@@ -1,115 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750861AbXBKVPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750880AbXBKVRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750861AbXBKVPj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 16:15:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750880AbXBKVPj
+	id S1750880AbXBKVRh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 16:17:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbXBKVRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 16:15:39 -0500
-Received: from mail.screens.ru ([213.234.233.54]:42457 "EHLO mail.screens.ru"
+	Sun, 11 Feb 2007 16:17:37 -0500
+Received: from smtp19.orange.fr ([80.12.242.19]:21210 "EHLO smtp19.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750851AbXBKVPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 16:15:38 -0500
-Date: Mon, 12 Feb 2007 00:15:24 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, David Howells <dhowells@redhat.com>,
-       Daniel Drake <dsd@gentoo.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 4/3] make cancel_rearming_delayed_work() work on any workqueue, not just keventd_wq
-Message-ID: <20070211211524.GA203@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	id S1750867AbXBKVRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 16:17:36 -0500
+X-ME-UUID: 20070211211734607.943F91C0008A@mwinf1923.orange.fr
+Message-ID: <45CF87EE.5000401@wanadoo.fr>
+Date: Sun, 11 Feb 2007 22:17:34 +0100
+From: Thibaud Hulin <hulin.thibaud@wanadoo.fr>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Cc: alex14641@yahoo.com, oliver@neukum.org
+Subject: Problem with USB ports and a dongle
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cancel_rearming_delayed_workqueue(wq, dwork) doesn't need the first parameter.
-We don't hang on un-queued dwork any longer, and work->data doesn't change its
-type. This means we can always figure out "wq" from dwork when it is needed.
+Hi !
 
-Remove this parameter, and rename the function to cancel_rearming_delayed_work().
-Re-create an inline "obsolete" cancel_rearming_delayed_workqueue(wq) which just
-calls cancel_rearming_delayed_work().
+I'm trying to use a dongle for ndiswrapper, but it fails because a 
+problem of usb. Note that the problem appear when ndiswrapper is fully 
+uninstalled (and others packages as ndiswrapper-utils, with modprobe -r, 
+etc...).
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+So ; when I get on the first time the dongle, a lsusb give :
+Bus 001 Device 002: ID 0457:0163 Silicon Integrated Systems Corps.
+Bus 001 Device 001: ID 0000:0000
+But, a few seconds later, the dongle is not recognize with sometimes an 
+error -71.
+Then, lsusb forget the driver and get :
+Bus 001 Device 001: ID 0000:0000
 
- include/linux/workqueue.h |   13 ++++++++++---
- kernel/workqueue.c        |   26 +++++++++-----------------
- 2 files changed, 19 insertions(+), 20 deletions(-)
+How can I configure the kernel to have the good configuration ? I tried 
+different ways, but it fails.
 
---- 6.20-rc6-mm3/include/linux/workqueue.h~4_crdw	2007-02-10 18:16:15.000000000 +0300
-+++ 6.20-rc6-mm3/include/linux/workqueue.h	2007-02-11 23:27:28.000000000 +0300
-@@ -185,9 +185,6 @@ extern int current_is_keventd(void);
- extern int keventd_up(void);
- 
- extern void init_workqueues(void);
--void cancel_rearming_delayed_work(struct delayed_work *work);
--void cancel_rearming_delayed_workqueue(struct workqueue_struct *,
--				       struct delayed_work *);
- int execute_in_process_context(work_func_t fn, struct execute_work *);
- 
- /*
-@@ -205,4 +202,14 @@ static inline int cancel_delayed_work(st
- 	return ret;
- }
- 
-+void cancel_rearming_delayed_work(struct delayed_work *work);
-+
-+/* Obsolete. use cancel_rearming_delayed_work() */
-+static inline
-+void cancel_rearming_delayed_workqueue(struct workqueue_struct *wq,
-+					struct delayed_work *work)
-+{
-+	cancel_rearming_delayed_work(work);
-+}
-+
- #endif
---- 6.20-rc6-mm3/kernel/workqueue.c~4_crdw	2007-02-10 19:07:41.000000000 +0300
-+++ 6.20-rc6-mm3/kernel/workqueue.c	2007-02-11 23:32:34.000000000 +0300
-@@ -555,36 +555,28 @@ void flush_work_keventd(struct work_stru
- EXPORT_SYMBOL(flush_work_keventd);
- 
- /**
-- * cancel_rearming_delayed_workqueue - kill off a delayed work whose handler rearms the delayed work.
-+ * cancel_rearming_delayed_work - kill off a delayed work whose handler rearms the delayed work.
-  * @wq:   the controlling workqueue structure
-  * @dwork: the delayed work struct
-  *
-  * Note that the work callback function may still be running on return from
-  * cancel_delayed_work(). Run flush_workqueue() or flush_work() to wait on it.
-  */
--void cancel_rearming_delayed_workqueue(struct workqueue_struct *wq,
--				       struct delayed_work *dwork)
-+void cancel_rearming_delayed_work(struct delayed_work *dwork)
- {
-+	struct cpu_workqueue_struct *cwq = get_wq_data(&dwork->work);
-+
- 	/* Was it ever queued ? */
--	if (!get_wq_data(&dwork->work))
--		return;
-+	if (cwq != NULL) {
-+		struct workqueue_struct *wq = cwq->wq;
- 
--	while (!cancel_delayed_work(dwork))
--		flush_workqueue(wq);
-+		while (!cancel_delayed_work(dwork))
-+			flush_workqueue(wq);
-+	}
- }
- EXPORT_SYMBOL(cancel_rearming_delayed_workqueue);
- 
- /**
-- * cancel_rearming_delayed_work - kill off a delayed keventd work whose handler rearms the delayed work.
-- * @dwork: the delayed work struct
-- */
--void cancel_rearming_delayed_work(struct delayed_work *dwork)
--{
--	cancel_rearming_delayed_workqueue(keventd_wq, dwork);
--}
--EXPORT_SYMBOL(cancel_rearming_delayed_work);
--
--/**
-  * execute_in_process_context - reliably execute the routine with user context
-  * @fn:		the function to execute
-  * @ew:		guaranteed storage for the execute work structure (must
+I already reinstalled the bios.
+
+See at below for the result of these commands (when I try the dongle) :
+"lspci -v |grep HCI"
+"cat /var/log/messages" (the end)
+"dmesg |grep usb"
+
+Thanks for help,
+Thibaud.
+
+NB1 : thanks to Alex Davis and Oliver Neukum for advices and 
+recommendations about check if the problem was from ndiswrapper or not. 
+I hope there is not a special list for kernel USB ; if yes : apologizes, 
+I couldn't find it.
+
+NB2 : I'm not sure if this message is too long or not. I included the 
+mention "End of the message" at last.
+
+---------------
+
+My hardware :
+Computer : dell pentium mmx 233 mst
+ram : 128 Mo
+dongle : thomson WLG-1500A - chipset Sis163u
+Kernel 2.6.19
+Ubuntu Edgy
+
+"lspci -v |grep HCI" :
+
+00:01.2 USB Controller: Intel Corporation 82371AB/EB/MB PIIX4 USB (rev 
+01) (prog-if 00 [UHCI])
+
+-------------
+
+"cat /var/log/messages"
+
+Feb 11 21:41:08 localhost kernel: [ 6049.104000] usb 1-1: new full speed 
+USB device using uhci_hcd and address 2
+Feb 11 21:41:08 localhost kernel: [ 6049.252000] usb 1-1: configuration 
+#1 chosen from 1 choice
+Feb 11 21:41:12 localhost kernel: [ 6053.592000] usb 1-1: USB 
+disconnect, address 2
+Feb 11 21:41:12 localhost kernel: [ 6053.712000] usb 1-1: new full speed 
+USB device using uhci_hcd and address 3
+Feb 11 21:41:13 localhost kernel: [ 6053.860000] usb 1-1: configuration 
+#1 chosen from 1 choice
+Feb 11 21:41:15 localhost kernel: [ 6056.592000] usb 1-1: USB 
+disconnect, address 3
+Feb 11 21:41:15 localhost kernel: [ 6056.712000] usb 1-1: new full speed 
+USB device using uhci_hcd and address 4
+Feb 11 21:41:16 localhost kernel: [ 6056.856000] usb 1-1: configuration 
+#1 chosen from 1 choice
+Feb 11 21:41:19 localhost kernel: [ 6059.700000] usb 1-1: USB 
+disconnect, address 4
+Feb 11 21:41:19 localhost kernel: [ 6059.812000] usb 1-1: new full speed 
+USB device using uhci_hcd and address 5
+Feb 11 21:41:20 localhost kernel: [ 6059.960000] usb 1-1: configuration 
+#1 chosen from 1 choice
+Feb 11 21:41:20 localhost kernel: [ 6060.204000] usb 1-1: USB 
+disconnect, address 5
+Feb 11 21:41:20 localhost kernel: [ 6060.316000] usb 1-1: new full speed 
+USB device using uhci_hcd and address 6
+Feb 11 21:41:20 localhost kernel: [ 6060.464000] usb 1-1: configuration 
+#1 chosen from 1 choice
+Feb 11 21:41:21 localhost kernel: [ 6062.220000] usb 1-1: USB 
+disconnect, address 6
+Feb 11 21:41:21 localhost kernel: [ 6062.332000] usb 1-1: new full speed 
+USB device using uhci_hcd and address 7
+Feb 11 21:41:21 localhost kernel: [ 6062.480000] usb 1-1: configuration 
+#1 chosen from 1 choice
+Feb 11 21:41:22 localhost kernel: [ 6062.724000] usb 1-1: USB 
+disconnect, address 7
+Feb 11 21:41:22 localhost kernel: [ 6062.836000] usb 1-1: new full speed 
+USB device using uhci_hcd and address 8
+Feb 11 21:41:22 localhost kernel: [ 6062.984000] usb 1-1: configuration 
+#1 chosen from 1 choice
+Feb 11 21:41:22 localhost kernel: [ 6063.480000] usb 1-1: USB 
+disconnect, address 8
+Feb 11 21:41:22 localhost kernel: [ 6063.592000] usb 1-1: new full speed 
+USB device using uhci_hcd and address 9
+Feb 11 21:41:24 localhost kernel: [ 6064.452000] usb 1-1: new full speed 
+USB device using uhci_hcd and address 10
+Feb 11 21:41:24 localhost kernel: [ 6065.012000] usb 1-1: new full speed 
+USB device using uhci_hcd and address 11
+Feb 11 21:41:24 localhost kernel: [ 6065.532000] usb 1-1: new full speed 
+USB device using uhci_hcd and address 12
+
+
+-------------
+
+dmesg |grep usb :
+
+[   17.780000] usbcore: registered new interface driver usbfs
+[   17.784000] usbcore: registered new interface driver hub
+[   17.788000] usbcore: registered new device driver usb
+[   17.808000] usb usb1: configuration #1 chosen from 1 choice
+[   69.416000] usbcore: registered new interface driver ndiswrapper
+[ 5916.300000] usbcore: deregistering interface driver ndiswrapper
+[ 6049.104000] usb 1-1: new full speed USB device using uhci_hcd and 
+address 2
+[ 6049.252000] usb 1-1: configuration #1 chosen from 1 choice
+[ 6053.592000] usb 1-1: USB disconnect, address 2
+[ 6053.712000] usb 1-1: new full speed USB device using uhci_hcd and 
+address 3
+[ 6053.860000] usb 1-1: configuration #1 chosen from 1 choice
+[ 6056.592000] usb 1-1: USB disconnect, address 3
+[ 6056.712000] usb 1-1: new full speed USB device using uhci_hcd and 
+address 4
+[ 6056.856000] usb 1-1: configuration #1 chosen from 1 choice
+[ 6059.700000] usb 1-1: USB disconnect, address 4
+[ 6059.812000] usb 1-1: new full speed USB device using uhci_hcd and 
+address 5
+[ 6059.960000] usb 1-1: configuration #1 chosen from 1 choice
+[ 6060.204000] usb 1-1: USB disconnect, address 5
+[ 6060.316000] usb 1-1: new full speed USB device using uhci_hcd and 
+address 6
+[ 6060.464000] usb 1-1: configuration #1 chosen from 1 choice
+[ 6062.220000] usb 1-1: USB disconnect, address 6
+[ 6062.332000] usb 1-1: new full speed USB device using uhci_hcd and 
+address 7
+[ 6062.480000] usb 1-1: configuration #1 chosen from 1 choice
+[ 6062.724000] usb 1-1: USB disconnect, address 7
+[ 6062.836000] usb 1-1: new full speed USB device using uhci_hcd and 
+address 8
+[ 6062.984000] usb 1-1: configuration #1 chosen from 1 choice
+[ 6063.480000] usb 1-1: USB disconnect, address 8
+[ 6063.592000] usb 1-1: new full speed USB device using uhci_hcd and 
+address 9
+[ 6063.712000] usb 1-1: device descriptor read/64, error -71
+[ 6064.340000] usb 1-1: device not accepting address 9, error -71
+[ 6064.452000] usb 1-1: new full speed USB device using uhci_hcd and 
+address 10
+[ 6064.572000] usb 1-1: device descriptor read/64, error -71
+[ 6064.796000] usb 1-1: device descriptor read/64, error -71
+[ 6065.012000] usb 1-1: new full speed USB device using uhci_hcd and 
+address 11
+[ 6065.420000] usb 1-1: device not accepting address 11, error -71
+[ 6065.532000] usb 1-1: new full speed USB device using uhci_hcd and 
+address 12
+[ 6065.940000] usb 1-1: device not accepting address 12, error -71
+
+----------------
+
+End of the message
 
