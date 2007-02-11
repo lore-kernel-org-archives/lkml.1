@@ -1,70 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753121AbXBKGyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbXBKG7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753121AbXBKGyb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 01:54:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbXBKGyb
+	id S1753139AbXBKG7b (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 01:59:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbXBKG7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 01:54:31 -0500
-Received: from 1wt.eu ([62.212.114.60]:2323 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753121AbXBKGya (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 01:54:30 -0500
-Date: Sun, 11 Feb 2007 07:54:04 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Daniel Barkalow <barkalow@iabervon.org>, nigel@nigel.suspend2.net,
-       Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.osdl.org>
-Subject: Re: [PATCH] Re: NAK new drivers without proper power management?
-Message-ID: <20070211065404.GA943@1wt.eu>
-References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no> <200702101130.44471.rjw@sisk.pl> <Pine.LNX.4.64.0702101231281.20138@iabervon.org> <200702102050.28218.rjw@sisk.pl>
+	Sun, 11 Feb 2007 01:59:31 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:22094 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753131AbXBKG7a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 01:59:30 -0500
+Date: Sat, 10 Feb 2007 22:55:11 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Tejun Heo <htejun@gmail.com>, Christoph Hellwig <hch@infradead.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Jeff Garzik <jgarzik@pobox.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
+Subject: Re: [patch] linux/io.h: forward declare struct pci_dev
+Message-Id: <20070210225511.384f894b.randy.dunlap@oracle.com>
+In-Reply-To: <20070211063431.GS10050@ftp.linux.org.uk>
+References: <20070210114550.GC12642@osiris.boeblingen.de.ibm.com>
+	<20070211034902.GA9077@infradead.org>
+	<45CEB720.1020406@gmail.com>
+	<20070211063431.GS10050@ftp.linux.org.uk>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200702102050.28218.rjw@sisk.pl>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 10, 2007 at 08:50:27PM +0100, Rafael J. Wysocki wrote:
-> On Saturday, 10 February 2007 18:52, Daniel Barkalow wrote:
-> > On Sat, 10 Feb 2007, Rafael J. Wysocki wrote:
-> > 
-> > > On Saturday, 10 February 2007 11:02, Nigel Cunningham wrote:
-> > >
-> > > > Well, the original desire was to stop new drivers getting in without
-> > > > proper power management.
-> > > 
-> > > I know, but I agree with the argument that having a driver without the
-> > > suspend/resume support is better than not having the driver at all.
-> > 
-> > How about if "proper power management" is defined to include the driver 
-> > explicitly preventing suspend? It seems to me like the current problem is 
-> > that driver writers don't think about power management at all, and the 
-> > result is that, after suspend/resume, the system doesn't come back. It 
-> > would be better if driver writers had to think about power management just 
-> > enough to realize that it's not going to work, and make this information 
-> > available to the system. At that point, it's relatively easy for the 
-> > system to do something useful about it.
+On Sun, 11 Feb 2007 06:34:31 +0000 Al Viro wrote:
+
+> My current version:
 > 
-> Actually, it is easy for the driver authors to do this right now.  They can
-> just make the .suspend() routine always return an error.
+> >From 97f115834b5ebef4f04e0f18aaa10f78f43733a0 Mon Sep 17 00:00:00 2001
+> From: Al Viro <viro@zeniv.linux.org.uk>
+> Date: Sat, 10 Feb 2007 23:41:09 -0500
+> Subject: [PATCH] sort the devres mess out
 > 
-> Well, I think this is a good idea: if the device in question requires specific
-> power management during the suspend/resume, but it is not implemented by the
-> driver, we should require the author of the driver to define the .suspend()
-> routine that returns -ENOSYS (preferably, with an explanatory warning in
-> dmesg).
+> Split the implementation-agnostic stuff in separate files.
+> Make sure that targets using non-default request_irq() pull kernel/irq/devres.o
+> Mark targets that have no ioport_map() and friends, protect the ioport-related
+> Parts of lib/devres.o with corresponding ifdef (BTW, we need it in driver
+> dependencies in quite a few of cases, so that symbol was needed anyway).
+> 
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
+> 
+> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+> index 1523046..7215152 100644
+> --- a/arch/arm/Kconfig
+> +++ b/arch/arm/Kconfig
+> @@ -29,6 +29,10 @@ config MMU
+>  	bool
+>  	default y
+>  
+> +config NO_IOPORT
+> +	bool
+> +	default n
 
-instead of modifying all drivers to explicitly state that they don't support
-it, we should start with a test of the NULL pointer for .suspend which should
-mean exactly the same without modifying the drivers. I find it obvious that
-a driver which does provide a suspend function will not support it. And if
-some drivers (eg /dev/null) can support it anyway, it's better to change
-*those* drivers to explicitly mark them as compatible.
+Uh, I think that we would rather see a positive-sense symbol instead
+of a negative one.  Any reason that this one prefers to be negative?
 
-regards,
-Willy
-
+Thanks,
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
