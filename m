@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932570AbXBKXYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932576AbXBKXZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932570AbXBKXYI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 18:24:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932591AbXBKXYI
+	id S932576AbXBKXZe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 18:25:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932593AbXBKXZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 18:24:08 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:53738 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932570AbXBKXYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 18:24:05 -0500
-Date: Mon, 12 Feb 2007 00:23:38 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
+	Sun, 11 Feb 2007 18:25:34 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:5171 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932576AbXBKXZd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 18:25:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hmHsZTMpsixsZ6i+8Ou/HF4U4eUzUngB/Jpl7CaaUKCbopDpiJ5UQo2Xoju2H8ObovK9huXuitf1lYw6hHnjNRnwZNqmmL0jd8JeJz1PnfV7oykdL3sH9eXWy/gvq8I0DvkHRMPrCrCsFLAhT70MxuzeWXwZKeyi7vdJfEPTEvw=
+Message-ID: <1a297b360702111525v4f26ad4ax9af8fba45936c22f@mail.gmail.com>
+Date: Mon, 12 Feb 2007 03:25:32 +0400
+From: "Manu Abraham" <abraham.manu@gmail.com>
+To: nigel@nigel.suspend2.net
 Subject: Re: NAK new drivers without proper power management?
-Message-ID: <20070211232338.GH15445@elf.ucw.cz>
-References: <1171058269.1484.64.camel@nigel.suspend2.net> <20070211210258.0b8da53c@localhost.localdomain> <1171235428.4493.105.camel@nigel.suspend2.net> <200702120016.18480.rjw@sisk.pl> <1171236143.4493.118.camel@nigel.suspend2.net>
+Cc: "Willy Tarreau" <w@1wt.eu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Pavel Machek" <pavel@ucw.cz>, "Arjan van de Ven" <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, tilman@imap.cc
+In-Reply-To: <1171236000.4493.116.camel@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1171236143.4493.118.camel@nigel.suspend2.net>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+References: <1171058269.1484.64.camel@nigel.suspend2.net>
+	 <1171059433.8675.195.camel@laptopd505.fenrus.org>
+	 <20070210193851.GA3956@ucw.cz> <200702102320.39531.rjw@sisk.pl>
+	 <1171147026.19894.16.camel@nigel.suspend2.net>
+	 <20070211064636.GA12171@1wt.eu>
+	 <1171234027.4493.88.camel@nigel.suspend2.net>
+	 <1a297b360702111457k3a38eefei485f814f980e58c6@mail.gmail.com>
+	 <1171236000.4493.116.camel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On 2/12/07, Nigel Cunningham <nigel@nigel.suspend2.net> wrote:
+> Hi.
+>
+> On Mon, 2007-02-12 at 02:57 +0400, Manu Abraham wrote:
+> > On 2/12/07, Nigel Cunningham <nigel@nigel.suspend2.net> wrote:
+> >
+> > > Neither am I. I'm just asking that new drivers have power management as
+> > > standard.
+>
+> > What if the hardware doesn't support power management ?
+>
+> You would still want to do the cleanup and configuration that you'd do
+> for module load/unload.
+>
 
-> > > - built in;
-> > > - modular, loaded while suspending but not loaded prior to resume from
-> > > disk;
-> > > - modular, loaded while suspending and loaded prior to resume from disk;
-> > 
-> > I think we should state the general rule in Documentation/SubmittingDrivers
-> > and give more details in Documentation/power/devices.txt
-> 
-> Sounds good.
+By adding dummy functions, wouldn't that just look awkward ?
 
-Ok, so who does the patch?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+regards,
+manu
