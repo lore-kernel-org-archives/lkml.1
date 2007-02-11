@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932579AbXBKWUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932580AbXBKWUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932579AbXBKWUS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 17:20:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932580AbXBKWUS
+	id S932580AbXBKWUp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 17:20:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932588AbXBKWUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 17:20:18 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:53864 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932579AbXBKWUQ (ORCPT
+	Sun, 11 Feb 2007 17:20:44 -0500
+Received: from llsb232-a02.servidoresdns.net ([82.223.190.38]:37324 "EHLO
+	llsb232-a02.servidoresdns.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932580AbXBKWU1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 17:20:16 -0500
-X-Sasl-enc: x0s7W5vYlEB8meZkk5e/MnNvfd4li+szzvdQyXE/j9Dp 1171232413
-Message-ID: <45CF96D0.8070004@imap.cc>
-Date: Sun, 11 Feb 2007 23:21:04 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
+	Sun, 11 Feb 2007 17:20:27 -0500
+X-Greylist: delayed 1236 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Feb 2007 17:20:27 EST
+Message-ID: <45CF91D2.4060508@albentia.com>
+Date: Sun, 11 Feb 2007 22:59:46 +0100
+From: Iratxo Pichel Ortiz <ipichel@albentia.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Arjan van de Ven <arjan@infradead.org>,
-       nigel@nigel.suspend2.net, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: NAK new drivers without proper power management?
-References: <1171058269.1484.64.camel@nigel.suspend2.net> <1171059433.8675.195.camel@laptopd505.fenrus.org> <20070210193851.GA3956@ucw.cz> <200702102320.39531.rjw@sisk.pl> <20070211194202.GC15445@elf.ucw.cz>
-In-Reply-To: <20070211194202.GC15445@elf.ucw.cz>
-X-Enigmail-Version: 0.94.1.2
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig0E5C8289FE3636EE9076CE58"
+To: linux-kernel@vger.kernel.org
+Subject: Multicast "ipmr.c" misunderstood / bug / new feature.
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig0E5C8289FE3636EE9076CE58
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi !
 
-Am 11.02.2007 20:42 schrieb Pavel Machek:
-[...]
->> What about this:
->>
->> "If the device requires that, implement .suspend and .resume or at lea=
-st
->> define .suspend that will always return -ENOSYS (then people will know=
- they
->> have to unload the driver before the suspend).  Similarly, if you aren=
-'t sure
->> whether or not the device requires .suspend and .resume, define .suspe=
-nd that
->> will always return -ENOSYS."
->=20
-> Sounds ok to me. Where should this text go?
-> Documentation/SubmittingDrivers ?
+I have been working with multicast routing to build a multicast router.
+The target system uses static multicast routers and we have used
+smcroute user-space daemon. After some issues with that sofware I have
+built a some kind of custom daemon.
 
+This router has support for hotpluggable interfaces like wifi and usb ones.
 
-Documentation/power/devices.txt?
+I think that there is something I don't understand or is not supported
+in the net/ipv4/ipmr.c Kernel router. This routing system registers the
+function "ipmr_device_event" as a notifier so that when a device is
+unregistered from the system the correspondings multicast virtual
+interfaces are also unregistered.
 
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-- In theory, there is no difference between theory and practice.
-  In practice, there is.
+This is fine, but the problem is that the function "vif_delete()", used
+in the notifier and in the corresponding IOCTL does not release the
+active routes (mfc_cache entries). When doing "cat /proc/net/ip_mr_vif"
+the unregistered interfaces are no longer available, but when doing "cat
+/proc/net/ip_mr_cache" weird entries are displayed. If the unregistered
+device was an output vif the route entry is shown with no output vif. If
+it was an input vif  the entry is shown but not really valid.
 
+I don't know if this is really the expected behaviour of the multicast
+routing system or even this is the correct place to ask.
 
---------------enig0E5C8289FE3636EE9076CE58
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+I have coded a small patch for the ipmr.c file that purges all the
+routes related to a device when it is unregistered, leaving the tables
+in a coherent state always. I am know debugging this feature.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+So: Is this the correct behaviour or is a bug? And is this patch
+interesting for the Kernel?
 
-iD8DBQFFz5bZMdB4Whm86/kRAr/HAJ94UhMAR4hb+WBXu7HpmGqkrWJrhgCfSYGj
-CAGEd9ZKAmIG2Vu9VuV80BA=
-=ZnRp
------END PGP SIGNATURE-----
+Thank you very much,
 
---------------enig0E5C8289FE3636EE9076CE58--
+    Iratxo Pichel Ortiz.
