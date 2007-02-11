@@ -1,103 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932067AbXBKSzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932073AbXBKTBB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932067AbXBKSzu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 13:55:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932069AbXBKSzt
+	id S932073AbXBKTBB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 14:01:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932072AbXBKTBB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 13:55:49 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38130 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932067AbXBKSzs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 13:55:48 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Daniel Barkalow <barkalow@iabervon.org>
-Subject: Re: [PATCH] Re: NAK new drivers without proper power management?
-Date: Sun, 11 Feb 2007 19:53:00 +0100
-User-Agent: KMail/1.9.5
-Cc: Willy Tarreau <w@1wt.eu>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       nigel@nigel.suspend2.net, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.osdl.org>
-References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no> <200702111536.20871.rjw@sisk.pl> <Pine.LNX.4.64.0702111154570.20138@iabervon.org>
-In-Reply-To: <Pine.LNX.4.64.0702111154570.20138@iabervon.org>
+	Sun, 11 Feb 2007 14:01:01 -0500
+Received: from alnrmhc12.comcast.net ([206.18.177.52]:44671 "EHLO
+	alnrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932069AbXBKTBA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 14:01:00 -0500
+X-Greylist: delayed 543 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Feb 2007 14:01:00 EST
+Message-ID: <45CF65BE.8060602@jmorrow.org>
+Date: Sun, 11 Feb 2007 10:51:42 -0800
+From: Jeff Morrow <jmorrow@jmorrow.org>
+Reply-To: jmorrow@massspec.com
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: akpm@osdl.org, jeff@garzik.org, davem@davemloft.net
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [patch] bugfixes and new hardware support for arcnet driver
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702111953.02229.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 11 February 2007 18:27, Daniel Barkalow wrote:
-> On Sun, 11 Feb 2007, Rafael J. Wysocki wrote:
-> 
-> > The problem is it was made implicit long ago.  The design is "optimistic", so
-> > to speak, and I think we have the following choices:
-> > 
-> > 1) Change the design to make the kernel refuse to suspend if there are any
-> > drivers not explicitly flagged as "suspend/resume-safe".  [This looks like a
-> > lot of work to me, but it is generally doable provided that someone has enough
-> > time to do it.  Unfortunately it has to be done in one shot for all of the
-> > known good drivers to avoid user-observable regressions.]
-> 
-> The kernel wouldn't necessarily have to refuse to suspend.
+The modifications and bug fixes noted below were done by Realtime
+Control Works and Contemporary Control Systems, Inc, Jan 2005.  They
+were incorporated into the 2.6 kernel by Jeff Morrow of Sierra
+Analytics, Feb 2007.  <jmorrow@massspec.com>
 
-Well, not from the start, but I think at some point in the fufure it would.
+The changes have been tested on a Contemporary Controls PCI20U-4000.
 
-> It could just warn (and list the drivers that aren't marked), or could
-> require some extra insistance from the user.
+Summary of changes:
 
-We would have to change the interface for that and I don't want to do it.
+Arc-rawmode.c:
+      rx():
+      - Fixed error in received packet lengths; 256 byte packets were
+        being received as 257 bytes packets.
 
-> It would be good to have it log a message saying something like: "If you can
-> read this, report that ne2000 seems to be safe for suspend/resume".
+      prepare_tx():
+      - Fixed error in transmit length calcs; 257 byte packets were being
+        transmitted as 260 byte packets.
 
-Sure, it would.
+com20020.c:
+      com20020_check():
+      - We now load the SETUP2 register if the 'clockm' parameter is
+        non-zero, instead of checking for ARC_CAN_10MBIT. The user is
+        now responsible for whether or not SETUP2 is loaded.  If the
+        clock multiplier is non-zero, this means that the user wants a
+        baud rate greater than 2.5Mbps. This is not possible unless the
+        SETUP2 register is present (COM20020D, or COM20022). So, we're
+        relying on the user to be smart about what kind of chip he's
+        dealing with...
 
-> Having drivers explicitly marked as to whether they are safe is a good kernel
-> feature; what to do if they're not is policy.
+com20020-pci.c
+      - Added several entries to com20020pci_id_table[].
 
-That's true, but I assume that the people who opt for doing that are also
-willing to take part in the review of the drivers. :-)
+Signed-off-by: Jeff Morrow <jmorrow@massspec.com>
 
-> > 2) Require the authors of new drivers to _either_ ensure that their drivers
-> > will be suspend/resume-safe (and I mean both STR and STD here), _or_ explicitly
-> > flag the drivers as "suspend/resume-unsafe", for example by impelenting
-> > .suspend() routines returning -ENOSYS.  [The existing drivers can be modified
-> > to follow this convention gradually.]
-> 
-> I don't see any reason not to do (2) regardless of (1). That was (my idea 
-> of) the statement that started this thread: new drivers need to not mess 
-> up on suspend/resume, as a matter of suitability for inclusion. Of course, 
-> we need some way for drivers to indicate that they work fine with the 
-> PCI-layer defaults. And it should probably more machine-readable than the 
-> author telling reviewers that it works.
+---
+diff -uprN -X linux-2.6.20/Documentation/dontdiff linux-2.6.20/drivers/net/arcnet/arcnet.c linux-2.6.20.changed/drivers/net/arcnet/arcnet.c
+--- linux-2.6.20/drivers/net/arcnet/arcnet.c    2007-02-04 10:44:54.000000000 -0800
++++ linux-2.6.20.changed/drivers/net/arcnet/arcnet.c    2007-02-11 10:26:47.000000000 -0800
+@@ -41,7 +41,7 @@
+   *     <jojo@repas.de>
+   */
 
-Well, if we change the design to fail by default, the authors of new drivers
-will only have to flag them if they believe that the drivers are
-suspend/resume-safe.
+-#define VERSION "arcnet: v3.93 BETA 2000/04/29 - by Avery Pennarun et al.\n"
++#define VERSION "arcnet: v3.94 BETA 2007/02/08 - by Avery Pennarun et al.\n"
 
-> > - Problem what to do with drivers that work for some people and don't work
-> > for the others (ie. if we don't flag them as known good, we will break the
-> > setups in which they work)
-> 
-> I think the only interesting case here is when a device resumes fine with 
-> no driver support if the BIOS manages to deal effectively with it, but the 
-> BIOS generally doesn't.
+  #include <linux/module.h>
+  #include <linux/types.h>
+diff -uprN -X linux-2.6.20/Documentation/dontdiff linux-2.6.20/drivers/net/arcnet/arc-rawmode.c linux-2.6.20.changed/drivers/net/arcnet/arc-rawmode.c
+--- linux-2.6.20/drivers/net/arcnet/arc-rawmode.c       2007-02-04 10:44:54.000000000 -0800
++++ linux-2.6.20.changed/drivers/net/arcnet/arc-rawmode.c       2007-02-11 10:24:38.000000000 -0800
+@@ -94,7 +94,7 @@ static void rx(struct net_device *dev, i
 
-Well, I don't think so.  Let's estimate the number of drivers that define
-.resume() right now:
+  	BUGMSG(D_DURING, "it's a raw packet (length=%d)\n", length);
 
-$ grep -I -l -r '.resume =' linux-2.6.20/drivers/ | wc
-    102     102    4169
+-	if (length >= MinTU)
++	if (length > MTU)
+  		ofs = 512 - length;
+  	else
+  		ofs = 256 - length;
+@@ -183,7 +183,7 @@ static int prepare_tx(struct net_device
+  		       length, XMTU);
+  		length = XMTU;
+  	}
+-	if (length > MinTU) {
++	if (length >= MinTU) {
+  		hard->offset[0] = 0;
+  		hard->offset[1] = ofs = 512 - length;
+  	} else if (length > MTU) {
+diff -uprN -X linux-2.6.20/Documentation/dontdiff linux-2.6.20/drivers/net/arcnet/com20020.c linux-2.6.20.changed/drivers/net/arcnet/com20020.c
+--- linux-2.6.20/drivers/net/arcnet/com20020.c  2007-02-04 10:44:54.000000000 -0800
++++ linux-2.6.20.changed/drivers/net/arcnet/com20020.c  2007-02-11 10:29:59.000000000 -0800
+@@ -104,7 +104,7 @@ int com20020_check(struct net_device *de
+  	SET_SUBADR(SUB_SETUP1);
+  	outb(lp->setup, _XREG);
 
-And I think there are much more drivers that really work fine with respect
-to the suspend/resume.
+-	if (lp->card_flags & ARC_CAN_10MBIT)
++	if (lp->clockm != 0)
+  	{
+  		SET_SUBADR(SUB_SETUP2);
+  		outb(lp->setup2, _XREG);
+diff -uprN -X linux-2.6.20/Documentation/dontdiff linux-2.6.20/drivers/net/arcnet/com20020-pci.c linux-2.6.20.changed/drivers/net/arcnet/com20020-pci.c
+--- linux-2.6.20/drivers/net/arcnet/com20020-pci.c      2007-02-04 10:44:54.000000000 -0800
++++ linux-2.6.20.changed/drivers/net/arcnet/com20020-pci.c      2007-02-11 10:33:11.000000000 -0800
+@@ -155,6 +155,7 @@ static struct pci_device_id com20020pci_
+  	{ 0x1571, 0xa00b, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_IS_5MBIT },
+  	{ 0x1571, 0xa00c, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_IS_5MBIT },
+  	{ 0x1571, 0xa00d, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_IS_5MBIT },
++	{ 0x1571, 0xa00e, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_IS_5MBIT },
+  	{ 0x1571, 0xa201, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
+  	{ 0x1571, 0xa202, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
+  	{ 0x1571, 0xa203, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
+@@ -163,6 +164,8 @@ static struct pci_device_id com20020pci_
+  	{ 0x1571, 0xa206, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
+  	{ 0x10B5, 0x9030, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
+  	{ 0x10B5, 0x9050, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
++	{ 0x14BA, 0x6000, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
++	{ 0x10B5, 0x2200, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
+  	{0,}
+  };
 
-This indicates that in fact many drivers can be marked as known good even
-though they don't define the .suspend() or .resume() routines.
 
-Greetings,
-Rafael
