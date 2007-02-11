@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752959AbXBKF7I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753035AbXBKGEF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752959AbXBKF7I (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 00:59:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbXBKF7I
+	id S1753035AbXBKGEF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 01:04:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbXBKGEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 00:59:08 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:62400 "EHLO
-	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753026AbXBKF7G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 00:59:06 -0500
-Date: Sat, 10 Feb 2007 21:57:56 -0800 (PST)
-From: Zwane Mwaikambo <zwane@infradead.org>
-Subject: Re: What are the real ioapic rte programming constraints?
-In-reply-to: <m1hctt1sfp.fsf_-_@ebiederm.dsl.xmission.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Ashok Raj <ashok.raj@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       "Lu, Yinghai" <yinghai.lu@amd.com>,
-       Natalie Protasevich <protasnb@gmail.com>, Andi Kleen <ak@suse.de>,
-       Coywolf Qi Hunt <coywolf@lovecn.org>
-Message-id: <Pine.LNX.4.64.0702102146380.8245@montezuma.fsmlabs.com>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <200701221116.13154.luigi.genoni@pirelli.com>
- <200702021848.55921.luigi.genoni@pirelli.com>
- <m1ejp85tgm.fsf@ebiederm.dsl.xmission.com>
- <200702021905.39922.luigi.genoni@pirelli.com>
- <m1zm7w3wvr.fsf_-_@ebiederm.dsl.xmission.com>
- <m1veik3woc.fsf_-_@ebiederm.dsl.xmission.com> <20070206073616.GA15016@elte.hu>
- <m1odo7q6cq.fsf@ebiederm.dsl.xmission.com> <20070206222523.GA11602@elte.hu>
- <m1irecamzh.fsf@ebiederm.dsl.xmission.com>
- <m1wt2s8ksa.fsf@ebiederm.dsl.xmission.com>
- <m1veib6dgi.fsf@ebiederm.dsl.xmission.com>
- <m1hctt1sfp.fsf_-_@ebiederm.dsl.xmission.com>
+	Sun, 11 Feb 2007 01:04:05 -0500
+Received: from wasp.net.au ([203.190.192.17]:39788 "EHLO wasp.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753035AbXBKGEE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 01:04:04 -0500
+Message-ID: <45CEB1C9.5010103@wasp.net.au>
+Date: Sun, 11 Feb 2007 10:03:53 +0400
+From: Brad Campbell <brad@wasp.net.au>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
+MIME-Version: 1.0
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+CC: Alex Dubov <oakad@yahoo.com>, linux-kernel@vger.kernel.org
+Subject: Re: Recent and not-so problems with tifm_sd driver - one more
+References: <113489.35158.qm@web36703.mail.mud.yahoo.com> <45CDC22B.6040408@drzeus.cx>
+In-Reply-To: <45CDC22B.6040408@drzeus.cx>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Feb 2007, Eric W. Biederman wrote:
-
-> There are not enough details in the justification to really understand
-> the issue so I'm asking to see if someone has some more details.
+Pierre Ossman wrote:
+> Alex Dubov wrote:
+>> One more problem (you may already know about it) - I was contacted by somebody from the hald
+>> project and indeed I can confirm that on 2.6.20 kernel hald fails to take action on card
+>> insertion. I can't see anything in my code so this may be a general mmc problem.
+>> The problem is described here:
+>> http://lists.freedesktop.org/archives/hal/2007-January/006960.html
+>>
 > 
-> The description makes the assertion that reprograming the ioapic
-> when an  interrupt is pending is the only safe way to handle this.
-> Since edge triggered interrupts cannot be pending at the ioapic I know
-> it is not talking level triggered interrupts.
-> 
-> However it is not possible to fully reprogram a level triggered
-> interrupt when the interrupt is pending as the ioapic will not
-> receive the interrupt acknowledgement.  So it turns out I have
-> broken this change for several kernel releases without people
-> screaming at me about io_apic problems.
-> 
-> Currently I am disabling the irq on the ioapic before reprogramming
-> it so I do not run into issues.  Does that solve the concerns that
-> were patched around by only reprogramming interrupt redirection
-> table entry in interrupt handlers?
+> Odd. This might be the whole sysfs restructuring thing causing problems. Can you
+> check if that user has CONFIG_SYSFS_DEPRECATED on?
 
-Hi Eric,
-	Could you outline in pseudocode where you're issuing the mask? If 
-it's done whilst an irq is pending some (intel 7500 based) chipsets will 
-not actually mask it but treat it as a 'legacy' IRQ and deliver it 
-anyway. Using the masked whilst pending logic avoids all of that.
+I've tested both with and without CONFIG_SYSFS_DEPRECATED on, both fail the same way.
+hald reports that the device has no parent and decides to ignore it.
 
-Cheers,
-	Zwane
+I've also tested both combinations against hal from ubuntu 6.06LTS and a more recent version
+
+brad@bklaptop2:~$ hald --version
+HAL package version: 0.5.8.1
+
+Again with and without CONFIG_SYSFS_DEPRECATED and all combinations fail.
+Hal appears to go looking for /sys/block/mmcblk0/mmcblk0p1/range
+
+When it can't find it, it then looks for the parent of that to check what would be 
+/sys/block/mmcblk0/range, Complains it can't find a parent for /sys/block/mmcblk0/mmcblk0p1 and just 
+proceeds to ignore the event.
+
+Brad
+--
+"Human beings, who are almost unique in having the ability
+to learn from the experience of others, are also remarkable
+for their apparent disinclination to do so." -- Douglas Adams
