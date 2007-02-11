@@ -1,73 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750895AbXBKVgM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750900AbXBKViS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750895AbXBKVgM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 16:36:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750897AbXBKVgM
+	id S1750900AbXBKViS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 16:38:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750902AbXBKViS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 16:36:12 -0500
-Received: from gate.crashing.org ([63.228.1.57]:52538 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750884AbXBKVgL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 16:36:11 -0500
-Subject: Re: remote debugging via FireWire
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Andi Kleen <ak@suse.de>, Bernhard Kaindl <bk@suse.de>, discuss@x86-64.org,
-       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <45CE19F3.2070603@s5r6.in-berlin.de>
-References: <200702101242.48467.ak@suse.de> <200702101502.59431.ak@suse.de>
-	 <45CDE14C.4040203@s5r6.in-berlin.de> <200702101641.36239.ak@suse.de>
-	 <45CE19F3.2070603@s5r6.in-berlin.de>
-Content-Type: text/plain
-Date: Mon, 12 Feb 2007 08:35:38 +1100
-Message-Id: <1171229738.20494.60.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 11 Feb 2007 16:38:18 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50762 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750897AbXBKViR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 16:38:17 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Natalie Protasevich" <protasnb@gmail.com>
+Cc: "Zwane Mwaikambo" <zwane@infradead.org>, "Ashok Raj" <ashok.raj@intel.com>,
+       "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, "Lu, Yinghai" <yinghai.lu@amd.com>,
+       "Andi Kleen" <ak@suse.de>, "Coywolf Qi Hunt" <coywolf@lovecn.org>
+Subject: Re: What are the real ioapic rte programming constraints?
+References: <200701221116.13154.luigi.genoni@pirelli.com>
+	<20070206073616.GA15016@elte.hu>
+	<m1odo7q6cq.fsf@ebiederm.dsl.xmission.com>
+	<20070206222523.GA11602@elte.hu>
+	<m1irecamzh.fsf@ebiederm.dsl.xmission.com>
+	<m1wt2s8ksa.fsf@ebiederm.dsl.xmission.com>
+	<m1veib6dgi.fsf@ebiederm.dsl.xmission.com>
+	<m1hctt1sfp.fsf_-_@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.64.0702102146380.8245@montezuma.fsmlabs.com>
+	<m13b5d0zdp.fsf@ebiederm.dsl.xmission.com>
+	<32209efe0702111212j77f5011xe2430cb13c13686@mail.gmail.com>
+Date: Sun, 11 Feb 2007 14:36:47 -0700
+In-Reply-To: <32209efe0702111212j77f5011xe2430cb13c13686@mail.gmail.com>
+	(Natalie Protasevich's message of "Sun, 11 Feb 2007 12:12:19 -0800")
+Message-ID: <m1ejowz89c.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-02-10 at 20:16 +0100, Stefan Richter wrote:
-> [ohci1394_early]
-> 
-> Some remarks to the September 2006 version at
-> http://www.suse.de/~bk/firewire/ :
-> 
->   - Seems its .remove won't work properly if more than one OHCI-1394
->     controller is installed.  And it's .probe isn't reentrant, but that
->     might be less of a problem.
->   - Its functionality will be lost if there is a FireWire bus reset,
->     e.g. when something is plugged in or out.  To keep physical DMA
->     alive, an interrupt handler had to be installed which writes ~0
->     to OHCI1394_PhyReqFilter{Hi,Lo}Set.  Can interrupt handlers be
->     registered in an early setup stage?
->   - There might be some register accesses in the setup which could be
->     omitted; I'd have to look this up.
->   - Could be optimized to not use ohci1394.h::struct ti_ohci.
->   - PCI_CLASS_FIREWIRE_OHCI can be replaced by
->     include/linux/pci_ids.h::PCI_CLASS_SERIAL_FIREWIRE_OHCI which
->     was newly added in 2.6.20-git#.
->   - I suppose .probe should check for PCI_CLASS_SERIAL_FIREWIRE_OHCI
->     instead of PCI_CLASS_SERIAL_FIREWIRE.
->   - How about dropping support for configuring this as module, to
->     simplify the code?  Unless this would interfere with ohci1394; and
->     it probably would if there was an interrupt handler...
->   - "depends on X86_64" is missing in Kconfig.
->   - Maybe put it into arch/x86_64/drivers/ instead of drivers/ieee1394?
->   - Plus what I mentioned earlier in the thread.
-> 
-> I could send code to address some of this at next weekend or later.
+"Natalie Protasevich" <protasnb@gmail.com> writes:
 
-I'd like to have that on ppc as well, so I'd rather keep it in drivers/
+> On 2/11/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
+>
+>     The code currently in the kernel does:
+>
+>     pending
+>     mask
+>     read io_apic
+>     ack
+>     reprogram vector and destination
+>     unmask
+>
+>     So I guess it does retain the bug fix.
+>
+>     What I am looking at doing is:
+>
+>     mask
+>     read io_apic
+>     -- Past this point no more irqs are expected from the io_apic
+>     -- Now I work to drain any inflight/pending instances of the irq
+>     send ipi to all irq destinations cpus and wait for it to return
+>     read lapic
+>     disable local irqs
+>     take irq lock
+>     -- Now no more irqs are expected to arrive
+>     reprogram vector and destination
+>     enable local irqs
+>     unmask
+>
+>     What I need to ensure is that I have a point where I will not receive any
+>     new messages from an ioapic about a particular irq anymore.  Even if
+>     everything is working perfectly setting the disable bit is not enough
+>     because there could be an irq message in flight. So I need to give any
+>     in flight irqs a chance to complete.
+>
+>
+> It is probably safer to have "interlapping" time in having second rte
+> programmed, then both willl have the same vector and receive the eoi. And if
+> you have interrupts disabled for a little while before you dismantle the old
+> entry it should insure that all the in-flight ones got services and acked...
+> --Natalie
 
-I agree that it doesn't need to be a module. If you can load modules,
-then you can load the full ohci driver. Thus, if it's an early thingy
-initialized by arch, it can export a special "takeover" hook that the
-proper ohci module can then call to override it (important if we start
-having an irq handler).
+I am assuming you mean interrupts disabled at the ioapic.  If that
+is true mostly I agree with your assertion.
 
-Andi, also, how do you deal with iommu ? Not at all ? :-)
+If you look above the mask is where I disable that interrupt source on
+the ioapic.  I then send an ipi to all of the other possible cpus and
+read the local apic to ensure that the window is over in which I need
+to handle interrupts at the old destination. 
 
-Ben.
+If I don't know when the window ends I can never dismantle the data
+structures for receiving the irq at the old destination.  Ouch!
+
+If I know how long I have to wait until I can clean up the data
+structure at the old destination I don't have to worry about
+overlapping interrupts.
+
+Therefore it doesn't by me anything but complexity to setup the data
+structures on the new cpu before the window for receiving the irqs
+has completed.
+
+Make sense?
+
+Eric
+
 
 
