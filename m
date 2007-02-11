@@ -1,59 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750757AbXBKRwH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750758AbXBKRzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750757AbXBKRwH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 12:52:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbXBKRwH
+	id S1750758AbXBKRzy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 12:55:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750759AbXBKRzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 12:52:07 -0500
-Received: from wr-out-0506.google.com ([64.233.184.229]:4028 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750757AbXBKRwF (ORCPT
+	Sun, 11 Feb 2007 12:55:54 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40503
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750758AbXBKRzy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 12:52:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=b8xqSF81g5wCiNDtUNsgVi0d9sM4Yqsw2tR2xvcykpX95p8OjhDiBmySeB/+oY5snK9t/5K56Sw1E7PoKCi2XwmyZ62x3Rih3KQtYukboPocZBlmLfiTjrMqw+ZIQo73sHaq/x5rAI6HEabKM9dEJNURZSmYR0vZ/mGsMQS6Bj4=
-Message-ID: <8d158e1f0702110952m480ba28atae6d020f6ecff9aa@mail.gmail.com>
-Date: Sun, 11 Feb 2007 18:52:01 +0100
-From: "Patrick Ale" <patrick.ale@gmail.com>
-To: "Robert Hancock" <hancockr@shaw.ca>
-Subject: Re: libsata doesn't like bus without master
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <45CF54C7.7050400@shaw.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 11 Feb 2007 12:55:54 -0500
+Date: Sun, 11 Feb 2007 09:55:52 -0800 (PST)
+Message-Id: <20070211.095552.71093127.davem@davemloft.net>
+To: olaf@aepfle.de
+Cc: rol@witbe.net, akpm@osdl.org, linux-kernel@vger.kernel.org, rol@as2917.net
+Subject: Re: [PATCH] keep track of network interface renaming
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070211125423.GA30668@aepfle.de>
+References: <011001c74dcf$c60c1c80$2101a8c0@donald>
+	<20070211125423.GA30668@aepfle.de>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <fa.kM2jAt0lhoofVm0+pIia0W2vzoo@ifi.uio.no>
-	 <45CF54C7.7050400@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/11/07, Robert Hancock <hancockr@shaw.ca> wrote:
-> Patrick Ale wrote:
-> > Something unrelated to the tests I am doing.
-> >
-> > I found out that the libsata driver doesn't really cope or likes the
-> > idea that you might have a controller without a master drive
-> > configured.
-> >
-> > In this case on ATA2 I have a CDROM drive, connected as slave.
-> > ATA: abnormal status 0x7F on port 0x177
-> > ATA: abnormal status 0x7F on port 0x177
-> > ata2.01: ATAPI, max UDMA/66
-> > ata2.01: configured for UDMA/66
->
-> Having a single drive on the channel configured as slave is not really a
-> legal configuration. (I believe the ATA standards say that it's
-> something that a host controller/driver/OS is allowed to support, but it
-> is not required to.) A single drive should always be set to master (and
-> connected to the end of the cable and not the middle, by the way).
+From: Olaf Hering <olaf@aepfle.de>
+Date: Sun, 11 Feb 2007 13:54:23 +0100
 
-It is very legal when one of your harddisks blows out and you take it
-out temporarely and have no money for a replacement IMO. But then
-again, this is probably an abnormality.
+> Keep track about which network interface names were renamed after the
+> network device driver printed its banner.
+> 
+> Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
-But still, it even complains when no drive is attached to a controller
-at all. Since when you buy an add-on PCI card you get 2 connectors
-even when you want to add one harddisk how does one deal with that?
+This is kernel log clutter.
+
+You can ask the kernel for the list of interfaces, and
+use even ethtool to ask what driver each interface is
+associated with.
+
+The patch wasn't applied because it really is not necessary.
