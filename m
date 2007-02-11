@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164AbXBKIWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753160AbXBKIhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753164AbXBKIWT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 03:22:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbXBKIWT
+	id S1753160AbXBKIhi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 03:37:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbXBKIhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 03:22:19 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:53485 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753161AbXBKIWS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 03:22:18 -0500
-Date: Sun, 11 Feb 2007 08:21:59 +0000
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Christoph Hellwig <hch@infradead.org>, Tejun Heo <htejun@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Jeff Garzik <jgarzik@pobox.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org
-Subject: Re: [patch] linux/io.h: forward declare struct pci_dev
-Message-ID: <20070211082159.GT10050@ftp.linux.org.uk>
-References: <20070210114550.GC12642@osiris.boeblingen.de.ibm.com> <20070211034902.GA9077@infradead.org> <45CEB720.1020406@gmail.com> <20070211063431.GS10050@ftp.linux.org.uk> <20070211071047.GA3847@infradead.org>
+	Sun, 11 Feb 2007 03:37:38 -0500
+Received: from 1wt.eu ([62.212.114.60]:2327 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753160AbXBKIhi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 03:37:38 -0500
+Date: Sun, 11 Feb 2007 09:37:15 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: lkml@pengaru.com
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, clemens@dwf.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Still cant boot 2.6.20
+Message-ID: <20070211083715.GB943@1wt.eu>
+References: <200702110620.l1B6KoNT025415@deneb.dwf.com> <20070211070247.GP5762@shells.gnugeneration.com> <20070210231234.33dedf24.randy.dunlap@oracle.com> <20070211073731.GQ5762@shells.gnugeneration.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070211071047.GA3847@infradead.org>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20070211073731.GQ5762@shells.gnugeneration.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 11, 2007 at 07:10:47AM +0000, Christoph Hellwig wrote:
-> On Sun, Feb 11, 2007 at 06:34:31AM +0000, Al Viro wrote:
-> > +config NO_IOPORT
-> > +	bool
-> > +	default n
+On Sun, Feb 11, 2007 at 01:37:31AM -0600, lkml@pengaru.com wrote:
+> On Sat, Feb 10, 2007 at 11:12:34PM -0800, Randy Dunlap wrote:
+> > On Sun, 11 Feb 2007 01:02:47 -0600 lkml@pengaru.com wrote:
+> > 
+> > > I don't see CONFIG_BLK_DEV_INITRD=y
+> > > 
+> > > Regards,
+> > > Vito Caputo
+> > > 
+> > > BTW, this isnt the appropriate place for asking this type of question...
+> > 
+> > Please explain why not.
+> > 
+> > And please delete large parts of email that are not needed in replies
+> > (like the .config).
+> > Thanks.
+> > 
 > 
-> please make this IOPORT.  config symbols with an implicit negation
-> are quite horrible for the brain to understand.
+> I was under the impression that lkml is for kernel development, not basic help
+> with configuring your kernel.
+> 
+> >From the FAQ at http://www.tux.org/lkml/#s3-8
+> 
+>  "Remember that this is a list for the discussion of kernel development."
 
-Take a look at lib/Kconfig.  And see HAS_IOPORT there.
+You are right, but development also needs feedback. Until the user notices
+it is just a configuration error, it is perfectly possible that his problem
+is caused by a recently introduced bug. You reply put the finger on the
+error (missing CONFIG_BLK_DEV_INITRD). That's perfect. He would be off-topic
+if he went back asking "how do I add this option ?".
 
-The reason for doing it that way: majority of targets has that stuff
-already.  Even more should have it eventually.  IOW, the default should
-be positive.  Modified in arch/*/Kconfig of targets where it doesn't
-work.  Which is exactly what's done here.
+> Regards,
+> Vito Caputo
+
+Regards,
+Willy
+
