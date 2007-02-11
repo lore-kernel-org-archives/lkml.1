@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750705AbXBKPtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750703AbXBKPx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750705AbXBKPtl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 10:49:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750708AbXBKPtl
+	id S1750703AbXBKPx5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 10:53:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750704AbXBKPx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 10:49:41 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:44764 "EHLO mail.dvmed.net"
+	Sun, 11 Feb 2007 10:53:57 -0500
+Received: from il.qumranet.com ([82.166.9.18]:32953 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750703AbXBKPtk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 10:49:40 -0500
-Message-ID: <45CF3B0F.9080406@garzik.org>
-Date: Sun, 11 Feb 2007 10:49:35 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
+	id S1750703AbXBKPx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 10:53:56 -0500
+Message-ID: <45CF3BF0.2070103@qumranet.com>
+Date: Sun, 11 Feb 2007 17:53:20 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org
-Subject: Re: [patch] More defines for dma-mapping-broken.h
-References: <20070210114314.GB12642@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20070210114314.GB12642@osiris.boeblingen.de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       kvm-devel@lists.sourceforge.net
+Subject: Re: KVM oops: killing interrupt handler
+References: <45CE20E5.8000107@gmail.com> <45CEDB95.2020705@qumranet.com> <4af2d03a0702110601g36b4780fuec82be8290d6a397@mail.gmail.com>
+In-Reply-To: <4af2d03a0702110601g36b4780fuec82be8290d6a397@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Heiko Carstens wrote:
-> From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> 
-> 9ac7849e35f705830f7b016ff272b0ff1f7ff759 causes this on s390.
-> Since we don't support DMA extend dma-mapping-broken.h a bit.
-> 
-> drivers/base/dma-mapping.c: In function `dmam_noncoherent_release':
-> drivers/base/dma-mapping.c:32:
-> 	warning: implicit declaration of function `dma_free_noncoherent'
-> drivers/base/dma-mapping.c: In function `dmam_alloc_noncoherent':
-> drivers/base/dma-mapping.c:129:
-> 	warning: implicit declaration of function `dma_alloc_noncoherent'
-> drivers/base/dma-mapping.c:129:
-> 	warning: assignment makes pointer from integer without a cast
-> 
-> Cc: Tejun Heo <htejun@gmail.com>
-> Cc: Jeff Garzik <jeff@garzik.org>
-> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> ---
->  include/asm-generic/dma-mapping-broken.h |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletion(-)
+Jiri Slaby wrote:
+> On 2/11/07, Avi Kivity <avi@qumranet.com> wrote:
+>> Jiri Slaby wrote:
+>> > Hi!
+>> >
+>> > My schoolmate got this while using kvm-12 on 2.6.20-rc6:
+>> > http://www.fi.muni.cz/~xslaby/sklad/kvm-intel-panic/a/
+>> >
+>> > Unfortunately it's only shots taken by camera. If we are able to
+>> > reproduce it in 2.6.20, we'll grab netconsole output.
+>> >
+>>
+>> What guest? what host?  How to reproduce?
+>
+> It's intel core 2 duo emulating 32-bit wxp. It happened after
+> suspend/resume (he doesn't know if qemu was actually running) of the
+> machine.
+>
 
-ACK
+kvm suspend/resume support is only present in -mm (what's more, I don't 
+think in any released -mm).  A workaround is to rmmod kvm_intel before 
+suspending.
 
+
+
+-- 
+error compiling committee.c: too many arguments to function
 
