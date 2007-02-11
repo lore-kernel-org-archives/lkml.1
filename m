@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbXBKNPH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752674AbXBKNUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752743AbXBKNPH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 08:15:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbXBKNPH
+	id S1752674AbXBKNUZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 08:20:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932078AbXBKNUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 08:15:07 -0500
-Received: from tag.witbe.net ([81.88.96.48]:44783 "EHLO tag.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752743AbXBKNPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 08:15:06 -0500
-Reply-To: <rol@as2917.net>
-From: "Paul Rolland" <rol@as2917.net>
-To: "'Benoit Boissinot'" <bboissin@gmail.com>, <rol@witbe.net>,
-       "'Olaf Hering'" <olaf@aepfle.de>
-Cc: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
-Subject: RE: 2.6.20/2.6.20-rc7 : ethX renumbered
-Date: Sun, 11 Feb 2007 14:14:15 +0100
-Organization: AS2917.net
-Message-ID: <012001c74dde$87a16bd0$2101a8c0@donald>
+	Sun, 11 Feb 2007 08:20:25 -0500
+Received: from cavan.codon.org.uk ([217.147.92.49]:39877 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752674AbXBKNUY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 08:20:24 -0500
+Date: Sun, 11 Feb 2007 13:19:57 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Willy Tarreau <w@1wt.eu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Barkalow <barkalow@iabervon.org>,
+       nigel@nigel.suspend2.net, Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.osdl.org>
+Message-ID: <20070211131957.GA6039@srcf.ucam.org>
+References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no> <200702101130.44471.rjw@sisk.pl> <Pine.LNX.4.64.0702101231281.20138@iabervon.org> <200702102050.28218.rjw@sisk.pl> <20070211065404.GA943@1wt.eu> <20070211121339.GB4204@srcf.ucam.org> <20070211130943.GA1868@1wt.eu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-In-Reply-To: <40f323d00702110504i3a7b1421p9309eac1cfd75553@mail.gmail.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Thread-Index: AcdN3Sb0WA52hll5Ru6mIGWeM5Qj1QAARy2g
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070211130943.GA1868@1wt.eu>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH] Re: NAK new drivers without proper power management?
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Benoit,
+On Sun, Feb 11, 2007 at 02:09:43PM +0100, Willy Tarreau wrote:
 
-> usually distro enable persistent interface naming with udev, check
-> /etc/iftab and see if you have something like
-> /etc/udev/something-iftab.rules
+> Then change the PCI layer to do the basic PM only for known compatible
+> drivers, and modify only the known-compatible drivers to mark them
+> explicitly compatible. IMHO, it generally is a bad idea to require that
+> any driver explicitly states what it *does not* support. It's the reason
+> why users encounter problem on new features with old drivers. For instance,
+> do you know if the old ISA NE2000 driver breaks suspend ? I don't know,
+> but I would at least expect it not to support it by default. It's best
+> to announce what *is* supported and consider everything unimplemented
+> otherwise explicitly stated.
 
-Found this :
-# This file assigns persistent names to network interfaces.
-# See iftab(5) for syntax.
+This ignores the reality of the situation, which is that many drivers 
+support suspend and resume despite the lack of any explicit 
+implementation. Changing things so they're flagged as broken when 
+they're not would be a regression.
 
-eth0 mac 00:11:d8:a9:c0:c2 arp 1
-ra0 mac 00:11:d8:b9:27:7e arp 1
-
-As these are no MAC on my machine, I suspect this is the reason for the
-renaming.
-
-I'm trying Olaf's patch to check the message is printed, and next boot
-is without this crap in this /etc/iftab file.
-
-Regards,
-Paul
-
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
