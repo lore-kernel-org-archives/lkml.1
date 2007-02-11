@@ -1,80 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750785AbXBKVFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750832AbXBKVKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750785AbXBKVFn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 16:05:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbXBKVFn
+	id S1750832AbXBKVKy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 16:10:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750838AbXBKVKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 16:05:43 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:10723 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750785AbXBKVFm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 16:05:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
-        b=n0urpFFzAzHwPgJf6sfZoji/bQGB6JGnFhULv8fmw1QZR4RhPHxfSygY714ibP2G6td21OSinvbxHd9OcJCkOXzbnTBMqFUDPTqWG3vGNMQFd0ZP0iz2PoVl1l2TOD7OMYPwMqo4IqWaluhXYtxq4iJbErqzD5YLHttCwKQDXto=
-From: Maxim <maximlevitsky@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>, pavel@ucw.cz
-Subject: Re: [PATCH] [NETDEV] [004] dmfe : Add suspend/resume support
-Date: Sun, 11 Feb 2007 23:05:34 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, tori@unhappy.mine.nu, netdev@vger.kernel.org
-References: <549393.8054.qm@web38506.mail.mud.yahoo.com> <20070209205451.GA3949@ucw.cz>
-In-Reply-To: <20070209205451.GA3949@ucw.cz>
+	Sun, 11 Feb 2007 16:10:54 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40374 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750832AbXBKVKx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 16:10:53 -0500
+Date: Sun, 11 Feb 2007 22:10:38 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Daniel Barkalow <barkalow@iabervon.org>, nigel@nigel.suspend2.net,
+       Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, pm list <linux-pm@lists.osdl.org>
+Subject: Re: [PATCH] Re: NAK new drivers without proper power management?
+Message-ID: <20070211211038.GD15445@elf.ucw.cz>
+References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no> <200702101130.44471.rjw@sisk.pl> <Pine.LNX.4.64.0702101231281.20138@iabervon.org> <200702102050.28218.rjw@sisk.pl> <20070211065404.GA943@1wt.eu> <20070211121339.GB4204@srcf.ucam.org> <20070211130943.GA1868@1wt.eu>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <45cf8524.034e66ed.1dc4.638d@mx.google.com>
+In-Reply-To: <20070211130943.GA1868@1wt.eu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 09 February 2007 22:54:52 Pavel Machek wrote:
-> Hi!
->
-> > From: Maxim Levitsky <maximlevitsky@yahoo.com>
-> > Subject: [PATCH] [NETDEV] [004] dmfe : Add suspend/resume support
-> >
-> > Adds support for suspend/resume
->
-> Patch looks ok, but your mailer damaged it heavily.
->
-> > --- linux-2.6.20-mod/drivers/net/tulip/dmfe.c   2007-02-07
-> > 18:46:13.000000000 +0200 +++
-> > linux-2.6.20-test/drivers/net/tulip/dmfe.c  2007-02-07 18:50:52.000000000
-> > +0200 @@ -55,9 +55,6 @@
-> >  
-> >      TODO
-> >  
-> > -    Implement pci_driver::suspend() and pci_driver::resume()
-> > -    power management methods.
-> > -
-> >      Check on 64 bit boxes.
-> >      Check and fix on big endian boxes.
-> >  
-> > @@ -2027,11 +2024,59 @@ static struct pci_device_id dmfe_pci_tbl
-> >  MODULE_DEVICE_TABLE(pci, dmfe_pci_tbl);
-> >  
-> >  
-> > +
-> > +static int dmfe_suspend(struct pci_dev *pci_dev, pm_message_t state)
-> > +{
->
-> 							Pavel
+Hi!
 
+> > > instead of modifying all drivers to explicitly state that they don't support
+> > > it, we should start with a test of the NULL pointer for .suspend which should
+> > > mean exactly the same without modifying the drivers. I find it obvious that
+> > > a driver which does provide a suspend function will not support it. And if
+> > > some drivers (eg /dev/null) can support it anyway, it's better to change
+> > > *those* drivers to explicitly mark them as compatible.
+> > 
+> > No, that doesn't work. In the absence of suspend/resume methods, the PCI 
+> > layer will implement basic PM itself. In some cases, this works. In 
+> > others, it doesn't. There's no way to automatically determine which is 
+> > which without modifying the drivers.
+> 
+> Then change the PCI layer to do the basic PM only for known compatible
+> drivers, and modify only the known-compatible drivers to mark them
+> explicitly compatible. IMHO, it generally is a bad idea to require that
+> any driver explicitly states what it *does not* support. It's the reason
+> why users encounter problem on new features with old drivers. For instance,
+> do you know if the old ISA NE2000 driver breaks suspend ? I don't know,
+> but I would at least expect it not to support it by default. It's best
+> to announce what *is* supported and consider everything unimplemented
+> otherwise explicitly stated.
 
-Hi , thanks for reply , I will send them again, and this time I will check 
-that mailer doesn't mess with patches.
+Actually, ne2k driver is okay. ne2k cards are notoriously buggy, so it
+responds with "****, that damn card has just locked up again, lets
+reset it". Ok, it takes timeout to realize card is "locked up",
+so it could be improved...
 
-I fixed word wrap problem.
-
-I also want to note that my address is now maximlevitsky@gmail.com , the 
-address I took recently because yahoo is only aviable via webmail
-and it is not good for patches.
-
-Thanks for reply, 
-
-regards , Maxim Levitsky
-
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
