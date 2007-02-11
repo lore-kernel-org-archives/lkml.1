@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753159AbXBKIN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753158AbXBKIQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753159AbXBKIN3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 03:13:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbXBKIN3
+	id S1753158AbXBKIQj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 03:16:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbXBKIQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 03:13:29 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:63568 "EHLO
+	Sun, 11 Feb 2007 03:16:39 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:1979 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753159AbXBKIN3 (ORCPT
+	with ESMTP id S1753158AbXBKIQj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 03:13:29 -0500
+	Sun, 11 Feb 2007 03:16:39 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=fuYJWaW5vQ5c1U6yXS12df7c1uYwy9EZjpct4ZZh74Z3nfE8+cxjwwgmU74oeCcuQZcg1biLCFAKZC6/Q9KEM3ES81CLe+DNB26rChOegTH9U6jOfyy1olQUnARYJpGlbEVuP2el7OJnjM56Zbq7DhEGD/70RLHQ1QZ/b92fv/g=
-Date: Sun, 11 Feb 2007 11:13:25 +0300
+        b=WAX4pw3lcy/+aJeNax9X/4huQovEUIkVkTC7au0P/f8ZWe9L0VtS1aumBdg1Qt2X2kKoUFpKw+NjryLf2lWCKoXKp3k+fwMKGJqVAzGdHwIB0N7obpyuVUBuR075+nEITIZpBlHk7E0zKakrmjZ52pAW8jjIHdGTluWX3447Smc=
+Date: Sun, 11 Feb 2007 11:16:36 +0300
 From: Alexey Dobriyan <adobriyan@gmail.com>
 To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] mwave: interesting flags savings
-Message-ID: <20070211081325.GA16712@martell.zuzino.mipt.ru>
+Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] pcmcia: some class_device fallout
+Message-ID: <20070211081636.GB16712@martell.zuzino.mipt.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -27,120 +27,65 @@ User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Flags from spin_lock_irqsave() are saved into global variable and
-restored from it. My gut feeling this is very racy.
+As found on some arm defconfigs.
+
+I only looked at how original patch changes things and other patches fix
+compilation. ;-)
 
 Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 ---
 
- drivers/char/mwave/3780i.c |   14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+ drivers/pcmcia/at91_cf.c    |    2 +-
+ drivers/pcmcia/soc_common.c |    8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
---- a/drivers/char/mwave/3780i.c
-+++ b/drivers/char/mwave/3780i.c
-@@ -63,8 +63,6 @@ #include "mwavedd.h"
- #include "3780i.h"
- 
- static DEFINE_SPINLOCK(dsp_lock);
--static unsigned long flags;
--
- 
- static void PaceMsaAccess(unsigned short usDspBaseIO)
+--- a/drivers/pcmcia/soc_common.c
++++ b/drivers/pcmcia/soc_common.c
+@@ -478,7 +478,7 @@ dump_bits(char **p, const char *prefix, 
+  *
+  * Returns: the number of characters added to the buffer
+  */
+-static ssize_t show_status(struct device *dev, char *buf)
++static ssize_t show_status(struct device *dev, struct device_attribute *attr, char *buf)
  {
-@@ -76,6 +74,7 @@ static void PaceMsaAccess(unsigned short
- unsigned short dsp3780I_ReadMsaCfg(unsigned short usDspBaseIO,
-                                    unsigned long ulMsaAddr)
- {
-+	unsigned long flags;
- 	unsigned short val;
+ 	struct soc_pcmcia_socket *skt =
+ 		container_of(dev, struct soc_pcmcia_socket, socket.dev);
+@@ -501,7 +501,7 @@ static ssize_t show_status(struct device
  
- 	PRINTK_3(TRACE_3780I,
-@@ -96,6 +95,7 @@ unsigned short dsp3780I_ReadMsaCfg(unsig
- void dsp3780I_WriteMsaCfg(unsigned short usDspBaseIO,
-                           unsigned long ulMsaAddr, unsigned short usValue)
- {
-+	unsigned long flags;
- 
- 	PRINTK_4(TRACE_3780I,
- 		"3780i::dsp3780i_WriteMsaCfg entry usDspBaseIO %x ulMsaAddr %lx usValue %x\n",
-@@ -175,6 +175,7 @@ int dsp3780I_EnableDSP(DSP_3780I_CONFIG_
-                        unsigned short *pIrqMap,
-                        unsigned short *pDmaMap)
- {
-+	unsigned long flags;
- 	unsigned short usDspBaseIO = pSettings->usDspBaseIO;
- 	int i;
- 	DSP_UART_CFG_1 rUartCfg1;
-@@ -354,6 +355,7 @@ int dsp3780I_EnableDSP(DSP_3780I_CONFIG_
- 
- int dsp3780I_DisableDSP(DSP_3780I_CONFIG_SETTINGS * pSettings)
- {
-+	unsigned long flags;
- 	unsigned short usDspBaseIO = pSettings->usDspBaseIO;
- 	DSP_ISA_SLAVE_CONTROL rSlaveControl;
- 
-@@ -383,6 +385,7 @@ int dsp3780I_DisableDSP(DSP_3780I_CONFIG
- 
- int dsp3780I_Reset(DSP_3780I_CONFIG_SETTINGS * pSettings)
- {
-+	unsigned long flags;
- 	unsigned short usDspBaseIO = pSettings->usDspBaseIO;
- 	DSP_BOOT_DOMAIN rBootDomain;
- 	DSP_HBRIDGE_CONTROL rHBridgeControl;
-@@ -427,6 +430,7 @@ int dsp3780I_Reset(DSP_3780I_CONFIG_SETT
- 
- int dsp3780I_Run(DSP_3780I_CONFIG_SETTINGS * pSettings)
- {
-+	unsigned long flags;
- 	unsigned short usDspBaseIO = pSettings->usDspBaseIO;
- 	DSP_BOOT_DOMAIN rBootDomain;
- 	DSP_HBRIDGE_CONTROL rHBridgeControl;
-@@ -473,6 +477,7 @@ int dsp3780I_Run(DSP_3780I_CONFIG_SETTIN
- int dsp3780I_ReadDStore(unsigned short usDspBaseIO, void __user *pvBuffer,
-                         unsigned uCount, unsigned long ulDSPAddr)
- {
-+	unsigned long flags;
- 	unsigned short __user *pusBuffer = pvBuffer;
- 	unsigned short val;
- 
-@@ -514,6 +519,7 @@ int dsp3780I_ReadAndClearDStore(unsigned
-                                 void __user *pvBuffer, unsigned uCount,
-                                 unsigned long ulDSPAddr)
- {
-+	unsigned long flags;
- 	unsigned short __user *pusBuffer = pvBuffer;
- 	unsigned short val;
- 
-@@ -555,6 +561,7 @@ int dsp3780I_ReadAndClearDStore(unsigned
- int dsp3780I_WriteDStore(unsigned short usDspBaseIO, void __user *pvBuffer,
-                          unsigned uCount, unsigned long ulDSPAddr)
- {
-+	unsigned long flags;
- 	unsigned short __user *pusBuffer = pvBuffer;
+ 	return p-buf;
+ }
+-static CLASS_DEVICE_ATTR(status, S_IRUGO, show_status, NULL);
++static DEVICE_ATTR(status, S_IRUGO, show_status, NULL);
  
  
-@@ -596,6 +603,7 @@ int dsp3780I_WriteDStore(unsigned short 
- int dsp3780I_ReadIStore(unsigned short usDspBaseIO, void __user *pvBuffer,
-                         unsigned uCount, unsigned long ulDSPAddr)
- {
-+	unsigned long flags;
- 	unsigned short __user *pusBuffer = pvBuffer;
+ static struct pccard_operations soc_common_pcmcia_operations = {
+@@ -660,7 +660,7 @@ int soc_common_drv_pcmcia_probe(struct d
  
- 	PRINTK_5(TRACE_3780I,
-@@ -643,6 +651,7 @@ int dsp3780I_ReadIStore(unsigned short u
- int dsp3780I_WriteIStore(unsigned short usDspBaseIO, void __user *pvBuffer,
-                          unsigned uCount, unsigned long ulDSPAddr)
- {
-+	unsigned long flags;
- 	unsigned short __user *pusBuffer = pvBuffer;
+ 		skt->socket.ops = &soc_common_pcmcia_operations;
+ 		skt->socket.owner = ops->owner;
+-		skt->socket.dev.dev = dev;
++		skt->socket.dev.parent = dev;
  
- 	PRINTK_5(TRACE_3780I,
-@@ -691,6 +700,7 @@ int dsp3780I_WriteIStore(unsigned short 
- int dsp3780I_GetIPCSource(unsigned short usDspBaseIO,
-                           unsigned short *pusIPCSource)
- {
-+	unsigned long flags;
- 	DSP_HBRIDGE_CONTROL rHBridgeControl;
- 	unsigned short temp;
+ 		init_timer(&skt->poll_timer);
+ 		skt->poll_timer.function = soc_common_pcmcia_poll_event;
+@@ -747,7 +747,7 @@ int soc_common_drv_pcmcia_probe(struct d
  
+ 		add_timer(&skt->poll_timer);
+ 
+-		device_create_file(&skt->socket.dev, &device_attr_status);
++		device_create_file(&skt->socket.dev, &dev_attr_status);
+ 	}
+ 
+ 	dev_set_drvdata(dev, sinfo);
+--- a/drivers/pcmcia/at91_cf.c
++++ b/drivers/pcmcia/at91_cf.c
+@@ -278,7 +278,7 @@ static int __init at91_cf_probe(struct p
+ 		board->det_pin, board->irq_pin);
+ 
+ 	cf->socket.owner = THIS_MODULE;
+-	cf->socket.dev.dev = &pdev->dev;
++	cf->socket.dev.parent = &pdev->dev;
+ 	cf->socket.ops = &at91_cf_ops;
+ 	cf->socket.resource_ops = &pccard_static_ops;
+ 	cf->socket.features = SS_CAP_PCCARD | SS_CAP_STATIC_MAP
 
