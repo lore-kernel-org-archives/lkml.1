@@ -1,54 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750759AbXBKSET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750762AbXBKSE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750759AbXBKSET (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 13:04:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750762AbXBKSET
+	id S1750762AbXBKSE2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 13:04:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750765AbXBKSE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 13:04:19 -0500
-Received: from sardaukar.technologeek.org ([213.41.134.240]:55208 "EHLO
-	sonic.technologeek.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750759AbXBKSET (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 13:04:19 -0500
-From: Julien BLACHE <jb@jblache.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix USB vendor and product IDs endianness for USB HID devices
-References: <87k5yp90v1.fsf@sonic.technologeek.org>
-	<Pine.LNX.4.64.0702111822190.22290@jikos.suse.cz>
-Date: Sun, 11 Feb 2007 19:04:24 +0100
-In-Reply-To: <Pine.LNX.4.64.0702111822190.22290@jikos.suse.cz> (Jiri Kosina's
-	message of "Sun, 11 Feb 2007 18:24:50 +0100 (CET)")
-Message-ID: <87abzk1sgn.fsf@sonic.technologeek.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
+	Sun, 11 Feb 2007 13:04:28 -0500
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:41360 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750762AbXBKSE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 13:04:28 -0500
+Message-ID: <45CF5AB0.6080309@drzeus.cx>
+Date: Sun, 11 Feb 2007 19:04:32 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070131)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Brad Campbell <brad@wasp.net.au>
+CC: Alex Dubov <oakad@yahoo.com>, linux-kernel@vger.kernel.org
+Subject: Re: Recent and not-so problems with tifm_sd driver - one more
+References: <113489.35158.qm@web36703.mail.mud.yahoo.com> <45CDC22B.6040408@drzeus.cx> <45CEB1C9.5010103@wasp.net.au> <45CF3904.5070401@drzeus.cx> <45CF3CA3.1010704@wasp.net.au>
+In-Reply-To: <45CF3CA3.1010704@wasp.net.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina <jkosina@suse.cz> wrote:
+Brad Campbell wrote:
+> 
+> brad@bklaptop2:/$ find sys/devices | grep mmc
+> sys/devices/pci0000:00/0000:00:1e.0/0000:06:05.3/tifm_sd0:3/mmc_host:mmc0
+> 
 
-Hi,
+This is strange. You should be getting more entries below that.
 
-> this is obviously a bug, thanks for a fix, I queued it for upstream.
+> /sys/block/mmcblk0/device
 
-Thanks.
+Where does this point?
 
-> Two nitpicks:
->
-> - could you please submitpatches in standard conventions, so that they 
->   could be applied directly using patch -p1 against toplevel of the kernel 
->   tree (your patch was just against hid-core.c, but without any path)
-
-Gah, I did that again. Sorry.
-
-> - please inline patches in message and do not attach them, if possible
-
-Same here, got fooled again into doing an inline MIME part instead of
-inlining the patch for real.
-
-JB.
-
+Rgds
 -- 
-Julien BLACHE                                   <http://www.jblache.org> 
-<jb@jblache.org>                                  GPG KeyID 0xF5D65169
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
