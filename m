@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750760AbXBKR4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750759AbXBKSET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750760AbXBKR4V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 12:56:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750764AbXBKR4V
+	id S1750759AbXBKSET (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 13:04:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750762AbXBKSET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 12:56:21 -0500
-Received: from brick.kernel.dk ([62.242.22.158]:20465 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750760AbXBKR4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 12:56:20 -0500
-Date: Sun, 11 Feb 2007 18:56:19 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
-Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: current git breaks resume
-Message-ID: <20070211175619.GB3999@kernel.dk>
-References: <20070209190307.GC6152@kernel.dk> <200702110002.38328.lenb@kernel.org> <20070211165302.GO6458@kernel.dk> <45CF52F4.3060108@linux.intel.com> <20070211173624.GU6458@kernel.dk>
+	Sun, 11 Feb 2007 13:04:19 -0500
+Received: from sardaukar.technologeek.org ([213.41.134.240]:55208 "EHLO
+	sonic.technologeek.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750759AbXBKSET (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 13:04:19 -0500
+From: Julien BLACHE <jb@jblache.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix USB vendor and product IDs endianness for USB HID devices
+References: <87k5yp90v1.fsf@sonic.technologeek.org>
+	<Pine.LNX.4.64.0702111822190.22290@jikos.suse.cz>
+Date: Sun, 11 Feb 2007 19:04:24 +0100
+In-Reply-To: <Pine.LNX.4.64.0702111822190.22290@jikos.suse.cz> (Jiri Kosina's
+	message of "Sun, 11 Feb 2007 18:24:50 +0100 (CET)")
+Message-ID: <87abzk1sgn.fsf@sonic.technologeek.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070211173624.GU6458@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 11 2007, Jens Axboe wrote:
-> On Sun, Feb 11 2007, Alexey Starikovskiy wrote:
-> > Jens Axboe wrote:
-> > >On Sun, Feb 11 2007, Len Brown wrote:
-> > >  
-> > >>On Friday 09 February 2007 14:03, Jens Axboe wrote:
-> > >>    
-> > >>>Hi,
-> > >>>
-> > >>>Unfortunately I'm a little short on time as I'll be travelling tomorrow,
-> > >>>but of course preparing a new kernel for the laptop is something you
-> > >>>want to do right before leaving. So I discovered that the current (well
-> > >>>as of yesterday, HEAD is 5986a2ec35836a878350c54af4bd91b1de6abc59)
-> > >>>doesn't resume on my x60. 2.6.20 works fine, so something broke since
-> > >>>then.
-> > >>>      
-> > >>resume from RAM, or resume from disk?
-> > >>    
-> > >
-> > >Resume from RAM, I never use suspend-to-disk.
-> > >
-> > >  
-> > Jens,
-> > Could you please test the patch I've sent?
-> 
-> Just saw it, will do.
+Jiri Kosina <jkosina@suse.cz> wrote:
 
-With that patch applied, current git works as expected. Thanks!
+Hi,
+
+> this is obviously a bug, thanks for a fix, I queued it for upstream.
+
+Thanks.
+
+> Two nitpicks:
+>
+> - could you please submitpatches in standard conventions, so that they 
+>   could be applied directly using patch -p1 against toplevel of the kernel 
+>   tree (your patch was just against hid-core.c, but without any path)
+
+Gah, I did that again. Sorry.
+
+> - please inline patches in message and do not attach them, if possible
+
+Same here, got fooled again into doing an inline MIME part instead of
+inlining the patch for real.
+
+JB.
 
 -- 
-Jens Axboe
-
+Julien BLACHE                                   <http://www.jblache.org> 
+<jb@jblache.org>                                  GPG KeyID 0xF5D65169
