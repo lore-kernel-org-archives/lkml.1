@@ -1,75 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752640AbXBKC4M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751712AbXBKD2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752640AbXBKC4M (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 21:56:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbXBKC4M
+	id S1751712AbXBKD2m (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 22:28:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbXBKD2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 21:56:12 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:35936 "EHLO smtp.osdl.org"
+	Sat, 10 Feb 2007 22:28:42 -0500
+Received: from brick.kernel.dk ([62.242.22.158]:7296 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752640AbXBKC4L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 21:56:11 -0500
-Date: Sat, 10 Feb 2007 18:55:50 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Dave Jones <davej@redhat.com>
-cc: William Cohen <wcohen@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Size of 2.6.20 task_struct on x86_64 machines
-In-Reply-To: <20070211002020.GA6849@redhat.com>
-Message-ID: <Pine.LNX.4.64.0702101853140.8424@woody.linux-foundation.org>
-References: <45CB4C55.4070902@redhat.com> <20070211002020.GA6849@redhat.com>
+	id S1751252AbXBKD2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 22:28:41 -0500
+Date: Sun, 11 Feb 2007 04:28:58 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: current git breaks resume
+Message-ID: <20070211032858.GF6458@kernel.dk>
+References: <20070209190307.GC6152@kernel.dk> <20070210112457.GK6152@kernel.dk> <20070210115018.GA3877@kernel.dk> <200702101257.32559.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702101257.32559.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 10 Feb 2007, Dave Jones wrote:
+On Sat, Feb 10 2007, Rafael J. Wysocki wrote:
+> On Saturday, 10 February 2007 12:50, Jens Axboe wrote:
+> > On Sat, Feb 10 2007, Jens Axboe wrote:
+> > > On Sat, Feb 10 2007, Rafael J. Wysocki wrote:
+> > > > Hi,
+> > > > 
+> > > > On Friday, 9 February 2007 20:03, Jens Axboe wrote:
+> > > > > Hi,
+> > > > > 
+> > > > > Unfortunately I'm a little short on time as I'll be travelling tomorrow,
+> > > > > but of course preparing a new kernel for the laptop is something you
+> > > > > want to do right before leaving. So I discovered that the current (well
+> > > > > as of yesterday, HEAD is 5986a2ec35836a878350c54af4bd91b1de6abc59)
+> > > > > doesn't resume on my x60. 2.6.20 works fine, so something broke since
+> > > > > then.
+> > > > 
+> > > > I think the patch from
+> > > > 
+> > > > http://marc.theaimsgroup.com/?l=linux-acpi&m=117103448629685&w=2
+> > > > 
+> > > > is likely to help.
+> > > 
+> > > Thanks, will give it a shot.
+> > 
+> > Doesn't work, still hangs in the same way.
 > 
-> Shrink the held_lock struct by using bitfields.
-> This shrinks task_struct on lockdep enabled kernels by 480 bytes.
-
-Are we sure that there are no users that depend on accessing the different 
-fields under different locks?
-
-Having them as separate "int" fields means that they don't have any 
-interaction, and normal cache coherency will "just work". Once they are 
-fields in the same word in memory, updating one field automatically will 
-do a read-write cycle on the other fields, and if _they_ are updated by 
-interrupts or other CPU's at the same time, a write can get lost..
-
-So I'd like this to be ack'ed by Ingo.
-
-Ingo?
-
-		Linus
----
-> Signed-off-by: Dave Jones <davej@redhat.com>
+> Well, looked promising ...
 > 
-> diff --git a/include/linux/lockdep.h b/include/linux/lockdep.h
-> index ea097dd..ba81cce 100644
-> --- a/include/linux/lockdep.h
-> +++ b/include/linux/lockdep.h
-> @@ -175,11 +175,11 @@ struct held_lock {
->  	 * The following field is used to detect when we cross into an
->  	 * interrupt context:
->  	 */
-> -	int				irq_context;
-> -	int				trylock;
-> -	int				read;
-> -	int				check;
-> -	int				hardirqs_off;
-> +	unsigned char irq_context:1;
-> +	unsigned char trylock:1;
-> +	unsigned char read:2;
-> +	unsigned char check:1;
-> +	unsigned char hardirqs_off:1;
->  };
->  
->  /*
+> Still, I suspect the ACPI changes cause the problem to happen.
 > 
-> -- 
-> http://www.codemonkey.org.uk
-> 
+> I've tested 2.6.20-git4 and it works on  my box (HPC nx6325, x86_64).
+> Unfortunately I have no i386 setup anywhere close to me right now.
+
+When I'm on stable ground again, I'll try with pm tracing and see if
+that yields anything. Otherwise I'll do a bisect.
+
+-- 
+Jens Axboe
+
