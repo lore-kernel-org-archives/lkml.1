@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750761AbXBKRh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750756AbXBKRjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750761AbXBKRh6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 12:37:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750759AbXBKRh6
+	id S1750756AbXBKRjX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 12:39:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750757AbXBKRjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 12:37:58 -0500
-Received: from cacti.profiwh.com ([85.93.165.66]:40752 "EHLO cacti.profiwh.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750758AbXBKRh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 12:37:57 -0500
-Message-ID: <45CF5476.5030204@gmail.com>
-Date: Sun, 11 Feb 2007 18:37:58 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
-MIME-Version: 1.0
-To: Avi Kivity <avi@qumranet.com>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       kvm-devel@lists.sourceforge.net
-Subject: Re: KVM oops: killing interrupt handler
-References: <45CE20E5.8000107@gmail.com> <45CEDB95.2020705@qumranet.com> <4af2d03a0702110601g36b4780fuec82be8290d6a397@mail.gmail.com> <45CF3BF0.2070103@qumranet.com> <45CF4B23.5050401@gmail.com> <45CF4DE9.8080904@qumranet.com>
-In-Reply-To: <45CF4DE9.8080904@qumranet.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 11 Feb 2007 12:39:23 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:57538 "EHLO
+	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750756AbXBKRjV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 12:39:21 -0500
+Date: Sun, 11 Feb 2007 11:39:19 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: libsata doesn't like bus without master
+In-reply-to: <fa.kM2jAt0lhoofVm0+pIia0W2vzoo@ifi.uio.no>
+To: Patrick Ale <patrick.ale@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <45CF54C7.7050400@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.kM2jAt0lhoofVm0+pIia0W2vzoo@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity napsal(a):
-> Jiri Slaby wrote:
->> Avi Kivity napsal(a):
->>> kvm suspend/resume support is only present in -mm (what's more, I 
->>> don't think in any released -mm).  A workaround is to rmmod kvm_intel 
->>> before suspending.
->>
->> BTW. will kvm-13's external module work?
->>
+Patrick Ale wrote:
+> Something unrelated to the tests I am doing.
 > 
-> Try and report back :)
+> I found out that the libsata driver doesn't really cope or likes the
+> idea that you might have a controller without a master drive
+> configured.
+> 
+> In this case on ATA2 I have a CDROM drive, connected as slave.
+> ATA: abnormal status 0x7F on port 0x177
+> ATA: abnormal status 0x7F on port 0x177
+> ata2.01: ATAPI, max UDMA/66
+> ata2.01: configured for UDMA/66
 
-Yeah :). But while installing I revealed one problem.
-I had to do this in kernel/Makefile:
+Having a single drive on the channel configured as slave is not really a 
+legal configuration. (I believe the ATA standards say that it's 
+something that a host controller/driver/OS is allowed to support, but it 
+is not required to.) A single drive should always be set to master (and 
+connected to the end of the cable and not the middle, by the way).
 
-         $(MAKE) -C $(KERNELDIR) M=`pwd` "$$@"
-
-  install:
--       mkdir -p $(DESTDIR)/$(INSTALLDIR)
--       cp *.ko $(DESTDIR)/$(INSTALLDIR)
--       /sbin/depmod -a
-+       $(MAKE) -C $(KERNELDIR) M=`pwd` modules_install
-
-  tmpspec = .tmp.kvm-kmod.spec
-  RPMDIR = $$(pwd)/../RPMS
-
-Otherwise it installs modules into build directory, which is not usable too much ;):
-kernel# make install
-mkdir -p //home/xpapiez/install/linux-2.6.19
-cp *.ko //home/xpapiez/install/linux-2.6.19
-/sbin/depmod -a
-
-I used this configure params:
-./configure --qemu-cc=gcc --prefix=/usr/local/kvm/ --disable-gcc-check
-
-Now, he's going to test it...
-
-thanks,
 -- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
