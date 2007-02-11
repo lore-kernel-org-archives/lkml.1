@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932122AbXBKThm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750713AbXBKTmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932122AbXBKThm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 14:37:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932126AbXBKThm
+	id S1750713AbXBKTmN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 14:42:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750710AbXBKTmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 14:37:42 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51455 "EHLO amd.ucw.cz"
+	Sun, 11 Feb 2007 14:42:13 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51568 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932122AbXBKThl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 14:37:41 -0500
-Date: Sun, 11 Feb 2007 20:37:29 +0100
+	id S1750713AbXBKTmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 14:42:13 -0500
+Date: Sun, 11 Feb 2007 20:42:02 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: Daniel Barkalow <barkalow@iabervon.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, nigel@nigel.suspend2.net,
-       Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, pm list <linux-pm@lists.osdl.org>
-Subject: Re: [PATCH] Re: NAK new drivers without proper power management?
-Message-ID: <20070211193729.GB15445@elf.ucw.cz>
-References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no> <200702101034.04410.rjw@sisk.pl> <1171101723.3821.22.camel@nigel.suspend2.net> <200702101130.44471.rjw@sisk.pl> <Pine.LNX.4.64.0702101231281.20138@iabervon.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Arjan van de Ven <arjan@infradead.org>, nigel@nigel.suspend2.net,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: NAK new drivers without proper power management?
+Message-ID: <20070211194202.GC15445@elf.ucw.cz>
+References: <1171058269.1484.64.camel@nigel.suspend2.net> <1171059433.8675.195.camel@laptopd505.fenrus.org> <20070210193851.GA3956@ucw.cz> <200702102320.39531.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702101231281.20138@iabervon.org>
+In-Reply-To: <200702102320.39531.rjw@sisk.pl>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
@@ -30,16 +28,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> > Also, I think there are quite some drivers already in the tree that don't
-> > support suspend/resume explicitly and honestly we should start from adding the
-> > suspend/resume routines to these drivers _before_ we ban new drivers like that.
+> > > > Can we start to NAK new drivers that don't have proper power management
+> > > > implemented? There really is no excuse for writing a new driver and not
+> > > > putting .suspend and .resume methods in anymore, is there?
+> > > 
+> > > to a large degree, a device driver that doesn't suspend is better than
+> > > no device driver at all, right?
+> > > now.. if you want to make the core warn about it, that's very fair
+> > 
+> > Well, driver that is broken on SMP is arguably better than no driver
+> > at all, yet we'd probably avoid merging that. It would be nice to
+> > start including suspend in 'must work' list...
 > 
-> It'd be relatively quick to modify all the current drivers that don't 
-> explicitly support suspend/resume to explicitly not support it. (Or
+> What about this:
+> 
+> "If the device requires that, implement .suspend and .resume or at least
+> define .suspend that will always return -ENOSYS (then people will know they
+> have to unload the driver before the suspend).  Similarly, if you aren't sure
+> whether or not the device requires .suspend and .resume, define .suspend that
+> will always return -ENOSYS."
 
-Well, I think that is more work than you realize, but yes, that patch
-would really be welcome.
-								Pavel
+Sounds ok to me. Where should this text go?
+Documentation/SubmittingDrivers ?
+
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
