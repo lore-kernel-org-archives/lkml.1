@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750708AbXBKT6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932323AbXBKUDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750708AbXBKT6x (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 14:58:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750718AbXBKT6w
+	id S932323AbXBKUDb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 15:03:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932325AbXBKUDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 14:58:52 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:54096 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750708AbXBKT6w (ORCPT
+	Sun, 11 Feb 2007 15:03:31 -0500
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:57612 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932319AbXBKUD3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 14:58:52 -0500
-X-Sasl-enc: fcMjHfRLVwk6ZruiTD+8CUC+X6FurrPepgrKMKezOhsJ 1171223929
-Date: Sun, 11 Feb 2007 17:58:46 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: libsata doesn't like bus without master
-Message-ID: <20070211195846.GC26874@khazad-dum.debian.net>
-References: <fa.OcrmlkSFqen95BGHXWJdR6KGswQ@ifi.uio.no> <fa.mIV6AQH7D5yiY39XNxbu0M2/1Kc@ifi.uio.no> <fa.3Ti1gtH2JY4DWsqr3J1loC7lcc0@ifi.uio.no> <45CF619D.6000704@shaw.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45CF619D.6000704@shaw.ca>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 11 Feb 2007 15:03:29 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+       systemtap@sources.redhat.com, ltt-dev@shafik.org
+Subject: [PATCH 00/05] Linux Kernel Markers - kernel 2.6.20
+Date: Sun, 11 Feb 2007 15:03:22 -0500
+Message-Id: <1171224207118-git-send-email-mathieu.desnoyers@polymtl.ca>
+X-Mailer: git-send-email 1.4.4.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 Feb 2007, Robert Hancock wrote:
-> Then in that case you should set the remaining drive as master. That's 
-> just the way PATA is. A lot of BIOSes won't even detect a drive that's 
-> set as slave with no master present.
+Linux Kernel Markers - kernel 2.6.20
 
-I have seen at least three *thousand* boxes configured that way in the last
-five years.  From at least a hundred different vendors (almost all of them
-small "system assembler" vendors that mix generic and customer-specified
-parts).
+Hi,
 
-For some stupid reason, it appears that the norm around here (Brazil) is
-that "no brand" boxes get assembled with ATAPI devices in slave mode.
-Usually they attach it to the second channel using an 40-wire cable, even if
-there is nothing using the first channel.
+You will find, in the following posts, the latest revision of the Linux Kernel
+Markers. Due to the need some tracing projects (LTTng, SystemTAP) has of this
+kind of mechanism, it could be nice to consider it for mainstream inclusion.
 
-There is an amazing ammount of hardware out there which needs PATA drivers
-to deal as gracefully as possible on a ATAPI PATA device alone as slave on a
-channel, and I'd say at that point it is best to just deal with ATA PATA
-devices in that configuration, too.
+Recently added : completed correct support for Intel XMC-safe code modification
+(erratum 49 of the Pentium III). I am not using the kprobe infrastructure
+because it forbids instrumentation of too much core kernel functions (traps
+handlers, lockdep.c, ...). I also made the "GEN_MARK" marker available at all
+time : it will force using the generic version of the markers at a specific
+instrumentation site. It is intended to be used at instrumentation sites that
+are not reentrant with respect to the breakpoint handler.
+lockdep.c/trace_hardirqs_on/off() is a good example of where it is needed :
+the breakpoint handler calls hardirq tracing event when it returns.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+The following patches apply on 2.6.20.
+
+These patches compile fine against :
+
+arm
+i686
+ia64
+m68k
+mips
+mipsel
+x86_64
+ppc 405
+powerpc 970
+s390
+sparc
+sparc64
+
+Signed-off-by : Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
