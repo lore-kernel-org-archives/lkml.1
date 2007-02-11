@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752681AbXBKK15@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753169AbXBKKcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752681AbXBKK15 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 05:27:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbXBKK15
+	id S1753169AbXBKKcU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 05:32:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbXBKKcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 05:27:57 -0500
-Received: from nz-out-0506.google.com ([64.233.162.236]:35347 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752681AbXBKK14 (ORCPT
+	Sun, 11 Feb 2007 05:32:20 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:6741 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753169AbXBKKcT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 05:27:56 -0500
+	Sun, 11 Feb 2007 05:32:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=lgf0KTzgdUjOuy+T8IBmbfzm2FMukiZbEL8LGKR6Vb/QhzbFAj7WvMpXDjzjhwZEsp8WnLlFb7651JWt2rBPn4+3KERWUpbHakHtd9mG/Z3VZFjTKNWmSurmotKVJOglrK8ic0+prt5FXu7Rx/inxLYodf3fPe3B8XQrKvq07zg=
-Message-ID: <8d158e1f0702110227i40301348g79db1d8b90f259b1@mail.gmail.com>
-Date: Sun, 11 Feb 2007 11:27:54 +0100
-From: "Patrick Ale" <patrick.ale@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: libsata doesn't like bus without master
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TWc/znL+G1MhQl5YDg+CBQ32nJ2nYLZTYsuX2zpB43w7fAMePEPawxbzASAhmdwylhnj15SbKzBxJoxkwjxIrCazSJev9VWuQvFsrhOXoQSYiAXzRoIUw3g3yTOLJTHb26pOnMb6kPzE0OWbF4rgGSQcvVGP0X8pAMEdGJKM1Gw=
+Message-ID: <1defaf580702110232p72012fa4pe89d0a488c2817f@mail.gmail.com>
+Date: Sun, 11 Feb 2007 11:32:18 +0100
+From: "Haavard Skinnemoen" <hskinnemoen@gmail.com>
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [BUG] PATA_PCMCIA does not work
+Cc: Komuro <komurojun-mbn@nifty.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070211015619.39d3e29a@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <20061217212752.d93816b4.komurojun-mbn@nifty.com>
+	 <20061217040222.GD17561@ftp.linux.org.uk>
+	 <20070211101537.e40fa309.komurojun-mbn@nifty.com>
+	 <20070211015619.39d3e29a@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 2/11/07, Alan <alan@lxorguk.ukuu.org.uk> wrote:
+> > [pata_pcmcia dmesg]
+> > ata1.00: CFA, max PIO0, 20480 sectors: LBA
+> > ata1.00: ata1: dev 0 multi count 0
+> > ata1.01: CFA, max PIO0, 20480 sectors: LBA
+> > ata1.01: ata1: dev 1 multi count 0
+>
+> Do you have two cards here ?
 
-Something unrelated to the tests I am doing.
+I've seen this as well, on an ancient 4MB card. I'm pretty sure the
+-CSEL signal on my test board is incorrectly routed, so I thought it
+was because of that. I'll try to strap it tomorrow and see if it
+really is the cause of the problem.
 
-I found out that the libsata driver doesn't really cope or likes the
-idea that you might have a controller without a master drive
-configured.
+> Your card should work with the current -mm driver although not entirely
+> for the right reasons. Given you have such a marvellously buggy set of
+> hardware can I send you some test patches to try ?
 
-In this case on ATA2 I have a CDROM drive, connected as slave.
-ATA: abnormal status 0x7F on port 0x177
-ATA: abnormal status 0x7F on port 0x177
-ata2.01: ATAPI, max UDMA/66
-ata2.01: configured for UDMA/66
+In my current pile of four CF cards, it looks like three of them are
+buggy, although in slightly different ways. I'd be happy to test a few
+patches.
 
-And in another case, I have ATA5 with no drives connected at all:
-pata_pdc2027x 0000:00:0f.0: PLL input clock 33508 kHz
-ata5: PATA max UDMA/133 cmd 0xF88597C0 ctl 0xF8859FDA bmdma 0xF8859000 irq 19
-ata6: PATA max UDMA/133 cmd 0xF88595C0 ctl 0xF8859DDA bmdma 0xF8859008 irq 19
-scsi4 : pata_pdc2027x
-ATA: abnormal status 0x8 on port 0xF88597DF
-
-
-Maybe this is purely a cosmetic error where the error code can be
-translated to something like "no drive attached" or maybe the drivers
-assume you always configure a master drive on a controller, which
-doesnt always have to be the case, especialy not with motherboards
-these days where you get 2 ATA ports + 2 exta raid channels.
-
-
-Patrick
+Haavard
