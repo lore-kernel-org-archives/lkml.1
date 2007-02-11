@@ -1,400 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932412AbXBKUIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932430AbXBKUJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932412AbXBKUIp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 15:08:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932532AbXBKUIo
+	id S932430AbXBKUJT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 15:09:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932425AbXBKUJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 15:08:44 -0500
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:62975 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932412AbXBKUIm (ORCPT
+	Sun, 11 Feb 2007 15:09:18 -0500
+Received: from nz-out-0506.google.com ([64.233.162.233]:32742 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932534AbXBKUJP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 15:08:42 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@redhat.com>,
-       systemtap@sources.redhat.com, ltt-dev@shafik.org
-Subject: [PATCH 01/05] Linux Kernel Markers : Kconfig menus
-Date: Sun, 11 Feb 2007 15:03:23 -0500
-Message-Id: <11712242071183-git-send-email-mathieu.desnoyers@polymtl.ca>
-X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <1171224207118-git-send-email-mathieu.desnoyers@polymtl.ca>
-References: <1171224207118-git-send-email-mathieu.desnoyers@polymtl.ca>
+	Sun, 11 Feb 2007 15:09:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eDI23Oy5N6XZHtXd8C5l+sQKmhTwJ97+C1B5pZHZg3VlC8ppa34Ih4x13LVuxDc0nGhAA5xW5QaIVXGl5Ci2VkirKs93APdXivmw3nAU+n6HlWokop7x8mAc7u6UEzM/P/piNkyjnRYLaNa0zBS691ixItmYB+tuhzdLg1vuv2o=
+Message-ID: <8d158e1f0702111209u1ba462a9se155d37d4ce3c44e@mail.gmail.com>
+Date: Sun, 11 Feb 2007 21:09:14 +0100
+From: "Patrick Ale" <patrick.ale@gmail.com>
+To: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
+Subject: Re: libsata doesn't like bus without master
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070211195846.GC26874@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <fa.OcrmlkSFqen95BGHXWJdR6KGswQ@ifi.uio.no>
+	 <fa.mIV6AQH7D5yiY39XNxbu0M2/1Kc@ifi.uio.no>
+	 <fa.3Ti1gtH2JY4DWsqr3J1loC7lcc0@ifi.uio.no> <45CF619D.6000704@shaw.ca>
+	 <20070211195846.GC26874@khazad-dum.debian.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linux Kernel Markers : Kconfig menus
+On 2/11/07, Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
+> On Sun, 11 Feb 2007, Robert Hancock wrote:
+> > Then in that case you should set the remaining drive as master. That's
+> > just the way PATA is. A lot of BIOSes won't even detect a drive that's
+> > set as slave with no master present.
+>
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> For some stupid reason, it appears that the norm around here (Brazil) is
+> that "no brand" boxes get assembled with ATAPI devices in slave mode.
+> Usually they attach it to the second channel using an 40-wire cable, even if
+> there is nothing using the first channel.
 
---- /dev/null
-+++ b/kernel/Kconfig.marker
-@@ -0,0 +1,17 @@
-+# Code markers configuration
-+
-+config MARKERS
-+	bool "Activate markers"
-+	select MODULES
-+	default n
-+	help
-+	  Place an empty function call at each marker site. Can be
-+	  dynamically changed for a probe function.
-+
-+config MARKERS_ENABLE_OPTIMIZATION
-+	bool "Enable marker optimization"
-+	depends on MARKERS
-+	default y
-+	help
-+	  Disable code replacement jump optimisations. Especially useful if your
-+	  code is in a read-only rom/flash.
---- a/Makefile
-+++ b/Makefile
-@@ -308,7 +308,8 @@ AFLAGS_KERNEL	=
- # Needed to be compatible with the O= option
- LINUXINCLUDE    := -Iinclude \
-                    $(if $(KBUILD_SRC),-Iinclude2 -I$(srctree)/include) \
--		   -include include/linux/autoconf.h
-+		   -include include/linux/autoconf.h \
-+		   -include linux/marker.h
- 
- CPPFLAGS        := -D__KERNEL__ $(LINUXINCLUDE)
- 
---- a/arch/alpha/Kconfig
-+++ b/arch/alpha/Kconfig
-@@ -638,6 +638,12 @@ source "fs/Kconfig"
- 
- source "arch/alpha/oprofile/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.marker"
-+
-+endmenu
-+
- source "arch/alpha/Kconfig.debug"
- 
- source "security/Kconfig"
---- a/arch/arm26/Kconfig
-+++ b/arch/arm26/Kconfig
-@@ -240,6 +240,12 @@ source "drivers/misc/Kconfig"
- 
- source "drivers/usb/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.marker"
-+
-+endmenu
-+
- source "arch/arm26/Kconfig.debug"
- 
- source "security/Kconfig"
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -968,6 +968,12 @@ source "fs/Kconfig"
- 
- source "arch/arm/oprofile/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.marker"
-+
-+endmenu
-+
- source "arch/arm/Kconfig.debug"
- 
- source "security/Kconfig"
---- a/arch/cris/Kconfig
-+++ b/arch/cris/Kconfig
-@@ -191,6 +191,12 @@ source "sound/Kconfig"
- 
- source "drivers/usb/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.marker"
-+
-+endmenu
-+
- source "arch/cris/Kconfig.debug"
- 
- source "security/Kconfig"
---- a/arch/frv/Kconfig
-+++ b/arch/frv/Kconfig
-@@ -375,6 +375,12 @@ source "drivers/Kconfig"
- 
- source "fs/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.marker"
-+
-+endmenu
-+
- source "arch/frv/Kconfig.debug"
- 
- source "security/Kconfig"
---- a/arch/h8300/Kconfig
-+++ b/arch/h8300/Kconfig
-@@ -205,6 +205,12 @@ endmenu
- 
- source "fs/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.marker"
-+
-+endmenu
-+
- source "arch/h8300/Kconfig.debug"
- 
- source "security/Kconfig"
---- a/arch/i386/Kconfig
-+++ b/arch/i386/Kconfig
-@@ -1210,6 +1210,9 @@ config KPROBES
- 	  a probepoint and specifies the callback.  Kprobes is useful
- 	  for kernel debugging, non-intrusive instrumentation and testing.
- 	  If in doubt, say "N".
-+
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/i386/Kconfig.debug"
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -564,6 +564,9 @@ config KPROBES
- 	  a probepoint and specifies the callback.  Kprobes is useful
- 	  for kernel debugging, non-intrusive instrumentation and testing.
- 	  If in doubt, say "N".
-+
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/ia64/Kconfig.debug"
---- a/arch/m32r/Kconfig
-+++ b/arch/m32r/Kconfig
-@@ -394,6 +394,12 @@ source "fs/Kconfig"
- 
- source "arch/m32r/oprofile/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.marker"
-+
-+endmenu
-+
- source "arch/m32r/Kconfig.debug"
- 
- source "security/Kconfig"
---- a/arch/m68k/Kconfig
-+++ b/arch/m68k/Kconfig
-@@ -660,6 +660,12 @@ endmenu
- 
- source "fs/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.marker"
-+
-+endmenu
-+
- source "arch/m68k/Kconfig.debug"
- 
- source "security/Kconfig"
---- a/arch/m68knommu/Kconfig
-+++ b/arch/m68knommu/Kconfig
-@@ -669,6 +669,12 @@ source "drivers/Kconfig"
- 
- source "fs/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.marker"
-+
-+endmenu
-+
- source "arch/m68knommu/Kconfig.debug"
- 
- source "security/Kconfig"
---- a/arch/ppc/Kconfig
-+++ b/arch/ppc/Kconfig
-@@ -1441,8 +1441,14 @@ endmenu
- 
- source "lib/Kconfig"
- 
-+menu "Instrumentation Support"
-+
- source "arch/powerpc/oprofile/Kconfig"
- 
-+source "kernel/Kconfig.marker"
-+
-+endmenu
-+
- source "arch/ppc/Kconfig.debug"
- 
- source "security/Kconfig"
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -1189,6 +1189,9 @@ config KPROBES
- 	  a probepoint and specifies the callback.  Kprobes is useful
- 	  for kernel debugging, non-intrusive instrumentation and testing.
- 	  If in doubt, say "N".
-+
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/powerpc/Kconfig.debug"
---- a/arch/parisc/Kconfig
-+++ b/arch/parisc/Kconfig
-@@ -263,6 +263,12 @@ source "fs/Kconfig"
- 
- source "arch/parisc/oprofile/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.marker"
-+
-+endmenu
-+
- source "arch/parisc/Kconfig.debug"
- 
- source "security/Kconfig"
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -2082,6 +2082,12 @@ source "fs/Kconfig"
- 
- source "arch/mips/oprofile/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.marker"
-+
-+endmenu
-+
- source "arch/mips/Kconfig.debug"
- 
- source "security/Kconfig"
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -518,6 +518,8 @@ config KPROBES
- 	  for kernel debugging, non-intrusive instrumentation and testing.
- 	  If in doubt, say "N".
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/s390/Kconfig.debug"
---- a/arch/sh64/Kconfig
-+++ b/arch/sh64/Kconfig
-@@ -284,6 +284,12 @@ source "fs/Kconfig"
- 
- source "arch/sh64/oprofile/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.marker"
-+
-+endmenu
-+
- source "arch/sh64/Kconfig.debug"
- 
- source "security/Kconfig"
---- a/arch/sh/Kconfig
-+++ b/arch/sh/Kconfig
-@@ -707,6 +707,12 @@ source "fs/Kconfig"
- 
- source "arch/sh/oprofile/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.marker"
-+
-+endmenu
-+
- source "arch/sh/Kconfig.debug"
- 
- source "security/Kconfig"
---- a/arch/sparc64/Kconfig
-+++ b/arch/sparc64/Kconfig
-@@ -443,6 +443,9 @@ config KPROBES
- 	  a probepoint and specifies the callback.  Kprobes is useful
- 	  for kernel debugging, non-intrusive instrumentation and testing.
- 	  If in doubt, say "N".
-+
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/sparc64/Kconfig.debug"
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -302,6 +302,8 @@ menu "Instrumentation Support"
- 
- source "arch/sparc/oprofile/Kconfig"
- 
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/sparc/Kconfig.debug"
---- a/arch/um/Kconfig
-+++ b/arch/um/Kconfig
-@@ -344,4 +344,10 @@ config INPUT
- 	bool
- 	default n
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.marker"
-+
-+endmenu
-+
- source "arch/um/Kconfig.debug"
---- a/arch/v850/Kconfig
-+++ b/arch/v850/Kconfig
-@@ -332,6 +332,12 @@ source "sound/Kconfig"
- 
- source "drivers/usb/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.marker"
-+
-+endmenu
-+
- source "arch/v850/Kconfig.debug"
- 
- source "security/Kconfig"
---- a/arch/xtensa/Kconfig
-+++ b/arch/xtensa/Kconfig
-@@ -244,6 +244,12 @@ config EMBEDDED_RAMDISK_IMAGE
- 	  provide one yourself.
- endmenu
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.marker"
-+
-+endmenu
-+
- source "arch/xtensa/Kconfig.debug"
- 
- source "security/Kconfig"
---- a/arch/x86_64/Kconfig
-+++ b/arch/x86_64/Kconfig
-@@ -731,6 +731,9 @@ config KPROBES
- 	  a probepoint and specifies the callback.  Kprobes is useful
- 	  for kernel debugging, non-intrusive instrumentation and testing.
- 	  If in doubt, say "N".
-+
-+source "kernel/Kconfig.marker"
-+
- endmenu
- 
- source "arch/x86_64/Kconfig.debug"
+Yes, this is actually one of the reasons i mentioned sometimes having
+only a slave drive can be a "legal" way to connect drives. I've lived
+in Curitiba and Rio for a while (familiar cities to you I guess) and
+sometimes we just had no choice to yank the master drive out of its
+bay and keep running with what we had, cause money wasnt exactly
+growing in trees where I used to work.
+
+Next to that, we had the so called "paraguay" quality assembled
+hardware, which basicly means someone, somewhere put some hardware
+together and if it didnt work, you had a problem since its all you
+could get.
+
+Now, I agree with Robert, people should assemble and maintain their
+hardware as much as possible, following the specs. But sometimes it
+just isnt possible to do that, for whatever the reason might be. And I
+honestly havent found any old or new mainboard that doesnt allow you
+to have only a slave drive. I did see the opposite tho. A master drive
+that just refused to get detected cause the jumper wasnt set to
+"master only" (hello Western Digital).
+
+I don't know, the error i saw is nothing critical, I am just wondering
+how valid the "abnormal" notation is, if you go by the specs of ATA,
+yes, it is. If you go by daily practice, then in my honest opinion, it
+isnt.
+
+Then again, there are way more important things to deal with right now
+than cosmetics :)
+
+
+Patrick
