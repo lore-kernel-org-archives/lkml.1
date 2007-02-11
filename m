@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750696AbXBKPtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750705AbXBKPtl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750696AbXBKPtc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 10:49:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750703AbXBKPtc
+	id S1750705AbXBKPtl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 10:49:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750708AbXBKPtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 10:49:32 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:44758 "EHLO mail.dvmed.net"
+	Sun, 11 Feb 2007 10:49:41 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:44764 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750696AbXBKPtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 10:49:31 -0500
-Message-ID: <45CF3AF6.2060203@garzik.org>
-Date: Sun, 11 Feb 2007 10:49:10 -0500
+	id S1750703AbXBKPtk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 10:49:40 -0500
+Message-ID: <45CF3B0F.9080406@garzik.org>
+Date: Sun, 11 Feb 2007 10:49:35 -0500
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
 MIME-Version: 1.0
-To: Al Viro <viro@ftp.linux.org.uk>
-CC: torvalds@linux-foundation.org, Tejun Heo <htejun@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Subject: Re: [PATCH] sort the devres mess out
-References: <20070210114550.GC12642@osiris.boeblingen.de.ibm.com> <20070211034902.GA9077@infradead.org> <45CEB720.1020406@gmail.com> <20070211063431.GS10050@ftp.linux.org.uk> <20070211153144.GA11547@osiris.ibm.com> <20070211154131.GW10050@ftp.linux.org.uk>
-In-Reply-To: <20070211154131.GW10050@ftp.linux.org.uk>
+       Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
+Subject: Re: [patch] More defines for dma-mapping-broken.h
+References: <20070210114314.GB12642@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20070210114314.GB12642@osiris.boeblingen.de.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.3 (----)
@@ -31,41 +31,28 @@ X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:
-> * Split the implementation-agnostic stuff in separate files.
-> * Make sure that targets using non-default request_irq() pull
->   kernel/irq/devres.o
-> * Introduce new symbols (HAS_IOPORT and HAS_IOMEM) defaulting to positive;
->   allow architectures to turn them off (we needed these symbols anyway for
->   dependencies of quite a few drivers).
-> * protect the ioport-related parts of lib/devres.o with CONFIG_HAS_IOPORT.
+Heiko Carstens wrote:
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
 > 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> 9ac7849e35f705830f7b016ff272b0ff1f7ff759 causes this on s390.
+> Since we don't support DMA extend dma-mapping-broken.h a bit.
+> 
+> drivers/base/dma-mapping.c: In function `dmam_noncoherent_release':
+> drivers/base/dma-mapping.c:32:
+> 	warning: implicit declaration of function `dma_free_noncoherent'
+> drivers/base/dma-mapping.c: In function `dmam_alloc_noncoherent':
+> drivers/base/dma-mapping.c:129:
+> 	warning: implicit declaration of function `dma_alloc_noncoherent'
+> drivers/base/dma-mapping.c:129:
+> 	warning: assignment makes pointer from integer without a cast
+> 
+> Cc: Tejun Heo <htejun@gmail.com>
+> Cc: Jeff Garzik <jeff@garzik.org>
+> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 > ---
->  arch/arm/Kconfig           |    5 +
->  arch/cris/Kconfig          |    3 +
->  arch/h8300/Kconfig         |    3 +
->  arch/h8300/kernel/Makefile |    4 +-
->  arch/m32r/Kconfig          |    3 +
->  arch/m68k/Kconfig          |    3 +
->  arch/m68k/kernel/Makefile  |    4 +-
->  arch/m68knommu/Kconfig     |    3 +
->  arch/s390/Kconfig          |    3 +
->  arch/sparc/kernel/Makefile |    4 +-
->  arch/um/Kconfig            |    3 +
->  arch/xtensa/Kconfig        |    3 +
->  include/linux/io.h         |    6 -
->  include/linux/pci.h        |    5 +
->  kernel/irq/Makefile        |    2 +-
->  kernel/irq/devres.c        |   88 +++++++++++++
->  kernel/irq/manage.c        |   86 -------------
->  lib/Kconfig                |    9 +-
->  lib/Makefile               |    5 +-
->  lib/devres.c               |  300 ++++++++++++++++++++++++++++++++++++++++++++
->  lib/iomap.c                |  296 -------------------------------------------
->  21 files changed, 442 insertions(+), 396 deletions(-)
->  create mode 100644 kernel/irq/devres.c
->  create mode 100644 lib/devres.c
+>  include/asm-generic/dma-mapping-broken.h |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletion(-)
 
 ACK
 
