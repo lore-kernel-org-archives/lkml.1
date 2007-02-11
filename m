@@ -1,127 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752699AbXBKErN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752719AbXBKErc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752699AbXBKErN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Feb 2007 23:47:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbXBKErN
+	id S1752719AbXBKErc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Feb 2007 23:47:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbXBKErc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Feb 2007 23:47:13 -0500
-Received: from web36708.mail.mud.yahoo.com ([209.191.85.42]:47158 "HELO
-	web36708.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752699AbXBKErL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Feb 2007 23:47:11 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=ND6WZ8PLwEI92eziWbU6oLp4cRPIOnaMe9HHMLhQLCnmN27VRBiOsEYkRtAy2X7WnjzjgEMQWCvnCMG56WCorqjaA1ofYjES9jCD7memVNOxs8eBxCmbndtTkL0l8nT5b/lZjb+XU+4TIFf2ZvAwx3NyO2P8lnR9dHICjEPnk5E=;
-X-YMail-OSG: ROigYcQVM1lPT1HeZn_eDh8s9cMJvauI011240umo_Djvog1feQLgwuqcXKq6C4D9nYKQymraxKIi857HmlP1wyqUljJuz4zij86E1Y5dsa05rKRspGWrzQ4dH2SSFc6LsdZOp4PNetFSmA-
-Date: Sat, 10 Feb 2007 20:47:10 -0800 (PST)
-From: Alex Dubov <oakad@yahoo.com>
-Subject: Re: Recent and not-so problems with tifm_sd driver
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <45CCC72A.8020904@drzeus.cx>
+	Sat, 10 Feb 2007 23:47:32 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57571 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752700AbXBKErY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Feb 2007 23:47:24 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Richard Purdie <rpurdie@rpsys.net>, linux-acpi@vger.kernel.org
+Subject: Re: git backlight tree
+Date: Sat, 10 Feb 2007 23:45:39 -0500
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, jsimmons@infradead.org,
+       linux-kernel@hansmi.ch, openembedded@hrw.one.pl,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <1171153985.5836.66.camel@localhost.localdomain>
+In-Reply-To: <1171153985.5836.66.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <779217.2685.qm@web36708.mail.mud.yahoo.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702102345.39855.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 10 February 2007 19:33, Richard Purdie wrote:
+> As mentioned previously, I've setup a backlight git tree at:
 > 
-> This looks like the problem with races in mmc_block again. Add some printk:s in
-> the remove function so that you can see if this oops is after the remove
-> function (shouldn't be possible, but will cause crash if it is).
+> http://git.o-hand.com/?p=linux-rpurdie-backlight;a=shortlog;h=for-mm
+> (git://git.o-hand.com/linux-rpurdie-backlight)
+> 
+> A patch of the combined changes to mainline is:
+> 
+> http://www.rpsys.net/openzaurus/patches/git_backlight-r1.patch.gz
 
-It just occurred to me that my synopsis of the problem was utterly lame.
-Here, the correct description:
-When the card is pulled out, I mark the host as "ejected" (so it fast-fails all the requests),
-sleep a little for it to relax and then call mmc_remove_host. Otherwise, nasty things happen.
-Here's the example not involving mmc_block at all (command 3 failed, hardware timeout was missed,
-so software timeout picked it up; the sleep hack is disabled):
+The changes under drivers/acpi/ and drivers/misc/ look fine to me.
+Acked-by: Len Brown <len.brown@intel.com>
+if you need that to send those bits upstream.
 
-Feb 11 02:26:08 mortug tifm_sd tifm_sd0:3: executing opcode 0x3, arg: 0x0, mask:
-0x1140
-Feb 11 02:26:09 mortug tifm_sd: card failed to respond for a long period of time<
-7>tifm_7xx1 0000:06:09.3: checking media set 8
-Feb 11 02:26:09 mortug tifm_7xx1: demand removing card from socket 0:3
-Feb 11 02:26:09 mortug tifm_sd tifm_sd0:3: Setting bus width 0, power 0
-Feb 11 02:26:09 mortug tifm_sd tifm_sd0:3: Setting bus width 0, power 0
-Feb 11 02:26:09 mortug general protection fault: 0000 [1] SMP
-Feb 11 02:26:09 mortug CPU 0
-Feb 11 02:26:09 mortug Modules linked in: tifm_sd tifm_7xx1 tifm_core mmc_block m
-mc_core appletalk ipx p8022 psnap llc p8023 fglrx(P) ndiswrapper snd_pcm_oss snd_
-mixer_oss snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device eth
-1394 binfmt_misc firmware_class tg3 ohci1394 yenta_socket rsrc_nonstatic ieee1394
- pcmcia_core 8250_pci i2c_piix4 i2c_core snd_atiixp snd_atiixp_modem parport_pc p
-arport k8temp hwmon snd_ac97_codec ac97_bus joydev snd_pcm ehci_hcd serio_raw tsd
-ev pcspkr 8250_pnp 8250 serial_core snd_timer snd ohci_hcd evdev irda crc_ccitt s
-oundcore snd_page_alloc usbcore
-Feb 11 02:26:09 mortug Pid: 8318, comm: kmmcd Tainted: P      2.6.20 #1
-Feb 11 02:26:09 mortug RIP: 0010:[<ffffffff88178d30>]  [<ffffffff88178d30>] :mmc_
-core:mmc_rescan+0x440/0x1350
-Feb 11 02:26:09 mortug RSP: 0018:ffff81002d6d5af0  EFLAGS: 00010202
-Feb 11 02:26:09 mortug RAX: 2f4065766f6d6572 RBX: 2f4065766f6d6572 RCX: 000000000
-0000000
-Feb 11 02:26:09 mortug RDX: ffff81002d6d5fd8 RSI: 0000000000000286 RDI: ffff81002
-d6d5a88
-Feb 11 02:26:09 mortug RBP: ffff81002d6d5dc8 R08: 0000000000000000 R09: 000000000
-000000a
-Feb 11 02:26:09 mortug R10: 00000000ffffffff R11: ffffffff88178110 R12: ffff81002
-976a000
-Feb 11 02:26:09 mortug R13: ffff81002976a2c0 R14: ffff81002adee800 R15: ffff81002
-d6d5dc0
-Feb 11 02:26:09 mortug FS:  00002b8375adab00(0000) GS:ffffffff805d0000(0000) knlG
-S:00000000f7e066c0
-Feb 11 02:26:09 mortug CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-Feb 11 02:26:09 mortug CR2: 000000000050e3c0 CR3: 00000000079a2000 CR4: 000000000
-00006e0
-Feb 11 02:26:09 mortug Process kmmcd (pid: 8318, threadinfo ffff81002d6d4000, tas
-k ffff81002ea82820)
-Feb 11 02:26:09 mortug Stack:  ffffffff80288770 ffff81002d6d5dc8 ffff81002976a2ac
- ffff81002d6d5b28
-Feb 11 02:26:09 mortug ffffffff80288a38 00000cc03f1dc6bb 0000000000962228 037ffe4
-382562228
-Feb 11 02:26:09 mortug 00ffffff80248e8b 00ff800000000001 00000000000004d0 0000000
-000000001
-Feb 11 02:26:09 mortug Call Trace:
-Feb 11 02:26:09 mortug [<ffffffff80288770>] task_rq_lock+0x50/0x90
-Feb 11 02:26:09 mortug [<ffffffff80288a38>] __activate_task+0x38/0x50
-Feb 11 02:26:09 mortug [<ffffffff8049d762>] unix_find_other+0x172/0x200
-Feb 11 02:26:09 mortug [<ffffffff8028a5e0>] __wake_up_common+0x40/0x70
-Feb 11 02:26:09 mortug [<ffffffff8020f199>] __alloc_pages+0x69/0x2f0
-Feb 11 02:26:09 mortug [<ffffffff802110f1>] do_wp_page+0x4b1/0x510
-Feb 11 02:26:09 mortug [<ffffffff80265d3e>] thread_return+0x0/0xe2
-Feb 11 02:26:09 mortug [<ffffffff88178110>] :mmc_core:mmc_wait_done+0x0/0x10
-Feb 11 02:26:09 mortug [<ffffffff881788f0>] :mmc_core:mmc_rescan+0x0/0x1350
-Feb 11 02:26:09 mortug [<ffffffff80250001>] run_workqueue+0xb1/0x160
-Feb 11 02:26:09 mortug [<ffffffff8029e670>] keventd_create_kthread+0x0/0x90
-Feb 11 02:26:09 mortug [<ffffffff8024c6d1>] worker_thread+0x161/0x1a0
-Feb 11 02:26:09 mortug [<ffffffff8028a590>] default_wake_function+0x0/0x10
-Feb 11 02:26:09 mortug [<ffffffff8028a590>] default_wake_function+0x0/0x10
-Feb 11 02:26:09 mortug [<ffffffff8024c570>] worker_thread+0x0/0x1a0
-Feb 11 02:26:09 mortug [<ffffffff80233109>] kthread+0xd9/0x120
-Feb 11 02:26:09 mortug [<ffffffff80262ec8>] child_rip+0xa/0x12
-Feb 11 02:26:09 mortug [<ffffffff8029e670>] keventd_create_kthread+0x0/0x90
-Feb 11 02:26:09 mortug [<ffffffff80233030>] kthread+0x0/0x120
-Feb 11 02:26:09 mortug [<ffffffff80262ebe>] child_rip+0x0/0x12
-Feb 11 02:26:09 mortug
-Feb 11 02:26:09 mortug
-Feb 11 02:26:09 mortug Code: 48 8b 03 0f 18 08 49 39 dd 0f 84 0c 04 00 00 f6 83 8
-c 02 00
-Feb 11 02:26:09 mortug RIP  [<ffffffff88178d30>] :mmc_core:mmc_rescan+0x440/0x135
-0
-Feb 11 02:26:09 mortug RSP <ffff81002d6d5af0>
-Feb 11 02:28:09 mortug shutdown[17114]: shutting down for system halt
-Feb 11 02:28:09 mortug init: Switching to runlevel: 0
-Feb 11 02:28:18 mortug dhcpcd[7461]: terminating on signal 15
-Feb 11 02:28:21 mortug <6>ACPI: PCI interrupt for device 0000:00:14.5 disabled
-Feb 11 02:28:21 mortug ACPI: PCI interrupt for device 0000:00:14.6 disabled
+Note that there is a new sony-laptop driver under drivers/misc/ in my tree
+that I expect to send upstream next week -- and it will need
+the analogous updates.
 
+thanks,
+-Len
 
-
- 
-____________________________________________________________________________________
-Don't get soaked.  Take a quick peak at the forecast
-with the Yahoo! Search weather shortcut.
-http://tools.search.yahoo.com/shortcuts/#loc_weather
+> I've included a git shortlog and diffstat output below. 
+> 
+> A few months ago Dmitry highlighted some problems with the backlight
+> code and I've included patches to fix the issues raised. I've also
+> included several pending backlight patches adding drivers or fixing
+> other bugs.
+> 
+> The backlight code was turning into a locking minefield, several mutexes
+> deep in places and was in need of some cleanup which these patches
+> attempt, by simplifying locks and documenting what they protect. 
+> 
+> Whilst working on the above I noticed some ways of removing some code
+> duplication particularly with the powermac backlight hooks. There were
+> also several backlight calls from fb_blank methods which aren't needed
+> with the backlight code so I've removed them. There should be no
+> functionality changes.
+> 
+> I've cc'd various people who've been involved with areas of the
+> backlight code. If people could check the changes to their
+> hardware/areas of interest over or better still, test them I'd
+> appreciate it as I can't compile or runtime test all of these changes.
+> These changes should be appearing in the next -mm and I'm hoping it
+> might still be possible to get them into 2.6.21 and iron out any issues
+> during the -rc releases.
+> 
+> Richard
+> 
+>  MAINTAINERS                                 |    5
+>  arch/powerpc/kernel/traps.c                 |    6 -
+>  arch/powerpc/platforms/powermac/backlight.c |   27 +---
+>  drivers/acpi/asus_acpi.c                    |    7 -
+>  drivers/acpi/ibm_acpi.c                     |    8 -
+>  drivers/acpi/toshiba_acpi.c                 |    7 -
+>  drivers/acpi/video.c                        |   36 ++----
+>  drivers/macintosh/via-pmu-backlight.c       |   33 ++----
+>  drivers/misc/asus-laptop.c                  |   31 +----
+>  drivers/misc/msi-laptop.c                   |   10 -
+>  drivers/usb/misc/appledisplay.c             |   22 +---
+>  drivers/video/Kconfig                       |   73 ++++++-------
+>  drivers/video/aty/aty128fb.c                |  102 +++---------------
+>  drivers/video/aty/atyfb_base.c              |  100 +++---------------
+>  drivers/video/aty/radeon_backlight.c        |   59 ++--------
+>  drivers/video/aty/radeon_base.c             |    3
+>  drivers/video/backlight/Kconfig             |   24 ++--
+>  drivers/video/backlight/Makefile            |    1
+>  drivers/video/backlight/backlight.c         |  123 +++++++++++-----------
+>  drivers/video/backlight/corgi_bl.c          |   54 ++++-----
+>  drivers/video/backlight/hp680_bl.c          |   50 +++++----
+>  drivers/video/backlight/lcd.c               |   83 +++++++--------
+>  drivers/video/backlight/locomolcd.c         |   13 +-
+>  drivers/video/backlight/progear_bl.c        |  153 ++++++++++++++++++++++++++++
+>  drivers/video/chipsfb.c                     |   26 ----
+>  drivers/video/console/fbcon.c               |    7 +
+>  drivers/video/fbsysfs.c                     |   14 +-
+>  drivers/video/nvidia/nv_backlight.c         |   92 ++--------------
+>  drivers/video/nvidia/nv_proto.h             |    2
+>  drivers/video/nvidia/nvidia.c               |    5
+>  drivers/video/riva/fbdev.c                  |  100 +++---------------
+>  include/linux/backlight.h                   |   50 +++++++--
+>  include/linux/fb.h                          |   13 +-
+>  include/linux/lcd.h                         |   45 ++++++--
+>  34 files changed, 624 insertions(+), 760 deletions(-)
+> 
+> 
+> Dmitry Torokhov (2):
+>       backlight: Fix error handling
+>       backlight: Remove excessive (un)likelys
+> 
+> James Simmons (1):
+>       backlight: Improve backlight selection for fbdev drivers
+> 
+> Marcin Juszkiewicz (1):
+>       backlight: Add Frontpath ProGear HX1050+ driver
+> 
+> Michael Hanselmann (1):
+>       backlight: Fix null pointer dereference in appledisplay driver
+> 
+> Richard Purdie (15):
+>       backlight: Add maintainer entry
+>       backlight: Remove unneeded owner field
+>       backlight: Minor code cleanups for corgi_bl.c
+>       backlight: Minor code cleanups for hp680_bl.c
+>       backlight: Fix external uses of backlight internal semaphore
+>       backlight: Convert semaphore -> mutex
+>       backlight: Remove uneeded nvidia set_power calls
+>       backlight: Fix Kconfig entries
+>       backlight/fbcon: Add FB_EVENT_CONBLANK
+>       backlight: Remove uneeded update_status call from chipsfb.c
+>       backlight: Remove unneeded backlight update_status calls
+>       backlight: Rework backlight/fb interaction simplifying, lots
+>       backlight: Clean up pmac_backlight handling
+>       backlight: Separate backlight properties from backlight ops pointers
+>       backlight: simplify corgi_bl locking
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
