@@ -1,79 +1,253 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750717AbXBKQez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750730AbXBKQpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750717AbXBKQez (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 11:34:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750718AbXBKQez
+	id S1750730AbXBKQpd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 11:45:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750728AbXBKQpd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 11:34:55 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:3697 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750717AbXBKQey (ORCPT
+	Sun, 11 Feb 2007 11:45:33 -0500
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:42888 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750726AbXBKQpc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 11:34:54 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Sun, 11 Feb 2007 08:34:51 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-cc: Ralf Baechle <ralf@linux-mips.org>, David Woodhouse <dwmw2@infradead.org>,
-       linux-mips@linux-mips.org, Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@openvz.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: -mm merge plans for 2.6.21
-In-Reply-To: <20070211161446.GB11547@osiris.ibm.com>
-Message-ID: <Pine.LNX.4.64.0702110819290.21815@alien.or.mcafeemobile.com>
-References: <20070208150710.1324f6b4.akpm@linux-foundation.org>
- <1171042535.29713.96.camel@pmac.infradead.org> <20070209134516.2367a7aa.akpm@linux-foundation.org>
- <1171058342.29713.136.camel@pmac.infradead.org>
- <Pine.LNX.4.64.0702091442230.2786@alien.or.mcafeemobile.com>
- <20070210102205.GB8145@osiris.boeblingen.de.ibm.com>
- <1171103527.29713.228.camel@pmac.infradead.org> <20070210213447.GB9116@linux-mips.org>
- <20070211161446.GB11547@osiris.ibm.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 11 Feb 2007 11:45:32 -0500
+Subject: Re: [PATCH] iomap: make PCI iomap stuff excluded when PCI isn't
+	configured
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Tejun Heo <htejun@gmail.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
+In-Reply-To: <20070210235553.GP10050@ftp.linux.org.uk>
+References: <20070210114314.GB12642@osiris.boeblingen.de.ibm.com>
+	 <45CE0434.30105@gmail.com> <20070210194630.GA13416@osiris.ibm.com>
+	 <45CE43B5.2020806@gmail.com>
+	 <Pine.LNX.4.64.0702101425230.8424@woody.linux-foundation.org>
+	 <20070210225033.GO10050@ftp.linux.org.uk>
+	 <20070210235553.GP10050@ftp.linux.org.uk>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Sun, 11 Feb 2007 17:45:33 +0100
+Message-Id: <1171212333.23147.10.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 Feb 2007, Heiko Carstens wrote:
-
-> On Sat, Feb 10, 2007 at 09:34:47PM +0000, Ralf Baechle wrote:
-> > On Sat, Feb 10, 2007 at 10:32:07AM +0000, David Woodhouse wrote:
-> > 
-> > > On Sat, 2007-02-10 at 11:22 +0100, Heiko Carstens wrote:
-> > > > Which remembers me that I think that MIPS is using the non-compat version
-> > > > of sys_epoll_pwait for compat syscalls. But maybe MIPS doesn't need a compat
-> > > > syscall for some reason. Dunno. 
-> > > 
-> > > It's OK as long as the 64-bit kernel, N32 and O32 userspace all agree
-> > > there there's 32 bits of padding between the fields of this structure:
-> > > 
-> > > struct epoll_event {
-> > >         __u32 events;
-> > >         __u64 data;
-> > > };
-> > > 
-> > > I suspect it's a fairly safe bet that N32 userspace agrees; if the O32
-> > > ABI is different then it would need the compat syscall.
-> > 
-> > That is correct - and apparently for all ABIs because I wasn't able to find
-> > a compat_sys_epoll_pwait at all.
+On Sat, 2007-02-10 at 23:55 +0000, Al Viro wrote: 
+> FWIW, the current picture wrt io-related stuff looks so:
 > 
-> Hmm.. so you don't need to do some fancy compat conversion for the sigset_t
-> that gets passed? Why is that? I don't get it...
+> s390: no ioport_map, no ioread*/iowrite*, no port IO except for (in|out)b(_p|)
 
-The compat_sys_epoll_pwait function has two sources of compat. One is the 
-sigset_t and the other one is the struct epoll_event. The sigset_t compat 
-is always needed, while the struct epoll_event may be needed. The code of 
-(upcoming) compat_sys_epoll_pwait takes care of both, with a smart 
-compile-time check to wire sys_epoll_wait or compat_sys_epoll_wait, 
-depending on the need of the struct epoll_event compat handling.
-So yes, compat_sys_epoll_pwait is needed.
+s390 does not even need (in|out)b(_p|). I wondered what else from io.h
+do we not need. The answer is: almost nothing. With the devres patch
+from Al and the dma-mapping patch from Heiko we can get rid of iomem and
+all associated definitions.
 
+-- 
+blue skies,
+  Martin.
 
+Martin Schwidefsky
+Linux for zSeries Development & Services
+IBM Deutschland Entwicklung GmbH
 
-- Davide
+"Reality continues to ruin my life." - Calvin.
+
+--
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+
+[S390] cleanup io.h
+
+Remove code to access I/O memory. There is no such thing on s390.
+
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+ arch/s390/Kconfig      |    3 ++
+ arch/s390/mm/Makefile  |    2 -
+ arch/s390/mm/ioremap.c |   58 --------------------------------------------
+ include/asm-s390/io.h  |   64 -------------------------------------------------
+ 4 files changed, 5 insertions(+), 122 deletions(-)
+
+diff -urpN linux-2.6/arch/s390/Kconfig linux-2.6-patched/arch/s390/Kconfig
+--- linux-2.6/arch/s390/Kconfig	2007-02-11 17:24:37.000000000 +0100
++++ linux-2.6-patched/arch/s390/Kconfig	2007-02-11 17:25:30.000000000 +0100
+@@ -40,6 +40,9 @@ config GENERIC_TIME
+ config NO_IOPORT
+ 	def_bool y
+ 
++config NO_IOMEM
++	def_bool y
++
+ mainmenu "Linux Kernel Configuration"
+ 
+ config S390
+diff -urpN linux-2.6/arch/s390/mm/ioremap.c linux-2.6-patched/arch/s390/mm/ioremap.c
+--- linux-2.6/arch/s390/mm/ioremap.c	2006-12-09 21:08:18.000000000 +0100
++++ linux-2.6-patched/arch/s390/mm/ioremap.c	1970-01-01 01:00:00.000000000 +0100
+@@ -1,58 +0,0 @@
+-/*
+- *  arch/s390/mm/ioremap.c
+- *
+- *  S390 version
+- *    Copyright (C) 1999 IBM Deutschland Entwicklung GmbH, IBM Corporation
+- *    Author(s): Hartmut Penner (hp@de.ibm.com)
+- *
+- *  Derived from "arch/i386/mm/extable.c"
+- *    (C) Copyright 1995 1996 Linus Torvalds
+- *
+- * Re-map IO memory to kernel address space so that we can access it.
+- * This is needed for high PCI addresses that aren't mapped in the
+- * 640k-1MB IO memory area on PC's
+- */
+-
+-#include <linux/vmalloc.h>
+-#include <linux/mm.h>
+-#include <linux/io.h>
+-#include <asm/pgalloc.h>
+-
+-/*
+- * Generic mapping function (not visible outside):
+- */
+-
+-/*
+- * Remap an arbitrary physical address space into the kernel virtual
+- * address space. Needed when the kernel wants to access high addresses
+- * directly.
+- */
+-void * __ioremap(unsigned long phys_addr, unsigned long size, unsigned long flags)
+-{
+-	void * addr;
+-	struct vm_struct * area;
+-
+-	if (phys_addr < virt_to_phys(high_memory))
+-		return phys_to_virt(phys_addr);
+-	if (phys_addr & ~PAGE_MASK)
+-		return NULL;
+-	size = PAGE_ALIGN(size);
+-	if (!size || size > phys_addr + size)
+-		return NULL;
+-	area = get_vm_area(size, VM_IOREMAP);
+-	if (!area)
+-		return NULL;
+-	addr = area->addr;
+-	if (ioremap_page_range((unsigned long)addr, (unsigned long)addr + size,
+-			       phys_addr, __pgprot(flags))) {
+-		vfree(addr);
+-		return NULL;
+-	}
+-	return addr;
+-}
+-
+-void iounmap(void *addr)
+-{
+-	if (addr > high_memory)
+-		vfree(addr);
+-}
+diff -urpN linux-2.6/arch/s390/mm/Makefile linux-2.6-patched/arch/s390/mm/Makefile
+--- linux-2.6/arch/s390/mm/Makefile	2006-12-09 21:08:18.000000000 +0100
++++ linux-2.6-patched/arch/s390/mm/Makefile	2007-02-11 17:23:02.000000000 +0100
+@@ -2,6 +2,6 @@
+ # Makefile for the linux s390-specific parts of the memory manager.
+ #
+ 
+-obj-y	 := init.o fault.o ioremap.o extmem.o mmap.o vmem.o
++obj-y	 := init.o fault.o extmem.o mmap.o vmem.o
+ obj-$(CONFIG_CMM) += cmm.o
+ 
+diff -urpN linux-2.6/include/asm-s390/io.h linux-2.6-patched/include/asm-s390/io.h
+--- linux-2.6/include/asm-s390/io.h	2007-02-07 15:42:46.000000000 +0100
++++ linux-2.6-patched/include/asm-s390/io.h	2007-02-11 17:19:32.000000000 +0100
+@@ -18,8 +18,6 @@
+ 
+ #define IO_SPACE_LIMIT 0xffffffff
+ 
+-#define __io_virt(x)            ((void *)(PAGE_OFFSET | (unsigned long)(x)))
+-
+ /*
+  * Change virtual addresses to physical addresses and vv.
+  * These are pretty trivial
+@@ -38,28 +36,9 @@ static inline unsigned long virt_to_phys
+ 
+ static inline void * phys_to_virt(unsigned long address)
+ {
+-        return __io_virt(address);
+-}
+-
+-extern void * __ioremap(unsigned long offset, unsigned long size, unsigned long flags);
+-
+-static inline void * ioremap (unsigned long offset, unsigned long size)
+-{
+-        return __ioremap(offset, size, 0);
+-}
+-
+-/*
+- * This one maps high address device memory and turns off caching for that area.
+- * it's useful if some control registers are in such an area and write combining
+- * or read caching is not desirable:
+- */
+-static inline void * ioremap_nocache (unsigned long offset, unsigned long size)
+-{
+-        return __ioremap(offset, size, 0);
++        return (void *) address;
+ }
+ 
+-extern void iounmap(void *addr);
+-
+ /*
+  * IO bus memory addresses are also 1:1 with the physical address
+  */
+@@ -67,47 +46,6 @@ extern void iounmap(void *addr);
+ #define bus_to_virt phys_to_virt
+ 
+ /*
+- * readX/writeX() are used to access memory mapped devices. On some
+- * architectures the memory mapped IO stuff needs to be accessed
+- * differently.
+- */
+-
+-#define readb(addr) (*(volatile unsigned char *) __io_virt(addr))
+-#define readw(addr) (*(volatile unsigned short *) __io_virt(addr))
+-#define readl(addr) (*(volatile unsigned int *) __io_virt(addr))
+-#define readq(addr) (*(volatile unsigned long long *) __io_virt(addr))
+-
+-#define readb_relaxed(addr) readb(addr)
+-#define readw_relaxed(addr) readw(addr)
+-#define readl_relaxed(addr) readl(addr)
+-#define readq_relaxed(addr) readq(addr)
+-#define __raw_readb readb
+-#define __raw_readw readw
+-#define __raw_readl readl
+-#define __raw_readq readq
+-
+-#define writeb(b,addr) (*(volatile unsigned char *) __io_virt(addr) = (b))
+-#define writew(b,addr) (*(volatile unsigned short *) __io_virt(addr) = (b))
+-#define writel(b,addr) (*(volatile unsigned int *) __io_virt(addr) = (b))
+-#define writeq(b,addr) (*(volatile unsigned long long *) __io_virt(addr) = (b))
+-#define __raw_writeb writeb
+-#define __raw_writew writew
+-#define __raw_writel writel
+-#define __raw_writeq writeq
+-
+-#define memset_io(a,b,c)        memset(__io_virt(a),(b),(c))
+-#define memcpy_fromio(a,b,c)    memcpy((a),__io_virt(b),(c))
+-#define memcpy_toio(a,b,c)      memcpy(__io_virt(a),(b),(c))
+-
+-#define inb_p(addr) readb(addr)
+-#define inb(addr) readb(addr)
+-
+-#define outb(x,addr) ((void) writeb(x,addr))
+-#define outb_p(x,addr) outb(x,addr)
+-
+-#define mmiowb()	do { } while (0)
+-
+-/*
+  * Convert a physical pointer to a virtual kernel pointer for /dev/mem
+  * access
+  */
 
 
