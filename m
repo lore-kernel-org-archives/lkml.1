@@ -1,87 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752042AbXBKJxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167AbXBKKRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752042AbXBKJxU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 04:53:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbXBKJxU
+	id S1753167AbXBKKRd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 05:17:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753168AbXBKKRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 04:53:20 -0500
-Received: from usbb-lacimss2.unisys.com ([192.63.108.52]:2467 "EHLO
-	usbb-lacimss2.unisys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752042AbXBKJxT convert rfc822-to-8bit (ORCPT
+	Sun, 11 Feb 2007 05:17:33 -0500
+Received: from viefep18-int.chello.at ([213.46.255.21]:11315 "EHLO
+	viefep22-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753167AbXBKKRc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 04:53:19 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Sun, 11 Feb 2007 05:17:32 -0500
+X-Greylist: delayed 958 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Feb 2007 05:17:31 EST
+Message-ID: <45CEE9AB.2020208@freemail.hu>
+Date: Sun, 11 Feb 2007 11:02:19 +0100
+From: =?ISO-8859-2?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.0.6) Gecko/20060730 SeaMonkey/1.0.4
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: Data Caching Service
-Date: Sun, 11 Feb 2007 14:53:12 +0530
-Message-ID: <D566E8CF3538B54D95B925CB69CB4D2A01E8031B@inblr-exch1.eu.uis.unisys.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Data Caching Service
-Thread-Index: AcdBJ5uL70rxUgzzSeKZD9iR5SIK1gMlp0uw
-From: "Satapathy, Soumendu Sekhar" <Soumendu.Satapathy@in.unisys.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 11 Feb 2007 09:23:16.0002 (UTC) FILETIME=[429C6820:01C74DBE]
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Subject: [PATCH] input: extend EV_LED
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Extend EV_LED handling code so that it can handle not
+only two states (on/off) but also others. For example
+a LED can blink using hardware acceleration. The code
+changed so that it is similar to the code at EV_SND.
 
- 
+Signed-off-by: Márton Németh <nm127@freemail.hu>
 
------Original Message-----
-From: Andrew Morton [mailto:akpm@osdl.org] 
-Sent: Friday, January 26, 2007 2:24 PM
-To: Satapathy, Soumendu Sekhar
-Subject: Re: Data Caching Service
+---
+diff -uprN linux-2.6.20.orig/drivers/input/input.c 
+linux/drivers/input/input.c
+--- linux-2.6.20.orig/drivers/input/input.c	2007-02-04 
+19:44:54.000000000 +0100
++++ linux/drivers/input/input.c	2007-02-10 15:20:28.000000000 +0100
+@@ -141,10 +141,11 @@ void input_event(struct input_dev *dev,
 
-On Fri, 26 Jan 2007 14:05:04 +0530
-"Satapathy, Soumendu Sekhar" <Soumendu.Satapathy@in.unisys.com> wrote:
+  		case EV_LED:
 
-> Hi,
-> 
->  
-> 
-> I was just trying to work out on a Philosophy, where the Application
-> designer, should not bother about performance issues related to any
-kind
-> of
-> 
-> caching. Even if Data Caching is a simple phenomenon of just storing
-> data in memory for quick access, we don't want the application
-designer
-> 
-> to bother about that. Application designer should bother about only
-one
-> thing and that is , the business logic for which they are writing the 
-> 
-> application. 
-> 
->  
-> 
-> Of course we do have some language features which implements this
-.Will
-> it be prudent for the Kernel to take care of all issues related to
-> caching ? 
-> 
-> Can a robust kernel be implemented to realize this?
-> 
->  
-> 
-> I am attaching a small draft with this mail. Will it be possible for
-you
-> to just scroll it down in your free time ? If you feel that a variant
-of
-> such
-> 
-> a scheme if implemented can be of some help to linux,  then maybe we
-> could release some useful patches.  
-> 
+-			if (code > LED_MAX || !test_bit(code, dev->ledbit) || 
+!!test_bit(code, dev->led) == value)
++			if (code > LED_MAX || !test_bit(code, dev->ledbit))
+  				return;
 
-hm.  But applications can utilise a common cache via shared libraries,
-and shared memory
-without involving the kernel.
+-			change_bit(code, dev->led);
++			if (!!test_bit(code, dev->led) != !!value)
++				change_bit(code, dev->led);
+
+  			if (dev->event)
+  				dev->event(dev, type, code, value);
