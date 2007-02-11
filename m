@@ -1,93 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932086AbXBKTSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932087AbXBKTTG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932086AbXBKTSz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 14:18:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932084AbXBKTS3
+	id S932087AbXBKTTG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 14:19:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932084AbXBKTS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 14:18:29 -0500
-Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:42240 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932082AbXBKTSU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 14:18:20 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [PATCH 08/10] local_t : s390 cleanup
-Date: Sun, 11 Feb 2007 14:18:13 -0500
-Message-Id: <1171221496961-git-send-email-mathieu.desnoyers@polymtl.ca>
-X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <117122149548-git-send-email-mathieu.desnoyers@polymtl.ca>
-References: <117122149548-git-send-email-mathieu.desnoyers@polymtl.ca>
+	Sun, 11 Feb 2007 14:18:58 -0500
+Received: from cacti.profiwh.com ([85.93.165.66]:38629 "EHLO cacti.profiwh.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932075AbXBKTSs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 14:18:48 -0500
+Message-ID: <45CF6C19.5060408@gmail.com>
+Date: Sun, 11 Feb 2007 20:18:49 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
+MIME-Version: 1.0
+Cc: Avi Kivity <avi@qumranet.com>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       kvm-devel@lists.sourceforge.net
+Subject: Re: KVM oops: killing interrupt handler
+References: <45CE20E5.8000107@gmail.com> <45CEDB95.2020705@qumranet.com> <4af2d03a0702110601g36b4780fuec82be8290d6a397@mail.gmail.com> <45CF3BF0.2070103@qumranet.com> <45CF4B23.5050401@gmail.com> <45CF4DE9.8080904@qumranet.com> <45CF5476.5030204@gmail.com>
+In-Reply-To: <45CF5476.5030204@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-local_t : s390 cleanup
+Jiri Slaby napsal(a):
+> Avi Kivity napsal(a):
+>> Jiri Slaby wrote:
+>>> Avi Kivity napsal(a):
+>>>> kvm suspend/resume support is only present in -mm (what's more, I 
+>>>> don't think in any released -mm).  A workaround is to rmmod 
+>>>> kvm_intel before suspending.
+>>>
+>>> BTW. will kvm-13's external module work?
+>>
+>> Try and report back :)
+[...]
+> Now, he's going to test it...
 
-s390 architecture local_t cleanup : use asm-generic/local.h.
+Nice to report, that it works, good work!
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
---- a/include/asm-s390/local.h
-+++ b/include/asm-s390/local.h
-@@ -1,58 +1 @@
--#ifndef _ASM_LOCAL_H
--#define _ASM_LOCAL_H
--
--#include <linux/percpu.h>
--#include <asm/atomic.h>
--
--#ifndef __s390x__
--
--typedef atomic_t local_t;
--
--#define LOCAL_INIT(i)	ATOMIC_INIT(i)
--#define local_read(v)	atomic_read(v)
--#define local_set(v,i)	atomic_set(v,i)
--
--#define local_inc(v)	atomic_inc(v)
--#define local_dec(v)	atomic_dec(v)
--#define local_add(i, v)	atomic_add(i, v)
--#define local_sub(i, v)	atomic_sub(i, v)
--
--#else
--
--typedef atomic64_t local_t;
--
--#define LOCAL_INIT(i)	ATOMIC64_INIT(i)
--#define local_read(v)	atomic64_read(v)
--#define local_set(v,i)	atomic64_set(v,i)
--
--#define local_inc(v)	atomic64_inc(v)
--#define local_dec(v)	atomic64_dec(v)
--#define local_add(i, v)	atomic64_add(i, v)
--#define local_sub(i, v)	atomic64_sub(i, v)
--
--#endif
--
--#define __local_inc(v)		((v)->counter++)
--#define __local_dec(v)		((v)->counter--)
--#define __local_add(i,v)	((v)->counter+=(i))
--#define __local_sub(i,v)	((v)->counter-=(i))
--
--/*
-- * Use these for per-cpu local_t variables: on some archs they are
-- * much more efficient than these naive implementations.  Note they take
-- * a variable, not an address.
-- */
--#define cpu_local_read(v)	local_read(&__get_cpu_var(v))
--#define cpu_local_set(v, i)	local_set(&__get_cpu_var(v), (i))
--
--#define cpu_local_inc(v)	local_inc(&__get_cpu_var(v))
--#define cpu_local_dec(v)	local_dec(&__get_cpu_var(v))
--#define cpu_local_add(i, v)	local_add((i), &__get_cpu_var(v))
--#define cpu_local_sub(i, v)	local_sub((i), &__get_cpu_var(v))
--
--#define __cpu_local_inc(v)	__local_inc(&__get_cpu_var(v))
--#define __cpu_local_dec(v)	__local_dec(&__get_cpu_var(v))
--#define __cpu_local_add(i, v)	__local_add((i), &__get_cpu_var(v))
--#define __cpu_local_sub(i, v)	__local_sub((i), &__get_cpu_var(v))
--
--#endif /* _ASM_LOCAL_H */
-+#include <asm-generic/local.h>
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
