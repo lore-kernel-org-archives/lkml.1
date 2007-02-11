@@ -1,73 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750783AbXBKSeM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932065AbXBKSjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750783AbXBKSeM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 13:34:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750787AbXBKSeM
+	id S932065AbXBKSjT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 13:39:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932066AbXBKSjT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 13:34:12 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:3241 "EHLO
-	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750783AbXBKSeL (ORCPT
+	Sun, 11 Feb 2007 13:39:19 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:44399 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932065AbXBKSjT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 13:34:11 -0500
-Date: Sun, 11 Feb 2007 12:34:05 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: libsata doesn't like bus without master
-In-reply-to: <fa.3Ti1gtH2JY4DWsqr3J1loC7lcc0@ifi.uio.no>
-To: Patrick Ale <patrick.ale@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Robert Hancock <hancockr@shaw.ca>
-Message-id: <45CF619D.6000704@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.OcrmlkSFqen95BGHXWJdR6KGswQ@ifi.uio.no>
- <fa.mIV6AQH7D5yiY39XNxbu0M2/1Kc@ifi.uio.no>
- <fa.3Ti1gtH2JY4DWsqr3J1loC7lcc0@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Sun, 11 Feb 2007 13:39:19 -0500
+X-Sasl-enc: ijTC1QXkrthfHSDJYjYapbIcwT9UoUpJB2qJBu6vegJb 1171219156
+Message-ID: <45CF630F.1040706@imap.cc>
+Date: Sun, 11 Feb 2007 19:40:15 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
+MIME-Version: 1.0
+To: Tilman Schmidt <tilman@imap.cc>
+CC: Jiri Kosina <jikos@jikos.cz>, Jeff Garzik <jeff@garzik.org>,
+       Greg KH <greg@kroah.com>, hjlipp@web.de,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux-Usb-Devel <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: gigaset build broken on current linux-2.6.git
+References: <45CBA41D.3000406@garzik.org> <Pine.LNX.4.64.0702082344100.25686@twin.jikos.cz> <45CC3109.1010502@imap.cc>
+In-Reply-To: <45CC3109.1010502@imap.cc>
+X-Enigmail-Version: 0.94.1.2
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigCB3D9A17D1418B91C38F7690"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick Ale wrote:
-> On 2/11/07, Robert Hancock <hancockr@shaw.ca> wrote:
->> Patrick Ale wrote:
->> > Something unrelated to the tests I am doing.
->> >
->> > I found out that the libsata driver doesn't really cope or likes the
->> > idea that you might have a controller without a master drive
->> > configured.
->> >
->> > In this case on ATA2 I have a CDROM drive, connected as slave.
->> > ATA: abnormal status 0x7F on port 0x177
->> > ATA: abnormal status 0x7F on port 0x177
->> > ata2.01: ATAPI, max UDMA/66
->> > ata2.01: configured for UDMA/66
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigCB3D9A17D1418B91C38F7690
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, 08 Feb 2007 14:02:31 +0100 I wrote:
+> Subject: Re: [linux-usb-devel] [PATCH 41/70] usbcore: remove unused ban=
+dwith-related code
+>=20
+> This breaks compilation of drivers/isdn/gigaset/bas-gigaset.c.
+> If you pass on this patch, please pass on Andrew's
+>=20
+> fix-gregkh-usb-usbcore-remove-unused-bandwith-related-code.patch
+>=20
+> along with it.
+
+On Fri, 09 Feb 2007 09:30:01 +0100, I wrote:
+> Jiri Kosina schrieb:
+>> ISDN: gigaset - remove forgotten urb->bandwidth reference
 >>
->> Having a single drive on the channel configured as slave is not really a
->> legal configuration. (I believe the ATA standards say that it's
->> something that a host controller/driver/OS is allowed to support, but it
->> is not required to.) A single drive should always be set to master (and
->> connected to the end of the cable and not the middle, by the way).
-> 
-> It is very legal when one of your harddisks blows out and you take it
-> out temporarely and have no money for a replacement IMO. But then
-> again, this is probably an abnormality.
+>> Recent changes in usbcore removed the bandwidth field from struct urb.=
 
-Then in that case you should set the remaining drive as master. That's 
-just the way PATA is. A lot of BIOSes won't even detect a drive that's 
-set as slave with no master present.
+>> Remove the forgotten occurence in bas-gigaset.c
+>>
+>> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+> Signed-off-by: Tilman Schmidt <tilman@imap.cc>
 
-> But still, it even complains when no drive is attached to a controller
-> at all. Since when you buy an add-on PCI card you get 2 connectors
-> even when you want to add one harddisk how does one deal with that?
+I notice that 2.6.20-git6 still doesn't include either of these fixes.
+Is there anything I need to do in order to push it?
 
-Yeah, that's a better point. It's not really complaining, but we could 
-probably have a better way of suppressing that message. I think it's 
-largely there so that we can debug issues with drives not being detected 
-when they should.
+Thanks,
+Tilman
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+- In theory, there is no difference between theory and practice.
+  In practice, there is.
 
+
+--------------enigCB3D9A17D1418B91C38F7690
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFFz2MQMdB4Whm86/kRAkWeAJ42nOO7xt887sK9HwnjZKsrbklZ0wCbBTHR
+azs0ZLQwCNH87VyhN0m1lew=
+=DnJ7
+-----END PGP SIGNATURE-----
+
+--------------enigCB3D9A17D1418B91C38F7690--
