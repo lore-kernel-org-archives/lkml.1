@@ -1,91 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932919AbXBKXic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932920AbXBKXkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932919AbXBKXic (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 18:38:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932920AbXBKXic
+	id S932920AbXBKXkL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 18:40:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932922AbXBKXkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 18:38:32 -0500
-Received: from 1wt.eu ([62.212.114.60]:2366 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932919AbXBKXib (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 18:38:31 -0500
-Date: Mon, 12 Feb 2007 00:38:22 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>
+	Sun, 11 Feb 2007 18:40:11 -0500
+Received: from nigel.suspend2.net ([203.171.70.205]:54423 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932920AbXBKXkJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 18:40:09 -0500
 Subject: Re: NAK new drivers without proper power management?
-Message-ID: <20070211233822.GD13913@1wt.eu>
-References: <fa.FzHdYYYH5Ru57c8/yRxLylpH0Kk@ifi.uio.no> <fa.DhkemAgVI60diqZy0t9GzpwyLmk@ifi.uio.no> <fa.E/NjHlgg0HqDg5CgZjnCHFi2AMM@ifi.uio.no> <fa.kop49l/7yexJoUGrzk6vVeIP934@ifi.uio.no> <fa.EgQN5JpU6xrZSLyOY0kWjJ26hUM@ifi.uio.no> <45CF60F2.5020308@shaw.ca> <20070211215211.GB13913@1wt.eu> <1171232786.4493.62.camel@nigel.suspend2.net> <20070211224637.GC13913@1wt.eu> <1171235922.4493.114.camel@nigel.suspend2.net>
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <200702120029.23657.rjw@sisk.pl>
+References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no>
+	 <200702110144.17783.rjw@sisk.pl>
+	 <1171233655.4493.78.camel@nigel.suspend2.net>
+	 <200702120029.23657.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Mon, 12 Feb 2007 10:40:08 +1100
+Message-Id: <1171237208.4493.139.camel@nigel.suspend2.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1171235922.4493.114.camel@nigel.suspend2.net>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 12, 2007 at 10:18:42AM +1100, Nigel Cunningham wrote:
-[snip]
-> > Hmm sorry, but we don't have the same usages of notebooks. For no reason
-> > would I keep documents open, for two reasons :
+Hi.
+
+On Mon, 2007-02-12 at 00:29 +0100, Rafael J. Wysocki wrote:
+> > On Sun, 2007-02-11 at 01:44 +0100, Rafael J. Wysocki wrote:
+> > > > Well, it's probably more acceptable than silently doing nothing and the 
+> > > > device failing or locking up the machine on resume, but I couldn't agree 
+> > > > more that it's not what we want to be encouraging. Perfect may be the 
+> > > > enemy of the good, but "works except no power management" is hardly what 
+> > > > I would call good these days, more like pretty sloppy..
+> > > 
+> > > I think there are situations in which it can be justified, like:
+> > > - The driver is not entirely finished, but we want to merge it early, because
+> > > of many potential users,
+> > > - The driver has only a few users who aren't interested in the suspend/resume
+> > > functionality,
 > > 
-> >   - when I shutdown my notebook, it is to move from one customer to
-> >     home/company/another customer. There's no related work anyway, the
-> >     network will have changed and I'll have to switch nearly all of my
-> >     apps anyway. So using suspend just to save one reboot is not worth
-> >     it (for me) IMHO.
+> > How do you determine that? How many users have to want suspend/resume
+> > functionality before you say "Ok. It has to be done now"?
 > 
-> The network configuration utilities can help there. In addition,
-> Suspend2 preserves the commandline you used to boot with
-> (/sys/power/suspend2/resume_commandline), so you can use a combination
-> of slightly varying grub entries (I have one for not starting ath0 and
-> one for starting it) and scripts to do different things in different
-> environments. The resume_commandline is writable, so can be cleared
-> after usage if there were anything sensitive there.
-
-OK, I see there are features to make life easier when I decide to use
-suspend. But it looks like that using suspend is the goal and dealing
-with the constraints is a lot of work and I'm still far from being
-convinced that it would provide me advantage.
-
-> >   - I would certainly not keep open documents that are on crypted FS
-> >     while I travel. Otherwise, it would be a total waste of time to
-> >     enter my passphrase everytime I need to access them ! Some might
-> >     argue that it would save me a lot of time, providing me with the
-> >     ability to type my passphrase only once a month, but that's not
-> >     what I'm looking for :-)
+> That depends on what the driver author tells us.  If he says there's only one
+> such device in the world and it needs a Linux drivers, but the system in
+> question will never be suspended, that will be fine, I think.  There are such
+> cases already and I see no reason why there won't be any more in the future.
 > 
-> People are using Suspend2 with encryption today (I'm not sure about
-> uswsusp). Some of them have set things up so you need to use a
-> passphrase or usb key to resume, and the image itself is of course
-> encrypted too.
-
-Unless I'm mistaken, I have to type the passphrase twice then :
-  - once at suspend
-  - once at resume
-
-which is once more per "boot" than what I'm doing on loop-aes.
-
-> You could also close the document and not the app. Or both and just get
-> the benefit of having the app in page cache post-resume.
-
-I'm not much convinced by the advantage of reading 500 MB on disk to have
-emacs in hot cache :-)
-
-> > I can barely understand why one would prefer to suspend when the notebook
-> > does not move at all, but under the conditions above, advantages are really
-> > faint. I now realize that people I work with also face the same constraints,
-> > which can explain why they don't use such features either, whatever the OS.
+> > > - The device is undocumented and we don't know how to make it handle the
+> > > suspend/resume (we may learn that in the future or not).
+> > 
+> > If we know how to initialise/cleanup, we know a good portion of what is
+> > needed for suspend/resume. Sure, for some video chipsets, you need more
+> > (you need to know how to reprogram the whole thing after S3), but
+> > they're the exception. Yes, there are other cases. But on the whole,
+> > we're not talking about esoteric knowledge.
 > 
-> I guess the thing you're highlighting to me is the lack of awareness of
-> the options that are available. Maybe I need to work harder at making
-> people aware of the possible usage scenarios! :)
+> No, in general this is not _that_ simple.  Please browse the archives of
+> bcm43xx-dev, for example.
 
-You're certainly right. I really think that this feature is clearly not for
-me but it's more featureful than I initially thought, and I could encourage
-some people to give it a try.
+Yeah. The problems of not having documentation + having to reassociate
+and so on.
 
-Best regards,
-Willy
+> While I agree that the support for suspend and resume _is_ generally important,
+> I also admit that there are situations in which it doesn't matter and there are
+> many people who won't care a whit for it.
+
+Ok, but that's the exception, right? Not the rule? So in those cases, an
+exception is made.
+
+Regards,
+
+Nigel
 
