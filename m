@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753035AbXBKGEF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753093AbXBKGLv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753035AbXBKGEF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 01:04:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbXBKGEF
+	id S1753093AbXBKGLv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 01:11:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbXBKGLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 01:04:05 -0500
-Received: from wasp.net.au ([203.190.192.17]:39788 "EHLO wasp.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753035AbXBKGEE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 01:04:04 -0500
-Message-ID: <45CEB1C9.5010103@wasp.net.au>
-Date: Sun, 11 Feb 2007 10:03:53 +0400
-From: Brad Campbell <brad@wasp.net.au>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
+	Sun, 11 Feb 2007 01:11:51 -0500
+Received: from mis011-2.exch011.intermedia.net ([64.78.21.129]:4201 "EHLO
+	mis011-2.exch011.intermedia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753093AbXBKGLu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 01:11:50 -0500
+Message-ID: <45CEB39F.4070700@qumranet.com>
+Date: Sun, 11 Feb 2007 08:11:43 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-CC: Alex Dubov <oakad@yahoo.com>, linux-kernel@vger.kernel.org
-Subject: Re: Recent and not-so problems with tifm_sd driver - one more
-References: <113489.35158.qm@web36703.mail.mud.yahoo.com> <45CDC22B.6040408@drzeus.cx>
-In-Reply-To: <45CDC22B.6040408@drzeus.cx>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: caglar@pardus.org.tr, lkml <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       stable@kernel.org
+Subject: Re: + kvm-fix-asm-constraint-for-lldt-instruction.patch added to
+ -mm tree
+References: <200701310036.l0V0abnE002548@shell0.pdx.osdl.net>	<200702101932.30623.caglar@pardus.org.tr> <20070210130606.393ed586.akpm@linux-foundation.org>
+In-Reply-To: <20070210130606.393ed586.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 11 Feb 2007 06:11:49.0815 (UTC) FILETIME=[844F5C70:01C74DA3]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman wrote:
-> Alex Dubov wrote:
->> One more problem (you may already know about it) - I was contacted by somebody from the hald
->> project and indeed I can confirm that on 2.6.20 kernel hald fails to take action on card
->> insertion. I can't see anything in my code so this may be a general mmc problem.
->> The problem is described here:
->> http://lists.freedesktop.org/archives/hal/2007-January/006960.html
+Andrew Morton wrote:
+> On Sat, 10 Feb 2007 19:32:30 +0200 "S.Çağlar Onur" <caglar@pardus.org.tr> wrote:
+>
+>   
+>> Hi;
 >>
-> 
-> Odd. This might be the whole sysfs restructuring thing causing problems. Can you
-> check if that user has CONFIG_SYSFS_DEPRECATED on?
+>> 31 Oca 2007 Çar tarihinde, akpm@osdl.org şunları yazmıştı: 
+>>     
+>>> The patch titled
+>>>      kvm: Fix asm constraint for lldt instruction
+>>>  has been added to the -mmtree.  Its filename is
+>>>      kvm-fix-asm-constraint-for-lldt-instruction.patch
+>>>       
+>> Is it possible to merge it into .20.1, its really trivial and its the only 
+>> compile fix for gcc-4.2.x?
+>>
+>>     
+>
+> OK by be.  Avi?
+>   
 
-I've tested both with and without CONFIG_SYSFS_DEPRECATED on, both fail the same way.
-hald reports that the device has no parent and decides to ignore it.
+No objections, though I'm wondering whether fixing a miscompile on an 
+unreleased compiler is a stability fix.
 
-I've also tested both combinations against hal from ubuntu 6.06LTS and a more recent version
 
-brad@bklaptop2:~$ hald --version
-HAL package version: 0.5.8.1
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
-Again with and without CONFIG_SYSFS_DEPRECATED and all combinations fail.
-Hal appears to go looking for /sys/block/mmcblk0/mmcblk0p1/range
-
-When it can't find it, it then looks for the parent of that to check what would be 
-/sys/block/mmcblk0/range, Complains it can't find a parent for /sys/block/mmcblk0/mmcblk0p1 and just 
-proceeds to ignore the event.
-
-Brad
---
-"Human beings, who are almost unique in having the ability
-to learn from the experience of others, are also remarkable
-for their apparent disinclination to do so." -- Douglas Adams
