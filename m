@@ -1,35 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932560AbXBKVpN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932562AbXBKVsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932560AbXBKVpN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 16:45:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932561AbXBKVpN
+	id S932562AbXBKVsq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 16:48:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932563AbXBKVsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 16:45:13 -0500
-Received: from main.gmane.org ([80.91.229.2]:36003 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932560AbXBKVpM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 16:45:12 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Neil Schemenauer <nas@arctrix.com>
-Subject: Re: sata_nv - ADMA issues with 2.6.20
-Date: Sun, 11 Feb 2007 19:55:37 +0000 (UTC)
-Message-ID: <eqnsbp$5fn$1@sea.gmane.org>
-References: <fa.uoZWqSFxPjjB7zobQOwk/2zqG5A@ifi.uio.no> <45CD20DB.9030808@shaw.ca>
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: s0106000625c557dc.ss.shawcable.net
-User-Agent: slrn/0.9.8.1pl1 (Debian)
+	Sun, 11 Feb 2007 16:48:46 -0500
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:50308 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932562AbXBKVsp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 16:48:45 -0500
+Date: Sun, 11 Feb 2007 22:47:34 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [patch] add epoll compat code to kernel/compat.c ...
+Message-ID: <20070211214734.GB8631@osiris.ibm.com>
+References: <Pine.LNX.4.64.0702111155180.24568@alien.or.mcafeemobile.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702111155180.24568@alien.or.mcafeemobile.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> David R wrote:
->>>> Feb  9 18:40:29 server kernel: ata7: Resetting port
->>>> Feb  9 18:40:29 server kernel: ata7.00: exception Emask 0x0 SAct 0x1 SErr 0x0 action 0x2 frozen
->>>> Feb  9 18:40:29 server kernel: ata7.00: cmd 61/08:00:1f:e4:50/00:00:09:00:00/40 tag 0 cdb 0x0 data 4096 out
->>>> Feb  9 18:40:29 server kernel:          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+On Sun, Feb 11, 2007 at 12:15:24PM -0800, Davide Libenzi wrote:
+> 
+> Add epoll compat_ code to kernel/compat.c. IA64 and ARM-OABI are currently 
+> using their own version of epoll compat_ code and they could probably wire 
+> to the new common code. Patch over 2.6.20.
+> + * epoll (fs/eventpoll.c) compat bits follow ...
+> + */
+> +struct compat_epoll_event {
+> +	u32 events;
+> +	u32 data[2];
+> +};
+> +
+>[...]
+> +
+> + * We need the compat layer over the epoll_event structure, only if the offset
+> + * of the __u64 data member is not 4 (size of the events member that precedes the
+> + * data one).
+> + */
+> +#define EPOLL_NEED_EVENT_COMPAT() (offsetof(struct epoll_event, data) != 4)
 
-I'm setting similar errors on my machine (AMD64 CPU, MSI board with
-NForce chipset).  Linux 2.6.19.2 seems to be okay.
+With
 
-  Neil
+struct epoll_event {
+        __u32 events;
+        __u64 data;
+};
 
+this won't work on s390. offsetof(struct epoll_event, data) is 8 on both
+31 bit and 64 bit. So it will do the conversion and corrupt all the data.
+Actually we would only need the compat conversion for the sigset_t stuff.
+
+But then again I thought most 32 bit architectures would add a 4 byte
+pad between events and data, no?
+
+Maybe we need some arch dependent struct compat_epoll_event and have
+something like
+#define EPOLL_NEED_EVENT_COMPAT() \
+(offsetof(struct epoll_event, data) != offsetof(struct compat_epoll_event, data))
+
+?
