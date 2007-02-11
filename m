@@ -1,66 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753157AbXBKIGH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753159AbXBKIN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753157AbXBKIGH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 03:06:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753158AbXBKIGH
+	id S1753159AbXBKIN3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 03:13:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbXBKIN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 03:06:07 -0500
-Received: from mail.exanet.com ([212.143.73.109]:38693 "EHLO mr.exanet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753157AbXBKIGG convert rfc822-to-8bit (ORCPT
+	Sun, 11 Feb 2007 03:13:29 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:63568 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753159AbXBKIN3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 03:06:06 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Getting the nfs_fh of a specific file/dir from the kernel
-Date: Sun, 11 Feb 2007 10:06:02 +0200
-Message-ID: <A6FDE6B975803043804A49F12F49028E0F573D@hawk.exanet-il.co.il>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Getting the nfs_fh of a specific file/dir from the kernel
-Thread-Index: AcdNsv0JVcXnWcelSECJSvHVdOUEIQAAAxQw
-From: "Menny Hamburger" <menny@exanet.com>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: <linux-kernel@vger.kernel.org>
+	Sun, 11 Feb 2007 03:13:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=fuYJWaW5vQ5c1U6yXS12df7c1uYwy9EZjpct4ZZh74Z3nfE8+cxjwwgmU74oeCcuQZcg1biLCFAKZC6/Q9KEM3ES81CLe+DNB26rChOegTH9U6jOfyy1olQUnARYJpGlbEVuP2el7OJnjM56Zbq7DhEGD/70RLHQ1QZ/b92fv/g=
+Date: Sun, 11 Feb 2007 11:13:25 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] mwave: interesting flags savings
+Message-ID: <20070211081325.GA16712@martell.zuzino.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We implement our own nfsd in user space - so the  kernel nfsd (as well
-as the lockd) are disabled.
-We need the handle in order to associate a kernel file handle with our
-own file id.
+Flags from spin_lock_irqsave() are saved into global variable and
+restored from it. My gut feeling this is very racy.
 
-M.
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
------Original Message-----
-From: linux-kernel-owner@vger.kernel.org
-[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of J. Bruce Fields
-Sent: Thursday, February 08, 2007 10:12 PM
-To: Menny Hamburger
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Getting the nfs_fh of a specific file/dir from the kernel
+ drivers/char/mwave/3780i.c |   14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
 
-On Thu, Feb 08, 2007 at 06:38:48PM +0200, Menny Hamburger wrote:
-> I have a piece of code in my 2.6 kernel that associates an ioctl 
-> file_operation to nfs in file.c and dir.c.
-> This ioctl sends the nfs_fh to a userland application.
-
-Doesn't /proc/fs/nfsd/filehandle do what you want already?
-
-See nfs-util/utils/mountd/cache.c:cache_get_filehandle(), or, for the
-kernel side, linux/fs/nfsd/nfsctl.c:write_filehandle().
-
-(Just out of curiosity--why are you doing this?)
-
---b.
+--- a/drivers/char/mwave/3780i.c
++++ b/drivers/char/mwave/3780i.c
+@@ -63,8 +63,6 @@ #include "mwavedd.h"
+ #include "3780i.h"
+ 
+ static DEFINE_SPINLOCK(dsp_lock);
+-static unsigned long flags;
 -
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"
-in the body of a message to majordomo@vger.kernel.org More majordomo
-info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-
+ 
+ static void PaceMsaAccess(unsigned short usDspBaseIO)
+ {
+@@ -76,6 +74,7 @@ static void PaceMsaAccess(unsigned short
+ unsigned short dsp3780I_ReadMsaCfg(unsigned short usDspBaseIO,
+                                    unsigned long ulMsaAddr)
+ {
++	unsigned long flags;
+ 	unsigned short val;
+ 
+ 	PRINTK_3(TRACE_3780I,
+@@ -96,6 +95,7 @@ unsigned short dsp3780I_ReadMsaCfg(unsig
+ void dsp3780I_WriteMsaCfg(unsigned short usDspBaseIO,
+                           unsigned long ulMsaAddr, unsigned short usValue)
+ {
++	unsigned long flags;
+ 
+ 	PRINTK_4(TRACE_3780I,
+ 		"3780i::dsp3780i_WriteMsaCfg entry usDspBaseIO %x ulMsaAddr %lx usValue %x\n",
+@@ -175,6 +175,7 @@ int dsp3780I_EnableDSP(DSP_3780I_CONFIG_
+                        unsigned short *pIrqMap,
+                        unsigned short *pDmaMap)
+ {
++	unsigned long flags;
+ 	unsigned short usDspBaseIO = pSettings->usDspBaseIO;
+ 	int i;
+ 	DSP_UART_CFG_1 rUartCfg1;
+@@ -354,6 +355,7 @@ int dsp3780I_EnableDSP(DSP_3780I_CONFIG_
+ 
+ int dsp3780I_DisableDSP(DSP_3780I_CONFIG_SETTINGS * pSettings)
+ {
++	unsigned long flags;
+ 	unsigned short usDspBaseIO = pSettings->usDspBaseIO;
+ 	DSP_ISA_SLAVE_CONTROL rSlaveControl;
+ 
+@@ -383,6 +385,7 @@ int dsp3780I_DisableDSP(DSP_3780I_CONFIG
+ 
+ int dsp3780I_Reset(DSP_3780I_CONFIG_SETTINGS * pSettings)
+ {
++	unsigned long flags;
+ 	unsigned short usDspBaseIO = pSettings->usDspBaseIO;
+ 	DSP_BOOT_DOMAIN rBootDomain;
+ 	DSP_HBRIDGE_CONTROL rHBridgeControl;
+@@ -427,6 +430,7 @@ int dsp3780I_Reset(DSP_3780I_CONFIG_SETT
+ 
+ int dsp3780I_Run(DSP_3780I_CONFIG_SETTINGS * pSettings)
+ {
++	unsigned long flags;
+ 	unsigned short usDspBaseIO = pSettings->usDspBaseIO;
+ 	DSP_BOOT_DOMAIN rBootDomain;
+ 	DSP_HBRIDGE_CONTROL rHBridgeControl;
+@@ -473,6 +477,7 @@ int dsp3780I_Run(DSP_3780I_CONFIG_SETTIN
+ int dsp3780I_ReadDStore(unsigned short usDspBaseIO, void __user *pvBuffer,
+                         unsigned uCount, unsigned long ulDSPAddr)
+ {
++	unsigned long flags;
+ 	unsigned short __user *pusBuffer = pvBuffer;
+ 	unsigned short val;
+ 
+@@ -514,6 +519,7 @@ int dsp3780I_ReadAndClearDStore(unsigned
+                                 void __user *pvBuffer, unsigned uCount,
+                                 unsigned long ulDSPAddr)
+ {
++	unsigned long flags;
+ 	unsigned short __user *pusBuffer = pvBuffer;
+ 	unsigned short val;
+ 
+@@ -555,6 +561,7 @@ int dsp3780I_ReadAndClearDStore(unsigned
+ int dsp3780I_WriteDStore(unsigned short usDspBaseIO, void __user *pvBuffer,
+                          unsigned uCount, unsigned long ulDSPAddr)
+ {
++	unsigned long flags;
+ 	unsigned short __user *pusBuffer = pvBuffer;
+ 
+ 
+@@ -596,6 +603,7 @@ int dsp3780I_WriteDStore(unsigned short 
+ int dsp3780I_ReadIStore(unsigned short usDspBaseIO, void __user *pvBuffer,
+                         unsigned uCount, unsigned long ulDSPAddr)
+ {
++	unsigned long flags;
+ 	unsigned short __user *pusBuffer = pvBuffer;
+ 
+ 	PRINTK_5(TRACE_3780I,
+@@ -643,6 +651,7 @@ int dsp3780I_ReadIStore(unsigned short u
+ int dsp3780I_WriteIStore(unsigned short usDspBaseIO, void __user *pvBuffer,
+                          unsigned uCount, unsigned long ulDSPAddr)
+ {
++	unsigned long flags;
+ 	unsigned short __user *pusBuffer = pvBuffer;
+ 
+ 	PRINTK_5(TRACE_3780I,
+@@ -691,6 +700,7 @@ int dsp3780I_WriteIStore(unsigned short 
+ int dsp3780I_GetIPCSource(unsigned short usDspBaseIO,
+                           unsigned short *pusIPCSource)
+ {
++	unsigned long flags;
+ 	DSP_HBRIDGE_CONTROL rHBridgeControl;
+ 	unsigned short temp;
+ 
 
