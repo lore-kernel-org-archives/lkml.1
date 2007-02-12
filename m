@@ -1,51 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750908AbXBLADf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750935AbXBLAEF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750908AbXBLADf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 19:03:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929AbXBLADf
+	id S1750935AbXBLAEF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 19:04:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750940AbXBLAEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 19:03:35 -0500
-Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:32837 "EHLO
-	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750908AbXBLADf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 19:03:35 -0500
-Message-ID: <45CFAED5.2090808@lwfinger.net>
-Date: Sun, 11 Feb 2007 18:03:33 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
+	Sun, 11 Feb 2007 19:04:04 -0500
+Received: from customer-domains.icp-qv1-irony15.iinet.net.au ([203.59.1.175]:61186
+	"EHLO customer-domains.icp-qv1-irony15.iinet.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750933AbXBLAEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 19:04:01 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CADY+z0V8qGxQdGdsb2JhbACgfwEBAQ
+X-IronPort-AV: i="4.13,311,1167580800"; 
+   d="scan'208"; a="52499535:sNHT327483420"
+From: "Marc Marais" <marcm@liquid-nexus.net>
+To: Neil Brown <neilb@suse.de>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: md: md6_raid5 crash 2.6.20
+Date: Mon, 12 Feb 2007 08:03:57 +0800
+Message-Id: <20070212000042.M73586@liquid-nexus.net>
+In-Reply-To: <17871.37497.786198.834303@notabene.brown>
+References: <20070211071527.M31642@liquid-nexus.net> <17871.37497.786198.834303@notabene.brown>
+X-Mailer: Open WebMail 2.51 20050627
+X-OriginatingIP: 159.99.34.18 (marc)
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Regress for 8139too in 2.6.20
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset=iso-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In kernel version 2.6.20, my network interface, a Uniden PCN 300 PCMCIA card that uses the 8139too
-driver fails to initialize with Yenta and 8139too as modules. It worked correctly in 2.6.19. Using
-git bisect, the bad commit is shown below:
+On Mon, 12 Feb 2007 09:02:33 +1100, Neil Brown wrote
+> On Sunday February 11, marcm@liquid-nexus.net wrote:
+> > Greetings,
+> > 
+> > I've been running md on my server for some time now and a few days ago one of
+> > the (3) drives in the raid5 array starting giving read errors. The result was
+> > usually system hangs and this was with kernel 2.6.17.13. I upgraded to the
+> > latest production 2.6.20 kernel and experienced the same behaviour.
+> 
+> System hangs suggest a problem with the drive controller.  However
+> this "kernel BUG" is something newly introduced in 2.6.20 which 
+> should be fixed in 2.6.20.1.  Patch is below.
+> 
+> If you still get hangs with this patch installed, then please report
+> detail, and probably copy to linux-ide@vger.kernel.org.
+> 
+> NeilBrown
+> 
+> Fix various bugs with aligned reads in RAID5.
+> 
+> It is possible for raid5 to be sent a bio that is too big
+> for an underlying device.  So if it is a READ that we
+> pass stright down to a device, it will fail and confuse
+> RAID5.
+> 
+> So in 'chunk_aligned_read' we check that the bio fits within the
+> parameters for the target device and if it doesn't fit, fall back
+> on reading through the stripe cache and making lots of one-page
+> requests.
+> 
+> Note that this is the earliest time we can check against the device
+> because earlier we don't have a lock on the device, so it could 
+> change underneath us.
+> 
+> Also, the code for handling a retry through the cache when a read
+> fails has not been tested and was badly broken.  This patch fixes 
+> that code.
+> 
+> Signed-off-by: Neil Brown <neilb@suse.de>
+> 
 
-finger@sonylap:~/linux-2.6> git bisect good
-8d610dd52dd1da696e199e4b4545f33a2a5de5c6 is first bad commit
-commit 8d610dd52dd1da696e199e4b4545f33a2a5de5c6
-Author: Linus Torvalds <torvalds@woody.osdl.org>
-Date:   Mon Dec 11 12:12:04 2006 -0800
+Thanks for the quick response Neil unfortunately the kernel doesn't build with
+this patch due to a missing symbol:
 
-    Make sure we populate the initroot filesystem late enough
+WARNING: "blk_recount_segments" [drivers/md/raid456.ko] undefined!
 
-    We should not initialize rootfs before all the core initializers have
-    run.  So do it as a separate stage just before starting the regular
-    driver initializers.
+Is that in another file that needs patching or within raid5.c?
 
-    Signed-off-by: Linus Torvalds <torvalds@osdl.org>
+Marc
 
-:040000 040000 12bc13def90d15921d41d2b285854b3e157a970f f936e01f6b1b2b75478484861d34e81830c73860 M
-    include
-:040000 040000 5673719c3f6b47b329cfc9554c112077634a9b19 9c2e768964af1500d62849836b9f8e801fe7f29e M
-    init
-
-
-If Yenta is built into the kernel, rather than a module, it works again with 2.6.20.
-
-Larry
+--
