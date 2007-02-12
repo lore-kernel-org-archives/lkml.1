@@ -1,87 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964797AbXBLJJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964800AbXBLJJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964797AbXBLJJh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 04:09:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964801AbXBLJI7
+	id S964800AbXBLJJi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 04:09:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964802AbXBLJJB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 04:08:59 -0500
-Received: from rere.qmqm.pl ([86.63.132.164]:41871 "EHLO rere.qmqm.pl"
+	Mon, 12 Feb 2007 04:09:01 -0500
+Received: from rere.qmqm.pl ([86.63.132.164]:50405 "EHLO rere.qmqm.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933134AbXBLJIt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 04:08:49 -0500
-Date: Mon, 12 Feb 2007 01:39:56 +0100
+	id S933076AbXBLJIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 04:08:50 -0500
+X-Greylist: delayed 3501 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Feb 2007 04:08:48 EST
+Date: Mon, 12 Feb 2007 01:37:38 +0100
 From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
 To: netfilter-devel@lists.netfilter.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.20 07/10] nfnetlink_log: fix module reference counting
-Message-ID: <20070212003956.GH8262@rere.qmqm.pl>
+Subject: [PATCH 2.6.20 00/10] nfnetlink_log: patch series introduction
+Message-ID: <20070212003738.GA8262@rere.qmqm.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Count module references correctly: after instance_destroy() there
-might be timer pending and holding a reference for this netlink instance.
+Dear list,
 
-Signed-off-by: Micha³ Miros³aw <mirq-linux@rere.qmqm.pl>
+After meeting a faint-hearted Linux kernel lately I decided to try myself
+at persuading it to not be afraid of NFLOG. This chat gave a series of
+ten commandments I present today. Take a look and agree or comment.
 
---- linux-2.6.20/net/netfilter/nfnetlink_log.c.5	2007-02-11 22:24:56.000000000 +0100
-+++ linux-2.6.20/net/netfilter/nfnetlink_log.c	2007-02-11 22:31:19.000000000 +0100
-@@ -133,6 +133,7 @@ instance_put(struct nfulnl_instance *ins
- 	if (inst && atomic_dec_and_test(&inst->use)) {
- 		UDEBUG("kfree(inst=%p)\n", inst);
- 		kfree(inst);
-+		module_put(THIS_MODULE);
- 	}
- }
- 
-@@ -146,9 +147,13 @@ instance_create(u_int16_t group_num, int
- 	UDEBUG("entering (group_num=%u, pid=%d)\n", group_num,
- 		pid);
- 
-+	if (!try_module_get(THIS_MODULE)) {
-+		UDEBUG("aborting, could not reference own module (module unloading?)\n");
-+		goto out_modunload;
-+	}
-+
- 	write_lock_bh(&instances_lock);	
- 	if (__instance_lookup(group_num)) {
--		inst = NULL;
- 		UDEBUG("aborting, instance already exists\n");
- 		goto out_unlock;
- 	}
-@@ -176,9 +181,6 @@ instance_create(u_int16_t group_num, int
- 	inst->copy_mode 	= NFULNL_COPY_PACKET;
- 	inst->copy_range 	= 0xffff;
- 
--	if (!try_module_get(THIS_MODULE))
--		goto out_free;
--
- 	hlist_add_head(&inst->hlist, 
- 		       &instance_table[instance_hashfn(group_num)]);
- 
-@@ -189,10 +191,10 @@ instance_create(u_int16_t group_num, int
- 
- 	return inst;
- 
--out_free:
--	instance_put(inst);
- out_unlock:
- 	write_unlock_bh(&instances_lock);
-+	module_put(THIS_MODULE);
-+out_modunload:
- 	return NULL;
- }
- 
-@@ -228,8 +230,6 @@ _instance_destroy2(struct nfulnl_instanc
- 
- 	/* and finally put the refcount */
- 	instance_put(inst);
--
--	module_put(THIS_MODULE);
- }
- 
- static inline void
+Here's the list:
+
+  1. nfulnl_log_packet() - don't count the same thing twice
+* 2. nfulnl_log_packet() - don't leak references
+  3. nfulnl_log_packet() - don't copy-and-paste code
+* 4. nfulnl_timer() - don't touch freed memory
+  5. nfulnl_recv_config() - don't free what isn't there
+  6. nfulnl_recv_config() - don't touch dead animals
+* 7. instance_destroy() - remember of your appointments
+  8. instance_create() - don't lock the bookshelf for too long
+! 9. __build_packet_message() - don't forget your tail
+ 10. instance_create() - wear your watch when going out
+
+Ninth is THE one. Those marked with stars are important I believe.
+Others came out on the way. I'll send them one-in-a-mail right after
+this message. I'm CC:ing this to LKML, so someone could put the important
+ones in -stable maybe?
+
+Have a nice reading,
+Michal Miroslaw
+
+PS. Please CC: me if you need my answer as I read the list's archive
+only and I am not subscribed.
+
