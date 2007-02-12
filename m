@@ -1,149 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933108AbXBLHkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933101AbXBLHlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933108AbXBLHkT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 02:40:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933107AbXBLHi3
+	id S933101AbXBLHlA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 02:41:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933107AbXBLHkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 02:38:29 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:49624 "EHLO mx2.suse.de"
+	Mon, 12 Feb 2007 02:40:23 -0500
+Received: from ns2.suse.de ([195.135.220.15]:49658 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933088AbXBLHiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 02:38:05 -0500
+	id S964773AbXBLHib (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 02:38:31 -0500
 From: Andi Kleen <ak@suse.de>
 References: <20070212837.963446000@suse.de>
 In-Reply-To: <20070212837.963446000@suse.de>
-To: "Jan Beulich" <jbeulich@novell.com>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH x86 for review II] [17/39] x86_64: Tighten mce_amd driver MSR reads
-Message-Id: <20070212073804.7953A13D7F@wotan.suse.de>
-Date: Mon, 12 Feb 2007 08:38:04 +0100 (CET)
+To: patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH x86 for review II] [34/39] i386: Use stack arguments for calling into EFI
+Message-Id: <20070212073822.8F33E13D7F@wotan.suse.de>
+Date: Mon, 12 Feb 2007 08:38:22 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: "Jan Beulich" <jbeulich@novell.com>
+When calling into the EFI firmware, the parameters need to be passed on
+the stack. The recent change to use -mregparm=3 breaks x86 EFI support.
+This patch is needed to allow the new Intel-based Macs to suspend to ram
+(efi.get_time is called during the suspend phase).
 
-while debugging an unrelated problem in Xen, I noticed odd reads from
-non-existent MSRs. Having now found time to look why these happen, I
-came up with below patch, which
-- prevents accessing MCi_MISCj with j > 0 when the block pointer in
-MCi_MISC0 is zero
-- accesses only contiguous MCi_MISCj until a non-implemented one is
-found
-- doesn't touch unimplemented blocks in mce_threshold_interrupt at all
-- gives names to two bits previously derived from MASK_VALID_HI (it
-took me some time to understand the code without this)
-
-The first three items, besides being apparently closer to the spec, should
-namely help cutting down on the time mce_threshold_interrupt() takes.
-
+Signed-off-by: Frederic Riss <frederic.riss@gmail.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86_64/kernel/mce_amd.c |   40 +++++++++++++++++++++++++---------------
- 1 file changed, 25 insertions(+), 15 deletions(-)
+ include/linux/efi.h |   43 +++++++++++++++++++++++++++----------------
+ 1 file changed, 27 insertions(+), 16 deletions(-)
 
-Index: linux/arch/x86_64/kernel/mce_amd.c
+Index: linux/include/linux/efi.h
 ===================================================================
---- linux.orig/arch/x86_64/kernel/mce_amd.c
-+++ linux/arch/x86_64/kernel/mce_amd.c
-@@ -37,6 +37,8 @@
- #define THRESHOLD_MAX     0xFFF
- #define INT_TYPE_APIC     0x00020000
- #define MASK_VALID_HI     0x80000000
-+#define MASK_CNTP_HI      0x40000000
-+#define MASK_LOCKED_HI    0x20000000
- #define MASK_LVTOFF_HI    0x00F00000
- #define MASK_COUNT_EN_HI  0x00080000
- #define MASK_INT_TYPE_HI  0x00060000
-@@ -122,14 +124,17 @@ void __cpuinit mce_amd_feature_init(stru
- 		for (block = 0; block < NR_BLOCKS; ++block) {
- 			if (block == 0)
- 				address = MSR_IA32_MC0_MISC + bank * 4;
--			else if (block == 1)
--				address = MCG_XBLK_ADDR
--					+ ((low & MASK_BLKPTR_LO) >> 21);
-+			else if (block == 1) {
-+				address = (low & MASK_BLKPTR_LO) >> 21;
-+				if (!address)
-+					break;
-+				address += MCG_XBLK_ADDR;
-+			}
- 			else
- 				++address;
+--- linux.orig/include/linux/efi.h
++++ linux/include/linux/efi.h
+@@ -157,22 +157,33 @@ typedef struct {
+ 	unsigned long reset_system;
+ } efi_runtime_services_t;
  
- 			if (rdmsr_safe(address, &low, &high))
--				continue;
-+				break;
- 
- 			if (!(high & MASK_VALID_HI)) {
- 				if (block)
-@@ -138,8 +143,8 @@ void __cpuinit mce_amd_feature_init(stru
- 					break;
- 			}
- 
--			if (!(high & MASK_VALID_HI >> 1)  ||
--			     (high & MASK_VALID_HI >> 2))
-+			if (!(high & MASK_CNTP_HI)  ||
-+			     (high & MASK_LOCKED_HI))
- 				continue;
- 
- 			if (!block)
-@@ -187,17 +192,22 @@ asmlinkage void mce_threshold_interrupt(
- 
- 	/* assume first bank caused it */
- 	for (bank = 0; bank < NR_BANKS; ++bank) {
-+		if (!(per_cpu(bank_map, m.cpu) & (1 << bank)))
-+			continue;
- 		for (block = 0; block < NR_BLOCKS; ++block) {
- 			if (block == 0)
- 				address = MSR_IA32_MC0_MISC + bank * 4;
--			else if (block == 1)
--				address = MCG_XBLK_ADDR
--					+ ((low & MASK_BLKPTR_LO) >> 21);
-+			else if (block == 1) {
-+				address = (low & MASK_BLKPTR_LO) >> 21;
-+				if (!address)
-+					break;
-+				address += MCG_XBLK_ADDR;
-+			}
- 			else
- 				++address;
- 
- 			if (rdmsr_safe(address, &low, &high))
--				continue;
-+				break;
- 
- 			if (!(high & MASK_VALID_HI)) {
- 				if (block)
-@@ -206,8 +216,8 @@ asmlinkage void mce_threshold_interrupt(
- 					break;
- 			}
- 
--			if (!(high & MASK_VALID_HI >> 1)  ||
--			     (high & MASK_VALID_HI >> 2))
-+			if (!(high & MASK_CNTP_HI)  ||
-+			     (high & MASK_LOCKED_HI))
- 				continue;
- 
- 			if (high & MASK_OVERFLOW_HI) {
-@@ -385,7 +395,7 @@ static __cpuinit int allocate_threshold_
- 		return 0;
- 
- 	if (rdmsr_safe(address, &low, &high))
--		goto recurse;
-+		return 0;
- 
- 	if (!(high & MASK_VALID_HI)) {
- 		if (block)
-@@ -394,8 +404,8 @@ static __cpuinit int allocate_threshold_
- 			return 0;
- 	}
- 
--	if (!(high & MASK_VALID_HI >> 1)  ||
--	     (high & MASK_VALID_HI >> 2))
-+	if (!(high & MASK_CNTP_HI)  ||
-+	     (high & MASK_LOCKED_HI))
- 		goto recurse;
- 
- 	b = kzalloc(sizeof(struct threshold_block), GFP_KERNEL);
+-typedef efi_status_t efi_get_time_t (efi_time_t *tm, efi_time_cap_t *tc);
+-typedef efi_status_t efi_set_time_t (efi_time_t *tm);
+-typedef efi_status_t efi_get_wakeup_time_t (efi_bool_t *enabled, efi_bool_t *pending,
+-					    efi_time_t *tm);
+-typedef efi_status_t efi_set_wakeup_time_t (efi_bool_t enabled, efi_time_t *tm);
+-typedef efi_status_t efi_get_variable_t (efi_char16_t *name, efi_guid_t *vendor, u32 *attr,
+-					 unsigned long *data_size, void *data);
+-typedef efi_status_t efi_get_next_variable_t (unsigned long *name_size, efi_char16_t *name,
+-					      efi_guid_t *vendor);
+-typedef efi_status_t efi_set_variable_t (efi_char16_t *name, efi_guid_t *vendor, 
+-					 unsigned long attr, unsigned long data_size, 
+-					 void *data);
+-typedef efi_status_t efi_get_next_high_mono_count_t (u32 *count);
+-typedef void efi_reset_system_t (int reset_type, efi_status_t status,
+-				 unsigned long data_size, efi_char16_t *data);
+-typedef efi_status_t efi_set_virtual_address_map_t (unsigned long memory_map_size,
++typedef asmlinkage efi_status_t efi_get_time_t (efi_time_t *tm,
++						efi_time_cap_t *tc);
++typedef asmlinkage efi_status_t efi_set_time_t (efi_time_t *tm);
++typedef asmlinkage efi_status_t efi_get_wakeup_time_t (efi_bool_t *enabled,
++						       efi_bool_t *pending,
++						       efi_time_t *tm);
++typedef asmlinkage efi_status_t efi_set_wakeup_time_t (efi_bool_t enabled,
++						       efi_time_t *tm);
++typedef asmlinkage efi_status_t efi_get_variable_t (efi_char16_t *name,
++						    efi_guid_t *vendor,
++						    u32 *attr,
++						    unsigned long *data_size,
++						    void *data);
++typedef asmlinkage efi_status_t efi_get_next_variable_t (unsigned long *name_sz,
++							 efi_char16_t *name,
++							 efi_guid_t *vendor);
++typedef asmlinkage efi_status_t efi_set_variable_t (efi_char16_t *name,
++						    efi_guid_t *vendor,
++						    unsigned long attr,
++						    unsigned long data_size,
++						    void *data);
++typedef asmlinkage efi_status_t efi_get_next_high_mono_count_t (u32 *count);
++typedef asmlinkage void efi_reset_system_t (int reset_type,
++					    efi_status_t status,
++					    unsigned long data_size,
++					    efi_char16_t *data);
++typedef asmlinkage efi_status_t efi_set_virtual_address_map_t (unsigned long memory_map_size,
+ 						unsigned long descriptor_size,
+ 						u32 descriptor_version,
+ 						efi_memory_desc_t *virtual_map);
