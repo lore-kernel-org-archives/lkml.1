@@ -1,68 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932996AbXBLPcf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932991AbXBLPev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932996AbXBLPcf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 10:32:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932990AbXBLPcf
+	id S932991AbXBLPev (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 10:34:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933006AbXBLPev
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 10:32:35 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:51230 "EHLO mx2.redhat.com"
+	Mon, 12 Feb 2007 10:34:51 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:42565 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932821AbXBLPcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 10:32:33 -0500
-X-Greylist: delayed 1856 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Feb 2007 10:32:33 EST
-Message-ID: <45D080C5.4000500@redhat.com>
-Date: Mon, 12 Feb 2007 06:59:17 -0800
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
-MIME-Version: 1.0
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-CC: Andrew Morton <akpm@osdl.org>, David Miller <davem@davemloft.net>,
-       netdev <netdev@vger.kernel.org>, Zach Brown <zach.brown@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Chase Venters <chase.venters@clientec.com>,
-       Johann Borck <johann.borck@densedata.com>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, Jamal Hadi Salim <hadi@cyberus.ca>,
-       Ingo Molnar <mingo@elte.hu>, linux-fsdevel@vger.kernel.org
-Subject: Re: [take35 0/10] kevent: Generic event handling mechanism.
-References: <asdasdqaa0591036@2ka.mipt.ru> <11703247503374@2ka.mipt.ru> <20070205142336.GA24190@2ka.mipt.ru> <20070212103510.GC5703@2ka.mipt.ru>
-In-Reply-To: <20070212103510.GC5703@2ka.mipt.ru>
-X-Enigmail-Version: 0.94.1.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig6F0502E471948832081F9F8F"
+	id S933000AbXBLPeu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 10:34:50 -0500
+Date: Mon, 12 Feb 2007 21:04:10 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: menage@google.com
+Cc: akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
+       serue@us.ibm.com, ebiederm@xmission.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       rohitseth@google.com, mbligh@google.com, winget@google.com,
+       containers@lists.osdl.org, devel@openvz.org
+Subject: Re: [PATCH 6/7] containers (V7): BeanCounters over generic process containers
+Message-ID: <20070212153410.GE7526@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070212081521.808338000@menage.corp.google.com> <20070212085104.998727000@menage.corp.google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070212085104.998727000@menage.corp.google.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig6F0502E471948832081F9F8F
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Mon, Feb 12, 2007 at 12:15:27AM -0800, menage@google.com wrote:
+> This patch implements the BeanCounter resource control abstraction
+> over generic process containers. 
 
-Evgeniy Polyakov wrote:
-> I think that mean that everybody is happy with APi, design and set of
-> features.=20
+Forgive my confusion, but do we really need two-levels of resource control 
+abstraction here? Why can't resource controllers directly work with containers 
+(just like cpu accounting does)?
 
-No comment means that I still have not been able to test anything since
-regardless of what version I tried, it failed to build.
-
---=20
-=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
-=E2=9E=A7 Mountain View, CA =E2=9D=96
-
-
---------------enig6F0502E471948832081F9F8F
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFF0IDF2ijCOnn/RHQRAiesAKCZ6rlV3mcXkj7NpwFNSXU5exoQaACcDuB7
-EF+93V+R1z22vZsGZYS0JcI=
-=iDCs
------END PGP SIGNATURE-----
-
---------------enig6F0502E471948832081F9F8F--
+-- 
+Regards,
+vatsa
