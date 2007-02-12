@@ -1,1619 +1,865 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964792AbXBLIxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964790AbXBLIyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964792AbXBLIxs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 03:53:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964790AbXBLIx1
+	id S964790AbXBLIyu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 03:54:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964794AbXBLIyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 03:53:27 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:26318 "EHLO
+	Mon, 12 Feb 2007 03:54:49 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:26436 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964789AbXBLIxV (ORCPT
+	with ESMTP id S964790AbXBLIyr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 03:53:21 -0500
+	Mon, 12 Feb 2007 03:54:47 -0500
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:message-id:references:user-agent:date:from:to:cc:
 	subject:content-disposition;
-	b=eHXtrO+ajVhiJmBr6l5oR4a3JgQ1GgwJDg1dYVnSuqHV/9MKusc45MWq+U45o1qaF
-	ZbSvFbEaL1dB707Pe220A==
-Message-Id: <20070212085104.830246000@menage.corp.google.com>
+	b=MF8/VTN8CJVtV3JLhFdPS4vAip6YKxk+50KC0nK6zjAZGXNfBxdElzJ2JVnHMz4X9
+	JqzQHm9FBGScn7S0ui28w==
+Message-Id: <20070212085104.998727000@menage.corp.google.com>
 References: <20070212081521.808338000@menage.corp.google.com>
 User-Agent: quilt/0.45-1
-Date: Mon, 12 Feb 2007 00:15:26 -0800
+Date: Mon, 12 Feb 2007 00:15:27 -0800
 From: menage@google.com
 To: akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
        serue@us.ibm.com, vatsa@in.ibm.com, ebiederm@xmission.com
 Cc: ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
        rohitseth@google.com, mbligh@google.com, winget@google.com,
        containers@lists.osdl.org, devel@openvz.org
-Subject: [PATCH 5/7] containers (V7): Resource Groups over generic containers
-Content-Disposition: inline; filename=res_group_f0.8_single_2618.patch
+Subject: [PATCH 6/7] containers (V7): BeanCounters over generic process containers
+Content-Disposition: inline; filename=beancounters.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch provides the RG core and numtasks controller as container
-subsystems, intended as an example of how to implement a more complex
-resource control system over generic process containers. The changes
-to the core involve primarily removing the group management, task
-membership and configfs support and adding interface layers to talk to
-the generic container layer instead.
+This patch implements the BeanCounter resource control abstraction
+over generic process containers. It contains the beancounter core
+code, plus the numfiles resource counter. It doesn't currently contain
+any of the memory tracking code or the code for switching beancounter
+context in interrupts.
 
-Each resource controller becomes an independent container subsystem;
-the RG core is essentially a library that the resource controllers can
-use to provide the RG API to userspace. Rather than a single shares
-and stats file in each group, there's a <controller>_shares and 
-a <controller>_stats file, each linked to the appropriate resource
-controller.
+Currently all the beancounters resource counters are lumped into a
+single hierarchy; ideally it would be possible for each resource
+counter to be a separate container subsystem, allowing them to be
+connected to different hierarchies.
 
- include/linux/moduleparam.h  |   12 -
- include/linux/numtasks.h     |   28 ++
- include/linux/res_group.h    |   87 ++++++++
- include/linux/res_group_rc.h |   97 ++++++++
- init/Kconfig                 |   22 ++
- kernel/Makefile              |    1 
- kernel/fork.c                |    7 
- kernel/res_group/Makefile    |    2 
- kernel/res_group/local.h     |   38 +++
- kernel/res_group/numtasks.c  |  467 +++++++++++++++++++++++++++++++++++++++++++
- kernel/res_group/res_group.c |  160 ++++++++++++++
- kernel/res_group/rgcs.c      |  302 +++++++++++++++++++++++++++
- kernel/res_group/shares.c    |  228 ++++++++++++++++++++
- 13 files changed, 1447 insertions(+), 4 deletions(-)
+---
+ fs/file_table.c          |   11 +
+ include/bc/beancounter.h |  192 ++++++++++++++++++++++++
+ include/bc/misc.h        |   27 +++
+ include/linux/fs.h       |    3 
+ init/Kconfig             |    4 
+ init/main.c              |    3 
+ kernel/Makefile          |    1 
+ kernel/bc/Kconfig        |   17 ++
+ kernel/bc/Makefile       |    7 
+ kernel/bc/beancounter.c  |  371 +++++++++++++++++++++++++++++++++++++++++++++++
+ kernel/bc/misc.c         |   56 +++++++
+ 11 files changed, 691 insertions(+), 1 deletion(-)
 
-Index: container-2.6.20/include/linux/moduleparam.h
-===================================================================
---- container-2.6.20.orig/include/linux/moduleparam.h
-+++ container-2.6.20/include/linux/moduleparam.h
-@@ -78,11 +78,17 @@ struct kparam_array
- /* Helper functions: type is byte, short, ushort, int, uint, long,
-    ulong, charp, bool or invbool, or XXX if you define param_get_XXX,
-    param_set_XXX and param_check_XXX. */
--#define module_param_named(name, value, type, perm)			   \
--	param_check_##type(name, &(value));				   \
--	module_param_call(name, param_set_##type, param_get_##type, &value, perm); \
-+#define module_param_named_call(name, value, type, set, perm)		\
-+	param_check_##type(name, &(value));				\
-+	module_param_call(name, set, param_get_##type, &(value), perm); \
- 	__MODULE_PARM_TYPE(name, #type)
- 
-+#define module_param_named(name, value, type, perm)			   \
-+	module_param_named_call(name, value, type, param_set_##type, perm)
-+
-+#define module_param_set_call(name, type, setfn, perm) \
-+	module_param_named_call(name, name, type, setfn, perm)
-+
- #define module_param(name, type, perm)				\
- 	module_param_named(name, name, type, perm)
- 
-Index: container-2.6.20/include/linux/numtasks.h
-===================================================================
---- /dev/null
-+++ container-2.6.20/include/linux/numtasks.h
-@@ -0,0 +1,28 @@
-+/* numtasks.h - No. of tasks resource controller for Resource Groups
-+ *
-+ * Copyright (C) Chandra Seetharaman, IBM Corp. 2003, 2004, 2005
-+ *
-+ * Provides No. of tasks resource controller for Resource Groups
-+ *
-+ * Latest version, more details at http://ckrm.sf.net
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ */
-+#ifndef _LINUX_NUMTASKS_H
-+#define _LINUX_NUMTASKS_H
-+
-+#ifdef CONFIG_RES_GROUPS_NUMTASKS
-+#include <linux/res_group_rc.h>
-+
-+extern int numtasks_allow_fork(struct task_struct *);
-+
-+#else /* CONFIG_RES_GROUPS_NUMTASKS */
-+
-+#define numtasks_allow_fork(task) (0)
-+
-+#endif /* CONFIG_RES_GROUPS_NUMTASKS */
-+#endif /* _LINUX_NUMTASKS_H */
-Index: container-2.6.20/include/linux/res_group.h
-===================================================================
---- /dev/null
-+++ container-2.6.20/include/linux/res_group.h
-@@ -0,0 +1,87 @@
-+/*
-+ *  res_group.h - Header file to be used by Resource Groups
-+ *
-+ * Copyright (C) Hubertus Franke, IBM Corp. 2003, 2004
-+ *		(C) Shailabh Nagar,  IBM Corp. 2003, 2004
-+ *		(C) Chandra Seetharaman, IBM Corp. 2003, 2004, 2005
-+ *
-+ * Provides data structures, macros and kernel APIs
-+ *
-+ * More details at http://ckrm.sf.net
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ */
-+
-+#ifndef _LINUX_RES_GROUP_H
-+#define _LINUX_RES_GROUP_H
-+
-+#ifdef CONFIG_RES_GROUPS
-+#include <linux/spinlock.h>
-+#include <linux/list.h>
-+#include <linux/kref.h>
-+#include <linux/container.h>
-+
-+#define SHARE_UNCHANGED	(-1)	/* implicitly specified by userspace,
-+					 * never stored in a resource group'
-+					 * shares struct; never displayed */
-+#define SHARE_UNSUPPORTED	(-2)	/* If the resource controller doesn't
-+					 * support user changing a shares value
-+					 * it sets the corresponding share
-+					 * value to UNSUPPORTED when it returns
-+					 * the newly allocated shares data
-+					 * structure */
-+#define SHARE_DONT_CARE	(-3)
-+
-+#define SHARE_DEFAULT_DIVISOR 	(100)
-+
-+#define MAX_RES_CTLRS	CONFIG_MAX_CONTAINER_SUBSYS /* max # of resource controllers */
-+#define MAX_DEPTH	5	/* max depth of hierarchy supported */
-+
-+#define NO_RES_GROUP		NULL
-+#define NO_SHARE		NULL
-+#define NO_RES_ID		MAX_RES_CTLRS /* Invalid ID */
-+
-+/*
-+ * Share quantities are a child's fraction of the parent's resource
-+ * specified by a divisor in the parent and a dividend in the child.
-+ *
-+ * Shares are represented as a relative quantity between parent and child
-+ * to simplify locking when propagating modifications to the shares of a
-+ * resource group. Only the parent and the children of the modified
-+ * resource group need to be locked.
-+*/
-+struct res_shares {
-+	/* shares only set by userspace */
-+	int min_shares; /* minimun fraction of parent's resources allowed */
-+	int max_shares; /* maximum fraction of parent's resources allowed */
-+	int child_shares_divisor; /* >= 1, may not be DONT_CARE */
-+
-+	/*
-+	 * share values invisible to userspace.  adjusted when userspace
-+	 * sets shares
-+	 */
-+	int unused_min_shares;
-+		/* 0 <= unused_min_shares <= (child_shares_divisor -
-+		 * 			Sum of min_shares of children)
-+		 */
-+	int cur_max_shares; /* max(children's max_shares). need better name */
-+
-+	/* State maintained by container system - only relevant when
-+	 * this shares struct is the actual shares struct for a
-+	 * container */
-+	struct container_subsys_state css;
-+};
-+
-+/*
-+ * Class is the grouping of tasks with shares of each resource that has
-+ * registered a resource controller (see include/linux/res_group_rc.h).
-+ */
-+
-+#define resource_group container
-+
-+#endif /* CONFIG_RES_GROUPS */
-+#endif /* _LINUX_RES_GROUP_H */
-Index: container-2.6.20/include/linux/res_group_rc.h
-===================================================================
---- /dev/null
-+++ container-2.6.20/include/linux/res_group_rc.h
-@@ -0,0 +1,97 @@
-+/*
-+ *  res_group_rc.h - Header file to be used by Resource controllers of
-+ *		      Resource Groups
-+ *
-+ * Copyright (C) Hubertus Franke, IBM Corp. 2003
-+ *		(C) Shailabh Nagar,  IBM Corp. 2003
-+ *		(C) Chandra Seetharaman, IBM Corp. 2003, 2004, 2005
-+ *		(C) Vivek Kashyap , IBM Corp. 2004
-+ *
-+ * Provides data structures, macros and kernel API of Resource Groups for
-+ * resource controllers.
-+ *
-+ * More details at http://ckrm.sf.net
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ */
-+
-+#ifndef _LINUX_RES_GROUP_RC_H
-+#define _LINUX_RES_GROUP_RC_H
-+
-+#include <linux/res_group.h>
-+#include <linux/container.h>
-+
-+struct res_group_cft {
-+	struct cftype cft;
-+	struct res_controller *ctlr;
-+};
-+
-+struct res_controller {
-+	struct container_subsys subsys;
-+	struct res_group_cft shares_cft;
-+	struct res_group_cft stats_cft;
-+
-+	const char *name;
-+	unsigned int ctlr_id;
-+
-+	/*
-+	 * Keeps number of references to this controller structure. kref
-+	 * does not work as we want to be able to allow removal of a
-+	 * controller even when some resource group are still defined.
-+	 */
-+	atomic_t count;
-+
-+	/*
-+	 * Allocate a new shares struct for this resource controller.
-+	 * Called when registering a resource controller with pre-existing
-+	 * resource groups and when new resource group is created by the user.
-+	 */
-+	struct res_shares *(*alloc_shares_struct)(struct container *);
-+	/* Corresponding free of shares struct for this resource controller */
-+	void (*free_shares_struct)(struct res_shares *);
-+
-+	/* Notifies the controller when the shares are changed */
-+	void (*shares_changed)(struct res_shares *);
-+
-+	/* resource statistics */
-+	ssize_t (*show_stats)(struct res_shares *, char *, size_t);
-+	int (*reset_stats)(struct res_shares *, const char *);
-+
-+	/*
-+	 * move_task is called when a task moves from one resource group to
-+	 * another. First parameter is the task that is moving, the second
-+	 * is the resource specific shares of the resource group the task
-+	 * was in, and the third is the shares of the resource group the
-+	 * task has moved to.
-+	 */
-+	void (*move_task)(struct task_struct *, struct res_shares *,
-+				struct res_shares *);
-+};
-+
-+extern int register_controller(struct res_controller *);
-+extern int unregister_controller(struct res_controller *);
-+extern struct resource_group default_res_group;
-+static inline int is_res_group_root(const struct resource_group *rgroup)
-+{
-+	return (rgroup->parent == NULL);
-+}
-+
-+#define for_each_child(child, parent)	\
-+	list_for_each_entry(child, &parent->children, sibling)
-+
-+/* Get controller specific shares structure for the given resource group */
-+static inline struct res_shares *get_controller_shares(
-+	struct container *rgroup, struct res_controller *ctlr)
-+{
-+	if (rgroup && ctlr)
-+		return container_of(rgroup->subsys[ctlr->subsys.subsys_id],
-+				    struct res_shares, css);
-+	else
-+		return NO_SHARE;
-+}
-+
-+#endif /* _LINUX_RES_GROUP_RC_H */
 Index: container-2.6.20/init/Kconfig
 ===================================================================
 --- container-2.6.20.orig/init/Kconfig
 +++ container-2.6.20/init/Kconfig
-@@ -341,6 +341,28 @@ config TASK_IO_ACCOUNTING
+@@ -619,6 +619,10 @@ config STOP_MACHINE
+ 	  Need stop_machine() primitive.
+ endmenu
  
- 	  Say N if unsure.
- 
-+menu "Resource Groups"
-+
-+config RES_GROUPS
-+	bool "Resource Groups"
-+	depends on EXPERIMENTAL
-+	select CONTAINERS
-+	help
-+	  Resource Groups is a framework for controlling and monitoring
-+	  resource allocation of user-defined groups of tasks. For more
-+	  information, please visit http://ckrm.sf.net.
-+
-+config RES_GROUPS_NUMTASKS
-+	bool "Number of Tasks Resource Controller"
-+	depends on RES_GROUPS
-+	default y
-+	help
-+	  Provides a Resource Controller for Resource Groups that allows
-+	  limiting number of tasks a resource group can have.
-+
-+	  Say N if unsure, Y to use the feature.
-+
++menu "Beancounters"
++source "kernel/bc/Kconfig"
 +endmenu
- config SYSCTL
- 	bool
- 
++
+ menu "Block layer"
+ source "block/Kconfig"
+ endmenu
 Index: container-2.6.20/kernel/Makefile
 ===================================================================
 --- container-2.6.20.orig/kernel/Makefile
 +++ container-2.6.20/kernel/Makefile
-@@ -52,6 +52,7 @@ obj-$(CONFIG_RELAY) += relay.o
- obj-$(CONFIG_UTS_NS) += utsname.o
- obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
- obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
-+obj-$(CONFIG_RES_GROUPS) += res_group/
+@@ -12,6 +12,7 @@ obj-y     = sched.o fork.o exec_domain.o
  
- ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
- # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
-Index: container-2.6.20/kernel/fork.c
+ obj-$(CONFIG_STACKTRACE) += stacktrace.o
+ obj-y += time/
++obj-$(CONFIG_BEANCOUNTERS) += bc/
+ obj-$(CONFIG_DEBUG_MUTEXES) += mutex-debug.o
+ obj-$(CONFIG_LOCKDEP) += lockdep.o
+ ifeq ($(CONFIG_PROC_FS),y)
+Index: container-2.6.20/kernel/bc/Kconfig
 ===================================================================
---- container-2.6.20.orig/kernel/fork.c
-+++ container-2.6.20/kernel/fork.c
-@@ -49,6 +49,7 @@
- #include <linux/delayacct.h>
- #include <linux/taskstats_kern.h>
- #include <linux/random.h>
-+#include <linux/numtasks.h>
- 
- #include <asm/pgtable.h>
- #include <asm/pgalloc.h>
-@@ -1355,7 +1356,7 @@ long do_fork(unsigned long clone_flags,
- 	      int __user *child_tidptr)
- {
- 	struct task_struct *p;
--	int trace = 0;
-+	int trace = 0, rc;
- 	struct pid *pid = alloc_pid();
- 	long nr;
- 
-@@ -1368,6 +1369,10 @@ long do_fork(unsigned long clone_flags,
- 			clone_flags |= CLONE_PTRACE;
- 	}
- 
-+	rc = numtasks_allow_fork(current);
-+	if (rc)
-+		return rc;
+--- /dev/null
++++ container-2.6.20/kernel/bc/Kconfig
+@@ -0,0 +1,17 @@
++config BEANCOUNTERS
++	bool "Enable resource accounting/control"
++	default n
++	select CONTAINERS
++	help
++	  When Y this option provides accounting and allows configuring
++	  limits for user's consumption of exhaustible system resources.
++	  The most important resource controlled by this patch is unswappable
++	  memory (either mlock'ed or used by internal kernel structures and
++	  buffers). The main goal of this patch is to protect processes
++	  from running short of important resources because of accidental
++	  misbehavior of processes or malicious activity aiming to ``kill''
++	  the system. It's worth mentioning that resource limits configured
++	  by setrlimit(2) do not give an acceptable level of protection
++	  because they cover only a small fraction of resources and work on a
++	  per-process basis.  Per-process accounting doesn't prevent malicious
++	  users from spawning a lot of resource-consuming processes.
+Index: container-2.6.20/kernel/bc/Makefile
+===================================================================
+--- /dev/null
++++ container-2.6.20/kernel/bc/Makefile
+@@ -0,0 +1,7 @@
++#
++# kernel/bc/Makefile
++#
++# Copyright (C) 2006 OpenVZ SWsoft Inc.
++#
 +
- 	p = copy_process(clone_flags, stack_start, regs, stack_size, parent_tidptr, child_tidptr, nr);
- 	/*
- 	 * Do this prior waking up the new thread - the thread pointer
-Index: container-2.6.20/kernel/res_group/Makefile
++obj-y = beancounter.o misc.o
+Index: container-2.6.20/include/bc/beancounter.h
 ===================================================================
 --- /dev/null
-+++ container-2.6.20/kernel/res_group/Makefile
-@@ -0,0 +1,2 @@
-+obj-y = res_group.o shares.o rgcs.o
-+obj-$(CONFIG_RES_GROUPS_NUMTASKS) += numtasks.o
-Index: container-2.6.20/kernel/res_group/local.h
-===================================================================
---- /dev/null
-+++ container-2.6.20/kernel/res_group/local.h
-@@ -0,0 +1,38 @@
++++ container-2.6.20/include/bc/beancounter.h
+@@ -0,0 +1,192 @@
 +/*
-+ * Contains function definitions that are local to the Resource Groups.
-+ * NOT to be included by controllers.
++ * include/bc/beancounter.h
++ *
++ * Copyright (C) 2006 OpenVZ SWsoft Inc
++ *
 + */
 +
-+#include <linux/res_group_rc.h>
++#ifndef __BEANCOUNTER_H__
++#define __BEANCOUNTER_H__
 +
-+extern struct res_controller *get_controller_by_name(const char *);
-+extern struct res_controller *get_controller_by_id(unsigned int);
-+extern void put_controller(struct res_controller *);
-+extern struct resource_group *alloc_res_group(struct resource_group *,
-+							const char *);
-+extern int free_res_group(struct resource_group *);
-+extern void release_res_group(struct kref *);
-+extern int set_controller_shares(struct resource_group *,
-+			struct res_controller *, const struct res_shares *);
-+/* Set shares for the given resource group and resource to default values */
-+extern void set_shares_to_default(struct resource_group *,
-+						struct res_controller *);
-+extern void res_group_teardown(void);
-+extern int set_res_group(pid_t, struct resource_group *);
-+extern void move_tasks_to_parent(struct resource_group *);
-+
-+ssize_t res_group_file_read(struct container *cont,
-+			    struct cftype *cft,
-+			    struct file *file,
-+			    char __user *buf,
-+			    size_t nbytes, loff_t *ppos);
-+ssize_t res_group_file_write(struct container *cont,
-+			     struct cftype *cft,
-+			     struct file *file,
-+			     const char __user *userbuf,
-+			     size_t nbytes, loff_t *ppos);
++#include <linux/container.h>
 +
 +enum {
-+	RG_FILE_SHARES,
-+	RG_FILE_STATS,
++	BC_KMEMSIZE,
++	BC_PRIVVMPAGES,
++	BC_PHYSPAGES,
++	BC_NUMTASKS,
++	BC_NUMFILES,
++
++	BC_RESOURCES
 +};
-Index: container-2.6.20/kernel/res_group/numtasks.c
++
++struct bc_resource_parm {
++	unsigned long	barrier;
++	unsigned long	limit;
++	unsigned long	held;
++	unsigned long	minheld;
++	unsigned long	maxheld;
++	unsigned long	failcnt;
++
++};
++
++#ifdef __KERNEL__
++
++#include <linux/list.h>
++#include <linux/spinlock.h>
++#include <linux/init.h>
++#include <linux/configfs.h>
++#include <asm/atomic.h>
++
++#define BC_MAXVALUE	((unsigned long)LONG_MAX)
++
++enum bc_severity {
++	BC_BARRIER,
++	BC_LIMIT,
++	BC_FORCE,
++};
++
++struct beancounter;
++
++#ifdef CONFIG_BEANCOUNTERS
++
++enum bc_attr_index {
++	BC_RES_HELD,
++	BC_RES_MAXHELD,
++	BC_RES_MINHELD,
++	BC_RES_BARRIER,
++	BC_RES_LIMIT,
++	BC_RES_FAILCNT,
++
++	BC_ATTRS
++};
++
++struct bc_resource {
++	char	*bcr_name;
++	int      res_id;
++
++	int	(*bcr_init)(struct beancounter *bc, int res);
++	int	(*bcr_change)(struct beancounter *bc,
++			unsigned long new_bar, unsigned long new_lim);
++	void	(*bcr_barrier_hit)(struct beancounter *bc);
++	int	(*bcr_limit_hit)(struct beancounter *bc, unsigned long val,
++			unsigned long flags);
++	void	(*bcr_fini)(struct beancounter *bc);
++
++	/* container file handlers */
++	struct cftype cft_attrs[BC_ATTRS];
++};
++
++extern struct bc_resource *bc_resources[];
++extern struct container_subsys bc_subsys;
++
++struct beancounter {
++	struct container_subsys_state css;
++	spinlock_t		bc_lock;
++
++	struct bc_resource_parm bc_parms[BC_RESOURCES];
++};
++
++/* Update the beancounter for a container */
++static inline void set_container_bc(struct container *cont,
++				    struct beancounter *bc)
++{
++	cont->subsys[bc_subsys.subsys_id] = &bc->css;
++}
++
++/* Retrieve the beancounter for a container */
++static inline struct beancounter *container_bc(struct container *cont)
++{
++	return container_of(container_subsys_state(cont, &bc_subsys),
++			    struct beancounter, css);
++}
++
++/* Retrieve the beancounter for a task */
++static inline struct beancounter *task_bc(struct task_struct *task)
++{
++	return container_bc(task_container(task, &bc_subsys));
++}
++
++static inline void bc_adjust_maxheld(struct bc_resource_parm *parm)
++{
++	if (parm->maxheld < parm->held)
++		parm->maxheld = parm->held;
++}
++
++static inline void bc_adjust_minheld(struct bc_resource_parm *parm)
++{
++	if (parm->minheld > parm->held)
++		parm->minheld = parm->held;
++}
++
++static inline void bc_init_resource(struct bc_resource_parm *parm,
++		unsigned long bar, unsigned long lim)
++{
++	parm->barrier = bar;
++	parm->limit = lim;
++	parm->held = 0;
++	parm->minheld = 0;
++	parm->maxheld = 0;
++	parm->failcnt = 0;
++}
++
++int bc_change_param(struct beancounter *bc, int res,
++		unsigned long bar, unsigned long lim);
++
++int __must_check bc_charge_locked(struct beancounter *bc, int res_id,
++		unsigned long val, int strict, unsigned long flags);
++static inline int __must_check bc_charge(struct beancounter *bc, int res_id,
++		unsigned long val, int strict)
++{
++	int ret;
++	unsigned long flags;
++
++	spin_lock_irqsave(&bc->bc_lock, flags);
++	ret = bc_charge_locked(bc, res_id, val, strict, flags);
++	spin_unlock_irqrestore(&bc->bc_lock, flags);
++	return ret;
++}
++
++void __must_check bc_uncharge_locked(struct beancounter *bc, int res_id,
++		unsigned long val);
++static inline void bc_uncharge(struct beancounter *bc, int res_id,
++		unsigned long val)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&bc->bc_lock, flags);
++	bc_uncharge_locked(bc, res_id, val);
++	spin_unlock_irqrestore(&bc->bc_lock, flags);
++}
++
++void __init bc_register_resource(int res_id, struct bc_resource *br);
++void __init bc_init_early(void);
++#else /* CONFIG_BEANCOUNTERS */
++static inline int __must_check bc_charge_locked(struct beancounter *bc, int res,
++		unsigned long val, int strict, unsigned long flags)
++{
++	return 0;
++}
++
++static inline int __must_check bc_charge(struct beancounter *bc, int res,
++		unsigned long val, int strict)
++{
++	return 0;
++}
++
++static inline void bc_uncharge_locked(struct beancounter *bc, int res,
++		unsigned long val)
++{
++}
++
++static inline void bc_uncharge(struct beancounter *bc, int res,
++		unsigned long val)
++{
++}
++
++static inline void bc_init_early(void)
++{
++}
++#endif /* CONFIG_BEANCOUNTERS */
++#endif /* __KERNEL__ */
++#endif
+Index: container-2.6.20/init/main.c
+===================================================================
+--- container-2.6.20.orig/init/main.c
++++ container-2.6.20/init/main.c
+@@ -54,6 +54,8 @@
+ #include <linux/pid_namespace.h>
+ #include <linux/device.h>
+ 
++#include <bc/beancounter.h>
++
+ #include <asm/io.h>
+ #include <asm/bugs.h>
+ #include <asm/setup.h>
+@@ -487,6 +489,7 @@ asmlinkage void __init start_kernel(void
+ 	extern struct kernel_param __start___param[], __stop___param[];
+ 
+ 	container_init_early();
++	bc_init_early();
+ 	smp_setup_processor_id();
+ 
+ 	/*
+Index: container-2.6.20/kernel/bc/beancounter.c
 ===================================================================
 --- /dev/null
-+++ container-2.6.20/kernel/res_group/numtasks.c
-@@ -0,0 +1,467 @@
-+/* numtasks.c - "Number of tasks" resource controller for Resource Groups
++++ container-2.6.20/kernel/bc/beancounter.c
+@@ -0,0 +1,371 @@
++/*
++ * kernel/bc/beancounter.c
 + *
-+ * Copyright (C) Chandra Seetharaman,  IBM Corp. 2003-2006
-+ *	      (C) Matt Helsley, IBM Corp. 2006
-+ *
-+ * Latest version, more details at http://ckrm.sf.net
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
++ * Copyright (C) 2006 OpenVZ SWsoft Inc
 + *
 + */
 +
-+/*
-+ * Resource controller for tracking number of tasks in a resource group.
-+ */
++#include <linux/sched.h>
++#include <linux/list.h>
++#include <linux/hash.h>
++#include <linux/gfp.h>
++#include <linux/slab.h>
 +#include <linux/module.h>
-+#include <linux/res_group_rc.h>
-+#include <linux/numtasks.h>
-+
-+static const char res_ctlr_name[] = "numtasks";
-+
-+#define UNLIMITED INT_MAX
-+#define DEF_TOTAL_NUM_TASKS UNLIMITED
-+static int total_numtasks __read_mostly = DEF_TOTAL_NUM_TASKS;
-+
-+static struct resource_group *root_rgroup;
-+static int total_cnt_alloc = 0;
-+
-+#define DEF_FORKRATE UNLIMITED
-+#define DEF_FORKRATE_INTERVAL (1)
-+static int forkrate __read_mostly = DEF_FORKRATE;
-+static int forkrate_interval __read_mostly = DEF_FORKRATE_INTERVAL;
-+
-+struct numtasks {
-+	struct res_shares shares;
-+	int cnt_min_shares;	/* num_tasks min_shares in local units */
-+	int cnt_unused;		/* has to borrow if more than this is needed */
-+	int cnt_max_shares;	/* no tasks over this limit. */
-+				/* Three above cnt_* fields are protected
-+				 * by resource group's group_lock */
-+	atomic_t cnt_cur_alloc;	/* current alloc from self */
-+	atomic_t cnt_borrowed;	/* borrowed from the parent */
-+
-+	/* stats */
-+	int successes;
-+	int failures;
-+	int forkrate_failures;
-+
-+	/* Fork rate fields */
-+	int forks_in_period;
-+	unsigned long period_start;
-+};
-+
-+struct res_controller numtasks_ctlr;
-+
-+static struct numtasks *get_shares_numtasks(struct res_shares *shares)
-+{
-+	if (shares)
-+		return container_of(shares, struct numtasks, shares);
-+	return NULL;
-+}
-+
-+static struct numtasks *get_numtasks(struct resource_group *rgroup)
-+{
-+	return get_shares_numtasks(get_controller_shares(rgroup,
-+						&numtasks_ctlr));
-+}
-+
-+static struct resource_group *numtasks_rgroup(struct numtasks *nt)
-+{
-+	return nt->shares.css.container;
-+}
-+
-+static inline int check_forkrate(struct numtasks *res)
-+{
-+	if (time_after(jiffies, res->period_start + forkrate_interval * HZ)) {
-+		res->period_start = jiffies;
-+		res->forks_in_period = 0;
-+	}
-+
-+	if (res->forks_in_period >= forkrate) {
-+ 		res->forkrate_failures++;
-+		return -ENOSPC;
-+	}
-+	res->forks_in_period++;
-+	return 0;
-+}
-+
-+int numtasks_allow_fork(struct task_struct *task)
-+{
-+	int rc = 0;
-+	struct numtasks *res;
-+
-+	/* task->container won't be deleted during an RCU critical section */
-+	rcu_read_lock();
-+
-+	/* controller is not registered; no resource group is given */
-+	if (numtasks_ctlr.ctlr_id == NO_RES_ID)
-+		goto out;
-+	res = get_numtasks(task_container(task, &numtasks_ctlr.subsys));
-+
-+	/* numtasks not available for this resource group */
-+	if (!res)
-+		goto out;
-+
-+	/* Check forkrate before checking resource group's usage */
-+	rc = check_forkrate(res);
-+	if (rc)
-+		goto out;
-+
-+	if (res->cnt_max_shares == SHARE_DONT_CARE)
-+		goto out;
-+
-+	/* Over the limit ? */
-+	if (atomic_read(&res->cnt_cur_alloc) >= res->cnt_max_shares) {
-+		res->failures++;
-+		rc = -ENOSPC;
-+		goto out;
-+	}
-+ out:
-+	rcu_read_unlock();
-+	return rc;
-+}
-+
-+static void inc_usage_count(struct numtasks *res)
-+{
-+	struct resource_group *rgroup = numtasks_rgroup(res);
-+	atomic_inc(&res->cnt_cur_alloc);
-+
-+	if (is_res_group_root(rgroup)) {
-+		total_cnt_alloc++;
-+		res->successes++;
-+		return;
-+	}
-+	/* Do we need to borrow from our parent ? */
-+	if ((res->cnt_unused == SHARE_DONT_CARE) ||
-+			(atomic_read(&res->cnt_cur_alloc) > res->cnt_unused)) {
-+		inc_usage_count(get_numtasks(rgroup->parent));
-+		atomic_inc(&res->cnt_borrowed);
-+	} else {
-+		total_cnt_alloc++;
-+  		res->successes++;
-+	}
-+}
-+
-+static void dec_usage_count(struct numtasks *res)
-+{
-+	if (atomic_read(&res->cnt_cur_alloc) == 0)
-+		return;
-+	atomic_dec(&res->cnt_cur_alloc);
-+	if (atomic_read(&res->cnt_borrowed) > 0) {
-+		atomic_dec(&res->cnt_borrowed);
-+		dec_usage_count(get_numtasks(numtasks_rgroup(res)->parent));
-+	} else
-+		total_cnt_alloc--;
-+
-+}
-+
-+static void numtasks_move_task(struct task_struct *task,
-+		struct res_shares *old, struct res_shares *new)
-+{
-+	struct numtasks *oldres, *newres;
-+
-+	if (old == new)
-+		return;
-+
-+	/* Decrement usage count of old resource group */
-+	oldres = get_shares_numtasks(old);
-+	if (oldres)
-+		dec_usage_count(oldres);
-+
-+	/* Increment usage count of new resource group */
-+	newres = get_shares_numtasks(new);
-+	if (newres)
-+		inc_usage_count(newres);
-+}
-+
-+/* Initialize share struct values */
-+static void numtasks_res_init_one(struct numtasks *numtasks_res)
-+{
-+	numtasks_res->shares.min_shares = SHARE_DONT_CARE;
-+	numtasks_res->shares.max_shares = SHARE_DONT_CARE;
-+	numtasks_res->shares.child_shares_divisor = SHARE_DEFAULT_DIVISOR;
-+	numtasks_res->shares.unused_min_shares = SHARE_DEFAULT_DIVISOR;
-+
-+	numtasks_res->cnt_min_shares = SHARE_DONT_CARE;
-+	numtasks_res->cnt_unused = SHARE_DONT_CARE;
-+	numtasks_res->cnt_max_shares = SHARE_DONT_CARE;
-+	numtasks_res->period_start = jiffies;
-+}
-+
-+static struct res_shares *numtasks_alloc_shares_struct(
-+					struct resource_group *rgroup)
-+{
-+	struct numtasks *res;
-+
-+	res = kzalloc(sizeof(struct numtasks), GFP_KERNEL);
-+	if (!res)
-+		return NULL;
-+	numtasks_res_init_one(res);
-+	if (is_res_group_root(rgroup))
-+		root_rgroup = rgroup; /* store root's resource group. */
-+	return &res->shares;
-+}
-+
-+/*
-+ * No locking of this resource group object necessary as we are not
-+ * supposed to be assigned (or used) when/after this function is called.
-+ */
-+static void numtasks_free_shares_struct(struct res_shares *my_res)
-+{
-+	struct numtasks *res, *parres;
-+	int i, borrowed;
-+	struct resource_group *rgroup;
-+
-+	res = get_shares_numtasks(my_res);
-+	rgroup = numtasks_rgroup(res);
-+	if (!is_res_group_root(rgroup)) {
-+		parres = get_numtasks(rgroup->parent);
-+		borrowed = atomic_read(&res->cnt_borrowed);
-+		for (i = 0; i < borrowed; i++)
-+			dec_usage_count(parres);
-+	}
-+	kfree(res);
-+}
-+
-+static int recalc_shares(int self_shares, int parent_shares, int parent_divisor)
-+{
-+	u64 numerator;
-+
-+	if ((self_shares == SHARE_DONT_CARE) ||
-+				(parent_shares == SHARE_DONT_CARE))
-+		return SHARE_DONT_CARE;
-+	if (parent_divisor == 0)
-+		return 0;
-+	numerator = (u64) self_shares * parent_shares;
-+	do_div(numerator, parent_divisor);
-+	return numerator;
-+}
-+
-+static int recalc_unused_shares(int self_cnt_min_shares,
-+				int self_unused_min_shares, int self_divisor)
-+{
-+	u64 numerator;
-+
-+	if (self_cnt_min_shares == SHARE_DONT_CARE)
-+		return SHARE_DONT_CARE;
-+	if (self_divisor == 0)
-+		return 0;
-+	numerator = (u64) self_unused_min_shares * self_cnt_min_shares;
-+	do_div(numerator, self_divisor);
-+	return numerator;
-+}
-+
-+static void recalc_self(struct numtasks *res,
-+				struct numtasks *parres)
-+{
-+	struct res_shares *par = &parres->shares;
-+	struct res_shares *self = &res->shares;
-+
-+	res->cnt_min_shares = recalc_shares(self->min_shares,
-+						parres->cnt_min_shares,
-+						par->child_shares_divisor);
-+	res->cnt_max_shares = recalc_shares(self->max_shares,
-+						parres->cnt_max_shares,
-+						par->child_shares_divisor);
-+
-+	/*
-+	 * Now that we know the new cnt_min/cnt_max boundaries we can update
-+	 * the unused quantity.
-+	 */
-+	res->cnt_unused = recalc_unused_shares(res->cnt_min_shares,
-+						self->unused_min_shares,
-+						self->child_shares_divisor);
-+}
-+
-+
-+/*
-+ * Recalculate the min_shares and max_shares in real units and propagate the
-+ * same to children.
-+ * Called with container_manage_lock() held.
-+ */
-+static void recalc_and_propagate(struct numtasks *res,
-+				struct numtasks *parres)
-+{
-+	struct resource_group *child = NULL;
-+	struct numtasks *childres;
-+
-+	if (parres)
-+		recalc_self(res, parres);
-+
-+	/* propagate to children */
-+	for_each_child(child, numtasks_rgroup(res)) {
-+		childres = get_numtasks(child);
-+		BUG_ON(!childres);
-+		recalc_and_propagate(childres, res);
-+	}
-+}
-+
-+static void numtasks_shares_changed(struct res_shares *my_res)
-+{
-+	struct numtasks *parres, *res;
-+	struct res_shares *cur, *par;
-+	struct resource_group *rgroup;
-+
-+	res = get_shares_numtasks(my_res);
-+	if (!res)
-+		return;
-+	rgroup = numtasks_rgroup(res);
-+	cur = &res->shares;
-+
-+	if (!is_res_group_root(rgroup)) {
-+		parres = get_numtasks(rgroup->parent);
-+		par = &parres->shares;
-+	} else {
-+		parres = NULL;
-+		par = NULL;
-+	}
-+	if (parres)
-+		parres->cnt_unused = recalc_unused_shares(
-+						parres->cnt_min_shares,
-+						par->unused_min_shares,
-+						par->child_shares_divisor);
-+	recalc_and_propagate(res, parres);
-+}
-+
-+static ssize_t numtasks_show_stats(struct res_shares *my_res,
-+					char *buf, size_t buf_size)
-+{
-+	ssize_t i, j = 0;
-+	struct numtasks *res;
-+
-+	res = get_shares_numtasks(my_res);
-+	if (!res)
-+		return -EINVAL;
-+
-+	i = snprintf(buf, buf_size, "%s: Current usage %d\n",
-+					res_ctlr_name,
-+					atomic_read(&res->cnt_cur_alloc));
-+	buf += i; j += i; buf_size -= i;
-+	i = snprintf(buf, buf_size, "%s: Number of successes %d\n",
-+					res_ctlr_name, res->successes);
-+	buf += i; j += i; buf_size -= i;
-+	i = snprintf(buf, buf_size, "%s: Number of failures %d\n",
-+					res_ctlr_name, res->failures);
-+	buf += i; j += i; buf_size -= i;
-+	i = snprintf(buf, buf_size, "%s: Number of forkrate failures %d\n",
-+					res_ctlr_name, res->forkrate_failures);
-+	j += i;
-+	return j;
-+}
-+
-+struct res_controller numtasks_ctlr = {
-+	.name = res_ctlr_name,
-+	.ctlr_id = NO_RES_ID,
-+	.alloc_shares_struct = numtasks_alloc_shares_struct,
-+	.free_shares_struct = numtasks_free_shares_struct,
-+	.move_task = numtasks_move_task,
-+	.shares_changed = numtasks_shares_changed,
-+	.show_stats = numtasks_show_stats,
-+};
-+
-+/*
-+ * Writeable module parameters use these set_<parameter> functions to respond
-+ * to changes. Otherwise the values can be read and used any time.
-+ */
-+static int set_numtasks_config_val(int *var, int old_value, const char *val,
-+				struct kernel_param *kp)
-+{
-+	int rc = param_set_int(val, kp);
-+
-+	if (rc < 0)
-+		return rc;
-+	if (*var < 1) {
-+		*var = old_value;
-+		return -EINVAL;
-+	}
-+	return 0;
-+}
-+
-+static int set_total_numtasks(const char *val, struct kernel_param *kp)
-+{
-+	int prev = total_numtasks;
-+	int rc = set_numtasks_config_val(&total_numtasks, prev, val, kp);
-+	struct numtasks *res = NULL;
-+
-+	if (!root_rgroup)
-+		return 0;
-+	if (rc < 0)
-+		return rc;
-+	if (total_numtasks <= total_cnt_alloc) {
-+		total_numtasks = prev;
-+		return -EINVAL;
-+	}
-+	container_lock();
-+	res = get_numtasks(root_rgroup);
-+	res->cnt_min_shares = total_numtasks;
-+	res->cnt_unused = total_numtasks;
-+	res->cnt_max_shares = total_numtasks;
-+	recalc_and_propagate(res, NULL);
-+	container_unlock();
-+	return 0;
-+}
-+module_param_set_call(total_numtasks, int, set_total_numtasks,
-+			S_IRUGO | S_IWUSR);
-+
-+static void reset_forkrates(struct resource_group *rgroup, unsigned long now)
-+{
-+	struct numtasks *res;
-+	struct resource_group *child = NULL;
-+
-+	res = get_numtasks(rgroup);
-+	if (!res)
-+		return;
-+	res->forks_in_period = 0;
-+	res->period_start = now;
-+
-+	for_each_child(child, rgroup)
-+		reset_forkrates(child, now);
-+}
-+
-+static int set_forkrate(const char *val, struct kernel_param *kp)
-+{
-+	int prev = forkrate;
-+	int rc = set_numtasks_config_val(&forkrate, prev, val, kp);
-+	if (rc < 0)
-+		return rc;
-+	container_lock();
-+	reset_forkrates(root_rgroup, jiffies);
-+	container_unlock();
-+	return 0;
-+}
-+module_param_set_call(forkrate, int, set_forkrate, S_IRUGO | S_IWUSR);
-+
-+static int set_forkrate_interval(const char *val, struct kernel_param *kp)
-+{
-+	int prev = forkrate_interval;
-+	int rc = set_numtasks_config_val(&forkrate_interval, prev, val, kp);
-+	if (rc < 0)
-+		return rc;
-+	container_lock();
-+	reset_forkrates(root_rgroup, jiffies);
-+	container_unlock();
-+	return 0;
-+}
-+module_param_set_call(forkrate_interval, int, set_forkrate_interval,
-+			S_IRUGO | S_IWUSR);
-+
-+int __init init_numtasks_res(void)
-+{
-+	if (numtasks_ctlr.ctlr_id != NO_RES_ID)
-+		return -EBUSY; /* already registered */
-+	return register_controller(&numtasks_ctlr);
-+}
-+
-+void __exit exit_numtasks_res(void)
-+{
-+	int rc;
-+	do {
-+		rc = unregister_controller(&numtasks_ctlr);
-+	} while (rc == -EBUSY);
-+	BUG_ON(rc != 0);
-+}
-+module_init(init_numtasks_res)
-+module_exit(exit_numtasks_res)
-Index: container-2.6.20/kernel/res_group/res_group.c
-===================================================================
---- /dev/null
-+++ container-2.6.20/kernel/res_group/res_group.c
-@@ -0,0 +1,160 @@
-+/* res_group.c - Resource Groups: Resource management through grouping of
-+ *		  unrelated tasks.
-+ *
-+ * Copyright (C) Hubertus Franke, IBM Corp. 2003, 2004
-+ *		(C) Shailabh Nagar, IBM Corp. 2003, 2004
-+ *		(C) Chandra Seetharaman, IBM Corp. 2003, 2004, 2005
-+ *		(C) Vivek Kashyap, IBM Corp. 2004
-+ *		(C) Matt Helsley, IBM Corp. 2006
-+ *
-+ * Provides kernel API of Resource Groups for in-kernel,per-resource
-+ * controllers (one each for cpu, memory and io).
-+ *
-+ * Latest version, more details at http://ckrm.sf.net
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <asm/uaccess.h>
 +#include <linux/fs.h>
-+#include "local.h"
++#include <linux/uaccess.h>
 +
++#include <bc/beancounter.h>
 +
-+static int res_group_create(struct container_subsys *ss,
-+			    struct container *cont)
++#define BC_HASH_BITS	(8)
++#define BC_HASH_SIZE	(1 << BC_HASH_BITS)
++
++static int bc_dummy_init(struct beancounter *bc, int i)
 +{
-+	struct res_controller *ctlr = container_of(ss, struct res_controller, subsys);
-+	struct res_shares *shares = ctlr->alloc_shares_struct(cont);
-+	cont->subsys[ss->subsys_id] = &shares->css;
++	bc_init_resource(&bc->bc_parms[i], BC_MAXVALUE, BC_MAXVALUE);
 +	return 0;
 +}
 +
-+static void res_group_destroy(struct container_subsys *ss,
-+			     struct container *cont)
++static struct bc_resource bc_dummy_res = {
++	.bcr_name = "dummy",
++	.bcr_init = bc_dummy_init,
++};
++
++struct bc_resource *bc_resources[BC_RESOURCES] = {
++	[0 ... BC_RESOURCES - 1] = &bc_dummy_res,
++};
++
++struct beancounter init_bc;
++static kmem_cache_t *bc_cache;
++
++static int bc_create(struct container_subsys *ss,
++		     struct container *cont)
 +{
-+	struct res_controller *ctlr = container_of(ss, struct res_controller, subsys);
-+	struct res_shares *shares = get_controller_shares(cont, ctlr);
-+	ctlr->free_shares_struct(shares);
-+}
++	int i;
++	struct beancounter *new_bc;
 +
-+static int res_group_populate(struct container_subsys *ss,
-+			      struct container *cont) {
-+	int err;
-+	struct res_controller *ctlr = container_of(ss, struct res_controller, subsys);
-+	if ((err = container_add_file(cont, &ctlr->shares_cft.cft)) < 0)
-+		return err;
-+	if ((err = container_add_file(cont, &ctlr->stats_cft.cft)) < 0)
-+		return err;
++	if (!cont->parent) {
++		/* Early initialization for top container */
++		set_container_bc(cont, &init_bc);
++		init_bc.css.container = cont;
++		return 0;
++	}
 +
++	new_bc = kmem_cache_alloc(bc_cache, GFP_KERNEL);
++	if (!new_bc)
++		return -ENOMEM;
++
++	spin_lock_init(&new_bc->bc_lock);
++
++	for (i = 0; i < BC_RESOURCES; i++) {
++		int err;
++		if ((err = bc_resources[i]->bcr_init(new_bc, i))) {
++			for (i--; i >= 0; i--)
++				if (bc_resources[i]->bcr_fini)
++					bc_resources[i]->bcr_fini(new_bc);
++			kmem_cache_free(bc_cache, new_bc);
++			return err;
++		}
++	}
++
++	new_bc->css.container = cont;
++	set_container_bc(cont, new_bc);
 +	return 0;
 +}
 +
-+static void res_group_attach(struct container_subsys *ss,
-+			     struct container *cont,
-+			     struct container *old_cont,
-+			     struct task_struct *tsk) {
-+	struct res_controller *ctlr = container_of(ss, struct res_controller, subsys);
-+	struct res_shares *oldshares = get_controller_shares(old_cont, ctlr);
-+	struct res_shares *newshares = get_controller_shares(cont, ctlr);
-+
-+	if (ctlr->move_task) {
-+		ctlr->move_task(tsk, oldshares, newshares);
-+	}
++static void bc_destroy(struct container_subsys *ss,
++		       struct container *cont)
++{
++	struct beancounter *bc = container_bc(cont);
++	kmem_cache_free(bc_cache, bc);
 +}
 +
-+static void res_group_fork(struct container_subsys *ss,
-+				struct task_struct *task) {
-+	struct res_controller *ctlr =
-+		container_of(ss, struct res_controller, subsys);
-+	struct res_shares *shares =
-+		get_controller_shares(task_container(task, ss), ctlr);
-+	if (ctlr->move_task) {
-+		ctlr->move_task(task, NULL, shares);
++int bc_charge_locked(struct beancounter *bc, int res, unsigned long val,
++		int strict, unsigned long flags)
++{
++	struct bc_resource_parm *parm;
++	unsigned long new_held;
++
++	BUG_ON(val > BC_MAXVALUE);
++
++	parm = &bc->bc_parms[res];
++	new_held = parm->held + val;
++
++	switch (strict) {
++	case BC_LIMIT:
++		if (new_held > parm->limit)
++			break;
++		/* fallthrough */
++	case BC_BARRIER:
++		if (new_held > parm->barrier) {
++			if (strict == BC_BARRIER)
++				break;
++			if (parm->held < parm->barrier &&
++					bc_resources[res]->bcr_barrier_hit)
++				bc_resources[res]->bcr_barrier_hit(bc);
++		}
++		/* fallthrough */
++	case BC_FORCE:
++		parm->held = new_held;
++		bc_adjust_maxheld(parm);
++		return 0;
++	default:
++		BUG();
 +	}
++
++	if (bc_resources[res]->bcr_limit_hit)
++		return bc_resources[res]->bcr_limit_hit(bc, val, flags);
++
++	parm->failcnt++;
++	return -ENOMEM;
 +}
 +
-+static void res_group_exit(struct container_subsys *ss,
-+			   struct task_struct *task) {
-+	struct res_controller *ctlr =
-+		container_of(ss, struct res_controller, subsys);
-+	struct res_shares *shares =
-+		get_controller_shares(task_container(task, ss), ctlr);
-+	if (ctlr->move_task) {
-+		ctlr->move_task(task, shares, NULL);
++void bc_uncharge_locked(struct beancounter *bc, int res, unsigned long val)
++{
++	struct bc_resource_parm *parm;
++
++	BUG_ON(val > BC_MAXVALUE);
++
++	parm = &bc->bc_parms[res];
++	if (unlikely(val > parm->held)) {
++		printk(KERN_ERR "BC: Uncharging too much of %s: %lu vs %lu\n",
++				bc_resources[res]->bcr_name,
++				val, parm->held);
++		val = parm->held;
 +	}
++
++	parm->held -= val;
++	bc_adjust_minheld(parm);
 +}
 +
-+/*
-+ * Interface for registering a resource controller.
-+ *
-+ * Returns the 0 on success, -errno for failure.
-+ * Fills ctlr->ctlr_id with a valid controller id on success.
-+ */
-+int register_controller(struct res_controller *ctlr)
++int bc_change_param(struct beancounter *bc, int res,
++		    unsigned long bar, unsigned long lim)
 +{
 +	int ret;
 +
-+	struct container_subsys *ss = &ctlr->subsys;
++	ret = -EINVAL;
++	if (bar > lim)
++		goto out;
++	if (bar > BC_MAXVALUE || lim > BC_MAXVALUE)
++		goto out;
 +
-+	if (!ctlr)
-+		return -EINVAL;
-+
-+	/* Make sure there is an alloc and a free */
-+	if (!ctlr->alloc_shares_struct || !ctlr->free_shares_struct)
-+		return -EINVAL;
-+
-+	ss->create = res_group_create;
-+	ss->destroy = res_group_destroy;
-+	ss->populate = res_group_populate;
-+	if (ctlr->move_task) {
-+		ss->attach = res_group_attach;
-+		ss->fork = res_group_fork;
-+		ss->exit = res_group_exit;
++	ret = 0;
++	spin_lock_irq(&bc->bc_lock);
++	if (bc_resources[res]->bcr_change) {
++		ret = bc_resources[res]->bcr_change(bc, bar, lim);
++		if (ret < 0)
++			goto out_unlock;
 +	}
 +
-+	ctlr->shares_cft.ctlr = ctlr;
-+	strcpy(ctlr->shares_cft.cft.name, ctlr->name);
-+	strcat(ctlr->shares_cft.cft.name, ".shares");
-+	ctlr->shares_cft.cft.private = RG_FILE_SHARES;
-+	ctlr->shares_cft.cft.read = res_group_file_read;
-+	ctlr->shares_cft.cft.write = res_group_file_write;
++	bc->bc_parms[res].barrier = bar;
++	bc->bc_parms[res].limit = lim;
 +
-+	ctlr->stats_cft.ctlr = ctlr;
-+	strcpy(ctlr->stats_cft.cft.name, ctlr->name);
-+	strcat(ctlr->stats_cft.cft.name, ".stats");
-+	ctlr->stats_cft.cft.private = RG_FILE_STATS;
-+	ctlr->stats_cft.cft.read = res_group_file_read;
-+	ctlr->stats_cft.cft.write = res_group_file_write;
-+
-+	ss->name = ctlr->name;
-+
-+	ret = container_register_subsys(ss);
-+
-+	if (ret < 0)
-+		return ret;
-+
-+	ctlr->ctlr_id = ss->subsys_id;
-+
-+	return 0;
++out_unlock:
++	spin_unlock_irq(&bc->bc_lock);
++out:
++	return ret;
 +}
 +
-+/*
-+ * Unregistering resource controller.
-+ *
-+ * Returns 0 on success -errno for failure.
-+ */
-+int unregister_controller(struct res_controller *ctlr)
++static ssize_t bc_resource_show(struct container *cont, struct cftype *cft,
++				struct file *file, char __user *userbuf,
++				size_t nbytes, loff_t *ppos)
 +{
-+	BUG();
-+	return 0;
-+}
++	struct beancounter *bc = container_bc(cont);
++	int idx = cft->private;
++	struct bc_resource *res = container_of(cft, struct bc_resource,
++					       cft_attrs[idx]);
 +
++	char *page;
++	ssize_t retval = 0;
++	char *s;
 +
-+EXPORT_SYMBOL_GPL(register_controller);
-+EXPORT_SYMBOL_GPL(unregister_controller);
-+EXPORT_SYMBOL_GPL(set_controller_shares);
-Index: container-2.6.20/kernel/res_group/rgcs.c
-===================================================================
---- /dev/null
-+++ container-2.6.20/kernel/res_group/rgcs.c
-@@ -0,0 +1,302 @@
-+/*
-+ * kernel/res_group/rgcs.c
-+ *
-+ * Copyright (C) Shailabh Nagar,  IBM Corp. 2005
-+ *	       Chandra Seetharaman,   IBM Corp. 2005, 2006
-+ *
-+ * Resource Group Configfs Subsystem (rgcs) provides the user interface
-+ * for Resource groups.
-+ *
-+ * Latest version, more details at http://ckrm.sf.net
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of version 2 of the  GNU General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ */
-+#include <linux/ctype.h>
-+#include <linux/module.h>
-+#include <linux/configfs.h>
-+#include <linux/parser.h>
-+#include <linux/fs.h>
-+#include <asm/uaccess.h>
++	if (!(page = (char *)__get_free_page(GFP_KERNEL)))
++		return -ENOMEM;
 +
-+#include "local.h"
++	s = page;
 +
-+#define RES_STRING "res"
-+#define MIN_SHARES_STRING "min_shares"
-+#define MAX_SHARES_STRING "max_shares"
-+#define CHILD_SHARES_DIVISOR_STRING "child_shares_divisor"
-+
-+static ssize_t show_stats(struct resource_group *rgroup,
-+		   struct res_controller *ctlr,
-+		   char *buf)
-+{
-+	int j = 0, rc = 0;
-+	size_t buf_size = PAGE_SIZE-1; /* allow only PAGE_SIZE # of bytes */
-+	struct res_shares *shares;
-+
-+	shares = get_controller_shares(rgroup, ctlr);
-+	if (shares && ctlr->show_stats)
-+		j = ctlr->show_stats(shares, buf, buf_size);
-+	rc += j;
-+	buf += j;
-+	buf_size -= j;
-+	return rc;
-+}
-+
-+enum parse_token_t {
-+	parse_res_type, parse_err
-+};
-+
-+static match_table_t parse_tokens = {
-+	{parse_res_type, RES_STRING"=%s"},
-+	{parse_err, NULL}
-+};
-+
-+static int stats_parse(const char *options,
-+				char **resname, char **remaining_line)
-+{
-+	char *p, *str;
-+	int rc = -EINVAL;
-+
-+	if (!options)
-+		return -EINVAL;
-+
-+	while ((p = strsep((char **)&options, ",")) != NULL) {
-+		substring_t args[MAX_OPT_ARGS];
-+		int token;
-+
-+		if (!*p)
-+			continue;
-+		token = match_token(p, parse_tokens, args);
-+		if (token == parse_res_type) {
-+			*resname = match_strdup(args);
-+			str = p + strlen(p) + 1;
-+			*remaining_line = kmalloc(strlen(str) + 1, GFP_KERNEL);
-+			if (*remaining_line == NULL) {
-+				kfree(*resname);
-+				*resname = NULL;
-+				rc = -ENOMEM;
-+			} else {
-+				strcpy(*remaining_line, str);
-+				rc = 0;
-+			}
-+			break;
-+		}
++	switch(idx) {
++	case BC_RES_HELD:
++		s += sprintf(page, "%lu\n", bc->bc_parms[res->res_id].held);
++		break;
++	case BC_RES_BARRIER:
++		s += sprintf(page, "%lu\n", bc->bc_parms[res->res_id].barrier);
++		break;
++	case BC_RES_LIMIT:
++		s += sprintf(page, "%lu\n", bc->bc_parms[res->res_id].limit);
++		break;
++	case BC_RES_MAXHELD:
++		s += sprintf(page, "%lu\n", bc->bc_parms[res->res_id].maxheld);
++		break;
++	case BC_RES_MINHELD:
++		s += sprintf(page, "%lu\n", bc->bc_parms[res->res_id].minheld);
++		break;
++	case BC_RES_FAILCNT:
++		s += sprintf(page, "%lu\n", bc->bc_parms[res->res_id].failcnt);
++		break;
++	default:
++		retval = -EINVAL;
++		goto out;
++		break;
 +	}
-+	return rc;
++
++	retval = simple_read_from_buffer(userbuf, nbytes, ppos, page, s-page);
++ out:
++	free_page((unsigned long) page);
++	return retval;
 +}
 +
-+static int reset_stats(struct resource_group *rgroup, struct res_controller *ctlr, const char *str)
++static ssize_t bc_resource_store(struct container *cont, struct cftype *cft,
++				 struct file *file,
++				 const char __user *userbuf,
++				 size_t nbytes, loff_t *ppos)
 +{
-+	int rc;
-+	char *resname = NULL, *statstr = NULL;
-+	struct res_shares *shares;
++	struct beancounter *bc = container_bc(cont);
++	int idx = cft->private;
++	struct bc_resource *res = container_of(cft, struct bc_resource,
++					       cft_attrs[idx]);
 +
-+	rc = stats_parse(str, &resname, &statstr);
-+	if (rc)
-+		return rc;
++	char buffer[64];
++	unsigned long val;
++	char *end;
++	int ret = 0;
 +
-+	shares = get_controller_shares(rgroup, ctlr);
-+	if (shares && ctlr->reset_stats)
-+		rc = ctlr->reset_stats(shares, statstr);
-+
-+	kfree(resname);
-+	kfree(statstr);
-+	return rc;
-+}
-+
-+
-+enum share_token_t {
-+	MIN_SHARES_TOKEN,
-+	MAX_SHARES_TOKEN,
-+	CHILD_SHARES_DIVISOR_TOKEN,
-+	RESOURCE_TYPE_TOKEN,
-+	ERROR_TOKEN
-+};
-+
-+/* Token matching for parsing input to this magic file */
-+static match_table_t shares_tokens = {
-+	{RESOURCE_TYPE_TOKEN, RES_STRING"=%s"},
-+	{MIN_SHARES_TOKEN, MIN_SHARES_STRING"=%d"},
-+	{MAX_SHARES_TOKEN, MAX_SHARES_STRING"=%d"},
-+	{CHILD_SHARES_DIVISOR_TOKEN, CHILD_SHARES_DIVISOR_STRING"=%d"},
-+	{ERROR_TOKEN, NULL}
-+};
-+
-+static int shares_parse(const char *options, char **resname,
-+					struct res_shares *shares)
-+{
-+	char *p;
-+	int option, rc = -EINVAL;
-+
-+	*resname = NULL;
-+	if (!options)
-+		goto done;
-+
-+	while ((p = strsep((char **)&options, ",")) != NULL) {
-+		substring_t args[MAX_OPT_ARGS];
-+		int token;
-+
-+		if (!*p)
-+			continue;
-+
-+		token = match_token(p, shares_tokens, args);
-+		switch (token) {
-+		case RESOURCE_TYPE_TOKEN:
-+			if (*resname)
-+				goto done;
-+			*resname = match_strdup(args);
-+			break;
-+		case MIN_SHARES_TOKEN:
-+			if (match_int(args, &option))
-+				goto done;
-+			shares->min_shares = option;
-+			break;
-+		case MAX_SHARES_TOKEN:
-+			if (match_int(args, &option))
-+				goto done;
-+			shares->max_shares = option;
-+			break;
-+		case CHILD_SHARES_DIVISOR_TOKEN:
-+			if (match_int(args, &option))
-+				goto done;
-+			shares->child_shares_divisor = option;
-+			break;
-+		default:
-+			goto done;
-+		}
-+	}
-+	rc = 0;
-+done:
-+	if (rc) {
-+		kfree(*resname);
-+		*resname = NULL;
-+	}
-+	return rc;
-+}
-+
-+static int set_shares(struct resource_group *rgroup,
-+		      struct res_controller *ctlr,
-+		      const char *str)
-+{
-+	char *resname = NULL;
-+	int rc;
-+	struct res_shares shares = {
-+		.min_shares = SHARE_UNCHANGED,
-+		.max_shares = SHARE_UNCHANGED,
-+		.child_shares_divisor = SHARE_UNCHANGED,
-+	};
-+
-+	rc = shares_parse(str, &resname, &shares);
-+	if (!rc) {
-+		rc = set_controller_shares(rgroup, ctlr, &shares);
-+		kfree(resname);
-+	}
-+	return rc;
-+}
-+
-+static ssize_t show_shares(struct resource_group *rgroup,
-+			   struct res_controller *ctlr,
-+			   char *buf)
-+{
-+	ssize_t j, rc = 0, bufsize = PAGE_SIZE;
-+	struct res_shares *shares;
-+
-+	shares = get_controller_shares(rgroup, ctlr);
-+	if (shares) {
-+		j = snprintf(buf, bufsize, "%s=%s,%s=%d,%s=%d,%s=%d\n",
-+			     RES_STRING, ctlr->name,
-+			     MIN_SHARES_STRING, shares->min_shares,
-+			     MAX_SHARES_STRING, shares->max_shares,
-+			     CHILD_SHARES_DIVISOR_STRING,
-+			     shares->child_shares_divisor);
-+		rc += j; buf += j; bufsize -= j;
-+	}
-+	return rc;
-+}
-+
-+ssize_t res_group_file_write(struct container *cont,
-+				   struct cftype *cft,
-+				   struct file *file,
-+				   const char __user *userbuf,
-+				   size_t nbytes, loff_t *ppos)
-+{
-+	struct res_group_cft *rgcft = container_of(cft, struct res_group_cft, cft);
-+	struct res_controller *ctlr = rgcft->ctlr;
-+
-+	char *buf;
-+	ssize_t retval;
-+	int filetype = cft->private;
-+
-+	if (nbytes >= PAGE_SIZE)
++	if (nbytes >= sizeof(buffer))
 +		return -E2BIG;
 +
-+	buf = kmalloc(nbytes + 1, GFP_USER);
-+	if (!buf) return -ENOMEM;
-+	if (copy_from_user(buf, userbuf, nbytes)) {
-+		retval = -EFAULT;
-+		goto out1;
-+	}
-+	buf[nbytes] = 0;	/* nul-terminate */
++	if (copy_from_user(buffer, userbuf, nbytes))
++		return -EFAULT;
++
++	buffer[nbytes] = 0;
 +
 +	container_manage_lock();
 +
 +	if (container_is_removed(cont)) {
-+		retval = -ENODEV;
-+		goto out2;
++		ret = -ENODEV;
++		goto out_unlock;
 +	}
 +
-+	switch(filetype) {
-+	case RG_FILE_SHARES:
-+		retval = set_shares(cont, ctlr, buf);
-+		break;
-+	case RG_FILE_STATS:
-+		retval = reset_stats(cont, ctlr, buf);
-+		break;
-+	default:
-+		retval = -EINVAL;
-+	}
-+	if (!retval) retval = nbytes;
++	ret = -EINVAL;
++	val = simple_strtoul(buffer, &end, 10);
++	if (*end != '\0')
++		goto out_unlock;
 +
-+ out2:
++	switch (idx) {
++	case BC_RES_BARRIER:
++		ret = bc_change_param(bc, res->res_id,
++				      val, bc->bc_parms[res->res_id].limit);
++		break;
++	case BC_RES_LIMIT:
++		ret = bc_change_param(bc, res->res_id,
++				      bc->bc_parms[res->res_id].barrier, val);
++		break;
++	}
++
++	if (ret == 0)
++		ret = nbytes;
++
++ out_unlock:
 +	container_manage_unlock();
-+ out1:
-+	kfree(buf);
-+	return retval;
++
++	return ret;
 +}
 +
-+ssize_t res_group_file_read(struct container *cont,
-+				   struct cftype *cft,
-+				   struct file *file,
-+				   char __user *buf,
-+				   size_t nbytes, loff_t *ppos)
++
++
++void __init bc_register_resource(int res_id, struct bc_resource *br)
 +{
-+	struct res_group_cft *rgcft = container_of(cft, struct res_group_cft, cft);
-+	struct res_controller *ctlr = rgcft->ctlr;
++	int attr;
++	BUG_ON(bc_resources[res_id] != &bc_dummy_res);
++	BUG_ON(res_id >= BC_RESOURCES);
 +
-+	char *page = kmalloc(PAGE_SIZE, GFP_USER);
-+	ssize_t retval;
-+	int filetype = cft->private;
++	bc_resources[res_id] = br;
++	br->res_id = res_id;
 +
-+	if (!page) return -ENOMEM;
++	for (attr = 0; attr < BC_ATTRS; attr++) {
 +
-+	switch(filetype) {
-+	case RG_FILE_SHARES:
-+		retval = show_shares(cont, ctlr, page);
-+		break;
-+	case RG_FILE_STATS:
-+		retval = show_stats(cont, ctlr, page);
-+		break;
-+	default:
-+		retval = -EINVAL;
++		/* Construct a file handler for each attribute of this
++		 * resource; the name is of the form
++		 * "bc.<resname>.<attrname>" */
++
++		struct cftype *cft = &br->cft_attrs[attr];
++		const char *attrname;
++		cft->private = attr;
++		strcpy(cft->name, "bc.");
++		strcat(cft->name, br->bcr_name);
++		strcat(cft->name, ".");
++		switch (attr) {
++		case BC_RES_HELD:
++			attrname = "held"; break;
++		case BC_RES_BARRIER:
++			attrname = "barrier"; break;
++		case BC_RES_LIMIT:
++			attrname = "limit"; break;
++		case BC_RES_MAXHELD:
++			attrname = "maxheld"; break;
++		case BC_RES_MINHELD:
++			attrname = "minheld"; break;
++		case BC_RES_FAILCNT:
++			attrname = "failcnt"; break;
++		default:
++			BUG();
++		}
++		strcat(cft->name, attrname);
++		cft->read = bc_resource_show;
++		cft->write = bc_resource_store;
 +	}
-+
-+	if (retval >= 0) {
-+		retval = simple_read_from_buffer(buf, nbytes,
-+						 ppos, page, retval);
-+	}
-+	kfree(page);
-+	return retval;
 +}
-Index: container-2.6.20/kernel/res_group/shares.c
++
++void __init bc_init_early(void)
++{
++	int i;
++
++	spin_lock_init(&init_bc.bc_lock);
++
++	for (i = 0; i < BC_RESOURCES; i++) {
++		init_bc.bc_parms[i].barrier = BC_MAXVALUE;
++		init_bc.bc_parms[i].limit = BC_MAXVALUE;
++
++	}
++
++	if (container_register_subsys(&bc_subsys) < 0)
++		panic("Couldn't register beancounter subsystem");
++
++}
++
++int __init bc_init_late(void)
++{
++	bc_cache = kmem_cache_create("beancounters",
++			sizeof(struct beancounter), 0,
++			SLAB_HWCACHE_ALIGN | SLAB_PANIC, NULL, NULL);
++	return 0;
++}
++
++__initcall(bc_init_late);
++
++static int bc_populate(struct container_subsys *ss, struct container *cont)
++{
++	int err;
++	int attr, res;
++	for (res = 0; res < BC_RESOURCES; res++) {
++		struct bc_resource *bcr = bc_resources[res];
++
++		for (attr = 0; attr < BC_ATTRS; attr++) {
++			struct cftype *cft = &bcr->cft_attrs[attr];
++			if (!cft->name[0]) continue;
++			err = container_add_file(cont, cft);
++			if (err < 0) return err;
++		}
++	}
++	return 0;
++}
++
++struct container_subsys bc_subsys = {
++	.name = "bc",
++	.create = bc_create,
++	.destroy = bc_destroy,
++	.populate = bc_populate,
++	.subsys_id = -1,
++};
++
++EXPORT_SYMBOL(bc_resources);
++EXPORT_SYMBOL(init_bc);
++EXPORT_SYMBOL(bc_change_param);
+Index: container-2.6.20/include/bc/misc.h
 ===================================================================
 --- /dev/null
-+++ container-2.6.20/kernel/res_group/shares.c
-@@ -0,0 +1,228 @@
++++ container-2.6.20/include/bc/misc.h
+@@ -0,0 +1,27 @@
 +/*
-+ * shares.c - Share management functions for Resource Groups
++ * include/bc/misc.h
 + *
-+ * Copyright (C) Chandra Seetharaman,  IBM Corp. 2003, 2004, 2005, 2006
-+ *		(C) Hubertus Franke,  IBM Corp. 2004
-+ *		(C) Matt Helsley,  IBM Corp. 2006
++ * Copyright (C) 2006 OpenVZ SWsoft Inc
 + *
-+ * Latest version, more details at http://ckrm.sf.net
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
 + */
 +
-+#include <linux/errno.h>
-+#include <linux/res_group_rc.h>
-+#include <linux/container.h>
++#ifndef __BC_MISC_H__
++#define __BC_MISC_H__
 +
-+/*
-+ * Share values can be quantitative (quantity of memory for instance) or
-+ * symbolic. The symbolic value DONT_CARE allows for any quantity of a resource
-+ * to be substituted in its place. The symbolic value UNCHANGED is only used
-+ * when setting share values and means that the old value should be used.
-+ */
++struct file;
 +
-+/* Is the share a quantity (as opposed to "symbols" DONT_CARE or UNCHANGED) */
-+static inline int is_share_quantitative(int share)
++#ifdef CONFIG_BEANCOUNTERS
++int __must_check bc_file_charge(struct file *);
++void bc_file_uncharge(struct file *);
++#else
++static inline int __must_check bc_file_charge(struct file *f)
 +{
-+	return (share >= 0);
++	return 0;
 +}
 +
-+static inline int is_share_symbolic(int share)
++static inline void bc_file_uncharge(struct file *f)
 +{
-+	return !is_share_quantitative(share);
 +}
++#endif
 +
-+static inline int is_share_valid(int share)
++#endif
+Index: container-2.6.20/kernel/bc/misc.c
+===================================================================
+--- /dev/null
++++ container-2.6.20/kernel/bc/misc.c
+@@ -0,0 +1,56 @@
++
++#include <linux/fs.h>
++#include <bc/beancounter.h>
++
++int bc_file_charge(struct file *file)
 +{
-+	return ((share == SHARE_DONT_CARE) ||
-+			(share == SHARE_UNSUPPORTED) ||
-+			is_share_quantitative(share));
-+}
++	int sev;
++	struct beancounter *bc;
 +
-+static inline int did_share_change(int share)
-+{
-+	return (share != SHARE_UNCHANGED);
-+}
++	task_lock(current);
++	bc = task_bc(current);
++	css_get_current(&bc->css);
++	task_unlock(current);
 +
-+static inline int change_supported(int share)
-+{
-+	return (share != SHARE_UNSUPPORTED);
-+}
++	sev = (capable(CAP_SYS_ADMIN) ? BC_LIMIT : BC_BARRIER);
 +
-+/*
-+ * Caller is responsible for protecting 'parent'
-+ * Caller is responsible for making sure that the sum of sibling min_shares
-+ * doesn't exceed parent's total min_shares.
-+ */
-+static inline void child_min_shares_changed(struct res_shares *parent,
-+				   int child_cur_min_shares,
-+				   int child_new_min_shares)
-+{
-+	if (is_share_quantitative(child_new_min_shares))
-+		parent->unused_min_shares -= child_new_min_shares;
-+	if (is_share_quantitative(child_cur_min_shares))
-+		parent->unused_min_shares += child_cur_min_shares;
-+}
-+
-+/*
-+ * Set parent's cur_max_shares to the largest 'max_shares' of all
-+ * of its children.
-+ */
-+static inline void set_cur_max_shares(struct resource_group *parent,
-+				      struct res_controller *ctlr)
-+{
-+	int max_shares = 0;
-+	struct resource_group *child = NULL;
-+	struct res_shares *child_shares, *parent_shares;
-+
-+	for_each_child(child, parent) {
-+		child_shares = get_controller_shares(child, ctlr);
-+		max_shares = max(max_shares, child_shares->max_shares);
++	if (bc_charge(bc, BC_NUMFILES, 1, sev)) {
++		css_put(&bc->css);
++		return -EMFILE;
 +	}
 +
-+	parent_shares = get_controller_shares(parent, ctlr);
-+	parent_shares->cur_max_shares = max_shares;
-+}
-+
-+/*
-+ * Return -EINVAL if the child's shares violate self-consistency or
-+ * parent-imposed restrictions. Otherwise return 0.
-+ *
-+ * This involves checking shares between the child and its parent;
-+ * the child and itself (userspace can't be trusted).
-+ */
-+static inline int are_shares_valid(struct res_shares *child,
-+				   struct res_shares *parent,
-+				   int current_usage,
-+				   int min_shares_increase)
-+{
-+	/*
-+	 * CHILD <-> PARENT validation
-+	 * Increases in child's min_shares or max_shares can't exceed
-+	 * limitations imposed by the parent resource group.
-+	 * Only validate this if we have a parent.
-+	 */
-+	if (parent &&
-+	    ((is_share_quantitative(child->min_shares) &&
-+	      (min_shares_increase > parent->unused_min_shares)) ||
-+	     (is_share_quantitative(child->max_shares) &&
-+	      (child->max_shares > parent->child_shares_divisor))))
-+		return -EINVAL;
-+
-+	/* CHILD validation: is min valid */
-+	if (!is_share_valid(child->min_shares))
-+		return -EINVAL;
-+
-+	/* CHILD validation: is max valid */
-+	if (!is_share_valid(child->max_shares))
-+		return -EINVAL;
-+
-+	/*
-+	 * CHILD validation: is divisor quantitative & current_usage
-+	 * is not more than the new divisor
-+	 */
-+	if (!is_share_quantitative(child->child_shares_divisor) ||
-+			(current_usage > child->child_shares_divisor))
-+		return -EINVAL;
-+
-+	/*
-+	 * CHILD validation: is the new child_shares_divisor large
-+	 * enough to accomodate largest max_shares of any of my child
-+	 */
-+	if (child->child_shares_divisor < child->cur_max_shares)
-+		return -EINVAL;
-+
-+	/* CHILD validation: min <= max */
-+	if (is_share_quantitative(child->min_shares) &&
-+			is_share_quantitative(child->max_shares) &&
-+			(child->min_shares > child->max_shares))
-+		return -EINVAL;
-+
++	file->f_bc = bc;
 +	return 0;
 +}
 +
-+/*
-+ * Set the resource shares of a child resource group given the new shares
-+ * specified by userspace, the child's current shares, and the parent
-+ * resource group's shares.
-+ *
-+ * Caller is responsible for holding group_lock of child and parent
-+ * resource groups to protect the shares structures passed to this function.
-+ */
-+static int set_shares(const struct res_shares *new,
-+		    struct res_shares *child_shares,
-+    		    struct res_shares *parent_shares)
++void bc_file_uncharge(struct file *file)
 +{
-+	int rc, current_usage, min_shares_increase;
-+	struct res_shares final_shares;
++	struct beancounter *bc;
 +
-+	BUG_ON(!new || !child_shares);
++	bc = file->f_bc;
++	bc_uncharge(bc, BC_NUMFILES, 1);
++	css_put(&bc->css);
++}
 +
-+	final_shares = *child_shares;
-+	if (did_share_change(new->child_shares_divisor) &&
-+			change_supported(child_shares->child_shares_divisor))
-+		final_shares.child_shares_divisor = new->child_shares_divisor;
-+	if (did_share_change(new->min_shares) &&
-+			change_supported(child_shares->min_shares))
-+		final_shares.min_shares = new->min_shares;
-+	if (did_share_change(new->max_shares) &&
-+			change_supported(child_shares->max_shares))
-+		final_shares.max_shares = new->max_shares;
++#define BC_NUMFILES_BARRIER	256
++#define BC_NUMFILES_LIMIT	512
 +
-+	current_usage = child_shares->child_shares_divisor -
-+	    		 child_shares->unused_min_shares;
-+	min_shares_increase = final_shares.min_shares;
-+	if (is_share_quantitative(child_shares->min_shares))
-+		min_shares_increase -= child_shares->min_shares;
-+
-+	rc = are_shares_valid(&final_shares, parent_shares, current_usage,
-+   			      min_shares_increase);
-+	if (rc)
-+		return rc; /* new shares would violate restrictions */
-+
-+	if (did_share_change(new->child_shares_divisor))
-+		final_shares.unused_min_shares =
-+			(final_shares.child_shares_divisor - current_usage);
-+	*child_shares = final_shares;
++static int bc_files_init(struct beancounter *bc, int i)
++{
++	bc_init_resource(&bc->bc_parms[BC_NUMFILES],
++			BC_NUMFILES_BARRIER, BC_NUMFILES_LIMIT);
 +	return 0;
 +}
 +
-+int set_controller_shares(struct resource_group *rgroup,
-+			  struct res_controller *ctlr,
-+			  const struct res_shares *new_shares)
++static struct bc_resource bc_files_resource = {
++	.bcr_name = "numfiles",
++	.bcr_init = bc_files_init,
++};
++
++static int __init bc_misc_init_resource(void)
 +{
-+	struct res_shares *shares, *parent_shares;
-+	int prev_min, prev_max, rc;
-+
-+	if (!ctlr->shares_changed)
-+		return -EINVAL;
-+
-+	shares = get_controller_shares(rgroup, ctlr);
-+	if (!shares)
-+		return -EINVAL;
-+
-+	prev_min = shares->min_shares;
-+	prev_max = shares->max_shares;
-+
-+	container_lock(); /* XXX */
-+	//spin_lock(&rgroup->group_lock);
-+	parent_shares = get_controller_shares(rgroup->parent, ctlr);
-+	rc = set_shares(new_shares, shares, parent_shares);
-+
-+	if (rc || is_res_group_root(rgroup))
-+		goto done;
-+
-+	/* Notify parent about changes in my shares */
-+	child_min_shares_changed(parent_shares, prev_min,
-+				      shares->min_shares);
-+	if (prev_max != shares->max_shares)
-+		set_cur_max_shares(rgroup->parent, ctlr);
-+
-+done:
-+	container_unlock(); /* XXX */
-+	if (!rc)
-+		ctlr->shares_changed(shares);
-+	return rc;
++	bc_register_resource(BC_NUMFILES, &bc_files_resource);
++ 	return 0;
 +}
++
++__initcall(bc_misc_init_resource);
+Index: container-2.6.20/fs/file_table.c
+===================================================================
+--- container-2.6.20.orig/fs/file_table.c
++++ container-2.6.20/fs/file_table.c
+@@ -22,6 +22,8 @@
+ #include <linux/sysctl.h>
+ #include <linux/percpu_counter.h>
+ 
++#include <bc/misc.h>
++
+ #include <asm/atomic.h>
+ 
+ /* sysctl tunables... */
+@@ -43,6 +45,7 @@ static inline void file_free_rcu(struct 
+ static inline void file_free(struct file *f)
+ {
+ 	percpu_counter_dec(&nr_files);
++	bc_file_uncharge(f);
+ 	call_rcu(&f->f_u.fu_rcuhead, file_free_rcu);
+ }
+ 
+@@ -107,8 +110,10 @@ struct file *get_empty_filp(void)
+ 	if (f == NULL)
+ 		goto fail;
+ 
+-	percpu_counter_inc(&nr_files);
+ 	memset(f, 0, sizeof(*f));
++	if (bc_file_charge(f))
++		goto fail_charge;
++	percpu_counter_inc(&nr_files);
+ 	if (security_file_alloc(f))
+ 		goto fail_sec;
+ 
+@@ -135,6 +140,10 @@ fail_sec:
+ 	file_free(f);
+ fail:
+ 	return NULL;
++
++ fail_charge:
++	kmem_cache_free(filp_cachep, f);
++	return NULL;
+ }
+ 
+ EXPORT_SYMBOL(get_empty_filp);
+Index: container-2.6.20/include/linux/fs.h
+===================================================================
+--- container-2.6.20.orig/include/linux/fs.h
++++ container-2.6.20/include/linux/fs.h
+@@ -739,6 +739,9 @@ struct file {
+ 	spinlock_t		f_ep_lock;
+ #endif /* #ifdef CONFIG_EPOLL */
+ 	struct address_space	*f_mapping;
++#ifdef CONFIG_BEANCOUNTERS
++	struct beancounter      *f_bc;
++#endif
+ };
+ extern spinlock_t files_lock;
+ #define file_list_lock() spin_lock(&files_lock);
 
 --
