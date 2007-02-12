@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964959AbXBLQj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964951AbXBLQji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964959AbXBLQj2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 11:39:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964961AbXBLQj2
+	id S964951AbXBLQji (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 11:39:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964961AbXBLQjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 11:39:28 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:52352 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964959AbXBLQj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 11:39:27 -0500
-Date: Mon, 12 Feb 2007 08:37:59 -0800
-From: Greg KH <greg@kroah.com>
-To: Rainer Weikusat <rainer.weikusat@sncag.com>
-Cc: Rainer Weikusat <rweikusat@sncag.com>, LKML <linux-kernel@vger.kernel.org>,
-       Oleg Verych <olecom@flower.upol.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: unfixed regression in 2.6.20-rc6 (since 2.6.19)
-Message-ID: <20070212163759.GA15603@kroah.com>
-References: <877ivb2kvc.fsf@semtex.sncag.com> <20070125185101.GA26279@kroah.com> <87y7nq131x.fsf@semtex.sncag.com> <20070126174828.GA28890@kroah.com> <87d54z1dhb.fsf@semtex.sncag.com> <slrnerqjit.f71.olecom@flower.upol.cz> <20070129234340.GA6881@kroah.com> <87k5z4za4l.fsf@semtex.sncag.com> <20070204043935.GA8829@kroah.com> <87abzj5tz5.fsf@semtex.sncag.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87abzj5tz5.fsf@semtex.sncag.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 12 Feb 2007 11:39:37 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:41834 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964951AbXBLQjg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 11:39:36 -0500
+Subject: Re: [Cbe-oss-dev] [RFC, PATCH] CELL Oprofile SPU profiling updated
+	patch
+From: Carl Love <cel@us.ibm.com>
+To: Milton Miller <miltonm@bga.com>
+Cc: cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       oprofile-list@lists.sourceforge.net
+In-Reply-To: <fdeac69371a6b75fbf0ebffd30228106@bga.com>
+References: <1170721711.5204.44.camel@dyn9047021078.beaverton.ibm.com>
+	 <1170802957.5204.56.camel@dyn9047021078.beaverton.ibm.com>
+	 <b682962303654f4958a6c2c50d805907@bga.com>
+	 <200702081821.57358.arnd@arndb.de>
+	 <1170975119.5204.99.camel@dyn9047021078.beaverton.ibm.com>
+	 <e03c784bc3aff642ef10d0e2ed8eab45@bga.com>
+	 <1171037869.5204.143.camel@dyn9047021078.beaverton.ibm.com>
+	 <fdeac69371a6b75fbf0ebffd30228106@bga.com>
+Content-Type: text/plain
+Date: Mon, 12 Feb 2007 08:38:35 -0800
+Message-Id: <1171298315.5204.235.camel@dyn9047021078.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-2) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 12, 2007 at 03:30:22PM +0100, Rainer Weikusat wrote:
-> Greg KH <greg@kroah.com> writes:
-> > On Tue, Jan 30, 2007 at 06:40:10PM +0100, Rainer Weikusat wrote:
-> >> Greg KH <greg@kroah.com> writes:
-> >> 
-> >> [...]
-> >> 
-> >> > Rainer's problem is a real bug in the USB driver code, which we need to
-> >> > work on getting fixed,
-> >
-> > Ok, here's an updated version, that should tell us where things are
-> > going wrong (if they are.)
-> >
-> > Can you try this out with debugging enabled for the driver:
-> > 	modprobe keyspan debug=1
-> >
-> > and let me know what the output of the kernel log is when you plug your
-> > device in?
+On Sun, 2007-02-11 at 16:46 -0600, Milton Miller wrote:
+
+[cut]
+
 > 
-> I can do all sorts of things, but frankly, I just need my device to
-> work (which it does again, courtesy of myself). Apart from that, this
-> is still just what a SCO-person would call 'a structural copy' of my
-> code with no functional changes, especially none that could result in
-> any additional output. I believe it will work as well. Mine does, so
-> I am not going to test a different one for the sake of having done so.
+> As far as I understand, you are providing access to a completely new
+> hardware that is related to the PMU hardware by the fact that it
+> collects a program counter.   It doesn't use the PMU counters nor the
+> PMU event selection.
+> 
+> In fact, why can the existing op_model_cell profiling not run while
+> the SPU profiling runs?   Is there a shared debug bus inside the
+> chip?   Or just the data stream with your buffer_sync code?
+> 
 
-Well, as others have reported that this fix works for them, I've sent it
-on to Linus and will add it to the 2.6.20-stable tree too.
+There are two reasons you cannot do SPU profiling and profiling on non
+SPU events at the sametime.  1) the SPU PC values are routed on the
+debug bus.  You cannot also route the signals for other non SPU events
+on the debug bus since they will conflict.  Specifically, the signals
+would get logically OR'd on the bus.  The exception is PPU cycles which
+does not use the debug bus.  2) the hardware that captures the SPU
+program counters has some shared components with the HW performance
+counters.  To use the SPU program counter hardware, the performance
+counter hardware must be disabled.
 
-> If you want to fix it only if you can claim to have written the code,
-> fine. If you'll never fix it --- fine as well.
+In summary, we cannot do SPU cycle profiling and non SPU event profiling
+at the same time due to limitations in the hardware.
 
-I do not claim I have rewritten the code, if you look, you get full
-authorship credit for this fix, I just say I restructured it a bit.
 
-> In either case, I have already put more time into this as I have
-> available.
+[cut]
 
-If you still have problems, please let me know.
 
-thanks,
+> milton
+> 
 
-greg k-h
