@@ -1,37 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933040AbXBLHJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933047AbXBLHKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933040AbXBLHJj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 02:09:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933046AbXBLHJj
+	id S933047AbXBLHKE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 02:10:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933053AbXBLHKD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 02:09:39 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:59377 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933040AbXBLHJi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 02:09:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fBRYyt/3FIoO4jTCC0ezyqnq/EWSVM5JNBLHvhfbr/IsUJBSF3bvPc/zcDZdF0SAh6dI5WuAOmYupBUJRTwtEIEvKJ8/vZ+w6dnOgOBdHJ7EcSz5jqBr8i9/zg0a6kQNeamO+JCufV2RGMnXZITTv3Su4R9XtdZDXhPW4MwQYBU=
-Message-ID: <4e5ebad50702112309l35069a06g69ef7e10ddc1690b@mail.gmail.com>
-Date: Mon, 12 Feb 2007 15:09:36 +0800
-From: "Sonic Zhang" <sonic.adi@gmail.com>
-To: bryan.wu@analog.com
-Subject: Re: [PATCH 1/3] Blackfin: architecture patch against Linux kernel2.6.20 (again)
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1170927469.14638.2.camel@roc-desktop>
+	Mon, 12 Feb 2007 02:10:03 -0500
+Received: from comtv.ru ([217.10.32.17]:49721 "EHLO comtv.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933047AbXBLHJv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 02:09:51 -0500
+X-UCL: actv
+Date: Mon, 12 Feb 2007 10:10:09 +0300 (MSK)
+From: malc <av1474@comtv.ru>
+X-X-Sender: malc@home.oyster.ru
+To: Con Kolivas <kernel@kolivas.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: CPU load
+In-Reply-To: <200702121712.50168.kernel@kolivas.org>
+Message-ID: <Pine.LNX.4.64.0702121006030.1049@home.oyster.ru>
+References: <loom.20070212T063225-663@post.gmane.org>
+ <8cd998d50702112144y38958d27saec4196f6f5d5236@mail.gmail.com>
+ <Pine.LNX.4.64.0702120849310.903@home.oyster.ru> <200702121712.50168.kernel@kolivas.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1170727860.31450.17.camel@roc-desktop>
-	 <1170927469.14638.2.camel@roc-desktop>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Any comments on this blackfin arch kernel patch for 2.6.20?
-We fixed a lot of issues according to the feedback against our last
-patch for 2.6.18. We really appreciate your comments on this new one.
+On Mon, 12 Feb 2007, Con Kolivas wrote:
 
-Thanks
+> On Monday 12 February 2007 16:54, malc wrote:
+>> On Mon, 12 Feb 2007, Con Kolivas wrote:
+>>> On 12/02/07, Vassili Karpov <av1474@comtv.ru> wrote:
+>>
+>> [..snip..]
+>>
+>>> The kernel looks at what is using cpu _only_ during the timer
+>>> interrupt. Which means if your HZ is 1000 it looks at what is running
+>>> at precisely the moment those 1000 timer ticks occur. It is
+>>> theoretically possible using this measurement system to use >99% cpu
+>>> and record 0 usage if you time your cpu usage properly. It gets even
+>>> more inaccurate at lower HZ values for the same reason.
+>>
+>> Thank you very much. This somewhat contradicts what i saw (and outlined
+>> in usnet article), namely the mplayer+/dev/rtc case. Unless ofcourse
+>> /dev/rtc interrupt is considered to be the same as the interrupt from
+>> PIT (on X86 that is)
+>>
+>> P.S. Perhaps it worth documenting this in the documentation? I caused
+>>       me, and perhaps quite a few other people, a great deal of pain and
+>>       frustration.
+>
+> Lots of confusion comes from this, and often people think their pc suddenly
+> uses a lot less cpu when they change from 1000HZ to 100HZ and use this as an
+> argument/reason for changing to 100HZ when in fact the massive _reported_
+> difference is simply worse accounting. Of course there is more overhead going
+> from 100 to 1000 but it doesn't suddenly make your apps use 10 times more
+> cpu.
+
+Yep. This, i belive, what made the mplayer developers incorrectly conclude
+that utilizing RTC suddenly made the code run slower, after all /proc/stat
+now claims that CPU load is higher, while in reality it stayed the same -
+it's the accuracy that has improved (somewhat)
+
+But back to the original question, does it look at what's running on timer
+interrupt only or any IRQ? (something which is more in line with my own
+observations)
+
+-- 
+vale
