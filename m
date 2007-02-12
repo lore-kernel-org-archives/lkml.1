@@ -1,127 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964781AbXBLHs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964780AbXBLHs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964781AbXBLHs7 (ORCPT <rfc822;w@1wt.eu>);
+	id S964780AbXBLHs7 (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 12 Feb 2007 02:48:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933085AbXBLHqu
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933086AbXBLHqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 02:46:50 -0500
-Received: from mail.suse.de ([195.135.220.2]:38377 "EHLO mx1.suse.de"
+	Mon, 12 Feb 2007 02:46:48 -0500
+Received: from mx2.suse.de ([195.135.220.15]:49612 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933082AbXBLHh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 02:37:58 -0500
+	id S933084AbXBLHiC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 02:38:02 -0500
 From: Andi Kleen <ak@suse.de>
 References: <20070212837.963446000@suse.de>
 In-Reply-To: <20070212837.963446000@suse.de>
-To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, patches@x86-64.org,
+To: Rene Herman <rene.herman@gmail.com>, patches@x86-64.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH x86 for review II] [10/39] x86_64: Handle 32 bit PerfMon Counter writes cleanly in x86_64 nmi_watchdog
-Message-Id: <20070212073756.96F7B13DA0@wotan.suse.de>
-Date: Mon, 12 Feb 2007 08:37:56 +0100 (CET)
+Subject: [PATCH x86 for review II] [13/39] i386: CONFIG_PHYSICAL_ALIGN limited to 4M?
+Message-Id: <20070212073800.3D44313DD5@wotan.suse.de>
+Date: Mon, 12 Feb 2007 08:38:00 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+From: Rene Herman <rene.herman@gmail.com>
+A while ago it was remarked on list here that keeping the kernel 4M 
+aligned physically might be a performance win if the added 1M (it 
+normally loads at 1M) meant it would fit on one 4M aligned hugepage 
+instead of 2 and since that time I've been doing such.
 
+In fact, while I was at it, I ran the kernel at 16M; while admittedly a 
+bit of a non-issue, having never experienced ZONE_DMA shortage, I am an 
+ISA user on a >16M machine so this seemed to make sense -- no kernel 
+eating up "precious" ISA-DMAable memory.
 
-P6 CPUs and Core/Core 2 CPUs which has 'architectural perf mon' feature,
-only supports write of low 32 bits in Performance Monitoring Counters.
-Bits 32..39 are sign extended based on bit 31 and bits 40..63 are reserved
-and should be zero.
+Recently CONFIG_PHYSICAL_START was replaced by CONFIG_PHYSICAL_ALIGN 
+(commit e69f202d0a1419219198566e1c22218a5c71a9a6) and while 4M alignment 
+is still possible, that's also the strictest alignment allowed meaning I 
+can't load my (non-relocatable) kernel at 16M anymore.
 
-This patch:
+If I just apply the following and set it to 16M, things seem to be 
+working for me. Was there an important reason to limit the alignment to 
+4M, and if so, even on non relocatable kernels?
 
-Change x86_64 nmi handler to handle this case cleanly.
+Rene.
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86_64/kernel/nmi.c |   46 ++++++++++++++++++++++++++++++++--------------
- 1 file changed, 32 insertions(+), 14 deletions(-)
+ arch/i386/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux/arch/x86_64/kernel/nmi.c
+Index: linux/arch/i386/Kconfig
 ===================================================================
---- linux.orig/arch/x86_64/kernel/nmi.c
-+++ linux/arch/x86_64/kernel/nmi.c
-@@ -214,6 +214,23 @@ static __init void nmi_cpu_busy(void *da
- }
- #endif
- 
-+static unsigned int adjust_for_32bit_ctr(unsigned int hz)
-+{
-+	unsigned int retval = hz;
-+
-+	/*
-+	 * On Intel CPUs with ARCH_PERFMON only 32 bits in the counter
-+	 * are writable, with higher bits sign extending from bit 31.
-+	 * So, we can only program the counter with 31 bit values and
-+	 * 32nd bit should be 1, for 33.. to be 1.
-+	 * Find the appropriate nmi_hz
-+	 */
-+ 	if ((((u64)cpu_khz * 1000) / retval) > 0x7fffffffULL) {
-+		retval = ((u64)cpu_khz * 1000) / 0x7fffffffUL + 1;
-+	}
-+	return retval;
-+}
-+
- int __init check_nmi_watchdog (void)
- {
- 	int *counts;
-@@ -268,17 +285,8 @@ int __init check_nmi_watchdog (void)
- 		struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
- 
- 		nmi_hz = 1;
--		/*
--		 * On Intel CPUs with ARCH_PERFMON only 32 bits in the counter
--		 * are writable, with higher bits sign extending from bit 31.
--		 * So, we can only program the counter with 31 bit values and
--		 * 32nd bit should be 1, for 33.. to be 1.
--		 * Find the appropriate nmi_hz
--		 */
--	 	if (wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR0 &&
--			((u64)cpu_khz * 1000) > 0x7fffffffULL) {
--			nmi_hz = ((u64)cpu_khz * 1000) / 0x7fffffffUL + 1;
--		}
-+	 	if (wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR0)
-+			nmi_hz = adjust_for_32bit_ctr(nmi_hz);
- 	}
- 
- 	kfree(counts);
-@@ -634,7 +642,9 @@ static int setup_intel_arch_watchdog(voi
- 
- 	/* setup the timer */
- 	wrmsr(evntsel_msr, evntsel, 0);
--	wrmsrl(perfctr_msr, -((u64)cpu_khz * 1000 / nmi_hz));
-+
-+	nmi_hz = adjust_for_32bit_ctr(nmi_hz);
-+	wrmsr(perfctr_msr, (u32)(-((u64)cpu_khz * 1000 / nmi_hz)), 0);
- 
- 	apic_write(APIC_LVTPC, APIC_DM_NMI);
- 	evntsel |= ARCH_PERFMON_EVENTSEL0_ENABLE;
-@@ -855,15 +865,23 @@ int __kprobes nmi_watchdog_tick(struct p
- 				dummy &= ~P4_CCCR_OVF;
- 	 			wrmsrl(wd->cccr_msr, dummy);
- 	 			apic_write(APIC_LVTPC, APIC_DM_NMI);
-+				/* start the cycle over again */
-+				wrmsrl(wd->perfctr_msr,
-+				       -((u64)cpu_khz * 1000 / nmi_hz));
- 	 		} else if (wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR0) {
- 				/*
- 				 * ArchPerfom/Core Duo needs to re-unmask
- 				 * the apic vector
- 				 */
- 				apic_write(APIC_LVTPC, APIC_DM_NMI);
-+				/* ARCH_PERFMON has 32 bit counter writes */
-+				wrmsr(wd->perfctr_msr,
-+				     (u32)(-((u64)cpu_khz * 1000 / nmi_hz)), 0);
-+			} else {
-+				/* start the cycle over again */
-+				wrmsrl(wd->perfctr_msr,
-+				       -((u64)cpu_khz * 1000 / nmi_hz));
- 			}
--			/* start the cycle over again */
--			wrmsrl(wd->perfctr_msr, -((u64)cpu_khz * 1000 / nmi_hz));
- 			rc = 1;
- 		} else 	if (nmi_watchdog == NMI_IO_APIC) {
- 			/* don't know how to accurately check for this.
+--- linux.orig/arch/i386/Kconfig
++++ linux/arch/i386/Kconfig
+@@ -843,7 +843,7 @@ config RELOCATABLE
+ config PHYSICAL_ALIGN
+ 	hex "Alignment value to which kernel should be aligned"
+ 	default "0x100000"
+-	range 0x2000 0x400000
++	range 0x2000 0x1000000
+ 	help
+ 	  This value puts the alignment restrictions on physical address
+  	  where kernel is loaded and run from. Kernel is compiled for an
