@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964970AbXBLSPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964988AbXBLSRI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964970AbXBLSPK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 13:15:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964971AbXBLSPK
+	id S964988AbXBLSRI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 13:17:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964971AbXBLSRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 13:15:10 -0500
-Received: from comtv.ru ([217.10.32.17]:48207 "EHLO comtv.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964970AbXBLSPJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 13:15:09 -0500
-X-UCL: actv
-Date: Mon, 12 Feb 2007 21:15:34 +0300 (MSK)
-From: malc <av1474@comtv.ru>
-X-X-Sender: malc@home.oyster.ru
-To: Andrew Burgess <aab@cichlid.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: CPU load
-In-Reply-To: <200702121657.l1CGvRh5010463@cichlid.com>
-Message-ID: <Pine.LNX.4.64.0702122105400.2345@home.oyster.ru>
-References: <200702121657.l1CGvRh5010463@cichlid.com>
+	Mon, 12 Feb 2007 13:17:08 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:32320 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964988AbXBLSRH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 13:17:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=c1jj/kD4xyNQoWxmDIftyPtG+cunPI3QXnn2xPAK1GtBBW+zPOnNoEtUhN3tL3kzlAZWaQLAZyih8pSHvaNG96hsu1lkTkeVfqQulNtFYyMxkduXcxaZnS7p0ijv2kF9INrKesoe952RcCCQhBH6z2jmN/q4fjpGGhVmHI1LN9M=
+Message-ID: <2c0942db0702121017i3ab273b0qf9f31654f73519ba@mail.gmail.com>
+Date: Mon, 12 Feb 2007 10:17:03 -0800
+From: "Ray Lee" <madrabbit@gmail.com>
+Reply-To: ray-gmail@madrabbit.org
+To: "Martin A. Fink" <fink@mpe.mpg.de>
+Subject: Re: SATA-performance: Linux vs. FreeBSD
+Cc: "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <200702121856.29729.fink@mpe.mpg.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200702121502.17130.fink@mpe.mpg.de>
+	 <200702121727.17108.fink@mpe.mpg.de> <p731wkvi5go.fsf@bingen.suse.de>
+	 <200702121856.29729.fink@mpe.mpg.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Feb 2007, Andrew Burgess wrote:
+On 2/12/07, Martin A. Fink <fink@mpe.mpg.de> wrote:
+> Am Montag, 12. Februar 2007 19:41 schrieben Sie:
+> I have to store big amounts of data coming from 2 digital cameras to disk.
+> Thus I have to write blocks of around 1 MB at 30 to 50 frames per second for
+> a long period of time. So it is important for me that the harddisk drive is
+> reliable in the sense of "if it is capable of 50 MB/s then it should operate
+> at this speed. Constantly."
 
-> On 12/02/07, Vassili Karpov <av1474@comtv.ru> wrote:
->>
->> How does the kernel calculates the value it places in `/proc/stat' at
->> 4th position (i.e. "idle: twiddling thumbs")?
->>
-> ..
->>
->> Later small kernel module was developed that tried to time how much
->> time is spent in the idle handler inside the kernel and exported this
->> information to the user-space. The results were consistent with our
->> expectations and the output of the test utility.
-> ..
->> http://www.boblycat.org/~malc/apc
->
-> Vassili
->
-> Could you rewrite this code as a kernel patch for
-> discussion/inclusion in mainline? I and maybe others would
-> appreciate having idle statistics be more accurate.
+Ah, here is a misunderstanding, I think. By default, Linux won't start
+writing out dirty buffers until something like 40% of memory is used.
+This is to help common workloads where many temporary files are
+created and destroyed, or even data that gets written then overwritten
+shortly after.
 
-I really don't know how to approach that, what i do in itc.c is ugly
-to say the least (it's less ugly on PPC, but still).
+If the kernel were to immediately write out that dirty data, it would
+be slower than leaving it in memory for those workloads. But since
+that isn't best for everyone, there's a parameter that controls that
+dirty threshold. Setting that to a lower value will help even out the
+writeout, and start it early, just as you seem to be requesting.
 
-There's stuff there that is very dangerous, i.e. entering idle handler
-on SMP and simultaneously rmmoding the module (which surprisingly
-never actually caused any bad things on kernels i had (starting with
-2.6.17.3), but paniced on Debians 2.6.8). Safety nets were added but i
-don't know whether they are sufficient. All in all what i have is a
-gross hack, but it works for my purposes.
+Hmm, it may be one of:
 
-Another thing that keeps bothering me (again discovered with this
-Debian kernel) is the fact that PREEMPT preempts idle handler, this
-just doesn't add up in my head.
+/proc/sys/vm/dirty_ratio
+/proc/sys/vm/dirty_background_ratio
 
-So to summarize: i don't know how to properly do that (so that it
-works on all/most architectures, is less of a hack, has no negative
-impact on performance, etc)
+Try tweaking those to much lower values and see if that helps.
 
-But i guess what innocent `smallhog.c' posted earlier demonstrated -
-is that something probably ought to be done about it, or at least
-the current situation documented.
-
--- 
-vale
+Ray
