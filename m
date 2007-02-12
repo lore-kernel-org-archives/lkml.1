@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750962AbXBLAPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750980AbXBLAQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750962AbXBLAPg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 19:15:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbXBLAPg
+	id S1750980AbXBLAQO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 19:16:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbXBLAQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 19:15:36 -0500
-Received: from nigel.suspend2.net ([203.171.70.205]:40867 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750960AbXBLAPf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 19:15:35 -0500
-Subject: Re: NAK new drivers without proper power management?
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Willy Tarreau <w@1wt.eu>, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <200702120109.56564.rjw@sisk.pl>
-References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no>
-	 <200702120050.24539.rjw@sisk.pl>
-	 <1171238117.4493.153.camel@nigel.suspend2.net>
-	 <200702120109.56564.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Mon, 12 Feb 2007 11:15:35 +1100
-Message-Id: <1171239335.4493.163.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Sun, 11 Feb 2007 19:16:14 -0500
+Received: from ns.suse.de ([195.135.220.2]:42130 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750980AbXBLAQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 19:16:13 -0500
+From: Neil Brown <neilb@suse.de>
+To: "Marc Marais" <marcm@liquid-nexus.net>
+Date: Mon, 12 Feb 2007 11:15:38 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <17871.45482.186152.158022@notabene.brown>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: md: md6_raid5 crash 2.6.20
+In-Reply-To: message from Marc Marais on Monday February 12
+References: <20070211071527.M31642@liquid-nexus.net>
+	<17871.37497.786198.834303@notabene.brown>
+	<20070212000042.M73586@liquid-nexus.net>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-
-On Mon, 2007-02-12 at 01:09 +0100, Rafael J. Wysocki wrote:
-> On Monday, 12 February 2007 00:55, Nigel Cunningham wrote:
-> > Hi.
-> > 
-> > On Mon, 2007-02-12 at 00:50 +0100, Rafael J. Wysocki wrote:
-> > > On Monday, 12 February 2007 00:47, Nigel Cunningham wrote:
-> > > > Hi.
-> > > > 
-> > > > On Mon, 2007-02-12 at 00:41 +0100, Rafael J. Wysocki wrote:
-> > > > > > I'm using M$ hibernation and Suspend2 to dual boot on our desktop (dtv
-> > > > > > card that Linux doesn't support well yet), and I know other Suspend2
-> > > > > > users doing the same. It's made earier by the fact that Suspend2 lets
-> > > > > > you reboot instead of powering down.
-> > > > > 
-> > > > > Well, I don't know why you're saying it's a special capability of suspend2.
-> > > > > Even the "old" swsusp has been able to do this since I can remember. ;-)
-> > > > 
-> > > > It does?! I just did cat /sys/power/disk and it only says platform. How
-> > > > do you make swsusp reboot instead of powering down?
-> > > 
-> > > echo reboot > /sys/power/disk && echo disk > /sys/power/state
-> > 
-> > Ah. Perhaps you should make it show reboot when you cat it?
+On Monday February 12, marcm@liquid-nexus.net wrote:
 > 
-> albercik:~ # echo reboot > /sys/power/disk
-> albercik:~ # cat /sys/power/disk
-> reboot
+> Thanks for the quick response Neil unfortunately the kernel doesn't build with
+> this patch due to a missing symbol:
 > 
-> It shows the current value, and "platform" happens to be the default now.
+> WARNING: "blk_recount_segments" [drivers/md/raid456.ko] undefined!
+> 
+> Is that in another file that needs patching or within raid5.c?
 
-Oh, so the problem is that it shows the current value, not the
-possibilities. I wrongly assumed it would work like /sys/power/disk.
-That explains it :)
+Yes.  I keep forgetting about that bit. Sorry.
 
-Regards,
 
-Nigel
-
+diff -puN block/ll_rw_blk.c~md-fix-various-bugs-with-aligned-reads-in-raid5-fix block/ll_rw_blk.c
+--- a/block/ll_rw_blk.c~md-fix-various-bugs-with-aligned-reads-in-raid5-fix
++++ a/block/ll_rw_blk.c
+@@ -1264,7 +1264,7 @@ new_hw_segment:
+ 	bio->bi_hw_segments = nr_hw_segs;
+ 	bio->bi_flags |= (1 << BIO_SEG_VALID);
+ }
+-
++EXPORT_SYMBOL(blk_recount_segments);
+ 
+ static int blk_phys_contig_segment(request_queue_t *q, struct bio *bio,
+ 				   struct bio *nxt)
+_
