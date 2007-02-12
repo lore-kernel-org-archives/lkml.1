@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964812AbXBLKZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964816AbXBLKZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964812AbXBLKZY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 05:25:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964823AbXBLKZY
+	id S964816AbXBLKZq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 05:25:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964840AbXBLKZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 05:25:24 -0500
-Received: from ikar.perftech.si ([195.246.0.20]:14270 "EHLO ikar.perftech.si"
+	Mon, 12 Feb 2007 05:25:46 -0500
+Received: from mx1.suse.de ([195.135.220.2]:48017 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964812AbXBLKZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 05:25:23 -0500
-X-Greylist: delayed 666 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Feb 2007 05:25:23 EST
-X-ASG-Debug-ID: 1171275255-796100390000-xx1T2L
-X-Barracuda-URL: http://10.12.0.14:5000/cgi-bin/mark.cgi
-X-Barracuda-Connect: unknown[10.12.0.44]
-X-Barracuda-Start-Time: 1171275255
-Date: Mon, 12 Feb 2007 11:14:11 +0100
-From: "xerces8" <xerces8@butn.net>
-To: linux-kernel@vger.kernel.org
-X-ASG-Orig-Subj: Fw: Different routing for one process ?
-Subject: Fw: Different routing for one process ?
+	id S964827AbXBLKZk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 05:25:40 -0500
+From: Andi Kleen <ak@suse.de>
+To: "Jan Beulich" <jbeulich@novell.com>
+Subject: Re: [patches] [PATCH 2.6.21 review I] [21/25] x86_64: a memcpy that tries to reduce cache pressure
+Date: Mon, 12 Feb 2007 11:25:28 +0100
+User-Agent: KMail/1.9.5
+Cc: "Bryan O'Sullivan" <bos@pathscale.com>,
+       "Roland Dreier" <rolandd@cisco.com>, linux-kernel@vger.kernel.org,
+       patches@x86-64.org
+References: <200702101250.142420000@suse.de> <20070210115034.694B013DBF@wotan.suse.de> <45D04806.76E4.0078.0@novell.com>
+In-Reply-To: <45D04806.76E4.0078.0@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <WorldClient-F200702121114.AA14110070@butn.net>
-X-Mailer: WorldClient 9.5.4
-X-Authenticated-Sender: xerces8@butn.net
-X-Spam-Processed: POP, Mon, 12 Feb 2007 11:14:14 +0100
-	(not processed: message from valid local sender)
-X-Return-Path: xerces8@butn.net
-X-Envelope-From: xerces8@butn.net
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-X-MDAV-Processed: POP, Mon, 12 Feb 2007 11:14:15 +0100
-X-Barracuda-Virus-Scanned: by OUTBOUND - ikar.perftech.si at perftech.si
-X-Barracuda-Spam-Score: 0.00
-X-Barracuda-Spam-Status: No, SCORE=0.00 using global scores of TAG_LEVEL=1000.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=7.0 tests=UNPARSEABLE_RELAY
-X-Barracuda-Spam-Report: Code version 3.1, rules version 3.1.8465
-	Rule breakdown below
-	 pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	0.00 UNPARSEABLE_RELAY      Informational: message has unparseable relay
-	                           lines
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702121125.28867.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please CC me on replies (not subscribed)
-I sent this to linux-net, but they are on vacation ;-)
 
+> This looks a little strange to me:
+> - the first 128 bytes are still going through the cache
+> - up to 192 bytes past the copied area are being marked non-temporal, while
+>   there's nothing known about that area
 
-Hi!
- 
-Is there a way to make one process route differently than the rest of the system ?
- 
-My situation is this: I have a PC on a very restrictive network ((P)NAT&filtering). I want to
-run an application that is more or less a SIP telephone client. SIP is of course blocked on
-the network. The only option I see is a tunnel to a friendlier place on the net and route
-the SIP traffic over it. This I already did using OpenVPN. The problem is, that I want to
-the tunnel to be used for the SIP application only and not other net access (due to limited
-bandwidth of the tunnel and other reasons).
- 
-My current solution is to run the SIP application inside a VMWare virtual machine, that does
-all it's networking over the tunnel.
- 
-I wonder if I can do it without running vmware, since that seems like shooting a sparrow with a cannon.
- 
-Note that the SIP client can communicate with the entire world, I can not predict who will call me
-and from what IP address.
- 
-(I linger between linux and windows, so if someone knows a person or mail list with windows
-network experts, that would be helpful too)
- 
- 
-Regards,
-David
+Yes that seems quite bogus.
 
+> - sfence seems questionable here, I would have thought this should be lfence,
+>   or perhaps even none at all
 
+Agreed -- it's not needed.
+
+I think i also objected earlier to the jump table which is likely slower.
+
+Will drop for now.
+
+-Andi
