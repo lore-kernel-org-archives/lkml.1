@@ -1,65 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964840AbXBLK2x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964843AbXBLKff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964840AbXBLK2x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 05:28:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964846AbXBLK2x
+	id S964843AbXBLKff (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 05:35:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964849AbXBLKff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 05:28:53 -0500
-Received: from mail.sf-mail.de ([62.27.20.61]:42583 "EHLO mail.sf-mail.de"
+	Mon, 12 Feb 2007 05:35:35 -0500
+Received: from ns2.suse.de ([195.135.220.15]:58953 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964840AbXBLK2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 05:28:52 -0500
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: linux-scsi@vger.kernel.org
-Subject: Re: [GIT PATCH] SCSI updates for 2.6.20
-Date: Mon, 12 Feb 2007 11:29:28 +0100
-User-Agent: KMail/1.9.6
-Cc: James Bottomley <James.Bottomley@steeleye.com>,
-       Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <1171166252.3373.58.camel@mulgrave.il.steeleye.com>
-In-Reply-To: <1171166252.3373.58.camel@mulgrave.il.steeleye.com>
+	id S964843AbXBLKfe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 05:35:34 -0500
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 10/10] atomic.h : Add atomic64 cmpxchg, xchg and add_unless to x86_64
+References: <11712214684187-git-send-email-mathieu.desnoyers@polymtl.ca>
+	<11712214703522-git-send-email-mathieu.desnoyers@polymtl.ca>
+From: Andi Kleen <ak@suse.de>
+Date: 12 Feb 2007 12:35:47 +0100
+In-Reply-To: <11712214703522-git-send-email-mathieu.desnoyers@polymtl.ca>
+Message-ID: <p737iunhalo.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart6168428.fcT4MqvegJ";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200702121129.34359.eike-kernel@sf-tec.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart6168428.fcT4MqvegJ
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
+>  
+>  /**
+> @@ -402,7 +405,7 @@ static __inline__ long atomic64_sub_return(long i, atomic64_t *v)
+>   */
+>  #define atomic_add_unless(v, a, u)				\
+>  ({								\
+> -	int c, old;						\
+> +	__typeof__((v)->counter) c, old;			\
 
-Am Sonntag, 11. Februar 2007 schrieb James Bottomley:
-> This is the accumulated SCSI tree for 2.6.20.  It is available at
->
-> master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+This change seems useless. Please drop.
 
-You once again have not included this two patches Andrew sent you on 20070602:
+In general you should enforce atomic_t vs atomic64_t types on x86, otherwise
+people will write code that won't compile on other architectures 
+that have truly different implementations.
 
-[patch 08/33] remove extra newline from info message
-[patch 09/33] Fix scsi/scsi_transport.h compile error
+I would suggest using inlines.
 
-Is this by mistake or intentional?
-
-Greetings,
-
-Eike
-
---nextPart6168428.fcT4MqvegJ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iD8DBQBF0EGOXKSJPmm5/E4RAsAlAJ9yb3XOlBjnW0kzrZLIizALmhkGSwCfTY44
-Ia3MPYEcPZEZ8nLQBEleiLM=
-=rOAz
------END PGP SIGNATURE-----
-
---nextPart6168428.fcT4MqvegJ--
+-Andi
