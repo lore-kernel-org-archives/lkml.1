@@ -1,73 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964979AbXBLQ6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965001AbXBLQ7G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964979AbXBLQ6Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 11:58:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964989AbXBLQ5R
+	id S965001AbXBLQ7G (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 11:59:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965010AbXBLQ6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 11:57:17 -0500
-Received: from ns1.suse.de ([195.135.220.2]:47943 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964990AbXBLQvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 11:51:37 -0500
-From: Andi Kleen <ak@suse.de>
-References: <20070212551.664370000@suse.de>
-In-Reply-To: <20070212551.664370000@suse.de>
-To: "Bob Picco" <bob.picco@hp.com>, Andi Kleen <ak@muc.de>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH x86 for review III] [4/29] x86_64: clean up sparsemem memory_present call
-Message-Id: <20070212165123.DDBA613F81@wotan.suse.de>
-Date: Mon, 12 Feb 2007 17:51:23 +0100 (CET)
+	Mon, 12 Feb 2007 11:58:25 -0500
+Received: from dsl3-63-249-91-56.cruzio.com ([63.249.91.56]:45014 "EHLO
+	cichlid.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964987AbXBLQ6B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 11:58:01 -0500
+Date: Mon, 12 Feb 2007 08:57:27 -0800
+From: Andrew Burgess <aab@cichlid.com>
+Message-Id: <200702121657.l1CGvRh5010463@cichlid.com>
+To: av1474@comtv.ru, linux-kernel@vger.kernel.org
+Subject: Re: CPU load
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 12/02/07, Vassili Karpov <av1474@comtv.ru> wrote:
+>
+> How does the kernel calculates the value it places in `/proc/stat' at
+> 4th position (i.e. "idle: twiddling thumbs")?
+>
+..
+>
+> Later small kernel module was developed that tried to time how much
+> time is spent in the idle handler inside the kernel and exported this
+> information to the user-space. The results were consistent with our
+> expectations and the output of the test utility.
+..
+> http://www.boblycat.org/~malc/apc
 
-From: "Bob Picco" <bob.picco@hp.com>
+Vassili
 
-Eliminate arch specific memory_present call x86_64 NUMA by utilizing
-sparse_memory_present_with_active_regions.
+Could you rewrite this code as a kernel patch for
+discussion/inclusion in mainline? I and maybe others would
+appreciate having idle statistics be more accurate.
 
-Acked-by: Mel Gorman <mel@csn.ul.ie>
-Signed-off-by: Bob Picco <bob.picco@hp.com>
-Signed-off-by: Andi Kleen <ak@suse.de>
-Cc: Andi Kleen <ak@muc.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+Thanks for your work
+Andrew
 
- arch/x86_64/mm/numa.c |   17 ++---------------
- 1 file changed, 2 insertions(+), 15 deletions(-)
-
-Index: linux/arch/x86_64/mm/numa.c
-===================================================================
---- linux.orig/arch/x86_64/mm/numa.c
-+++ linux/arch/x86_64/mm/numa.c
-@@ -460,20 +460,6 @@ unsigned long __init numa_free_all_bootm
- 	return pages;
- } 
- 
--#ifdef CONFIG_SPARSEMEM
--static void __init arch_sparse_init(void)
--{
--	int i;
--
--	for_each_online_node(i)
--		memory_present(i, node_start_pfn(i), node_end_pfn(i));
--
--	sparse_init();
--}
--#else
--#define arch_sparse_init() do {} while (0)
--#endif
--
- void __init paging_init(void)
- { 
- 	int i;
-@@ -483,7 +469,8 @@ void __init paging_init(void)
- 	max_zone_pfns[ZONE_DMA32] = MAX_DMA32_PFN;
- 	max_zone_pfns[ZONE_NORMAL] = end_pfn;
- 
--	arch_sparse_init();
-+	sparse_memory_present_with_active_regions(MAX_NUMNODES);
-+	sparse_init();
- 
- 	for_each_online_node(i) {
- 		setup_node_zones(i); 
