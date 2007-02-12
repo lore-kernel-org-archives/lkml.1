@@ -1,46 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030208AbXBLWhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965427AbXBLWiQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030208AbXBLWhe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 17:37:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965438AbXBLWhd
+	id S965427AbXBLWiQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 17:38:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965437AbXBLWiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 17:37:33 -0500
-Received: from nigel.suspend2.net ([203.171.70.205]:50269 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965437AbXBLWhc (ORCPT
+	Mon, 12 Feb 2007 17:38:16 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:52207 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965427AbXBLWiP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 17:37:32 -0500
-Subject: Re: NAK new drivers without proper power management?
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Willy Tarreau <w@1wt.eu>
-Cc: Alan <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070212051924.GE13913@1wt.eu>
-References: <fa.E/NjHlgg0HqDg5CgZjnCHFi2AMM@ifi.uio.no>
-	 <fa.kop49l/7yexJoUGrzk6vVeIP934@ifi.uio.no>
-	 <fa.EgQN5JpU6xrZSLyOY0kWjJ26hUM@ifi.uio.no> <45CF60F2.5020308@shaw.ca>
-	 <20070211215211.GB13913@1wt.eu>
-	 <1171232786.4493.62.camel@nigel.suspend2.net>
-	 <20070211224637.GC13913@1wt.eu>
-	 <1171235922.4493.114.camel@nigel.suspend2.net>
-	 <20070211233822.GD13913@1wt.eu>
-	 <20070212002652.1ea4026e@localhost.localdomain>
-	 <20070212051924.GE13913@1wt.eu>
-Content-Type: text/plain
-Date: Tue, 13 Feb 2007 09:36:58 +1100
-Message-Id: <1171319818.4081.51.camel@nigel.suspend2.net>
+	Mon, 12 Feb 2007 17:38:15 -0500
+Date: Mon, 12 Feb 2007 23:38:14 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH x86 for review III] [17/29] x86: Add new CPUID bits for AMD Family 10 CPUs in /proc/cpuinfo
+Message-ID: <20070212223814.GA16951@one.firstfloor.org>
+References: <20070212551.664370000@suse.de> <20070212165137.AD85913E1B@wotan.suse.de> <45D0E60F.2090506@redhat.com> <200702122323.53364.andi@firstfloor.org> <45D0EC39.8030608@redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45D0EC39.8030608@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+> A one-liner for each in the comments would be just enough.
 
-On Mon, 2007-02-12 at 06:19 +0100, Willy Tarreau wrote:
-> One less "myth" as Nigel would say call it ;-)
+No. RTFM.
 
-You know me too well! :>
-
-
+-Andi
