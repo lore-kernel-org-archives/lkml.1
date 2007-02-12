@@ -1,52 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933050AbXBLGyG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933048AbXBLGy7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933050AbXBLGyG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 01:54:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933051AbXBLGyG
+	id S933048AbXBLGy7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 01:54:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933051AbXBLGy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 01:54:06 -0500
-Received: from comtv.ru ([217.10.32.17]:47808 "EHLO comtv.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933050AbXBLGyF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 01:54:05 -0500
-X-Greylist: delayed 3597 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Feb 2007 01:54:04 EST
-X-UCL: actv
-Date: Mon, 12 Feb 2007 08:54:25 +0300 (MSK)
-From: malc <av1474@comtv.ru>
-X-X-Sender: malc@home.oyster.ru
-To: Con Kolivas <kernel@kolivas.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: CPU load
-In-Reply-To: <8cd998d50702112144y38958d27saec4196f6f5d5236@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0702120849310.903@home.oyster.ru>
-References: <loom.20070212T063225-663@post.gmane.org>
- <8cd998d50702112144y38958d27saec4196f6f5d5236@mail.gmail.com>
+	Mon, 12 Feb 2007 01:54:59 -0500
+Received: from mga06.intel.com ([134.134.136.21]:10962 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933048AbXBLGy6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 01:54:58 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.13,312,1167638400"; 
+   d="scan'208"; a="195650697:sNHT20347887"
+Date: Sun, 11 Feb 2007 22:55:04 -0800
+From: Valerie Henson <val_henson@linux.intel.com>
+To: Dave Jones <davej@redhat.com>, Michael Kerrisk <mtk-manpages@gmx.net>,
+       val_henson@linux.interl.com, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Documenting MS_RELATIME
+Message-ID: <20070212065503.GC20919@nifty>
+References: <45CE0737.6010103@gmx.net> <20070211005400.GC6849@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070211005400.GC6849@redhat.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Feb 2007, Con Kolivas wrote:
+On Sat, Feb 10, 2007 at 07:54:00PM -0500, Dave Jones wrote:
+> 
+> Whilst on the subject of RELATIME, is there any good reason why
+> not to make this a default mount option ?
 
-> On 12/02/07, Vassili Karpov <av1474@comtv.ru> wrote:
+Ubuntu has been shipping with noatime as the default for some time
+now, with no obvious problems (I'm running Ubuntu).  I see relatime as
+an improvement on noatime.
 
-[..snip..]
-
-> The kernel looks at what is using cpu _only_ during the timer
-> interrupt. Which means if your HZ is 1000 it looks at what is running
-> at precisely the moment those 1000 timer ticks occur. It is
-> theoretically possible using this measurement system to use >99% cpu
-> and record 0 usage if you time your cpu usage properly. It gets even
-> more inaccurate at lower HZ values for the same reason.
-
-Thank you very much. This somewhat contradicts what i saw (and outlined
-in usnet article), namely the mplayer+/dev/rtc case. Unless ofcourse
-/dev/rtc interrupt is considered to be the same as the interrupt from
-PIT (on X86 that is)
-
-P.S. Perhaps it worth documenting this in the documentation? I caused
-      me, and perhaps quite a few other people, a great deal of pain and
-      frustration.
-
--- 
-vale
+-VAL
