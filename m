@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932578AbXBLHnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933098AbXBLHoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932578AbXBLHnq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 02:43:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933088AbXBLHnp
+	id S933098AbXBLHoX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 02:44:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933093AbXBLHn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 02:43:45 -0500
-Received: from ns2.suse.de ([195.135.220.15]:49642 "EHLO mx2.suse.de"
+	Mon, 12 Feb 2007 02:43:59 -0500
+Received: from ns2.suse.de ([195.135.220.15]:49631 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933110AbXBLHiX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 02:38:23 -0500
+	id S933094AbXBLHiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 02:38:16 -0500
 From: Andi Kleen <ak@suse.de>
 References: <20070212837.963446000@suse.de>
 In-Reply-To: <20070212837.963446000@suse.de>
-To: Nicolas Kaiser <nikai@nikai.net>, patches@x86-64.org,
+To: Alexey Dobriyan <adobriyan@openvz.org>, patches@x86-64.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH x86 for review II] [22/39] x86_64: Kconfig typos
-Message-Id: <20070212073809.D070413D7F@wotan.suse.de>
-Date: Mon, 12 Feb 2007 08:38:09 +0100 (CET)
+Subject: [PATCH x86 for review II] [24/39] i386: use smp_call_function_single()
+Message-Id: <20070212073811.EF43213D01@wotan.suse.de>
+Date: Mon, 12 Feb 2007 08:38:11 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Nicolas Kaiser <nikai@nikai.net>
-Some typos in Kconfig.
+From: Alexey Dobriyan <adobriyan@openvz.org>
+It will execure cpuid only on the cpu we need.
 
-Signed-off-by: Nicolas Kaiser <nikai@nikai.net>
+Signed-off-by: Alexey Dobriyan <adobriyan@openvz.org>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
 
----
- arch/x86_64/Kconfig |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ arch/i386/kernel/cpuid.c |    7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-Index: linux/arch/x86_64/Kconfig
+Index: linux/arch/i386/kernel/cpuid.c
 ===================================================================
---- linux.orig/arch/x86_64/Kconfig
-+++ linux/arch/x86_64/Kconfig
-@@ -148,18 +148,18 @@ config MPSC
- 	  Optimize for Intel Pentium 4 and older Nocona/Dempsey Xeon CPUs
- 	  with Intel Extended Memory 64 Technology(EM64T). For details see
- 	  <http://www.intel.com/technology/64bitextensions/>.
--	  Note the the latest Xeons (Xeon 51xx and 53xx) are not based on the
--          Netburst core and shouldn't use this option. You can distingush them
-+	  Note that the latest Xeons (Xeon 51xx and 53xx) are not based on the
-+          Netburst core and shouldn't use this option. You can distinguish them
- 	  using the cpu family field
--	  in /proc/cpuinfo. Family 15 is a older Xeon, Family 6 a newer one
--	  (this rule only applies to system that support EM64T)
-+	  in /proc/cpuinfo. Family 15 is an older Xeon, Family 6 a newer one
-+	  (this rule only applies to systems that support EM64T)
+--- linux.orig/arch/i386/kernel/cpuid.c
++++ linux/arch/i386/kernel/cpuid.c
+@@ -48,7 +48,6 @@ static struct class *cpuid_class;
+ #ifdef CONFIG_SMP
  
- config MCORE2
- 	bool "Intel Core2 / newer Xeon"
- 	help
- 	  Optimize for Intel Core2 and newer Xeons (51xx)
--	  You can distingush the newer Xeons from the older ones using
--	  the cpu family field in /proc/cpuinfo. 15 is a older Xeon
-+	  You can distinguish the newer Xeons from the older ones using
-+	  the cpu family field in /proc/cpuinfo. 15 is an older Xeon
- 	  (use CONFIG_MPSC then), 6 is a newer one. This rule only
- 	  applies to CPUs that support EM64T.
+ struct cpuid_command {
+-	int cpu;
+ 	u32 reg;
+ 	u32 *data;
+ };
+@@ -57,8 +56,7 @@ static void cpuid_smp_cpuid(void *cmd_bl
+ {
+ 	struct cpuid_command *cmd = (struct cpuid_command *)cmd_block;
  
+-	if (cmd->cpu == smp_processor_id())
+-		cpuid(cmd->reg, &cmd->data[0], &cmd->data[1], &cmd->data[2],
++	cpuid(cmd->reg, &cmd->data[0], &cmd->data[1], &cmd->data[2],
+ 		      &cmd->data[3]);
+ }
+ 
+@@ -70,11 +68,10 @@ static inline void do_cpuid(int cpu, u32
+ 	if (cpu == smp_processor_id()) {
+ 		cpuid(reg, &data[0], &data[1], &data[2], &data[3]);
+ 	} else {
+-		cmd.cpu = cpu;
+ 		cmd.reg = reg;
+ 		cmd.data = data;
+ 
+-		smp_call_function(cpuid_smp_cpuid, &cmd, 1, 1);
++		smp_call_function_single(cpu, cpuid_smp_cpuid, &cmd, 1, 1);
+ 	}
+ 	preempt_enable();
+ }
