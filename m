@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964825AbXBLJdJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964821AbXBLJg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964825AbXBLJdJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 04:33:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964827AbXBLJdJ
+	id S964821AbXBLJg3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 04:36:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964824AbXBLJg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 04:33:09 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:29569 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964825AbXBLJdF (ORCPT
+	Mon, 12 Feb 2007 04:36:28 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4823 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964821AbXBLJg1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 04:33:05 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=WoR076p/LgV3KMeSE0/i4BKWrnUoSwvL6z+GbBviz7aD+g9dVXmWiEsfnrHZC4Fkr
-	p2mmpjDiXLZXuhP/MJJHw==
-Message-ID: <6599ad830702120132r181d338cy28b23736fa393de5@mail.gmail.com>
-Date: Mon, 12 Feb 2007 01:32:51 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Paul Jackson" <pj@sgi.com>
-Subject: Re: [PATCH 0/7] containers (V7): Generic Process Containers
-Cc: akpm@osdl.org, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
-       serue@us.ibm.com, vatsa@in.ibm.com, ebiederm@xmission.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       rohitseth@google.com, mbligh@google.com, winget@google.com,
-       containers@lists.osdl.org, devel@openvz.org
-In-Reply-To: <20070212011843.c6e8f4ae.pj@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Feb 2007 04:36:27 -0500
+Date: Mon, 12 Feb 2007 09:35:49 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: David Gibson <david@gibson.dropbear.id.au>,
+       Thomas Gleixner <tglx@linutronix.de>, mingo@elte.hu,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: genirq: Add a set_irq_handler_locked() function
+Message-ID: <20070212093549.GA22465@flint.arm.linux.org.uk>
+Mail-Followup-To: David Gibson <david@gibson.dropbear.id.au>,
+	Thomas Gleixner <tglx@linutronix.de>, mingo@elte.hu,
+	Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+References: <20070207023353.GC23870@localhost.localdomain> <1170940949.3646.1.camel@chaos> <20070209034842.GF3489@localhost.localdomain> <20070209073640.GA29988@flint.arm.linux.org.uk> <20070212031728.GA30401@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070212081521.808338000@menage.corp.google.com>
-	 <20070212011843.c6e8f4ae.pj@sgi.com>
+In-Reply-To: <20070212031728.GA30401@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/12/07, Paul Jackson <pj@sgi.com> wrote:
->
-> You'll have a rough time selling me on the idea that some kernel thread
-> should be waking up every few seconds, grabbing system-wide locks, on a
-> big honkin NUMA box, for the few times per hour, or less, that a cpuset is
-> abandoned.
+On Mon, Feb 12, 2007 at 02:17:28PM +1100, David Gibson wrote:
+> On Fri, Feb 09, 2007 at 07:36:40AM +0000, Russell King wrote:
+> > On Fri, Feb 09, 2007 at 02:48:42PM +1100, David Gibson wrote:
+> > > At present set_irq_handler() and all the existing variants take the
+> > > desc->lock for the irq in question before adjusting the irq's flow
+> > > handler.  This can cause problems for irq chips for which a given
+> > > interrupt can be either level or edge depending on what's attached.
+> > 
+> > Are you sure you need to change the flow handler depending on how
+> > you program the device?
+> > 
+> > Since the outset of this design, I've had what are essentially edge
+> > based interrupt sources using the "level" handlers because they haven't
+> > had a "broken" edge implementation.  By that, I mean that the masking
+> > is done in such a way that you miss edges when the source is masked.
+> > 
+> > If you do not miss edges while the source is masked, there's no point
+> > in having the complexity of the "edge" based handler in the path - it
+> > buys you nothing.  Just use the "level" handler instead.
+> 
+> I see... how terribly obvious.
 
-I think it could be made smarter than that, e.g. have a workqueue task
-that's only woken when a refcount does actually reach zero. (I think
-that waking a workqueue task is something that can be done without too
-much worry about locks)
+Do you have a better way of naming the functions?
 
->
-> Can you explain to me how this intruded on the reference counting?
->
+> As far as I know, the 4xx UIC does things correctly, though I don't
+> have handy any devices with edge interrupts to test it with.
+> 
+> It would still be nice to have this change, so we can use the
+> lazy-masking from handle_edge_irq(), but I guess I can do without it
+> for now.
 
-Essentially, it means that anything that releases a reference count on
-a container needs to be able to trigger a call to the release agent.
-The reference count is often released at a point when important locks
-are held, so you end up having to pass buffers into any function that
-might drop a ref count, in order to store a path to a release agent to
-be invoked.
+If you have correct behaviour from your interrupt controller for edge
+based interrupts, you don't need the lazy masking, so why make things
+complicated in this way?
 
-In particular, the new container_clone() function can be called during
-the task fork path; at which point forking a new release_agent process
-would be impossible, or at least nasty. Additionally, if containers
-are potentially going to be used for virtual servers, having the
-release agent run from a top-level process rather than the process
-context that released the refcount sounds like a sane option.
-
-Paul
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
