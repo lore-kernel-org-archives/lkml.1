@@ -1,38 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965347AbXBLTr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965346AbXBLTrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965347AbXBLTr3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 14:47:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965346AbXBLTr3
+	id S965346AbXBLTrl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 14:47:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965348AbXBLTrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 14:47:29 -0500
-Received: from mail.kroah.org ([69.55.234.183]:33898 "EHLO perch.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965347AbXBLTr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 14:47:28 -0500
-Date: Mon, 12 Feb 2007 11:46:39 -0800
-From: Greg KH <greg@kroah.com>
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list 
-	<linux-fbdev-devel@lists.sourceforge.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] class device cleanup for fbdev
-Message-ID: <20070212194639.GA789@kroah.com>
-References: <Pine.LNX.4.64.0702071950110.9071@pentafluge.infradead.org>
+	Mon, 12 Feb 2007 14:47:40 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46704 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965346AbXBLTrk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 14:47:40 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Etienne Lorrain <etienne_lorrain@yahoo.fr>, vgoyal@in.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Re : [PATCH] Compressed ia32 ELF file generation for loading by Gujin 1/3
+References: <687898.45581.qm@web26907.mail.ukl.yahoo.com>
+	<m17iuny2xg.fsf@ebiederm.dsl.xmission.com>
+	<45D07457.9030006@zytor.com>
+Date: Mon, 12 Feb 2007 12:47:27 -0700
+In-Reply-To: <45D07457.9030006@zytor.com> (H. Peter Anvin's message of "Mon,
+	12 Feb 2007 06:06:15 -0800")
+Message-ID: <m1abzjw434.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702071950110.9071@pentafluge.infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 07, 2007 at 07:53:09PM +0000, James Simmons wrote:
-> 
-> Let me know if this is the right approach. This patch uses the class field 
-> in struct device.
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-Yes, it looks like the correct thing to do.
+> Eric W. Biederman wrote:
+>>
+>> With ELF we get a single file format that works on multiple
+>> architectures and for multiple OS-s, with well understood rules.  This
+>> allows for a broader audience who can review and maintain the code.
+>> In addition to the real possibility of multi-architecture or multi-os
+>> bootloaders.
+>>
+>
+> Well understood MAYBE (although the "virtual" versus "physical" address stuff in
+> ELF is clearly misspecified in the extreme), but they are clearly not sufficient
+> for presenting a well-defined entry condition. So it's not really anywhere near
+> as straightforward as you make it sound.
 
-thanks,
+About the entry condition I completely agree.
 
-greg k-h
+The fact that the generic tools almost do what you need and then fall short is
+also problematic.
+
+However it still appears a reasonable approach to consider.
+
+Eric
