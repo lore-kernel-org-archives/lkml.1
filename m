@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932591AbXBLBFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932929AbXBLCDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932591AbXBLBFU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 20:05:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932594AbXBLBFU
+	id S932929AbXBLCDm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 21:03:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932931AbXBLCDl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 20:05:20 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:24530 "EHLO
-	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932591AbXBLBFS (ORCPT
+	Sun, 11 Feb 2007 21:03:41 -0500
+Received: from 87-194-2-4.bethere.co.uk ([87.194.2.4]:59915 "EHLO
+	mail.arasphere.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932929AbXBLCDl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 20:05:18 -0500
-Date: Sun, 11 Feb 2007 17:05:12 -0800 (PST)
-From: Zwane Mwaikambo <zwane@infradead.org>
-Subject: Re: What are the real ioapic rte programming constraints?
-In-reply-to: <m17iuoz74f.fsf@ebiederm.dsl.xmission.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Ashok Raj <ashok.raj@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       "Lu, Yinghai" <yinghai.lu@amd.com>,
-       Natalie Protasevich <protasnb@gmail.com>, Andi Kleen <ak@suse.de>
-Message-id: <Pine.LNX.4.64.0702111416220.24829@montezuma.fsmlabs.com>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <200701221116.13154.luigi.genoni@pirelli.com>
- <200702021848.55921.luigi.genoni@pirelli.com>
- <m1ejp85tgm.fsf@ebiederm.dsl.xmission.com>
- <200702021905.39922.luigi.genoni@pirelli.com>
- <m1zm7w3wvr.fsf_-_@ebiederm.dsl.xmission.com>
- <m1veik3woc.fsf_-_@ebiederm.dsl.xmission.com> <20070206073616.GA15016@elte.hu>
- <m1odo7q6cq.fsf@ebiederm.dsl.xmission.com> <20070206222523.GA11602@elte.hu>
- <m1irecamzh.fsf@ebiederm.dsl.xmission.com>
- <m1wt2s8ksa.fsf@ebiederm.dsl.xmission.com>
- <m1veib6dgi.fsf@ebiederm.dsl.xmission.com>
- <m1hctt1sfp.fsf_-_@ebiederm.dsl.xmission.com>
- <Pine.LNX.4.64.0702102146380.8245@montezuma.fsmlabs.com>
- <m13b5d0zdp.fsf@ebiederm.dsl.xmission.com>
- <Pine.LNX.4.64.0702110753390.8245@montezuma.fsmlabs.com>
- <m17iuoz74f.fsf@ebiederm.dsl.xmission.com>
+	Sun, 11 Feb 2007 21:03:41 -0500
+X-Greylist: delayed 1563 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Feb 2007 21:03:41 EST
+Message-ID: <45CFC4DE.9010504@arasphere.net>
+Date: Mon, 12 Feb 2007 01:37:34 +0000
+From: Matthew Hodgson <matthew@arasphere.net>
+User-Agent: Thunderbird 1.5.0.9 (Macintosh/20061207)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: BUG: at fs/nfs/pagelist.c:339 nfs_scan_dirty()
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 Feb 2007, Eric W. Biederman wrote:
+Hi,
 
-> > 2.15.2 PCI Express* Legacy INTx Support and Boot Interrupt
-> > http://download.intel.com/design/chipsets/datashts/30262802.pdf
-> 
-> Ouch.  And this kind of thing isn't exactly uncommon.
-> 
-> However if we have the irqs also disabled in the i8259 we should
-> be safe from actually receiving this interrupt (even if it generates
-> bus traffic), and when we enable the irq since it is level triggered  
-> we should still get an interrupt message.
->
-> It isn't immediately obvious where the i8259 irq enable/disable
-> happens.  So i"m having trouble auditing that bit of code.
->
-> Plus we can get very strange things like the irq number changing
-> and the sharing rules being different when going through the i8259.
-> So irqN may be irqM when going through the i8259.
-> 
-> As long as we aren't using anything on the i8259 including the timer
-> in ExtINT mode we can disable every interrupt pin and not worry about
-> interrupts from that source.
+I just upgraded from 2.6.13.4 to 2.6.20 on a Pentium M, and on booting 
+off an NFS root encountered the following bug somewhere after loading 
+the w83627hf module and before ohci1394:
 
-We do the 8259 mask in setup_IO_APIC_irq. does anyone have access to an 
-E7520/E7320 system for testing?
+BUG: at fs/nfs/pagelist.c:339 nfs_scan_dirty()
+  [<c01da1b6>] nfs_scan_dirty+0x168/0x17d
+  [<c01dd54a>] nfs_wait_on_requests_locked+0x9c/0xac
+  [<c01dda9b>] nfs_sync_mapping_wait+0xad/0x256
+  [<c01de35a>] nfs_sync_mapping_range+0x83/0x9e
+  [<c01d8037>] nfs_getattr+0x37/0x98
+  [<c01d8000>] nfs_getattr+0x0/0x98
+  [<c014be19>] vfs_getattr+0x21/0x30
+  [<c014c203>] vfs_stat_fd+0x2e/0x40
+  [<c0224ec4>] __copy_to_user_ll+0xc9/0xd4
+  [<c014c2a2>] sys_stat64+0xf/0x23
+  [<c010f5bb>] do_page_fault+0x277/0x528
+  [<c0149c61>] vfs_read+0xfa/0x134
+  [<c010f344>] do_page_fault+0x0/0x528
+  [<c0102c98>] syscall_call+0x7/0xb
+  =======================
 
-Cheers,
-	Zwane
+So far the machine appears stable other than this - but after having had 
+a year or so of perfect uptime on the box under 2.6.13.4 with no such 
+kernel errors, I thought you might like to know in case this indicates 
+something more serious.
 
+The kernel options given to boot off NFS were...
+
+root=/dev/nfs rw 
+nfsroot=192.168.0.x:/home/stb,v3,hard,intr,nolock,retrans=6,rsize=16384,wsize=16384 
+ip=dhcp
+
+...and the full dmesg, kernel config, lspci and lsmod output may be 
+found at http://www.arasphere.net/linux/nfs-bug.  The NFS server is 
+running the default NFS v3 options on 2.6.20 on Core 2 Duo.  No patches 
+have been applied to either kernel.
+
+Any advice on whether I should be worried by this, whether it indicates 
+that something significant is wrong, and how I might help debug it would 
+be appreciated.
+
+thanks.
+
+Matthew.
