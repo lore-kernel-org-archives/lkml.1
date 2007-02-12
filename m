@@ -1,92 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932949AbXBLD0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932569AbXBLDcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932949AbXBLD0d (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 22:26:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932948AbXBLD0d
+	id S932569AbXBLDcr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 22:32:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932941AbXBLDcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 22:26:33 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:45267 "EHLO
-	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932946AbXBLD0c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 22:26:32 -0500
-Date: Sun, 11 Feb 2007 21:25:27 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: libata FUA revisited
-To: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-Cc: edmudama@gmail.com, Nicolas.Mailhot@LaPoste.net,
-       Tejun Heo <htejun@gmail.com>
-Message-id: <45CFDE27.5030607@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Sun, 11 Feb 2007 22:32:47 -0500
+Received: from ozlabs.org ([203.10.76.45]:50808 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932569AbXBLDcr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 22:32:47 -0500
+Subject: [PATCH 1/7] cleanup: paravirt unhandled fallthrough
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.osdl.org>, Andi Kleen <ak@muc.de>
+Content-Type: text/plain
+Date: Mon, 12 Feb 2007 14:32:00 +1100
+Message-Id: <1171251120.10409.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've been looking at some list archives from about a year ago when there 
-was a big hoohah about FUA in libata. To summarize what I've gotten from 
-that discussion:
+The current code simply calls "start_kernel" directly if we're under a
+hypervisor and no paravirt_ops backend wants us, because paravirt.c
+registers that as a backend.
 
-Nicolas Mailhot ran into a problem with the first kernels that supported 
-libata FUA, using a Silicon Image 3114 controller and a Maxtor 6L300S0 
-    drive with BANC1G10 firmware. Essentially it would quickly corrupt 
-the filesystem on bootup. After that:
+This was always a vain hope; start_kernel won't get far without setup.
+It's also impossible for paravirt_ops backends which don't sit in the
+arch/i386/kernel directory: they can't link before paravirt.o anyway.
 
--A blacklist entry was added into libata disabling FUA on Maxtor drives 
-with BANC1G10 firmware
+Keep it simple: if we pass all the registered paravirt probes, BUG().
 
--Eric Mudama from Maxtor complained that there was nothing wrong with 
-FUA on those drives and the blacklist should be taken out (though it 
-never was)
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
--It was also confirmed by Eric and others that Silicon Image 311x 
-controllers go nuts if they're issued WRITE DMA FUA commands, at least 
-without some driver improvements which I assume haven't happened.
+diff -r 4fb7fc327801 arch/i386/kernel/Makefile
+--- a/arch/i386/kernel/Makefile	Mon Feb 12 12:37:01 2007 +1100
++++ b/arch/i386/kernel/Makefile	Mon Feb 12 12:55:00 2007 +1100
+@@ -41,8 +41,6 @@ obj-$(CONFIG_KWATCH)		+= debugreg.o kwat
+ obj-$(CONFIG_KWATCH)		+= debugreg.o kwatch.o
+ 
+ obj-$(CONFIG_VMI)		+= vmi.o vmitime.o
+-
+-# Make sure this is linked after any other paravirt_ops structs: see head.S
+ obj-$(CONFIG_PARAVIRT)		+= paravirt.o
+ 
+ EXTRA_AFLAGS   := -traditional
+diff -r 4fb7fc327801 arch/i386/kernel/head.S
+--- a/arch/i386/kernel/head.S	Mon Feb 12 12:37:01 2007 +1100
++++ b/arch/i386/kernel/head.S	Mon Feb 12 12:54:19 2007 +1100
+@@ -513,10 +513,11 @@ startup_paravirt:
+ 	pushl	%ecx
+ 	pushl	%eax
+ 
+-	/* paravirt.o is last in link, and that probe fn never returns */
+ 	pushl	$__start_paravirtprobe
+ 1:
+ 	movl	0(%esp), %eax
++	cmpl	$__stop_paravirtprobe, %eax
++	je	unhandled_paravirt
+ 	pushl	(%eax)
+ 	movl	8(%esp), %eax
+ 	call	*(%esp)
+@@ -528,6 +529,10 @@ 1:
+ 
+ 	addl	$4, (%esp)
+ 	jmp	1b
++
++unhandled_paravirt:
++	/* Nothing wanted us: we're screwed. */ 
++	ud2
+ #endif
+ 
+ /*
+diff -r 4fb7fc327801 arch/i386/kernel/paravirt.c
+--- a/arch/i386/kernel/paravirt.c	Mon Feb 12 12:37:01 2007 +1100
++++ b/arch/i386/kernel/paravirt.c	Mon Feb 12 12:54:19 2007 +1100
+@@ -481,9 +481,6 @@ static int __init print_banner(void)
+ 	return 0;
+ }
+ core_initcall(print_banner);
+-
+-/* We simply declare start_kernel to be the paravirt probe of last resort. */
+-paravirt_probe(start_kernel);
+ 
+ struct paravirt_ops paravirt_ops = {
+ 	.name = "bare hardware",
 
--Eventually FUA was disabled by default globally in libata.
 
-Given the above, what I'm proposing to do is:
-
--Remove the blacklisting of Maxtor BANC1G10 firmware for FUA. If we need 
-to FUA-blacklist any drives this should likely be added to the existing 
-"horkage" mechanism we now have. However, at this point I don't think 
-that's needed, considering that I've seen no conclusive evidence that 
-any drive has ever been established to have broken FUA.
-
--Add a new port flag ATA_FLAG_NO_FUA to indicate that a controller can't 
-handle FUA commands, and add that flag to sata_sil. Force FUA off on any 
-drive connected to a controller with this bit set.
-
-There was some talk that sata_mv might have this problem, but I believe 
-the conclusion was that it didn't. The only controllers that would are 
-ones that actually try to interpret the ATA command codes and don't know 
-about WRITE DMA FUA.
-
--Change the fua module option to control FUA enable/disable to have a 
-third value, "enable for NCQ-supporting drives only", which would become 
-the new default. That case seems less likely to cause problems since FUA 
-on NCQ is just another bit in the command whereas FUA on non-NCQ is an 
-entirely different, potentially unsupported command.
-
-Any comments?
-
-As an aside, I came across a comment that the Silicon Image Windows 
-drivers for NCQ-supporting controllers have some blacklist entries for 
-drives with broken NCQ in their .inf files. We only seem to have one in 
-the libata NCQ blacklist, we may want to add some more of these. The 
-ones in the current SiI3124 and 3132 drivers' .inf files for 
-"DisableSataQueueing" appear to be:
-
-Model				Firmware
-Maxtor 7B250S0			BANC1B70
-HTS541060G9SA00			MB3OC60D
-HTS541080G9SA00			MB4OC60D
-HTS541010G9SA00			MBZOC60D
-
-(the latter 3 being Hitachi Travelstar drives)
-
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
