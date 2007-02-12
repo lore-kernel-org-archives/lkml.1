@@ -1,160 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965013AbXBLQzF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965017AbXBLQzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965013AbXBLQzF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 11:55:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965002AbXBLQwA
+	id S965017AbXBLQzx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 11:55:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965015AbXBLQzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 11:52:00 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:53671 "EHLO mx2.suse.de"
+	Mon, 12 Feb 2007 11:55:12 -0500
+Received: from mail.suse.de ([195.135.220.2]:47948 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965003AbXBLQv4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 11:51:56 -0500
+	id S964994AbXBLQvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 11:51:39 -0500
 From: Andi Kleen <ak@suse.de>
 References: <20070212551.664370000@suse.de>
 In-Reply-To: <20070212551.664370000@suse.de>
 To: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH x86 for review III] [29/29] x86: Unify pcspeaker platform device code between i386/x86-64
-Message-Id: <20070212165150.5D40313F7A@wotan.suse.de>
-Date: Mon, 12 Feb 2007 17:51:50 +0100 (CET)
+Subject: [PATCH x86 for review III] [17/29] x86: Add new CPUID bits for AMD Family 10 CPUs in /proc/cpuinfo
+Message-Id: <20070212165137.AD85913E1B@wotan.suse.de>
+Date: Mon, 12 Feb 2007 17:51:37 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Trivial cleanup.
+Just various new acronyms. The new popcnt bit is in the middle
+of Intel space. This looks a little weird, but I've been assured
+it's ok.
 
-Only change is that it is always compiled in now on x86-64 like on i386.
+Also I fixed RDTSCP for i386 which was at the wrong place.
 
+For i386 and x86-64.
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/i386/kernel/Makefile    |    1 +
- arch/i386/kernel/pcspeaker.c |   20 ++++++++++++++++++++
- arch/i386/kernel/setup.c     |   26 --------------------------
- arch/x86_64/kernel/Makefile  |    2 ++
- arch/x86_64/kernel/setup.c   |   20 --------------------
- 5 files changed, 23 insertions(+), 46 deletions(-)
+ arch/i386/kernel/cpu/proc.c |   14 +++++++++-----
+ arch/x86_64/kernel/setup.c  |   14 ++++++++++----
+ 2 files changed, 19 insertions(+), 9 deletions(-)
 
-Index: linux/arch/i386/kernel/Makefile
-===================================================================
---- linux.orig/arch/i386/kernel/Makefile
-+++ linux/arch/i386/kernel/Makefile
-@@ -42,6 +42,7 @@ obj-$(CONFIG_K8_NB)		+= k8.o
- 
- obj-$(CONFIG_VMI)		+= vmi.o vmitime.o
- obj-$(CONFIG_PARAVIRT)		+= paravirt.o
-+obj-y				+= pcspeaker.o
- 
- EXTRA_AFLAGS   := -traditional
- 
-Index: linux/arch/i386/kernel/pcspeaker.c
-===================================================================
---- /dev/null
-+++ linux/arch/i386/kernel/pcspeaker.c
-@@ -0,0 +1,20 @@
-+#include <linux/platform_device.h>
-+#include <linux/errno.h>
-+#include <linux/init.h>
-+
-+static __init int add_pcspkr(void)
-+{
-+	struct platform_device *pd;
-+	int ret;
-+
-+	pd = platform_device_alloc("pcspkr", -1);
-+	if (!pd)
-+		return -ENOMEM;
-+
-+	ret = platform_device_add(pd);
-+	if (ret)
-+		platform_device_put(pd);
-+
-+	return ret;
-+}
-+device_initcall(add_pcspkr);
-Index: linux/arch/i386/kernel/setup.c
-===================================================================
---- linux.orig/arch/i386/kernel/setup.c
-+++ linux/arch/i386/kernel/setup.c
-@@ -33,7 +33,6 @@
- #include <linux/initrd.h>
- #include <linux/bootmem.h>
- #include <linux/seq_file.h>
--#include <linux/platform_device.h>
- #include <linux/console.h>
- #include <linux/mca.h>
- #include <linux/root_dev.h>
-@@ -660,28 +659,3 @@ void __init setup_arch(char **cmdline_p)
- #endif
- 	tsc_init();
- }
--
--static __init int add_pcspkr(void)
--{
--	struct platform_device *pd;
--	int ret;
--
--	pd = platform_device_alloc("pcspkr", -1);
--	if (!pd)
--		return -ENOMEM;
--
--	ret = platform_device_add(pd);
--	if (ret)
--		platform_device_put(pd);
--
--	return ret;
--}
--device_initcall(add_pcspkr);
--
--/*
-- * Local Variables:
-- * mode:c
-- * c-file-style:"k&r"
-- * c-basic-offset:8
-- * End:
-- */
-Index: linux/arch/x86_64/kernel/Makefile
-===================================================================
---- linux.orig/arch/x86_64/kernel/Makefile
-+++ linux/arch/x86_64/kernel/Makefile
-@@ -42,6 +42,7 @@ obj-$(CONFIG_PCI)		+= early-quirks.o
- 
- obj-y				+= topology.o
- obj-y				+= intel_cacheinfo.o
-+obj-y				+= pcspeaker.o
- 
- CFLAGS_vsyscall.o		:= $(PROFILING) -g0
- 
-@@ -55,3 +56,4 @@ quirks-y			+= ../../i386/kernel/quirks.o
- i8237-y				+= ../../i386/kernel/i8237.o
- msr-$(subst m,y,$(CONFIG_X86_MSR))  += ../../i386/kernel/msr.o
- alternative-y			+= ../../i386/kernel/alternative.o
-+pcspeaker-y			+= ../../i386/kernel/pcspeaker.o
 Index: linux/arch/x86_64/kernel/setup.c
 ===================================================================
 --- linux.orig/arch/x86_64/kernel/setup.c
 +++ linux/arch/x86_64/kernel/setup.c
-@@ -1104,23 +1104,3 @@ struct seq_operations cpuinfo_op = {
- 	.stop =	c_stop,
- 	.show =	show_cpuinfo,
- };
--
--#if defined(CONFIG_INPUT_PCSPKR) || defined(CONFIG_INPUT_PCSPKR_MODULE)
--#include <linux/platform_device.h>
--static __init int add_pcspkr(void)
--{
--	struct platform_device *pd;
--	int ret;
--
--	pd = platform_device_alloc("pcspkr", -1);
--	if (!pd)
--		return -ENOMEM;
--
--	ret = platform_device_add(pd);
--	if (ret)
--		platform_device_put(pd);
--
--	return ret;
--}
--device_initcall(add_pcspkr);
--#endif
+@@ -942,7 +942,8 @@ static int show_cpuinfo(struct seq_file 
+ 		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+ 		NULL, NULL, NULL, "syscall", NULL, NULL, NULL, NULL,
+ 		NULL, NULL, NULL, NULL, "nx", NULL, "mmxext", NULL,
+-		NULL, "fxsr_opt", NULL, "rdtscp", NULL, "lm", "3dnowext", "3dnow",
++		NULL, "fxsr_opt", "pdpe1gb", "rdtscp", NULL, "lm",
++		"3dnowext", "3dnow",
+ 
+ 		/* Transmeta-defined */
+ 		"recovery", "longrun", NULL, "lrti", NULL, NULL, NULL, NULL,
+@@ -960,7 +961,7 @@ static int show_cpuinfo(struct seq_file 
+ 		/* Intel-defined (#2) */
+ 		"pni", NULL, NULL, "monitor", "ds_cpl", "vmx", "smx", "est",
+ 		"tm2", "ssse3", "cid", NULL, NULL, "cx16", "xtpr", NULL,
+-		NULL, NULL, "dca", NULL, NULL, NULL, NULL, NULL,
++		NULL, NULL, "dca", NULL, NULL, NULL, NULL, "popcnt",
+ 		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+ 
+ 		/* VIA/Cyrix/Centaur-defined */
+@@ -970,8 +971,10 @@ static int show_cpuinfo(struct seq_file 
+ 		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+ 
+ 		/* AMD-defined (#2) */
+-		"lahf_lm", "cmp_legacy", "svm", NULL, "cr8_legacy", NULL, NULL, NULL,
+-		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
++		"lahf_lm", "cmp_legacy", "svm", "extapic", "cr8_legacy",
++		"altmovcr8", "abm", "sse4a",
++		"misalignsse", "3dnowprefetch",
++		"osvw", "ibs", NULL, NULL, NULL, NULL,
+ 		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+ 		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+ 	};
+@@ -982,6 +985,9 @@ static int show_cpuinfo(struct seq_file 
+ 		"ttp",  /* thermal trip */
+ 		"tm",
+ 		"stc",
++		"100mhzsteps",
++		"hwpstate",
++		NULL,	/* tsc invariant mapped to constant_tsc */
+ 		NULL,
+ 		/* nothing */	/* constant_tsc - moved to flags */
+ 	};
+Index: linux/arch/i386/kernel/cpu/proc.c
+===================================================================
+--- linux.orig/arch/i386/kernel/cpu/proc.c
++++ linux/arch/i386/kernel/cpu/proc.c
+@@ -29,7 +29,7 @@ static int show_cpuinfo(struct seq_file 
+ 		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+ 		NULL, NULL, NULL, "syscall", NULL, NULL, NULL, NULL,
+ 		NULL, NULL, NULL, "mp", "nx", NULL, "mmxext", NULL,
+-		NULL, "fxsr_opt", "rdtscp", NULL, NULL, "lm", "3dnowext", "3dnow",
++		NULL, "fxsr_opt", "pdpe1gb", "rdtscp", NULL, "lm", "3dnowext", "3dnow",
+ 
+ 		/* Transmeta-defined */
+ 		"recovery", "longrun", NULL, "lrti", NULL, NULL, NULL, NULL,
+@@ -47,7 +47,7 @@ static int show_cpuinfo(struct seq_file 
+ 		/* Intel-defined (#2) */
+ 		"pni", NULL, NULL, "monitor", "ds_cpl", "vmx", "smx", "est",
+ 		"tm2", "ssse3", "cid", NULL, NULL, "cx16", "xtpr", NULL,
+-		NULL, NULL, "dca", NULL, NULL, NULL, NULL, NULL,
++		NULL, NULL, "dca", NULL, NULL, NULL, NULL, "popcnt",
+ 		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+ 
+ 		/* VIA/Cyrix/Centaur-defined */
+@@ -57,8 +57,9 @@ static int show_cpuinfo(struct seq_file 
+ 		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+ 
+ 		/* AMD-defined (#2) */
+-		"lahf_lm", "cmp_legacy", "svm", NULL, "cr8legacy", NULL, NULL, NULL,
+-		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
++		"lahf_lm", "cmp_legacy", "svm", "extapic", "cr8legacy", "abm",
++		"sse4a", "misalignsse",
++		"3dnowprefetch", "osvw", "ibs", NULL, NULL, NULL, NULL, NULL,
+ 		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+ 		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+ 	};
+@@ -69,8 +70,11 @@ static int show_cpuinfo(struct seq_file 
+ 		"ttp",  /* thermal trip */
+ 		"tm",
+ 		"stc",
++		"100mhzsteps",
++		"hwpstate",
+ 		NULL,
+-		/* nothing */	/* constant_tsc - moved to flags */
++		NULL,	/* constant_tsc - moved to flags */
++		/* nothing */
+ 	};
+ 	struct cpuinfo_x86 *c = v;
+ 	int i, n = c - cpu_data;
