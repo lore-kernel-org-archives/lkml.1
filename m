@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964935AbXBLOab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964944AbXBLOcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964935AbXBLOab (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 09:30:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964940AbXBLOab
+	id S964944AbXBLOcB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 09:32:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964942AbXBLOcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 09:30:31 -0500
-Received: from ms-smtp-03.texas.rr.com ([24.93.47.42]:38295 "EHLO
-	ms-smtp-03.texas.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964935AbXBLOaa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 09:30:30 -0500
-From: Dave McCracken <dave.mccracken@oracle.com>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Adam Litke <agl@us.ibm.com>, Dave McCracken <dave.mccracken@oracle.com>
-Date: Mon, 12 Feb 2007 08:28:02 -0600
-Message-Id: <20070212142802.15738.80487.sendpatchset@wildcat.int.mccr.org>
-Subject: [PATCH 1/1] Enable fully functional truncate for hugetlbfs
+	Mon, 12 Feb 2007 09:32:00 -0500
+Received: from [217.111.56.2] ([217.111.56.2]:22671 "EHLO semtex.sncag.com"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S964946AbXBLOcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 09:32:00 -0500
+To: Greg KH <greg@kroah.com>
+Cc: Rainer Weikusat <rweikusat@sncag.com>, LKML <linux-kernel@vger.kernel.org>,
+       Oleg Verych <olecom@flower.upol.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: unfixed regression in 2.6.20-rc6 (since 2.6.19)
+In-Reply-To: <20070204043935.GA8829@kroah.com> (Greg KH's message of "Sat, 3 Feb 2007 20:39:36 -0800")
+References: <877ivb2kvc.fsf@semtex.sncag.com>
+	<20070125185101.GA26279@kroah.com> <87y7nq131x.fsf@semtex.sncag.com>
+	<20070126174828.GA28890@kroah.com> <87d54z1dhb.fsf@semtex.sncag.com>
+	<slrnerqjit.f71.olecom@flower.upol.cz>
+	<20070129234340.GA6881@kroah.com> <87k5z4za4l.fsf@semtex.sncag.com>
+	<20070204043935.GA8829@kroah.com>
+From: Rainer Weikusat <rainer.weikusat@sncag.com>
+Date: Mon, 12 Feb 2007 15:30:22 +0100
+Message-ID: <87abzj5tz5.fsf@semtex.sncag.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch enables the full functionality of truncate for hugetlbfs
-files.  Truncate was originally limited to reducing the file size
-because page faults were not supported for hugetlbfs.  Now that page
-faults have been implemented it is now possible to fully support
-truncate.
+Greg KH <greg@kroah.com> writes:
+> On Tue, Jan 30, 2007 at 06:40:10PM +0100, Rainer Weikusat wrote:
+>> Greg KH <greg@kroah.com> writes:
+>> 
+>> [...]
+>> 
+>> > Rainer's problem is a real bug in the USB driver code, which we need to
+>> > work on getting fixed,
+>
+> Ok, here's an updated version, that should tell us where things are
+> going wrong (if they are.)
+>
+> Can you try this out with debugging enabled for the driver:
+> 	modprobe keyspan debug=1
+>
+> and let me know what the output of the kernel log is when you plug your
+> device in?
 
-Signed-off-by: Dave McCracken <dave.mccracken@oracle.com>
+I can do all sorts of things, but frankly, I just need my device to
+work (which it does again, courtesy of myself). Apart from that, this
+is still just what a SCO-person would call 'a structural copy' of my
+code with no functional changes, especially none that could result in
+any additional output. I believe it will work as well. Mine does, so
+I am not going to test a different one for the sake of having done so.
 
----
- inode.c |   21 ++++++++++++++++++++-
- 1 file changed, 20 insertions(+), 1 deletion(-)
+If you want to fix it only if you can claim to have written the code,
+fine. If you'll never fix it --- fine as well. In either case, I have
+already put more time into this as I have available.
 
---- 2.6.20/./fs/hugetlbfs/inode.c	2007-02-04 12:44:54.000000000 -0600
-+++ 2.6.20-htrunc/./fs/hugetlbfs/inode.c	2007-02-05 13:02:00.000000000 -0600
-@@ -298,9 +298,10 @@ static int hugetlb_vmtruncate(struct ino
- {
- 	pgoff_t pgoff;
- 	struct address_space *mapping = inode->i_mapping;
-+	unsigned long limit;
- 
- 	if (offset > inode->i_size)
--		return -EINVAL;
-+		goto do_expand;
- 
- 	BUG_ON(offset & ~HPAGE_MASK);
- 	pgoff = offset >> PAGE_SHIFT;
-@@ -312,6 +313,24 @@ static int hugetlb_vmtruncate(struct ino
- 	spin_unlock(&mapping->i_mmap_lock);
- 	truncate_hugepages(inode, offset);
- 	return 0;
-+
-+do_expand:
-+	limit = current->signal->rlim[RLIMIT_FSIZE].rlim_cur;
-+	if (limit != RLIM_INFINITY && offset > limit)
-+		goto out_sig;
-+	if (offset > inode->i_sb->s_maxbytes)
-+		goto out_big;
-+	if (hugetlb_reserve_pages(inode, inode->i_size >> HPAGE_SHIFT,
-+				  offset >> HPAGE_SHIFT))
-+		goto out_mem;
-+	i_size_write(inode, offset);
-+	return 0;
-+out_sig:
-+	send_sig(SIGXFSZ, current, 0);
-+out_big:
-+	return -EFBIG;
-+out_mem:
-+	return -ENOMEM;
- }
- 
- static int hugetlbfs_setattr(struct dentry *dentry, struct iattr *attr)
+
+
