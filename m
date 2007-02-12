@@ -1,152 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933079AbXBLHtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933086AbXBLHuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933079AbXBLHtq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 02:49:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933088AbXBLHqp
+	id S933086AbXBLHuJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 02:50:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933077AbXBLHuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 02:46:45 -0500
-Received: from mail.suse.de ([195.135.220.2]:38381 "EHLO mx1.suse.de"
+	Mon, 12 Feb 2007 02:50:08 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:49599 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933083AbXBLHiC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 02:38:02 -0500
+	id S933076AbXBLHhw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 02:37:52 -0500
 From: Andi Kleen <ak@suse.de>
 References: <20070212837.963446000@suse.de>
 In-Reply-To: <20070212837.963446000@suse.de>
-To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, patches@x86-64.org,
+To: Ingo Molnar <mingo@elte.hu>, patches@x86-64.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH x86 for review II] [11/39] i386: Handle 32 bit PerfMon Counter writes cleanly in i386 nmi_watchdog
-Message-Id: <20070212073757.A6A6113DA0@wotan.suse.de>
-Date: Mon, 12 Feb 2007 08:37:57 +0100 (CET)
+Subject: [PATCH x86 for review II] [5/39] i386: improve sched_clock() on i686
+Message-Id: <20070212073751.4B49F13D7F@wotan.suse.de>
+Date: Mon, 12 Feb 2007 08:37:51 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+From: Ingo Molnar <mingo@elte.hu>
 
-Change i386 nmi handler to handle 32 bit perfmon counter MSR writes cleanly.
+Clean up sched_clock() on i686: it will use the TSC if available and falls
+back to jiffies only if the user asked for it to be disabled via notsc or
+the CPU calibration code didnt figure out the right cpu_khz.
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+This generally makes the scheduler timestamps more finegrained, on all
+hardware.  (the current scheduler is pretty resistant against asynchronous
+sched_clock() values on different CPUs, it will allow at most up to a jiffy
+of jitter.)
+
+Also simplify sched_clock()'s check for TSC availability: propagate the
+desire and ability to use the TSC into the tsc_disable flag, previously
+this flag only indicated whether the notsc option was passed.  This makes
+the rare low-res sched_clock() codepath a single branch off a read-mostly
+flag.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Andrew Morton <akpm@osdl.org>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/i386/kernel/nmi.c |   64 ++++++++++++++++++++++++++++++++++++-------------
- 1 file changed, 48 insertions(+), 16 deletions(-)
 
-Index: linux/arch/i386/kernel/nmi.c
+ arch/i386/kernel/tsc.c  |   22 ++++++++++++++--------
+ include/asm-i386/bugs.h |    2 +-
+ 2 files changed, 15 insertions(+), 9 deletions(-)
+
+Index: linux/arch/i386/kernel/tsc.c
 ===================================================================
---- linux.orig/arch/i386/kernel/nmi.c
-+++ linux/arch/i386/kernel/nmi.c
-@@ -216,6 +216,28 @@ static __init void nmi_cpu_busy(void *da
+--- linux.orig/arch/i386/kernel/tsc.c
++++ linux/arch/i386/kernel/tsc.c
+@@ -112,13 +112,10 @@ unsigned long long sched_clock(void)
+ 		return (*custom_sched_clock)();
+ 
+ 	/*
+-	 * in the NUMA case we dont use the TSC as they are not
+-	 * synchronized across all CPUs.
++	 * Fall back to jiffies if there's no TSC available:
+ 	 */
+-#ifndef CONFIG_NUMA
+-	if (!cpu_khz || check_tsc_unstable())
+-#endif
+-		/* no locking but a rare wrong value is not a big deal */
++	if (unlikely(tsc_disable))
++		/* No locking but a rare wrong value is not a big deal: */
+ 		return (jiffies_64 - INITIAL_JIFFIES) * (1000000000 / HZ);
+ 
+ 	/* read the Time Stamp Counter: */
+@@ -198,13 +195,13 @@ EXPORT_SYMBOL(recalibrate_cpu_khz);
+ void __init tsc_init(void)
+ {
+ 	if (!cpu_has_tsc || tsc_disable)
+-		return;
++		goto out_no_tsc;
+ 
+ 	cpu_khz = calculate_cpu_khz();
+ 	tsc_khz = cpu_khz;
+ 
+ 	if (!cpu_khz)
+-		return;
++		goto out_no_tsc;
+ 
+ 	printk("Detected %lu.%03lu MHz processor.\n",
+ 				(unsigned long)cpu_khz / 1000,
+@@ -212,6 +209,15 @@ void __init tsc_init(void)
+ 
+ 	set_cyc2ns_scale(cpu_khz);
+ 	use_tsc_delay();
++	return;
++
++out_no_tsc:
++	/*
++	 * Set the tsc_disable flag if there's no TSC support, this
++	 * makes it a fast flag for the kernel to see whether it
++	 * should be using the TSC.
++	 */
++	tsc_disable = 1;
  }
+ 
+ #ifdef CONFIG_CPU_FREQ
+Index: linux/include/asm-i386/bugs.h
+===================================================================
+--- linux.orig/include/asm-i386/bugs.h
++++ linux/include/asm-i386/bugs.h
+@@ -160,7 +160,7 @@ static void __init check_config(void)
+  * If we configured ourselves for a TSC, we'd better have one!
+  */
+ #ifdef CONFIG_X86_TSC
+-	if (!cpu_has_tsc)
++	if (!cpu_has_tsc && !tsc_disable)
+ 		panic("Kernel compiled for Pentium+, requires TSC feature!");
  #endif
  
-+static unsigned int adjust_for_32bit_ctr(unsigned int hz)
-+{
-+	u64 counter_val;
-+	unsigned int retval = hz;
-+
-+	/*
-+	 * On Intel CPUs with P6/ARCH_PERFMON only 32 bits in the counter
-+	 * are writable, with higher bits sign extending from bit 31.
-+	 * So, we can only program the counter with 31 bit values and
-+	 * 32nd bit should be 1, for 33.. to be 1.
-+	 * Find the appropriate nmi_hz
-+	 */
-+	counter_val = (u64)cpu_khz * 1000;
-+	do_div(counter_val, retval);
-+ 	if (counter_val > 0x7fffffffULL) {
-+		u64 count = (u64)cpu_khz * 1000;
-+		do_div(count, 0x7fffffffUL);
-+		retval = count + 1;
-+	}
-+	return retval;
-+}
-+
- static int __init check_nmi_watchdog(void)
- {
- 	unsigned int *prev_nmi_count;
-@@ -281,18 +303,10 @@ static int __init check_nmi_watchdog(voi
- 		struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
- 
- 		nmi_hz = 1;
--		/*
--		 * On Intel CPUs with ARCH_PERFMON only 32 bits in the counter
--		 * are writable, with higher bits sign extending from bit 31.
--		 * So, we can only program the counter with 31 bit values and
--		 * 32nd bit should be 1, for 33.. to be 1.
--		 * Find the appropriate nmi_hz
--		 */
--	 	if (wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR0 &&
--			((u64)cpu_khz * 1000) > 0x7fffffffULL) {
--			u64 count = (u64)cpu_khz * 1000;
--			do_div(count, 0x7fffffffUL);
--			nmi_hz = count + 1;
-+
-+		if (wd->perfctr_msr == MSR_P6_PERFCTR0 ||
-+		    wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR0) {
-+			nmi_hz = adjust_for_32bit_ctr(nmi_hz);
- 		}
- 	}
- 
-@@ -442,6 +456,17 @@ static void write_watchdog_counter(unsig
- 	wrmsrl(perfctr_msr, 0 - count);
- }
- 
-+static void write_watchdog_counter32(unsigned int perfctr_msr,
-+		const char *descr)
-+{
-+	u64 count = (u64)cpu_khz * 1000;
-+
-+	do_div(count, nmi_hz);
-+	if(descr)
-+		Dprintk("setting %s to -0x%08Lx\n", descr, count);
-+	wrmsr(perfctr_msr, (u32)(-count), 0);
-+}
-+
- /* Note that these events don't tick when the CPU idles. This means
-    the frequency varies with CPU load. */
- 
-@@ -531,7 +556,8 @@ static int setup_p6_watchdog(void)
- 
- 	/* setup the timer */
- 	wrmsr(evntsel_msr, evntsel, 0);
--	write_watchdog_counter(perfctr_msr, "P6_PERFCTR0");
-+	nmi_hz = adjust_for_32bit_ctr(nmi_hz);
-+	write_watchdog_counter32(perfctr_msr, "P6_PERFCTR0");
- 	apic_write(APIC_LVTPC, APIC_DM_NMI);
- 	evntsel |= P6_EVNTSEL0_ENABLE;
- 	wrmsr(evntsel_msr, evntsel, 0);
-@@ -704,7 +730,8 @@ static int setup_intel_arch_watchdog(voi
- 
- 	/* setup the timer */
- 	wrmsr(evntsel_msr, evntsel, 0);
--	write_watchdog_counter(perfctr_msr, "INTEL_ARCH_PERFCTR0");
-+	nmi_hz = adjust_for_32bit_ctr(nmi_hz);
-+	write_watchdog_counter32(perfctr_msr, "INTEL_ARCH_PERFCTR0");
- 	apic_write(APIC_LVTPC, APIC_DM_NMI);
- 	evntsel |= ARCH_PERFMON_EVENTSEL0_ENABLE;
- 	wrmsr(evntsel_msr, evntsel, 0);
-@@ -956,6 +983,8 @@ __kprobes int nmi_watchdog_tick(struct p
- 				dummy &= ~P4_CCCR_OVF;
- 	 			wrmsrl(wd->cccr_msr, dummy);
- 	 			apic_write(APIC_LVTPC, APIC_DM_NMI);
-+				/* start the cycle over again */
-+				write_watchdog_counter(wd->perfctr_msr, NULL);
- 	 		}
- 			else if (wd->perfctr_msr == MSR_P6_PERFCTR0 ||
- 				 wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR0) {
-@@ -964,9 +993,12 @@ __kprobes int nmi_watchdog_tick(struct p
- 				 * other P6 variant.
- 				 * ArchPerfom/Core Duo also needs this */
- 				apic_write(APIC_LVTPC, APIC_DM_NMI);
-+				/* P6/ARCH_PERFMON has 32 bit counter write */
-+				write_watchdog_counter32(wd->perfctr_msr, NULL);
-+			} else {
-+				/* start the cycle over again */
-+				write_watchdog_counter(wd->perfctr_msr, NULL);
- 			}
--			/* start the cycle over again */
--			write_watchdog_counter(wd->perfctr_msr, NULL);
- 			rc = 1;
- 		} else if (nmi_watchdog == NMI_IO_APIC) {
- 			/* don't know how to accurately check for this.
