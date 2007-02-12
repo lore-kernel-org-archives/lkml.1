@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750946AbXBLANM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750962AbXBLAPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750946AbXBLANM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 19:13:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbXBLANM
+	id S1750962AbXBLAPg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 19:15:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbXBLAPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 19:13:12 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43104 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750946AbXBLANK (ORCPT
+	Sun, 11 Feb 2007 19:15:36 -0500
+Received: from nigel.suspend2.net ([203.171.70.205]:40867 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750960AbXBLAPf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 19:13:10 -0500
-Date: Mon, 12 Feb 2007 00:26:52 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Willy Tarreau <w@1wt.eu>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
+	Sun, 11 Feb 2007 19:15:35 -0500
 Subject: Re: NAK new drivers without proper power management?
-Message-ID: <20070212002652.1ea4026e@localhost.localdomain>
-In-Reply-To: <20070211233822.GD13913@1wt.eu>
-References: <fa.FzHdYYYH5Ru57c8/yRxLylpH0Kk@ifi.uio.no>
-	<fa.DhkemAgVI60diqZy0t9GzpwyLmk@ifi.uio.no>
-	<fa.E/NjHlgg0HqDg5CgZjnCHFi2AMM@ifi.uio.no>
-	<fa.kop49l/7yexJoUGrzk6vVeIP934@ifi.uio.no>
-	<fa.EgQN5JpU6xrZSLyOY0kWjJ26hUM@ifi.uio.no>
-	<45CF60F2.5020308@shaw.ca>
-	<20070211215211.GB13913@1wt.eu>
-	<1171232786.4493.62.camel@nigel.suspend2.net>
-	<20070211224637.GC13913@1wt.eu>
-	<1171235922.4493.114.camel@nigel.suspend2.net>
-	<20070211233822.GD13913@1wt.eu>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Willy Tarreau <w@1wt.eu>, Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200702120109.56564.rjw@sisk.pl>
+References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no>
+	 <200702120050.24539.rjw@sisk.pl>
+	 <1171238117.4493.153.camel@nigel.suspend2.net>
+	 <200702120109.56564.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Mon, 12 Feb 2007 11:15:35 +1100
+Message-Id: <1171239335.4493.163.camel@nigel.suspend2.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Unless I'm mistaken, I have to type the passphrase twice then :
->   - once at suspend
->   - once at resume
+Hi.
+
+On Mon, 2007-02-12 at 01:09 +0100, Rafael J. Wysocki wrote:
+> On Monday, 12 February 2007 00:55, Nigel Cunningham wrote:
+> > Hi.
+> > 
+> > On Mon, 2007-02-12 at 00:50 +0100, Rafael J. Wysocki wrote:
+> > > On Monday, 12 February 2007 00:47, Nigel Cunningham wrote:
+> > > > Hi.
+> > > > 
+> > > > On Mon, 2007-02-12 at 00:41 +0100, Rafael J. Wysocki wrote:
+> > > > > > I'm using M$ hibernation and Suspend2 to dual boot on our desktop (dtv
+> > > > > > card that Linux doesn't support well yet), and I know other Suspend2
+> > > > > > users doing the same. It's made earier by the fact that Suspend2 lets
+> > > > > > you reboot instead of powering down.
+> > > > > 
+> > > > > Well, I don't know why you're saying it's a special capability of suspend2.
+> > > > > Even the "old" swsusp has been able to do this since I can remember. ;-)
+> > > > 
+> > > > It does?! I just did cat /sys/power/disk and it only says platform. How
+> > > > do you make swsusp reboot instead of powering down?
+> > > 
+> > > echo reboot > /sys/power/disk && echo disk > /sys/power/state
+> > 
+> > Ah. Perhaps you should make it show reboot when you cat it?
 > 
-> which is once more per "boot" than what I'm doing on loop-aes.
+> albercik:~ # echo reboot > /sys/power/disk
+> albercik:~ # cat /sys/power/disk
+> reboot
+> 
+> It shows the current value, and "platform" happens to be the default now.
 
-You don't need to type in a key at suspend time if you don't want to.
-Think about gpg email - I can send you an encrypted email without typing
-any keys, you need the right key however to read it.
+Oh, so the problem is that it shows the current value, not the
+possibilities. I wrongly assumed it would work like /sys/power/disk.
+That explains it :)
 
-Alan
+Regards,
+
+Nigel
+
