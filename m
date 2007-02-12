@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964853AbXBLKjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964854AbXBLKmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964853AbXBLKjV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 05:39:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964856AbXBLKjV
+	id S964854AbXBLKmY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 05:42:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964855AbXBLKmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 05:39:21 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:43336 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964853AbXBLKjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 05:39:19 -0500
-Date: Mon, 12 Feb 2007 13:35:10 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Andrew Morton <akpm@osdl.org>
-Cc: David Miller <davem@davemloft.net>, Ulrich Drepper <drepper@redhat.com>,
-       netdev <netdev@vger.kernel.org>, Zach Brown <zach.brown@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Chase Venters <chase.venters@clientec.com>,
-       Johann Borck <johann.borck@densedata.com>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, Jamal Hadi Salim <hadi@cyberus.ca>,
-       Ingo Molnar <mingo@elte.hu>, linux-fsdevel@vger.kernel.org
-Subject: Re: [take35 0/10] kevent: Generic event handling mechanism.
-Message-ID: <20070212103510.GC5703@2ka.mipt.ru>
-References: <asdasdqaa0591036@2ka.mipt.ru> <11703247503374@2ka.mipt.ru> <20070205142336.GA24190@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <20070205142336.GA24190@2ka.mipt.ru>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.7.5 (2ka.mipt.ru [0.0.0.0]); Mon, 12 Feb 2007 13:35:54 +0300 (MSK)
+	Mon, 12 Feb 2007 05:42:24 -0500
+Received: from web26907.mail.ukl.yahoo.com ([217.146.176.96]:41002 "HELO
+	web26907.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S964854AbXBLKmX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 05:42:23 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.fr;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=RyswAx84qIvTTGBxhxVEK4aMUZIDk0Oco4u19lVrMYMFgJS8qhsJqp9c2caXYx82JfGaUmyE51lpDecT6+FftWCsWQvNr1VX7WPhEfcz12/tthiERNxpVNTZvtU3bHX86IYJFTEVW+F0aQ9V7AVy8f5Pf9nIRSltu90iUXOgiW4=;
+X-YMail-OSG: Z.dqxq4VM1nsdx0QawjgjnJVEuqxGbkGKqeHUNNKjyeC7fpllh80aYUl9PAgB83DomvOJ9VHZqUHc_Y_hAJLPVCwzNji.fRbP70GsICEqB5gy2v5yJwi_XzfD2ZbvVw5H3N9gkqH9Hcg.tb8uO18fizt31jmFiG3d8nT.RlOnFwP3Ui6vnNMUg--
+Date: Mon, 12 Feb 2007 11:42:21 +0100 (CET)
+From: Etienne Lorrain <etienne_lorrain@yahoo.fr>
+Subject: Re : [PATCH] Compressed ia32 ELF file generation for loading by Gujin 1/3
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: vgoyal@in.ibm.com, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <m1odo0zafe.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Message-ID: <687898.45581.qm@web26907.mail.ukl.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 05, 2007 at 05:23:36PM +0300, Evgeniy Polyakov (johnpol@2ka.mipt.ru) wrote:
-> On Thu, Feb 01, 2007 at 01:12:30PM +0300, Evgeniy Polyakov (johnpol@2ka.mipt.ru) wrote:
-> > 
-> > Generic event handling mechanism.
-> > 
-> > Kevent is a generic subsytem which allows to handle event notifications.
-> > It supports both level and edge triggered events. It is similar to
-> > poll/epoll in some cases, but it is more scalable, it is faster and
-> > allows to work with essentially eny kind of events.
-> > 
-> > Events are provided into kernel through control syscall and can be read
-> > back through ring buffer or using usual syscalls.
-> > Kevent update (i.e. readiness switching) happens directly from internals
-> > of the appropriate state machine of the underlying subsytem (like
-> > network, filesystem, timer or any other).
-> > 
-> > Homepage:
-> > http://tservice.net.ru/~s0mbre/old/?section=projects&item=kevent
-> > 
-> > Documentation page:
-> > http://linux-net.osdl.org/index.php/Kevent
-> > 
-> > Consider for inclusion.
-> > 
-> > P.S. If you want to be removed from Cc: list just drop me a mail.
-> > 
-> > Changes from 'take34' patchset:
-> >  * Ported to the 2.6.20-rc7 (9be5b038b1c9d1927c367bf91683458e10d5d4eb) tree.
-> 
-> Is there some progress?
-> Some things to be implemented, described or discussed?
+--- "Eric W. Biederman" wrote:
+> So I really don't care if we move whole real mode section into a note
+> or if we just put a pointer to it into a note.  What is important is
+> that we use a note to find it.
 
-I think that mean that everybody is happy with APi, design and set of
-features. 
+ Well, we can advertise by a note the section number or the section
+name which contains the real-mode code, but finding the section of
+type SHT_PROGBITS having SHF_EXECINSTR flags linked at zero is not
+that difficult to do: it is what Gujin does right now when it does
+not find the program header linked at zero.
 
-Andrew, do you consider kevent for inclusion or declining?
+> Which means that we could do something goofy in the linker script
+> like we do with the current vdso.  So we could give it a virtual
+> address of 0 and a physical address in the init code section.
 
--- 
-	Evgeniy Polyakov
+ Gujin loads at the physical address, i.e. kernel is loaded at
+0x100000 and not 0xC0100000, is that wrong?
+ I am not sure playing these games with addresses is cleaner than
+not loading a section which is not in the program header.
+
+> For me the objective is not so much reusing the existing tools
+> (although that is a plus) but more to be able to build a unified
+> binary that can be used for everything, and will give us the freedom
+> to do interesting things with the kernel in the future, and hopefully
+> something that is more or less usable by portable bootloaders.  Having
+> a different file format and different rules for different
+> architectures is a pain.
+
+ For me the objective is to have a reasonable bootloader,
+I will not have the time to port back and test with every other
+bootloader some transfert of code from Gujin to an ELF looking
+like bzImage file.
+
+  Etienne.
+
+
+	
+
+	
+		
+___________________________________________________________________________ 
+Découvrez une nouvelle façon d'obtenir des réponses à toutes vos questions ! 
+Profitez des connaissances, des opinions et des expériences des internautes sur Yahoo! Questions/Réponses 
+http://fr.answers.yahoo.com
