@@ -1,51 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965395AbXBLUzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965385AbXBLUzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965395AbXBLUzX (ORCPT <rfc822;w@1wt.eu>);
+	id S965385AbXBLUzX (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 12 Feb 2007 15:55:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965385AbXBLUy4
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965394AbXBLUyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 15:54:56 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:44557 "EHLO ogre.sisk.pl"
+	Mon, 12 Feb 2007 15:54:54 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44554 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965390AbXBLUyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S965385AbXBLUyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 12 Feb 2007 15:54:50 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Gerhard Mack <gmack@innerfire.net>
+To: Pavel Machek <pavel@ucw.cz>
 Subject: Re: NAK new drivers without proper power management?
-Date: Mon, 12 Feb 2007 21:46:06 +0100
+Date: Mon, 12 Feb 2007 21:31:32 +0100
 User-Agent: KMail/1.9.5
-Cc: Willy Tarreau <w@1wt.eu>, Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>, Arjan van de Ven <arjan@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, tilman@imap.cc
-References: <1171058269.1484.64.camel@nigel.suspend2.net> <20070211064636.GA12171@1wt.eu> <Pine.LNX.4.64.0702120752420.3824@mtl.rackplans.net>
-In-Reply-To: <Pine.LNX.4.64.0702120752420.3824@mtl.rackplans.net>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Manu Abraham <abraham.manu@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, tilman@imap.cc,
+       Robert Hancock <hancockr@shaw.ca>
+References: <1171059433.8675.195.camel@laptopd505.fenrus.org> <1171236787.4493.132.camel@nigel.suspend2.net> <20070212165207.GC17400@elf.ucw.cz>
+In-Reply-To: <20070212165207.GC17400@elf.ucw.cz>
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200702122131.33662.rjw@sisk.pl>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702122146.08120.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 12 February 2007 13:59, Gerhard Mack wrote:
-> On Sun, 11 Feb 2007, Willy Tarreau wrote:
+On Monday, 12 February 2007 17:52, Pavel Machek wrote:
+> Hi!
 > 
-> > On Sun, Feb 11, 2007 at 09:37:06AM +1100, Nigel Cunningham wrote:
-> > > On Sat, 2007-02-10 at 23:20 +0100, Rafael J. Wysocki wrote:
+> > > > > > Neither am I. I'm just asking that new drivers have power management as
+> > > > > > standard.
+> > > >
+> > > > > What if the hardware doesn't support power management ?
+> > > >
+> > > > You would still want to do the cleanup and configuration that you'd do
+> > > > for module load/unload.
+> > > >
+> > > By adding dummy functions, wouldn't that just look awkward ?
 > > 
-> > Many people also have Linux on their notebooks, but as a dual-boot. You
-> > read the word ? "dual-boot". It means that they cleanly shutdown their
-> > system every time they don't use it anymore, and they won't know what
-> > OS they'll use next time.
+> > If all you need to do is say 'I don't need to do anything' and we have a
+> > shared function that does that, all we're talking about doing is adding
+> > to your struct pci_device (or whatever)
+> > 
+> > .resume = generic_empty_resume;
+> > 
+> > To me at least, that doesn't look awkward, and says cleanly and clearly
+> > that you've checked things over and decided you know what's required.
 > 
-> Please tell me your joking.  Linux' crappy suspend support is a common 
-> reason people give me for not wanting Linux anywhere near their laptops.  
+> Actually, I'd like it to be
 > 
-> I have a single boot laptop that's somewhat of a mobile debugging station 
-> that needs Linux and I absolutely hate it.  Right now my laptop takes far 
-> too long to boot and even if it didn't I wish I could suspend.
+> .resume = generic_empty_resume; /* Explain, why your driver needs no
+> 				   resume */
 
-When did you try last time?
+Okay, but we can't define an empty .resume(), because, for example, the PCI's
+generic suspend/resume won't be called.
 
+I think we can introduce a "pm_safe" flag that will indicate if the driver
+handles suspend/resume correctly.  If we do it, we can flag all of the drivers
+currently in the tree as "pm_safe" unless we know that they aren't.  Next,
+we can convert the core to fail the suspend for any driver that is not flagged
+as "pm_safe".  But I think that will take time.
+
+In the meantime, I'd like to ask the authors of new drivers to define
+error-returning .suspend() if they don't intend to define "real" .suspend()
+and .resume() for now.  When we are ready with the conversion, we'll be able
+to drop the error-returning .suspend()s and clear "pm_safe" for them.
+
+Greetings,
 Rafael
