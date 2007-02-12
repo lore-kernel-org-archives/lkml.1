@@ -1,71 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965334AbXBLVYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965421AbXBLVhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965334AbXBLVYs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 16:24:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965378AbXBLVYs
+	id S965421AbXBLVhN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 16:37:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965422AbXBLVhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 16:24:48 -0500
-Received: from nigel.suspend2.net ([203.171.70.205]:37250 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965334AbXBLVYr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 16:24:47 -0500
-Subject: Re: NAK new drivers without proper power management?
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>, Manu Abraham <abraham.manu@gmail.com>,
-       Willy Tarreau <w@1wt.eu>, Arjan van de Ven <arjan@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, tilman@imap.cc,
-       Robert Hancock <hancockr@shaw.ca>
-In-Reply-To: <200702122201.01666.rjw@sisk.pl>
-References: <1171059433.8675.195.camel@laptopd505.fenrus.org>
-	 <200702122131.33662.rjw@sisk.pl> <20070212205857.GE18101@elf.ucw.cz>
-	 <200702122201.01666.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Tue, 13 Feb 2007 08:24:13 +1100
-Message-Id: <1171315453.4081.23.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Mon, 12 Feb 2007 16:37:12 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:60027 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965421AbXBLVhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 16:37:11 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Alexey Dobriyan <adobriyan@openvz.org>
+X-Fcc: ~/Mail/utrace
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: Re: utrace regressions (was: -mm merge plans for 2.6.21)
+In-Reply-To: Alexey Dobriyan's message of  Monday, 12 February 2007 15:51:56 +0300 <20070212125156.GA6035@localhost.sw.ru>
+X-Windows: form follows malfunction.
+Message-Id: <20070212213634.2777A1800E4@magilla.sf.frob.com>
+Date: Mon, 12 Feb 2007 13:36:34 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+> We're aware of two regressions compared to mainline if ptrace is utrace:
 
-On Mon, 2007-02-12 at 22:01 +0100, Rafael J. Wysocki wrote:
-> On Monday, 12 February 2007 21:58, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > > > If all you need to do is say 'I don't need to do anything' and we have a
-> > > > > shared function that does that, all we're talking about doing is adding
-> > > > > to your struct pci_device (or whatever)
-> > > > > 
-> > > > > .resume = generic_empty_resume;
-> > > > > 
-> > > > > To me at least, that doesn't look awkward, and says cleanly and clearly
-> > > > > that you've checked things over and decided you know what's required.
-> > > > 
-> > > > Actually, I'd like it to be
-> > > > 
-> > > > .resume = generic_empty_resume; /* Explain, why your driver needs no
-> > > > 				   resume */
-> > > 
-> > > Okay, but we can't define an empty .resume(), because, for example, the PCI's
-> > > generic suspend/resume won't be called.
-> > 
-> > PCI drivers should just do .resume = pci_generic_resume, explicitely.
-> 
-> Well, I generally agree, but I think the idea with the "pm_safe" flag has some
-> advantages.  For example, the drivers that do deffine .suspend() and .resume()
-> which don't work correctly could be flagged as not "pm_safe" until the problems
-> are fixed.
+Thanks very much for bringing these to my attention.
 
-Oooh. Now I like that idea. Are you thinking of a document in
-Documentation/power that describes why pm_safe is off, or comments in
-the code itself?
+> 1) zero holes for PTRACE_PEEKUSR vanished.
 
-Regards,
+I've fixed this in the current patches.
 
-Nigel
+> 2. The following proggie renders box unusable in ~10 seconds (but not
+>    mainline kernel where Ctrl+C will kill process).
 
+I haven't been able to reproduce this so far on my test machine.  I got
+bored after about 10 minutes ("passed: 119200000").  The machine remains
+responsive and the test dies immediately on hitting C-c.  I'll try it on
+some other machines.  It would help to know what kind of unusable (crashy,
+leaky, wedgey?).
+
+
+Thanks,
+Roland
