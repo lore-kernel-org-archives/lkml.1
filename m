@@ -1,266 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964863AbXBLL1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964885AbXBLL2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964863AbXBLL1t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 06:27:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964877AbXBLL1m
+	id S964885AbXBLL2V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 06:28:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964868AbXBLL2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 06:27:42 -0500
-Received: from tservice.net.ru ([195.178.208.66]:49852 "EHLO tservice.net.ru"
+	Mon, 12 Feb 2007 06:28:05 -0500
+Received: from cacti.profiwh.com ([85.93.165.66]:55490 "EHLO cacti.profiwh.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964863AbXBLL1e convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 06:27:34 -0500
-Cc: David Miller <davem@davemloft.net>, Ulrich Drepper <drepper@redhat.com>,
-       Andrew Morton <akpm@osdl.org>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       netdev <netdev@vger.kernel.org>, Zach Brown <zach.brown@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Chase Venters <chase.venters@clientec.com>,
-       Johann Borck <johann.borck@densedata.com>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, Jamal Hadi Salim <hadi@cyberus.ca>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [take36 7/10] kevent: Signal notifications.
-In-Reply-To: <11712796492252@2ka.mipt.ru>
-X-Mailer: gregkh_patchbomb
-Date: Mon, 12 Feb 2007 14:27:29 +0300
-Message-Id: <1171279649838@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Reply-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Content-Transfer-Encoding: 7BIT
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+	id S964874AbXBLL1l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 06:27:41 -0500
+Message-ID: <45D04F30.2090600@gmail.com>
+Date: Mon, 12 Feb 2007 12:27:44 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
+MIME-Version: 1.0
+To: albcamus <albcamus@gmail.com>
+Cc: Reg Clemens <reg@dwf.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Why can't I build a running Kernel?
+References: <200702081817.l18IHlbE027996@deneb.dwf.com>	 <45CB79CF.9010702@gmail.com> <df9815e70702120036k3e2a2a50re0dc2605c31766f3@mail.gmail.com>
+In-Reply-To: <df9815e70702120036k3e2a2a50re0dc2605c31766f3@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+albcamus napsal(a):
+> 2007/2/9, Jiri Slaby <jirislaby@gmail.com>:
+>> Reg Clemens napsal(a):
+>> > Why can't I build a running Kernel?
+>> > I have in the past, but since some time in the 2.6.19 series,
+>> > I have got the following series of errors.
+>> > Same thing now with 2.6.20.
+>> >
+>> > I build with:
+>> >
+>> >     make xconfig
+>> >
+>> > changing only the Processor type to Pentium4,
+>> > then I
+>> >
+>> >     make bzImage
+>> >     make modules
+>> >     make modules_install
+>> >     make install
+>> >
+>> > Fine everything builds, no errors.
+>> > I then try booting, and I get 4 or 5 lines and then
+>> >
+>> >     Unable to access resume device (/dev/sda5)
+>> >     mount: could not find filesystem '/dev/root'
+>> >     < 4 more lines with setuproot and switchroot >
+>> >
+>> > and then
+>> >
+>> >     Kernel panic - not syncing: Attempting to kill init!
+>> >
+>> > Sigh.
+>> > What has changed, what do I need to do to get this thing to boot?
+>>
+> I have the same problem with 2.6.19 and later. The previous kernel with
+> same .config works, but it's not true for 2.6.19 and 2.6.30.
+> 
+> 
+> 
+> 
+>> Re-enable sata/scsi/usb/whatever is your root behind stuff back again? 
+>> What
+>> does
+>> your .config look like?
+>>
+>> regards,
+> 
+> I selected everything about ATA to <*> or <M>, and made initrd for the
+> newly-built kernel, still unable to boot.
+> 
+> The .config was attached, I have kdb-4.4 patched.
 
-Signal notifications.
+Config seems to be fine. Please post
+lspci -vvvxx
 
-This type of notifications allows to deliver signals through kevent queue.
-One can find example application signal.c on project homepage.
+and lines from your boot loader.
 
-If KEVENT_SIGNAL_NOMASK bit is set in raw_u64 id then signal will be
-delivered only through queue, otherwise both delivery types are used - old
-through update of mask of pending signals and through queue.
-
-If signal is delivered only through kevent queue, mask of pending signals
-is not updated at all, which is equal to putting signal into blocked mask,
-but with delivery of that signal through kevent queue.
-
-Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 4463735..e7372f2 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -82,6 +82,7 @@ struct sched_param {
- #include <linux/resource.h>
- #include <linux/timer.h>
- #include <linux/hrtimer.h>
-+#include <linux/kevent_storage.h>
- #include <linux/task_io_accounting.h>
- 
- #include <asm/processor.h>
-@@ -1048,6 +1049,10 @@ struct task_struct {
- #ifdef	CONFIG_TASK_DELAY_ACCT
- 	struct task_delay_info *delays;
- #endif
-+#ifdef CONFIG_KEVENT_SIGNAL
-+	struct kevent_storage st;
-+	u32 kevent_signals;
-+#endif
- #ifdef CONFIG_FAULT_INJECTION
- 	int make_it_fail;
- #endif
-diff --git a/kernel/fork.c b/kernel/fork.c
-index fc723e5..fd7c749 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -49,6 +49,7 @@
- #include <linux/delayacct.h>
- #include <linux/taskstats_kern.h>
- #include <linux/random.h>
-+#include <linux/kevent.h>
- 
- #include <asm/pgtable.h>
- #include <asm/pgalloc.h>
-@@ -118,6 +119,9 @@ void __put_task_struct(struct task_struct *tsk)
- 	WARN_ON(atomic_read(&tsk->usage));
- 	WARN_ON(tsk == current);
- 
-+#ifdef CONFIG_KEVENT_SIGNAL
-+	kevent_storage_fini(&tsk->st);
-+#endif
- 	security_task_free(tsk);
- 	free_uid(tsk->user);
- 	put_group_info(tsk->group_info);
-@@ -1126,6 +1130,10 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 	if (retval)
- 		goto bad_fork_cleanup_namespaces;
- 
-+#ifdef CONFIG_KEVENT_SIGNAL
-+	kevent_storage_init(p, &p->st);
-+#endif
-+
- 	p->set_child_tid = (clone_flags & CLONE_CHILD_SETTID) ? child_tidptr : NULL;
- 	/*
- 	 * Clear TID on mm_release()?
-diff --git a/kernel/kevent/kevent_signal.c b/kernel/kevent/kevent_signal.c
-new file mode 100644
-index 0000000..abe3972
---- /dev/null
-+++ b/kernel/kevent/kevent_signal.c
-@@ -0,0 +1,94 @@
-+/*
-+ * 	kevent_signal.c
-+ * 
-+ * 2006 Copyright (c) Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-+ * All rights reserved.
-+ * 
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/types.h>
-+#include <linux/slab.h>
-+#include <linux/spinlock.h>
-+#include <linux/file.h>
-+#include <linux/fs.h>
-+#include <linux/kevent.h>
-+
-+static int kevent_signal_callback(struct kevent *k)
-+{
-+	struct task_struct *tsk = k->st->origin;
-+	int sig = k->event.id.raw[0];
-+	int ret = 0;
-+
-+	if (sig == tsk->kevent_signals)
-+		ret = 1;
-+
-+	if (ret && (k->event.id.raw_u64 & KEVENT_SIGNAL_NOMASK))
-+		tsk->kevent_signals |= 0x80000000;
-+
-+	return ret;
-+}
-+
-+int kevent_signal_enqueue(struct kevent *k)
-+{
-+	int err;
-+
-+	err = kevent_storage_enqueue(&current->st, k);
-+	if (err)
-+		goto err_out_exit;
-+
-+	if (k->event.req_flags & KEVENT_REQ_ALWAYS_QUEUE) {
-+		kevent_requeue(k);
-+		err = 0;
-+	} else {
-+		err = k->callbacks.callback(k);
-+		if (err)
-+			goto err_out_dequeue;
-+	}
-+
-+	return err;
-+
-+err_out_dequeue:
-+	kevent_storage_dequeue(k->st, k);
-+err_out_exit:
-+	return err;
-+}
-+
-+int kevent_signal_dequeue(struct kevent *k)
-+{
-+	kevent_storage_dequeue(k->st, k);
-+	return 0;
-+}
-+
-+int kevent_signal_notify(struct task_struct *tsk, int sig)
-+{
-+	tsk->kevent_signals = sig;
-+	kevent_storage_ready(&tsk->st, NULL, KEVENT_SIGNAL_DELIVERY);
-+	return (tsk->kevent_signals & 0x80000000);
-+}
-+
-+static int __init kevent_init_signal(void)
-+{
-+	struct kevent_callbacks sc = {
-+		.callback = &kevent_signal_callback,
-+		.enqueue = &kevent_signal_enqueue,
-+		.dequeue = &kevent_signal_dequeue,
-+		.flags = 0,
-+	};
-+
-+	return kevent_add_callbacks(&sc, KEVENT_SIGNAL);
-+}
-+module_init(kevent_init_signal);
-diff --git a/kernel/signal.c b/kernel/signal.c
-index 5630255..f12ebc0 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -23,6 +23,7 @@
- #include <linux/ptrace.h>
- #include <linux/signal.h>
- #include <linux/capability.h>
-+#include <linux/kevent.h>
- #include <linux/freezer.h>
- #include <linux/pid_namespace.h>
- #include <linux/nsproxy.h>
-@@ -714,6 +715,9 @@ static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
- {
- 	struct sigqueue * q = NULL;
- 	int ret = 0;
-+	
-+	if (kevent_signal_notify(t, sig))
-+		return 1;
- 
- 	/*
- 	 * fast-pathed signals for kernel-internal things like SIGSTOP
-@@ -793,6 +797,17 @@ specific_send_sig_info(int sig, struct siginfo *info, struct task_struct *t)
- 	ret = send_signal(sig, info, t, &t->pending);
- 	if (!ret && !sigismember(&t->blocked, sig))
- 		signal_wake_up(t, sig == SIGKILL);
-+#ifdef CONFIG_KEVENT_SIGNAL
-+	/*
-+	 * Kevent allows to deliver signals through kevent queue, 
-+	 * it is possible to setup kevent to not deliver
-+	 * signal through the usual way, in that case send_signal()
-+	 * returns 1 and signal is delivered only through kevent queue.
-+	 * We simulate successfull delivery notification through this hack:
-+	 */
-+	if (ret == 1)
-+		ret = 0;
-+#endif
- out:
- 	return ret;
- }
-@@ -982,6 +997,17 @@ __group_send_sig_info(int sig, struct siginfo *info, struct task_struct *p)
- 	 * to avoid several races.
- 	 */
- 	ret = send_signal(sig, info, p, &p->signal->shared_pending);
-+#ifdef CONFIG_KEVENT_SIGNAL
-+	/*
-+	 * Kevent allows to deliver signals through kevent queue, 
-+	 * it is possible to setup kevent to not deliver
-+	 * signal through the usual way, in that case send_signal()
-+	 * returns 1 and signal is delivered only through kevent queue.
-+	 * We simulate successfull delivery notification through this hack:
-+	 */
-+	if (ret == 1)
-+		ret = 0;
-+#endif
- 	if (unlikely(ret))
- 		return ret;
- 
-
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
