@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964911AbXBLNG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964892AbXBLNVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964911AbXBLNG3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 08:06:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964910AbXBLNG3
+	id S964892AbXBLNVR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 08:21:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964905AbXBLNVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 08:06:29 -0500
-Received: from mlf.linux.rulez.org ([192.188.244.13]:1174 "EHLO
-	mlf.linux.rulez.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964909AbXBLNG2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 08:06:28 -0500
-X-Greylist: delayed 1605 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Feb 2007 08:06:28 EST
-Date: Mon, 12 Feb 2007 13:39:39 +0100 (MET)
-From: Szakacsits Szabolcs <szaka@sienet.hu>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] add filesystem subtype support
-In-Reply-To: <E1HGZhm-0003eb-00@dorka.pomaz.szeredi.hu>
-Message-ID: <Pine.LNX.4.21.0702121259540.25964-100000@mlf.linux.rulez.org>
+	Mon, 12 Feb 2007 08:21:17 -0500
+Received: from hermes.domdv.de ([193.102.202.1]:2199 "EHLO hermes.domdv.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964892AbXBLNVQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 08:21:16 -0500
+Message-ID: <45D069C3.2020406@domdv.de>
+Date: Mon, 12 Feb 2007 14:21:07 +0100
+From: Andreas Steinmetz <ast@domdv.de>
+User-Agent: Mail/News 1.5.0.7 (X11/20060915)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alex Dubov <oakad@yahoo.com>
+CC: Brad Campbell <brad@wasp.net.au>, Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Recent and not-so problems with tifm_sd driver - one more
+References: <113489.35158.qm@web36703.mail.mud.yahoo.com> <45CDC22B.6040408@drzeus.cx> <45CEB1C9.5010103@wasp.net.au> <45CF3904.5070401@drzeus.cx> <45CF3CA3.1010704@wasp.net.au> <45CF5AB0.6080309@drzeus.cx> <45CF6F64.60500@wasp.net.au>
+In-Reply-To: <45CF6F64.60500@wasp.net.au>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Brad Campbell wrote:
+> Alex, it's still hit and miss getting this card detected. I had to
+> insert/remove the card over 10 times with random driver load/unloads
+> until it created the device entries..
 
-Hi,
+And for me it's still worse, no matter what I try with 2.6.20:
 
-On Mon, 12 Feb 2007, Miklos Szeredi wrote:
+speedy:~ # find /sys/devices | grep tifm
+/sys/devices/pci0000:00/0000:00:14.4/0000:03:09.3/tifm_sd0:3
+/sys/devices/pci0000:00/0000:00:14.4/0000:03:09.3/tifm_sd0:3/mmc_host:mmc0
+/sys/devices/pci0000:00/0000:00:14.4/0000:03:09.3/tifm_sd0:3/driver
+/sys/devices/pci0000:00/0000:00:14.4/0000:03:09.3/tifm_sd0:3/bus
+/sys/devices/pci0000:00/0000:00:14.4/0000:03:09.3/tifm_sd0:3/subsystem
+/sys/devices/pci0000:00/0000:00:14.4/0000:03:09.3/tifm_sd0:3/power
+/sys/devices/pci0000:00/0000:00:14.4/0000:03:09.3/tifm_sd0:3/power/wakeup
+/sys/devices/pci0000:00/0000:00:14.4/0000:03:09.3/tifm_sd0:3/uevent
 
-> There's a slight problem with filesystem type representation in fuse
-> based filesystems.
-> 
-> >From the kernel's view, there are just two filesystem types: fuse and
-> fuseblk.  From the user's view there are lots of different filesystem
-> types.  The user is not even much concerned if the filesystem is fuse
-> based or not.  
+speedy:~ # find /sys/block | grep mmc
+speedy:~ #
 
-Yes. Those who are concerned with the fstype and mount like
-
-    mount -t fstype device mountpoint
-
-apparently expect mount/fstab line like
-
-    device mountpoint fstype ...
-
-Of course the fstype could be fuse.subtype or fuseblk.subtype but that 
-would add a needless complexity (also, for example ntfs-3g uses both and 
-it decides run-time which one to use).
-
-> So there's a conflict of interest in how this should be
-> represented in fstab, mtab and /proc/mounts.
-> 
-> The current scheme is to encode the real filesystem type in the mount
-> source.  So an sshfs mount looks like this:
-> 
->   sshfs#user@server:/   /mnt/server    fuse   rw,nosuid,nodev,...
-> 
-> This url-ish syntax works OK for sshfs and similar filesystems.
-> However for block device based filesystems (ntfs-3g, zfs) it doesn't
-> work, since the kernel expects the mount source to be a real device
-> name.
-> 
-> A possibly better scheme would be to encode the real type in the type
-> field as "type.subtype".  So fuse mounts would look like this:
-> 
->   /dev/hda1       /mnt/windows   fuseblk.ntfs-3g   rw,...
->   user@server:/   /mnt/server    fuse.sshfs        rw,nosuid,nodev,...
-
-I think it's definitely an improvement because it solves real problems, 
-though perhaps not the way users would expect.
-
-	Szaka
-
+-- 
+Andreas Steinmetz                       SPAMmers use robotrap@domdv.de
