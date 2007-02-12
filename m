@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964918AbXBLOBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964934AbXBLOEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964918AbXBLOBd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 09:01:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964930AbXBLOBd
+	id S964934AbXBLOEM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 09:04:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964933AbXBLOEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 09:01:33 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:38398 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964918AbXBLOBd (ORCPT
+	Mon, 12 Feb 2007 09:04:12 -0500
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:60549 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964931AbXBLOEL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 09:01:33 -0500
-Message-ID: <45D07457.9030006@zytor.com>
-Date: Mon, 12 Feb 2007 06:06:15 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Etienne Lorrain <etienne_lorrain@yahoo.fr>, vgoyal@in.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Re : [PATCH] Compressed ia32 ELF file generation for loading
- by Gujin 1/3
-References: <687898.45581.qm@web26907.mail.ukl.yahoo.com> <m17iuny2xg.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m17iuny2xg.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Feb 2007 09:04:11 -0500
+To: szaka@sienet.hu
+CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <Pine.LNX.4.21.0702121259540.25964-100000@mlf.linux.rulez.org>
+	(message from Szakacsits Szabolcs on Mon, 12 Feb 2007 13:39:39 +0100
+	(MET))
+Subject: Re: [RFC PATCH] add filesystem subtype support
+References: <Pine.LNX.4.21.0702121259540.25964-100000@mlf.linux.rulez.org>
+Message-Id: <E1HGbmc-0003oc-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 12 Feb 2007 15:03:54 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
+> > There's a slight problem with filesystem type representation in fuse
+> > based filesystems.
+> > 
+> > >From the kernel's view, there are just two filesystem types: fuse and
+> > fuseblk.  From the user's view there are lots of different filesystem
+> > types.  The user is not even much concerned if the filesystem is fuse
+> > based or not.  
 > 
-> With ELF we get a single file format that works on multiple
-> architectures and for multiple OS-s, with well understood rules.  This
-> allows for a broader audience who can review and maintain the code.
-> In addition to the real possibility of multi-architecture or multi-os
-> bootloaders.
+> Yes. Those who are concerned with the fstype and mount like
 > 
+>     mount -t fstype device mountpoint
+> 
+> apparently expect mount/fstab line like
+> 
+>     device mountpoint fstype ...
 
-Well understood MAYBE (although the "virtual" versus "physical" address 
-stuff in ELF is clearly misspecified in the extreme), but they are 
-clearly not sufficient for presenting a well-defined entry condition. 
-So it's not really anywhere near as straightforward as you make it sound.
+The problem with supporting 
 
-	-hpa
+  /dev/hda1   /mnt/windows   ntfs-3g   rw,...
 
+type syntax in /proc/mounts is that it would add much more complexity
+to the kernel.  The same could be achieved in userspace by teaching
+the mount utility about special filesystems like ntfs-3g.
+
+This patch aims for the minium footprint for a feature, that really
+doesn't concern the kernel at all.
+
+Miklos
