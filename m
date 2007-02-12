@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965371AbXBLUXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965330AbXBLU0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965371AbXBLUXi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 15:23:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965376AbXBLUXi
+	id S965330AbXBLU0V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 15:26:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965318AbXBLU0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 15:23:38 -0500
-Received: from rere.qmqm.pl ([86.63.132.164]:33407 "EHLO rere.qmqm.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965371AbXBLUXh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 15:23:37 -0500
-Date: Mon, 12 Feb 2007 21:23:19 +0100
-From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
-To: netfilter-devel@lists.netfilter.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.20 14/14] nfnetlink_log: micro-optimization: inst->skb != NULL in __nfulnl_send()
-Message-ID: <20070212202319.GE28704@rere.qmqm.pl>
-References: <20070212003738.GA8262@rere.qmqm.pl> <20070212202052.GA28704@rere.qmqm.pl>
+	Mon, 12 Feb 2007 15:26:21 -0500
+Received: from mail.cc.tut.fi ([130.230.1.120]:43064 "EHLO outbox.tut.fi"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965330AbXBLU0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 15:26:20 -0500
+X-Greylist: delayed 1979 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Feb 2007 15:26:20 EST
+Date: Mon, 12 Feb 2007 21:53:18 +0200
+From: Petri Kaukasoina <kaukasoina701m2os9b@sci.fi>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Dave Jones <davej@redhat.com>, Valerie Henson <val_henson@linux.intel.com>,
+       Michael Kerrisk <mtk-manpages@gmx.net>, val_henson@linux.interl.com,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Documenting MS_RELATIME
+Message-ID: <20070212195318.GB14369@elektroni.phys.tut.fi>
+Mail-Followup-To: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+	Dave Jones <davej@redhat.com>,
+	Valerie Henson <val_henson@linux.intel.com>,
+	Michael Kerrisk <mtk-manpages@gmx.net>, val_henson@linux.interl.com,
+	lkml <linux-kernel@vger.kernel.org>
+References: <45CE0737.6010103@gmx.net> <20070211005400.GC6849@redhat.com> <20070212065503.GC20919@nifty> <20070212154010.GC7617@redhat.com> <Pine.LNX.4.61.0702121848480.26360@yvahk01.tjqt.qr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070212202052.GA28704@rere.qmqm.pl>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <Pine.LNX.4.61.0702121848480.26360@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No other function calls __nfulnl_send() with inst->skb == NULL than nfulnl_timer().
+On Mon, Feb 12, 2007 at 06:49:39PM +0100, Jan Engelhardt wrote:
+> >The one problem with noatime is that mutt's 'new mail arrived' breaks
+> 
+> Just why does not it use mtime then to check for New Mail Arrived, like 
 
-Signed-off-by: Micha³ Miros³aw <mirq-linux@rere.qmqm.pl>
+I have always used:
 
---- linux-2.6.20/net/netfilter/nfnetlink_log.c.12	2007-02-12 17:58:01.000000000 +0100
-+++ linux-2.6.20/net/netfilter/nfnetlink_log.c	2007-02-12 17:58:56.000000000 +0100
-@@ -375,9 +375,6 @@ __nfulnl_send(struct nfulnl_instance *in
- {
- 	int status;
- 
--	if (!inst->skb)
--		return 0;
--
- 	if (inst->qlen > 1)
- 		inst->lastnlh->nlmsg_type = NLMSG_DONE;
- 
-@@ -403,7 +400,8 @@ static void nfulnl_timer(unsigned long d
- 	spin_lock_bh(&inst->lock);
- 	if (timer_pending(&inst->timer))	/* is it always true or false here? */
- 		del_timer(&inst->timer);
--	__nfulnl_send(inst);
-+	if (inst->skb)
-+		__nfulnl_send(inst);
- 	spin_unlock_bh(&inst->lock);
- 	instance_put(inst);
- }
+  --enable-buffy-size        Use file size attribute instead of access time
+
+Support was there at least in 1998, maybe before.
