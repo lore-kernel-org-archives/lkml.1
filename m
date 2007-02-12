@@ -1,207 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965425AbXBLWBE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965355AbXBLWEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965425AbXBLWBE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 17:01:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965429AbXBLWBD
+	id S965355AbXBLWEX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 17:04:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965427AbXBLWEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 17:01:03 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:43273 "EHLO smtp.osdl.org"
+	Mon, 12 Feb 2007 17:04:23 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47529 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965425AbXBLWBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 17:01:01 -0500
-Date: Mon, 12 Feb 2007 14:00:43 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
+	id S965355AbXBLWEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 17:04:22 -0500
+Message-ID: <45D0E486.9020104@redhat.com>
+Date: Mon, 12 Feb 2007 17:04:54 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
 To: Andi Kleen <ak@suse.de>
-Cc: davej@redhat.com, linux-kernel@vger.kernel.org, adobriyan@openvz.org
-Subject: Re: - rdmsr_on_cpu-wrmsr_on_cpu.patch removed from -mm tree
-Message-Id: <20070212140043.6586665c.akpm@linux-foundation.org>
-In-Reply-To: <200702111138.23253.ak@suse.de>
-References: <200702082132.l18LWhl4027000@shell0.pdx.osdl.net>
-	<20070211001143.GB13178@redhat.com>
-	<200702111138.23253.ak@suse.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+CC: Jeff Dike <jdike@addtoit.com>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH x86 for review III] [12/29] x86_64: 32-bit ptrace mangles
+ sixth system call argument
+References: <20070212551.664370000@suse.de> <20070212165132.6518713F45@wotan.suse.de>
+In-Reply-To: <20070212165132.6518713F45@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sun, 11 Feb 2007 11:38:23 +0100 Andi Kleen <ak@suse.de> wrote:
-> On Sunday 11 February 2007 01:11, Dave Jones wrote:
-> > On Thu, Feb 08, 2007 at 01:32:43PM -0800, akpm@linux-foundation.org wrote:
-> >  > 
-> >  > The patch titled
-> >  >      rdmsr_on_cpu, wrmsr_on_cpu
-> >  > has been removed from the -mm tree.  Its filename was
-> >  >      rdmsr_on_cpu-wrmsr_on_cpu.patch
-> >  > 
-> >  > This patch was dropped because I've lost the plot on this thing
-> > 
-> > Alexey, send me the latest fixed up version of this, and I'll
-> > queue this up to save Andrew trying to sort it out.
+Andi Kleen wrote:
+> From: Jeff Dike <jdike@addtoit.com>
+> The patch below copies %r9 (where the sixth argument has been
+> stashed) into the RBP slot of pt_regs before syscall_trace_enter is
+> called.  This fixes ptrace.
 > 
-> I fixed it up to at least support x86-64 too
+> To allow a successful return to userspace, the original value of rbp
+> must be restored.  This is done by storing the current value of rbp
+> into the RBP slot of pt_regs before the RESTORE_REST.
 > 
+> --- linux.orig/arch/x86_64/ia32/ia32entry.S
+> +++ linux/arch/x86_64/ia32/ia32entry.S
+> @@ -148,11 +148,23 @@ sysenter_do_call:	
+>  sysenter_tracesys:
+>  	CFI_RESTORE_STATE
+>  	SAVE_REST
+> +	/*
+> +	 * We need the 6th system call argument to be in regs->rbp at
+> +	 * this point so that ptrace will see it.  It's in r9 now, so copy
+> +	 * it to the rbp slot now.
+> +	 */
+> +	movq	%r9, RBP(%rsp)
+>  	CLEAR_RREGS
+>  	movq	$-ENOSYS,RAX(%rsp)	/* really needed? */
+>  	movq	%rsp,%rdi        /* &pt_regs -> arg1 */
+>  	call	syscall_trace_enter
+>  	LOAD_ARGS ARGOFFSET  /* reload args from stack in case ptrace changed it */
+> +	/*
+> +	 * Now, we need the correct value of rbp to be restored.  It
+> +	 * was never munged, so we can save it to the rbp slot and
+> +	 * just have it restored.
+> +	 */
+> +	movq	%rbp, RBP(%rsp)
+>  	RESTORE_REST
+>  	movl	%ebp, %ebp
+>  	/* no need to do an access_ok check here because rbp has been
 
-No you didn't ;) I still get a build error with i386 allmodconfig using
-your version.
+Didn't we have problems with this exact approach before? This one was dropped
+because it caused 32-bit programs to crash:
+http://www2.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.13/2.6.13-mm2/broken-out/x86-64-ptrace-ia32-bp-fix.patch
 
-I backed out x86_64-mm-msr-on-cpu.patch (again) and went with Alexey's
-second version (again).  It works fine.
+See:
+	http://lkml.org/lkml/2005/09/16/261
 
+for the one I proposed instead.
 
-
-From: Alexey Dobriyan <adobriyan@openvz.org>
-
-There was OpenVZ specific bug rendering some cpufreq drivers unusable on SMP. 
-In short, when cpufreq code thinks it confined itself to needed cpu by means
-of set_cpus_allowed() to execute rdmsr, some "virtual cpu" feature can migrate
-process to anywhere.  This triggers bugons and does wrong things in general.
-
-This got fixed by introducing rdmsr_on_cpu and wrmsr_on_cpu executing rdmsr
-and wrmsr on given physical cpu by means of smp_call_function_single().
-
-Dave Jones mentioned cpufreq might be not only user of rdmsr_on_cpu() and
-wrmsr_on_cpu(), so I'm putting them into arch/{i386,x86_64}/lib/ .
-
-Signed-off-by: Alexey Dobriyan <adobriyan@openvz.org>
-Cc: Andi Kleen <ak@suse.de>
-Acked-by: Dave Jones <davej@codemonkey.org.uk>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- arch/i386/lib/Makefile       |    2 
- arch/i386/lib/msr-on-cpu.c   |   70 +++++++++++++++++++++++++++++++++
- arch/x86_64/lib/Makefile     |    2 
- arch/x86_64/lib/msr-on-cpu.c |    1 
- include/asm-i386/msr.h       |    3 +
- include/asm-x86_64/msr.h     |    2 
- 6 files changed, 79 insertions(+), 1 deletion(-)
-
-diff -puN arch/i386/lib/Makefile~rdmsr_on_cpu-wrmsr_on_cpu arch/i386/lib/Makefile
---- a/arch/i386/lib/Makefile~rdmsr_on_cpu-wrmsr_on_cpu
-+++ a/arch/i386/lib/Makefile
-@@ -7,3 +7,5 @@ lib-y = checksum.o delay.o usercopy.o ge
- 	bitops.o semaphore.o
- 
- lib-$(CONFIG_X86_USE_3DNOW) += mmx.o
-+
-+obj-y = msr-on-cpu.o
-diff -puN /dev/null arch/i386/lib/msr-on-cpu.c
---- /dev/null
-+++ a/arch/i386/lib/msr-on-cpu.c
-@@ -0,0 +1,70 @@
-+#include <linux/module.h>
-+#include <linux/preempt.h>
-+#include <linux/smp.h>
-+#include <asm/msr.h>
-+
-+#ifdef CONFIG_SMP
-+struct msr_info {
-+	u32 msr_no;
-+	u32 l, h;
-+};
-+
-+static void __rdmsr_on_cpu(void *info)
-+{
-+	struct msr_info *rv = info;
-+
-+	rdmsr(rv->msr_no, rv->l, rv->h);
-+}
-+
-+void rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
-+{
-+	preempt_disable();
-+	if (smp_processor_id() == cpu)
-+		rdmsr(msr_no, *l, *h);
-+	else {
-+		struct msr_info rv;
-+
-+		rv.msr_no = msr_no;
-+		smp_call_function_single(cpu, __rdmsr_on_cpu, &rv, 0, 1);
-+		*l = rv.l;
-+		*h = rv.h;
-+	}
-+	preempt_enable();
-+}
-+
-+static void __wrmsr_on_cpu(void *info)
-+{
-+	struct msr_info *rv = info;
-+
-+	wrmsr(rv->msr_no, rv->l, rv->h);
-+}
-+
-+void wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
-+{
-+	preempt_disable();
-+	if (smp_processor_id() == cpu)
-+		wrmsr(msr_no, l, h);
-+	else {
-+		struct msr_info rv;
-+
-+		rv.msr_no = msr_no;
-+		rv.l = l;
-+		rv.h = h;
-+		smp_call_function_single(cpu, __wrmsr_on_cpu, &rv, 0, 1);
-+	}
-+	preempt_enable();
-+}
-+#else
-+void rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
-+{
-+	rdmsr(msr_no, *l, *h);
-+}
-+
-+void wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
-+{
-+	wrmsr(msr_no, l, h);
-+}
-+#endif
-+
-+EXPORT_SYMBOL(rdmsr_on_cpu);
-+EXPORT_SYMBOL(wrmsr_on_cpu);
-diff -puN arch/x86_64/lib/Makefile~rdmsr_on_cpu-wrmsr_on_cpu arch/x86_64/lib/Makefile
---- a/arch/x86_64/lib/Makefile~rdmsr_on_cpu-wrmsr_on_cpu
-+++ a/arch/x86_64/lib/Makefile
-@@ -4,7 +4,7 @@
- 
- CFLAGS_csum-partial.o := -funroll-loops
- 
--obj-y := io.o iomap_copy.o
-+obj-y := io.o iomap_copy.o msr-on-cpu.o
- 
- lib-y := csum-partial.o csum-copy.o csum-wrappers.o delay.o \
- 	usercopy.o getuser.o putuser.o  \
-diff -puN /dev/null arch/x86_64/lib/msr-on-cpu.c
---- /dev/null
-+++ a/arch/x86_64/lib/msr-on-cpu.c
-@@ -0,0 +1 @@
-+#include "../../i386/lib/msr-on-cpu.c"
-diff -puN include/asm-i386/msr.h~rdmsr_on_cpu-wrmsr_on_cpu include/asm-i386/msr.h
---- a/include/asm-i386/msr.h~rdmsr_on_cpu-wrmsr_on_cpu
-+++ a/include/asm-i386/msr.h
-@@ -83,6 +83,9 @@ static inline void wrmsrl (unsigned long
- 			  : "c" (counter))
- #endif	/* !CONFIG_PARAVIRT */
- 
-+void rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
-+void wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
-+
- /* symbolic names for some interesting MSRs */
- /* Intel defined MSRs. */
- #define MSR_IA32_P5_MC_ADDR		0
-diff -puN include/asm-x86_64/msr.h~rdmsr_on_cpu-wrmsr_on_cpu include/asm-x86_64/msr.h
---- a/include/asm-x86_64/msr.h~rdmsr_on_cpu-wrmsr_on_cpu
-+++ a/include/asm-x86_64/msr.h
-@@ -160,6 +160,8 @@ static inline unsigned int cpuid_edx(uns
- #define MSR_IA32_UCODE_WRITE		0x79
- #define MSR_IA32_UCODE_REV		0x8b
- 
-+void rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
-+void wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
- 
- #endif
- 
-_
+And in any case doesn't cstar_tracesys() need the same fix?
 
