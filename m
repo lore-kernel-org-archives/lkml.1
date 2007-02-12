@@ -1,40 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965024AbXBLRB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964983AbXBLRK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965024AbXBLRB1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 12:01:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965028AbXBLRB0
+	id S964983AbXBLRK3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 12:10:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964984AbXBLRK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 12:01:26 -0500
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:52435
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965024AbXBLRBY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 12:01:24 -0500
-Message-Id: <45D0AB68.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.1 
-Date: Mon, 12 Feb 2007 17:01:12 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Jeff Dike" <jdike@addtoit.com>
-Cc: "Andi Kleen" <ak@suse.de>, <linux-kernel@vger.kernel.org>,
-       <patches@x86-64.org>
-Subject: Re: [patches] [PATCH 2.6.21 review I] [4/25] x86: kernel-mode
-	faults pollute current->thead
-References: <200702101250.142420000@suse.de>
- <20070210115016.652C913DCE@wotan.suse.de>
- <45D0422A.76E4.0078.0@novell.com>
- <20070212164247.GA5381@ccure.user-mode-linux.org>
-In-Reply-To: <20070212164247.GA5381@ccure.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Mon, 12 Feb 2007 12:10:29 -0500
+Received: from [217.111.56.2] ([217.111.56.2]:24112 "EHLO semtex.sncag.com"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S964983AbXBLRK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 12:10:28 -0500
+To: Greg KH <greg@kroah.com>
+Cc: Rainer Weikusat <rweikusat@sncag.com>, LKML <linux-kernel@vger.kernel.org>,
+       Oleg Verych <olecom@flower.upol.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: unfixed regression in 2.6.20-rc6 (since 2.6.19)
+In-Reply-To: <20070212163759.GA15603@kroah.com> (Greg KH's message of "Mon, 12 Feb 2007 08:37:59 -0800")
+References: <877ivb2kvc.fsf@semtex.sncag.com>
+	<20070125185101.GA26279@kroah.com> <87y7nq131x.fsf@semtex.sncag.com>
+	<20070126174828.GA28890@kroah.com> <87d54z1dhb.fsf@semtex.sncag.com>
+	<slrnerqjit.f71.olecom@flower.upol.cz>
+	<20070129234340.GA6881@kroah.com> <87k5z4za4l.fsf@semtex.sncag.com>
+	<20070204043935.GA8829@kroah.com> <87abzj5tz5.fsf@semtex.sncag.com>
+	<20070212163759.GA15603@kroah.com>
+From: Rainer Weikusat <rainer.weikusat@sncag.com>
+Date: Mon, 12 Feb 2007 18:10:03 +0100
+Message-ID: <87odnzi9p0.fsf@semtex.sncag.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Yup.  How does this patch look to you?  We set error_code and trap_no
->for userspace faults and kernel faults which call die().  We don't set
->them for kernelspace faults which are fixed up.
+Greg KH <greg@kroah.com> writes:
+> On Mon, Feb 12, 2007 at 03:30:22PM +0100, Rainer Weikusat wrote:
 
-That seems a reasonable approach.
+[...]
 
-Thanks, Jan
+>> If you want to fix it only if you can claim to have written the code,
+>> fine.
+>
+> I do not claim I have rewritten the code, if you look, you get full
+> authorship credit for this fix, I just say I restructured it a bit.
+
+You have rewritten it to match set of popular beliefs I consider to be
+misguided. This means _you_ are the author of this code and all I can
+to is to basically accept that you have the power to force your
+beliefs on others and I haven't. So be it. Could this be the end of
+this useless discussion?
+
