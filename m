@@ -1,169 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964860AbXBLLao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964857AbXBLLmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964860AbXBLLao (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 06:30:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964879AbXBLL1t
+	id S964857AbXBLLmY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 06:42:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964870AbXBLLmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 06:27:49 -0500
-Received: from intermatrixgroup.ru ([195.178.208.66]:49839 "EHLO
-	tservice.net.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964864AbXBLL1f convert rfc822-to-8bit (ORCPT
+	Mon, 12 Feb 2007 06:42:24 -0500
+Received: from wx-out-0506.google.com ([66.249.82.225]:43599 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964857AbXBLLmX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 06:27:35 -0500
-Cc: David Miller <davem@davemloft.net>, Ulrich Drepper <drepper@redhat.com>,
-       Andrew Morton <akpm@osdl.org>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       netdev <netdev@vger.kernel.org>, Zach Brown <zach.brown@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Chase Venters <chase.venters@clientec.com>,
-       Johann Borck <johann.borck@densedata.com>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, Jamal Hadi Salim <hadi@cyberus.ca>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [take36 5/10] kevent: Timer notifications.
-In-Reply-To: <11712796482594@2ka.mipt.ru>
-X-Mailer: gregkh_patchbomb
-Date: Mon, 12 Feb 2007 14:27:29 +0300
-Message-Id: <11712796491621@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Reply-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Content-Transfer-Encoding: 7BIT
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+	Mon, 12 Feb 2007 06:42:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=mPQKaU+FBnripJoP3dwUo6ogfuE3nACcvIoQQI28fpkIR2QD97fnkyze07tYiR7Io/31/sur6zCXqbP1SkBDSmPYJonSreh8x9gpyPpKQRmVe8wOgBtf02A20ZVC5WS68iXtjaLnt1h6wwpp+otazyNqBnHXt6J6fun8hDv7As8=
+Message-ID: <cab162590702120342p1efea5c1ua345c2cafa81f569@mail.gmail.com>
+Date: Mon, 12 Feb 2007 12:42:22 +0100
+From: "Milan Markovic" <zivotinja@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Found trivial error in linux-headers-2.6.17-11-generic/include/linux/tty.h
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I upgraded the kernel on my Kubuntu 6.10 to 2.6.17-11-generic and had
+a lot of trouble compiling my softmodem driver.
+Apparently it was, among others, because of a mistake in kernel-headers
+this is what I've found in tty.h
 
-Timer notifications.
+$ cat -n /usr/src/linux-headers-2.6.17-11-generic/include/linux/tty.h
+| grep Define -C 3
+    83   */
+    84  #define TTY_NORMAL      0
+    85  #define TTY_BREAK       1
+    86  #Define Tty_Frame       2
+    87  #define TTY_PARITY      3
+    88  #define TTY_OVERRUN     4
+    89
 
-Timer notifications can be used for fine grained per-process time 
-management, since interval timers are very inconvenient to use, 
-and they are limited.
+I don't know whether it is Ubuntu-related error, or it came  from the
+top, and I wasn't really sure to whom should I address this error
+report.
+Hope this will help.
 
-This subsystem uses high-resolution timers.
-
-id.raw[0] is used as number of seconds
-id.raw[1] is used as number of nanoseconds
-
-Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-
-diff --git a/kernel/kevent/kevent_timer.c b/kernel/kevent/kevent_timer.c
-new file mode 100644
-index 0000000..c21a155
---- /dev/null
-+++ b/kernel/kevent/kevent_timer.c
-@@ -0,0 +1,114 @@
-+/*
-+ * 2006 Copyright (c) Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-+ * All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/types.h>
-+#include <linux/list.h>
-+#include <linux/slab.h>
-+#include <linux/spinlock.h>
-+#include <linux/hrtimer.h>
-+#include <linux/jiffies.h>
-+#include <linux/kevent.h>
-+
-+struct kevent_timer
-+{
-+	struct hrtimer		ktimer;
-+	struct kevent_storage	ktimer_storage;
-+	struct kevent		*ktimer_event;
-+};
-+
-+static int kevent_timer_func(struct hrtimer *timer)
-+{
-+	struct kevent_timer *t = container_of(timer, struct kevent_timer, ktimer);
-+	struct kevent *k = t->ktimer_event;
-+
-+	kevent_storage_ready(&t->ktimer_storage, NULL, KEVENT_MASK_ALL);
-+	hrtimer_forward(timer, timer->base->softirq_time,
-+			ktime_set(k->event.id.raw[0], k->event.id.raw[1]));
-+	return HRTIMER_RESTART;
-+}
-+
-+static struct lock_class_key kevent_timer_key;
-+
-+static int kevent_timer_enqueue(struct kevent *k)
-+{
-+	int err;
-+	struct kevent_timer *t;
-+
-+	t = kmalloc(sizeof(struct kevent_timer), GFP_KERNEL);
-+	if (!t)
-+		return -ENOMEM;
-+
-+	hrtimer_init(&t->ktimer, CLOCK_MONOTONIC, HRTIMER_REL);
-+	t->ktimer.expires = ktime_set(k->event.id.raw[0], k->event.id.raw[1]);
-+	t->ktimer.function = kevent_timer_func;
-+	t->ktimer_event = k;
-+
-+	err = kevent_storage_init(&t->ktimer, &t->ktimer_storage);
-+	if (err)
-+		goto err_out_free;
-+	lockdep_set_class(&t->ktimer_storage.lock, &kevent_timer_key);
-+
-+	err = kevent_storage_enqueue(&t->ktimer_storage, k);
-+	if (err)
-+		goto err_out_st_fini;
-+
-+	hrtimer_start(&t->ktimer, t->ktimer.expires, HRTIMER_REL);
-+
-+	return 0;
-+
-+err_out_st_fini:
-+	kevent_storage_fini(&t->ktimer_storage);
-+err_out_free:
-+	kfree(t);
-+
-+	return err;
-+}
-+
-+static int kevent_timer_dequeue(struct kevent *k)
-+{
-+	struct kevent_storage *st = k->st;
-+	struct kevent_timer *t = container_of(st, struct kevent_timer, ktimer_storage);
-+
-+	hrtimer_cancel(&t->ktimer);
-+	kevent_storage_dequeue(st, k);
-+	kfree(t);
-+
-+	return 0;
-+}
-+
-+static int kevent_timer_callback(struct kevent *k)
-+{
-+	k->event.ret_data[0] = jiffies_to_msecs(jiffies);
-+	return 1;
-+}
-+
-+static int __init kevent_init_timer(void)
-+{
-+	struct kevent_callbacks tc = {
-+		.callback = &kevent_timer_callback,
-+		.enqueue = &kevent_timer_enqueue,
-+		.dequeue = &kevent_timer_dequeue,
-+		.flags = 0,
-+	};
-+
-+	return kevent_add_callbacks(&tc, KEVENT_TIMER);
-+}
-+module_init(kevent_init_timer);
-+
-
+Greetings,
+M
