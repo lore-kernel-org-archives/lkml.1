@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964818AbXBLJco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964825AbXBLJdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964818AbXBLJco (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 04:32:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964821AbXBLJco
+	id S964825AbXBLJdJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 04:33:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964827AbXBLJdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 04:32:44 -0500
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:27658
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S964818AbXBLJcn (ORCPT
+	Mon, 12 Feb 2007 04:33:09 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:29569 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964825AbXBLJdF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 04:32:43 -0500
-Message-Id: <45D0422A.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.1 
-Date: Mon, 12 Feb 2007 09:32:10 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Jeff Dike" <jdike@addtoit.com>, "Andi Kleen" <ak@suse.de>
-Cc: <linux-kernel@vger.kernel.org>, <patches@x86-64.org>
-Subject: Re: [patches] [PATCH 2.6.21 review I] [4/25] x86: kernel-mode
-	faults pollute current->thead
-References: <200702101250.142420000@suse.de>
- <20070210115016.652C913DCE@wotan.suse.de>
-In-Reply-To: <20070210115016.652C913DCE@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 12 Feb 2007 04:33:05 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=WoR076p/LgV3KMeSE0/i4BKWrnUoSwvL6z+GbBviz7aD+g9dVXmWiEsfnrHZC4Fkr
+	p2mmpjDiXLZXuhP/MJJHw==
+Message-ID: <6599ad830702120132r181d338cy28b23736fa393de5@mail.gmail.com>
+Date: Mon, 12 Feb 2007 01:32:51 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: [PATCH 0/7] containers (V7): Generic Process Containers
+Cc: akpm@osdl.org, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
+       serue@us.ibm.com, vatsa@in.ibm.com, ebiederm@xmission.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       rohitseth@google.com, mbligh@google.com, winget@google.com,
+       containers@lists.osdl.org, devel@openvz.org
+In-Reply-To: <20070212011843.c6e8f4ae.pj@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <20070212081521.808338000@menage.corp.google.com>
+	 <20070212011843.c6e8f4ae.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Andi Kleen <ak@suse.de> 10.02.07 12:50 >>>
+On 2/12/07, Paul Jackson <pj@sgi.com> wrote:
 >
->From: Jeff Dike <jdike@addtoit.com>
->
->Kernel-mode traps on x86_64 can pollute the trap information for a previous
->userspace trap for which the signal has not yet been delivered to the
->process.
->
->do_trap and do_general_protection set task->thread.error_code and .trapno
->for kernel traps.  If a kernel-mode trap arrives between the arrival of a
->userspace trap and the delivery of the associated SISGEGV to the process,
->the process will get the kernel trap information in its sigcontext.
->
->This causes UML process segfaults, as the trapno that the UML kernel sees
->is 13, rather than the 14 for normal page faults.  So, the UML kernel
->passes the SIGSEGV along to its process.
->
->I don't claim to fully understand the problem.  On the one hand, a check in
->do_general_protection for a pending SIGSEGV turned up nothing.  On the
->other hand, this patch fixed the UML process segfault problem.
->
->The patch below moves the setting of error_code and trapno so that that
->only happens in the case of userspace faults.  As a side-effect, this
->should speed up kernel-mode fault handling a tiny bit.
+> You'll have a rough time selling me on the idea that some kernel thread
+> should be waking up every few seconds, grabbing system-wide locks, on a
+> big honkin NUMA box, for the few times per hour, or less, that a cpuset is
+> abandoned.
 
-This breaks consumers of notify_die() relying on the proper trap number being
-passed, as the call to notify_die() from die() currently reads
-current->thread.trap_no.
+I think it could be made smarter than that, e.g. have a workqueue task
+that's only woken when a refcount does actually reach zero. (I think
+that waking a workqueue task is something that can be done without too
+much worry about locks)
 
-Also, you seem to leave other places where trap_no gets set untouched -
-is this intentional (do_debug - probably correct here, kernel_math_error -
-probably incorrect here)?
+>
+> Can you explain to me how this intruded on the reference counting?
+>
 
->I looked at i386, and there is a similar situation.  In this case, there is
->duplicate code setting task->thread.error_code and trapno.  I deleted one,
->leaving the copy that runs in the case of a userspace fault.
+Essentially, it means that anything that releases a reference count on
+a container needs to be able to trigger a call to the release agent.
+The reference count is often released at a point when important locks
+are held, so you end up having to pass buffers into any function that
+might drop a ref count, in order to store a path to a release agent to
+be invoked.
 
-Likewise.
+In particular, the new container_clone() function can be called during
+the task fork path; at which point forking a new release_agent process
+would be impossible, or at least nasty. Additionally, if containers
+are potentially going to be used for virtual servers, having the
+release agent run from a top-level process rather than the process
+context that released the refcount sounds like a sane option.
 
-Jan
+Paul
