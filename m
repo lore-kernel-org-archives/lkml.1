@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965284AbXBLScA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965291AbXBLScZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965284AbXBLScA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 13:32:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965287AbXBLSb7
+	id S965291AbXBLScZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 13:32:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965289AbXBLScY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 13:31:59 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:27760 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965284AbXBLSb5 convert rfc822-to-8bit (ORCPT
+	Mon, 12 Feb 2007 13:32:24 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:16823 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965288AbXBLScK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 13:31:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mCbyjBvubj1WmLZ5JVwuLfSHbXtlq331V2Vd+sciM2VaHyXfoMrBN5OwAos/1SJe6YiXwSTbbxJRNLJTD6NXr32gEK/ecK9wBIPMzkr7SWEUl9GV63+qYUQe+WtG6TznWPQR0FSEWR8YFSkOR7TX8rZaAy3qqkhwpnmejj1vQKo=
-Message-ID: <d120d5000702121031o1ea5ff20lf4e0946c8c1e2980@mail.gmail.com>
-Date: Mon, 12 Feb 2007 13:31:52 -0500
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "=?ISO-8859-1?Q?N=E9meth_M=E1rton?=" <nm127@freemail.hu>
-Subject: Re: [PATCH] input: extend EV_LED
-Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-In-Reply-To: <45CEE9AB.2020208@freemail.hu>
+	Mon, 12 Feb 2007 13:32:10 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=VgCK055wEAtkuLs1MaTlAvsH5hTxP6u1yOz+BZC55MG+lSx/PjmvdccFBhcNne0WI
+	9qE5vBclt0NH/KuXgb5mA==
+Message-ID: <6599ad830702121031p16b88cd0vc81f400d213a812f@mail.gmail.com>
+Date: Mon, 12 Feb 2007 10:31:48 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Cedric Le Goater" <clg@fr.ibm.com>
+Subject: Re: [PATCH 3/7] containers (V7): Add generic multi-subsystem API to containers
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, vatsa@in.ibm.com,
+       sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net, xemul@sw.ru,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org, pj@sgi.com,
+       ebiederm@xmission.com, winget@google.com, rohitseth@google.com
+In-Reply-To: <45D08E2B.4010400@fr.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <45CEE9AB.2020208@freemail.hu>
+References: <20070212081521.808338000@menage.corp.google.com>
+	 <20070212085104.485337000@menage.corp.google.com>
+	 <20070212153949.GA16014@sergelap.austin.ibm.com>
+	 <45D08E2B.4010400@fr.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/11/07, Németh Márton <nm127@freemail.hu> wrote:
+On 2/12/07, Cedric Le Goater <clg@fr.ibm.com> wrote:
+> >> +#include <asm/proto.h>
+> >
+> > I did have a problem with this include.  On s390 it didn't exist so I've
+> > just been running without it (with no problems).  A quick 'find'
+> > suggests it only exists on x86_64, so I'd expect failures on all other
+> > arches.
 >
-> Extend EV_LED handling code so that it can handle not
-> only two states (on/off) but also others. For example
-> a LED can blink using hardware acceleration. The code
-> changed so that it is similar to the code at EV_SND.
+> confirmed on x86 also.
 >
 
-Hi,
+Sorry, this turned out to be left over from when I was debugging an
+initialization problem that required early_printk(). I should have
+removed it.
 
-I am not sure we would need this, could you explain what are you
-trying to use input leds for?
+You can safely remove it from the patch.
 
-Generally speaking leds within input subsystem are supposed to be very
-simple on/off objects, mostly for reporting state of input devices
-(keyboards), I am not even sure that LED_MAIL and LED_CHARGING make
-much sense here. For more compex objects(blinking/different
-colors/different brightness) we have a separate LED subsystem
-(drivers/leds).
-
--- 
-Dmitry
+Paul
