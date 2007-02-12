@@ -1,123 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932883AbXBLAxE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932593AbXBLA7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932883AbXBLAxE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 19:53:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932938AbXBLAxE
+	id S932593AbXBLA7y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 19:59:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932594AbXBLA7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 19:53:04 -0500
-Received: from mail.screens.ru ([213.234.233.54]:54334 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932883AbXBLAxC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 19:53:02 -0500
-Date: Mon, 12 Feb 2007 03:52:54 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, David Howells <dhowells@redhat.com>,
-       Daniel Drake <dsd@gentoo.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/3] make cancel_rearming_delayed_work() work on any workqueue, not just keventd_wq
-Message-ID: <20070212005254.GA2806@tv-sign.ru>
-References: <20070211211524.GA203@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070211211524.GA203@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+	Sun, 11 Feb 2007 19:59:54 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:9764 "EHLO
+	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932593AbXBLA7x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 19:59:53 -0500
+Date: Sun, 11 Feb 2007 18:59:24 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: NAK new drivers without proper power management?
+In-reply-to: <fa.AaJ/ugmiUmPO8uC+y1rS9JLuuMc@ifi.uio.no>
+To: Tilman Schmidt <tilman@imap.cc>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Cc: nigel@nigel.suspend2.net
+Message-id: <45CFBBEC.2090407@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-15; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.xSKPgY66Q+DPCZ1pszFFfdrJ0To@ifi.uio.no>
+ <fa.E/NjHlgg0HqDg5CgZjnCHFi2AMM@ifi.uio.no>
+ <fa.kop49l/7yexJoUGrzk6vVeIP934@ifi.uio.no>
+ <fa.O1YH4k5KtBGCNs5i2yB17bPvPGw@ifi.uio.no>
+ <fa.RfzClbTP/7B79AoEbQLNj3ABfIk@ifi.uio.no>
+ <fa.AaJ/ugmiUmPO8uC+y1rS9JLuuMc@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/12, Oleg Nesterov wrote:
->
-> Remove this parameter, and rename the function to cancel_rearming_delayed_work().
+Tilman Schmidt wrote:
+>>>> If your device requires power management, and you know it requires power
+>>>> management, why not just implement power management? [...]
+>>> Like it or not, power management is far from trivial, and people
+>>> writing device drivers have limited resources. [...]
+>> It's not that complex. All we're really talking about is a bit of extra
+>> code to cleanup and configure hardware state; things that the driver
+>> author already knows how to do. S3 might require a bit more
+>> initialisation if firmware needs to be reloaded or more extensive
+>> configuration needs to be done, but if there's firmware to be loaded,
+>> there is a reasonably good probability that we loaded it from Linux to
+>> start with anyway.
+> 
+> You are assuming a perfect world where driver authors have complete
+> knowledge of their devices. In reality, many drivers (including
+> those I have the mixed pleasure of maintaining) are based at least
+> in part on reverse engineering, and managing power states may well
+> fall into the domain of things not yet sufficiently reverse
+> engineered.
+> 
+>>> Also, in your argument you neglected a few cases:
+>>> - What if my device does not require power management?
+>> Then you as a generic routine that does nothing but return success
+>> (potentially shared with other drivers that are in the same situation).
+> 
+> But if I just write an empty routine like that I open myself up to
+> criticism along the lines of "writing dummy routines just in order
+> to shut up kernel warnings". BTDT.
 
-Damn! Forgot to rename EXPORT_SYMBOL() as well, otherwise unchanged.
+Well, it couldn't actually be an empty routine (at least not for a PCI 
+device), since the generic PCI suspend/resume handling doesn't get 
+called if you have suspend/resume functions defined, so you'd have to do 
+the pci_save_state, pci_disable_device, pci_set_power_state, etc. in 
+there at least. Using empty functions would prevent those from being 
+called and result in your PCI config space contain crap after resuming, 
+which can break the whole system.
 
+That's a bit messy, actually.. I know we can't just do that stuff 
+unconditionally in the PCI layer since some devices blow up if you 
+disable them, which we normally do, etc. We should just have some 
+generic function you can stick in the .suspend slot that just says "I 
+know how to suspend, but don't need anything more than the generic 
+handling". And if you do need more than that (which is almost always the 
+case), you can just call that from your own function and then add what 
+you need, instead of duplicating the code a million times (sometimes in 
+an incomplete/incorrect fashion) like we do now.
 
+>>> - What if I don't know whether my device requires power management?
+>> The questions are straight forward: Is there hardware state that needs
+>> to be configured if you've just booted the computer and nothing else has
+>> touched it? If so, that needs to be done in a resume method. Do you need
+>> to clean up state prior to doing the things in the resume method, or
+>> otherwise do things to quiesce the driver? If so, they will need to be
+>> done in the suspend method. The result will be roughly similar to what
+>> you do for module load/unload, except maybe less complete in some cases.
+> 
+> I don't doubt your basic assessment. However it doesn't translate that
+> easily into a real implementation. In my case, I maintain a USB driver,
+> so I have to deal with USB specifics of suspend/resume which happen not
+> to be that well documented. My driver provides an isdn4linux device but
+> isdn4linux knows nothing about suspend/resume so I am on my own on how
+> to reconcile the two. The device itself, though in turn far from trivial,
+> is actually the least of my worries.
 
-[PATCH 4/3] make cancel_rearming_delayed_work() work on any workqueue, not just keventd_wq
+That is one good excuse for not implementing it - the driver is part of 
+a framework which does not handle suspend/resume itself. (The current 
+FireWire stack is another case like this.) This is the kind of situation 
+where I would say the driver should just define a suspend function that 
+returns -ENOSYS and then the user would know they have to remove that 
+module, etc. before suspending (there is at least some distro script 
+support for doing that automatically based on a config file), since it 
+hasn't a hope of working after resume until the framework is updated to 
+support suspending.
 
-cancel_rearming_delayed_workqueue(wq, dwork) doesn't need the first parameter.
-We don't hang on un-queued dwork any longer, and work->data doesn't change its
-type. This means we can always figure out "wq" from dwork when it is needed.
-
-Remove this parameter, and rename the function to cancel_rearming_delayed_work().
-Re-create an inline "obsolete" cancel_rearming_delayed_workqueue(wq) which just
-calls cancel_rearming_delayed_work().
-
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
- include/linux/workqueue.h |   13 ++++++++++---
- kernel/workqueue.c        |   26 +++++++++-----------------
- 2 files changed, 19 insertions(+), 20 deletions(-)
-
---- 6.20-rc6-mm3/include/linux/workqueue.h~4_crdw	2007-02-10 18:16:15.000000000 +0300
-+++ 6.20-rc6-mm3/include/linux/workqueue.h	2007-02-12 03:15:20.000000000 +0300
-@@ -185,9 +185,6 @@ extern int current_is_keventd(void);
- extern int keventd_up(void);
- 
- extern void init_workqueues(void);
--void cancel_rearming_delayed_work(struct delayed_work *work);
--void cancel_rearming_delayed_workqueue(struct workqueue_struct *,
--				       struct delayed_work *);
- int execute_in_process_context(work_func_t fn, struct execute_work *);
- 
- /*
-@@ -205,4 +202,14 @@ static inline int cancel_delayed_work(st
- 	return ret;
- }
- 
-+extern void cancel_rearming_delayed_work(struct delayed_work *work);
-+
-+/* Obsolete. use cancel_rearming_delayed_work() */
-+static inline
-+void cancel_rearming_delayed_workqueue(struct workqueue_struct *wq,
-+					struct delayed_work *work)
-+{
-+	cancel_rearming_delayed_work(work);
-+}
-+
- #endif
---- 6.20-rc6-mm3/kernel/workqueue.c~4_crdw	2007-02-10 19:07:41.000000000 +0300
-+++ 6.20-rc6-mm3/kernel/workqueue.c	2007-02-12 03:15:20.000000000 +0300
-@@ -555,32 +555,23 @@ void flush_work_keventd(struct work_stru
- EXPORT_SYMBOL(flush_work_keventd);
- 
- /**
-- * cancel_rearming_delayed_workqueue - kill off a delayed work whose handler rearms the delayed work.
-- * @wq:   the controlling workqueue structure
-+ * cancel_rearming_delayed_work - kill off a delayed work whose handler rearms the delayed work.
-  * @dwork: the delayed work struct
-  *
-  * Note that the work callback function may still be running on return from
-  * cancel_delayed_work(). Run flush_workqueue() or flush_work() to wait on it.
-  */
--void cancel_rearming_delayed_workqueue(struct workqueue_struct *wq,
--				       struct delayed_work *dwork)
-+void cancel_rearming_delayed_work(struct delayed_work *dwork)
- {
--	/* Was it ever queued ? */
--	if (!get_wq_data(&dwork->work))
--		return;
-+	struct cpu_workqueue_struct *cwq = get_wq_data(&dwork->work);
- 
--	while (!cancel_delayed_work(dwork))
--		flush_workqueue(wq);
--}
--EXPORT_SYMBOL(cancel_rearming_delayed_workqueue);
-+	/* Was it ever queued ? */
-+	if (cwq != NULL) {
-+		struct workqueue_struct *wq = cwq->wq;
- 
--/**
-- * cancel_rearming_delayed_work - kill off a delayed keventd work whose handler rearms the delayed work.
-- * @dwork: the delayed work struct
-- */
--void cancel_rearming_delayed_work(struct delayed_work *dwork)
--{
--	cancel_rearming_delayed_workqueue(keventd_wq, dwork);
-+		while (!cancel_delayed_work(dwork))
-+			flush_workqueue(wq);
-+	}
- }
- EXPORT_SYMBOL(cancel_rearming_delayed_work);
- 
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
