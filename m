@@ -1,64 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964780AbXBLHs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964782AbXBLHtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964780AbXBLHs7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 02:48:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933086AbXBLHqs
+	id S964782AbXBLHtA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 02:49:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933083AbXBLHqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 02:46:48 -0500
-Received: from mx2.suse.de ([195.135.220.15]:49612 "EHLO mx2.suse.de"
+	Mon, 12 Feb 2007 02:46:47 -0500
+Received: from mx2.suse.de ([195.135.220.15]:49610 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933084AbXBLHiC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S933085AbXBLHiC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 12 Feb 2007 02:38:02 -0500
 From: Andi Kleen <ak@suse.de>
 References: <20070212837.963446000@suse.de>
 In-Reply-To: <20070212837.963446000@suse.de>
-To: Rene Herman <rene.herman@gmail.com>, patches@x86-64.org,
+To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, patches@x86-64.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH x86 for review II] [13/39] i386: CONFIG_PHYSICAL_ALIGN limited to 4M?
-Message-Id: <20070212073800.3D44313DD5@wotan.suse.de>
-Date: Mon, 12 Feb 2007 08:38:00 +0100 (CET)
+Subject: [PATCH x86 for review II] [12/39] i386: Handle 32 bit PerfMon Counter writes cleanly in oprofile
+Message-Id: <20070212073759.2D7DA13E11@wotan.suse.de>
+Date: Mon, 12 Feb 2007 08:37:58 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Rene Herman <rene.herman@gmail.com>
-A while ago it was remarked on list here that keeping the kernel 4M 
-aligned physically might be a performance win if the added 1M (it 
-normally loads at 1M) meant it would fit on one 4M aligned hugepage 
-instead of 2 and since that time I've been doing such.
+From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
-In fact, while I was at it, I ran the kernel at 16M; while admittedly a 
-bit of a non-issue, having never experienced ZONE_DMA shortage, I am an 
-ISA user on a >16M machine so this seemed to make sense -- no kernel 
-eating up "precious" ISA-DMAable memory.
+Handle these 32 bit perfmon counter MSR writes cleanly in oprofile.
 
-Recently CONFIG_PHYSICAL_START was replaced by CONFIG_PHYSICAL_ALIGN 
-(commit e69f202d0a1419219198566e1c22218a5c71a9a6) and while 4M alignment 
-is still possible, that's also the strictest alignment allowed meaning I 
-can't load my (non-relocatable) kernel at 16M anymore.
-
-If I just apply the following and set it to 16M, things seem to be 
-working for me. Was there an important reason to limit the alignment to 
-4M, and if so, even on non relocatable kernels?
-
-Rene.
-
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/i386/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/i386/oprofile/op_model_ppro.c |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-Index: linux/arch/i386/Kconfig
+Index: linux/arch/i386/oprofile/op_model_ppro.c
 ===================================================================
---- linux.orig/arch/i386/Kconfig
-+++ linux/arch/i386/Kconfig
-@@ -843,7 +843,7 @@ config RELOCATABLE
- config PHYSICAL_ALIGN
- 	hex "Alignment value to which kernel should be aligned"
- 	default "0x100000"
--	range 0x2000 0x400000
-+	range 0x2000 0x1000000
- 	help
- 	  This value puts the alignment restrictions on physical address
-  	  where kernel is loaded and run from. Kernel is compiled for an
+--- linux.orig/arch/i386/oprofile/op_model_ppro.c
++++ linux/arch/i386/oprofile/op_model_ppro.c
+@@ -24,7 +24,8 @@
+ 
+ #define CTR_IS_RESERVED(msrs,c) (msrs->counters[(c)].addr ? 1 : 0)
+ #define CTR_READ(l,h,msrs,c) do {rdmsr(msrs->counters[(c)].addr, (l), (h));} while (0)
+-#define CTR_WRITE(l,msrs,c) do {wrmsr(msrs->counters[(c)].addr, -(u32)(l), -1);} while (0)
++#define CTR_32BIT_WRITE(l,msrs,c)	\
++	do {wrmsr(msrs->counters[(c)].addr, -(u32)(l), 0);} while (0)
+ #define CTR_OVERFLOWED(n) (!((n) & (1U<<31)))
+ 
+ #define CTRL_IS_RESERVED(msrs,c) (msrs->controls[(c)].addr ? 1 : 0)
+@@ -79,7 +80,7 @@ static void ppro_setup_ctrs(struct op_ms
+ 	for (i = 0; i < NUM_COUNTERS; ++i) {
+ 		if (unlikely(!CTR_IS_RESERVED(msrs,i)))
+ 			continue;
+-		CTR_WRITE(1, msrs, i);
++		CTR_32BIT_WRITE(1, msrs, i);
+ 	}
+ 
+ 	/* enable active counters */
+@@ -87,7 +88,7 @@ static void ppro_setup_ctrs(struct op_ms
+ 		if ((counter_config[i].enabled) && (CTR_IS_RESERVED(msrs,i))) {
+ 			reset_value[i] = counter_config[i].count;
+ 
+-			CTR_WRITE(counter_config[i].count, msrs, i);
++			CTR_32BIT_WRITE(counter_config[i].count, msrs, i);
+ 
+ 			CTRL_READ(low, high, msrs, i);
+ 			CTRL_CLEAR(low);
+@@ -116,7 +117,7 @@ static int ppro_check_ctrs(struct pt_reg
+ 		CTR_READ(low, high, msrs, i);
+ 		if (CTR_OVERFLOWED(low)) {
+ 			oprofile_add_sample(regs, i);
+-			CTR_WRITE(reset_value[i], msrs, i);
++			CTR_32BIT_WRITE(reset_value[i], msrs, i);
+ 		}
+ 	}
+ 
