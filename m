@@ -1,79 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964815AbXBLJaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964822AbXBLJaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964815AbXBLJaY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 04:30:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964820AbXBLJaY
+	id S964822AbXBLJaj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 04:30:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964821AbXBLJaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 04:30:24 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:51461 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964815AbXBLJaW (ORCPT
+	Mon, 12 Feb 2007 04:30:39 -0500
+Received: from mo-p00-ob.rzone.de ([81.169.146.160]:50119 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964822AbXBLJai convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 04:30:22 -0500
-Date: Mon, 12 Feb 2007 14:59:45 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Srinivasa Ds <srinivasa@in.ibm.com>, Frederik Deweerdt <deweerdt@free.fr>,
-       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, jkenisto@us.ibm.com,
-       anil.s.keshavamurthy@intel.com, prasanna@in.ibm.com,
-       davem@davemloft.net
-Subject: Re: [RFC] [PATCH] To list all active probes in the system---Take-2
-Message-ID: <20070212092945.GA7109@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <45C85097.1000106@in.ibm.com> <20070206100607.GA10296@infradead.org> <45C856F1.7060403@in.ibm.com> <45C894EA.4060305@in.ibm.com> <20070206145609.GA11249@slug> <45C962C3.2020904@in.ibm.com> <20070207142717.5da4d8d4.akpm@linux-foundation.org> <45CB0D87.8070808@in.ibm.com> <20070212004515.b66ec836.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 12 Feb 2007 04:30:38 -0500
+From: Stefan Rompf <stefan@loplof.de>
+To: linux-kernel@vger.kernel.org
+Subject: Open reiserfs transactions (was Re: 2.6.19-rc5: grub is much slower resuming from suspend-to-disk than in 2.6.18)
+User-Agent: KMail/1.9.1
+Cc: arvidjaar@mail.ru
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20070212004515.b66ec836.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+Date: Mon, 12 Feb 2007 10:34:08 +0100
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-Id: <200702121034.08647.stefan@loplof.de>
+X-RZG-AUTH: kR2YrGeU3i5IZ7e/KoXXySNh16uouyfpvuAE9NRyohxnu02OuGTTkbe6PwRfQq/rApUg
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 12, 2007 at 12:45:15AM -0800, Andrew Morton wrote:
-> On Thu, 08 Feb 2007 17:16:15 +0530 Srinivasa Ds <srinivasa@in.ibm.com> wrote:
-> 
-> > +	if (p->pre_handler == pre_handler_kretprobe)
-> 
-> This breaks on sparc64:
-> 
-> kernel/kprobes.c: In function `report_probe':
-> kernel/kprobes.c:826: error: `pre_handler_kretprobe' undeclared (first use in this function)
+Andrey Borzenkov wrote:
 
-Andrew,
+> This is rather funny; in 2.6.19-rc5 grub is *really* slow loading kernel
+> when I switch on the system after suspend to disk. Actually, after kernel
+> has been loaded, the whole resuming (up to the point I have usable desktop
+> again) takes about three time less than the process of loading kernel +
+> initrd. During loading disk LED is constantly lit. This almost looks like
+> kernel leaves HDD in some strange state, although I always assumed HDD/IDE
+> is completely reinitialized in this case.
 
-Here is a patch to fix the issue, compile tested with crosstools. Sorry for
-the trouble.
+I have the same problem since I made my desktop computer able to suspend 
+again. As others in this thread said, grub replays all open transactions 
+internally before accessing a file on an unclean reiserfs partition.
 
-Do you want a comprehensive patch that folds all the related changes
-into one?
+>From some tests, 2.6.19(.x) seems to keep quite a bunch of open transactions 
+even if I do multiple syncs just before a hard reset or echo 
+>/proc/acpi/sleep on an idle system. I haven't verified against 2.6.18 yet, 
+but there have been some non cosmetical reiserfs updates in 2.6.19. Anyone 
+aware of a change that may cause this behaviour?
 
-Ananth
---
-
-Fix kprobes compilation breakage on sparc64 caused due to
-kprobes-list-all-active-probes-in-the-system.patch
-
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-
----
- kernel/kprobes.c |    6 ++++++
- 1 files changed, 6 insertions(+)
-
-Index: linux-2.6.20/kernel/kprobes.c
-===================================================================
---- linux-2.6.20.orig/kernel/kprobes.c
-+++ linux-2.6.20/kernel/kprobes.c
-@@ -780,6 +780,12 @@ int __kprobes register_kretprobe(struct 
- 	return -ENOSYS;
- }
- 
-+static int __kprobes pre_handler_kretprobe(struct kprobe *p,
-+					   struct pt_regs *regs)
-+{
-+	return 0;
-+}
-+
- #endif /* ARCH_SUPPORTS_KRETPROBES */
- 
- void __kprobes unregister_kretprobe(struct kretprobe *rp)
+Stefan
