@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933024AbXBLGN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933027AbXBLGNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933024AbXBLGN2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 01:13:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933025AbXBLGN2
+	id S933027AbXBLGNz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 01:13:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933025AbXBLGNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 01:13:28 -0500
-Received: from mail07.syd.optusnet.com.au ([211.29.132.188]:41887 "EHLO
-	mail07.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933024AbXBLGN1 (ORCPT
+	Mon, 12 Feb 2007 01:13:55 -0500
+Received: from paragon.brong.net ([66.232.154.163]:37904 "EHLO
+	paragon.brong.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933027AbXBLGNy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 01:13:27 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: malc <av1474@comtv.ru>
-Subject: Re: CPU load
-Date: Mon, 12 Feb 2007 17:12:50 +1100
-User-Agent: KMail/1.9.5
+	Mon, 12 Feb 2007 01:13:54 -0500
+Date: Mon, 12 Feb 2007 17:13:47 +1100
+From: Bron Gondwana <brong@fastmail.fm>
+To: Adrian Bunk <bunk@stusta.de>
 Cc: linux-kernel@vger.kernel.org
-References: <loom.20070212T063225-663@post.gmane.org> <8cd998d50702112144y38958d27saec4196f6f5d5236@mail.gmail.com> <Pine.LNX.4.64.0702120849310.903@home.oyster.ru>
-In-Reply-To: <Pine.LNX.4.64.0702120849310.903@home.oyster.ru>
+Subject: Re: Linux 2.6.16.40
+Message-ID: <20070212061347.GB24889@brong.net>
+References: <20070210164113.GG12958@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702121712.50168.kernel@kolivas.org>
+In-Reply-To: <20070210164113.GG12958@stusta.de>
+Organization: brong.net
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 February 2007 16:54, malc wrote:
-> On Mon, 12 Feb 2007, Con Kolivas wrote:
-> > On 12/02/07, Vassili Karpov <av1474@comtv.ru> wrote:
->
-> [..snip..]
->
-> > The kernel looks at what is using cpu _only_ during the timer
-> > interrupt. Which means if your HZ is 1000 it looks at what is running
-> > at precisely the moment those 1000 timer ticks occur. It is
-> > theoretically possible using this measurement system to use >99% cpu
-> > and record 0 usage if you time your cpu usage properly. It gets even
-> > more inaccurate at lower HZ values for the same reason.
->
-> Thank you very much. This somewhat contradicts what i saw (and outlined
-> in usnet article), namely the mplayer+/dev/rtc case. Unless ofcourse
-> /dev/rtc interrupt is considered to be the same as the interrupt from
-> PIT (on X86 that is)
->
-> P.S. Perhaps it worth documenting this in the documentation? I caused
->       me, and perhaps quite a few other people, a great deal of pain and
->       frustration.
+On Sat, Feb 10, 2007 at 05:41:13PM +0100, Adrian Bunk wrote:
+> New drivers since 2.6.16.39:
+> - Areca ARC11X0/ARC12X0 SATA-RAID support
+> - AMD Athlon64/FX and Opteron temperature sensor
 
-Lots of confusion comes from this, and often people think their pc suddenly 
-uses a lot less cpu when they change from 1000HZ to 100HZ and use this as an 
-argument/reason for changing to 100HZ when in fact the massive _reported_ 
-difference is simply worse accounting. Of course there is more overhead going 
-from 100 to 1000 but it doesn't suddenly make your apps use 10 times more 
-cpu.
+Sorry - I think I just sent a blank reply to this!  Oops.
 
--- 
--ck
+I was going to say - thanks.  We'll definitely be using
+this kernel since we've found that 2.6.19.2 has a
+significantly worse IO profile and either the 2.6.16.40-rc1
+kernel or 2.6.18 on otherwise identical machines with pretty
+stable loads (so we can compare back to previous weeks).
+
+Now to figure out what's causing the extra load in the
+2.6.19 branch!
+
+Bron.
