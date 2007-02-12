@@ -1,62 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964845AbXBLJ4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964838AbXBLKFJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964845AbXBLJ4u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 04:56:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964846AbXBLJ4u
+	id S964838AbXBLKFJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 05:05:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964828AbXBLKFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 04:56:50 -0500
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:29088
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S964845AbXBLJ4t (ORCPT
+	Mon, 12 Feb 2007 05:05:09 -0500
+Received: from dsl.static81213182239.ttnet.net.tr ([81.213.182.239]:15192 "EHLO
+	bonsai.taydin.org" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964838AbXBLKFI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 04:56:49 -0500
-Message-Id: <45D04806.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.1 
-Date: Mon, 12 Feb 2007 09:57:10 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Bryan O'Sullivan" <bos@pathscale.com>, "Andi Kleen" <ak@suse.de>
-Cc: "Roland Dreier" <rolandd@cisco.com>, <linux-kernel@vger.kernel.org>,
-       <patches@x86-64.org>
-Subject: Re: [patches] [PATCH 2.6.21 review I] [21/25] x86_64: a memcpy
-	that tries to reduce cache pressure
-References: <200702101250.142420000@suse.de>
- <20070210115034.694B013DBF@wotan.suse.de>
-In-Reply-To: <20070210115034.694B013DBF@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Mon, 12 Feb 2007 05:05:08 -0500
+X-Greylist: delayed 1523 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Feb 2007 05:05:08 EST
+From: Timur Aydin <ta@taydin.org>
+To: linux-kernel@vger.kernel.org
+Subject: Adjusting destination pointer with copy_to_user
+Date: Mon, 12 Feb 2007 11:39:44 +0200
+Message-ID: <87ire7af4v.fsf@bonsai.taydin.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.92 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Andi Kleen <ak@suse.de> 10.02.07 12:50 >>>
->
->From: "Bryan O'Sullivan" <bos@pathscale.com>
->
->This copy routine is memcpy-compatible, but on some architectures will use
->cache-bypassing loads to avoid bringing the source data into the cache.
->
->One case where this is useful is when a device issues a DMA to a memory
->region, and the CPU must copy the DMAed data elsewhere before doing any work
->with it.  Since the source data is read-once, write-never from the CPU's
->perspective, caching the data at those addresses can only evict potentially
->useful data.
->
->We provide an x86_64 implementation that uses SSE non-temporal loads, and a
->generic version that falls back to plain memcpy.
->
->Implementors for other arches should not use cache-bypassing stores to the
->destination, as in most cases, the destination is accessed almost immediately
->after a copy finishes.
+Hi,
 
-This looks a little strange to me:
-- the first 128 bytes are still going through the cache
-- up to 192 bytes past the copied area are being marked non-temporal, while
-  there's nothing known about that area
-- sfence seems questionable here, I would have thought this should be lfence,
-  or perhaps even none at all
+I am passing a packet consisting of a fixed length header and a
+variable length data block to a user mode application. The user mode
+application passes the pointer of its buffer with an ioctl call
+(buff_ptr). When the driver receives buff_ptr, it makes two calls to
+pass the packet to user mode:
 
-Minor remarks would be to remove the double .align before .L12 and replace
-or-ing a register with itself by test.
+copy_to_user(buff_ptr, header, header_size);
+copy_to_user(buff_ptr + header_size, data, data_size);
 
-Jan
+Is this a valid usage? Or can I only use buff_ptr here?
+
+Timur
