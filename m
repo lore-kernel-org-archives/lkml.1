@@ -1,44 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965330AbXBLU0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965372AbXBLU2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965330AbXBLU0V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 15:26:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965318AbXBLU0V
+	id S965372AbXBLU2A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 15:28:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965365AbXBLU2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 15:26:21 -0500
-Received: from mail.cc.tut.fi ([130.230.1.120]:43064 "EHLO outbox.tut.fi"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965330AbXBLU0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 15:26:20 -0500
-X-Greylist: delayed 1979 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Feb 2007 15:26:20 EST
-Date: Mon, 12 Feb 2007 21:53:18 +0200
-From: Petri Kaukasoina <kaukasoina701m2os9b@sci.fi>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Dave Jones <davej@redhat.com>, Valerie Henson <val_henson@linux.intel.com>,
-       Michael Kerrisk <mtk-manpages@gmx.net>, val_henson@linux.interl.com,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Documenting MS_RELATIME
-Message-ID: <20070212195318.GB14369@elektroni.phys.tut.fi>
-Mail-Followup-To: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-	Dave Jones <davej@redhat.com>,
-	Valerie Henson <val_henson@linux.intel.com>,
-	Michael Kerrisk <mtk-manpages@gmx.net>, val_henson@linux.interl.com,
-	lkml <linux-kernel@vger.kernel.org>
-References: <45CE0737.6010103@gmx.net> <20070211005400.GC6849@redhat.com> <20070212065503.GC20919@nifty> <20070212154010.GC7617@redhat.com> <Pine.LNX.4.61.0702121848480.26360@yvahk01.tjqt.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0702121848480.26360@yvahk01.tjqt.qr>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 12 Feb 2007 15:28:00 -0500
+Received: from heineken.digium.com ([216.207.245.2]:35364 "EHLO
+	heineken.digium.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965372AbXBLU17 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 15:27:59 -0500
+X-Greylist: delayed 1483 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Feb 2007 15:27:58 EST
+In-Reply-To: <45D00DF7.6090605@gmail.com>
+References: <20070115164541.M22367@elsat.net.pl> <20070115165432.M87238@elsat.net.pl> <20070115182642.GA18374@slug> <20070115222320.M55059@elsat.net.pl> <45B43241.1070301@gmail.com> <loom.20070211T232847-590@post.gmane.org> <45D00DF7.6090605@gmail.com>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <9d377bf8f83da4ca7935f5a69cde5bef@digium.com>
+Content-Transfer-Encoding: 7bit
+Cc: linux-kernel@vger.kernel.org, ris <ris@elsat.net.pl>
+From: Matthew Fredrickson <creslin@digium.com>
+Subject: Re: High CPU usage with sata_nv
+Date: Mon, 12 Feb 2007 14:02:57 -0600
+To: Tejun Heo <htejun@gmail.com>
+X-Mailer: Apple Mail (2.624)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 12, 2007 at 06:49:39PM +0100, Jan Engelhardt wrote:
-> >The one problem with noatime is that mutt's 'new mail arrived' breaks
-> 
-> Just why does not it use mtime then to check for New Mail Arrived, like 
 
-I have always used:
+On Feb 12, 2007, at 12:49 AM, Tejun Heo wrote:
 
-  --enable-buffy-size        Use file size attribute instead of access time
+> ris wrote:
+>> procs -----------memory---------- ---swap-- -----io---- -system-- 
+>> ----cpu----
+>>  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us 
+>> sy id wa
+>>  0  0      0 303444  53224 360132    0    0   276   157  627  814  5  
+>> 2 89  4
+>>  0  0      0 302956  53228 360332    0    0   196     0 1193 1686  2  
+>> 2 95  1
+>>  0  0      0 303204  53228 360332    0    0     0     0 1175 1544  2  
+>> 1 97  0
+>>  1  0      0 234656  53240 428880    0    0 34428     0 1498 2532  4 
+>> 11 69 16
+>>  2  0      0 105776  53248 556372    0    0 63752     0 1729 2696  6 
+>> 18 47 29
+>>  0  3      0   9464  53248 648708    0    0 43780 28008 1804 2262  6 
+>> 20 29 44
+>>  0  3   2588   9548  51548 647488    0    0 19200 47616 1503 1903  4  
+>> 7 42 46
+>>  0  3   2640  10152  50840 648480    0    0 24716 11876 1695 2251  5  
+>> 8  7 80
+>>  1  2   2640   9788  46468 652052    0    0 54280  5620 1740 2687  6 
+>> 18  0 76
+>>  0  3   2640   9788  46308 652500    0    0 43392  2212 1626 2038  5 
+>> 14  0 81
+>>  1  2   2640   9636  46308 653000    0    0 38528  1164 1588 2181  4 
+>> 12  0 84
+>>  0  3   2640  13872  46084 648264    0    0 30088 12972 1701 2223  4 
+>> 12  0 85
+>>  0  4   2644   8460  37140 661572    0 2640 25648 26372 1615 1908  3 
+>> 10  0 88
+>>  0  3   2644   9188  16760 683196    0    0 33840 48988 1639 2154  4 
+>> 12  0 84
+>
+> iowait != cpu busy.  Your cpu idleness stays above 80%.
 
-Support was there at least in 1998, maybe before.
+I have noticed something that might be related as well.  I am working 
+on a device driver that would have periodic data errors due to 
+exceptionally long interrupt handling latency.  I have come to the 
+point that I suspect that it's the sata_nv driver, and now that we 
+can't do the hdparm -u1 option for sata, it seems to be a bigger 
+problem.
+
+Matthew Fredrickson
+
