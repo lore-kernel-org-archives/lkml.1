@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965300AbXBLSsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965306AbXBLSuO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965300AbXBLSsa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 13:48:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965302AbXBLSsa
+	id S965306AbXBLSuO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 13:50:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965304AbXBLSuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 13:48:30 -0500
-Received: from cantor.suse.de ([195.135.220.2]:59002 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965300AbXBLSs2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 13:48:28 -0500
-Date: Mon, 12 Feb 2007 10:47:12 -0800
-From: Greg KH <greg@kroah.com>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Karsten Keil <kkeil@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       i4ldeveloper@listserv.isdn4linux.de, linux-serial@vger.kernel.org,
-       Hansjoerg Lipp <hjlipp@web.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] drivers/isdn/gigaset: new M101 driver
-Message-ID: <20070212184712.GC32607@kroah.com>
-References: <200702012112.l11LCOO4016557@lx1.pxnet.com> <20070201171345.bd98ce30.akpm@osdl.org> <20070203160932.GA32523@kroah.com> <45C52848.50705@imap.cc>
+	Mon, 12 Feb 2007 13:50:14 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:50503 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965302AbXBLSuL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 13:50:11 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=cgmo/HVXUI0qYtrzNy4SdO58YqwtPLr0DAD5GfRyA3D/h/0n/64usWi0shGLje0yW
+	b0LhtOC/QvuJXCP55jUpw==
+Message-ID: <6599ad830702121049l6055ab2asa6c42ac2c4afd61f@mail.gmail.com>
+Date: Mon, 12 Feb 2007 10:49:58 -0800
+From: "Paul Menage" <menage@google.com>
+To: vatsa@in.ibm.com
+Subject: Re: [PATCH 6/7] containers (V7): BeanCounters over generic process containers
+Cc: akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
+       serue@us.ibm.com, ebiederm@xmission.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       rohitseth@google.com, mbligh@google.com, winget@google.com,
+       containers@lists.osdl.org, devel@openvz.org
+In-Reply-To: <20070212153410.GE7526@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45C52848.50705@imap.cc>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20070212081521.808338000@menage.corp.google.com>
+	 <20070212085104.998727000@menage.corp.google.com>
+	 <20070212153410.GE7526@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 04, 2007 at 01:26:48AM +0100, Tilman Schmidt wrote:
-> Am 03.02.2007 17:09 schrieb Greg KH:
-> > On Thu, Feb 01, 2007 at 05:13:45PM -0800, Andrew Morton wrote:
-> >>> +/* dummy to shut up framework warning */
-> >>> +static void gigaset_device_release(struct device *dev)
-> >>> +{
-> >>> +	//FIXME anything to do? cf. platform_device_release()
-> >>> +}
-> >> Ask Greg ;)
-> > 
-> > Oh come on people.  Don't provide an empty function because the kernel
-> > is complaining that you don't provide a release function.  Yes it will
-> > shut the kernel up but did you ever think _why_ the kernel was
-> > complaining?
-> 
-> Actually, I did. Just guess how that FIXME came to be.
-> Hint: the kernel shuts up just as well without it.
+On 2/12/07, Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
+> On Mon, Feb 12, 2007 at 12:15:27AM -0800, menage@google.com wrote:
+> > This patch implements the BeanCounter resource control abstraction
+> > over generic process containers.
+>
+> Forgive my confusion, but do we really need two-levels of resource control
+> abstraction here? Why can't resource controllers directly work with containers
+> (just like cpu accounting does)?
+>
 
-Sure, but only because I can't do a test for a function pointer that
-points to a function that does nothing :(
+The generic containers patch represents a pretty low-level view of
+task grouping - it doesn't try to prescribe how to do accounting, nor
+exactly what API to present to the user (beyond providing a
+filesystem-based interface).
 
-> > You need to free your memory here, don't just provide an empty function,
-> > that shows the driver is broken.
-> 
-> Call me silly and incapable of thinking, but to me it's far from
-> clear _what_ memory I am supposed to free there. Certainly neither
-> memory I will still be needing after platform_device_unregister()
-> nor memory that's being taken care of elsewhere. Between the two,
-> in my case there's nothing left, so the release function is empty.
-> If that shows my driver is broken, please explain in what way.
+Resource controllers certainly can be written directly over it, but
+equally having additional abstractions to provide a common user API
+and kernel API for multiple resources is a reasonable goal.
 
-The memory of the platform device itself needs to be freed here,
-otherwise, to do it earlier would cause race conditions and oopses.
-Look at how the other platform drivers do things.
+I would imagine that each different resource being controlled would be
+represented as a container subsystem, which is how I structured the
+ResGroups example patch - ResGroups becomes a library that provides a
+common set of file manipulations for different resource controllers,
+each of which is a containers subsystem. The same could potentially be
+done for BeanCounters if people wanted.
 
-thanks,
+But the main point of the latter four patches in this series is to
+illustrate to the various folks writing resource controller systems
+(and other observers) that this patch provides sufficient features to
+act as a base for their work. I don't presume to claim that one
+higher-level resource control abstraction is better than another.
 
-greg k-h
+Paul
