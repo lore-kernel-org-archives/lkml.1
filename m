@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964842AbXBLJ4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964845AbXBLJ4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964842AbXBLJ4K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 04:56:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964844AbXBLJ4K
+	id S964845AbXBLJ4u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 04:56:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964846AbXBLJ4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 04:56:10 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:57016 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964842AbXBLJ4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 04:56:08 -0500
-From: Andi Kleen <ak@suse.de>
-To: "Jeff Chua" <jeff.chua.linux@gmail.com>
-Subject: Re: [QUESTION] file access time in millisecond?
-Date: Mon, 12 Feb 2007 10:56:03 +0100
-User-Agent: KMail/1.9.5
-Cc: lkml <linux-kernel@vger.kernel.org>
-References: <b6a2187b0702112327t7294c221w460b3bd0f77d0e@mail.gmail.com> <p73bqjzhhp7.fsf@bingen.suse.de> <b6a2187b0702120152s1279b931x813413a4234d8dec@mail.gmail.com>
-In-Reply-To: <b6a2187b0702120152s1279b931x813413a4234d8dec@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 12 Feb 2007 04:56:50 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:29088
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S964845AbXBLJ4t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 04:56:49 -0500
+Message-Id: <45D04806.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.1 
+Date: Mon, 12 Feb 2007 09:57:10 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Bryan O'Sullivan" <bos@pathscale.com>, "Andi Kleen" <ak@suse.de>
+Cc: "Roland Dreier" <rolandd@cisco.com>, <linux-kernel@vger.kernel.org>,
+       <patches@x86-64.org>
+Subject: Re: [patches] [PATCH 2.6.21 review I] [21/25] x86_64: a memcpy
+	that tries to reduce cache pressure
+References: <200702101250.142420000@suse.de>
+ <20070210115034.694B013DBF@wotan.suse.de>
+In-Reply-To: <20070210115034.694B013DBF@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702121056.03467.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 February 2007 10:52, Jeff Chua wrote:
-> On 12 Feb 2007 10:02:28 +0100, Andi Kleen <ak@suse.de> wrote:
-> 
-> > > stat() returns time in seconds,
-> >
-> > Not correct (at least for glibc stat). It supports nanoseconds these days,
-> > although not all file systems (including ext3) do yet.
-> 
-> I'm using gcc-3.4.5, and glibc-2.3.6. Don't think 2.3.6 stat() support
-> that ... 
+>>> Andi Kleen <ak@suse.de> 10.02.07 12:50 >>>
+>
+>From: "Bryan O'Sullivan" <bos@pathscale.com>
+>
+>This copy routine is memcpy-compatible, but on some architectures will use
+>cache-bypassing loads to avoid bringing the source data into the cache.
+>
+>One case where this is useful is when a device issues a DMA to a memory
+>region, and the CPU must copy the DMAed data elsewhere before doing any work
+>with it.  Since the source data is read-once, write-never from the CPU's
+>perspective, caching the data at those addresses can only evict potentially
+>useful data.
+>
+>We provide an x86_64 implementation that uses SSE non-temporal loads, and a
+>generic version that falls back to plain memcpy.
+>
+>Implementors for other arches should not use cache-bypassing stores to the
+>destination, as in most cases, the destination is accessed almost immediately
+>after a copy finishes.
 
-It should be always available in padding, even on older glibc. Given a sufficiently
-new kernel. The bigger problem is getting a file system that supports it.
+This looks a little strange to me:
+- the first 128 bytes are still going through the cache
+- up to 192 bytes past the copied area are being marked non-temporal, while
+  there's nothing known about that area
+- sfence seems questionable here, I would have thought this should be lfence,
+  or perhaps even none at all
 
-> at least the man page doesn't indicate so. 
+Minor remarks would be to remove the double .align before .L12 and replace
+or-ing a register with itself by test.
 
-Manpages are often outdated.
-
--Andi
+Jan
