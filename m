@@ -1,235 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964832AbXBLJps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964835AbXBLJqX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964832AbXBLJps (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 04:45:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964831AbXBLJps
+	id S964835AbXBLJqX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 04:46:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964834AbXBLJqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 04:45:48 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:3513 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964824AbXBLJpq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 04:45:46 -0500
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-CC: Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, devel@openvz.org
-Subject: [PATCH 0/1][RFC]  prepare_write positive return value V(2)
-From: Dmitriy Monakhov <dmonakhov@sw.ru>
-Date: Mon, 12 Feb 2007 12:46:02 +0300
-Message-ID: <87y7n3909x.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-=-="
+	Mon, 12 Feb 2007 04:46:23 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:38149 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964833AbXBLJqW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 04:46:22 -0500
+Subject: Re: NAK new drivers without proper power management?
+From: Arjan van de Ven <arjan@infradead.org>
+To: Manu Abraham <abraham.manu@gmail.com>
+Cc: nigel@nigel.suspend2.net, Willy Tarreau <w@1wt.eu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       LKML <linux-kernel@vger.kernel.org>, tilman@imap.cc
+In-Reply-To: <1a297b360702111525v4f26ad4ax9af8fba45936c22f@mail.gmail.com>
+References: <1171058269.1484.64.camel@nigel.suspend2.net>
+	 <1171059433.8675.195.camel@laptopd505.fenrus.org>
+	 <20070210193851.GA3956@ucw.cz> <200702102320.39531.rjw@sisk.pl>
+	 <1171147026.19894.16.camel@nigel.suspend2.net>
+	 <20070211064636.GA12171@1wt.eu>
+	 <1171234027.4493.88.camel@nigel.suspend2.net>
+	 <1a297b360702111457k3a38eefei485f814f980e58c6@mail.gmail.com>
+	 <1171236000.4493.116.camel@nigel.suspend2.net>
+	 <1a297b360702111525v4f26ad4ax9af8fba45936c22f@mail.gmail.com>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Mon, 12 Feb 2007 10:45:44 +0100
+Message-Id: <1171273544.6308.5.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
 
-Changes from ver(1)
- - __page_symlink(): In order to be on a safe side add explicit zeroing content
-                     before fail (just in case).
- -do_lo_send_aops(): If prepare_write can't handle total size of bytes requested
-                     from loop_dev it is safer to fail.
- -  pipe_to_file():  Limit the size of the copy to size wich prepare_write ready
-                     to handle. instead of failing.
- - ecryptfs: was't changed in this version, because where is no even 
-                     AOP_TRUNCATED_PAGE handling code where.
+> 
+> By adding dummy functions, wouldn't that just look awkward ?
 
-Almost all read/write operation handles data with chunks(segments or pages)
-and result has integral behaviour for folowing scenario: 
-for_each_chunk() {
-     res = op(....);
-     if(IS_ERROR(res))
-           return progress ? progress : res;
-     progress += res;
-}
-prepare_write may has integral behaviour in case of blksize < pgsize,
-for example we successfully allocated/read some blocks, but not all of them,
-and than some error happend. Currently we eliminate this progress by doing
-vmtrunate() after prepare_has failed.
-It is good to have ability to signal about this progress. Interprete positive
-prepare_write() ret code as bytes num that fs ready to handle at this moment.
- 
-BTH: This approach was used in OpenVZ 2.6.9 kernel in order to make FS with 
-delayed allocation more correct, and its works well.
-I think not everybody will happy about this,  but let's discuss all advantages
-and disadvantages of this change.
+not really; if you have a template
 
-fixes not dirrectly connected with proposed prepare_write semantic changes:
- __page_symlink : If find_or_create_page has failed on second retry attempt
-                  function will exit with wrong error code.
- __generic_cont_expand: Add correct AOP_TRUNCATED_PAGE handling.
 
-Signed-off-by: Dmitriy Monakhov <dmonakhov@openvz.org>
--------------
+pm_no_suspend_needed
+and
+pm_no_restore_needed
 
---=-=-=
-Content-Disposition: inline; filename=diff-ms-fs-prepare_write-retval5
+functions, and just make it part of ALL device structs that don't need
+it.. it's not that bad
 
-diff --git a/drivers/block/loop.c b/drivers/block/loop.c
-index 6b5b642..dc332dc 100644
---- a/drivers/block/loop.c
-+++ b/drivers/block/loop.c
-@@ -224,6 +224,7 @@ static int do_lo_send_aops(struct loop_device *lo, struct bio_vec *bvec,
- 		sector_t IV;
- 		unsigned size;
- 		int transfer_result;
-+		int partial = 0;
- 
- 		IV = ((sector_t)index << (PAGE_CACHE_SHIFT - 9))+(offset >> 9);
- 		size = PAGE_CACHE_SIZE - offset;
-@@ -239,11 +240,20 @@ static int do_lo_send_aops(struct loop_device *lo, struct bio_vec *bvec,
- 				page_cache_release(page);
- 				continue;
- 			}
--			goto unlock;
-+			if (ret > 0 && ret < PAGE_CACHE_SIZE) {
-+			/* 
-+	 	 	 * ->prepare_write() can't handle total size of bytes
-+			 * requested. In fact this is not likely to happen, 
-+			 * because we request one block only.
-+	 	 	 */
-+				partial = 1;
-+				size = ret;
-+			} else
-+				goto unlock;
- 		}
- 		transfer_result = lo_do_transfer(lo, WRITE, page, offset,
- 				bvec->bv_page, bv_offs, size, IV);
--		if (unlikely(transfer_result)) {
-+		if (unlikely(transfer_result || partial)) {
- 			char *kaddr;
- 
- 			/*
-@@ -266,7 +276,7 @@ static int do_lo_send_aops(struct loop_device *lo, struct bio_vec *bvec,
- 			}
- 			goto unlock;
- 		}
--		if (unlikely(transfer_result))
-+		if (unlikely(transfer_result || partial))
- 			goto unlock;
- 		bv_offs += size;
- 		len -= size;
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 1ad674f..ed06560 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -2027,13 +2027,20 @@ static int __generic_cont_expand(struct inode *inode, loff_t size,
- 	if (size > inode->i_sb->s_maxbytes)
- 		goto out;
- 
-+retry:
- 	err = -ENOMEM;
- 	page = grab_cache_page(mapping, index);
- 	if (!page)
- 		goto out;
- 	err = mapping->a_ops->prepare_write(NULL, page, offset, offset);
-+	if (err == AOP_TRUNCATED_PAGE) {
-+		page_cache_release(page);
-+		goto retry;
-+	}
- 	if (err) {
- 		/*
-+		 * ->prepare_write() called with from==to and must not 
-+		 * return positive size of bytes in this case.
- 		 * ->prepare_write() may have instantiated a few blocks
- 		 * outside i_size.  Trim these off again.
- 		 */
-@@ -2044,6 +2051,10 @@ static int __generic_cont_expand(struct inode *inode, loff_t size,
- 	}
- 
- 	err = mapping->a_ops->commit_write(NULL, page, offset, offset);
-+	if (err == AOP_TRUNCATED_PAGE) {
-+		page_cache_release(page);
-+		goto retry;
-+	}
- 
- 	unlock_page(page);
- 	page_cache_release(page);
-diff --git a/fs/namei.c b/fs/namei.c
-index e4f108f..6626277 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -2688,20 +2688,36 @@ int __page_symlink(struct inode *inode, const char *symname, int len,
- {
- 	struct address_space *mapping = inode->i_mapping;
- 	struct page *page;
--	int err = -ENOMEM;
-+	int err;
- 	char *kaddr;
- 
- retry:
-+	err = -ENOMEM;	
- 	page = find_or_create_page(mapping, 0, gfp_mask);
- 	if (!page)
- 		goto fail;
- 	err = mapping->a_ops->prepare_write(NULL, page, 0, len-1);
--	if (err == AOP_TRUNCATED_PAGE) {
--		page_cache_release(page);
--		goto retry;
--	}
--	if (err)
-+	if(unlikely(err)){
-+		if (err == AOP_TRUNCATED_PAGE) {
-+			page_cache_release(page);
-+			goto retry;
-+		}
-+		if (err > 0 && err < PAGE_CACHE_SIZE) {
-+		/* 
-+	 	 * ->prepare_write() can't handle total size of bytes requested.
-+	 	 * Really this is not likely to happen, because usualy we need 
-+		 * one block only. In order to preserve prepare/commit balanced
-+		 * invoke commit and fail with ENOSPC.
-+	 	 */
-+			int ret;
-+			kaddr = kmap_atomic(page, KM_USER0);
-+			memset(kaddr, 0, err);
-+			kunmap_atomic(kaddr, KM_USER0);
-+			ret = mapping->a_ops->commit_write(NULL, page, 0, err);
-+			err = (ret < 0) ? ret : -ENOSPC;
-+		}
- 		goto fail_map;
-+	}
- 	kaddr = kmap_atomic(page, KM_USER0);
- 	memcpy(kaddr, symname, len-1);
- 	kunmap_atomic(kaddr, KM_USER0);
-diff --git a/fs/splice.c b/fs/splice.c
-index 2fca6eb..78c3e88 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -649,6 +649,14 @@ find_page:
- 	}
- 
- 	ret = mapping->a_ops->prepare_write(file, page, offset, offset+this_len);
-+	if (unlikely(ret > 0 && ret < PAGE_CACHE_SIZE)) {
-+	/*
-+	 * Limit the size of the copy to size wich prepare_write 
-+	 * ready to handle.
-+	 */
-+		this_len = ret;
-+		ret = 0;
-+	}
- 	if (unlikely(ret)) {
- 		loff_t isize = i_size_read(mapping->host);
- 
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 8332c77..8b4789d 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -2127,6 +2127,14 @@ generic_file_buffered_write(struct kiocb *iocb, const struct iovec *iov,
- 		}
- 
- 		status = a_ops->prepare_write(file, page, offset, offset+bytes);
-+		if (unlikely(status > 0 && status < PAGE_CACHE_SIZE)) {
-+		/*
-+		 * Limit the size of the copy to size wich prepare_write
-+		 * ready to handle.
-+		 */
-+			bytes = status;
-+			status = 0;
-+		}
- 		if (unlikely(status)) {
- 			loff_t isize = i_size_read(inode);
- 
+or maybe 
 
---=-=-=--
+pm_generic_no_suspend
+pm_generic_no_resume
+
+as names, more in line what we use elsewhere in the kernel
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
 
