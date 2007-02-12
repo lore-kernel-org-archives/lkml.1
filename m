@@ -1,70 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965292AbXBLUVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965363AbXBLUWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965292AbXBLUVM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 15:21:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965330AbXBLUVL
+	id S965363AbXBLUWT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 15:22:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965365AbXBLUWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 15:21:11 -0500
-Received: from rere.qmqm.pl ([86.63.132.164]:49545 "EHLO rere.qmqm.pl"
+	Mon, 12 Feb 2007 15:22:19 -0500
+Received: from rere.qmqm.pl ([86.63.132.164]:35992 "EHLO rere.qmqm.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965292AbXBLUVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 15:21:10 -0500
-Date: Mon, 12 Feb 2007 21:20:52 +0100
+	id S965364AbXBLUWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 15:22:18 -0500
+Date: Mon, 12 Feb 2007 21:22:00 +0100
 From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
 To: netfilter-devel@lists.netfilter.org
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.20 +0/14] nfnetlink_log: patch series season 2
-Message-ID: <20070212202052.GA28704@rere.qmqm.pl>
-References: <20070212003738.GA8262@rere.qmqm.pl>
+Subject: [PATCH 2.6.20 11/14] nfnetlink_log: iterator functions need iter_state * only
+Message-ID: <20070212202200.GB28704@rere.qmqm.pl>
+References: <20070212003738.GA8262@rere.qmqm.pl> <20070212202052.GA28704@rere.qmqm.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-In-Reply-To: <20070212003738.GA8262@rere.qmqm.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070212202052.GA28704@rere.qmqm.pl>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear list,
+get_*() don't need access to seq_file - iter_state is enough for them.
 
-As it turned out, not all worms eating nfnetlink_log have been exterminated
-by my last patch series. I'll append next four patches to the end of the
-series and I hope that it doesn't make your patching scripts unhappy.
+Signed-off-by: Micha³ Miros³aw <mirq-linux@rere.qmqm.pl>
 
-Those patches fix two bugs and make two other code beautifications:
-
-  11. procfs file handling - don't pass seq_file when you don't have to
-* 12. nfulnl_recv_config() - don't modify what isn't there
-* 13. __nfulnl_send() and friends - return your books timely
-  14. __nfulnl_send() - don't prove the obvious
-
-There are some other bugs I found that I'm looking for a fix. One of them
-is wrong /proc/net/netfilter/nfnetlink_log contents:
-
-natownica:~# cat /proc/net/netfilter/nfnetlink_log
-    0  -4100     0 2 65535    100  1
-    2  -4099     2 2 65535    100  2
-    4  15355     0 2 65535    100  1
-
-Those three entries are created by a single ulogd2 listening in three
-packet logging groups. I believe that's some problem with generating
-the file contents because after shutting down ulogd all disappear.
-
-The two groups: 2, 4 are stuffed with packets by those iptables rules:
-
-natownica:~# iptables-save |grep NFLOG
--A LOG_and_DROP_fakenet -m hashlimit --hashlimit 1/sec --hashlimit-mode \
-	srcip --hashlimit-name fw_fakenet_src -j NFLOG --nflog-prefix \
-	"fakenet" --nflog-group 2 --nflog-threshold 30
--A LOG_and_DROP_p2p -m hashlimit --hashlimit 1/sec --hashlimit-mode srcip \
-	--hashlimit-name fw_p2p_src -j NFLOG --nflog-prefix "p2p" \
-	--nflog-group 2 --nflog-threshold 30
--A invalid -m mark --mark 0x3000/0x3000 -j NFLOG --nflog-prefix \
-	"nonregistered" --nflog-group 3
--A invalid -j NFLOG --nflog-prefix "invalid" --nflog-group 2
-
-As you can see, there's no group 4 among the rules - 3 is. This seems to
-be xt_NFLOG's fault, but I haven't looked there yet.
-
-Greets,
-Michal Miroslaw
-
+--- linux-2.6.20/net/netfilter/nfnetlink_log.c.9	2007-02-12 00:19:16.000000000 +0100
++++ linux-2.6.20/net/netfilter/nfnetlink_log.c	2007-02-12 17:05:14.000000000 +0100
+@@ -929,10 +929,8 @@ struct iter_state {
+ 	unsigned int bucket;
+ };
+ 
+-static struct hlist_node *get_first(struct seq_file *seq)
++static struct hlist_node *get_first(struct iter_state *st)
+ {
+-	struct iter_state *st = seq->private;
+-
+ 	if (!st)
+ 		return NULL;
+ 
+@@ -943,10 +941,8 @@ static struct hlist_node *get_first(stru
+ 	return NULL;
+ }
+ 
+-static struct hlist_node *get_next(struct seq_file *seq, struct hlist_node *h)
++static struct hlist_node *get_next(struct iter_state *st, struct hlist_node *h)
+ {
+-	struct iter_state *st = seq->private;
+-
+ 	h = h->next;
+ 	while (!h) {
+ 		if (++st->bucket >= INSTANCE_BUCKETS)
+@@ -957,13 +953,13 @@ static struct hlist_node *get_next(struc
+ 	return h;
+ }
+ 
+-static struct hlist_node *get_idx(struct seq_file *seq, loff_t pos)
++static struct hlist_node *get_idx(struct iter_state *st, loff_t pos)
+ {
+ 	struct hlist_node *head;
+-	head = get_first(seq);
++	head = get_first(st);
+ 
+ 	if (head)
+-		while (pos && (head = get_next(seq, head)))
++		while (pos && (head = get_next(st, head)))
+ 			pos--;
+ 	return pos ? NULL : head;
+ }
+@@ -971,13 +967,13 @@ static struct hlist_node *get_idx(struct
+ static void *seq_start(struct seq_file *seq, loff_t *pos)
+ {
+ 	read_lock_bh(&instances_lock);
+-	return get_idx(seq, *pos);
++	return get_idx(seq->private, *pos);
+ }
+ 
+ static void *seq_next(struct seq_file *s, void *v, loff_t *pos)
+ {
+ 	(*pos)++;
+-	return get_next(s, v);
++	return get_next(s->private, v);
+ }
+ 
+ static void seq_stop(struct seq_file *s, void *v)
