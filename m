@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933084AbXBLItw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933125AbXBLIvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933084AbXBLItw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 03:49:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933124AbXBLItw
+	id S933125AbXBLIvb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 03:51:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933126AbXBLIvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 03:49:52 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:53131 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933084AbXBLItw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 03:49:52 -0500
-Date: Mon, 12 Feb 2007 09:49:50 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Pavel Machek <pavel@ucw.cz>, Arjan van de Ven <arjan@infradead.org>,
-       nigel@nigel.suspend2.net, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: NAK new drivers without proper power management?
-In-Reply-To: <200702102320.39531.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.62.0702120948230.10436@chinchilla.sonytel.be>
-References: <1171058269.1484.64.camel@nigel.suspend2.net>
- <1171059433.8675.195.camel@laptopd505.fenrus.org> <20070210193851.GA3956@ucw.cz>
- <200702102320.39531.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 12 Feb 2007 03:51:31 -0500
+Received: from smtp.ono.com ([62.42.230.12]:42423 "EHLO resmaa06.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933125AbXBLIva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 03:51:30 -0500
+Date: Mon, 12 Feb 2007 09:51:27 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Re: Bio device too big | kernel BUG at
+ mm/filemap.c:537!
+Message-ID: <20070212095127.7ec4b22d@werewolf-wl>
+In-Reply-To: <17865.3776.511594.763544@notabene.brown>
+References: <1170734919.15636.1173102761@webmail.messagingengine.com>
+	<20070205203750.7be7f772.akpm@linux-foundation.org>
+	<17864.4339.925700.626157@notabene.brown>
+	<17865.3776.511594.763544@notabene.brown>
+X-Mailer: Claws Mail 2.7.2cvs38 (GTK+ 2.10.9; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Feb 2007, Rafael J. Wysocki wrote:
-> What about this:
+On Wed, 7 Feb 2007 10:26:56 +1100, Neil Brown <neilb@suse.de> wrote:
+
+> On Tuesday February 6, neilb@suse.de wrote:
+> > 
+> > This patch should fix the worst of the offences, but I'd like to
+> > experiment and think a bit more before I submit it to stable.
+> > And probably test it too - as yet I have only compile and brain
+> > tested.
 > 
-> "If the device requires that, implement .suspend and .resume or at least
-                                                                  ^^^^^^^^
-> define .suspend that will always return -ENOSYS (then people will know they
-  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> have to unload the driver before the suspend).  Similarly, if you aren't sure
-> whether or not the device requires .suspend and .resume, define .suspend that
-                                                           ^^^^^^^^^^^^^^^^^^^^
-> will always return -ENOSYS."
-  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Can't the upper layer just assume -ENOSYS if .resume/.suspend is NULL?
-It's nicer if you don't have to implement dummy functions at all.
+> Ok, I've experimented and tested and now I know what was causing the
+> double-unlock.
+> 
+> The following patch is suitable for 2.6.20.1 and mainline.  There is
+> room for a bit more improvement, but only for performance, not
+> correctness.  I'll look into that later.
+> 
 
-Gr{oetje,eeting}s,
+> +	blk_recount_segments(q, bi);
 
-						Geert
+I needed to export blk_recount_segments() to build raid as a module:
+
+--- linux/block/ll_rw_blk.c.orig	2007-02-12 09:46:55.000000000 +0100
++++ linux/block/ll_rw_blk.c	2007-02-12 09:45:57.000000000 +0100
+@@ -1258,6 +1258,8 @@
+ 	bio->bi_flags |= (1 << BIO_SEG_VALID);
+ }
+ 
++EXPORT_SYMBOL(blk_recount_segments);
++
+ static int blk_phys_contig_segment(request_queue_t *q, struct bio *bio,
+ 				   struct bio *nxt)
+ {
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2007.1 (Cooker) for i586
+Linux 2.6.19-jam06 (gcc 4.1.2 20070115 (prerelease) (4.1.2-0.20070115.1mdv2007.1)) #1 SMP PREEMPT
