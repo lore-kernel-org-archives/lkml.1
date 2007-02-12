@@ -1,223 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750968AbXBLWea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965223AbXBLWhK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750968AbXBLWea (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 17:34:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750976AbXBLWea
+	id S965223AbXBLWhK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 17:37:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965427AbXBLWhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 17:34:30 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:42171 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750964AbXBLWe3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 17:34:29 -0500
-Date: Mon, 12 Feb 2007 14:29:19 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: akpm <akpm@osdl.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, gregkh@suse.de
-Subject: [PATCH] build errors: uevent with CONFIG_SYSFS=n
-Message-Id: <20070212142919.5ce91086.randy.dunlap@oracle.com>
-In-Reply-To: <20070212135021.27754603.randy.dunlap@oracle.com>
-References: <20070212135021.27754603.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 12 Feb 2007 17:37:10 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:57820 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965223AbXBLWhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 17:37:08 -0500
+Message-ID: <45D0EC39.8030608@redhat.com>
+Date: Mon, 12 Feb 2007 17:37:45 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH x86 for review III] [17/29] x86: Add new CPUID bits for
+ AMD Family 10 CPUs in /proc/cpuinfo
+References: <20070212551.664370000@suse.de> <20070212165137.AD85913E1B@wotan.suse.de> <45D0E60F.2090506@redhat.com> <200702122323.53364.andi@firstfloor.org>
+In-Reply-To: <200702122323.53364.andi@firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Feb 2007 13:50:21 -0800 Randy Dunlap wrote:
+Andi Kleen wrote:
 
+>> Since we seem to have become the place where all these are collected,
+>> shouldn't we document what they mean?
 > 
-> in kernel/params.c:
+> This is not a data sheet and the CPU vendors have fine tech writers
+> working on this already.
 > 
-> kernel/params.c:700: error: 'module_uevent_ops' undeclared here (not in a function)
+> Also I don't really want to encourage people to hack this without
+> at least taking a basic look at the documentation first.
 > 
-> in kernel/module.c:
+>> I've got some this machine that 
+>> I'd like to know more about:
+>>
+>> dts ss ds_cpl est tm2 ssse3 xtpr
 > 
-> kernel/built-in.o: In function `module_add_driver':
-> (.text+0x20c5b): undefined reference to `module_subsys'
-> kernel/built-in.o: In function `sys_init_module':
-> (.text+0x2177c): undefined reference to `module_subsys'
-> kernel/built-in.o: In function `sys_init_module':
-> (.text+0x21838): undefined reference to `module_subsys'
-> kernel/built-in.o: In function `kernel_param_sysfs_setup':
-> params.c:(.init.text+0x1492): undefined reference to `module_subsys'
-> kernel/built-in.o: In function `param_sysfs_init':
-> params.c:(.init.text+0x14f8): undefined reference to `module_subsys'
+> All documented in Intel documentation. But it's all relatively boring stuff
 > 
-> Are these already fixed?
+> dts = debug trace store
+> ss = self snoop
+> ds_cpl = cpl qualified debug store
+> est = enhanced speedstep
+> tm2 = thermal monitor 2
+> ssse3 = more sse3 instructions
+> xtpr = tpr register chipset update control msr
+> 
 
-Here's a patch, tested both ways (SYSFS=y, SYSFS=n).
+That's exactly what I was asking for.  Our abbreviations are too cryptic
+to let someone go look up the meanings without a lot of trouble.
 
----
-From: Randy Dunlap <randy.dunlap@oracle.com>
+A one-liner for each in the comments would be just enough.
 
-Fix source files to build with CONFIG_SYSFS=n.
-module_subsys is not available.
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/base/bus.c |    4 ++++
- kernel/module.c    |   10 ++++++++++
- kernel/params.c    |   20 ++++++++++----------
- 3 files changed, 24 insertions(+), 10 deletions(-)
-
---- linux-2.6.20-git7.orig/kernel/params.c
-+++ linux-2.6.20-git7/kernel/params.c
-@@ -30,8 +30,6 @@
- #define DEBUGP(fmt, a...)
- #endif
- 
--static struct kobj_type module_ktype;
--
- static inline char dash2underscore(char c)
- {
- 	if (c == '-')
-@@ -673,6 +671,8 @@ static struct sysfs_ops module_sysfs_ops
- 	.store = module_attr_store,
- };
- 
-+static struct kobj_type module_ktype;
-+
- static int uevent_filter(struct kset *kset, struct kobject *kobj)
- {
- 	struct kobj_type *ktype = get_ktype(kobj);
-@@ -686,19 +686,12 @@ static struct kset_uevent_ops module_uev
- 	.filter = uevent_filter,
- };
- 
--#else
--static struct sysfs_ops module_sysfs_ops = {
--	.show = NULL,
--	.store = NULL,
--};
--#endif
-+decl_subsys(module, &module_ktype, &module_uevent_ops);
- 
- static struct kobj_type module_ktype = {
- 	.sysfs_ops =	&module_sysfs_ops,
- };
- 
--decl_subsys(module, &module_ktype, &module_uevent_ops);
--
- /*
-  * param_sysfs_init - wrapper for built-in params support
-  */
-@@ -719,6 +712,13 @@ static int __init param_sysfs_init(void)
- }
- subsys_initcall(param_sysfs_init);
- 
-+#else
-+static struct sysfs_ops module_sysfs_ops = {
-+	.show = NULL,
-+	.store = NULL,
-+};
-+#endif
-+
- EXPORT_SYMBOL(param_set_byte);
- EXPORT_SYMBOL(param_get_byte);
- EXPORT_SYMBOL(param_set_short);
---- linux-2.6.20-git7.orig/kernel/module.c
-+++ linux-2.6.20-git7/kernel/module.c
-@@ -1110,6 +1110,7 @@ static void module_remove_modinfo_attrs(
- 	kfree(mod->modinfo_attrs);
- }
- 
-+#ifdef CONFIG_SYSFS
- static int mod_sysfs_init(struct module *mod)
- {
- 	int err;
-@@ -1148,6 +1149,7 @@ static int mod_sysfs_setup(struct module
- 	if (!mod->holders_dir)
- 		goto out_unreg;
- 
-+#ifdef CONFIG_SYSFS
- 	err = module_param_sysfs_setup(mod, kparam, num_params);
- 	if (err)
- 		goto out_unreg_holders;
-@@ -1155,6 +1157,7 @@ static int mod_sysfs_setup(struct module
- 	err = module_add_modinfo_attrs(mod);
- 	if (err)
- 		goto out_unreg_param;
-+#endif
- 
- 	kobject_uevent(&mod->mkobj.kobj, KOBJ_ADD);
- 	return 0;
-@@ -1169,6 +1172,7 @@ out_unreg:
- out:
- 	return err;
- }
-+#endif
- 
- static void mod_kobject_remove(struct module *mod)
- {
-@@ -1782,9 +1786,11 @@ static struct module *load_module(void _
- 	/* Now we've moved module, initialize linked lists, etc. */
- 	module_unload_init(mod);
- 
-+#ifdef CONFIG_SYSFS
- 	/* Initialize kobject, so we can reference it. */
- 	if (mod_sysfs_init(mod) != 0)
- 		goto cleanup;
-+#endif
- 
- 	/* Set up license info based on the info section */
- 	set_license(mod, get_modinfo(sechdrs, infoindex, "license"));
-@@ -1917,6 +1923,7 @@ static struct module *load_module(void _
- 	if (err < 0)
- 		goto arch_cleanup;
- 
-+#ifdef CONFIG_SYSFS
- 	err = mod_sysfs_setup(mod, 
- 			      (struct kernel_param *)
- 			      sechdrs[setupindex].sh_addr,
-@@ -1924,6 +1931,7 @@ static struct module *load_module(void _
- 			      / sizeof(struct kernel_param));
- 	if (err < 0)
- 		goto arch_cleanup;
-+#endif
- 	add_sect_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
- 
- 	/* Size of section 0 is 0, so this works well if no unwind info. */
-@@ -2366,6 +2374,7 @@ static void module_create_drivers_dir(st
- 	mk->drivers_dir = kobject_add_dir(&mk->kobj, "drivers");
- }
- 
-+#ifdef CONFIG_SYSFS
- void module_add_driver(struct module *mod, struct device_driver *drv)
- {
- 	char *driver_name;
-@@ -2419,6 +2428,7 @@ void module_remove_driver(struct device_
- 	}
- }
- EXPORT_SYMBOL(module_remove_driver);
-+#endif
- 
- #ifdef CONFIG_MODVERSIONS
- /* Generate the signature for struct module here, too, for modversions. */
---- linux-2.6.20-git7.orig/drivers/base/bus.c
-+++ linux-2.6.20-git7/drivers/base/bus.c
-@@ -547,7 +547,9 @@ int bus_add_driver(struct device_driver 
- 	if (error)
- 		goto out_unregister;
- 	klist_add_tail(&drv->knode_bus, &bus->klist_drivers);
-+#ifdef CONFIG_SYSFS
- 	module_add_driver(drv->owner, drv);
-+#endif
- 
- 	error = driver_add_attrs(bus, drv);
- 	if (error) {
-@@ -589,7 +591,9 @@ void bus_remove_driver(struct device_dri
- 	klist_remove(&drv->knode_bus);
- 	pr_debug("bus %s: remove driver %s\n", drv->bus->name, drv->name);
- 	driver_detach(drv);
-+#ifdef CONFIG_SYSFS
- 	module_remove_driver(drv);
-+#endif
- 	kobject_unregister(&drv->kobj);
- 	put_bus(drv->bus);
- }
