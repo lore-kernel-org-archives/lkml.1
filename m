@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965359AbXBLUVI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965292AbXBLUVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965359AbXBLUVI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 15:21:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965292AbXBLUVH
+	id S965292AbXBLUVM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 15:21:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965330AbXBLUVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 15:21:07 -0500
-Received: from 1wt.eu ([62.212.114.60]:2376 "EHLO 1wt.eu"
+	Mon, 12 Feb 2007 15:21:11 -0500
+Received: from rere.qmqm.pl ([86.63.132.164]:49545 "EHLO rere.qmqm.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965359AbXBLUVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 15:21:06 -0500
-Date: Mon, 12 Feb 2007 21:20:12 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Gerhard Mack <gmack@innerfire.net>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       Arjan van de Ven <arjan@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, tilman@imap.cc
-Subject: Re: NAK new drivers without proper power management?
-Message-ID: <20070212202012.GA22344@1wt.eu>
-References: <1171058269.1484.64.camel@nigel.suspend2.net> <1171059433.8675.195.camel@laptopd505.fenrus.org> <20070210193851.GA3956@ucw.cz> <200702102320.39531.rjw@sisk.pl> <1171147026.19894.16.camel@nigel.suspend2.net> <20070211064636.GA12171@1wt.eu> <Pine.LNX.4.64.0702120752420.3824@mtl.rackplans.net>
+	id S965292AbXBLUVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 15:21:10 -0500
+Date: Mon, 12 Feb 2007 21:20:52 +0100
+From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
+To: netfilter-devel@lists.netfilter.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.20 +0/14] nfnetlink_log: patch series season 2
+Message-ID: <20070212202052.GA28704@rere.qmqm.pl>
+References: <20070212003738.GA8262@rere.qmqm.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702120752420.3824@mtl.rackplans.net>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070212003738.GA8262@rere.qmqm.pl>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 12, 2007 at 07:59:40AM -0500, Gerhard Mack wrote:
-> On Sun, 11 Feb 2007, Willy Tarreau wrote:
-> 
-> > On Sun, Feb 11, 2007 at 09:37:06AM +1100, Nigel Cunningham wrote:
-> > > On Sat, 2007-02-10 at 23:20 +0100, Rafael J. Wysocki wrote:
-> > 
-> > Many people also have Linux on their notebooks, but as a dual-boot. You
-> > read the word ? "dual-boot". It means that they cleanly shutdown their
-> > system every time they don't use it anymore, and they won't know what
-> > OS they'll use next time.
-> 
-> Please tell me your joking.  Linux' crappy suspend support is a common 
-> reason people give me for not wanting Linux anywhere near their laptops.  
+Dear list,
 
-No, I'm not kidding. The most annoyed ones are those who don't have serial
-ports and who need those annoying USB adapters. But fortunately, not all
-of them need to access router consoles :-)
+As it turned out, not all worms eating nfnetlink_log have been exterminated
+by my last patch series. I'll append next four patches to the end of the
+series and I hope that it doesn't make your patching scripts unhappy.
 
-> I have a single boot laptop that's somewhat of a mobile debugging station 
-> that needs Linux and I absolutely hate it.  Right now my laptop takes far 
-> too long to boot and even if it didn't I wish I could suspend.
+Those patches fix two bugs and make two other code beautifications:
 
-Probably that you got the wrong laptop. If you buy an ultra-thin with highly
-proprietary hardware, it may be hard. But if you choose in profesionnal ranges,
-there is rarely any problem. I have a compaq nc8000 on which everything works
-fine, and it boots in about 20 seconds. Other people I know have Toshibas,
-NECs, Dells and IBMs and are happy with them. My previous VAIO was a dirty
-crap that I would never recommend to anybody though.
+  11. procfs file handling - don't pass seq_file when you don't have to
+* 12. nfulnl_recv_config() - don't modify what isn't there
+* 13. __nfulnl_send() and friends - return your books timely
+  14. __nfulnl_send() - don't prove the obvious
 
-> I'm actually a huge Linux fan.. I use it exclusively on my server and on 
-> my PC but if I get another laptop I will probably run something else on 
-> it.  Linux is just too annoying for that use.
+There are some other bugs I found that I'm looking for a fix. One of them
+is wrong /proc/net/netfilter/nfnetlink_log contents:
 
-Everyone has different needs, that's all.
+natownica:~# cat /proc/net/netfilter/nfnetlink_log
+    0  -4100     0 2 65535    100  1
+    2  -4099     2 2 65535    100  2
+    4  15355     0 2 65535    100  1
 
-Sorry, but I fell like we're becoming a bit off-topic here.
+Those three entries are created by a single ulogd2 listening in three
+packet logging groups. I believe that's some problem with generating
+the file contents because after shutting down ulogd all disappear.
 
-Regards,
-Willy
+The two groups: 2, 4 are stuffed with packets by those iptables rules:
+
+natownica:~# iptables-save |grep NFLOG
+-A LOG_and_DROP_fakenet -m hashlimit --hashlimit 1/sec --hashlimit-mode \
+	srcip --hashlimit-name fw_fakenet_src -j NFLOG --nflog-prefix \
+	"fakenet" --nflog-group 2 --nflog-threshold 30
+-A LOG_and_DROP_p2p -m hashlimit --hashlimit 1/sec --hashlimit-mode srcip \
+	--hashlimit-name fw_p2p_src -j NFLOG --nflog-prefix "p2p" \
+	--nflog-group 2 --nflog-threshold 30
+-A invalid -m mark --mark 0x3000/0x3000 -j NFLOG --nflog-prefix \
+	"nonregistered" --nflog-group 3
+-A invalid -j NFLOG --nflog-prefix "invalid" --nflog-group 2
+
+As you can see, there's no group 4 among the rules - 3 is. This seems to
+be xt_NFLOG's fault, but I haven't looked there yet.
+
+Greets,
+Michal Miroslaw
 
