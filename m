@@ -1,170 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964836AbXBLJrF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964839AbXBLJsJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964836AbXBLJrF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 04:47:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964834AbXBLJrE
+	id S964839AbXBLJsJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 04:48:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964838AbXBLJsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 04:47:04 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:30310 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964820AbXBLJrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 04:47:01 -0500
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-CC: Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, devel@openvz.org
-Subject: [PATCH 1/1][RFC] EXT34 retry loop issue V(2)
-From: Dmitriy Monakhov <dmonakhov@sw.ru>
-Date: Mon, 12 Feb 2007 12:47:14 +0300
-Message-ID: <87wt2n907x.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	Mon, 12 Feb 2007 04:48:09 -0500
+Received: from wx-out-0506.google.com ([66.249.82.239]:60335 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964839AbXBLJsF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 04:48:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=caBfUpWPal8PpCfSx6xkHbKObWuxMh7eS3dv+TJ0QKxmbBHDTQJu/7HL69/yG7UOaLnqvUy/u6EM+q9mmss9n3HIhrc5SkjMxe5jZdlr2VGqZjjybpUOpYfUPiNwm1ODxfd69VoQ3pb7DBkm//w6pJpcnjOtAKN5zrATBgQWmtU=
+Message-ID: <45D037C3.3070306@gmail.com>
+Date: Mon, 12 Feb 2007 01:47:47 -0800
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-=-="
+To: Jean Delvare <jdelvare@suse.de>
+CC: Leopold Palomo Avellaneda <lepalom@wol.es>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: Sata_via problems in a Vintage2-AE1
+References: <200702090010.06897.lepalom@wol.es> <200702092109.25029.lepalom@wol.es> <45CDDA86.2000607@gmail.com> <200702121011.49818.jdelvare@suse.de>
+In-Reply-To: <200702121011.49818.jdelvare@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
+Jean Delvare wrote:
+> I've read the whole thread, the source code (quickly) and the patches to 
+> ahci.c and sata_via.c, and here are some comments:
+> 
+> It looks like support for the VT8251 was added to the ahci driver in kernel 
+> 2.6.18, and was then updated in 2.6.20. The code is different from the 
+> patch Leopold is using with 2.6.16. As I am not an expert in this area, I 
+> can't tell whether both versions are equivalent or not, but I'd guess so.
 
+The differences between 2.6.16 and 2.6.20 in ahci are mostly things like 
+detection fixes and hotplug handling fixes which shouldn't affect normal 
+operations too much and irqpoll definitely won't fix the problem.
 
-Patch depends on : "[PATCH 0/1][RFC]  prepare_write positive return value V(2)"
+> On the other hand, I do not see VT8251 support in the sata_via driver in the 
+> kernel, so I'm not surprised that it doesn't work properly for Leopold. But 
+> again I am no expert in the area, so maybe the sata_via driver in the kernel 
+> is supposed to work for VT8251-based systems. Jeff (cc'd) should know better.
 
-This patch solve ext3/4 retry loop issue.
-Issue description:
-What we can do if block_prepare_write fail inside ext3_prepare_write ?
-a) Stop transaction and do retry if possible, but what happend if 
-   reboot comes after journal_force_commit, but before we exhaust
-   all retry attempts and generic_file_buffered_write call trancate? 
-   We may get allocated blocks outside i_size. Witch is bad.
+vt8251 is an ahci controller so sata_via is irrelevant.
 
-b) Commit newly allocated blocks. This approach was used after Andrey's patch.
-   But if reboot comes, or error happend, user will be surprised that i_size
-   increased but blocks are zero filed. This is internal write operation state
-   becames visiable to user. Witch is also bad. 
-   
-c) Just return as match bytes as we can deal with rigth now back to 
-   caller, and let's caller handles it and than call commit. In this scenario
-   we never stop journal in the midle of some internal fs operation.
-   If reboot comes before commit trunsaction was't closed so it will 
-   be droped while journal replay.
+> I also see that there were many changes to these drivers post-2.6.20, so maybe 
+> Leopold could give a try to Linus' latest kernel (2.6.20-git6 as I speak) and 
+> see if there are any improvements.
+> 
+> As for the VIA IRQ quirks, the version we have in 2.6.20 does not handle the 
+> VIA chips more recent than the VT8237A. If the VT8251 needs it, then we have 
+> to add it. Alan?
+> 
+> *If* the VT8251 needs the VIA IRQ quirk, then the attached patch may help. 
+> Leopold, can you give it a try?
 
-Only (c) tend to garantie attomic data operation.
+This is where I have no clue.  :-)  Leopold, please test Jean's patch.
 
-Also fix some issues introduced by 
-retries-in-ext3_prepare_write-violate-ordering-requirements:
-  i_size may increase after error happend.
-  possible data corruption caused commiting non uptodate bh.
+Thanks a lot.
 
-Signed-off-by: Dmitriy Monakhov <dmonakhov@openvz.org>
--------------
-
---=-=-=
-Content-Disposition: inline; filename=diff-mm-ext34-retry-loop2
-
-diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
-index dba6dd2..4c5e9f7 100644
---- a/fs/ext3/inode.c
-+++ b/fs/ext3/inode.c
-@@ -1154,6 +1154,18 @@ static int do_journal_get_write_access(handle_t *handle,
-  * transaction must include the content of the newly allocated blocks.
-  * This content is expected to be set to zeroes by block_prepare_write().
-  * 2006/10/14  SAW
-+ * What we can do if some blocks was allocated?
-+ * a) Stop transaction and do retry if possible, but what happend if
-+ *    reboot comes after journal_force_commit, but before we exhaust
-+ *    all retry attempts and caller call trancate?
-+ *    We may get allocated blocks outside i_size. Witch is bad.
-+ * b) Commit newly allocated blocks. And if reboot comes, user will be
-+ *    surprised that i_size increased but blocks are zero filed. Witch is
-+ *    also bad.
-+ * c) Just return as match bytes as we can deal with rigth now back to
-+ *    caller, and if reboot comes trunsaction was't closed so it will
-+ *    be droped while journal replay.
-+ * Only (c) tend to garantie attomic data operation.
-  */
- static int ext3_prepare_failure(struct file *file, struct page *page,
- 				unsigned from, unsigned to)
-@@ -1186,7 +1198,7 @@ skip:
- 			block_start = to;
- 			break;
- 		}
--		if (!buffer_mapped(bh))
-+		if (!buffer_mapped(bh) || !buffer_uptodate(bh))
- 		/* prepare_write failed on this bh */
- 			break;
- 		if (ext3_should_journal_data(mapping->host)) {
-@@ -1204,8 +1216,8 @@ skip:
- 	if (block_start <= from)
- 		goto skip;
- 
--	/* commit allocated and zeroed buffers */
--	return mapping->a_ops->commit_write(file, page, from, block_start);
-+	/* return number of bytes till last mapped && uptodate block */
-+	return block_start - from;
- }
- 
- static int ext3_prepare_write(struct file *file, struct page *page,
-@@ -1239,7 +1251,8 @@ retry:
- 
- failure:
- 	ret2 = ext3_prepare_failure(file, page, from, to);
--	if (ret2 < 0)
-+	if (ret2)
-+	/* ready to partial write, or fatal error */
- 		return ret2;
- 	if (ret == -ENOSPC && ext3_should_retry_alloc(inode->i_sb, &retries))
- 		goto retry;
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index 806eee1..da39f80 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -1153,6 +1153,18 @@ static int do_journal_get_write_access(handle_t *handle,
-  * transaction must include the content of the newly allocated blocks.
-  * This content is expected to be set to zeroes by block_prepare_write().
-  * 2006/10/14  SAW
-+ * What we can do if some blocks was allocated?
-+ * a) Stop transaction and do retry if possible, but what happend if
-+ *    reboot comes after journal_force_commit, but before we exhaust
-+ *    all retry attempts and caller call trancate?
-+ *    We may get allocated blocks outside i_size. Witch is bad.
-+ * b) Commit newly allocated blocks. And if reboot comes, user will be
-+ *    surprised that i_size increased but blocks are zero filed. Witch is
-+ *    also bad.
-+ * c) Just return as match bytes as we can deal with rigth now back to
-+ *    caller, and if reboot comes trunsaction was't closed so it will
-+ *    be droped while journal replay.
-+ * Only (c) tend to garantie attomic data operation.
-  */
- static int ext4_prepare_failure(struct file *file, struct page *page,
- 				unsigned from, unsigned to)
-@@ -1185,7 +1197,7 @@ skip:
- 			block_start = to;
- 			break;
- 		}
--		if (!buffer_mapped(bh))
-+		if (!buffer_mapped(bh) || !buffer_uptodate(bh))
- 		/* prepare_write failed on this bh */
- 			break;
- 		if (ext4_should_journal_data(mapping->host)) {
-@@ -1203,8 +1215,8 @@ skip:
- 	if (block_start <= from)
- 		goto skip;
- 
--	/* commit allocated and zeroed buffers */
--	return mapping->a_ops->commit_write(file, page, from, block_start);
-+	/* return number of bytes till last mapped && uptodate block */
-+	return block_start - from;
- }
- 
- static int ext4_prepare_write(struct file *file, struct page *page,
-@@ -1238,7 +1250,8 @@ retry:
- 
- failure:
- 	ret2 = ext4_prepare_failure(file, page, from, to);
--	if (ret2 < 0)
-+	if (ret2)
-+	/* ready to partial write, or fatal error */
- 		return ret2;
- 	if (ret == -ENOSPC && ext4_should_retry_alloc(inode->i_sb, &retries))
- 		goto retry;
-
---=-=-=--
-
+-- 
+tejun
