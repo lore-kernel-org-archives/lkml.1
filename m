@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964912AbXBLN30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964920AbXBLNel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964912AbXBLN30 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 08:29:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964913AbXBLN30
+	id S964920AbXBLNel (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 08:34:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964918AbXBLNel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 08:29:26 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:50257 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964912AbXBLN3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 08:29:24 -0500
-Date: Mon, 12 Feb 2007 16:24:21 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+	Mon, 12 Feb 2007 08:34:41 -0500
+Received: from mail.gmx.net ([213.165.64.20]:50656 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S964917AbXBLNek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 08:34:40 -0500
+X-Provags-ID: V01U2FsdGVkX18TeJQs2rATxF/9Dzci6bY5CDwrp3rf/GgJWMJllc
+	dUgA==
+From: Florian Schmidt <mista.tapas@gmx.net>
 To: Alan <alan@lxorguk.ukuu.org.uk>
-Cc: Andi Kleen <ak@suse.de>, David Miller <davem@davemloft.net>,
-       Ulrich Drepper <drepper@redhat.com>, Andrew Morton <akpm@osdl.org>,
-       netdev <netdev@vger.kernel.org>, Zach Brown <zach.brown@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Chase Venters <chase.venters@clientec.com>,
-       Johann Borck <johann.borck@densedata.com>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, Jamal Hadi Salim <hadi@cyberus.ca>,
-       Ingo Molnar <mingo@elte.hu>, linux-fsdevel@vger.kernel.org
-Subject: Re: [take36 10/10] kevent: Kevent based generic AIO.
-Message-ID: <20070212132421.GA7578@2ka.mipt.ru>
-References: <11712796493850@2ka.mipt.ru> <1171279650540@2ka.mipt.ru> <p733b5bh6bp.fsf@bingen.suse.de> <20070212131257.565f8066@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+Subject: Re: 2.6.20 "IRQ handler type mismatch for IRQ 4"
+Date: Mon, 12 Feb 2007 14:34:38 +0100
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+References: <200702102140.55155.mista.tapas@gmx.net> <20070212131838.04a2abcc@localhost.localdomain>
+In-Reply-To: <20070212131838.04a2abcc@localhost.localdomain>
+X-Face: %EpW[IH18fBP*R?oz~]%Klbl.q!_(Xs_q"t?K~RVx[c7~3|C3kDdA(8y_KOB\{(Rn(=?utf-8?q?MZhm=0A=09=7B/l=2E?=>O48>i9k<+(,c^Y%mGm)M\+RxuxL4r<7-W63sB$+w\}hkT"Q2?v&N:y\Z
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070212131257.565f8066@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.7.5 (2ka.mipt.ru [0.0.0.0]); Mon, 12 Feb 2007 16:24:37 +0300 (MSK)
+Message-Id: <200702121434.38403.mista.tapas@gmx.net>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 12, 2007 at 01:12:57PM +0000, Alan (alan@lxorguk.ukuu.org.uk) wrote:
-> > I'm sure others would want them then for their favourite system call combo
-> > too. If they were really useful it might make more sense to have a batch() 
-> > system call that works for arbitary calls, but I'm not convinced yet
-> > it's even needed. It would be certainly ugly.
-> 
-> batch() would possibly make a lot of sense in terms of the fibril/thread
-> based removal for the need for all the AIO stuff, just to provide a
-> natural way to group and order sequences of synchronous operations into
-> asynchronous groups.
-> 
-> I am extremely sceptical about the need for aio_sendfile_path since with
-> sendfile/sendpath hacking around there didn't seem to be much gain.
-> 
-> I'm even more sceptical of the header buffer stuff as while other OS's do
-> that as a hack to make TCP packetising work we simply fixed the root
-> problem with TCP_CORK
+On Monday 12 February 2007, Alan wrote:
+> > [   23.783913] Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ
+> > sharing enabled
+> > [   23.787063] pnp: Device 00:0c activated.
+> > [   23.787420] 00:0c: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+>
+> So the PnP layers put a device on IRQ 4, which is sensible
+>
+> > [   37.516000] eth1: orinoco_cs at 0.0, irq 4, io 0x0100-0x013f
+>
+> The PCMCIA layer then ignores this and takes IRQ 4 simply because
+> although PnP has used it the IRQ isnt currently live
+>
+> > [   53.580000] IRQ handler type mismatch for IRQ 4
+> > [   53.580000] current handler: pcmcia0.0
+>
+> The serial IRQ setup fails
+>
+> > [   53.580000]  [<c0141a25>] setup_irq+0x135/0x1e0
+> > [   53.580000]  [<c0230930>] serial8250_interrupt+0x0/0xf0
+> > [   53.580000]  [<c0141b73>] request_irq+0xa3/0xc0
+> > [   53.580000]  [<c023086e>] serial8250_startup+0x47e/0x4b0
+> > [   53.580000]  [<c022bf58>] uart_startup+0x48/0x160
+> > [   53.580000]  [<c022cb9f>] uart_open+0xbf/0x460
+>
+> This is all scary and generally not needed spew but handy for debug.
+>
+> Looks like a PCMCIA layer bug. It should be respecting IRQ assignment
+> (not just allocation) by other resource configuration layers.
 
-Well, that does not matter that much - that syscall is an example of how
-kevent AIO state machine works - it trivially allows to have async
-open/send/sendfile/close like aio_senfile_path.
+Ah thanks for taking a look. I was slowly getting the impression from older 
+lkml posts, that this isn't really what stopped my wifi from functioning. It 
+seems there are other reasons and i just stumbled across this harmless 
+message in dmesg.. Thanks for clearing it up :)
 
-I would remove header too (it was not there in the first release, added
-on request), but the whole idea of async open/send/close seems natural 
-for web-like workloads, when user should not even care about proper state 
-machine.
-
-Having batch() mode would be good too - with kevent state machine it is
-quite trivially: 
-req = kaio_add_call(NULL, first_call)
-kaio_append_call(req, second_call);
-kaio_append_call(req, third_call);
-...
-kaio_schedule_req(req);
-
-Yes, state machine handling requires additional code, but when it ends
-up in faster processing implementation complexities deserve its price.
-
-> Alan
+Flo
 
 -- 
-	Evgeniy Polyakov
+Palimm Palimm!
+http://tapas.affenbande.org
