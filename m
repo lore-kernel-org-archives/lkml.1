@@ -1,60 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965352AbXBLTuH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965357AbXBLTyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965352AbXBLTuH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 14:50:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965353AbXBLTuH
+	id S965357AbXBLTyn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 14:54:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965358AbXBLTyn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 14:50:07 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46719 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965352AbXBLTuE (ORCPT
+	Mon, 12 Feb 2007 14:54:43 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:32299 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965357AbXBLTym (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 14:50:04 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andi Kleen <ak@suse.de>
-Cc: Benjamin Romer <benjamin.romer@unisys.com>,
-       Vivek Goyal <vgoyal@in.ibm.com>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH x86 for review III] [7/29] x86_64: update IO-APIC dest field to 8-bit for xAPIC
-References: <20070212551.664370000@suse.de>
-	<20070212165127.1790A13FAE@wotan.suse.de>
-Date: Mon, 12 Feb 2007 12:49:28 -0700
-In-Reply-To: <20070212165127.1790A13FAE@wotan.suse.de> (Andi Kleen's message
-	of "Mon, 12 Feb 2007 17:51:27 +0100 (CET)")
-Message-ID: <m164a7w3zr.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 12 Feb 2007 14:54:42 -0500
+Subject: Re: [PATCH mm] cfag12864b: fix crash when built-in and no parport
+	present
+From: Daniel Walker <dwalker@mvista.com>
+To: Miguel Ojeda <maxextreme@gmail.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070210205123.699abb9c.maxextreme@gmail.com>
+References: <20070210205123.699abb9c.maxextreme@gmail.com>
+Content-Type: text/plain
+Date: Mon, 12 Feb 2007 11:52:50 -0800
+Message-Id: <1171309970.32073.115.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <ak@suse.de> writes:
+On Sat, 2007-02-10 at 20:51 +0100, Miguel Ojeda wrote:
+> Andrew, Daniel who reported the crash has tested this patch and says that it works fine avoiding it, so you can merge.
+> 
 
-> From: Benjamin Romer <benjamin.romer@unisys.com>
->
-> On the Unisys ES7000/ONE system, we encountered a problem where performing
-> a kexec reboot or dump on any cell other than cell 0 causes the system
-> timer to stop working, resulting in a hang during timer calibration in the
-> new kernel.
->
-> We traced the problem to one line of code in disable_IO_APIC(), which needs
-> to restore the timer's IO-APIC configuration before rebooting.  The code is
-> currently using the 4-bit physical destination field, rather than using the
-> 8-bit logical destination field, and it cuts off the upper 4 bits of the
-> timer's APIC ID.  If we change this to use the logical destination field,
-> the timer works and we can kexec on the upper cells.  This was tested on
-> two different cells (0 and 2) in an ES7000/ONE system.
->
-> For reference, the relevant Intel xAPIC spec is kept at
-> ftp://download.intel.com/design/chipsets/e8501/datashts/30962001.pdf,
-> specifically on page 334.
->
-> Signed-off-by: Benjamin M Romer <benjamin.romer@unisys.com>
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> Cc: Andi Kleen <ak@suse.de>
-> Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-> Cc: Vivek Goyal <vgoyal@in.ibm.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Yes, I tested it with the ks0108 enabled alone, and with both ks0108 and
+CFAG12864B .. Both booted fully..
 
-Acked-by: Eric W. Biederman" <ebiederm@xmission.com>
+Daniel
 
