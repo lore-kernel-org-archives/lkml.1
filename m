@@ -1,146 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030205AbXBLWKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030212AbXBLWPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030205AbXBLWKw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 17:10:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030206AbXBLWKw
+	id S1030212AbXBLWPA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 17:15:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030213AbXBLWPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 17:10:52 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49451 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030205AbXBLWKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 17:10:51 -0500
-Message-ID: <45D0E60F.2090506@redhat.com>
-Date: Mon, 12 Feb 2007 17:11:27 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Mon, 12 Feb 2007 17:15:00 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:12024 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030212AbXBLWO7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 17:14:59 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=Hjgueafp5f0/myolGYP0sWjotPhp8xrxsrBWURXaWge1S/w7gQhCZSoZBwx6JdMXe
+	CjGuL3CYy4ijLo+PtYkoA==
+Message-ID: <b040c32a0702121414oc570ccfhd8b78a87c5ff7b86@mail.gmail.com>
+Date: Mon, 12 Feb 2007 14:14:43 -0800
+From: "Ken Chen" <kenchen@google.com>
+To: "Dave McCracken" <dave.mccracken@oracle.com>
+Subject: Re: [PATCH 1/1] Enable fully functional truncate for hugetlbfs
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Adam Litke" <agl@us.ibm.com>
+In-Reply-To: <20070212142802.15738.80487.sendpatchset@wildcat.int.mccr.org>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH x86 for review III] [17/29] x86: Add new CPUID bits for
- AMD Family 10 CPUs in /proc/cpuinfo
-References: <20070212551.664370000@suse.de> <20070212165137.AD85913E1B@wotan.suse.de>
-In-Reply-To: <20070212165137.AD85913E1B@wotan.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070212142802.15738.80487.sendpatchset@wildcat.int.mccr.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Just various new acronyms. The new popcnt bit is in the middle
-> of Intel space. This looks a little weird, but I've been assured
-> it's ok.
-> 
-> Also I fixed RDTSCP for i386 which was at the wrong place.
-> 
-> For i386 and x86-64.
-> 
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> 
-> ---
->  arch/i386/kernel/cpu/proc.c |   14 +++++++++-----
->  arch/x86_64/kernel/setup.c  |   14 ++++++++++----
->  2 files changed, 19 insertions(+), 9 deletions(-)
-> 
-> Index: linux/arch/x86_64/kernel/setup.c
-> ===================================================================
-> --- linux.orig/arch/x86_64/kernel/setup.c
-> +++ linux/arch/x86_64/kernel/setup.c
-> @@ -942,7 +942,8 @@ static int show_cpuinfo(struct seq_file 
->  		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
->  		NULL, NULL, NULL, "syscall", NULL, NULL, NULL, NULL,
->  		NULL, NULL, NULL, NULL, "nx", NULL, "mmxext", NULL,
-> -		NULL, "fxsr_opt", NULL, "rdtscp", NULL, "lm", "3dnowext", "3dnow",
-> +		NULL, "fxsr_opt", "pdpe1gb", "rdtscp", NULL, "lm",
-> +		"3dnowext", "3dnow",
->  
->  		/* Transmeta-defined */
->  		"recovery", "longrun", NULL, "lrti", NULL, NULL, NULL, NULL,
-> @@ -960,7 +961,7 @@ static int show_cpuinfo(struct seq_file 
->  		/* Intel-defined (#2) */
->  		"pni", NULL, NULL, "monitor", "ds_cpl", "vmx", "smx", "est",
->  		"tm2", "ssse3", "cid", NULL, NULL, "cx16", "xtpr", NULL,
-> -		NULL, NULL, "dca", NULL, NULL, NULL, NULL, NULL,
-> +		NULL, NULL, "dca", NULL, NULL, NULL, NULL, "popcnt",
->  		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
->  
->  		/* VIA/Cyrix/Centaur-defined */
-> @@ -970,8 +971,10 @@ static int show_cpuinfo(struct seq_file 
->  		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
->  
->  		/* AMD-defined (#2) */
-> -		"lahf_lm", "cmp_legacy", "svm", NULL, "cr8_legacy", NULL, NULL, NULL,
-> -		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-> +		"lahf_lm", "cmp_legacy", "svm", "extapic", "cr8_legacy",
-> +		"altmovcr8", "abm", "sse4a",
-> +		"misalignsse", "3dnowprefetch",
-> +		"osvw", "ibs", NULL, NULL, NULL, NULL,
->  		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
->  		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
->  	};
-> @@ -982,6 +985,9 @@ static int show_cpuinfo(struct seq_file 
->  		"ttp",  /* thermal trip */
->  		"tm",
->  		"stc",
-> +		"100mhzsteps",
-> +		"hwpstate",
-> +		NULL,	/* tsc invariant mapped to constant_tsc */
->  		NULL,
->  		/* nothing */	/* constant_tsc - moved to flags */
->  	};
-> Index: linux/arch/i386/kernel/cpu/proc.c
-> ===================================================================
-> --- linux.orig/arch/i386/kernel/cpu/proc.c
-> +++ linux/arch/i386/kernel/cpu/proc.c
-> @@ -29,7 +29,7 @@ static int show_cpuinfo(struct seq_file 
->  		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
->  		NULL, NULL, NULL, "syscall", NULL, NULL, NULL, NULL,
->  		NULL, NULL, NULL, "mp", "nx", NULL, "mmxext", NULL,
-> -		NULL, "fxsr_opt", "rdtscp", NULL, NULL, "lm", "3dnowext", "3dnow",
-> +		NULL, "fxsr_opt", "pdpe1gb", "rdtscp", NULL, "lm", "3dnowext", "3dnow",
->  
->  		/* Transmeta-defined */
->  		"recovery", "longrun", NULL, "lrti", NULL, NULL, NULL, NULL,
-> @@ -47,7 +47,7 @@ static int show_cpuinfo(struct seq_file 
->  		/* Intel-defined (#2) */
->  		"pni", NULL, NULL, "monitor", "ds_cpl", "vmx", "smx", "est",
->  		"tm2", "ssse3", "cid", NULL, NULL, "cx16", "xtpr", NULL,
-> -		NULL, NULL, "dca", NULL, NULL, NULL, NULL, NULL,
-> +		NULL, NULL, "dca", NULL, NULL, NULL, NULL, "popcnt",
->  		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
->  
->  		/* VIA/Cyrix/Centaur-defined */
-> @@ -57,8 +57,9 @@ static int show_cpuinfo(struct seq_file 
->  		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
->  
->  		/* AMD-defined (#2) */
-> -		"lahf_lm", "cmp_legacy", "svm", NULL, "cr8legacy", NULL, NULL, NULL,
-> -		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-> +		"lahf_lm", "cmp_legacy", "svm", "extapic", "cr8legacy", "abm",
-> +		"sse4a", "misalignsse",
-> +		"3dnowprefetch", "osvw", "ibs", NULL, NULL, NULL, NULL, NULL,
->  		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
->  		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
->  	};
-> @@ -69,8 +70,11 @@ static int show_cpuinfo(struct seq_file 
->  		"ttp",  /* thermal trip */
->  		"tm",
->  		"stc",
-> +		"100mhzsteps",
-> +		"hwpstate",
->  		NULL,
-> -		/* nothing */	/* constant_tsc - moved to flags */
-> +		NULL,	/* constant_tsc - moved to flags */
-> +		/* nothing */
->  	};
->  	struct cpuinfo_x86 *c = v;
->  	int i, n = c - cpu_data;
-> -
+On 2/12/07, Dave McCracken <dave.mccracken@oracle.com> wrote:
+> This patch enables the full functionality of truncate for hugetlbfs
+> files.  Truncate was originally limited to reducing the file size
+> because page faults were not supported for hugetlbfs.  Now that page
+> faults have been implemented it is now possible to fully support
+> truncate.
 
-Since we seem to have become the place where all these are collected,
-shouldn't we document what they mean? I've got some this machine that
-I'd like to know more about:
+ye!
 
-dts ss ds_cpl est tm2 ssse3 xtpr
+> --- 2.6.20/./fs/hugetlbfs/inode.c       2007-02-04 12:44:54.000000000 -0600
+> +++ 2.6.20-htrunc/./fs/hugetlbfs/inode.c        2007-02-05 13:02:00.000000000 -0600
+> +       if (hugetlb_reserve_pages(inode, inode->i_size >> HPAGE_SHIFT,
+> +                                 offset >> HPAGE_SHIFT))
+> +               goto out_mem;
+> +       i_size_write(inode, offset);
 
+hugetlb_reserve_pages() is used to reserve pages for shared mapping
+and is used only for the size of mapping at the time of mmap().  We
+shouldn't call this function when expanding hugetlb file.
 
+- Ken
