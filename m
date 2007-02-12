@@ -1,45 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933027AbXBLGNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933025AbXBLGRD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933027AbXBLGNz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 01:13:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933025AbXBLGNz
+	id S933025AbXBLGRD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 01:17:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933026AbXBLGRD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 01:13:55 -0500
-Received: from paragon.brong.net ([66.232.154.163]:37904 "EHLO
-	paragon.brong.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933027AbXBLGNy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 01:13:54 -0500
-Date: Mon, 12 Feb 2007 17:13:47 +1100
-From: Bron Gondwana <brong@fastmail.fm>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.16.40
-Message-ID: <20070212061347.GB24889@brong.net>
-References: <20070210164113.GG12958@stusta.de>
-MIME-Version: 1.0
+	Mon, 12 Feb 2007 01:17:03 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:36481 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933025AbXBLGRC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 01:17:02 -0500
+Date: Mon, 12 Feb 2007 01:16:59 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: Greg KH <greg@kroah.com>
+Cc: Tilman Schmidt <tilman@imap.cc>, Jiri Kosina <jikos@jikos.cz>,
+       hjlipp@web.de, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux-Usb-Devel <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: gigaset build broken on current linux-2.6.git
+Message-ID: <20070212061659.GB10409@havoc.gtf.org>
+References: <45CBA41D.3000406@garzik.org> <Pine.LNX.4.64.0702082344100.25686@twin.jikos.cz> <45CC3109.1010502@imap.cc> <45CF630F.1040706@imap.cc> <20070211184727.GB15182@kroah.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070210164113.GG12958@stusta.de>
-Organization: brong.net
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070211184727.GB15182@kroah.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 10, 2007 at 05:41:13PM +0100, Adrian Bunk wrote:
-> New drivers since 2.6.16.39:
-> - Areca ARC11X0/ARC12X0 SATA-RAID support
-> - AMD Athlon64/FX and Opteron temperature sensor
+On Sun, Feb 11, 2007 at 10:47:27AM -0800, Greg KH wrote:
+> It's in my queue and is on track to get in before 2.6.21-rc1 is out.
 
-Sorry - I think I just sent a blank reply to this!  Oops.
+It breaks the build for everyone, please fast-forward the merging of
+this.
 
-I was going to say - thanks.  We'll definitely be using
-this kernel since we've found that 2.6.19.2 has a
-significantly worse IO profile and either the 2.6.16.40-rc1
-kernel or 2.6.18 on otherwise identical machines with pretty
-stable loads (so we can compare back to previous weeks).
+	Jeff
 
-Now to figure out what's causing the extra load in the
-2.6.19 branch!
 
-Bron.
+
