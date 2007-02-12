@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030212AbXBLWPA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030190AbXBLWZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030212AbXBLWPA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 17:15:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030213AbXBLWPA
+	id S1030190AbXBLWZQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 17:25:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030194AbXBLWZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 17:15:00 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:12024 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030212AbXBLWO7 (ORCPT
+	Mon, 12 Feb 2007 17:25:16 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:60269 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030190AbXBLWZO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 17:14:59 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=Hjgueafp5f0/myolGYP0sWjotPhp8xrxsrBWURXaWge1S/w7gQhCZSoZBwx6JdMXe
-	CjGuL3CYy4ijLo+PtYkoA==
-Message-ID: <b040c32a0702121414oc570ccfhd8b78a87c5ff7b86@mail.gmail.com>
-Date: Mon, 12 Feb 2007 14:14:43 -0800
-From: "Ken Chen" <kenchen@google.com>
-To: "Dave McCracken" <dave.mccracken@oracle.com>
-Subject: Re: [PATCH 1/1] Enable fully functional truncate for hugetlbfs
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Adam Litke" <agl@us.ibm.com>
-In-Reply-To: <20070212142802.15738.80487.sendpatchset@wildcat.int.mccr.org>
+	Mon, 12 Feb 2007 17:25:14 -0500
+From: Andi Kleen <andi@firstfloor.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: - rdmsr_on_cpu-wrmsr_on_cpu.patch removed from -mm tree
+Date: Mon, 12 Feb 2007 23:24:44 +0100
+User-Agent: KMail/1.9.5
+Cc: davej@redhat.com, linux-kernel@vger.kernel.org, adobriyan@openvz.org
+References: <200702082132.l18LWhl4027000@shell0.pdx.osdl.net> <200702111138.23253.ak@suse.de> <20070212140043.6586665c.akpm@linux-foundation.org>
+In-Reply-To: <20070212140043.6586665c.akpm@linux-foundation.org>
+Organization: -
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070212142802.15738.80487.sendpatchset@wildcat.int.mccr.org>
+Message-Id: <200702122324.44611.andi@firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/12/07, Dave McCracken <dave.mccracken@oracle.com> wrote:
-> This patch enables the full functionality of truncate for hugetlbfs
-> files.  Truncate was originally limited to reducing the file size
-> because page faults were not supported for hugetlbfs.  Now that page
-> faults have been implemented it is now possible to fully support
-> truncate.
+On Monday 12 February 2007 23:00, Andrew Morton wrote:
+> > On Sun, 11 Feb 2007 11:38:23 +0100 Andi Kleen <ak@suse.de> wrote:
+> > On Sunday 11 February 2007 01:11, Dave Jones wrote:
+> > > On Thu, Feb 08, 2007 at 01:32:43PM -0800, akpm@linux-foundation.org wrote:
+> > >  > 
+> > >  > The patch titled
+> > >  >      rdmsr_on_cpu, wrmsr_on_cpu
+> > >  > has been removed from the -mm tree.  Its filename was
+> > >  >      rdmsr_on_cpu-wrmsr_on_cpu.patch
+> > >  > 
+> > >  > This patch was dropped because I've lost the plot on this thing
+> > > 
+> > > Alexey, send me the latest fixed up version of this, and I'll
+> > > queue this up to save Andrew trying to sort it out.
+> > 
+> > I fixed it up to at least support x86-64 too
+> > 
+> 
+> No you didn't ;) I still get a build error with i386 allmodconfig using
+> your version.
 
-ye!
+That's not surprising because I didn't change anything on i386
 
-> --- 2.6.20/./fs/hugetlbfs/inode.c       2007-02-04 12:44:54.000000000 -0600
-> +++ 2.6.20-htrunc/./fs/hugetlbfs/inode.c        2007-02-05 13:02:00.000000000 -0600
-> +       if (hugetlb_reserve_pages(inode, inode->i_size >> HPAGE_SHIFT,
-> +                                 offset >> HPAGE_SHIFT))
-> +               goto out_mem;
-> +       i_size_write(inode, offset);
+> 
+> I backed out x86_64-mm-msr-on-cpu.patch (again) and went with Alexey's
+> second version (again).  It works fine.
 
-hugetlb_reserve_pages() is used to reserve pages for shared mapping
-and is used only for the size of mapping at the time of mmap().  We
-shouldn't call this function when expanding hugetlb file.
+I think I'll just drop the thing. Nuisance:gain seems to be out of order
 
-- Ken
+-Andi
+
