@@ -1,83 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964964AbXBLPUt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964965AbXBLPWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964964AbXBLPUt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 10:20:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964966AbXBLPUt
+	id S964965AbXBLPWg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 10:22:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964969AbXBLPWg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 10:20:49 -0500
-Received: from mail.sf-mail.de ([62.27.20.61]:53296 "EHLO mail.sf-mail.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964964AbXBLPUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 10:20:46 -0500
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: linux-scsi@vger.kernel.org
-Subject: Re: [GIT PATCH] SCSI updates for 2.6.20
-Date: Mon, 12 Feb 2007 16:21:18 +0100
-User-Agent: KMail/1.9.6
-Cc: James Bottomley <James.Bottomley@steeleye.com>,
-       Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Hannes Reinecke <hare@suse.de>
-References: <1171166252.3373.58.camel@mulgrave.il.steeleye.com> <200702121129.34359.eike-kernel@sf-tec.de> <1171291120.3690.0.camel@mulgrave.il.steeleye.com>
-In-Reply-To: <1171291120.3690.0.camel@mulgrave.il.steeleye.com>
+	Mon, 12 Feb 2007 10:22:36 -0500
+Received: from mpemail.mpe.mpg.de ([130.183.137.110]:47587 "EHLO
+	mpemail.mpe.mpg.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964965AbXBLPWf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 10:22:35 -0500
+X-Greylist: delayed 4813 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Feb 2007 10:22:35 EST
+From: "Martin A. Fink" <fink@mpe.mpg.de>
+Organization: MPE
+To: linux-kernel@vger.kernel.org
+Subject: SATA-performance: Linux vs. FreeBSD
+Date: Mon, 12 Feb 2007 15:02:17 +0100
+User-Agent: KMail/1.8
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4633436.Lx5QbtJ5KU";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200702121621.31232.eike-kernel@sf-tec.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200702121502.17130.fink@mpe.mpg.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart4633436.Lx5QbtJ5KU
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Dear all,
 
-James Bottomley wrote:
-> On Mon, 2007-02-12 at 11:29 +0100, Rolf Eike Beer wrote:
-> > Am Sonntag, 11. Februar 2007 schrieb James Bottomley:
-> > > This is the accumulated SCSI tree for 2.6.20.  It is available at
-> > >
-> > > master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
-> >
-> > You once again have not included this two patches Andrew sent you on
-> > 20070602:
-> >
-> > [patch 08/33] remove extra newline from info message
->
-> This one's waiting on Hannes to ack, since he's working in that driver
+I did some performance tests that made me really wonder:
 
-Ah, thanks. (Added Hannes to CC).
+My Hardware:
+Asus P5LD2 board with Intel i945P chipset, ICH7R southbridge
+CPU Intel Core 2 Duo E6300 at 1.86 GHz, 2 MB Cache
+1 GB RAM
+My Software:
+OpenSuSE 10.2 with Linux kernel 2.6.18, x86-64 architecture
+FreeBSD 6.2
 
-> > [patch 09/33] Fix scsi/scsi_transport.h compile error
->
-> I did look at this one, but I can't find a configuration that will
-> induce a compile error like the header says.  It's pending further
-> investigation.
+Testdrives:
+1. HDD: Seagate ST3250820AS RPM 7200.9, 8 MB Cache, 250 GB, SATA-II
+   (Harddisk Drive)
+2. SSD: Adtron AF25FB, 27GB, SATA Revision 1.0a (Solid State Disk)
 
-Just try to compile a file that only includes this header. I don't know if=
-=20
-there is an existing (in-kernel) configuration where this can go wrong, I=20
-found it when hacking a replacement for cpqfcTS. Nevertheless this is still=
- a=20
-bug, relying on a specific include order is just wrong.
+What I did:
+I wrote blocks of 1 MB size to file. Each 1 GB I made a fsync and took the 
+time. For those tests with filesystems I wrote files of 1 GB size, otherwise 
+I just wrote to the raw device.
 
-Greetings,
+Results: -1-
 
-Eike
+Test					OpenSuSE(AHCI)			FreeBSD(AHCI)
+---------------------------------------------------------------------------------------------------------------------------------------
+SSD(vfat 25GB)			41+/-2 MB/s at 4-10%		15+/-0 MB/s at 2% CPU
+SSD(raw  25GB) 		26+/-1 MB/s at 4-10% CPU	48+/-0 MB/s at 1% CPU
+SSD(ext3 25GB)		39+/-5 MB/s at 10-15% CPU	34+/-0 MB/s at 14% CPU
+SSD(ext2 25GB)		42+/-1 MB/s at 10-15% CPU	32+/-0 MB/s at 10% CPU
+---------------------------------------------------------------------------------------------------------------------------------------
 
---nextPart4633436.Lx5QbtJ5KU
-Content-Type: application/pgp-signature
+Test					OpenSuSE (AHCI off)		FreeBSD (AHCI off)
+---------------------------------------------------------------------------------------------------------------------------------------
+SSD(vfat 25GB)			22+/-4 MB/s at 6-19% CPU	--
+SSD(raw  25GB)		33+/-4 MB/s at 7-14% CPU	41+/-0 MB/s at 1% CPU
+SSD(ext2 25GB)		27+/-6 MB/s at 6-14% CPU	--
+---------------------------------------------------------------------------------------------------------------------------------------
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
+Question 1:
+Can anybody explain to me, why writing to a SATA-I device with AHCI consumes 
+so much CPU time using Linux, while it takes almost no CPU time on FreeBSD 
+6.2 ? Especially comparing values of writing to the raw device?
 
-iD8DBQBF0IX7XKSJPmm5/E4RAkVfAJ422voSn0nhm9CBZ4aeZXZ0MsT8ewCfUDNt
-XPHBOla9YYPL7PMUnDoIJ4w=
-=aZH9
------END PGP SIGNATURE-----
+Question 2:
+Can anybody explain to me, why writing to a solid state disk (a kind of memory 
+that always has the same constant bandwidth) has such big standard errors in 
+writing rate using Linux (between 1 to 6 MB/s error) while FreeBSD gives an 
+almost constant writing rate (as one would expect it for a SSD) ?
 
---nextPart4633436.Lx5QbtJ5KU--
+Question 3:
+Why is writing to a raw device in Linux slower than using e.g. ext2 ? And why 
+is Linux writing rate much lower (-12.5 % for the best case) compared to 
+writing rate of FreeBSD?
+
+Question 4:
+When writing to the SATA-II HDD Linux is around 10% slower than FreeBSD when 
+using ext3, but around as fast as FreeBSD when writing raw. Why?
+
+
+How can I improve the speed of Linux,
+Thanks for advices
+
+Martin
+
+PS: part of my testcode:
+
+  int fd=open(fileName, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+  (void)gettimeofday(&start, 0);
+  for (long bl=0; bl < blocksPerGigaByte; ++bl)
+    write(fd, block, blockSize);
+  fsync(fd);
+  (void)gettimeofday(&ende, 0);
