@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964952AbXBLPAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964954AbXBLPBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964952AbXBLPAa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 10:00:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964953AbXBLPAa
+	id S964954AbXBLPBW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 10:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964955AbXBLPBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 10:00:30 -0500
-Received: from palakse.guam.net ([202.128.0.38]:39393 "EHLO palakse.guam.net"
+	Mon, 12 Feb 2007 10:01:22 -0500
+Received: from brick.kernel.dk ([62.242.22.158]:24574 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964952AbXBLPA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 10:00:29 -0500
-From: "Michael D. Setzer II" <mikes@kuentos.guam.net>
-To: linux-kernel@vger.kernel.org
-Date: Tue, 13 Feb 2007 01:00:06 +1000
+	id S964954AbXBLPBV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 10:01:21 -0500
+Date: Mon, 12 Feb 2007 16:01:25 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.osdl.org>
+Subject: Re: [PATCH 7/8] lguest: trivial guest block driver
+Message-ID: <20070212150125.GM3999@kernel.dk>
+References: <1171251965.10409.28.camel@localhost.localdomain> <1171252113.10409.30.camel@localhost.localdomain> <1171252219.10409.33.camel@localhost.localdomain> <1171252321.10409.36.camel@localhost.localdomain> <1171252405.10409.39.camel@localhost.localdomain> <1171252474.10409.42.camel@localhost.localdomain> <20070212044339.GJ3685@kernel.dk> <1171258034.10409.54.camel@localhost.localdomain> <20070212053204.GB3999@kernel.dk> <1171264167.10409.62.camel@localhost.localdomain>
 MIME-Version: 1.0
-Subject: Using kernel with modules for nics that cause errors.
-Message-ID: <45D10D96.14820.3205274@mikes.kuentos.guam.net>
-X-mailer: Pegasus Mail for Windows (4.41)
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1171264167.10409.62.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Question on using modules with kernel. 
-I've been building the latest git kernels for the G4L project, 
-and the latest 
-kernels have added support for a lot of newer hardware, but 
-currently have 
-two of the nic drivers that cause problems when build into 
-the kernel. 
+On Mon, Feb 12 2007, Rusty Russell wrote:
+> On Mon, 2007-02-12 at 06:32 +0100, Jens Axboe wrote:
+> > On Mon, Feb 12 2007, Rusty Russell wrote:
+> > > On Mon, 2007-02-12 at 05:43 +0100, Jens Axboe wrote:
+> > > > Here you map the entire request (lets call that segment A..Z), but
+> > > > end_request() only completes the first chunk of the request. So
+> > > > elv_next_request() will retrieve the same request again, and you'll then
+> > > > map B..Z and repeat that transfer. So unless I'm missing some other part
+> > > > here (just read it over quickly), you are re-doing large parts of a
+> > > > merged request several times.
+> 
+> virtbench before:
+> 	Time to read from disk (256 kB): 18654562 nsec
+> After:
+> 	Time to read from disk (256 kB): 8018468 nsec
+> 
+> Thanks Jens!!
 
-DEPCA causes a kernel panic. 
-TLAN just stops during the boot. 
-Without these, the kernel boots fine. Unfortunately, I don't 
-have either of 
-these cards, so built it with these as modules, and put the 
-.ko files in the 
-/lib/modules/2.6.20 directory. Would the instructions for a 
-user that does 
-have one of these cards just to use insmod? 
+My pleasure, it's not often you get to make that big a performance
+improvement with just a little few lines of change :-)
 
-I generally have about 9000 downloads per month of the 
-project files, so 
-would assume that some users would have these cards. 
+I guess you'll take changes to make this driver queuing as well? It's
+pretty important for good guest io performance as well.
 
-Thanks. 
-
-+----------------------------------------------------------+
-  Michael D. Setzer II -  Computer Science Instructor      
-  Guam Community College  Computer Center                  
-  mailto:mikes@kuentos.guam.net                            
-  mailto:msetzerii@gmail.com
-  http://www.guam.net/home/mikes
-  Guam - Where America's Day Begins                        
-+----------------------------------------------------------+
-
-http://setiathome.berkeley.edu
-Number of Seti Units Returned:  19,471
-Processing time:  32 years, 290 days, 12 hours, 58 minutes
-(Total Hours: 287,489)
-
-BOINC TOTAL CREDITS 
-SETI@HOME/EINSTEIN@HOME/ROSETTA@HOME
-Total Credits 2732993.968392 
-Total Credits 508418.821181 
-Total Credits 8288.718734 
+-- 
+Jens Axboe
 
