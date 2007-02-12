@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964816AbXBLKZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964840AbXBLK2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964816AbXBLKZq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 05:25:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964840AbXBLKZq
+	id S964840AbXBLK2x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 05:28:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964846AbXBLK2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 05:25:46 -0500
-Received: from mx1.suse.de ([195.135.220.2]:48017 "EHLO mx1.suse.de"
+	Mon, 12 Feb 2007 05:28:53 -0500
+Received: from mail.sf-mail.de ([62.27.20.61]:42583 "EHLO mail.sf-mail.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964827AbXBLKZk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 05:25:40 -0500
-From: Andi Kleen <ak@suse.de>
-To: "Jan Beulich" <jbeulich@novell.com>
-Subject: Re: [patches] [PATCH 2.6.21 review I] [21/25] x86_64: a memcpy that tries to reduce cache pressure
-Date: Mon, 12 Feb 2007 11:25:28 +0100
-User-Agent: KMail/1.9.5
-Cc: "Bryan O'Sullivan" <bos@pathscale.com>,
-       "Roland Dreier" <rolandd@cisco.com>, linux-kernel@vger.kernel.org,
-       patches@x86-64.org
-References: <200702101250.142420000@suse.de> <20070210115034.694B013DBF@wotan.suse.de> <45D04806.76E4.0078.0@novell.com>
-In-Reply-To: <45D04806.76E4.0078.0@novell.com>
+	id S964840AbXBLK2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 05:28:52 -0500
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: linux-scsi@vger.kernel.org
+Subject: Re: [GIT PATCH] SCSI updates for 2.6.20
+Date: Mon, 12 Feb 2007 11:29:28 +0100
+User-Agent: KMail/1.9.6
+Cc: James Bottomley <James.Bottomley@steeleye.com>,
+       Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <1171166252.3373.58.camel@mulgrave.il.steeleye.com>
+In-Reply-To: <1171166252.3373.58.camel@mulgrave.il.steeleye.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: multipart/signed;
+  boundary="nextPart6168428.fcT4MqvegJ";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702121125.28867.ak@suse.de>
+Message-Id: <200702121129.34359.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart6168428.fcT4MqvegJ
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> This looks a little strange to me:
-> - the first 128 bytes are still going through the cache
-> - up to 192 bytes past the copied area are being marked non-temporal, while
->   there's nothing known about that area
+Am Sonntag, 11. Februar 2007 schrieb James Bottomley:
+> This is the accumulated SCSI tree for 2.6.20.  It is available at
+>
+> master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
 
-Yes that seems quite bogus.
+You once again have not included this two patches Andrew sent you on 20070602:
 
-> - sfence seems questionable here, I would have thought this should be lfence,
->   or perhaps even none at all
+[patch 08/33] remove extra newline from info message
+[patch 09/33] Fix scsi/scsi_transport.h compile error
 
-Agreed -- it's not needed.
+Is this by mistake or intentional?
 
-I think i also objected earlier to the jump table which is likely slower.
+Greetings,
 
-Will drop for now.
+Eike
 
--Andi
+--nextPart6168428.fcT4MqvegJ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQBF0EGOXKSJPmm5/E4RAsAlAJ9yb3XOlBjnW0kzrZLIizALmhkGSwCfTY44
+Ia3MPYEcPZEZ8nLQBEleiLM=
+=rOAz
+-----END PGP SIGNATURE-----
+
+--nextPart6168428.fcT4MqvegJ--
