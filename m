@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964874AbXBLM7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964906AbXBLNDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964874AbXBLM7n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 07:59:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964880AbXBLM7n
+	id S964906AbXBLNDd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 08:03:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964901AbXBLNDd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 07:59:43 -0500
-Received: from mtl.rackplans.net ([69.90.0.18]:51344 "EHLO mtl.rackplans.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964874AbXBLM7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 07:59:43 -0500
-Date: Mon, 12 Feb 2007 07:59:40 -0500 (EST)
-From: Gerhard Mack <gmack@innerfire.net>
-X-X-Sender: gmack@mtl.rackplans.net
-To: Willy Tarreau <w@1wt.eu>
-cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       Arjan van de Ven <arjan@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, tilman@imap.cc
-Subject: Re: NAK new drivers without proper power management?
-In-Reply-To: <20070211064636.GA12171@1wt.eu>
-Message-ID: <Pine.LNX.4.64.0702120752420.3824@mtl.rackplans.net>
-References: <1171058269.1484.64.camel@nigel.suspend2.net>
- <1171059433.8675.195.camel@laptopd505.fenrus.org> <20070210193851.GA3956@ucw.cz>
- <200702102320.39531.rjw@sisk.pl> <1171147026.19894.16.camel@nigel.suspend2.net>
- <20070211064636.GA12171@1wt.eu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 12 Feb 2007 08:03:33 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34164 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964880AbXBLNDc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 08:03:32 -0500
+Date: Mon, 12 Feb 2007 13:12:57 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <ak@suse.de>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, David Miller <davem@davemloft.net>,
+       Ulrich Drepper <drepper@redhat.com>, Andrew Morton <akpm@osdl.org>,
+       netdev <netdev@vger.kernel.org>, Zach Brown <zach.brown@oracle.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Chase Venters <chase.venters@clientec.com>,
+       Johann Borck <johann.borck@densedata.com>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, Jamal Hadi Salim <hadi@cyberus.ca>,
+       Ingo Molnar <mingo@elte.hu>, linux-fsdevel@vger.kernel.org
+Subject: Re: [take36 10/10] kevent: Kevent based generic AIO.
+Message-ID: <20070212131257.565f8066@localhost.localdomain>
+In-Reply-To: <p733b5bh6bp.fsf@bingen.suse.de>
+References: <11712796493850@2ka.mipt.ru>
+	<1171279650540@2ka.mipt.ru>
+	<p733b5bh6bp.fsf@bingen.suse.de>
+X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 Feb 2007, Willy Tarreau wrote:
+> I'm sure others would want them then for their favourite system call combo
+> too. If they were really useful it might make more sense to have a batch() 
+> system call that works for arbitary calls, but I'm not convinced yet
+> it's even needed. It would be certainly ugly.
 
-> On Sun, Feb 11, 2007 at 09:37:06AM +1100, Nigel Cunningham wrote:
-> > On Sat, 2007-02-10 at 23:20 +0100, Rafael J. Wysocki wrote:
-> 
-> Many people also have Linux on their notebooks, but as a dual-boot. You
-> read the word ? "dual-boot". It means that they cleanly shutdown their
-> system every time they don't use it anymore, and they won't know what
-> OS they'll use next time.
+batch() would possibly make a lot of sense in terms of the fibril/thread
+based removal for the need for all the AIO stuff, just to provide a
+natural way to group and order sequences of synchronous operations into
+asynchronous groups.
 
-Please tell me your joking.  Linux' crappy suspend support is a common 
-reason people give me for not wanting Linux anywhere near their laptops.  
+I am extremely sceptical about the need for aio_sendfile_path since with
+sendfile/sendpath hacking around there didn't seem to be much gain.
 
-I have a single boot laptop that's somewhat of a mobile debugging station 
-that needs Linux and I absolutely hate it.  Right now my laptop takes far 
-too long to boot and even if it didn't I wish I could suspend.
+I'm even more sceptical of the header buffer stuff as while other OS's do
+that as a hack to make TCP packetising work we simply fixed the root
+problem with TCP_CORK
 
-I'm actually a huge Linux fan.. I use it exclusively on my server and on 
-my PC but if I get another laptop I will probably run something else on 
-it.  Linux is just too annoying for that use.
-
-	Gerhard
-
-
-
---
-Gerhard Mack
-
-gmack@innerfire.net
-
-<>< As a computer I find your faith in technology amusing.
+Alan
