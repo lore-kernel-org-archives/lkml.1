@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933090AbXBLHmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933091AbXBLHmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933090AbXBLHmc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 02:42:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933118AbXBLHmR
+	id S933091AbXBLHmd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 02:42:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933104AbXBLHiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 02:42:17 -0500
-Received: from cantor.suse.de ([195.135.220.2]:38431 "EHLO mx1.suse.de"
+	Mon, 12 Feb 2007 02:38:25 -0500
+Received: from mx2.suse.de ([195.135.220.15]:49628 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933090AbXBLHi0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 02:38:26 -0500
+	id S933090AbXBLHiH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 02:38:07 -0500
 From: Andi Kleen <ak@suse.de>
 References: <20070212837.963446000@suse.de>
 In-Reply-To: <20070212837.963446000@suse.de>
-To: Jeff Garzik <jeff@garzik.org>, patches@x86-64.org,
+To: "Jan Beulich" <jbeulich@novell.com>, patches@x86-64.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH x86 for review II] [36/39] x86_64: define dma noncoherent API functions
-Message-Id: <20070212073824.AF6B813DA0@wotan.suse.de>
-Date: Mon, 12 Feb 2007 08:38:24 +0100 (CET)
+Subject: [PATCH x86 for review II] [19/39] x86_64: remove get_pmd()
+Message-Id: <20070212073806.9A17913D7F@wotan.suse.de>
+Date: Mon, 12 Feb 2007 08:38:06 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Jeff Garzik <jeff@garzik.org>
+From: "Jan Beulich" <jbeulich@novell.com>
+Function is dead.
 
-x86-64 is missing these:
-
-Signed-off-by: Jeff Garzik <jeff@garzik.org>
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- include/asm-x86_64/dma-mapping.h |    3 +++
- 1 file changed, 3 insertions(+)
+ include/asm-x86_64/pgalloc.h |    5 -----
+ 1 file changed, 5 deletions(-)
 
-Index: linux/include/asm-x86_64/dma-mapping.h
+Index: linux/include/asm-x86_64/pgalloc.h
 ===================================================================
---- linux.orig/include/asm-x86_64/dma-mapping.h
-+++ linux/include/asm-x86_64/dma-mapping.h
-@@ -66,6 +66,9 @@ static inline int dma_mapping_error(dma_
- #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
- #define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
+--- linux.orig/include/asm-x86_64/pgalloc.h
++++ linux/include/asm-x86_64/pgalloc.h
+@@ -18,11 +18,6 @@ static inline void pmd_populate(struct m
+ 	set_pmd(pmd, __pmd(_PAGE_TABLE | (page_to_pfn(pte) << PAGE_SHIFT)));
+ }
  
-+#define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
-+#define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
-+
- extern void *dma_alloc_coherent(struct device *dev, size_t size,
- 				dma_addr_t *dma_handle, gfp_t gfp);
- extern void dma_free_coherent(struct device *dev, size_t size, void *vaddr,
+-static inline pmd_t *get_pmd(void)
+-{
+-	return (pmd_t *)get_zeroed_page(GFP_KERNEL);
+-}
+-
+ static inline void pmd_free(pmd_t *pmd)
+ {
+ 	BUG_ON((unsigned long)pmd & (PAGE_SIZE-1));
