@@ -1,120 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965320AbXBLTPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965326AbXBLTRp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965320AbXBLTPt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 14:15:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965323AbXBLTPt
+	id S965326AbXBLTRp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 14:17:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965323AbXBLTRp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 14:15:49 -0500
-Received: from mga06.intel.com ([134.134.136.21]:12201 "EHLO
+	Mon, 12 Feb 2007 14:17:45 -0500
+Received: from mga06.intel.com ([134.134.136.21]:17344 "EHLO
 	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965320AbXBLTPs (ORCPT
+	with ESMTP id S965318AbXBLTRn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 14:15:48 -0500
+	Mon, 12 Feb 2007 14:17:43 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: i="4.13,316,1167638400"; 
-   d="scan'208"; a="195870267:sNHT1911291676"
-Date: Mon, 12 Feb 2007 10:41:23 -0800
-From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-Cc: Adam Belay <abelay@novell.com>, Shaohua Li <shaohua.li@intel.com>,
-       Len Brown <len.brown@intel.com>
-Subject: [PATCH 3/3] Introducing cpuidle: Basic documentation for cpuidle
-Message-ID: <20070212104123.C12078@unix-os.sc.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.2.5.1i
+   d="scan'208"; a="195871161:sNHT21501697"
+Message-ID: <45D0B363.8070303@linux.intel.com>
+Date: Mon, 12 Feb 2007 10:35:15 -0800
+From: James Ketrenos <jketreno@linux.intel.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
+MIME-Version: 1.0
+To: "Hesse, Christian" <mail@earthworm.de>
+CC: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       ipw3945-devel@lists.sourceforge.net, netdev@vger.kernel.org
+Subject: Re: [ANNOUNCE] d80211 based driver for Intel PRO/Wireless 3945ABG
+References: <45CCE3CA.4050904@linux.intel.com> <200702101424.00156.mail@earthworm.de> <200702101525.56820.mail@earthworm.de>
+In-Reply-To: <200702101525.56820.mail@earthworm.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hesse, Christian wrote:
+> On Saturday 10 February 2007 14:23, Hesse, Christian wrote:
+>> On Friday 09 February 2007 22:12, James Ketrenos wrote:
+>>> We are pleased to announce the availability of a new driver for the
+>>> Intel PRO/Wireless 3945ABG Network Connection adapter.
+...
+> Oh, I forgot one note: "make patch_kernel" is terribly broken. Any chance to 
+> get this fixed soon?
 
+I've put up a new version of iwlwifi (0.0.6) with significant changes to 
+the patch_kernel scripts as well as including Pavel's patch to KSRC.
 
-Documentation for cpuidle infrastructure
+I performed some build testing with 2.6.18 and wireless-dev @ commit 
+f66e5aaa88c1c0a7ee6c6427d6535ed8afd35427 (Jan 8).
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Adam Belay <abelay@novell.com>
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+http://intellinuxwireless.org/?n=downloads
 
-Index: linux-2.6.21-rc-mm/Documentation/cpuidle/core.txt
-===================================================================
---- /dev/null
-+++ linux-2.6.21-rc-mm/Documentation/cpuidle/core.txt
-@@ -0,0 +1,17 @@
-+
-+		Supporting multiple CPU idle levels in kernel
-+
-+				cpuidle
-+
-+General Information:
-+
-+Various CPUs today support multiple idle levels that are differentiated
-+by varying exit latencies and power consumption during idle.
-+cpuidle is a generic in-kernel infrastructure that separates
-+idle policy (governor) from idle mechanism (driver) and provides a
-+standardized infrastructure to support independent development of
-+governors and drivers.
-+
-+cpuidle resides under /drivers/cpuidle.
-+
-+
-Index: linux-2.6.21-rc-mm/Documentation/cpuidle/driver.txt
-===================================================================
---- /dev/null
-+++ linux-2.6.21-rc-mm/Documentation/cpuidle/driver.txt
-@@ -0,0 +1,24 @@
-+
-+
-+		Supporting multiple CPU idle levels in kernel
-+
-+				cpuidle drivers
-+
-+
-+
-+
-+cpuidle driver supports capability detection for a particular system. The
-+init and exit routines will be called for each online CPU, with a percpu
-+cpuidle_driver object and driver should fill in cpuidle_states inside
-+cpuidle_driver depending on the CPU capability.
-+
-+Driver can handle dynamic state changes (like battery<->AC), by calling
-+force_redetect interface.
-+
-+It is possible to have more than one driver registered at the same time and
-+user can switch between drivers using /sysfs interface.
-+
-+Interfaces:
-+int cpuidle_register_driver(struct cpuidle_driver *drv);
-+void cpuidle_unregister_driver(struct cpuidle_driver *drv);
-+int cpuidle_force_redetect(struct cpuidle_device *dev);
-Index: linux-2.6.21-rc-mm/Documentation/cpuidle/sysfs.txt
-===================================================================
---- /dev/null
-+++ linux-2.6.21-rc-mm/Documentation/cpuidle/sysfs.txt
-@@ -0,0 +1,27 @@
-+
-+
-+		Supporting multiple CPU idle levels in kernel
-+
-+				cpuidle sysfs
-+
-+System global cpuidle information are under
-+/sys/devices/system/cpu/cpuidle
-+
-+The current interfaces in this directory has self-explanatory names:
-+* available_drivers
-+* available_governors
-+* current_driver
-+* current_governor
-+
-+Per logical CPU specific cpuidle information are under
-+/sys/devices/system/cpu/cpuX/cpuidle
-+for each online cpu X
-+
-+Under this percpu directory, there is a directory for each idle state supported
-+by the driver, which in turn has
-+* latency
-+* power
-+* time
-+* usage
-+
-+
+Let me know if it is still breaking.
+
+Thanks,
+James
