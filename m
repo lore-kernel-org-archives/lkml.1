@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965393AbXBLUzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965398AbXBLU7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965393AbXBLUzb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 15:55:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965392AbXBLUz1
+	id S965398AbXBLU7X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 15:59:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965400AbXBLU7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 15:55:27 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40827 "EHLO amd.ucw.cz"
+	Mon, 12 Feb 2007 15:59:23 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51609 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965393AbXBLUy5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 15:54:57 -0500
-Date: Mon, 12 Feb 2007 21:54:44 +0100
+	id S965398AbXBLU7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 15:59:22 -0500
+Date: Mon, 12 Feb 2007 21:58:57 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-Subject: Re: pcim_enable_device BUGs for libata devices in 2.6.20-git6
-Message-ID: <20070212205444.GC18101@elf.ucw.cz>
-References: <45CFB87F.9060802@shaw.ca> <45D02F5B.801@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Manu Abraham <abraham.manu@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, tilman@imap.cc,
+       Robert Hancock <hancockr@shaw.ca>
+Subject: Re: NAK new drivers without proper power management?
+Message-ID: <20070212205857.GE18101@elf.ucw.cz>
+References: <1171059433.8675.195.camel@laptopd505.fenrus.org> <1171236787.4493.132.camel@nigel.suspend2.net> <20070212165207.GC17400@elf.ucw.cz> <200702122131.33662.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45D02F5B.801@gmail.com>
+In-Reply-To: <200702122131.33662.rjw@sisk.pl>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
@@ -28,59 +31,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> >I'm seeing BUGs like these on all libata-driven controllers when 
-> >suspending to disk on 2.6.20-git6:
-> >
-> >sata_nv 0000:00:07.0: resuming
-> >BUG: at drivers/pci/pci.c:817 pcim_enable_device()
-> >
-> >Call Trace:
-> > [<ffffffff80337d21>] pcim_enable_device+0x8a/0xa5
-> > [<ffffffff88099d18>] :libata:ata_pci_device_do_resume+0x20/0x59
-> > [<ffffffff880bb731>] :sata_nv:nv_pci_device_resume+0x1d/0x100
-> > [<ffffffff8039d2bf>] resume_device+0xcb/0x12c
-> > [<ffffffff8039d3ac>] dpm_resume+0x8c/0xec
-> > [<ffffffff8039d456>] device_resume+0x4a/0x5d
-> > [<ffffffff802a0a33>] pm_suspend_disk+0x160/0x170
-> > [<ffffffff8029f4b6>] enter_state+0x52/0x1da
-> > [<ffffffff8029f69c>] state_store+0x5e/0x79
-> > [<ffffffff802f2b20>] sysfs_write_file+0xe4/0x118
-> > [<ffffffff80214b58>] vfs_write+0xce/0x177
-> > [<ffffffff8021553e>] sys_write+0x45/0x6e
-> > [<ffffffff8025711e>] system_call+0x7e/0x83
-> >
-> >It looks like what's happening is that during the "freezing" stage, we 
-> >suspend and then resume the controllers. ata_pci_device_do_suspend only 
-> >calls pci_disable_device if the event is PM_EVENT_SUSPEND but 
-> >ata_pci_device_do_resume calls pcim_enable_device unconditionally. If 
-> >the event was something else, then pcim_enable_device complains because 
-> >the device was previously enabled and never disabled.
-> >
-> >Not sure what the best way to fix this is?
+> > > If all you need to do is say 'I don't need to do anything' and we have a
+> > > shared function that does that, all we're talking about doing is adding
+> > > to your struct pci_device (or whatever)
+> > > 
+> > > .resume = generic_empty_resume;
+> > > 
+> > > To me at least, that doesn't look awkward, and says cleanly and clearly
+> > > that you've checked things over and decided you know what's required.
+> > 
+> > Actually, I'd like it to be
+> > 
+> > .resume = generic_empty_resume; /* Explain, why your driver needs no
+> > 				   resume */
 > 
-> I think what should happen is either one of the followings.
-> 
-> 1. Don't restore power state and re-enable PCI device on resume from 
-> freeze just as we don't do the opposite when freezing.
-> 
-> 2. Unconditionally disable and power down PCI device on suspend whether 
-> it's freeze or not.
-> 
-> #2 would be simpler but I'm a bit worried about it.  There might be 
-> controllers which choke after such sequence (save state, disable, power 
-> down, no actual power removal, power on, restore state, re-enable).
+> Okay, but we can't define an empty .resume(), because, for example, the PCI's
+> generic suspend/resume won't be called.
 
-I'd just go for #2.
+PCI drivers should just do .resume = pci_generic_resume, explicitely.
 
-> #1 can be easily done by taking a look at the current device power state 
-> (gendev->power.power_state).  The problem is that no one in 
-> suspend/resume path seems to be setting that variable except for
-> runtime 
+> In the meantime, I'd like to ask the authors of new drivers to define
+> error-returning .suspend() if they don't intend to define "real" .suspend()
+> and .resume() for now.  When we are ready with the conversion, we'll be able
+> to drop the error-returning .suspend()s and clear "pm_safe" for them.
 
-No, that variable is probably going to go away. If you want to
-remember that you are resuming from freeze, just store that info in
-private data structure.
-								Pavel
+Yes... please.
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
