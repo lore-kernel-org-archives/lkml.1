@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964892AbXBLNVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964905AbXBLNXn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964892AbXBLNVR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 08:21:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964905AbXBLNVR
+	id S964905AbXBLNXn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 08:23:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964908AbXBLNXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 08:21:17 -0500
-Received: from hermes.domdv.de ([193.102.202.1]:2199 "EHLO hermes.domdv.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964892AbXBLNVQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 08:21:16 -0500
-Message-ID: <45D069C3.2020406@domdv.de>
-Date: Mon, 12 Feb 2007 14:21:07 +0100
-From: Andreas Steinmetz <ast@domdv.de>
-User-Agent: Mail/News 1.5.0.7 (X11/20060915)
-MIME-Version: 1.0
-To: Alex Dubov <oakad@yahoo.com>
-CC: Brad Campbell <brad@wasp.net.au>, Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Recent and not-so problems with tifm_sd driver - one more
-References: <113489.35158.qm@web36703.mail.mud.yahoo.com> <45CDC22B.6040408@drzeus.cx> <45CEB1C9.5010103@wasp.net.au> <45CF3904.5070401@drzeus.cx> <45CF3CA3.1010704@wasp.net.au> <45CF5AB0.6080309@drzeus.cx> <45CF6F64.60500@wasp.net.au>
-In-Reply-To: <45CF6F64.60500@wasp.net.au>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 12 Feb 2007 08:23:43 -0500
+Received: from smtpd2.aruba.it ([62.149.128.207]:37628 "HELO smtp3.aruba.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S964905AbXBLNXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 08:23:42 -0500
+X-Greylist: delayed 396 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Feb 2007 08:23:42 EST
+Subject: Post-boot PCI device detection
+From: Andrea Galbusera <andrea.galbusera@teamware.it>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Mon, 12 Feb 2007 14:16:57 +0100
+Message-Id: <1171286217.5438.25.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
+X-Spam-Rating: smtp3.aruba.it 1.6.2 0/1000/N
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brad Campbell wrote:
-> Alex, it's still hit and miss getting this card detected. I had to
-> insert/remove the card over 10 times with random driver load/unloads
-> until it created the device entries..
+Hi all,
 
-And for me it's still worse, no matter what I try with 2.6.20:
+I work on a custom board and I have a PCI realated question. Please
+redirect me to a more suitable list if you find the following off-topic.
 
-speedy:~ # find /sys/devices | grep tifm
-/sys/devices/pci0000:00/0000:00:14.4/0000:03:09.3/tifm_sd0:3
-/sys/devices/pci0000:00/0000:00:14.4/0000:03:09.3/tifm_sd0:3/mmc_host:mmc0
-/sys/devices/pci0000:00/0000:00:14.4/0000:03:09.3/tifm_sd0:3/driver
-/sys/devices/pci0000:00/0000:00:14.4/0000:03:09.3/tifm_sd0:3/bus
-/sys/devices/pci0000:00/0000:00:14.4/0000:03:09.3/tifm_sd0:3/subsystem
-/sys/devices/pci0000:00/0000:00:14.4/0000:03:09.3/tifm_sd0:3/power
-/sys/devices/pci0000:00/0000:00:14.4/0000:03:09.3/tifm_sd0:3/power/wakeup
-/sys/devices/pci0000:00/0000:00:14.4/0000:03:09.3/tifm_sd0:3/uevent
+On my board I have a powerpc and an fpga that I need to configure at
+boot: once this is accomplished, the fpga implements a PCI device. At
+moment I use a "two stages boot" in order to let the PCI subsystem
+correctly detect the new device. More in detail:
+1. the system boots up my kernel
+2. I configure the fpga through SPI with a suitable init script
+3. I reboot the ppc (this does not clear fpga config, of course!)
+4. Now the kernel show the PCI device and I can load its driver
 
-speedy:~ # find /sys/block | grep mmc
-speedy:~ #
+This works but has performance issues. Here comes the question... Is
+there a more suitable way to let the kernel know about the PCI device
+being present on the bus without rebooting the system.
+No hardware support is available to any sort of hotplug signaling, since
+the fpga will never be removed from the system after boot.
+
+How can I signal PCI that something new is present?
+I read Documentation/pci.txt but this does not clarify my dubt.
+
+Thank you in advance for any kind help.
+
 
 -- 
-Andreas Steinmetz                       SPAMmers use robotrap@domdv.de
+Andrea Galbusera
+
