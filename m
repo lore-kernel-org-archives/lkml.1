@@ -1,93 +1,355 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964831AbXBLLUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964882AbXBLL1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964831AbXBLLUX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 06:20:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964837AbXBLLUX
+	id S964882AbXBLL1p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 06:27:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964873AbXBLL1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 06:20:23 -0500
-Received: from tag.witbe.net ([81.88.96.48]:39670 "EHLO tag.witbe.net"
+	Mon, 12 Feb 2007 06:27:40 -0500
+Received: from netgear.net.ru ([195.178.208.66]:49811 "EHLO tservice.net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964831AbXBLLUX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 06:20:23 -0500
-Reply-To: <rol@as2917.net>
-From: "Paul Rolland" <rol@as2917.net>
-To: "'Tejun Heo'" <htejun@gmail.com>
-Cc: "'Alan'" <alan@lxorguk.ukuu.org.uk>, "'Robert Hancock'" <hancockr@shaw.ca>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
-Subject: RE: AHCI - remove probing of ata2
-Date: Mon, 12 Feb 2007 12:19:24 +0100
-Organization: AS2917.net
-Message-ID: <00e201c74e97$a982fa70$4b00a8c0@donald>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-In-Reply-To: <45CFBA90.4090201@gmail.com>
-Thread-Index: AcdOcU1jEWACMYkdRr2x9my3Zst8AwAJVPGw
+	id S964860AbXBLL1e convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 06:27:34 -0500
+Cc: David Miller <davem@davemloft.net>, Ulrich Drepper <drepper@redhat.com>,
+       Andrew Morton <akpm@osdl.org>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       netdev <netdev@vger.kernel.org>, Zach Brown <zach.brown@oracle.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Chase Venters <chase.venters@clientec.com>,
+       Johann Borck <johann.borck@densedata.com>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, Jamal Hadi Salim <hadi@cyberus.ca>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [take36 3/10] kevent: poll/select() notifications.
+In-Reply-To: <11712796473213@2ka.mipt.ru>
+X-Mailer: gregkh_patchbomb
+Date: Mon, 12 Feb 2007 14:27:28 +0300
+Message-Id: <11712796483329@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Reply-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Content-Transfer-Encoding: 7BIT
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Tejun,
 
-> You have a Maxtor connected to that port, right?  That's caused by 
+poll/select() notifications.
 
-Waoh, you are using crystal ball ? :) You are right, this is a Maxtor
-disk, 250 MB. If you want more details about this disk, I can send you
-a complete details.
+This patch includes generic poll/select notifications.
+kevent_poll works simialr to epoll and has the same issues (callback
+is invoked not from internal state machine of the caller, but through
+process awake, a lot of allocations and so on).
 
-> firmware bug.  Future kernels will consider that condition as 
-> protocol 
-> violation and blacklist the drive such that NCQ is not used on it.  I 
-> think it can be dangerous on rare corner/error cases but there hasn't 
-> been any actual report of problems caused by that, so no need 
-> to worry 
-> about it too much.  If it bothers you, you can turn NCQ off 
-> using sysfs 
-> node.  Take a look at FAQ section of http://linux-ata.org
+Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mitp.ru>
 
-I'm just slightly worried about that, and because all this libata
-stuff is quite "new", I prefer to report everything I can see, considering
-that I can test patches on this machine if people need me to do so.
-So, consider this machine as some kind of playground if you have
-some code you want someone to test.
+diff --git a/fs/file_table.c b/fs/file_table.c
+index 4c17a18..46f458c 100644
+--- a/fs/file_table.c
++++ b/fs/file_table.c
+@@ -20,6 +20,7 @@
+ #include <linux/cdev.h>
+ #include <linux/fsnotify.h>
+ #include <linux/sysctl.h>
++#include <linux/kevent.h>
+ #include <linux/percpu_counter.h>
  
-> Slightly OT, but it's generally a good idea to use LABELs to access 
-> filesystems.  With so many ports and EH dynamics including 
-> hotplug, it's 
-> much more difficult to keep device names persistent and remember them.
-
-Yes, that's what I should do, but I've never really like that stuff ;(
+ #include <asm/atomic.h>
+@@ -119,6 +120,7 @@ struct file *get_empty_filp(void)
+ 	f->f_uid = tsk->fsuid;
+ 	f->f_gid = tsk->fsgid;
+ 	eventpoll_init_file(f);
++	kevent_init_file(f);
+ 	/* f->f_version: 0 */
+ 	return f;
  
-> > So, 2.6.20-rc7 results are :
-> >  - ata2 probing still very long and delaying boot a lot,
-> 
-> That's sil4726's config device acting weird.  When reset as a normal 
-> device (not PMP device), sil4726 acts as a normal ATA device which is 
-> used to configure how the chip behaves.  Unfortunately, the emulation 
-> seems to contain some flaws and cause lots of delays as you've seen. 
-> I'm attaching a patch to clear TF before IDENTIFY which fixes similar 
-> IDENTIFY failures on buggy ATAPI devices.
-
-OK, will try this tonite (I'm sorry, this is my home comp., and I'm at the
-office right now - will tell you tomorrow).
+@@ -164,6 +166,7 @@ void fastcall __fput(struct file *file)
+ 	 * in the file cleanup chain.
+ 	 */
+ 	eventpoll_release(file);
++	kevent_cleanup_file(file);
+ 	locks_remove_flock(file);
  
-> >  - Jmicron PATA still not working, and doesn't even detect 
-> the DVD-ROM on
-> >    the port.
-> 
-> This problem is likely to be fixed by clearing TF before IDENTIFY.
-> 
-> So, please test the attached patch and report the result.
-
-Will do, and will test more if you more that are to be tested !
-
-BTW, maybe OT, but what about setting a list of people willing to test
-patches together with their configurations so that they can be send
-patches related to their hardware ? That could be useful to people developing
-drivers...
-
-Regards,
-Paul
+ 	if (file->f_op && file->f_op->release)
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 1410e53..24f605c 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -280,6 +280,7 @@ extern int dir_notify_enable;
+ #include <linux/init.h>
+ #include <linux/pid.h>
+ #include <linux/mutex.h>
++#include <linux/kevent_storage.h>
+ 
+ #include <asm/atomic.h>
+ #include <asm/semaphore.h>
+@@ -408,6 +409,8 @@ struct address_space_operations {
+ 
+ 	int (*readpages)(struct file *filp, struct address_space *mapping,
+ 			struct list_head *pages, unsigned nr_pages);
++	int (*aio_readpages)(struct file *filp, struct address_space *mapping,
++			struct list_head *pages, unsigned nr_pages, void *priv);
+ 
+ 	/*
+ 	 * ext3 requires that a successful prepare_write() call be followed
+@@ -579,6 +582,10 @@ struct inode {
+ 	struct mutex		inotify_mutex;	/* protects the watches list */
+ #endif
+ 
++#if defined CONFIG_KEVENT_SOCKET || defined CONFIG_KEVENT_PIPE
++	struct kevent_storage	st;
++#endif
++
+ 	unsigned long		i_state;
+ 	unsigned long		dirtied_when;	/* jiffies of first dirtying */
+ 
+@@ -738,6 +745,9 @@ struct file {
+ 	struct list_head	f_ep_links;
+ 	spinlock_t		f_ep_lock;
+ #endif /* #ifdef CONFIG_EPOLL */
++#ifdef CONFIG_KEVENT_POLL
++	struct kevent_storage	st;
++#endif
+ 	struct address_space	*f_mapping;
+ };
+ extern spinlock_t files_lock;
+diff --git a/kernel/kevent/kevent_poll.c b/kernel/kevent/kevent_poll.c
+new file mode 100644
+index 0000000..58129fa
+--- /dev/null
++++ b/kernel/kevent/kevent_poll.c
+@@ -0,0 +1,234 @@
++/*
++ * 2006 Copyright (c) Evgeniy Polyakov <johnpol@2ka.mipt.ru>
++ * All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include <linux/kernel.h>
++#include <linux/types.h>
++#include <linux/list.h>
++#include <linux/slab.h>
++#include <linux/spinlock.h>
++#include <linux/timer.h>
++#include <linux/file.h>
++#include <linux/kevent.h>
++#include <linux/poll.h>
++#include <linux/fs.h>
++
++static struct kmem_cache *kevent_poll_container_cache;
++static struct kmem_cache *kevent_poll_priv_cache;
++
++struct kevent_poll_ctl
++{
++	struct poll_table_struct 	pt;
++	struct kevent			*k;
++};
++
++struct kevent_poll_wait_container
++{
++	struct list_head		container_entry;
++	wait_queue_head_t		*whead;
++	wait_queue_t			wait;
++	struct kevent			*k;
++};
++
++struct kevent_poll_private
++{
++	struct list_head		container_list;
++	spinlock_t			container_lock;
++};
++
++static int kevent_poll_enqueue(struct kevent *k);
++static int kevent_poll_dequeue(struct kevent *k);
++static int kevent_poll_callback(struct kevent *k);
++
++static int kevent_poll_wait_callback(wait_queue_t *wait,
++		unsigned mode, int sync, void *key)
++{
++	struct kevent_poll_wait_container *cont =
++		container_of(wait, struct kevent_poll_wait_container, wait);
++	struct kevent *k = cont->k;
++
++	kevent_storage_ready(k->st, NULL, KEVENT_MASK_ALL);
++	return 0;
++}
++
++static void kevent_poll_qproc(struct file *file, wait_queue_head_t *whead,
++		struct poll_table_struct *poll_table)
++{
++	struct kevent *k =
++		container_of(poll_table, struct kevent_poll_ctl, pt)->k;
++	struct kevent_poll_private *priv = k->priv;
++	struct kevent_poll_wait_container *cont;
++	unsigned long flags;
++
++	cont = kmem_cache_alloc(kevent_poll_container_cache, GFP_KERNEL);
++	if (!cont) {
++		kevent_break(k);
++		return;
++	}
++
++	cont->k = k;
++	init_waitqueue_func_entry(&cont->wait, kevent_poll_wait_callback);
++	cont->whead = whead;
++
++	spin_lock_irqsave(&priv->container_lock, flags);
++	list_add_tail(&cont->container_entry, &priv->container_list);
++	spin_unlock_irqrestore(&priv->container_lock, flags);
++
++	add_wait_queue(whead, &cont->wait);
++}
++
++static int kevent_poll_enqueue(struct kevent *k)
++{
++	struct file *file;
++	int err;
++	unsigned int revents;
++	unsigned long flags;
++	struct kevent_poll_ctl ctl;
++	struct kevent_poll_private *priv;
++
++	file = fget(k->event.id.raw[0]);
++	if (!file)
++		return -EBADF;
++	
++	err = -EINVAL;
++	if (!file->f_op || !file->f_op->poll)
++		goto err_out_fput;
++	
++	err = -ENOMEM;
++	priv = kmem_cache_alloc(kevent_poll_priv_cache, GFP_KERNEL);
++	if (!priv)
++		goto err_out_fput;
++
++	spin_lock_init(&priv->container_lock);
++	INIT_LIST_HEAD(&priv->container_list);
++
++	k->priv = priv;
++
++	ctl.k = k;
++	init_poll_funcptr(&ctl.pt, &kevent_poll_qproc);
++	
++	err = kevent_storage_enqueue(&file->st, k);
++	if (err)
++		goto err_out_free;
++
++	revents = file->f_op->poll(file, &ctl.pt);
++	if (k->event.req_flags & KEVENT_REQ_ALWAYS_QUEUE) {
++		kevent_requeue(k);
++	} else {
++		if (revents & k->event.event) {
++			err = 1;
++			goto out_dequeue;
++		}
++	}
++
++	spin_lock_irqsave(&k->ulock, flags);
++	k->event.req_flags |= KEVENT_REQ_LAST_CHECK;
++	spin_unlock_irqrestore(&k->ulock, flags);
++
++	return 0;
++
++out_dequeue:
++	kevent_storage_dequeue(k->st, k);
++err_out_free:
++	kmem_cache_free(kevent_poll_priv_cache, priv);
++err_out_fput:
++	fput(file);
++	return err;
++}
++
++static int kevent_poll_dequeue(struct kevent *k)
++{
++	struct file *file = k->st->origin;
++	struct kevent_poll_private *priv = k->priv;
++	struct kevent_poll_wait_container *w, *n;
++	unsigned long flags;
++
++	kevent_storage_dequeue(k->st, k);
++
++	spin_lock_irqsave(&priv->container_lock, flags);
++	list_for_each_entry_safe(w, n, &priv->container_list, container_entry) {
++		list_del(&w->container_entry);
++		remove_wait_queue(w->whead, &w->wait);
++		kmem_cache_free(kevent_poll_container_cache, w);
++	}
++	spin_unlock_irqrestore(&priv->container_lock, flags);
++
++	kmem_cache_free(kevent_poll_priv_cache, priv);
++	k->priv = NULL;
++
++	fput(file);
++
++	return 0;
++}
++
++static int kevent_poll_callback(struct kevent *k)
++{
++	if (k->event.req_flags & KEVENT_REQ_LAST_CHECK) {
++		return 1;
++	} else {
++		struct file *file = k->st->origin;
++		unsigned int revents = file->f_op->poll(file, NULL);
++
++		k->event.ret_data[0] = revents & k->event.event;
++
++		return (revents & k->event.event);
++	}
++}
++
++static int __init kevent_poll_sys_init(void)
++{
++	struct kevent_callbacks pc = {
++		.callback = &kevent_poll_callback,
++		.enqueue = &kevent_poll_enqueue,
++		.dequeue = &kevent_poll_dequeue,
++		.flags = 0,
++	};
++
++	kevent_poll_container_cache = kmem_cache_create("kevent_poll_container_cache",
++			sizeof(struct kevent_poll_wait_container), 0, 0, NULL, NULL);
++	if (!kevent_poll_container_cache) {
++		printk(KERN_ERR "Failed to create kevent poll container cache.\n");
++		return -ENOMEM;
++	}
++
++	kevent_poll_priv_cache = kmem_cache_create("kevent_poll_priv_cache",
++			sizeof(struct kevent_poll_private), 0, 0, NULL, NULL);
++	if (!kevent_poll_priv_cache) {
++		printk(KERN_ERR "Failed to create kevent poll private data cache.\n");
++		kmem_cache_destroy(kevent_poll_container_cache);
++		kevent_poll_container_cache = NULL;
++		return -ENOMEM;
++	}
++
++	kevent_add_callbacks(&pc, KEVENT_POLL);
++
++	printk(KERN_INFO "Kevent poll()/select() subsystem has been initialized.\n");
++	return 0;
++}
++
++static struct lock_class_key kevent_poll_key;
++
++void kevent_poll_reinit(struct file *file)
++{
++	lockdep_set_class(&file->st.lock, &kevent_poll_key);
++}
++
++static void __exit kevent_poll_sys_fini(void)
++{
++	kmem_cache_destroy(kevent_poll_priv_cache);
++	kmem_cache_destroy(kevent_poll_container_cache);
++}
++
++module_init(kevent_poll_sys_init);
++module_exit(kevent_poll_sys_fini);
 
