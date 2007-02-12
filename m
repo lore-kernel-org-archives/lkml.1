@@ -1,90 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965363AbXBLUWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965362AbXBLUWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965363AbXBLUWT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 15:22:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965365AbXBLUWT
+	id S965362AbXBLUWj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 15:22:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965318AbXBLUWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 15:22:19 -0500
-Received: from rere.qmqm.pl ([86.63.132.164]:35992 "EHLO rere.qmqm.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965364AbXBLUWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 15:22:18 -0500
-Date: Mon, 12 Feb 2007 21:22:00 +0100
-From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
-To: netfilter-devel@lists.netfilter.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.20 11/14] nfnetlink_log: iterator functions need iter_state * only
-Message-ID: <20070212202200.GB28704@rere.qmqm.pl>
-References: <20070212003738.GA8262@rere.qmqm.pl> <20070212202052.GA28704@rere.qmqm.pl>
+	Mon, 12 Feb 2007 15:22:39 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:53952 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965362AbXBLUWi convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 15:22:38 -0500
+Date: Mon, 12 Feb 2007 12:18:55 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Jochen =?ISO-8859-1?Q?Vo=DF" ?= <jochen.voss@googlemail.com>
+Cc: "Andi Kleen" <ak@suse.de>, "Christoph Hellwig" <hch@infradead.org>,
+       "Segher Boessenkool" <segher@kernel.crashing.org>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH x86 for review III] [1/29] i386: avoid gcc extension
+Message-Id: <20070212121855.4611d910.randy.dunlap@oracle.com>
+In-Reply-To: <ef1cd66f0702121143i765ccd1ere8ecb28eeaab5759@mail.gmail.com>
+References: <20070212551.664370000@suse.de>
+	<ef1cd66f0702121143i765ccd1ere8ecb28eeaab5759@mail.gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070212202052.GA28704@rere.qmqm.pl>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-get_*() don't need access to seq_file - iter_state is enough for them.
+On Mon, 12 Feb 2007 19:43:36 +0000 Jochen Voﬂ wrote:
 
-Signed-off-by: Micha≥ Miros≥aw <mirq-linux@rere.qmqm.pl>
+> Hi,
+> 
+> On 12/02/07, Andi Kleen <ak@suse.de> wrote:
+> > setcc() in math-emu is written as a gcc extension statement expression
+> > macro that returns a value.  However, it's not used that way and it's not
+> > needed like that, so just make it a do-while non-extension macro so that we
+> > don't use an extension when it's not needed.
+> 
+> This description ...
+> 
+> ... seems to contradict the implementation.  No "do-while" here.
+> 
+> I hope this helps,
 
---- linux-2.6.20/net/netfilter/nfnetlink_log.c.9	2007-02-12 00:19:16.000000000 +0100
-+++ linux-2.6.20/net/netfilter/nfnetlink_log.c	2007-02-12 17:05:14.000000000 +0100
-@@ -929,10 +929,8 @@ struct iter_state {
- 	unsigned int bucket;
- };
+Yes, thanks.  First version was do-while, latter was inline.
+
+Here's an updated patch/description.
+
+---
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+setcc() in math-emu is written as a gcc extension statement expression
+macro that returns a value.  However, it's not used that way and it's
+not needed like that, so just make it an inline void so that
+we don't use an extension when it's not needed.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ arch/i386/math-emu/status_w.h |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+--- linux-2620-rc2.orig/arch/i386/math-emu/status_w.h
++++ linux-2620-rc2/arch/i386/math-emu/status_w.h
+@@ -48,9 +48,11 @@
  
--static struct hlist_node *get_first(struct seq_file *seq)
-+static struct hlist_node *get_first(struct iter_state *st)
- {
--	struct iter_state *st = seq->private;
--
- 	if (!st)
- 		return NULL;
+ #define status_word() \
+   ((partial_status & ~SW_Top & 0xffff) | ((top << SW_Top_Shift) & SW_Top))
+-#define setcc(cc) ({ \
+-  partial_status &= ~(SW_C0|SW_C1|SW_C2|SW_C3); \
+-  partial_status |= (cc) & (SW_C0|SW_C1|SW_C2|SW_C3); })
++static inline void setcc(int cc)
++{
++	partial_status &= ~(SW_C0|SW_C1|SW_C2|SW_C3);
++	partial_status |= (cc) & (SW_C0|SW_C1|SW_C2|SW_C3);
++}
  
-@@ -943,10 +941,8 @@ static struct hlist_node *get_first(stru
- 	return NULL;
- }
- 
--static struct hlist_node *get_next(struct seq_file *seq, struct hlist_node *h)
-+static struct hlist_node *get_next(struct iter_state *st, struct hlist_node *h)
- {
--	struct iter_state *st = seq->private;
--
- 	h = h->next;
- 	while (!h) {
- 		if (++st->bucket >= INSTANCE_BUCKETS)
-@@ -957,13 +953,13 @@ static struct hlist_node *get_next(struc
- 	return h;
- }
- 
--static struct hlist_node *get_idx(struct seq_file *seq, loff_t pos)
-+static struct hlist_node *get_idx(struct iter_state *st, loff_t pos)
- {
- 	struct hlist_node *head;
--	head = get_first(seq);
-+	head = get_first(st);
- 
- 	if (head)
--		while (pos && (head = get_next(seq, head)))
-+		while (pos && (head = get_next(st, head)))
- 			pos--;
- 	return pos ? NULL : head;
- }
-@@ -971,13 +967,13 @@ static struct hlist_node *get_idx(struct
- static void *seq_start(struct seq_file *seq, loff_t *pos)
- {
- 	read_lock_bh(&instances_lock);
--	return get_idx(seq, *pos);
-+	return get_idx(seq->private, *pos);
- }
- 
- static void *seq_next(struct seq_file *s, void *v, loff_t *pos)
- {
- 	(*pos)++;
--	return get_next(s, v);
-+	return get_next(s->private, v);
- }
- 
- static void seq_stop(struct seq_file *s, void *v)
+ #ifdef PECULIAR_486
+    /* Default, this conveys no information, but an 80486 does it. */
