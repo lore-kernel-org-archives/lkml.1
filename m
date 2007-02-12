@@ -1,80 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964868AbXBLLxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964899AbXBLMIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964868AbXBLLxp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 06:53:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964888AbXBLLxp
+	id S964899AbXBLMIm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 07:08:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964893AbXBLMIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 06:53:45 -0500
-Received: from web36712.mail.mud.yahoo.com ([209.191.85.46]:22899 "HELO
-	web36712.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S964868AbXBLLxo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 06:53:44 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=ZMHkdXJZaaevlsvxoErt+rronszJ/sazFMihCZvRnYxGoHU6OgfBL3rjFQxB/b93GptaPyVPHQVth4AdOOUeBTcPydGYoGnM2T7mw5vOdquKDruOHUd/UOxZIZkP0X5bnNxULyd0Bwq0J8vD38ZL7RKmN6t91pZMzAD702VmPyo=  ;
-Message-ID: <20070212115343.41523.qmail@web36712.mail.mud.yahoo.com>
-X-YMail-OSG: ImwDjp0VM1kBd0RkYedBglQdq7DkUNLABOvBY.zHYz92inYem5TkglDKxMX_ZhevmVfk8vqSk_MSj._qr18SUtd.yVaI.w0O_B7F9mvNg9TJiIpJJQCWXdy7GQSDjkkAu0PHs2FmDzYTWk1xZN.eRiteG4ycHAdShrLX2s.GZdhgAjkhl2PTBbLgk509
-Date: Mon, 12 Feb 2007 03:53:43 -0800 (PST)
-From: Alex Dubov <oakad@yahoo.com>
-Subject: Re: Recent and not-so problems with tifm_sd driver
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <45CF5D37.1000900@drzeus.cx>
+	Mon, 12 Feb 2007 07:08:42 -0500
+Received: from ns2.suse.de ([195.135.220.15]:35749 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964891AbXBLMIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 07:08:41 -0500
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: David Miller <davem@davemloft.net>, Ulrich Drepper <drepper@redhat.com>,
+       Andrew Morton <akpm@osdl.org>, netdev <netdev@vger.kernel.org>,
+       Zach Brown <zach.brown@oracle.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Chase Venters <chase.venters@clientec.com>,
+       Johann Borck <johann.borck@densedata.com>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, Jamal Hadi Salim <hadi@cyberus.ca>,
+       Ingo Molnar <mingo@elte.hu>, linux-fsdevel@vger.kernel.org
+Subject: Re: [take36 10/10] kevent: Kevent based generic AIO.
+References: <11712796493850@2ka.mipt.ru> <1171279650540@2ka.mipt.ru>
+From: Andi Kleen <ak@suse.de>
+Date: 12 Feb 2007 14:08:10 +0100
+In-Reply-To: <1171279650540@2ka.mipt.ru>
+Message-ID: <p733b5bh6bp.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
-
-> Alex Dubov wrote:
-> > 
-> > It just occurred to me that my synopsis of the problem was utterly lame.
-> > Here, the correct description:
-> > When the card is pulled out, I mark the host as "ejected" (so it fast-fails all the requests),
-> > sleep a little for it to relax and then call mmc_remove_host. Otherwise, nasty things happen.
-> > Here's the example not involving mmc_block at all (command 3 failed, hardware timeout was
-> missed,
-> > so software timeout picked it up; the sleep hack is disabled):
-> > 
+Evgeniy Polyakov <johnpol@2ka.mipt.ru> writes:
 > 
-> I believe your problem is line 915 of tifm_sd.c:
-> 
-> > 	tifm_set_drvdata(sock, NULL);
-> 
-> You call that before mmc_free_host() (which flushes the work queue), and I
-> assume something still needs it. Put in some BUG_ON() here and there and you
-> should be able to catch it.
-> 
-I removed that line altogether (it does not really needed as mmc host will not be accessed
-anymore). The problem is more elaborate. Here, the card fails, mmc_host_remove is called without
-sleep beforehand, and "after remove" message is printed immediately after it. Only then, mmc_block
-remembers to finish its business. If I leave the sleep in place, mmc_block's stuff will get
-scheduled before the mmc_remove_host and everything will be all right.
-You may also notice that host is already powered off ("Setting ... power 0" message) and still
-mmc_block continues to make requests like nothing happened.
+> aio_sendfile_path() is essentially aio_sendfile(), except that it takes
+> source filename as parameter, has a pointer to private header
+> and its size (which allows to send header and file's content in one syscall
+> instead of three (open, send, sendfile) and returns opened file descriptor.
 
-Feb 12 22:06:55 mortug tifm_sd tifm_sd0:3: host_status 400, fifo_status 0
-Feb 12 22:06:56 mortug tifm_sd: card failed to respond for a long period of time
-Feb 12 22:06:56 mortug tifm_7xx1 0000:06:09.3: checking media set 8
-Feb 12 22:06:56 mortug tifm_7xx1: demand removing card from socket 0:3
-Feb 12 22:06:56 mortug tifm_sd tifm_sd0:3: Setting bus width 0, power 0
-Feb 12 22:06:56 mortug tifm_sd tifm_sd0:3: after remove
-Feb 12 22:06:56 mortug mmcblk1: error 1 sending read/write command
-Feb 12 22:06:56 mortug end_request: I/O error, dev mmcblk1, sector 0
-Feb 12 22:06:56 mortug printk: 137 messages suppressed.
-Feb 12 22:06:56 mortug Buffer I/O error on device mmcblk1, logical block 0
-Feb 12 22:06:56 mortug divide error: 0000 [1] SMP
-Feb 12 22:06:56 mortug CPU 0
-Feb 12 22:06:56 mortug Modules linked in: ...
+Are you sure this is a useful optimization? Do you have numbers vs open+aio_sendfile+close? 
 
+Compared to the cost of sending a complete file three system calls should be quite in the noise. 
+And Linux system calls are not that expensive (few hundred cycles normally) 
 
- 
-____________________________________________________________________________________
-Expecting? Get great news right away with email Auto-Check. 
-Try the Yahoo! Mail Beta.
-http://advision.webevents.yahoo.com/mailbeta/newmail_tools.html 
+Adding such compound system calls would be a worrying precedent because
+I'm sure others would want them then for their favourite system call combo
+too. If they were really useful it might make more sense to have a batch() 
+system call that works for arbitary calls, but I'm not convinced yet
+it's even needed. It would be certainly ugly.
+
+-Andi
