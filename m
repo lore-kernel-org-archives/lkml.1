@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933067AbXBLHa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933068AbXBLHcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933067AbXBLHa1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 02:30:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933069AbXBLHa1
+	id S933068AbXBLHcJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 02:32:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933069AbXBLHcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 02:30:27 -0500
-Received: from mail06.syd.optusnet.com.au ([211.29.132.187]:33023 "EHLO
-	mail06.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933068AbXBLHaZ (ORCPT
+	Mon, 12 Feb 2007 02:32:09 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:20589
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933068AbXBLHcI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 02:30:25 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: malc <av1474@comtv.ru>
-Subject: Re: CPU load
-Date: Mon, 12 Feb 2007 18:29:47 +1100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <loom.20070212T063225-663@post.gmane.org> <200702121712.50168.kernel@kolivas.org> <Pine.LNX.4.64.0702121006030.1049@home.oyster.ru>
-In-Reply-To: <Pine.LNX.4.64.0702121006030.1049@home.oyster.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 12 Feb 2007 02:32:08 -0500
+Message-Id: <45D025BF.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.1 
+Date: Mon, 12 Feb 2007 07:30:55 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Christoph Hellwig" <hch@lst.de>
+Cc: <tony.luck@intel.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: [IA64] swiotlb abstraction (e.g. for Xen)
+References: <200702070759.l177xIti030295@hera.kernel.org>
+ <20070207083254.GA24561@lst.de> <20070211072555.GA22831@lst.de>
+In-Reply-To: <20070211072555.GA22831@lst.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702121829.47453.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 February 2007 18:10, malc wrote:
-> On Mon, 12 Feb 2007, Con Kolivas wrote:
-> > Lots of confusion comes from this, and often people think their pc
-> > suddenly uses a lot less cpu when they change from 1000HZ to 100HZ and
-> > use this as an argument/reason for changing to 100HZ when in fact the
-> > massive _reported_ difference is simply worse accounting. Of course there
-> > is more overhead going from 100 to 1000 but it doesn't suddenly make your
-> > apps use 10 times more cpu.
->
-> Yep. This, i belive, what made the mplayer developers incorrectly conclude
-> that utilizing RTC suddenly made the code run slower, after all /proc/stat
-> now claims that CPU load is higher, while in reality it stayed the same -
-> it's the accuracy that has improved (somewhat)
->
-> But back to the original question, does it look at what's running on timer
-> interrupt only or any IRQ? (something which is more in line with my own
-> observations)
+On Wed, Feb 07, 2007 at 09:32:54AM +0100, Christoph Hellwig wrote:
+> On Wed, Feb 07, 2007 at 07:59:18AM +0000, Linux Kernel Mailing List wrote:
+> >     [IA64] swiotlb abstraction (e.g. for Xen)
+> >     
+> >     Add abstraction so that the file can be used by environments other than IA64
+> >     and EM64T, namely for Xen.
+> 
+> Tony, this code is more than ugly, and even further not needed for anything
+> we actually need.  Can you please revert it.
+> 
+> Some comments below in case we need justification..
+> 
+> If Jan actually had a goal with that except making the code utterly
+> unreadable he should try again with small patches that are well
+> explained and do one thing at a at time.  (And cane be reviewed an
+> improved on if needed.
 
-During the timer interrupt only. However if you create any form of timer, they 
-will of course have some periodicity relationship with the timer interrupt.
+As the topic says - the goal is to support Xen. But yes, I was afraid someone would
+claim this make the code look ugly. And no, I currently don't have ideas to address
+any of your comments without breaking functionality on Xen...
 
--- 
--ck
+Jan
