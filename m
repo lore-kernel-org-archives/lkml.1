@@ -1,44 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030194AbXBLW0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030211AbXBLW1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030194AbXBLW0t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 17:26:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030208AbXBLW0s
+	id S1030211AbXBLW1a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 17:27:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030213AbXBLW13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 17:26:48 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:60274 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030194AbXBLW0r (ORCPT
+	Mon, 12 Feb 2007 17:27:29 -0500
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:56936 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030211AbXBLW12 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 17:26:47 -0500
-From: Andi Kleen <andi@firstfloor.org>
-To: Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: [PATCH x86 for review III] [12/29] x86_64: 32-bit ptrace mangles sixth system call argument
-Date: Mon, 12 Feb 2007 23:26:23 +0100
-User-Agent: KMail/1.9.5
-Cc: Jeff Dike <jdike@addtoit.com>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-References: <20070212551.664370000@suse.de> <20070212165132.6518713F45@wotan.suse.de> <45D0E486.9020104@redhat.com>
-In-Reply-To: <45D0E486.9020104@redhat.com>
-Organization: -
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702122326.23406.andi@firstfloor.org>
+	Mon, 12 Feb 2007 17:27:28 -0500
+To: jengelh@linux01.gwdg.de
+CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       szaka@sienet.hu
+In-reply-to: <Pine.LNX.4.61.0702121923350.26360@yvahk01.tjqt.qr> (message from
+	Jan Engelhardt on Mon, 12 Feb 2007 19:27:22 +0100 (MET))
+Subject: Re: [RFC PATCH] add filesystem subtype support
+References: <E1HGZhm-0003eb-00@dorka.pomaz.szeredi.hu> <Pine.LNX.4.61.0702121923350.26360@yvahk01.tjqt.qr>
+Message-Id: <E1HGjdh-0004h3-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 12 Feb 2007 23:27:13 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> Didn't we have problems with this exact approach before? This one was dropped
-> because it caused 32-bit programs to crash:
-> http://www2.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.13/2.6.13-mm2/broken-out/x86-64-ptrace-ia32-bp-fix.patch
+> >-static struct file_system_type **find_filesystem(const char *name)
+> >+static struct file_system_type **find_filesystem(const char *name, unsigned len)
+> > {
+> > 	struct file_system_type **p;
+> > 	for (p=&file_systems; *p; p=&(*p)->next)
+> >-		if (strcmp((*p)->name,name) == 0)
+> >+		if (strlen((*p)->name) == len &&
+> >+		    strncmp((*p)->name, name, len) == 0)
+> > 			break;
+> > 	return p;
+> > }
 > 
-> See:
-> 	http://lkml.org/lkml/2005/09/16/261
-> 
-> for the one I proposed instead.
+> Question btw, why does this function return a struct file_system_type ** at
+> all? Would not struct file_system_type * suffice?
 
-Yes you're right. I dropped it for now.
+It's used in register_filesystem() to get the end of the list pointer.
 
--Andi
+Miklos
