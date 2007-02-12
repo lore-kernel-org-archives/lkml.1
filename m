@@ -1,66 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964931AbXBLQcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964884AbXBLQhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964931AbXBLQcU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 11:32:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964940AbXBLQcU
+	id S964884AbXBLQhU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 11:37:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964959AbXBLQhT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 11:32:20 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:53513 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964931AbXBLQcT (ORCPT
+	Mon, 12 Feb 2007 11:37:19 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60874 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964884AbXBLQhS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 11:32:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=hQTG2Myi2El8lxPltip5A1oLOvIF9g2/YIL68d+viaiPNaQOMmz+Ia9S+T1R3fci7U50dyPq8enNdcZG04DOKJpY3eAIuY2BlmmFAOarK0AGg3IzuS7Ufi2zg5YwPz49Y7JnS3cF1FMDaoWS4Nrt0yO+ISO1PxpTYDBv1YIqa5o=
-Message-ID: <45D0968F.8040103@gmail.com>
-Date: Mon, 12 Feb 2007 17:32:15 +0100
-From: dragoran <drago01@gmail.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
-MIME-Version: 1.0
-To: "Hesse, Christian" <mail@earthworm.de>
-CC: James Ketrenos <jketreno@linux.intel.com>, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ipw3945-devel@lists.sourceforge.net
-Subject: Re: [ipw3945-devel] [ANNOUNCE] d80211 based driver for Intel	PRO/Wireless
- 3945ABG
-References: <45CCE3CA.4050904@linux.intel.com>	<200702101424.00156.mail@earthworm.de> <200702101525.56820.mail@earthworm.de>
-In-Reply-To: <200702101525.56820.mail@earthworm.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Mon, 12 Feb 2007 11:37:18 -0500
+Date: Mon, 12 Feb 2007 16:51:05 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Florian Schmidt <mista.tapas@gmx.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20 "IRQ handler type mismatch for IRQ 4"
+Message-ID: <20070212165105.2d97ccce@localhost.localdomain>
+In-Reply-To: <200702121434.38403.mista.tapas@gmx.net>
+References: <200702102140.55155.mista.tapas@gmx.net>
+	<20070212131838.04a2abcc@localhost.localdomain>
+	<200702121434.38403.mista.tapas@gmx.net>
+X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hesse, Christian wrote:
-> On Saturday 10 February 2007 14:23, Hesse, Christian wrote:
->   
->> On Friday 09 February 2007 22:12, James Ketrenos wrote:
->>     
->>> We are pleased to announce the availability of a new driver for the
->>> Intel PRO/Wireless 3945ABG Network Connection adapter.
->>>       
->> Wow, great news on this rainy saturday! ;-)
->>
->> The driver works perfectly, I'm writing this mail via wireless link.
->> However there are two things to note:
->>
->> The driver generates two network devices. The second one is for promicious
->> mode? Is there any chance to disable the interface? ifrename renamed the
->> wrong one to wlan0 and I had to tell my system to use eth1 for the wireless
->> connection.
->>
->> Second problem is that I can't unload the module. I get the message "FATAL:
->> Module iwlwifi is in use." even if both interfaces are down.
->>     
->
-> Oh, I forgot one note: "make patch_kernel" is terribly broken. Any chance to 
-> get this fixed soon?
->   
->   
-confirmed on my box it resulted in deleting all kernel modules.
-(had to reinstall the kernel)
-(make modules in /lib/modules/`uname -r`/build after make patch_kernel)
-this was on fc6 x86_64
+> > This is all scary and generally not needed spew but handy for debug.
+> >
+> > Looks like a PCMCIA layer bug. It should be respecting IRQ assignment
+> > (not just allocation) by other resource configuration layers.
+> 
+> Ah thanks for taking a look. I was slowly getting the impression from older 
+> lkml posts, that this isn't really what stopped my wifi from functioning. It 
+> seems there are other reasons and i just stumbled across this harmless 
+> message in dmesg.. Thanks for clearing it up :)
 
+The problem is we don't know what the PNP layer does about the routing
+here. It could be breaking the wifi but it's only a possible cause. It
+still shouldn't be using IRQ 4 after pnp had it.
 
+I'm also a little suprised to see both pnp and ACPI triggering. I thought
+it wasn't permitted to use both at once but that really wants asking of
+an ACPI guru like Len.
+
+Does it work if you compile out PNP bios support ?
