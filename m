@@ -1,132 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965282AbXBLSbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965284AbXBLScA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965282AbXBLSbv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 13:31:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965284AbXBLSbu
+	id S965284AbXBLScA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 13:32:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965287AbXBLSb7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 13:31:50 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:34294 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965282AbXBLSbt (ORCPT
+	Mon, 12 Feb 2007 13:31:59 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:27760 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965284AbXBLSb5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 13:31:49 -0500
-From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: akpm@linux-foundation.org, "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>,
-       Michael Halcrow <mhalcrow@us.ibm.com>
-Subject: [PATCH 2/3] fs/: Move eCryptfs & Unionfs config options into a sub-menu
-Date: Mon, 12 Feb 2007 13:30:51 -0500
-Message-Id: <11713050533314-git-send-email-jsipek@cs.sunysb.edu>
-X-Mailer: git-send-email 1.5.0.rc3.g5057
-In-Reply-To: <11713050521708-git-send-email-jsipek@cs.sunysb.edu>
-References: <11713050521708-git-send-email-jsipek@cs.sunysb.edu>
+	Mon, 12 Feb 2007 13:31:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mCbyjBvubj1WmLZ5JVwuLfSHbXtlq331V2Vd+sciM2VaHyXfoMrBN5OwAos/1SJe6YiXwSTbbxJRNLJTD6NXr32gEK/ecK9wBIPMzkr7SWEUl9GV63+qYUQe+WtG6TznWPQR0FSEWR8YFSkOR7TX8rZaAy3qqkhwpnmejj1vQKo=
+Message-ID: <d120d5000702121031o1ea5ff20lf4e0946c8c1e2980@mail.gmail.com>
+Date: Mon, 12 Feb 2007 13:31:52 -0500
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "=?ISO-8859-1?Q?N=E9meth_M=E1rton?=" <nm127@freemail.hu>
+Subject: Re: [PATCH] input: extend EV_LED
+Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+In-Reply-To: <45CEE9AB.2020208@freemail.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <45CEE9AB.2020208@freemail.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Using The Misc filesystems sub-menu for layered/stackable filesystems only
-makes it harder for users to find eCryptfs/Unionfs.
+On 2/11/07, Németh Márton <nm127@freemail.hu> wrote:
+>
+> Extend EV_LED handling code so that it can handle not
+> only two states (on/off) but also others. For example
+> a LED can blink using hardware acceleration. The code
+> changed so that it is similar to the code at EV_SND.
+>
 
-Additionally, the menu can be easily turned into a menuconfig, which could
-be used to turn on any VFS/VM functionality required by layered filesystems
-(there is none at the moment).
+Hi,
 
-Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
-Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
----
- fs/Kconfig |   66 +++++++++++++++++++++++++++++++----------------------------
- 1 files changed, 35 insertions(+), 31 deletions(-)
+I am not sure we would need this, could you explain what are you
+trying to use input leds for?
 
-diff --git a/fs/Kconfig b/fs/Kconfig
-index cf46c71..99ea991 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -1041,6 +1041,41 @@ config CONFIGFS_FS
- 
- endmenu
- 
-+menu "Layered filesystems"
-+
-+config ECRYPT_FS
-+	tristate "eCrypt filesystem layer support (EXPERIMENTAL)"
-+	depends on EXPERIMENTAL && KEYS && CRYPTO
-+	help
-+	  Encrypted filesystem that operates on the VFS layer.  See
-+	  <file:Documentation/ecryptfs.txt> to learn more about
-+	  eCryptfs.  Userspace components are required and can be
-+	  obtained from <http://ecryptfs.sf.net>.
-+
-+	  To compile this file system support as a module, choose M here: the
-+	  module will be called ecryptfs.
-+
-+config UNION_FS
-+	tristate "Union file system (EXPERIMENTAL)"
-+	depends on EXPERIMENTAL
-+	help
-+	  Unionfs is a stackable unification file system, which appears to
-+	  merge the contents of several directories (branches), while keeping
-+	  their physical content separate.
-+
-+	  See <http://www.unionfs.org> for details
-+
-+config UNION_FS_XATTR
-+	bool "Unionfs extended attributes"
-+	depends on UNION_FS
-+	help
-+	  Extended attributes are name:value pairs associated with inodes by
-+	  the kernel or by users (see the attr(5) manual page).
-+
-+	  If unsure, say N.
-+
-+endmenu
-+
- menu "Miscellaneous filesystems"
- 
- config ADFS_FS
-@@ -1093,18 +1128,6 @@ config AFFS_FS
- 	  To compile this file system support as a module, choose M here: the
- 	  module will be called affs.  If unsure, say N.
- 
--config ECRYPT_FS
--	tristate "eCrypt filesystem layer support (EXPERIMENTAL)"
--	depends on EXPERIMENTAL && KEYS && CRYPTO
--	help
--	  Encrypted filesystem that operates on the VFS layer.  See
--	  <file:Documentation/ecryptfs.txt> to learn more about
--	  eCryptfs.  Userspace components are required and can be
--	  obtained from <http://ecryptfs.sf.net>.
--
--	  To compile this file system support as a module, choose M here: the
--	  module will be called ecryptfs.
--
- config HFS_FS
- 	tristate "Apple Macintosh file system support (EXPERIMENTAL)"
- 	depends on BLOCK && EXPERIMENTAL
-@@ -1554,25 +1577,6 @@ config UFS_DEBUG
- 	  Y here.  This will result in _many_ additional debugging messages to be
- 	  written to the system log.
- 
--config UNION_FS
--	tristate "Union file system (EXPERIMENTAL)"
--	depends on EXPERIMENTAL
--	help
--	  Unionfs is a stackable unification file system, which appears to
--	  merge the contents of several directories (branches), while keeping
--	  their physical content separate.
--
--	  See <http://www.unionfs.org> for details
--
--config UNION_FS_XATTR
--	bool "Unionfs extended attributes"
--	depends on UNION_FS
--	help
--	  Extended attributes are name:value pairs associated with inodes by
--	  the kernel or by users (see the attr(5) manual page).
--
--	  If unsure, say N.
--
- endmenu
- 
- menu "Network File Systems"
+Generally speaking leds within input subsystem are supposed to be very
+simple on/off objects, mostly for reporting state of input devices
+(keyboards), I am not even sure that LED_MAIL and LED_CHARGING make
+much sense here. For more compex objects(blinking/different
+colors/different brightness) we have a separate LED subsystem
+(drivers/leds).
+
 -- 
-1.5.0.rc3.g5057
-
+Dmitry
