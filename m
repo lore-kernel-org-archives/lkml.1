@@ -1,52 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964981AbXBLQ5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965003AbXBLQ6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964981AbXBLQ5u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 11:57:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964987AbXBLQ5X
+	id S965003AbXBLQ6Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 11:58:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964979AbXBLQ5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 11:57:23 -0500
-Received: from mail.suse.de ([195.135.220.2]:47937 "EHLO mx1.suse.de"
+	Mon, 12 Feb 2007 11:57:21 -0500
+Received: from mail.suse.de ([195.135.220.2]:47934 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964981AbXBLQvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S964987AbXBLQvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 12 Feb 2007 11:51:36 -0500
 From: Andi Kleen <ak@suse.de>
 References: <20070212551.664370000@suse.de>
 In-Reply-To: <20070212551.664370000@suse.de>
-To: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH x86 for review III] [10/29] i386: don't include bugs.h
-Message-Id: <20070212165130.450D413FCB@wotan.suse.de>
-Date: Mon, 12 Feb 2007 17:51:30 +0100 (CET)
+To: patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH x86 for review III] [15/29] x86_64: Fix wrong gcc check in bitops.h
+Message-Id: <20070212165135.9138013E1B@wotan.suse.de>
+Date: Mon, 12 Feb 2007 17:51:35 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Andrew Morton <akpm@osdl.org>
-
-That stupid non-inlined-static function in bugs.h causes:
-
-include/asm/bugs.h:186: warning: 'check_bugs' defined but not used
-
-But fortunately the include isn't needed.
-
-Cc: Andi Kleen <ak@muc.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+gcc 5.0 will likely not have the constraint problem
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
+ include/asm-x86_64/bitops.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- arch/i386/kernel/alternative.c |    1 -
- 1 file changed, 1 deletion(-)
-
-Index: linux/arch/i386/kernel/alternative.c
+Index: linux/include/asm-x86_64/bitops.h
 ===================================================================
---- linux.orig/arch/i386/kernel/alternative.c
-+++ linux/arch/i386/kernel/alternative.c
-@@ -4,7 +4,6 @@
- #include <linux/list.h>
- #include <asm/alternative.h>
- #include <asm/sections.h>
--#include <asm/bugs.h>
+--- linux.orig/include/asm-x86_64/bitops.h
++++ linux/include/asm-x86_64/bitops.h
+@@ -7,7 +7,7 @@
  
- static int no_replacement    = 0;
- static int smp_alt_once      = 0;
+ #include <asm/alternative.h>
+ 
+-#if __GNUC__ < 4 || __GNUC_MINOR__ < 1
++#if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 1)
+ /* Technically wrong, but this avoids compilation errors on some gcc
+    versions. */
+ #define ADDR "=m" (*(volatile long *) addr)
