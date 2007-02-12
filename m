@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030221AbXBLWi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030220AbXBLWjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030221AbXBLWi5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 17:38:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030216AbXBLWit
+	id S1030220AbXBLWjV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 17:39:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030216AbXBLWi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 17:38:49 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:45994 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030220AbXBLWiq (ORCPT
+	Mon, 12 Feb 2007 17:38:57 -0500
+Received: from nigel.suspend2.net ([203.171.70.205]:36268 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030220AbXBLWi4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 17:38:46 -0500
-From: Andi Kleen <andi@firstfloor.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 2.6.21 review I] [11/25] x86: default to physical mode on hotplug CPU kernels
-Date: Mon, 12 Feb 2007 23:36:23 +0100
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-References: <200702101250.142420000@suse.de> <20070210115023.D19ED13DCE@wotan.suse.de> <m1vei9ymkh.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1vei9ymkh.fsf@ebiederm.dsl.xmission.com>
-Organization: -
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 12 Feb 2007 17:38:56 -0500
+Subject: Re: NAK new drivers without proper power management?
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Tilman Schmidt <tilman@imap.cc>, Pavel Machek <pavel@ucw.cz>,
+       Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200702122106.25939.rjw@sisk.pl>
+References: <1171058269.1484.64.camel@nigel.suspend2.net>
+	 <45CFB06B.5080102@imap.cc> <1171253309.5473.15.camel@nigel.suspend2.net>
+	 <200702122106.25939.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Tue, 13 Feb 2007 09:38:54 +1100
+Message-Id: <1171319934.4081.55.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702122336.23826.andi@firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 11 February 2007 12:13, Eric W. Biederman wrote:
-> Andi Kleen <ak@suse.de> writes:
+Hi.
+
+On Mon, 2007-02-12 at 21:06 +0100, Rafael J. Wysocki wrote:
+> On Monday, 12 February 2007 05:08, Nigel Cunningham wrote:
+> > Nope. I'm assuming that the driver author knows what needs to be done to
+> > get the driver out of whatever state the BIOS puts it in to start with,
+> > and into an operational state, and that they therefore also know what
+> > needs to be done to take it out of the operational state again. I'm
+> > admitting that there's also another state - the post suspend-to-ram
+> > driver state - that they may not know how to deal with. But for
+> > suspend-to-disk, if you know how to get the driver to work in the first
+> > place, you know enough to stop it working (.suspend) and start it up
+> > again (.resume) for the hibernate case at least.
 > 
-> > From: Ingo Molnar <mingo@elte.hu>
-> >
-> > Default to physical mode on hotplug CPU kernels.  Furher simplify and clean up
-> > the APIC initialization code.
+> We're talking about _both_ the STR and STD.  The drivers that have problems
+> with the STR cannot be regarded as suspend/resume-safe IMO.
+
+Yeah, I'm not disagreeing at all. I'm just admitting my bias toward the
+bit I concentrate on more.
+
+[...]
+
+> > Mmm, so that's a case where we need to prod those who write
+> > documentation and bus support first. You're probably closer! :)
 > 
-> Where is the code that the subject describes?
+> Actually, the lack of documentation is a major problem that we all should
+> try to fix in the first place.  Unfortunately the code has been recently
+> changing quite often, so that's difficult.
 
-True, that seems to be missing.
+Yeah.
 
-I agree that the patch seems to consist mostly of renaming doesn't make
-it any easier to read.
+Nigel
 
-And it's worrying that it doesn't handle the hotplug case at all.
-
-> I have two problems here.
-> 
-> - I don't see anything handling the hotplug case, and forcing us to
->   physical mode.
-> - Ingo's other patch asserts that hotplug should be made to handle
->   logical deliver mode.
-> 
-> With logical deliver mode the experimental evidence is that the
-> destination cpu is a hint, 
-
-What experimental evidence did you have? 
-
-But I'm tempted to drop this unless the hotplug mystery can be cleared
-up. There was past information that logical is unsafe for hotplug.
-
-Ingo? Suresh? 
-
--Andi
