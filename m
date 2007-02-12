@@ -1,67 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933125AbXBLIvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964776AbXBLIwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933125AbXBLIvb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 03:51:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933126AbXBLIvb
+	id S964776AbXBLIwy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 03:52:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964784AbXBLIwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 03:51:31 -0500
-Received: from smtp.ono.com ([62.42.230.12]:42423 "EHLO resmaa06.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933125AbXBLIva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 03:51:30 -0500
-Date: Mon, 12 Feb 2007 09:51:27 +0100
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Re: Bio device too big | kernel BUG at
- mm/filemap.c:537!
-Message-ID: <20070212095127.7ec4b22d@werewolf-wl>
-In-Reply-To: <17865.3776.511594.763544@notabene.brown>
-References: <1170734919.15636.1173102761@webmail.messagingengine.com>
-	<20070205203750.7be7f772.akpm@linux-foundation.org>
-	<17864.4339.925700.626157@notabene.brown>
-	<17865.3776.511594.763544@notabene.brown>
-X-Mailer: Claws Mail 2.7.2cvs38 (GTK+ 2.10.9; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Feb 2007 03:52:54 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:26269 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964776AbXBLIwx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 03:52:53 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:user-agent:date:from:to:cc:subject;
+	b=Hb5jUc2S5deVbO+EZWyKVWyYsSn2HU65MzSdvrQirViA/Hl35QPMeqC3kbRjeZRwi
+	mF2FLidBdmSG+Qq8M7vrg==
+Message-Id: <20070212081521.808338000@menage.corp.google.com>
+User-Agent: quilt/0.45-1
+Date: Mon, 12 Feb 2007 00:15:21 -0800
+From: menage@google.com
+To: akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
+       serue@us.ibm.com, vatsa@in.ibm.com, ebiederm@xmission.com
+Cc: ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       rohitseth@google.com, mbligh@google.com, winget@google.com,
+       containers@lists.osdl.org, devel@openvz.org
+Subject: [PATCH 0/7] containers (V7): Generic Process Containers
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Feb 2007 10:26:56 +1100, Neil Brown <neilb@suse.de> wrote:
-
-> On Tuesday February 6, neilb@suse.de wrote:
-> > 
-> > This patch should fix the worst of the offences, but I'd like to
-> > experiment and think a bit more before I submit it to stable.
-> > And probably test it too - as yet I have only compile and brain
-> > tested.
-> 
-> Ok, I've experimented and tested and now I know what was causing the
-> double-unlock.
-> 
-> The following patch is suitable for 2.6.20.1 and mainline.  There is
-> room for a bit more improvement, but only for performance, not
-> correctness.  I'll look into that later.
-> 
-
-> +	blk_recount_segments(q, bi);
-
-I needed to export blk_recount_segments() to build raid as a module:
-
---- linux/block/ll_rw_blk.c.orig	2007-02-12 09:46:55.000000000 +0100
-+++ linux/block/ll_rw_blk.c	2007-02-12 09:45:57.000000000 +0100
-@@ -1258,6 +1258,8 @@
- 	bio->bi_flags |= (1 << BIO_SEG_VALID);
- }
- 
-+EXPORT_SYMBOL(blk_recount_segments);
-+
- static int blk_phys_contig_segment(request_queue_t *q, struct bio *bio,
- 				   struct bio *nxt)
- {
-
 --
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2007.1 (Cooker) for i586
-Linux 2.6.19-jam06 (gcc 4.1.2 20070115 (prerelease) (4.1.2-0.20070115.1mdv2007.1)) #1 SMP PREEMPT
+
+This is an update to my multi-hierarchy multi-subsystem generic
+process containers patch. Changes since V6 (22nd December) include:
+
+- updated to 2.6.20
+
+- added more details about multiple hierarchy support in the
+  documentation
+
+- reduced the per-task memory overhead to one pointer (previously it
+  was one pointer for each hierarchy). Now each task has
+  a pointer to a container_group, which holds the pointers to the
+  containers (one per active hierarchy) that the task is attached to
+  and the associated per-subsystem state (one per active subsystem).
+  This container group is shared (with reference counts) between all
+  tasks that have the same set of container mappings.
+
+- added API support for binding/unbinding subsystems to/from active
+  hierarchies, by remounting with -oremount,<new-subsys-list>. Currently
+  this fails with EBUSY if the hierarchy has a child containers; full
+  implementation support is left to a later patch.
+
+- added a bind() subsystem callback to indicate when a subsystem is
+  moved between hierarchies
+
+- added container_clone(subsys, task), which creates a child container
+  for the hierarchy that the specified subsystem is bound to, and
+  moves the given task into that container. An example use of this
+  would be in sys_unshare, which could, if the namespace container
+  subsystem is active, create a child container when the new namespace
+  is created.
+
+- temporarily removed the "release agent" support. It's only currently
+  used by CPUsets, and intrudes somewhat on the per-container
+  reference counting. If necessary it can be re-added, either as a
+  generic subsystem feature or a CPUset-specific feature, via a kernel
+  thread that periodically polls containers that have been designated
+  as notify_on_release to see if they are releasable
+
+Generic Process Containers
+--------------------------
+
+There have recently been various proposals floating around for
+resource management/accounting and other task grouping subsystems in
+the kernel, including ResGroups, User BeanCounters, NSProxy
+containers, and others.  These all need the basic abstraction of being
+able to group together multiple processes in an aggregate, in order to
+track/limit the resources permitted to those processes, or control
+other behaviour of the processes, and all implement this grouping in
+different ways.
+
+Already existing in the kernel is the cpuset subsystem; this has a
+process grouping mechanism that is mature, tested, and well documented
+(particularly with regards to synchronization rules).
+
+This patchset extracts the process grouping code from cpusets into a
+generic container system, and makes the cpusets code a client of
+the container system.
+
+It also provides several example clients of the container system,
+including ResGroups, BeanCounters and namespace proxy.
+
+The change is implemented in three stages, plus four example
+subsystems that aren't necessarily intended to be merged as part of
+this patch set, but demonstrate the applicability of the framework.
+
+1) extract the process grouping code from cpusets into a standalone system
+
+2) remove the process grouping code from cpusets and hook into the
+   container system
+
+3) convert the container system to present a generic multi-hierarchy
+   API, and make cpusets a client of that API
+
+4) example of a simple CPU accounting container subsystem
+
+5) example of implementing ResGroups and its numtasks controller over
+   generic containers
+
+6) example of implementing BeanCounters and its numfiles counter over
+   generic containers
+
+7) example of integrating the namespace isolation code (sys_unshare()
+   or various clone flags) with generic containers, allowing virtual
+   servers to take advantage of other resource control efforts.
+
+The intention is that the various resource management and
+virtualization efforts can also become container clients, with the
+result that:
+
+- the userspace APIs are (somewhat) normalised
+
+- it's easier to test out e.g. the ResGroups CPU controller in
+ conjunction with the BeanCounters memory controller, or use either of
+them as the resource-control portion of a virtual server system.
+
+- the additional kernel footprint of any of the competing resource
+ management systems is substantially reduced, since it doesn't need
+ to provide process grouping/containment, hence improving their
+ chances of getting into the kernel
+
+Signed-off-by: Paul Menage <menage@google.com>
