@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030201AbXBLWIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030202AbXBLWJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030201AbXBLWIJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 17:08:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030202AbXBLWIJ
+	id S1030202AbXBLWJv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 17:09:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030203AbXBLWJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 17:08:09 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:43380 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030201AbXBLWIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 17:08:07 -0500
-Date: Mon, 12 Feb 2007 14:08:00 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Regress for 8139too in 2.6.20
-Message-Id: <20070212140800.4d9378ad.akpm@linux-foundation.org>
-In-Reply-To: <45CFAED5.2090808@lwfinger.net>
-References: <45CFAED5.2090808@lwfinger.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 12 Feb 2007 17:09:51 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:62990 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030202AbXBLWJv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 17:09:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=totEX9gvLGhRKxfOWmARfWIwPNUFT0FCXGMzE9wGU9XFn/UVy/vnec6Nu4A2wtPjbvtUV7MZ21sCi0bHZ0yggxdlYxT9oTJPoeotiMtEgl/qtmD973CL6tE7g/c7ykuR3zBCfHM6/bwjqv+dHgmUAJ8+CT/wIXpeomJ74oFxdyM=
+Message-ID: <12c511ca0702121409t30e126dfh445d13dd2f637e08@mail.gmail.com>
+Date: Mon, 12 Feb 2007 14:09:49 -0800
+From: "Tony Luck" <tony.luck@intel.com>
+To: "Oleg Verych" <olecom@flower.upol.cz>
+Subject: Re: [patch 3/3, resend] kbuild: correctly skip tilded backups in localversion files
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Jesper Juhl" <jesper.juhl@gmail.com>,
+       "Roman Zippel" <zippel@linux-m68k.org>,
+       "Bastian Blank" <bastian@waldi.eu.org>,
+       "Sam Ravnborg" <sam@ravnborg.org>
+In-Reply-To: <20070206012208.050237000@flower.upol.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070206011819.160359000@flower.upol.cz>
+	 <20070206012208.050237000@flower.upol.cz>
+X-Google-Sender-Auth: 613f6d9594d01996
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sun, 11 Feb 2007 18:03:33 -0600 Larry Finger <Larry.Finger@lwfinger.net> wrote:
-> In kernel version 2.6.20, my network interface, a Uniden PCN 300 PCMCIA card that uses the 8139too
-> driver fails to initialize with Yenta and 8139too as modules. It worked correctly in 2.6.19. Using
-> git bisect, the bad commit is shown below:
-> 
-> finger@sonylap:~/linux-2.6> git bisect good
-> 8d610dd52dd1da696e199e4b4545f33a2a5de5c6 is first bad commit
-> commit 8d610dd52dd1da696e199e4b4545f33a2a5de5c6
-> Author: Linus Torvalds <torvalds@woody.osdl.org>
-> Date:   Mon Dec 11 12:12:04 2006 -0800
-> 
->     Make sure we populate the initroot filesystem late enough
-> 
->     We should not initialize rootfs before all the core initializers have
->     run.  So do it as a separate stage just before starting the regular
->     driver initializers.
-> 
->     Signed-off-by: Linus Torvalds <torvalds@osdl.org>
-> 
-> :040000 040000 12bc13def90d15921d41d2b285854b3e157a970f f936e01f6b1b2b75478484861d34e81830c73860 M
->     include
-> :040000 040000 5673719c3f6b47b329cfc9554c112077634a9b19 9c2e768964af1500d62849836b9f8e801fe7f29e M
->     init
-> 
-> 
-> If Yenta is built into the kernel, rather than a module, it works again with 2.6.20.
-> 
+On 2/5/07, Oleg Verych <olecom@flower.upol.cz> wrote:
+> kbuild: correctly skip tilded backups in localversion files
+>
+>  Tildes as in path as in filenames are handled correctly now:
+>  only files, containing tilde '~', are backups, thus are not valid.
 
-That's a bit surprising - the initcall levels don't affect modules. 
-Presumably something went wrong in core kernel which later caused yenta
-and/or 8139too to fail.
+Git bisect fingers this patch (which is in Linus' tree as commit
+76c329563c5b8663ef27eb1bd195885ab826cbd0) as the culprit
+for double adding the contents of the localversion file.  E.g.
 
-Have you tried diffing the before- and after-dmesgs to see if that particular
-commit has caused any interesting differences?
+$ echo -tiger-smp > localversion
+$ make prepare
+$ make kernelrelease
+2.6.20-tiger-smp-tiger-smp
 
-And are you able to test any other cardbus devices to see whether it's
-specific to 8139too?
-
+-Tony
