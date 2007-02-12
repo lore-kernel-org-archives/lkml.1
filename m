@@ -1,83 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750935AbXBLAEF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750940AbXBLAES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750935AbXBLAEF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Feb 2007 19:04:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750940AbXBLAEE
+	id S1750940AbXBLAES (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Feb 2007 19:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750939AbXBLAES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Feb 2007 19:04:04 -0500
-Received: from customer-domains.icp-qv1-irony15.iinet.net.au ([203.59.1.175]:61186
-	"EHLO customer-domains.icp-qv1-irony15.iinet.net.au"
+	Sun, 11 Feb 2007 19:04:18 -0500
+Received: from mail.screens.ru ([213.234.233.54]:36943 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750933AbXBLAEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Feb 2007 19:04:01 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CADY+z0V8qGxQdGdsb2JhbACgfwEBAQ
-X-IronPort-AV: i="4.13,311,1167580800"; 
-   d="scan'208"; a="52499535:sNHT327483420"
-From: "Marc Marais" <marcm@liquid-nexus.net>
-To: Neil Brown <neilb@suse.de>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: md: md6_raid5 crash 2.6.20
-Date: Mon, 12 Feb 2007 08:03:57 +0800
-Message-Id: <20070212000042.M73586@liquid-nexus.net>
-In-Reply-To: <17871.37497.786198.834303@notabene.brown>
-References: <20070211071527.M31642@liquid-nexus.net> <17871.37497.786198.834303@notabene.brown>
-X-Mailer: Open WebMail 2.51 20050627
-X-OriginatingIP: 159.99.34.18 (marc)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=iso-8859-1
+	id S1750940AbXBLAER (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Feb 2007 19:04:17 -0500
+Date: Mon, 12 Feb 2007 03:04:10 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, David Howells <dhowells@redhat.com>,
+       Daniel Drake <dsd@gentoo.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] make queue_delayed_work() friendly to flush_fork()
+Message-ID: <20070212000410.GA91@tv-sign.ru>
+References: <20070210215040.GA2213@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070210215040.GA2213@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Feb 2007 09:02:33 +1100, Neil Brown wrote
-> On Sunday February 11, marcm@liquid-nexus.net wrote:
-> > Greetings,
-> > 
-> > I've been running md on my server for some time now and a few days ago one of
-> > the (3) drives in the raid5 array starting giving read errors. The result was
-> > usually system hangs and this was with kernel 2.6.17.13. I upgraded to the
-> > latest production 2.6.20 kernel and experienced the same behaviour.
+On 02/11, Oleg Nesterov wrote:
 > 
-> System hangs suggest a problem with the drive controller.  However
-> this "kernel BUG" is something newly introduced in 2.6.20 which 
-> should be fixed in 2.6.20.1.  Patch is below.
-> 
-> If you still get hangs with this patch installed, then please report
-> detail, and probably copy to linux-ide@vger.kernel.org.
-> 
-> NeilBrown
-> 
-> Fix various bugs with aligned reads in RAID5.
-> 
-> It is possible for raid5 to be sent a bio that is too big
-> for an underlying device.  So if it is a READ that we
-> pass stright down to a device, it will fail and confuse
-> RAID5.
-> 
-> So in 'chunk_aligned_read' we check that the bio fits within the
-> parameters for the target device and if it doesn't fit, fall back
-> on reading through the stripe cache and making lots of one-page
-> requests.
-> 
-> Note that this is the earliest time we can check against the device
-> because earlier we don't have a lock on the device, so it could 
-> change underneath us.
-> 
-> Also, the code for handling a retry through the cache when a read
-> fails has not been tested and was badly broken.  This patch fixes 
-> that code.
-> 
-> Signed-off-by: Neil Brown <neilb@suse.de>
-> 
+> This makes impossible to use flush_fork(delayed_work->work) in addition
+> to cancel_delayed_work/cancel_rearming_delayed_work, not good.
 
-Thanks for the quick response Neil unfortunately the kernel doesn't build with
-this patch due to a missing symbol:
+It turns out this patch is in fact bug-fix.
 
-WARNING: "blk_recount_segments" [drivers/md/raid456.ko] undefined!
+I didn't notice that we already have flush_fork(delayed_work) calls!
 
-Is that in another file that needs patching or within raid5.c?
+This means that
+	workqueue-make-cancel_rearming_delayed_workqueue-work-on-idle-dwork.patch
+	and this patch
 
-Marc
+should go just after
+	implement-flush_work.patch
 
---
+Sorry for inconvenience, please apply.
+
+Oleg.
+
