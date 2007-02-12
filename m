@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965036AbXBLRto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965037AbXBLRwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965036AbXBLRto (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 12:49:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965038AbXBLRtn
+	id S965037AbXBLRwW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 12:52:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965039AbXBLRwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 12:49:43 -0500
-Received: from asphyx.net ([82.168.54.189]:4752 "EHLO esther.asphyx.net"
+	Mon, 12 Feb 2007 12:52:22 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:56718 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965036AbXBLRtn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 12:49:43 -0500
-X-Greylist: delayed 716 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Feb 2007 12:49:43 EST
-Subject: Which CPU for VIA C7/Esther?
-From: Mark de Vries <mark@asphyx.net>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: asphyx.net
-Date: Mon, 12 Feb 2007 18:37:38 +0100
-Message-Id: <1171301858.3557.6.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	id S965037AbXBLRwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 12:52:21 -0500
+Date: Mon, 12 Feb 2007 18:49:39 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Dave Jones <davej@redhat.com>
+cc: Valerie Henson <val_henson@linux.intel.com>,
+       Michael Kerrisk <mtk-manpages@gmx.net>, val_henson@linux.interl.com,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Documenting MS_RELATIME
+In-Reply-To: <20070212154010.GC7617@redhat.com>
+Message-ID: <Pine.LNX.4.61.0702121848480.26360@yvahk01.tjqt.qr>
+References: <45CE0737.6010103@gmx.net> <20070211005400.GC6849@redhat.com>
+ <20070212065503.GC20919@nifty> <20070212154010.GC7617@redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-I've been googeling for about an hour now and can't find an answer to:
-What type of CPU should I select when compiling a recent 2.6 kernel if I
-have a VIA Esther CPU?
+On Feb 12 2007 10:40, Dave Jones wrote:
+> > > Whilst on the subject of RELATIME, is there any good reason why
+> > > not to make this a default mount option ?
+> > 
+> > Ubuntu has been shipping with noatime as the default for some time
+> > now, with no obvious problems (I'm running Ubuntu).  I see relatime as
+> > an improvement on noatime.
+>
+>The one problem with noatime is that mutt's 'new mail arrived' breaks
 
-Please CC me, I'm not on the list.
-
-Thanks & Regards,
-Mark.
-
-~$ cat /proc/cpuinfo
-processor       : 0
-vendor_id       : CentaurHauls
-cpu family      : 6
-model           : 10
-model name      : VIA Esther processor 1200MHz
-stepping        : 9
-cpu MHz         : 1200.189
-cache size      : 128 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce apic sep mtrr pge cmov
-pat clflush acpi mmx fxsr sse sse2 tm nx up pni est tm2 rng rng_en ace
-ace_en
-bogomips        : 2407.15
+Just why does not it use mtime then to check for New Mail Arrived, like 
+bash does?
 
 
+Jan
+-- 
+ft: http://freshmeat.net/p/chaostables/
