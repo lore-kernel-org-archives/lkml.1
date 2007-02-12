@@ -1,101 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964965AbXBLPWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932944AbXBLP2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964965AbXBLPWg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 10:22:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964969AbXBLPWg
+	id S932944AbXBLP2e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 10:28:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932821AbXBLP2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 10:22:36 -0500
-Received: from mpemail.mpe.mpg.de ([130.183.137.110]:47587 "EHLO
-	mpemail.mpe.mpg.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964965AbXBLPWf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 10:22:35 -0500
-X-Greylist: delayed 4813 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Feb 2007 10:22:35 EST
-From: "Martin A. Fink" <fink@mpe.mpg.de>
-Organization: MPE
-To: linux-kernel@vger.kernel.org
-Subject: SATA-performance: Linux vs. FreeBSD
-Date: Mon, 12 Feb 2007 15:02:17 +0100
-User-Agent: KMail/1.8
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Mon, 12 Feb 2007 10:28:34 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:46999 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932944AbXBLP2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 10:28:33 -0500
+Date: Mon, 12 Feb 2007 20:57:38 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: menage@google.com
+Cc: akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
+       serue@us.ibm.com, ebiederm@xmission.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       rohitseth@google.com, mbligh@google.com, winget@google.com,
+       containers@lists.osdl.org, devel@openvz.org
+Subject: Re: [PATCH 3/7] containers (V7): Add generic multi-subsystem API to containers
+Message-ID: <20070212152738.GD7526@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070212081521.808338000@menage.corp.google.com> <20070212085104.485337000@menage.corp.google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702121502.17130.fink@mpe.mpg.de>
+In-Reply-To: <20070212085104.485337000@menage.corp.google.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear all,
+On Mon, Feb 12, 2007 at 12:15:24AM -0800, menage@google.com wrote:
+> +/*
+> + * Call css_get() to hold a reference on the container; following a
+> + * return of 0, this container subsystem state object is guaranteed
+> + * not to be destroyed until css_put() is called on it.  A non-zero
+> + * return code indicates that a reference could not be taken.
+> + *
+> + */
+> +
 
-I did some performance tests that made me really wonder:
+Why can't we reuse container->count (or container_group->ref) to
+refcount the per-subsystem object attached to a container? I think
+that is how it is done for cpusets? That would make css_get/put
+unnecessary?
 
-My Hardware:
-Asus P5LD2 board with Intel i945P chipset, ICH7R southbridge
-CPU Intel Core 2 Duo E6300 at 1.86 GHz, 2 MB Cache
-1 GB RAM
-My Software:
-OpenSuSE 10.2 with Linux kernel 2.6.18, x86-64 architecture
-FreeBSD 6.2
+> +static inline int css_get(struct container_subsys_state *css)
+> +{
+> +	int retval = 0;
+> +	unsigned long flags;
+> +	/* Synchronize with container_rmdir() */
+> +	spin_lock_irqsave(&css->refcnt_lock, flags);
+> +	if (atomic_read(&css->refcnt) >= 0) {
+> +		/* Container is still alive */
+> +		atomic_inc(&css->refcnt);
+> +	} else {
+> +		/* Container removal is in progress */
+> +		retval = -EINVAL;
+> +	}
+> +	spin_unlock_irqrestore(&css->refcnt_lock, flags);
+> +	return retval;
+> +}
 
-Testdrives:
-1. HDD: Seagate ST3250820AS RPM 7200.9, 8 MB Cache, 250 GB, SATA-II
-   (Harddisk Drive)
-2. SSD: Adtron AF25FB, 27GB, SATA Revision 1.0a (Solid State Disk)
-
-What I did:
-I wrote blocks of 1 MB size to file. Each 1 GB I made a fsync and took the 
-time. For those tests with filesystems I wrote files of 1 GB size, otherwise 
-I just wrote to the raw device.
-
-Results: -1-
-
-Test					OpenSuSE(AHCI)			FreeBSD(AHCI)
----------------------------------------------------------------------------------------------------------------------------------------
-SSD(vfat 25GB)			41+/-2 MB/s at 4-10%		15+/-0 MB/s at 2% CPU
-SSD(raw  25GB) 		26+/-1 MB/s at 4-10% CPU	48+/-0 MB/s at 1% CPU
-SSD(ext3 25GB)		39+/-5 MB/s at 10-15% CPU	34+/-0 MB/s at 14% CPU
-SSD(ext2 25GB)		42+/-1 MB/s at 10-15% CPU	32+/-0 MB/s at 10% CPU
----------------------------------------------------------------------------------------------------------------------------------------
-
-Test					OpenSuSE (AHCI off)		FreeBSD (AHCI off)
----------------------------------------------------------------------------------------------------------------------------------------
-SSD(vfat 25GB)			22+/-4 MB/s at 6-19% CPU	--
-SSD(raw  25GB)		33+/-4 MB/s at 7-14% CPU	41+/-0 MB/s at 1% CPU
-SSD(ext2 25GB)		27+/-6 MB/s at 6-14% CPU	--
----------------------------------------------------------------------------------------------------------------------------------------
-
-Question 1:
-Can anybody explain to me, why writing to a SATA-I device with AHCI consumes 
-so much CPU time using Linux, while it takes almost no CPU time on FreeBSD 
-6.2 ? Especially comparing values of writing to the raw device?
-
-Question 2:
-Can anybody explain to me, why writing to a solid state disk (a kind of memory 
-that always has the same constant bandwidth) has such big standard errors in 
-writing rate using Linux (between 1 to 6 MB/s error) while FreeBSD gives an 
-almost constant writing rate (as one would expect it for a SSD) ?
-
-Question 3:
-Why is writing to a raw device in Linux slower than using e.g. ext2 ? And why 
-is Linux writing rate much lower (-12.5 % for the best case) compared to 
-writing rate of FreeBSD?
-
-Question 4:
-When writing to the SATA-II HDD Linux is around 10% slower than FreeBSD when 
-using ext3, but around as fast as FreeBSD when writing raw. Why?
-
-
-How can I improve the speed of Linux,
-Thanks for advices
-
-Martin
-
-PS: part of my testcode:
-
-  int fd=open(fileName, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-  (void)gettimeofday(&start, 0);
-  for (long bl=0; bl < blocksPerGigaByte; ++bl)
-    write(fd, block, blockSize);
-  fsync(fd);
-  (void)gettimeofday(&ende, 0);
+-- 
+Regards,
+vatsa
