@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964800AbXBLJJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964809AbXBLJJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964800AbXBLJJi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 04:09:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964802AbXBLJJB
+	id S964809AbXBLJJg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 04:09:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964797AbXBLJI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 04:09:01 -0500
-Received: from rere.qmqm.pl ([86.63.132.164]:50405 "EHLO rere.qmqm.pl"
+	Mon, 12 Feb 2007 04:08:57 -0500
+Received: from rere.qmqm.pl ([86.63.132.164]:33953 "EHLO rere.qmqm.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933076AbXBLJIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 04:08:50 -0500
-X-Greylist: delayed 3501 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Feb 2007 04:08:48 EST
-Date: Mon, 12 Feb 2007 01:37:38 +0100
+	id S933129AbXBLJIt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 04:08:49 -0500
+Date: Mon, 12 Feb 2007 01:37:59 +0100
 From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
 To: netfilter-devel@lists.netfilter.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.20 00/10] nfnetlink_log: patch series introduction
-Message-ID: <20070212003738.GA8262@rere.qmqm.pl>
+Subject: [PATCH 2.6.20 01/10] nfnetlink_log: don't count max(a,b) twice
+Message-ID: <20070212003759.GB8262@rere.qmqm.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear list,
+We don't need local nlbufsiz (skb size) as nfulnl_alloc_skb() takes
+the maximum anyway.
 
-After meeting a faint-hearted Linux kernel lately I decided to try myself
-at persuading it to not be afraid of NFLOG. This chat gave a series of
-ten commandments I present today. Take a look and agree or comment.
+Signed-off-by: Micha³ Miros³aw <mirq-linux@rere.qmqm.pl>
 
-Here's the list:
-
-  1. nfulnl_log_packet() - don't count the same thing twice
-* 2. nfulnl_log_packet() - don't leak references
-  3. nfulnl_log_packet() - don't copy-and-paste code
-* 4. nfulnl_timer() - don't touch freed memory
-  5. nfulnl_recv_config() - don't free what isn't there
-  6. nfulnl_recv_config() - don't touch dead animals
-* 7. instance_destroy() - remember of your appointments
-  8. instance_create() - don't lock the bookshelf for too long
-! 9. __build_packet_message() - don't forget your tail
- 10. instance_create() - wear your watch when going out
-
-Ninth is THE one. Those marked with stars are important I believe.
-Others came out on the way. I'll send them one-in-a-mail right after
-this message. I'm CC:ing this to LKML, so someone could put the important
-ones in -stable maybe?
-
-Have a nice reading,
-Michal Miroslaw
-
-PS. Please CC: me if you need my answer as I read the list's archive
-only and I am not subscribed.
-
+--- linux-2.6.20/net/netfilter/nfnetlink_log.c.orig	2007-02-10 18:25:14.000000000 +0100
++++ linux-2.6.20/net/netfilter/nfnetlink_log.c	2007-02-11 20:20:27.000000000 +0100
+@@ -596,7 +596,6 @@ nfulnl_log_packet(unsigned int pf,
+ 	struct nfulnl_instance *inst;
+ 	const struct nf_loginfo *li;
+ 	unsigned int qthreshold;
+-	unsigned int nlbufsiz;
+ 	unsigned int plen;
+ 
+ 	if (li_user && li_user->type == NF_LOG_TYPE_ULOG) 
+@@ -672,13 +671,8 @@ nfulnl_log_packet(unsigned int pf,
+ 		return;
+ 	}
+ 
+-	if (size > inst->nlbufsiz)
+-		nlbufsiz = size;
+-	else
+-		nlbufsiz = inst->nlbufsiz;
+-
+ 	if (!inst->skb) {
+-		if (!(inst->skb = nfulnl_alloc_skb(nlbufsiz, size))) {
++		if (!(inst->skb = nfulnl_alloc_skb(inst->nlbufsiz, size))) {
+ 			UDEBUG("error in nfulnl_alloc_skb(%u, %u)\n",
+ 				inst->nlbufsiz, size);
+ 			goto alloc_failure;
+@@ -691,7 +685,7 @@ nfulnl_log_packet(unsigned int pf,
+ 
+ 		__nfulnl_send(inst);
+ 
+-		if (!(inst->skb = nfulnl_alloc_skb(nlbufsiz, size))) {
++		if (!(inst->skb = nfulnl_alloc_skb(inst->nlbufsiz, size))) {
+ 			UDEBUG("error in nfulnl_alloc_skb(%u, %u)\n",
+ 				inst->nlbufsiz, size);
+ 			goto alloc_failure;
