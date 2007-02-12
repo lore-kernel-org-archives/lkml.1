@@ -1,116 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965035AbXBLR4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965039AbXBLR4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965035AbXBLR4f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 12:56:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965031AbXBLR4f
+	id S965039AbXBLR4g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 12:56:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965038AbXBLR4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 12:56:35 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:9057 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965035AbXBLR4e (ORCPT
+	Mon, 12 Feb 2007 12:56:36 -0500
+Received: from mpemail.mpe.mpg.de ([130.183.137.110]:38158 "EHLO
+	mpemail.mpe.mpg.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965039AbXBLR4f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 12:56:34 -0500
-Message-ID: <45D0AA49.8060006@ru.mvista.com>
-Date: Mon, 12 Feb 2007 20:56:25 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Mon, 12 Feb 2007 12:56:35 -0500
+From: "Martin A. Fink" <fink@mpe.mpg.de>
+Organization: MPE
+To: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: SATA-performance: Linux vs. FreeBSD
+Date: Mon, 12 Feb 2007 18:56:29 +0100
+User-Agent: KMail/1.8
+References: <200702121502.17130.fink@mpe.mpg.de> <200702121727.17108.fink@mpe.mpg.de> <p731wkvi5go.fsf@bingen.suse.de>
+In-Reply-To: <p731wkvi5go.fsf@bingen.suse.de>
 MIME-Version: 1.0
-To: Marc St-Jean <Marc_St-Jean@pmc-sierra.com>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org
-Subject: Re: [PATCH] serial driver PMC MSP71xx, kernel linux-mips.git mast
-  er
-References: <45D0A7DA.1040305@pmc-sierra.com>
-In-Reply-To: <45D0A7DA.1040305@pmc-sierra.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702121856.29729.fink@mpe.mpg.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Am Montag, 12. Februar 2007 19:41 schrieben Sie:
+> "Martin A. Fink" <fink@mpe.mpg.de> writes:
+> 
+> Your mailer seems to be broken. It drops cc.
+> > 
+> > If you call fsync in BSD then you get what you expect. anything that is 
+still 
+> > not on disk will be written. Afterwards fsync returns... So this should be 
+> > the same like with linux?!
+> 
+> Not necessarily.  The disk may buffer additionally. Handling that
+> differs widely, but modern Linux forces flushes to platter if the hardware 
+support 
+> it.
+> 
+> > But the big question still is -- buffered or not -- where do the big 
+> > variations within linux come frome? I am not writing small blocks. I write 
+> > huge amounts of data.
+> 
+> 1MB is nowhere near huge by modern standards. Many IO subsystems are
+> only happy with multi MB requests. 
+> 
+> > So the buffer will always be full.
+> 
+> Hardly. Especially not if you do synchronous fsync inbetween.
 
-Marc St-Jean wrote:
+Well no. I write 1 GB in blocks of 1 MB. After that I call fsync. Then I 
+process the next Gigabyte...
+> 
+> > If I use a normal SATA-II disk, there are no differences between BSD and 
+Linux 
+> > when writing to the raw device... So it cant be a buffer-problem alone.
+> 
+> Yes that is something that needs to be investigated. That is why I suggested
+> oprofile if your assertation of a more CPU overhead on Linux is true.
+> 
+> > I still don't understand the buffer argument. If one writes 25 GB in 
+blocks of 
+> > 1 MB your buffer should be always full...
+> 
+> Your mental model of a IO subsystem seems to be quite off.
+> Think what happens when you fsync and submit synchronously.
 
->> >> > Fourth attempt at the serial driver patch for the PMC-Sierra MSP71xx
->> >>device.
+See above, how I do writing.
+> 
+> It's like sending something down a long pipe and waiting until it arrives
+> at the bottom and you hear the echo of the impact. Then only then you send 
+again. 
+> There will be always long periods when the pipe will be empty.
+> 
+> If you use large enough blocks these gaps will be quite small and
+> might effectively become unimportant, but 1MB is nowhere near big enough 
+> for that.
 
->>    I think you need to submit your patch to Andrew Morton since it 
->>requires a patch from his tree.
+I tested this: When I write in blocks of 8kB or less the effect you describe 
+happens. But above 100kB blocksize there is no more increase of speed.
 
-> OK, will do.
+> 
+> > Is there a buffered io device that I can use, but that does not use a 
+> > filesystem?
+> 
+> /dev/sdX*. However it has some other issues that also don't make
+> it ideal. File systems are usually best.
 
-    In fact, since the serial drivers are not maintained anymore, this seems 
-the only option.
+My experience with filesystems is: I write some data and the write-function 
+returns nearly immediatelly. So I write again. Sometimes it returns only 
+after some 100-300ms. I think this happens always then when the buffer is 
+full and thus linux starts to write to disk. After this happend, it returns 
+again nearly immediatelly and after another while the same trouble happen 
+again. But not in a regular order...
 
->> >> > +                     /* The DesignWare APB UART has an Busy Detect
->> >>(0x07)
->> >> > +                      * interrupt meaning an LCR write attempt
->> >>occured while the
->> >> > +                      * UART was busy. The interrupt must be cleared
->> >>by reading
->> >> > +                      * the UART status register (USR) and the LCR
->> >>re-written. */
->> >> > +                     unsigned int status;
->> >> > +                     status = *(volatile u32 
->>*)up->port.private_data;
->> >> > +                     serial_out(up, UART_LCR, up->lcr);
->> >> > +
->> >> > +                     handled = 1;
->> >> > +
->> >> > +                     end = NULL;
->> >> >               } else if (end == NULL)
->> >> >                       end = l;
+I have to store big amounts of data coming from 2 digital cameras to disk. 
+Thus I have to write blocks of around 1 MB at 30 to 50 frames per second for 
+a long period of time. So it is important for me that the harddisk drive is 
+reliable in the sense of "if it is capable of 50 MB/s then it should operate 
+at this speed. Constantly."
 
->> >> >       return 0;
-
->> >>    Still, shouldn't you be doing this in serial8250_timeout()
-
->> > No, the serial8250_timeout is for issue 1 at the top, this is for
->> > issue 2.
-
->>    It's for lost interrupts, IIUC. They use anothe timeout handler for the
->>workaround...
-
-> This issue (2) is a completely new type of interrupt generated but the
-> DesignWare APB uart, it has nothing to do with lost interrupts.
-
-    Yeah, I just thought that the lost interrupts might be a "generic" issue.
-
->> >>also?
->> >>What IRQ numbers this UART is using, BTW?
-
->> > For the ports on the device they are 27 and 42. Is there any 
->>significance
->> > that I'm not aware of?
-
->>    Yeah, IRQ0 is treated as no IRQ by 8250, and in this case it falls 
->>back to using serial8250_timeout() to handle "interrupts".
-
-> Good to know. It won't be affecting us then.
-
-    This may be overriden anyway...
-
->> >>    Oops, your mailer went and did it again. :-)
-
->> > I'm completely giving up on Thunderbird,unless someone can point out
-
->>    Ypu should have long ago. :-)
-
->> > the specific internal configuration items which needs a kick!
-
->>    Only the attachments will work in the Mozilla kind mailer, AFAIK.
->>The last patch looked OK at last. :-)
-
-> The attachemnents appear to be MIME which is a no-no according the
-
-    The text/plain type attachments seem to be acceptable for the most 
-maintainers.  This Mozilla can do, at least. :-)
-
-> linux FAQ at kernel.org. I guess I'll stick with /bin/mail.
-
-> Thanks,
-> Marc
-
-WBR, Sergei
+> 
+> -Andi
+> 
