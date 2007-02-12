@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964841AbXBLJyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964842AbXBLJ4K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964841AbXBLJyp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 04:54:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964842AbXBLJyo
+	id S964842AbXBLJ4K (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 04:56:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964844AbXBLJ4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 04:54:44 -0500
-Received: from omx1-ext.sgi.com ([192.48.179.11]:42412 "EHLO omx1.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S964841AbXBLJyo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 04:54:44 -0500
-Date: Mon, 12 Feb 2007 01:52:00 -0800
-From: Paul Jackson <pj@sgi.com>
-To: "Paul Menage" <menage@google.com>
-Cc: akpm@osdl.org, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
-       serue@us.ibm.com, vatsa@in.ibm.com, ebiederm@xmission.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       rohitseth@google.com, mbligh@google.com, winget@google.com,
-       containers@lists.osdl.org, devel@openvz.org
-Subject: Re: [PATCH 0/7] containers (V7): Generic Process Containers
-Message-Id: <20070212015200.cb795924.pj@sgi.com>
-In-Reply-To: <6599ad830702120132r181d338cy28b23736fa393de5@mail.gmail.com>
-References: <20070212081521.808338000@menage.corp.google.com>
-	<20070212011843.c6e8f4ae.pj@sgi.com>
-	<6599ad830702120132r181d338cy28b23736fa393de5@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 12 Feb 2007 04:56:10 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:57016 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964842AbXBLJ4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 04:56:08 -0500
+From: Andi Kleen <ak@suse.de>
+To: "Jeff Chua" <jeff.chua.linux@gmail.com>
+Subject: Re: [QUESTION] file access time in millisecond?
+Date: Mon, 12 Feb 2007 10:56:03 +0100
+User-Agent: KMail/1.9.5
+Cc: lkml <linux-kernel@vger.kernel.org>
+References: <b6a2187b0702112327t7294c221w460b3bd0f77d0e@mail.gmail.com> <p73bqjzhhp7.fsf@bingen.suse.de> <b6a2187b0702120152s1279b931x813413a4234d8dec@mail.gmail.com>
+In-Reply-To: <b6a2187b0702120152s1279b931x813413a4234d8dec@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702121056.03467.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul M, responding to Paul J:
-> I think it could be made smarter than that, e.g. have a workqueue task
-> that's only woken when a refcount does actually reach zero. (I think
-> that waking a workqueue task is something that can be done without too
-> much worry about locks)
+On Monday 12 February 2007 10:52, Jeff Chua wrote:
+> On 12 Feb 2007 10:02:28 +0100, Andi Kleen <ak@suse.de> wrote:
 > 
+> > > stat() returns time in seconds,
 > >
-> > Can you explain to me how this intruded on the reference counting?
-> >
+> > Not correct (at least for glibc stat). It supports nanoseconds these days,
+> > although not all file systems (including ext3) do yet.
 > 
-> Essentially, it means that anything that releases a reference count on
-> a container needs to be able to trigger a call to the release agent.
-> The reference count is often released at a point when important locks
-> are held, so you end up having to pass buffers into any function that
-> might drop a ref count, in order to store a path to a release agent to
-> be invoked.
+> I'm using gcc-3.4.5, and glibc-2.3.6. Don't think 2.3.6 stat() support
+> that ... 
 
-Ok - now that you put it like that - it's much more persuasive.
+It should be always available in padding, even on older glibc. Given a sufficiently
+new kernel. The bigger problem is getting a file system that supports it.
 
-Consider me sold on this aspect of your proposal, until and unless I
-protest otherwise, which is not likely.
+> at least the man page doesn't indicate so. 
 
-Thanks.
+Manpages are often outdated.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+-Andi
