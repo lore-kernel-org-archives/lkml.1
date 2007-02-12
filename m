@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932944AbXBLP2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932996AbXBLPcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932944AbXBLP2e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 10:28:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932821AbXBLP2e
+	id S932996AbXBLPcf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 10:32:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932990AbXBLPcf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 10:28:34 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:46999 "EHLO e3.ny.us.ibm.com"
+	Mon, 12 Feb 2007 10:32:35 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:51230 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932944AbXBLP2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 10:28:33 -0500
-Date: Mon, 12 Feb 2007 20:57:38 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: menage@google.com
-Cc: akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
-       serue@us.ibm.com, ebiederm@xmission.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       rohitseth@google.com, mbligh@google.com, winget@google.com,
-       containers@lists.osdl.org, devel@openvz.org
-Subject: Re: [PATCH 3/7] containers (V7): Add generic multi-subsystem API to containers
-Message-ID: <20070212152738.GD7526@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070212081521.808338000@menage.corp.google.com> <20070212085104.485337000@menage.corp.google.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070212085104.485337000@menage.corp.google.com>
-User-Agent: Mutt/1.5.11
+	id S932821AbXBLPcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 10:32:33 -0500
+X-Greylist: delayed 1856 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Feb 2007 10:32:33 EST
+Message-ID: <45D080C5.4000500@redhat.com>
+Date: Mon, 12 Feb 2007 06:59:17 -0800
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
+MIME-Version: 1.0
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+CC: Andrew Morton <akpm@osdl.org>, David Miller <davem@davemloft.net>,
+       netdev <netdev@vger.kernel.org>, Zach Brown <zach.brown@oracle.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Chase Venters <chase.venters@clientec.com>,
+       Johann Borck <johann.borck@densedata.com>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, Jamal Hadi Salim <hadi@cyberus.ca>,
+       Ingo Molnar <mingo@elte.hu>, linux-fsdevel@vger.kernel.org
+Subject: Re: [take35 0/10] kevent: Generic event handling mechanism.
+References: <asdasdqaa0591036@2ka.mipt.ru> <11703247503374@2ka.mipt.ru> <20070205142336.GA24190@2ka.mipt.ru> <20070212103510.GC5703@2ka.mipt.ru>
+In-Reply-To: <20070212103510.GC5703@2ka.mipt.ru>
+X-Enigmail-Version: 0.94.1.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig6F0502E471948832081F9F8F"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 12, 2007 at 12:15:24AM -0800, menage@google.com wrote:
-> +/*
-> + * Call css_get() to hold a reference on the container; following a
-> + * return of 0, this container subsystem state object is guaranteed
-> + * not to be destroyed until css_put() is called on it.  A non-zero
-> + * return code indicates that a reference could not be taken.
-> + *
-> + */
-> +
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig6F0502E471948832081F9F8F
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Why can't we reuse container->count (or container_group->ref) to
-refcount the per-subsystem object attached to a container? I think
-that is how it is done for cpusets? That would make css_get/put
-unnecessary?
+Evgeniy Polyakov wrote:
+> I think that mean that everybody is happy with APi, design and set of
+> features.=20
 
-> +static inline int css_get(struct container_subsys_state *css)
-> +{
-> +	int retval = 0;
-> +	unsigned long flags;
-> +	/* Synchronize with container_rmdir() */
-> +	spin_lock_irqsave(&css->refcnt_lock, flags);
-> +	if (atomic_read(&css->refcnt) >= 0) {
-> +		/* Container is still alive */
-> +		atomic_inc(&css->refcnt);
-> +	} else {
-> +		/* Container removal is in progress */
-> +		retval = -EINVAL;
-> +	}
-> +	spin_unlock_irqrestore(&css->refcnt_lock, flags);
-> +	return retval;
-> +}
+No comment means that I still have not been able to test anything since
+regardless of what version I tried, it failed to build.
 
--- 
-Regards,
-vatsa
+--=20
+=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
+=E2=9E=A7 Mountain View, CA =E2=9D=96
+
+
+--------------enig6F0502E471948832081F9F8F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFF0IDF2ijCOnn/RHQRAiesAKCZ6rlV3mcXkj7NpwFNSXU5exoQaACcDuB7
+EF+93V+R1z22vZsGZYS0JcI=
+=iDCs
+-----END PGP SIGNATURE-----
+
+--------------enig6F0502E471948832081F9F8F--
