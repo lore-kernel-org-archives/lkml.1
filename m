@@ -1,255 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933100AbXBLHrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933080AbXBLHrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933100AbXBLHrz (ORCPT <rfc822;w@1wt.eu>);
+	id S933080AbXBLHrz (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 12 Feb 2007 02:47:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933080AbXBLHq4
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933082AbXBLHqx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 02:46:56 -0500
-Received: from mx2.suse.de ([195.135.220.15]:49603 "EHLO mx2.suse.de"
+	Mon, 12 Feb 2007 02:46:53 -0500
+Received: from ns2.suse.de ([195.135.220.15]:49607 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933077AbXBLHhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 02:37:54 -0500
+	id S933079AbXBLHhz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 02:37:55 -0500
 From: Andi Kleen <ak@suse.de>
 References: <20070212837.963446000@suse.de>
 In-Reply-To: <20070212837.963446000@suse.de>
-To: Rohit Seth <rohitseth@google.com>, Andi Kleen <ak@suse.de>,
+To: Glauber de Oliveira Costa <gcosta@redhat.com>, Andi Kleen <ak@suse.de>,
        patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH x86 for review II] [7/39] x86_64: Fix fake numa for x86_64 machines with big IO hole
-Message-Id: <20070212073753.6A8B013D7F@wotan.suse.de>
-Date: Mon, 12 Feb 2007 08:37:53 +0100 (CET)
+Subject: [PATCH x86 for review II] [8/39] x86_64: Remove fastcall references in x86_64 code
+Message-Id: <20070212073754.79C9913D01@wotan.suse.de>
+Date: Mon, 12 Feb 2007 08:37:54 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Rohit Seth <rohitseth@google.com>
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
 
-This patch resolves the issue of running with numa=fake=X on kernel command
-line on x86_64 machines that have big IO hole.  While calculating the size
-of each node now we look at the total hole size in that range.
+Unlike x86, x86_64 already passes arguments in registers.  The use of
+regparm attribute makes no difference in produced code, and the use of
+fastcall just bloats the code.
 
-Previously there were nodes that only had IO holes in them causing kernel
-boot problems.  We now use the NODE_MIN_SIZE (64MB) as the minimum size of
-memory that any node must have.  We reduce the number of allocated nodes if
-the number of nodes specified on kernel command line results in any node
-getting memory smaller than NODE_MIN_SIZE.
-
-This change allows the extra memory to be incremented in NODE_MIN_SIZE
-granule and uniformly distribute among as many nodes (called big nodes) as
-possible.
-
-[akpm@osdl.org: build fix]
-Signed-off-by: David Rientjes <reintjes@google.com>
-Signed-off-by: Paul Menage <menage@google.com>
-Signed-off-by: Rohit Seth <rohitseth@google.com>
+Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
 Cc: Andi Kleen <ak@suse.de>
 Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
 
- arch/x86_64/kernel/e820.c   |   31 ++++++++++++
- arch/x86_64/mm/numa.c       |  110 ++++++++++++++++++++++++++++++++++++++------
- include/asm-x86_64/e820.h   |    1 
- include/asm-x86_64/mmzone.h |    5 ++
- 4 files changed, 133 insertions(+), 14 deletions(-)
+ arch/x86_64/kernel/acpi/sleep.c  |    2 +-
+ arch/x86_64/kernel/x8664_ksyms.c |    4 ++--
+ include/asm-x86_64/hw_irq.h      |    2 +-
+ include/asm-x86_64/mutex.h       |    6 +++---
+ 4 files changed, 7 insertions(+), 7 deletions(-)
 
-Index: linux/arch/x86_64/kernel/e820.c
+Index: linux/arch/x86_64/kernel/acpi/sleep.c
 ===================================================================
---- linux.orig/arch/x86_64/kernel/e820.c
-+++ linux/arch/x86_64/kernel/e820.c
-@@ -191,6 +191,37 @@ unsigned long __init e820_end_of_ram(voi
- }
+--- linux.orig/arch/x86_64/kernel/acpi/sleep.c
++++ linux/arch/x86_64/kernel/acpi/sleep.c
+@@ -58,7 +58,7 @@ unsigned long acpi_wakeup_address = 0;
+ unsigned long acpi_video_flags;
+ extern char wakeup_start, wakeup_end;
  
- /*
-+ * Find the hole size in the range.
-+ */
-+unsigned long __init e820_hole_size(unsigned long start, unsigned long end)
-+{
-+	unsigned long ram = 0;
-+	int i;
-+
-+	for (i = 0; i < e820.nr_map; i++) {
-+		struct e820entry *ei = &e820.map[i];
-+		unsigned long last, addr;
-+
-+		if (ei->type != E820_RAM ||
-+		    ei->addr+ei->size <= start ||
-+		    ei->addr >= end)
-+			continue;
-+
-+		addr = round_up(ei->addr, PAGE_SIZE);
-+		if (addr < start)
-+			addr = start;
-+
-+		last = round_down(ei->addr + ei->size, PAGE_SIZE);
-+		if (last >= end)
-+			last = end;
-+
-+		if (last > addr)
-+			ram += last - addr;
-+	}
-+	return ((end - start) - ram);
-+}
-+
-+/*
-  * Mark e820 reserved areas as busy for the resource manager.
+-extern unsigned long FASTCALL(acpi_copy_wakeup_routine(unsigned long));
++extern unsigned long acpi_copy_wakeup_routine(unsigned long);
+ 
+ static pgd_t low_ptr;
+ 
+Index: linux/arch/x86_64/kernel/x8664_ksyms.c
+===================================================================
+--- linux.orig/arch/x86_64/kernel/x8664_ksyms.c
++++ linux/arch/x86_64/kernel/x8664_ksyms.c
+@@ -36,8 +36,8 @@ EXPORT_SYMBOL(copy_page);
+ EXPORT_SYMBOL(clear_page);
+ 
+ #ifdef CONFIG_SMP
+-extern void FASTCALL( __write_lock_failed(rwlock_t *rw));
+-extern void FASTCALL( __read_lock_failed(rwlock_t *rw));
++extern void  __write_lock_failed(rwlock_t *rw);
++extern void  __read_lock_failed(rwlock_t *rw);
+ EXPORT_SYMBOL(__write_lock_failed);
+ EXPORT_SYMBOL(__read_lock_failed);
+ #endif
+Index: linux/include/asm-x86_64/hw_irq.h
+===================================================================
+--- linux.orig/include/asm-x86_64/hw_irq.h
++++ linux/include/asm-x86_64/hw_irq.h
+@@ -91,7 +91,7 @@ extern void enable_8259A_irq(unsigned in
+ extern int i8259A_irq_pending(unsigned int irq);
+ extern void make_8259A_irq(unsigned int irq);
+ extern void init_8259A(int aeoi);
+-extern void FASTCALL(send_IPI_self(int vector));
++extern void send_IPI_self(int vector);
+ extern void init_VISWS_APIC_irqs(void);
+ extern void setup_IO_APIC(void);
+ extern void disable_IO_APIC(void);
+Index: linux/include/asm-x86_64/mutex.h
+===================================================================
+--- linux.orig/include/asm-x86_64/mutex.h
++++ linux/include/asm-x86_64/mutex.h
+@@ -21,7 +21,7 @@ do {									\
+ 	unsigned long dummy;						\
+ 									\
+ 	typecheck(atomic_t *, v);					\
+-	typecheck_fn(fastcall void (*)(atomic_t *), fail_fn);		\
++	typecheck_fn(void (*)(atomic_t *), fail_fn);			\
+ 									\
+ 	__asm__ __volatile__(						\
+ 		LOCK_PREFIX "   decl (%%rdi)	\n"			\
+@@ -47,7 +47,7 @@ do {									\
   */
- void __init e820_reserve_resources(void)
-Index: linux/arch/x86_64/mm/numa.c
-===================================================================
---- linux.orig/arch/x86_64/mm/numa.c
-+++ linux/arch/x86_64/mm/numa.c
-@@ -272,31 +272,113 @@ void __init numa_init_array(void)
- }
- 
- #ifdef CONFIG_NUMA_EMU
-+/* Numa emulation */
- int numa_fake __initdata = 0;
- 
--/* Numa emulation */
-+/*
-+ * This function is used to find out if the start and end correspond to
-+ * different zones.
-+ */
-+int zone_cross_over(unsigned long start, unsigned long end)
-+{
-+	if ((start < (MAX_DMA32_PFN << PAGE_SHIFT)) &&
-+			(end >= (MAX_DMA32_PFN << PAGE_SHIFT)))
-+		return 1;
-+	return 0;
-+}
-+
- static int __init numa_emulation(unsigned long start_pfn, unsigned long end_pfn)
+ static inline int
+ __mutex_fastpath_lock_retval(atomic_t *count,
+-			     int fastcall (*fail_fn)(atomic_t *))
++			     int (*fail_fn)(atomic_t *))
  {
-- 	int i;
-+ 	int i, big;
-  	struct bootnode nodes[MAX_NUMNODES];
-- 	unsigned long sz = ((end_pfn - start_pfn)<<PAGE_SHIFT) / numa_fake;
-+ 	unsigned long sz, old_sz;
-+	unsigned long hole_size;
-+	unsigned long start, end;
-+	unsigned long max_addr = (end_pfn << PAGE_SHIFT);
-+
-+	start = (start_pfn << PAGE_SHIFT);
-+	hole_size = e820_hole_size(start, max_addr);
-+	sz = (max_addr - start - hole_size) / numa_fake;
- 
-  	/* Kludge needed for the hash function */
-- 	if (hweight64(sz) > 1) {
-- 		unsigned long x = 1;
-- 		while ((x << 1) < sz)
-- 			x <<= 1;
-- 		if (x < sz/2)
-- 			printk(KERN_ERR "Numa emulation unbalanced. Complain to maintainer\n");
-- 		sz = x;
-- 	}
- 
-+	old_sz = sz;
-+	/*
-+	 * Round down to the nearest FAKE_NODE_MIN_SIZE.
-+	 */
-+	sz &= FAKE_NODE_MIN_HASH_MASK;
-+
-+	/*
-+	 * We ensure that each node is at least 64MB big.  Smaller than this
-+	 * size can cause VM hiccups.
-+	 */
-+	if (sz == 0) {
-+		printk(KERN_INFO "Not enough memory for %d nodes.  Reducing "
-+				"the number of nodes\n", numa_fake);
-+		numa_fake = (max_addr - start - hole_size) / FAKE_NODE_MIN_SIZE;
-+		printk(KERN_INFO "Number of fake nodes will be = %d\n",
-+				numa_fake);
-+		sz = FAKE_NODE_MIN_SIZE;
-+	}
-+	/*
-+	 * Find out how many nodes can get an extra NODE_MIN_SIZE granule.
-+	 * This logic ensures the extra memory gets distributed among as many
-+	 * nodes as possible (as compared to one single node getting all that
-+	 * extra memory.
-+	 */
-+	big = ((old_sz - sz) * numa_fake) / FAKE_NODE_MIN_SIZE;
-+	printk(KERN_INFO "Fake node Size: %luMB hole_size: %luMB big nodes: "
-+			"%d\n",
-+			(sz >> 20), (hole_size >> 20), big);
-  	memset(&nodes,0,sizeof(nodes));
-+	end = start;
-  	for (i = 0; i < numa_fake; i++) {
-- 		nodes[i].start = (start_pfn<<PAGE_SHIFT) + i*sz;
-+		/*
-+		 * In case we are not able to allocate enough memory for all
-+		 * the nodes, we reduce the number of fake nodes.
-+		 */
-+		if (end >= max_addr) {
-+			numa_fake = i - 1;
-+			break;
-+		}
-+ 		start = nodes[i].start = end;
-+		/*
-+		 * Final node can have all the remaining memory.
-+		 */
-  		if (i == numa_fake-1)
-- 			sz = (end_pfn<<PAGE_SHIFT) - nodes[i].start;
-- 		nodes[i].end = nodes[i].start + sz;
-+ 			sz = max_addr - start;
-+ 		end = nodes[i].start + sz;
-+		/*
-+		 * Fir "big" number of nodes get extra granule.
-+		 */
-+		if (i < big)
-+			end += FAKE_NODE_MIN_SIZE;
-+		/*
-+		 * Iterate over the range to ensure that this node gets at
-+		 * least sz amount of RAM (excluding holes)
-+		 */
-+		while ((end - start - e820_hole_size(start, end)) < sz) {
-+			end += FAKE_NODE_MIN_SIZE;
-+			if (end >= max_addr)
-+				break;
-+		}
-+		/*
-+		 * Look at the next node to make sure there is some real memory
-+		 * to map.  Bad things happen when the only memory present
-+		 * in a zone on a fake node is IO hole.
-+		 */
-+		while (e820_hole_size(end, end + FAKE_NODE_MIN_SIZE) > 0) {
-+			if (zone_cross_over(start, end + sz)) {
-+				end = (MAX_DMA32_PFN << PAGE_SHIFT);
-+				break;
-+			}
-+			if (end >= max_addr)
-+				break;
-+			end += FAKE_NODE_MIN_SIZE;
-+		}
-+		if (end > max_addr)
-+			end = max_addr;
-+		nodes[i].end = end;
-  		printk(KERN_INFO "Faking node %d at %016Lx-%016Lx (%LuMB)\n",
-  		       i,
-  		       nodes[i].start, nodes[i].end,
-Index: linux/include/asm-x86_64/e820.h
-===================================================================
---- linux.orig/include/asm-x86_64/e820.h
-+++ linux/include/asm-x86_64/e820.h
-@@ -46,6 +46,7 @@ extern void e820_mark_nosave_regions(voi
- extern void e820_print_map(char *who);
- extern int e820_any_mapped(unsigned long start, unsigned long end, unsigned type);
- extern int e820_all_mapped(unsigned long start, unsigned long end, unsigned type);
-+extern unsigned long e820_hole_size(unsigned long start, unsigned long end);
- 
- extern void e820_setup_gap(void);
- extern void e820_register_active_regions(int nid,
-Index: linux/include/asm-x86_64/mmzone.h
-===================================================================
---- linux.orig/include/asm-x86_64/mmzone.h
-+++ linux/include/asm-x86_64/mmzone.h
-@@ -47,5 +47,10 @@ static inline __attribute__((pure)) int 
- extern int pfn_valid(unsigned long pfn);
- #endif
- 
-+#ifdef CONFIG_NUMA_EMU
-+#define FAKE_NODE_MIN_SIZE	(64*1024*1024)
-+#define FAKE_NODE_MIN_HASH_MASK	(~(FAKE_NODE_MIN_SIZE - 1ul))
-+#endif
-+
- #endif
- #endif
+ 	if (unlikely(atomic_dec_return(count) < 0))
+ 		return fail_fn(count);
+@@ -67,7 +67,7 @@ do {									\
+ 	unsigned long dummy;						\
+ 									\
+ 	typecheck(atomic_t *, v);					\
+-	typecheck_fn(fastcall void (*)(atomic_t *), fail_fn);		\
++	typecheck_fn(void (*)(atomic_t *), fail_fn);			\
+ 									\
+ 	__asm__ __volatile__(						\
+ 		LOCK_PREFIX "   incl (%%rdi)	\n"			\
