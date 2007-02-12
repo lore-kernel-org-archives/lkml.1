@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965366AbXBLUx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965384AbXBLUyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965366AbXBLUx3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 15:53:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965385AbXBLUx3
+	id S965384AbXBLUyv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 15:54:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965392AbXBLUyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 15:53:29 -0500
-Received: from smtpout06-01.prod.mesa1.secureserver.net ([64.202.165.224]:39206
-	"HELO smtpout06-04.prod.mesa1.secureserver.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S965366AbXBLUx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 15:53:29 -0500
-X-Greylist: delayed 742 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Feb 2007 15:53:28 EST
-Message-ID: <45D0D09D.8010807@techmoninc.com>
-Date: Mon, 12 Feb 2007 14:39:57 -0600
-From: Andy Kennedy <akennedy@techmoninc.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+	Mon, 12 Feb 2007 15:54:50 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44549 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965384AbXBLUyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 15:54:50 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Willy Tarreau <w@1wt.eu>
+Subject: Re: NAK new drivers without proper power management?
+Date: Mon, 12 Feb 2007 21:20:07 +0100
+User-Agent: KMail/1.9.5
+Cc: Alan <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <fa.E/NjHlgg0HqDg5CgZjnCHFi2AMM@ifi.uio.no> <20070212002652.1ea4026e@localhost.localdomain> <20070212051924.GE13913@1wt.eu>
+In-Reply-To: <20070212051924.GE13913@1wt.eu>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Serial console issues.
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702122120.08032.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For those of you who are on BusyBox's mailing list, you've already seen 
-this -- I was sent here for help.
+On Monday, 12 February 2007 06:19, Willy Tarreau wrote:
+> On Mon, Feb 12, 2007 at 12:26:52AM +0000, Alan wrote:
+> > > Unless I'm mistaken, I have to type the passphrase twice then :
+> > >   - once at suspend
+> > >   - once at resume
+> > > 
+> > > which is once more per "boot" than what I'm doing on loop-aes.
+> > 
+> > You don't need to type in a key at suspend time if you don't want to.
+> > Think about gpg email - I can send you an encrypted email without typing
+> > any keys, you need the right key however to read it.
+> 
+> OK, so that means that it can generate a random secret which is crypted
+> with your public key. That's very different from a crypted FS which has
+> to keep the same secret key over time for obvious reasons, but it is
+> smart to proceed this way.
+> 
+> One less "myth" as Nigel would say call it ;-)
 
-Specs:
-Linux:  2.6.18
-Bootloader:  SysLinux
-Init:  BusyBox (ver 1.4.0) init.
-Kernel command line: console=ttyS0,115200,n,8,1
-System: VersaLogic 568 (STD80/STD32 Bus, i386 based computer)
-Issue:  Booting on "System" I get perfect printk's to the serial 
-console.  When the init takes over (from within an initrd), the console 
-begins to miss characters.  I can still send write commands through the 
-console, however, the output of these commands is garbled.  The really 
-odd part is when the init releases control (is killed by Linux), or when 
-a printk is issued, the console prints perfectly again.  The next really 
-strange part about this is that changing "System" to my laptop -- no 
-problems PERIOD. 
+Yup.  Our userland suspend tools available from http://suspend.sf.net are
+capable of doing that in a more or less transparent way.
 
-The BusyBox list directed me to LKML as this is a wider base of users 
-that may have experienced the same problem and could provide me an answer.
+Greetings,
+Rafael
 
-Thanks in advance for the help (and sorry for asking such a non-related 
-issue on the LKML),
-Andy
