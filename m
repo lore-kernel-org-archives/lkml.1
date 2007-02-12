@@ -1,59 +1,377 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933036AbXBLG2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933041AbXBLGmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933036AbXBLG2a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 01:28:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933034AbXBLG2a
+	id S933041AbXBLGmg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 01:42:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933042AbXBLGmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 01:28:30 -0500
-Received: from yumi.tdiedrich.de ([85.10.210.183]:4849 "EHLO yumi.tdiedrich.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933030AbXBLG22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 01:28:28 -0500
-Date: Mon, 12 Feb 2007 07:28:23 +0100
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Ayaz Abdulla <aabdulla@nvidia.com>, David Ford <firefighterblu3@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: Re: forcedeth problems on 2.6.20-rc6-mm3
-Message-ID: <20070212062823.GB4756@melchior.yamamaya.is-a-geek.org>
-Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-	Jeff Garzik <jeff@garzik.org>, Ayaz Abdulla <aabdulla@nvidia.com>,
-	David Ford <firefighterblu3@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Robert Hancock <hancockr@shaw.ca>,
-	linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-References: <45C6BCE5.90103@shaw.ca> <20070204213603.a5bce839.akpm@linux-foundation.org> <45C6C531.20508@shaw.ca> <20070204221741.63152cbe.akpm@linux-foundation.org> <523e55a00702081326j43de05e3hdd8cf35e946eae9@mail.gmail.com> <45CBE30D.5030006@nvidia.com> <20070209115821.GD10330@melchior.yamamaya.is-a-geek.org> <20070209120730.GA11911@melchior.yamamaya.is-a-geek.org> <45CC8A2D.20509@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <45CC8A2D.20509@garzik.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 12 Feb 2007 01:42:36 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:45445 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933041AbXBLGmf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 01:42:35 -0500
+X-Sasl-enc: nQ7nyNxYUyXuF6nFYVhELWIPGR/AAY+C9yhvlD3TIFPu 1171262552
+Subject: [PATCH 1/2] Re: [autofs] Bad race condition in the new autofs
+	protocol somewhere
+From: Ian Kent <raven@themaw.net>
+To: Olivier Galibert <galibert@pobox.com>
+Cc: "Hack inc." <linux-kernel@vger.kernel.org>, autofs@linux.kernel.org
+In-Reply-To: <1170901990.3383.18.camel@raven.themaw.net>
+References: <20070207173414.GA64492@dspnet.fr.eu.org>
+	 <1170871661.3415.36.camel@raven.themaw.net>
+	 <20070207181817.GA75717@dspnet.fr.eu.org>
+	 <1170901990.3383.18.camel@raven.themaw.net>
+Content-Type: text/plain
+Date: Mon, 12 Feb 2007 15:43:14 +0900
+Message-Id: <1171262594.18376.13.camel@raven.themaw.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-32.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Tobias Diedrich wrote:
-> >Tobias Diedrich wrote:
-> >>Ayaz Abdulla wrote:
-> >>>For all those who are having issues, please try out the attached patch.
-> >>Will try.
-> >
-> >Does not apply cleanly against 2.6.20, is this one fixed up right?
+On Thu, 2007-02-08 at 11:33 +0900, Ian Kent wrote:
+> On Wed, 2007-02-07 at 19:18 +0100, Olivier Galibert wrote:
+> > On Thu, Feb 08, 2007 at 03:07:41AM +0900, Ian Kent wrote:
+> > > It may be better to update to a later kernel so I don't have to port the
+> > > patch to several different kernels. Is that possible?
+> > 
+> > Sure, 2.6.20 or -git?
 > 
-> It probably needs to be top of 2.6.20-git-latest or 2.6.20-rc6-mm3.
+> 2.6.20 has all the patches I've proposed so far except for the one we're
+> working on so that would be best for me.
 > 
-> IOW, the forcedeth changes in question are not in 2.6.20, and you need 
-> to apply the patch on top of the latest batch of forcedeth changes.
+> Seems there may still be a problem with the patch so I'll let you know
+> what's happening as soon as I can.
 
-Well, it hasn't blown up on me despite being applied to 2.6.20...
-The problem I was seeing might even be fixed in 2.6.20 vanilla,
-since the last version I saw it in was 2.6.20-rc6 and then I
-reverted to 2.6.19 to make sure that one is ok (see
-20070130183208.GE11814@melchior.yamamaya.is-a-geek.org).
+I think I'm just about done.
 
--- 
-Tobias						PGP: http://9ac7e0bc.uguu.de
-このメールは十割再利用されたビットで作られています。
+Could you try using the two patches here against 2.6.20 please:
+
+Ian
+
+---
+
+--- linux-2.6.20/fs/autofs4/autofs_i.h.lookup-expire-race	2007-02-05 03:44:54.000000000 +0900
++++ linux-2.6.20/fs/autofs4/autofs_i.h	2007-02-12 12:15:17.000000000 +0900
+@@ -52,6 +52,8 @@ struct autofs_info {
+ 
+ 	int		flags;
+ 
++	struct list_head rehash;
++
+ 	struct autofs_sb_info *sbi;
+ 	unsigned long last_used;
+ 	atomic_t count;
+@@ -110,6 +112,8 @@ struct autofs_sb_info {
+ 	struct mutex wq_mutex;
+ 	spinlock_t fs_lock;
+ 	struct autofs_wait_queue *queues; /* Wait queue pointer */
++	spinlock_t rehash_lock;
++	struct list_head rehash_list;
+ };
+ 
+ static inline struct autofs_sb_info *autofs4_sbi(struct super_block *sb)
+--- linux-2.6.20/fs/autofs4/root.c.lookup-expire-race	2007-02-05 03:44:54.000000000 +0900
++++ linux-2.6.20/fs/autofs4/root.c	2007-02-12 12:14:51.000000000 +0900
+@@ -263,7 +263,7 @@ static int try_to_fill_dentry(struct den
+ 		 */
+ 		status = d_invalidate(dentry);
+ 		if (status != -EBUSY)
+-			return -ENOENT;
++			return -EAGAIN;
+ 	}
+ 
+ 	DPRINTK("dentry=%p %.*s ino=%p",
+@@ -413,7 +413,16 @@ static int autofs4_revalidate(struct den
+ 		 */
+ 		status = try_to_fill_dentry(dentry, flags);
+ 		if (status == 0)
+-				return 1;
++			return 1;
++
++		/*
++		 * A status of EAGAIN here means that the dentry has gone
++		 * away while waiting for an expire to complete. If we are
++		 * racing with expire lookup will wait for it so this must
++		 * be a revalidate and we need to send it to lookup.
++		 */
++		if (status == -EAGAIN)
++			return 0;
+ 
+ 		return status;
+ 	}
+@@ -459,9 +468,18 @@ void autofs4_dentry_release(struct dentr
+ 	de->d_fsdata = NULL;
+ 
+ 	if (inf) {
++		struct autofs_sb_info *sbi = autofs4_sbi(de->d_sb);
++
+ 		inf->dentry = NULL;
+ 		inf->inode = NULL;
+ 
++		if (sbi) {
++			spin_lock(&sbi->rehash_lock);
++			if (!list_empty(&inf->rehash))
++				list_del(&inf->rehash);
++			spin_unlock(&sbi->rehash_lock);
++		}
++
+ 		autofs4_free_ino(inf);
+ 	}
+ }
+@@ -478,10 +496,80 @@ static struct dentry_operations autofs4_
+ 	.d_release	= autofs4_dentry_release,
+ };
+ 
++static struct dentry *autofs4_lookup_unhashed(struct autofs_sb_info *sbi, struct dentry *parent, struct qstr *name)
++{
++	unsigned int len = name->len;
++	unsigned int hash = name->hash;
++	const unsigned char *str = name->name;
++	struct list_head *p, *head;
++
++	spin_lock(&dcache_lock);
++	spin_lock(&sbi->rehash_lock);
++	head = &sbi->rehash_list;
++	list_for_each(p, head) {
++		struct autofs_info *ino;
++		struct dentry *dentry;
++		struct qstr *qstr;
++
++		ino = list_entry(p, struct autofs_info, rehash);
++		dentry = ino->dentry;
++
++		spin_lock(&dentry->d_lock);
++
++		/* Bad luck, we've already been dentry_iput */
++		if (!dentry->d_inode)
++			goto next;
++
++		qstr = &dentry->d_name;
++
++		if (dentry->d_name.hash != hash)
++			goto next;
++		if (dentry->d_parent != parent)
++			goto next;
++
++		if (qstr->len != len)
++			goto next;
++		if (memcmp(qstr->name, str, len))
++			goto next;
++
++		if (d_unhashed(dentry)) {
++			struct autofs_info *ino = autofs4_dentry_ino(dentry);
++			struct inode *inode = dentry->d_inode;
++
++			list_del_init(&ino->rehash);
++			dget(dentry);
++			/*
++			 * Make the rehashed dentry negative so the VFS
++			 * behaves as it should.
++			 */
++			if (inode) {
++				dentry->d_inode = NULL;
++				list_del_init(&dentry->d_alias);
++				spin_unlock(&dentry->d_lock);
++				spin_unlock(&sbi->rehash_lock);
++				spin_unlock(&dcache_lock);
++				iput(inode);
++				return dentry;
++			}
++			spin_unlock(&dentry->d_lock);
++			spin_unlock(&sbi->rehash_lock);
++			spin_unlock(&dcache_lock);
++			return dentry;
++		}
++next:
++		spin_unlock(&dentry->d_lock);
++	}
++	spin_unlock(&sbi->rehash_lock);
++	spin_unlock(&dcache_lock);
++
++	return NULL;
++}
++
+ /* Lookups in the root directory */
+ static struct dentry *autofs4_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
+ {
+ 	struct autofs_sb_info *sbi;
++	struct dentry *unhashed;
+ 	int oz_mode;
+ 
+ 	DPRINTK("name = %.*s",
+@@ -497,25 +585,46 @@ static struct dentry *autofs4_lookup(str
+ 	DPRINTK("pid = %u, pgrp = %u, catatonic = %d, oz_mode = %d",
+ 		 current->pid, process_group(current), sbi->catatonic, oz_mode);
+ 
+-	/*
+-	 * Mark the dentry incomplete, but add it. This is needed so
+-	 * that the VFS layer knows about the dentry, and we can count
+-	 * on catching any lookups through the revalidate.
+-	 *
+-	 * Let all the hard work be done by the revalidate function that
+-	 * needs to be able to do this anyway..
+-	 *
+-	 * We need to do this before we release the directory semaphore.
+-	 */
+-	dentry->d_op = &autofs4_root_dentry_operations;
++	unhashed = autofs4_lookup_unhashed(sbi, dentry->d_parent, &dentry->d_name);
++	if (!unhashed) {
++		/*
++		 * Mark the dentry incomplete, but add it. This is needed so
++		 * that the VFS layer knows about the dentry, and we can count
++		 * on catching any lookups through the revalidate.
++		 *
++		 * Let all the hard work be done by the revalidate function that
++		 * needs to be able to do this anyway..
++		 *
++		 * We need to do this before we release the directory semaphore.
++		 */
++		dentry->d_op = &autofs4_root_dentry_operations;
++
++		dentry->d_fsdata = NULL;
++		d_add(dentry, NULL);
++	} else {
++		struct autofs_info *ino = autofs4_dentry_ino(unhashed);
++		DPRINTK("rehash %p with %p", dentry, unhashed);
++		/*
++		 * If we are racing with expire the request might not
++		 * be quite complete but the directory has been removed
++		 * so it must have been successful, so just wait for it.
++		 */
++		if (ino && (ino->flags & AUTOFS_INF_EXPIRING)) {
++			DPRINTK("wait for incomplete expire %p name=%.*s",
++				unhashed, unhashed->d_name.len,
++				unhashed->d_name.name);
++			autofs4_wait(sbi, unhashed, NFY_NONE);
++			DPRINTK("request completed");
++		}
++		d_rehash(unhashed);
++		dentry = unhashed;
++	}
+ 
+ 	if (!oz_mode) {
+ 		spin_lock(&dentry->d_lock);
+ 		dentry->d_flags |= DCACHE_AUTOFS_PENDING;
+ 		spin_unlock(&dentry->d_lock);
+ 	}
+-	dentry->d_fsdata = NULL;
+-	d_add(dentry, NULL);
+ 
+ 	if (dentry->d_op && dentry->d_op->d_revalidate) {
+ 		mutex_unlock(&dir->i_mutex);
+@@ -534,6 +643,8 @@ static struct dentry *autofs4_lookup(str
+ 			if (sigismember (sigset, SIGKILL) ||
+ 			    sigismember (sigset, SIGQUIT) ||
+ 			    sigismember (sigset, SIGINT)) {
++			    if (unhashed)
++				dput(unhashed);
+ 			    return ERR_PTR(-ERESTARTNOINTR);
+ 			}
+ 		}
+@@ -548,8 +659,14 @@ static struct dentry *autofs4_lookup(str
+ 	 * doesn't do the right thing for all system calls, but it should
+ 	 * be OK for the operations we permit from an autofs.
+ 	 */
+-	if (dentry->d_inode && d_unhashed(dentry))
++	if (dentry->d_inode && d_unhashed(dentry)) {
++		if (unhashed)
++			dput(unhashed);
+ 		return ERR_PTR(-ENOENT);
++	}
++
++	if (unhashed)
++		return dentry;
+ 
+ 	return NULL;
+ }
+@@ -611,9 +728,10 @@ static int autofs4_dir_symlink(struct in
+  * Normal filesystems would do a "d_delete()" to tell the VFS dcache
+  * that the file no longer exists. However, doing that means that the
+  * VFS layer can turn the dentry into a negative dentry.  We don't want
+- * this, because since the unlink is probably the result of an expire.
+- * We simply d_drop it, which allows the dentry lookup to remount it
+- * if necessary.
++ * this, because the unlink is probably the result of an expire.
++ * We simply d_drop it and add it to a rehash candidates list in the
++ * super block, which allows the dentry lookup to reuse it retaining
++ * the flags, such as expire in progress, in case we're racing with expire.
+  *
+  * If a process is blocked on the dentry waiting for the expire to finish,
+  * it will invalidate the dentry and try to mount with a new one.
+@@ -642,7 +760,14 @@ static int autofs4_dir_unlink(struct ino
+ 
+ 	dir->i_mtime = CURRENT_TIME;
+ 
+-	d_drop(dentry);
++	spin_lock(&dcache_lock);
++	spin_lock(&sbi->rehash_lock);
++	list_add(&ino->rehash, &sbi->rehash_list);
++	spin_unlock(&sbi->rehash_lock);
++	spin_lock(&dentry->d_lock);
++	__d_drop(dentry);
++	spin_unlock(&dentry->d_lock);
++	spin_unlock(&dcache_lock);
+ 
+ 	return 0;
+ }
+@@ -653,6 +778,9 @@ static int autofs4_dir_rmdir(struct inod
+ 	struct autofs_info *ino = autofs4_dentry_ino(dentry);
+ 	struct autofs_info *p_ino;
+ 	
++	DPRINTK("dentry %p, removing %.*s",
++		dentry, dentry->d_name.len, dentry->d_name.name);
++
+ 	if (!autofs4_oz_mode(sbi))
+ 		return -EACCES;
+ 
+@@ -661,6 +789,9 @@ static int autofs4_dir_rmdir(struct inod
+ 		spin_unlock(&dcache_lock);
+ 		return -ENOTEMPTY;
+ 	}
++	spin_lock(&sbi->rehash_lock);
++	list_add(&ino->rehash, &sbi->rehash_list);
++	spin_unlock(&sbi->rehash_lock);
+ 	spin_lock(&dentry->d_lock);
+ 	__d_drop(dentry);
+ 	spin_unlock(&dentry->d_lock);
+--- linux-2.6.20/fs/autofs4/inode.c.lookup-expire-race	2007-02-05 03:44:54.000000000 +0900
++++ linux-2.6.20/fs/autofs4/inode.c	2007-02-12 12:16:27.000000000 +0900
+@@ -48,6 +48,8 @@ struct autofs_info *autofs4_init_ino(str
+ 	ino->dentry = NULL;
+ 	ino->size = 0;
+ 
++	INIT_LIST_HEAD(&ino->rehash);
++
+ 	ino->last_used = jiffies;
+ 	atomic_set(&ino->count, 0);
+ 
+@@ -158,14 +160,13 @@ void autofs4_kill_sb(struct super_block 
+ 	if (!sbi)
+ 		goto out_kill_sb;
+ 
+-	sb->s_fs_info = NULL;
+-
+-	if ( !sbi->catatonic )
++	if (!sbi->catatonic)
+ 		autofs4_catatonic_mode(sbi); /* Free wait queues, close pipe */
+ 
+ 	/* Clean up and release dangling references */
+ 	autofs4_force_release(sbi);
+ 
++	sb->s_fs_info = NULL;
+ 	kfree(sbi);
+ 
+ out_kill_sb:
+@@ -336,6 +337,8 @@ int autofs4_fill_super(struct super_bloc
+ 	mutex_init(&sbi->wq_mutex);
+ 	spin_lock_init(&sbi->fs_lock);
+ 	sbi->queues = NULL;
++	spin_lock_init(&sbi->rehash_lock);
++	INIT_LIST_HEAD(&sbi->rehash_list);
+ 	s->s_blocksize = 1024;
+ 	s->s_blocksize_bits = 10;
+ 	s->s_magic = AUTOFS_SUPER_MAGIC;
+
+
