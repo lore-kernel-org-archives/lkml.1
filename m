@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751375AbXBMWip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751374AbXBMWjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751375AbXBMWip (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 17:38:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbXBMWip
+	id S1751374AbXBMWjx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 17:39:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbXBMWjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 17:38:45 -0500
-Received: from ns.suse.de ([195.135.220.2]:50921 "EHLO mx1.suse.de"
+	Tue, 13 Feb 2007 17:39:53 -0500
+Received: from ns1.suse.de ([195.135.220.2]:51026 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751372AbXBMWip (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 17:38:45 -0500
-Date: Tue, 13 Feb 2007 23:38:33 +0100
-From: Andrea Arcangeli <andrea@suse.de>
-To: Vojtech Pavlik <vojtech@suse.cz>
-Cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
-       Arjan van de Ven <arjan@infradead.org>, Jiri Bohac <jbohac@suse.cz>,
-       linux-kernel@vger.kernel.org, ssouhlal@freebsd.org, tglx@linutronix.de,
-       johnstul@us.ibm.com, zippel@linux-m68k.org
-Subject: Re: [patch 4/9] Remove the TSC synchronization on SMP machines
-Message-ID: <20070213223833.GB7615@v2.random>
-References: <20070201095952.589234000@jet.suse.cz> <1171348808.12771.19.camel@laptopd505.fenrus.org> <Pine.LNX.4.64.0702130906530.23634@schroedinger.engr.sgi.com> <200702131820.15180.ak@suse.de> <20070213221848.GF9189@suse.cz>
+	id S1751374AbXBMWjw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 17:39:52 -0500
+From: Neil Brown <neilb@suse.de>
+To: Greg KH <greg@kroah.com>
+Date: Wed, 14 Feb 2007 09:39:10 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070213221848.GF9189@suse.cz>
+Content-Transfer-Encoding: 7bit
+Message-ID: <17874.15886.523387.629797@notabene.brown>
+Cc: Andreas Gruenbacher <agruen@suse.de>, torvalds@linux-foundation.org,
+       viro@zeniv.linux.org.uk, hch@lst.de, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Bug in current -git tree causing dbus and gnome to chew up cpu time
+In-Reply-To: message from Greg KH on Tuesday February 13
+References: <20070213195116.GA5181@kroah.com>
+	<200702131158.02809.agruen@suse.de>
+	<20070213213737.GA14383@kroah.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Tue, Feb 13, 2007 at 11:18:48PM +0100, Vojtech Pavlik wrote:
-> It's not inherent to ntpd's design, but the current (which may have been
-> fixed since I looked last) implementation of the NTP PLL in the kernel.
+On Tuesday February 13, greg@kroah.com wrote:
 > 
-> The interaction with ntpd can be fixed and I've done it in the past
-> once, although the fix wasn't all that nice.
+> This causes the following to just loop over and over, incrementing the
+> pid:
+> 
+> gnome-vfs-daemo(8914): 
 
-Yep, it can slowly move towards the correct time, but ntpdate (or more
-generally settimeofday) remains a fundamental issue (and I prefer time
-skews to be fixed ASAP, not slowly).
+That's odd.  getcwd returning an empty string.
+I can only see that happening if you do the equivalent of
+   chdir("/");
+   chroot("/somewhere");
+   getcwd(buf,sizeof(buf));
 
-If the admin is good, he can know that if he ever runs the db when the
-clock isn't perfectly synchronized with the atomic clock, he risks to
-screwup his whole dataset as the apps won't even handle time going
-backwards after reboot.
+That would return an empty string with the new code but not with the
+old.
+But I cannot imagine gnome-vfs-daemon doing a chroot, as it does not
+run as root.
 
-I think there should be a limit to how much an app can pretend from
-gtod before generating failures. Certainly it's always better to write
-apps that are robust against a not monotonic gtod because eventually
-it _can_ happen (either that or remove the stod syscall ;).
+You could try removing the
+		if (*buffer == '/') {
+			buffer++;
+			buflen++;
+		}
+from the new __d_path.  But that still wouldn't really explain what
+was happening.
 
-About ntpdate at boot and ntpd at runtime, not running them isn't
-really an option on the server IMHO, think the liability if system
-time runs out of sync of a minute and you need to know exactly when
-something bad has happened.
+Maybe also put a WARN_ON(! *buffer) just before the return to find out
+exactly what is going on when the empty string is returned.
+
+NeilBrown
