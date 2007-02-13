@@ -1,127 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030618AbXBMCtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030621AbXBMCx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030618AbXBMCtn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 21:49:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030617AbXBMCtn
+	id S1030621AbXBMCx3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 21:53:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030620AbXBMCx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 21:49:43 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:47295 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030616AbXBMCtl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 21:49:41 -0500
-Date: Mon, 12 Feb 2007 18:49:15 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, oleg@tv-sign.ru, a.p.zijlstra@chello.nl,
-       mingo@elte.hu, hch@infradead.org, akpm@osdl.org,
-       stern@rowland.harvard.edu
-Subject: Re: [RFC PATCH] QRCU fastpath optimization
-Message-ID: <20070213024915.GE2542@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070212044817.GA23254@linux.vnet.ibm.com> <20070212062209.GE3999@kernel.dk>
-Mime-Version: 1.0
+	Mon, 12 Feb 2007 21:53:29 -0500
+Received: from ns2.suse.de ([195.135.220.15]:35745 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030619AbXBMCx2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 21:53:28 -0500
+From: Neil Brown <neilb@suse.de>
+To: Pete Clements <clem@clem.clem-digital.net>
+Date: Tue, 13 Feb 2007 13:52:26 +1100
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070212062209.GE3999@kernel.dk>
-User-Agent: Mutt/1.4.1i
+Content-Transfer-Encoding: 7bit
+Message-ID: <17873.10218.683015.201907@notabene.brown>
+Cc: yoshfuji@linux-ipv6.org (YOSHIFUJIHideaki/=?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?=),
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, "Chuck Lever" <chuck.lever@oracle.com>
+Subject: Re: 2.6.20-git8 fails compile -- net/built-in.o __ipv6_addr_type
+In-Reply-To: message from Pete Clements on Monday February 12
+References: <20070213.111345.78160400.yoshfuji@linux-ipv6.org>
+	<200702130236.l1D2a0u7014457@clem.clem-digital.net>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 12, 2007 at 07:22:09AM +0100, Jens Axboe wrote:
-> On Sun, Feb 11 2007, Paul E. McKenney wrote:
-> > This patch optimizes the "quick" RCU update-side fastpath, so that in the
-> > absence of readers, synchronize_qrcu() does four non-atomic comparisons
-> > and three memory barriers, eliminating the need to acquire the global
-> > lock in this case.  Lightly tested.  Algorithm has been validated for
-> > the 3-reader-2-updater and 2-reader-3-updater cases -- 3-readers-3-updaters
-> > case still to be done (I expect to get access to a large-memory machine
-> > in the next few weeks -- need >>20GB).
-> > 
-> > Not for inclusion.  Patch is against Oleg's original patch, and likely
-> > needs to be rediffed against Jen's patchstack.  I will do this rediffing
-> > later, first want an easy-to-test and easy-to-inpect version.
-> 
-> I'd suggest just merging this optimization into the original QRCU patch.
-> Once you are happy with the validation, I'll add it to the plug branch
-> as well.
-> 
-> Version against the plug branch below.
+On Monday February 12, clem@clem.clem-digital.net wrote:
+> Quoting YOSHIFUJIHideaki/=?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?=
+>   > In article <20070212181216.c55ca788.akpm@linux-foundation.org> (at Mon, 12 Feb 2007 18:12:16 -0800), Andrew Morton <akpm@linux-foundation.org> says:
+>   > 
+>   > > > On Mon, 12 Feb 2007 20:10:13 -0500 (EST) Pete Clements <clem@clem.clem-digital.net> wrote:
+>   > > > 2.6.20-git8 fails compile:
+>   > > > 
+>   > > >   CHK     include/linux/compile.h
+>   > > >   UPD     include/linux/compile.h
+>   > > >   CC      init/version.o
+>   > > >   LD      init/built-in.o
+>   > > >   LD      .tmp_vmlinux1
+>   > > > net/built-in.o: In function `svc_udp_recvfrom':
+>   > > > svcsock.c:(.text+0x61be4): undefined reference to `__ipv6_addr_type'
+>   > > > make: *** [.tmp_vmlinux1] Error 1
+>   > > > 
 
-Thank you very much!!!
+Hmmm.  
 
-One way or another, I will get you something in a form friendly to your
-patch stack.
+> CONFIG_IPV6=m
+combined with
+> CONFIG_SUNRPC=y
 
-							Thanx, Paul
+is a combination that isn't going to work at the moment....
 
-> diff --git a/kernel/srcu.c b/kernel/srcu.c
-> index 53c6989..bfe347a 100644
-> --- a/kernel/srcu.c
-> +++ b/kernel/srcu.c
-> @@ -324,28 +324,53 @@ void synchronize_qrcu(struct qrcu_struct *qp)
->  {
->  	int idx;
-> 
-> +	smp_mb();  /* Force preceding change to happen before fastpath check. */
-> +
->  	/*
-> -	 * The following memory barrier is needed to ensure that
-> -	 * any prior data-structure manipulation is seen by other
-> -	 * CPUs to happen before picking up the value of
-> -	 * qp->completed.
-> +	 * Fastpath: If the two counters sum to "1" at a given point in
-> +	 * time, there are no readers.  However, it takes two separate
-> +	 * loads to sample both counters, which won't occur simultaneously.
-> +	 * So we might race with a counter switch, so that we might see
-> +	 * ctr[0]==0, then the counter might switch, then we might see
-> +	 * ctr[1]==1 (unbeknownst to us because there is a reader still
-> +	 * there).  So we do a read memory barrier and recheck.  If the
-> +	 * same race happens again, there must have been a second counter
-> +	 * switch.  This second counter switch could not have happened
-> +	 * until all preceding readers finished, so if the condition
-> +	 * is true both times, we may safely proceed.
-> +	 *
-> +	 * This relies critically on the atomic increment and atomic
-> +	 * decrement being seen as executing in order.
->  	 */
-> -	smp_mb();
-> +
-> +	if (atomic_read(&qp->ctr[0]) + atomic_read(&qp->ctr[1]) <= 1) {
-> +		smp_rmb();  /* Keep two checks independent. */
-> +		if (atomic_read(&qp->ctr[0]) + atomic_read(&qp->ctr[1]) <= 1)
-> +			goto out;
-> +	}
-> +
->  	mutex_lock(&qp->mutex);
-> 
->  	idx = qp->completed & 0x1;
->  	if (atomic_read(qp->ctr + idx) == 1)
-> -		goto out;
-> +		goto out_unlock;
-> 
->  	atomic_inc(qp->ctr + (idx ^ 0x1));
-> -	/* Reduce the likelihood that qrcu_read_lock() will loop */
-> +
-> +	/*
-> +	 * Prevent subsequent decrement from being seen before previous
-> +	 * increment -- such an inversion could cause the fastpath
-> +	 * above to falsely conclude that there were no readers.  Also,
-> +	 * reduce the likelihood that qrcu_read_lock() will loop.
-> +	 */
->  	smp_mb__after_atomic_inc();
->  	qp->completed++;
-> 
->  	atomic_dec(qp->ctr + idx);
->  	__wait_event(qp->wq, !atomic_read(qp->ctr + idx));
-> -out:
-> +out_unlock:
->  	mutex_unlock(&qp->mutex);
-> +out:
->  	smp_mb();
->  	/*
->  	 * The above smp_mb() is needed in the case that we
-> 
-> -- 
-> Jens Axboe
-> 
+Options?
+
+ - Move __ipv6_addr_type to lib/ ??
+        Might not work for modules.
+ - Disallow that combination in the .config.
+        .. a bit harsh.
+ - Only include IPv6 support in SUNRPC is a module or IPV6 is built-in
+        A bit of a kludge..
+
+Chuck?  Any ideas?
+
+NeilBrown
+
