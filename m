@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750735AbXBMPQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750738AbXBMPVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750735AbXBMPQf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 10:16:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750738AbXBMPQf
+	id S1750738AbXBMPVR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 10:21:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750740AbXBMPVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 10:16:35 -0500
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:34689 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750735AbXBMPQe (ORCPT
+	Tue, 13 Feb 2007 10:21:16 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:38751 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750738AbXBMPVO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 10:16:34 -0500
-Date: Tue, 13 Feb 2007 10:16:33 -0500
-To: Raphael Assenat <raph@8d.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add PCI device ID for IT8152 RISC-to-PCI chip
-Message-ID: <20070213151633.GL7584@csclub.uwaterloo.ca>
-References: <45CCD60D.5050001@8d.com> <20070209212856.GK7584@csclub.uwaterloo.ca> <45D1CF22.6010706@8d.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45D1CF22.6010706@8d.com>
-User-Agent: Mutt/1.5.9i
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Tue, 13 Feb 2007 10:21:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=VLAbhyrRoTN7/FePKHJc2YgcTzHxqHAIFa6DOUdfDLsvGOAEglcLQFiMU55fZjuWRQWYc4lGQXqAeSbQEMbyw0CC/3x+qhydI6OCXnh26ZmNXHWK0DBI2InWLA+hF0Jed5GiY6DLBd5Px/ZI5+GkYjHcJ32xkbBs3CUXy3m2ofc=
+Message-ID: <45D1D72D.9020509@gmail.com>
+Date: Tue, 13 Feb 2007 07:20:13 -0800
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Robert Hancock <hancockr@shaw.ca>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       edmudama@gmail.com, Nicolas.Mailhot@LaPoste.net
+Subject: Re: libata FUA revisited
+References: <fa.S80SRyQbD/hm4SxliPUKU88BaCo@ifi.uio.no> <fa.Q/csgyCHkAsD84yi+bN78H1WNNM@ifi.uio.no> <45D104F3.7040602@shaw.ca>
+In-Reply-To: <45D104F3.7040602@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 13, 2007 at 09:45:54AM -0500, Raphael Assenat wrote:
-> Really? I have no idea if it's possible to get a reliable PCI bus or
-> not with this chip. Right now, we only use it for it's built-in OHCI 
-> USB host controller and UART. You're making me hope I never have to 
-> use it for interfacing a PCI card!
+Hello, Robert.
 
-Well on the system on a board we were trying, using the development
-baseboard from the same supplier, by simply doing a ping flood through
-the onboard rtl8139 I managed to get corrupted ethernet packets fairly
-frequently.  The WAN cards (T1/E1) we were trying to make work with it
-were much more upset by it.  It could be bad enough corruption to cause
-the chip on the card and the driver to get out of sync and just have no
-idea what to do anymore.  Given our mainboard works perfectly fine using
-a Geode SC1200 instead of the PXA255 board, I can only figure the PCI
-bus wasn't implemented correctly on that chip, unless PCI on arm is done
-wrong in linux (I sure hope not).  There doesn't seem to be very many
-arm systems with PCI, so it's hard to tell.  Now other than PCI the
-system was wonderful.  Fast, reliable, ran great even at high
-temperatures, etc.  Just couldn't get the stupid PCI bus to work.
+Robert Hancock wrote:
+[--snip--]
+> On the NCQ side, I think it's pretty safe to assume that all controllers 
+> will handle it. Obviously I've verified it with sata_nv (at least that 
+> it doesn't blow up obviously), and the other two NCQ drivers we have, 
+> ahci and sata_sil24 just feed raw FIS data into the controller so there 
+> should be no issue with not supporting it.
 
---
-Len Sorensen
+FWIW, ICH6/7/8 ahci's clear PMP field when transmitting FIS.  The reason 
+why I'm hesitant is because there is no way to tell whether the FUA bit 
+got honored or ignored.  With extra opcode, it's okay because barrier 
+explicitly fails but if NCQ FUA is not supported, it will succeed 
+silently as normal write.  Everything will be okay generally but the 
+barrier is done incorrectly and on a really bad day it will lead to 
+journal corruption.
+
+So, actually, I was thinking about *always* using the non-NCQ FUA 
+opcode.  As currently implemented, FUA request is always issued by 
+itself, so NCQ doesn't make any difference there.  So, I think it would 
+be better to turn on FUA on driver-by-driver basis whether the 
+controller supports NCQ or not.
+
+Well, I might be being too paranoid but silent FUA failure would be 
+really hard to diagnose if that ever happens (and I'm fairly certain 
+that it will on some firmwares).
+
+-- 
+tejun
