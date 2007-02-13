@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750908AbXBMUEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750919AbXBMUJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750908AbXBMUEv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 15:04:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbXBMUEv
+	id S1750919AbXBMUJU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 15:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbXBMUJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 15:04:51 -0500
-Received: from wr-out-0506.google.com ([64.233.184.234]:55064 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750908AbXBMUEu (ORCPT
+	Tue, 13 Feb 2007 15:09:20 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:43767 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750917AbXBMUJU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 15:04:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hwWiDYe/SFdVsilTGXa6fNXEydZ1IeOf2aMxmIBK9keVipw1WNBztvinR3xO3sGeUuHUwuUEy2ImBZiYE3uKGKfxjTr47lPQaxaZaWVckYb0WEQFAOtO5oHbIEVdfhzFbNEJHP870SD/pjV94wfMbN6T1dp4nKBmX1L4hjo2aA0=
-Message-ID: <8d158e1f0702131204l51099b84m822aba87ffb64ccb@mail.gmail.com>
-Date: Tue, 13 Feb 2007 21:04:47 +0100
-From: "Patrick Ale" <patrick.ale@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: [LIBATA] Libata under Qemu
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070213195933.GC16991@havoc.gtf.org>
+	Tue, 13 Feb 2007 15:09:20 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Alexey Dobriyan <adobriyan@openvz.org>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: Re: Alt+SysRq+K broken
+References: <20070213144814.GA6017@localhost.sw.ru>
+Date: Tue, 13 Feb 2007 13:08:52 -0700
+In-Reply-To: <20070213144814.GA6017@localhost.sw.ru> (Alexey Dobriyan's
+	message of "Tue, 13 Feb 2007 17:48:14 +0300")
+Message-ID: <m1lkj1stuz.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8d158e1f0702130955n1ae4ebbew4bbf799d683c79fc@mail.gmail.com>
-	 <8d158e1f0702131153g6d9f748djb7556a1e9ebc71ad@mail.gmail.com>
-	 <20070213195933.GC16991@havoc.gtf.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/13/07, Jeff Garzik <jeff@garzik.org> wrote:
+Alexey Dobriyan <adobriyan@openvz.org> writes:
 
+> kernel BUG at kernel/workqueue.c:212! 100% reproducable
 >
-> /That/ sounds like a qemu bug.
+> 	queue_work
+> 	__handle_sysrq
+> 	kbd_event
+> 	add_timer_randomness
+> 	kbd_event
+> 	input_event
+> 	atkbd_interrupt
+> 	serio_interrupt
+> 	i8042_interrupt
+> 		...
+>
+> reverting the following patch make it work again.
 
-Allright, I will make sure tonight by testing it on a native PIIX
-mainboard without anything connected to the second PATA controller :)
+Thanks,
 
-I thought for a second it was a similar "abnorma statel" error I got
-earlier this week with pata_via when no drive was attached (no qemu,
-real hardware)
+I wrote the patch just before the big set of work queue changes,
+and had to fix it to work with the new style of work queues when
+it went it Andrews tree.  It looks like the work queue api
+continued to change and my patch bit rotted.
 
-I'll keep you posted.
+I will take a look and see what it takes to updated the code to
+the current API.
 
+I'm pretty certain a s/PREPARE_WORK/INIT_WORK/g would make it
+work but I'm not certain that is correct.
 
-Patrick
+Eric
