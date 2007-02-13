@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750914AbXBMRMg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750966AbXBMRPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750914AbXBMRMg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 12:12:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbXBMRMg
+	id S1750966AbXBMRPe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 12:15:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbXBMRPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 12:12:36 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:44899 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750914AbXBMRMf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 12:12:35 -0500
-Date: Tue, 13 Feb 2007 12:12:33 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Cc: "Martin A. Fink" <fink@mpe.mpg.de>, linux-kernel@vger.kernel.org
-Subject: Re: SATA-performance: Linux vs. FreeBSD
-Message-ID: <20070213171233.GA6798@havoc.gtf.org>
-References: <200702121502.17130.fink@mpe.mpg.de> <200702121856.29729.fink@mpe.mpg.de> <20070212190835.20f9b92f@localhost.localdomain> <200702131034.22639.fink@mpe.mpg.de> <20070213112527.59eaa504@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 13 Feb 2007 12:15:34 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:42314 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750963AbXBMRPd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 12:15:33 -0500
+X-Greylist: delayed 1372 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Feb 2007 12:15:33 EST
+From: Andi Kleen <ak@suse.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH x86 for review III] [1/29] i386: avoid gcc extension
+Date: Tue, 13 Feb 2007 17:52:27 +0100
+User-Agent: KMail/1.9.5
+Cc: Arnd Bergmann <arnd@arndb.de>, Christoph Hellwig <hch@infradead.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+References: <20070212551.664370000@suse.de> <200702131611.15172.arnd@arndb.de> <20070213081023.1fc951ff.randy.dunlap@oracle.com>
+In-Reply-To: <20070213081023.1fc951ff.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <20070213112527.59eaa504@localhost.localdomain>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200702131752.28377.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 13, 2007 at 11:25:27AM +0000, Alan wrote:
-> > So where is the difference between SATA-I and SATA-II ?
+On Tuesday 13 February 2007 17:10, Randy Dunlap wrote:
+> On Tue, 13 Feb 2007 16:11:14 +0100 Arnd Bergmann wrote:
 > 
-> All physical side if they are on the same controller when you do the
-> tests. Mostly latency,
+> > On Monday 12 February 2007 17:51, Andi Kleen wrote:
+> > > setcc() in math-emu is written as a gcc extension statement expression
+> > > macro that returns a value.  However, it's not used that way and it's not
+> > > needed like that, so just make it a do-while non-extension macro so that we
+> > > don't use an extension when it's not needed.
+> > > 
+> > 
+> > The patch looks good but it doesn't match the description any more, since
+> > you now use a function...
+> 
+> Hi Arnd,
+> Someone else had that same comment, so I sent a corrected patch
+> (description change only) to that mail.
 
-SATA-II is a highly confusing marketing term.  It is /not/ a technical
-term.
+I had already fixed it up
 
-In some cases there are NO differences between SATA-I and SATA-II.  You
-can find 1.5Gbps non-NCQ-supporting devices claiming SATA-II.
-
-Similarly, there is no "SATA version" word in the IDENTIFY DEVICE page,
-like there are "ATA version" words.
-
-	Jeff
-
-
-
+-Andi
