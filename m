@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751301AbXBMMId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751302AbXBMMMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751301AbXBMMId (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 07:08:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbXBMMId
+	id S1751302AbXBMMMg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 07:12:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbXBMMMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 07:08:33 -0500
-Received: from lazybastard.de ([212.112.238.170]:37772 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751301AbXBMMIc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 07:08:32 -0500
-Date: Tue, 13 Feb 2007 12:04:52 +0000
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: "Martin A. Fink" <fink@mpe.mpg.de>
-Cc: Matthias Schniedermeyer <ms@citd.de>, linux-kernel@vger.kernel.org
-Subject: Re: SATA-performance: Linux vs. FreeBSD
-Message-ID: <20070213120452.GB12383@lazybastard.org>
-References: <200702121502.17130.fink@mpe.mpg.de> <200702131025.15964.fink@mpe.mpg.de> <45D19014.5080900@citd.de> <200702131129.19270.fink@mpe.mpg.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Tue, 13 Feb 2007 07:12:35 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60769 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751302AbXBMMMf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 07:12:35 -0500
+Date: Tue, 13 Feb 2007 13:12:13 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Andrew Morton <akpm@linux-foundation.org>, akuster@mvista.com,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch 1/1] PM: Adds remount fs ro at suspend
+Message-ID: <20070213121213.GI18101@elf.ucw.cz>
+References: <20070202235132.EDBDF1C448@hermes.mvista.com> <20070202161611.cf8b4328.akpm@linux-foundation.org> <20070203003536.GA619@khazad-dum.debian.net> <1170710913.6105.39.camel@nigel.suspend2.net> <20070206143231.GD18392@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200702131129.19270.fink@mpe.mpg.de>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070206143231.GD18392@khazad-dum.debian.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 February 2007 11:29:18 +0100, Martin A. Fink wrote:
-> 
-> Please Read Carefully! I talk about flash disk, not normal harddisks. There 
-> are no mechanical parts in flash disks, only flash memory. And therefore 
-> 48MB/s is excellent (compared to all other available disks)
-> 
-> [...]
-> 
-> Well. The testdrive has 27GB. The final drive will have 225 GB. And there will 
-> be 3 cameras and thus 3 disks. This means we talk about 140 MB/s for around 
-> 90 minutes.
+Hi!
 
-Do you have any numbers on the performance for the final drive?  Single
-flash chips are relatively slow, the high bandwidth is usually achieved
-by writing in parallel to several of them.  With the bigger drive you
-get more chips and the manufacturer could run more of them in parallel.
+> > Why do you think remounting filesystems is necessary? Are you getting
+> > problems with some particular filesystem?
+> 
+> No.  But anything in a removable device neets to be either remounted
+> read-only or unmounted if that is at all possible, because the user could
+> unplug it.  It is of course, sync'd anyway, so if the remount/umount fails,
+> no corruption should happen...  but the fs will be dirty, etc.
+> 
+> It can get very ugly when you factor in docks and removable bays. It's not
+> just USB/firewire mass-storage devices and memory cards.  And there is the
+> patological cases where the user suspends with the device in one port, and
+> resumes with the device in another port.
+> 
+> I feel userspace *can* do all that needs to be done, but we are (currently)
+> very bad at it.
 
-Jörn
+Fix it in userspace, then. fsck when you unplug disk while suspended
+should serve as a reminder to fix that userspace :-).
 
+(And yes, you may need some kernel support to do it nicely; hopefully
+same kernel support that will solve users unplugging disks without
+umount.)
+									Pavel
 -- 
-With a PC, I always felt limited by the software available. On Unix,
-I am limited only by my knowledge.
--- Peter J. Schoenster
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
