@@ -1,75 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751737AbXBMTOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751740AbXBMTPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751737AbXBMTOr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 14:14:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbXBMTOq
+	id S1751740AbXBMTPI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 14:15:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbXBMTPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 14:14:46 -0500
-Received: from javad.com ([216.122.176.236]:3002 "EHLO javad.com"
+	Tue, 13 Feb 2007 14:15:08 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:57219 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751735AbXBMTOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 14:14:46 -0500
-From: Sergei Organov <osv@javad.com>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       =?utf-8?B?Si5BLiBN?= =?utf-8?B?YWdhbGzDg8ODw4LCs24=?= 
-	<jamagallon@ono.com>,
-       "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
-       "Jeff Garzik" <jeff@garzik.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: somebody dropped a (warning) bomb
-References: <45CB3B28.60102@garzik.org>
-	<Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org>
-	<20070208221317.5beedaeb@werewolf-wl>
-	<Pine.LNX.4.64.0702081338010.8424@woody.linux-foundation.org>
-	<Pine.LNX.4.64.0702081351410.8424@woody.linux-foundation.org>
-	<87abznsdyo.fsf@javad.com>
-	<Pine.LNX.4.64.0702090753500.8424@woody.linux-foundation.org>
-	<874pprr5nn.fsf@javad.com>
-	<Pine.LNX.4.64.0702120804520.8424@woody.linux-foundation.org>
-	<87ps8end9b.fsf@javad.com>
-	<84144f020702131026q2af1afd6vbcd2708d7b7b9907@mail.gmail.com>
-Date: Tue, 13 Feb 2007 22:14:23 +0300
-In-Reply-To: <84144f020702131026q2af1afd6vbcd2708d7b7b9907@mail.gmail.com>
-	(Pekka Enberg's message of "Tue, 13 Feb 2007 20:26:23 +0200")
-Message-ID: <87bqjxooog.fsf@javad.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	id S1751741AbXBMTPB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 14:15:01 -0500
+Date: Tue, 13 Feb 2007 22:12:24 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Benjamin LaHaise <bcrl@kvack.org>, Alan <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system call support
+Message-ID: <20070213191224.GA4894@2ka.mipt.ru>
+References: <20060529212109.GA2058@elte.hu> <20070213142010.GA638@elte.hu> <20070213150019.4b4d4827@localhost.localdomain> <20070213145848.GS18311@kvack.org> <20070213165642.GB16394@elte.hu> <20070213185636.GA23987@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <20070213185636.GA23987@2ka.mipt.ru>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.7.5 (2ka.mipt.ru [0.0.0.0]); Tue, 13 Feb 2007 22:12:35 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Pekka Enberg" <penberg@cs.helsinki.fi> writes:
+> I have not received first mail with announcement yet, so I will place 
+> my thoughts here if you do not mind.
 
-> On 2/13/07, Sergei Organov <osv@javad.com> wrote:
->> May I suggest another definition for a warning being entirely sucks?
->> "The warning is entirely sucks if and only if it never has true
->> positives." In all other cases it's only more or less sucks, IMHO.
->
-> You're totally missing the point.
+An issue with sys_async_wait():
+is is possible that events_left will be setup too late so that all
+events are already ready and thus sys_async_wait() can wait forever
+(or until next $sys_async_wait are ready)?
 
-No, I don't. 
-
-> False positives are not a minor annoyance, they're actively harmful as
-> they hide other _useful_ warnings.
-
-Every warning I'm aware of do have false positives. They are indeed
-harmful, so one takes steps to get rid of them. If a warning had none
-false positives, it should be an error, not a warning in the first
-place.
-
-> So, you really want warnings to be about things that can and
-> should be fixed.
-
-That's the definition of a "perfect" warning, that is actually called
-"error".
-
-> So you really should aim for _zero false positives_ even if you risk
-> not detecting some real positives.
-
-With almost any warning out there one makes more or less efforts to
-suppress the warning where it gives false positives, isn't it? At least
-that's my experience so far.
-
--- Sergei.
+-- 
+	Evgeniy Polyakov
