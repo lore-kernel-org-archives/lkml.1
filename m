@@ -1,81 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750700AbXBMOqB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750701AbXBMOrM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750700AbXBMOqB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 09:46:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750704AbXBMOqA
+	id S1750701AbXBMOrM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 09:47:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750707AbXBMOrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 09:46:00 -0500
-Received: from roc.holo.8d.com ([64.254.227.115]:35963 "EHLO roc.holo.8d.com"
+	Tue, 13 Feb 2007 09:47:12 -0500
+Received: from thunk.org ([69.25.196.29]:50091 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750700AbXBMOqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 09:46:00 -0500
-Message-ID: <45D1CF22.6010706@8d.com>
-Date: Tue, 13 Feb 2007 09:45:54 -0500
-From: Raphael Assenat <raph@8d.com>
-User-Agent: Mozilla Thunderbird 1.0 (X11/20050118)
-X-Accept-Language: en-us, en
+	id S1750701AbXBMOrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 09:47:10 -0500
+Date: Tue, 13 Feb 2007 09:47:02 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: "Martin A. Fink" <fink@mpe.mpg.de>
+Cc: Alan <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: SATA-performance: Linux vs. FreeBSD
+Message-ID: <20070213144702.GD8670@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"Martin A. Fink" <fink@mpe.mpg.de>, Alan <alan@lxorguk.ukuu.org.uk>,
+	linux-kernel@vger.kernel.org
+References: <200702121502.17130.fink@mpe.mpg.de> <200702131034.22639.fink@mpe.mpg.de> <20070213112527.59eaa504@localhost.localdomain> <200702131332.34899.fink@mpe.mpg.de>
 MIME-Version: 1.0
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add PCI device ID for IT8152 RISC-to-PCI chip
-References: <45CCD60D.5050001@8d.com> <20070209212856.GK7584@csclub.uwaterloo.ca>
-In-Reply-To: <20070209212856.GK7584@csclub.uwaterloo.ca>
-X-Enigmail-Version: 0.89.5.0
-X-Enigmail-Supports: pgp-inline, pgp-mime
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -2.6
-X-Spam-Report: -2.6 points, 5.0 required autolearn=ham
-	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 AWL                    AWL: From: address is in the auto white-list
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702131332.34899.fink@mpe.mpg.de>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennart Sorensen wrote:
-> On Fri, Feb 09, 2007 at 03:14:05PM -0500, Raphael Assenat wrote:
-> 
->>This patch adds a PCI device ID (0x8152) for the IT8152F/G
->>Advanced RISC-to-PCI Companion Chip.
->>
->>-- 
->>Raphael Assenat
->>8D Technologies Inc.
-> 
-> 
->>This patch adds a PCI device ID for the IT8152F/G 
->>Advanced RISC-to-PCI Companion Chip.
->>
->>Signed-off-by: Raphael Assenat <raph@8d.com>
->>
->>--- linux-2.6.20/include/linux/pci_ids.h	2007-02-04 13:44:54.000000000 -0500
->>+++ linux-2.6.20-8d/include/linux/pci_ids.h	2007-02-09 15:00:38.000000000 -0500
->>@@ -1626,6 +1626,7 @@
->> #define PCI_VENDOR_ID_ROCKWELL		0x127A
->> 
->> #define PCI_VENDOR_ID_ITE		0x1283
->>+#define PCI_DEVICE_ID_ITE_8152		0x8152
->> #define PCI_DEVICE_ID_ITE_8211		0x8211
->> #define PCI_DEVICE_ID_ITE_8212		0x8212
->> #define PCI_DEVICE_ID_ITE_8872		0x8872
-> 
-> 
-> Oh that one.  Anyone ever have a reliable PCI bus with one of these?
-> The one system on a board I have worked with in the past had so many
-> problems with the PCI bus that we have to switch to another board
-> instead.  Too bad since the ARM cpu was much faster and better and
-> handling network traffic (we switched to a Geode SC1200 based board).
-> 
-> At the time my theory was that the cpu would interrupt DMA transfers
-> when it wanted access to system memory, which would break the PCI
-> transfers.  But that was just my theory.
-Really? I have no idea if it's possible to get a reliable PCI bus or
-not with this chip. Right now, we only use it for it's built-in OHCI 
-USB host controller and UART. You're making me hope I never have to 
-use it for interfacing a PCI card!
+On Tue, Feb 13, 2007 at 01:32:34PM +0100, Martin A. Fink wrote:
+> > Does the FreeBSD fsync sync to media ? Also what controller is being used
+> > here, and do you have EHCI USB support running ?
+>
+> Manual of FreeBSD fsync says it syncs to media.
 
-Best regards,
+That didn't answer the question.  With SATA in particular, just
+because you flush it to the *disk*, doesn't mean that you've flushed
+it to the *media*, unless the OS is explicitly giving an command to
+the disk to do so.  If you haven't done any tests where you sync a
+huge amount of data on FreeBSD, and then immediate manually kick the
+power plug out of the wall, and then checking to make sure all of the
+data actually did make it to the media, I wouldn't necessary assume
+that it has.  Given that it sounds like you really care about this,
+I'd suggest that you explicitly testing this before making
+assumptions.
 
--- 
-Raphael Assenat
-8D Technologies Inc.
+							- Ted
