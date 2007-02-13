@@ -1,133 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030634AbXBMDNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030641AbXBMDeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030634AbXBMDNP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 22:13:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030632AbXBMDNP
+	id S1030641AbXBMDeW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 22:34:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030642AbXBMDeW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 22:13:15 -0500
-Received: from clem.clem-digital.net ([68.16.168.10]:56129 "EHLO
-	clem.clem-digital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030628AbXBMDNO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 22:13:14 -0500
-From: Pete Clements <clem@clem.clem-digital.net>
-Message-Id: <200702130313.l1D3D7hI014740@clem.clem-digital.net>
-Subject: Re: 2.6.20-git8 fails compile -- net/built-in.o __ipv6_addr_type
-To: yoshfuji@linux-ipv6.org (YOSHIFUJI Hideaki /
-	=?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?=)
-Date: Mon, 12 Feb 2007 22:13:07 -0500 (EST)
-Cc: clem@clem.clem-digital.net, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       yoshfuji@linux-ipv6.org
-In-Reply-To: <20070213.115510.21486123.yoshfuji@linux-ipv6.org>
-X-Mailer: ELM [version 2.5 PL7]
+	Mon, 12 Feb 2007 22:34:22 -0500
+Received: from [219.153.9.10] ([219.153.9.10]:20699 "EHLO mail.iblink.com.cn"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1030641AbXBMDeW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 22:34:22 -0500
+X-Greylist: delayed 2010 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Feb 2007 22:34:21 EST
+Message-ID: <45D129DA.1040306@idccenter.cn>
+Date: Tue, 13 Feb 2007 11:00:42 +0800
+From: "Tony.Ho" <linux@idccenter.cn>
+User-Agent: Thunderbird 2.0b2 (Windows/20070116)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: albcamus <albcamus@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Why can't I build a running Kernel?
+References: <200702081817.l18IHlbE027996@deneb.dwf.com>	 <45CB79CF.9010702@gmail.com> <df9815e70702120036k3e2a2a50re0dc2605c31766f3@mail.gmail.com>
+In-Reply-To: <df9815e70702120036k3e2a2a50re0dc2605c31766f3@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patched, compiles.
---
-Pete Clements
+I have the same problem with 2.6.20.
+My host is dell PE850: pemtiumD 2.8G X1,  MEM  1G X4,  SATA  73G X1.
 
-Quoting YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?=
-  > 
-  > Ah, this is because of new ipv6 support in sunrpc code.
-  > Enable it if it is statically compiled.
-  > 
-  > Alternatively, we could 
-  > - export __ipv6_addr_type in new net/ipv6/addrconf_core.c
-  > or
-  > - introduce tiny inline for chcking if the address is link-local.
-  > 
-  > Signed-off-by: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
-  > 
-  > diff --git a/net/sunrpc/svcsock.c b/net/sunrpc/svcsock.c
-  > index 63ae947..27dcb31 100644
-  > --- a/net/sunrpc/svcsock.c
-  > +++ b/net/sunrpc/svcsock.c
-  > @@ -107,12 +107,12 @@ static inline void svc_reclassify_socket
-  >  		sock_lock_init_class_and_name(sk, "slock-AF_INET-NFSD",
-  >  		    &svc_slock_key[0], "sk_lock-AF_INET-NFSD", &svc_key[0]);
-  >  		break;
-  > -
-  > +#ifdef CONFIG_IPV6
-  >  	case AF_INET6:
-  >  		sock_lock_init_class_and_name(sk, "slock-AF_INET6-NFSD",
-  >  		    &svc_slock_key[1], "sk_lock-AF_INET6-NFSD", &svc_key[1]);
-  >  		break;
-  > -
-  > +#endif
-  >  	default:
-  >  		BUG();
-  >  	}
-  > @@ -131,7 +131,7 @@ static char *__svc_print_addr(struct soc
-  >  			NIPQUAD(((struct sockaddr_in *) addr)->sin_addr),
-  >  			htons(((struct sockaddr_in *) addr)->sin_port));
-  >  		break;
-  > -#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
-  > +#if defined(CONFIG_IPV6)
-  >  	case AF_INET6:
-  >  		snprintf(buf, len, "%x:%x:%x:%x:%x:%x:%x:%x, port=%u",
-  >  			NIP6(((struct sockaddr_in6 *) addr)->sin6_addr),
-  > @@ -449,7 +449,7 @@ svc_wake_up(struct svc_serv *serv)
-  >  
-  >  union svc_pktinfo_u {
-  >  	struct in_pktinfo pkti;
-  > -#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
-  > +#if defined(CONFIG_IPV6)
-  >  	struct in6_pktinfo pkti6;
-  >  #endif
-  >  };
-  > @@ -467,7 +467,7 @@ static void svc_set_cmsg_data(struct svc
-  >  			cmh->cmsg_len = CMSG_LEN(sizeof(*pki));
-  >  		}
-  >  		break;
-  > -#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
-  > +#if defined(CONFIG_IPV6)
-  >  	case AF_INET6: {
-  >  			struct in6_pktinfo *pki = CMSG_DATA(cmh);
-  >  
-  > @@ -737,7 +737,7 @@ static void svc_udp_get_sender_address(s
-  >  			rqstp->rq_daddr.addr.s_addr = skb->nh.iph->daddr;
-  >  		}
-  >  		break;
-  > -#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
-  > +#if defined(CONFIG_IPV6)
-  >  	case AF_INET6: {
-  >  		/* this is derived from net/ipv6/udp.c:udpv6_recvmesg */
-  >  			struct sockaddr_in6 *sin6 = svc_addr_in6(rqstp);
-  > @@ -977,7 +977,7 @@ static inline int svc_port_is_privileged
-  >  	case AF_INET:
-  >  		return ntohs(((struct sockaddr_in *)sin)->sin_port)
-  >  			< PROT_SOCK;
-  > -#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
-  > +#if defined(CONFIG_IPV6)
-  >  	case AF_INET6:
-  >  		return ntohs(((struct sockaddr_in6 *)sin)->sin6_port)
-  >  			< PROT_SOCK;
-  > diff --git a/net/sunrpc/xprtsock.c b/net/sunrpc/xprtsock.c
-  > index 49cabff..877b52b 100644
-  > --- a/net/sunrpc/xprtsock.c
-  > +++ b/net/sunrpc/xprtsock.c
-  > @@ -1187,11 +1187,12 @@ static inline void xs_reclassify_socket(
-  >  			&xs_slock_key[0], "sk_lock-AF_INET-NFS", &xs_key[0]);
-  >  		break;
-  >  
-  > +#ifdef CONFIG_IPV6
-  >  	case AF_INET6:
-  >  		sock_lock_init_class_and_name(sk, "slock-AF_INET6-NFS",
-  >  			&xs_slock_key[1], "sk_lock-AF_INET6-NFS", &xs_key[1]);
-  >  		break;
-  > -
-  > +#endif
-  >  	default:
-  >  		BUG();
-  >  	}
-  > 
-  > 
-  > -- 
-  > YOSHIFUJI Hideaki @ USAGI Project  <yoshfuji@linux-ipv6.org>
-  > GPG-FP  : 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
-  > 
+albcamus wrote:
+> 2007/2/9, Jiri Slaby <jirislaby@gmail.com>:
+>> Reg Clemens napsal(a):
+>> > Why can't I build a running Kernel?
+>> > I have in the past, but since some time in the 2.6.19 series,
+>> > I have got the following series of errors.
+>> > Same thing now with 2.6.20.
+>> >
+>> > I build with:
+>> >
+>> >     make xconfig
+>> >
+>> > changing only the Processor type to Pentium4,
+>> > then I
+>> >
+>> >     make bzImage
+>> >     make modules
+>> >     make modules_install
+>> >     make install
+>> >
+>> > Fine everything builds, no errors.
+>> > I then try booting, and I get 4 or 5 lines and then
+>> >
+>> >     Unable to access resume device (/dev/sda5)
+>> >     mount: could not find filesystem '/dev/root'
+>> >     < 4 more lines with setuproot and switchroot >
+>> >
+>> > and then
+>> >
+>> >     Kernel panic - not syncing: Attempting to kill init!
+>> >
+>> > Sigh.
+>> > What has changed, what do I need to do to get this thing to boot?
+>>
+> I have the same problem with 2.6.19 and later. The previous kernel with
+> same .config works, but it's not true for 2.6.19 and 2.6.30.
+>
+>
+>
+>
+>> Re-enable sata/scsi/usb/whatever is your root behind stuff back 
+>> again? What
+>> does
+>> your .config look like?
+>>
+>> regards,
+>
+> I selected everything about ATA to <*> or <M>, and made initrd for the
+> newly-built kernel, still unable to boot.
+>
+> The .config was attached, I have kdb-4.4 patched.
+>
+> Thanks and Regards,
+> albcamus <albcamus@gmail.com>
+
