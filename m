@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750763AbXBMPzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750757AbXBMP5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750763AbXBMPzd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 10:55:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750757AbXBMPzd
+	id S1750757AbXBMP5x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 10:57:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbXBMP5x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 10:55:33 -0500
-Received: from rtr.ca ([64.26.128.89]:2053 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750763AbXBMPzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 10:55:32 -0500
-Message-ID: <45D1DF66.6030906@rtr.ca>
-Date: Tue, 13 Feb 2007 10:55:18 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
-MIME-Version: 1.0
-To: nigel@nigel.suspend2.net
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
-       Pavel Machek <pavel@ucw.cz>, Arjan van de Ven <arjan@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: NAK new drivers without proper power management?
-References: <1171058269.1484.64.camel@nigel.suspend2.net>	 <1171147026.19894.16.camel@nigel.suspend2.net> <45CE5934.3020801@imap.cc>	 <200702110127.35631.rjw@sisk.pl> <1171233683.4493.81.camel@nigel.suspend2.net>
-In-Reply-To: <1171233683.4493.81.camel@nigel.suspend2.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Feb 2007 10:57:53 -0500
+Received: from smtp.nokia.com ([131.228.20.173]:61305 "EHLO
+	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750757AbXBMP5w convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 10:57:52 -0500
+Subject: Pull UBI tree
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andreas Arnez <arnez@vnet.ibm.com>,
+       Frank Haverkamp <haver@vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 13 Feb 2007 17:34:12 +0200
+Message-Id: <1171380852.17314.55.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 13 Feb 2007 15:34:13.0402 (UTC) FILETIME=[69E19FA0:01C74F84]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nigel Cunningham wrote:
-> On Sun, 2007-02-11 at 01:27 +0100, Rafael J. Wysocki wrote:
->> Plus:
->> - What if I'm planning to implement the power managemet, but not just right
->> now?
-> 
-> Why not right now?
+Hello Linus,
 
-LKML is much more receptive to drivers that follow
-the "release early, release often" mantra.
+The UBI tree has been in -mm for a few releases now and we would like to
+to see it in the mainline.
 
-Which means we really have to be more accomodating of
-drivers that start out simple, and then gain all of the
-non-essential capabilities gradually over time.
+We have several groups using the code now and it has proved to be fairly
+stable thus far. We've also got some feedback from people outside the
+community.
 
-Simple observation here shows much more hostility :)
-to drivers that are simply "presented" as a complete whole.
-Often for good reason -- starting out with a framework
-and then adding the rest bit by bit allows for much better
-peer review and feedback.
+In short, UBI is kind of LVM layer but for flash (MTD) devices. It makes
+it possible to dynamically create, delete and re-size volumes. But the
+analogy is not full. UBI also takes care of wear-leveling and bad
+eraseblocks handling, so UBI completely hides 2 aspects of flash chips
+which make them very difficult to work with:
 
-And not all devices / situations need power management,
-and lack of documentation on the hardware often prevents
-us from implementing it at the outset.
+1. wear of eraseblocks;
+2. bad eraseblocks.
 
-Cheers
+There is some documentation available at:
+http://www.linux-mtd.infradead.org/doc/ubi.html
+http://www.linux-mtd.infradead.org/faq/ubi.html
+
+The sources are available via the GIT tree:
+git://git.infradead.org/ubi-2.6.git
+
+The tree is based on your current git tree and is ready to pull from.
+
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
