@@ -1,71 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750847AbXBMTnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750844AbXBMTnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750847AbXBMTnh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 14:43:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbXBMTnh
+	id S1750844AbXBMTnm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 14:43:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750853AbXBMTnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 14:43:37 -0500
-Received: from smtp.cce.hp.com ([161.114.21.23]:18020 "EHLO
-	ccerelrim02.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750839AbXBMTng (ORCPT
+	Tue, 13 Feb 2007 14:43:42 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:41490 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750851AbXBMTnl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 14:43:36 -0500
-X-Greylist: delayed 5946 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Feb 2007 14:43:36 EST
-Message-ID: <45D214E4.9020608@hp.com>
-Date: Tue, 13 Feb 2007 14:43:32 -0500
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
-MIME-Version: 1.0
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: Hasso Tepper <hasso@estpak.ee>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: /proc/sys/net/ipv[46]/conf/ issue unsolved
-References: <200702131529.04708.hasso@estpak.ee> <20070213185820.GB25362@hmsreliant.homelinux.net>
-In-Reply-To: <20070213185820.GB25362@hmsreliant.homelinux.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-PMX-Version: 5.3.0.289146, Antispam-Engine: 2.5.0.283055, Antispam-Data: 2007.2.13.113434
+	Tue, 13 Feb 2007 14:43:41 -0500
+Subject: Re: [PATCH v2] kernel-doc: include struct short description in
+	title output
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@osdl.org>
+In-Reply-To: <20070213113522.8490ddaf.randy.dunlap@oracle.com>
+References: <20070213111042.e10a4234.randy.dunlap@oracle.com>
+	 <1171394317.10344.111.camel@johannes.berg>
+	 <20070213113522.8490ddaf.randy.dunlap@oracle.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-hfsNqmr51AFvSmVUVeyE"
+Date: Tue, 13 Feb 2007 20:43:38 +0100
+Message-Id: <1171395818.10344.126.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Horman wrote:
-> On Tue, Feb 13, 2007 at 03:29:04PM +0200, Hasso Tepper wrote:
->> There is long standing issue in kernel which makes using /etc/sysctl.conf
->> useless for boottime configuration of specific interface properties and
->> breaks probably any software relying on unconditional existence of the
->> conf trees like it was in previous kernels (I alone have written several
->> pieces of such software). It's broken AFAIK from 2.6.15. There has been
->> several notes about issue in the list, but issue haven't got any (at least
->> efficient) attention from developers.
->>
->> The current behaviour bites users in many ways and breaks several use cases.
->> I asked several times in the past "what I should do now?" question, but
->> got no clear answer.
->>
->> References:
->> http://marc.theaimsgroup.com/?l=linux-netdev&m=115685059625467&w=2
->> http://marc.theaimsgroup.com/?l=linux-netdev&m=115690828822486&w=2
->> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=169809
->>
->> Is there any chance this will be fixed or at least clear position is
->> taken by developers? Breaking userspace applications is declared nonono
->> several times in the past ... I'm not even against breaking it if there
->> is _very_ good reason to do it. Ok, but I want to know how userspace is
->> meant to behave now. I can't continue using crappy workarounds.
->>
-> Can't this simply be fixed by adding a custom udev rule?  Correct me if I'm
-> wrong, but the only reason that interfaces come up automatically after their
-> appropriate module is inserted is because most distos udev rules issue an ifup
-> $DEVICE when they get a creation event for $DEVICE.  Why not add a custom rule
-> in for net device creation events to set appropriate sysctl values before the
-> ifup is issued.
-> 
 
-You can't.  The /proc/sys/conf/eth<x>/  structure appears when the 
-interface is marked UP.  At this point, if protocol modules are already
-loaded, your configuration parameters are already set.
+--=-hfsNqmr51AFvSmVUVeyE
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I was going to ask.. How are you testing Optimistic DAD patch.  The
-only way I could do it was to set /proc/sys/conf/default/ipv6  entry.
+On Tue, 2007-02-13 at 11:35 -0800, Randy Dunlap wrote:
+> > Yup, that fixes it for structs. I guess I forgot to mention this earlie=
+r
+> > because I didn't notice it until now... the same bug exists for
+> > functions as well.
+>=20
+> updated patch.  Thanks.
 
--vlad
+Thanks, works great.
+
+> ---
+>=20
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+>=20
+> Output of a function or struct in html mode needs to include the short
+> description from the function/struct name line in the output title line.
+>=20
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+
+So if anyone cares:
+
+Acked-by: Johannes Berg <johannes@sipsolutions.net>
+
+> ---
+>  scripts/kernel-doc |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>=20
+> --- linux-2.6.20-git7.orig/scripts/kernel-doc
+> +++ linux-2.6.20-git7/scripts/kernel-doc
+> @@ -452,7 +452,7 @@ sub output_struct_html(%) {
+>      my %args =3D %{$_[0]};
+>      my ($parameter);
+> =20
+> -    print "<h2>".$args{'type'}." ".$args{'struct'}."</h2>\n";
+> +    print "<h2>".$args{'type'}." ".$args{'struct'}. " - " .$args{'purpos=
+e'}."</h2>\n";
+>      print "<b>".$args{'type'}." ".$args{'struct'}."</b> {<br>\n";
+>      foreach $parameter (@{$args{'parameterlist'}}) {
+>  	if ($parameter =3D~ /^#/) {
+> @@ -498,8 +498,8 @@ sub output_function_html(%) {
+>      my %args =3D %{$_[0]};
+>      my ($parameter, $section);
+>      my $count;
+> -    print "<h2>Function</h2>\n";
+> =20
+> +    print "<h2>" .$args{'function'}." - ".$args{'purpose'}."</h2>\n";
+>      print "<i>".$args{'functiontype'}."</i>\n";
+>      print "<b>".$args{'function'}."</b>\n";
+>      print "(";
+>=20
+
+--=-hfsNqmr51AFvSmVUVeyE
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBF0hTq/ETPhpq3jKURAk1gAKCngowPJ2hpTqU3ZMKSURpSFsZKdQCePpyC
+9zekxLUAZ0iBMYtnVmRo3ro=
+=ZMbd
+-----END PGP SIGNATURE-----
+
+--=-hfsNqmr51AFvSmVUVeyE--
+
