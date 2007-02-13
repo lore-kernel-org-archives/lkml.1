@@ -1,67 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751200AbXBMInG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751183AbXBMIo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751200AbXBMInG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 03:43:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbXBMInG
+	id S1751183AbXBMIo5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 03:44:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbXBMIo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 03:43:06 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:57742 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751200AbXBMInF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 03:43:05 -0500
-Subject: Re: [PATCH] nanosecond filesystem support???
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: Andi Kleen <ak@suse.de>, lkml <linux-kernel@vger.kernel.org>,
-       Miquel van Smoorenburg <miquels@cistron.nl>,
-       Linus Torvalds <torvalds@osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0702131627210.5124@boston.corp.fedex.com>
-References: <Pine.LNX.4.64.0702131627210.5124@boston.corp.fedex.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Tue, 13 Feb 2007 09:42:59 +0100
-Message-Id: <1171356179.12771.50.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+	Tue, 13 Feb 2007 03:44:56 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:49457 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751183AbXBMIoz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 03:44:55 -0500
+From: Neil Brown <neilb@suse.de>
+To: Andrew Burgess <aab@cichlid.com>
+Date: Tue, 13 Feb 2007 19:44:17 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-ID: <17873.31329.972230.498090@notabene.brown>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: md: md6_raid5 crash 2.6.20
+In-Reply-To: message from Andrew Burgess on Monday February 12
+References: <200702121628.l1CGSwhJ019548@cichlid.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-13 at 16:38 +0800, Jeff Chua wrote:
-> On 2/12/07, Andi Kleen <ak@suse.de> wrote:
+On Monday February 12, aab@cichlid.com wrote:
+> >However
+> >this "kernel BUG" is something newly introduced in 2.6.20 which should
+> >be fixed in 2.6.20.1.  Patch is below.
 > 
-> > The bigger problem is getting a file system that support it.
-> 
-> 
-> Andi,
-> 
-> It seems that the part that's not returning nanosecond is in the code 
-> below. I've modified it, and now stat() is returning st_mtim.tv_nsec 
-> correctly.
-> 
-> I've tested it on ext2 and reiserfs, and both seems to be working.
-> 
-> 
-> I don't know why "t.tv_nsec = 0;" was set in the code. Any idea?
+> I am using raid6. Am I at risk after applying this patch?
 
-it was there to avoid the following situation:
+I'm not going to say "you are not at risk after applying this patch"
+as one never knows about hidden bugs until one finds them.
 
-on disk it's still in seconds
-kernel has the inode in memory, with a recently updated times
-user asks for it, gets nanoseconds data
-kernel evicts inode to disk
-user asks again,
-kernel reads from disk (in whole seconds only on disk)
-kernel reports a DIFFERENT time than it did before
-user program gets confused
+However this patch is equally applicable to raid6 and if you apply it
+you should be able to continue using your raid6 with as much
+confidence as before...
 
-this actually happens, make is one of those cases that get confused for
-example..
-
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+NeilBrown
