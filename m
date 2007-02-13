@@ -1,40 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750918AbXBMRKN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750926AbXBMRKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750918AbXBMRKN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 12:10:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbXBMRKN
+	id S1750926AbXBMRKq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 12:10:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbXBMRKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 12:10:13 -0500
-Received: from omx2-ext.sgi.com ([192.48.171.19]:60102 "EHLO omx2.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750918AbXBMRKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 12:10:12 -0500
-Date: Tue, 13 Feb 2007 09:09:13 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Andi Kleen <ak@suse.de>, Vojtech Pavlik <vojtech@suse.cz>,
-       Jiri Bohac <jbohac@suse.cz>, linux-kernel@vger.kernel.org,
-       ssouhlal@freebsd.org, tglx@linutronix.de, johnstul@us.ibm.com,
-       zippel@linux-m68k.org, andrea@suse.de
-Subject: Re: [patch 4/9] Remove the TSC synchronization on SMP machines
-In-Reply-To: <1171348808.12771.19.camel@laptopd505.fenrus.org>
-Message-ID: <Pine.LNX.4.64.0702130906530.23634@schroedinger.engr.sgi.com>
-References: <20070201095952.589234000@jet.suse.cz>  <20070201131715.GM21755@dwarf.suse.cz>
- <20070201151654.GA20385@suse.cz>  <200702020814.27378.ak@suse.de> 
- <Pine.LNX.4.64.0702121632420.19380@schroedinger.engr.sgi.com>
- <1171348808.12771.19.camel@laptopd505.fenrus.org>
+	Tue, 13 Feb 2007 12:10:46 -0500
+Received: from dvhart.com ([64.146.134.43]:55540 "EHLO dvhart.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750926AbXBMRKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 12:10:45 -0500
+Message-ID: <45D1F0B1.3020508@mbligh.org>
+Date: Tue, 13 Feb 2007 09:09:05 -0800
+From: "Martin J. Bligh" <mbligh@mbligh.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
+       bob.picco@hp.com
+Subject: Re: [RFC] [PATCH] more support for memory-less-node.
+References: <20070213155736.1131d46a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070213155736.1131d46a.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Feb 2007, Arjan van de Ven wrote:
+KAMEZAWA Hiroyuki wrote:
+> In my last posintg, mempolicy-fix-for-memory-less-node patch, there was a 
+> discussion 'what do you consider definition of "node" as...?
+> I found there is no consensus. But I want to go ahead.
+> Before posing patch again, I'd like to discuss more.
+> 
+> -Kame
+> 
+> In my understanding, a "node" is a block of cpu, memory, devices.
+> and there could be cpu-only-node, memory-only-node, device-only-node...
+> 
+> There will be discussion. IMHO, to represent hardware configuration
+> as it is, this definition is very natural and flexible.
+> (And because my work is memory-hotplug, this definition fits me.)
+> 
+> "Don't support such crazy configuraton" is one of opinions.
+> I hear x86_64 doesn't support it and defines node as a block of memory,
+> It remaps cpus on memory-less-nodes to other nodes.
+> I know ia64 allows memory-less-node. (I don't know about ppc.)
+> It works well on my box (and HP's box).
 
-> no quite the opposite. gettimeofday() currently is NOT monotonic
-> unfortunately. With this patchseries it actually has a better chance of
-> becoming that...
+It doesn't make much sense for an architecture independent structure to
+be "defined" in different ways by specific architectures. "not
+supported" or "currently broken" might be a better description.
 
-It is monotonic on IA64 at least and we have found that subtle application 
-bugs occur if it is not. IA64 (and other arches using time interpolation) 
-can insure the monotoneity of time sources. Are you sure about this? I 
-wonder why the new time of day subsystem does not have that?
+Your description of the node is correct, it's an arbitrary container of
+one or more resources. Not only is this definition flexible, it's also
+very useful, for memory hotplug, odd types of NUMA boxes, etc.
+
+M.
