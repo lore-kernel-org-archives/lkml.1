@@ -1,54 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751321AbXBMWA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751178AbXBMWBG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751321AbXBMWA7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 17:00:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbXBMWA7
+	id S1751178AbXBMWBG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 17:01:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbXBMWBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 17:00:59 -0500
-Received: from comtv.ru ([217.10.32.17]:54920 "EHLO comtv.ru"
+	Tue, 13 Feb 2007 17:01:06 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:54879 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751321AbXBMWA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 17:00:58 -0500
-X-UCL: actv
-Date: Wed, 14 Feb 2007 01:01:26 +0300 (MSK)
-From: malc <av1474@comtv.ru>
-X-X-Sender: malc@home.oyster.ru
-To: Pavel Machek <pavel@ucw.cz>
-cc: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
-Subject: Re: CPU load
-In-Reply-To: <20070212143219.GB5226@ucw.cz>
-Message-ID: <Pine.LNX.4.64.0702140059390.727@home.oyster.ru>
-References: <loom.20070212T063225-663@post.gmane.org>
- <8cd998d50702112144y38958d27saec4196f6f5d5236@mail.gmail.com>
- <20070212143219.GB5226@ucw.cz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S1751178AbXBMWBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 17:01:04 -0500
+Date: Tue, 13 Feb 2007 14:00:51 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       discuss@x86-64.org
+Subject: Re: Please pull x86 updates
+Message-Id: <20070213140051.70de4b2c.akpm@linux-foundation.org>
+In-Reply-To: <200702131340.57004.andi@firstfloor.org>
+References: <200702131340.57004.andi@firstfloor.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Feb 2007, Pavel Machek wrote:
+> On Tue, 13 Feb 2007 13:40:56 +0100 Andi Kleen <andi@firstfloor.org> wrote:
+> Linux please pull from
+> 
+>   git://one.firstfloor.org/home/andi/git/linux-2.6
+> 
+> This is not all, but I pruned lots of stuff that still wasn't
+> quite ready. Less is more I guess.
 
-> Hi!
->
->> The kernel looks at what is using cpu _only_ during the
->> timer
->> interrupt. Which means if your HZ is 1000 it looks at
->> what is running
->> at precisely the moment those 1000 timer ticks occur. It
->> is
->> theoretically possible using this measurement system to
->> use >99% cpu
->> and record 0 usage if you time your cpu usage properly.
->> It gets even
->> more inaccurate at lower HZ values for the same reason.
->
-> I have (had?) code that 'exploits' this. I believe I could eat 90% of cpu
-> without being noticed.
-
-Slightly changed version of hog(around 3 lines in total changed) does that
-easily on 2.6.18.3 on PPC.
-
-http://www.boblycat.org/~malc/apc/load-hog-ppc.png
-
--- 
-vale
+I guess this means that hrtimers&dynticks remains on hold.  Do you have a feel
+for when batch #2 will be pushed?
