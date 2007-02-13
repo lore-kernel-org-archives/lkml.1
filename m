@@ -1,345 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751441AbXBMXWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751442AbXBMXYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751441AbXBMXWj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 18:22:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbXBMXWj
+	id S1751442AbXBMXYq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 18:24:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbXBMXYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 18:22:39 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:40464 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751445AbXBMXWi (ORCPT
+	Tue, 13 Feb 2007 18:24:46 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:4612 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751442AbXBMXYp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 18:22:38 -0500
-Date: Tue, 13 Feb 2007 15:19:06 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
-Subject: [PATCH v2] build errors: uevent with CONFIG_SYSFS=n
-Message-Id: <20070213151906.dcbc479d.randy.dunlap@oracle.com>
-In-Reply-To: <20070212145823.57114781.akpm@linux-foundation.org>
-References: <20070212135021.27754603.randy.dunlap@oracle.com>
-	<20070212142919.5ce91086.randy.dunlap@oracle.com>
-	<20070212145823.57114781.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Tue, 13 Feb 2007 18:24:45 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 13 Feb 2007 15:24:43 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system
+ call support
+In-Reply-To: <20070213215724.GD22104@elte.hu>
+Message-ID: <Pine.LNX.4.64.0702131522120.32055@alien.or.mcafeemobile.com>
+References: <20070213142010.GA638@elte.hu> <Pine.LNX.4.64.0702131219240.32055@alien.or.mcafeemobile.com>
+ <20070213215724.GD22104@elte.hu>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Feb 2007 14:58:23 -0800 Andrew Morton wrote:
+On Tue, 13 Feb 2007, Ingo Molnar wrote:
 
-> > On Mon, 12 Feb 2007 14:29:19 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > Here's a patch, tested both ways (SYSFS=y, SYSFS=n).
-> > 
-> > ---
-> > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > 
-> > Fix source files to build with CONFIG_SYSFS=n.
-> > module_subsys is not available.
 > 
-> erk.  Can we get some stubs in the header file to reduce the need for ifdeffing?
+> * Davide Libenzi <davidel@xmailserver.org> wrote:
+> 
+> > > Open issues:
+> 
+> > If this is going to be a generic AIO subsystem:
+> > 
+> > - Cancellation of pending request
+> 
+> How about implementing aio_cancel() as a NOP. Can anyone prove that the 
+> kernel didnt actually attempt to cancel that IO? [but unfortunately 
+> failed at doing so, because the platters were being written already.]
+> 
+> really, what's the point behind aio_cancel()?
 
-er, ok.  This now builds cleanly with all 4 combinations of
-SYSFS * MODULES.  No idea how it meshes with what's in -mm.
----
+You need cancel. If you scheduled an async syscall, and the "session" 
+linked with that chain is going away, you better have that canceled before 
+cleaning up buffers to where the chain is going to read/write.
+If you keep and hash or a tree indexed by atom-ptr, than become a matter 
+of a lookup and sending a signal.
 
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Fix source files to build with CONFIG_SYSFS=n.
-module_subsys is not available.
+- Davide
 
-SYSFS=n, MODULES=y:	T:y
-SYSFS=n, MODULES=n:	T:y
 
-SYSFS=y, MODULES=y:	T:y
-SYSFS=y, MODULES=n:	T:y
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- include/linux/module.h      |   53 ++++++++++++++++++++++++++++++++++++--------
- include/linux/moduleparam.h |   12 +++++++++
- kernel/module.c             |   14 ++++++++---
- kernel/params.c             |   28 ++++++++++++-----------
- 4 files changed, 81 insertions(+), 26 deletions(-)
-
---- linux-2.6.20-git7.orig/kernel/params.c
-+++ linux-2.6.20-git7/kernel/params.c
-@@ -30,8 +30,6 @@
- #define DEBUGP(fmt, a...)
- #endif
- 
--static struct kobj_type module_ktype;
--
- static inline char dash2underscore(char c)
- {
- 	if (c == '-')
-@@ -391,6 +389,7 @@ struct module_param_attrs
- 	struct param_attribute attrs[0];
- };
- 
-+#ifdef CONFIG_SYSFS
- #define to_param_attr(n) container_of(n, struct param_attribute, mattr);
- 
- static ssize_t param_attr_show(struct module_attribute *mattr,
-@@ -426,6 +425,7 @@ static ssize_t param_attr_store(struct m
- 		return len;
- 	return err;
- }
-+#endif
- 
- #ifdef CONFIG_MODULES
- #define __modinit
-@@ -433,6 +433,7 @@ static ssize_t param_attr_store(struct m
- #define __modinit __init
- #endif
- 
-+#ifdef CONFIG_SYSFS
- /*
-  * param_sysfs_setup - setup sysfs support for one module or KBUILD_MODNAME
-  * @mk: struct module_kobject (contains parent kobject)
-@@ -500,9 +501,7 @@ param_sysfs_setup(struct module_kobject 
- 	return mp;
- }
- 
--
- #ifdef CONFIG_MODULES
--
- /*
-  * module_param_sysfs_setup - setup sysfs support for one module
-  * @mod: module
-@@ -625,7 +624,6 @@ static void __init param_sysfs_builtin(v
- 
- 
- /* module-related sysfs stuff */
--#ifdef CONFIG_SYSFS
- 
- #define to_module_attr(n) container_of(n, struct module_attribute, attr);
- #define to_module_kobject(n) container_of(n, struct module_kobject, kobj);
-@@ -673,6 +671,8 @@ static struct sysfs_ops module_sysfs_ops
- 	.store = module_attr_store,
- };
- 
-+static struct kobj_type module_ktype;
-+
- static int uevent_filter(struct kset *kset, struct kobject *kobj)
- {
- 	struct kobj_type *ktype = get_ktype(kobj);
-@@ -686,19 +686,12 @@ static struct kset_uevent_ops module_uev
- 	.filter = uevent_filter,
- };
- 
--#else
--static struct sysfs_ops module_sysfs_ops = {
--	.show = NULL,
--	.store = NULL,
--};
--#endif
-+decl_subsys(module, &module_ktype, &module_uevent_ops);
- 
- static struct kobj_type module_ktype = {
- 	.sysfs_ops =	&module_sysfs_ops,
- };
- 
--decl_subsys(module, &module_ktype, &module_uevent_ops);
--
- /*
-  * param_sysfs_init - wrapper for built-in params support
-  */
-@@ -719,6 +712,15 @@ static int __init param_sysfs_init(void)
- }
- subsys_initcall(param_sysfs_init);
- 
-+#else
-+#if 0
-+static struct sysfs_ops module_sysfs_ops = {
-+	.show = NULL,
-+	.store = NULL,
-+};
-+#endif
-+#endif
-+
- EXPORT_SYMBOL(param_set_byte);
- EXPORT_SYMBOL(param_get_byte);
- EXPORT_SYMBOL(param_set_short);
---- linux-2.6.20-git7.orig/kernel/module.c
-+++ linux-2.6.20-git7/kernel/module.c
-@@ -1068,7 +1068,8 @@ static inline void remove_sect_attrs(str
- }
- #endif /* CONFIG_KALLSYMS */
- 
--static int module_add_modinfo_attrs(struct module *mod)
-+#ifdef CONFIG_SYSFS
-+int module_add_modinfo_attrs(struct module *mod)
- {
- 	struct module_attribute *attr;
- 	struct module_attribute *temp_attr;
-@@ -1094,7 +1095,7 @@ static int module_add_modinfo_attrs(stru
- 	return error;
- }
- 
--static void module_remove_modinfo_attrs(struct module *mod)
-+void module_remove_modinfo_attrs(struct module *mod)
- {
- 	struct module_attribute *attr;
- 	int i;
-@@ -1109,8 +1110,10 @@ static void module_remove_modinfo_attrs(
- 	}
- 	kfree(mod->modinfo_attrs);
- }
-+#endif
- 
--static int mod_sysfs_init(struct module *mod)
-+#ifdef CONFIG_SYSFS
-+int mod_sysfs_init(struct module *mod)
- {
- 	int err;
- 
-@@ -1133,7 +1136,7 @@ out:
- 	return err;
- }
- 
--static int mod_sysfs_setup(struct module *mod,
-+int mod_sysfs_setup(struct module *mod,
- 			   struct kernel_param *kparam,
- 			   unsigned int num_params)
- {
-@@ -1169,6 +1172,7 @@ out_unreg:
- out:
- 	return err;
- }
-+#endif
- 
- static void mod_kobject_remove(struct module *mod)
- {
-@@ -2345,6 +2349,7 @@ void print_modules(void)
- 	printk("\n");
- }
- 
-+#ifdef CONFIG_SYSFS
- static char *make_driver_name(struct device_driver *drv)
- {
- 	char *driver_name;
-@@ -2419,6 +2424,7 @@ void module_remove_driver(struct device_
- 	}
- }
- EXPORT_SYMBOL(module_remove_driver);
-+#endif
- 
- #ifdef CONFIG_MODVERSIONS
- /* Generate the signature for struct module here, too, for modversions. */
---- linux-2.6.20-git7.orig/include/linux/module.h
-+++ linux-2.6.20-git7/include/linux/module.h
-@@ -76,8 +76,6 @@ void sort_extable(struct exception_table
- 		  struct exception_table_entry *finish);
- void sort_main_extable(void);
- 
--extern struct subsystem module_subsys;
--
- #ifdef MODULE
- #define MODULE_GENERIC_TABLE(gtype,name)			\
- extern const struct gtype##_id __mod_##gtype##_table		\
-@@ -467,10 +465,6 @@ int unregister_module_notifier(struct no
- 
- extern void print_modules(void);
- 
--struct device_driver;
--void module_add_driver(struct module *, struct device_driver *);
--void module_remove_driver(struct device_driver *);
--
- #else /* !CONFIG_MODULES... */
- #define EXPORT_SYMBOL(sym)
- #define EXPORT_SYMBOL_GPL(sym)
-@@ -568,18 +562,59 @@ static inline void print_modules(void)
- {
- }
- 
-+#endif /* CONFIG_MODULES */
-+
- struct device_driver;
-+#ifdef CONFIG_SYSFS
- struct module;
- 
--static inline void module_add_driver(struct module *module, struct device_driver *driver)
-+extern struct subsystem module_subsys;
-+
-+int mod_sysfs_init(struct module *mod);
-+int mod_sysfs_setup(struct module *mod,
-+			   struct kernel_param *kparam,
-+			   unsigned int num_params);
-+int module_add_modinfo_attrs(struct module *mod);
-+void module_remove_modinfo_attrs(struct module *mod);
-+
-+#else /* !CONFIG_SYSFS */
-+
-+static inline int mod_sysfs_init(struct module *mod)
- {
-+	return 0;
- }
- 
--static inline void module_remove_driver(struct device_driver *driver)
-+static inline int mod_sysfs_setup(struct module *mod,
-+			   struct kernel_param *kparam,
-+			   unsigned int num_params)
- {
-+	return 0;
- }
- 
--#endif /* CONFIG_MODULES */
-+static inline int module_add_modinfo_attrs(struct module *mod)
-+{
-+	return 0;
-+}
-+
-+static inline void module_remove_modinfo_attrs(struct module *mod)
-+{ }
-+
-+#endif /* CONFIG_SYSFS */
-+
-+#if defined(CONFIG_SYSFS) && defined(CONFIG_MODULES)
-+
-+void module_add_driver(struct module *mod, struct device_driver *drv);
-+void module_remove_driver(struct device_driver *drv);
-+
-+#else /* not both CONFIG_SYSFS && CONFIG_MODULES */
-+
-+static inline void module_add_driver(struct module *mod, struct device_driver *drv)
-+{ }
-+
-+static inline void module_remove_driver(struct device_driver *drv)
-+{ }
-+
-+#endif
- 
- #define symbol_request(x) try_then_request_module(symbol_get(x), "symbol:" #x)
- 
---- linux-2.6.20-git7.orig/include/linux/moduleparam.h
-+++ linux-2.6.20-git7/include/linux/moduleparam.h
-@@ -169,10 +169,22 @@ extern int param_get_string(char *buffer
- 
- struct module;
- 
-+#if defined(CONFIG_SYSFS) && defined(CONFIG_MODULES)
- extern int module_param_sysfs_setup(struct module *mod,
- 				    struct kernel_param *kparam,
- 				    unsigned int num_params);
- 
- extern void module_param_sysfs_remove(struct module *mod);
-+#else
-+static inline int module_param_sysfs_setup(struct module *mod,
-+			     struct kernel_param *kparam,
-+			     unsigned int num_params)
-+{
-+	return 0;
-+}
-+
-+static inline void module_param_sysfs_remove(struct module *mod)
-+{ }
-+#endif
- 
- #endif /* _LINUX_MODULE_PARAMS_H */
