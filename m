@@ -1,116 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751071AbXBMUwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751067AbXBMVA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751071AbXBMUwV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 15:52:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751078AbXBMUwV
+	id S1751067AbXBMVA5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 16:00:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751083AbXBMVA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 15:52:21 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:43833 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751071AbXBMUwU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 15:52:20 -0500
-Date: Tue, 13 Feb 2007 20:51:52 +0000 (GMT)
-From: James Simmons <jsimmons@infradead.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-cc: Linux Frame Buffer Device Development 
-	<linux-fbdev-devel@lists.sourceforge.net>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH 0/7] RFC: Cell SPE logos
-In-Reply-To: <Pine.LNX.4.62.0702121452480.4624@pademelon.sonytel.be>
-Message-ID: <Pine.LNX.4.64.0702132049030.898@pentafluge.infradead.org>
-References: <Pine.LNX.4.62.0701311325480.14996@pademelon.sonytel.be>
- <Pine.LNX.4.62.0702121452480.4624@pademelon.sonytel.be>
+	Tue, 13 Feb 2007 16:00:57 -0500
+Received: from neon.samage.net ([83.149.67.130]:39202 "EHLO neon.samage.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751067AbXBMVA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 16:00:57 -0500
+X-Greylist: delayed 2567 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Feb 2007 16:00:56 EST
+Message-ID: <4390.81.207.0.53.1171397879.squirrel@secure.samage.net>
+In-Reply-To: <20070213142024.GC638@elte.hu>
+References: <20070213142024.GC638@elte.hu>
+Date: Tue, 13 Feb 2007 21:17:59 +0100 (CET)
+Subject: Re: [patch 02/11] syslets: add syslet.h include file,
+      user API/ABI definitions
+From: "Indan Zupancic" <indan@nul.nu>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Andrew Morton" <akpm@zip.com.au>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Ulrich Drepper" <drepper@redhat.com>
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.7
+X-Scan-Signature: ba572e8a3bde05b4b19613c12a9e49fc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, February 13, 2007 15:20, Ingo Molnar wrote:
+> +/*
+> + * Execution control: conditions upon the return code
+> + * of the previous syslet atom. 'Stop' means syslet
+> + * execution is stopped and the atom is put into the
+> + * completion ring:
+> + */
+> +#define SYSLET_STOP_ON_NONZERO			0x00000008
+> +#define SYSLET_STOP_ON_ZERO			0x00000010
+> +#define SYSLET_STOP_ON_NEGATIVE			0x00000020
+> +#define SYSLET_STOP_ON_NON_POSITIVE		0x00000040
 
-Andrew please apply. 
+This is confusing. Why the return code of the previous syslet atom?
+Wouldn't it be more clear if the flag was for the current tasklet?
+Worse, what is the previous atom? Imagine some case with a loop:
 
-Acked-By: James Simmons <jsimmons@infradead.org>
+  A
+  |
+  B<--.
+  |   |
+  C---'
 
-On Mon, 12 Feb 2007, Geert Uytterhoeven wrote:
+What will be the previous atom of B here? It can be either A or C,
+but their return values can be different and incompatible, so what
+flag should B set?
 
-> On Wed, 31 Jan 2007, Geert Uytterhoeven wrote:
-> > I would like to hear your opinions about the patchset below (updated version
-> > compared to yesterday, lkml added to the CC list).
-> > 
-> > The Cell Broadband Engine contains a 64-bit PowerPC core with 2 hardware
-> > threads (called PPEs) and 8 Synergistic Processing Engines (called SPEs).
-> > When booting Linux, 2 penguins logos are shown on the graphical console by
-> > the standard frame buffer console logo code.
-> > 
-> > To emphasize the existence of the SPEs (which can be used under Linux), we
-> > added a second row of (smaller) helper penguin logos, one for each SPE.
-> > I attached a PNG version of the helper penguin logo for reference.
-> > 
-> > Summaries:
-> > [PATCH 1/7] fbdev: Avoid vertical overflow when making space for the logo
-> > [PATCH 2/7] fbdev: fb_do_show_logo() updates
-> > [PATCH 3/7] fbdev: extract fb_show_logo_line()
-> > [PATCH 4/7] fbdev: move logo externs to header file
-> > [PATCH 5/7] fbdev: Add fb_append_extra_logo()
-> > [PATCH 6/7] fbdev: SPE helper penguin logo
-> > [PATCH 7/7] Cell: Draw SPE helper penguin logos
-> 
-> The helper penguins overlap with the main penguins when using console rotation
-> (fbcon=rotate:x, with x != 0). Here's a fix:
-> 
-> ---
-> 
-> Correct the image offsets when rotating the logo. Before image->dx and
-> image->dy were always zero, so nobody ever noticed.
-> 
-> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> ---
->  drivers/video/fbmem.c |   12 ++++++++----
->  1 files changed, 8 insertions(+), 4 deletions(-)
-> 
-> --- ps3-linux-2.6.20.orig/drivers/video/fbmem.c
-> +++ ps3-linux-2.6.20/drivers/video/fbmem.c
-> @@ -355,22 +355,26 @@ static void fb_rotate_logo(struct fb_inf
->  	if (rotate == FB_ROTATE_UD) {
->  		fb_rotate_logo_ud(image->data, dst, image->width,
->  				  image->height);
-> -		image->dx = info->var.xres - image->width;
-> -		image->dy = info->var.yres - image->height;
-> +		image->dx = info->var.xres - image->width - image->dx;
-> +		image->dy = info->var.yres - image->height - image->dy;
->  	} else if (rotate == FB_ROTATE_CW) {
->  		fb_rotate_logo_cw(image->data, dst, image->width,
->  				  image->height);
->  		tmp = image->width;
->  		image->width = image->height;
->  		image->height = tmp;
-> -		image->dx = info->var.xres - image->width;
-> +		tmp = image->dy;
-> +		image->dy = image->dx;
-> +		image->dx = info->var.xres - image->width - tmp;
->  	} else if (rotate == FB_ROTATE_CCW) {
->  		fb_rotate_logo_ccw(image->data, dst, image->width,
->  				   image->height);
->  		tmp = image->width;
->  		image->width = image->height;
->  		image->height = tmp;
-> -		image->dy = info->var.yres - image->height;
-> +		tmp = image->dx;
-> +		image->dx = image->dy;
-> +		image->dy = info->var.yres - image->height - tmp;
->  	}
->  
->  	image->data = dst;
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-> Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-> Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
-> 
+> +/*
+> + * Special modifier to 'stop' handling: instead of stopping the
+> + * execution of the syslet, the linearly next syslet is executed.
+> + * (Normal execution flows along atom->next, and execution stops
+> + *  if atom->next is NULL or a stop condition becomes true.)
+> + *
+> + * This is what allows true branches of execution within syslets.
+> + */
+> +#define SYSLET_SKIP_TO_NEXT_ON_STOP		0x00000080
+> +
+
+Might rename this to SYSLET_SKIP_NEXT_ON_STOP too then.
+
+Greetings,
+
+Indan
+
+
+
