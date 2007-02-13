@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750730AbXBMPrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750760AbXBMPvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750730AbXBMPrb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 10:47:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750760AbXBMPra
+	id S1750760AbXBMPvl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 10:51:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbXBMPvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 10:47:30 -0500
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:36804 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750730AbXBMPra (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 10:47:30 -0500
-Date: Tue, 13 Feb 2007 10:47:28 -0500
-To: Raphael Assenat <raph@8d.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add PCI device ID for IT8152 RISC-to-PCI chip
-Message-ID: <20070213154728.GM7584@csclub.uwaterloo.ca>
-References: <45CCD60D.5050001@8d.com> <20070209212856.GK7584@csclub.uwaterloo.ca> <45D1CF22.6010706@8d.com> <20070213151633.GL7584@csclub.uwaterloo.ca> <20070213153029.GB15227@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070213153029.GB15227@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.9i
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Tue, 13 Feb 2007 10:51:41 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:41813 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750760AbXBMPvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 10:51:40 -0500
+Date: Tue, 13 Feb 2007 07:51:22 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Oleg Verych <olecom@flower.upol.cz>
+cc: Tony Luck <tony.luck@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Bastian Blank <bastian@waldi.eu.org>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [patch 3/3, resend] kbuild: correctly skip tilded backups in
+ localversion files
+In-Reply-To: <20070213050503.GA27441@flower.upol.cz>
+Message-ID: <Pine.LNX.4.64.0702130744030.8424@woody.linux-foundation.org>
+References: <20070206011819.160359000@flower.upol.cz> <20070206012208.050237000@flower.upol.cz>
+ <12c511ca0702121409t30e126dfh445d13dd2f637e08@mail.gmail.com>
+ <Pine.LNX.4.64.0702121437420.8424@woody.linux-foundation.org>
+ <20070213003258.GA15534@flower.upol.cz> <20070213050503.GA27441@flower.upol.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 13, 2007 at 03:30:29PM +0000, Russell King wrote:
-> On Tue, Feb 13, 2007 at 10:16:33AM -0500, Lennart Sorensen wrote:
-> > There doesn't seem to be very many
-> > arm systems with PCI, so it's hard to tell.
+
+
+On Tue, 13 Feb 2007, Oleg Verych wrote:
 > 
-> NetWinder, EBSA285 (which the NetWinder is a derivative of), the N2100,
-> etc are PCI based and are all well proven in the field.
+> I mean, all by-hand modifications must be in the $(srctree) (let's get
+> this term), $(objtree) is output *only*.
 
-Which PCI controller do they use?
+No. Especially for things like localversion, the object tree (if it is 
+different) is very much where you'd put that marker.
 
-> However, I have come across issues with what I suspect are buggy
-> bridges - some southbridges require out of band cache control
-> signalling and don't behave properly if you don't provide this (despite
-> having modes to disable such signalling) and some PCMCIA bridges which
-> don't like delayed read responses from host bridges.
+You might have several object trees for the same source tree, with 
+different configurations. Exactly to remember which one is which, you'd 
+have a "localversion" file in each object tree.
 
-Well certainly on the cpu board we were trying out, it didn't work,
-whether it was a buggy PCI bridge, or a bad design I am not sure.  I
-suspect the chip.
+> I know it maybe another my "change it all" proposition, but i can't find
+> nothing against `GNU $(wildcard ..)' and `unnecessarily complex "find"'.
 
-> That said, I've an EBSA285 with Promise UDMA, 3com NIC, S3 VGA and a
-> plug-in southbridge card which has been running since about 1999 or so
-> and the only real data corruption problem I've heard of was when a track
-> on my Promise UDMA card was eaten by the sticky label resulting in silent
-> corruption of writes to the disks.
+It's the regexp in both cases. $(wildcard ) doesn't do regexp's (only the 
+normal path rules), and traditional 'find' doesn't either. The fact that 
+GNU find does is another matter. I don't think we require GNU find 
+normally.
 
-Ouch.
+And I don't even much like the "backup" thing. Some programs will use 
+other things than "~" as a backup marker. Patch more often uses ".orig", 
+for example. So both methods are fairly complex, but at the same time not 
+quite complex enough.
 
-> (I did consider replacing the Promise UDMA card, but the IT821x card
-> I bought to replace it didn't have all the pins on the chip soldered
-> down - to the extent that even a PC couldn't recognise the PCI card.
-> So I'm running on the assumption that the self-repaired Promise UDMA
-> card is all round going to be more reliable than the as yet unproven
-> IT821x card.)
+It would probably have been a better idea had we made the rule be that the 
+file is called "*localversion" rather than "localversion*", exactly 
+because that way it's unambiguous (people normally use _suffixes_ for 
+filetypes, not prefixes). That would have avoided the whole complexity in 
+wildcarding, but it's too late now..
 
-And they shipped a card in that state?
+	$(sort $(wildcard $(srctree)/*localversion $(objtree)/*localversion)
 
---
-Len Sorensen
+should have worked.
+
+		Linus
