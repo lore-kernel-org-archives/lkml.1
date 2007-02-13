@@ -1,38 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030598AbXBMAek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030603AbXBMAhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030598AbXBMAek (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 19:34:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030599AbXBMAek
+	id S1030603AbXBMAhj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 19:37:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030605AbXBMAhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 19:34:40 -0500
-Received: from omx1-ext.sgi.com ([192.48.179.11]:39657 "EHLO omx1.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030598AbXBMAej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 19:34:39 -0500
-Date: Mon, 12 Feb 2007 16:34:07 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Andi Kleen <ak@suse.de>
-cc: Vojtech Pavlik <vojtech@suse.cz>, Jiri Bohac <jbohac@suse.cz>,
-       linux-kernel@vger.kernel.org, ssouhlal@freebsd.org, arjan@infradead.org,
-       tglx@linutronix.de, johnstul@us.ibm.com, zippel@linux-m68k.org,
-       andrea@suse.de
-Subject: Re: [patch 4/9] Remove the TSC synchronization on SMP machines
-In-Reply-To: <200702020814.27378.ak@suse.de>
-Message-ID: <Pine.LNX.4.64.0702121632420.19380@schroedinger.engr.sgi.com>
-References: <20070201095952.589234000@jet.suse.cz> <20070201131715.GM21755@dwarf.suse.cz>
- <20070201151654.GA20385@suse.cz> <200702020814.27378.ak@suse.de>
+	Mon, 12 Feb 2007 19:37:38 -0500
+Received: from wr-out-0506.google.com ([64.233.184.231]:19979 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030603AbXBMAhi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 19:37:38 -0500
+Message-ID: <826775f30702121637q3f843e14t55cb2a1dcf20bb95@mail.gmail.com>
+Date: Tue, 13 Feb 2007 02:37:36 +0200
+From: "Damian Minkov" <damencho@damencho.com>
+To: video4linux-list@redhat.com
+Subject: [PATCH] video4linux: Fix audio input for AverTv Go 007
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Feb 2007, Andi Kleen wrote:
+from Damian Minkov
 
-> I've threatened to just disable RDTSC for ring 3 before, but it'll likely
-> never happen because too many programs use it.
+Fix audio input source for capturing(playing) audio on AverTv Go 007 cards.
 
-Those programs are aware that they are fiddling around with low level 
-material but with this patchset we are going to have a non 
-monotonic time subsystem? Programs expects gettimeofday() etc to be 
-monotonic. Its going to a big surprise if that is not working anymore.
-
+Signed-off-by: Damian Minkov <damencho@damencho.com>
+---
+diff -upr a/linux/drivers/media/video/saa7134/saa7134-cards.c
+b/linux/drivers/media/video/saa7134/saa7134-cards.c
+--- a/linux/drivers/media/video/saa7134/saa7134-cards.c    2007-02-13
+02:17:55.000000000 +0200
++++ b/linux/drivers/media/video/saa7134/saa7134-cards.c    2007-02-13
+02:20:40.000000000 +0200
+@@ -1544,12 +1544,12 @@ struct saa7134_board saa7134_boards[] =
+         },{
+             .name = name_comp1,
+             .vmux = 0,
+-            .amux = LINE2,
++            .amux = LINE1,
+             .gpio = 0x02,
+         },{
+             .name = name_svideo,
+             .vmux = 6,
+-            .amux = LINE2,
++            .amux = LINE1,
+             .gpio = 0x02,
+         }},
+         .radio = {
