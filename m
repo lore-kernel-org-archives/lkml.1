@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751402AbXBMSDc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751408AbXBMSEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751402AbXBMSDc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 13:03:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbXBMSDc
+	id S1751408AbXBMSEx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 13:04:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbXBMSEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 13:03:32 -0500
-Received: from omx1-ext.sgi.com ([192.48.179.11]:37800 "EHLO omx1.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751402AbXBMSDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 13:03:31 -0500
-Date: Tue, 13 Feb 2007 10:03:14 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Andi Kleen <ak@suse.de>
-cc: "Martin J. Bligh" <mbligh@mbligh.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       bob.picco@hp.com
-Subject: Re: [RFC] [PATCH] more support for memory-less-node.
-In-Reply-To: <200702131845.05913.ak@suse.de>
-Message-ID: <Pine.LNX.4.64.0702130956540.26309@schroedinger.engr.sgi.com>
-References: <20070213155736.1131d46a.kamezawa.hiroyu@jp.fujitsu.com>
- <45D1F0B1.3020508@mbligh.org> <200702131845.05913.ak@suse.de>
+	Tue, 13 Feb 2007 13:04:53 -0500
+Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:55049 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751408AbXBMSEw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 13:04:52 -0500
+Date: Tue, 13 Feb 2007 19:04:56 +0100
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: linux-kernel@vger.kernel.org
+Message-ID: <20070213180456.GL8882@enneenne.com>
+References: <20070213173805.GK8882@enneenne.com> <20070213174829.GA465@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070213174829.GA465@flint.arm.linux.org.uk>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH] pxafb: Add option to enable/disable the cursor
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Feb 2007, Andi Kleen wrote:
+On Tue, Feb 13, 2007 at 05:48:29PM +0000, Russell King wrote:
+> 
+> Maybe this should be a generic option?  Or maybe issue ESC [ 25 l
+> to disable the cursor if you're wanting to turn it off from userspace.
 
-> Adding NULL tests all over mm for this would seem like a clear case
-> of this to me.
+This is useful if you have a full screen boot logo. How I can issue
+ESC [ 25 l at boot time?
 
-Maybe there is an alternative. We are free to number the nodes right? 
-How about requiring the low node number to have memory and the high ones 
-do not?
+Without this patch the full screen boot logo is corrupted in the upper
+left corner with a little box containing the blinking cursor.
 
-F.e. have a boundary like
+Ciao,
 
-nr_mem_nodes ?
+Rodolfo
 
-Everything above nr_mem_nodes has no memory and cannot be specified in a 
-nodemask. Those nodes would not be visible to user space via memory 
-policies and page migration. So the core mempolicy logic could be left 
-untouched.
+-- 
 
-The nodes above nr_mem_nodes would exist purely within the kernel. They 
-would have proximity information (which can be used to determine 
-neighboring memory. More flexible then the current attachment 
-to one fixed memory node) but those node numbers could not be specified as 
-node masks in any memory operations. This would then allow memory less nodes 
-with I/O or cpus. The user would not be aware of these.
-
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
