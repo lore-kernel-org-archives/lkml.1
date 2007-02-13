@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751338AbXBMWSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751339AbXBMWUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751338AbXBMWSx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 17:18:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbXBMWSx
+	id S1751339AbXBMWUS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 17:20:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbXBMWUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 17:18:53 -0500
-Received: from styx.suse.cz ([82.119.242.94]:43546 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751338AbXBMWSw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 17:18:52 -0500
-Date: Tue, 13 Feb 2007 23:18:48 +0100
-From: Vojtech Pavlik <vojtech@suse.cz>
-To: Andi Kleen <ak@suse.de>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Arjan van de Ven <arjan@infradead.org>, Jiri Bohac <jbohac@suse.cz>,
-       linux-kernel@vger.kernel.org, ssouhlal@freebsd.org, tglx@linutronix.de,
-       johnstul@us.ibm.com, zippel@linux-m68k.org, andrea@suse.de
-Subject: Re: [patch 4/9] Remove the TSC synchronization on SMP machines
-Message-ID: <20070213221848.GF9189@suse.cz>
-References: <20070201095952.589234000@jet.suse.cz> <1171348808.12771.19.camel@laptopd505.fenrus.org> <Pine.LNX.4.64.0702130906530.23634@schroedinger.engr.sgi.com> <200702131820.15180.ak@suse.de>
-MIME-Version: 1.0
+	Tue, 13 Feb 2007 17:20:18 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56616 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751339AbXBMWUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 17:20:16 -0500
+Date: Tue, 13 Feb 2007 23:18:10 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Benjamin LaHaise <bcrl@kvack.org>, Alan <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system call support
+Message-ID: <20070213221810.GF22104@elte.hu>
+References: <20060529212109.GA2058@elte.hu> <20070213142010.GA638@elte.hu> <20070213150019.4b4d4827@localhost.localdomain> <20070213145848.GS18311@kvack.org> <20070213165642.GB16394@elte.hu> <20070213185636.GA23987@2ka.mipt.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200702131820.15180.ak@suse.de>
-X-Bounce-Cookie: It's a lemon tree, dear Watson!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070213185636.GA23987@2ka.mipt.ru>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -5.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 13, 2007 at 06:20:14PM +0100, Andi Kleen wrote:
-> On Tuesday 13 February 2007 18:09, Christoph Lameter wrote:
-> > On Tue, 13 Feb 2007, Arjan van de Ven wrote:
-> > 
-> > > no quite the opposite. gettimeofday() currently is NOT monotonic
-> > > unfortunately. With this patchseries it actually has a better chance of
-> > > becoming that...
-> > 
-> > It is monotonic on IA64 at least and we have found that subtle application 
-> > bugs occur if it is not. IA64 (and other arches using time interpolation) 
-> > can insure the monotoneity of time sources. Are you sure about this? I 
-> > wonder why the new time of day subsystem does not have that?
-> 
-> Just to avoid spreading misinformation: modulo some new broken hardware
-> (which we always try to work around when found) i386/x86-64 gettimeofday
-> is monotonic.  AFAIK on the currently known hardware it should be generally
-> ok.
-> 
-> However ntpd can always screw you up, but that's inherent in the design.
 
-It's not inherent to ntpd's design, but the current (which may have been
-fixed since I looked last) implementation of the NTP PLL in the kernel.
+* Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
 
-The interaction with ntpd can be fixed and I've done it in the past
-once, although the fix wasn't all that nice.
+> [...] it still has a problem - syscall blocks and the same thread thus 
+> is not allowed to continue execution and fill the pipe - so what if 
+> system issues thousands of requests and there are only tens of working 
+> thread at most. [...]
 
-> Safer in general is to use clock_gettime(CLOCK_MONOTONIC, ...) which
-> guarantees no interference from ntpd
+the same thread is allowed to continue execution even if the system call 
+blocks: take a look at async_schedule(). The blocked system-call is 'put 
+aside' (in a sleeping thread), the kernel switches the user-space 
+context (registers) to a free kernel thread and switches to it - and 
+returns to user-space as if nothing happened - allowing the user-space 
+context to 'fill the pipe' as much as it can. Or did i misunderstand 
+your point?
 
--- 
-Vojtech Pavlik
-Director SuSE Labs
+basically there's SYSLET_ASYNC for 'always async' and SYSLET_SYNC for 
+'always sync' - but the default syslet behavior is: 'try sync and switch 
+transparently to async on demand'. The testcode i sent very much uses 
+this. (and this mechanism is in essence Zach's fibril-switching thing, 
+but done via kernel threads.)
+
+	Ingo
