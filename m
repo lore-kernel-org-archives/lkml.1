@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751213AbXBMJKE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751214AbXBMJSa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751213AbXBMJKE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 04:10:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbXBMJKE
+	id S1751214AbXBMJSa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 04:18:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbXBMJSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 04:10:04 -0500
-Received: from wr-out-0506.google.com ([64.233.184.231]:34649 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751213AbXBMJJt (ORCPT
+	Tue, 13 Feb 2007 04:18:30 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:57669 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751214AbXBMJS3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 04:09:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=S51e6NEes4m1FBBIv/Mr9wbKgyazRLIWkGCJdKEdfJy71AFbUcqdDigC38twRraRKyXXtCwAtSD1l/tiXqPOfbSyCbN7WEuIBR2k88TeOJXFk5JhpS8Ljw/Q3FjVzT01la32uhJSBWZgPCeH9Ao/+WisfbEBWCRqn6JO0c+ylsY=
-Message-ID: <b6a2187b0702130109n16cea6a1oae5761707c17e10f@mail.gmail.com>
-Date: Tue, 13 Feb 2007 17:09:46 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH] nanosecond filesystem support???
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Miquel van Smoorenburg" <miquels@cistron.nl>,
-       "Linus Torvalds" <torvalds@osdl.org>
-In-Reply-To: <200702130952.26048.andi@firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 13 Feb 2007 04:18:29 -0500
+Subject: Re: [PATCH mm] cfag12864b: fix crash when built-in and no parport
+	present
+From: Daniel Walker <dwalker@mvista.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Miguel Ojeda <maxextreme@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070212213557.4b28e567.akpm@linux-foundation.org>
+References: <20070210205123.699abb9c.maxextreme@gmail.com>
+	 <20070212213557.4b28e567.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 13 Feb 2007 01:16:36 -0800
+Message-Id: <1171358197.32073.182.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0702131627210.5124@boston.corp.fedex.com>
-	 <200702130952.26048.andi@firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/13/07, Arjan van de Ven <arjan@infradead.org> wrote:
-> it was there to avoid the following situation:
-> on disk it's still in seconds
+On Mon, 2007-02-12 at 21:35 -0800, Andrew Morton wrote:
 
+> 
+> This looks hacky.
+> 
 
-On 2/13/07, Andi Kleen <andi@firstfloor.org> wrote:
+One other thing that could be added is a change in the initcalls .
+ks0108 should be subsys_initcall() and the LCD devices
+device_initcall(). That would make sure one runs before the other. I
+don't think that alone would fix the crash tho. I didn't suggest it
+before cause I think the order of the sources in the build system might
+do this implicitly even if both are in device_initcall ..
 
-> If you want ns resolution you need a file system that supports it:
-> that's currently XFS, JFS, NTFS/CIFS (resolution is lower, but < 1s), NFSv[34], UDF,
-> with suitable servers,  tmpfs/ramfs/hugetlbfs. ext4 ns support is being worked on,
->
-> BTW the real max resolution supported in the kernel right now is jiffies.
+Daniel
 
-
-Andy, Arjan,
-
-Ok, I got it now. Well, after reboot, I ran stat() and since the info
-has to come from disk, now the nanosec returned is zero!
-
-Thanks for all your help.
-
-Jeff.
