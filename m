@@ -1,59 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750943AbXBMUQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750951AbXBMUQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750943AbXBMUQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 15:16:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbXBMUQZ
+	id S1750951AbXBMUQm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 15:16:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbXBMUQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 15:16:25 -0500
-Received: from hax.kala.ee ([194.126.124.39]:21664 "HELO hax.kala.ee"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750943AbXBMUQY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 15:16:24 -0500
-From: Hasso Tepper <hasso@estpak.ee>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: /proc/sys/net/ipv[46]/conf/ issue unsolved
-Date: Tue, 13 Feb 2007 22:16:13 +0200
+	Tue, 13 Feb 2007 15:16:42 -0500
+Received: from mx2.suse.de ([195.135.220.15]:34074 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750951AbXBMUQl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 15:16:41 -0500
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SuSE Labs, Novell
+To: Greg KH <greg@kroah.com>
+Subject: Re: Bug in current -git tree causing dbus and gnome to chew up cpu time
+Date: Tue, 13 Feb 2007 12:16:34 -0800
 User-Agent: KMail/1.9.5
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200702131529.04708.hasso@estpak.ee> <20070213090224.2826859f@localhost.localdomain>
-In-Reply-To: <20070213090224.2826859f@localhost.localdomain>
-Organization: Elion Enterprises Ltd.
+Cc: torvalds@linux-foundation.org, neilb@suse.de, viro@zeniv.linux.org.uk,
+       hch@lst.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+References: <20070213195116.GA5181@kroah.com> <200702131158.02809.agruen@suse.de> <20070213200132.GA6149@kroah.com>
+In-Reply-To: <20070213200132.GA6149@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702132216.13828.hasso@estpak.ee>
+Message-Id: <200702131216.35436.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger wrote:
-> > You can disable it in /proc/sys/net/ipv6/conf/default/... and then
-> > reenable it on the interfaces that you actually want.
+On Tuesday 13 February 2007 12:01, Greg KH wrote:
+> Attached below.
 
-And YOSHIFUJI Hideaki answered to this:
+I'm getting a CRC error on that file. Would you mind to resend?
 
-> The point is:
-> 
->  - Until we have live address(es), we do not create inet6_dev{} for that
->    device.
->  - We do NOT run DAD until the link is ready (netif_carrier_ok()).
-> 
-> This means, we do NOT have any addresses until the link is once up,
-> and thus, because the sysctl entries live in inet6_dev{}, we do not
-> install net.ipv6.conf.ethX from values of net.ipv6.conf.default until
-> then.
-
-Ie. to make it very clear - I can't reenable it on the interface before
-the first "carrier up" event (cable is plugged on). That's the point -
-AFAICS the only way I can configure interface differently than default is
-via daemon listening interface events via netlink. I can't do it in any
-way before.
-
-
-regards,
-
--- 
-Hasso Tepper
-Elion Enterprises Ltd. [AS3249]
-IP & Data Networking Expert
+Thanks,
+Andreas
