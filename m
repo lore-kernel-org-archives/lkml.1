@@ -1,64 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751038AbXBMIdF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751019AbXBMIdE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751038AbXBMIdF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 03:33:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbXBMIdE
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1751019AbXBMIdE (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 13 Feb 2007 03:33:04 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:55928 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751038AbXBMIdD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751192AbXBMIdD
+	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 13 Feb 2007 03:33:03 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:55929 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751019AbXBMIdC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 03:33:02 -0500
 From: Andi Kleen <andi@firstfloor.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [patch 4/9] Remove the TSC synchronization on SMP machines
-Date: Tue, 13 Feb 2007 09:28:05 +0100
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC] [PATCH] more support for memory-less-node.
+Date: Tue, 13 Feb 2007 09:29:49 +0100
 User-Agent: KMail/1.9.5
-Cc: Christoph Lameter <clameter@sgi.com>, Vojtech Pavlik <vojtech@suse.cz>,
-       Jiri Bohac <jbohac@suse.cz>, linux-kernel@vger.kernel.org,
-       ssouhlal@freebsd.org, tglx@linutronix.de, johnstul@us.ibm.com,
-       zippel@linux-m68k.org, andrea@suse.de
-References: <20070201095952.589234000@jet.suse.cz> <Pine.LNX.4.64.0702121632420.19380@schroedinger.engr.sgi.com> <1171348808.12771.19.camel@laptopd505.fenrus.org>
-In-Reply-To: <1171348808.12771.19.camel@laptopd505.fenrus.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Christoph Lameter <clameter@sgi.com>, bob.picco@hp.com
+References: <20070213155736.1131d46a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070213155736.1131d46a.kamezawa.hiroyu@jp.fujitsu.com>
 Organization: -
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702130928.05838.andi@firstfloor.org>
+Message-Id: <200702130929.49349.andi@firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 February 2007 07:40, Arjan van de Ven wrote:
-> On Mon, 2007-02-12 at 16:34 -0800, Christoph Lameter wrote:
-> > On Fri, 2 Feb 2007, Andi Kleen wrote:
-> > 
-> > > I've threatened to just disable RDTSC for ring 3 before, but it'll likely
-> > > never happen because too many programs use it.
-> > 
-> > Those programs are aware that they are fiddling around with low level 
-> > material but with this patchset we are going to have a non 
-> > monotonic time subsystem?
-> 
-> no quite the opposite. gettimeofday() currently is NOT monotonic
-> unfortunately. 
 
-Anytime it is non monotonic that's a bug. We've had bugs
-like this before, but recently we're doing reasonably well. Of course
-there can be always improvements, but in general I don't agree
-with your statement, sorry. You can usually rely on it being monotonic,
-short of the known limitations (e.g. don't run ntpd) 
+> In my understanding, a "node" is a block of cpu, memory, devices.
+> and there could be cpu-only-node, memory-only-node, device-only-node...
 
-Usually it weren't really classical bugs, but more "hardware does
-unexpected things under us". x86 hardware is a moving target unfortunately.
-
-> With this patchseries it actually has a better chance of
-> becoming that...
-
-ntpd problem is fundamental, nothing will change that. However
-it doesn't seem to be a big one in practice. 
+The trouble with this is that you'll need to harden large parts
+of code against these.  Especially a NULL pgdat is something quite
+dangerous. You could make it a dummy empty pgdat, but just assigning it
+nearby seems easier.
 
 -Andi
- 
