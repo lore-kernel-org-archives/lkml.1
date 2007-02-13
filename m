@@ -1,39 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932068AbXBMX4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932067AbXBMX6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932068AbXBMX4J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 18:56:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932069AbXBMX4J
+	id S932067AbXBMX6W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 18:58:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932070AbXBMX6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 18:56:09 -0500
-Received: from omx1-ext.sgi.com ([192.48.179.11]:46904 "EHLO omx1.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932068AbXBMX4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 18:56:08 -0500
-Date: Tue, 13 Feb 2007 15:55:41 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Vojtech Pavlik <vojtech@suse.cz>
-cc: Andi Kleen <ak@suse.de>, Arjan van de Ven <arjan@infradead.org>,
-       Jiri Bohac <jbohac@suse.cz>, linux-kernel@vger.kernel.org,
-       ssouhlal@freebsd.org, tglx@linutronix.de, johnstul@us.ibm.com,
-       zippel@linux-m68k.org, andrea@suse.de
-Subject: Re: [patch 4/9] Remove the TSC synchronization on SMP machines
-In-Reply-To: <20070213221848.GF9189@suse.cz>
-Message-ID: <Pine.LNX.4.64.0702131553560.30023@schroedinger.engr.sgi.com>
-References: <20070201095952.589234000@jet.suse.cz>
- <1171348808.12771.19.camel@laptopd505.fenrus.org>
- <Pine.LNX.4.64.0702130906530.23634@schroedinger.engr.sgi.com>
- <200702131820.15180.ak@suse.de> <20070213221848.GF9189@suse.cz>
+	Tue, 13 Feb 2007 18:58:22 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:53564 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932067AbXBMX6V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 18:58:21 -0500
+Message-ID: <45D2509C.4070502@vmware.com>
+Date: Tue, 13 Feb 2007 15:58:20 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Dan Hecht <dhecht@vmware.com>, Andrew Morton <akpm@osdl.org>,
+       xen-devel@lists.xensource.com, Ian Pratt <ian.pratt@xensource.com>,
+       linux-kernel@vger.kernel.org, Chris Wright <chrisw@sous-sol.org>,
+       Andi Kleen <ak@muc.de>, virtualization@lists.osdl.org
+Subject: Re: [Xen-devel] Re: [patch 14/21] Xen-paravirt: Add XEN config options
+ and disable unsupported config options.
+References: <20070213221729.772002682@goop.org>	<20070213221830.542511707@goop.org> <45D24172.9020800@vmware.com> <45D249D9.80407@goop.org>
+In-Reply-To: <45D249D9.80407@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Feb 2007, Vojtech Pavlik wrote:
+Jeremy Fitzhardinge wrote:
+> Dan Hecht wrote:
+>   
+>> I assume you plan to eventually get all this stuff working but just
+>> want to prevent configurations that the Xen paravirt-ops isn't ready
+>> for at the moment?
+>>
+>> Instead can you do it this way:
+>>
+>> config XEN
+>>     depends on PARAVIRT && !PREEMPT && HZ_100 && !DOUBLEFAULT && !KEXEC
+>>     
+>
+> That's a bit simpler code-wise, but it does make it pretty complex to
+> get everything just-so to even see the CONFIG_XEN option.
+>   
 
-> The interaction with ntpd can be fixed and I've done it in the past
-> once, although the fix wasn't all that nice.
+Yes, but that is what you need to do to compile Xen - logically, to 
+build a Xen kernel, you need to have a kernel configuration which can 
+enable Xen - not limit the configuration of a kernel because Xen has 
+been enabled.  This is because  with paravirt-ops, Xen compiled kernels 
+may not actually run on Xen, so you can't arbitrarily drop features 
+because you assume Xen is there.
 
-It can be and was fixed by gradually moving time instead of jumping to 
-the new time. F.e. the time interpolator on ia64 gradually adapts the 
-intervals so that synchronization is obtained.
+One of these has an easy solution - doublefault.  You don't need to 
+install the doublefault gate if you don't want it, and the hypervisor 
+doesn't need to freak out if you install it, it can just ignore the gate 
+entirely and claim #DF is not supported.
 
+Zach
