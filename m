@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751233AbXBMKI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751237AbXBMKLF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751233AbXBMKI2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 05:08:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbXBMKI2
+	id S1751237AbXBMKLF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 05:11:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbXBMKLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 05:08:28 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:45150 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751233AbXBMKI1 (ORCPT
+	Tue, 13 Feb 2007 05:11:05 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:37884 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751237AbXBMKLE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 05:08:27 -0500
-Subject: Re: SATA-performance: Linux vs. FreeBSD
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Martin A. Fink" <fink@mpe.mpg.de>
-Cc: Matthias Schniedermeyer <ms@citd.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <200702131025.15964.fink@mpe.mpg.de>
-References: <200702121502.17130.fink@mpe.mpg.de>
-	 <200702121856.29729.fink@mpe.mpg.de> <45D0F8EE.7020604@citd.de>
-	 <200702131025.15964.fink@mpe.mpg.de>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Tue, 13 Feb 2007 11:08:10 +0100
-Message-Id: <1171361290.12771.77.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 13 Feb 2007 05:11:04 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Nadia Derbey <Nadia.Derbey@bull.net>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 6/6] automatic tuning applied to some kernel components
+References: <20070116061516.899460000@bull.net>
+	<20070116063030.761795000@bull.net>
+	<20070122115638.835b26a1.akpm@osdl.org> <45B61E50.6020607@bull.net>
+	<m1mz3poeda.fsf@ebiederm.dsl.xmission.com> <45CC68BA.4010403@bull.net>
+	<m11wkz5gd2.fsf@ebiederm.dsl.xmission.com> <45D17F8D.3020207@bull.net>
+Date: Tue, 13 Feb 2007 03:10:36 -0700
+In-Reply-To: <45D17F8D.3020207@bull.net> (Nadia Derbey's message of "Tue, 13
+	Feb 2007 10:06:21 +0100")
+Message-ID: <m14ppqtlk3.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 
-> The problem is: FreeBSD is fast, but lacks of some special drivers. Linux has 
-> all drivers but access to harddisk is unpredictable and thus unreliable!
-> What can I do??
+Nadia Derbey <Nadia.Derbey@bull.net> writes:
 
+> So, should I understand from this that automatic tuning and the AKT framework
+> itself would make sense, given that I find the rigth tunables it should be
+> applied to?
 
-there's several tunables you can do;
-1) increase /sys/block/<device>/queue/nr_requests
-   the linux default is on the low side
-2) investigate other elevators; cfq is great for interactive use but not
-so great for max throughput. you can do this by echo'ing "deadline"
-into /sys/block/<device>/scheduler
-3) make sure ext3 is set to "data=writeback"; the default journalling
-mode is very strict, fine for smallish files but for multi-gigabyte
-it'll start to hurt
-4) try to use iostat -x /dev/<foo>  1 to see what values avg-rq and
-avg-qu are.. avg-rq should be at least several hundred if not more.
-5) echo a larger value into /sys/block/<device>/queue/max_sectors_kb
-   the default seems to be 512 which is... really low. The hw max is in
-   another file in that directory; if you want max throughput set the
-   max_sectors_kb value to the hw max. (you pay in terms of fairness for
-   this; it's the eternal fairness/latency versus throughput tradeoff)
+Sort of.  The concept of things tuning themselves automatically makes
+a lot of sense.
 
+I'm not at all certain about tunables being exported just to be hidden
+again.  Ideally you don't even want the fact that these things are
+varying visible to the user.
 
+So I think that if you can find a good example that cannot be solved
+better another way, you can build a case for your framework.
+Currently I am doubt you can find such a case.
 
+> Actually, dont' know if you had the opportunity to read all the patches, but
+> there are 2 other tunables AKT is proposed to be applied to:
+> . max_threads, the tunable limit on nr_threads
+> . max_files, the tunable limit on nr_files
+
+At a quick glance max_threads and max_files appear even more to be
+DOS limits and not tunables and even less applicable to needing any
+tuning at all.  My gut feel is at worst these values may need a little
+better boot time defaults but otherwise they the should be good.
+
+Eric
