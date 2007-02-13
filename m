@@ -1,39 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751437AbXBMXNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751422AbXBMXQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751437AbXBMXNs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 18:13:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbXBMXNr
+	id S1751422AbXBMXQz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 18:16:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbXBMXQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 18:13:47 -0500
-Received: from gw.goop.org ([64.81.55.164]:33958 "EHLO mail.goop.org"
+	Tue, 13 Feb 2007 18:16:55 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:52581 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751437AbXBMXNr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 18:13:47 -0500
-Message-ID: <45D24629.5010401@goop.org>
-Date: Tue, 13 Feb 2007 15:13:45 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	id S1751422AbXBMXQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 18:16:54 -0500
+Date: Tue, 13 Feb 2007 18:16:52 -0500
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Menny Hamburger <menny@exanet.com>, linux-kernel@vger.kernel.org
+Subject: Re: Getting the nfs_fh of a specific file/dir from the kernel
+Message-ID: <20070213231652.GA19243@fieldses.org>
+References: <A6FDE6B975803043804A49F12F49028E0F573D@hawk.exanet-il.co.il> <1171408381.6031.1.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-Subject: Re: [patch 13/21] Xen-paravirt: Add nosegneg capability to the vsyscall
- page notes
-References: <20070213221729.772002682@goop.org> <20070213221830.466651996@goop.org> <45D23F97.5040907@vmware.com> <45D24066.4070109@goop.org> <45D241A2.6000401@vmware.com>
-In-Reply-To: <45D241A2.6000401@vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1171408381.6031.1.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> I'm not super concerned either, but I still don't like it.  There
-> already is dynamic replacement for vsyscall.so, so you could have just
-> dropped in an an-note-ated version.
+On Tue, Feb 13, 2007 at 03:13:01PM -0800, Trond Myklebust wrote:
+> On Sun, 2007-02-11 at 10:06 +0200, Menny Hamburger wrote:
+> > We implement our own nfsd in user space - so the  kernel nfsd (as well
+> > as the lockd) are disabled.
+> > We need the handle in order to associate a kernel file handle with our
+> > own file id.
+> 
+> Filehandles are not part of any API that is exported to userland.
 
-Ah, OK.  I'll have a look at that.
+/proc/fs/nfsd/filehandle ???
 
-    J
+--b.
