@@ -1,151 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751023AbXBMK3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751248AbXBMKgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751023AbXBMK3W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 05:29:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750994AbXBMK3W
+	id S1751248AbXBMKgm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 05:36:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbXBMKgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 05:29:22 -0500
-Received: from mpemail.mpe.mpg.de ([130.183.137.110]:57804 "EHLO
-	mpemail.mpe.mpg.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750725AbXBMK3V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 05:29:21 -0500
-From: "Martin A. Fink" <fink@mpe.mpg.de>
-Organization: MPE
-To: Matthias Schniedermeyer <ms@citd.de>, linux-kernel@vger.kernel.org
-Subject: Re: SATA-performance: Linux vs. FreeBSD
-Date: Tue, 13 Feb 2007 11:29:18 +0100
-User-Agent: KMail/1.8
-References: <200702121502.17130.fink@mpe.mpg.de> <200702131025.15964.fink@mpe.mpg.de> <45D19014.5080900@citd.de>
-In-Reply-To: <45D19014.5080900@citd.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 13 Feb 2007 05:36:42 -0500
+Received: from ns.firmix.at ([62.141.48.66]:38067 "EHLO ns.firmix.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751248AbXBMKgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 05:36:41 -0500
+Subject: Re: Coding style RFC: convert "for (i=0;i<ARRAY_SIZE(array);i++)"
+	to "array_for_each(index, array)"
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Joe Perches <joe@perches.com>, Ben Nizette <ben.nizette@iinet.net.au>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <45D16BF8.9090409@yahoo.com.au>
+References: <1171324070.1528.25.camel@localhost>
+	 <45D10460.6000903@iinet.net.au> <1171327648.1528.30.camel@localhost>
+	 <45D13C34.2040400@yahoo.com.au> <1171352052.1528.48.camel@localhost>
+	 <45D16BF8.9090409@yahoo.com.au>
+Content-Type: text/plain
+Organization: Firmix Software GmbH
+Date: Tue, 13 Feb 2007 11:36:28 +0100
+Message-Id: <1171362988.21261.12.camel@tara.firmix.at>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -2.415 () AWL,BAYES_00,FORGED_RCVD_HELO
+X-Firmix-Spam-Status: No, hits=-2.415 required=5
+X-Spam-Score: -2.415 () AWL,BAYES_00,FORGED_RCVD_HELO
 Content-Disposition: inline
-Message-Id: <200702131129.19270.fink@mpe.mpg.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 13. Februar 2007 11:16 schrieben Sie:
-> Martin A. Fink wrote:
-> > Am Dienstag, 13. Februar 2007 00:31 schrieben Sie:
-> >> Martin A. Fink wrote:
-> >>> I have to store big amounts of data coming from 2 digital cameras to 
-disk. 
-> >>> Thus I have to write blocks of around 1 MB at 30 to 50 frames per second 
-> >>> for 
-> >>> a long period of time. So it is important for me that the harddisk drive 
-> >>> is 
-> >>> reliable in the sense of "if it is capable of 50 MB/s then it should 
-> >>> operate 
-> >>> at this speed. Constantly."
-> >> The good old handful of suggestions:
-> >>
-> >> - Use a dedicated disc for the task.
+On Tue, 2007-02-13 at 18:42 +1100, Nick Piggin wrote:
+> Joe Perches wrote:
+[...]
+> > perhaps:
 > > 
-> > I used a dedicated disk for this task. No one else besides the task is 
-writing 
-> > to it!
+> > #define array_for_each(element, array) \
+> > 	for ((element) = (array); \
+> > 	     (element) < ((array) + ARRAY_SIZE((array))); \
+> > 	     (element)++)
 > 
-> OK.
-> 
-> >> - Use an empty disc so there is no fragmentation.
-> > 
-> > All tests were performed on empty disk!
-> 
-> OK.
-> 
-> >> - Buy a bigger disk, they have high bandwidths.
-> > 
-> > I have a flash disk from a manufacturer who grants me 48 MB/s. And FreeBSD 
-as 
-> > well as Windows reach this value. Only Linux 2.6.18 is far away from it 
-(42 
-> > MB/s)
-> 
-> Even 48MB/s is quite low.
-> I've reached up to 70MB/s with a single 500GB Seagate model and even my 
-older HDDs all reach 60MB/s (at least on the outer cylinders)
-> But i haven't tested any "sync/fsync" in between, only after.
+> If you're going for consistency, then shouldn't this be
+> array_for_each_entry()?
 
-Please Read Carefully! I talk about flash disk, not normal harddisks. There 
-are no mechanical parts in flash disks, only flash memory. And therefore 
-48MB/s is excellent (compared to all other available disks)
+That depends on the decision between consistency to array_for_each_index
+or consistency to list_for_each.
 
-> 
-> >> - Buy a more "specialized" disc.
-> > 
-> > see above
-> > 
-> >>   for e.x.: Western Digital Raptor X(*) a 150GB, 10-KRPM S-ATA disc.
-> >> - Buy several discs and use RAID 0
-> >>   or alternate between discs when writing.
-> > 
-> > What I have to build is an application for the International Space Station 
-> > ISS. I am limited with power and space. So If the disk is able to write 
-> > constantly 48 MB/s then the Operating System should do this!
-> 
-> OK. That appears to be a serious constraint.
-> Do HDDs cope well with zero gravity?
+> > #define array_for_each_index(index, array) \
+> > 	for ((index) = 0; (index) < ARRAY_SIZE((array)); (index)++)
 
-Yes and no. Yes: standard desktop HDDs are unproblematic. Laptop HDDs have 
-g-force shock hardware that works on zero-g detection and thus Laptop HDDs 
-can't be used in space. At least modern ones can't...
-
-> At least the SSD won't have a problem with that. ;-)
-> 
-> > The problem is: FreeBSD is fast, but lacks of some special drivers. Linux 
-has 
-> > all drivers but access to harddisk is unpredictable and thus unreliable!
-> > What can I do??
-> 
-> Personally i haven't had such bad write speeds in years. Taking USB 
-connected and/or encrypted partitions aside.
-> But on the other hand: I don't sync(fsync) until i have to.
-
-If you don't have to - no problem. But if you use filesystem you do a fsync 
-every time you close the file (and filesize is less then 1-2 GB)
-> And personally i have good (and constant bandwidth) experience using XFS as 
-a filesystem.
-> (I have 41 HDDs with a total capacity of 10.5 TB, performance is quite 
-important for me.)
-> 
-> Also you have skipped the information how the images "arrive" on the system 
-(PCI(e) card?), that may be important for an "end to end" view of the 
-problem.
-
-Images arrive via Gigabit Ethernet. GigE Vision standard. (PCIe x4)
-> 
-> And what's also missing. What is "a long period of time".
-> Calculating best-case with the SSD:
-> 27GB divided by 30MB/s only gives a bit more than 15 Minutes.
-> And worst case with 50MB/s is less than 10 Minutes.
-
-Well. The testdrive has 27GB. The final drive will have 225 GB. And there will 
-be 3 cameras and thus 3 disks. This means we talk about 140 MB/s for around 
-90 minutes.
-For space applications with low power but high performance this is a long 
-time... ;-)
-> 
-> 
-> 
-> 
-> 
-> -- 
-> Real Programmers consider "what you see is what you get" to be just as
-> bad a concept in Text Editors as it is in women. No, the Real Programmer
-> wants a "you asked for it, you got it" text editor -- complicated,
-> cryptic, powerful, unforgiving, dangerous.
-> 
-> 
-
+	Bernd
 -- 
-Dipl. Physiker
-Martin Anton Fink
-Max Planck Institute for extraterrestrial Physics
-Giessenbachstrasse
-85741 Garching
-Germany
-Tel. +49-(0)89-30000-3645
-Fax. +49-(0)89-30000-3569
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
+
