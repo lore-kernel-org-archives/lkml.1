@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751741AbXBMTP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751768AbXBMTVG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751741AbXBMTP2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 14:15:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbXBMTP2
+	id S1751768AbXBMTVG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 14:21:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbXBMTVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 14:15:28 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:33648 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751741AbXBMTP0 (ORCPT
+	Tue, 13 Feb 2007 14:21:06 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:43763 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751768AbXBMTVF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 14:15:26 -0500
-Date: Tue, 13 Feb 2007 11:10:42 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: johannes@sipsolutions.net
+	Tue, 13 Feb 2007 14:21:05 -0500
+Subject: Re: [PATCH] kernel-doc: include struct short description in title
+	output
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Randy Dunlap <randy.dunlap@oracle.com>
 Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@osdl.org>
-Subject: [PATCH] kernel-doc: include struct short description in title
- output
-Message-Id: <20070213111042.e10a4234.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+In-Reply-To: <20070213111042.e10a4234.randy.dunlap@oracle.com>
+References: <20070213111042.e10a4234.randy.dunlap@oracle.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-pkZwGySVNASjUpWNE19b"
+Date: Tue, 13 Feb 2007 20:18:37 +0100
+Message-Id: <1171394317.10344.111.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-Mailer: Evolution 2.6.3 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Output of a struct in html mode needs to include the short description
-from the struct name line in the output title line.
+--=-pkZwGySVNASjUpWNE19b
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- scripts/kernel-doc |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Tue, 2007-02-13 at 11:10 -0800, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+>=20
+> Output of a struct in html mode needs to include the short description
+> from the struct name line in the output title line.
 
---- linux-2.6.20-git7.orig/scripts/kernel-doc
-+++ linux-2.6.20-git7/scripts/kernel-doc
-@@ -452,7 +452,7 @@ sub output_struct_html(%) {
-     my %args = %{$_[0]};
-     my ($parameter);
- 
--    print "<h2>".$args{'type'}." ".$args{'struct'}."</h2>\n";
-+    print "<h2>".$args{'type'}." ".$args{'struct'}. " - " .$args{'purpose'}."</h2>\n";
-     print "<b>".$args{'type'}." ".$args{'struct'}."</b> {<br>\n";
-     foreach $parameter (@{$args{'parameterlist'}}) {
- 	if ($parameter =~ /^#/) {
+Yup, that fixes it for structs. I guess I forgot to mention this earlier
+because I didn't notice it until now... the same bug exists for
+functions as well.
+
+And apparently I never looked at the output for my description for
+pm_set_ops.... maybe (hopefully!) it'll teach me to be more careful next
+time.
+
+johannes
+
+--=-pkZwGySVNASjUpWNE19b
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBF0g8M/ETPhpq3jKURAlWHAJ4qbnXlpL945eMTIW8dBtClown9PACgmp/K
+stZcKLWfPmpAsHUqcyz3OCo=
+=e6EW
+-----END PGP SIGNATURE-----
+
+--=-pkZwGySVNASjUpWNE19b--
+
