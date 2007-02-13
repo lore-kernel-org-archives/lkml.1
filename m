@@ -1,146 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751448AbXBMXVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751438AbXBMXVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751448AbXBMXVS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 18:21:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbXBMXVS
+	id S1751438AbXBMXVa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 18:21:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbXBMXVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 18:21:18 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:4604 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751448AbXBMXVR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 18:21:17 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 13 Feb 2007 15:21:14 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 06/11] syslets: core, documentation
-In-Reply-To: <20070213213422.GA22104@elte.hu>
-Message-ID: <Pine.LNX.4.64.0702131457060.32055@alien.or.mcafeemobile.com>
-References: <20070213142042.GG638@elte.hu> <Pine.LNX.4.64.0702131117120.32055@alien.or.mcafeemobile.com>
- <20070213213422.GA22104@elte.hu>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 13 Feb 2007 18:21:30 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:60191 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751438AbXBMXV3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 18:21:29 -0500
+Date: Tue, 13 Feb 2007 15:21:04 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Sergei Organov <osv@javad.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       =?ISO-8859-1?Q?J=2EA=2E_Magall=C3=C3=C3=C2=B3n?= 
+	<jamagallon@ono.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: somebody dropped a (warning) bomb
+In-Reply-To: <87fy99n6mf.fsf@javad.com>
+Message-ID: <Pine.LNX.4.64.0702131513050.3604@woody.linux-foundation.org>
+References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702081338010.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0702081351410.8424@woody.linux-foundation.org>
+ <87abznsdyo.fsf@javad.com> <Pine.LNX.4.64.0702090753500.8424@woody.linux-foundation.org>
+ <874pprr5nn.fsf@javad.com> <Pine.LNX.4.64.0702120804520.8424@woody.linux-foundation.org>
+ <87ps8end9b.fsf@javad.com> <84144f020702131026q2af1afd6vbcd2708d7b7b9907@mail.gmail.com>
+ <87bqjxooog.fsf@javad.com> <84144f020702131143r767aa40blb97a39b40bee73b8@mail.gmail.com>
+ <87fy99n6mf.fsf@javad.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Feb 2007, Ingo Molnar wrote:
 
+
+On Tue, 13 Feb 2007, Sergei Organov wrote:
 > 
-> * Davide Libenzi <davidel@xmailserver.org> wrote:
-> 
-> > > +The Syslet Atom:
-> > > +----------------
-> > > +
-> > > +The syslet atom is a small, fixed-size (44 bytes on 32-bit) piece of
-> > > +user-space memory, which is the basic unit of execution within the syslet
-> > > +framework. A syslet represents a single system-call and its arguments.
-> > > +In addition it also has condition flags attached to it that allows the
-> > > +construction of larger programs (syslets) from these atoms.
-> > > +
-> > > +Arguments to the system call are implemented via pointers to arguments.
-> > > +This not only increases the flexibility of syslet atoms (multiple syslets
-> > > +can share the same variable for example), but is also an optimization:
-> > > +copy_uatom() will only fetch syscall parameters up until the point it
-> > > +meets the first NULL pointer. 50% of all syscalls have 2 or less
-> > > +parameters (and 90% of all syscalls have 4 or less parameters).
-> > 
-> > Why do you need to have an extra memory indirection per parameter in 
-> > copy_uatom()? [...]
-> 
-> yes. Try to use them in real programs, and you'll see that most of the 
-> time the variable an atom wants to access should also be accessed by 
-> other atoms. For example a socket file descriptor - one atom opens it, 
-> another one reads from it, a third one closes it. By having the 
-> parameters in the atoms we'd have to copy the fd to two other places.
+> Sorry, what do you do with "variable 'xxx' might be used uninitialized"
+> warning when it's false? Turn it off? Annotate the source? Assign fake
+> initialization value? Change the compiler so that it does "the effort"
+> for you? Never encountered false positive from this warning?
 
-Yes, of course we have to support the indirection, otherwise chaining 
-won't work. But ...
+The thing is, that warning is at least easy to shut up. 
 
+You just add a fake initialization. There isn't any real downside.
 
+In contrast, to shut up the idiotic pointer-sign warning, you have to add 
+a cast.
 
-> > I can understand that chaining syscalls requires variable sharing, but 
-> > the majority of the parameters passed to syscalls are just direct 
-> > ones. Maybe a smart method that allows you to know if a parameter is a 
-> > direct one or a pointer to one? An "unsigned int pmap" where bit N is 
-> > 1 if param N is an indirection? Hmm?
-> 
-> adding such things tends to slow down atom parsing.
+Now, some people seem to think that adding casts is a way of life, and 
+think that C programs always have a lot of casts. That's NOT TRUE. It's 
+actually possible to avoid casts, and good C practice will do that to 
+quite a high degree, because casts in C are *dangerous*. 
 
-I really think it simplifies it. You simply *copy* the parameter (I'd say 
-that 70+% of cases falls inside here), and if the current "pmap" bit is 
-set, then you do all the indirection copy-from-userspace stuff.
-It also simplify userspace a lot, since you can now pass arrays and 
-structure pointers directly, w/out saving them in a temporary variable.
+A language that doesn't allow arbitrary type-casting is a horrible 
+language (because it doesn't allow you to "get out" of the language type 
+system), and typecasts in C are really important. But they are an 
+important feature that should be used with caution, and as little as 
+possible, because they (by design, of course) break the type rules.
 
+Now, since the _only_ reason for the -Wpointer-sign warning in the first 
+place is to warn about breaking type rules, if the way to shut it up is to 
+break them EVEN MORE, then the warnign is obviously totally broken. IT 
+CAUSES PEOPLE TO WRITE WORSE CODE! Which was against the whole point of 
+having the warning in the first place.
 
+This is why certain warnings are fine. For example, the warning about
 
+	if (a=b)
+		..
 
-> > Sigh, I really dislike shared userspace/kernel stuff, when we're 
-> > transfering pointers to userspace. Did you actually bench it against 
-> > a:
-> > 
-> > int async_wait(struct syslet_uatom **r, int n);
-> > 
-> > I can fully understand sharing userspace buffers with the kernel, if 
-> > we're talking about KB transferd during a block or net I/O DMA 
-> > operation, but for transfering a pointer? Behind each pointer 
-> > transfer(4/8 bytes) there is a whole syscall execution, [...]
-> 
-> there are three main reasons for this choice:
-> 
-> - firstly, by putting completion events into the user-space ringbuffer
->   the asynchronous contexts are not held up at all, and the threads are
->   available for further syslet use.
-> 
-> - secondly, it was the most obvious and simplest solution to me - it 
->   just fits well into the syslet model - which is an execution concept 
->   centered around pure user-space memory and system calls, not some 
->   kernel resource. Kernel fills in the ringbuffer, user-space clears it. 
->   If we had to worry about a handshake between user-space and 
->   kernel-space for the completion information to be passed along, that 
->   would either mean extra buffering or extra overhead. Extra buffering 
->   (in the kernel) would be for no good reason: why not buffer it in the 
->   place where the information is destined for in the first place. The 
->   ringbuffer of /pointers/ is what makes this really powerful. I never 
->   really liked the AIO/etc. method /event buffer/ rings. With syslets 
->   the 'cookie' is the pointer to the syslet atom itself. It doesnt get 
->   any more straightforward than that i believe.
-> 
-> - making 'is there more stuff for me to work on' a simple instruction in
->   user-space makes it a no-brainer for user-space to promptly and
->   without thinking complete events. It's also the right thing to do on 
->   SMP: if one core is solely dedicated to the asynchronous workload,
->   only running on kernel mode, and the other code is only running
->   user-space, why ever switch between protection domains? [except if any
->   of them is idle] The fastest completion signalling method is the
->   /memory bus/, not an interrupt. User-space could in theory even use
->   MWAIT (in user-space!) to wait for the other core to complete stuff. 
->   That makes for a hell of a fast wakeup.
+is obviously warning about totally valid C code, but it's _still_ a fine 
+warning, because it's actually very easy to make that warning go away AND 
+IMPROVE THE CODE at the same time. Even if you actually meant to write the 
+assignment, you can write it as
 
-That makes also for a hell ugly retrieval API IMO ;)
-If it'd be backed up but considerable performance gains, then it might be OK.
-But I believe it won't be the case, and that leave us with an ugly API.
-OTOH, if noone else object this, it means that I'm the only wierdo :) and 
-the API is just fine.
+	if ((a = b) != 0)
+		..
 
+or 
 
+	a = b;
+	if (a)
+		..
 
+both of which are actually more readable.
 
-- Davide
+But if you have 
 
+	unsigned char *mystring;
 
+	len = strlen(mystring);
+
+then please tell me how to fix that warning without making the code 
+*worse* from a type-safety standpoint? You CANNOT. You'd have to cast it 
+explicitly (or assing it through a "void *" variable), both of which 
+actually MAKE THE TYPE-CHECKING PROBLEM WORSE!
+
+See? The warning made no sense to begin with, and it warns about something 
+where the alternatives are worse than what it warned about.
+
+Ergo. It's a crap warning.
+
+		Linus
