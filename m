@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750744AbXBMPb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750742AbXBMPjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750744AbXBMPb1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 10:31:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750750AbXBMPb1
+	id S1750742AbXBMPjp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 10:39:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750752AbXBMPjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 10:31:27 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:53402 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750744AbXBMPb1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 10:31:27 -0500
-Subject: current git crashes on bootup with pci_iounmap()
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 13 Feb 2007 16:31:54 +0100
-Message-Id: <1171380714.3829.6.camel@pim.off.vrfy.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:4ddcc9dd12ba6cf3155e4d81b383efda
-X-Provags-ID2: V01U2FsdGVkX18VFkDKMepjOVkHb/AQBQvsg36pgJuGlhVf2C6k7xv2LO7grpW6WJUzFOJiNktrim10EID1OcoWiJkUwDEpFckuZmoj9WOIz1AaPERqQbwK/w==
+	Tue, 13 Feb 2007 10:39:45 -0500
+Received: from ns.suse.de ([195.135.220.2]:51667 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750742AbXBMPjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 10:39:45 -0500
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system call support
+References: <20060529212109.GA2058@elte.hu> <20070213142010.GA638@elte.hu>
+	<20070213150019.4b4d4827@localhost.localdomain>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 13 Feb 2007 17:39:28 +0100
+In-Reply-To: <20070213150019.4b4d4827@localhost.localdomain>
+Message-ID: <p73hctqggfz.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kernel BUG at lib/iomap.c:254!
-invalid opcode: 0000 [#1]
-...
+Alan <alan@lxorguk.ukuu.org.uk> writes:
 
-The screen picture is here:
-  http://vrfy.org/pci_iounmap.jpg
+Funny, it sounds like batch() on stereoids @) Ok with an async context it becomes
+somewhat more interesting.
+ 
+> 	sys_setuid/gid/etc need to be synchronous only and not occur
+> while other async syscalls are running in parallel to meet current kernel
+> assumptions.
+> 
+> 	sys_exec and other security boundaries must be synchronous only
+> and not allow async "spill over" (consider setuid async binary patching)
 
-It's a Thinkpad T43p.
+He probably would need some generalization of Andrea's seccomp work.
+Perhaps using bitmaps? For paranoia I would suggest to white list, not black list
+calls.
 
-2.6.20 was working fine.
-
-Commenting out:
-  IO_COND(addr, /* nothing */, iounmap(addr));
-in:
-  lib/iomap.c:254
-makes at least booting up possible.
-
-Thanks,
-Kay
-
+-Andi
