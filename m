@@ -1,171 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161081AbXBMFgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750996AbXBMFrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161081AbXBMFgO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 00:36:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161082AbXBMFgN
+	id S1750996AbXBMFrl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 00:47:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbXBMFrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 00:36:13 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:55291 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161081AbXBMFgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 00:36:13 -0500
-Date: Mon, 12 Feb 2007 21:35:57 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Miguel Ojeda <maxextreme@gmail.com>
-Cc: dwalker@mvista.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH mm] cfag12864b: fix crash when built-in and no parport
- present
-Message-Id: <20070212213557.4b28e567.akpm@linux-foundation.org>
-In-Reply-To: <20070210205123.699abb9c.maxextreme@gmail.com>
-References: <20070210205123.699abb9c.maxextreme@gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 Feb 2007 00:47:41 -0500
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:49980 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750774AbXBMFrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 00:47:40 -0500
+Message-ID: <45D150FD.8080901@drzeus.cx>
+Date: Tue, 13 Feb 2007 06:47:41 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070131)
+MIME-Version: 1.0
+To: Sascha Sommer <saschasommer@freenet.de>
+CC: Jiri Slaby <jirislaby@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       rmk+mmc@arm.linux.org.uk, Elladan <elladan@eskimo.com>,
+       Samuel Thibault <samuel.thibault@ens-lyon.org>
+Subject: Re: Experimental driver for Ricoh Bay1Controller SD Card readers
+References: <200701070032.27234.saschasommer@freenet.de> <45A0C3A7.2040506@gmail.com> <200702112122.38440.saschasommer@freenet.de>
+In-Reply-To: <200702112122.38440.saschasommer@freenet.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Feb 2007 20:51:23 +0100 Miguel Ojeda <maxextreme@gmail.com> wrote:
+Sascha Sommer wrote:
+> I still consider this driver experimental, but without documentation this is 
+> probably not going to change anytime soon.
+> The question is now what I should do with the driver?
+> Is it worth to be included in the kernel? If yes where and against what 
+> kernelversion should I send the patch?
+>
+>   
 
-> Andrew, Daniel who reported the crash has tested this patch and says that it works fine avoiding it, so you can merge.
-> 
-> drivers-add-lcd-support-fix-crash-when-built-in-and-no-parport-present.patch
-> Signed-off-by: Miguel Ojeda Sandonis <maxextreme@gmail.com>
-> ---
-> diff --git a/drivers/auxdisplay/cfag12864b.c b/drivers/auxdisplay/cfag12864b.c
-> index 889583d..cb44cb4 100644
-> --- a/drivers/auxdisplay/cfag12864b.c
-> +++ b/drivers/auxdisplay/cfag12864b.c
-> @@ -312,6 +312,17 @@ EXPORT_SYMBOL_GPL(cfag12864b_disable);
->  EXPORT_SYMBOL_GPL(cfag12864b_isenabled);
->  
->  /*
-> + * Is the module inited?
-> + */
-> +
-> +static unsigned char cfag12864b_inited;
-> +unsigned char cfag12864b_isinited(void)
-> +{
-> +	return cfag12864b_inited;
-> +}
-> +EXPORT_SYMBOL_GPL(cfag12864b_isinited);
-> +
-> +/*
->   * Module Init & Exit
->   */
->  
-> @@ -319,6 +330,13 @@ static int __init cfag12864b_init(void)
->  {
->  	int ret = -EINVAL;
->  
-> +	/* ks0108_init() must be called first */
-> +	if (!ks0108_isinited()) {
-> +		printk(KERN_ERR CFAG12864B_NAME ": ERROR: "
-> +			"ks0108 is not initialized\n");
-> +		goto none;
-> +	}
-> +
->  	if (PAGE_SIZE < CFAG12864B_SIZE) {
->  		printk(KERN_ERR CFAG12864B_NAME ": ERROR: "
->  			"page size (%i) < cfag12864b size (%i)\n",
-> @@ -354,6 +372,7 @@ static int __init cfag12864b_init(void)
->  	cfag12864b_clear();
->  	cfag12864b_on();
->  
-> +	cfag12864b_inited = 1;
->  	return 0;
->  
->  cachealloced:
-> diff --git a/drivers/auxdisplay/cfag12864bfb.c b/drivers/auxdisplay/cfag12864bfb.c
-> index 94765e7..66fafbb 100644
-> --- a/drivers/auxdisplay/cfag12864bfb.c
-> +++ b/drivers/auxdisplay/cfag12864bfb.c
-> @@ -137,7 +137,14 @@ static struct platform_device *cfag12864
->  
->  static int __init cfag12864bfb_init(void)
->  {
-> -	int ret;
-> +	int ret = -EINVAL;
-> +
-> +	/* cfag12864b_init() must be called first */
-> +	if (!cfag12864b_isinited()) {
-> +		printk(KERN_ERR CFAG12864BFB_NAME ": ERROR: "
-> +			"cfag12864b is not initialized\n");
-> +		goto none;
-> +	}
->  
->  	if (cfag12864b_enable()) {
->  		printk(KERN_ERR CFAG12864BFB_NAME ": ERROR: "
-> @@ -162,6 +169,7 @@ static int __init cfag12864bfb_init(void
->  		}
->  	}
->  
-> +none:
->  	return ret;
->  }
->  
-> diff --git a/drivers/auxdisplay/ks0108.c b/drivers/auxdisplay/ks0108.c
-> index a637575..e6c3646 100644
-> --- a/drivers/auxdisplay/ks0108.c
-> +++ b/drivers/auxdisplay/ks0108.c
-> @@ -111,6 +111,17 @@ EXPORT_SYMBOL_GPL(ks0108_address);
->  EXPORT_SYMBOL_GPL(ks0108_page);
->  
->  /*
-> + * Is the module inited?
-> + */
-> +
-> +static unsigned char ks0108_inited;
-> +unsigned char ks0108_isinited(void)
-> +{
-> +	return ks0108_inited;
-> +}
-> +EXPORT_SYMBOL_GPL(ks0108_isinited);
-> +
-> +/*
->   * Module Init & Exit
->   */
->  
-> @@ -142,6 +153,7 @@ static int __init ks0108_init(void)
->  		goto registered;
->  	}
->  
-> +	ks0108_inited = 1;
->  	return 0;
->  
->  registered:
-> diff --git a/include/linux/cfag12864b.h b/include/linux/cfag12864b.h
-> index 0bc45e6..1605dd8 100644
-> --- a/include/linux/cfag12864b.h
-> +++ b/include/linux/cfag12864b.h
-> @@ -73,5 +73,10 @@ extern void cfag12864b_disable(void);
->   */
->  extern unsigned char cfag12864b_isenabled(void);
->  
-> +/*
-> + * Is the module inited?
-> + */
-> +extern unsigned char cfag12864b_isinited(void);
-> +
->  #endif /* _CFAG12864B_H_ */
->  
-> diff --git a/include/linux/ks0108.h b/include/linux/ks0108.h
-> index 8047d4b..a2c54ac 100644
-> --- a/include/linux/ks0108.h
-> +++ b/include/linux/ks0108.h
-> @@ -43,4 +43,7 @@ extern void ks0108_address(unsigned char
->  /* Set the controller's current page (0..7) */
->  extern void ks0108_page(unsigned char page);
->  
-> +/* Is the module inited? */
-> +extern unsigned char ks0108_isinited(void);
-> +
->  #endif /* _KS0108_H_ */
+That's up to you. The most important thing for any part of the kernel is
+that it must have a maintainer. So if you are ready to keep the driver
+up to date and handle the support requests that show, then you should
+really submit it.
 
-This looks hacky.
+Patches should always be sent against the current version of the kernel
+(i.e. git HEAD). Usually the latest packaged release will also do.
 
-Your patch didn't include a description of the bug (please always include
-such a description) so I'm not sure what's going on here.  But I'm
-suspecting that module dependencies and appropriate choice of initcall
-levels is the right way to fix whatever bug this is.
+(Note that I haven't had time to review your latest version of the driver)
+
+Rgds
+
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
 
