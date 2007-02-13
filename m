@@ -1,66 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161111AbXBMHgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751161AbXBMHhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161111AbXBMHgn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 02:36:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161108AbXBMHgn
+	id S1751161AbXBMHhn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 02:37:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbXBMHhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 02:36:43 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:38212 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751164AbXBMHgm convert rfc822-to-8bit (ORCPT
+	Tue, 13 Feb 2007 02:37:43 -0500
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:1207 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751161AbXBMHhm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 02:36:42 -0500
-From: Ismail =?utf-8?q?D=C3=B6nmez?= <ismail@pardus.org.tr>
-Organization: TUBITAK/UEKAE
-To: Len Brown <lenb@kernel.org>
-Subject: Re: /proc/acpi/ac_adapter/AC is missing after latest ACPI merge
-Date: Tue, 13 Feb 2007 09:36:34 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Lebedev, Vladimir P" <vladimir.p.lebedev@intel.com>
-References: <200702122045.34951.ismail@pardus.org.tr> <200702130023.15495.lenb@kernel.org>
-In-Reply-To: <200702130023.15495.lenb@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	Tue, 13 Feb 2007 02:37:42 -0500
+Date: Tue, 13 Feb 2007 09:37:38 +0200
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Coding style RFC: convert "for (i=0;i<ARRAY_SIZE(array);i++)" to "array_for_each(index, array)"
+Message-ID: <20070213073738.GB23804@rhun.ibm.com>
+References: <1171324070.1528.25.camel@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702130936.37764.ismail@pardus.org.tr>
+In-Reply-To: <1171324070.1528.25.camel@localhost>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 February 2007 07:23:15 Len Brown wrote:
-> On Monday 12 February 2007 13:45, Ismail Dönmez wrote:
-> > Hi all,
-> >
-> > After latest ACPI merge /proc/acpi/ac_adapter/AC has gone fishing :
-> >
-> > [~]> ls -al /proc/acpi/ac_adapter/
-> > dr-xr-xr-x  2 root root 0 Şub 12 20:44 ADP1
-> >
-> > [~]> ls -al /proc/acpi/ac_adapter/ADP1
-> > -r--r--r-- 1 root root 0 Şub 12 20:44 state
-> >
-> > This at least breaks HAL which thinks AC is always plugged in, is this
-> > change intentional?
->
-> no change intended here.
->
-> grep CONFIG_ACPI_AC .config
->
-> lsmod |grep ac
+On Mon, Feb 12, 2007 at 03:47:50PM -0800, Joe Perches wrote:
 
+> Now that most of the sizeof(array)/sizeof(array[0]) conversions have
+> been done (there are about 800 done and about another 130 left),
+> perhaps it could be useful to change the code to use a define
+> similar to the list_for_each
+> 
+> #define list_for_each(pos, head) \
+> 	for (pos = (head)->next; prefetch(pos->next), pos != (head); \
+>         	pos = pos->next)
+> 
+> perhaps
+> 
+> #define array_for_each(index, array) \
+> 	for ((index) = 0; (index) < ARRAY_SIZE((array)); (index)++)
 
-[~/GIT/linux-2.6]> grep CONFIG_ACPI_AC .config
-CONFIG_ACPI_AC=y
+Could we please stop "improving" the C language? it has served us fine
+so far.
 
-[~/GIT/linux-2.6]> lsmod|grep ac
-af_packet              19976  2
-cpufreq_userspace       3732  0
-
-But it looks like older kernels had only  /proc/acpi/ac_adapter/ADP1 and it 
-worked fine with HAL, maybe something in sysfs changed? Also for some reason 
-hal-addon-acpi doesn't seem to start at all, which might be the problem.
-
-Regards,
-ismail
+Cheers,
+Muli
