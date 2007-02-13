@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751357AbXBMWa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751364AbXBMWcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751357AbXBMWa7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 17:30:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbXBMWa7
+	id S1751364AbXBMWcW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 17:32:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbXBMWcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 17:30:59 -0500
-Received: from ns2.suse.de ([195.135.220.15]:40335 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751357AbXBMWa6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 17:30:58 -0500
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SuSE Labs, Novell
-To: Greg KH <greg@kroah.com>
-Subject: Re: Bug in current -git tree causing dbus and gnome to chew up cpu time
-Date: Tue, 13 Feb 2007 14:30:46 -0800
-User-Agent: KMail/1.9.5
-Cc: torvalds@linux-foundation.org, neilb@suse.de, viro@zeniv.linux.org.uk,
-       hch@lst.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-References: <20070213195116.GA5181@kroah.com> <200702131158.02809.agruen@suse.de> <20070213213737.GA14383@kroah.com>
-In-Reply-To: <20070213213737.GA14383@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Feb 2007 17:32:22 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:39307 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751364AbXBMWcV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 17:32:21 -0500
+Date: Tue, 13 Feb 2007 23:32:20 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system call support
+Message-ID: <20070213223220.GK29492@one.firstfloor.org>
+References: <20070213142010.GA638@elte.hu> <Pine.LNX.4.64.0702131219240.32055@alien.or.mcafeemobile.com> <20070213215724.GD22104@elte.hu> <p733b59hc81.fsf@bingen.suse.de> <20070213222626.GI22104@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702131430.47053.agruen@suse.de>
+In-Reply-To: <20070213222626.GI22104@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 February 2007 13:37, Greg KH wrote:
-> On Tue, Feb 13, 2007 at 11:58:02AM -0800, Andreas Gruenbacher wrote:
-> > > I'm running pretty new GNOME and dbus here:
-> > > 	dbus 1.0.2
-> > > 	gnome 2.16.2
-> > > 	hal 0.5.7.1
-> > > 	nautilus 2.16.3
-> > >
-> > > Any ideas of things I can test?
-> >
-> > Sorry for the breakage. Printk of the __d_path result may tell:
-> >
-> > Index: b/fs/dcache.c
-> > ===================================================================
-> > --- a/fs/dcache.c
-> > +++ b/fs/dcache.c
-> > @@ -1803,6 +1803,8 @@ char *__d_path(struct dentry *dentry, st
-> >
-> >  out:
-> >         spin_unlock(&dcache_lock);
-> > +	printk(KERN_DEBUG "%s(%d): %s\n", current->comm, current->pid,
-> > +	       IS_ERR(buffer) ? "failed" : buffer);
-> > 	return buffer;
->
-> This causes the following to just loop over and over, incrementing the
-> pid:
->
-> gnome-vfs-daemo(8914):
+On Tue, Feb 13, 2007 at 11:26:26PM +0100, Ingo Molnar wrote:
+> 
+> * Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > > really, what's the point behind aio_cancel()?
+> > 
+> > The main use case is when you open a file requester on a network file 
+> > system where the server is down and you get tired of waiting and press 
+> > "Cancel" it should abort the hanging IO immediately.
+> 
+> ok, that should work fine already - exit in the user context gets 
 
-That's the weird case, and it should only trigger if there's no path to be 
-recovered from what gnome-vfs-deamon calls d_path on, like a lazily unmounted 
-filesystem. (A bind mount wouldn't do.)
+That would be a little heavy handed. I wouldn't expect my GUI
+program to quit itself on cancel. And requiring it to create a new
+thread just to exit on cancel would be also nasty.
 
-> I'm running gnome-vfs version 2.6.13 if that matters.
->
-> Anything else I can try?
+And of course you cannot interrupt blocked IOs this way right now
+(currently it only works with signals in some cases on NFS)
 
-I guess I'll just have to check what gnome-vfs-deamon does, thanks.
-
-Andreas
+-Andi
