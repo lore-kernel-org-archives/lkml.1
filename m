@@ -1,108 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750807AbXBMQK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750805AbXBMQLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750807AbXBMQK0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 11:10:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbXBMQKZ
+	id S1750805AbXBMQLd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 11:11:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbXBMQLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 11:10:25 -0500
-Received: from scrub.xs4all.nl ([194.109.195.176]:46902 "EHLO scrub.xs4all.nl"
+	Tue, 13 Feb 2007 11:11:33 -0500
+Received: from dash.upc.es ([147.83.2.50]:47457 "EHLO dash.upc.es"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750807AbXBMQKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 11:10:25 -0500
-Date: Tue, 13 Feb 2007 17:09:47 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Oleg Verych <olecom@flower.upol.cz>, Tony Luck <tony.luck@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Bastian Blank <bastian@waldi.eu.org>, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [patch 3/3, resend] kbuild: correctly skip tilded backups in
- localversion files
-In-Reply-To: <Pine.LNX.4.64.0702130744030.8424@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0702131700190.14457@scrub.home>
-References: <20070206011819.160359000@flower.upol.cz> <20070206012208.050237000@flower.upol.cz>
- <12c511ca0702121409t30e126dfh445d13dd2f637e08@mail.gmail.com>
- <Pine.LNX.4.64.0702121437420.8424@woody.linux-foundation.org>
- <20070213003258.GA15534@flower.upol.cz> <20070213050503.GA27441@flower.upol.cz>
- <Pine.LNX.4.64.0702130744030.8424@woody.linux-foundation.org>
+	id S1750805AbXBMQLc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 11:11:32 -0500
+From: Leopold Palomo-Avellaneda <lepalom@wol.es>
+To: Jean Delvare <jdelvare@suse.de>
+Subject: Re: Sata_via problems in a Vintage2-AE1
+Date: Tue, 13 Feb 2007 17:11:10 +0100
+User-Agent: KMail/1.9.5
+Cc: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jeff Garzik <jgarzik@pobox.com>
+References: <200702090010.06897.lepalom@wol.es> <200702121723.17999.lepalom@wol.es> <200702131220.21690.jdelvare@suse.de>
+In-Reply-To: <200702131220.21690.jdelvare@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <200702131711.11781.lepalom@wol.es>
+X-MIMETrack: Itemize by SMTP Server on Ackerman/UPC(Release 5.0.12  |February 13, 2003) at
+ 13/02/2007 17:11:13,
+	Serialize by Router on Ackerman/UPC(Release 5.0.12  |February 13, 2003) at
+ 13/02/2007 17:11:15,
+	Serialize complete at 13/02/2007 17:11:15
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-13"
+Content-Disposition: inline
+X-Mail-Scanned: Criba 2.0 + Clamd
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.0.2 (dash.upc.es [147.83.2.50]); Tue, 13 Feb 2007 17:11:15 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+A Dimarts 13 Febrer 2007 12:20, Jean Delvare va escriure:
+> Hi Leopold,
+>
+> Le Lundi 12 Février 2007 17:23, Leopold Palomo-Avellaneda a écrit :
+> > A Dilluns 12 Febrer 2007 10:11, Jean Delvare va escriure:
+> > > Did you report the problem to Asus? They should fix it. Maybe this new
+> > > BIOS actually fixes some other problems you have.
+> >
+> > no. It's on the todo list. However I'm a bit afraid because I'm not using
+> > the "official" system so probably they will say that "we do not support
+> > ..."
+>
+> That's indeed probable, but if enough people report the same problems, they
+> might still end up looking into it.
+>
+ok, I will try.
 
-On Tue, 13 Feb 2007, Linus Torvalds wrote:
+> > Well in http://via8251.la-evento.com/index.html
+> >
+> > <off topic>
+> > please tell me that I'm not violating any rule about the linux-kernel
+> > list putting this link :-S
+> > </off topic>
+> >
+> > claims that the VT8251 are supported in 2.6.20. As always you nned to see
+> > the official place .... :-(
+>
+> That's quite a bold claim considering that the VT8251 includes many
+> different functions (PATA, SATA, USB, SMBus...) and can be configured
+> differently on different motherboards. Maybe most functions are supposedly
+> supported as of 2.6.20, but it doesn't mean everything works for everyone,
+> as you are experiencing yourself.
 
-> > I know it maybe another my "change it all" proposition, but i can't find
-> > nothing against `GNU $(wildcard ..)' and `unnecessarily complex "find"'.
-> 
-> It's the regexp in both cases. $(wildcard ) doesn't do regexp's (only the 
-> normal path rules), and traditional 'find' doesn't either. The fact that 
-> GNU find does is another matter. I don't think we require GNU find 
-> normally.
-> 
-> And I don't even much like the "backup" thing. Some programs will use 
-> other things than "~" as a backup marker. Patch more often uses ".orig", 
-> for example. So both methods are fairly complex, but at the same time not 
-> quite complex enough.
-> 
-> It would probably have been a better idea had we made the rule be that the 
-> file is called "*localversion" rather than "localversion*", exactly 
-> because that way it's unambiguous (people normally use _suffixes_ for 
-> filetypes, not prefixes). That would have avoided the whole complexity in 
-> wildcarding, but it's too late now..
-> 
-> 	$(sort $(wildcard $(srctree)/*localversion $(objtree)/*localversion)
-> 
-> should have worked.
+sure, you're right.
 
-For now I think it's easier to just revert the change to use find, I 
-posted the patch for this already a few days ago.
-I don't know if it really makes sense to change the rules for this now, 
-apparently people are using this, it may not be perfect, but I think in 
-the end it's just a matter of taste.
+> > > *If* the VT8251 needs the VIA IRQ quirk, then the attached patch may
+> > > help. Leopold, can you give it a try?
+> >
+> > Well, making your patch to the vanilla 2.6.20 the result is the same. The
+> > box doesn't boot. Always the same problem ....
+>
+> If it's not a VIA IRQ problem, then there's nothing more I can do, sorry.
+> Someone else will have to look into the problem.
+>
+> Out of curiosity, with my patch applied, did you see any "VIA VLink IRQ
+> fixup" messages on the console?
 
-bye, Roman
+No :-(
 
+Regards,
 
-
-[PATCH] refix localversion handling
-
-This reverts part of the localversion patch, which now already got into
-git. It removes the unnecessary find call, with the simpler $(notdir ...)
-fix.
-
-Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
-
----
- Makefile |   14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
-
-Index: linux-2.6/Makefile
-===================================================================
---- linux-2.6.orig/Makefile
-+++ linux-2.6/Makefile
-@@ -787,12 +787,14 @@ $(vmlinux-dirs): prepare scripts
- # moment, only git is supported but other SCMs can edit the script
- # scripts/setlocalversion and add the appropriate checks as needed.
- 
--pattern = ".*/localversion[^~]*"
--string  = $(shell cat /dev/null \
--	   `find $(objtree) $(srctree) -maxdepth 1 -regex $(pattern) | sort`)
--
--localver = $(subst $(space),, $(string) \
--			      $(patsubst "%",%,$(CONFIG_LOCALVERSION)))
-+___localver = $(objtree)/localversion* $(srctree)/localversion*
-+__localver  = $(sort $(wildcard $(___localver)))
-+# skip files containing '~' (like backup files)
-+_localver = $(foreach f,$(__localver),$(if $(findstring ~,$(notdir $(f))),,$(f)))
-+
-+localver = $(subst $(space),, \
-+	   $(shell cat /dev/null $(_localver)) \
-+	   $(patsubst "%",%,$(CONFIG_LOCALVERSION)))
- 
- # If CONFIG_LOCALVERSION_AUTO is set scripts/setlocalversion is called
- # and if the SCM is know a tag from the SCM is appended.
+Leo
