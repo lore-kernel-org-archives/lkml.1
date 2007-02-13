@@ -1,37 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750951AbXBMUQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750944AbXBMURl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750951AbXBMUQm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 15:16:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbXBMUQm
+	id S1750944AbXBMURl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 15:17:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750947AbXBMURl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 15:16:42 -0500
-Received: from mx2.suse.de ([195.135.220.15]:34074 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750951AbXBMUQl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 15:16:41 -0500
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SuSE Labs, Novell
-To: Greg KH <greg@kroah.com>
-Subject: Re: Bug in current -git tree causing dbus and gnome to chew up cpu time
-Date: Tue, 13 Feb 2007 12:16:34 -0800
-User-Agent: KMail/1.9.5
-Cc: torvalds@linux-foundation.org, neilb@suse.de, viro@zeniv.linux.org.uk,
-       hch@lst.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-References: <20070213195116.GA5181@kroah.com> <200702131158.02809.agruen@suse.de> <20070213200132.GA6149@kroah.com>
-In-Reply-To: <20070213200132.GA6149@kroah.com>
+	Tue, 13 Feb 2007 15:17:41 -0500
+Received: from wr-out-0506.google.com ([64.233.184.238]:61472 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750948AbXBMURk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 15:17:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=evR/agMVDbqATIPXyRWrWPevV7+WmlGOYdeXy5YU8OPepvlr7bZnDu/rWWPS3cD3MWxP3ePECPIDjW2Vddx1ckxNVbRwT4x3LE4fOtveQ8n0gjfmAGFXHr75IyKYNQn/A6MYwwG6aGVMXEobybDpvwN7mxq3jugZHPK9DAbuIEE=
+Message-ID: <45D21CD4.70708@gmail.com>
+Date: Tue, 13 Feb 2007 12:17:24 -0800
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Patrick Ale <patrick.ale@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: libsata doesn't like bus without master
+References: <8d158e1f0702110227i40301348g79db1d8b90f259b1@mail.gmail.com>
+In-Reply-To: <8d158e1f0702110227i40301348g79db1d8b90f259b1@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702131216.35436.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 February 2007 12:01, Greg KH wrote:
-> Attached below.
+Patrick Ale wrote:
+> ATA: abnormal status 0x8 on port 0xF88597DF
+> 
+> Maybe this is purely a cosmetic error where the error code can be
+> translated to something like "no drive attached" or maybe the drivers
+> assume you always configure a master drive on a controller, which
+> doesnt always have to be the case, especialy not with motherboards
+> these days where you get 2 ATA ports + 2 exta raid channels.
 
-I'm getting a CRC error on that file. Would you mind to resend?
+Yeah, it is a cosmetic error message that should have been killed quite 
+a while ago.  I just keep forgetting about it.  Will kill it soon.
 
-Thanks,
-Andreas
+-- 
+tejun
