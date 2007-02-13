@@ -1,86 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751377AbXBMWlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751382AbXBMWoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751377AbXBMWlV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 17:41:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbXBMWlV
+	id S1751382AbXBMWoN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 17:44:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbXBMWoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 17:41:21 -0500
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:53542 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751377AbXBMWlU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 17:41:20 -0500
-Message-ID: <45D23E87.2030805@nortel.com>
-Date: Tue, 13 Feb 2007 16:41:11 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: whatever happened to down_timeout()?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Feb 2007 22:41:14.0831 (UTC) FILETIME=[11716DF0:01C74FC0]
+	Tue, 13 Feb 2007 17:44:12 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52219 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751382AbXBMWoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 17:44:11 -0500
+Date: Tue, 13 Feb 2007 23:41:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 05/11] syslets: core code
+Message-ID: <20070213224131.GK22104@elte.hu>
+References: <20060529212109.GA2058@elte.hu> <20070213142035.GF638@elte.hu> <p73bqjxhcnl.fsf@bingen.suse.de> <20070213222443.GH22104@elte.hu> <20070213223017.GJ29492@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070213223017.GJ29492@one.firstfloor.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -5.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-There has been some discussion on lkml about a function that would 
-either down a semaphore or else abort if it couldn't get the semaphore 
-in a certain amount of time.  Something along the lines of:
+* Andi Kleen <andi@firstfloor.org> wrote:
 
-down_timeout(struct semaphore *sem, long timeout);
+> > > > +	if (!access_ok(VERIFY_WRITE, arg_ptr, sizeof(*arg_ptr)))
+> > > > +		return -EFAULT;
+> > > 
+> > > It's a little unclear why you do that many individual access_ok()s. 
+> > > And why is the target constant sized anyways?
+> > 
+> > each indirect pointer has to be checked separately, before dereferencing 
+> > it. (Andrew pointed out that they should be VERIFY_READ, i fixed that in 
+> > my tree)
+> 
+> But why only constant sized? It could be a variable length object, 
+> couldn't it?
 
+i think what you might be missing is that it's only the 6 syscall 
+arguments that are fetched via indirect pointers - security checks are 
+then done by the system calls themselves. It's a bit awkward to think 
+about, but it is surprisingly clean in the assembly, and it simplified 
+syslet programming too.
 
-Does something like this exist?  Does anyone have a working 
-implementation?  Does anyone see anything obviously wrong with the 
-following version (that I loosely based on one by Rupert Eibauer)?
+> > get_user_pages() would have to be limited in some way - and i didnt 
+> > want
+> 
+> If you only use it for a small ring buffer it is naturally limited.
 
+yeah, but 'small' is a dangerous word when it comes to adding IO 
+interfaces ;-)
 
+> > a single page is enough for 1024 completion pointers - that's more 
+> > than enough for most purposes - and the default mlock limit is 40K.
+> 
+> Then limit it to a single page and use gup
 
-semaphore.h:
+1024 (512 on 64-bit) is alot but not ALOT. It is also certainly not 
+ALOOOOT :-) Really, people will want to have more than 512 
+disks/spindles in the same box. I have used such a beast myself. For Tux 
+workloads and benchmarks we had parallelism levels of millions of 
+pending requests (!) on a single system - networking, socket limits, 
+disk IO combined with thousands of clients do create such scenarios. I 
+really think that such 'pinned pages' are a pretty natural fit for 
+sys_mlock() and RLIMIT_MEMLOCK, and since the kernel side is careful to 
+use the _inatomic() uaccess methods, it's safe (and fast) as well.
 
-extern int __down_timeout(struct semaphore * sem, unsigned int timeout);
-
-
-/* "timeout" is the number of jiffies to wait.
-  * Returns -ETIME if timeout period expires.
-  */
-static inline int down_timeout(struct semaphore * sem, unsigned int timeout)
-{
-	int ret = down_trylock(sem);
-	if (!ret)
-		ret = __down_timeout(sem, timeout);
-	return ret;
-}
-
-
-
-
-kernel/timer.c
-
-int __down_timeout(struct semaphore * sem, int timeout)
-{
-	int ret;
-	unsigned long expire;
-	struct timer_list timer;
-
-	expire = jiffies + timeout;
-	init_timer(&timer);
-	timer.expires = expire;
-	timer.data = (unsigned long) current;
-	timer.function = process_timeout;
-	add_timer(&timer);
-
-	ret = down_interruptible(sema);
-	if (ret && (jiffies > expire))
-		ret = -ETIME;
-	 else
-		del_timer_sync(&timer);
-
-         return ret;
-}
-
-
-Thanks,
-Chris
+	Ingo
