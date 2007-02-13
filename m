@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750753AbXBMPyI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750763AbXBMPzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750753AbXBMPyI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 10:54:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750756AbXBMPyI
+	id S1750763AbXBMPzd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 10:55:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750757AbXBMPzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 10:54:08 -0500
-Received: from dspnet.fr.eu.org ([213.186.44.138]:3564 "EHLO dspnet.fr.eu.org"
+	Tue, 13 Feb 2007 10:55:33 -0500
+Received: from rtr.ca ([64.26.128.89]:2053 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750753AbXBMPyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 10:54:07 -0500
-Date: Tue, 13 Feb 2007 16:54:05 +0100
-From: Olivier Galibert <galibert@pobox.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Ian Kent <raven@themaw.net>, "Hack inc." <linux-kernel@vger.kernel.org>,
-       autofs@linux.kernel.org
-Subject: Re: [PATCH 1/2] Re: [autofs] Bad race condition in the new autofs protocol somewhere
-Message-ID: <20070213155405.GA33765@dspnet.fr.eu.org>
-Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
-	Chuck Ebbert <cebbert@redhat.com>, Ian Kent <raven@themaw.net>,
-	"Hack inc." <linux-kernel@vger.kernel.org>, autofs@linux.kernel.org
-References: <20070207173414.GA64492@dspnet.fr.eu.org> <1170871661.3415.36.camel@raven.themaw.net> <20070207181817.GA75717@dspnet.fr.eu.org> <1170901990.3383.18.camel@raven.themaw.net> <1171262594.18376.13.camel@raven.themaw.net> <20070212135749.GA1681@dspnet.fr.eu.org> <1171327959.3377.3.camel@raven.themaw.net> <20070213085053.GA74257@dspnet.fr.eu.org> <45D1C61F.9090509@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45D1C61F.9090509@redhat.com>
-User-Agent: Mutt/1.4.2.2i
+	id S1750763AbXBMPzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 10:55:32 -0500
+Message-ID: <45D1DF66.6030906@rtr.ca>
+Date: Tue, 13 Feb 2007 10:55:18 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+MIME-Version: 1.0
+To: nigel@nigel.suspend2.net
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
+       Pavel Machek <pavel@ucw.cz>, Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: NAK new drivers without proper power management?
+References: <1171058269.1484.64.camel@nigel.suspend2.net>	 <1171147026.19894.16.camel@nigel.suspend2.net> <45CE5934.3020801@imap.cc>	 <200702110127.35631.rjw@sisk.pl> <1171233683.4493.81.camel@nigel.suspend2.net>
+In-Reply-To: <1171233683.4493.81.camel@nigel.suspend2.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 13, 2007 at 09:07:27AM -0500, Chuck Ebbert wrote:
-> Olivier Galibert wrote:
-> > On Tue, Feb 13, 2007 at 09:52:39AM +0900, Ian Kent wrote:
-> >> Indeed.
-> >> Which kernel can you use?
-> >> I believe that 2200 had another problem so can you use an fc5 kernel
-> >> later than that?
-> > 
-> > I've ported your patch to 2257 (nothing special, only moved lines),
-> > and it seems to work beautifully.  I'm enlarging the testing.
-> > 
+Nigel Cunningham wrote:
+> On Sun, 2007-02-11 at 01:27 +0100, Rafael J. Wysocki wrote:
+>> Plus:
+>> - What if I'm planning to implement the power managemet, but not just right
+>> now?
 > 
-> If you get the patches into -stable they will end up in Fedora
-> kernels automatically. 2288 (based on 2.6.19) is in testing now...
+> Why not right now?
 
-Don't they require autofs5 to be of any use though?  That's not going
-to be in fc until it's out of beta I guess.
+LKML is much more receptive to drivers that follow
+the "release early, release often" mantra.
 
-  OG.
+Which means we really have to be more accomodating of
+drivers that start out simple, and then gain all of the
+non-essential capabilities gradually over time.
 
+Simple observation here shows much more hostility :)
+to drivers that are simply "presented" as a complete whole.
+Often for good reason -- starting out with a framework
+and then adding the rest bit by bit allows for much better
+peer review and feedback.
+
+And not all devices / situations need power management,
+and lack of documentation on the hardware often prevents
+us from implementing it at the outset.
+
+Cheers
