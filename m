@@ -1,53 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750860AbXBMTwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750875AbXBMTxI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750860AbXBMTwd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 14:52:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750859AbXBMTwd
+	id S1750875AbXBMTxI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 14:53:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750872AbXBMTxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 14:52:33 -0500
-Received: from cantor.suse.de ([195.135.220.2]:41950 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750839AbXBMTwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 14:52:32 -0500
-Date: Tue, 13 Feb 2007 11:51:16 -0800
-From: Greg KH <greg@kroah.com>
-To: torvalds@linux-foundation.org, agruen@suse.de, neilb@suse.de,
-       viro@zeniv.linux.org.uk, hch@lst.de, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Bug in current -git tree causing dbus and gnome to chew up cpu time
-Message-ID: <20070213195116.GA5181@kroah.com>
+	Tue, 13 Feb 2007 14:53:08 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:51898 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750875AbXBMTxH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 14:53:07 -0500
+Date: Tue, 13 Feb 2007 14:53:06 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: stable@kernel.org
+cc: Kernel development list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] EHCI: turn off remote wakeup during shutdown
+Message-ID: <Pine.LNX.4.44L0.0702131448400.2573-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This patch (as850b) disables remote wakeup (and everything else!) on
+all EHCI ports when the shutdown() method is called.  If remote wakeup
+is left active then some systems will reboot instead of powering off.
+This fixes Bugzilla #7828.
 
-I've used 'git bisect' to track down a change in the latest git tree
-that is causing dbus-daemon to sit and spin at the time GNOME launches,
-preventing nautlius from ever running.
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
-The bad commit is:
-commit eb3dfb0cb1f4a44e2d0553f89514ce9f2a9fcaf1
-Author: Andreas Gruenbacher <agruen@suse.de>
-Date:   Mon Feb 12 00:51:47 2007 -0800
+---
 
-    [PATCH] Fix d_path for lazy unmounts
+I'm submitting this for 2.6.20.stable.  The problem it addresses can occur
+with earlier kernels, but not unless the user explicitly enables remote
+wakeup by doing a runtime suspend of the EHCI root hub.  In 2.6.20 the
+root hub will autosuspend itself, enabling remote wakeup and thus
+triggering the problem.
 
-With that patch out, GNOME startup works just fine.  I have a strace of
-the dbus process running showing the problem, if anyone thinks that will
-help out any.
+A slightly different version of this patch will be submitted separately
+for Greg KH's USB development tree.
 
-I'm running pretty new GNOME and dbus here:
-	dbus 1.0.2
-	gnome 2.16.2
-	hal 0.5.7.1
-	nautilus 2.16.3
+Alan Stern
 
-Any ideas of things I can test?
 
-thanks,
+Index: 2.6.20/drivers/usb/host/ehci-hcd.c
+===================================================================
+--- 2.6.20.orig/drivers/usb/host/ehci-hcd.c
++++ 2.6.20/drivers/usb/host/ehci-hcd.c
+@@ -296,6 +296,18 @@ static void ehci_watchdog (unsigned long
+ 	spin_unlock_irqrestore (&ehci->lock, flags);
+ }
+ 
++/* On some systems, leaving remote wakeup enabled prevents system shutdown.
++ * The firmware seems to think that powering off is a wakeup event!
++ * This routine turns off remote wakeup and everything else, on all ports.
++ */
++static void ehci_turn_off_all_ports(struct ehci_hcd *ehci)
++{
++	int	port = HCS_N_PORTS(ehci->hcs_params);
++
++	while (port--)
++		writel(PORT_RWC_BITS, &ehci->regs->port_status[port]);
++}
++
+ /* ehci_shutdown kick in for silicon on any bus (not just pci, etc).
+  * This forcibly disables dma and IRQs, helping kexec and other cases
+  * where the next system software may expect clean state.
+@@ -307,9 +319,13 @@ ehci_shutdown (struct usb_hcd *hcd)
+ 
+ 	ehci = hcd_to_ehci (hcd);
+ 	(void) ehci_halt (ehci);
++	ehci_turn_off_all_ports(ehci);
+ 
+ 	/* make BIOS/etc use companion controller during reboot */
+ 	writel (0, &ehci->regs->configured_flag);
++
++	/* unblock posted writes */
++	readl(&ehci->regs->configured_flag);
+ }
+ 
+ static void ehci_port_power (struct ehci_hcd *ehci, int is_on)
 
-greg k-h
