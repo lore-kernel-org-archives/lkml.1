@@ -1,57 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932132AbXBMOYH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932130AbXBMOYK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932132AbXBMOYH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 09:24:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932131AbXBMOXo
+	id S932130AbXBMOYK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 09:24:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932139AbXBMOYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 09:23:44 -0500
-Received: from thunk.org ([69.25.196.29]:41899 "EHLO thunker.thunk.org"
+	Tue, 13 Feb 2007 09:24:10 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33143 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932130AbXBMOXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 09:23:41 -0500
-Date: Tue, 13 Feb 2007 09:23:35 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: William Cohen <wcohen@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Looking at space used by objects in slab allocator
-Message-ID: <20070213142335.GC8670@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	William Cohen <wcohen@redhat.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <45D0B78F.4030309@redhat.com>
-MIME-Version: 1.0
+	id S932130AbXBMOXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 09:23:50 -0500
+Date: Tue, 13 Feb 2007 15:21:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch 09/11] syslets: x86, wire up the syslet system calls
+Message-ID: <20070213142126.GJ638@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45D0B78F.4030309@redhat.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.8
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.1.7
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.5000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 12, 2007 at 01:53:03PM -0500, William Cohen wrote:
-> After last week's experiment reducing size of task_struct on I was
-> The is a signficant amount of space wasted for ext3_inode_cache. If
-> the struct used for ext3_inode_cache struct could be made smaller,
-> three objects rather than two could fit in a slab. Fitting 3 objects
-> to a page would decrease the space required for ext3_inod_cache from
-> 20.4MB to 13.6MB in this example.
+From: Ingo Molnar <mingo@elte.hu>
 
-The problem is the size of "struct inode" (which is included in struct
-ext3_inode_info).  There is quite a few fields in struct inode which
-are only used when the inode has been opened and being referenced by
-one or more file descriptors, but which take up a huge amount of
-space.  One of the biggies is inode.i_data; struct address_space is
-*huge*, and we're keeping a copy of it in every single inode which
-we're caching.
+wire up the new syslet / async system call syscalls and make it
+thus available to user-space.
 
-It was next on my list on my inode-diet project that I worked on about
-six months ago, but it was non-trivial, and my time got sucked away
-with other projects, so I never got back to it.  But if you want to
-try to save space, that's the next logical step --- we've already done
-all or most of the low-hanging fruit to save space wasted by struct
-inode and by extension in the ext3_inode_cache.
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ arch/i386/kernel/syscall_table.S |    5 +++++
+ include/asm-i386/unistd.h        |    7 ++++++-
+ 2 files changed, 11 insertions(+), 1 deletion(-)
 
-						- Ted
-
+Index: linux/arch/i386/kernel/syscall_table.S
+===================================================================
+--- linux.orig/arch/i386/kernel/syscall_table.S
++++ linux/arch/i386/kernel/syscall_table.S
+@@ -319,3 +319,8 @@ ENTRY(sys_call_table)
+ 	.long sys_move_pages
+ 	.long sys_getcpu
+ 	.long sys_epoll_pwait
++	.long sys_async_register	/* 320 */
++	.long sys_async_exec
++	.long sys_async_wait
++	.long sys_async_unregister
++	.long sys_umem_add
+Index: linux/include/asm-i386/unistd.h
+===================================================================
+--- linux.orig/include/asm-i386/unistd.h
++++ linux/include/asm-i386/unistd.h
+@@ -325,10 +325,15 @@
+ #define __NR_move_pages		317
+ #define __NR_getcpu		318
+ #define __NR_epoll_pwait	319
++#define __NR_async_register	320
++#define __NR_async_exec		321
++#define __NR_async_wait		322
++#define __NR_async_unregister	323
++#define __NR_umem_add		324
+ 
+ #ifdef __KERNEL__
+ 
+-#define NR_syscalls 320
++#define NR_syscalls 325
+ 
+ #define __ARCH_WANT_IPC_PARSE_VERSION
+ #define __ARCH_WANT_OLD_READDIR
