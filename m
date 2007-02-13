@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751284AbXBMLUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751255AbXBML1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751284AbXBMLUU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 06:20:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbXBMLUU
+	id S1751255AbXBML1y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 06:27:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbXBML1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 06:20:20 -0500
-Received: from mx1.suse.de ([195.135.220.2]:33482 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751284AbXBMLUT convert rfc822-to-8bit (ORCPT
+	Tue, 13 Feb 2007 06:27:54 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:45710 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751255AbXBML1y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 06:20:19 -0500
-From: Jean Delvare <jdelvare@suse.de>
-Organization: SuSE Linux
-To: Leopold Palomo-Avellaneda <lepalom@wol.es>
-Subject: Re: Sata_via problems in a Vintage2-AE1
-Date: Tue, 13 Feb 2007 12:20:21 +0100
-User-Agent: KMail/1.9.1
-Cc: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jeff Garzik <jgarzik@pobox.com>
-References: <200702090010.06897.lepalom@wol.es> <200702121011.49818.jdelvare@suse.de> <200702121723.17999.lepalom@wol.es>
-In-Reply-To: <200702121723.17999.lepalom@wol.es>
+	Tue, 13 Feb 2007 06:27:54 -0500
+Message-ID: <45D1A092.6030804@cosmosbay.com>
+Date: Tue, 13 Feb 2007 12:27:14 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-13"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200702131220.21690.jdelvare@suse.de>
+To: Andi Kleen <ak@suse.de>
+CC: "Bryan O'Sullivan" <bos@pathscale.com>, Roland Dreier <rolandd@cisco.com>,
+       patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21 review I] [21/25] x86_64: a memcpy that tries to
+ reduce cache pressure
+References: <200702101250.142420000@suse.de> <20070210115034.694B013DBF@wotan.suse.de>
+In-Reply-To: <20070210115034.694B013DBF@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Tue, 13 Feb 2007 12:27:25 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Leopold,
+Andi Kleen a écrit :
+> From: "Bryan O'Sullivan" <bos@pathscale.com>
+> 
+> This copy routine is memcpy-compatible, but on some architectures will use
+> cache-bypassing loads to avoid bringing the source data into the cache.
+> 
+> One case where this is useful is when a device issues a DMA to a memory
+> region, and the CPU must copy the DMAed data elsewhere before doing any work
+> with it.  Since the source data is read-once, write-never from the CPU's
+> perspective, caching the data at those addresses can only evict potentially
+> useful data.
+> 
+> We provide an x86_64 implementation that uses SSE non-temporal loads, and a
+> generic version that falls back to plain memcpy.
 
-Le Lundi 12 Février 2007 17:23, Leopold Palomo-Avellaneda a écrit :
-> A Dilluns 12 Febrer 2007 10:11, Jean Delvare va escriure:
-> > Did you report the problem to Asus? They should fix it. Maybe this new
-> > BIOS actually fixes some other problems you have.
->
-> no. It's on the todo list. However I'm a bit afraid because I'm not using
-> the "official" system so probably they will say that "we do not support
-> ..."
+> +	movq	%r11, 56(%rdi)
+> +	addq	%rcx, %rdi
+> +	cmpq	%rdx, %rcx	/* is rdx >= 64? */
+> +	jbe	.L42
+> +	sfence
+> +	orl	%edx, %edx
+> +	je	.L33
 
-That's indeed probable, but if enough people report the same problems, they 
-might still end up looking into it.
+I have three questions/remarks
 
-> Well in http://via8251.la-evento.com/index.html
->
-> <off topic>
-> please tell me that I'm not violating any rule about the linux-kernel list
-> putting this link :-S
-> </off topic>
->
-> claims that the VT8251 are supported in 2.6.20. As always you nned to see
-> the official place .... :-(
+1) Just curious why sfence is necessary here ?
 
-That's quite a bold claim considering that the VT8251 includes many different 
-functions (PATA, SATA, USB, SMBus...) and can be configured differently on 
-different motherboards. Maybe most functions are supposedly supported as of 
-2.6.20, but it doesn't mean everything works for everyone, as you are 
-experiencing yourself.
+2) Shouldnt we use this for large buffers, and restrict them to a size 
+multiple of 64, to avoid all these conditional branches ?
 
-> > *If* the VT8251 needs the VIA IRQ quirk, then the attached patch may
-> > help. Leopold, can you give it a try?
->
-> Well, making your patch to the vanilla 2.6.20 the result is the same. The
-> box doesn't boot. Always the same problem ....
+3) Also, the first 128 bytes of the source buffer will be bring into cache.
 
-If it's not a VIA IRQ problem, then there's nothing more I can do, sorry. 
-Someone else will have to look into the problem.
-
-Out of curiosity, with my patch applied, did you see any "VIA VLink IRQ fixup" 
-messages on the console?
-
--- 
-Jean Delvare
-Suse L3
