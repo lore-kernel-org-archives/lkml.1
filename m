@@ -1,108 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751118AbXBMVpe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751252AbXBMVs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751118AbXBMVpe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 16:45:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbXBMVpe
+	id S1751252AbXBMVs5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 16:48:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbXBMVs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 16:45:34 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50497 "EHLO mx2.mail.elte.hu"
+	Tue, 13 Feb 2007 16:48:57 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:50056 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751118AbXBMVpe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 16:45:34 -0500
-Date: Tue, 13 Feb 2007 22:43:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Indan Zupancic <indan@nul.nu>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [patch 02/11] syslets: add syslet.h include file, user API/ABI definitions
-Message-ID: <20070213214335.GC22104@elte.hu>
-References: <20070213142024.GC638@elte.hu> <4390.81.207.0.53.1171397879.squirrel@secure.samage.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4390.81.207.0.53.1171397879.squirrel@secure.samage.net>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -5.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751203AbXBMVs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 16:48:56 -0500
+Message-ID: <45D23042.1020802@redhat.com>
+Date: Tue, 13 Feb 2007 16:40:18 -0500
+From: William Cohen <wcohen@redhat.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: eranian@hpl.hp.com
+CC: perfmon@napali.hpl.hp.com, perfctr-devel@lists.sourceforge.net,
+       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       oprofile-list@lists.sourceforge.net
+Subject: Re: [perfmon] 2.6.20 new perfmon code base + libpfm + pfmon
+References: <20070213184839.GC10031@frankl.hpl.hp.com>
+In-Reply-To: <20070213184839.GC10031@frankl.hpl.hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Indan Zupancic <indan@nul.nu> wrote:
-
-> > + * Execution control: conditions upon the return code
-> > + * of the previous syslet atom. 'Stop' means syslet
-> > + * execution is stopped and the atom is put into the
-> > + * completion ring:
-> > + */
-> > +#define SYSLET_STOP_ON_NONZERO			0x00000008
-> > +#define SYSLET_STOP_ON_ZERO			0x00000010
-> > +#define SYSLET_STOP_ON_NEGATIVE			0x00000020
-> > +#define SYSLET_STOP_ON_NON_POSITIVE		0x00000040
+Stephane Eranian wrote:
+> Hello,
 > 
-> This is confusing. Why the return code of the previous syslet atom? 
-> Wouldn't it be more clear if the flag was for the current tasklet? 
-> Worse, what is the previous atom? [...]
-
-the previously executed atom. (I have fixed up the comment in my tree to 
-say that.)
-
-> [...] Imagine some case with a loop:
+> I have released another version of the perfmon new code base package.
+> This version of the kernel patch is relative to 2.6.20.
 > 
->   A
->   |
->   B<--.
->   |   |
->   C---'
+> This  new kernel patch includes the following new features and
+> bug fixes:
+> 	- first cut at supporting Oprofile on i386 and x86-64 architectures
+> 	- several internal interfaces simplfications
+> 	- various MIPS updates (Phil Mucci/Manoj Ekbote)
+> 	- varous PPC32 updates (Phil Mucci)
+> 	- fix bug in set switching with a single set
+> 	- fix bug in pfm_restart() for per-thread mode with blocking notification
 > 
-> What will be the previous atom of B here? It can be either A or C, but 
-> their return values can be different and incompatible, so what flag 
-> should B set?
-
-previous here is the previously executed atom, which is always a 
-specific atom. Think of atoms as 'instructions', and these condition 
-flags as the 'CPU flags' like 'zero' 'carry' 'sign', etc. Syslets can be 
-thought of as streams of simplified instructions.
-
-> > +/*
-> > + * Special modifier to 'stop' handling: instead of stopping the
-> > + * execution of the syslet, the linearly next syslet is executed.
-> > + * (Normal execution flows along atom->next, and execution stops
-> > + *  if atom->next is NULL or a stop condition becomes true.)
-> > + *
-> > + * This is what allows true branches of execution within syslets.
-> > + */
-> > +#define SYSLET_SKIP_TO_NEXT_ON_STOP		0x00000080
-> > +
+> Unfortunately, this release does not build for PowerPC due to a problem with the
+> TIF_* flags. Perfmon adds 2 new flags which make the TIF now use more than 16 bits which
+> causes problem with some assembly instructions in entry_64.S. Hopefully,
+> this will be fixed in the next release.
 > 
-> Might rename this to SYSLET_SKIP_NEXT_ON_STOP too then.
+> To make Oprofile work, you need a modified user level Oprofile package. I have made
+> a first pass at modifying 0.9.2 to work on Perfmon 2.3 (and v2.0 for IA-64) for
+> the following processors: AMD Opteron, P6, Core Duo, Core 2 Duo, P4. The modified
+> package is available as Alpha at:
+> 
+> 	ftp://ftp.hpl.hp.com/pub/linux-ia64/oprof-perfmon2-070122.diff
 
-but that's not what it does. It really 'skips to the next one on a stop 
-event'. I.e. if you have three consecutive atoms (consecutive in linear 
-memory):
+Hello Stephane,
 
-	atom1 returns 0
-	atom2 has SYSLET_STOP_ON_ZERO|SYSLET_SKIP_NEXT_ON_STOP set
-	atom3
+The oprofile patch should be made against the oprofile cvs rather than the 0.9.2 
+tarball. There are some files that the patch touches that are created by the 
+autogen.sh.
 
-then after atom1 returns 0, the SYSLET_STOP_ON_ZERO condition is 
-recognized as a 'stop' event - but due to the SYSLET_SKIP_NEXT_ON_STOP 
-flag execution does not stop (i.e. we do not return to user-space or 
-complete the syslet), but we continue execution at atom3.
+The oprofile patch doesn't build if things are configured without the 
+"--enable-perfmon2".
 
-this flag basically avoids having to add an atom->else pointer and keeps 
-the data structure more compressed. Two-way branches are sufficiently 
-rare, so i wanted to avoid the atom->else pointer.
+gcc -W -Wall -fno-common -Wdeclaration-after-statement -fno-omit-frame-pointer 
+-g -O2   -o oprofiled  init.o oprofiled.o opd_stats.o opd_sfile.o opd_kernel.o 
+opd_trans.o opd_cookie.o opd_events.o opd_mangling.o opd_perfmon.o 
+opd_perfmon_22.o opd_perfmon_compat.o opd_anon.o liblegacy/liblegacy.a 
+../libabi/libabi.a ../libdb/libodb.a ../libop/libop.a ../libutil/libutil.a 
+-lpopt -liberty -ldl
+opd_perfmon.o: In function `perfmon_init':
+/home/wcohen/research/profiling/oprofile/oprofile-0.9.2-perfmon2/daemon/opd_perfmon.c:384: 
+undefined reference to `do_perfmon_init'
+collect2: ld returned 1 exit status
 
-	Ingo
+-Will
