@@ -1,102 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751247AbXBMKPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751241AbXBMKRG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751247AbXBMKPx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 05:15:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbXBMKPx
+	id S1751241AbXBMKRG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 05:17:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbXBMKRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 05:15:53 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:48713 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751244AbXBMKPw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 05:15:52 -0500
-Message-ID: <45D1908F.8080804@bull.net>
-Date: Tue, 13 Feb 2007 11:18:55 +0100
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
+	Tue, 13 Feb 2007 05:17:06 -0500
+Received: from enyo.dsw2k3.info ([195.71.86.239]:35572 "EHLO enyo.dsw2k3.info"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751241AbXBMKRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 05:17:05 -0500
+Message-ID: <45D19014.5080900@citd.de>
+Date: Tue, 13 Feb 2007 11:16:52 +0100
+From: Matthias Schniedermeyer <ms@citd.de>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-Cc: akpm@osdl.org, randy.dunlap@oracle.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] AKT - Tunable structure and registration routines
-References: <20070130101143.296619000@bull.net>	<20070130102908.781457000@bull.net> <p73y7n3fm7t.fsf@bingen.suse.de>
-In-Reply-To: <p73y7n3fm7t.fsf@bingen.suse.de>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 13/02/2007 11:17:04,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 13/02/2007 11:17:05,
-	Serialize complete at 13/02/2007 11:17:05
+To: "Martin A. Fink" <fink@mpe.mpg.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: SATA-performance: Linux vs. FreeBSD
+References: <200702121502.17130.fink@mpe.mpg.de> <200702121856.29729.fink@mpe.mpg.de> <45D0F8EE.7020604@citd.de> <200702131025.15964.fink@mpe.mpg.de>
+In-Reply-To: <200702131025.15964.fink@mpe.mpg.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Nadia.Derbey@bull.net writes:
+Martin A. Fink wrote:
+> Am Dienstag, 13. Februar 2007 00:31 schrieben Sie:
+>> Martin A. Fink wrote:
+>>> I have to store big amounts of data coming from 2 digital cameras to disk. 
+>>> Thus I have to write blocks of around 1 MB at 30 to 50 frames per second 
+>>> for 
+>>> a long period of time. So it is important for me that the harddisk drive 
+>>> is 
+>>> reliable in the sense of "if it is capable of 50 MB/s then it should 
+>>> operate 
+>>> at this speed. Constantly."
+>> The good old handful of suggestions:
+>>
+>> - Use a dedicated disc for the task.
 > 
->>+
->>+This feature aims at making the kernel automatically change the tunables
->>+values as it sees resources running out.
-> 
-> 
-> The only reason we have resource limit is to avoid DOS when one
-> resource consumes too much memory.  When there is no such danger then
-> there isn't any reason to have a limit at all and it could be just
-> eliminated (or set to unlimited by default)
+> I used a dedicated disk for this task. No one else besides the task is writing 
+> to it!
 
-Automatic tuning is a way to set the limit to unlimited, in a sense, 
-doesn't it? With this feature, we can leave the default limits as they 
-are for an "every-day" usage, and when a particular application runs on 
-the machine, authorize the limit to grow up as needed.
+OK.
 
+>> - Use an empty disc so there is no fragmentation.
 > 
-> Your feature doesn't address the DOS and without that there isn't
-> any reason to have limits at all. So what's the point? 
+> All tests were performed on empty disk!
 
-As I told Eric Biederman in another mail, DoS in ensured in AKT by 
-exporting the min and max values for each tunable to sysfs (actually 
-Eric complained about these min and max :-( ). These are RW atrributes 
-that make it possible for a sysadmin to set the max value a tunable can 
-ever reach, instead of letting it grow up to huge values.
+OK.
 
+>> - Buy a bigger disk, they have high bandwidths.
 > 
-> I agree that some of the default limits we have are not very useful
-> on modern machines. I guess you're trying to address that.
+> I have a flash disk from a manufacturer who grants me 48 MB/s. And FreeBSD as 
+> well as Windows reach this value. Only Linux 2.6.18 is far away from it (42 
+> MB/s)
 
-Yep
+Even 48MB/s is quite low.
+I've reached up to 70MB/s with a single 500GB Seagate model and even my older HDDs all reach 60MB/s (at least on the outer cylinders)
+But i haven't tested any "sync/fsync" in between, only after.
 
+>> - Buy a more "specialized" disc.
 > 
-> I would suggest the following strategy:
+> see above
 > 
-> - Review any limits we have and make sure they make sense.
+>>   for e.x.: Western Digital Raptor X(*) a 150GB, 10-KRPM S-ATA disc.
+>> - Buy several discs and use RAID 0
+>>   or alternate between discs when writing.
 > 
-> - Figure out if they actually serve a useful purpose 
-> e.g. what happens when they are exceeded, is there a DOS?. 
-> If yes can  the DOS be addressed in a better way (e.g. by allowing to shrink
-> the resource by a shrinker callback).
->  
-> Some of the existing limits are clearly bogus, e.g. the limit
-> on shared memory.
-> 
-> For others i don't see a good alternative. e.g. if you don't limit
-> the number of files allocated the only alternative would be to kill
-> processes when they allocate too many files. Is that really preferable
-> to a errno? 
+> What I have to build is an application for the International Space Station 
+> ISS. I am limited with power and space. So If the disk is able to write 
+> constantly 48 MB/s then the Operating System should do this!
 
-Agree with you, BUT between the default max_files and the "too many 
-files" situation, there is a gap that can be crossed by automatically 
-tuning max_files, isn't there? e.g. max_file default value is NR_FILE 
-(0x2000), while Oracle expects to have it set to 0x10000.
+OK. That appears to be a serious constraint.
+Do HDDs cope well with zero gravity?
+At least the SSD won't have a problem with that. ;-)
 
-> 
-> - If they serve a useful purpose then check if the default is useful
-> on a modern machine. Or make them scale with the amount of memory
-> like many limits already do.
-> 
-> -Andi
-> 
+> The problem is: FreeBSD is fast, but lacks of some special drivers. Linux has 
+> all drivers but access to harddisk is unpredictable and thus unreliable!
+> What can I do??
 
-Regards,
-Nadia
+Personally i haven't had such bad write speeds in years. Taking USB connected and/or encrypted partitions aside.
+But on the other hand: I don't sync(fsync) until i have to.
+And personally i have good (and constant bandwidth) experience using XFS as a filesystem.
+(I have 41 HDDs with a total capacity of 10.5 TB, performance is quite important for me.)
+
+Also you have skipped the information how the images "arrive" on the system (PCI(e) card?), that may be important for an "end to end" view of the problem.
+
+And what's also missing. What is "a long period of time".
+Calculating best-case with the SSD:
+27GB divided by 30MB/s only gives a bit more than 15 Minutes.
+And worst case with 50MB/s is less than 10 Minutes.
+
+
+
+
+
+-- 
+Real Programmers consider "what you see is what you get" to be just as
+bad a concept in Text Editors as it is in women. No, the Real Programmer
+wants a "you asked for it, you got it" text editor -- complicated,
+cryptic, powerful, unforgiving, dangerous.
 
