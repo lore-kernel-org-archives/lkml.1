@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750841AbXBMQxK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750861AbXBMQ5E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750841AbXBMQxK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 11:53:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750843AbXBMQxK
+	id S1750861AbXBMQ5E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 11:57:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750859AbXBMQ5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 11:53:10 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50238 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750841AbXBMQxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 11:53:09 -0500
-Date: Tue, 13 Feb 2007 17:49:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Alan <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system call support
-Message-ID: <20070213164939.GA16394@elte.hu>
-References: <20060529212109.GA2058@elte.hu> <20070213142010.GA638@elte.hu> <20070213150019.4b4d4827@localhost.localdomain> <p73hctqggfz.fsf@bingen.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 13 Feb 2007 11:57:04 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:52169 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750850AbXBMQ5B convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 11:57:01 -0500
+From: Ismail =?iso-8859-1?q?D=F6nmez?= <ismail@pardus.org.tr>
+Organization: TUBITAK/UEKAE
+To: "Jeff Chua" <jeff.chua.linux@gmail.com>
+Subject: Re: [ANNOUNCE] d80211 based driver for Intel PRO/Wireless 3945ABG
+Date: Tue, 13 Feb 2007 18:57:01 +0200
+User-Agent: KMail/1.9.6
+Cc: "James Ketrenos" <jketreno@linux.intel.com>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org
+References: <45CCE3CA.4050904@linux.intel.com> <200702131558.48987.ismail@pardus.org.tr> <b6a2187b0702130710s217281c4k5ed227995c09c878@mail.gmail.com>
+In-Reply-To: <b6a2187b0702130710s217281c4k5ed227995c09c878@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <p73hctqggfz.fsf@bingen.suse.de>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.8
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.1.7
-	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.5000]
+Message-Id: <200702131857.02369.ismail@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 13 February 2007 17:10:24 Jeff Chua wrote:
+> On 2/13/07, Ismail Dönmez <ismail@pardus.org.tr> wrote:
+> > Tried this is on a patched 2.6.20 kernel with ipw3945 device and it
+> > always puts the card in 802.11a mode instead of 802.11bg mode.
+> >
+> > Ideas?
+>
+> Before running  "iwconfig wlan0 channel 8",  the card is set to
+> 802.11a mode. iwconfig shows rate at 54Mb/s. But after setting the
+> channel, it sets to 802.11b mode, and I can't find a way to change
+> from 11Mb/s to 54MB/s.
+>
+> "iwlist eth0 rate" only show up to 11Mb/s.
+>
+> So, my problem is the card is always in 802.11b mode.
 
-* Andi Kleen <andi@firstfloor.org> wrote:
+So I guess there is a common problem with a/bg modes?
 
-> > 	sys_exec and other security boundaries must be synchronous 
-> > only and not allow async "spill over" (consider setuid async binary 
-> > patching)
-> 
-> He probably would need some generalization of Andrea's seccomp work. 
-> Perhaps using bitmaps? For paranoia I would suggest to white list, not 
-> black list calls.
+Regards,
+ismail
 
-what i've implemented in my tree is sys_async_call_table[] which is a 
-copy of sys_call_table[] with certain entries modified (by architecture 
-level code, not by kernel/async.c) to sys_ni_syscall(). It's up to the 
-architecture to decide which syscalls are allowed.
 
-but i could use a bitmap too - whatever linear construct. [ I'm not sure 
-there's much connection to seccomp - seccomp uses a NULL terminated 
-whitelist - while syslets would use most of the entries (and would not 
-want to have the overhead of checking a blacklist). ]
-
-	Ingo
