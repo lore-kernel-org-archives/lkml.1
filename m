@@ -1,46 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751169AbXBMH6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751174AbXBMIQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751169AbXBMH6O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 02:58:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbXBMH6O
+	id S1751174AbXBMIQe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 03:16:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbXBMIQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 02:58:14 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:54225 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751169AbXBMH6N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 02:58:13 -0500
-Subject: Re: [PATCH 1/3] Introducing cpuidle: core cpuidle infrastructure
-From: Arjan van de Ven <arjan@infradead.org>
-To: Dave Jones <davej@redhat.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Adam Belay <abelay@novell.com>,
-       Shaohua Li <shaohua.li@intel.com>, Len Brown <len.brown@intel.com>
-In-Reply-To: <20070213012201.GA27685@redhat.com>
-References: <20070212103925.A12078@unix-os.sc.intel.com>
-	 <20070213012201.GA27685@redhat.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Tue, 13 Feb 2007 08:58:09 +0100
-Message-Id: <1171353489.12771.42.camel@laptopd505.fenrus.org>
+	Tue, 13 Feb 2007 03:16:34 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:50003 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751174AbXBMIQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 03:16:33 -0500
+Date: Tue, 13 Feb 2007 13:46:25 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Paul Menage" <menage@google.com>
+Cc: sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, xemul@sw.ru, dev@sw.ru,
+       containers@lists.osdl.org, pj@sgi.com, ebiederm@xmission.com,
+       mbligh@google.com, winget@google.com, rohitseth@google.com,
+       serue@us.ibm.com, devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 1/7] containers (V7): Generic container system abstracted from cpusets code
+Message-ID: <20070213081625.GA4252@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070212081521.808338000@menage.corp.google.com> <20070212085104.130746000@menage.corp.google.com> <20070212123309.GA7526@in.ibm.com> <6599ad830702121126o35fb0cb6x696a4a56079bce40@mail.gmail.com> <6599ad830702121146y41c8856cm4a85943aa950771f@mail.gmail.com> <20070213054857.GD22982@in.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070213054857.GD22982@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Feb 13, 2007 at 11:18:57AM +0530, Srivatsa Vaddagiri wrote:
+> Which make me wonder why we need task_lock() at all ..I can understand
+> the need for a lock like that if we are reading/updating multiple words
+> in task_struct under the lock. In this case, it is used to read/write
+> just one pointer, isnt it? I think it can be eliminated all-together
+> with the use of RCU.
 
-> The only differentiator that I can think of would be latency, but that seems
-> to be a) covered in a different tunable, and b) probably wouldn't affect
-> most people enough where it matters.
-> 
+I see that cpuset.c uses task_lock to read/write multiple words
+(cpuset_update_task_memory_state) ..So yes it is necessary in attach_task() ..
 
-and for latency the kernel already has a policy thing that tracks the
-maximum latency allowed.... if we need to give the user a knob to shoot
-himself into the foot with that one should probably be exported instead
-(although I'm still convinced it's a mistake since our beloved userspace
-WILL abuse it in the most unimaginable ways)
 
+-- 
+Regards,
+vatsa
