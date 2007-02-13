@@ -1,55 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751372AbXBMWjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751377AbXBMWlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751372AbXBMWjz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 17:39:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbXBMWjz
+	id S1751377AbXBMWlV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 17:41:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbXBMWlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 17:39:55 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:42342 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751377AbXBMWjy (ORCPT
+	Tue, 13 Feb 2007 17:41:21 -0500
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:53542 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751377AbXBMWlU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 17:39:54 -0500
-Message-ID: <45D23E38.1030607@vmware.com>
-Date: Tue, 13 Feb 2007 14:39:52 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+	Tue, 13 Feb 2007 17:41:20 -0500
+Message-ID: <45D23E87.2030805@nortel.com>
+Date: Tue, 13 Feb 2007 16:41:11 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [patch 06/21] Xen-paravirt: remove ctor for pgd cache
-References: <20070213221729.772002682@goop.org> <20070213221829.929261125@goop.org>
-In-Reply-To: <20070213221829.929261125@goop.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: whatever happened to down_timeout()?
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 Feb 2007 22:41:14.0831 (UTC) FILETIME=[11716DF0:01C74FC0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
->  
-> @@ -261,10 +261,12 @@ void pgd_ctor(void *pgd, struct kmem_cac
->  	spin_unlock_irqrestore(&pgd_lock, flags);
->  }
->  
-> -/* never called when PTRS_PER_PMD > 1 */
-> -void pgd_dtor(void *pgd, struct kmem_cache *cache, unsigned long unused)
-> +static void pgd_dtor(pgd_t *pgd)
->  {
->  	unsigned long flags; /* can be called from interrupt context */
-> +
-> +	if (PTRS_PER_PMD == 1)
-> +		return;
->  
->  	paravirt_release_pd(__pa(pgd) >> PAGE_SHIFT);
->  	spin_lock_irqsave(&pgd_lock, flags);
->   
+
+There has been some discussion on lkml about a function that would 
+either down a semaphore or else abort if it couldn't get the semaphore 
+in a certain amount of time.  Something along the lines of:
+
+down_timeout(struct semaphore *sem, long timeout);
 
 
-Acked, with exceptions.  This bit breaks VMI.  The paravirt_release_pd 
-must happen unconditionally.  But I would rather fix it after patches 
-get applied just to make sure the entire allocation / deallocation order 
-constraints are intact.
+Does something like this exist?  Does anyone have a working 
+implementation?  Does anyone see anything obviously wrong with the 
+following version (that I loosely based on one by Rupert Eibauer)?
 
-Zach
+
+
+semaphore.h:
+
+extern int __down_timeout(struct semaphore * sem, unsigned int timeout);
+
+
+/* "timeout" is the number of jiffies to wait.
+  * Returns -ETIME if timeout period expires.
+  */
+static inline int down_timeout(struct semaphore * sem, unsigned int timeout)
+{
+	int ret = down_trylock(sem);
+	if (!ret)
+		ret = __down_timeout(sem, timeout);
+	return ret;
+}
+
+
+
+
+kernel/timer.c
+
+int __down_timeout(struct semaphore * sem, int timeout)
+{
+	int ret;
+	unsigned long expire;
+	struct timer_list timer;
+
+	expire = jiffies + timeout;
+	init_timer(&timer);
+	timer.expires = expire;
+	timer.data = (unsigned long) current;
+	timer.function = process_timeout;
+	add_timer(&timer);
+
+	ret = down_interruptible(sema);
+	if (ret && (jiffies > expire))
+		ret = -ETIME;
+	 else
+		del_timer_sync(&timer);
+
+         return ret;
+}
+
+
+Thanks,
+Chris
