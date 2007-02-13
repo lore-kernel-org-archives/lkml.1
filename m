@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751252AbXBMVs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751292AbXBMVto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751252AbXBMVs5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 16:48:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbXBMVs5
+	id S1751292AbXBMVto (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 16:49:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbXBMVtn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 16:48:57 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50056 "EHLO mx1.redhat.com"
+	Tue, 13 Feb 2007 16:49:43 -0500
+Received: from k-sit.com ([220.233.124.29]:33198 "EHLO k-sit.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751203AbXBMVs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 16:48:56 -0500
-Message-ID: <45D23042.1020802@redhat.com>
-Date: Tue, 13 Feb 2007 16:40:18 -0500
-From: William Cohen <wcohen@redhat.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: eranian@hpl.hp.com
-CC: perfmon@napali.hpl.hp.com, perfctr-devel@lists.sourceforge.net,
-       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       oprofile-list@lists.sourceforge.net
-Subject: Re: [perfmon] 2.6.20 new perfmon code base + libpfm + pfmon
-References: <20070213184839.GC10031@frankl.hpl.hp.com>
-In-Reply-To: <20070213184839.GC10031@frankl.hpl.hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751243AbXBMVtn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 16:49:43 -0500
+X-Greylist: delayed 1245 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Feb 2007 16:49:42 EST
+Subject: Re: User tools for March 11
+From: James Purser <purserj@k-sit.com>
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Cc: Linux kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.61.0702131607590.27065@chaos.analogic.com>
+References: <Pine.LNX.4.61.0702131607590.27065@chaos.analogic.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-3H4kStWuJAyaiOFQyCyc"
+Date: Wed, 14 Feb 2007 08:28:51 +1100
+Message-Id: <1171402131.7924.1.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephane Eranian wrote:
-> Hello,
-> 
-> I have released another version of the perfmon new code base package.
-> This version of the kernel patch is relative to 2.6.20.
-> 
-> This  new kernel patch includes the following new features and
-> bug fixes:
-> 	- first cut at supporting Oprofile on i386 and x86-64 architectures
-> 	- several internal interfaces simplfications
-> 	- various MIPS updates (Phil Mucci/Manoj Ekbote)
-> 	- varous PPC32 updates (Phil Mucci)
-> 	- fix bug in set switching with a single set
-> 	- fix bug in pfm_restart() for per-thread mode with blocking notification
-> 
-> Unfortunately, this release does not build for PowerPC due to a problem with the
-> TIF_* flags. Perfmon adds 2 new flags which make the TIF now use more than 16 bits which
-> causes problem with some assembly instructions in entry_64.S. Hopefully,
-> this will be fixed in the next release.
-> 
-> To make Oprofile work, you need a modified user level Oprofile package. I have made
-> a first pass at modifying 0.9.2 to work on Perfmon 2.3 (and v2.0 for IA-64) for
-> the following processors: AMD Opteron, P6, Core Duo, Core 2 Duo, P4. The modified
-> package is available as Alpha at:
-> 
-> 	ftp://ftp.hpl.hp.com/pub/linux-ia64/oprof-perfmon2-070122.diff
 
-Hello Stephane,
+--=-3H4kStWuJAyaiOFQyCyc
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-The oprofile patch should be made against the oprofile cvs rather than the 0.9.2 
-tarball. There are some files that the patch touches that are created by the 
-autogen.sh.
+On Tue, 2007-02-13 at 16:19 -0500, linux-os (Dick Johnson) wrote:
+> Hi!
+> In the United States, some idiots have decided that the year 2000 scare
+> wasn't enough so they changed the start date for daylight savings time
+> from the first Sunday in April to the second Sunday in March.
+> Does anybody know if there are new tools like `hwclock` and `date`?
+> Will new 'C' runtime libraries be necessary as well?
+>=20
+> Cheers,
+> Dick Johnson
+> Penguin : Linux version 2.6.16.24 on an i686 machine (5592.61 BogoMips).
+> New book: http://www.AbominableFirebug.com/
 
-The oprofile patch doesn't build if things are configured without the 
-"--enable-perfmon2".
+Hi Dick,
 
-gcc -W -Wall -fno-common -Wdeclaration-after-statement -fno-omit-frame-pointer 
--g -O2   -o oprofiled  init.o oprofiled.o opd_stats.o opd_sfile.o opd_kernel.o 
-opd_trans.o opd_cookie.o opd_events.o opd_mangling.o opd_perfmon.o 
-opd_perfmon_22.o opd_perfmon_compat.o opd_anon.o liblegacy/liblegacy.a 
-../libabi/libabi.a ../libdb/libodb.a ../libop/libop.a ../libutil/libutil.a 
--lpopt -liberty -ldl
-opd_perfmon.o: In function `perfmon_init':
-/home/wcohen/research/profiling/oprofile/oprofile-0.9.2-perfmon2/daemon/opd_perfmon.c:384: 
-undefined reference to `do_perfmon_init'
-collect2: ld returned 1 exit status
+This timezone change will be handled by the distro makers, so you might
+want to check with them. This list is for discussion and development of
+the core linux kernel.
 
--Will
+Thanks.
+--=20
+James Purser
+Producer/Presenter
+Open Source On The Air
+http://www.localfoss.org
+
+--=-3H4kStWuJAyaiOFQyCyc
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBF0i2Tyx477OLqpLMRAl3IAJ9xTmJG/g3kXF4xyfjhqanKZCjOFACgk9sP
+Y+r5SdFDYaSow+bas7kFO1I=
+=45Zj
+-----END PGP SIGNATURE-----
+
+--=-3H4kStWuJAyaiOFQyCyc--
+
