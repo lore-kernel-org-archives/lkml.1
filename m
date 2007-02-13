@@ -1,75 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751259AbXBMMC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751295AbXBMMEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751259AbXBMMC4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 07:02:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbXBMMC4
+	id S1751295AbXBMMEf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 07:04:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbXBMMEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 07:02:56 -0500
-Received: from nijmegen.renzel.net ([195.243.213.130]:37397 "EHLO
-	nijmegen.renzel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751259AbXBMMCz (ORCPT
+	Tue, 13 Feb 2007 07:04:35 -0500
+Received: from lazybastard.de ([212.112.238.170]:42395 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751295AbXBMMEf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 07:02:55 -0500
-From: Marcel Siegert <mws@linuxtv.org>
-To: Jakub Jelinek <jakub@redhat.com>
-Subject: Re: dvb shared datastructure bug?
-Date: Tue, 13 Feb 2007 13:02:46 +0100
-User-Agent: KMail/1.9.6
-Cc: Manu Abraham <abraham.manu@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>, mchehab@infradead.org,
-       v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
-References: <1171352878.12771.30.camel@laptopd505.fenrus.org> <1a297b360702130314i3b67a828v804ddb85dc975101@mail.gmail.com> <20070213113552.GL22959@devserv.devel.redhat.com>
-In-Reply-To: <20070213113552.GL22959@devserv.devel.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Feb 2007 07:04:35 -0500
+Date: Tue, 13 Feb 2007 11:59:35 +0000
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Cc: Arjan van de Ven <arjan@infradead.org>, "Martin A. Fink" <fink@mpe.mpg.de>,
+       Matthias Schniedermeyer <ms@citd.de>, linux-kernel@vger.kernel.org
+Subject: Re: SATA-performance: Linux vs. FreeBSD
+Message-ID: <20070213115935.GA12383@lazybastard.org>
+References: <200702121502.17130.fink@mpe.mpg.de> <200702121856.29729.fink@mpe.mpg.de> <45D0F8EE.7020604@citd.de> <200702131025.15964.fink@mpe.mpg.de> <1171361290.12771.77.camel@laptopd505.fenrus.org> <20070213112758.5920a28e@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200702131302.47344.mws@linuxtv.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070213112758.5920a28e@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 February 2007, Jakub Jelinek wrote:
-> On Tue, Feb 13, 2007 at 03:14:23PM +0400, Manu Abraham wrote:
-> > >thanks for pointing out this issue.
-> > >
-> > >attached find a patch that fixes the problem.
-> > >
-> > >@mauro - please pull changeset a7ac92d208fe
-> > >   dvbdev: fix illegal re-usage of fileoperations struct
-> > >
-> > >from  http://www.linuxtv.org/hg/~mws/v4l-dvb-fixtree
-> > >
-> > 
-> > Ack'd-by: Manu Abraham <manu@linuxtv.org>
+On Tue, 13 February 2007 11:27:58 +0000, Alan wrote:
 > 
-> Wouldn't it be better to kmalloc both struct dvb_device and
-> struct file_operations together instead of doing 2 separate allocations?
-> struct dvd_device_plus_fops
-> {
->   struct dvb_device dev;
->   struct file_operations fops;
-> } *dev_fops = kmalloc (sizeof (struct dvd_device_plus_fops), GFP_KERNEL);
-> *pdvbdev = dvbdev = (struct dvb_device *)dev_fops;
-> if (dev_fops == NULL)
->   error handling;
-> memset (&dev_fops->fops, 0, sizeof (dev_fops->fops));
-> ...
-> dvbdev->fops = &dev_fops->fops;
-> 
-> 	Jakub
-> 
+> isn't yet a heavily optimised libata path. Secondly erase block size
+> matters with flash drives so the bigger each I/O the better erase block
+> behaviour we should get.
 
-hi jakub, 
+Although that should max out somewhere between 16KiB and 128KiB,
+depending on the chips being used.
 
-it may be worth doing that, but, imho that can be done when we are perfoming
-some revise of the whole dvb-core subsystem. 
+Jörn
 
-at the moment i would stay at "as-is", the code is more readable and the more "cost"
-of the additional alloc is affordable.
-
-thanks for your comments.
-marcel
-
-
-
+-- 
+If you're willing to restrict the flexibility of your approach,
+you can almost always do something better.
+-- John Carmack
