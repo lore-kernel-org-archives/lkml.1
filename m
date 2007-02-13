@@ -1,71 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161050AbXBMFNc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161060AbXBMFQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161050AbXBMFNc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 00:13:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161053AbXBMFNc
+	id S1161060AbXBMFQZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 00:16:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161042AbXBMFQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 00:13:32 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:54699 "EHLO smtp.osdl.org"
+	Tue, 13 Feb 2007 00:16:25 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:38363 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161050AbXBMFNb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 00:13:31 -0500
-Date: Mon, 12 Feb 2007 21:11:48 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Hansen <hansendc@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, hch@infradead.org
-Subject: Re: [PATCH 12/22] elevate write count files are open()ed
-Message-Id: <20070212211148.c9069c97.akpm@linux-foundation.org>
-In-Reply-To: <20070209225337.C8EC7257@localhost.localdomain>
-References: <20070209225329.27619A62@localhost.localdomain>
-	<20070209225337.C8EC7257@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	id S1161035AbXBMFQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 00:16:23 -0500
+Date: Tue, 13 Feb 2007 08:14:54 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: davem@davemloft.net, drepper@redhat.com, netdev@vger.kernel.org,
+       zach.brown@oracle.com, hch@infradead.org, chase.venters@clientec.com,
+       johann.borck@densedata.com, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, hadi@cyberus.ca, mingo@elte.hu,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [take35 0/10] kevent: Generic event handling mechanism.
+Message-ID: <20070213051454.GB1859@2ka.mipt.ru>
+References: <asdasdqaa0591036@2ka.mipt.ru> <11703247503374@2ka.mipt.ru> <20070205142336.GA24190@2ka.mipt.ru> <20070212103510.GC5703@2ka.mipt.ru> <20070212091335.9c00d5d9.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <20070212091335.9c00d5d9.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.7.5 (2ka.mipt.ru [0.0.0.0]); Tue, 13 Feb 2007 08:14:59 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 09 Feb 2007 14:53:37 -0800 Dave Hansen <hansendc@us.ibm.com> wrote:
+On Mon, Feb 12, 2007 at 09:13:35AM -0800, Andrew Morton (akpm@linux-foundation.org) wrote:
+> > On Mon, 12 Feb 2007 13:35:10 +0300 Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+> > Andrew, do you consider kevent for inclusion or declining?
+> 
+> I haven't had time to think about it in the past month or two, sorry.
+> 
+> However we might as well get it back in there for review-and-test - please
+> send a new patchset once 2.6.21-rc1 is released and copy me on it?
 
-> diff -puN fs/file_table.c~14-24-tricky-elevate-write-count-files-are-open-ed fs/file_table.c
-> --- lxc/fs/file_table.c~14-24-tricky-elevate-write-count-files-are-open-ed	2007-02-09 14:26:54.000000000 -0800
-> +++ lxc-dave/fs/file_table.c	2007-02-09 14:26:54.000000000 -0800
-> @@ -209,8 +209,11 @@ void fastcall __fput(struct file *file)
->  	if (unlikely(S_ISCHR(inode->i_mode) && inode->i_cdev != NULL))
->  		cdev_put(inode->i_cdev);
->  	fops_put(file->f_op);
-> -	if (file->f_mode & FMODE_WRITE)
-> +	if (file->f_mode & FMODE_WRITE) {
->  		put_write_access(inode);
-> +		if(!special_file(inode->i_mode))
-> +			mnt_drop_write(mnt);
-> +	}
->  	put_pid(file->f_owner.pid);
->  	put_user_ns(file->f_owner.user_ns);
->  	file_kill(file);
-> diff -puN fs/namei.c~14-24-tricky-elevate-write-count-files-are-open-ed fs/namei.c
-> --- lxc/fs/namei.c~14-24-tricky-elevate-write-count-files-are-open-ed	2007-02-09 14:26:54.000000000 -0800
-> +++ lxc-dave/fs/namei.c	2007-02-09 14:26:54.000000000 -0800
-> @@ -1548,8 +1548,17 @@ int may_open(struct nameidata *nd, int a
->  			return -EACCES;
->  
->  		flag &= ~O_TRUNC;
-> -	} else if (IS_RDONLY(inode) && (flag & FMODE_WRITE))
-> -		return -EROFS;
-> +	} else if (flag & FMODE_WRITE) {
-> +		/*
-> +		 * effectively: !special_file()
-> +		 * balanced by __fput()
-> +		 */
-> +		error = mnt_want_write(nd->mnt);
-> +		if (error)
-> +			return error;
-> +		if (IS_RDONLY(inode))
-> +			return -EROFS;
-> +	}
+Ok, I will.
+You are always in copy for kevent patchsets.
 
-yipes.  A new mount-wide spin_lock/unlock for each for-writing open() and close().
-Can we have a microbenchmark on this please?
-
-Are you sure that fget_light() and fput_light() don't accidentally bypass this
-new logic?
+-- 
+	Evgeniy Polyakov
