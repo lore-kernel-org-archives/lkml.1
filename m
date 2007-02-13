@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751167AbXBMHsC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751170AbXBMHtF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751167AbXBMHsC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 02:48:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751163AbXBMHsB
+	id S1751170AbXBMHtF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 02:49:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751163AbXBMHtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 02:48:01 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60078 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751167AbXBMHsA (ORCPT
+	Tue, 13 Feb 2007 02:49:05 -0500
+Received: from yue.linux-ipv6.org ([203.178.140.15]:54942 "EHLO
+	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751173AbXBMHtD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 02:48:00 -0500
-Subject: dvb shared datastructure bug?
-From: Arjan van de Ven <arjan@infradead.org>
-To: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Tue, 13 Feb 2007 08:47:58 +0100
-Message-Id: <1171352878.12771.30.camel@laptopd505.fenrus.org>
+	Tue, 13 Feb 2007 02:49:03 -0500
+Date: Tue, 13 Feb 2007 16:48:57 +0900 (JST)
+Message-Id: <20070213.164857.33144817.yoshfuji@linux-ipv6.org>
+To: joe@perches.com
+Cc: linux-kernel@vger.kernel.org, yoshfuji@linux-ipv6.org
+Subject: Re: Coding style RFC: convert "for (i=0;i<ARRAY_SIZE(array);i++)"
+ to "array_for_each(index, array)"
+From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
+	<yoshfuji@linux-ipv6.org>
+In-Reply-To: <1171324070.1528.25.camel@localhost>
+References: <1171324070.1528.25.camel@localhost>
+Organization: USAGI/WIDE Project
+X-URL: http://www.yoshifuji.org/%7Ehideaki/
+X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
+X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
+X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
+ $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
+X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+In article <1171324070.1528.25.camel@localhost> (at Mon, 12 Feb 2007 15:47:50 -0800), Joe Perches <joe@perches.com> says:
 
-while working on the last pieces of the file_ops constantification, DVB
-is the small village in France that is holding the Romans at bay... but
-I think I found the final flaw in it now: 
+> Now that most of the sizeof(array)/sizeof(array[0])
+> conversions have been done (there are about 800 done
+> and about another 130 left), perhaps it could be
+> useful to change the code to use a define similar
+> to the list_for_each
+> 
+> #define list_for_each(pos, head) \
+> 	for (pos = (head)->next; prefetch(pos->next), pos != (head); \
+>         	pos = pos->next)
+> 
+> perhaps
+> 
+> #define array_for_each(index, array) \
+> 	for ((index) = 0; (index) < ARRAY_SIZE((array)); (index)++)
 
-       *pdvbdev = dvbdev = kmalloc(sizeof(struct dvb_device), GFP_KERNEL);
+I dislike this; it is overkill.
 
-        if (!dvbdev) {
-                mutex_unlock(&dvbdev_register_lock);
-                return -ENOMEM;
-        }
+list_for_each etc. are for list_head etc., of structures.
+On the other hand, arrays are not.
 
-        memcpy(dvbdev, template, sizeof(struct dvb_device));
-        dvbdev->type = type;
-        dvbdev->id = id;
-        dvbdev->adapter = adap;
-        dvbdev->priv = priv;
+It is very, very obvious how to access its members.
 
-        dvbdev->fops->owner = adap->module;
-
-
-this is the place in DVB that is writing to a struct file_operations.
-But as with almost all such cases in the kernel, this one is buggy:
-While the code nicely copies a template dvbdev, that template only has a
-pointer to a *shared* fops struct, the copy doesn't help that. So this
-code is overwriting the fops owner field for ALL active devices, not
-just the ones the copy of the template is for....
-
-I'm lost in the maze of this part of DVB (it seems to have some magic
-potion to resist me) but I was hoping some of the local citizens could
-take a look at this buglet...
-
-Greetings,
-    Arjan van de Ven
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+--yoshfuji
