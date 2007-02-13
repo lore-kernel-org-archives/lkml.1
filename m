@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750710AbXBMPMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750735AbXBMPQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750710AbXBMPMc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 10:12:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750731AbXBMPMc
+	id S1750735AbXBMPQf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 10:16:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750738AbXBMPQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 10:12:32 -0500
-Received: from moutng.kundenserver.de ([212.227.126.174]:63363 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750710AbXBMPMc convert rfc822-to-8bit (ORCPT
+	Tue, 13 Feb 2007 10:16:35 -0500
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:34689 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750735AbXBMPQe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 10:12:32 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH x86 for review III] [1/29] i386: avoid gcc extension
-Date: Tue, 13 Feb 2007 16:11:14 +0100
-User-Agent: KMail/1.9.5
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-References: <20070212551.664370000@suse.de>
-In-Reply-To: <20070212551.664370000@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+	Tue, 13 Feb 2007 10:16:34 -0500
+Date: Tue, 13 Feb 2007 10:16:33 -0500
+To: Raphael Assenat <raph@8d.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add PCI device ID for IT8152 RISC-to-PCI chip
+Message-ID: <20070213151633.GL7584@csclub.uwaterloo.ca>
+References: <45CCD60D.5050001@8d.com> <20070209212856.GK7584@csclub.uwaterloo.ca> <45D1CF22.6010706@8d.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702131611.15172.arnd@arndb.de>
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
-X-Provags-ID2: V01U2FsdGVkX18uPhqAFO0HZzSp7gL3QgSFYe2GvzeT0ewnmSkUGcAU4LM+BOylQ2YSHYuv+2Ld/RxF16DQPoy5KNY4GlvR/s1bCuXDC4bDIUWfRuQsMMQjDw==
+In-Reply-To: <45D1CF22.6010706@8d.com>
+User-Agent: Mutt/1.5.9i
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 February 2007 17:51, Andi Kleen wrote:
-> setcc() in math-emu is written as a gcc extension statement expression
-> macro that returns a value.  However, it's not used that way and it's not
-> needed like that, so just make it a do-while non-extension macro so that we
-> don't use an extension when it's not needed.
-> 
+On Tue, Feb 13, 2007 at 09:45:54AM -0500, Raphael Assenat wrote:
+> Really? I have no idea if it's possible to get a reliable PCI bus or
+> not with this chip. Right now, we only use it for it's built-in OHCI 
+> USB host controller and UART. You're making me hope I never have to 
+> use it for interfacing a PCI card!
 
-The patch looks good but it doesn't match the description any more, since
-you now use a function...
+Well on the system on a board we were trying, using the development
+baseboard from the same supplier, by simply doing a ping flood through
+the onboard rtl8139 I managed to get corrupted ethernet packets fairly
+frequently.  The WAN cards (T1/E1) we were trying to make work with it
+were much more upset by it.  It could be bad enough corruption to cause
+the chip on the card and the driver to get out of sync and just have no
+idea what to do anymore.  Given our mainboard works perfectly fine using
+a Geode SC1200 instead of the PXA255 board, I can only figure the PCI
+bus wasn't implemented correctly on that chip, unless PCI on arm is done
+wrong in linux (I sure hope not).  There doesn't seem to be very many
+arm systems with PCI, so it's hard to tell.  Now other than PCI the
+system was wonderful.  Fast, reliable, ran great even at high
+temperatures, etc.  Just couldn't get the stupid PCI bus to work.
+
+--
+Len Sorensen
