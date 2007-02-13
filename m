@@ -1,43 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750756AbXBMQFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750788AbXBMQHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750756AbXBMQFV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 11:05:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750788AbXBMQFV
+	id S1750788AbXBMQHW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 11:07:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750797AbXBMQHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 11:05:21 -0500
-Received: from rtr.ca ([64.26.128.89]:1809 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750756AbXBMQFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 11:05:20 -0500
-Message-ID: <45D1E1B3.3050109@rtr.ca>
-Date: Tue, 13 Feb 2007 11:05:07 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
-MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Patrick Ale <patrick.ale@gmail.com>, linux-kernel@vger.kernel.org,
-       Tejun Heo <htejun@gmail.com>
-Subject: Re: libsata doesn't like bus without master
-References: <fa.kM2jAt0lhoofVm0+pIia0W2vzoo@ifi.uio.no> <45CF54C7.7050400@shaw.ca>
-In-Reply-To: <45CF54C7.7050400@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Feb 2007 11:07:22 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55775 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750788AbXBMQHU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 11:07:20 -0500
+Date: Tue, 13 Feb 2007 16:06:44 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Mark Lord <lkml@rtr.ca>
+Cc: nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Tilman Schmidt <tilman@imap.cc>, Pavel Machek <pavel@ucw.cz>,
+       Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: NAK new drivers without proper power management?
+Message-ID: <20070213160644.GA22748@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Mark Lord <lkml@rtr.ca>, nigel@nigel.suspend2.net,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, Tilman Schmidt <tilman@imap.cc>,
+	Pavel Machek <pavel@ucw.cz>, Arjan van de Ven <arjan@infradead.org>,
+	LKML <linux-kernel@vger.kernel.org>
+References: <1171058269.1484.64.camel@nigel.suspend2.net> <1171147026.19894.16.camel@nigel.suspend2.net> <45CE5934.3020801@imap.cc> <200702110127.35631.rjw@sisk.pl> <1171233683.4493.81.camel@nigel.suspend2.net> <45D1DF66.6030906@rtr.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45D1DF66.6030906@rtr.ca>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
->>
-> Having a single drive on the channel configured as slave is not really a 
-> legal configuration.
+On Tue, Feb 13, 2007 at 10:55:18AM -0500, Mark Lord wrote:
+> LKML is much more receptive to drivers that follow
+> the "release early, release often" mantra.
 
-Sure it is.  Not ideal, but "legal" in every respect,
-and suprisingly common "in the wild" since the early 1990s.
+Exactly.
 
-> (I believe the ATA standards say that it's 
-> something that a host controller/driver/OS is allowed to support, but it 
-> is not required to.)
+> Which means we really have to be more accomodating of
+> drivers that start out simple, and then gain all of the
+> non-essential capabilities gradually over time.
 
-Exactly.  Perfectly legal, in other words.  If it's not working with libata,
-then we need to fix libata.
+We usually are, the endless flamewar lurkers might not :)
+> 
+> Simple observation here shows much more hostility :)
+> to drivers that are simply "presented" as a complete whole.
+> Often for good reason -- starting out with a framework
+> and then adding the rest bit by bit allows for much better
+> peer review and feedback.
 
-Cheers
+*nod*
+
+> And not all devices / situations need power management,
+> and lack of documentation on the hardware often prevents
+> us from implementing it at the outset.
+
+*nod*
+
+So can be use Mark's excellent post as closing of this
+utterly useless thread and go on to real work now?
+
