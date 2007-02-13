@@ -1,136 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030583AbXBMASb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030574AbXBMAVK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030583AbXBMASb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 19:18:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030582AbXBMASb
+	id S1030574AbXBMAVK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 19:21:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030582AbXBMAVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 19:18:31 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:10882 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030584AbXBMAS3 (ORCPT
+	Mon, 12 Feb 2007 19:21:10 -0500
+Received: from mail.velocitynet.com.au ([203.17.154.25]:47782 "EHLO
+	m0.velocity.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030574AbXBMAVI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 19:18:29 -0500
-X-IronPort-AV: i="4.14,160,1170662400"; 
-   d="scan'208"; a="111879583:sNHT86090886"
-To: torvalds@linux-foundation.org
-Cc: openib-general@openib.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] please pull infiniband.git
-X-Message-Flag: Warning: May contain useful information
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 12 Feb 2007 16:18:23 -0800
-Message-ID: <adazm7ioqpc.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Mon, 12 Feb 2007 19:21:08 -0500
+Message-ID: <45D10460.6000903@iinet.net.au>
+Date: Tue, 13 Feb 2007 11:20:48 +1100
+From: Ben Nizette <ben.nizette@iinet.net.au>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 13 Feb 2007 00:18:24.0144 (UTC) FILETIME=[79924100:01C74F04]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+To: Joe Perches <joe@perches.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Coding style RFC: convert "for (i=0;i<ARRAY_SIZE(array);i++)"
+ to	"array_for_each(index, array)"
+References: <1171324070.1528.25.camel@localhost>
+In-Reply-To: <1171324070.1528.25.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+Joe Perches wrote:
+> Now that most of the sizeof(array)/sizeof(array[0])
+> conversions have been done (there are about 800 done
+> and about another 130 left), perhaps it could be
+> useful to change the code to use a define similar
+> to the list_for_each
+> 
+> #define list_for_each(pos, head) \
+> 	for (pos = (head)->next; prefetch(pos->next), pos != (head); \
+>         	pos = pos->next)
+> 
+> perhaps
+> 
+> #define array_for_each(index, array) \
+> 	for ((index) = 0; (index) < ARRAY_SIZE((array)); (index)++)
+> 
 
-    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+I like the idea, my only concern would be potential confusion.  That is, 
+the list_for_each macro sets pos to each list_head in turn where 
+array_for_each just sets the index /in to/ the array.  While I think the 
+way you have is nicer, for compatibility between the two styles maybe 
+something more like
 
-This tree is also available from kernel.org mirrors at:
+  #define array_for_each(element, array) \
+	for (int __idx = 0; __idx < ARRAY_SIZE((array)); \
+		__idx++, (element) = &(array[__idx]))
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+would help.  Of course the other option is to name array_for_each 
+something different to avoid comparisons with list_for_each.
 
-This will add the new cxgb3 RDMA driver for Chelsio T3 NICs, as well
-as IPoIB connected mode and various other smaller changes:
-
-Ahmed S. Darwish (1):
-      IB/core: Use ARRAY_SIZE macro for mandatory_table
-
-Akinobu Mita (1):
-      IB/ehca: Fix memleak on module unloading
-
-David Howells (1):
-      IB/mthca: Work around gcc bug on sparc64
-
-Michael S. Tsirkin (6):
-      IPoIB: Connected mode experimental support
-      IB/mthca: Fix reserved MTTs calculation on mem-free HCAs
-      IB/mthca: Give reserved MTTs a separate cache line
-      IB/mthca: Fix access to MTT and MPT tables on non-cache-coherent CPUs
-      IB/mthca: Merge MR and FMR space on 64-bit systems
-      IB/mthca: Always fill MTTs from CPU
-
-Roland Dreier (1):
-      IB/mthca: Use correct structure size in call to memset()
-
-Sean Hefty (2):
-      RDMA/cma: Increment port number after close to avoid re-use
-      IB: Remove redundant "_wq" from workqueue names
-
-Steve Wise (1):
-      RDMA/cxgb3: Add driver for Chelsio T3 RNIC
-
- drivers/infiniband/Kconfig                     |    1 +
- drivers/infiniband/Makefile                    |    1 +
- drivers/infiniband/core/addr.c                 |    2 +-
- drivers/infiniband/core/cma.c                  |   68 +-
- drivers/infiniband/core/device.c               |    3 +-
- drivers/infiniband/hw/cxgb3/Kconfig            |   27 +
- drivers/infiniband/hw/cxgb3/Makefile           |   12 +
- drivers/infiniband/hw/cxgb3/cxio_dbg.c         |  207 +++
- drivers/infiniband/hw/cxgb3/cxio_hal.c         | 1280 +++++++++++++++
- drivers/infiniband/hw/cxgb3/cxio_hal.h         |  201 +++
- drivers/infiniband/hw/cxgb3/cxio_resource.c    |  331 ++++
- drivers/infiniband/hw/cxgb3/cxio_resource.h    |   70 +
- drivers/infiniband/hw/cxgb3/cxio_wr.h          |  685 ++++++++
- drivers/infiniband/hw/cxgb3/iwch.c             |  189 +++
- drivers/infiniband/hw/cxgb3/iwch.h             |  177 ++
- drivers/infiniband/hw/cxgb3/iwch_cm.c          | 2081 ++++++++++++++++++++++++
- drivers/infiniband/hw/cxgb3/iwch_cm.h          |  223 +++
- drivers/infiniband/hw/cxgb3/iwch_cq.c          |  225 +++
- drivers/infiniband/hw/cxgb3/iwch_ev.c          |  231 +++
- drivers/infiniband/hw/cxgb3/iwch_mem.c         |  172 ++
- drivers/infiniband/hw/cxgb3/iwch_provider.c    | 1203 ++++++++++++++
- drivers/infiniband/hw/cxgb3/iwch_provider.h    |  367 +++++
- drivers/infiniband/hw/cxgb3/iwch_qp.c          | 1007 ++++++++++++
- drivers/infiniband/hw/cxgb3/iwch_user.h        |   67 +
- drivers/infiniband/hw/cxgb3/tcb.h              |  632 +++++++
- drivers/infiniband/hw/ehca/ehca_irq.c          |    2 +
- drivers/infiniband/hw/mthca/mthca_cmd.c        |    6 +-
- drivers/infiniband/hw/mthca/mthca_dev.h        |    2 +
- drivers/infiniband/hw/mthca/mthca_main.c       |   40 +-
- drivers/infiniband/hw/mthca/mthca_memfree.c    |  127 ++-
- drivers/infiniband/hw/mthca/mthca_memfree.h    |    9 +-
- drivers/infiniband/hw/mthca/mthca_mr.c         |  110 ++-
- drivers/infiniband/hw/mthca/mthca_profile.c    |    2 +-
- drivers/infiniband/hw/mthca/mthca_provider.c   |   14 +-
- drivers/infiniband/hw/mthca/mthca_provider.h   |    1 +
- drivers/infiniband/hw/mthca/mthca_qp.c         |    2 +-
- drivers/infiniband/hw/mthca/mthca_srq.c        |    9 +-
- drivers/infiniband/ulp/ipoib/Kconfig           |   16 +-
- drivers/infiniband/ulp/ipoib/Makefile          |    1 +
- drivers/infiniband/ulp/ipoib/ipoib.h           |  215 +++
- drivers/infiniband/ulp/ipoib/ipoib_cm.c        | 1237 ++++++++++++++
- drivers/infiniband/ulp/ipoib/ipoib_ib.c        |   29 +-
- drivers/infiniband/ulp/ipoib/ipoib_main.c      |   63 +-
- drivers/infiniband/ulp/ipoib/ipoib_multicast.c |    4 +-
- drivers/infiniband/ulp/ipoib/ipoib_verbs.c     |   40 +-
- drivers/infiniband/ulp/ipoib/ipoib_vlan.c      |    2 +
- 46 files changed, 11279 insertions(+), 114 deletions(-)
- create mode 100644 drivers/infiniband/hw/cxgb3/Kconfig
- create mode 100644 drivers/infiniband/hw/cxgb3/Makefile
- create mode 100644 drivers/infiniband/hw/cxgb3/cxio_dbg.c
- create mode 100644 drivers/infiniband/hw/cxgb3/cxio_hal.c
- create mode 100644 drivers/infiniband/hw/cxgb3/cxio_hal.h
- create mode 100644 drivers/infiniband/hw/cxgb3/cxio_resource.c
- create mode 100644 drivers/infiniband/hw/cxgb3/cxio_resource.h
- create mode 100644 drivers/infiniband/hw/cxgb3/cxio_wr.h
- create mode 100644 drivers/infiniband/hw/cxgb3/iwch.c
- create mode 100644 drivers/infiniband/hw/cxgb3/iwch.h
- create mode 100644 drivers/infiniband/hw/cxgb3/iwch_cm.c
- create mode 100644 drivers/infiniband/hw/cxgb3/iwch_cm.h
- create mode 100644 drivers/infiniband/hw/cxgb3/iwch_cq.c
- create mode 100644 drivers/infiniband/hw/cxgb3/iwch_ev.c
- create mode 100644 drivers/infiniband/hw/cxgb3/iwch_mem.c
- create mode 100644 drivers/infiniband/hw/cxgb3/iwch_provider.c
- create mode 100644 drivers/infiniband/hw/cxgb3/iwch_provider.h
- create mode 100644 drivers/infiniband/hw/cxgb3/iwch_qp.c
- create mode 100644 drivers/infiniband/hw/cxgb3/iwch_user.h
- create mode 100644 drivers/infiniband/hw/cxgb3/tcb.h
- create mode 100644 drivers/infiniband/ulp/ipoib/ipoib_cm.c
+--Ben.
