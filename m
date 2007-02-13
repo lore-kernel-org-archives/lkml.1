@@ -1,66 +1,234 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751279AbXBMLMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751275AbXBMLN5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751279AbXBMLMt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 06:12:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbXBMLMt
+	id S1751275AbXBMLN5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 06:13:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbXBMLN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 06:12:49 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60806 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751279AbXBMLMs (ORCPT
+	Tue, 13 Feb 2007 06:13:57 -0500
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:5985 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751275AbXBMLN4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 06:12:48 -0500
-Date: Tue, 13 Feb 2007 11:25:27 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: "Martin A. Fink" <fink@mpe.mpg.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: SATA-performance: Linux vs. FreeBSD
-Message-ID: <20070213112527.59eaa504@localhost.localdomain>
-In-Reply-To: <200702131034.22639.fink@mpe.mpg.de>
-References: <200702121502.17130.fink@mpe.mpg.de>
-	<200702121856.29729.fink@mpe.mpg.de>
-	<20070212190835.20f9b92f@localhost.localdomain>
-	<200702131034.22639.fink@mpe.mpg.de>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 Feb 2007 06:13:56 -0500
+Message-ID: <45D19D72.4050009@de.ibm.com>
+Date: Tue, 13 Feb 2007 12:13:54 +0100
+From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+User-Agent: Thunderbird 1.5 (X11/20051201)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: gregkh@suse.de, akpm@linux-foundation.org
+Subject: [PATCH debugfs: implement symbolic links
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Well they do. The Flash disk I have (SATA-I) is capable of 48 MB/s and this 
-> value is reached over the whole disk size by windows as well as by FreeBSD. 
-> See my test results in the first thread.
+From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
 
-Ok a flash disk should be more stable
+debugfs: implement symbolic links
 
-> My Seagate Barracuda Harddisk drive (SATA-II) starts with 76 MB/s and 
-> decreases linearly to 35 MB/s due to the fact that it has to write to a 
-> rotating disk. But on a flash disk there is nothing rotating...
+Implement a new function debugfs_create_symlink() which can be used
+to create symbolic links in debugfs. This function can be useful
+for people moving functionality from /proc to debugfs (e.g. the
+gcov-kernel patch).
 
-The hard disk one isn't guaranteed or stable but the flash especially if
-it is aimed at it ought to behave.
+Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+---
 
-> So where is the difference between SATA-I and SATA-II ?
+ fs/debugfs/file.c       |   12 ++++++
+ fs/debugfs/inode.c      |   76 ++++++++++++++++++++++++++++++++++++--
+ include/linux/debugfs.h |   10 +++++
+ 3 files changed, 94 insertions(+), 4 deletions(-)
 
-All physical side if they are on the same controller when you do the
-tests. Mostly latency,
-
-> And why is FreeBSD able to write with constant rates (the complete 25 GB, all 
-> with 48+/-0.1 MB/s) but Linux 2.6.18 not ?
-
-Does the FreeBSD fsync sync to media ? Also what controller is being used
-here, and do you have EHCI USB support running ?
-
-> With a dedicated (rotating) SATA II device, using the first 70% of disk space 
-> no problem -- tested ! With a SATA-I device only a problem with Linux 2.6.18
-
-I suspect the SATA-1 itself may not be the decider but something else -
-eg the hard disk using NCQ, which would cover up any latency related
-problems.
-
-> Journaling of data: you are right, ext2 performs better than ext3.
-
-And ext3 in writeback mode ought in theory (but practice is always
-harder ;)) be faster than ext2.
+diff -uprN linux-2.6.20/fs/debugfs/file.c linux-2.6.20-patched/fs/debugfs/file.c
+--- linux-2.6.20/fs/debugfs/file.c	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.20-patched/fs/debugfs/file.c	2007-02-13 10:55:38.000000000 +0100
+@@ -16,6 +16,7 @@
+ #include <linux/module.h>
+ #include <linux/fs.h>
+ #include <linux/pagemap.h>
++#include <linux/namei.h>
+ #include <linux/debugfs.h>
+ 
+ static ssize_t default_read_file(struct file *file, char __user *buf,
+@@ -44,6 +45,17 @@ const struct file_operations debugfs_fil
+ 	.open =		default_open,
+ };
+ 
++static void *debugfs_follow_link(struct dentry *dentry, struct nameidata *nd)
++{
++	nd_set_link(nd, dentry->d_inode->i_private);
++	return NULL;
++}
++
++const struct inode_operations debugfs_link_operations = {
++	.readlink       = generic_readlink,
++	.follow_link    = debugfs_follow_link,
++};
++
+ static void debugfs_u8_set(void *data, u64 val)
+ {
+ 	*(u8 *)data = val;
+diff -uprN linux-2.6.20/fs/debugfs/inode.c linux-2.6.20-patched/fs/debugfs/inode.c
+--- linux-2.6.20/fs/debugfs/inode.c	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.20-patched/fs/debugfs/inode.c	2007-02-13 10:58:00.000000000 +0100
+@@ -25,11 +25,13 @@
+ #include <linux/namei.h>
+ #include <linux/debugfs.h>
+ #include <linux/fsnotify.h>
++#include <linux/string.h>
+ 
+ #define DEBUGFS_MAGIC	0x64626720
+ 
+ /* declared over in file.c */
+ extern struct file_operations debugfs_file_operations;
++extern struct inode_operations debugfs_link_operations;
+ 
+ static struct vfsmount *debugfs_mount;
+ static int debugfs_mount_count;
+@@ -51,6 +53,9 @@ static struct inode *debugfs_get_inode(s
+ 		case S_IFREG:
+ 			inode->i_fop = &debugfs_file_operations;
+ 			break;
++		case S_IFLNK:
++			inode->i_op = &debugfs_link_operations;
++			break;
+ 		case S_IFDIR:
+ 			inode->i_op = &simple_dir_inode_operations;
+ 			inode->i_fop = &simple_dir_operations;
+@@ -96,6 +101,12 @@ static int debugfs_mkdir(struct inode *d
+ 	return res;
+ }
+ 
++static int debugfs_link(struct inode *dir, struct dentry *dentry, int mode)
++{
++	mode = (mode & S_IALLUGO) | S_IFLNK;
++	return debugfs_mknod(dir, dentry, mode, 0);
++}
++
+ static int debugfs_create(struct inode *dir, struct dentry *dentry, int mode)
+ {
+ 	int res;
+@@ -158,10 +169,17 @@ static int debugfs_create_by_name(const 
+ 	mutex_lock(&parent->d_inode->i_mutex);
+ 	*dentry = lookup_one_len(name, parent, strlen(name));
+ 	if (!IS_ERR(*dentry)) {
+-		if ((mode & S_IFMT) == S_IFDIR)
++		switch (mode & S_IFMT) {
++		case S_IFDIR:
+ 			error = debugfs_mkdir(parent->d_inode, *dentry, mode);
+-		else 
++			break;
++		case S_IFLNK:
++			error = debugfs_link(parent->d_inode, *dentry, mode);
++			break;
++		default:
+ 			error = debugfs_create(parent->d_inode, *dentry, mode);
++			break;
++		}
+ 		dput(*dentry);
+ 	} else
+ 		error = PTR_ERR(*dentry);
+@@ -259,6 +277,49 @@ struct dentry *debugfs_create_dir(const 
+ EXPORT_SYMBOL_GPL(debugfs_create_dir);
+ 
+ /**
++ * debugfs_create_symlink- create a symbolic link in the debugfs filesystem
++ * @name: a pointer to a string containing the name of the symbolic link to
++ *        create.
++ * @parent: a pointer to the parent dentry for this symbolic link.  This
++ *          should be a directory dentry if set.  If this paramater is NULL,
++ *          then the symbolic link will be created in the root of the debugfs
++ *          filesystem.
++ * @target: a pointer to a string containing the path to the target of the
++ *          symbolic link.
++ *
++ * This function creates a symbolic link with the given name in debugfs that
++ * links to the given target path.
++ *
++ * This function will return a pointer to a dentry if it succeeds.  This
++ * pointer must be passed to the debugfs_remove() function when the symbolic
++ * link is to be removed (no automatic cleanup happens if your module is
++ * unloaded, you are responsible here.)  If an error occurs, %NULL will be
++ * returned.
++ *
++ * If debugfs is not enabled in the kernel, the value -%ENODEV will be
++ * returned.  It is not wise to check for this value, but rather, check for
++ * %NULL or !%NULL instead as to eliminate the need for #ifdef in the calling
++ * code.
++ */
++struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
++				      const char *target)
++{
++	struct dentry *result;
++	char *link;
++
++	link = kstrdup(target, GFP_KERNEL);
++	if (!link)
++		return NULL;
++
++	result = debugfs_create_file(name, S_IFLNK | S_IRWXUGO, parent, link,
++				     NULL);
++	if (!result)
++		kfree(link);
++	return result;
++}
++EXPORT_SYMBOL_GPL(debugfs_create_symlink);
++
++/**
+  * debugfs_remove - removes a file or directory from the debugfs filesystem
+  * @dentry: a pointer to a the dentry of the file or directory to be
+  *          removed.
+@@ -287,15 +348,22 @@ void debugfs_remove(struct dentry *dentr
+ 	if (debugfs_positive(dentry)) {
+ 		if (dentry->d_inode) {
+ 			dget(dentry);
+-			if (S_ISDIR(dentry->d_inode->i_mode)) {
++			switch (dentry->d_inode->i_mode & S_IFMT) {
++			case S_IFDIR:
+ 				ret = simple_rmdir(parent->d_inode, dentry);
+ 				if (ret)
+ 					printk(KERN_ERR
+ 						"DebugFS rmdir on %s failed : "
+ 						"directory not empty.\n",
+ 						dentry->d_name.name);
+-			} else
++				break;
++			case S_IFLNK:
++				kfree(dentry->d_inode->i_private);
++				/* fall through */
++			default:
+ 				simple_unlink(parent->d_inode, dentry);
++				break;
++			}
+ 			if (!ret)
+ 				d_delete(dentry);
+ 			dput(dentry);
+diff -uprN linux-2.6.20/include/linux/debugfs.h linux-2.6.20-patched/include/linux/debugfs.h
+--- linux-2.6.20/include/linux/debugfs.h	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.20-patched/include/linux/debugfs.h	2007-02-13 10:57:10.000000000 +0100
+@@ -33,6 +33,9 @@ struct dentry *debugfs_create_file(const
+ 
+ struct dentry *debugfs_create_dir(const char *name, struct dentry *parent);
+ 
++struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
++				      const char *dest);
++
+ void debugfs_remove(struct dentry *dentry);
+ 
+ struct dentry *debugfs_create_u8(const char *name, mode_t mode,
+@@ -70,6 +73,13 @@ static inline struct dentry *debugfs_cre
+ 	return ERR_PTR(-ENODEV);
+ }
+ 
++static inline struct dentry *debugfs_create_symlink(const char *name,
++						    struct dentry *parent,
++						    const char *dest)
++{
++	return ERR_PTR(-ENODEV);
++}
++
+ static inline void debugfs_remove(struct dentry *dentry)
+ { }
+ 
 
