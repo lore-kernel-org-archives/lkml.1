@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932432AbXBMNVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932066AbXBMN3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932432AbXBMNVk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 08:21:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932389AbXBMNVk
+	id S932066AbXBMN3U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 08:29:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932069AbXBMN3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 08:21:40 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:2007 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932428AbXBMNVj (ORCPT
+	Tue, 13 Feb 2007 08:29:20 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:24228 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932066AbXBMN3U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 08:21:39 -0500
+	Tue, 13 Feb 2007 08:29:20 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QCWmXej6Kv9u3MsxbZEQQImmwBTozgMK2GU2i2iqGttpQSA6Jr56tdqNHt2IcONcFR4eBlovuM5xkhktF4JO0q2QtMtK4XFyfmvk/uk25snDVKs+54jQXkUtX4wJq0iuyn7AKGKZppILvWhNZBk5m4c7TYLDGyh5w+7bB2pX+cQ=
-Message-ID: <1a297b360702130521l4ae0de2byf2c277a505adf273@mail.gmail.com>
-Date: Tue, 13 Feb 2007 17:21:37 +0400
-From: "Manu Abraham" <abraham.manu@gmail.com>
-To: "Trent Piepho" <xyzzy@speakeasy.org>
-Subject: Re: [v4l-dvb-maintainer] Re: dvb shared datastructure bug?
-Cc: "Jakub Jelinek" <jakub@redhat.com>, v4l-dvb-maintainer@linuxtv.org,
-       mchehab@infradead.org, linux-kernel@vger.kernel.org,
-       "Arjan van de Ven" <arjan@infradead.org>
-In-Reply-To: <Pine.LNX.4.58.0702130506410.29610@shell2.speakeasy.net>
+        b=BNQSwkH8ege3EFlWw6AuTnmN60SVr4yqf5oQtNGiGzX5BOpGWp1ua12i2h7kykZJGqUMkMhAsDSWg0DDJYdPkUcNPhROuaRsz9kLB4LOoQj4ghpCm8o7Ni0PLhFArUjo7S+jwIPy4yXnQTptz26wgOdmEU7d0xrtXuXoc+TqdG0=
+Message-ID: <653402b90702130529k51b779d7w8b9a9f34a105197c@mail.gmail.com>
+Date: Tue, 13 Feb 2007 14:29:17 +0100
+From: "Miguel Ojeda" <maxextreme@gmail.com>
+To: "Daniel Walker" <dwalker@mvista.com>
+Subject: Re: [PATCH mm] cfag12864b: fix crash when built-in and no parport present
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <1171358197.32073.182.camel@imap.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1171352878.12771.30.camel@laptopd505.fenrus.org>
-	 <200702131204.47314.mws@linuxtv.org>
-	 <1a297b360702130314i3b67a828v804ddb85dc975101@mail.gmail.com>
-	 <20070213113552.GL22959@devserv.devel.redhat.com>
-	 <Pine.LNX.4.58.0702130506410.29610@shell2.speakeasy.net>
+References: <20070210205123.699abb9c.maxextreme@gmail.com>
+	 <20070212213557.4b28e567.akpm@linux-foundation.org>
+	 <1171358197.32073.182.camel@imap.mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/13/07, Trent Piepho <xyzzy@speakeasy.org> wrote:
-> On Tue, 13 Feb 2007, Jakub Jelinek wrote:
-> > Wouldn't it be better to kmalloc both struct dvb_device and
-> > struct file_operations together instead of doing 2 separate allocations?
-> > struct dvd_device_plus_fops
-> > {
-> >   struct dvb_device dev;
-> >   struct file_operations fops;
-> > } *dev_fops = kmalloc (sizeof (struct dvd_device_plus_fops), GFP_KERNEL);
-> > *pdvbdev = dvbdev = (struct dvb_device *)dev_fops;
-> > if (dev_fops == NULL)
-> >   error handling;
-> > memset (&dev_fops->fops, 0, sizeof (dev_fops->fops));
-> > ...
-> > dvbdev->fops = &dev_fops->fops;
+On 2/13/07, Daniel Walker <dwalker@mvista.com> wrote:
+> On Mon, 2007-02-12 at 21:35 -0800, Andrew Morton wrote:
 >
-> Maybe change struct dvb_device:
+> >
+> > This looks hacky.
+> >
 >
->  struct dvb_device {
->          struct list_head list_head;
-> -        struct file_operations *fops;
-> +        struct file_operations fops;
->          struct dvb_adapter *adapter;
+> One other thing that could be added is a change in the initcalls .
+> ks0108 should be subsys_initcall() and the LCD devices
+> device_initcall(). That would make sure one runs before the other. I
 >
 
-We can of course do that, but if we do that now, i will have to rework
-on the changes that which i have, but considering the changes that i
-have i wouldn't want to do such a change right now as marcel
-explained. But we can surely go in for this, as soon as the rest of
-the API changes goes in, ie, multiproto + adaptor changes
+Yes, it could be better, although it is not necessary for now (link
+order is telling who should get called first).
 
-manu
+>
+> don't think that alone would fix the crash tho. I didn't suggest it
+> before cause I think the order of the sources in the build system might
+> do this implicitly even if both are in device_initcall ..
+>
+
+Yes, link order matters; however, the problem is related to
+cfag12864b_init() being called if ks0108 failed. Indeed, if cfag12864b
+is called before ks0108 is a mistake too, but it isn't happening here.
+
+I also think the solution looks hacky (I said that I was waiting for a
+better solution), and also I think it should be checked by the kernel
+at boot like modprobe does; but I don't know any other solution. Any
+ideas?
+
+-- 
+Miguel Ojeda
+http://maxextreme.googlepages.com/index.htm
