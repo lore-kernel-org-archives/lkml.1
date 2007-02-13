@@ -1,77 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751254AbXBMLRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751284AbXBMLUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751254AbXBMLRh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 06:17:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbXBMLRh
+	id S1751284AbXBMLUU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 06:20:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbXBMLUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 06:17:37 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:34971 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751254AbXBMLRg convert rfc822-to-8bit (ORCPT
+	Tue, 13 Feb 2007 06:20:20 -0500
+Received: from mx1.suse.de ([195.135.220.2]:33482 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751284AbXBMLUT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 06:17:36 -0500
-Date: Tue, 13 Feb 2007 12:15:57 +0100
-From: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
-To: Laurent Pinchart <laurent.pinchart@technotrade.biz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: git issues while fetching from
- http://www.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/
-Message-ID: <20070213121557.6a7442a8@frecb000686.frec.bull.fr>
-In-Reply-To: <200702131030.00046.laurent.pinchart@technotrade.biz>
-References: <200702131030.00046.laurent.pinchart@technotrade.biz>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 13/02/2007 12:18:50,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 13/02/2007 12:18:51,
-	Serialize complete at 13/02/2007 12:18:51
+	Tue, 13 Feb 2007 06:20:19 -0500
+From: Jean Delvare <jdelvare@suse.de>
+Organization: SuSE Linux
+To: Leopold Palomo-Avellaneda <lepalom@wol.es>
+Subject: Re: Sata_via problems in a Vintage2-AE1
+Date: Tue, 13 Feb 2007 12:20:21 +0100
+User-Agent: KMail/1.9.1
+Cc: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jeff Garzik <jgarzik@pobox.com>
+References: <200702090010.06897.lepalom@wol.es> <200702121011.49818.jdelvare@suse.de> <200702121723.17999.lepalom@wol.es>
+In-Reply-To: <200702121723.17999.lepalom@wol.es>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-13"
 Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+Message-Id: <200702131220.21690.jdelvare@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Leopold,
 
-  Hi Laurent,
+Le Lundi 12 Février 2007 17:23, Leopold Palomo-Avellaneda a écrit :
+> A Dilluns 12 Febrer 2007 10:11, Jean Delvare va escriure:
+> > Did you report the problem to Asus? They should fix it. Maybe this new
+> > BIOS actually fixes some other problems you have.
+>
+> no. It's on the todo list. However I'm a bit afraid because I'm not using
+> the "official" system so probably they will say that "we do not support
+> ..."
 
+That's indeed probable, but if enough people report the same problems, they 
+might still end up looking into it.
 
-On Tue, 13 Feb 2007 10:29:59 +0100 Laurent Pinchart <laurent.pinchart@technotrade.biz> wrote:
+> Well in http://via8251.la-evento.com/index.html
+>
+> <off topic>
+> please tell me that I'm not violating any rule about the linux-kernel list
+> putting this link :-S
+> </off topic>
+>
+> claims that the VT8251 are supported in 2.6.20. As always you nned to see
+> the official place .... :-(
 
-> Hi everybody,
-> 
-> I'm trying to fetch from the Linux kernel repository at 
-> http://www.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/. After 
-> downloading the objects, git failed while trying to fetch tags. Retrying the 
-> fetch operation gives the following output:
-> 
-> $ git-fetch origin
-> Fetching refs/heads/master from 
-> http://www.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/ using 
-> http
-> Auto-following refs/tags/v2.6.20
-> Auto-following refs/tags/v2.6.20
-> Auto-following refs/tags/v2.6.20-rc1
-> Auto-following refs/tags/v2.6.20-rc1
-> Auto-following refs/tags/v2.6.20-rc2
-> Auto-following refs/tags/v2.6.20-rc2
-> Auto-following refs/tags/v2.6.20-rc3
-> Auto-following refs/tags/v2.6.20-rc3
-> Auto-following refs/tags/v2.6.20-rc4
-> Auto-following refs/tags/v2.6.20-rc4
-> Auto-following refs/tags/v2.6.20-rc5
-> Auto-following refs/tags/v2.6.20-rc5
-> Auto-following refs/tags/v2.6.20-rc6
-> Auto-following refs/tags/v2.6.20-rc6
-> Auto-following refs/tags/v2.6.20-rc7
-> Auto-following refs/tags/v2.6.20-rc7
-> Failed to fetch refs/tags/v2.6.20 from 
-> http://www.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/
-> 
-> While trying to solve the issue, I noticed that the refs/tags directory in the 
-> remote repository is empty. Is that a normal situation ? Should git be able 
-> to regenerate the tags locally from the objects ? I'm using git 1.4.4.4.
+That's quite a bold claim considering that the VT8251 includes many different 
+functions (PATA, SATA, USB, SMBus...) and can be configured differently on 
+different motherboards. Maybe most functions are supposedly supported as of 
+2.6.20, but it doesn't mean everything works for everyone, as you are 
+experiencing yourself.
 
-  I had the same issue. Upgrade git. the refs are now packed
-in a single file packed-refs.
+> > *If* the VT8251 needs the VIA IRQ quirk, then the attached patch may
+> > help. Leopold, can you give it a try?
+>
+> Well, making your patch to the vanilla 2.6.20 the result is the same. The
+> box doesn't boot. Always the same problem ....
 
-  Sébastien.
+If it's not a VIA IRQ problem, then there's nothing more I can do, sorry. 
+Someone else will have to look into the problem.
+
+Out of curiosity, with my patch applied, did you see any "VIA VLink IRQ fixup" 
+messages on the console?
+
+-- 
+Jean Delvare
+Suse L3
