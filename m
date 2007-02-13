@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751211AbXBMJDc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751210AbXBMJDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751211AbXBMJDc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 04:03:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbXBMJDc
+	id S1751210AbXBMJDW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 04:03:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbXBMJDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 04:03:32 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:10263 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751211AbXBMJDb (ORCPT
+	Tue, 13 Feb 2007 04:03:22 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:56074 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751210AbXBMJDU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 04:03:31 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=uJQH/L3GCx3N3wq9f2SX/sm9BdvXLIGcso6FjN5gz4wb9Ad6zMWg+lQYyXg4ib3Xd
-	oHDeBTjxNpwDCacQl3byQ==
-Message-ID: <6599ad830702130103l54f48df0y7c20606d31122a50@mail.gmail.com>
-Date: Tue, 13 Feb 2007 01:03:12 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Pavel Emelianov" <xemul@sw.ru>
-Subject: Re: [PATCH 6/7] containers (V7): BeanCounters over generic process containers
-Cc: akpm@osdl.org, pj@sgi.com, sekharan@us.ibm.com, dev@sw.ru,
-       serue@us.ibm.com, vatsa@in.ibm.com, ebiederm@xmission.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       rohitseth@google.com, mbligh@google.com, winget@google.com,
-       containers@lists.osdl.org, devel@openvz.org
-In-Reply-To: <45D17C48.9030105@sw.ru>
+	Tue, 13 Feb 2007 04:03:20 -0500
+Message-ID: <45D17F8D.3020207@bull.net>
+Date: Tue, 13 Feb 2007 10:06:21 +0100
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 6/6] automatic tuning applied to some kernel components
+References: <20070116061516.899460000@bull.net>	<20070116063030.761795000@bull.net>	<20070122115638.835b26a1.akpm@osdl.org> <45B61E50.6020607@bull.net>	<m1mz3poeda.fsf@ebiederm.dsl.xmission.com> <45CC68BA.4010403@bull.net> <m11wkz5gd2.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m11wkz5gd2.fsf@ebiederm.dsl.xmission.com>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 13/02/2007 10:04:30,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 13/02/2007 10:04:31,
+	Serialize complete at 13/02/2007 10:04:31
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070212081521.808338000@menage.corp.google.com>
-	 <20070212085104.998727000@menage.corp.google.com>
-	 <45D17C48.9030105@sw.ru>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/13/07, Pavel Emelianov <xemul@sw.ru> wrote:
-> menage@google.com wrote:
-> > This patch implements the BeanCounter resource control abstraction
-> > over generic process containers. It contains the beancounter core
-> > code, plus the numfiles resource counter. It doesn't currently contain
-> > any of the memory tracking code or the code for switching beancounter
-> > context in interrupts.
->
-> Numfiles is not the most interesting place in beancounters.
-> Kmemsize accounting is much more important actually.
+Eric W. Biederman wrote:
+> Nadia Derbey <Nadia.Derbey@bull.net> writes:
+> 
+> 
+>>I do not fully agree with you:
+>>It is true that some ipc tunables play the role of DoS limits.
+>>But IMHO the *mni ones (semmni, msgmni, shmmni) are used by the ipc subsystem to
+>>adapt its data structures sizes to what is being asked for through the tunable
+>>value. I think this is how they manage to take into account a new tunable value
+>>without a need for rebooting the system: reallocate some more memory on demand.
+> 
+> 
+> Yes, they do.  However if you are constantly having to play with shmmni or
+> the others that is the problem and the array should be replaced with
+> a hash table or some form of radix tree, so it changes it's size to fit
+> the need.  Once that is done, shmmni does become a simple DOS limit.
+> 
+> So what I'm asking is please fix the problem at the source don't plaster over
+> it.
+> 
+> 
+>>Now, what the akt framework does, is that it takes advantage of this concept of
+>>"on demand memory allocation" to replace a user (or a daemon) that would
+>>periodically check its ipcs consumptions and manually adjust the ipcs tunables:
+>>Doing this from the user space would imply a latency that makes it difficult to
+>>react fast enough to resources running out.
+> 
+> 
+> There may be some sense in this but you haven't found something that inherently
+> needs tuning.  You have found something that has a poor data structure,
+> and can more easily be fixed by simply fixing the data structure.
 
-Right, but the memory accouting was a much bigger and more intrusive
-patch than I wanted to include as an example.
+So, should I understand from this that automatic tuning and the AKT 
+framework itself would make sense, given that I find the rigth tunables 
+it should be applied to?
+Actually, dont' know if you had the opportunity to read all the patches, 
+but there are 2 other tunables AKT is proposed to be applied to:
+. max_threads, the tunable limit on nr_threads
+. max_files, the tunable limit on nr_files
 
->
-> I have already pointed out the fact that this place
-> will hurt performance too much. If we have some context
-> on task this context must
->   1. be get-ed without any locking
+Regards,
+Nadia
 
-Would you also be happy with the restriction that a task couldn't be
-moved in/out of a beancounter container by any task other than itself?
-If so, the beancounter can_attach() method could simply return false
-if current != tsk, and then you'd not need to worry about locking in
-this situation.
-
->   2. be settable to some temporary one without
->      locking as well
-
-I thought that we solved that problem by having a tmp_bc field in the
-task_struct that would take precedence over the main bc if it was
-non-null?
-
-Paul
