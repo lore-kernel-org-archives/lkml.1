@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751344AbXBMWWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751351AbXBMWWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751344AbXBMWWi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 17:22:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbXBMWWi
+	id S1751351AbXBMWWu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 17:22:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbXBMWWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 17:22:38 -0500
-Received: from mail02.syd.optusnet.com.au ([211.29.132.183]:44393 "EHLO
-	mail02.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751344AbXBMWWh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 17:22:37 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: malc <av1474@comtv.ru>
-Subject: Re: CPU load
-Date: Wed, 14 Feb 2007 09:08:44 +1100
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
-References: <loom.20070212T063225-663@post.gmane.org> <20070212143219.GB5226@ucw.cz> <Pine.LNX.4.64.0702140059390.727@home.oyster.ru>
-In-Reply-To: <Pine.LNX.4.64.0702140059390.727@home.oyster.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Feb 2007 17:22:50 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57048 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751351AbXBMWWt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 17:22:49 -0500
+Date: Tue, 13 Feb 2007 23:19:55 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Benjamin LaHaise <bcrl@kvack.org>, Alan <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system call support
+Message-ID: <20070213221955.GG22104@elte.hu>
+References: <20060529212109.GA2058@elte.hu> <20070213142010.GA638@elte.hu> <20070213150019.4b4d4827@localhost.localdomain> <20070213145848.GS18311@kvack.org> <20070213165642.GB16394@elte.hu> <20070213185636.GA23987@2ka.mipt.ru> <20070213191224.GA4894@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702140908.44934.kernel@kolivas.org>
+In-Reply-To: <20070213191224.GA4894@2ka.mipt.ru>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.8
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.1.7
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.5000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 February 2007 09:01, malc wrote:
-> On Mon, 12 Feb 2007, Pavel Machek wrote:
-> > Hi!
-> >
-> >> The kernel looks at what is using cpu _only_ during the
-> >> timer
-> >> interrupt. Which means if your HZ is 1000 it looks at
-> >> what is running
-> >> at precisely the moment those 1000 timer ticks occur. It
-> >> is
-> >> theoretically possible using this measurement system to
-> >> use >99% cpu
-> >> and record 0 usage if you time your cpu usage properly.
-> >> It gets even
-> >> more inaccurate at lower HZ values for the same reason.
-> >
-> > I have (had?) code that 'exploits' this. I believe I could eat 90% of cpu
-> > without being noticed.
->
-> Slightly changed version of hog(around 3 lines in total changed) does that
-> easily on 2.6.18.3 on PPC.
->
-> http://www.boblycat.org/~malc/apc/load-hog-ppc.png
 
-I guess it's worth mentioning this is _only_ about displaying the cpu usage to 
-userspace, as the cpu scheduler knows the accounting of each task in 
-different ways. This behaviour can not be used to exploit the cpu scheduler 
-into a starvation situation. Using the discrete per process accounting to 
-accumulate the displayed values to userspace would fix this problem, but 
-would be expensive.
+* Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
 
--- 
--ck
+> > I have not received first mail with announcement yet, so I will place 
+> > my thoughts here if you do not mind.
+> 
+> An issue with sys_async_wait(): is is possible that events_left will 
+> be setup too late so that all events are already ready and thus 
+> sys_async_wait() can wait forever (or until next $sys_async_wait are 
+> ready)?
+
+yeah. I have fixed this up and have uploaded a newer queue to:
+
+ http://redhat.com/~mingo/syslet-patches/
+
+	Ingo
