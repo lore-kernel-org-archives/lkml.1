@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750749AbXBMPam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750744AbXBMPb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750749AbXBMPam (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 10:30:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750751AbXBMPam
+	id S1750744AbXBMPb1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 10:31:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750750AbXBMPb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 10:30:42 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4436 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750749AbXBMPal (ORCPT
+	Tue, 13 Feb 2007 10:31:27 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:53402 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750744AbXBMPb1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 10:30:41 -0500
-Date: Tue, 13 Feb 2007 15:30:29 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Raphael Assenat <raph@8d.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add PCI device ID for IT8152 RISC-to-PCI chip
-Message-ID: <20070213153029.GB15227@flint.arm.linux.org.uk>
-Mail-Followup-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-	Raphael Assenat <raph@8d.com>, linux-kernel@vger.kernel.org
-References: <45CCD60D.5050001@8d.com> <20070209212856.GK7584@csclub.uwaterloo.ca> <45D1CF22.6010706@8d.com> <20070213151633.GL7584@csclub.uwaterloo.ca>
+	Tue, 13 Feb 2007 10:31:27 -0500
+Subject: current git crashes on bootup with pci_iounmap()
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 13 Feb 2007 16:31:54 +0100
+Message-Id: <1171380714.3829.6.camel@pim.off.vrfy.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070213151633.GL7584@csclub.uwaterloo.ca>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: kundenserver.de abuse@kundenserver.de login:4ddcc9dd12ba6cf3155e4d81b383efda
+X-Provags-ID2: V01U2FsdGVkX18VFkDKMepjOVkHb/AQBQvsg36pgJuGlhVf2C6k7xv2LO7grpW6WJUzFOJiNktrim10EID1OcoWiJkUwDEpFckuZmoj9WOIz1AaPERqQbwK/w==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 13, 2007 at 10:16:33AM -0500, Lennart Sorensen wrote:
-> There doesn't seem to be very many
-> arm systems with PCI, so it's hard to tell.
+kernel BUG at lib/iomap.c:254!
+invalid opcode: 0000 [#1]
+...
 
-NetWinder, EBSA285 (which the NetWinder is a derivative of), the N2100,
-etc are PCI based and are all well proven in the field.
+The screen picture is here:
+  http://vrfy.org/pci_iounmap.jpg
 
-However, I have come across issues with what I suspect are buggy
-bridges - some southbridges require out of band cache control
-signalling and don't behave properly if you don't provide this (despite
-having modes to disable such signalling) and some PCMCIA bridges which
-don't like delayed read responses from host bridges.
+It's a Thinkpad T43p.
 
-That said, I've an EBSA285 with Promise UDMA, 3com NIC, S3 VGA and a
-plug-in southbridge card which has been running since about 1999 or so
-and the only real data corruption problem I've heard of was when a track
-on my Promise UDMA card was eaten by the sticky label resulting in silent
-corruption of writes to the disks.
+2.6.20 was working fine.
 
-(I did consider replacing the Promise UDMA card, but the IT821x card
-I bought to replace it didn't have all the pins on the chip soldered
-down - to the extent that even a PC couldn't recognise the PCI card.
-So I'm running on the assumption that the self-repaired Promise UDMA
-card is all round going to be more reliable than the as yet unproven
-IT821x card.)
+Commenting out:
+  IO_COND(addr, /* nothing */, iounmap(addr));
+in:
+  lib/iomap.c:254
+makes at least booting up possible.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Thanks,
+Kay
+
