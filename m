@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751237AbXBMKLF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751240AbXBMKLL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751237AbXBMKLF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 05:11:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbXBMKLF
+	id S1751240AbXBMKLL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 05:11:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbXBMKLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 05:11:05 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:37884 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751237AbXBMKLE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 05:11:04 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Nadia Derbey <Nadia.Derbey@bull.net>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 6/6] automatic tuning applied to some kernel components
-References: <20070116061516.899460000@bull.net>
-	<20070116063030.761795000@bull.net>
-	<20070122115638.835b26a1.akpm@osdl.org> <45B61E50.6020607@bull.net>
-	<m1mz3poeda.fsf@ebiederm.dsl.xmission.com> <45CC68BA.4010403@bull.net>
-	<m11wkz5gd2.fsf@ebiederm.dsl.xmission.com> <45D17F8D.3020207@bull.net>
-Date: Tue, 13 Feb 2007 03:10:36 -0700
-In-Reply-To: <45D17F8D.3020207@bull.net> (Nadia Derbey's message of "Tue, 13
-	Feb 2007 10:06:21 +0100")
-Message-ID: <m14ppqtlk3.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 13 Feb 2007 05:11:10 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:60222 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751240AbXBMKLH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 05:11:07 -0500
+Date: Tue, 13 Feb 2007 21:11:21 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org
+Subject: Re: [patch] (2nd try)  add epoll compat code to kernel/compat.c ...
+Message-Id: <20070213211121.639b9a0f.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.64.0702122321570.30273@alien.or.mcafeemobile.com>
+References: <Pine.LNX.4.64.0702111615340.24568@alien.or.mcafeemobile.com>
+	<20070213153525.c1440cff.sfr@canb.auug.org.au>
+	<Pine.LNX.4.64.0702122321570.30273@alien.or.mcafeemobile.com>
+X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__13_Feb_2007_21_11_21_+1100_GPVIPQ/CExjrjTro"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nadia Derbey <Nadia.Derbey@bull.net> writes:
+--Signature=_Tue__13_Feb_2007_21_11_21_+1100_GPVIPQ/CExjrjTro
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-> So, should I understand from this that automatic tuning and the AKT framework
-> itself would make sense, given that I find the rigth tunables it should be
-> applied to?
+On Mon, 12 Feb 2007 23:26:42 -0800 (PST) Davide Libenzi <davidel@xmailserver.org> wrote:
+>
+> ARM-OABI also defines them, dunno why. Rmk?
 
-Sort of.  The concept of things tuning themselves automatically makes
-a lot of sense.
+I suspect that OABI stands for old ABI and the alignment of 64 bit
+quantities changed at some point.  I am pretty sure that arm is only
+32bit, but I assume that they need backward compatibility for the old
+ABI's alignment.
 
-I'm not at all certain about tunables being exported just to be hidden
-again.  Ideally you don't even want the fact that these things are
-varying visible to the user.
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-So I think that if you can find a good example that cannot be solved
-better another way, you can build a case for your framework.
-Currently I am doubt you can find such a case.
+--Signature=_Tue__13_Feb_2007_21_11_21_+1100_GPVIPQ/CExjrjTro
+Content-Type: application/pgp-signature
 
-> Actually, dont' know if you had the opportunity to read all the patches, but
-> there are 2 other tunables AKT is proposed to be applied to:
-> . max_threads, the tunable limit on nr_threads
-> . max_files, the tunable limit on nr_files
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-At a quick glance max_threads and max_files appear even more to be
-DOS limits and not tunables and even less applicable to needing any
-tuning at all.  My gut feel is at worst these values may need a little
-better boot time defaults but otherwise they the should be good.
+iD8DBQFF0Y7YFdBgD/zoJvwRArT5AJ0Uoztu8mpVzTTUQ+3eavycE35VCgCeIe65
+ghFZj1jaI1f0+K/k0OaOFzE=
+=CFjX
+-----END PGP SIGNATURE-----
 
-Eric
+--Signature=_Tue__13_Feb_2007_21_11_21_+1100_GPVIPQ/CExjrjTro--
