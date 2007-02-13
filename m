@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030599AbXBMAiO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030595AbXBMAmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030599AbXBMAiO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 19:38:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030582AbXBMAiN
+	id S1030595AbXBMAmh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 19:42:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030601AbXBMAmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 19:38:13 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:43373 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030607AbXBMAiM (ORCPT
+	Mon, 12 Feb 2007 19:42:37 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:51589 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030595AbXBMAmg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 19:38:12 -0500
-Date: Mon, 12 Feb 2007 16:33:37 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Joseph Cosby" <jo-cosby@hotmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: SATA Drive No Longer Recognized In New 2.6.20 Kernel
-Message-Id: <20070212163337.3af55213.randy.dunlap@oracle.com>
-In-Reply-To: <BAY120-F15C225BC4817C7D84BC43E83900@phx.gbl>
-References: <jh6bEu1Gx0021e119@bay0-omc3-s26.bay0.hotmail.com>
-	<BAY120-F15C225BC4817C7D84BC43E83900@phx.gbl>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 12 Feb 2007 19:42:36 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=SDdg3ASTHrlGxS+xac3shmbyFMH8asWO4t2wbis9+EF0++Htrfw1GJ2CptFzXLfvK
+	8ZW9vDuohvrqSLfXfWfCg==
+Message-ID: <6599ad830702121642w80c53ddud3c77c13af99d2b7@mail.gmail.com>
+Date: Mon, 12 Feb 2007 16:42:15 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Sam Vilain" <sam@vilain.net>
+Subject: Re: [ckrm-tech] [PATCH 0/7] containers (V7): Generic Process Containers
+Cc: vatsa@in.ibm.com, sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, xemul@sw.ru, dev@sw.ru,
+       rohitseth@google.com, pj@sgi.com, ebiederm@xmission.com,
+       winget@google.com, containers@lists.osdl.org, serue@us.ibm.com
+In-Reply-To: <45D1068D.4060906@vilain.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <20070212081521.808338000@menage.corp.google.com>
+	 <45D0EC68.9090009@vilain.net>
+	 <6599ad830702121515p10bc1b58kf1d29367b9b18016@mail.gmail.com>
+	 <45D1068D.4060906@vilain.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Feb 2007 17:30:38 -0700 Joseph Cosby wrote:
+On 2/12/07, Sam Vilain <sam@vilain.net> wrote:
+> Ask yourself this - what do you need the container structure for so
+> badly, that virtualising the individual resources does not provide for?
 
-> Hi,
-> Until recently I was using the 2.6.18 kernel. I have a SATA hard drive
-> that was detected by the kernel, using the PIIX driver. But after
-> updating to 2.6.20, the hard drive is no longer detected by the kernel.
-> I used make oldconfig to create the 2.6.20 config file, and I noticed a
-> new option CONFIG_ATA. I did not use this, because as I understand it is
-> not necessary and is experimental. Do I need to use this or is there
-> something else in the new kernel that needs to be enabled for this
-> driver?
+Primarily, that otherwise every module that wants to affect/monitor
+behaviour of a group of associated processes has to implement its own
+process grouping abstraction.
 
-Yes, you need CONFIG_ATA for SATA after 2.6.18.
+As an example, the CPU accounting patch that in included in my patch
+set as an illustration of a simple resource monitoring module is just
+250 lines, almost entirely in one file; if it also had to handle
+associating tasks together into groups and presenting a filesystem
+interface to the user it would be far larger and would have a much
+bigger footprint on the kernel.
 
-(prod) == production level code, not experimental (that only
-applies to the PATA drivers)
+>From the point of view of the virtual server containers, the advantage
+is that you're integrated with a standard filesystem interface for
+determining group membership. It does become simpler to combine
+virtual servers and resource controllers, although I grant you that
+you could juggle that from userspace without the additional kernel
+support.
 
-> My 2.6.20 config file follows.
-> The hard drive has vendor ID 8086 and device ID 27c0. It is listed in the
-> modules.pcilist file of 2.6.18 but not 2.6.20.
-> 
-> If anybody can share any advice please CC me in response.
-> 
-> #
-> # Serial ATA (prod) and Parallel ATA (experimental) drivers
-> #
-> # CONFIG_ATA is not set
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Paul
