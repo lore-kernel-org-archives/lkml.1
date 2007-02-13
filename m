@@ -1,54 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161021AbXBMGkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751126AbXBMG62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161021AbXBMGkd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 01:40:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161026AbXBMGkd
+	id S1751126AbXBMG62 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 01:58:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbXBMG62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 01:40:33 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55863 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161021AbXBMGkc (ORCPT
+	Tue, 13 Feb 2007 01:58:28 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60614 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751126AbXBMG61 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 01:40:32 -0500
-Subject: Re: [patch 4/9] Remove the TSC synchronization on SMP machines
-From: Arjan van de Ven <arjan@infradead.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andi Kleen <ak@suse.de>, Vojtech Pavlik <vojtech@suse.cz>,
-       Jiri Bohac <jbohac@suse.cz>, linux-kernel@vger.kernel.org,
-       ssouhlal@freebsd.org, tglx@linutronix.de, johnstul@us.ibm.com,
-       zippel@linux-m68k.org, andrea@suse.de
-In-Reply-To: <Pine.LNX.4.64.0702121632420.19380@schroedinger.engr.sgi.com>
-References: <20070201095952.589234000@jet.suse.cz>
-	 <20070201131715.GM21755@dwarf.suse.cz> <20070201151654.GA20385@suse.cz>
-	 <200702020814.27378.ak@suse.de>
-	 <Pine.LNX.4.64.0702121632420.19380@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Tue, 13 Feb 2007 07:40:08 +0100
-Message-Id: <1171348808.12771.19.camel@laptopd505.fenrus.org>
+	Tue, 13 Feb 2007 01:58:27 -0500
+Date: Tue, 13 Feb 2007 15:57:36 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@sgi.com>, bob.picco@hp.com
+Subject: [RFC] [PATCH] more support for memory-less-node.
+Message-Id: <20070213155736.1131d46a.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-02-12 at 16:34 -0800, Christoph Lameter wrote:
-> On Fri, 2 Feb 2007, Andi Kleen wrote:
-> 
-> > I've threatened to just disable RDTSC for ring 3 before, but it'll likely
-> > never happen because too many programs use it.
-> 
-> Those programs are aware that they are fiddling around with low level 
-> material but with this patchset we are going to have a non 
-> monotonic time subsystem?
+In my last posintg, mempolicy-fix-for-memory-less-node patch, there was a 
+discussion 'what do you consider definition of "node" as...?
+I found there is no consensus. But I want to go ahead.
+Before posing patch again, I'd like to discuss more.
 
-no quite the opposite. gettimeofday() currently is NOT monotonic
-unfortunately. With this patchseries it actually has a better chance of
-becoming that...
+-Kame
 
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+In my understanding, a "node" is a block of cpu, memory, devices.
+and there could be cpu-only-node, memory-only-node, device-only-node...
+
+There will be discussion. IMHO, to represent hardware configuration
+as it is, this definition is very natural and flexible.
+(And because my work is memory-hotplug, this definition fits me.)
+
+"Don't support such crazy configuraton" is one of opinions.
+I hear x86_64 doesn't support it and defines node as a block of memory,
+It remaps cpus on memory-less-nodes to other nodes.
+I know ia64 allows memory-less-node. (I don't know about ppc.)
+It works well on my box (and HP's box).
+
+If there is memory-less-node, codes which checks all nodes which have memory
+should check NODE_DATA(nid)->present_pages.
+
+But following is a bit heavy operation.
+xxxxx
+	for_each_online_node(nid)
+		if (!node_present_pages(nid))
+			continue;
+xxxxx
+
+This patch adds a new node mask "node_memory_online_map" for nodes
+which have memory.
+
+for_each_node_mask(nid, node_memory_online_map) walks all memory-ready-nodes.
+This mask is updated at node-hotplug ops.
+
+Signed-Off-By: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+Index: linux-2.6.20/include/linux/nodemask.h
+===================================================================
+--- linux-2.6.20.orig/include/linux/nodemask.h	2007-02-07 17:25:54.000000000 +0900
++++ linux-2.6.20/include/linux/nodemask.h	2007-02-13 15:31:33.000000000 +0900
+@@ -344,6 +344,8 @@
+ 
+ extern nodemask_t node_online_map;
+ extern nodemask_t node_possible_map;
++/* online nodes which have memory */
++extern nodemask_t node_memory_online_map;
+ 
+ #if MAX_NUMNODES > 1
+ #define num_online_nodes()	nodes_weight(node_online_map)
+Index: linux-2.6.20/mm/page_alloc.c
+===================================================================
+--- linux-2.6.20.orig/mm/page_alloc.c	2007-02-07 17:25:54.000000000 +0900
++++ linux-2.6.20/mm/page_alloc.c	2007-02-13 15:54:04.000000000 +0900
+@@ -54,6 +54,9 @@
+ EXPORT_SYMBOL(node_online_map);
+ nodemask_t node_possible_map __read_mostly = NODE_MASK_ALL;
+ EXPORT_SYMBOL(node_possible_map);
++nodemask_t node_memory_online_map __read_mostly = { { [0] = 1UL } };
++EXPORT_SYMBOL(node_memory_online_map);
++
+ unsigned long totalram_pages __read_mostly;
+ unsigned long totalreserve_pages __read_mostly;
+ long nr_swap_pages;
+@@ -1805,6 +1808,16 @@
+ 	}
+ }
+ 
++static void __meminit fixup_memory_online_nodes(void)
++{
++	int nid;
++	nodes_clear(node_memory_online_map);
++	for_each_online_node(nid) {
++		if (node_present_pages(nid))
++			node_set(nid, node_memory_online_map);
++	}
++}
++
+ #else	/* CONFIG_NUMA */
+ 
+ static void __meminit build_zonelists(pg_data_t *pgdat)
+@@ -1851,6 +1864,10 @@
+ 		pgdat->node_zonelists[i].zlcache_ptr = NULL;
+ }
+ 
++static void fixup_memory_online_nodes(void)
++{
++	return;
++}
+ #endif	/* CONFIG_NUMA */
+ 
+ /* return values int ....just for stop_machine_run() */
+@@ -1862,6 +1879,7 @@
+ 		build_zonelists(NODE_DATA(nid));
+ 		build_zonelist_cache(NODE_DATA(nid));
+ 	}
++	fixup_memory_online_nodes();
+ 	return 0;
+ }
+ 
+
 
