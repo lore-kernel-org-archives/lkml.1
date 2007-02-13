@@ -1,43 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750755AbXBMPlF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750754AbXBMPov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750755AbXBMPlF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 10:41:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750752AbXBMPlF
+	id S1750754AbXBMPov (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 10:44:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbXBMPou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 10:41:05 -0500
-Received: from ns2.tasking.nl ([195.193.207.10]:22776 "EHLO ns2.tasking.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750755AbXBMPlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 10:41:03 -0500
-X-Greylist: delayed 1599 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Feb 2007 10:41:03 EST
-To: linux-kernel@vger.kernel.org
+	Tue, 13 Feb 2007 10:44:50 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:36498 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750754AbXBMPou (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 10:44:50 -0500
+Date: Tue, 13 Feb 2007 16:45:51 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de, akpm@linux-foundation.org
+Subject: Re: [PATCH debugfs: implement symbolic links
+Message-ID: <20070213164551.500cd390@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <45D19D72.4050009@de.ibm.com>
+References: <45D19D72.4050009@de.ibm.com>
+X-Mailer: Claws Mail 2.7.2 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Newsreader: knews 1.0b.1
-Reply-To: dick.streefland@altium.nl (Dick Streefland)
-Organization: Altium BV
-X-Face: "`*@3nW;mP[=Z(!`?W;}cn~3M5O_/vMjX&Pe!o7y?xi@;wnA&Tvx&kjv'N\P&&5Xqf{2CaT 9HXfUFg}Y/TT^?G1j26Qr[TZY%v-1A<3?zpTYD5E759Q?lEoR*U1oj[.9\yg_o.~O.$wj:t(B+Q_?D XX57?U,#b,iM$[zX'I(!'VCQM)N)x~knSj>M*@l}y9(tK\rYwdv%~+&*jV"epphm>|q~?ys:g:K#R" 2PuAzy-N9cKM<Ml/%yPQxpq"Ttm{GzBn-*:;619QM2HLuRX4]~361+,[uFp6f"JF5R`y
-References: <Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org> <Pine.LNX.4.61.0702082202180.24888@yvahk01.tjqt.qr> <Pine.LNX.4.64.0702081324090.8424@woody.linux-foundation.org> <Pine.LNX.4.64.0702081432320.27603@chino.kir.corp.google.com> <Pine.LNX.4.64.0702081528070.8424@woody.linux-foundation.org> <Pine.LNX.4.64.0702081554380.29559@chino.kir.corp.google.com> <Pine.LNX.4.64.0702081632200.8424@woody.linux-foundation.org> <Pine.LNX.4.61.0702091330380.31955@yvahk01.tjqt.qr>
-From: dick.streefland@altium.nl (Dick Streefland)
-Subject: Re: somebody dropped a (warning) bomb
-Content-Type: text/plain; charset=us-ascii
-NNTP-Posting-Host: 172.17.1.66
-Message-ID: <27c8.45d1d5cf.69f9a@altium.nl>
-Date: Tue, 13 Feb 2007 15:14:23 -0000
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
-| Further, giving again answer to the question whether they generate signed or
-| unsigned comparisons: Have you ever seen a computer which addresses memory with
-| negative numbers? Since the answer is most likely no, signed comparisons would
-| not make sense for me.
+On Tue, 13 Feb 2007 12:13:54 +0100,
+Peter Oberparleiter <peter.oberparleiter@de.ibm.com> wrote:
 
-The Transputer has (had?) a signed address space:
+Not especially related to this patch (which just does the same as the
+other debugfs functions), but:
 
-http://maven.smith.edu/~thiebaut/transputer/chapter2/chap2-3.html
+> + * If debugfs is not enabled in the kernel, the value -%ENODEV will be
+> + * returned.  It is not wise to check for this value, but rather, check for
+> + * %NULL or !%NULL instead as to eliminate the need for #ifdef in the calling
+> + * code.
+
+does not look like good advice for return code handling. Return code
+seems to be:
+
+- ERR_PTR(-ENODEV) if debugfs is disabled
+- NULL if debugfs is enabled and something went wrong
+- !NULL and !IS_ERR if debugfs is enabled and all went fine
+
+That makes it easy to get return code checking wrong (especially
+considering the comment above), and a number of callers do get it wrong.
+
+How about changing the return code behaviour of the debugfs code, either
+
+1. return NULL if debugfs is disabled or something went wrong, !NULL
+   else or
+2. return ERR_PTR(-ENODEV) if debugfs is disabled, ERR_PTR(-ESOMEERROR)
+   if something went wrong or a proper dentry if everything went fine?
+
+At the very least we should change the misleading comment.
 
 -- 
-Dick Streefland                      ////                      Altium BV
-dick.streefland@altium.nl           (@ @)          http://www.altium.com
---------------------------------oOO--(_)--OOo---------------------------
-
+Cornelia Huck
+Linux for zSeries Developer
+Tel.: +49-7031-16-4837, Mail: cornelia.huck@de.ibm.com
