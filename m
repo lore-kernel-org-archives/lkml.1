@@ -1,478 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965475AbXBMCgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030525AbXBMCle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965475AbXBMCgN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 21:36:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965476AbXBMCgN
+	id S1030525AbXBMCle (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 21:41:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030588AbXBMCle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 21:36:13 -0500
-Received: from clem.clem-digital.net ([68.16.168.10]:45739 "EHLO
-	clem.clem-digital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965475AbXBMCgM (ORCPT
+	Mon, 12 Feb 2007 21:41:34 -0500
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:50743 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030525AbXBMCld (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 21:36:12 -0500
-From: Pete Clements <clem@clem.clem-digital.net>
-Message-Id: <200702130236.l1D2a0u7014457@clem.clem-digital.net>
-Subject: Re: 2.6.20-git8 fails compile -- net/built-in.o __ipv6_addr_type
-To: yoshfuji@linux-ipv6.org (YOSHIFUJIHideaki/=?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?=)
-Date: Mon, 12 Feb 2007 21:35:59 -0500 (EST)
-Cc: akpm@linux-foundation.org, clem@clem.clem-digital.net,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       yoshfuji@linux-ipv6.org
-In-Reply-To: <20070213.111345.78160400.yoshfuji@linux-ipv6.org>
-X-Mailer: ELM [version 2.5 PL7]
+	Mon, 12 Feb 2007 21:41:33 -0500
+Message-ID: <45D1255A.90502@lwfinger.net>
+Date: Mon, 12 Feb 2007 20:41:30 -0600
+From: Larry Finger <larry.finger@lwfinger.net>
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Regress for 8139too in 2.6.20
+References: <45CFAED5.2090808@lwfinger.net> <20070212140800.4d9378ad.akpm@linux-foundation.org>
+In-Reply-To: <20070212140800.4d9378ad.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting YOSHIFUJIHideaki/=?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?=
-  > In article <20070212181216.c55ca788.akpm@linux-foundation.org> (at Mon, 12 Feb 2007 18:12:16 -0800), Andrew Morton <akpm@linux-foundation.org> says:
-  > 
-  > > > On Mon, 12 Feb 2007 20:10:13 -0500 (EST) Pete Clements <clem@clem.clem-digital.net> wrote:
-  > > > 2.6.20-git8 fails compile:
-  > > > 
-  > > >   CHK     include/linux/compile.h
-  > > >   UPD     include/linux/compile.h
-  > > >   CC      init/version.o
-  > > >   LD      init/built-in.o
-  > > >   LD      .tmp_vmlinux1
-  > > > net/built-in.o: In function `svc_udp_recvfrom':
-  > > > svcsock.c:(.text+0x61be4): undefined reference to `__ipv6_addr_type'
-  > > > make: *** [.tmp_vmlinux1] Error 1
-  > > > 
-  > > 
-  > > Please send the .config.
-  > 
-  > and, the gcc version...
-  > 
-  > --yoshfuji
-  > -
+Andrew Morton wrote:
+>>
+> 
+> That's a bit surprising - the initcall levels don't affect modules. 
+> Presumably something went wrong in core kernel which later caused yenta
+> and/or 8139too to fail.
+> 
+> Have you tried diffing the before- and after-dmesgs to see if that particular
+> commit has caused any interesting differences?
+> 
+> And are you able to test any other cardbus devices to see whether it's
+> specific to 8139too?
 
-git 7 compiled just fine.
+No devices would work until I manually loaded yenta_socket. Before the change, the PCMCIA bridge was
+discovered earlier, and yenta_socket was automatically loaded. Now I need to add it to the list of
+modules to be loaded at bootup. With that change, everyting is OK.
 
-gcc version 4.1.2 20061115 (prerelease) (Debian 4.1.1-21)
+The diff between yenta as a module and yenta built is follows.
 
-Config:
+Thanks,
+Larry
 
-CONFIG_X86_32=y
-CONFIG_GENERIC_TIME=y
-CONFIG_LOCKDEP_SUPPORT=y
-CONFIG_STACKTRACE_SUPPORT=y
-CONFIG_SEMAPHORE_SLEEPERS=y
-CONFIG_X86=y
-CONFIG_MMU=y
-CONFIG_ZONE_DMA=y
-CONFIG_GENERIC_ISA_DMA=y
-CONFIG_GENERIC_IOMAP=y
-CONFIG_GENERIC_BUG=y
-CONFIG_GENERIC_HWEIGHT=y
-CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-CONFIG_DMI=y
-CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-CONFIG_EXPERIMENTAL=y
-CONFIG_LOCK_KERNEL=y
-CONFIG_INIT_ENV_ARG_LIMIT=32
-CONFIG_LOCALVERSION=""
-CONFIG_SWAP=y
-CONFIG_SYSVIPC=y
-CONFIG_POSIX_MQUEUE=y
-CONFIG_BSD_PROCESS_ACCT=y
-CONFIG_SYSCTL=y
-CONFIG_UID16=y
-CONFIG_SYSCTL_SYSCALL=y
-CONFIG_KALLSYMS=y
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-CONFIG_BUG=y
-CONFIG_ELF_CORE=y
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-CONFIG_EPOLL=y
-CONFIG_SHMEM=y
-CONFIG_SLAB=y
-CONFIG_VM_EVENT_COUNTERS=y
-CONFIG_RT_MUTEXES=y
-CONFIG_BASE_SMALL=0
-CONFIG_MODULES=y
-CONFIG_MODULE_UNLOAD=y
-CONFIG_KMOD=y
-CONFIG_STOP_MACHINE=y
-CONFIG_BLOCK=y
-CONFIG_IOSCHED_NOOP=y
-CONFIG_IOSCHED_AS=y
-CONFIG_IOSCHED_DEADLINE=y
-CONFIG_IOSCHED_CFQ=y
-CONFIG_DEFAULT_AS=y
-CONFIG_DEFAULT_IOSCHED="anticipatory"
-CONFIG_SMP=y
-CONFIG_X86_PC=y
-CONFIG_MPENTIUMIII=y
-CONFIG_X86_CMPXCHG=y
-CONFIG_X86_XADD=y
-CONFIG_X86_L1_CACHE_SHIFT=5
-CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_X86_WP_WORKS_OK=y
-CONFIG_X86_INVLPG=y
-CONFIG_X86_BSWAP=y
-CONFIG_X86_POPAD_OK=y
-CONFIG_X86_CMPXCHG64=y
-CONFIG_X86_GOOD_APIC=y
-CONFIG_X86_INTEL_USERCOPY=y
-CONFIG_X86_USE_PPRO_CHECKSUM=y
-CONFIG_X86_TSC=y
-CONFIG_NR_CPUS=2
-CONFIG_PREEMPT_NONE=y
-CONFIG_X86_LOCAL_APIC=y
-CONFIG_X86_IO_APIC=y
-CONFIG_VM86=y
-CONFIG_HIGHMEM4G=y
-CONFIG_PAGE_OFFSET=0xC0000000
-CONFIG_HIGHMEM=y
-CONFIG_ARCH_FLATMEM_ENABLE=y
-CONFIG_ARCH_SPARSEMEM_ENABLE=y
-CONFIG_ARCH_SELECT_MEMORY_MODEL=y
-CONFIG_ARCH_POPULATES_NODE_MAP=y
-CONFIG_SELECT_MEMORY_MODEL=y
-CONFIG_FLATMEM_MANUAL=y
-CONFIG_FLATMEM=y
-CONFIG_FLAT_NODE_MEM_MAP=y
-CONFIG_SPARSEMEM_STATIC=y
-CONFIG_SPLIT_PTLOCK_CPUS=4
-CONFIG_ZONE_DMA_FLAG=1
-CONFIG_MTRR=y
-CONFIG_IRQBALANCE=y
-CONFIG_HZ_1000=y
-CONFIG_HZ=1000
-CONFIG_PHYSICAL_START=0x100000
-CONFIG_PHYSICAL_ALIGN=0x100000
-CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-CONFIG_PM=y
-CONFIG_PCI=y
-CONFIG_PCI_GOANY=y
-CONFIG_PCI_BIOS=y
-CONFIG_PCI_DIRECT=y
-CONFIG_ISA_DMA_API=y
-CONFIG_ISA=y
-CONFIG_BINFMT_ELF=y
-CONFIG_BINFMT_AOUT=y
-CONFIG_NET=y
-CONFIG_PACKET=y
-CONFIG_PACKET_MMAP=y
-CONFIG_UNIX=y
-CONFIG_INET=y
-CONFIG_IP_FIB_HASH=y
-CONFIG_INET_DIAG=y
-CONFIG_INET_TCP_DIAG=y
-CONFIG_TCP_CONG_CUBIC=y
-CONFIG_DEFAULT_TCP_CONG="cubic"
-CONFIG_IPV6=m
-CONFIG_NETFILTER=y
-CONFIG_NF_CONNTRACK_ENABLED=m
-CONFIG_NF_CONNTRACK_SUPPORT=y
-CONFIG_NF_CONNTRACK=m
-CONFIG_NF_CT_ACCT=y
-CONFIG_NF_CONNTRACK_MARK=y
-CONFIG_NF_CONNTRACK_EVENTS=y
-CONFIG_NF_CT_PROTO_GRE=m
-CONFIG_NF_CT_PROTO_SCTP=m
-CONFIG_NF_CONNTRACK_AMANDA=m
-CONFIG_NF_CONNTRACK_FTP=m
-CONFIG_NF_CONNTRACK_H323=m
-CONFIG_NF_CONNTRACK_IRC=m
-CONFIG_NF_CONNTRACK_NETBIOS_NS=m
-CONFIG_NF_CONNTRACK_PPTP=m
-CONFIG_NF_CONNTRACK_SANE=m
-CONFIG_NF_CONNTRACK_SIP=m
-CONFIG_NF_CONNTRACK_TFTP=m
-CONFIG_NETFILTER_XTABLES=m
-CONFIG_NETFILTER_XT_TARGET_CLASSIFY=m
-CONFIG_NETFILTER_XT_TARGET_CONNMARK=m
-CONFIG_NETFILTER_XT_TARGET_DSCP=m
-CONFIG_NETFILTER_XT_TARGET_MARK=m
-CONFIG_NETFILTER_XT_TARGET_NFQUEUE=m
-CONFIG_NETFILTER_XT_TARGET_NFLOG=m
-CONFIG_NETFILTER_XT_TARGET_NOTRACK=m
-CONFIG_NETFILTER_XT_TARGET_TCPMSS=m
-CONFIG_NETFILTER_XT_MATCH_COMMENT=m
-CONFIG_NETFILTER_XT_MATCH_CONNBYTES=m
-CONFIG_NETFILTER_XT_MATCH_CONNMARK=m
-CONFIG_NETFILTER_XT_MATCH_CONNTRACK=m
-CONFIG_NETFILTER_XT_MATCH_DCCP=m
-CONFIG_NETFILTER_XT_MATCH_DSCP=m
-CONFIG_NETFILTER_XT_MATCH_ESP=m
-CONFIG_NETFILTER_XT_MATCH_HELPER=m
-CONFIG_NETFILTER_XT_MATCH_LENGTH=m
-CONFIG_NETFILTER_XT_MATCH_LIMIT=m
-CONFIG_NETFILTER_XT_MATCH_MAC=m
-CONFIG_NETFILTER_XT_MATCH_MARK=m
-CONFIG_NETFILTER_XT_MATCH_MULTIPORT=m
-CONFIG_NETFILTER_XT_MATCH_PKTTYPE=m
-CONFIG_NETFILTER_XT_MATCH_QUOTA=m
-CONFIG_NETFILTER_XT_MATCH_REALM=m
-CONFIG_NETFILTER_XT_MATCH_SCTP=m
-CONFIG_NETFILTER_XT_MATCH_STATE=m
-CONFIG_NETFILTER_XT_MATCH_STATISTIC=m
-CONFIG_NETFILTER_XT_MATCH_STRING=m
-CONFIG_NETFILTER_XT_MATCH_TCPMSS=m
-CONFIG_NETFILTER_XT_MATCH_HASHLIMIT=m
-CONFIG_NF_CONNTRACK_IPV4=m
-CONFIG_IP_NF_QUEUE=m
-CONFIG_IP_NF_IPTABLES=m
-CONFIG_IP_NF_MATCH_IPRANGE=m
-CONFIG_IP_NF_MATCH_TOS=m
-CONFIG_IP_NF_MATCH_RECENT=m
-CONFIG_IP_NF_MATCH_ECN=m
-CONFIG_IP_NF_MATCH_AH=m
-CONFIG_IP_NF_MATCH_TTL=m
-CONFIG_IP_NF_MATCH_OWNER=m
-CONFIG_IP_NF_MATCH_ADDRTYPE=m
-CONFIG_IP_NF_FILTER=m
-CONFIG_IP_NF_TARGET_REJECT=m
-CONFIG_IP_NF_TARGET_LOG=m
-CONFIG_IP_NF_TARGET_ULOG=m
-CONFIG_NF_NAT=m
-CONFIG_NF_NAT_NEEDED=y
-CONFIG_IP_NF_TARGET_MASQUERADE=m
-CONFIG_IP_NF_TARGET_REDIRECT=m
-CONFIG_IP_NF_TARGET_NETMAP=m
-CONFIG_IP_NF_TARGET_SAME=m
-CONFIG_NF_NAT_SNMP_BASIC=m
-CONFIG_NF_NAT_PROTO_GRE=m
-CONFIG_NF_NAT_FTP=m
-CONFIG_NF_NAT_IRC=m
-CONFIG_NF_NAT_TFTP=m
-CONFIG_NF_NAT_AMANDA=m
-CONFIG_NF_NAT_PPTP=m
-CONFIG_NF_NAT_H323=m
-CONFIG_NF_NAT_SIP=m
-CONFIG_IP_NF_MANGLE=m
-CONFIG_IP_NF_TARGET_TOS=m
-CONFIG_IP_NF_TARGET_ECN=m
-CONFIG_IP_NF_TARGET_TTL=m
-CONFIG_IP_NF_TARGET_CLUSTERIP=m
-CONFIG_IP_NF_RAW=m
-CONFIG_IP_NF_ARPTABLES=m
-CONFIG_IP_NF_ARPFILTER=m
-CONFIG_IP_NF_ARP_MANGLE=m
-CONFIG_NF_CONNTRACK_IPV6=m
-CONFIG_IP6_NF_QUEUE=m
-CONFIG_IP6_NF_IPTABLES=m
-CONFIG_IP6_NF_MATCH_RT=m
-CONFIG_IP6_NF_MATCH_OPTS=m
-CONFIG_IP6_NF_MATCH_FRAG=m
-CONFIG_IP6_NF_MATCH_HL=m
-CONFIG_IP6_NF_MATCH_OWNER=m
-CONFIG_IP6_NF_MATCH_IPV6HEADER=m
-CONFIG_IP6_NF_MATCH_AH=m
-CONFIG_IP6_NF_MATCH_MH=m
-CONFIG_IP6_NF_MATCH_EUI64=m
-CONFIG_IP6_NF_FILTER=m
-CONFIG_IP6_NF_TARGET_LOG=m
-CONFIG_IP6_NF_TARGET_REJECT=m
-CONFIG_IP6_NF_MANGLE=m
-CONFIG_IP6_NF_TARGET_HL=m
-CONFIG_IP6_NF_RAW=m
-CONFIG_NET_CLS_ROUTE=y
-CONFIG_STANDALONE=y
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-CONFIG_FW_LOADER=y
-CONFIG_PARPORT=y
-CONFIG_PARPORT_PC=y
-CONFIG_PNP=y
-CONFIG_PNP_DEBUG=y
-CONFIG_ISAPNP=y
-CONFIG_PNPBIOS=y
-CONFIG_BLK_DEV_FD=y
-CONFIG_IDE=y
-CONFIG_BLK_DEV_IDE=y
-CONFIG_BLK_DEV_IDEDISK=y
-CONFIG_BLK_DEV_IDEPCI=y
-CONFIG_IDEPCI_SHARE_IRQ=y
-CONFIG_BLK_DEV_IDEDMA_PCI=y
-CONFIG_IDEDMA_PCI_AUTO=y
-CONFIG_BLK_DEV_PIIX=y
-CONFIG_BLK_DEV_IDEDMA=y
-CONFIG_IDEDMA_AUTO=y
-CONFIG_SCSI=y
-CONFIG_SCSI_NETLINK=y
-CONFIG_SCSI_PROC_FS=y
-CONFIG_BLK_DEV_SD=y
-CONFIG_BLK_DEV_SR=y
-CONFIG_CHR_DEV_SG=m
-CONFIG_SCSI_MULTI_LUN=y
-CONFIG_SCSI_CONSTANTS=y
-CONFIG_SCSI_SPI_ATTRS=y
-CONFIG_SCSI_FC_ATTRS=y
-CONFIG_SCSI_AIC7XXX=y
-CONFIG_AIC7XXX_CMDS_PER_DEVICE=8
-CONFIG_AIC7XXX_RESET_DELAY_MS=15000
-CONFIG_AIC7XXX_DEBUG_MASK=0
-CONFIG_NETDEVICES=y
-CONFIG_NET_ETHERNET=y
-CONFIG_MII=m
-CONFIG_NET_VENDOR_3COM=y
-CONFIG_EL3=y
-CONFIG_PPP=y
-CONFIG_PPP_ASYNC=y
-CONFIG_PPP_DEFLATE=m
-CONFIG_PPP_BSDCOMP=m
-CONFIG_PPP_MPPE=m
-CONFIG_PPPOE=m
-CONFIG_SLHC=y
-CONFIG_INPUT=y
-CONFIG_INPUT_MOUSEDEV=y
-CONFIG_INPUT_MOUSEDEV_PSAUX=y
-CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
-CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-CONFIG_INPUT_KEYBOARD=y
-CONFIG_KEYBOARD_ATKBD=y
-CONFIG_INPUT_MOUSE=y
-CONFIG_MOUSE_PS2=y
-CONFIG_INPUT_MISC=y
-CONFIG_INPUT_PCSPKR=y
-CONFIG_SERIO=y
-CONFIG_SERIO_I8042=y
-CONFIG_SERIO_LIBPS2=y
-CONFIG_VT=y
-CONFIG_VT_CONSOLE=y
-CONFIG_HW_CONSOLE=y
-CONFIG_SERIAL_8250=y
-CONFIG_SERIAL_8250_PCI=y
-CONFIG_SERIAL_8250_PNP=y
-CONFIG_SERIAL_8250_NR_UARTS=4
-CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-CONFIG_SERIAL_CORE=y
-CONFIG_UNIX98_PTYS=y
-CONFIG_LEGACY_PTYS=y
-CONFIG_LEGACY_PTY_COUNT=256
-CONFIG_PRINTER=y
-CONFIG_RTC=y
-CONFIG_AGP=m
-CONFIG_AGP_INTEL=m
-CONFIG_I2C=m
-CONFIG_I2C_ALGOBIT=m
-CONFIG_I2C_PIIX4=m
-CONFIG_FB=y
-CONFIG_FB_DDC=m
-CONFIG_FB_CFB_FILLRECT=y
-CONFIG_FB_CFB_COPYAREA=y
-CONFIG_FB_CFB_IMAGEBLIT=y
-CONFIG_FB_MODE_HELPERS=y
-CONFIG_FB_VGA16=m
-CONFIG_FB_VESA=y
-CONFIG_FB_RIVA=m
-CONFIG_FB_RIVA_I2C=y
-CONFIG_FB_RIVA_DEBUG=y
-CONFIG_VGA_CONSOLE=y
-CONFIG_VIDEO_SELECT=y
-CONFIG_DUMMY_CONSOLE=y
-CONFIG_FRAMEBUFFER_CONSOLE=m
-CONFIG_FONT_8x8=y
-CONFIG_FONT_8x16=y
-CONFIG_LOGO=y
-CONFIG_LOGO_LINUX_VGA16=y
-CONFIG_SOUND=m
-CONFIG_SND=m
-CONFIG_SND_TIMER=m
-CONFIG_SND_PCM=m
-CONFIG_SND_HWDEP=m
-CONFIG_SND_RAWMIDI=m
-CONFIG_SND_SEQUENCER=m
-CONFIG_SND_SEQ_DUMMY=m
-CONFIG_SND_OSSEMUL=y
-CONFIG_SND_MIXER_OSS=m
-CONFIG_SND_PCM_OSS=m
-CONFIG_SND_SEQUENCER_OSS=y
-CONFIG_SND_RTCTIMER=m
-CONFIG_SND_VERBOSE_PRINTK=y
-CONFIG_SND_DEBUG=y
-CONFIG_SND_DEBUG_DETECT=y
-CONFIG_SND_MPU401_UART=m
-CONFIG_SND_OPL3_LIB=m
-CONFIG_SND_CS4231_LIB=m
-CONFIG_SND_CS4236=m
-CONFIG_HID=m
-CONFIG_USB_ARCH_HAS_HCD=y
-CONFIG_USB_ARCH_HAS_OHCI=y
-CONFIG_USB_ARCH_HAS_EHCI=y
-CONFIG_USB=m
-CONFIG_USB_DEBUG=y
-CONFIG_USB_DEVICEFS=y
-CONFIG_USB_DYNAMIC_MINORS=y
-CONFIG_USB_EHCI_HCD=m
-CONFIG_USB_EHCI_SPLIT_ISO=y
-CONFIG_USB_EHCI_ROOT_HUB_TT=y
-CONFIG_USB_OHCI_HCD=m
-CONFIG_USB_OHCI_LITTLE_ENDIAN=y
-CONFIG_USB_UHCI_HCD=m
-CONFIG_EXT2_FS=y
-CONFIG_QUOTA=y
-CONFIG_QFMT_V2=m
-CONFIG_QUOTACTL=y
-CONFIG_DNOTIFY=y
-CONFIG_ISO9660_FS=y
-CONFIG_FAT_FS=y
-CONFIG_MSDOS_FS=y
-CONFIG_FAT_DEFAULT_CODEPAGE=437
-CONFIG_PROC_FS=y
-CONFIG_PROC_KCORE=y
-CONFIG_PROC_SYSCTL=y
-CONFIG_SYSFS=y
-CONFIG_TMPFS=y
-CONFIG_RAMFS=y
-CONFIG_CRAMFS=y
-CONFIG_NFS_FS=y
-CONFIG_NFS_V3=y
-CONFIG_NFS_V4=y
-CONFIG_LOCKD=y
-CONFIG_LOCKD_V4=y
-CONFIG_NFS_COMMON=y
-CONFIG_SUNRPC=y
-CONFIG_SUNRPC_GSS=y
-CONFIG_RPCSEC_GSS_KRB5=y
-CONFIG_MSDOS_PARTITION=y
-CONFIG_NLS=y
-CONFIG_NLS_DEFAULT="cp437"
-CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-CONFIG_DEBUG_KERNEL=y
-CONFIG_LOG_BUF_SHIFT=15
-CONFIG_DEBUG_BUGVERBOSE=y
-CONFIG_EARLY_PRINTK=y
-CONFIG_X86_FIND_SMP_CONFIG=y
-CONFIG_X86_MPPARSE=y
-CONFIG_DOUBLEFAULT=y
-CONFIG_CRYPTO=y
-CONFIG_CRYPTO_ALGAPI=y
-CONFIG_CRYPTO_BLKCIPHER=y
-CONFIG_CRYPTO_MANAGER=y
-CONFIG_CRYPTO_MD5=y
-CONFIG_CRYPTO_SHA1=m
-CONFIG_CRYPTO_ECB=m
-CONFIG_CRYPTO_CBC=y
-CONFIG_CRYPTO_DES=y
-CONFIG_CRYPTO_ARC4=m
-CONFIG_BITREVERSE=m
-CONFIG_CRC_CCITT=y
-CONFIG_CRC32=m
-CONFIG_ZLIB_INFLATE=y
-CONFIG_ZLIB_DEFLATE=m
-CONFIG_TEXTSEARCH=y
-CONFIG_TEXTSEARCH_KMP=m
-CONFIG_TEXTSEARCH_BM=m
-CONFIG_TEXTSEARCH_FSM=m
-CONFIG_PLIST=y
-CONFIG_HAS_IOMEM=y
-CONFIG_HAS_IOPORT=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_GENERIC_IRQ_PROBE=y
-CONFIG_GENERIC_PENDING_IRQ=y
-CONFIG_X86_SMP=y
-CONFIG_X86_HT=y
-CONFIG_X86_BIOS_REBOOT=y
-CONFIG_X86_TRAMPOLINE=y
-CONFIG_KTIME_SCALAR=y
+-----------
 
---
-Pete Clements
+--- /ide/dmesg_with_yenta_module        2007-02-12 18:51:35.000000000 -0600
++++ /ide/dmesg_with_yenta_builtin       2007-02-12 16:25:24.000000000 -0600
+@@ -1,4 +1,4 @@
+-Linux version 2.6.20-default-g7096ede5-dirty (finger@sonylap) (gcc version 4.0.2 20050901
+(prerelease) (SUSE Linux)) #119 Mon Feb 12 18:40:07 CST 2007
++Linux version 2.6.20-default-g7096ede5 (finger@sonylap) (gcc version 4.0.2 20050901 (prerelease)
+(SUSE Linux)) #116 Sun Feb 11 14:27:53 CST 2007
+ BIOS-provided physical RAM map:
+ sanitize start
+ sanitize end
+@@ -39,28 +39,28 @@
+ ACPI: FACS 07FFFFC0, 0040
+ ACPI: Disabling ACPI support
+ Allocating PCI resources starting at 10000000 (gap: 08000000:f7fea400)
+-Detected 331.611 MHz processor.
++Detected 331.592 MHz processor.
+ Built 1 zonelists.  Total pages: 32497
+ Kernel command line: root=/dev/hda3 vga=0x314 selinux=0    resume=/dev/hda2  splash=silent showopts
+ Local APIC disabled by BIOS -- you can enable it with "lapic"
+ mapped APIC to ffffd000 (01101000)
+ Enabling fast FPU save and restore... done.
+ Initializing CPU#0
+-CPU 0 irqstacks, hard=c0421000 soft=c0422000
++CPU 0 irqstacks, hard=c0432000 soft=c0433000
+ PID hash table entries: 512 (order: 9, 2048 bytes)
+ Console: colour dummy device 80x25
+ Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
+ Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
+-Memory: 124256k/131008k available (2092k kernel code, 6220k reserved, 886k data, 200k init, 0k highmem)
++Memory: 124188k/131008k available (2137k kernel code, 6288k reserved, 909k data, 200k init, 0k highmem)
+ virtual kernel memory layout:
+     fixmap  : 0xfffb6000 - 0xfffff000   ( 292 kB)
+     vmalloc : 0xc8800000 - 0xfffb4000   ( 887 MB)
+     lowmem  : 0xc0000000 - 0xc7ff0000   ( 127 MB)
+-      .init : 0xc03ea000 - 0xc041c000   ( 200 kB)
+-      .data : 0xc030b24b - 0xc03e8c48   ( 886 kB)
+-      .text : 0xc0100000 - 0xc030b24b   (2092 kB)
++      .init : 0xc03fb000 - 0xc042d000   ( 200 kB)
++      .data : 0xc031653b - 0xc03f9c48   ( 909 kB)
++      .text : 0xc0100000 - 0xc031653b   (2137 kB)
+ Checking if this processor honours the WP bit even in supervisor mode... Ok.
+-Calibrating delay using timer specific routine.. 664.03 BogoMIPS (lpj=1328067)
++Calibrating delay using timer specific routine.. 664.05 BogoMIPS (lpj=1328111)
+ Mount-cache hash table entries: 512
+ CPU: After generic identify, caps: 0183f9ff 00000000 00000000 00000000 00000000 00000000 00000000
+ CPU: L1 I cache: 16K, L1 D cache: 16K
+@@ -104,8 +104,10 @@
+   MEM window: 1c000000-1fffffff
+ PCI: Found IRQ 9 for device 0000:00:0a.0
+ PCI: Sharing IRQ 9 with 0000:00:08.1
++PCI: Setting latency timer of device 0000:00:0a.0 to 64
+ PCI: Assigned IRQ 9 for device 0000:00:0a.1
+ PCI: Sharing IRQ 9 with 0000:00:09.0
++PCI: Setting latency timer of device 0000:00:0a.1 to 64
+ NET: Registered protocol family 2
+ IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
+ TCP established hash table entries: 4096 (order: 4, 81920 bytes)
+@@ -115,7 +117,7 @@
+ checking if image is initramfs... it is
+ Freeing initrd memory: 1564k freed
+ audit: initializing netlink socket (disabled)
+-audit(1171306196.744:1): initialized
++audit(1171277305.752:1): initialized
+ io scheduler noop registered
+ io scheduler anticipatory registered (default)
+ io scheduler deadline registered
+@@ -138,25 +140,33 @@
+ FDC 0 is a post-1991 82077
+ RAMDISK driver initialized: 16 RAM disks of 64000K size 1024 blocksize
+ loop: loaded (max 8 devices)
++Yenta: CardBus bridge found at 0000:00:0a.0 [104d:8042]
++Yenta: ISA IRQ mask 0x0cb8, PCI irq 9
++Socket status: 30000410
++Yenta: CardBus bridge found at 0000:00:0a.1 [104d:8042]
++Yenta: ISA IRQ mask 0x0cb8, PCI irq 9
++Socket status: 30000820
+ PNP: No PS/2 controller found. Probing ports directly.
+ serio: i8042 KBD port at 0x60,0x64 irq 1
+ serio: i8042 AUX port at 0x60,0x64 irq 12
+ mice: PS/2 mouse device common for all mice
+ input: AT Translated Set 2 keyboard as /class/input/input0
+ input: PC Speaker as /class/input/input1
++pccard: PCMCIA card inserted into slot 0
+ input: PS/2 Mouse as /class/input/input2
+ input: AlpsPS/2 ALPS GlidePoint as /class/input/input3
+ NET: Registered protocol family 1
+ Using IPI Shortcut mode
+ Freeing unused kernel memory: 200k freed
+ Time: tsc clocksource has been installed.
++pccard: CardBus card inserted into slot 1
+ Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+ ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+ PIIX4: IDE controller at PCI slot 0000:00:07.1
+ PIIX4: chipset revision 1
+ PIIX4: not 100% native mode: will probe irqs later
+     ide0: BM-DMA at 0xfcf0-0xfcf7, BIOS settings: hda:DMA, hdb:pio
+-    ide1: BM-DMA at 0xfcf8-0xfcff, BIOS settings: hdc:DMA, hdd:pio
++    ide1: BM-DMA at 0xfcf8-0xfcff, BIOS settings: hdc:pio, hdd:pio
+ Probing IDE interface ide0...
+ hda: FUJITSU MHT2020AT, ATA DISK drive
+ ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+@@ -184,16 +194,53 @@
+ ReiserFS: hda4: checking transaction log (hda4)
+ ReiserFS: hda4: Using r5 hash to sort names
+ 8139too Fast Ethernet driver 0.9.28
++PCI: Enabling device 0000:05:00.0 (0000 -> 0003)
++PCI: Setting latency timer of device 0000:05:00.0 to 64
++eth0: RealTek RTL8139 at 0x1800, 00:a0:b0:00:0b:da, IRQ 9
++eth0:  Identified 8139 chip type 'RTL-8139C'
+ parport0: PC-style at 0x378 (0x778) [PCSPP,TRISTATE]
+ parport0: irq 7 detected
+ lp0: using parport0 (polling).
++cs: IO port probe 0x3e0-0x4ff: excluding 0x4d0-0x4d7
++cs: IO port probe 0x100-0x3af: clean.
++cs: IO port probe 0xc00-0xcff: clean.
++cs: IO port probe 0x820-0x8ff: clean.
++cs: IO port probe 0xa00-0xaff: clean.
++cs: memory probe 0xa0000000-0xa0ffffff: clean.
++pcmcia: registering new device pcmcia0.0
++cs: IO port probe 0x3e0-0x4ff: excluding 0x4d0-0x4d7
++cs: IO port probe 0x100-0x3af: clean.
++cs: IO port probe 0xc00-0xcff: clean.
++cs: IO port probe 0x820-0x8ff: clean.
++cs: IO port probe 0xa00-0xaff: clean.
++ieee80211_crypt: registered algorithm 'NULL'
+ hdc: ATAPI 20X DVD-ROM drive, 128kB Cache, DMA
+ Uniform CD-ROM driver Revision: 3.20
+-hdc: packet command error: status=0x51 { DriveReady SeekComplete Error }
+-hdc: packet command error: error=0x50 { LastFailedSense=0x05 }
+-ide: failed opcode was: unknown
++ieee80211: 802.11 data/management/control stack, git-1.1.13
++ieee80211: Copyright (C) 2004-2005 Intel Corporation <jketreno@linux.intel.com>
++bcm43xx driver
++Probing IDE interface ide2...
++hde: FUJITSU MHT2080AT, ATA DISK drive
++ide2 at 0x100-0x107,0x10e on irq 3
++hde: max request size: 128KiB
++hde: 156301488 sectors (80026 MB) w/8192KiB Cache, CHS=65535/16/63
++hde: cache flushes supported
++ hde: hde1 hde2
++ide-cs: hde: Vpp = 0.0
++eth0: link up, 100Mbps, full-duplex, lpa 0x45E1
+ Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+ NFSD: Using /var/lib/nfs/v4recovery as the NFSv4 state recovery directory
+ NFSD: unable to find recovery directory /var/lib/nfs/v4recovery
+ NFSD: starting 90-second grace period
+ BIOS EDD facility v0.16 2004-Jun-25, 1 devices found
++kjournald starting.  Commit interval 5 seconds
++EXT3 FS on hde1, internal journal
++EXT3-fs: mounted filesystem with ordered data mode.
++kjournald starting.  Commit interval 5 seconds
++EXT3-fs warning: maximal mount count reached, running e2fsck is recommended
++EXT3 FS on hde2, internal journal
++EXT3-fs: mounted filesystem with ordered data mode.
++pcmcia: Detected deprecated PCMCIA ioctl usage from process: hald.
++pcmcia: This interface will soon be removed from the kernel; please expect breakage unless you
+upgrade to new tools.
++pcmcia: see http://www.kernel.org/pub/linux/utils/kernel/pcmcia/pcmcia.html for details.
++spurious 8259A interrupt: IRQ7.
