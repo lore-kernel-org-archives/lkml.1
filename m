@@ -1,61 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030588AbXBMCtO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030618AbXBMCtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030588AbXBMCtO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 21:49:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030614AbXBMCtO
+	id S1030618AbXBMCtn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 21:49:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030617AbXBMCtn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 21:49:14 -0500
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:46873 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1030588AbXBMCtN (ORCPT
+	Mon, 12 Feb 2007 21:49:43 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:47295 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030616AbXBMCtl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 21:49:13 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=2dAKpwQWmLBv/b0xHNqkFQDHHLwF6v1+KymuEiH2qbkgCfslxlgVg+kRxPM+4HCB/qBdKPdZxS0R+1fwgHBtYQjuQLxx0hAvX9AxDaq4ufEs4ediLHJo6vy/VwZNMtwPyVeLf/GtGbjNzHIBzIVRsmjKIqwBJ5XrvfzOn/PiJX8=  ;
-X-YMail-OSG: kYEmiHwVM1nfwUvv9BaqO48AY9ZIpRDzV_QQQbni9otvqBvN58J3WiJiw57fG0DKbcl1YQlbGTnL7gylQ_.pDvA66jNOzPwRARDhibtTTZVE_yA3aFaiKJTh0IJtiOSXSoB_g323_wXuo2u2JKs59LBWqCDNvrlD2q4-
-Message-ID: <45D12715.4070408@yahoo.com.au>
-Date: Tue, 13 Feb 2007 13:48:53 +1100
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Hugh Dickins <hugh@veritas.com>
-Subject: Re: build error: allnoconfig fails on mincore/swapper_space
-References: <20070212145040.c3aea56e.randy.dunlap@oracle.com> <20070212150802.f240e94f.akpm@linux-foundation.org>
-In-Reply-To: <20070212150802.f240e94f.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Feb 2007 21:49:41 -0500
+Date: Mon, 12 Feb 2007 18:49:15 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, oleg@tv-sign.ru, a.p.zijlstra@chello.nl,
+       mingo@elte.hu, hch@infradead.org, akpm@osdl.org,
+       stern@rowland.harvard.edu
+Subject: Re: [RFC PATCH] QRCU fastpath optimization
+Message-ID: <20070213024915.GE2542@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070212044817.GA23254@linux.vnet.ibm.com> <20070212062209.GE3999@kernel.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070212062209.GE3999@kernel.dk>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->>On Mon, 12 Feb 2007 14:50:40 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
->>2.6.20-git8 on x86_64:
->>
->>
->>  LD      init/built-in.o
->>  LD      .tmp_vmlinux1
->>mm/built-in.o: In function `sys_mincore':
->>(.text+0xe584): undefined reference to `swapper_space'
->>make: *** [.tmp_vmlinux1] Error 1
+On Mon, Feb 12, 2007 at 07:22:09AM +0100, Jens Axboe wrote:
+> On Sun, Feb 11 2007, Paul E. McKenney wrote:
+> > This patch optimizes the "quick" RCU update-side fastpath, so that in the
+> > absence of readers, synchronize_qrcu() does four non-atomic comparisons
+> > and three memory barriers, eliminating the need to acquire the global
+> > lock in this case.  Lightly tested.  Algorithm has been validated for
+> > the 3-reader-2-updater and 2-reader-3-updater cases -- 3-readers-3-updaters
+> > case still to be done (I expect to get access to a large-memory machine
+> > in the next few weeks -- need >>20GB).
+> > 
+> > Not for inclusion.  Patch is against Oleg's original patch, and likely
+> > needs to be rediffed against Jen's patchstack.  I will do this rediffing
+> > later, first want an easy-to-test and easy-to-inpect version.
 > 
+> I'd suggest just merging this optimization into the original QRCU patch.
+> Once you are happy with the validation, I'll add it to the plug branch
+> as well.
 > 
-> oops.  CONFIG_SWAP=n,  I assume?
+> Version against the plug branch below.
+
+Thank you very much!!!
+
+One way or another, I will get you something in a form friendly to your
+patch stack.
+
+							Thanx, Paul
+
+> diff --git a/kernel/srcu.c b/kernel/srcu.c
+> index 53c6989..bfe347a 100644
+> --- a/kernel/srcu.c
+> +++ b/kernel/srcu.c
+> @@ -324,28 +324,53 @@ void synchronize_qrcu(struct qrcu_struct *qp)
+>  {
+>  	int idx;
 > 
-
-Hmm, OK. Hugh can strip me of my bonus point now...
-
-Hugh, you can strip me of my bonus point now... How about your other
-suggestion to just remove the stats from lookup_swap_cache? (and should
-we also rename it to find_get_swap_page?)
-
-Thanks,
-Nick
-
--- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
+> +	smp_mb();  /* Force preceding change to happen before fastpath check. */
+> +
+>  	/*
+> -	 * The following memory barrier is needed to ensure that
+> -	 * any prior data-structure manipulation is seen by other
+> -	 * CPUs to happen before picking up the value of
+> -	 * qp->completed.
+> +	 * Fastpath: If the two counters sum to "1" at a given point in
+> +	 * time, there are no readers.  However, it takes two separate
+> +	 * loads to sample both counters, which won't occur simultaneously.
+> +	 * So we might race with a counter switch, so that we might see
+> +	 * ctr[0]==0, then the counter might switch, then we might see
+> +	 * ctr[1]==1 (unbeknownst to us because there is a reader still
+> +	 * there).  So we do a read memory barrier and recheck.  If the
+> +	 * same race happens again, there must have been a second counter
+> +	 * switch.  This second counter switch could not have happened
+> +	 * until all preceding readers finished, so if the condition
+> +	 * is true both times, we may safely proceed.
+> +	 *
+> +	 * This relies critically on the atomic increment and atomic
+> +	 * decrement being seen as executing in order.
+>  	 */
+> -	smp_mb();
+> +
+> +	if (atomic_read(&qp->ctr[0]) + atomic_read(&qp->ctr[1]) <= 1) {
+> +		smp_rmb();  /* Keep two checks independent. */
+> +		if (atomic_read(&qp->ctr[0]) + atomic_read(&qp->ctr[1]) <= 1)
+> +			goto out;
+> +	}
+> +
+>  	mutex_lock(&qp->mutex);
+> 
+>  	idx = qp->completed & 0x1;
+>  	if (atomic_read(qp->ctr + idx) == 1)
+> -		goto out;
+> +		goto out_unlock;
+> 
+>  	atomic_inc(qp->ctr + (idx ^ 0x1));
+> -	/* Reduce the likelihood that qrcu_read_lock() will loop */
+> +
+> +	/*
+> +	 * Prevent subsequent decrement from being seen before previous
+> +	 * increment -- such an inversion could cause the fastpath
+> +	 * above to falsely conclude that there were no readers.  Also,
+> +	 * reduce the likelihood that qrcu_read_lock() will loop.
+> +	 */
+>  	smp_mb__after_atomic_inc();
+>  	qp->completed++;
+> 
+>  	atomic_dec(qp->ctr + idx);
+>  	__wait_event(qp->wq, !atomic_read(qp->ctr + idx));
+> -out:
+> +out_unlock:
+>  	mutex_unlock(&qp->mutex);
+> +out:
+>  	smp_mb();
+>  	/*
+>  	 * The above smp_mb() is needed in the case that we
+> 
+> -- 
+> Jens Axboe
+> 
