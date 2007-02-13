@@ -1,115 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751085AbXBMVB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751050AbXBMVOE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751085AbXBMVB2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 16:01:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751084AbXBMVB2
+	id S1751050AbXBMVOE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 16:14:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751084AbXBMVOD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 16:01:28 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:35186 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751085AbXBMVB1 (ORCPT
+	Tue, 13 Feb 2007 16:14:03 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:42257
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751050AbXBMVOB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 16:01:27 -0500
-Date: Tue, 13 Feb 2007 21:01:25 +0000 (GMT)
-From: James Simmons <jsimmons@infradead.org>
-To: linux-fbdev-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org, vince@arm.linux.org.uk, ben-linux@fluff.org
-Subject: Re: [Linux-fbdev-devel] [PATCH] fb: SM501 framebuffer driver
-In-Reply-To: <20070213193449.GA7701@fluff.org.uk>
-Message-ID: <Pine.LNX.4.64.0702132053110.898@pentafluge.infradead.org>
-References: <20070213193449.GA7701@fluff.org.uk>
+	Tue, 13 Feb 2007 16:14:01 -0500
+From: Rob Landley <rob@landley.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: somebody dropped a (warning) bomb
+Date: Tue, 13 Feb 2007 16:13:40 -0500
+User-Agent: KMail/1.9.1
+Cc: Sergei Organov <osv@javad.com>,
+       "J.A. =?iso-8859-1?q?Magall=C3=C3=C3=C2=B3n?=" <jamagallon@ono.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <45CB3B28.60102@garzik.org> <87ps8end9b.fsf@javad.com> <Pine.LNX.4.64.0702131121590.3604@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0702131121590.3604@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702131613.41958.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> Framebuffer support for the Silicon Motion SM501
-> multi-function chip.
+On Tuesday 13 February 2007 2:25 pm, Linus Torvalds wrote:
+> THE FACT IS, THAT "strlen()" IS DEFINED UNIVERSALLY AS TAKING "char *".
 > 
-> This driver provides a pair of framebuffer interfaces
-> for the CRT and LCD panel interfaces, and some basic
-> acceleration for the cursor.
+> That BY DEFINITION means that "strlen()" cannot care about the sign, 
+> because the sign IS NOT DEFINED UNIVERSALLY!
 > 
-> The patch has been updated slightly from the previous
-> version to including being able to pass an initial
-> video mode through via the platform data.
+> And if you cannot accept that fact, it's your problem. Not mine.
 > 
-> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-> Signed-off-by: Vincent Sanders <vince@arm.linux.org.uk>
+> The warning is CRAP. End of story.
 
-> + *
-> + * Converts a period in picoseconds to Hz.
-> + *
-> + * Note, we try to keep this in Hz to minimise rounding with
-> + * the limited PLL settings on the SM501.
-> +*/
-> +
-> +static unsigned long sm501fb_ps_to_hz(unsigned long psvalue)
-> +{
-> +	unsigned long long numerator=1000000000000ULL;
-> +
-> +	/* 10^12 / picosecond period gives frequency in Hz */
-> +	do_div(numerator, psvalue);
-> +	return (unsigned long)numerator;
-> +}
-> +
-> +/* sm501fb_hz_to_ps is identical to the oposite transform */
-> +
-> +#define sm501fb_hz_to_ps(x) sm501fb_ps_to_hz(x)
+In busybox we fed the compiler -funsigned-char to make it shut up.  (And so we 
+had consistent bugs between arm and x86.)
 
-You really need it down to the Hz? 
+Building tcc I had to feed it -fsigned-char because -funsigned char broke 
+stuff. :)
 
-> +/* sm501fb_validate_pan
-> + *
-> + * check panning on a var
-> +*/
-> +
-> +static inline int sm501fb_validate_pan(struct fb_var_screeninfo *var)
-> +{
-> +	if (var->xoffset < 0 || var->yoffset < 0)
-> +		return 0;
-> +
-> +	if (var->xoffset > (var->xres_virtual - var->xres) ||
-> +	    var->yoffset > (var->yres_virtual - var->yres))
-> +		return 0;
-> +
-> +	return 1;
-> +}
-
-Not needed. fb_pan_display in fbmem.c does this check for you :-)
-
-> +/* framebuffer ops */
-> +
-> +static struct fb_ops sm501fb_ops_crt = {
-> +	.owner		= THIS_MODULE,
-> +	.fb_check_var	= sm501fb_check_var_crt,
-> +	.fb_set_par	= sm501fb_set_par_crt,
-> +	.fb_blank	= sm501fb_blank_crt,
-> +	.fb_setcolreg	= sm501fb_setcolreg,
-> +	.fb_pan_display	= sm501fb_pan_crt,
-> +	.fb_cursor	= sm501fb_cursor,
-> +	.fb_fillrect	= cfb_fillrect,
-> +	.fb_copyarea	= cfb_copyarea,
-> +	.fb_imageblit	= cfb_imageblit,
-> +};
-> +
-> +static struct fb_ops sm501fb_ops_pnl = {
-> +	.owner		= THIS_MODULE,
-> +	.fb_check_var	= sm501fb_check_var_pnl,
-> +	.fb_set_par	= sm501fb_set_par_pnl,
-> +	.fb_pan_display	= sm501fb_pan_pnl,
-> +	.fb_blank	= sm501fb_blank_pnl,
-> +	.fb_setcolreg	= sm501fb_setcolreg,
-> +	.fb_cursor	= sm501fb_cursor,
-> +	.fb_fillrect	= cfb_fillrect,
-> +	.fb_copyarea	= cfb_copyarea,
-> +	.fb_imageblit	= cfb_imageblit,
-> +};
-
-Many cards require a fb_sync function after/before they do a drawing 
-operation. I notice you don't have one. Is sm501fb_sync_regs equivalent to 
-that?
-
-Other than that the driver looks great. Thank you.
-
+Rob
+-- 
+"Perfection is reached, not when there is no longer anything to add, but
+when there is no longer anything to take away." - Antoine de Saint-Exupery
