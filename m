@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030601AbXBMAnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030608AbXBMAoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030601AbXBMAnt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 19:43:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030605AbXBMAnt
+	id S1030608AbXBMAoN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 19:44:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030605AbXBMAoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 19:43:49 -0500
-Received: from brick.kernel.dk ([62.242.22.158]:2209 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030601AbXBMAns (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 19:43:48 -0500
-Date: Tue, 13 Feb 2007 01:44:08 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.osdl.org>
-Subject: Re: [PATCH 7/8] lguest: trivial guest block driver
-Message-ID: <20070213004408.GB3641@kernel.dk>
-References: <1171252219.10409.33.camel@localhost.localdomain> <1171252321.10409.36.camel@localhost.localdomain> <1171252405.10409.39.camel@localhost.localdomain> <1171252474.10409.42.camel@localhost.localdomain> <20070212044339.GJ3685@kernel.dk> <1171258034.10409.54.camel@localhost.localdomain> <20070212053204.GB3999@kernel.dk> <1171264167.10409.62.camel@localhost.localdomain> <20070212150125.GM3999@kernel.dk> <1171326305.19842.36.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1171326305.19842.36.camel@localhost.localdomain>
+	Mon, 12 Feb 2007 19:44:12 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:44662 "EHLO
+	pd5mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030608AbXBMAoL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 19:44:11 -0500
+Date: Mon, 12 Feb 2007 18:43:24 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: SATA Drive No Longer Recognized In New 2.6.20 Kernel
+In-reply-to: <fa.TnmEtAvuWo/QaHolplJ1wxgmx8A@ifi.uio.no>
+To: Joseph Cosby <jo-cosby@hotmail.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <45D109AC.6080102@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.N6er7HcCs0nD4LsKNkIdtRxShpk@ifi.uio.no>
+ <fa.TnmEtAvuWo/QaHolplJ1wxgmx8A@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 13 2007, Rusty Russell wrote:
-> On Mon, 2007-02-12 at 16:01 +0100, Jens Axboe wrote:
-> > On Mon, Feb 12 2007, Rusty Russell wrote:
-> > > Thanks Jens!!
-> > 
-> > My pleasure, it's not often you get to make that big a performance
-> > improvement with just a little few lines of change :-)
+Joseph Cosby wrote:
+> Hi,
+> Until recently I was using the 2.6.18 kernel. I have a SATA hard drive
+> that was detected by the kernel, using the PIIX driver. But after
+> updating to 2.6.20, the hard drive is no longer detected by the kernel.
+> I used make oldconfig to create the 2.6.20 config file, and I noticed a
+> new option CONFIG_ATA. I did not use this, because as I understand it is
+> not necessary and is experimental. Do I need to use this or is there
+> something else in the new kernel that needs to be enabled for this
+> driver?
 > 
-> *cough* I deliberately leave these low hanging fruit in lguest to
-> encourage people to hack on it.  Really.  *cough*
-
-:-)
-
-> > I guess you'll take changes to make this driver queuing as well? It's
-> > pretty important for good guest io performance as well.
+> My 2.6.20 config file follows.
+> The hard drive has vendor ID 8086 and device ID 27c0. It is listed in the
+> modules.pcilist file of 2.6.18 but not 2.6.20.
 > 
-> The question is whether the guest or host should queue.  If you have
-> multiple guests sharing a disk in the hose, I would think that the host
-> is better off queuing.  And this would seem to be the common case.
+> If anybody can share any advice please CC me in response.
 
-You want queuing in the host, since for queuing to make a performance
-difference it needs to be propagated all the way down to the device. But
-you can't get queuing at the host level if the guest device doesn't
-allow it, you'd be serializing anyway. Well for writes you can, but not
-synchronous requests.
-
-Basically allow as much to be sent to the host as possible.
-
-> On my todo list is:
-> 1) Implement write barriers, (-> fsync in the host)
-> 2) Make the host userspace program (lguest) async rather than blocking,
-> 3) Allow multiple outstanding requests.
-> 
-> Then it should be useful for other hypervisors.
-
-I completely agree with your prioritized list.
+Yes, you do need CONFIG_ATA if you were using ata_piix before (and of 
+course the PIIX driver also needs to be enabled). All of the libata 
+drivers were moved from under the SCSI menu into a new ATA menu (in 
+2.6.19 I think).
 
 -- 
-Jens Axboe
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
