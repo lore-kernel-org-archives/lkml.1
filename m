@@ -1,91 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751386AbXBMWyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751417AbXBMWy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751386AbXBMWyT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 17:54:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbXBMWyT
+	id S1751417AbXBMWy3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 17:54:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbXBMWy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 17:54:19 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:61888 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751386AbXBMWyS (ORCPT
+	Tue, 13 Feb 2007 17:54:29 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:37107 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751417AbXBMWy2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 17:54:18 -0500
-Date: Tue, 13 Feb 2007 14:49:09 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, tony.luck@gmail.com,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch] build error: allnoconfig fails on mincore/swapper_space
-Message-Id: <20070213144909.70943de2.randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.64.0702132224280.3729@blonde.wat.veritas.com>
-References: <20070212145040.c3aea56e.randy.dunlap@oracle.com>
-	<20070212150802.f240e94f.akpm@linux-foundation.org>
-	<45D12715.4070408@yahoo.com.au>
-	<20070213121217.0f4e9f3a.randy.dunlap@oracle.com>
-	<Pine.LNX.4.64.0702132224280.3729@blonde.wat.veritas.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 Feb 2007 17:54:28 -0500
+Message-ID: <45D241A2.6000401@vmware.com>
+Date: Tue, 13 Feb 2007 14:54:26 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
+Subject: Re: [patch 13/21] Xen-paravirt: Add nosegneg capability to the vsyscall
+ page notes
+References: <20070213221729.772002682@goop.org> <20070213221830.466651996@goop.org> <45D23F97.5040907@vmware.com> <45D24066.4070109@goop.org>
+In-Reply-To: <45D24066.4070109@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge wrote:
+> Zachary Amsden wrote:
+>   
+>> I don't like this because now a kernel compiled with both CONFIG_XEN
+>> and CONFIG_VMI has "nosegneg" turned on.  We don't actually require
+>> this for performance or correctness, so it would be nice to be able to
+>> dynamically turn it off instead of having it forced. 
+>>     
+>
+> Any suggestions about how to do this?  It seems hard to have a note
+> dynamically appear and disappear in the vsyscall.so.
+>
+> I wasn't terribly concerned about this, since there is effectively zero
+> performance difference between the two library implementations.
+>   
 
-> > > > oops.  CONFIG_SWAP=n,  I assume?
-> 
-> Sorry for being so slow to respond on this.  Yes, I'm inclined to
-> your ifdeffery fix - one can go cleverer, but I'd say it's the
-> appropriate fix now.
-> 
-> But, please change your "present = 0;" to "present = 1;" -
-> if CONFIG_SWAP isn't on, it has to be a migration entry,
-> which always counts as present.
-> 
-> > 
-> > BUT:  what is <present> used for in that loop?  or is it used?
-> 
-> Well spotted!  Something has gone missing: there needs to be a
-> 			vec[i] = present;
-> at the bottom of that loop.
+I'm not super concerned either, but I still don't like it.  There 
+already is dynamic replacement for vsyscall.so, so you could have just 
+dropped in an an-note-ated version.
 
-
-From: Randy Dunlap <randy.dunlap@oracle.com>
-
-Don't check for pte swap entries when CONFIG_SWAP=n.
-And save 'present' in the vec array.
-
-mm/built-in.o: In function `sys_mincore':
-(.text+0xe584): undefined reference to `swapper_space'
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- mm/mincore.c |    5 +++++
- 1 file changed, 5 insertions(+)
-
---- linux-2.6.20-git9.orig/mm/mincore.c
-+++ linux-2.6.20-git9/mm/mincore.c
-@@ -111,6 +111,7 @@ static long do_mincore(unsigned long add
- 			present = mincore_page(vma->vm_file->f_mapping, pgoff);
- 
- 		} else { /* pte is a swap entry */
-+#ifdef CONFIG_SWAP
- 			swp_entry_t entry = pte_to_swp_entry(pte);
- 			if (is_migration_entry(entry)) {
- 				/* migration entries are always uptodate */
-@@ -119,7 +120,11 @@ static long do_mincore(unsigned long add
- 				pgoff = entry.val;
- 				present = mincore_page(&swapper_space, pgoff);
- 			}
-+#else
-+			present = 1;
-+#endif
- 		}
-+		vec[i] = present;
- 	}
- 	pte_unmap_unlock(ptep-1, ptl);
- 
+Zach
