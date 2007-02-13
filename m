@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751297AbXBMLw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751298AbXBMLyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751297AbXBMLw0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 06:52:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbXBMLw0
+	id S1751298AbXBMLyr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 06:54:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbXBMLyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 06:52:26 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:33072 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751292AbXBMLwZ convert rfc822-to-8bit (ORCPT
+	Tue, 13 Feb 2007 06:54:46 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:1982 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751298AbXBMLyq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 06:52:25 -0500
-From: Ismail =?utf-8?q?D=C3=B6nmez?= <ismail@pardus.org.tr>
-Organization: TUBITAK/UEKAE
-To: Len Brown <lenb@kernel.org>
-Subject: Re: /proc/acpi/ac_adapter/AC is missing after latest ACPI merge
-Date: Tue, 13 Feb 2007 13:51:51 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200702122045.34951.ismail@pardus.org.tr> <200702130023.15495.lenb@kernel.org>
-In-Reply-To: <200702130023.15495.lenb@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	Tue, 13 Feb 2007 06:54:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:subject:message-id:mail-followup-to:mime-version:content-type:content-disposition:user-agent:from;
+        b=rOn7OXvaZF+WnxWntLwR3/EPrluoT80zShvuzrrwk4HRJDkKWZIsioenJU3/grv0coVTDp0aCrFy+NzWoSeO+Y7Hyg3O0zsuYFSYkTpgi2DBzYZyvUrXNEJISRaQjOiVylOYJoaU2JyvxfAwIC7wL5PG7p16LgO5hrqEGmyW/OU=
+Date: Tue, 13 Feb 2007 12:54:31 +0100
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] ecryptfs: fix forgotten format specifier
+Message-ID: <20070213115431.GA3023@unknown-00-0d-60-79-ca-00.lan>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702131352.13587.ismail@pardus.org.tr>
+User-Agent: Mutt/1.4.2.2i
+From: Thomas Hisch <t.hisch@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 February 2007 07:23:15 Len Brown wrote:
-> On Monday 12 February 2007 13:45, Ismail Dönmez wrote:
-> > Hi all,
-> >
-> > After latest ACPI merge /proc/acpi/ac_adapter/AC has gone fishing :
-> >
-> > [~]> ls -al /proc/acpi/ac_adapter/
-> > dr-xr-xr-x  2 root root 0 Şub 12 20:44 ADP1
-> >
-> > [~]> ls -al /proc/acpi/ac_adapter/ADP1
-> > -r--r--r-- 1 root root 0 Şub 12 20:44 state
-> >
-> > This at least breaks HAL which thinks AC is always plugged in, is this
-> > change intentional?
->
-> no change intended here.
+add format specifier %d for uid in ecryptfs_printk
 
-It was indeed a sysfs problem which commit 
-c2b6705b75d9c7aff98a4602a32230639e10891c fixed.
+Signed-off-by: Thomas Hisch <t.hisch@gmail.com>
+---
+ fs/ecryptfs/messaging.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Regards,
-ismail
+diff --git a/fs/ecryptfs/messaging.c b/fs/ecryptfs/messaging.c
+index 47d7e7b..1674d33 100644
+--- a/fs/ecryptfs/messaging.c
++++ b/fs/ecryptfs/messaging.c
+@@ -169,7 +169,8 @@ int ecryptfs_process_helo(unsigned int transport, uid_t uid, pid_t pid)
+ 	if (!new_id) {
+ 		rc = -ENOMEM;
+ 		ecryptfs_printk(KERN_ERR, "Failed to allocate memory; unable "
+-				"to register daemon [%d] for user\n", pid, uid);
++				"to register daemon [%d] for user [%d]\n", 
++				pid, uid);
+ 		goto unlock;
+ 	}
+ 	if (!ecryptfs_find_daemon_id(uid, &old_id)) {
+-- 
+1.5.0.rc3.22.g5057
 
+-- 
+Thomas Hisch
+e0625874@stud.tuwien.ac.at
