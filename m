@@ -1,49 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750798AbXBMN6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750733AbXBMOFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750798AbXBMN6t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 08:58:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750792AbXBMN6t
+	id S1750733AbXBMOFc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 09:05:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750734AbXBMOFc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 08:58:49 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:37529 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750791AbXBMN6s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 08:58:48 -0500
-From: Ismail =?iso-8859-1?q?D=F6nmez?= <ismail@pardus.org.tr>
-Organization: TUBITAK/UEKAE
-To: James Ketrenos <jketreno@linux.intel.com>
-Subject: Re: [ANNOUNCE] d80211 based driver for Intel PRO/Wireless 3945ABG
-Date: Tue, 13 Feb 2007 15:58:47 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       ipw3945-devel@lists.sourceforge.net, netdev@vger.kernel.org
-References: <45CCE3CA.4050904@linux.intel.com>
-In-Reply-To: <45CCE3CA.4050904@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Feb 2007 09:05:32 -0500
+Received: from mga06.intel.com ([134.134.136.21]:37185 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750733AbXBMOFb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 09:05:31 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,163,1170662400"; 
+   d="scan'208"; a="196204592:sNHT18629037"
+Date: Tue, 13 Feb 2007 05:31:16 -0800
+From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+To: Dave Jones <davej@redhat.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Adam Belay <abelay@novell.com>,
+       Shaohua Li <shaohua.li@intel.com>, Len Brown <len.brown@intel.com>
+Subject: Re: [PATCH 1/3] Introducing cpuidle: core cpuidle infrastructure
+Message-ID: <20070213053116.A13596@unix-os.sc.intel.com>
+References: <20070212103925.A12078@unix-os.sc.intel.com> <20070213012201.GA27685@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702131558.48987.ismail@pardus.org.tr>
+User-Agent: Mutt/1.2.5.1i
+In-Reply-To: <20070213012201.GA27685@redhat.com>; from davej@redhat.com on Mon, Feb 12, 2007 at 08:22:01PM -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 09 February 2007 23:12:42 James Ketrenos wrote:
-> Please hold all questions until I am done with this email.  Thank you.
->
-> We are pleased to announce the availability of a new driver for the
-> Intel PRO/Wireless 3945ABG Network Connection adapter.  This new driver
-> uses the new d80211 subsystem previously only available as part of the
-> wireless-dev tree.
->
-> You can find the new driver, and additional information about it, here:
->
->    http://intellinuxwireless.org/iwlwifi.
+On Mon, Feb 12, 2007 at 08:22:01PM -0500, Dave Jones wrote:
+> On Mon, Feb 12, 2007 at 10:39:25AM -0800, Venkatesh Pallipadi wrote:
+>  > 
+>  > Introducing 'cpuidle', a new CPU power management infrastructure to manage
+>  > idle CPUs in a clean and efficient manner.
+>  > cpuidle separates out the drivers that can provide support for multiple types
+>  > of idle states and policy governors that decide on what idle state to use
+>  > at run time.
+>  > A cpuidle driver can support multiple idle states based on parameters like
+>  > varying power consumption, wakeup latency, etc (ACPI C-states for example).
+>  > A cpuidle governor can be usage model specific (laptop, server,
+>  > laptop on battery etc).
+>  > Main advantage of the infrastructure being, it allows independent development
+>  > of drivers and governors and allows for better CPU power management.
+>  > 
+>  > A huge thanks to Adam Belay and Shaohua Li who were part of this mini-project
+>  > since its beginning and are greatly responsible for this patchset.
+> 
+> interesting.  Though I wonder about giving admins _more_ knobs to twiddle.
+> It took cpufreq a long time to settle down in this area, and typically
+> 'ondemand' was the answer in the end for 99.9% of people.   I question the usefulness
+> for the whole multiple governors interface, because in the case of cpuidle
+> there shouldn't be any real trade-off between one algorithm and another afaics?
+> So why can't we just have one, that just 'does the right thing' ?
+> The only differentiator that I can think of would be latency, but that seems
+> to be a) covered in a different tunable, and b) probably wouldn't affect
+> most people enough where it matters.
+> 
 
-Tried this is on a patched 2.6.20 kernel with ipw3945 device and it always 
-puts the card in 802.11a mode instead of 802.11bg mode.
+Agreed. In long term, I think cpuidle will also have one governor that will be
+used in most of the cases. But, we have to go through the process of
+experimenting with different governors, just like cpufreq and let the best
+governor win. I think this interface helps to experiment with new
+governors in a non-disruptive way. I mean, any new experiments will not have
+side effects on people already using currently established drivers in
+distributions.
 
-Ideas?
+Also, one of the things we are looking at is to have ratings for different
+drivers and governors (similar to time subsystem), with which we can control
+best driver and best governor for a platform from inside the kernel, instead
+of depending on admin/init script to do the right thing.
 
-Regards,
-ismail
+Having said that, I do feel we may need a different governor for things like
+handhelds. I heard them saying there idle routines has more than one
+dimension of low power-high latency idle states. But, that do not suggest the
+need for runtime switch in sysfs, as it will still be one proper governor for
+a platform.
+
+> I'll do a proper code review later, but one thing stuck out like a sore
+> thumb on a quick skim..
+> 
+> 
+>  > +EXPORT_SYMBOL_GPL(current_driver);
+> That's a horribly generic name for an exported global.
+> 
+> current_cpuidle_driver maybe?
+> 
+
+oops. I don't think we need to export here.
+Though, name should change to current_cpuidle_driver as it is non-static. Will
+fix it in next rev. 
+
+Thanks,
+Venki
