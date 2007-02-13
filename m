@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750867AbXBMRCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750910AbXBMRGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750867AbXBMRCx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 12:02:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbXBMRCx
+	id S1750910AbXBMRGn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 12:06:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbXBMRGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 12:02:53 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:44424 "EHLO smtp.osdl.org"
+	Tue, 13 Feb 2007 12:06:43 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41414 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750867AbXBMRCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 12:02:52 -0500
-Date: Tue, 13 Feb 2007 09:02:24 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Hasso Tepper <hasso@estpak.ee>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: /proc/sys/net/ipv[46]/conf/ issue unsolved
-Message-ID: <20070213090224.2826859f@localhost.localdomain>
-In-Reply-To: <200702131529.04708.hasso@estpak.ee>
-References: <200702131529.04708.hasso@estpak.ee>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	id S1750909AbXBMRGm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 12:06:42 -0500
+Date: Tue, 13 Feb 2007 18:03:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Alan <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system call support
+Message-ID: <20070213170348.GA18967@elte.hu>
+References: <20060529212109.GA2058@elte.hu> <20070213142010.GA638@elte.hu> <20070213150019.4b4d4827@localhost.localdomain> <p73hctqggfz.fsf@bingen.suse.de> <Pine.LNX.4.64.0702130817440.8424@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702130817440.8424@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.8
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.1.7
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.5000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Feb 2007 15:29:04 +0200
-Hasso Tepper <hasso@estpak.ee> wrote:
 
-> There is long standing issue in kernel which makes using /etc/sysctl.conf
-> useless for boottime configuration of specific interface properties and
-> breaks probably any software relying on unconditional existence of the
-> conf trees like it was in previous kernels (I alone have written several
-> pieces of such software). It's broken AFAIK from 2.6.15. There has been
-> several notes about issue in the list, but issue haven't got any (at least
-> efficient) attention from developers.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> Ie, we could just add to "do_fork()" (which is where all of the 
+> vfork/clone/fork cases end up) a simple case like
 > 
-> The current behaviour bites users in many ways and breaks several use cases.
-> I asked several times in the past "what I should do now?" question, but
-> got no clear answer.
+> 	err = wait_async_context();
+> 	if (err)
+> 		return err;
 > 
-> References:
-> http://marc.theaimsgroup.com/?l=linux-netdev&m=115685059625467&w=2
-> http://marc.theaimsgroup.com/?l=linux-netdev&m=115690828822486&w=2
-> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=169809
+> or
 > 
-> Is there any chance this will be fixed or at least clear position is
-> taken by developers? Breaking userspace applications is declared nonono
-> several times in the past ... I'm not even against breaking it if there
-> is _very_ good reason to do it. Ok, but I want to know how userspace is
-> meant to behave now. I can't continue using crappy workarounds.
+> 	if (in_async_context())
+> 		return -EINVAL;
 
-As Herbert Xu said:
+ok, this is a much nicer solution. I've scrapped the 
+sys_async_sys_call_table[] thing.
 
-> You can disable it in /proc/sys/net/ipv6/conf/default/... and then
-> reenable it on the interfaces that you actually want.
-
-And Xen is broken because it tries to use the same bogus Mac
-address on on all pseudo devices.
-
-
+	Ingo
