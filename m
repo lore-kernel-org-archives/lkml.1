@@ -1,106 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030626AbXBMGgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030655AbXBMGhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030626AbXBMGgZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 01:36:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030653AbXBMGgZ
+	id S1030655AbXBMGhN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 01:37:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161021AbXBMGhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 01:36:25 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:56405 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030626AbXBMGgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 01:36:25 -0500
-Date: Mon, 12 Feb 2007 22:35:52 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Alexey Dobriyan <adobriyan@openvz.org>, viro@ftp.linux.org.uk,
-       linux-kernel@vger.kernel.org, duncan.sands@math.u-psud.fr
-Subject: Re: [PATCH v4] Fix rmmod/read/write races in /proc entries
-Message-Id: <20070212223552.59d733b1.akpm@linux-foundation.org>
-In-Reply-To: <20070211202330.GA24509@martell.zuzino.mipt.ru>
-References: <20070208132012.GA6041@localhost.sw.ru>
-	<20070209010037.7f4393c5.akpm@linux-foundation.org>
-	<20070211202330.GA24509@martell.zuzino.mipt.ru>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 Feb 2007 01:37:13 -0500
+Received: from smtpq3.groni1.gr.home.nl ([213.51.130.202]:57259 "EHLO
+	smtpq3.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030655AbXBMGhL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 01:37:11 -0500
+Message-ID: <45D15C7D.1050400@gmail.com>
+Date: Tue, 13 Feb 2007 07:36:45 +0100
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH x86 for review II] [13/39] i386: CONFIG_PHYSICAL_ALIGN
+ limited to 4M?
+References: <20070212837.963446000@suse.de> <20070212073800.3D44313DD5@wotan.suse.de>
+In-Reply-To: <20070212073800.3D44313DD5@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 Feb 2007 23:23:30 +0300 Alexey Dobriyan <adobriyan@gmail.com> wrote:
+On 02/12/2007 08:38 AM, Andi Kleen wrote:
 
-> [PATCH v4] Fix rmmod/read/write races in /proc entries
+> From: Rene Herman <rene.herman@gmail.com>
 
-This:
+[ ... ]
 
-static ssize_t
-proc_file_write(struct file *file, const char __user *buffer,
-		size_t count, loff_t *ppos)
-{
-	struct inode *inode = file->f_path.dentry->d_inode;
-	struct proc_dir_entry * dp;
-	ssize_t rv = -EIO;
-	
-	dp = PDE(inode);
+> --- linux.orig/arch/i386/Kconfig
+> +++ linux/arch/i386/Kconfig
+> @@ -843,7 +843,7 @@ config RELOCATABLE
+>  config PHYSICAL_ALIGN
+>  	hex "Alignment value to which kernel should be aligned"
+>  	default "0x100000"
+> -	range 0x2000 0x400000
+> +	range 0x2000 0x1000000
+>  	help
+>  	  This value puts the alignment restrictions on physical address
+>   	  where kernel is loaded and run from. Kernel is compiled for an
 
-	if (!dp->write_proc)
-		goto out;
+Okay I guess, but in reply to this, Vivek Goyal pointed out a patch of 
+his restoring CONFIG_PHYSICAL_START that was already in -mm instead 
+since it seems Xen also wanted it. That does also match what I wanted it 
+for better:
 
-	spin_lock(&dp->pde_unload_lock);
-	if (!dp->proc_fops)
-		/*
-		 * remove_proc_entry() marked PDE as "going away".
-		 * No new writers allowed.
-		 */
-		goto out_unlock;
+http://lkml.org/lkml/2007/1/2/376
 
-versus
-
-		spin_lock(&de->pde_unload_lock);
-		/*
-		 * Stop accepting new readers/writers. If you're dynamically
-		 * allocating ->proc_fops, save a pointer somewhere.
-		 */
-		de->proc_fops = NULL;
-		/* Wait until all existing readers/writers are done. */
-		if (de->pde_users > 0) {
-			struct completion c;
-
-			init_completion(&c);
-			if (!de->pde_unload_completion)
-				de->pde_unload_completion = &c;
-
-			spin_unlock(&de->pde_unload_lock);
-			spin_unlock(&proc_subdir_lock);
-
-			wait_for_completion(de->pde_unload_completion);
-
-			spin_lock(&proc_subdir_lock);
-			goto continue_removing;
-		}
-		spin_unlock(&de->pde_unload_lock);
-  <here>
-	...
-	<free de>
-
-What prevents proc_file_write() from looking up and playing with this de in
-<here>?
-
-
-Also... lockdep wants this:
-
---- a/fs/proc/generic.c~fix-rmmod-read-write-races-in-proc-entries-fix
-+++ a/fs/proc/generic.c
-@@ -790,9 +790,8 @@ void remove_proc_entry(const char *name,
- 		de->proc_fops = NULL;
- 		/* Wait until all existing readers/writers are done. */
- 		if (de->pde_users > 0) {
--			struct completion c;
-+			DECLARE_COMPLETION_ONSTACK(c);
- 
--			init_completion(&c);
- 			if (!de->pde_unload_completion)
- 				de->pde_unload_completion = &c;
- 
-_
+Rene.
 
