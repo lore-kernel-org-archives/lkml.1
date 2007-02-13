@@ -1,144 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750974AbXBMUSZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750993AbXBMUT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750974AbXBMUSZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 15:18:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbXBMUSZ
+	id S1750993AbXBMUT4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 15:19:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbXBMUT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 15:18:25 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:4226 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750956AbXBMUSX (ORCPT
+	Tue, 13 Feb 2007 15:19:56 -0500
+Received: from smtpout05-04.prod.mesa1.secureserver.net ([64.202.165.221]:46255
+	"HELO smtpout05-04.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751004AbXBMUTz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 15:18:23 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 13 Feb 2007 12:18:16 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 06/11] syslets: core, documentation
-In-Reply-To: <20070213142042.GG638@elte.hu>
-Message-ID: <Pine.LNX.4.64.0702131117120.32055@alien.or.mcafeemobile.com>
-References: <20070213142042.GG638@elte.hu>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 13 Feb 2007 15:19:55 -0500
+Message-ID: <45D21D71.2000708@techmoninc.com>
+Date: Tue, 13 Feb 2007 14:20:01 -0600
+From: Andy Kennedy <akennedy@techmoninc.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+Subject: Re: Serial console issues.
+References: <45D0D09D.8010807@techmoninc.com> <Pine.LNX.4.63.0702121255100.6630@qynat.qvtvafvgr.pbz>
+In-Reply-To: <Pine.LNX.4.63.0702121255100.6630@qynat.qvtvafvgr.pbz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Lang wrote:
+> On Mon, 12 Feb 2007, Andy Kennedy wrote:
+>
+>>
+>> For those of you who are on BusyBox's mailing list, you've already 
+>> seen this -- I was sent here for help.
+>>
+>> Specs:
+>> Linux:  2.6.18
+>> Bootloader:  SysLinux
+>> Init:  BusyBox (ver 1.4.0) init.
+>> Kernel command line: console=ttyS0,115200,n,8,1
+>> System: VersaLogic 568 (STD80/STD32 Bus, i386 based computer)
+>> Issue:  Booting on "System" I get perfect printk's to the serial 
+>> console. When the init takes over (from within an initrd), the 
+>> console begins to miss characters.  I can still send write commands 
+>> through the console, however, the output of these commands is 
+>> garbled.  The really odd part is when the init releases control (is 
+>> killed by Linux), or when a printk is issued, the console prints 
+>> perfectly again.  The next really strange part about this is that 
+>> changing "System" to my laptop -- no problems PERIOD. The BusyBox 
+>> list directed me to LKML as this is a wider base of users that may 
+>> have experienced the same problem and could provide me an answer.
+>
+> I've seen this happen when you accidently have multple programs 
+> attached to the same console (even with the text-mode vga consoles)
+>
+> double check that nothing else is trying to use that serial port
+>
+> David Lang
+>
+<Adding Off-line chatter Between David Lang and Andy Kennedy>
+>>>> Not to be thick, but it is the same disk used on two different 
+>>>> systems. . . one works, the other doesn't.  Doesn't that imply that 
+>>>> there is only one thing grabbing the serial port?  If not, I'll 
+>>>> look again.  I have even had this problem with nothing in the 
+>>>> inittab. . . The only thing I could think is that maybe something 
+>>>> within the init code opens the /dev/console the wrong way. . . or 
+>>>> is init opening /dev/console AND /dev/ttyS0 and that is what is 
+>>>> causing the problem????  BUT, then why would it work on my laptop, 
+>>>> however, not the embedded system?
+>>>
+>>> with the same disk working differently on different hardware I would 
+>>> start looking at the drivers and interrupts. does one of the two 
+>>> have different hardware that could be shareing an interrupt and the 
+>>> other doesn't?
+>>>
+>>> David Lang
+>> Other than looking into proc, is there another way to determine 
+>> this?  The BIOS CMOS setup isn't that forthcoming with any 
+>> information -- this is an older board and has very limited settings 
+>> on it.
+>>
+>> In proc/interrupts I'm seeing nothing but serial on 4.
+>>
+>> Do you know if the kernel preforms any type of init on the 
+>> /dev/console before it writes each time?  IE, from the BusyBox code, 
+>> I cannot see that it mucks with the /dev/console before it writes, 
+>> but the code is so thick I may have missed something.
+>
+> I don't know the answers to these questions, sorry. I'm not a kernel 
+> hacker, just an experianced user, and since this problem sounded 
+> familiar I spoke up. at this point we are getting out of my depth.
+>
+> David Lang
+Me neither David. . . but thanks for you help.
 
-Wow! You really helped Zach out ;)
+Another piece of the puzzle (sorry I left this off before, didn't think):
+SERIAL PORT TYPE:  TI16750
 
+In printk(), when something is sent from the kernel to the console, is 
+there an initialization that occurs prior to the actual write to the 
+console?  How does the console interact with ttyS0 when console=ttyS0 is 
+supplied as command line parameter?  When an init interfaces the 
+console, should it also send the setup information if it detects that 
+console=<serial device>?  OR. . . could there be something specific to 
+this hardware that requires additional coding to get the console to work 
+the correct way (i.e. some form of force send, etc)?
 
+Before, I explained how the printk comes out perfectly, then BusyBox 
+hoses the connection, then another printk will reset the input.  The 
+following is a snippet of that:
+> Using IPI Shortcut mode
+> drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
+> Time: pit clocksource has been installed.
+> Freeing unused kernel memory: 536k freed
+>  :l
+>    a l
+>       tr'
+>          z ye
+>               .
+>                gg et dil
+>                         t'
+>
+>
+>
+>
+>
+> g input: AT Translated Set 2 keyboard as /class/input/input0
+>
+I'm in way over my head on this one since I don't know the underling 
+driver for the serial port on Linux. Sorry again for polluting your list 
+and thanks in advance (again) for any assistance you can provide me on 
+this issue.
 
-On Tue, 13 Feb 2007, Ingo Molnar wrote:
-
-> +The Syslet Atom:
-> +----------------
-> +
-> +The syslet atom is a small, fixed-size (44 bytes on 32-bit) piece of
-> +user-space memory, which is the basic unit of execution within the syslet
-> +framework. A syslet represents a single system-call and its arguments.
-> +In addition it also has condition flags attached to it that allows the
-> +construction of larger programs (syslets) from these atoms.
-> +
-> +Arguments to the system call are implemented via pointers to arguments.
-> +This not only increases the flexibility of syslet atoms (multiple syslets
-> +can share the same variable for example), but is also an optimization:
-> +copy_uatom() will only fetch syscall parameters up until the point it
-> +meets the first NULL pointer. 50% of all syscalls have 2 or less
-> +parameters (and 90% of all syscalls have 4 or less parameters).
-
-Why do you need to have an extra memory indirection per parameter in 
-copy_uatom()? It also forces you to have parameters pointed-to, to be 
-"long" (or pointers), instead of their natural POSIX type (like fd being 
-"int" for example). Also, you need to have array pointers (think about a 
-"char buf[];" passed to an async read(2)) to be saved into a pointer 
-variable, and pass the pointer of the latter to the async system. Same for 
-all structures (ie. stat(2) "struct stat"). Let them be real argouments 
-and add a nparams argoument to the structure:
-
-struct syslet_atom {
-       unsigned long                       flags;
-       unsigned int                        nr;
-       unsigned int                        nparams;
-       long __user                         *ret_ptr;
-       struct syslet_uatom     __user      *next;
-       unsigned long                       args[6];
-};
-
-I can understand that chaining syscalls requires variable sharing, but the 
-majority of the parameters passed to syscalls are just direct ones.
-Maybe a smart method that allows you to know if a parameter is a direct 
-one or a pointer to one? An "unsigned int pmap" where bit N is 1 if param 
-N is an indirection? Hmm?
-
-
-
-
-
-> +Running Syslets:
-> +----------------
-> +
-> +Syslets can be run via the sys_async_exec() system call, which takes
-> +the first atom of the syslet as an argument. The kernel does not need
-> +to be told about the other atoms - it will fetch them on the fly as
-> +execution goes forward.
-> +
-> +A syslet might either be executed 'cached', or it might generate a
-> +'cachemiss'.
-> +
-> +'Cached' syslet execution means that the whole syslet was executed
-> +without blocking. The system-call returns the submitted atom's address
-> +in this case.
-> +
-> +If a syslet blocks while the kernel executes a system-call embedded in
-> +one of its atoms, the kernel will keep working on that syscall in
-> +parallel, but it immediately returns to user-space with a NULL pointer,
-> +so the submitting task can submit other syslets.
-> +
-> +Completion of asynchronous syslets:
-> +-----------------------------------
-> +
-> +Completion of asynchronous syslets is done via the 'completion ring',
-> +which is a ringbuffer of syslet atom pointers user user-space memory,
-> +provided by user-space in the sys_async_register() syscall. The
-> +kernel fills in the ringbuffer starting at index 0, and user-space
-> +must clear out these pointers. Once the kernel reaches the end of
-> +the ring it wraps back to index 0. The kernel will not overwrite
-> +non-NULL pointers (but will return an error), user-space has to
-> +make sure it completes all events it asked for.
-
-Sigh, I really dislike shared userspace/kernel stuff, when we're 
-transfering pointers to userspace. Did you actually bench it against a:
-
-int async_wait(struct syslet_uatom **r, int n);
-
-I can fully understand sharing userspace buffers with the kernel, if we're 
-talking about KB transferd during a block or net I/O DMA operation, but 
-for transfering a pointer? Behind each pointer transfer(4/8 bytes) there 
-is a whole syscall execution, that makes the 4/8 bytes tranfers have a 
-relative cost of 0.01% *maybe*. Different case is a O_DIRECT read of 16KB 
-of data, where in that case the memory transfer has a relative cost 
-compared to the syscall, that can be pretty high. The syscall saving 
-argument is moot too, because syscall are cheap, and if there's a lot of 
-async traffic, you'll be fetching lots of completions to keep you dispatch 
-loop pretty busy for a while.
-And the API is *certainly* cleaner.
-
-
-
-- Davide
-
-
+Andy Kennedy
