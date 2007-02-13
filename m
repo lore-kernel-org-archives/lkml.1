@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751277AbXBMLfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751287AbXBMLhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751277AbXBMLfd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 06:35:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbXBMLfd
+	id S1751287AbXBMLhA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 06:37:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbXBMLhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 06:35:33 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42404 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751277AbXBMLfd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 06:35:33 -0500
+	Tue, 13 Feb 2007 06:37:00 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:51740 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751287AbXBMLg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 06:36:59 -0500
+Date: Tue, 13 Feb 2007 06:35:52 -0500
+From: Jakub Jelinek <jakub@redhat.com>
+To: Manu Abraham <abraham.manu@gmail.com>
+Cc: Marcel Siegert <mws@linuxtv.org>, Arjan van de Ven <arjan@infradead.org>,
+       mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
+       linux-kernel@vger.kernel.org
 Subject: Re: dvb shared datastructure bug?
-From: Arjan van de Ven <arjan@infradead.org>
-To: Marcel Siegert <mws@linuxtv.org>
-Cc: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
-       linux-kernel@vger.kernel.org, Manu Abraham <abraham.manu@gmail.com>
-In-Reply-To: <200702131204.47314.mws@linuxtv.org>
-References: <1171352878.12771.30.camel@laptopd505.fenrus.org>
-	 <200702131204.47314.mws@linuxtv.org>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Tue, 13 Feb 2007 12:35:26 +0100
-Message-Id: <1171366526.12771.99.camel@laptopd505.fenrus.org>
+Message-ID: <20070213113552.GL22959@devserv.devel.redhat.com>
+Reply-To: Jakub Jelinek <jakub@redhat.com>
+References: <1171352878.12771.30.camel@laptopd505.fenrus.org> <200702131204.47314.mws@linuxtv.org> <1a297b360702130314i3b67a828v804ddb85dc975101@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1a297b360702130314i3b67a828v804ddb85dc975101@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Feb 13, 2007 at 03:14:23PM +0400, Manu Abraham wrote:
+> >thanks for pointing out this issue.
+> >
+> >attached find a patch that fixes the problem.
+> >
+> >@mauro - please pull changeset a7ac92d208fe
+> >   dvbdev: fix illegal re-usage of fileoperations struct
+> >
+> >from  http://www.linuxtv.org/hg/~mws/v4l-dvb-fixtree
+> >
+> 
+> Ack'd-by: Manu Abraham <manu@linuxtv.org>
 
-> attached find a patch that fixes the problem.
+Wouldn't it be better to kmalloc both struct dvb_device and
+struct file_operations together instead of doing 2 separate allocations?
+struct dvd_device_plus_fops
+{
+  struct dvb_device dev;
+  struct file_operations fops;
+} *dev_fops = kmalloc (sizeof (struct dvd_device_plus_fops), GFP_KERNEL);
+*pdvbdev = dvbdev = (struct dvb_device *)dev_fops;
+if (dev_fops == NULL)
+  error handling;
+memset (&dev_fops->fops, 0, sizeof (dev_fops->fops));
+...
+dvbdev->fops = &dev_fops->fops;
 
-
-Hi,
-
-Thank you for the quick response.
-I think there is a small bug in this; at least I don't see where you
-copy over the content of the fops template to the newly allocated piece
-of memory...
-
-Greetings,
-   Arjan van de Ven
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+	Jakub
