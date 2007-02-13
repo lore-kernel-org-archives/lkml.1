@@ -1,83 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751285AbXBMLO1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751283AbXBMLPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751285AbXBMLO1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 06:14:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbXBMLO0
+	id S1751283AbXBMLPy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 06:15:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbXBMLPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 06:14:26 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:42398 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751285AbXBMLO0 (ORCPT
+	Tue, 13 Feb 2007 06:15:54 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57596 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751283AbXBMLPx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 06:14:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jby2sKUL0iy970NX8+Hv6Hc7PUH8fDM2UiYeNlf+F1KXmZwyR4gjtu1aP+NGlWp/SMbCc5Fbgw5Ho0KWRVigTMt99cc0G2PEIKEg6V6QINXl+YHfpQK3scc2LyachkJkwRKMnQBsnOK5I1ZSk1EEk110h9TuSxz/GwCZoyL6n3w=
-Message-ID: <1a297b360702130314i3b67a828v804ddb85dc975101@mail.gmail.com>
-Date: Tue, 13 Feb 2007 15:14:23 +0400
-From: "Manu Abraham" <abraham.manu@gmail.com>
-To: "Marcel Siegert" <mws@linuxtv.org>
-Subject: Re: dvb shared datastructure bug?
-Cc: "Arjan van de Ven" <arjan@infradead.org>, mchehab@infradead.org,
-       v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
-In-Reply-To: <200702131204.47314.mws@linuxtv.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 13 Feb 2007 06:15:53 -0500
+Date: Tue, 13 Feb 2007 11:27:58 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: "Martin A. Fink" <fink@mpe.mpg.de>, Matthias Schniedermeyer <ms@citd.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: SATA-performance: Linux vs. FreeBSD
+Message-ID: <20070213112758.5920a28e@localhost.localdomain>
+In-Reply-To: <1171361290.12771.77.camel@laptopd505.fenrus.org>
+References: <200702121502.17130.fink@mpe.mpg.de>
+	<200702121856.29729.fink@mpe.mpg.de>
+	<45D0F8EE.7020604@citd.de>
+	<200702131025.15964.fink@mpe.mpg.de>
+	<1171361290.12771.77.camel@laptopd505.fenrus.org>
+X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1171352878.12771.30.camel@laptopd505.fenrus.org>
-	 <200702131204.47314.mws@linuxtv.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/13/07, Marcel Siegert <mws@linuxtv.org> wrote:
-> On Tuesday 13 February 2007, Arjan van de Ven wrote:
-> > Hi,
-> >
-> > while working on the last pieces of the file_ops constantification, DVB
-> > is the small village in France that is holding the Romans at bay... but
-> > I think I found the final flaw in it now:
-> >
-> >        *pdvbdev = dvbdev = kmalloc(sizeof(struct dvb_device), GFP_KERNEL);
-> >
-> >         if (!dvbdev) {
-> >                 mutex_unlock(&dvbdev_register_lock);
-> >                 return -ENOMEM;
-> >         }
-> >
-> >         memcpy(dvbdev, template, sizeof(struct dvb_device));
-> >         dvbdev->type = type;
-> >         dvbdev->id = id;
-> >         dvbdev->adapter = adap;
-> >         dvbdev->priv = priv;
-> >
-> >         dvbdev->fops->owner = adap->module;
-> >
-> >
-> > this is the place in DVB that is writing to a struct file_operations.
-> > But as with almost all such cases in the kernel, this one is buggy:
-> > While the code nicely copies a template dvbdev, that template only has a
-> > pointer to a *shared* fops struct, the copy doesn't help that. So this
-> > code is overwriting the fops owner field for ALL active devices, not
-> > just the ones the copy of the template is for....
-> >
-> > I'm lost in the maze of this part of DVB (it seems to have some magic
-> > potion to resist me) but I was hoping some of the local citizens could
-> > take a look at this buglet...
-> >
-> > Greetings,
-> >     Arjan van de Ven
->
-> hi arjan,
-> thanks for pointing out this issue.
->
-> attached find a patch that fixes the problem.
->
-> @mauro - please pull changeset a7ac92d208fe
->    dvbdev: fix illegal re-usage of fileoperations struct
->
-> from  http://www.linuxtv.org/hg/~mws/v4l-dvb-fixtree
->
+> there's several tunables you can do;
+> 1) increase /sys/block/<device>/queue/nr_requests
+>    the linux default is on the low side
+> 5) echo a larger value into /sys/block/<device>/queue/max_sectors_kb
+>    the default seems to be 512 which is... really low. The hw max is in
+>    another file in that directory; if you want max throughput set the
+>    max_sectors_kb value to the hw max. (you pay in terms of fairness for
 
-Ack'd-by: Manu Abraham <manu@linuxtv.org>
+
+There are two more factors that play into #1 and #5. Firstly there is a
+per command completion overhead in ATA without NCQ being active and that
+isn't yet a heavily optimised libata path. Secondly erase block size
+matters with flash drives so the bigger each I/O the better erase block
+behaviour we should get.
