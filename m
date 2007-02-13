@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932126AbXBMOZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932150AbXBMO0D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932126AbXBMOZc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 09:25:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932141AbXBMOY6
+	id S932150AbXBMO0D (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 09:26:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932127AbXBMOY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 09:24:58 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33288 "EHLO mx2.mail.elte.hu"
+	Tue, 13 Feb 2007 09:24:56 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33296 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932139AbXBMOYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 09:24:13 -0500
-Date: Tue, 13 Feb 2007 15:21:33 +0100
+	id S932144AbXBMOYP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 09:24:15 -0500
+Date: Tue, 13 Feb 2007 15:20:24 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -23,11 +23,12 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Suparna Bhattacharya <suparna@in.ibm.com>,
        Davide Libenzi <davidel@xmailserver.org>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 11/11] syslets: x86: optimized sys_umem_add()
-Message-ID: <20070213142133.GL638@elte.hu>
+Subject: [patch 02/11] syslets: add syslet.h include file, user API/ABI definitions
+Message-ID: <20070213142024.GC638@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20060529212109.GA2058@elte.hu>
 User-Agent: Mutt/1.4.2.2i
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -0.8
@@ -43,50 +44,166 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ingo Molnar <mingo@elte.hu>
 
-provide an optimized assembly version of sys_umem_add().
-It is about 2 times faster than the C version.
+add include/linux/syslet.h which contains the user-space API/ABI
+declarations. Add the new header to include/linux/Kbuild as well.
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- arch/i386/lib/getuser.S |   27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
+ include/linux/Kbuild   |    1 
+ include/linux/syslet.h |  136 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 137 insertions(+)
 
-Index: linux/arch/i386/lib/getuser.S
+Index: linux/include/linux/Kbuild
 ===================================================================
---- linux.orig/arch/i386/lib/getuser.S
-+++ linux/arch/i386/lib/getuser.S
-@@ -11,6 +11,33 @@
- #include <asm/thread_info.h>
- 
- /*
-+ * Optimized user-memory arithmetics system-call:
+--- linux.orig/include/linux/Kbuild
++++ linux/include/linux/Kbuild
+@@ -140,6 +140,7 @@ header-y += sockios.h
+ header-y += som.h
+ header-y += sound.h
+ header-y += synclink.h
++header-y += syslet.h
+ header-y += telephony.h
+ header-y += termios.h
+ header-y += ticable.h
+Index: linux/include/linux/syslet.h
+===================================================================
+--- /dev/null
++++ linux/include/linux/syslet.h
+@@ -0,0 +1,136 @@
++#ifndef _LINUX_SYSLET_H
++#define _LINUX_SYSLET_H
++/*
++ * The syslet subsystem - asynchronous syscall execution support.
++ *
++ * Started by Ingo Molnar:
++ *
++ *  Copyright (C) 2007 Red Hat, Inc., Ingo Molnar <mingo@redhat.com>
++ *
++ * User-space API/ABI definitions:
 + */
 +
-+.text
-+.align 4
-+.globl sys_umem_add
-+sys_umem_add:
-+	movl 0x4(%esp), %ecx			# uptr
-+	movl 0x8(%esp), %edx			# inc
-+
-+	cmpl $__PAGE_OFFSET, %ecx		# access_ok(uptr)
-+	jae bad_sys_umem_add
-+
-+1:	addl %edx, (%ecx)			# *uptr += inc
-+2:	movl (%ecx), %eax			# return *uptr
-+	ret
-+
-+bad_sys_umem_add:
-+	movl $-14, %eax
-+	ret
-+
-+.section __ex_table,"a"
-+	.long 1b, bad_sys_umem_add
-+	.long 2b, bad_sys_umem_add
-+.previous
++/*
++ * This is the 'Syslet Atom' - the basic unit of execution
++ * within the syslet framework. A syslet always represents
++ * a single system-call plus its arguments, plus has conditions
++ * attached to it that allows the construction of larger
++ * programs from these atoms. User-space variables can be used
++ * (for example a loop index) via the special sys_umem*() syscalls.
++ *
++ * Arguments are implemented via pointers to arguments. This not
++ * only increases the flexibility of syslet atoms (multiple syslets
++ * can share the same variable for example), but is also an
++ * optimization: copy_uatom() will only fetch syscall parameters
++ * up until the point it meets the first NULL pointer. 50% of all
++ * syscalls have 2 or less parameters (and 90% of all syscalls have
++ * 4 or less parameters).
++ *
++ * [ Note: since the argument array is at the end of the atom, and the
++ *   kernel will not touch any argument beyond the final NULL one, atoms
++ *   might be packed more tightly. (the only special case exception to
++ *   this rule would be SKIP_TO_NEXT_ON_STOP atoms, where the kernel will
++ *   jump a full syslet_uatom number of bytes.) ]
++ */
++struct syslet_uatom {
++	unsigned long				flags;
++	unsigned long				nr;
++	long __user				*ret_ptr;
++	struct syslet_uatom	__user		*next;
++	unsigned long		__user		*arg_ptr[6];
++	/*
++	 * User-space can put anything in here, kernel will not
++	 * touch it:
++	 */
++	void __user				*private;
++};
 +
 +/*
-  * copy_uatom() - copy a syslet_atom from user-space into kernel-space:
-  */
- 
++ * Flags to modify/control syslet atom behavior:
++ */
++
++/*
++ * Immediately queue this syslet asynchronously - do not even
++ * attempt to execute it synchronously in the user context:
++ */
++#define SYSLET_ASYNC				0x00000001
++
++/*
++ * Never queue this syslet asynchronously - even if synchronous
++ * execution causes a context-switching:
++ */
++#define SYSLET_SYNC				0x00000002
++
++/*
++ * Do not queue the syslet in the completion ring when done.
++ *
++ * ( the default is that the final atom of a syslet is queued
++ *   in the completion ring. )
++ *
++ * Some syscalls generate implicit completion events of their
++ * own.
++ */
++#define SYSLET_NO_COMPLETE			0x00000004
++
++/*
++ * Execution control: conditions upon the return code
++ * of the previous syslet atom. 'Stop' means syslet
++ * execution is stopped and the atom is put into the
++ * completion ring:
++ */
++#define SYSLET_STOP_ON_NONZERO			0x00000008
++#define SYSLET_STOP_ON_ZERO			0x00000010
++#define SYSLET_STOP_ON_NEGATIVE			0x00000020
++#define SYSLET_STOP_ON_NON_POSITIVE		0x00000040
++
++#define SYSLET_STOP_MASK				\
++	(	SYSLET_STOP_ON_NONZERO		|	\
++		SYSLET_STOP_ON_ZERO		|	\
++		SYSLET_STOP_ON_NEGATIVE		|	\
++		SYSLET_STOP_ON_NON_POSITIVE		)
++
++/*
++ * Special modifier to 'stop' handling: instead of stopping the
++ * execution of the syslet, the linearly next syslet is executed.
++ * (Normal execution flows along atom->next, and execution stops
++ *  if atom->next is NULL or a stop condition becomes true.)
++ *
++ * This is what allows true branches of execution within syslets.
++ */
++#define SYSLET_SKIP_TO_NEXT_ON_STOP		0x00000080
++
++/*
++ * This is the (per-user-context) descriptor of the async completion
++ * ring. This gets registered via sys_async_register().
++ */
++struct async_head_user {
++	/*
++	 * Pointers to completed async syslets (i.e. syslets that
++	 * generated a cachemiss and went async, returning -EASYNCSYSLET
++	 * to the user context by sys_async_exec()) are queued here.
++	 * Syslets that were executed synchronously are not queued here.
++	 *
++	 * Note: the final atom that generated the exit condition is
++	 * queued here. Normally this would be the last atom of a syslet.
++	 */
++	struct syslet_uatom __user		**completion_ring;
++	/*
++	 * Ring size in bytes:
++	 */
++	unsigned long				ring_size_bytes;
++
++	/*
++	 * Maximum number of asynchronous contexts the kernel creates.
++	 *
++	 * -1UL has a special meaning: the kernel manages the optimal
++	 * size of the async pool.
++	 *
++	 * Note: this field should be valid for the lifetime of async
++	 * processing, because future kernels detect changes to this
++	 * field. (enabling user-space to control the size of the async
++	 * pool in a low-overhead fashion)
++	 */
++	unsigned long				max_nr_threads;
++};
++
++#endif
