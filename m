@@ -1,234 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751275AbXBMLN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751285AbXBMLO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751275AbXBMLN5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 06:13:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbXBMLN5
+	id S1751285AbXBMLO1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 06:14:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbXBMLO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 06:13:57 -0500
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:5985 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751275AbXBMLN4 (ORCPT
+	Tue, 13 Feb 2007 06:14:26 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:42398 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751285AbXBMLO0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 06:13:56 -0500
-Message-ID: <45D19D72.4050009@de.ibm.com>
-Date: Tue, 13 Feb 2007 12:13:54 +0100
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-User-Agent: Thunderbird 1.5 (X11/20051201)
+	Tue, 13 Feb 2007 06:14:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jby2sKUL0iy970NX8+Hv6Hc7PUH8fDM2UiYeNlf+F1KXmZwyR4gjtu1aP+NGlWp/SMbCc5Fbgw5Ho0KWRVigTMt99cc0G2PEIKEg6V6QINXl+YHfpQK3scc2LyachkJkwRKMnQBsnOK5I1ZSk1EEk110h9TuSxz/GwCZoyL6n3w=
+Message-ID: <1a297b360702130314i3b67a828v804ddb85dc975101@mail.gmail.com>
+Date: Tue, 13 Feb 2007 15:14:23 +0400
+From: "Manu Abraham" <abraham.manu@gmail.com>
+To: "Marcel Siegert" <mws@linuxtv.org>
+Subject: Re: dvb shared datastructure bug?
+Cc: "Arjan van de Ven" <arjan@infradead.org>, mchehab@infradead.org,
+       v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200702131204.47314.mws@linuxtv.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: gregkh@suse.de, akpm@linux-foundation.org
-Subject: [PATCH debugfs: implement symbolic links
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1171352878.12771.30.camel@laptopd505.fenrus.org>
+	 <200702131204.47314.mws@linuxtv.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+On 2/13/07, Marcel Siegert <mws@linuxtv.org> wrote:
+> On Tuesday 13 February 2007, Arjan van de Ven wrote:
+> > Hi,
+> >
+> > while working on the last pieces of the file_ops constantification, DVB
+> > is the small village in France that is holding the Romans at bay... but
+> > I think I found the final flaw in it now:
+> >
+> >        *pdvbdev = dvbdev = kmalloc(sizeof(struct dvb_device), GFP_KERNEL);
+> >
+> >         if (!dvbdev) {
+> >                 mutex_unlock(&dvbdev_register_lock);
+> >                 return -ENOMEM;
+> >         }
+> >
+> >         memcpy(dvbdev, template, sizeof(struct dvb_device));
+> >         dvbdev->type = type;
+> >         dvbdev->id = id;
+> >         dvbdev->adapter = adap;
+> >         dvbdev->priv = priv;
+> >
+> >         dvbdev->fops->owner = adap->module;
+> >
+> >
+> > this is the place in DVB that is writing to a struct file_operations.
+> > But as with almost all such cases in the kernel, this one is buggy:
+> > While the code nicely copies a template dvbdev, that template only has a
+> > pointer to a *shared* fops struct, the copy doesn't help that. So this
+> > code is overwriting the fops owner field for ALL active devices, not
+> > just the ones the copy of the template is for....
+> >
+> > I'm lost in the maze of this part of DVB (it seems to have some magic
+> > potion to resist me) but I was hoping some of the local citizens could
+> > take a look at this buglet...
+> >
+> > Greetings,
+> >     Arjan van de Ven
+>
+> hi arjan,
+> thanks for pointing out this issue.
+>
+> attached find a patch that fixes the problem.
+>
+> @mauro - please pull changeset a7ac92d208fe
+>    dvbdev: fix illegal re-usage of fileoperations struct
+>
+> from  http://www.linuxtv.org/hg/~mws/v4l-dvb-fixtree
+>
 
-debugfs: implement symbolic links
-
-Implement a new function debugfs_create_symlink() which can be used
-to create symbolic links in debugfs. This function can be useful
-for people moving functionality from /proc to debugfs (e.g. the
-gcov-kernel patch).
-
-Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
----
-
- fs/debugfs/file.c       |   12 ++++++
- fs/debugfs/inode.c      |   76 ++++++++++++++++++++++++++++++++++++--
- include/linux/debugfs.h |   10 +++++
- 3 files changed, 94 insertions(+), 4 deletions(-)
-
-diff -uprN linux-2.6.20/fs/debugfs/file.c linux-2.6.20-patched/fs/debugfs/file.c
---- linux-2.6.20/fs/debugfs/file.c	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.20-patched/fs/debugfs/file.c	2007-02-13 10:55:38.000000000 +0100
-@@ -16,6 +16,7 @@
- #include <linux/module.h>
- #include <linux/fs.h>
- #include <linux/pagemap.h>
-+#include <linux/namei.h>
- #include <linux/debugfs.h>
- 
- static ssize_t default_read_file(struct file *file, char __user *buf,
-@@ -44,6 +45,17 @@ const struct file_operations debugfs_fil
- 	.open =		default_open,
- };
- 
-+static void *debugfs_follow_link(struct dentry *dentry, struct nameidata *nd)
-+{
-+	nd_set_link(nd, dentry->d_inode->i_private);
-+	return NULL;
-+}
-+
-+const struct inode_operations debugfs_link_operations = {
-+	.readlink       = generic_readlink,
-+	.follow_link    = debugfs_follow_link,
-+};
-+
- static void debugfs_u8_set(void *data, u64 val)
- {
- 	*(u8 *)data = val;
-diff -uprN linux-2.6.20/fs/debugfs/inode.c linux-2.6.20-patched/fs/debugfs/inode.c
---- linux-2.6.20/fs/debugfs/inode.c	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.20-patched/fs/debugfs/inode.c	2007-02-13 10:58:00.000000000 +0100
-@@ -25,11 +25,13 @@
- #include <linux/namei.h>
- #include <linux/debugfs.h>
- #include <linux/fsnotify.h>
-+#include <linux/string.h>
- 
- #define DEBUGFS_MAGIC	0x64626720
- 
- /* declared over in file.c */
- extern struct file_operations debugfs_file_operations;
-+extern struct inode_operations debugfs_link_operations;
- 
- static struct vfsmount *debugfs_mount;
- static int debugfs_mount_count;
-@@ -51,6 +53,9 @@ static struct inode *debugfs_get_inode(s
- 		case S_IFREG:
- 			inode->i_fop = &debugfs_file_operations;
- 			break;
-+		case S_IFLNK:
-+			inode->i_op = &debugfs_link_operations;
-+			break;
- 		case S_IFDIR:
- 			inode->i_op = &simple_dir_inode_operations;
- 			inode->i_fop = &simple_dir_operations;
-@@ -96,6 +101,12 @@ static int debugfs_mkdir(struct inode *d
- 	return res;
- }
- 
-+static int debugfs_link(struct inode *dir, struct dentry *dentry, int mode)
-+{
-+	mode = (mode & S_IALLUGO) | S_IFLNK;
-+	return debugfs_mknod(dir, dentry, mode, 0);
-+}
-+
- static int debugfs_create(struct inode *dir, struct dentry *dentry, int mode)
- {
- 	int res;
-@@ -158,10 +169,17 @@ static int debugfs_create_by_name(const 
- 	mutex_lock(&parent->d_inode->i_mutex);
- 	*dentry = lookup_one_len(name, parent, strlen(name));
- 	if (!IS_ERR(*dentry)) {
--		if ((mode & S_IFMT) == S_IFDIR)
-+		switch (mode & S_IFMT) {
-+		case S_IFDIR:
- 			error = debugfs_mkdir(parent->d_inode, *dentry, mode);
--		else 
-+			break;
-+		case S_IFLNK:
-+			error = debugfs_link(parent->d_inode, *dentry, mode);
-+			break;
-+		default:
- 			error = debugfs_create(parent->d_inode, *dentry, mode);
-+			break;
-+		}
- 		dput(*dentry);
- 	} else
- 		error = PTR_ERR(*dentry);
-@@ -259,6 +277,49 @@ struct dentry *debugfs_create_dir(const 
- EXPORT_SYMBOL_GPL(debugfs_create_dir);
- 
- /**
-+ * debugfs_create_symlink- create a symbolic link in the debugfs filesystem
-+ * @name: a pointer to a string containing the name of the symbolic link to
-+ *        create.
-+ * @parent: a pointer to the parent dentry for this symbolic link.  This
-+ *          should be a directory dentry if set.  If this paramater is NULL,
-+ *          then the symbolic link will be created in the root of the debugfs
-+ *          filesystem.
-+ * @target: a pointer to a string containing the path to the target of the
-+ *          symbolic link.
-+ *
-+ * This function creates a symbolic link with the given name in debugfs that
-+ * links to the given target path.
-+ *
-+ * This function will return a pointer to a dentry if it succeeds.  This
-+ * pointer must be passed to the debugfs_remove() function when the symbolic
-+ * link is to be removed (no automatic cleanup happens if your module is
-+ * unloaded, you are responsible here.)  If an error occurs, %NULL will be
-+ * returned.
-+ *
-+ * If debugfs is not enabled in the kernel, the value -%ENODEV will be
-+ * returned.  It is not wise to check for this value, but rather, check for
-+ * %NULL or !%NULL instead as to eliminate the need for #ifdef in the calling
-+ * code.
-+ */
-+struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
-+				      const char *target)
-+{
-+	struct dentry *result;
-+	char *link;
-+
-+	link = kstrdup(target, GFP_KERNEL);
-+	if (!link)
-+		return NULL;
-+
-+	result = debugfs_create_file(name, S_IFLNK | S_IRWXUGO, parent, link,
-+				     NULL);
-+	if (!result)
-+		kfree(link);
-+	return result;
-+}
-+EXPORT_SYMBOL_GPL(debugfs_create_symlink);
-+
-+/**
-  * debugfs_remove - removes a file or directory from the debugfs filesystem
-  * @dentry: a pointer to a the dentry of the file or directory to be
-  *          removed.
-@@ -287,15 +348,22 @@ void debugfs_remove(struct dentry *dentr
- 	if (debugfs_positive(dentry)) {
- 		if (dentry->d_inode) {
- 			dget(dentry);
--			if (S_ISDIR(dentry->d_inode->i_mode)) {
-+			switch (dentry->d_inode->i_mode & S_IFMT) {
-+			case S_IFDIR:
- 				ret = simple_rmdir(parent->d_inode, dentry);
- 				if (ret)
- 					printk(KERN_ERR
- 						"DebugFS rmdir on %s failed : "
- 						"directory not empty.\n",
- 						dentry->d_name.name);
--			} else
-+				break;
-+			case S_IFLNK:
-+				kfree(dentry->d_inode->i_private);
-+				/* fall through */
-+			default:
- 				simple_unlink(parent->d_inode, dentry);
-+				break;
-+			}
- 			if (!ret)
- 				d_delete(dentry);
- 			dput(dentry);
-diff -uprN linux-2.6.20/include/linux/debugfs.h linux-2.6.20-patched/include/linux/debugfs.h
---- linux-2.6.20/include/linux/debugfs.h	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.20-patched/include/linux/debugfs.h	2007-02-13 10:57:10.000000000 +0100
-@@ -33,6 +33,9 @@ struct dentry *debugfs_create_file(const
- 
- struct dentry *debugfs_create_dir(const char *name, struct dentry *parent);
- 
-+struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
-+				      const char *dest);
-+
- void debugfs_remove(struct dentry *dentry);
- 
- struct dentry *debugfs_create_u8(const char *name, mode_t mode,
-@@ -70,6 +73,13 @@ static inline struct dentry *debugfs_cre
- 	return ERR_PTR(-ENODEV);
- }
- 
-+static inline struct dentry *debugfs_create_symlink(const char *name,
-+						    struct dentry *parent,
-+						    const char *dest)
-+{
-+	return ERR_PTR(-ENODEV);
-+}
-+
- static inline void debugfs_remove(struct dentry *dentry)
- { }
- 
-
+Ack'd-by: Manu Abraham <manu@linuxtv.org>
