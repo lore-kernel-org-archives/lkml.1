@@ -1,306 +1,666 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750964AbXBMXy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932065AbXBMXzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750964AbXBMXy2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 18:54:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456AbXBMXy2
+	id S932065AbXBMXzh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 18:55:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932068AbXBMXzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 18:54:28 -0500
-Received: from colin.muc.de ([193.149.48.1]:1114 "EHLO mail.muc.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750968AbXBMXy1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 18:54:27 -0500
-Date: 14 Feb 2007 00:54:24 +0100
-Date: Wed, 14 Feb 2007 00:54:24 +0100
-From: Andi Kleen <ak@muc.de>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>
-Subject: Re: [patch 16/21] Xen-paravirt: Add code into head.S to handle being booted by Xen
-Message-ID: <20070213235424.GA1908@muc.de>
-References: <20070213221729.772002682@goop.org> <20070213221830.707197267@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070213221830.707197267@goop.org>
-User-Agent: Mutt/1.4.1i
+	Tue, 13 Feb 2007 18:55:37 -0500
+Received: from ms-smtp-05.texas.rr.com ([24.93.47.44]:51045 "EHLO
+	ms-smtp-05.texas.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932065AbXBMXzg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 18:55:36 -0500
+From: Eric Van Hensbergen <ericvh@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: v9fs-developer@lists.sourceforge.net,
+       Eric Van Hensbergen <ericvh@gmail.com>
+Subject: [RESEND][PATCH] 9p: add write-cache support to loose cache mode
+Date: Tue, 13 Feb 2007 17:55:31 -0600
+Message-Id: <11714109311262-git-send-email-ericvh@gmail.com>
+X-Mailer: git-send-email 1.5.0.rc1.gde38
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> --- a/arch/i386/kernel/entry.S
-> +++ b/arch/i386/kernel/entry.S
-> @@ -1001,6 +1001,83 @@ ENTRY(kernel_thread_helper)
->  	CFI_ENDPROC
->  ENDPROC(kernel_thread_helper)
->  
-> +#ifdef CONFIG_XEN
-> +/* Xen only supports sysenter/sysexit in ring0 guests,
-> +   and only if it the guest asks for it.  So for now,
-> +   this should never be used. */
-> +ENTRY(xen_sti_sysexit)
-> +	CFI_STARTPROC
-> +	ud2
-> +	CFI_ENDPROC
+Loose cache mode was added primarily to asssist exclusive, read-only
+mounts (like venti) -- however, there is also a case for using loose
+write cacheing in support of read/write exclusive mounts.  This feature
+is linked to the loose cache option and is disabled by default.
 
-Please add ENDPROC()s too, otherwise Jan will be unhappy.
+This code adds the necessary code to support writes through the page
+cache.  Write caches are not used for synthetic files or for files opened
+in APPEND mode.
 
-Could be written in C with a real BUG? 
+Signed-of-by: Eric Van Hensbergen <ericvh@gmail.com>
+---
+ Documentation/filesystems/9p.txt |    2 
+ fs/9p/9p.h                       |    2 
+ fs/9p/conv.c                     |   19 ++++
+ fs/9p/conv.h                     |    2 
+ fs/9p/fcall.c                    |    6 +
+ fs/9p/fid.c                      |   17 ++--
+ fs/9p/fid.h                      |    2 
+ fs/9p/v9fs_vfs.h                 |    2 
+ fs/9p/vfs_addr.c                 |  180 ++++++++++++++++++++++++++++++++++++--
+ fs/9p/vfs_dir.c                  |    2 
+ fs/9p/vfs_file.c                 |   58 ++++++++++--
+ fs/9p/vfs_inode.c                |   13 ++-
+ fs/9p/vfs_super.c                |    3 -
+ 13 files changed, 264 insertions(+), 44 deletions(-)
 
-> +ENTRY(xen_failsafe_callback)
-> +	CFI_STARTPROC
-> +	pushl %eax
-> +	CFI_ADJUST_CFA_OFFSET 4
-> +	movl $1,%eax
-> +1:	mov 4(%esp),%ds
-> +2:	mov 8(%esp),%es
-> +3:	mov 12(%esp),%fs
-> +4:	mov 16(%esp),%gs
-> +	testl %eax,%eax
-> +	popl %eax
-> +	CFI_ADJUST_CFA_OFFSET -4
-> +	jz 5f
-> +	addl $16,%esp		# EAX != 0 => Category 2 (Bad IRET)
-> +	CFI_ADJUST_CFA_OFFSET -16
-> +	jmp iret_exc
-> +5:	addl $16,%esp		# EAX == 0 => Category 1 (Bad segment)
+diff --git a/Documentation/filesystems/9p.txt b/Documentation/filesystems/9p.txt
+index bbd8b28..36ed211 100644
+--- a/Documentation/filesystems/9p.txt
++++ b/Documentation/filesystems/9p.txt
+@@ -42,7 +42,7 @@ OPTIONS
+ 
+   cache=mode	specifies a cacheing policy.  By default, no caches are used.
+ 			loose = no attempts are made at consistency,
+-                                intended for exclusive, read-only mounts
++                                intended for exclusive mounts
+ 
+   debug=n	specifies debug level.  The debug level is a bitmask.
+   			0x01 = display verbose error messages
+diff --git a/fs/9p/9p.h b/fs/9p/9p.h
+index 94e2f92..6f8edf0 100644
+--- a/fs/9p/9p.h
++++ b/fs/9p/9p.h
+@@ -370,6 +370,6 @@ int v9fs_t_read(struct v9fs_session_info
+ 		u64 offset, u32 count, struct v9fs_fcall **rcall);
+ 
+ int v9fs_t_write(struct v9fs_session_info *v9ses, u32 fid, u64 offset,
+-		 u32 count, const char __user * data,
++		 u32 count, const char __user * data, char * kdata,
+ 		 struct v9fs_fcall **rcall);
+ int v9fs_printfcall(char *, int, struct v9fs_fcall *, int);
+diff --git a/fs/9p/conv.c b/fs/9p/conv.c
+index a3ed571..89c3d3c 100644
+--- a/fs/9p/conv.c
++++ b/fs/9p/conv.c
+@@ -458,6 +458,15 @@ v9fs_put_user_data(struct cbuf *bufp, co
+ 	return copy_from_user(*pdata, data, count);
+ }
+ 
++static int
++v9fs_put_kernel_data(struct cbuf *bufp, char * kdata, int count,
++		   unsigned char **pdata)
++{
++	*pdata = buf_alloc(bufp, count);
++	memcpy(*pdata, kdata, count);
++	return 0;
++}
++
+ static void
+ v9fs_put_wstat(struct cbuf *bufp, struct v9fs_wstat *wstat,
+ 	       struct v9fs_stat *stat, int statsz, int extended)
+@@ -723,7 +732,7 @@ struct v9fs_fcall *v9fs_create_tread(u32
+ }
+ 
+ struct v9fs_fcall *v9fs_create_twrite(u32 fid, u64 offset, u32 count,
+-				      const char __user * data)
++				      const char __user * data, char * kdata)
+ {
+ 	int size, err;
+ 	struct v9fs_fcall *fc;
+@@ -738,7 +747,13 @@ struct v9fs_fcall *v9fs_create_twrite(u3
+ 	v9fs_put_int32(bufp, fid, &fc->params.twrite.fid);
+ 	v9fs_put_int64(bufp, offset, &fc->params.twrite.offset);
+ 	v9fs_put_int32(bufp, count, &fc->params.twrite.count);
+-	err = v9fs_put_user_data(bufp, data, count, &fc->params.twrite.data);
++	if(data) {
++		err = v9fs_put_user_data(bufp, data, count, 
++						&fc->params.twrite.data); 
++	} else {
++		err = v9fs_put_kernel_data(bufp, kdata, count, 
++						&fc->params.twrite.data); 
++	}	
+ 	if (err) {
+ 		kfree(fc);
+ 		fc = ERR_PTR(err);
+diff --git a/fs/9p/conv.h b/fs/9p/conv.h
+index dd5b6b1..8091672 100644
+--- a/fs/9p/conv.h
++++ b/fs/9p/conv.h
+@@ -42,7 +42,7 @@ struct v9fs_fcall *v9fs_create_tcreate(u
+ 	char *extension, int extended);
+ struct v9fs_fcall *v9fs_create_tread(u32 fid, u64 offset, u32 count);
+ struct v9fs_fcall *v9fs_create_twrite(u32 fid, u64 offset, u32 count,
+-	const char __user *data);
++	const char __user *data, char *kdata);
+ struct v9fs_fcall *v9fs_create_tclunk(u32 fid);
+ struct v9fs_fcall *v9fs_create_tremove(u32 fid);
+ struct v9fs_fcall *v9fs_create_tstat(u32 fid);
+diff --git a/fs/9p/fcall.c b/fs/9p/fcall.c
+index dc336a6..671301a 100644
+--- a/fs/9p/fcall.c
++++ b/fs/9p/fcall.c
+@@ -393,13 +393,15 @@ v9fs_t_read(struct v9fs_session_info *v9
+  * @fid: fid to write to
+  * @offset: offset to start write at
+  * @count: how many bytes to write
++ * @data: userspace data 
++ * @kdata: kernelspace data
+  * @fcall: pointer to response fcall
+  *
+  */
+ 
+ int
+ v9fs_t_write(struct v9fs_session_info *v9ses, u32 fid, u64 offset, u32 count,
+-	const char __user *data, struct v9fs_fcall **rcp)
++	const char __user *data, char *kdata, struct v9fs_fcall **rcp)
+ {
+ 	int ret;
+ 	struct v9fs_fcall *tc, *rc;
+@@ -407,7 +409,7 @@ v9fs_t_write(struct v9fs_session_info *v
+ 	dprintk(DEBUG_9P, "fid %d offset 0x%llux count 0x%x\n", fid,
+ 		(long long unsigned) offset, count);
+ 
+-	tc = v9fs_create_twrite(fid, offset, count, data);
++	tc = v9fs_create_twrite(fid, offset, count, data, kdata);
+ 	if (!IS_ERR(tc)) {
+ 		ret = v9fs_mux_rpc(v9ses->mux, tc, &rc);
+ 
+diff --git a/fs/9p/fid.c b/fs/9p/fid.c
+index 9041971..f3c5cb8 100644
+--- a/fs/9p/fid.c
++++ b/fs/9p/fid.c
+@@ -40,19 +40,18 @@ #include "fid.h"
+  *
+  */
+ 
+-int v9fs_fid_insert(struct v9fs_fid *fid, struct dentry *dentry)
++int v9fs_fid_insert(struct v9fs_fid *fid, void **priv)
+ {
+-	struct list_head *fid_list = (struct list_head *)dentry->d_fsdata;
+-	dprintk(DEBUG_9P, "fid %d (%p) dentry %s (%p)\n", fid->fid, fid,
+-		dentry->d_iname, dentry);
+-	if (dentry->d_fsdata == NULL) {
+-		dentry->d_fsdata =
++	struct list_head *fid_list= (struct list_head *) *priv;
++
++	if (fid_list == NULL) {
++		*priv =
+ 		    kmalloc(sizeof(struct list_head), GFP_KERNEL);
+-		if (dentry->d_fsdata == NULL) {
++		if (*priv == NULL) {
+ 			dprintk(DEBUG_ERROR, "Out of memory\n");
+ 			return -ENOMEM;
+ 		}
+-		fid_list = (struct list_head *)dentry->d_fsdata;
++		fid_list = (struct list_head *)*priv;
+ 		INIT_LIST_HEAD(fid_list);	/* Initialize list head */
+ 	}
+ 
+@@ -80,6 +79,7 @@ struct v9fs_fid *v9fs_fid_create(struct 
+ 
+ 	new->fid = fid;
+ 	new->v9ses = v9ses;
++	new->filp = NULL;
+ 	new->fidopen = 0;
+ 	new->fidclunked = 0;
+ 	new->iounit = 0;
+@@ -192,3 +192,4 @@ void v9fs_fid_clunk(struct v9fs_session_
+ 	v9fs_t_clunk(v9ses, fid->fid);
+ 	v9fs_fid_destroy(fid);
+ }
++
+diff --git a/fs/9p/fid.h b/fs/9p/fid.h
+index 48fc170..dd19181 100644
+--- a/fs/9p/fid.h
++++ b/fs/9p/fid.h
+@@ -56,7 +56,7 @@ struct v9fs_fid *v9fs_fid_lookup(struct 
+ struct v9fs_fid *v9fs_fid_get_created(struct dentry *);
+ void v9fs_fid_destroy(struct v9fs_fid *fid);
+ struct v9fs_fid *v9fs_fid_create(struct v9fs_session_info *, int fid);
+-int v9fs_fid_insert(struct v9fs_fid *fid, struct dentry *dentry);
++int v9fs_fid_insert(struct v9fs_fid *fid, void **priv);
+ struct v9fs_fid *v9fs_fid_clone(struct dentry *dentry);
+ void v9fs_fid_clunk(struct v9fs_session_info *v9ses, struct v9fs_fid *fid);
+ 
+diff --git a/fs/9p/v9fs_vfs.h b/fs/9p/v9fs_vfs.h
+index 8ada4c5..27f11eb 100644
+--- a/fs/9p/v9fs_vfs.h
++++ b/fs/9p/v9fs_vfs.h
+@@ -53,3 +53,5 @@ int v9fs_file_open(struct inode *inode, 
+ void v9fs_inode2stat(struct inode *inode, struct v9fs_stat *stat);
+ void v9fs_dentry_release(struct dentry *);
+ int v9fs_uflags2omode(int uflags);
++ssize_t v9fs_write(struct file *filp, const char __user * data, char * kdata, size_t count, loff_t * offset);
++
+diff --git a/fs/9p/vfs_addr.c b/fs/9p/vfs_addr.c
+index bed48fa..6cdd6b0 100644
+--- a/fs/9p/vfs_addr.c
++++ b/fs/9p/vfs_addr.c
+@@ -6,6 +6,9 @@
+  *  Copyright (C) 2005 by Eric Van Hensbergen <ericvh@gmail.com>
+  *  Copyright (C) 2002 by Ron Minnich <rminnich@lanl.gov>
+  *
++ *  Some operations based on code from fs/cifs/file.c
++ *  Copyright (C) International Business Machines  Corp., 2002,2003
++ *
+  *  This program is free software; you can redistribute it and/or modify
+  *  it under the terms of the GNU General Public License version 2
+  *  as published by the Free Software Foundation.
+@@ -41,14 +44,14 @@ #include "v9fs_vfs.h"
+ #include "fid.h"
+ 
+ /**
+- * v9fs_vfs_readpage - read an entire page in from 9P
++ * v9fs_vfs_readpage_worker - read an entire page in from 9P
+  *
+  * @file: file being read
+  * @page: structure to page
+  *
+  */
+ 
+-static int v9fs_vfs_readpage(struct file *filp, struct page *page)
++static int v9fs_vfs_readpage_worker(struct file *filp, struct page *page)
+ {
+ 	char *buffer = NULL;
+ 	int retval = -EIO;
+@@ -63,8 +66,7 @@ static int v9fs_vfs_readpage(struct file
+ 	int total = 0;
+ 	int result = 0;
+ 
+-	dprintk(DEBUG_VFS, "\n");
+-
++	page_cache_get(page);
+ 	buffer = kmap(page);
+ 	do {
+ 		if (count < rsize)
+@@ -73,13 +75,13 @@ static int v9fs_vfs_readpage(struct file
+ 		result = v9fs_t_read(v9ses, fid, offset, rsize, &fcall);
+ 
+ 		if (result < 0) {
+-			printk(KERN_ERR "v9fs_t_read returned %d\n",
+-			       result);
++			printk(KERN_ERR "v9fs_t_read returned %d\n", result);
+ 
+ 			kfree(fcall);
+-			goto UnmapAndUnlock;
+-		} else
++			goto io_error;
++		} else {
+ 			offset += result;
++		}
+ 
+ 		memcpy(buffer, fcall->params.rread.data, result);
+ 
+@@ -98,12 +100,170 @@ static int v9fs_vfs_readpage(struct file
+ 	SetPageUptodate(page);
+ 	retval = 0;
+ 
+-UnmapAndUnlock:
++      io_error:
++	kunmap(page);
++	page_cache_release(page);
++	return retval;
++}
++
++/**
++ * v9fs_prepare_write - prepare for mmap or page-cache I/O
++ *
++ * @file: file being read
++ * @page: structure to page
++ * @from: starting offset 
++ * @to: ending offset
++ *
++ * This is mostly just a 
++ *
++ */
++
++int v9fs_prepare_write(struct file *file, struct page *page,
++		       unsigned from, unsigned to)
++{
++	if (!PageUptodate(page)) {
++		if (to - from != PAGE_CACHE_SIZE) {
++			void *kaddr = kmap_atomic(page, KM_USER0);
++			memset(kaddr, 0, from);
++			memset(kaddr + to, 0, PAGE_CACHE_SIZE - to);
++			flush_dcache_page(page);
++			kunmap_atomic(kaddr, KM_USER0);
++		}
++		SetPageUptodate(page);
++	}
++
++	if ((to == PAGE_CACHE_SIZE) && (from == 0))
++		SetPageUptodate(page);
++
++	if ((file->f_flags & O_ACCMODE) != O_WRONLY) {
++		v9fs_vfs_readpage_worker(file, page);
++	}
++
++	return 0;
++}
++
++/**
++ * v9fs_vfs_readpage - read an entire page in from 9P
++ *
++ * @file: file being read
++ * @page: structure to page
++ *
++ */
++
++static int v9fs_vfs_readpage(struct file *filp, struct page *page)
++{
++	int retval;
++
++	dprintk(DEBUG_VFS, "\n");
++
++	retval = v9fs_vfs_readpage_worker(filp, page);
++
++	unlock_page(page);
++	return retval;
++}
++
++/**
++ * v9fs_find_file - find a file pointer based on page
++ * @page: page to lookup file based on
++ * 
++ */
++static struct file *v9fs_find_file(struct page *page)
++{
++	struct inode *inode = page->mapping->host;
++	struct v9fs_fid *fid = NULL;
++	struct list_head *p;
++
++	dprintk(DEBUG_VFS, " page: %p\n", page);
++
++	p = (struct list_head *)inode->i_private;
++	if (!p) {
++		dprintk(DEBUG_ERROR, "No list_head\n");
++		return NULL;
++	}
++
++	fid = list_entry(p->next, struct v9fs_fid, list);
++
++	if (fid)
++		return fid->filp;
++
++	dprintk(DEBUG_VFS, " filp not found for page: %p\n", page);
++	return NULL;
++}
++
++/**
++ * v9fs_vfs_writepage - write a mmaped page to server
++ * @page: page to write
++ * @wbc: writeback control
++ * 
++ */
++
++static int v9fs_vfs_writepage(struct page *page, struct writeback_control *wbc)
++{
++	char *buffer = NULL;
++	struct address_space *mapping = page->mapping;
++	int retval = -EIO;
++	loff_t offset = 0;
++	loff_t pageoffset = 0;
++	unsigned long end_index;
++	int count = PAGE_CACHE_SIZE;
++	struct file *filp = v9fs_find_file(page);
++	struct inode *inode = mapping->host;
++
++	dprintk(DEBUG_VFS, "page: %p\n", page);
++
++	if ((!inode) || (!filp))
++		goto UnlockPage;
++
++	end_index = inode->i_size >> PAGE_CACHE_SHIFT;
++
++	/* complicated case at end of file */
++	if (page->index >= end_index) {
++		/* things got complicated... */
++		count = inode->i_size & (PAGE_CACHE_SIZE - 1);
++		if (page->index >= end_index + 1 || !count)
++			return 0;	/* truncated - don't care */
++	}
++
++	/* get buffer */
++	buffer = kmap(page) + pageoffset;
++	offset = ((loff_t) page->index << PAGE_CACHE_SHIFT) + pageoffset;
++
++	page_cache_get(page);
++
++	retval = v9fs_write(filp, NULL, buffer, count, &offset);
++
++	if (retval < 0) {
++		dprintk(DEBUG_ERROR, "error: %d\n", retval);
++		ClearPageUptodate(page);
++		goto UnmapPage;
++	}
++
++	if (retval < count) {
++		dprintk(DEBUG_ERROR, "Short write\n");
++	}
++
++	if (offset > inode->i_size) {
++		inode->i_size = offset;
++	}
++
++	if (PageError(page))
++		ClearPageError(page);
++	SetPageUptodate(page);
++
++	retval = 0;
++
++      UnmapPage:
+ 	kunmap(page);
++      UnlockPage:
+ 	unlock_page(page);
++	page_cache_release(page);
++
+ 	return retval;
+ }
+ 
+ const struct address_space_operations v9fs_addr_operations = {
+-      .readpage = v9fs_vfs_readpage,
++	.prepare_write = v9fs_prepare_write,
++	.commit_write = simple_commit_write,
++	.readpage = v9fs_vfs_readpage,
++	.writepage = v9fs_vfs_writepage,
+ };
+diff --git a/fs/9p/vfs_dir.c b/fs/9p/vfs_dir.c
+index 3129688..8559f7a 100644
+--- a/fs/9p/vfs_dir.c
++++ b/fs/9p/vfs_dir.c
+@@ -197,7 +197,7 @@ int v9fs_dir_release(struct inode *inode
+ 			dprintk(DEBUG_ERROR, "clunk failed\n");
+ 
+ 		kfree(fid->rdir_fcall);
+-		kfree(fid);
++ 		v9fs_fid_destroy(fid);
+ 
+ 		filp->private_data = NULL;
+ 	}
+diff --git a/fs/9p/vfs_file.c b/fs/9p/vfs_file.c
+index 653dfa5..f26f628 100644
+--- a/fs/9p/vfs_file.c
++++ b/fs/9p/vfs_file.c
+@@ -79,13 +79,14 @@ int v9fs_file_open(struct inode *inode, 
+ 	vfid->filp = file;
+ 	kfree(fcall);
+ 
+-	if((vfid->qid.version) && (v9ses->cache)) {
+-		dprintk(DEBUG_VFS, "cached");
++	if((vfid->qid.version) && (v9ses->cache) && !(file->f_flags&O_APPEND)) {
+ 		/* enable cached file options */
+ 		if(file->f_op == &v9fs_file_operations)
+ 			file->f_op = &v9fs_cached_file_operations;
+ 	}
+ 
++         v9fs_fid_insert(vfid, &inode->i_private);
++
+ 	return 0;
+ 
+ Clunk_Fid:
+@@ -187,17 +188,18 @@ v9fs_file_read(struct file *filp, char _
+ }
+ 
+ /**
+- * v9fs_file_write - write to a file
++ * v9fs_write - write to a file  (generic)
+  * @filep: file pointer to write
+- * @data: data buffer to write data from
++ * @data: user data buffer to write data from
++ * @kdata: kernel data buffer to write data from
+  * @count: size of buffer
+  * @offset: offset at which to write data
+  *
+  */
+ 
+-static ssize_t
+-v9fs_file_write(struct file *filp, const char __user * data,
+-		size_t count, loff_t * offset)
++ssize_t
++v9fs_write(struct file *filp, const char __user * data,
++		char* kdata, size_t count, loff_t * offset)
+ {
+ 	struct inode *inode = filp->f_path.dentry->d_inode;
+ 	struct v9fs_session_info *v9ses = v9fs_inode2v9ses(inode);
+@@ -208,8 +210,8 @@ v9fs_file_write(struct file *filp, const
+ 	int rsize = 0;
+ 	int total = 0;
+ 
+-	dprintk(DEBUG_VFS, "data %p count %d offset %x\n", data, (int)count,
+-		(int)*offset);
++	dprintk(DEBUG_VFS, "count %d offset %x\n", 
++			(int)count, (int)*offset);
+ 	rsize = v9ses->maxdata - V9FS_IOHDRSZ;
+ 	if (v9fid->iounit != 0 && rsize > v9fid->iounit)
+ 		rsize = v9fid->iounit;
+@@ -218,7 +220,8 @@ v9fs_file_write(struct file *filp, const
+ 		if (count < rsize)
+ 			rsize = count;
+ 
+-		result = v9fs_t_write(v9ses, fid, *offset, rsize, data, &fcall);
++		result = v9fs_t_write(v9ses, fid, *offset, rsize, 
++						data, kdata, &fcall);
+ 		if (result < 0) {
+ 			PRINT_FCALL_ERROR("error while writing", fcall);
+ 			kfree(fcall);
+@@ -237,19 +240,48 @@ v9fs_file_write(struct file *filp, const
+ 		}
+ 
+ 		count -= result;
+-		data += result;
++		if(data)
++			data += result;
++		else
++			kdata += result;
+ 		total += result;
+ 	} while (count);
+ 
+-	invalidate_inode_pages2(inode->i_mapping);
+ 	return total;
+ }
+ 
++
++/**
++ * v9fs_file_write - write to a file 
++ * @filep: file pointer to write
++ * @data: data buffer to write data from
++ * @count: size of buffer
++ * @offset: offset at which to write data
++ *
++ */
++
++static ssize_t
++v9fs_file_write(struct file *filp, const char __user * data,
++		size_t count, loff_t * offset)
++{
++	struct inode *inode = filp->f_path.dentry->d_inode;
++
++	ssize_t ret;
++
++	dprintk(DEBUG_VFS, "count %d offset %x\n", 
++			(int)count, (int)*offset);
++	ret = v9fs_write(filp, data, NULL, count, offset);
++	invalidate_inode_pages2(inode->i_mapping);
++	return ret;
++}
++
+ const struct file_operations v9fs_cached_file_operations = {
+ 	.llseek = generic_file_llseek,
+ 	.read = do_sync_read,
+ 	.aio_read = generic_file_aio_read,
+-	.write = v9fs_file_write,
++	.write = do_sync_write,
++	.aio_write = generic_file_aio_write,
++	.fsync	= simple_sync_file,
+ 	.open = v9fs_file_open,
+ 	.release = v9fs_dir_release,
+ 	.lock = v9fs_file_lock,
+diff --git a/fs/9p/vfs_inode.c b/fs/9p/vfs_inode.c
+index 124a085..4099b0e 100644
+--- a/fs/9p/vfs_inode.c
++++ b/fs/9p/vfs_inode.c
+@@ -208,6 +208,7 @@ struct inode *v9fs_get_inode(struct supe
+ 		inode->i_rdev = 0;
+ 		inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+ 		inode->i_mapping->a_ops = &v9fs_addr_operations;
++		inode->i_private = NULL;
+ 
+ 		switch (mode & S_IFMT) {
+ 		case S_IFIFO:
+@@ -340,7 +341,7 @@ v9fs_clone_walk(struct v9fs_session_info
+ 		goto clunk_fid;
+ 	}
+ 
+-	err = v9fs_fid_insert(ret, dentry);
++	err = v9fs_fid_insert(ret, &dentry->d_fsdata);
+ 	if (err < 0) {
+ 		v9fs_fid_destroy(ret);
+ 		goto clunk_fid;
+@@ -520,13 +521,19 @@ v9fs_vfs_create(struct inode *dir, struc
+ 			v9fs_fid_destroy(ffid);
+ 			return PTR_ERR(filp);
+ 		}
+-
+ 		ffid->rdir_pos = 0;
+ 		ffid->rdir_fcall = NULL;
+ 		ffid->fidopen = 1;
+ 		ffid->iounit = iounit;
+ 		ffid->filp = filp;
+ 		filp->private_data = ffid;
++	        if((vfid->qid.version) && (v9ses->cache) && 
++		  !(flags & O_APPEND)) {
++                	/* enable cached file options */
++                	if(filp->f_op == &v9fs_file_operations)
++                        	filp->f_op = &v9fs_cached_file_operations;
++        	}
++		v9fs_fid_insert(ffid, &inode->i_private);
+ 	}
+ 
+ 	return 0;
+@@ -696,7 +703,7 @@ static struct dentry *v9fs_vfs_lookup(st
+ 		goto FreeFcall;
+ 	}
+ 
+-	result = v9fs_fid_insert(fid, dentry);
++	result = v9fs_fid_insert(fid, &dentry->d_fsdata);
+ 	if (result < 0)
+ 		goto FreeFcall;
+ 
+diff --git a/fs/9p/vfs_super.c b/fs/9p/vfs_super.c
+index 0ec42f6..7c4c289 100644
+--- a/fs/9p/vfs_super.c
++++ b/fs/9p/vfs_super.c
+@@ -56,6 +56,7 @@ static const struct super_operations v9f
+ static void v9fs_clear_inode(struct inode *inode)
+ {
+ 	filemap_fdatawrite(inode->i_mapping);
++	kfree(inode->i_private);
+ }
+ 
+ /**
+@@ -167,7 +168,7 @@ static int v9fs_get_sb(struct file_syste
+ 			goto put_back_sb;
+ 		}
+ 
+-		retval = v9fs_fid_insert(root_fid, root);
++		retval = v9fs_fid_insert(root_fid, &root->d_fsdata);
+ 		if (retval < 0) {
+ 			kfree(fcall);
+ 			goto put_back_sb;
+-- 
+1.4.1
 
-If you use lea you could move the two adds before the jz
-
-> +#ifdef CONFIG_XEN
-> +#include "../xen/xen-head.S"
-> +#endif
-
-Can this really not be linked separately? 
-
-> +	
->  /*
->   * Real beginning of normal "text" segment
->   */
-> @@ -528,7 +532,7 @@ ENTRY(_stext)
->  /*
->   * BSS section
->   */
-> -.section ".bss.page_aligned","w"
-> +.section ".bss.page_aligned"
-
-Why? 
-
-> -static fastcall void native_clts(void)
-> +fastcall void native_clts(void)
-
-Fastcalls should all go now
-
-> --- a/arch/i386/kernel/vmlinux.lds.S
-> +++ b/arch/i386/kernel/vmlinux.lds.S
-> @@ -93,6 +93,7 @@ SECTIONS
->  
->    . = ALIGN(4096);
->    .data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
-> +	*(.data.page_aligned)
-
-Weird that that didn't work before -- we already had page aligned data
-and it somehow managed to work. But ok.
-
->  	*(.data.idt)
->    }
->  
-> ===================================================================
-> --- a/arch/i386/mm/pgtable.c
-> +++ b/arch/i386/mm/pgtable.c
-> @@ -267,6 +267,7 @@ static void pgd_ctor(pgd_t *pgd)
->  					swapper_pg_dir + USER_PTRS_PER_PGD,
->  					KERNEL_PGD_PTRS);
->  		} else {
-> +			memset(pgd, 0, USER_PTRS_PER_PGD*sizeof(pgd_t));
-
-That looks strange here. Belongs in a different patch? 
-
-> +
-> +extern struct Xgt_desc_struct cpu_gdt_descr;
-> +extern struct i386_pda boot_pda;
-> +extern unsigned long init_pg_tables_end;
-
-No externs in .c files
-
-> +
-> +static DEFINE_PER_CPU(unsigned, lazy_mode);
-> +
-> +/* Code defined in entry.S (not a function) */
-> +extern const char xen_sti_sysexit[];
-
-Ok except that
-
-> +{
-> +	printk(KERN_INFO "Booting paravirtualized kernel on %s\n",
-> +	       paravirt_ops.name);
-
-Say something about Xen here?
-
-> +}
-> +
-> +static fastcall void xen_restore_fl(unsigned long flags)
-> +{
-> +	struct vcpu_info *vcpu;
-> +
-> +	preempt_disable();
-> +
-> +	/* convert from IF type flag */
-> +	flags = !(flags & X86_EFLAGS_IF);
-> +	vcpu = read_pda(xen.vcpu);
-> +	vcpu->evtchn_upcall_mask = flags;
-> +	if (flags == 0) {
-> +		barrier(); /* unmask then check (avoid races) */
-
-If the barrier is needed shouldn't it be a rmb() ? 
-
-> +	vcpu = read_pda(xen.vcpu);
-> +	vcpu->evtchn_upcall_mask = 0;
-> +	barrier(); /* unmask then check (avoid races) */
-
-Similar.
-
-> +static fastcall void xen_load_gdt(const struct Xgt_desc_struct *dtr)
-> +{
-> +        unsigned long va;
-> +        int f;
-> +	unsigned size = dtr->size + 1;
-> +	unsigned long frames[16];
-> +
-> +	BUG_ON(size > 16*PAGE_SIZE);
-> +
-
-Indentation broken
-
-(more occurences in this file) 
-> +	type = (high >> 8) & 0x1f;
-> +	dpl = (high >> 13) & 3;
-> +
-> +	if (type != 0xf && type != 0xe)
-> +		return 0;
-> +
-> +	info->vector = vector;
-> +	info->address = (high & 0xffff0000) | (low & 0x0000ffff);
-> +	info->cs = low >> 16;
-> +	info->flags = dpl;
-> +	/* interrupt gates clear IF */
-> +	if (type == 0xe)
-> +		info->flags |= 4;
-
-Nasty magic numbers? 
-
-> +	return 1;
-> +}
-> +
-> +#if 0
-> +static void unpack_desc(u32 low, u32 high,
-> +			unsigned long *base, unsigned long *limit,
-> +			unsigned char *type, unsigned char *flags)
-> +{
-> +	*base = (high & 0xff000000) | ((high << 16) & 0x00ff0000) | ((low >> 16) & 0xffff);
-> +	*limit = (high & 0x000f0000) | (low & 0xffff);
-> +	*type = (high >> 8) & 0xff;
-> +	*flags = (high >> 20) & 0xf;
-> +}
-> +#endif
-
-Remove? 
-
-> +
-> +/* Locations of each CPU's IDT */
-> +static DEFINE_PER_CPU(struct Xgt_desc_struct, idt_desc);
-
-Why is that private here? 
-
-> +	/* Switch to new pagetable.  This is done before
-> +	   pagetable_init has done anything so that the new pages
-> +	   added to the table can be prepared properly for Xen.  */
-> +	printk("about to switch to new pagetable %p...\n", base);
-> +	xen_write_cr3(__pa(base));
-> +	printk("done\n");
-
-KERN_* ?
-
-> +	if (HYPERVISOR_update_descriptor(virt_to_machine(cpu_gdt_table +
-> +							 GDT_ENTRY_PDA).maddr,
-> +					 (u64)high << 32 | low))
-> +		BUG();
-
-Does a BUG that early actually do anything good?
-
-> +
-> +/*
-> + * Accessors for packed IRQ information.
-> + */
-
-Wouldn't it be a little simpler to just use a bit field? 
-
-> +static void bind_evtchn_to_cpu(unsigned int chn, unsigned int cpu)
-> +{
-> +	int irq = evtchn_to_irq[chn];
-> +
-> +	BUG_ON(irq == -1);
-> +	set_native_irq_info(irq, cpumask_of_cpu(cpu));
-> +
-> +	__clear_bit(chn, (unsigned long *)cpu_evtchn_mask[cpu_evtchn[chn]]);
-
-Why is the mask not unsigned long in the first place ?
-
-> +  level is a bitset of pending events themselves.
-> +*/
-> +asmlinkage fastcall void xen_evtchn_do_upcall(struct pt_regs *regs)
-> +{
-> +	int cpu = smp_processor_id();
-
-Doesn't a preemptive kernel complain about this?
-
-> +	set_64bit((u64 *)ptep, pte_val_ma(pte));
-> +}
-> +
-> +void fastcall xen_pte_clear(struct mm_struct *mm, u32 addr,pte_t *ptep)
-> +{
-> +#if 1
-> +	ptep->pte_low = 0;
-> +	smp_wmb();
-> +	ptep->pte_high = 0;	
-> +#else
-> +	set_64bit((u64 *)ptep, 0);
-
-Eliminate #if please
-
-> +fastcall unsigned long long xen_pgd_val(pgd_t pgd)
-> +{
-> +	unsigned long long ret = pgd.pgd;
-> +	if (ret)
-> +		ret = machine_to_phys(XMADDR(ret)).paddr | 1;
-
-Why can they be 0 here anyways?
-
-Normally they are all considered undefined when not present
-
-> +	rdtscll(now);
-> +	delta = now - shadow->tsc_timestamp;
-> +	return scale_delta(delta, shadow->tsc_to_nsec_mul, shadow->tsc_shift);
-> +}
-> +
-> +
-> +static void xen_timer_interrupt_hook(void)
-
-Timer code ... hopefully dyntick will not all mess this up. It is scheduled
-to go into mainline RSN. You might have to do some more merging.
-> +
-> +char * __init xen_memory_setup(void);
-
-Prototypes don't need __init
-
-> +void __init xen_arch_setup(void);
-> +void __init xen_init_IRQ(void);
-> +
-> @@ -53,6 +54,7 @@ struct paravirt_ops
->  	void (*arch_setup)(void);
->  	char *(*memory_setup)(void);
->  	void (*init_IRQ)(void);
-> +	void (*init_pda)(struct i386_pda *, int cpu);
-
-Hmm weird. For what was that needed again? 
-
--AndI
