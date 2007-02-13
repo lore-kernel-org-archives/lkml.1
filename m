@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932121AbXBMOXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932129AbXBMOXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932121AbXBMOXd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 09:23:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932126AbXBMOXc
+	id S932129AbXBMOXm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 09:23:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932126AbXBMOXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 09:23:32 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:32995 "EHLO mx2.mail.elte.hu"
+	Tue, 13 Feb 2007 09:23:35 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:32975 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932121AbXBMOXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 09:23:25 -0500
-Date: Tue, 13 Feb 2007 15:20:42 +0100
+	id S932069AbXBMOXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 09:23:22 -0500
+Date: Tue, 13 Feb 2007 15:20:31 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -23,175 +23,98 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Suparna Bhattacharya <suparna@in.ibm.com>,
        Davide Libenzi <davidel@xmailserver.org>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 06/11] syslets: core, documentation
-Message-ID: <20070213142042.GG638@elte.hu>
+Subject: [patch 04/11] syslets: core, data structures
+Message-ID: <20070213142031.GE638@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20060529212109.GA2058@elte.hu>
 User-Agent: Mutt/1.4.2.2i
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -5.3
+X-ELTE-SpamScore: -0.8
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=-0.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.1.7
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.5000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ingo Molnar <mingo@elte.hu>
 
-Add Documentation/syslet-design.txt with a high-level description
-of the syslet concepts.
+this adds the data structures used by the syslet / async system calls
+infrastructure.
+
+This is used only if CONFIG_ASYNC_SUPPORT is enabled.
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- Documentation/syslet-design.txt |  137 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 137 insertions(+)
+ kernel/async.h |   58 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 58 insertions(+)
 
-Index: linux/Documentation/syslet-design.txt
+Index: linux/kernel/async.h
 ===================================================================
 --- /dev/null
-+++ linux/Documentation/syslet-design.txt
-@@ -0,0 +1,137 @@
-+Syslets / asynchronous system calls
-+===================================
-+
-+started by Ingo Molnar <mingo@redhat.com>
-+
-+Goal:
-+-----
-+
-+The goal of the syslet subsystem is to allow user-space to execute
-+arbitrary system calls asynchronously. It does so by allowing user-space
-+to execute "syslets" which are small scriptlets that the kernel can execute
-+both securely and asynchronously without having to exit to user-space.
-+
-+the core syslet concepts are:
-+
-+The Syslet Atom:
-+----------------
-+
-+The syslet atom is a small, fixed-size (44 bytes on 32-bit) piece of
-+user-space memory, which is the basic unit of execution within the syslet
-+framework. A syslet represents a single system-call and its arguments.
-+In addition it also has condition flags attached to it that allows the
-+construction of larger programs (syslets) from these atoms.
-+
-+Arguments to the system call are implemented via pointers to arguments.
-+This not only increases the flexibility of syslet atoms (multiple syslets
-+can share the same variable for example), but is also an optimization:
-+copy_uatom() will only fetch syscall parameters up until the point it
-+meets the first NULL pointer. 50% of all syscalls have 2 or less
-+parameters (and 90% of all syscalls have 4 or less parameters).
-+
-+ [ Note: since the argument array is at the end of the atom, and the
-+   kernel will not touch any argument beyond the final NULL one, atoms
-+   might be packed more tightly. (the only special case exception to
-+   this rule would be SKIP_TO_NEXT_ON_STOP atoms, where the kernel will
-+   jump a full syslet_uatom number of bytes.) ]
-+
-+The Syslet:
-+-----------
-+
-+A syslet is a program, represented by a graph of syslet atoms. The
-+syslet atoms are chained to each other either via the atom->next pointer,
-+or via the SYSLET_SKIP_TO_NEXT_ON_STOP flag.
-+
-+Running Syslets:
-+----------------
-+
-+Syslets can be run via the sys_async_exec() system call, which takes
-+the first atom of the syslet as an argument. The kernel does not need
-+to be told about the other atoms - it will fetch them on the fly as
-+execution goes forward.
-+
-+A syslet might either be executed 'cached', or it might generate a
-+'cachemiss'.
-+
-+'Cached' syslet execution means that the whole syslet was executed
-+without blocking. The system-call returns the submitted atom's address
-+in this case.
-+
-+If a syslet blocks while the kernel executes a system-call embedded in
-+one of its atoms, the kernel will keep working on that syscall in
-+parallel, but it immediately returns to user-space with a NULL pointer,
-+so the submitting task can submit other syslets.
-+
-+Completion of asynchronous syslets:
-+-----------------------------------
-+
-+Completion of asynchronous syslets is done via the 'completion ring',
-+which is a ringbuffer of syslet atom pointers user user-space memory,
-+provided by user-space in the sys_async_register() syscall. The
-+kernel fills in the ringbuffer starting at index 0, and user-space
-+must clear out these pointers. Once the kernel reaches the end of
-+the ring it wraps back to index 0. The kernel will not overwrite
-+non-NULL pointers (but will return an error), user-space has to
-+make sure it completes all events it asked for.
-+
-+Waiting for completions:
-+------------------------
-+
-+Syslet completions can be waited for via the sys_async_wait()
-+system call - which takes the number of events it should wait for as
-+a parameter. This system call will also return if the number of
-+pending events goes down to zero.
-+
-+Sample Hello World syslet code:
-+
-+--------------------------->
++++ linux/kernel/async.h
+@@ -0,0 +1,58 @@
 +/*
-+ * Set up a syslet atom:
++ * The syslet subsystem - asynchronous syscall execution support.
++ *
++ * Syslet-subsystem internal definitions:
 + */
-+static void
-+init_atom(struct syslet_uatom *atom, int nr,
-+	  void *arg_ptr0, void *arg_ptr1, void *arg_ptr2,
-+	  void *arg_ptr3, void *arg_ptr4, void *arg_ptr5,
-+	  void *ret_ptr, unsigned long flags, struct syslet_uatom *next)
-+{
-+	atom->nr = nr;
-+	atom->arg_ptr[0] = arg_ptr0;
-+	atom->arg_ptr[1] = arg_ptr1;
-+	atom->arg_ptr[2] = arg_ptr2;
-+	atom->arg_ptr[3] = arg_ptr3;
-+	atom->arg_ptr[4] = arg_ptr4;
-+	atom->arg_ptr[5] = arg_ptr5;
-+	atom->ret_ptr = ret_ptr;
-+	atom->flags = flags;
-+	atom->next = next;
-+}
 +
-+int main(int argc, char *argv[])
-+{
-+	unsigned long int fd_out = 1; /* standard output */
-+	char *buf = "Hello Syslet World!\n";
-+	unsigned long size = strlen(buf);
-+	struct syslet_uatom atom, *done;
++/*
++ * The kernel-side copy of a syslet atom - with arguments expanded:
++ */
++struct syslet_atom {
++	unsigned long				flags;
++	unsigned long				nr;
++	long __user				*ret_ptr;
++	struct syslet_uatom	__user		*next;
++	unsigned long				args[6];
++};
 +
-+	async_head_init();
++/*
++ * The 'async head' is the thread which has user-space context (ptregs)
++ * 'below it' - this is the one that can return to user-space:
++ */
++struct async_head {
++	spinlock_t				lock;
++	struct task_struct			*user_task;
 +
-+	/*
-+	 * Simple syslet consisting of a single atom:
-+	 */
-+	init_atom(&atom, __NR_sys_write, &fd_out, &buf, &size,
-+		  NULL, NULL, NULL, NULL, SYSLET_ASYNC, NULL);
-+	done = sys_async_exec(&atom);
-+	if (!done) {
-+		sys_async_wait(1);
-+		if (completion_ring[curr_ring_idx] == &atom) {
-+			completion_ring[curr_ring_idx] = NULL;
-+			printf("completed an async syslet atom!\n");
-+		}
-+	} else {
-+		printf("completed an cached syslet atom!\n");
-+	}
++	struct list_head			ready_async_threads;
++	struct list_head			busy_async_threads;
 +
-+	async_head_exit();
++	unsigned long				events_left;
++	wait_queue_head_t			wait;
 +
-+	return 0;
-+}
++	struct async_head_user	__user		*uah;
++	struct syslet_uatom	__user		**completion_ring;
++	unsigned long				curr_ring_idx;
++	unsigned long				max_ring_idx;
++	unsigned long				ring_size_bytes;
++
++	unsigned int				nr_threads;
++	unsigned int				max_nr_threads;
++
++	struct completion			start_done;
++	struct completion			exit_done;
++};
++
++/*
++ * The 'async thread' is either a newly created async thread or it is
++ * an 'ex-head' - it cannot return to user-space and only has kernel
++ * context.
++ */
++struct async_thread {
++	struct task_struct			*task;
++	struct syslet_uatom	__user		*work;
++	struct async_head			*ah;
++
++	struct list_head			entry;
++
++	unsigned int				exit;
++};
