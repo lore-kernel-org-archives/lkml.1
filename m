@@ -1,76 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751362AbXBMWaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751357AbXBMWa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751362AbXBMWaU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 17:30:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbXBMWaU
+	id S1751357AbXBMWa7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 17:30:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbXBMWa7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 17:30:20 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:39291 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751362AbXBMWaS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 17:30:18 -0500
-Date: Tue, 13 Feb 2007 23:30:17 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 05/11] syslets: core code
-Message-ID: <20070213223017.GJ29492@one.firstfloor.org>
-References: <20060529212109.GA2058@elte.hu> <20070213142035.GF638@elte.hu> <p73bqjxhcnl.fsf@bingen.suse.de> <20070213222443.GH22104@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 13 Feb 2007 17:30:59 -0500
+Received: from ns2.suse.de ([195.135.220.15]:40335 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751357AbXBMWa6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 17:30:58 -0500
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SuSE Labs, Novell
+To: Greg KH <greg@kroah.com>
+Subject: Re: Bug in current -git tree causing dbus and gnome to chew up cpu time
+Date: Tue, 13 Feb 2007 14:30:46 -0800
+User-Agent: KMail/1.9.5
+Cc: torvalds@linux-foundation.org, neilb@suse.de, viro@zeniv.linux.org.uk,
+       hch@lst.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+References: <20070213195116.GA5181@kroah.com> <200702131158.02809.agruen@suse.de> <20070213213737.GA14383@kroah.com>
+In-Reply-To: <20070213213737.GA14383@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070213222443.GH22104@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200702131430.47053.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 13, 2007 at 11:24:43PM +0100, Ingo Molnar wrote:
-> > > +	memset(atom->args, 0, sizeof(atom->args));
-> > > +
-> > > +	ret |= __get_user(arg_ptr, &uatom->arg_ptr[0]);
-> > > +	if (!arg_ptr)
-> > > +		return ret;
-> > > +	if (!access_ok(VERIFY_WRITE, arg_ptr, sizeof(*arg_ptr)))
-> > > +		return -EFAULT;
-> > 
-> > It's a little unclear why you do that many individual access_ok()s. 
-> > And why is the target constant sized anyways?
-> 
-> each indirect pointer has to be checked separately, before dereferencing 
-> it. (Andrew pointed out that they should be VERIFY_READ, i fixed that in 
-> my tree)
+On Tuesday 13 February 2007 13:37, Greg KH wrote:
+> On Tue, Feb 13, 2007 at 11:58:02AM -0800, Andreas Gruenbacher wrote:
+> > > I'm running pretty new GNOME and dbus here:
+> > > 	dbus 1.0.2
+> > > 	gnome 2.16.2
+> > > 	hal 0.5.7.1
+> > > 	nautilus 2.16.3
+> > >
+> > > Any ideas of things I can test?
+> >
+> > Sorry for the breakage. Printk of the __d_path result may tell:
+> >
+> > Index: b/fs/dcache.c
+> > ===================================================================
+> > --- a/fs/dcache.c
+> > +++ b/fs/dcache.c
+> > @@ -1803,6 +1803,8 @@ char *__d_path(struct dentry *dentry, st
+> >
+> >  out:
+> >         spin_unlock(&dcache_lock);
+> > +	printk(KERN_DEBUG "%s(%d): %s\n", current->comm, current->pid,
+> > +	       IS_ERR(buffer) ? "failed" : buffer);
+> > 	return buffer;
+>
+> This causes the following to just loop over and over, incrementing the
+> pid:
+>
+> gnome-vfs-daemo(8914):
 
-But why only constant sized? It could be a variable length object, couldn't it?
+That's the weird case, and it should only trigger if there's no path to be 
+recovered from what gnome-vfs-deamon calls d_path on, like a lazily unmounted 
+filesystem. (A bind mount wouldn't do.)
 
-If it's an array it could be all checked together
+> I'm running gnome-vfs version 2.6.13 if that matters.
+>
+> Anything else I can try?
 
-(i must be missing something here) 
+I guess I'll just have to check what gnome-vfs-deamon does, thanks.
 
-> > If it's only a few pages you don't need any resource accounting. If 
-> > it's more then it's nasty to steal the users quota. I think plain 
-> > gup() would be better.
-> 
-> get_user_pages() would have to be limited in some way - and i didnt want 
-
-If you only use it for a small ring buffer it is naturally limited.
-
-Also beancounter will fix that eventually.
-
-> a single page is enough for 1024 completion pointers - that's more than 
-> enough for most purposes - and the default mlock limit is 40K.
-
-Then limit it to a single page and use gup
-
--Andi
+Andreas
