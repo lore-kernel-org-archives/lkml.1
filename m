@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751373AbXBMWgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751375AbXBMWip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751373AbXBMWgj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 17:36:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbXBMWgj
+	id S1751375AbXBMWip (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 17:38:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbXBMWip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 17:36:39 -0500
-Received: from gateway.insightbb.com ([74.128.0.19]:7185 "EHLO
-	asav04.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751373AbXBMWgi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 17:36:38 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aj0KAGHM0UVKhRO4UGdsb2JhbACOUgEBKpMkAQEB
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system call support
-Date: Tue, 13 Feb 2007 17:36:17 -0500
-User-Agent: KMail/1.9.3
-Cc: Alan <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20060529212109.GA2058@elte.hu> <d120d5000702130746k1a110efcice6630827510e96c@mail.gmail.com> <20070213203952.GA18130@elte.hu>
-In-Reply-To: <20070213203952.GA18130@elte.hu>
+	Tue, 13 Feb 2007 17:38:45 -0500
+Received: from ns.suse.de ([195.135.220.2]:50921 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751372AbXBMWip (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 17:38:45 -0500
+Date: Tue, 13 Feb 2007 23:38:33 +0100
+From: Andrea Arcangeli <andrea@suse.de>
+To: Vojtech Pavlik <vojtech@suse.cz>
+Cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
+       Arjan van de Ven <arjan@infradead.org>, Jiri Bohac <jbohac@suse.cz>,
+       linux-kernel@vger.kernel.org, ssouhlal@freebsd.org, tglx@linutronix.de,
+       johnstul@us.ibm.com, zippel@linux-m68k.org
+Subject: Re: [patch 4/9] Remove the TSC synchronization on SMP machines
+Message-ID: <20070213223833.GB7615@v2.random>
+References: <20070201095952.589234000@jet.suse.cz> <1171348808.12771.19.camel@laptopd505.fenrus.org> <Pine.LNX.4.64.0702130906530.23634@schroedinger.engr.sgi.com> <200702131820.15180.ak@suse.de> <20070213221848.GF9189@suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702131736.19612.dtor@insightbb.com>
+In-Reply-To: <20070213221848.GF9189@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+Hi,
 
-On Tuesday 13 February 2007 15:39, Ingo Molnar wrote:
+On Tue, Feb 13, 2007 at 11:18:48PM +0100, Vojtech Pavlik wrote:
+> It's not inherent to ntpd's design, but the current (which may have been
+> fixed since I looked last) implementation of the NTP PLL in the kernel.
 > 
-> * Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> 
-> > > What are the semantics of async sys_async_wait and async sys_async ?
-> > 
-> > Ooooohh. OpenVMS lives forever ;) Me likeee ;)
-> 
-> hm, i dont know OpenVMS - but googled around a bit for 'VMS 
-> asynchronous' and it gave me this:
-> 
->   http://en.wikipedia.org/wiki/Asynchronous_system_trap
-> 
-> is AST what you mean? From a quick read AST seems to be a signal 
-> mechanism a bit like Unix signals, extended to kernel-space as well - 
-> while syslets are a different 'safe execution engine' kind of thing 
-> centered around the execution of system calls.
-> 
+> The interaction with ntpd can be fixed and I've done it in the past
+> once, although the fix wasn't all that nice.
 
-That is only one of ways of notifying userspace of system call completion
-on OpenVMS. Pretty much every syscall there exists in 2 flavors - async
-and sync, for example $QIO and $QIOW or $ENQ/$ENQW (actually -W flavor
-is async call + $SYNCH to wait for completion). Once system service call
-is completed the OS would raise a so-called event flag and may also
-deliver an AST to the process. Application may either wait for an
-event flag/set of event flags (EFN) or rely on AST to get notification.
+Yep, it can slowly move towards the correct time, but ntpdate (or more
+generally settimeofday) remains a fundamental issue (and I prefer time
+skews to be fixed ASAP, not slowly).
 
--- 
-Dmitry
+If the admin is good, he can know that if he ever runs the db when the
+clock isn't perfectly synchronized with the atomic clock, he risks to
+screwup his whole dataset as the apps won't even handle time going
+backwards after reboot.
+
+I think there should be a limit to how much an app can pretend from
+gtod before generating failures. Certainly it's always better to write
+apps that are robust against a not monotonic gtod because eventually
+it _can_ happen (either that or remove the stod syscall ;).
+
+About ntpdate at boot and ntpd at runtime, not running them isn't
+really an option on the server IMHO, think the liability if system
+time runs out of sync of a minute and you need to know exactly when
+something bad has happened.
