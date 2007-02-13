@@ -1,54 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750861AbXBMQ5E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750876AbXBMQ6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750861AbXBMQ5E (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 11:57:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750859AbXBMQ5E
+	id S1750876AbXBMQ6t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 11:58:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbXBMQ6s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 11:57:04 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:52169 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750850AbXBMQ5B convert rfc822-to-8bit (ORCPT
+	Tue, 13 Feb 2007 11:58:48 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:57594 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750881AbXBMQ6s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 11:57:01 -0500
-From: Ismail =?iso-8859-1?q?D=F6nmez?= <ismail@pardus.org.tr>
-Organization: TUBITAK/UEKAE
-To: "Jeff Chua" <jeff.chua.linux@gmail.com>
-Subject: Re: [ANNOUNCE] d80211 based driver for Intel PRO/Wireless 3945ABG
-Date: Tue, 13 Feb 2007 18:57:01 +0200
-User-Agent: KMail/1.9.6
-Cc: "James Ketrenos" <jketreno@linux.intel.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org
-References: <45CCE3CA.4050904@linux.intel.com> <200702131558.48987.ismail@pardus.org.tr> <b6a2187b0702130710s217281c4k5ed227995c09c878@mail.gmail.com>
-In-Reply-To: <b6a2187b0702130710s217281c4k5ed227995c09c878@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200702131857.02369.ismail@pardus.org.tr>
+	Tue, 13 Feb 2007 11:58:48 -0500
+Subject: Re: [PATCH 12/22] elevate write count files are open()ed
+From: Dave Hansen <hansendc@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org
+In-Reply-To: <20070212211148.c9069c97.akpm@linux-foundation.org>
+References: <20070209225329.27619A62@localhost.localdomain>
+	 <20070209225337.C8EC7257@localhost.localdomain>
+	 <20070212211148.c9069c97.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 13 Feb 2007 08:58:16 -0800
+Message-Id: <1171385896.6202.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 February 2007 17:10:24 Jeff Chua wrote:
-> On 2/13/07, Ismail Dönmez <ismail@pardus.org.tr> wrote:
-> > Tried this is on a patched 2.6.20 kernel with ipw3945 device and it
-> > always puts the card in 802.11a mode instead of 802.11bg mode.
-> >
-> > Ideas?
->
-> Before running  "iwconfig wlan0 channel 8",  the card is set to
-> 802.11a mode. iwconfig shows rate at 54Mb/s. But after setting the
-> channel, it sets to 802.11b mode, and I can't find a way to change
-> from 11Mb/s to 54MB/s.
->
-> "iwlist eth0 rate" only show up to 11Mb/s.
->
-> So, my problem is the card is always in 802.11b mode.
+On Mon, 2007-02-12 at 21:11 -0800, Andrew Morton wrote:
+> On Fri, 09 Feb 2007 14:53:37 -0800 Dave Hansen <hansendc@us.ibm.com> wrote:
+> 
+> > diff -puN fs/file_table.c~14-24-tricky-elevate-write-count-files-are-open-ed fs/file_table.c
+> > --- lxc/fs/file_table.c~14-24-tricky-elevate-write-count-files-are-open-ed	2007-02-09 14:26:54.000000000 -0800
+> > +++ lxc-dave/fs/file_table.c	2007-02-09 14:26:54.000000000 -0800
+> > @@ -209,8 +209,11 @@ void fastcall __fput(struct file *file)
+> >  	if (unlikely(S_ISCHR(inode->i_mode) && inode->i_cdev != NULL))
+> >  		cdev_put(inode->i_cdev);
+> >  	fops_put(file->f_op);
+> > -	if (file->f_mode & FMODE_WRITE)
+> > +	if (file->f_mode & FMODE_WRITE) {
+> >  		put_write_access(inode);
+> > +		if(!special_file(inode->i_mode))
+> > +			mnt_drop_write(mnt);
+> > +	}
+> >  	put_pid(file->f_owner.pid);
+> >  	put_user_ns(file->f_owner.user_ns);
+> >  	file_kill(file);
+> > diff -puN fs/namei.c~14-24-tricky-elevate-write-count-files-are-open-ed fs/namei.c
+> > --- lxc/fs/namei.c~14-24-tricky-elevate-write-count-files-are-open-ed	2007-02-09 14:26:54.000000000 -0800
+> > +++ lxc-dave/fs/namei.c	2007-02-09 14:26:54.000000000 -0800
+> > @@ -1548,8 +1548,17 @@ int may_open(struct nameidata *nd, int a
+> >  			return -EACCES;
+> >  
+> >  		flag &= ~O_TRUNC;
+> > -	} else if (IS_RDONLY(inode) && (flag & FMODE_WRITE))
+> > -		return -EROFS;
+> > +	} else if (flag & FMODE_WRITE) {
+> > +		/*
+> > +		 * effectively: !special_file()
+> > +		 * balanced by __fput()
+> > +		 */
+> > +		error = mnt_want_write(nd->mnt);
+> > +		if (error)
+> > +			return error;
+> > +		if (IS_RDONLY(inode))
+> > +			return -EROFS;
+> > +	}
+> 
+> yipes.  A new mount-wide spin_lock/unlock for each for-writing open() and close().
+> Can we have a microbenchmark on this please?
 
-So I guess there is a common problem with a/bg modes?
+Yeah, I'll schedule some dbench time on a NUMA machine.
 
-Regards,
-ismail
+> Are you sure that fget_light() and fput_light() don't accidentally bypass this
+> new logic?
 
+Pretty sure.  My code actually surrounds all of the permission() checks
+in the VFS.  To even use fget, you had to get a fd at some point, and to
+do that you have to go through open, where both the mount and normal
+filesystem checks are.
+
+Is there something particular you had in mind?
+
+-- Dave
 
