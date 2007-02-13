@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030595AbXBMAmh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030601AbXBMAnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030595AbXBMAmh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 19:42:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030601AbXBMAmh
+	id S1030601AbXBMAnt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 19:43:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030605AbXBMAnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 19:42:37 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:51589 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030595AbXBMAmg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 19:42:36 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=SDdg3ASTHrlGxS+xac3shmbyFMH8asWO4t2wbis9+EF0++Htrfw1GJ2CptFzXLfvK
-	8ZW9vDuohvrqSLfXfWfCg==
-Message-ID: <6599ad830702121642w80c53ddud3c77c13af99d2b7@mail.gmail.com>
-Date: Mon, 12 Feb 2007 16:42:15 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Sam Vilain" <sam@vilain.net>
-Subject: Re: [ckrm-tech] [PATCH 0/7] containers (V7): Generic Process Containers
-Cc: vatsa@in.ibm.com, sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, xemul@sw.ru, dev@sw.ru,
-       rohitseth@google.com, pj@sgi.com, ebiederm@xmission.com,
-       winget@google.com, containers@lists.osdl.org, serue@us.ibm.com
-In-Reply-To: <45D1068D.4060906@vilain.net>
+	Mon, 12 Feb 2007 19:43:49 -0500
+Received: from brick.kernel.dk ([62.242.22.158]:2209 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030601AbXBMAns (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 19:43:48 -0500
+Date: Tue, 13 Feb 2007 01:44:08 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.osdl.org>
+Subject: Re: [PATCH 7/8] lguest: trivial guest block driver
+Message-ID: <20070213004408.GB3641@kernel.dk>
+References: <1171252219.10409.33.camel@localhost.localdomain> <1171252321.10409.36.camel@localhost.localdomain> <1171252405.10409.39.camel@localhost.localdomain> <1171252474.10409.42.camel@localhost.localdomain> <20070212044339.GJ3685@kernel.dk> <1171258034.10409.54.camel@localhost.localdomain> <20070212053204.GB3999@kernel.dk> <1171264167.10409.62.camel@localhost.localdomain> <20070212150125.GM3999@kernel.dk> <1171326305.19842.36.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070212081521.808338000@menage.corp.google.com>
-	 <45D0EC68.9090009@vilain.net>
-	 <6599ad830702121515p10bc1b58kf1d29367b9b18016@mail.gmail.com>
-	 <45D1068D.4060906@vilain.net>
+In-Reply-To: <1171326305.19842.36.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/12/07, Sam Vilain <sam@vilain.net> wrote:
-> Ask yourself this - what do you need the container structure for so
-> badly, that virtualising the individual resources does not provide for?
+On Tue, Feb 13 2007, Rusty Russell wrote:
+> On Mon, 2007-02-12 at 16:01 +0100, Jens Axboe wrote:
+> > On Mon, Feb 12 2007, Rusty Russell wrote:
+> > > Thanks Jens!!
+> > 
+> > My pleasure, it's not often you get to make that big a performance
+> > improvement with just a little few lines of change :-)
+> 
+> *cough* I deliberately leave these low hanging fruit in lguest to
+> encourage people to hack on it.  Really.  *cough*
 
-Primarily, that otherwise every module that wants to affect/monitor
-behaviour of a group of associated processes has to implement its own
-process grouping abstraction.
+:-)
 
-As an example, the CPU accounting patch that in included in my patch
-set as an illustration of a simple resource monitoring module is just
-250 lines, almost entirely in one file; if it also had to handle
-associating tasks together into groups and presenting a filesystem
-interface to the user it would be far larger and would have a much
-bigger footprint on the kernel.
+> > I guess you'll take changes to make this driver queuing as well? It's
+> > pretty important for good guest io performance as well.
+> 
+> The question is whether the guest or host should queue.  If you have
+> multiple guests sharing a disk in the hose, I would think that the host
+> is better off queuing.  And this would seem to be the common case.
 
->From the point of view of the virtual server containers, the advantage
-is that you're integrated with a standard filesystem interface for
-determining group membership. It does become simpler to combine
-virtual servers and resource controllers, although I grant you that
-you could juggle that from userspace without the additional kernel
-support.
+You want queuing in the host, since for queuing to make a performance
+difference it needs to be propagated all the way down to the device. But
+you can't get queuing at the host level if the guest device doesn't
+allow it, you'd be serializing anyway. Well for writes you can, but not
+synchronous requests.
 
-Paul
+Basically allow as much to be sent to the host as possible.
+
+> On my todo list is:
+> 1) Implement write barriers, (-> fsync in the host)
+> 2) Make the host userspace program (lguest) async rather than blocking,
+> 3) Allow multiple outstanding requests.
+> 
+> Then it should be useful for other hypervisors.
+
+I completely agree with your prioritized list.
+
+-- 
+Jens Axboe
+
