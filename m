@@ -1,106 +1,345 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751438AbXBMXVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751441AbXBMXWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751438AbXBMXVa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 18:21:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbXBMXVa
+	id S1751441AbXBMXWj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 18:22:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbXBMXWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 18:21:30 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:60191 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751438AbXBMXV3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 18:21:29 -0500
-Date: Tue, 13 Feb 2007 15:21:04 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Sergei Organov <osv@javad.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       =?ISO-8859-1?Q?J=2EA=2E_Magall=C3=C3=C3=C2=B3n?= 
-	<jamagallon@ono.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: somebody dropped a (warning) bomb
-In-Reply-To: <87fy99n6mf.fsf@javad.com>
-Message-ID: <Pine.LNX.4.64.0702131513050.3604@woody.linux-foundation.org>
-References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702081338010.8424@woody.linux-foundation.org>
- <Pine.LNX.4.64.0702081351410.8424@woody.linux-foundation.org>
- <87abznsdyo.fsf@javad.com> <Pine.LNX.4.64.0702090753500.8424@woody.linux-foundation.org>
- <874pprr5nn.fsf@javad.com> <Pine.LNX.4.64.0702120804520.8424@woody.linux-foundation.org>
- <87ps8end9b.fsf@javad.com> <84144f020702131026q2af1afd6vbcd2708d7b7b9907@mail.gmail.com>
- <87bqjxooog.fsf@javad.com> <84144f020702131143r767aa40blb97a39b40bee73b8@mail.gmail.com>
- <87fy99n6mf.fsf@javad.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 13 Feb 2007 18:22:39 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:40464 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751445AbXBMXWi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 18:22:38 -0500
+Date: Tue, 13 Feb 2007 15:19:06 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
+Subject: [PATCH v2] build errors: uevent with CONFIG_SYSFS=n
+Message-Id: <20070213151906.dcbc479d.randy.dunlap@oracle.com>
+In-Reply-To: <20070212145823.57114781.akpm@linux-foundation.org>
+References: <20070212135021.27754603.randy.dunlap@oracle.com>
+	<20070212142919.5ce91086.randy.dunlap@oracle.com>
+	<20070212145823.57114781.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 12 Feb 2007 14:58:23 -0800 Andrew Morton wrote:
 
-
-On Tue, 13 Feb 2007, Sergei Organov wrote:
+> > On Mon, 12 Feb 2007 14:29:19 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > Here's a patch, tested both ways (SYSFS=y, SYSFS=n).
+> > 
+> > ---
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > Fix source files to build with CONFIG_SYSFS=n.
+> > module_subsys is not available.
 > 
-> Sorry, what do you do with "variable 'xxx' might be used uninitialized"
-> warning when it's false? Turn it off? Annotate the source? Assign fake
-> initialization value? Change the compiler so that it does "the effort"
-> for you? Never encountered false positive from this warning?
+> erk.  Can we get some stubs in the header file to reduce the need for ifdeffing?
 
-The thing is, that warning is at least easy to shut up. 
+er, ok.  This now builds cleanly with all 4 combinations of
+SYSFS * MODULES.  No idea how it meshes with what's in -mm.
+---
 
-You just add a fake initialization. There isn't any real downside.
 
-In contrast, to shut up the idiotic pointer-sign warning, you have to add 
-a cast.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Now, some people seem to think that adding casts is a way of life, and 
-think that C programs always have a lot of casts. That's NOT TRUE. It's 
-actually possible to avoid casts, and good C practice will do that to 
-quite a high degree, because casts in C are *dangerous*. 
+Fix source files to build with CONFIG_SYSFS=n.
+module_subsys is not available.
 
-A language that doesn't allow arbitrary type-casting is a horrible 
-language (because it doesn't allow you to "get out" of the language type 
-system), and typecasts in C are really important. But they are an 
-important feature that should be used with caution, and as little as 
-possible, because they (by design, of course) break the type rules.
+SYSFS=n, MODULES=y:	T:y
+SYSFS=n, MODULES=n:	T:y
 
-Now, since the _only_ reason for the -Wpointer-sign warning in the first 
-place is to warn about breaking type rules, if the way to shut it up is to 
-break them EVEN MORE, then the warnign is obviously totally broken. IT 
-CAUSES PEOPLE TO WRITE WORSE CODE! Which was against the whole point of 
-having the warning in the first place.
+SYSFS=y, MODULES=y:	T:y
+SYSFS=y, MODULES=n:	T:y
 
-This is why certain warnings are fine. For example, the warning about
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ include/linux/module.h      |   53 ++++++++++++++++++++++++++++++++++++--------
+ include/linux/moduleparam.h |   12 +++++++++
+ kernel/module.c             |   14 ++++++++---
+ kernel/params.c             |   28 ++++++++++++-----------
+ 4 files changed, 81 insertions(+), 26 deletions(-)
 
-	if (a=b)
-		..
-
-is obviously warning about totally valid C code, but it's _still_ a fine 
-warning, because it's actually very easy to make that warning go away AND 
-IMPROVE THE CODE at the same time. Even if you actually meant to write the 
-assignment, you can write it as
-
-	if ((a = b) != 0)
-		..
-
-or 
-
-	a = b;
-	if (a)
-		..
-
-both of which are actually more readable.
-
-But if you have 
-
-	unsigned char *mystring;
-
-	len = strlen(mystring);
-
-then please tell me how to fix that warning without making the code 
-*worse* from a type-safety standpoint? You CANNOT. You'd have to cast it 
-explicitly (or assing it through a "void *" variable), both of which 
-actually MAKE THE TYPE-CHECKING PROBLEM WORSE!
-
-See? The warning made no sense to begin with, and it warns about something 
-where the alternatives are worse than what it warned about.
-
-Ergo. It's a crap warning.
-
-		Linus
+--- linux-2.6.20-git7.orig/kernel/params.c
++++ linux-2.6.20-git7/kernel/params.c
+@@ -30,8 +30,6 @@
+ #define DEBUGP(fmt, a...)
+ #endif
+ 
+-static struct kobj_type module_ktype;
+-
+ static inline char dash2underscore(char c)
+ {
+ 	if (c == '-')
+@@ -391,6 +389,7 @@ struct module_param_attrs
+ 	struct param_attribute attrs[0];
+ };
+ 
++#ifdef CONFIG_SYSFS
+ #define to_param_attr(n) container_of(n, struct param_attribute, mattr);
+ 
+ static ssize_t param_attr_show(struct module_attribute *mattr,
+@@ -426,6 +425,7 @@ static ssize_t param_attr_store(struct m
+ 		return len;
+ 	return err;
+ }
++#endif
+ 
+ #ifdef CONFIG_MODULES
+ #define __modinit
+@@ -433,6 +433,7 @@ static ssize_t param_attr_store(struct m
+ #define __modinit __init
+ #endif
+ 
++#ifdef CONFIG_SYSFS
+ /*
+  * param_sysfs_setup - setup sysfs support for one module or KBUILD_MODNAME
+  * @mk: struct module_kobject (contains parent kobject)
+@@ -500,9 +501,7 @@ param_sysfs_setup(struct module_kobject 
+ 	return mp;
+ }
+ 
+-
+ #ifdef CONFIG_MODULES
+-
+ /*
+  * module_param_sysfs_setup - setup sysfs support for one module
+  * @mod: module
+@@ -625,7 +624,6 @@ static void __init param_sysfs_builtin(v
+ 
+ 
+ /* module-related sysfs stuff */
+-#ifdef CONFIG_SYSFS
+ 
+ #define to_module_attr(n) container_of(n, struct module_attribute, attr);
+ #define to_module_kobject(n) container_of(n, struct module_kobject, kobj);
+@@ -673,6 +671,8 @@ static struct sysfs_ops module_sysfs_ops
+ 	.store = module_attr_store,
+ };
+ 
++static struct kobj_type module_ktype;
++
+ static int uevent_filter(struct kset *kset, struct kobject *kobj)
+ {
+ 	struct kobj_type *ktype = get_ktype(kobj);
+@@ -686,19 +686,12 @@ static struct kset_uevent_ops module_uev
+ 	.filter = uevent_filter,
+ };
+ 
+-#else
+-static struct sysfs_ops module_sysfs_ops = {
+-	.show = NULL,
+-	.store = NULL,
+-};
+-#endif
++decl_subsys(module, &module_ktype, &module_uevent_ops);
+ 
+ static struct kobj_type module_ktype = {
+ 	.sysfs_ops =	&module_sysfs_ops,
+ };
+ 
+-decl_subsys(module, &module_ktype, &module_uevent_ops);
+-
+ /*
+  * param_sysfs_init - wrapper for built-in params support
+  */
+@@ -719,6 +712,15 @@ static int __init param_sysfs_init(void)
+ }
+ subsys_initcall(param_sysfs_init);
+ 
++#else
++#if 0
++static struct sysfs_ops module_sysfs_ops = {
++	.show = NULL,
++	.store = NULL,
++};
++#endif
++#endif
++
+ EXPORT_SYMBOL(param_set_byte);
+ EXPORT_SYMBOL(param_get_byte);
+ EXPORT_SYMBOL(param_set_short);
+--- linux-2.6.20-git7.orig/kernel/module.c
++++ linux-2.6.20-git7/kernel/module.c
+@@ -1068,7 +1068,8 @@ static inline void remove_sect_attrs(str
+ }
+ #endif /* CONFIG_KALLSYMS */
+ 
+-static int module_add_modinfo_attrs(struct module *mod)
++#ifdef CONFIG_SYSFS
++int module_add_modinfo_attrs(struct module *mod)
+ {
+ 	struct module_attribute *attr;
+ 	struct module_attribute *temp_attr;
+@@ -1094,7 +1095,7 @@ static int module_add_modinfo_attrs(stru
+ 	return error;
+ }
+ 
+-static void module_remove_modinfo_attrs(struct module *mod)
++void module_remove_modinfo_attrs(struct module *mod)
+ {
+ 	struct module_attribute *attr;
+ 	int i;
+@@ -1109,8 +1110,10 @@ static void module_remove_modinfo_attrs(
+ 	}
+ 	kfree(mod->modinfo_attrs);
+ }
++#endif
+ 
+-static int mod_sysfs_init(struct module *mod)
++#ifdef CONFIG_SYSFS
++int mod_sysfs_init(struct module *mod)
+ {
+ 	int err;
+ 
+@@ -1133,7 +1136,7 @@ out:
+ 	return err;
+ }
+ 
+-static int mod_sysfs_setup(struct module *mod,
++int mod_sysfs_setup(struct module *mod,
+ 			   struct kernel_param *kparam,
+ 			   unsigned int num_params)
+ {
+@@ -1169,6 +1172,7 @@ out_unreg:
+ out:
+ 	return err;
+ }
++#endif
+ 
+ static void mod_kobject_remove(struct module *mod)
+ {
+@@ -2345,6 +2349,7 @@ void print_modules(void)
+ 	printk("\n");
+ }
+ 
++#ifdef CONFIG_SYSFS
+ static char *make_driver_name(struct device_driver *drv)
+ {
+ 	char *driver_name;
+@@ -2419,6 +2424,7 @@ void module_remove_driver(struct device_
+ 	}
+ }
+ EXPORT_SYMBOL(module_remove_driver);
++#endif
+ 
+ #ifdef CONFIG_MODVERSIONS
+ /* Generate the signature for struct module here, too, for modversions. */
+--- linux-2.6.20-git7.orig/include/linux/module.h
++++ linux-2.6.20-git7/include/linux/module.h
+@@ -76,8 +76,6 @@ void sort_extable(struct exception_table
+ 		  struct exception_table_entry *finish);
+ void sort_main_extable(void);
+ 
+-extern struct subsystem module_subsys;
+-
+ #ifdef MODULE
+ #define MODULE_GENERIC_TABLE(gtype,name)			\
+ extern const struct gtype##_id __mod_##gtype##_table		\
+@@ -467,10 +465,6 @@ int unregister_module_notifier(struct no
+ 
+ extern void print_modules(void);
+ 
+-struct device_driver;
+-void module_add_driver(struct module *, struct device_driver *);
+-void module_remove_driver(struct device_driver *);
+-
+ #else /* !CONFIG_MODULES... */
+ #define EXPORT_SYMBOL(sym)
+ #define EXPORT_SYMBOL_GPL(sym)
+@@ -568,18 +562,59 @@ static inline void print_modules(void)
+ {
+ }
+ 
++#endif /* CONFIG_MODULES */
++
+ struct device_driver;
++#ifdef CONFIG_SYSFS
+ struct module;
+ 
+-static inline void module_add_driver(struct module *module, struct device_driver *driver)
++extern struct subsystem module_subsys;
++
++int mod_sysfs_init(struct module *mod);
++int mod_sysfs_setup(struct module *mod,
++			   struct kernel_param *kparam,
++			   unsigned int num_params);
++int module_add_modinfo_attrs(struct module *mod);
++void module_remove_modinfo_attrs(struct module *mod);
++
++#else /* !CONFIG_SYSFS */
++
++static inline int mod_sysfs_init(struct module *mod)
+ {
++	return 0;
+ }
+ 
+-static inline void module_remove_driver(struct device_driver *driver)
++static inline int mod_sysfs_setup(struct module *mod,
++			   struct kernel_param *kparam,
++			   unsigned int num_params)
+ {
++	return 0;
+ }
+ 
+-#endif /* CONFIG_MODULES */
++static inline int module_add_modinfo_attrs(struct module *mod)
++{
++	return 0;
++}
++
++static inline void module_remove_modinfo_attrs(struct module *mod)
++{ }
++
++#endif /* CONFIG_SYSFS */
++
++#if defined(CONFIG_SYSFS) && defined(CONFIG_MODULES)
++
++void module_add_driver(struct module *mod, struct device_driver *drv);
++void module_remove_driver(struct device_driver *drv);
++
++#else /* not both CONFIG_SYSFS && CONFIG_MODULES */
++
++static inline void module_add_driver(struct module *mod, struct device_driver *drv)
++{ }
++
++static inline void module_remove_driver(struct device_driver *drv)
++{ }
++
++#endif
+ 
+ #define symbol_request(x) try_then_request_module(symbol_get(x), "symbol:" #x)
+ 
+--- linux-2.6.20-git7.orig/include/linux/moduleparam.h
++++ linux-2.6.20-git7/include/linux/moduleparam.h
+@@ -169,10 +169,22 @@ extern int param_get_string(char *buffer
+ 
+ struct module;
+ 
++#if defined(CONFIG_SYSFS) && defined(CONFIG_MODULES)
+ extern int module_param_sysfs_setup(struct module *mod,
+ 				    struct kernel_param *kparam,
+ 				    unsigned int num_params);
+ 
+ extern void module_param_sysfs_remove(struct module *mod);
++#else
++static inline int module_param_sysfs_setup(struct module *mod,
++			     struct kernel_param *kparam,
++			     unsigned int num_params)
++{
++	return 0;
++}
++
++static inline void module_param_sysfs_remove(struct module *mod)
++{ }
++#endif
+ 
+ #endif /* _LINUX_MODULE_PARAMS_H */
