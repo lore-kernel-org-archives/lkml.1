@@ -1,122 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751383AbXBMWkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751372AbXBMWjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751383AbXBMWkh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 17:40:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbXBMWkg
+	id S1751372AbXBMWjz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 17:39:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbXBMWjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 17:40:36 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:57111 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751383AbXBMWke (ORCPT
+	Tue, 13 Feb 2007 17:39:55 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:42342 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751377AbXBMWjy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 17:40:34 -0500
-X-AuditID: d80ac287-a2f80bb000007e48-f2-45d24157e4cb 
-Date: Tue, 13 Feb 2007 22:40:39 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>, tony.luck@gmail.com,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch] build error: allnoconfig fails on mincore/swapper_space
-In-Reply-To: <20070213121217.0f4e9f3a.randy.dunlap@oracle.com>
-Message-ID: <Pine.LNX.4.64.0702132224280.3729@blonde.wat.veritas.com>
-References: <20070212145040.c3aea56e.randy.dunlap@oracle.com>
- <20070212150802.f240e94f.akpm@linux-foundation.org> <45D12715.4070408@yahoo.com.au>
- <20070213121217.0f4e9f3a.randy.dunlap@oracle.com>
+	Tue, 13 Feb 2007 17:39:54 -0500
+Message-ID: <45D23E38.1030607@vmware.com>
+Date: Tue, 13 Feb 2007 14:39:52 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 13 Feb 2007 22:40:32.0590 (UTC) FILETIME=[F843F6E0:01C74FBF]
-X-Brightmail-Tracker: AAAAAA==
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [patch 06/21] Xen-paravirt: remove ctor for pgd cache
+References: <20070213221729.772002682@goop.org> <20070213221829.929261125@goop.org>
+In-Reply-To: <20070213221829.929261125@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Feb 2007, Randy Dunlap wrote:
-> On Tue, 13 Feb 2007 13:48:53 +1100 Nick Piggin wrote:
-> > Andrew Morton wrote:
-> > >>On Mon, 12 Feb 2007 14:50:40 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > >>2.6.20-git8 on x86_64:
-> > >>
-> > >>
-> > >>  LD      init/built-in.o
-> > >>  LD      .tmp_vmlinux1
-> > >>mm/built-in.o: In function `sys_mincore':
-> > >>(.text+0xe584): undefined reference to `swapper_space'
-> > >>make: *** [.tmp_vmlinux1] Error 1
-> > > 
-> > > 
-> > > oops.  CONFIG_SWAP=n,  I assume?
-> > > 
-> > 
-> > Hmm, OK. Hugh can strip me of my bonus point now...
-
-No, Nick, you get to keep your bonus point, it was for remembering
-migration pages.  I was the devil who tempted you into using
-find_get_page(&swapper_space,).
-
-> > 
-> > Hugh, you can strip me of my bonus point now... How about your other
-> > suggestion to just remove the stats from lookup_swap_cache? (and should
-> > we also rename it to find_get_swap_page?)
-
-Not at this point.  I won't mind you putting up a patch doing that for
-discussion and inclusion in -mm (if you do, then read_swap_cache_async
-should use it too), but it's not now an appropriate fix to the
-CONFIG_SWAP=n build issue.
-
-> 
-> I need a fix for this.  It's killing my daily/automated builds.
-> So here is an ifdeffery-fix.
-
-Sorry for being so slow to respond on this.  Yes, I'm inclined to
-your ifdeffery fix - one can go cleverer, but I'd say it's the
-appropriate fix now.
-
-But, please change your "present = 0;" to "present = 1;" -
-if CONFIG_SWAP isn't on, it has to be a migration entry,
-which always counts as present.
-
-> 
-> BUT:  what is <present> used for in that loop?  or is it used?
-
-Well spotted!  Something has gone missing: there needs to be a
-			vec[i] = present;
-at the bottom of that loop.
-
-Hugh
-
-> 
-> ---
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Don't check for pte swap entries when CONFIG_SWAP=n.
-> 
-> mm/built-in.o: In function `sys_mincore':
-> (.text+0xe584): undefined reference to `swapper_space'
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  mm/mincore.c |    4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> --- linux-2.6.20-git8.orig/mm/mincore.c
-> +++ linux-2.6.20-git8/mm/mincore.c
-> @@ -111,6 +111,7 @@ static long do_mincore(unsigned long add
->  			present = mincore_page(vma->vm_file->f_mapping, pgoff);
+Jeremy Fitzhardinge wrote:
 >  
->  		} else { /* pte is a swap entry */
-> +#ifdef CONFIG_SWAP
->  			swp_entry_t entry = pte_to_swp_entry(pte);
->  			if (is_migration_entry(entry)) {
->  				/* migration entries are always uptodate */
-> @@ -119,6 +120,9 @@ static long do_mincore(unsigned long add
->  				pgoff = entry.val;
->  				present = mincore_page(&swapper_space, pgoff);
->  			}
-> +#else
-> +			present = 0;
-> +#endif
->  		}
->  	}
->  	pte_unmap_unlock(ptep-1, ptl);
-> 
+> @@ -261,10 +261,12 @@ void pgd_ctor(void *pgd, struct kmem_cac
+>  	spin_unlock_irqrestore(&pgd_lock, flags);
+>  }
+>  
+> -/* never called when PTRS_PER_PMD > 1 */
+> -void pgd_dtor(void *pgd, struct kmem_cache *cache, unsigned long unused)
+> +static void pgd_dtor(pgd_t *pgd)
+>  {
+>  	unsigned long flags; /* can be called from interrupt context */
+> +
+> +	if (PTRS_PER_PMD == 1)
+> +		return;
+>  
+>  	paravirt_release_pd(__pa(pgd) >> PAGE_SHIFT);
+>  	spin_lock_irqsave(&pgd_lock, flags);
+>   
+
+
+Acked, with exceptions.  This bit breaks VMI.  The paravirt_release_pd 
+must happen unconditionally.  But I would rather fix it after patches 
+get applied just to make sure the entire allocation / deallocation order 
+constraints are intact.
+
+Zach
