@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161024AbXBMFJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161025AbXBMFLE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161024AbXBMFJs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 00:09:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161025AbXBMFJr
+	id S1161025AbXBMFLE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 00:11:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161029AbXBMFLE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 00:09:47 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:42892 "EHLO 2ka.mipt.ru"
+	Tue, 13 Feb 2007 00:11:04 -0500
+Received: from hera.kernel.org ([140.211.167.34]:39077 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161023AbXBMFJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 00:09:46 -0500
-Date: Tue, 13 Feb 2007 08:08:04 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Andrew Morton <akpm@osdl.org>, David Miller <davem@davemloft.net>,
-       netdev <netdev@vger.kernel.org>, Zach Brown <zach.brown@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Chase Venters <chase.venters@clientec.com>,
-       Johann Borck <johann.borck@densedata.com>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, Jamal Hadi Salim <hadi@cyberus.ca>,
-       Ingo Molnar <mingo@elte.hu>, linux-fsdevel@vger.kernel.org
-Subject: Re: [take35 0/10] kevent: Generic event handling mechanism.
-Message-ID: <20070213050804.GA1859@2ka.mipt.ru>
-References: <asdasdqaa0591036@2ka.mipt.ru> <11703247503374@2ka.mipt.ru> <20070205142336.GA24190@2ka.mipt.ru> <20070212103510.GC5703@2ka.mipt.ru> <45D080C5.4000500@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	id S1161025AbXBMFLC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 00:11:02 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 7/7] cleanup: make disable_acpi() valid w/o CONFIG_ACPI
+Date: Tue, 13 Feb 2007 00:09:36 -0500
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.osdl.org>,
+       Len Brown <len.brown@intel.com>
+References: <1171251120.10409.2.camel@localhost.localdomain> <1171251471.10409.15.camel@localhost.localdomain> <1171251578.10409.17.camel@localhost.localdomain>
+In-Reply-To: <1171251578.10409.17.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <45D080C5.4000500@redhat.com>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.7.5 (2ka.mipt.ru [0.0.0.0]); Tue, 13 Feb 2007 08:08:23 +0300 (MSK)
+Message-Id: <200702130009.36987.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 12, 2007 at 06:59:17AM -0800, Ulrich Drepper (drepper@redhat.com) wrote:
-> Evgeniy Polyakov wrote:
-> > I think that mean that everybody is happy with APi, design and set of
-> > features. 
+Applied.
+
+thanks,
+-Len
+
+On Sunday 11 February 2007 22:39, Rusty Russell wrote:
+> Len Brown <lenb@kernel.org> said:
+> > Okay, but better to use disable_acpi()
+> > indeed, since this would be the first code not already inside CONFIG_ACPI
+> > to invoke disable_acpi(), we could define the inline as empty and you could
+> > then scratch the #ifdef too.
 > 
-> No comment means that I still have not been able to test anything since
-> regardless of what version I tried, it failed to build.
-
-I think if you would provide error message you saw, I fixed that in a
-couple of moments, doesn't it?
-
-I will send new patchset next week when rc1 will be out and your
-feedback is greatly appreciated.
-
-> -- 
-> ➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 > 
-
-
-
--- 
-	Evgeniy Polyakov
+> ===================================================================
+> --- a/include/asm-i386/acpi.h
+> +++ b/include/asm-i386/acpi.h
+> @@ -127,6 +127,7 @@ extern int acpi_irq_balance_set(char *st
+>  #define acpi_ioapic 0
+>  static inline void acpi_noirq_set(void) { }
+>  static inline void acpi_disable_pci(void) { }
+> +static inline void disable_acpi(void) { }
+>  
+>  #endif	/* !CONFIG_ACPI */
+>  
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
