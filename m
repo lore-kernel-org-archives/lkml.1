@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750978AbXBMRUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751006AbXBMRXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750978AbXBMRUV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 12:20:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750993AbXBMRUV
+	id S1751006AbXBMRXZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 12:23:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751010AbXBMRXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 12:20:21 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:41453 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750978AbXBMRUT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 12:20:19 -0500
-From: Andi Kleen <ak@suse.de>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [patch 4/9] Remove the TSC synchronization on SMP machines
-Date: Tue, 13 Feb 2007 18:20:14 +0100
-User-Agent: KMail/1.9.5
-Cc: Arjan van de Ven <arjan@infradead.org>, Vojtech Pavlik <vojtech@suse.cz>,
-       Jiri Bohac <jbohac@suse.cz>, linux-kernel@vger.kernel.org,
-       ssouhlal@freebsd.org, tglx@linutronix.de, johnstul@us.ibm.com,
-       zippel@linux-m68k.org, andrea@suse.de
-References: <20070201095952.589234000@jet.suse.cz> <1171348808.12771.19.camel@laptopd505.fenrus.org> <Pine.LNX.4.64.0702130906530.23634@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0702130906530.23634@schroedinger.engr.sgi.com>
+	Tue, 13 Feb 2007 12:23:25 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:40172 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751006AbXBMRXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 12:23:24 -0500
+Message-ID: <45D1F3B4.6020802@redhat.com>
+Date: Tue, 13 Feb 2007 12:21:56 -0500
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Al Viro <viro@ftp.linux.org.uk>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
+       Jay Cliburn <jacliburn@bellsouth.net>, atl1-devel@lists.sourceforge.net
+Subject: Re: [PATCH] fix atl1 braino
+References: <20070213071256.GF4095@ftp.linux.org.uk>
+In-Reply-To: <20070213071256.GF4095@ftp.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702131820.15180.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 February 2007 18:09, Christoph Lameter wrote:
-> On Tue, 13 Feb 2007, Arjan van de Ven wrote:
+Al Viro wrote:
+> Spot the bug...
 > 
-> > no quite the opposite. gettimeofday() currently is NOT monotonic
-> > unfortunately. With this patchseries it actually has a better chance of
-> > becoming that...
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
 > 
-> It is monotonic on IA64 at least and we have found that subtle application 
-> bugs occur if it is not. IA64 (and other arches using time interpolation) 
-> can insure the monotoneity of time sources. Are you sure about this? I 
-> wonder why the new time of day subsystem does not have that?
+> diff --git a/drivers/net/atl1/atl1_hw.c b/drivers/net/atl1/atl1_hw.c
+> index 08b2d78..e28707a 100644
+> --- a/drivers/net/atl1/atl1_hw.c
+> +++ b/drivers/net/atl1/atl1_hw.c
+> @@ -357,7 +357,7 @@ void atl1_hash_set(struct atl1_hw *hw, u32 hash_value)
+>  	 */
+>  	hash_reg = (hash_value >> 31) & 0x1;
+>  	hash_bit = (hash_value >> 26) & 0x1F;
+> -	mta = ioread32((hw + REG_RX_HASH_TABLE) + (hash_reg << 2));
+> +	mta = ioread32((hw->hw_addr + REG_RX_HASH_TABLE) + (hash_reg << 2));
+>  	mta |= (1 << hash_bit);
+>  	iowrite32(mta, (hw->hw_addr + REG_RX_HASH_TABLE) + (hash_reg << 2));
+>  }
 
-Just to avoid spreading misinformation: modulo some new broken hardware
-(which we always try to work around when found) i386/x86-64 gettimeofday
-is monotonic.  AFAIK on the currently known hardware it should be generally
-ok.
+ACK.
 
-However ntpd can always screw you up, but that's inherent in the design.
-
-Safer in general is to use clock_gettime(CLOCK_MONOTONIC, ...) which guarantees
-no interference from ntpd
-
--Andi
+Thanks for catching this.
