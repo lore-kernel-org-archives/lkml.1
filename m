@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161060AbXBMFQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161071AbXBMFZE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161060AbXBMFQZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 00:16:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161042AbXBMFQZ
+	id S1161071AbXBMFZE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 00:25:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161029AbXBMFZD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 00:16:25 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:38363 "EHLO 2ka.mipt.ru"
+	Tue, 13 Feb 2007 00:25:03 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35046 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161035AbXBMFQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 00:16:23 -0500
-Date: Tue, 13 Feb 2007 08:14:54 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: davem@davemloft.net, drepper@redhat.com, netdev@vger.kernel.org,
-       zach.brown@oracle.com, hch@infradead.org, chase.venters@clientec.com,
-       johann.borck@densedata.com, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, hadi@cyberus.ca, mingo@elte.hu,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [take35 0/10] kevent: Generic event handling mechanism.
-Message-ID: <20070213051454.GB1859@2ka.mipt.ru>
-References: <asdasdqaa0591036@2ka.mipt.ru> <11703247503374@2ka.mipt.ru> <20070205142336.GA24190@2ka.mipt.ru> <20070212103510.GC5703@2ka.mipt.ru> <20070212091335.9c00d5d9.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+	id S1161021AbXBMFZB convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 00:25:01 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Ismail =?utf-8?q?D=C3=B6nmez?= <ismail@pardus.org.tr>
+Subject: Re: /proc/acpi/ac_adapter/AC is missing after latest ACPI merge
+Date: Tue, 13 Feb 2007 00:23:15 -0500
+User-Agent: KMail/1.9.5
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200702122045.34951.ismail@pardus.org.tr>
+In-Reply-To: <200702122045.34951.ismail@pardus.org.tr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070212091335.9c00d5d9.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.7.5 (2ka.mipt.ru [0.0.0.0]); Tue, 13 Feb 2007 08:14:59 +0300 (MSK)
+Message-Id: <200702130023.15495.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 12, 2007 at 09:13:35AM -0800, Andrew Morton (akpm@linux-foundation.org) wrote:
-> > On Mon, 12 Feb 2007 13:35:10 +0300 Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
-> > Andrew, do you consider kevent for inclusion or declining?
+On Monday 12 February 2007 13:45, Ismail Dönmez wrote:
+> Hi all,
 > 
-> I haven't had time to think about it in the past month or two, sorry.
+> After latest ACPI merge /proc/acpi/ac_adapter/AC has gone fishing :
 > 
-> However we might as well get it back in there for review-and-test - please
-> send a new patchset once 2.6.21-rc1 is released and copy me on it?
+> [~]> ls -al /proc/acpi/ac_adapter/
+> dr-xr-xr-x  2 root root 0 Şub 12 20:44 ADP1
+> 
+> [~]> ls -al /proc/acpi/ac_adapter/ADP1
+> -r--r--r-- 1 root root 0 Şub 12 20:44 state
+> 
+> This at least breaks HAL which thinks AC is always plugged in, is this change 
+> intentional?
 
-Ok, I will.
-You are always in copy for kevent patchsets.
+no change intended here.
 
--- 
-	Evgeniy Polyakov
+grep CONFIG_ACPI_AC .config
+
+lsmod |grep ac
+
+cheers,
+-Len
