@@ -1,56 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965470AbXBMCNp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933131AbXBMCQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965470AbXBMCNp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 21:13:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933128AbXBMCNo
+	id S933131AbXBMCQK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 21:16:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933132AbXBMCQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 21:13:44 -0500
-Received: from yue.linux-ipv6.org ([203.178.140.15]:54518 "EHLO
-	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933051AbXBMCNn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 21:13:43 -0500
-Date: Tue, 13 Feb 2007 11:13:45 +0900 (JST)
-Message-Id: <20070213.111345.78160400.yoshfuji@linux-ipv6.org>
-To: akpm@linux-foundation.org, clem@clem.clem-digital.net
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       yoshfuji@linux-ipv6.org
-Subject: Re: 2.6.20-git8 fails compile -- net/built-in.o __ipv6_addr_type
-From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
-	<yoshfuji@linux-ipv6.org>
-In-Reply-To: <20070212181216.c55ca788.akpm@linux-foundation.org>
-References: <200702130110.l1D1ADai012897@clem.clem-digital.net>
-	<20070212181216.c55ca788.akpm@linux-foundation.org>
-Organization: USAGI/WIDE Project
-X-URL: http://www.yoshifuji.org/%7Ehideaki/
-X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
-X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
-X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
- $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
-X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
+	Mon, 12 Feb 2007 21:16:10 -0500
+Received: from ozlabs.org ([203.10.76.45]:47493 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933131AbXBMCQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 21:16:08 -0500
+Subject: Re: [PATCH 5/8] lguest: trivial guest network driver
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.osdl.org>,
+       jgarzik <jgarzik@pobox.com>
+In-Reply-To: <20070212155553.GA15627@gondor.apana.org.au>
+References: <1171251406.10409.13.camel@localhost.localdomain>
+	 <1171251471.10409.15.camel@localhost.localdomain>
+	 <1171251578.10409.17.camel@localhost.localdomain>
+	 <1171251698.10409.20.camel@localhost.localdomain>
+	 <1171251770.10409.23.camel@localhost.localdomain>
+	 <1171251894.10409.26.camel@localhost.localdomain>
+	 <1171251965.10409.28.camel@localhost.localdomain>
+	 <1171252113.10409.30.camel@localhost.localdomain>
+	 <1171252219.10409.33.camel@localhost.localdomain>
+	 <1171252321.10409.36.camel@localhost.localdomain>
+	 <20070212155553.GA15627@gondor.apana.org.au>
+Content-Type: text/plain
+Date: Tue, 13 Feb 2007 13:15:18 +1100
+Message-Id: <1171332919.19842.74.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <20070212181216.c55ca788.akpm@linux-foundation.org> (at Mon, 12 Feb 2007 18:12:16 -0800), Andrew Morton <akpm@linux-foundation.org> says:
-
-> > On Mon, 12 Feb 2007 20:10:13 -0500 (EST) Pete Clements <clem@clem.clem-digital.net> wrote:
-> > 2.6.20-git8 fails compile:
-> > 
-> >   CHK     include/linux/compile.h
-> >   UPD     include/linux/compile.h
-> >   CC      init/version.o
-> >   LD      init/built-in.o
-> >   LD      .tmp_vmlinux1
-> > net/built-in.o: In function `svc_udp_recvfrom':
-> > svcsock.c:(.text+0x61be4): undefined reference to `__ipv6_addr_type'
-> > make: *** [.tmp_vmlinux1] Error 1
-> > 
+On Tue, 2007-02-13 at 02:55 +1100, Herbert Xu wrote:
+> On Mon, Feb 12, 2007 at 02:52:01PM +1100, Rusty Russell wrote:
+> >
+> > +static void skb_to_dma(const struct sk_buff *skb, unsigned int len,
+> > +		       struct lguest_dma *dma)
+> > +{
+> > +	unsigned int i, seg;
+> > +
+> > +	for (i = seg = 0; i < len; seg++, i += rest_of_page(skb->data + i)) {
 > 
-> Please send the .config.
+> The length field from the skb covers the fragmented parts as well.
+> So you don't want to use it as the boundary for the loop over the
+> skb header data.  As it is, if the skb has fragments, the first
+> loop will try to read them off the header.
 
-and, the gcc version...
+Good spotting!  This function needs to be passed skb_headlen(skb),
+rather than skb->len.  Patch is below (I renamed the parameter as well,
+for clarity).
 
---yoshfuji
+It's fascinating why this "worked".  Firstly, for inter-guest
+communication, I am not calculating checksums, nor checking them.
+Secondly, for guest->host, I turn off hw checksumming so the kernel
+disables SG and this code is never executed.  Thirdly, for virtbench's
+inter-guest sendfile test does not check the data received is actually
+correct.  Finally, while we end up producing a packet which is larger
+than skb->len of 1514, the DMA receive buffer for the other guest is
+only 1514 bytes, so the result of the transfer is 1514 (==skb->len), so
+no error reported by the driver.
+
+==
+lguest network driver fix: handle scatter-gather packets correctly
+
+Thanks to Herbert Xu for noticing the bug: "len" here is skb_headlen(),
+not skb->len.  Renamed the function to clarify, too.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+diff -r ed6484d145a4 drivers/net/lguest_net.c
+--- a/drivers/net/lguest_net.c	Tue Feb 13 11:30:39 2007 +1100
++++ b/drivers/net/lguest_net.c	Tue Feb 13 12:07:15 2007 +1100
+@@ -59,14 +59,14 @@ static unsigned long peer_addr(struct lg
+ 	return info->peer_phys + 4 * peernum;
+ }
+ 
+-static void skb_to_dma(const struct sk_buff *skb, unsigned int len,
++static void skb_to_dma(const struct sk_buff *skb, unsigned int headlen,
+ 		       struct lguest_dma *dma)
+ {
+ 	unsigned int i, seg;
+ 
+-	for (i = seg = 0; i < len; seg++, i += rest_of_page(skb->data + i)) {
++	for (i = seg = 0; i < headlen; seg++, i += rest_of_page(skb->data+i)) {
+ 		dma->addr[seg] = virt_to_phys(skb->data + i);
+-		dma->len[seg] = min((unsigned)(len - i),
++		dma->len[seg] = min((unsigned)(headlen - i),
+ 				    rest_of_page(skb->data + i));
+ 	}
+ 	for (i = 0; i < skb_shinfo(skb)->nr_frags; i++, seg++) {
+@@ -90,7 +90,7 @@ static void transfer_packet(struct net_d
+ 	struct lguestnet_info *info = dev->priv;
+ 	struct lguest_dma dma;
+ 
+-	skb_to_dma(skb, skb->len, &dma);
++	skb_to_dma(skb, skb_headlen(skb), &dma);
+ 	pr_debug("xfer length %04x (%u)\n", htons(skb->len), skb->len);
+ 
+ 	hcall(LHCALL_SEND_DMA, peer_addr(info,peernum), __pa(&dma),0);
+
+
