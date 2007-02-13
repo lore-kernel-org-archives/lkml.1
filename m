@@ -1,54 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751424AbXBMW6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751425AbXBMW7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751424AbXBMW6W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 17:58:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbXBMW6W
+	id S1751425AbXBMW7U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 17:59:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbXBMW7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 17:58:22 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:59673 "EHLO smtp.osdl.org"
+	Tue, 13 Feb 2007 17:59:20 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:53086 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751424AbXBMW6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 17:58:21 -0500
-Date: Tue, 13 Feb 2007 14:57:09 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
+	id S1751425AbXBMW7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 17:59:19 -0500
+Message-ID: <45D242BB.9040004@redhat.com>
+Date: Tue, 13 Feb 2007 14:59:07 -0800
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-Cc: andi@firstfloor.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, arjan@infradead.org, hch@infradead.org,
-       akpm@zip.com.au, alan@lxorguk.ukuu.org.uk, drepper@redhat.com,
-       zach.brown@oracle.com, johnpol@2ka.mipt.ru, davem@davemloft.net,
-       bcrl@kvack.org, suparna@in.ibm.com, davidel@xmailserver.org,
-       tglx@linutronix.de
-Subject: Re: [patch 05/11] syslets: core code
-Message-Id: <20070213145709.323a6505.akpm@linux-foundation.org>
-In-Reply-To: <20070213222443.GH22104@elte.hu>
-References: <20060529212109.GA2058@elte.hu>
-	<20070213142035.GF638@elte.hu>
-	<p73bqjxhcnl.fsf@bingen.suse.de>
-	<20070213222443.GH22104@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system
+ call support
+References: <20070213142010.GA638@elte.hu> <Pine.LNX.4.64.0702131219240.32055@alien.or.mcafeemobile.com> <20070213215724.GD22104@elte.hu>
+In-Reply-To: <20070213215724.GD22104@elte.hu>
+X-Enigmail-Version: 0.94.1.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig57FCBB38D30A8E586E87CE7F"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 13 Feb 2007 23:24:43 +0100 Ingo Molnar <mingo@elte.hu> wrote:
-> > If it's only a few pages you don't need any resource accounting. If 
-> > it's more then it's nasty to steal the users quota. I think plain 
-> > gup() would be better.
-> 
-> get_user_pages() would have to be limited in some way - and i didnt want 
-> to add yet another wacky limit thing - so i just used the already 
-> existing mlock() infrastructure for this. If Oracle wants to set up a 10 
-> MB ringbuffer, they can set the PAM resource limits to 11 MB and still 
-> have enough stuff left. And i dont really expect GPG to start using 
-> syslets - just yet ;-)
-> 
-> a single page is enough for 1024 completion pointers - that's more than 
-> enough for most purposes - and the default mlock limit is 40K.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig57FCBB38D30A8E586E87CE7F
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-So if I have an application which instantiates a single mlocked page
-for this purpose, I can only run ten of them at once, and any other
-mlock-using process which I'm using starts to mysteriously fail.
+Ingo Molnar wrote:
+> really, what's the point behind aio_cancel()?
 
-It seems like a problem to me..
+- sequence
+
+     aio_write()
+     aio_cancel()
+     aio_write()
+
+  with both writes going to the same place must be predictably
+
+- think beyond files.  Writes to sockets, ttys, they  can block and
+cancel must abort them.  Even for files the same applies in some
+situations, e.g., for network filesystems.
+
+--=20
+=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
+=E2=9E=A7 Mountain View, CA =E2=9D=96
+
+
+--------------enig57FCBB38D30A8E586E87CE7F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFF0kK72ijCOnn/RHQRAjp+AJ4iSwnqQXxv5YYefrVJH+D2drftVQCfSbl7
+9QP7SL/NjouDB1zJtNFYfvA=
+=0kry
+-----END PGP SIGNATURE-----
+
+--------------enig57FCBB38D30A8E586E87CE7F--
