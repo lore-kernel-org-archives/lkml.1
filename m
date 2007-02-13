@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750741AbXBMPXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750740AbXBMP2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750741AbXBMPXk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 10:23:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750742AbXBMPXk
+	id S1750740AbXBMP2V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 10:28:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750743AbXBMP2U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 10:23:40 -0500
-Received: from wasp.net.au ([203.190.192.17]:53409 "EHLO wasp.net.au"
+	Tue, 13 Feb 2007 10:28:20 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:39425 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750741AbXBMPXj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 10:23:39 -0500
-Message-ID: <45D1D7F4.3020603@wasp.net.au>
-Date: Tue, 13 Feb 2007 19:23:32 +0400
-From: Brad Campbell <brad@wasp.net.au>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
-MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: Gerhard Mack <gmack@innerfire.net>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       Arjan van de Ven <arjan@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, tilman@imap.cc
-Subject: Re: NAK new drivers without proper power management?
-References: <1171058269.1484.64.camel@nigel.suspend2.net> <1171059433.8675.195.camel@laptopd505.fenrus.org> <20070210193851.GA3956@ucw.cz> <200702102320.39531.rjw@sisk.pl> <1171147026.19894.16.camel@nigel.suspend2.net> <20070211064636.GA12171@1wt.eu> <Pine.LNX.4.64.0702120752420.3824@mtl.rackplans.net> <20070212202012.GA22344@1wt.eu>
-In-Reply-To: <20070212202012.GA22344@1wt.eu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1750740AbXBMP2U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 10:28:20 -0500
+Date: Tue, 13 Feb 2007 18:35:21 +0300
+From: Alexey Dobriyan <adobriyan@openvz.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: Re: utrace regressions (was: -mm merge plans for 2.6.21)
+Message-ID: <20070213153521.GA6036@localhost.sw.ru>
+References: <20070212125156.GA6035@localhost.sw.ru> <20070212213634.2777A1800E4@magilla.sf.frob.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070212213634.2777A1800E4@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau wrote:
+On Mon, Feb 12, 2007 at 01:36:34PM -0800, Roland McGrath wrote:
+> > We're aware of two regressions compared to mainline if ptrace is utrace:
+>
+> Thanks very much for bringing these to my attention.
+>
+> > 1) zero holes for PTRACE_PEEKUSR vanished.
+>
+> I've fixed this in the current patches.
 
-> Probably that you got the wrong laptop. If you buy an ultra-thin with highly
-> proprietary hardware, it may be hard. But if you choose in profesionnal ranges,
-> there is rarely any problem. I have a compaq nc8000 on which everything works
-> fine, and it boots in about 20 seconds. Other people I know have Toshibas,
-> NECs, Dells and IBMs and are happy with them. My previous VAIO was a dirty
-> crap that I would never recommend to anybody though.
+Looking at mainline x86_64 ptrace code I think hole for u_debugreg[4]
+and [5] is also needed.
 
-Whereas my "ultru-thin" VAIO works perfectly with both S2D and S2R and the only thing I have some 
-difficulty with is the SD reader. Would not hesitate to recommend it to anyone.
+--- a/arch/x86_64/kernel/ptrace.c
++++ b/arch/x86_64/kernel/ptrace.c
+@@ -687,6 +687,8 @@ EXPORT_SYMBOL_GPL(utrace_x86_64_native);
+ #ifdef CONFIG_PTRACE
+ static const struct ptrace_layout_segment x86_64_uarea[] = {
+ 	{0, sizeof(struct user_regs_struct), 0, 0},
++	{sizeof(struct user_regs_struct),
++	 offsetof(struct user, u_debugreg[0]), -1, 0},
+ 	{offsetof(struct user, u_debugreg[0]),
+ 	 offsetof(struct user, u_debugreg[4]), 3, 0},
+ 	{offsetof(struct user, u_debugreg[6]),
 
-I often hibernate linux to boot into a hibernated windows session, then go back the other way as 
-required, and my machine might do 80-100 "suspend2both" sessions a month between reboots. 30-40 
-seconds to suspend mostly (1.5GB of RAM) and about 15 to come back. That's what I call highly useful.
-
-Different strokes and all that I guess..
-
-Brad
--- 
-"Human beings, who are almost unique in having the ability
-to learn from the experience of others, are also remarkable
-for their apparent disinclination to do so." -- Douglas Adams
