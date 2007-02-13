@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751189AbXBMIig@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751196AbXBMIkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751189AbXBMIig (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 03:38:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbXBMIig
+	id S1751196AbXBMIkx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 03:40:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbXBMIkx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 03:38:36 -0500
-Received: from nz-out-0506.google.com ([64.233.162.227]:6583 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751189AbXBMIif (ORCPT
+	Tue, 13 Feb 2007 03:40:53 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37676 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751196AbXBMIkw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 03:38:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:x-x-sender:to:cc:subject:message-id:mime-version:content-type;
-        b=XklE51mV3aeVFVqtkJ1CTfWuAGRQfW2dRmDs+6uMnd+58cL3mgQrSEP41FE3DK4jbL2R6hNFnO5ey05qWyb6md5y06AuolTF5JlSiERVx6I8xW/Htiz5BoailuoUtaYXZPia0RhuMb8pYY1pWRE0BFtp+tp8RNYE0ycw0a26bwA=
-Date: Tue, 13 Feb 2007 16:38:22 +0800 (SGT)
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-X-X-Sender: root@boston.corp.fedex.com
-To: Andi Kleen <ak@suse.de>
-cc: lkml <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Miquel van Smoorenburg <miquels@cistron.nl>,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: [PATCH] nanosecond filesystem support???
-Message-ID: <Pine.LNX.4.64.0702131627210.5124@boston.corp.fedex.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Tue, 13 Feb 2007 03:40:52 -0500
+Date: Tue, 13 Feb 2007 17:38:30 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, clameter@sgi.com,
+       bob.picco@hp.com
+Subject: Re: [RFC] [PATCH] more support for memory-less-node.
+Message-Id: <20070213173830.285c3838.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <200702130929.49349.andi@firstfloor.org>
+References: <20070213155736.1131d46a.kamezawa.hiroyu@jp.fujitsu.com>
+	<200702130929.49349.andi@firstfloor.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 13 Feb 2007 09:29:49 +0100
+Andi Kleen <andi@firstfloor.org> wrote:
 
-On 2/12/07, Andi Kleen <ak@suse.de> wrote:
+> 
+> > In my understanding, a "node" is a block of cpu, memory, devices.
+> > and there could be cpu-only-node, memory-only-node, device-only-node...
+> 
+> The trouble with this is that you'll need to harden large parts
+> of code against these.  Especially a NULL pgdat is something quite
+> dangerous. You could make it a dummy empty pgdat, but just assigning it
+> nearby seems easier.
 
-> The bigger problem is getting a file system that support it.
+Ah...It seems I didn't explain enough.
 
+Now, memorly-less-node has its own pgdat, for its own zonelist.
+All *online* node has its own NODA_DATA(nid).
 
-Andi,
-
-It seems that the part that's not returning nanosecond is in the code 
-below. I've modified it, and now stat() is returning st_mtim.tv_nsec 
-correctly.
-
-I've tested it on ext2 and reiserfs, and both seems to be working.
-
-
-I don't know why "t.tv_nsec = 0;" was set in the code. Any idea?
-
-
+NOD_DATA(nid) is always valid pointer if a node is online.
+NODE_DATA(nid)->present_pages can be 0 even if a node is online, 
+I call this as memory-less-node.
 
 Thanks,
-Jeff.
+-Kame
 
-
---- linux/kernel/time.c.org	2007-02-13 08:43:08 +0800
-+++ linux/kernel/time.c	2007-02-13 08:52:29 +0800
-@@ -86,7 +86,6 @@
-  	if (get_user(tv.tv_sec, tptr))
-  		return -EFAULT;
-
--	tv.tv_nsec = 0;
-
-  	err = security_settime(&tv, NULL);
-  	if (err)
-@@ -269,7 +269,6 @@
-  	if (gran <= jiffies_to_usecs(1) * 1000) {
-  		/* nothing */
-  	} else if (gran == 1000000000) {
--		t.tv_nsec = 0;
-  	} else {
-  		t.tv_nsec -= t.tv_nsec % gran;
-  	}
 
