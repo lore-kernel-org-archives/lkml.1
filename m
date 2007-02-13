@@ -1,103 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751031AbXBMUYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751033AbXBMU06@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751031AbXBMUYa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 15:24:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbXBMUY3
+	id S1751033AbXBMU06 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 15:26:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751034AbXBMU06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 15:24:29 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:51761 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751030AbXBMUY2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 15:24:28 -0500
-Date: Tue, 13 Feb 2007 12:24:09 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Sergei Organov <osv@javad.com>
-cc: =?ISO-8859-1?Q?J=2EA=2E_Magall=C3=C3=C3=C3=C2=B3n?= 
-	<jamagallon@ono.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
+	Tue, 13 Feb 2007 15:26:58 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:4255 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751033AbXBMU05 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 15:26:57 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 13 Feb 2007 12:26:55 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andi Kleen <andi@firstfloor.org>, Alan <alan@lxorguk.ukuu.org.uk>,
+       Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: somebody dropped a (warning) bomb
-In-Reply-To: <87odnxn80u.fsf@javad.com>
-Message-ID: <Pine.LNX.4.64.0702131212120.3604@woody.linux-foundation.org>
-References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org>
- <Pine.LNX.4.61.0702081851310.1364@yvahk01.tjqt.qr>
- <Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org>
- <20070208221317.5beedaeb@werewolf-wl> <Pine.LNX.4.64.0702081338010.8424@woody.linux-foundation.org>
- <Pine.LNX.4.64.0702081351410.8424@woody.linux-foundation.org>
- <87abznsdyo.fsf@javad.com> <Pine.LNX.4.64.0702090753500.8424@woody.linux-foundation.org>
- <874pprr5nn.fsf@javad.com> <Pine.LNX.4.64.0702120804520.8424@woody.linux-foundation.org>
- <87ps8end9b.fsf@javad.com> <Pine.LNX.4.64.0702131121590.3604@woody.linux-foundation.org>
- <87odnxn80u.fsf@javad.com>
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system
+ call support
+In-Reply-To: <Pine.LNX.4.64.0702130817440.8424@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0702131225241.32055@alien.or.mcafeemobile.com>
+References: <20060529212109.GA2058@elte.hu> <20070213142010.GA638@elte.hu>
+ <20070213150019.4b4d4827@localhost.localdomain> <p73hctqggfz.fsf@bingen.suse.de>
+ <Pine.LNX.4.64.0702130817440.8424@woody.linux-foundation.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 13 Feb 2007, Linus Torvalds wrote:
 
-
-On Tue, 13 Feb 2007, Sergei Organov wrote:
-
-> > Exactly because "char" *by*definition* is "indeterminate sign" as far as 
-> > something like "strlen()" is concerned.
+> 	if (in_async_context())
+> 		return -EINVAL;
 > 
-> Thanks, I now understand that you either don't see the difference
-> between "indeterminate" and "implementation-defined" in this context or
-> consider it non-essential, so I think I've got your point.
+> or similar. We need that "async_context()" function anyway for the other 
+> cases where we can't do other things concurrently, like changing the UID.
 
-The thing is, "implementation-defined" does actually matter when you can 
-_depend_ on it.
+Yes, that's definitely better. Let's have the policy about weather a 
+syscall is or is not async-enabled, inside the syscall itself. Simplify 
+things a lot.
 
-For example, there's a *huge* difference between "undefined" and 
-"implementation-defined". A program can actually depend on something like
 
-	char c = 0x80;
 
-	if (c < 0)
-		..
+- Davide
 
-always having the *same* behaviour for a particular compiler (with a 
-particular set of compile flags - some compilers have flags to change the 
-sign behaviour).
 
-So yes, there "implementation defined" actually has a real and worthwhile 
-meaning. It is guaranteed to have _some_ semantics within the confines of 
-that program, and they are defined to be consistent (again, within the 
-confines of that particular program).
-
-So I agree that "implementation defined" doesn't always mean 
-"meaningless".
-
-BUT (and this is a big but) within the discussion of "strlen()", that is 
-no longer true. "strlen()" exists _outside_ of a single particular 
-implementation. As such, "implementation-defined" is no longer something 
-that "strlen()" can depend on.
-
-As an example of this argument, try this:
-
-	#include <string.h>
-	#include <stdio.h>
-
-	int main(int argc, char **argv)
-	{
-		char a1[] = { -1, 0 }, a2[] = { 1, 0 };
-
-		printf("%d %d\n", a1[0] < a2[0], strcmp(a1, a2) < 0);
-		return 0;
-	}
-
-and *before* you compile it, try to guess what the output is.
-
-And when that confuses you, try to compile it using gcc with the 
-"-funsigned-char" flag (or "-fsigned-char" if you started out on an 
-architecture where char was unsigned by default)
-
-And when you really *really* think about it afterwards, I think you'll go 
-"Ahh.. Linus is right". It's more than "implementation-defined": it really 
-is totally indeterminate for code like this.
-
-(Yeah, the above isn't "strlen()", but it's an even subtler issue with 
-EXACTLY THE SAME PROBLEM! And one where you can actually see the _effects_ 
-of it)
-
-			Linus
