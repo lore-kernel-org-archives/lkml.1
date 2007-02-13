@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750740AbXBMP2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750743AbXBMPaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750740AbXBMP2V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 10:28:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750743AbXBMP2U
+	id S1750743AbXBMPaS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 10:30:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750744AbXBMPaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 10:28:20 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:39425 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750740AbXBMP2U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 10:28:20 -0500
-Date: Tue, 13 Feb 2007 18:35:21 +0300
-From: Alexey Dobriyan <adobriyan@openvz.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: Re: utrace regressions (was: -mm merge plans for 2.6.21)
-Message-ID: <20070213153521.GA6036@localhost.sw.ru>
-References: <20070212125156.GA6035@localhost.sw.ru> <20070212213634.2777A1800E4@magilla.sf.frob.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070212213634.2777A1800E4@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.11
+	Tue, 13 Feb 2007 10:30:18 -0500
+Received: from wx-out-0506.google.com ([66.249.82.232]:42792 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750746AbXBMPaP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 10:30:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=FbwnwSnnV/7zOFJJ7TvkcrlJgLzu4ITrG5MDqu9ByDnPpLfy/1IBnxjFk5QMM8xNgdC5fynn9SwVZ4HCeIewrEfE+YNYf5ljAOIjW065HC7o0nbTmqLe+G5iy0EnA6R9tsm28MCwt0TQNL2Sq8Fw6jILBVbhxW2LKTO2S3dxTTQ=
+Message-ID: <45D1D97B.6010002@gmail.com>
+Date: Tue, 13 Feb 2007 07:30:03 -0800
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: pcim_enable_device BUGs for libata devices in 2.6.20-git6
+References: <45CFB87F.9060802@shaw.ca> <45D02F5B.801@gmail.com> <20070212205444.GC18101@elf.ucw.cz>
+In-Reply-To: <20070212205444.GC18101@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 12, 2007 at 01:36:34PM -0800, Roland McGrath wrote:
-> > We're aware of two regressions compared to mainline if ptrace is utrace:
->
-> Thanks very much for bringing these to my attention.
->
-> > 1) zero holes for PTRACE_PEEKUSR vanished.
->
-> I've fixed this in the current patches.
+Hello, Pavel.
 
-Looking at mainline x86_64 ptrace code I think hole for u_debugreg[4]
-and [5] is also needed.
+Pavel Machek wrote:
+>> 1. Don't restore power state and re-enable PCI device on resume from 
+>> freeze just as we don't do the opposite when freezing.
+>>
+>> 2. Unconditionally disable and power down PCI device on suspend whether 
+>> it's freeze or not.
+>>
+>> #2 would be simpler but I'm a bit worried about it.  There might be 
+>> controllers which choke after such sequence (save state, disable, power 
+>> down, no actual power removal, power on, restore state, re-enable).
+> 
+> I'd just go for #2.
 
---- a/arch/x86_64/kernel/ptrace.c
-+++ b/arch/x86_64/kernel/ptrace.c
-@@ -687,6 +687,8 @@ EXPORT_SYMBOL_GPL(utrace_x86_64_native);
- #ifdef CONFIG_PTRACE
- static const struct ptrace_layout_segment x86_64_uarea[] = {
- 	{0, sizeof(struct user_regs_struct), 0, 0},
-+	{sizeof(struct user_regs_struct),
-+	 offsetof(struct user, u_debugreg[0]), -1, 0},
- 	{offsetof(struct user, u_debugreg[0]),
- 	 offsetof(struct user, u_debugreg[4]), 3, 0},
- 	{offsetof(struct user, u_debugreg[6]),
+I think I've been seeing too many weird ATA controller issues to be bold 
+about this.  I'll chicken out and go for #1.  :-)
 
+>> #1 can be easily done by taking a look at the current device power state 
+>> (gendev->power.power_state).  The problem is that no one in 
+>> suspend/resume path seems to be setting that variable except for
+>> runtime 
+> 
+> No, that variable is probably going to go away. If you want to
+> remember that you are resuming from freeze, just store that info in
+> private data structure.
+
+I see.  Thanks.
+
+-- 
+tejun
