@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751754AbXBMTZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751787AbXBMT1s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751754AbXBMTZe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 14:25:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbXBMTZe
+	id S1751787AbXBMT1s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 14:27:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbXBMT1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 14:25:34 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:49071 "EHLO smtp.osdl.org"
+	Tue, 13 Feb 2007 14:27:48 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:50825 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751754AbXBMTZd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 14:25:33 -0500
-Date: Tue, 13 Feb 2007 11:25:05 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Sergei Organov <osv@javad.com>
-cc: =?ISO-8859-1?Q?J=2EA=2E_Magall=C3=C3=C3=C2=B3n?= 
-	<jamagallon@ono.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: somebody dropped a (warning) bomb
-In-Reply-To: <87ps8end9b.fsf@javad.com>
-Message-ID: <Pine.LNX.4.64.0702131121590.3604@woody.linux-foundation.org>
-References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702080819350.8424@woody.linux-foundation.org>
- <Pine.LNX.4.61.0702081851310.1364@yvahk01.tjqt.qr>
- <Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org>
- <20070208221317.5beedaeb@werewolf-wl> <Pine.LNX.4.64.0702081338010.8424@woody.linux-foundation.org>
- <Pine.LNX.4.64.0702081351410.8424@woody.linux-foundation.org>
- <87abznsdyo.fsf@javad.com> <Pine.LNX.4.64.0702090753500.8424@woody.linux-foundation.org>
- <874pprr5nn.fsf@javad.com> <Pine.LNX.4.64.0702120804520.8424@woody.linux-foundation.org>
- <87ps8end9b.fsf@javad.com>
+	id S1751787AbXBMT1r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 14:27:47 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tilman Schmidt <tilman@imap.cc>
+Subject: Re: NAK new drivers without proper power management?
+Date: Tue, 13 Feb 2007 20:24:18 +0100
+User-Agent: KMail/1.9.5
+Cc: Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Manu Abraham <abraham.manu@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, Robert Hancock <hancockr@shaw.ca>
+References: <1171059433.8675.195.camel@laptopd505.fenrus.org> <200702122131.33662.rjw@sisk.pl> <45D18805.9080607@imap.cc>
+In-Reply-To: <45D18805.9080607@imap.cc>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200702132024.20053.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 13 Feb 2007, Sergei Organov wrote:
-> >
-> > 	"I want a char of indeterminate sign"!
+On Tuesday, 13 February 2007 10:42, Tilman Schmidt wrote:
+> Rafael J. Wysocki schrieb:
+> > I think we can introduce a "pm_safe" flag that will indicate if the driver
+> > handles suspend/resume correctly.  If we do it, we can flag all of the drivers
+> > currently in the tree as "pm_safe" unless we know that they aren't.  Next,
+> > we can convert the core to fail the suspend for any driver that is not flagged
+> > as "pm_safe".  But I think that will take time.
 > 
-> I'm afraid I don't follow. Do we have a way to say "I want an int of
-> indeterminate sign" in C? The same way there doesn't seem to be a way
-> to say "I want a char of indeterminate sign".
+> Why a new flag?
 
-You're wrong.
+For example, there are drivers that define .suspend() and .resume() which
+do not work correctly and we can use the flag to mark them.
 
-Exactly because "char" *by*definition* is "indeterminate sign" as far as 
-something like "strlen()" is concerned.
+> IMHO it would be both more readable and more efficient 
+> to create a pm_generic_nosuspend() function which does "return -ENOSYS",
+> and set that as the .suspend method on drivers known to break
+> suspend/resume. New drivers should either have .suspend and .resume
+> methods of their own or set .suspend = pm_generic_nosuspend.
 
-"char" is _special_. Char is _different_. Char is *not* "int".
+This is quite similar to what we are trying to do now: ask driver authors to
+define .suspend that will return -ENOSYS if they can't ensure that the driver
+will handle the suspend and resume correctly.
 
-> So no, strlen() doesn't actually say that, no matter if we like it or 
-> not. It actually says "I want a char with implementation-defined sign".
+> That way, NULL .suspend/.resume methods retain their current semantics
+> ("don't know whether suspend would work, never thought about it"),
 
-You're arguing some strange semantic difference in the English language.
+I think this convention is unfortunate.  The default should be to fail the
+suspend if there's no .suspend defined, IMO.  Still, it's hard to change now.
 
-I'm not really interested.
+> error-returning ones would clearly signal "cannot suspend safely", and
+> success-returning ones would equally clearly signal "suspend works ok".
+> (Bugs nonwithstanding.)
+> 
+> There could then be a policy parameter (Kconfig selectable to start)
+> to abort suspend when encountering a driver without .suspend/.resume
+> methods, or to proceed with a warning message.
 
-THE FACT IS, THAT "strlen()" IS DEFINED UNIVERSALLY AS TAKING "char *".
+I think there are many drivers without .suspend and .resume already in the
+tree, so that wouldn't be practical.
 
-That BY DEFINITION means that "strlen()" cannot care about the sign, 
-because the sign IS NOT DEFINED UNIVERSALLY!
-
-And if you cannot accept that fact, it's your problem. Not mine.
-
-The warning is CRAP. End of story.
-
-		Linus
+Greetings,
+Rafael
