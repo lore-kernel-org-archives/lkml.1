@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751037AbXBMUcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751047AbXBMUdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751037AbXBMUcT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 15:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751039AbXBMUcT
+	id S1751047AbXBMUdi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 15:33:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbXBMUdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 15:32:19 -0500
-Received: from javad.com ([216.122.176.236]:4903 "EHLO javad.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750989AbXBMUcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 15:32:18 -0500
-From: Sergei Organov <osv@javad.com>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       =?utf-8?B?Si5BLiBN?= =?utf-8?B?YWdhbGzDg8ODw4LCs24=?= 
-	<jamagallon@ono.com>,
-       "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
-       "Jeff Garzik" <jeff@garzik.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: somebody dropped a (warning) bomb
-References: <45CB3B28.60102@garzik.org>
-	<Pine.LNX.4.64.0702081338010.8424@woody.linux-foundation.org>
-	<Pine.LNX.4.64.0702081351410.8424@woody.linux-foundation.org>
-	<87abznsdyo.fsf@javad.com>
-	<Pine.LNX.4.64.0702090753500.8424@woody.linux-foundation.org>
-	<874pprr5nn.fsf@javad.com>
-	<Pine.LNX.4.64.0702120804520.8424@woody.linux-foundation.org>
-	<87ps8end9b.fsf@javad.com>
-	<84144f020702131026q2af1afd6vbcd2708d7b7b9907@mail.gmail.com>
-	<87bqjxooog.fsf@javad.com>
-	<84144f020702131143r767aa40blb97a39b40bee73b8@mail.gmail.com>
-Date: Tue, 13 Feb 2007 23:29:44 +0300
-In-Reply-To: <84144f020702131143r767aa40blb97a39b40bee73b8@mail.gmail.com>
-	(Pekka Enberg's message of "Tue, 13 Feb 2007 21:43:41 +0200")
-Message-ID: <87fy99n6mf.fsf@javad.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Tue, 13 Feb 2007 15:33:38 -0500
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:41391 "EHLO
+	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751045AbXBMUdh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 15:33:37 -0500
+Date: Tue, 13 Feb 2007 21:30:47 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Eric Lacombe <tuxiko@free.fr>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.19.2: maybe a bug inside the r8169 network driver (was Re: Linux 2.6.19.2: Freeze with CIFS mount)
+Message-ID: <20070213203047.GA4158@electric-eye.fr.zoreil.com>
+References: <OFC7B98576.0C582E30-ON87257274.0014583D-86257274.00153815@us.ibm.com> <200702131452.05473.tuxiko@free.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702131452.05473.tuxiko@free.fr>
+User-Agent: Mutt/1.4.2.1i
+X-Organisation: Land of Sunshine Inc.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Pekka Enberg" <penberg@cs.helsinki.fi> writes:
-> On 2/13/07, Sergei Organov <osv@javad.com> wrote:
->> With almost any warning out there one makes more or less efforts to
->> suppress the warning where it gives false positives, isn't it?
->
-> Yes, as long it's the _compiler_ that's doing the effort.
-> You shouldn't need to annotate the source just to make the compiler
-> shut up.
+Eric Lacombe <tuxiko@free.fr> :
+[...]
+> That problem also remind me that when I compiled this driver without 
+> the "CONFIG_NET_ETHERNET" (in the section "Ethernet (10 or 100Mbit)"), I have 
+> really poor performance with the net device. Maybe it is related, or not ;)
+> 
+> If it gives you more ideas ?
+> Maybe it could be interesting to know about the r8169 maintainer, but I dont 
+> know who he is.
 
-Sorry, what do you do with "variable 'xxx' might be used uninitialized"
-warning when it's false? Turn it off? Annotate the source? Assign fake
-initialization value? Change the compiler so that it does "the effort"
-for you? Never encountered false positive from this warning?
+1. $ ls
+   arch     crypto         include  kernel       mm              scripts
+   block    Documentation  init     lib          net             security
+   COPYING  drivers        ipc      MAINTAINERS  README          sound
+   CREDITS  fs             Kbuild   Makefile     REPORTING-BUGS  usr
 
-> Once the compiler starts issuing enough false positives, it's
-> time to turn off that warning completely.
+   The maintainer of the r8169 driver is listed in the MAINTAINERS file.
 
-Yes, I don't argue that. I said "otherwise the warning is more or less
-sucks", and then it's up to programmers to decide if it's enough sucks
-to be turned off. The decision depends on the importance of its true
-positives then. Only if warning never has true positives it is
-unconditional, total, unhelpful crap, -- that was my point.
+2. Disabling CONFIG_NET_ETHERNET is a bad idea. Don't do that.
 
-> Therefore, the only sane strategy for a warning is to aim for zero
-> false positives.
+3. See tethereal -w or tcpdump on the adequate interface to save a
+   traffic dump.
 
-Sure. But unfortunately this in an unreachable aim in most cases.
+4. Are you using a binary module for your video adapter ?
 
--- Sergei.
+5. How does the 2.6.20 version of the r8169 driver behave ?
+
+6. You may setup a cron to monitor an ethtool dump of the register of
+   the 8169 at regular interval. ifconfig and /proc/interrupts could
+   exhibit some unusual drift as time passes on too.
+
+7. A dmesg would be welcome.
+
+8. Please open a PR at bugzilla.kernel.org.
+
+|...]
+> > There are various ways to analyze system hangs including (at least in some
+> > cases) getting a system dump which
+> > can be used to isolate the failing location - hopefully
+> 
+> I would like to have more detailed help, if possible.
+
+CONFIG_MAGIC_SYSRQ is set. Check that the magic sysrq is not disabled at
+runtime through /etc/sysctl.conf. See Documentation/sysrq.txt for details.
+
+Please keep Steve French in the loop.
+
+-- 
+Ueimor
