@@ -1,73 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161112AbXBMHnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751167AbXBMHsC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161112AbXBMHnj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 02:43:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161108AbXBMHnj
+	id S1751167AbXBMHsC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 02:48:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751163AbXBMHsB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 02:43:39 -0500
-Received: from adsl-207-214-87-82.dsl.snfc21.pacbell.net ([207.214.87.82]:41476
-	"EHLO heimdal.trondhjem.org" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1161112AbXBMHni (ORCPT
+	Tue, 13 Feb 2007 02:48:01 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60078 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751167AbXBMHsA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 02:43:38 -0500
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [PATCH 2/2] VM: invalidate_inode_pages2_range() shouldn't fail on page dirty...
-Date: Mon, 12 Feb 2007 23:43:38 -0800
-To: akpm@linux-foundation.org
+	Tue, 13 Feb 2007 02:48:00 -0500
+Subject: dvb shared datastructure bug?
+From: Arjan van de Ven <arjan@infradead.org>
+To: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org
 Cc: linux-kernel@vger.kernel.org
-Message-Id: <20070213074338.24191.28711.stgit@heimdal.trondhjem.org>
-In-Reply-To: <20070213074335.24191.51525.stgit@heimdal.trondhjem.org>
-References: <20070213074335.24191.51525.stgit@heimdal.trondhjem.org>
-Content-Type: text/plain; charset=utf-8; format=fixed
-Content-Transfer-Encoding: 8bit
-User-Agent: StGIT/0.9
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Tue, 13 Feb 2007 08:47:58 +0100
+Message-Id: <1171352878.12771.30.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Hi,
 
-invalidate_inode_pages2() should not try to fix races between direct_IO and
-mmap(). It should only be trying to clear out pages that were dirty before
-the direct_IO write (see generic_file_direct_IO()).
-Skipping dirty pages should therefore not result in an error.
+while working on the last pieces of the file_ops constantification, DVB
+is the small village in France that is holding the Romans at bay... but
+I think I found the final flaw in it now: 
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
+       *pdvbdev = dvbdev = kmalloc(sizeof(struct dvb_device), GFP_KERNEL);
 
- mm/truncate.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+        if (!dvbdev) {
+                mutex_unlock(&dvbdev_register_lock);
+                return -ENOMEM;
+        }
 
-diff --git a/mm/truncate.c b/mm/truncate.c
-index 0f4b6d1..c3ff820 100644
---- a/mm/truncate.c
-+++ b/mm/truncate.c
-@@ -318,6 +318,8 @@ EXPORT_SYMBOL(invalidate_mapping_pages);
-  * invalidation guarantees, and cannot afford to leave pages behind because
-  * shrink_list() has a temp ref on them, or because they're transiently sitting
-  * in the lru_cache_add() pagevecs.
-+ * Note: this function just skips pages that are dirty without flagging
-+ * an error.
-  */
- static int
- invalidate_complete_page2(struct address_space *mapping, struct page *page)
-@@ -330,7 +332,7 @@ invalidate_complete_page2(struct address
- 
- 	write_lock_irq(&mapping->tree_lock);
- 	if (PageDirty(page))
--		goto failed;
-+		goto dirty;
- 
- 	BUG_ON(PagePrivate(page));
- 	__remove_from_page_cache(page);
-@@ -338,9 +340,9 @@ invalidate_complete_page2(struct address
- 	ClearPageUptodate(page);
- 	page_cache_release(page);	/* pagecache ref */
- 	return 1;
--failed:
-+dirty:
- 	write_unlock_irq(&mapping->tree_lock);
--	return 0;
-+	return 1;
- }
- 
- static int do_launder_page(struct address_space *mapping, struct page *page)
+        memcpy(dvbdev, template, sizeof(struct dvb_device));
+        dvbdev->type = type;
+        dvbdev->id = id;
+        dvbdev->adapter = adap;
+        dvbdev->priv = priv;
+
+        dvbdev->fops->owner = adap->module;
+
+
+this is the place in DVB that is writing to a struct file_operations.
+But as with almost all such cases in the kernel, this one is buggy:
+While the code nicely copies a template dvbdev, that template only has a
+pointer to a *shared* fops struct, the copy doesn't help that. So this
+code is overwriting the fops owner field for ALL active devices, not
+just the ones the copy of the template is for....
+
+I'm lost in the maze of this part of DVB (it seems to have some magic
+potion to resist me) but I was hoping some of the local citizens could
+take a look at this buglet...
+
+Greetings,
+    Arjan van de Ven
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+
