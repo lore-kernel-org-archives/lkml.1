@@ -1,125 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751099AbXBMVvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751317AbXBMV76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751099AbXBMVvq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 16:51:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbXBMVvq
+	id S1751317AbXBMV76 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 16:59:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbXBMV76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 16:51:46 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:51423 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751099AbXBMVvp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 16:51:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Bng8n9R6U2/7+nBSB0Ul5oCEW9tRvZTho4Z6Itpfb/9yadaOAfEdIoXwdNFd/hNpKYQSUDv8sZODy9GKwG9QVLc1BNjFAw3U72aU9NXYLAHqOeiUz28zMJps/+gCJuj8Q97+WcvYFaVUY4ZBIvDKPAiwjcSn/Hfu5r0goOY2Z0Q=
-Message-ID: <8d158e1f0702131351l3e3e1ae2u71a13de655391fce@mail.gmail.com>
-Date: Tue, 13 Feb 2007 22:51:32 +0100
-From: "Patrick Ale" <patrick.ale@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PROBLEM] Can't start MD devices by using /dev/disk/by-id
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Feb 2007 16:59:58 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40780 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751317AbXBMV76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 16:59:58 -0500
+Date: Tue, 13 Feb 2007 22:57:24 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system call support
+Message-ID: <20070213215724.GD22104@elte.hu>
+References: <20070213142010.GA638@elte.hu> <Pine.LNX.4.64.0702131219240.32055@alien.or.mcafeemobile.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702131219240.32055@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -5.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi chaps,
 
-I just came home, rebooted my box to git8 and *gasp* a problem :)
+* Davide Libenzi <davidel@xmailserver.org> wrote:
 
-I can't start my MD devices anymore by defining /dev/disk/by-id/*
-devices in /etc/mdadm.conf.
+> > Open issues:
 
-When I do a: mdadm --assemble /dev/md/1 it tells me "No devices found
-for /dev/md/1"
-When I edit the file /etc/mdadm.conf and change the /dev/disk/by-id/*
-to whatever the symbolic links points to in the /dev directory, it
-does work.
+> If this is going to be a generic AIO subsystem:
+> 
+> - Cancellation of pending request
 
-An example:
+How about implementing aio_cancel() as a NOP. Can anyone prove that the 
+kernel didnt actually attempt to cancel that IO? [but unfortunately 
+failed at doing so, because the platters were being written already.]
 
--- mdadm.conf
-ARRAY /dev/md/1
-devices=/dev/disk/by-id/scsi-SATA_WDC_WD1200JB-00WD-WMAEL2258179-part1,/dev/disk/by-id/scsi-SATA_WDC_WD1200JB-00WD-WMACM1329740-part1
-#ARRAY /dev/md/1 devices=/dev/sdb1,/dev/sdf1
-ARRAY /dev/md/2 devices=/dev/disk/by-id/scsi-SATA_Maxtor_6L250R0_L609D78H-part1
-ARRAY /dev/md/3
-devices=/dev/disk/by-id/scsi-SATA_WDCD1600JB-00WD-WMAEK2977810-part1,/dev/disk/by-id/scsi-SATA_Maxtor_6Y160P0_Y48BCM3E-part1
--- end mdadm.conf --
+really, what's the point behind aio_cancel()?
 
-localhost by-id # pwd
-/dev/disk/by-id
-
-localhost by-id # mdadm --assemble /dev/md/1
-mdadm: no devices found for /dev/md/1
-
-
-Let's change the config file now
-
--- mdadm.conf --
-#ARRAY /dev/md/1
-devices=/dev/disk/by-id/scsi-SATA_WDC_WD1200JB-00WD-WMAEL2258179-part1,/dev/disk/by-id/scsi-SATA_WDC_WD1200JB-00WD-WMACM1329740-part1
-ARRAY /dev/md/1 devices=/dev/sdb1,/dev/sdf1
-ARRAY /dev/md/2 devices=/dev/disk/by-id/scsi-SATA_Maxtor_6L250R0_L609D78H-part1
-ARRAY /dev/md/3
-devices=/dev/disk/by-id/scsi-SATA_WDCD1600JB-00WD-WMAEK2977810-part1,/dev/disk/by-id/scsi-SATA_Maxtor_6Y160P0_Y48BCM3E-part1
-
-And
-localhost by-id # mdadm --assemble /dev/md/1
-mdadm: /dev/md/1 has been started with 2 drives.
-
-
-Now, granted, it's 22:49 and i had a sucky day at work but... this
-doesnt make any sense to me.
-
-So, I tried to use the vanilla 2.6.20 kernel, same problem.
-
-Here is a listing of symbolic links in /dev/disk/by-id , as you can
-see the initial mdadm.conf (which worked prior to 2.6.20) should work,
-since the links to the actual device nodes seem to be correct and
-taking in account the MD devices do start when using the /dev/ nodes.
-
-lrwxrwxrwx 1 root root   9 Feb 12 05:40
-scsi-SATA_Maxtor_6L250R0_L609D78H -> ../../sdc
-lrwxrwxrwx 1 root root  10 Feb 12 05:40
-scsi-SATA_Maxtor_6L250R0_L609D78H-part1 -> ../../sdc1
-lrwxrwxrwx 1 root root   9 Feb 12 05:40
-scsi-SATA_Maxtor_6Y160P0_Y48BCM3E -> ../../sde
-lrwxrwxrwx 1 root root  10 Feb 12 05:40
-scsi-SATA_Maxtor_6Y160P0_Y48BCM3E-part1 -> ../../sde1
-lrwxrwxrwx 1 root root   9 Feb 12 05:40
-scsi-SATA_WDC_WD1200JB-00WD-WMACM1329740 -> ../../sdf
-lrwxrwxrwx 1 root root  10 Feb 12 05:40
-scsi-SATA_WDC_WD1200JB-00WD-WMACM1329740-part1 -> ../../sdf1
-lrwxrwxrwx 1 root root   9 Feb 12 05:40
-scsi-SATA_WDC_WD1200JB-00WD-WMAEL2258179 -> ../../sdb
-lrwxrwxrwx 1 root root  10 Feb 12 05:40
-scsi-SATA_WDC_WD1200JB-00WD-WMAEL2258179-part1 -> ../../sdb1
-lrwxrwxrwx 1 root root   9 Feb 12 05:40
-scsi-SATA_WDC_WD1600JB-00WD-WMAEK2977810 -> ../../sdd
-lrwxrwxrwx 1 root root  10 Feb 12 05:40
-scsi-SATA_WDC_WD1600JB-00WD-WMAEK2977810-part1 -> ../../sdd1
-lrwxrwxrwx 1 root root   9 Feb 12 05:40
-scsi-SATA_WDC_WD2000JB-00_WD-WCAL81971867 -> ../../sda
-lrwxrwxrwx 1 root root  10 Feb 12 05:40
-scsi-SATA_WDC_WD2000JB-00_WD-WCAL81971867-part1 -> ../../sda1
-lrwxrwxrwx 1 root root  10 Feb 12 05:40
-scsi-SATA_WDC_WD2000JB-00_WD-WCAL81971867-part2 -> ../../sda2
-lrwxrwxrwx 1 root root  10 Feb 12 05:40
-scsi-SATA_WDC_WD2000JB-00_WD-WCAL81971867-part3 -> ../../sda3
-lrwxrwxrwx 1 root root  10 Feb 12 05:40
-scsi-SATA_WDC_WD2000JB-00_WD-WCAL81971867-part4 -> ../../sda4
-lrwxrwxrwx 1 root root  10 Feb 12 05:40
-scsi-SATA_WDC_WD2000JB-00_WD-WCAL81971867-part5 -> ../../sda5
-lrwxrwxrwx 1 root root  10 Feb 12 05:40
-scsi-SATA_WDC_WD2000JB-00_WD-WCAL81971867-part6 -> ../../sda6
-lrwxrwxrwx 1 root root   9 Feb 12 05:40
-usb-USB2.0_CardReader_CF_RW_586148026074 -> ../../sdg
-
-
-Cheers,
-
-Patrick
+	Ingo
