@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751174AbXBMIQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751179AbXBMITa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751174AbXBMIQe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 03:16:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbXBMIQe
+	id S1751179AbXBMITa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 03:19:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbXBMITa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 03:16:34 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:50003 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751174AbXBMIQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 03:16:33 -0500
-Date: Tue, 13 Feb 2007 13:46:25 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: "Paul Menage" <menage@google.com>
-Cc: sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, xemul@sw.ru, dev@sw.ru,
-       containers@lists.osdl.org, pj@sgi.com, ebiederm@xmission.com,
-       mbligh@google.com, winget@google.com, rohitseth@google.com,
-       serue@us.ibm.com, devel@openvz.org
-Subject: Re: [ckrm-tech] [PATCH 1/7] containers (V7): Generic container system abstracted from cpusets code
-Message-ID: <20070213081625.GA4252@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070212081521.808338000@menage.corp.google.com> <20070212085104.130746000@menage.corp.google.com> <20070212123309.GA7526@in.ibm.com> <6599ad830702121126o35fb0cb6x696a4a56079bce40@mail.gmail.com> <6599ad830702121146y41c8856cm4a85943aa950771f@mail.gmail.com> <20070213054857.GD22982@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 13 Feb 2007 03:19:30 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:26276 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751179AbXBMIT3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 03:19:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=bUiQW1vJqpnCs/pQ+h88rbcm8CmWZTG/blFHrP6riexhlTkoctBFbWu7o2XQO/bzYyabPXYfr1CoIvWT78BZBFBVim+DXhmGalnwjBTvWvZnyXqeYJc+9WIsZasJQdMTvoOeTfapuhaFGT09qgfT4K8yeO2T+E2xYsrmusWmdqo=
+Message-ID: <2375c9f90702130019u7c779440o9a1110b9803cdcde@mail.gmail.com>
+Date: Tue, 13 Feb 2007 16:19:28 +0800
+From: "Cong WANG" <xiyou.wangcong@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH]typo fix in comments
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070213054857.GD22982@in.ibm.com>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 13, 2007 at 11:18:57AM +0530, Srivatsa Vaddagiri wrote:
-> Which make me wonder why we need task_lock() at all ..I can understand
-> the need for a lock like that if we are reading/updating multiple words
-> in task_struct under the lock. In this case, it is used to read/write
-> just one pointer, isnt it? I think it can be eliminated all-together
-> with the use of RCU.
+Typo and tiny mistakes in comments of include/linux/poll.h.
 
-I see that cpuset.c uses task_lock to read/write multiple words
-(cpuset_update_task_memory_state) ..So yes it is necessary in attach_task() ..
+Signed-off-by: WANG Cong  <xiyou.wangcong@gmail.com>
+----
+--- include/linux/poll.h.orig	2007-02-13 10:25:43.000000000 +0800
++++ include/linux/poll.h	2007-02-13 10:27:10.000000000 +0800
+@@ -24,7 +24,7 @@
+ struct poll_table_struct;
 
+ /*
+- * structures and helpers for f_op->poll implementations
++ * Structures and helpers for f_op->poll implementations.
+  */
+ typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *,
+struct poll_table_struct *);
 
--- 
-Regards,
-vatsa
+@@ -50,7 +50,7 @@ struct poll_table_entry {
+ };
+
+ /*
+- * Structures and helpers for sys_poll/sys_poll
++ * Structures and helpers for sys_select/sys_poll.
+  */
+ struct poll_wqueues {
+ 	poll_table pt;
+@@ -81,7 +81,7 @@ typedef struct {
+
+ /*
+  * We do a VERIFY_WRITE here even though we are only reading this time:
+- * we'll write to it eventually..
++ * we'll write to it eventually.
+  *
+  * Use "unsigned long" accesses to let user-mode fd_set's be long-aligned.
+  */
