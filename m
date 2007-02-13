@@ -1,46 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751283AbXBMLPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751254AbXBMLRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751283AbXBMLPy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 06:15:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbXBMLPy
+	id S1751254AbXBMLRh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 06:17:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbXBMLRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 06:15:54 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57596 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751283AbXBMLPx (ORCPT
+	Tue, 13 Feb 2007 06:17:37 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:34971 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751254AbXBMLRg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 06:15:53 -0500
-Date: Tue, 13 Feb 2007 11:27:58 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: "Martin A. Fink" <fink@mpe.mpg.de>, Matthias Schniedermeyer <ms@citd.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: SATA-performance: Linux vs. FreeBSD
-Message-ID: <20070213112758.5920a28e@localhost.localdomain>
-In-Reply-To: <1171361290.12771.77.camel@laptopd505.fenrus.org>
-References: <200702121502.17130.fink@mpe.mpg.de>
-	<200702121856.29729.fink@mpe.mpg.de>
-	<45D0F8EE.7020604@citd.de>
-	<200702131025.15964.fink@mpe.mpg.de>
-	<1171361290.12771.77.camel@laptopd505.fenrus.org>
-X-Mailer: Claws Mail 2.7.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Tue, 13 Feb 2007 06:17:36 -0500
+Date: Tue, 13 Feb 2007 12:15:57 +0100
+From: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
+To: Laurent Pinchart <laurent.pinchart@technotrade.biz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: git issues while fetching from
+ http://www.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/
+Message-ID: <20070213121557.6a7442a8@frecb000686.frec.bull.fr>
+In-Reply-To: <200702131030.00046.laurent.pinchart@technotrade.biz>
+References: <200702131030.00046.laurent.pinchart@technotrade.biz>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 13/02/2007 12:18:50,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 13/02/2007 12:18:51,
+	Serialize complete at 13/02/2007 12:18:51
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> there's several tunables you can do;
-> 1) increase /sys/block/<device>/queue/nr_requests
->    the linux default is on the low side
-> 5) echo a larger value into /sys/block/<device>/queue/max_sectors_kb
->    the default seems to be 512 which is... really low. The hw max is in
->    another file in that directory; if you want max throughput set the
->    max_sectors_kb value to the hw max. (you pay in terms of fairness for
+
+  Hi Laurent,
 
 
-There are two more factors that play into #1 and #5. Firstly there is a
-per command completion overhead in ATA without NCQ being active and that
-isn't yet a heavily optimised libata path. Secondly erase block size
-matters with flash drives so the bigger each I/O the better erase block
-behaviour we should get.
+On Tue, 13 Feb 2007 10:29:59 +0100 Laurent Pinchart <laurent.pinchart@technotrade.biz> wrote:
+
+> Hi everybody,
+> 
+> I'm trying to fetch from the Linux kernel repository at 
+> http://www.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/. After 
+> downloading the objects, git failed while trying to fetch tags. Retrying the 
+> fetch operation gives the following output:
+> 
+> $ git-fetch origin
+> Fetching refs/heads/master from 
+> http://www.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/ using 
+> http
+> Auto-following refs/tags/v2.6.20
+> Auto-following refs/tags/v2.6.20
+> Auto-following refs/tags/v2.6.20-rc1
+> Auto-following refs/tags/v2.6.20-rc1
+> Auto-following refs/tags/v2.6.20-rc2
+> Auto-following refs/tags/v2.6.20-rc2
+> Auto-following refs/tags/v2.6.20-rc3
+> Auto-following refs/tags/v2.6.20-rc3
+> Auto-following refs/tags/v2.6.20-rc4
+> Auto-following refs/tags/v2.6.20-rc4
+> Auto-following refs/tags/v2.6.20-rc5
+> Auto-following refs/tags/v2.6.20-rc5
+> Auto-following refs/tags/v2.6.20-rc6
+> Auto-following refs/tags/v2.6.20-rc6
+> Auto-following refs/tags/v2.6.20-rc7
+> Auto-following refs/tags/v2.6.20-rc7
+> Failed to fetch refs/tags/v2.6.20 from 
+> http://www.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/
+> 
+> While trying to solve the issue, I noticed that the refs/tags directory in the 
+> remote repository is empty. Is that a normal situation ? Should git be able 
+> to regenerate the tags locally from the objects ? I'm using git 1.4.4.4.
+
+  I had the same issue. Upgrade git. the refs are now packed
+in a single file packed-refs.
+
+  Sébastien.
