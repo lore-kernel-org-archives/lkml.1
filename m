@@ -1,89 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751399AbXBMWvB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751386AbXBMWyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751399AbXBMWvB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 17:51:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbXBMWvB
+	id S1751386AbXBMWyT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 17:54:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbXBMWyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 17:51:01 -0500
-Received: from dspnet.fr.eu.org ([213.186.44.138]:3857 "EHLO dspnet.fr.eu.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751399AbXBMWvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 17:51:00 -0500
-Date: Tue, 13 Feb 2007 23:50:56 +0100
-From: Olivier Galibert <galibert@pobox.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system call support
-Message-ID: <20070213225056.GC68966@dspnet.fr.eu.org>
-Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
-	Ingo Molnar <mingo@elte.hu>,
-	Davide Libenzi <davidel@xmailserver.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Christoph Hellwig <hch@infradead.org>,
-	Andrew Morton <akpm@zip.com.au>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Ulrich Drepper <drepper@redhat.com>,
-	Zach Brown <zach.brown@oracle.com>,
-	Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-	"David S. Miller" <davem@davemloft.net>,
-	Benjamin LaHaise <bcrl@kvack.org>,
-	Suparna Bhattacharya <suparna@in.ibm.com>,
-	Thomas Gleixner <tglx@linutronix.de>
-References: <20070213142010.GA638@elte.hu> <Pine.LNX.4.64.0702131219240.32055@alien.or.mcafeemobile.com> <20070213215724.GD22104@elte.hu>
+	Tue, 13 Feb 2007 17:54:19 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:61888 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751386AbXBMWyS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 17:54:18 -0500
+Date: Tue, 13 Feb 2007 14:49:09 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, tony.luck@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [patch] build error: allnoconfig fails on mincore/swapper_space
+Message-Id: <20070213144909.70943de2.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0702132224280.3729@blonde.wat.veritas.com>
+References: <20070212145040.c3aea56e.randy.dunlap@oracle.com>
+	<20070212150802.f240e94f.akpm@linux-foundation.org>
+	<45D12715.4070408@yahoo.com.au>
+	<20070213121217.0f4e9f3a.randy.dunlap@oracle.com>
+	<Pine.LNX.4.64.0702132224280.3729@blonde.wat.veritas.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070213215724.GD22104@elte.hu>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 13, 2007 at 10:57:24PM +0100, Ingo Molnar wrote:
+
+> > > > oops.  CONFIG_SWAP=n,  I assume?
 > 
-> * Davide Libenzi <davidel@xmailserver.org> wrote:
+> Sorry for being so slow to respond on this.  Yes, I'm inclined to
+> your ifdeffery fix - one can go cleverer, but I'd say it's the
+> appropriate fix now.
 > 
-> > > Open issues:
+> But, please change your "present = 0;" to "present = 1;" -
+> if CONFIG_SWAP isn't on, it has to be a migration entry,
+> which always counts as present.
 > 
-> > If this is going to be a generic AIO subsystem:
 > > 
-> > - Cancellation of pending request
+> > BUT:  what is <present> used for in that loop?  or is it used?
 > 
-> How about implementing aio_cancel() as a NOP. Can anyone prove that the 
-> kernel didnt actually attempt to cancel that IO? [but unfortunately 
-> failed at doing so, because the platters were being written already.]
-> 
-> really, what's the point behind aio_cancel()?
+> Well spotted!  Something has gone missing: there needs to be a
+> 			vec[i] = present;
+> at the bottom of that loop.
 
-Lemme give you a real-world scenario: Question Answering in a Dialog
-System.  Your locked-in-memory index ranks documents in a several
-million files corpus depending of the chances they have to have what
-you're looking for.  You have a tenth of a second to read as many of
-them as you can, and each seek is 5ms.  So you aio-read them,
-requesting them in order of ranking up to 200 or so, and see what you
-have at the 0.1s deadline.  If you're lucky, a combination of cache
-(especially if you stat() the whole dir tree on a regular basis to
-keep the metadata fresh in cache) and of good io reorganisation by the
-scheduler will allow you to get a good number of them and do the
-information extraction, scoring and clustering of answers, which is
-pure CPU at that point.  You *have* to cancel the remaining i/o
-because you do not want the disk saturated when the next request
-comes, especially if it's 10ms later because the dialog manager found
-out it needed a complementary request.
 
-Incidentally, that's something I'm currently implementing for work,
-making these aio discussions more interesting that usual :-)
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-  OG.
+Don't check for pte swap entries when CONFIG_SWAP=n.
+And save 'present' in the vec array.
+
+mm/built-in.o: In function `sys_mincore':
+(.text+0xe584): undefined reference to `swapper_space'
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ mm/mincore.c |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+--- linux-2.6.20-git9.orig/mm/mincore.c
++++ linux-2.6.20-git9/mm/mincore.c
+@@ -111,6 +111,7 @@ static long do_mincore(unsigned long add
+ 			present = mincore_page(vma->vm_file->f_mapping, pgoff);
+ 
+ 		} else { /* pte is a swap entry */
++#ifdef CONFIG_SWAP
+ 			swp_entry_t entry = pte_to_swp_entry(pte);
+ 			if (is_migration_entry(entry)) {
+ 				/* migration entries are always uptodate */
+@@ -119,7 +120,11 @@ static long do_mincore(unsigned long add
+ 				pgoff = entry.val;
+ 				present = mincore_page(&swapper_space, pgoff);
+ 			}
++#else
++			present = 1;
++#endif
+ 		}
++		vec[i] = present;
+ 	}
+ 	pte_unmap_unlock(ptep-1, ptl);
+ 
