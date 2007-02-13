@@ -1,81 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751249AbXBMKpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751257AbXBMKvI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751249AbXBMKpa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 05:45:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbXBMKpa
+	id S1751257AbXBMKvI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 05:51:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbXBMKvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 05:45:30 -0500
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:45323 "EHLO
-	amsfep12-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751249AbXBMKp3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 05:45:29 -0500
-Subject: Re: [GIT] NFS client updates for 2.6.20
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       nfs <nfs@lists.sourceforge.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <1171352394.6177.5.camel@heimdal.trondhjem.org>
-References: <1171352394.6177.5.camel@heimdal.trondhjem.org>
-Content-Type: text/plain
-Date: Tue, 13 Feb 2007 11:43:52 +0100
-Message-Id: <1171363432.24923.7.camel@twins>
+	Tue, 13 Feb 2007 05:51:08 -0500
+Received: from mfe1.polimi.it ([131.175.12.23]:43273 "EHLO polimi.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751257AbXBMKvH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 05:51:07 -0500
+X-Greylist: delayed 1063 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 Feb 2007 05:51:06 EST
+Date: Tue, 13 Feb 2007 11:30:10 +0100
+From: Stefano Brivio <stefano.brivio@polimi.it>
+To: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
+Subject: [PATCH] fix error management in 8250_pci.c pciserial_resume_one
+Message-ID: <20070213113010.27125d53@localhost>
+X-Mailer: Sylpheed-Claws 2.5.6cvs10 (GTK+ 2.8.20; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-PMX-Version: 5.3.0.289146, Antispam-Engine: 2.5.0.283055, Antispam-Data: 2007.2.13.21933
+X-PerlMx-Spam: Gauge=I, Probability=81%, Report='RELAY_IN_CBL 8, RDNS_GENERIC_POOLED 0, RDNS_SUSP_GENERIC 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __HAS_X_MAILER 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0'
+X-Spam-Score: ***** (Spam Prob: 81% GAuge: XXXXXXXX)
+X-Probable-Spam: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-02-12 at 23:39 -0800, Trond Myklebust wrote:
+  CC      drivers/serial/8250_pci.o
+drivers/serial/8250_pci.c: In function 'pciserial_resume_one':
+drivers/serial/8250_pci.c:1830: warning: ignoring return value of 'pci_enable_device', declared with attribute warn_unused_result
 
-> commit 7c85d9007d05436e71d2b805b96c1e36a8193bd4
-> Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-> Date:   Wed Dec 13 15:23:48 2006 -0500
-> 
->     NFS: Fixup some outdated comments...
->     
->     Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+This patch fixes it.
 
-A few new comments would be appreciated :-)
-
-> commit 02241bc47e8961768de83d855accd0dcad1df045
-> Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-> Date:   Sat Jan 13 02:28:07 2007 -0500
-> 
->     NFS: Ensure that ->writepage() uses flush_stable() when reclaiming pages
->     
->     Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-
-That patch seems to make all ->writepage() calls use stable storage.
-Of course, given that there are no other ->writepage() calls this
-works out.
-
-I've been using this:
+Signed-off-by: Stefano Brivio <stefano.brivio@polimi.it>
 ---
 
-Subject: nfs: only use stable storage for swap
-
-unstable writes don't make sense for swap pages.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
----
- fs/nfs/write.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6-git/fs/nfs/write.c
-===================================================================
---- linux-2.6-git.orig/fs/nfs/write.c	2007-01-09 11:38:25.000000000 +0100
-+++ linux-2.6-git/fs/nfs/write.c	2007-01-09 13:40:34.000000000 +0100
-@@ -231,7 +231,7 @@ static int nfs_writepage_setup(struct nf
- static int wb_priority(struct writeback_control *wbc)
+--- drivers/serial/8250_pci.c.orig	2007-02-13 11:04:03.579805618 +0100
++++ drivers/serial/8250_pci.c	2007-02-13 11:12:52.128454010 +0100
+@@ -1819,6 +1819,7 @@
+ static int pciserial_resume_one(struct pci_dev *dev)
  {
- 	if (wbc->for_reclaim)
--		return FLUSH_HIGHPRI;
-+		return FLUSH_HIGHPRI|FLUSH_STABLE;
- 	if (wbc->for_kupdate)
- 		return FLUSH_LOWPRI;
- 	return 0;
-
-
+ 	struct serial_private *priv = pci_get_drvdata(dev);
++	int rc;
+ 
+ 	pci_set_power_state(dev, PCI_D0);
+ 	pci_restore_state(dev);
+@@ -1827,7 +1828,9 @@
+ 		/*
+ 		 * The device may have been disabled.  Re-enable it.
+ 		 */
+-		pci_enable_device(dev);
++		rc = pci_enable_device(dev);
++		if (rc)
++			return rc;
+ 
+ 		pciserial_resume_ports(priv);
+ 	}
