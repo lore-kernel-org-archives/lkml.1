@@ -1,65 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030576AbXBMAZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030589AbXBMA1B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030576AbXBMAZy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 19:25:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030585AbXBMAZy
+	id S1030589AbXBMA1B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Feb 2007 19:27:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030582AbXBMA1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 19:25:54 -0500
-Received: from ozlabs.org ([203.10.76.45]:39745 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030576AbXBMAZw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 19:25:52 -0500
-Subject: Re: [PATCH 7/8] lguest: trivial guest block driver
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.osdl.org>
-In-Reply-To: <20070212150125.GM3999@kernel.dk>
-References: <1171251965.10409.28.camel@localhost.localdomain>
-	 <1171252113.10409.30.camel@localhost.localdomain>
-	 <1171252219.10409.33.camel@localhost.localdomain>
-	 <1171252321.10409.36.camel@localhost.localdomain>
-	 <1171252405.10409.39.camel@localhost.localdomain>
-	 <1171252474.10409.42.camel@localhost.localdomain>
-	 <20070212044339.GJ3685@kernel.dk>
-	 <1171258034.10409.54.camel@localhost.localdomain>
-	 <20070212053204.GB3999@kernel.dk>
-	 <1171264167.10409.62.camel@localhost.localdomain>
-	 <20070212150125.GM3999@kernel.dk>
-Content-Type: text/plain
-Date: Tue, 13 Feb 2007 11:25:05 +1100
-Message-Id: <1171326305.19842.36.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Mon, 12 Feb 2007 19:27:00 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:12517 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030589AbXBMA07 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Feb 2007 19:26:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=l+pFBV+2g5Vjx1ZZTUhkTWqNCdouQzwNxrFmhE6m43ucatLf3iVN0dSbJoRIB9egxQt6cufUFa7Z8jVizJLs/sMNFS73am5T5WYcI3xp8ro74vA7H8zY3PcbcSqLDxyBZQEiRvAc3Th+9S+C/HNUKzzjQ/d97EzlozCLAZPmuO8=
+Message-ID: <12c511ca0702121626u7a100671w2e684dd5845d1220@mail.gmail.com>
+Date: Mon, 12 Feb 2007 16:26:57 -0800
+From: "Tony Luck" <tony.luck@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: build error: allnoconfig fails on mincore/swapper_space
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, "Nick Piggin" <nickpiggin@yahoo.com.au>
+In-Reply-To: <45D0F2F8.7060602@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070212145040.c3aea56e.randy.dunlap@oracle.com>
+	 <20070212150802.f240e94f.akpm@linux-foundation.org>
+	 <45D0F2F8.7060602@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-02-12 at 16:01 +0100, Jens Axboe wrote:
-> On Mon, Feb 12 2007, Rusty Russell wrote:
-> > Thanks Jens!!
-> 
-> My pleasure, it's not often you get to make that big a performance
-> improvement with just a little few lines of change :-)
+> > oops.  CONFIG_SWAP=n,  I assume?
+>
+> Yes, sorry.  Full config attached.
 
-*cough* I deliberately leave these low hanging fruit in lguest to
-encourage people to hack on it.  Really.  *cough*
-
-> I guess you'll take changes to make this driver queuing as well? It's
-> pretty important for good guest io performance as well.
-
-The question is whether the guest or host should queue.  If you have
-multiple guests sharing a disk in the hose, I would think that the host
-is better off queuing.  And this would seem to be the common case.
-
-On my todo list is:
-1) Implement write barriers, (-> fsync in the host)
-2) Make the host userspace program (lguest) async rather than blocking,
-3) Allow multiple outstanding requests.
-
-Then it should be useful for other hypervisors.
-
-Cheers!
-Rusty.
-
+<metoo>Same breakage on "make allnoconfig" for ia64</metoo>
