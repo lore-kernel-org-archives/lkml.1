@@ -1,55 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751091AbXBMVYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751088AbXBMVbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751091AbXBMVYz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 16:24:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751092AbXBMVYz
+	id S1751088AbXBMVbv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 16:31:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbXBMVbv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 16:24:55 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:4577 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751091AbXBMVYy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 16:24:54 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 13 Feb 2007 13:24:50 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Tue, 13 Feb 2007 16:31:51 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:46700 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751078AbXBMVbu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 16:31:50 -0500
+Date: Tue, 13 Feb 2007 16:31:43 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: Sergei Organov <osv@javad.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system
- call support
-In-Reply-To: <Pine.LNX.4.64.0702131219240.32055@alien.or.mcafeemobile.com>
-Message-ID: <Pine.LNX.4.64.0702131320450.32055@alien.or.mcafeemobile.com>
-References: <20070213142010.GA638@elte.hu> <Pine.LNX.4.64.0702131219240.32055@alien.or.mcafeemobile.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       =?iso-8859-1?B?Si5BLiBNYWdhbGzDw8Kzbg==?= <jamagallon@ono.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: somebody dropped a (warning) bomb
+Message-ID: <20070213213143.GA24625@havoc.gtf.org>
+References: <Pine.LNX.4.64.0702081351410.8424@woody.linux-foundation.org> <87abznsdyo.fsf@javad.com> <Pine.LNX.4.64.0702090753500.8424@woody.linux-foundation.org> <874pprr5nn.fsf@javad.com> <Pine.LNX.4.64.0702120804520.8424@woody.linux-foundation.org> <87ps8end9b.fsf@javad.com> <84144f020702131026q2af1afd6vbcd2708d7b7b9907@mail.gmail.com> <87bqjxooog.fsf@javad.com> <84144f020702131143r767aa40blb97a39b40bee73b8@mail.gmail.com> <87fy99n6mf.fsf@javad.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87fy99n6mf.fsf@javad.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Feb 2007, Davide Libenzi wrote:
+On Tue, Feb 13, 2007 at 11:29:44PM +0300, Sergei Organov wrote:
+> Sorry, what do you do with "variable 'xxx' might be used uninitialized"
+> warning when it's false? Turn it off? Annotate the source? Assign fake
+> initialization value? Change the compiler so that it does "the effort"
+> for you? Never encountered false positive from this warning?
 
-> If this is going to be a generic AIO subsystem:
-> 
-> - Cancellation of peding request
+You pull git://git.kernel.org/...jgarzik/misc-2.6.git#gccbug
 
-What about the busy_async_threads list becoming a hash/rb_tree indexed by 
-syslet_atom ptr. A cancel would lookup the thread and send a signal (of 
-course, signal handling of the async threads should be set properly)?
+	Jeff
 
-
-
-- Davide
 
 
