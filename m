@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751740AbXBMTPI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751741AbXBMTP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751740AbXBMTPI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 14:15:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbXBMTPI
+	id S1751741AbXBMTP2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 14:15:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbXBMTP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 14:15:08 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:57219 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751741AbXBMTPB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 14:15:01 -0500
-Date: Tue, 13 Feb 2007 22:12:24 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Benjamin LaHaise <bcrl@kvack.org>, Alan <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system call support
-Message-ID: <20070213191224.GA4894@2ka.mipt.ru>
-References: <20060529212109.GA2058@elte.hu> <20070213142010.GA638@elte.hu> <20070213150019.4b4d4827@localhost.localdomain> <20070213145848.GS18311@kvack.org> <20070213165642.GB16394@elte.hu> <20070213185636.GA23987@2ka.mipt.ru>
+	Tue, 13 Feb 2007 14:15:28 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:33648 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751741AbXBMTP0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 14:15:26 -0500
+Date: Tue, 13 Feb 2007 11:10:42 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: johannes@sipsolutions.net
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@osdl.org>
+Subject: [PATCH] kernel-doc: include struct short description in title
+ output
+Message-Id: <20070213111042.e10a4234.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <20070213185636.GA23987@2ka.mipt.ru>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.7.5 (2ka.mipt.ru [0.0.0.0]); Tue, 13 Feb 2007 22:12:35 +0300 (MSK)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I have not received first mail with announcement yet, so I will place 
-> my thoughts here if you do not mind.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-An issue with sys_async_wait():
-is is possible that events_left will be setup too late so that all
-events are already ready and thus sys_async_wait() can wait forever
-(or until next $sys_async_wait are ready)?
+Output of a struct in html mode needs to include the short description
+from the struct name line in the output title line.
 
--- 
-	Evgeniy Polyakov
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ scripts/kernel-doc |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-2.6.20-git7.orig/scripts/kernel-doc
++++ linux-2.6.20-git7/scripts/kernel-doc
+@@ -452,7 +452,7 @@ sub output_struct_html(%) {
+     my %args = %{$_[0]};
+     my ($parameter);
+ 
+-    print "<h2>".$args{'type'}." ".$args{'struct'}."</h2>\n";
++    print "<h2>".$args{'type'}." ".$args{'struct'}. " - " .$args{'purpose'}."</h2>\n";
+     print "<b>".$args{'type'}." ".$args{'struct'}."</b> {<br>\n";
+     foreach $parameter (@{$args{'parameterlist'}}) {
+ 	if ($parameter =~ /^#/) {
