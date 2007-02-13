@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751382AbXBMWoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751385AbXBMWpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751382AbXBMWoN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 17:44:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbXBMWoM
+	id S1751385AbXBMWpg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 17:45:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbXBMWpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 17:44:12 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52219 "EHLO mx2.mail.elte.hu"
+	Tue, 13 Feb 2007 17:45:36 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38227 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751382AbXBMWoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 17:44:11 -0500
-Date: Tue, 13 Feb 2007 23:41:31 +0100
+	id S1751389AbXBMWpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 17:45:35 -0500
+Date: Tue, 13 Feb 2007 23:43:22 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org,
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Arjan van de Ven <arjan@infradead.org>,
        Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
@@ -22,71 +23,41 @@ Cc: linux-kernel@vger.kernel.org,
        "David S. Miller" <davem@davemloft.net>,
        Benjamin LaHaise <bcrl@kvack.org>,
        Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 05/11] syslets: core code
-Message-ID: <20070213224131.GK22104@elte.hu>
-References: <20060529212109.GA2058@elte.hu> <20070213142035.GF638@elte.hu> <p73bqjxhcnl.fsf@bingen.suse.de> <20070213222443.GH22104@elte.hu> <20070213223017.GJ29492@one.firstfloor.org>
+Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system call support
+Message-ID: <20070213224322.GL22104@elte.hu>
+References: <20070213142010.GA638@elte.hu> <Pine.LNX.4.64.0702131219240.32055@alien.or.mcafeemobile.com> <20070213215724.GD22104@elte.hu> <p733b59hc81.fsf@bingen.suse.de> <20070213222626.GI22104@elte.hu> <20070213223220.GK29492@one.firstfloor.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070213223017.GJ29492@one.firstfloor.org>
+In-Reply-To: <20070213223220.GK29492@one.firstfloor.org>
 User-Agent: Mutt/1.4.2.2i
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -5.3
+X-ELTE-SpamScore: -0.8
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=-0.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.1.7
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4989]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 * Andi Kleen <andi@firstfloor.org> wrote:
 
-> > > > +	if (!access_ok(VERIFY_WRITE, arg_ptr, sizeof(*arg_ptr)))
-> > > > +		return -EFAULT;
-> > > 
-> > > It's a little unclear why you do that many individual access_ok()s. 
-> > > And why is the target constant sized anyways?
-> > 
-> > each indirect pointer has to be checked separately, before dereferencing 
-> > it. (Andrew pointed out that they should be VERIFY_READ, i fixed that in 
-> > my tree)
+> > ok, that should work fine already - exit in the user context gets
 > 
-> But why only constant sized? It could be a variable length object, 
-> couldn't it?
-
-i think what you might be missing is that it's only the 6 syscall 
-arguments that are fetched via indirect pointers - security checks are 
-then done by the system calls themselves. It's a bit awkward to think 
-about, but it is surprisingly clean in the assembly, and it simplified 
-syslet programming too.
-
-> > get_user_pages() would have to be limited in some way - and i didnt 
-> > want
+> That would be a little heavy handed. I wouldn't expect my GUI program 
+> to quit itself on cancel. And requiring it to create a new thread just 
+> to exit on cancel would be also nasty.
 > 
-> If you only use it for a small ring buffer it is naturally limited.
+> And of course you cannot interrupt blocked IOs this way right now 
+> (currently it only works with signals in some cases on NFS)
 
-yeah, but 'small' is a dangerous word when it comes to adding IO 
-interfaces ;-)
-
-> > a single page is enough for 1024 completion pointers - that's more 
-> > than enough for most purposes - and the default mlock limit is 40K.
-> 
-> Then limit it to a single page and use gup
-
-1024 (512 on 64-bit) is alot but not ALOT. It is also certainly not 
-ALOOOOT :-) Really, people will want to have more than 512 
-disks/spindles in the same box. I have used such a beast myself. For Tux 
-workloads and benchmarks we had parallelism levels of millions of 
-pending requests (!) on a single system - networking, socket limits, 
-disk IO combined with thousands of clients do create such scenarios. I 
-really think that such 'pinned pages' are a pretty natural fit for 
-sys_mlock() and RLIMIT_MEMLOCK, and since the kernel side is careful to 
-use the _inatomic() uaccess methods, it's safe (and fast) as well.
+ok. The TID+signal approach i mentioned in the other reply should work. 
+If it's frequent enough we could make this an explicit 
+sys_async_cancel(TID) API.
 
 	Ingo
