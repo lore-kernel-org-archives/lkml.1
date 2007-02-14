@@ -1,81 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750930AbXBNJra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751509AbXBNJsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750930AbXBNJra (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 04:47:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbXBNJra
+	id S1751509AbXBNJsb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 04:48:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbXBNJsb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 04:47:30 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:9387 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750930AbXBNJr3 (ORCPT
+	Wed, 14 Feb 2007 04:48:31 -0500
+Received: from fed1rmmtao105.cox.net ([68.230.241.41]:55143 "EHLO
+	fed1rmmtao105.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751059AbXBNJsa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 04:47:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ake9xwbdGJR+K05FBwDUkp4ZgA5itMYbeWGC4tgmxp/F0r5NgJX+aa3VdLhiJdN4VOawwE3UZe0xibQLNtMjShEpecX1hTC6j6FoMKTuimn3MdaeN+kf2Xww7hmZcKJmU6RiNq7VrVHuuIvafLxLTv5xKO3IASSLqTvAqCMKWZ0=
-Message-ID: <5a4c581d0702140147s7931bd63ief299780fa6963a5@mail.gmail.com>
-Date: Wed, 14 Feb 2007 10:47:27 +0100
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: Bug in current -git tree causing dbus and gnome to chew up cpu time
-Cc: torvalds@linux-foundation.org, agruen@suse.de, neilb@suse.de,
-       viro@zeniv.linux.org.uk, hch@lst.de, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070213195116.GA5181@kroah.com>
+	Wed, 14 Feb 2007 04:48:30 -0500
+From: Junio C Hamano <junkio@cox.net>
+To: Andy Parkins <andyparkins@gmail.com>
+Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] GIT 1.5.0
+References: <7vlkj1v3av.fsf@assigned-by-dhcp.cox.net>
+	<200702140906.37440.andyparkins@gmail.com>
+	<7vabzht72l.fsf@assigned-by-dhcp.cox.net>
+Date: Wed, 14 Feb 2007 01:48:28 -0800
+In-Reply-To: <7vabzht72l.fsf@assigned-by-dhcp.cox.net> (Junio C. Hamano's
+	message of "Wed, 14 Feb 2007 01:35:46 -0800")
+Message-ID: <7vzm7hrrwz.fsf@assigned-by-dhcp.cox.net>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070213195116.GA5181@kroah.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/13/07, Greg KH <greg@kroah.com> wrote:
-> Hi,
->
-> I've used 'git bisect' to track down a change in the latest git tree
-> that is causing dbus-daemon to sit and spin at the time GNOME launches,
-> preventing nautlius from ever running.
->
-> The bad commit is:
-> commit eb3dfb0cb1f4a44e2d0553f89514ce9f2a9fcaf1
-> Author: Andreas Gruenbacher <agruen@suse.de>
-> Date:   Mon Feb 12 00:51:47 2007 -0800
->
->     [PATCH] Fix d_path for lazy unmounts
->
-> With that patch out, GNOME startup works just fine.  I have a strace of
-> the dbus process running showing the problem, if anyone thinks that will
-> help out any.
->
-> I'm running pretty new GNOME and dbus here:
->         dbus 1.0.2
->         gnome 2.16.2
->         hal 0.5.7.1
->         nautilus 2.16.3
->
-> Any ideas of things I can test?
+Junio C Hamano <junkio@cox.net> writes:
 
-Just to add a data point, I see the same problem (startx never
- completes, gnome-vfs-daemon keeps getting forked by dbus
- to no end) on 2.6.20-git9 while -git7 is fine, and my pieces are
- from FC6 updates as of two days ago or so:
+> Andy Parkins <andyparkins@gmail.com> writes:
+>
+>> On Wednesday 2007 February 14 03:14, Junio C Hamano wrote:
+>>
+>>>  - There is a configuration variable core.legacyheaders that
+>>
+>>> The above two are not enabled by default and you explicitly have
+>>> to ask for them, because these two features make repositories
+>>
+>> It isn't really the case that you have to _enable_ legacyheaders?  It defaults 
+>> to on already.  You actually have to disable legacyheaders.
+>
+> Ah, true.  What it should have stressed is that we currently
+> default to the safer, backward compatible behaviour, and you have
+> to explicitly ask to use more efficient but incompatible
+> encoding by setting core.legacyheaders to false.
 
-[asuardi@sandman ~]$ rpm -q dbus gnome-vfs2 hal nautilus
-dbus-1.0.1-9.fc6
-gnome-vfs2-2.16.2-2.fc6
-hal-0.5.8.1-6.fc6
-nautilus-2.16.2-7.fc6
+So this will be the updated explanation.
 
-Since the patch breaks userspace in a deadly way, I guess
- it should be reverted until an usable version of the fix can
- be found. And yes, I'm up for testing of course.
+-- >8 --
+diff --git a/Documentation/RelNotes-1.5.0.txt b/Documentation/RelNotes-1.5.0.txt
+index f0120e1..0989ded 100644
+--- a/Documentation/RelNotes-1.5.0.txt
++++ b/Documentation/RelNotes-1.5.0.txt
+@@ -25,12 +25,18 @@ Specifically, the available options are:
+    older clients over dumb transports (e.g. http) using older
+    versions of git will also be affected.
+ 
++   To let git use the new loose object format, you have to
++   set core.legacyheaders to false.
++
+  - Since v1.4.3, configuration repack.usedeltabaseoffset allows
+    packfile to be created in more space efficient format, which
+    cannot be read by git older than that version.
+ 
+-The above two are not enabled by default and you explicitly have
+-to ask for them, because these two features make repositories
++   To let git use the new format for packfiles, you have to
++   set repack.usedeltabaseoffset to true.
++
++The above two new features are not enabled by default and you
++have explicitly to ask for them, because they make repositories
+ unreadable by older versions of git, and in v1.5.0 we still do
+ not enable them by default for the same reason.  We will change
+ this default probably 1 year after 1.4.2's release, when it is
 
---alessandro
-
- "but I thought that I should let you know
-  the things that I don't always show
-  might not be worth the time it took"
-
-     (Steve Wynn, 'If My Life Was An Open Book')
