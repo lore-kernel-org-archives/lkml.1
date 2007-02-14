@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751242AbXBNUrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751235AbXBNUro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751242AbXBNUrl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 15:47:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbXBNUrk
+	id S1751235AbXBNUro (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 15:47:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbXBNUrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 15:47:40 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35962 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932573AbXBNUrk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 15:47:40 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@osdl.org>,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 15/21] Xen-paravirt: Add Xen interface header files
-References: <20070213221729.772002682@goop.org>
-	<20070213221830.619562494@goop.org>
-Date: Wed, 14 Feb 2007 13:45:52 -0700
-In-Reply-To: <20070213221830.619562494@goop.org> (Jeremy Fitzhardinge's
-	message of "Tue, 13 Feb 2007 14:17:44 -0800")
-Message-ID: <m1k5ykpiwv.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 14 Feb 2007 15:47:43 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52715 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751235AbXBNUrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 15:47:42 -0500
+Date: Wed, 14 Feb 2007 21:45:15 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: malc <av1474@comtv.ru>
+Cc: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
+Subject: Re: CPU load
+Message-ID: <20070214204515.GA26153@elf.ucw.cz>
+References: <loom.20070212T063225-663@post.gmane.org> <20070212143219.GB5226@ucw.cz> <Pine.LNX.4.64.0702140059390.727@home.oyster.ru> <200702140908.44934.kernel@kolivas.org> <Pine.LNX.4.64.0702141023000.672@home.oyster.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702141023000.672@home.oyster.ru>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+Hi!
+> 
+> >>>I have (had?) code that 'exploits' this. I believe I could eat 90% of cpu
+> >>>without being noticed.
+> >>
+> >>Slightly changed version of hog(around 3 lines in total changed) does that
+> >>easily on 2.6.18.3 on PPC.
+> >>
+> >>http://www.boblycat.org/~malc/apc/load-hog-ppc.png
+> >
+> >I guess it's worth mentioning this is _only_ about displaying the cpu 
+> >usage to
+> >userspace, as the cpu scheduler knows the accounting of each task in
+> >different ways. This behaviour can not be used to exploit the cpu scheduler
+> >into a starvation situation. Using the discrete per process accounting to
+> >accumulate the displayed values to userspace would fix this problem, but
+> >would be expensive.
+> 
+> Guess you are right, but, once again, the problem is not so much about
+> fooling the system to do something or other, but confusing the user:
+> 
+> a. Everything is fine - the load is 0%, the fact that the system is
+>    overheating and/or that some processes do not do as much as they
+>    could is probably due to the bad hardware.
+> 
+> b. The weird load pattern must be the result of bugs in my code.
+>    (And then a whole lot of time/effort is poured into fixing the
+>     problem which is simply not there)
+> 
+> The current situation ought to be documented. Better yet some flag
+> can
 
-> Add Xen interface header files. These are taken fairly directly from
-> the Xen tree and hence the style is not entirely in accordance with
-> Linux guidelines. There is a tension between fitting with Linux coding
-> rules and ease of maintenance.
->
-> Define macros and inline functions for doing hypercalls into the
-> hypervisor.
->
-> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-> Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
-> Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-> Signed-off-by: Chris Wright <chrisw@sous-sol.org>
->
->
-> --
->  include/asm-i386/hypercall.h          |  416 +++++++++++++++++++++++++++++
->  include/asm-i386/hypervisor.h         |   72 +++++
+It probably _is_ documented, somewhere :-). If you find nice place
+where to document it (top manpage?) go ahead with the patch.
 
-Are hypercall.h and hypervisor.h generic or are they Xen specific.
-If they are Xen specific (as it appears) then are inappropriately
-named.
+> be introduced somewhere in the system so that it exports realy values to
+> /proc, not the estimations that are innacurate in some cases (like hog)
 
->  include/xen/interface/arch-x86_32.h   |  187 +++++++++++++
-Why isn't this file include-asm-i386/xen/arch-x86_32.h ?
+Patch would be welcome, but I do not think it will be easy.
 
->  include/xen/interface/elfnote.h       |  133 +++++++++
->  include/xen/interface/event_channel.h |  195 ++++++++++++++
->  include/xen/interface/features.h      |   43 +++
->  include/xen/interface/grant_table.h   |  301 +++++++++++++++++++++
->  include/xen/interface/io/blkif.h      |   96 ++++++
->  include/xen/interface/io/console.h    |   23 +
->  include/xen/interface/io/netif.h      |  152 ++++++++++
->  include/xen/interface/io/ring.h       |  260 ++++++++++++++++++
->  include/xen/interface/io/xenbus.h     |   42 +++
->  include/xen/interface/io/xs_wire.h    |   87 ++++++
->  include/xen/interface/memory.h        |  145 ++++++++++
->  include/xen/interface/physdev.h       |   61 ++++
->  include/xen/interface/sched.h         |   77 +++++
->  include/xen/interface/vcpu.h          |  109 +++++++
->  include/xen/interface/version.h       |   60 ++++
->  include/xen/interface/xen.h           |  445 ++++++++++++++++++++++++++++++++
->  19 files changed, 2904 insertions(+)
-
-Eric
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
