@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751235AbXBNUro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751245AbXBNUsG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751235AbXBNUro (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 15:47:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbXBNUrn
+	id S1751245AbXBNUsG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 15:48:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbXBNUrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 14 Feb 2007 15:47:45 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47616 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751239AbXBNUrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 14 Feb 2007 15:47:43 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52715 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751235AbXBNUrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 15:47:42 -0500
-Date: Wed, 14 Feb 2007 21:45:15 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: malc <av1474@comtv.ru>
-Cc: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
-Subject: Re: CPU load
-Message-ID: <20070214204515.GA26153@elf.ucw.cz>
-References: <loom.20070212T063225-663@post.gmane.org> <20070212143219.GB5226@ucw.cz> <Pine.LNX.4.64.0702140059390.727@home.oyster.ru> <200702140908.44934.kernel@kolivas.org> <Pine.LNX.4.64.0702141023000.672@home.oyster.ru>
-MIME-Version: 1.0
+Date: Wed, 14 Feb 2007 15:47:31 -0500
+From: Dave Jones <davej@redhat.com>
+To: Marcelo Tosatti <marcelo@kvack.org>
+Cc: Jordan Crouse <jordan.crouse@amd.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] use movntq version of fast_clear_page/fast_copy_page on Geode
+Message-ID: <20070214204731.GA4551@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Marcelo Tosatti <marcelo@kvack.org>,
+	Jordan Crouse <jordan.crouse@amd.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <20070214190839.GA4864@dmt.lan> <20070214195546.GA2005@redhat.com> <20070214201736.GA5794@dmt.lan>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702141023000.672@home.oyster.ru>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <20070214201736.GA5794@dmt.lan>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-> 
-> >>>I have (had?) code that 'exploits' this. I believe I could eat 90% of cpu
-> >>>without being noticed.
-> >>
-> >>Slightly changed version of hog(around 3 lines in total changed) does that
-> >>easily on 2.6.18.3 on PPC.
-> >>
-> >>http://www.boblycat.org/~malc/apc/load-hog-ppc.png
-> >
-> >I guess it's worth mentioning this is _only_ about displaying the cpu 
-> >usage to
-> >userspace, as the cpu scheduler knows the accounting of each task in
-> >different ways. This behaviour can not be used to exploit the cpu scheduler
-> >into a starvation situation. Using the discrete per process accounting to
-> >accumulate the displayed values to userspace would fix this problem, but
-> >would be expensive.
-> 
-> Guess you are right, but, once again, the problem is not so much about
-> fooling the system to do something or other, but confusing the user:
-> 
-> a. Everything is fine - the load is 0%, the fact that the system is
->    overheating and/or that some processes do not do as much as they
->    could is probably due to the bad hardware.
-> 
-> b. The weird load pattern must be the result of bugs in my code.
->    (And then a whole lot of time/effort is poured into fixing the
->     problem which is simply not there)
-> 
-> The current situation ought to be documented. Better yet some flag
-> can
+On Wed, Feb 14, 2007 at 06:17:36PM -0200, Marcelo Tosatti wrote:
+ > On Wed, Feb 14, 2007 at 02:55:46PM -0500, Dave Jones wrote:
+ > > On Wed, Feb 14, 2007 at 05:08:39PM -0200, Marcelo Tosatti wrote:
+ > >  > 
+ > >  > movntq instruction is supported by Geode CPU's, so use
+ > >  > fast_clear_page/fast_copy_page versions that have it.
+ > > 
+ > > it's supported, but is it a win ?
+ > > The same was also true of the VIA C3/C7's, but due to
+ > > poor memory bandwidth, it turned out to be slower in most cases.
+ > 
+ > Do you have the numbers for VIA C3/C7 around?
 
-It probably _is_ documented, somewhere :-). If you find nice place
-where to document it (top manpage?) go ahead with the patch.
+I don't, and my 3dnow capable C3s are unplugged right now.
+The newer generation (including the C7) have SSE/SSE2 instead,
+which seems to be faster.  (Using a different benchmark app that uses SSE)
 
-> be introduced somewhere in the system so that it exports realy values to
-> /proc, not the estimations that are innacurate in some cases (like hog)
+clear_page function 'normal clear_page()'        took 9425 cycles per page (620.3 MB/s)
+clear_page function 'new clear_page()   '        took 3840 cycles per page (1522.7 MB/s)
 
-Patch would be welcome, but I do not think it will be easy.
+copy_page function 'normal copy_page()'  took 11453 cycles per page (510.5 MB/s)
+copy_page function 'new copy_page()   '  took 5024 cycles per page (1163.7 MB/s)
+
+
+		Dave
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+http://www.codemonkey.org.uk
