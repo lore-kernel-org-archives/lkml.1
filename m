@@ -1,83 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751194AbXBNTp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932496AbXBNTrL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751194AbXBNTp1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 14:45:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932506AbXBNTp0
+	id S932496AbXBNTrL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 14:47:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932508AbXBNTrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 14:45:26 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:2597 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751194AbXBNTp0 (ORCPT
+	Wed, 14 Feb 2007 14:47:10 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:35656 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932496AbXBNTrJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 14:45:26 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 14 Feb 2007 11:45:23 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Benjamin LaHaise <bcrl@kvack.org>
-cc: Russell King <rmk+lkml@arm.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 06/11] syslets: core, documentation
-In-Reply-To: <20070214180344.GI32271@kvack.org>
-Message-ID: <Pine.LNX.4.64.0702141135390.7796@alien.or.mcafeemobile.com>
-References: <20060529212109.GA2058@elte.hu> <20070213142042.GG638@elte.hu>
- <20070214103655.GB4241@flint.arm.linux.org.uk> <20070214105039.GC6801@elte.hu>
- <20070214110419.GC4241@flint.arm.linux.org.uk>
- <Pine.LNX.4.64.0702140919200.7480@alien.or.mcafeemobile.com>
- <20070214180344.GI32271@kvack.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 14 Feb 2007 14:47:09 -0500
+Message-ID: <45D3673C.1070205@vmware.com>
+Date: Wed, 14 Feb 2007 11:47:08 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Pavel Machek <pavel@ucw.cz>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@muc.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH 9/11] Panic delay fix
+References: <200702060353.l163rUmj000771@zach-dev.vmware.com> <20070206122729.GC47229@muc.de> <45C8FA2D.6010706@vmware.com> <20070207123552.GD4481@ucw.cz> <1170880572.11736.4.camel@localhost.localdomain> <20070214122645.GE22008@elf.ucw.cz>
+In-Reply-To: <20070214122645.GE22008@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Feb 2007, Benjamin LaHaise wrote:
+Pavel Machek wrote:
+> On Thu 2007-02-08 07:36:12, Rusty Russell wrote:
+>   
+>> On Wed, 2007-02-07 at 12:35 +0000, Pavel Machek wrote:
+>>     
+>>> Ugh, it sounds like paravirt is more b0rken then I thought. It should
+>>> always to the proper delay, then replace those udelays that are not
+>>> needed on virtualized hardware with something else.
+>>>
+>>> Just magically defining udelay into nop is broken.
+>>>       
+>> We'd have to audit and figure out what udelays are for hardware and
+>> which are not, but the evidence is that the vast majority of them are
+>> for hardware and not needed for virtualization.
+>>     
+>
+> You did not time to do the full audit, so you just did #define.
+>   
 
-> On Wed, Feb 14, 2007 at 09:52:20AM -0800, Davide Libenzi wrote:
-> > That'd be, instead of passing a chain of atoms, with the kernel 
-> > interpreting conditions, and parameter lists, etc..., we let gcc 
-> > do this stuff for us, and we pass the "clet" :) pointer to sys_async_exec, 
-> > that exec the above under the same schedule-trapped environment, but in 
-> > userspace. We setup a special userspace ad-hoc frame (ala signal), and we 
-> > trap underneath task schedule attempt in the same way we do now.
-> > We setup the frame and when we return from sys_async_exec, we basically 
-> > enter the "clet", that will return to a ret_from_async, that will return 
-> > to userspace. Or, maybe we can support both. A simple single-syscall exec 
-> > in the way we do now, and a clet way for the ones that requires chains and 
-> > conditions. Hmmm?
-> 
-> Which is just the same as using threads.  My argument is that once you 
-> look at all the details involved, what you end up arriving at is the 
-> creation of threads.  Threads are relatively cheap, it's just that the 
-> hardware currently has several performance bugs with them on x86 (and more 
-> on x86-64 with the MSR fiddling that hits the hot path).  Architectures 
-> like powerpc are not going to benefit anywhere near as much from this 
-> exercise, as the state involved is processed much more sanely.  IA64 as 
-> usual is simply doomed by way of having too many registers to switch.
-
-Sort of, except that the whole thing can complete syncronously w/out 
-context switches. The real point of the whole fibrils/syslets solution is 
-that kind of optimization. The solution is as good as it is now, for 
-single syscalls (modulo sys_async_cancel implementation), but for multiple 
-chained submission it kinda stinks IMHO. Once you have to build chains, 
-and conditions, and new syscalls to implement userspace variable 
-increments, and so on..., at that point it's better to have the chain to 
-be coded in C ala thread proc. Yes, it requires a frame setup and another 
-entry to the kernel, but IMO that will be amortized in the cost of the 
-multiple syscalls inside the "clet".
+Yes, of course.  Since 99% of the drivers are completely irrelevant for 
+paravirt, and 99% of the udelays are in drivers, there isn't much point 
+to auditing a bunch of code we're not even going to be affected by.  The 
+default case for udelay is it is not needed.
 
 
+>> Changing udelay to "hardware_udelay" or something all over the kernel
+>> would have delayed the paravirt_ops merge by an infinite amount 8)
+>>     
+>
+> And here you claim you could not do the right thing, because people
+> would notice you are doing huge search/replace without audit, and
+> would stop you. So you simply hidden it from them :-(.
+>   
 
-- Davide
+What ludicrousness is this?  Hidden what?  That the default case for 
+udelay is that it is not needed?
 
+> Plus... udelay() should just work under virtualization, right? You get
+> slightly slower kernel, but still working, so the "full audit" is not
+> as hard as you are telling me.
+>   
 
+Save the time of doing a useless full audit and making sure we didn't 
+accidentally redefine or misspell some symbol on a bunch of 
+architectures we aren't even set up to compile for.
+
+> Just replace udelay() with hardware_udelay() on places that matter in
+> your workload...
+>   
+
+That's inconsistent.  We would be doing 2 SCSI drivers, part of the IDE 
+code, some i386 arch code, some random places in the kernel... and now 
+nobody else knows whether to use udelay or hardware_udelay and the code 
+gets jumbled to the point that it is useless because there is no clear 
+distinction between the two.  It is non-trivial to come up with a list 
+of source files that we have to actually do this to.  One C-file calls a 
+shared routine in a library, and now you've got a hidden udelay that you 
+have absolutely no way of detecting.  The right thing to do if you want 
+to do it on a line by line basis is exactly the opposite.  Remove udelay 
+and find out what breaks.  Bugs are easier to find and fix than hidden 
+code.  If I were to do it on a line by line basis, I would chose to 
+replace udelay() with real_time_udelay() for those places that actually 
+need it.
+
+Zach
