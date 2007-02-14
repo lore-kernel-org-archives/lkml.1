@@ -1,43 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932471AbXBNT0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932486AbXBNTcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932471AbXBNT0q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 14:26:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932487AbXBNT0q
+	id S932486AbXBNTcg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 14:32:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932451AbXBNTcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 14:26:46 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:41196 "EHLO smtp.osdl.org"
+	Wed, 14 Feb 2007 14:32:36 -0500
+Received: from kanga.kvack.org ([66.96.29.28]:50731 "EHLO kanga.kvack.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932471AbXBNT0p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 14:26:45 -0500
-Date: Wed, 14 Feb 2007 11:26:26 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Howells <dhowells@redhat.com>
-cc: akpm@linux-foundation.org, herbert.xu@redhat.com,
-       linux-kernel@vger.kernel.org, davej@redhat.com, arjan@infradead.org,
-       linux-crypto@vger.kernel.org
-Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing 
-In-Reply-To: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com>
-Message-ID: <Pine.LNX.4.64.0702141121030.20368@woody.linux-foundation.org>
-References: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S932486AbXBNTcf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 14:32:35 -0500
+Date: Wed, 14 Feb 2007 17:08:39 -0200
+From: Marcelo Tosatti <marcelo@kvack.org>
+To: Jordan Crouse <jordan.crouse@amd.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] use movntq version of fast_clear_page/fast_copy_page on Geode
+Message-ID: <20070214190839.GA4864@dmt.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+movntq instruction is supported by Geode CPU's, so use
+fast_clear_page/fast_copy_page versions that have it.
 
-On Wed, 14 Feb 2007, David Howells wrote:
->
->  (1) A cut-down MPI library derived from GPG with error handling added.
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 
-Do we really need to add this?
-
-Wouldn't it be much nicer to just teach people to use one of the existing 
-signature things that we need for _other_ cases anyway, and already have 
-merged?
-
-(Of course, it's possible that none of the current crypto supports any 
-signature checking at all - I didn't actually look. In which case my 
-argument is pointless).
-
-		Linus
+diff --git a/arch/i386/lib/mmx.c b/arch/i386/lib/mmx.c
+index 28084d2..ddc1421 100644
+--- a/arch/i386/lib/mmx.c
++++ b/arch/i386/lib/mmx.c
+@@ -121,7 +121,7 @@ void *_mmx_memcpy(void *to, const void *
+ 	return p;
+ }
+ 
+-#ifdef CONFIG_MK7
++#if defined (CONFIG_MK7) || defined(CONFIG_MGEODE_LX)
+ 
+ /*
+  *	The K7 has streaming cache bypass load/store. The Cyrix III, K6 and
