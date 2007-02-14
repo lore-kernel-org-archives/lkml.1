@@ -1,215 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751205AbXBNU2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751017AbXBNUfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751205AbXBNU2m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 15:28:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbXBNU2m
+	id S1751017AbXBNUfH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 15:35:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751015AbXBNUfH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 15:28:42 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:43284 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751205AbXBNU2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 15:28:41 -0500
-Date: Wed, 14 Feb 2007 14:28:36 -0600
-To: James.Bottomley@SteelEye.com
-Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-scsi@vger.kernel.org, rlary@us.ibm.com, Bino.Sebastian@Emulex.Com,
-       James Smart <james.smart@Emulex.Com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] lpfc: add PCI error recovery support
-Message-ID: <20070214202836.GS923@austin.ibm.com>
+	Wed, 14 Feb 2007 15:35:07 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57285 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750982AbXBNUfF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 15:35:05 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@osdl.org>,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 16/21] Xen-paravirt: Add code into head.S to handle being booted by Xen
+References: <20070213221729.772002682@goop.org>
+	<20070213221830.707197267@goop.org>
+Date: Wed, 14 Feb 2007 13:33:13 -0700
+In-Reply-To: <20070213221830.707197267@goop.org> (Jeremy Fitzhardinge's
+	message of "Tue, 13 Feb 2007 14:17:45 -0800")
+Message-ID: <m1sld8pjhy.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
-From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-James,
+There need to be alignment directives for the page aligned chunks.
 
-Please review and forward upstream.  This is a patch I'd previously
-submitted, and reworked by Bino.Sebastian@Emulex.Com in January.
-Not clear if I need to also nag James Smart (who is listed as the
-maintainer) for an Acked-by (which I am lead to beleive should be
-forthcoming? Ahh the joys of indirect communication!)
+Placing the page aligned chunks in a special section is nice in that
+it ensures the linker packs everything tightly but should be
+completely unnecessary if the alignment is correct.
 
---linas
+>  
+> ===================================================================
+> --- a/arch/i386/kernel/head.S
+> +++ b/arch/i386/kernel/head.S
+> @@ -519,6 +519,10 @@ 1:
+>  	jmp	1b
+>  #endif
+>  
+> +#ifdef CONFIG_XEN
+> +#include "../xen/xen-head.S"
+> +#endif
+> +	
+>  /*
+>   * Real beginning of normal "text" segment
+>   */
+> @@ -528,7 +532,7 @@ ENTRY(_stext)
+>  /*
+>   * BSS section
+>   */
+> -.section ".bss.page_aligned","w"
+> +.section ".bss.page_aligned"
+>  ENTRY(swapper_pg_dir)
+>  	.fill 1024,4,0
+>  ENTRY(empty_zero_page)
+> @@ -598,7 +602,8 @@ ENTRY(boot_gdt_table)
+>  /*
+>   * The Global Descriptor Table contains 28 quadwords, per-CPU.
+>   */
+> -	.align L1_CACHE_BYTES
+> +	.section ".data.page_aligned"
+> +	.align PAGE_SIZE_asm
+>  ENTRY(cpu_gdt_table)
+>  	.quad 0x0000000000000000	/* NULL descriptor */
+>  	.quad 0x0000000000000000	/* 0x0b reserved */
+> @@ -647,3 +652,6 @@ ENTRY(cpu_gdt_table)
+>  	.quad 0x0000000000000000	/* 0xf0 - unused */
+>  	.quad 0x0000000000000000 /* 0xf8 - GDT entry 31: double-fault TSS */
+>  
+> +	/* Be sure this is zeroed to avoid false validations in Xen */
+> +	.fill PAGE_SIZE_asm / 8 - GDT_ENTRIES,8,0
+> +	.previous
 
-This patch adds PCI Error recovery support to the
-Emulex Lightpulse Fibrechannel (lpfc) SCSI device driver.
-Lightly tested at this point, works.
+> ===================================================================
+> --- a/arch/i386/kernel/vmlinux.lds.S
+> +++ b/arch/i386/kernel/vmlinux.lds.S
+> @@ -93,6 +93,7 @@ SECTIONS
+>  
+>    . = ALIGN(4096);
+>    .data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
+> +	*(.data.page_aligned)
+>  	*(.data.idt)
+>    }
+>  
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-Signed-off-by: Bino.Sebastian@Emulex.Com
-Cc: James Smart <james.smart@emulex.com>
-
-----
-
- drivers/scsi/lpfc/lpfc_init.c |   97 ++++++++++++++++++++++++++++++++++++++++++
- drivers/scsi/lpfc/lpfc_sli.c  |   12 +++++
- 2 files changed, 109 insertions(+)
-
-Index: linux-2.6.20-git4/drivers/scsi/lpfc/lpfc_init.c
-===================================================================
---- linux-2.6.20-git4.orig/drivers/scsi/lpfc/lpfc_init.c	2007-02-09 17:22:30.000000000 -0600
-+++ linux-2.6.20-git4/drivers/scsi/lpfc/lpfc_init.c	2007-02-14 14:12:22.000000000 -0600
-@@ -518,6 +518,10 @@ lpfc_handle_eratt(struct lpfc_hba * phba
- 	struct lpfc_sli *psli = &phba->sli;
- 	struct lpfc_sli_ring  *pring;
- 	uint32_t event_data;
-+	/* If the pci channel is offline, ignore possible errors,
-+	 * since we cannot communicate with the pci card anyway. */
-+	if (pci_channel_offline(phba->pcidev))
-+		return;
- 
- 	if (phba->work_hs & HS_FFER6 ||
- 	    phba->work_hs & HS_FFER5) {
-@@ -1797,6 +1801,92 @@ lpfc_pci_remove_one(struct pci_dev *pdev
- 	pci_set_drvdata(pdev, NULL);
- }
- 
-+/**
-+ * lpfc_io_error_detected - called when PCI error is detected
-+ * @pdev: Pointer to PCI device
-+ * @state: The current pci conneection state
-+ *
-+ * This function is called after a PCI bus error affecting
-+ * this device has been detected.
-+ */
-+static pci_ers_result_t lpfc_io_error_detected(struct pci_dev *pdev,
-+				pci_channel_state_t state)
-+{
-+	struct Scsi_Host *host = pci_get_drvdata(pdev);
-+	struct lpfc_hba *phba = (struct lpfc_hba *)host->hostdata;
-+	struct lpfc_sli *psli = &phba->sli;
-+	struct lpfc_sli_ring  *pring;
-+
-+	if (state == pci_channel_io_perm_failure) {
-+		lpfc_pci_remove_one(pdev);
-+		return PCI_ERS_RESULT_DISCONNECT;
-+	}
-+	pci_disable_device(pdev);
-+	/*
-+	 * There may be I/Os dropped by the firmware.
-+	 * Error iocb (I/O) on txcmplq and let the SCSI layer
-+	 * retry it after re-establishing link.
-+	 */
-+	pring = &psli->ring[psli->fcp_ring];
-+	lpfc_sli_abort_iocb_ring(phba, pring);
-+
-+	/* Request a slot reset. */
-+	return PCI_ERS_RESULT_NEED_RESET;
-+}
-+
-+/**
-+ * lpfc_io_slot_reset - called after the pci bus has been reset.
-+ * @pdev: Pointer to PCI device
-+ *
-+ * Restart the card from scratch, as if from a cold-boot.
-+ */
-+static pci_ers_result_t lpfc_io_slot_reset(struct pci_dev *pdev)
-+{
-+	struct Scsi_Host *host = pci_get_drvdata(pdev);
-+	struct lpfc_hba *phba = (struct lpfc_hba *)host->hostdata;
-+	struct lpfc_sli *psli = &phba->sli;
-+	int bars = pci_select_bars(pdev, IORESOURCE_MEM);
-+
-+	dev_printk(KERN_INFO, &pdev->dev, "recovering from a slot reset.\n");
-+	if (pci_enable_device_bars(pdev, bars)) {
-+		printk(KERN_ERR "lpfc: Cannot re-enable "
-+			"PCI device after reset.\n");
-+		return PCI_ERS_RESULT_DISCONNECT;
-+	}
-+
-+	pci_set_master(pdev);
-+
-+	/* Re-establishing Link */
-+	spin_lock_irq(phba->host->host_lock);
-+	phba->fc_flag |= FC_ESTABLISH_LINK;
-+	psli->sli_flag &= ~LPFC_SLI2_ACTIVE;
-+	spin_unlock_irq(phba->host->host_lock);
-+
-+
-+	/* Take device offline; this will perform cleanup */
-+	lpfc_offline(phba);
-+	lpfc_sli_brdrestart(phba);
-+
-+	return PCI_ERS_RESULT_RECOVERED;
-+}
-+
-+/**
-+ * lpfc_io_resume - called when traffic can start flowing again.
-+ * @pdev: Pointer to PCI device
-+ *
-+ * This callback is called when the error recovery driver tells us that
-+ * its OK to resume normal operation.
-+ */
-+static void lpfc_io_resume(struct pci_dev *pdev)
-+{
-+	struct Scsi_Host *host = pci_get_drvdata(pdev);
-+	struct lpfc_hba *phba = (struct lpfc_hba *)host->hostdata;
-+
-+	if (lpfc_online(phba) == 0) {
-+		mod_timer(&phba->fc_estabtmo, jiffies + HZ * 60);
-+	}
-+}
-+
- static struct pci_device_id lpfc_id_table[] = {
- 	{PCI_VENDOR_ID_EMULEX, PCI_DEVICE_ID_VIPER,
- 		PCI_ANY_ID, PCI_ANY_ID, },
-@@ -1857,11 +1947,18 @@ static struct pci_device_id lpfc_id_tabl
- 
- MODULE_DEVICE_TABLE(pci, lpfc_id_table);
- 
-+static struct pci_error_handlers lpfc_err_handler = {
-+	.error_detected = lpfc_io_error_detected,
-+	.slot_reset = lpfc_io_slot_reset,
-+	.resume = lpfc_io_resume,
-+};
-+
- static struct pci_driver lpfc_driver = {
- 	.name		= LPFC_DRIVER_NAME,
- 	.id_table	= lpfc_id_table,
- 	.probe		= lpfc_pci_probe_one,
- 	.remove		= __devexit_p(lpfc_pci_remove_one),
-+	.err_handler = &lpfc_err_handler,
- };
- 
- static int __init
-Index: linux-2.6.20-git4/drivers/scsi/lpfc/lpfc_sli.c
-===================================================================
---- linux-2.6.20-git4.orig/drivers/scsi/lpfc/lpfc_sli.c	2007-02-09 17:22:30.000000000 -0600
-+++ linux-2.6.20-git4/drivers/scsi/lpfc/lpfc_sli.c	2007-02-14 14:01:31.000000000 -0600
-@@ -2104,6 +2104,10 @@ lpfc_sli_issue_mbox(struct lpfc_hba * ph
- 	volatile uint32_t word0, ldata;
- 	void __iomem *to_slim;
- 
-+	/* If the PCI channel is in offline state, do not post mbox. */
-+	if (unlikely(pci_channel_offline(phba->pcidev)))
-+		return MBX_NOT_FINISHED;
-+
- 	psli = &phba->sli;
- 
- 	spin_lock_irqsave(phba->host->host_lock, drvr_flag);
-@@ -2407,6 +2411,10 @@ lpfc_sli_issue_iocb(struct lpfc_hba *phb
- 	struct lpfc_iocbq *nextiocb;
- 	IOCB_t *iocb;
- 
-+	/* If the PCI channel is in offline state, do not post iocbs. */
-+	if (unlikely(pci_channel_offline(phba->pcidev)))
-+		return IOCB_ERROR;
-+
- 	/*
- 	 * We should never get an IOCB if we are in a < LINK_DOWN state
- 	 */
-@@ -3154,6 +3162,10 @@ lpfc_intr_handler(int irq, void *dev_id)
- 	if (unlikely(!phba))
- 		return IRQ_NONE;
- 
-+	/* If the pci channel is offline, ignore all the interrupts. */
-+	if (unlikely(pci_channel_offline(phba->pcidev)))
-+		return IRQ_NONE;
-+
- 	phba->sli.slistat.sli_intr++;
- 
- 	/*
+> --- /dev/null
+> +++ b/arch/i386/xen/xen-head.S
+> @@ -0,0 +1,29 @@
+> +/* Xen-specific pieces of head.S, intended to be included in the right
+> +	place in head.S */
+> +
+> +#include <linux/elfnote.h>
+> +#include <asm/boot.h>
+> +#include <xen/interface/elfnote.h>
+> +
+> +ENTRY(startup_xen)
+> +	movl %esi,xen_start_info
+> +	jmp startup_paravirt
+> +	
+> +.pushsection ".bss.page_aligned"
+> +ENTRY(hypercall_page)
+> +	.skip 0x1000
+> +.popsection
+> +
+> +	ELFNOTE(Xen, XEN_ELFNOTE_GUEST_OS,       .asciz, "linux")
+> +	ELFNOTE(Xen, XEN_ELFNOTE_GUEST_VERSION,  .asciz, "2.6")
+> +	ELFNOTE(Xen, XEN_ELFNOTE_XEN_VERSION,    .asciz, "xen-3.0")
+> +	ELFNOTE(Xen, XEN_ELFNOTE_VIRT_BASE,      .long,  __PAGE_OFFSET)
+> +	ELFNOTE(Xen, XEN_ELFNOTE_ENTRY,          .long,  startup_xen)
+> +	ELFNOTE(Xen, XEN_ELFNOTE_HYPERCALL_PAGE, .long,  hypercall_page)
+> + ELFNOTE(Xen, XEN_ELFNOTE_FEATURES, .asciz,
+> "!writable_page_tables|pae_pgdir_above_4gb")
+> +#ifdef CONFIG_X86_PAE
+> +	ELFNOTE(Xen, XEN_ELFNOTE_PAE_MODE,       .asciz, "yes")
+> +#else
+> +	ELFNOTE(Xen, XEN_ELFNOTE_PAE_MODE,       .asciz, "no")
+> +#endif
+> +	ELFNOTE(Xen, XEN_ELFNOTE_LOADER,         .asciz, "generic")
