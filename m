@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932449AbXBNThF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932498AbXBNTjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932449AbXBNThF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 14:37:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932493AbXBNThF
+	id S932498AbXBNTjq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 14:39:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbXBNTjq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 14:37:05 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42986 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932449AbXBNThD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 14:37:03 -0500
-Date: Wed, 14 Feb 2007 19:36:26 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Zachary Amsden <zach@vmware.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@muc.de>,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [patch 10/21] Xen-paravirt: Name: dont export paravirt_ops structure, do individual functions
-Message-ID: <20070214193626.GA18405@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Zachary Amsden <zach@vmware.com>,
-	Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@muc.de>,
-	Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-	virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-	Chris Wright <chrisw@sous-sol.org>,
-	Rusty Russell <rusty@rustcorp.com.au>
-References: <20070213221729.772002682@goop.org> <20070213221830.238235953@goop.org> <45D260A2.4010200@vmware.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 14 Feb 2007 14:39:46 -0500
+Received: from ns2.suse.de ([195.135.220.15]:44819 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751164AbXBNTjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 14:39:45 -0500
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SuSE Labs, Novell
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] Fix d_path for lazy unmounts
+Date: Wed, 14 Feb 2007 11:39:40 -0800
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, linux-fsdevel@vger.kernel.org,
+       Tony Jones <tonyj@suse.de>, Neil Brown <neilb@suse.de>,
+       Christoph Hellwig <hch@lst.de>, Greg Kroah-Hartman <gregkh@suse.de>,
+       walt <wa1ter@myrealbox.com>
+References: <200702021923.02491.agruen@suse.de> <200702140019.36378.agruen@suse.de> <Pine.LNX.4.64.0702140730350.3604@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0702140730350.3604@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45D260A2.4010200@vmware.com>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200702141139.41465.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 13, 2007 at 05:06:42PM -0800, Zachary Amsden wrote:
-> >I moved drm_follow_page into the core, to avoid having to wrap the
-> >various pte ops.  Unlining kernel_fpu_end and using that in the RAID6
-> >code would remove the need to export clts/read_cr0/write_cr0 too.
+On Wednesday 14 February 2007 07:37, Linus Torvalds wrote:
+> We could prepend another '/' (so that you'd have a path that starts with
+> "//"). That's still a legal path, but it's also somethign that even POSIX
+> says is valid to mean something else (eg "//ftp/.." or "//socket/.." to
+> escape into another namespace).
 
-Please don't push the drm_follow_page part.  Dave and I fixed drm
-to not need this junk anymore, and it should be part of the next drm merge.
+This sounds good enough to me. My main point is that users that care should be 
+able to tell the difference.
 
+Thanks,
+Andreas
