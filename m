@@ -1,90 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751133AbXBNGqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751135AbXBNGyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751133AbXBNGqr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 01:46:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbXBNGqr
+	id S1751135AbXBNGyR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 01:54:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbXBNGyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 01:46:47 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:43579 "EHLO smtp.osdl.org"
+	Wed, 14 Feb 2007 01:54:17 -0500
+Received: from ozlabs.org ([203.10.76.45]:56507 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751133AbXBNGqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 01:46:46 -0500
-Date: Tue, 13 Feb 2007 22:46:43 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Vitaly Wool <vitalywool@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 8250: make probing for TXEN bug a config option
-Message-Id: <20070213224643.14d27cd3.akpm@linux-foundation.org>
-In-Reply-To: <20061226194317.3fd3ec14.vitalywool@gmail.com>
-References: <20061226194317.3fd3ec14.vitalywool@gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	id S1751135AbXBNGyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 01:54:17 -0500
+Subject: Re: What will be in the x86-64/x86 2.6.21 merge
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andi Kleen <ak@suse.de>
+Cc: James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
+       discuss@x86-64.org
+In-Reply-To: <200702121514.25449.ak@suse.de>
+References: <200702101242.48467.ak@suse.de>
+	 <Pine.LNX.4.64.0702120907001.23639@d.namei> <200702121514.25449.ak@suse.de>
+Content-Type: text/plain
+Date: Wed, 14 Feb 2007 17:53:28 +1100
+Message-Id: <1171436009.19842.139.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Dec 2006 19:43:17 +0300 Vitaly Wool <vitalywool@gmail.com> wrote:
+On Mon, 2007-02-12 at 15:14 +0100, Andi Kleen wrote:
+> On Monday 12 February 2007 15:11, James Morris wrote:
+> > On Sat, 10 Feb 2007, Andi Kleen wrote:
+> > 
+> > > - lguest
+> > >   * still seems heavily in development. Not sure it will be ready in time.
+> > 
+> > How would you define ready?
+> 
+> Used by at least some people for something, got some real world testing, more review.
 
-        ^^^^^^^^^^^  Sorry.
+Well, I only have bug reports from around half a dozen people, so I'm
+not sure what that says about my userbase (for most people it should
+simply work).
 
-> Hello Andrew,
-> 
-> probing for UART_BUG_TXEN in 8250 driver leads to weird effects on some ARM boards (pnx4008 for instance). That is, the driver detects  UART_BUG_TXEN (though it apparently shouldn't) and it leads to symbol loss in console on input (i. e. you input 'a' and you get nothing, then you input 'b' and you get 'a', then you input 'c' and get 'b' and so on).
-> 
-> The patch below makes this very probing a configuration option turned on by default.
-> 
->  drivers/serial/8250.c  |    5 ++++-
->  drivers/serial/Kconfig |   10 ++++++++++
->  2 files changed, 14 insertions(+), 1 deletion(-)
-> 
-> Signed-off-by: Vitaly Wool <vitalywool@gmail.com>
-> 
-> diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-> index 51f3c73..cf3eb31 100644
-> --- a/drivers/serial/8250.c
-> +++ b/drivers/serial/8250.c
-> @@ -1645,6 +1645,7 @@ static int serial8250_startup(struct uar
->  
->  	serial8250_set_mctrl(&up->port, up->port.mctrl);
->  
-> +#ifndef CONFIG_SERIAL_8250_DONT_TEST_BUG_TXEN
->  	/*
->  	 * Do a quick test to see if we receive an
->  	 * interrupt when we enable the TX irq.
-> @@ -1660,7 +1661,9 @@ static int serial8250_startup(struct uar
->  			pr_debug("ttyS%d - enabling bad tx status workarounds\n",
->  				 port->line);
->  		}
-> -	} else {
-> +	} else
-> +#endif
-> +	{
->  		up->bugs &= ~UART_BUG_TXEN;
->  	}
->  
-> diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
-> index 2978c09..7efcaf3 100644
-> --- a/drivers/serial/Kconfig
-> +++ b/drivers/serial/Kconfig
-> @@ -223,6 +223,16 @@ config SERIAL_8250_DETECT_IRQ
->  
->  	  If unsure, say N.
->  
-> +config SERIAL_8250_DONT_TEST_BUG_TXEN
-> +	bool "Don't probe for TXEN bug"
-> +	depends on SERIAL_8250_EXTENDED
-> +	help
-> +	  Say Y here if you don't want the kernel to probe for TXEN bug
-> +	  on your serial port and try to workaround it. It might lead to
-> +	  character loss on some boards, though this is quite a rare case.
-> +
-> +	  If unsure, say N.
-> +
->  config SERIAL_8250_RSA
->  	bool "Support RSA serial ports"
->  	depends on SERIAL_8250_EXTENDED
+lguest.ozlabs.org got 3000 hits in the last 12 hours, and they can't all
+be bots 8)  Mind you, in that time only 26 unique IP addresses visited
+the patches/ repository, so maybe they are...
 
-I think this should be a module option/boot parameter, not a config-time
-option.
+As to "insufficient review", the reviews so far have cleaned up some
+code (great!) and found 3 actual bugs, none real showstoppers and all
+now fixed:
+
+ (1) race of initialization code vs. cpu hotplug.
+ (2) block driver being suboptimal
+ (3) network driver sending crap for inter-guest sendfile.
+
+In addition, you counted not handling TSC change as a bug, so I tore
+that code out, instead of leaving a FIXME.  During the cleanup patches I
+did introduce (and then fix) another bug, it is true.
+
+I would not describe it as "heavily in development"; I really think it's
+at the stage where it can benefit from being in-tree.
+
+> > It's currently useful and stable, 
+> 
+> How do you know?
+
+Please don't harass my users.  That's my job!
+
+Cheers!
+Rusty.
 
