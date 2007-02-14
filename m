@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932532AbXBNWVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932583AbXBNW0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932532AbXBNWVm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 17:21:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932583AbXBNWVm
+	id S932583AbXBNW0i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 17:26:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932606AbXBNW0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 17:21:42 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:47340 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932532AbXBNWVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 17:21:41 -0500
-Date: Wed, 14 Feb 2007 16:21:38 -0600
-From: Michael Halcrow <mhalcrow@us.ibm.com>
-To: David Howells <dhowells@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
-       herbert.xu@redhat.com, linux-kernel@vger.kernel.org, davej@redhat.com,
-       arjan@infradead.org, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing
-Message-ID: <20070214222138.GB4884@us.ibm.com>
-Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
-References: <20070214213200.GA4852@us.ibm.com> <Pine.LNX.4.64.0702141121030.20368@woody.linux-foundation.org> <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com> <7291.1171482057@redhat.com> <9513.1171490377@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9513.1171490377@redhat.com>
-User-Agent: Mutt/1.5.9i
+	Wed, 14 Feb 2007 17:26:38 -0500
+Received: from [69.90.0.18] ([69.90.0.18]:53103 "EHLO mtl.rackplans.net"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S932583AbXBNW0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 17:26:38 -0500
+Date: Wed, 14 Feb 2007 17:26:20 -0500 (EST)
+From: Gerhard Mack <gmack@innerfire.net>
+X-X-Sender: gmack@mtl.rackplans.net
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.20 trouble with Nvidia MCP51 Ethernet Controller
+Message-ID: <Pine.LNX.4.64.0702141719070.3884@mtl.rackplans.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 14, 2007 at 09:59:37PM +0000, David Howells wrote:
-> Michael Halcrow <mhalcrow@us.ibm.com> wrote:
-> 
-> > Right now, eCryptfs just delegates its modular exponentiation
-> > operations to a userspace daemon. If RSA ever finds its way into the
-> > kernel, I might tweak eCryptfs to use that instead for some of the
-> > public key operations.
-> 
-> Am I right in thinking that RSA uses many of the same MPI lib bits
-> as DSA?
+hello,
 
-I would imagine so. Assuming we aren't having to hassle with key
-generation (eCryptfs takes care of that in userspace), then RSA is,
-more or less, a^b mod c (mpi_mulpowm() and friends).
+I just got a new motherboard with an MCP51. The kernel detects it but then 
+I have no eth0 device.
 
-Mike
+from lspci:
+00:14.0 Bridge: nVidia Corporation MCP51 Ethernet Controller (rev a3)
+
+dmesg shows:
+forcedeth.c: Reverse Engineered nForce ethernet driver. Version 0.59.
+ACPI: PCI Interrupt Link [APCH] enabled at IRQ 23
+ACPI: PCI Interrupt 0000:00:14.0[A] -> Link [APCH] -> GSI 23 (level, low) 
+-> IRQ 23
+PCI: Setting latency timer of device 0000:00:14.0 to 64
+forcedeth: using HIGHDMA
+eth0: forcedeth.c: subsystem: 01043:816a bound to 0000:00:14.0
+
+mgerhard:~# ifup eth0
+SIOCSIFADDR: No such device
+eth0: ERROR while getting interface flags: No such device
+SIOCSIFNETMASK: No such device
+SIOCSIFBRDADDR: No such device
+eth0: ERROR while getting interface flags: No such device
+eth0: ERROR while getting interface flags: No such device
+Failed to bring up eth0.
+
+
+--
+Gerhard Mack
+
+gmack@innerfire.net
+
+<>< As a computer I find your faith in technology amusing.
