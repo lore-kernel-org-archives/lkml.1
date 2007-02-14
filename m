@@ -1,61 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932442AbXBNS5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932447AbXBNS7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932442AbXBNS5O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 13:57:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932447AbXBNS5O
+	id S932447AbXBNS7g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 13:59:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932451AbXBNS7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 13:57:14 -0500
-Received: from omx1-ext.sgi.com ([192.48.179.11]:43322 "EHLO omx1.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932442AbXBNS5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 13:57:13 -0500
-Date: Wed, 14 Feb 2007 10:57:00 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Nick Piggin <npiggin@suse.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: [patch] mm: NUMA replicated pagecache
-In-Reply-To: <20070213060924.GB20644@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0702141052350.975@schroedinger.engr.sgi.com>
-References: <20070213060924.GB20644@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 14 Feb 2007 13:59:36 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:35613 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932447AbXBNS7f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 13:59:35 -0500
+Date: Wed, 14 Feb 2007 18:59:07 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, openib-general@openib.org, hch@infradead.org,
+       raisch@de.ibm.com, h.carstens@de.ibm.com
+Subject: Re: [PATCH 2.6.21-rc1 1/5] ehca: reworked irq handler to avoid/reduce missed irq events
+Message-ID: <20070214185907.GA15105@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
+	Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, openib-general@openib.org,
+	raisch@de.ibm.com, h.carstens@de.ibm.com
+References: <200702141740.48286.hnguyen@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702141740.48286.hnguyen@linux.vnet.ibm.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Feb 2007, Nick Piggin wrote:
+On Wed, Feb 14, 2007 at 05:40:47PM +0100, Hoang-Nam Nguyen wrote:
+> Hi,
+> here is a patch for ehca with the reworked irq handler.
+> Thanks
+> Nam
 
-> Just tinkering around with this and got something working, so I'll see
-> if anyone else wants to try it.
-> 
-> Not proposing for inclusion, but I'd be interested in comments or results.
-
-We would be very interested in such a feature. We have another hack that 
-shows up to 40% performance improvements.
-
-> At the moment the code is a bit ugly, but it won't take much to make it a
-> completely standalone ~400 line module with just a handful of hooks into
-> the core mm. So if anyone really wants it, it could be quite realistic to
-> get into an includable form.
-
-Would be great but I am a bit skeptical regarding the locking and the 
-additonal overhead moving back and forth between replications and non 
-replicated page state.
-
-> At some point I did take a look at Dave Hansen's page replication patch for
-> ideas, but didn't get far because he was doing a per-inode scheme and I was
-> doing per-page. No judgments on which approach is better, but I feel this
-> per-page patch is quite neat.
-
-Definitely looks better.
-
-> - Would be nice to transfer master on reclaim. This should be quite easy,
->   must transfer relevant flags, and only if !PagePrivate (which reclaim
->   takes care of).
-
-Transfer master? Meaning you need to remove the replicated pages? Removing 
-of replicated pages should transfer reference bit?
-
-> - Should go nicely with lockless pagecache, but haven't merged them yet.
-
-When is that going to happen? Soon I hope?
+This looks okay to me (and sorry for new replying earlier to you private
+mail)
