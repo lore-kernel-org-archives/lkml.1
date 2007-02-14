@@ -1,124 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932517AbXBNUCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932527AbXBNUD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932517AbXBNUCv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 15:02:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932526AbXBNUCv
+	id S932527AbXBNUD6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 15:03:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932529AbXBNUD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 15:02:51 -0500
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:4697 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932517AbXBNUCu convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 15:02:50 -0500
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 8/28] Modules: only add drivers/ direcory if needed
-Date: Wed, 14 Feb 2007 21:03:39 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
+	Wed, 14 Feb 2007 15:03:58 -0500
+Received: from kanga.kvack.org ([66.96.29.28]:50999 "EHLO kanga.kvack.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932528AbXBNUD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 15:03:57 -0500
+Date: Wed, 14 Feb 2007 15:03:47 -0500
+From: Benjamin LaHaise <bcrl@kvack.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 06/11] syslets: core, documentation
+Message-ID: <20070214200347.GK32271@kvack.org>
+References: <20060529212109.GA2058@elte.hu> <20070213142042.GG638@elte.hu> <20070214103655.GB4241@flint.arm.linux.org.uk> <20070214105039.GC6801@elte.hu> <20070214110419.GC4241@flint.arm.linux.org.uk> <Pine.LNX.4.64.0702140919200.7480@alien.or.mcafeemobile.com> <20070214180344.GI32271@kvack.org> <Pine.LNX.4.64.0702141135390.7796@alien.or.mcafeemobile.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702142103.40471.m.kozlowski@tuxland.pl>
+In-Reply-To: <Pine.LNX.4.64.0702141135390.7796@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, 
+On Wed, Feb 14, 2007 at 11:45:23AM -0800, Davide Libenzi wrote:
+> Sort of, except that the whole thing can complete syncronously w/out 
+> context switches. The real point of the whole fibrils/syslets solution is 
+> that kind of optimization. The solution is as good as it is now, for 
 
-> @@ -1163,7 +1155,8 @@ static void mod_kobject_remove(struct module *mod)
->  {
->         module_remove_modinfo_attrs(mod);
->         module_param_sysfs_remove(mod);
-> -       kobject_unregister(mod->mkobj.drivers_dir);
-> +       if (mod->mkobj.drivers_dir)
-> +               kobject_unregister(mod->mkobj.drivers_dir);
->  
->         kobject_unregister(&mod->mkobj.kobj);
->  }
+Except that You Can't Do That (tm).  Try to predict beforehand if the code 
+path being followed will touch the FPU or SSE state, and you can't.  There is 
+no way to avoid the context switch overhead, as you have to preserve things 
+so that whatever state is being returned to the user is as it was.  Unless 
+you plan on resetting the state beforehand, but then you have to call into 
+arch specific code that ends up with a comparable overhead to the context 
+switch.
 
-This change looks superfluous on top of patch 1/28 where you'll find
-
- void kobject_unregister(struct kobject * kobj)
- {
-+       if (!kobj)
-+               return;
-
-I went a bit further and prepared a patch removing all redundant
-kobject_unregister argument checks.
-
-
-
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-
- drivers/base/class.c  |    3 +--
- fs/partitions/check.c |    9 +++------
- kernel/module.c       |    8 ++------
- 3 files changed, 6 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/base/class.c b/drivers/base/class.c
-index 96def1d..1417e5c 100644
---- a/drivers/base/class.c
-+++ b/drivers/base/class.c
-@@ -163,8 +163,7 @@ int class_register(struct class * cls)
- void class_unregister(struct class * cls)
- {
- 	pr_debug("device class '%s': unregistering\n", cls->name);
--	if (cls->virtual_dir)
--		kobject_unregister(cls->virtual_dir);
-+	kobject_unregister(cls->virtual_dir);
- 	remove_class_attrs(cls);
- 	subsystem_unregister(&cls->subsys);
- }
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index ac32a2e..22d38ff 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -358,8 +358,7 @@ void delete_partition(struct gendisk *disk, int part)
- 	p->ios[0] = p->ios[1] = 0;
- 	p->sectors[0] = p->sectors[1] = 0;
- 	sysfs_remove_link(&p->kobj, "subsystem");
--	if (p->holder_dir)
--		kobject_unregister(p->holder_dir);
-+	kobject_unregister(p->holder_dir);
- 	kobject_uevent(&p->kobj, KOBJ_REMOVE);
- 	kobject_del(&p->kobj);
- 	kobject_put(&p->kobj);
-@@ -603,10 +602,8 @@ void del_gendisk(struct gendisk *disk)
- 	disk->stamp = 0;
-
- 	kobject_uevent(&disk->kobj, KOBJ_REMOVE);
--	if (disk->holder_dir)
--		kobject_unregister(disk->holder_dir);
--	if (disk->slave_dir)
--		kobject_unregister(disk->slave_dir);
-+	kobject_unregister(disk->holder_dir);
-+	kobject_unregister(disk->slave_dir);
- 	if (disk->driverfs_dev) {
- 		char *disk_name = make_block_name(disk);
- 		sysfs_remove_link(&disk->kobj, "device");
-diff --git a/kernel/module.c b/kernel/module.c
-index 8a94e05..53f10e8 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -1174,11 +1174,8 @@ static void mod_kobject_remove(struct module *mod)
- {
- 	module_remove_modinfo_attrs(mod);
- 	module_param_sysfs_remove(mod);
--	if (mod->mkobj.drivers_dir)
--		kobject_unregister(mod->mkobj.drivers_dir);
--	if (mod->holders_dir)
--		kobject_unregister(mod->holders_dir);
--
-+	kobject_unregister(mod->mkobj.drivers_dir);
-+	kobject_unregister(mod->holders_dir);
- 	kobject_unregister(&mod->mkobj.kobj);
- }
-
---
-1.4.4.4
-
-Regards,
-
-	Mariusz Koz³owski
+		-ben
+-- 
+"Time is of no importance, Mr. President, only life is important."
+Don't Email: <dont@kvack.org>.
