@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932218AbXBNBMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750857AbXBNBQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932218AbXBNBMf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 20:12:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932217AbXBNBMf
+	id S1750857AbXBNBQR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 20:16:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbXBNBQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 20:12:35 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:43547 "EHLO mx1.redhat.com"
+	Tue, 13 Feb 2007 20:16:17 -0500
+Received: from gw.goop.org ([64.81.55.164]:41593 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932218AbXBNBMf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 20:12:35 -0500
-Message-ID: <45D26222.9040504@redhat.com>
-Date: Tue, 13 Feb 2007 20:13:06 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	id S1750857AbXBNBQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 20:16:17 -0500
+Message-ID: <45D262DC.2020008@goop.org>
+Date: Tue, 13 Feb 2007 17:16:12 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-To: Daniel Barkalow <barkalow@iabervon.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, Dave Jones <davej@redhat.com>
-Subject: Re: Is this bug too obvious?
-References: <45D25ABE.5080400@redhat.com> <Pine.LNX.4.64.0702132000220.20138@iabervon.org>
-In-Reply-To: <Pine.LNX.4.64.0702132000220.20138@iabervon.org>
+To: Zachary Amsden <zach@vmware.com>
+CC: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [patch 10/21] Xen-paravirt: Name: dont export paravirt_ops structure,
+ do individual functions
+References: <20070213221729.772002682@goop.org> <20070213221830.238235953@goop.org> <45D260A2.4010200@vmware.com>
+In-Reply-To: <45D260A2.4010200@vmware.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Barkalow wrote:
-> On Tue, 13 Feb 2007, Chuck Ebbert wrote:
-> 
->> drivers/usb/net/usbnet.c:
->>
->> int
->> usbnet_probe (struct usb_interface *udev, const struct usb_device_id *prod)
->> {
->>         struct usbnet                   *dev;
->>         struct net_device               *net;
->>         struct usb_host_interface       *interface;
->>         struct driver_info              *info;
->>         struct usb_device               *xdev;
->>         int                             status;
->>
->> 	...
->>
->>         net = alloc_etherdev(sizeof(*dev));
->>                                     ^^^^
->> 	                            *net ???
-> 
-> No, alloc_etherdev takes the size of the private data, which, in this 
-> case, is *dev.
-> 
-> 	-Daniel
-> *This .sig left intentionally blank*
+Zachary Amsden wrote:
+> This turned out really hideous looking to me.  Can't we split the
+> struct into GPL'd and non-GPL'd functions instead?  We still have the
+> same granularity, and none of this function call to an indirect
+> function call nonsense. 
 
-OK I'll keep looking for the cause of the oops then:
+It's not pretty, but I think having paravirt_ops and paravirt_ops_gpl
+would be worse.  I'd be sympathetic to the idea of splitting
+paravirt_ops up by function groupings, but splitting it by license seems
+like a maintenance headache with no real upside.  Besides, patching will
+solve everything (tm).
 
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=228231
-
+    J
