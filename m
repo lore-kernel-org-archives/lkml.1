@@ -1,55 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932583AbXBNW0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932613AbXBNW2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932583AbXBNW0i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 17:26:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932606AbXBNW0i
+	id S932613AbXBNW2A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 17:28:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932611AbXBNW2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 17:26:38 -0500
-Received: from [69.90.0.18] ([69.90.0.18]:53103 "EHLO mtl.rackplans.net"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S932583AbXBNW0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 17:26:38 -0500
-Date: Wed, 14 Feb 2007 17:26:20 -0500 (EST)
-From: Gerhard Mack <gmack@innerfire.net>
-X-X-Sender: gmack@mtl.rackplans.net
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.20 trouble with Nvidia MCP51 Ethernet Controller
-Message-ID: <Pine.LNX.4.64.0702141719070.3884@mtl.rackplans.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 14 Feb 2007 17:28:00 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:52211 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932610AbXBNW17 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 17:27:59 -0500
+Subject: Re: [PATCH 2.6.21-rc1] ehea: dynamic add / remove port
+From: John Rose <johnrose@austin.ibm.com>
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Christoph Raisch <RAISCH@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <MEDER@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>, stefan.roscher@de.ibm.com,
+       netdev <netdev@vger.kernel.org>, Nathan Fontenot <nfont@austin.ibm.com>
+In-Reply-To: <200702141536.28665.ossthema@de.ibm.com>
+References: <200702141536.28665.ossthema@de.ibm.com>
+Content-Type: text/plain
+Message-Id: <1171491906.30473.3.camel@sinatra.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Ximian Evolution 1.4.6 (1.4.6-2) 
+Date: Wed, 14 Feb 2007 16:25:06 -0600
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hello,
+Hi-
 
-I just got a new motherboard with an MCP51. The kernel detects it but then 
-I have no eth0 device.
+A few high level comments, then some really insignificant ones.
 
-from lspci:
-00:14.0 Bridge: nVidia Corporation MCP51 Ethernet Controller (rev a3)
+First, is there a reason why we shouldn't have a sysfs entry/kobject for
+each logical port?  How is it possible to determine, from the adapter
+sysfs directory, the current number of ports for that adapter?  A port
+sysfs directory could include attributes like the OF path to the port,
+the state of the port, etc etc.
 
-dmesg shows:
-forcedeth.c: Reverse Engineered nForce ethernet driver. Version 0.59.
-ACPI: PCI Interrupt Link [APCH] enabled at IRQ 23
-ACPI: PCI Interrupt 0000:00:14.0[A] -> Link [APCH] -> GSI 23 (level, low) 
--> IRQ 23
-PCI: Setting latency timer of device 0000:00:14.0 to 64
-forcedeth: using HIGHDMA
-eth0: forcedeth.c: subsystem: 01043:816a bound to 0000:00:14.0
+Second, the probe and remove functions do not communicate whether an add
+or remove was successful.  Combine this with the lack of port
+information in the adapter sysfs directory, and the userspace tool has
+no way of verifying a dynamic add/remove.
 
-mgerhard:~# ifup eth0
-SIOCSIFADDR: No such device
-eth0: ERROR while getting interface flags: No such device
-SIOCSIFNETMASK: No such device
-SIOCSIFBRDADDR: No such device
-eth0: ERROR while getting interface flags: No such device
-eth0: ERROR while getting interface flags: No such device
-Failed to bring up eth0.
++		dn_log_port_id = (u32*)get_property(eth_dn, "ibm,hea-port-no",
++						    NULL);
++		if (!dn_log_port_id) {
++			ehea_error("bad device node: dn_log_port_id=%p",
++				   dn_log_port_id);
 
+Wouldn't this print NULL every time for dn_log_port_id?  Would the OF
+path for eth_dn make for a more useful error msg?
 
---
-Gerhard Mack
++		ehea_info("%s -> logial port id #%d",
 
-gmack@innerfire.net
+Spelling :)
 
-<>< As a computer I find your faith in technology amusing.
+ 	if (port_setup_ok)
+-		ret = 0;	/* At least some ports are setup correctly */
++		return 0;	/* At least some ports are setup correctly */
+ 	else
+-		ret = -EINVAL;
++		return -EINVAL;
+
+The else is unnecessary.
+
+ static int __devexit ehea_remove(struct ibmebus_dev *dev)
+ {
+ 	struct ehea_adapter *adapter = dev->ofdev.dev.driver_data;
+ 	u64 hret;
+ 	int i;
+ 
+-	for (i = 0; i < adapter->num_ports; i++)
++	for (i = 0; i < EHEA_MAX_PORTS; i++)
+ 		if (adapter->port[i]) {
+ 			ehea_shutdown_single_port(adapter->port[i]);
+ 			adapter->port[i] = NULL;
+ 		}
+
+Else break?
+
+Thanks-
+John
+
