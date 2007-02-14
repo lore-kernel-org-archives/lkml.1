@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932228AbXBNMjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932234AbXBNMkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932228AbXBNMjd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 07:39:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932230AbXBNMjd
+	id S932234AbXBNMkF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 07:40:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932229AbXBNMkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 07:39:33 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44125 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932228AbXBNMjd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 07:39:33 -0500
-Date: Wed, 14 Feb 2007 12:52:16 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Pavel Machek <pavel@ucw.cz>, Zachary Amsden <zach@vmware.com>,
-       Andi Kleen <ak@muc.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH 9/11] Panic delay fix
-Message-ID: <20070214125216.2befda78@localhost.localdomain>
-In-Reply-To: <1170880572.11736.4.camel@localhost.localdomain>
-References: <200702060353.l163rUmj000771@zach-dev.vmware.com>
-	<20070206122729.GC47229@muc.de>
-	<45C8FA2D.6010706@vmware.com>
-	<20070207123552.GD4481@ucw.cz>
-	<1170880572.11736.4.camel@localhost.localdomain>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Feb 2007 07:40:04 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:34547 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932232AbXBNMkC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 07:40:02 -0500
+Date: Wed, 14 Feb 2007 13:37:55 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system call support
+Message-ID: <20070214123755.GC23857@elf.ucw.cz>
+References: <20060529212109.GA2058@elte.hu> <20070213142010.GA638@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070213142010.GA638@elte.hu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> We'd have to audit and figure out what udelays are for hardware and
-> which are not, but the evidence is that the vast majority of them are
-> for hardware and not needed for virtualization.
+Hi!
+  
+> The boring details:
+> 
+> Syslets consist of 'syslet atoms', where each atom represents a single 
+> system-call. These atoms can be chained to each other: serially, in 
+> branches or in loops. The return value of an executed atom is checked 
+> against the condition flags. So an atom can specify 'exit on nonzero' or 
+> 'loop until non-negative' kind of constructs.
 
-Which is irrelevant since the hardware drivers won't be used in a
-virtualised environment with any kind of performance optimisation.
+Ouch, yet another interpretter in kernel :-(. Can we reuse acpi or
+something?
 
-> Changing udelay to "hardware_udelay" or something all over the kernel
-> would have delayed the paravirt_ops merge by an infinite amount 8)
-
-paravirt_ops has no business fiddling with udelay. Not only does it
-create more code bloat and stalls in relatively fast paths but its
-optimising the wrong thing anyway.
-
-My performance sucks -> optimise out udelay is the wrong approach. My
-performance sucks, switch to the virtual block driver is the right
-approach, and a virtual block driver won't be using udelay anyway
-
-Alan
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
