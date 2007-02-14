@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751008AbXBNL5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751306AbXBNMUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751008AbXBNL5k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 06:57:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbXBNL5k
+	id S1751306AbXBNMUH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 07:20:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbXBNMUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 06:57:40 -0500
-Received: from rere.qmqm.pl ([86.63.132.164]:40451 "EHLO rere.qmqm.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751008AbXBNL5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 06:57:40 -0500
-Date: Wed, 14 Feb 2007 12:57:22 +0100
-From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
-To: netfilter-devel@lists.netfilter.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.20 14/14] nfnetlink_log: micro-optimization: inst->skb != NULL in __nfulnl_send()
-Message-ID: <20070214115722.GA28422@rere.qmqm.pl>
-References: <20070212003738.GA8262@rere.qmqm.pl> <20070212202052.GA28704@rere.qmqm.pl> <20070212202319.GE28704@rere.qmqm.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+	Wed, 14 Feb 2007 07:20:07 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56844 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751306AbXBNMUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 07:20:05 -0500
+Date: Wed, 14 Feb 2007 13:17:00 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Jakub Jelinek <jakub@redhat.com>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ANN] Userspace M-on-N threading model implementation. Alpha release.
+Message-ID: <20070214121700.GB23857@elf.ucw.cz>
+References: <66910A579C9312469A7DF9ADB54A8B7D5C2B90@exchange.ZeugmaSystems.local> <45C362D2.2040407@tmr.com> <1170516376.3073.1015.camel@laptopd505.fenrus.org> <45C63E30.4010106@tmr.com> <20070204202053.GC20307@devserv.devel.redhat.com> <45C65353.5000602@tmr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070212202319.GE28704@rere.qmqm.pl>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <45C65353.5000602@tmr.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch updated to apply after a new version of 13/14:
+Hi!
 
-No other function calls __nfulnl_send() with inst->skb == NULL than nfulnl_timer().
+> >>How does that work? Switching between kernel threads requires going into 
+> >>the kernel, user level thread switches are all done in user mode.
+> >>
+> >>Do you have some way to change o/s threads w/o going into the kernel?
+> >>    
+> >
+> >But going into kernel is not very expensive on Linux.
+> >
+> >On the other side, the overhead you need to add for every single syscall
+> >that might block for the M:N threads and the associated complications
+> >which make it far harder to conform to POSIX IMHO far outweight the costs
+> >of going into the kernel for a context switch.
+> 
+> That really wasn't my question, Arjan said that switching real threads 
+> wasn't a context switch in the hardware sense, and I was asking if I 
+> missed something. It may be cheap, but it would seem to be a context 
+> switch none-the-less.
 
-Signed-off-by: Micha³ Miros³aw <mirq-linux@rere.qmqm.pl>
+It is not reloading %cr3.
 
---- linux-2.6.20/net/netfilter/nfnetlink_log.c.12	2007-02-14 12:27:09.000000000 +0100
-+++ linux-2.6.20/net/netfilter/nfnetlink_log.c	2007-02-14 12:53:04.000000000 +0100
-@@ -373,9 +373,6 @@ __nfulnl_send(struct nfulnl_instance *in
- {
- 	int status;
- 
--	if (!inst->skb)
--		return 0;
--
- 	if (inst->qlen > 1)
- 		inst->lastnlh->nlmsg_type = NLMSG_DONE;
- 
-@@ -399,7 +396,8 @@ static void nfulnl_timer(unsigned long d
- 	UDEBUG("timer function called, flushing buffer\n");
- 
- 	spin_lock_bh(&inst->lock);
--	__nfulnl_send(inst);
-+	if (inst->skb)
-+		__nfulnl_send(inst);
- 	spin_unlock_bh(&inst->lock);
- 	instance_put(inst);
- }
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
