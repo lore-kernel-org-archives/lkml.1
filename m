@@ -1,126 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964782AbXBNVoG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964780AbXBNVoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964782AbXBNVoG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 16:44:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964780AbXBNVoG
+	id S964780AbXBNVoT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 16:44:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964779AbXBNVoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 16:44:06 -0500
-Received: from mailhub2.otago.ac.nz ([139.80.64.247]:38982 "EHLO
-	mailhub2.otago.ac.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964779AbXBNVoE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 16:44:04 -0500
-Message-ID: <45D3829C.8050302@maths.otago.ac.nz>
-Date: Thu, 15 Feb 2007 10:43:56 +1300
-From: Greg Trounson <gregt@maths.otago.ac.nz>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
-MIME-Version: 1.0
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: AHCI - remove probing of ata2
-References: <45D25E37.1060106@maths.otago.ac.nz> <45D34B47.5090005@tmr.com>
-In-Reply-To: <45D34B47.5090005@tmr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Feb 2007 16:44:19 -0500
+Received: from kanga.kvack.org ([66.96.29.28]:52041 "EHLO kanga.kvack.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964780AbXBNVoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 16:44:17 -0500
+Date: Wed, 14 Feb 2007 16:44:09 -0500
+From: Benjamin LaHaise <bcrl@kvack.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 06/11] syslets: core, documentation
+Message-ID: <20070214214409.GM32271@kvack.org>
+References: <20070214103655.GB4241@flint.arm.linux.org.uk> <20070214105039.GC6801@elte.hu> <20070214110419.GC4241@flint.arm.linux.org.uk> <Pine.LNX.4.64.0702140919200.7480@alien.or.mcafeemobile.com> <20070214180344.GI32271@kvack.org> <Pine.LNX.4.64.0702141135390.7796@alien.or.mcafeemobile.com> <20070214200347.GK32271@kvack.org> <Pine.LNX.4.64.0702141206190.7796@alien.or.mcafeemobile.com> <20070214203438.GL32271@kvack.org> <Pine.LNX.4.64.0702141241030.7796@alien.or.mcafeemobile.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702141241030.7796@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Davidsen wrote:
-> Greg Trounson wrote:
->> At the risk of sounding like a "me too" post:
->>
->> I also have an Asus P5W-DH, with the following drives connected:
->>
->> SATA: ST3250820AS, connected to sata1
->> PATA: HL-DT-ST GSA-H12N, ATAPI DVD Writer, Primary master
->>
->> On bootup of 2.6.19 and 2.6.20, the kernel stalls for 1 minute when 
->> probing sata2, eventually giving up and continuing the boot process.  
->> There is no physical sata2 connector on the Motherboard, just solder 
->> lugs between sata1 and sata3.  From other users I understand this is 
->> really a Silicon Image SIL4723 SATA to 2-Port SATA splitter.  It is 
->> detected by the kernel as a disk, as below.
->>
->> The relevant part of the boot process looks like:
->> ...
->> libata version 2.00 loaded.
->> ahci 0000:00:1f.2: version 2.0
->> ACPI: PCI Interrupt 0000:00:1f.2[B] -> GSI 23 (level, low) -> IRQ 22
->> PCI: Setting latency timer of device 0000:00:1f.2 to 64
->> ahci 0000:00:1f.2: AHCI 0001.0100 32 slots 4 ports 3 Gbps 0xf impl 
->> SATA mode
->> ahci 0000:00:1f.2: flags: 64bit ncq led clo pio slum part
->> ata1: SATA max UDMA/133 cmd 0xF882A900 ctl 0x0 bmdma 0x0 irq 219
->> ata2: SATA max UDMA/133 cmd 0xF882A980 ctl 0x0 bmdma 0x0 irq 219
->> ata3: SATA max UDMA/133 cmd 0xF882AA00 ctl 0x0 bmdma 0x0 irq 219
->> ata4: SATA max UDMA/133 cmd 0xF882AA80 ctl 0x0 bmdma 0x0 irq 219
->> scsi0 : ahci
->> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
->> ata1.00: ATA-7, max UDMA/133, 488397168 sectors: LBA48 NCQ (depth 31/32)
->> ata1.00: ata1: dev 0 multi count 16
->> ata1.00: configured for UDMA/133
->> scsi1 : ahci
->> ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
->>
->> ...waits 20 seconds...
->>
->> ata2.00: qc timeout (cmd 0xec)
->> ata2.00: failed to IDENTIFY (I/O error, err_mask=0x104)
->>
->> ...waits 5 seconds...
->>
->> ata2: port is slow to respond, please be patient (Status 0x80)
->>
->> ...waits 30 seconds...
->>
->> ata2: port failed to respond (30 secs, Status 0x80)
->> ata2: COMRESET failed (device not ready)
->> ata2: hardreset failed, retrying in 5 secs
->>
->> ...waits 5 seconds...
->>
->> ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
->> ata2.00: ATA-6, max UDMA/133, 640 sectors: LBA
->> ata2.00: ata2: dev 0 multi count 1
->> ata2.00: configured for UDMA/133
->> scsi2 : ahci
->> ata3: SATA link down (SStatus 0 SControl 300)
->> ...
->>
->> A bit of poking about shows:
->>
->> fdisk -l /dev/sdb
->> Disk /dev/sdb: 0 MB, 327680 bytes
->> 255 heads, 63 sectors/track, 0 cylinders
->> Units = cylinders of 16065 * 512 = 8225280 bytes
->> Disk /dev/sdb doesn't contain a valid partition table
->>
->> So it presents itself as a 320k disk, filled with zeroes as below:
->>
->> dd if=/dev/sdb |hexdump
->> 0000000 0000 0000 0000 0000 0000 0000 0000 0000
->> *
->> 0050000
->>
->> 640+0 records in
->> 640+0 records out
->> 327680 bytes (328 kB) copied, 0.0106662 seconds, 30.7 MB/s
->>
-...
-> Is this 320k of cache memory, or in any way some actual storage on the 
-> system? Have you tried to write to it out of curiosity? Seems odd that 
-> it would be detected if there were nothing at all present, although 
-> obviously it could be artifact.
+On Wed, Feb 14, 2007 at 01:06:59PM -0800, Davide Libenzi wrote:
+> Bear with me Ben, and let's follow this up :) If you are in the middle of 
+> an MMX copy operation, inside the syscall, you are:
+> 
+> - Userspace, on task A, calls sys_async_exec
+> 
+> - Userspace in _not_ doing any MMX stuff before the call
 
-According to the product outline at 
-http://www.siliconimage.com/products/product.aspx?id=64, the Silicon Image port multiplier 
-has an EEPROM of unspecified size.
+That's an incorrect assumption.  Every task/thread in the system has FPU 
+state associated with it, in part due to the fact that glibc has to change 
+some of the rounding mode bits, making them different than the default from 
+a freshly initialized state.
 
-With the drive appearing as precisely 320K I wouldn't be surprised if this EEPROM is what 
-it was seeing.  Even though it's currently filled with zeros I dare not write to it 
-through fear of bricking the controller.
+> - We wake task B that will return to userspace
 
-Greg
+At which point task B has to touch the FPU in userspace as part of the 
+cleanup, which adds back in an expensive operation to the whole process.
 
+The whole context switch mechanism is a zero sum game -- everything that 
+occurs does so because it *must* be done.  If you remove something at one 
+point, then it has to occur somewhere else.
 
+My opinion of this whole thread is that it implies that our thread creation 
+and/or context switch is too slow.  If that is the case, improve those 
+elements first.  At least some of those optimizations have to be done in 
+hardware on x86, while on other platforms are probably unnecessary.
 
+Fwiw, there are patches floating around that did AIO via kernel threads 
+for file descriptors that didn't implement AIO (and remember: kernel thread 
+context switches are cheaper than userland thread context switches).  At 
+least take a stab at measuring what the performance differences are and 
+what optimizations are possible before prematurely introducing a new "fast" 
+way of doing things that adds a bunch more to maintain.
+
+		-ben
+-- 
+"Time is of no importance, Mr. President, only life is important."
+Don't Email: <dont@kvack.org>.
