@@ -1,47 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751536AbXBNKT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751545AbXBNKb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751536AbXBNKT3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 05:19:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbXBNKT3
+	id S1751545AbXBNKb3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 05:31:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbXBNKb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 05:19:29 -0500
-Received: from smtp.ocgnet.org ([64.20.243.3]:46932 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751181AbXBNKT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 05:19:28 -0500
-Date: Wed, 14 Feb 2007 19:17:19 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Thomas Meyer <thomas@m3y3r.de>
-Subject: Re: undefined symbol 'PS3_PS3AV'
-Message-ID: <20070214101719.GA25319@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Thomas Meyer <thomas@m3y3r.de>
-References: <45D2A835.7020606@m3y3r.de> <Pine.LNX.4.62.0702140955130.17463@pademelon.sonytel.be> <20070214090701.GA11088@linux-sh.org> <Pine.LNX.4.62.0702141100470.2949@pademelon.sonytel.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.62.0702141100470.2949@pademelon.sonytel.be>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 14 Feb 2007 05:31:29 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:36462 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750830AbXBNKb2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 05:31:28 -0500
+Subject: Re: [patch 05/11] syslets: core code
+From: Arjan van de Ven <arjan@infradead.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20070214100955.GA23702@2ka.mipt.ru>
+References: <20060529212109.GA2058@elte.hu> <20070213142035.GF638@elte.hu>
+	 <p73bqjxhcnl.fsf@bingen.suse.de> <20070213222443.GH22104@elte.hu>
+	 <20070213223017.GJ29492@one.firstfloor.org>
+	 <20070213224131.GK22104@elte.hu> <20070214091348.GB4665@2ka.mipt.ru>
+	 <20070214094629.GA6801@elte.hu>  <20070214100955.GA23702@2ka.mipt.ru>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Wed, 14 Feb 2007 11:30:55 +0100
+Message-Id: <1171449055.12771.254.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 14, 2007 at 11:02:06AM +0100, Geert Uytterhoeven wrote:
-> On Wed, 14 Feb 2007, Paul Mundt wrote:
-> > This would seem like a reasonable candidate for a 'depends on' instead of
-> > a select..
-> 
-> That's what we originally had. But for the user it's simler if he can just
-> enable ps3fb and/or ps3snd (sound driver not yet finished), which both select
-> PS3_PS3AV.
+> (at least on Debian
+> and Mandrake there is no locked memory limit by default).
 
-Why not just have PS3_PS3AV def_bool y if ps3fb || ps3snd? Or if that
-doesn't work, just place the PS3FB option in arch/powerpc/platforms/ps3/Kconfig.
+that sounds like 2 very large bugtraq-worthy bugs in these distros.. so
+bad a bug that I almost find it hard to believe...
 
-Of course if select obeyed the depends on, this wouldn't be a problem
-either..
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+
