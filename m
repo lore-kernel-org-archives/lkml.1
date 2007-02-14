@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751489AbXBNIuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751021AbXBNI4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751489AbXBNIuY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 03:50:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbXBNIuY
+	id S1751021AbXBNI4L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 03:56:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502AbXBNI4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 03:50:24 -0500
-Received: from smtp.nokia.com ([131.228.20.171]:21878 "EHLO
-	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751489AbXBNIuX convert rfc822-to-8bit (ORCPT
+	Wed, 14 Feb 2007 03:56:10 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:54265
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751021AbXBNI4K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 03:50:23 -0500
-Subject: Re: Pull UBI tree
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andreas Arnez <arnez@vnet.ibm.com>,
-       Frank Haverkamp <haver@vnet.ibm.com>
-In-Reply-To: <20070213160849.GB22748@infradead.org>
-References: <1171380852.17314.55.camel@sauron>
-	 <20070213160849.GB22748@infradead.org>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 14 Feb 2007 10:46:04 +0200
-Message-Id: <1171442764.17314.87.camel@sauron>
+	Wed, 14 Feb 2007 03:56:10 -0500
+Message-Id: <45D2DCB9.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.1 
+Date: Wed, 14 Feb 2007 08:56:09 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Cc: <virtualization@lists.osdl.org>, <xen-devel@lists.xensource.com>,
+       "Andi Kleen" <ak@muc.de>, "Andrew Morton" <akpm@osdl.org>,
+       "Chris Wright" <chrisw@sous-sol.org>, <linux-kernel@vger.kernel.org>,
+       "Zachary Amsden" <zach@vmware.com>
+Subject: [Xen-devel] Re: [patch 16/21] Xen-paravirt: Add code into
+	head.S to handle being booted by Xen
+References: <20070213221729.772002682@goop.org>
+ <20070213221830.707197267@goop.org> <20070213235424.GA1908@muc.de>
+ <45D25A56.1000706@goop.org>
+In-Reply-To: <45D25A56.1000706@goop.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 14 Feb 2007 08:45:35.0385 (UTC) FILETIME=[7E6AE090:01C75014]
-X-eXpurgate-Category: 1/0
-X-eXpurgate-ID: 149371::070214104406-3DBFEBB0-099A7F4E/0-0/0-1
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-13 at 16:08 +0000, Christoph Hellwig wrote:
-> Please send out a current version for review instead.  Last time I looked
-> at it lots of things looked quite over-engineered, and I'd like to check
-> if this has been improved since.
+>>> @@ -528,7 +532,7 @@ ENTRY(_stext)
+>>>  /*
+>>>   * BSS section
+>>>   */
+>>> -.section ".bss.page_aligned","w"
+>>> +.section ".bss.page_aligned"
+>>>     
+>>
+>> Why? 
+>>   
+>
+>I got complaints about section attribute mismatches without it.
 
-The patch is big and LKML does filtered the mail. Actually the one in
--mm tree is almost the latest version, it is OK to look at it as we did
-not do large changes.
+Then perhaps ... "aw" is meant?
 
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
+>>> +fastcall unsigned long long xen_pgd_val(pgd_t pgd)
+>>> +{
+>>> +	unsigned long long ret = pgd.pgd;
+>>> +	if (ret)
+>>> +		ret = machine_to_phys(XMADDR(ret)).paddr | 1;
+>>>     
+>>
+>> Why can they be 0 here anyways?
+>>
+>> Normally they are all considered undefined when not present
+>>   
+>
+>Not sure.
 
+This should probably get sync-ed up with the page table handling changes
+submitted to xen-devel yesterday. Using zero/non-zero tests in contexts
+like this was always broken; should check for _PAGE_PRESENT.
+
+Jan
