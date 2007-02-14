@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932389AbXBNQp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932395AbXBNQ7E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932389AbXBNQp4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 11:45:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932392AbXBNQpx
+	id S932395AbXBNQ7E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 11:59:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932396AbXBNQ7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 11:45:53 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:35046 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932380AbXBNQps (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 11:45:48 -0500
-Date: Wed, 14 Feb 2007 08:45:44 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Bill Lear <rael@zopyra.com>
-cc: Junio C Hamano <junkio@cox.net>, git@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] GIT 1.5.0
-In-Reply-To: <17875.9043.217255.863200@lisa.zopyra.com>
-Message-ID: <Pine.LNX.4.64.0702140839560.3604@woody.linux-foundation.org>
-References: <7vlkj1v3av.fsf@assigned-by-dhcp.cox.net> <17875.9043.217255.863200@lisa.zopyra.com>
+	Wed, 14 Feb 2007 11:59:04 -0500
+Received: from mta15.adelphia.net ([68.168.78.77]:52944 "EHLO
+	mta15.adelphia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932394AbXBNQ7D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 11:59:03 -0500
+Message-ID: <45D33FD4.8040606@adelphia.net>
+Date: Wed, 14 Feb 2007 11:59:00 -0500
+From: David G Hamblen <dhamblen@adelphia.net>
+Reply-To: dhamblen@adelphia.net
+User-Agent: Thunderbird 1.5.0.7 (X11/20060927)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Problem with 2.6.20 and hostap_cs (Netgear MA401)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I've got the ieee80211 and hostap code compiled as modules for my MA401 
+card,  and the system locks up when I insert the card.  No keyboard, no 
+sysrq, no logs after reboot, no nothing. The same configuration works 
+fine under 2.6.19.
 
+If I first insert my old 3com 3c589 card, then eject it and rmmod the 
+3c589_cs module, the insertion of the MA401 works completely. Preloading 
+the modules with insmod or modprobe doesn't help.
 
-On Wed, 14 Feb 2007, Bill Lear wrote:
-> 
-> This is enabled by passing the --enable=receive-pack to the
-> git-daemon (usually in the [x]?inetd configuration).
-> 
-> This has the benefit of:
+Was there a change in the pcmcia or networking initialization code 
+between 2.6.19 and 2.6.20?
 
-Before you list the benefits, you should always talk about the lack of 
-security! Let nobody enable it without realizing the dangers! Tell people 
-to _only_ do this inside a company firewall, and even then, only if you 
-trust everybody.
+Here are the relevant modules.
 
->   2) A less ugly URL to use: git://server/repo, instead of, say,
->      ssh+git://server/path/to/repos/repo.
+#/sbin/lsmod
+Module                  Size  Used by
+ieee80211_crypt_wep     5248  0
+hostap_cs              59220  3
+hostap                110852  1 hostap_cs
+ieee80211_crypt         5632  2 ieee80211_crypt_wep,hostap
+...
+pcmcia                 29280  1 hostap_cs
+firmware_class          9664  1 pcmcia
+yenta_socket           26892  4
+...
+rsrc_nonstatic         13248  1 yenta_socket
+pcmcia_core            39056  4 \ 
+hostap_cs,pcmcia,yenta_socket,rsrc_nonstatic
 
-Why do people use that silly "ssh+git://" format?
-
-It's a cogito thing. Native git has never done it, and only supports it 
-because cogito thought it must make sense.
-
-The native git ssh URL is exactly the normal ssh URL:
-
-	server:/path/to/repos/repo
-
-and if you really want to use the "xxx://" format, you might as well just 
-use
-
-	ssh://server/path/to/repos/repo
-
-which should also work fine. 
-
-		Linus
-
-PS. This is the commit message that  added "git+ssh://":
-
-	Author: Linus Torvalds <torvalds@osdl.org>
-	Date:   Fri Oct 14 17:14:56 2005 -0700
-	
-	    Support git+ssh:// and ssh+git:// URL
-	
-	    It seemed to be such a stupid syntax. It's both what "ssh://" means,
-	    and it's what not specifying a protocol at _all_ means.
-	
-	    But hey, since we already have two ways of saying "use ssh with
-	    pack-files", here's two more.
-
-so it was deemed stupid from the get-go, and isn't even some "legacy" 
-thing. It's purely a "cogito people thought it makes sense to point out 
-that it's _both_ native git _and_ ssh protocol".
