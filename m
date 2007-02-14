@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932227AbXBNMaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932226AbXBNMgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932227AbXBNMaY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 07:30:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932234AbXBNMaX
+	id S932226AbXBNMgs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 07:36:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932228AbXBNMgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 07:30:23 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:34915 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932228AbXBNMaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 07:30:22 -0500
-Date: Wed, 14 Feb 2007 13:00:40 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Theodore Tso <tytso@mit.edu>, Greg KH <greg@kroah.com>,
-       Nicolas Mailhot <nicolas.mailhot@laposte.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Free Linux Driver Development!
-Message-ID: <20070214120040.GA23857@elf.ucw.cz>
-References: <32793.192.54.193.51.1170248792.squirrel@rousalka.dyndns.org> <20070131201258.GB15128@kroah.com> <20070131230014.GD20514@thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070131230014.GD20514@thunk.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Wed, 14 Feb 2007 07:36:48 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44176 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932226AbXBNMgr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 07:36:47 -0500
+Date: Wed, 14 Feb 2007 12:49:01 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Zachary Amsden <zach@vmware.com>
+Cc: Andi Kleen <ak@muc.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH 9/11] Panic delay fix
+Message-ID: <20070214124901.2579bd12@localhost.localdomain>
+In-Reply-To: <45CAE87E.8070502@vmware.com>
+References: <200702060353.l163rUmj000771@zach-dev.vmware.com>
+	<20070206122729.GC47229@muc.de>
+	<45C8FA2D.6010706@vmware.com>
+	<d120d5000702070658l1c018565n34a6d8814a20184d@mail.gmail.com>
+	<45CA535D.1080700@vmware.com>
+	<20070208082443.GA9928@muc.de>
+	<45CAE87E.8070502@vmware.com>
+X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > This kind of offer has _always_ been there for out-of-tree GPL drivers.
-> > I have contacted many different groups and driver authors over the years
-> > to offer my help in trying to get their code into the mainline kernel.
-> > 
-> > Some take me up on the offer, others ignore it, and still others activly
-> > refuse to do so, saying they want to stay out-of-the tree (lirc is one
-> > of these examples...)
+> No, not that.  But the virtual keyboard I/O gets processed and converted 
+> to physical keyboard I/O when a keyboard is attached to a VM.  The 
+> result is that the virtual keyboard spinning out of control causes the 
+> physical keyboard to receive the same commands, far too rapidly.
 > 
-> I think the point is that if we are offering free development effort
-> to write a driver which goes into mainline, maybe we should provide
-> more than "providing rules and guidelines" so that people can spend
-> engineering $$$ to get the driver into mainline.   
-> 
-> More specifically, Dave said that it "seemed rude" to just take the
-> driver and send updates, but maybe the best way of dealing with
-> out-of-tree drivers like lirc is to treat the out-of-tree drivers as a
-> kind of spec release, and just have someone in the community forcibly
-> take the code, fix it up, and then get it merged.  Maybe it's being
-> "rude", but so is not responding to requests to get it merged.
+> So the keyboard blinks out of control and acts as if possessed by demons.
 
-So can I treat Shem's code as a spec release, and merge it? :-).
+Which is a good example of why breaking udelay is the wrong thing to do.
+I bet vmware keyboard emulation isn't the only problematic case.
 
-[Okay, so your position is more reasonable than expected, good; but
-signed-off process strongly discourages merging some code without
-author's cooperation.]
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Alan
