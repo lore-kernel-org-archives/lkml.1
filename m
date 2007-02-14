@@ -1,52 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932563AbXBNUXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932561AbXBNUYB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932563AbXBNUXq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 15:23:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932564AbXBNUXq
+	id S932561AbXBNUYB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 15:24:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932569AbXBNUYB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 15:23:46 -0500
-Received: from mail.screens.ru ([213.234.233.54]:54498 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932563AbXBNUXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 15:23:45 -0500
-Date: Wed, 14 Feb 2007 23:23:16 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@osdl.org, paulmck@us.ibm.com,
-       mingo@elte.hu, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl
-Subject: Re: [RFC PATCH(Experimental) 2/4] Revert changes to workqueue.c
-Message-ID: <20070214202316.GD301@tv-sign.ru>
-References: <20070214144031.GA15257@in.ibm.com> <20070214144229.GA19789@in.ibm.com> <20070214144305.GB19789@in.ibm.com> <20070214152458.GA5200@in.ibm.com>
+	Wed, 14 Feb 2007 15:24:01 -0500
+Received: from smtp-103-wednesday.nerim.net ([62.4.16.103]:1193 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932565AbXBNUYA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 15:24:00 -0500
+Date: Wed, 14 Feb 2007 21:24:17 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: LM Sensors <lm-sensors@lm-sensors.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] hwmon updates for 2.6.21
+Message-Id: <20070214212417.c61d5cfe.khali@linux-fr.org>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070214152458.GA5200@in.ibm.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/14, Srivatsa Vaddagiri wrote:
->
-> On Wed, Feb 14, 2007 at 08:13:05PM +0530, Gautham R Shenoy wrote:
-> > +	switch (action) {
-> > +	case CPU_UP_PREPARE:
-> > +		/* Create a new workqueue thread for it. */
-> > +		list_for_each_entry(wq, &workqueues, list) {
-> 
-> Its probably safe to take the workqueue (spin) lock here (and other
-> notifiers as well), before traversing the list.
+Linus,
 
-We can't fork() under spin lock.
+Please pull the hwmon subsystem updates for Linux 2.6.21 from:
 
-> 
-> > +			cwq = per_cpu_ptr(wq->cpu_wq, hotcpu);
-> > +			if (create_workqueue_thread(cwq, hotcpu)) {
-> > +				printk("workqueue for %i failed\n", hotcpu);
-> > +				return NOTIFY_BAD;
-> > +			}
-> > +		}
-> > +		break;
+git://jdelvare.pck.nerim.net/jdelvare-2.6 hwmon-for-linus
 
-Oleg.
+There is one new hardware monitoring driver (adm1029, for the
+relatively rare Analog Devices ADM1029 chip), support for one new chip
+(Winbond W83627DHG), PWM clock frequency control added to the it87
+driver, and individual cleanups and minor fixes to a dozen drivers.
 
+ Documentation/hwmon/it87            |   10 +
+ Documentation/hwmon/sysfs-interface |   15 +
+ Documentation/hwmon/w83627ehf       |   54 +++-
+ MAINTAINERS                         |    6 
+ drivers/hwmon/Kconfig               |   11 +
+ drivers/hwmon/Makefile              |    1 
+ drivers/hwmon/abituguru.c           |   30 +-
+ drivers/hwmon/adm1026.c             |    1 
+ drivers/hwmon/adm1029.c             |  508 +++++++++++++++++++++++++++++++++++
+ drivers/hwmon/f71805f.c             |   30 --
+ drivers/hwmon/hwmon.c               |    2 
+ drivers/hwmon/it87.c                |   84 ++++--
+ drivers/hwmon/lm70.c                |    2 
+ drivers/hwmon/lm78.c                |    6 
+ drivers/hwmon/lm85.c                |    8 -
+ drivers/hwmon/sis5595.c             |    6 
+ drivers/hwmon/via686a.c             |    5 
+ drivers/hwmon/vt1211.c              |   58 ++--
+ drivers/hwmon/w83627ehf.c           |   54 +++-
+ drivers/hwmon/w83627hf.c            |    5 
+ drivers/hwmon/w83781d.c             |   10 -
+ 21 files changed, 769 insertions(+), 137 deletions(-)
+ create mode 100644 drivers/hwmon/adm1029.c
+
+---------------
+
+Corentin Labbe:
+      hwmon: New driver for the Analog Devices ADM1029
+
+David Brownell:
+      hwmon: Use subsys_initcall
+
+David Hubbard:
+      hwmon/w83627ehf: Add support for the W83627DHG chip
+
+Hans de Goede:
+      hwmon/abituguru: Fix unchecked return status
+
+Jean Delvare:
+      hwmon/it87: Add PWM base frequency control
+      hwmon: Drop unused mutexes in two drivers
+      hwmon: Simplify the locking model of two drivers
+      hwmon: Cleanup a bogus legacy comment
+      hwmon/f71805f: Fix a race condition
+
+Juerg Haefliger:
+      hwmon/vt1211: Add probing of alternate config index port
+
+Ralf Baechle:
+      hwmon/lm70: Make lm70_remove a __devexit function
+
+Thanks,
+-- 
+Jean Delvare
