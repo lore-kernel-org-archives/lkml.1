@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932372AbXBNQeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932373AbXBNQlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932372AbXBNQeE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 11:34:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932375AbXBNQeE
+	id S932373AbXBNQlI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 11:41:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932378AbXBNQlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 11:34:04 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:17786 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932372AbXBNQeB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 11:34:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YrzSPIxI+U92j2QXKcb7J+9Xhiuw6Rjm7Symm/98k6s7+qwSO3DhS2o6a7mevw31L1LLroUl6TclWy1+bYSzycl98xBAmmxNNIxxkgL4GQsR+Qi5/bysKGkeTYaMAmS3ZjaqjaF3q8N4VGg/gzKA2JuuvzT3XxHBo4UYluAqW/M=
-Message-ID: <40f323d00702140833p36502b7dq198d5774224390ec@mail.gmail.com>
-Date: Wed, 14 Feb 2007 17:33:59 +0100
-From: "Benoit Boissinot" <bboissin@gmail.com>
-To: "Thibaud Hulin" <hulin.thibaud@wanadoo.fr>
-Subject: Re: no swap!
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <45D335A2.5080105@wanadoo.fr>
+	Wed, 14 Feb 2007 11:41:08 -0500
+Received: from ns2.suse.de ([195.135.220.15]:34897 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932373AbXBNQlH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 11:41:07 -0500
+Date: Wed, 14 Feb 2007 08:39:48 -0800
+From: Greg KH <greg@kroah.com>
+To: Alessandro Suardi <alessandro.suardi@gmail.com>
+Cc: Andreas Gruenbacher <agruen@suse.de>, torvalds@linux-foundation.org,
+       neilb@suse.de, viro@zeniv.linux.org.uk, hch@lst.de,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: Bug in current -git tree causing dbus and gnome to chew up cpu time
+Message-ID: <20070214163948.GA5846@kroah.com>
+References: <20070213195116.GA5181@kroah.com> <5a4c581d0702140147s7931bd63ief299780fa6963a5@mail.gmail.com> <200702140157.59252.agruen@suse.de> <5a4c581d0702140313q6d048eufa83d7b3d058311@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <45D335A2.5080105@wanadoo.fr>
+In-Reply-To: <5a4c581d0702140313q6d048eufa83d7b3d058311@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/14/07, Thibaud Hulin <hulin.thibaud@wanadoo.fr> wrote:
-> Hi !
+On Wed, Feb 14, 2007 at 12:13:52PM +0100, Alessandro Suardi wrote:
+> On 2/14/07, Andreas Gruenbacher <agruen@suse.de> wrote:
+> >Hi,
+> >
+> >I've described the problem and possible fixes in the "Re: [PATCH] Fix 
+> >d_path
+> >for lazy unmounts" thread, Message-Id: 200702140019.36378.agruen@suse.de.
+> 
+> Yes, I saw that. But there isn't any patch for me to test, and my
+> userspace remains broken. Please don't get me wrong - I'm
+> not bitching about this, but I will effectively not be able to test
+> newer snapshots until either a fix for this new bug gets in, or
+> the commit that introduced the bug gets reverted.
 
-distro related: check
-https://bugs.launchpad.net/ubuntu/+source/util-linux/+bug/66637 and
-all the duplicates
+The commit was reverted, the latest git tree should work just fine.
 
+thanks,
 
->
-> After compiling the kernel, I discover that my computer don't use the swap.
-> So, I try a cat .config |grep SW, and I got :
-> CONFIG_SWAP=y
-> # CONFIG_X86_VISWS is not set
-> CONFIG_X86_BSWAP=y
-> CONFIG_SUSPEND2_SWAP=y
-> CONFIG_SUSPEND2_REPLACE_SWSUSP=y
-> # CONFIG_AGP_SWORKS is not set
-> CONFIG_USB_AUERSWALD=m
->
-> This is my fstab :
-> # /etc/fstab: static file system information.
-> #
-> # <file system> <mount point>   <type>  <options>       <dump>  <pass>
-> proc            /proc           proc    defaults        0       0
-> # /dev/hda1 -- converted during upgrade to edgy
-> UUID=c0808eb9-790a-4a20-a3a2-26a4204d0fb2 / ext3
-> defaults,errors=remount-ro 0 1
-> # /dev/hda5 -- converted during upgrade to edgy
-> UUID=dfcca30e-3b78-4110-b578-9b8835ecf062 none swap sw 0 0
-> #/dev/hda5      none    swap    sw      0       0
-> /dev/hdc        /media/cdrom0   udf,iso9660 user,noauto     0       0
-> /dev/fd0        /media/floppy0  auto    rw,user,noauto  0       0
->
->
-> Is it a problem of LVM or RAID ? I don't understand that very well...
->
+greg k-h
