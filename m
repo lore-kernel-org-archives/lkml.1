@@ -1,36 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932433AbXBNS2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932439AbXBNSb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932433AbXBNS2e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 13:28:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932435AbXBNS2e
+	id S932439AbXBNSb0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 13:31:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932438AbXBNSbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 13:28:34 -0500
-Received: from cantor.suse.de ([195.135.220.2]:34085 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932433AbXBNS2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 13:28:33 -0500
-From: Andi Kleen <ak@suse.de>
-To: Jeff Dike <jdike@addtoit.com>
-Subject: Re: [PATCH] x86_64 ptrace32 needs PTRACE_OLDSETOPTIONS
-Date: Wed, 14 Feb 2007 19:28:09 +0100
-User-Agent: KMail/1.9.5
-Cc: akpm@osdl.org, patches@x86-64.org, linux-kernel@vger.kernel.org
-References: <20070214175539.GD5801@ccure.user-mode-linux.org>
-In-Reply-To: <20070214175539.GD5801@ccure.user-mode-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Feb 2007 13:31:25 -0500
+Received: from gundega.hpl.hp.com ([192.6.19.190]:50619 "EHLO
+	gundega.hpl.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932435AbXBNSbY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 13:31:24 -0500
+Date: Wed, 14 Feb 2007 10:29:32 -0800
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: perfmon@napali.hpl.hp.com, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net,
+       perfctr-devel@lists.sourceforge.net
+Subject: Re: 2.6.20 new perfmon code base + libpfm + pfmon
+Message-ID: <20070214182932.GG11681@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20070213184839.GC10031@frankl.hpl.hp.com> <20070213140533.a5ca27ad.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702141928.09771.ak@suse.de>
+In-Reply-To: <20070213140533.a5ca27ad.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 February 2007 18:55, Jeff Dike wrote:
-> x86_64 ptrace32 needs to support PTRACE_OLDSETOPTIONS.  This patch
-> just converts the PTRACE_OLDSETOPTIONS request to PTRACE_SETOPTIONS
-> and falls through to the sys_ptrace call.
+Andrew,
 
-Hmm, why do we have this at all if it's the same as plain SETOPTIONS ?
+On Tue, Feb 13, 2007 at 02:05:33PM -0800, Andrew Morton wrote:
+> > On Tue, 13 Feb 2007 10:48:39 -0800 Stephane Eranian <eranian@hpl.hp.com> wrote:
+> > I have released another version of the perfmon new code base package.
+> 
+> Can we have a bug push to get this merged up please?
 
--Andi
+Could you please indicate the procedure to do this?
+
+Do you "just" need a patch against your latest -mm tree?
+
+Thanks.
+
+-- 
+-Stephane
