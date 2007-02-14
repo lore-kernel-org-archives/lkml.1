@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932275AbXBNN02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932274AbXBNN2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932275AbXBNN02 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 08:26:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932274AbXBNN02
+	id S932274AbXBNN2q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 08:28:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932279AbXBNN2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 08:26:28 -0500
-Received: from mail4.hitachi.co.jp ([133.145.228.5]:41107 "EHLO
-	mail4.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932275AbXBNN01 (ORCPT
+	Wed, 14 Feb 2007 08:28:46 -0500
+Received: from nz-out-0506.google.com ([64.233.162.237]:17058 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932274AbXBNN2p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 08:26:27 -0500
-Message-ID: <45D30DEA.4020309@hitachi.com>
-Date: Wed, 14 Feb 2007 22:26:02 +0900
-From: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Wed, 14 Feb 2007 08:28:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=QUSg7fwNwtAso9Xf9jtEwgBVYtOkJEqtVVOte1OmtagRdXBp0hOi6ksMRIsb0W07C5htVgXaD7jmjsX6i34DBCio8kb+JQ4UcBufoF0zUJPv/q0VA9mOLtYAuq6Jw3CuejFkq9GiHLii70cCUDRdot5qRIbUh0lm49FmfzsAFZM=
+Date: Wed, 14 Feb 2007 15:28:34 +0200
+To: Mark Brown <broonie@sirena.org.uk>
+Cc: Tim Hockin <thockin@hockin.org>, Jeff Garzik <jgarzik@pobox.com>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/2] natsemi: Add support for using MII port with no PHY
+Message-ID: <20070214132834.GA4436@Ahmed>
+References: <20070214100203.413293000@sirena.org.uk> <20070214100226.540001000@sirena.org.uk>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Robin Holt <holt@sgi.com>, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       dhowells@redhat.com, alan@lxorguk.ukuu.org.uk,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       Satoshi OSHIMA <soshima@redhat.com>,
-       "Hideo AOKI@redhat" <haoki@redhat.com>
-Subject: Re: [PATCH 0/4] coredump: core dump masking support v2
-References: <45BA0A93.30004@hitachi.com> 
-    <20070126152907.GB30950@lnx-holt.americas.sgi.com> 
-    <45BEF582.7080004@hitachi.com> 
-    <20070130124417.GA7320@lnx-holt.americas.sgi.com> 
-    <45C08E33.9030300@hitachi.com> <20070203124853.GA4191@elf.ucw.cz>
-In-Reply-To: <20070203124853.GA4191@elf.ucw.cz>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070214100226.540001000@sirena.org.uk>
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Feb 14, 2007 at 10:02:04AM +0000, Mark Brown wrote:
 
-I'm sorry that I couldn't reply you sooner.
-
-Pavel Machek wrote:
->>Okay, I'll adopt your idea in the next version.
->>I'm going to provide the proc entry as follows:
->>
->>  (1) /proc/<pid>/core_flags/flags
->>  (2) /proc/<pid>/core_flags/omit_anon_shared
->>
->>(1) is the same as current core_flags. It is for expert users.
->>(2) corresponds to one bit in (1).
->>If (2) is set to 1, anonymous shared memory of the process is never
->>dumped.
+> Signed-Off-By: Mark Brown <broonie@sirena.org.uk>
 > 
-> Now, that's what I call an ugly interface.
+[...]
+> -		if (np->phy_addr_external == PHY_ADDR_NONE) {
+> +		/* If we're ignoring the PHY it doesn't matter if we can't
+> +		 * find one. */
+> +		if (!np->ignore_phy && np->phy_addr_external == PHY_ADDR_NONE) {
+[...]
+> +	if (!np->ignore_phy) {
+> +		/* The link status field is latched: it remains low
+> +		 * after a temporary link failure until it's read. We
+> +		 * need the current link status, thus read twice.
+> +		 */
+> +		mdio_read(dev, MII_BMSR);
+> +		bmsr = mdio_read(dev, MII_BMSR);
+[...]
+>  	/*
+> +	 * If we're ignoring the PHY then autoneg and the internal
+> +	 * transciever are really not going to work so don't let the
+> +	 * user select them.
+> +	 */
+> +	if (np->ignore_phy && (ecmd->autoneg == AUTONEG_ENABLE ||
 
-I considered for a while, and then I decided not to use the
-above-stated interfaces. Instead, I'll create just one proc entry
-to access to one core dump flag:
-  /proc/<pid>/coredump_omit_anonymous_shared
-
-I think it is simple enough.
-Would you think it is still ugly?
-
- 
-> Can we simply add ulimit with boolean value, that says dump
-> anon_shared... or not? It will be simpler and faster, because you'll
-> not need locking.
-
-Yes, using ulimit will be simpler and faster, but less flexible.
-The core dump flags can be changed only before running the program.
-If the user modifies the program, the user will be able to change the
-flags anytime. But the user can't always modify the program.
-
-I need the ability to change the core dump flags anytime.
-
+A trivial comment actually, Is there a point to write multi-line comments 
+in two different formats ?
 
 Thanks,
--- 
-Hidehiro Kawai
-Hitachi, Ltd., Systems Development Laboratory
 
+-- 
+Ahmed S. Darwish
+http://darwish-07.blogspot.com
