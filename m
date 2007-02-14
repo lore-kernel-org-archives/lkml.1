@@ -1,204 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932142AbXBNKkE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932144AbXBNKki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932142AbXBNKkE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 05:40:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932173AbXBNKkD
+	id S932144AbXBNKki (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 05:40:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932197AbXBNKkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 05:40:03 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:4406 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932142AbXBNKj7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 05:39:59 -0500
-Message-Id: <20070214100226.540001000@sirena.org.uk>
-References: <20070214100203.413293000@sirena.org.uk>
-User-Agent: quilt/0.45-1
-Date: Wed, 14 Feb 2007 10:02:04 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: Tim Hockin <thockin@hockin.org>, Jeff Garzik <jgarzik@pobox.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 1/2] natsemi: Add support for using MII port with no PHY
-Content-Disposition: inline; filename=natsemi-ignore-phy.patch
-X-Spam-Score: -3.7 (---)
+	Wed, 14 Feb 2007 05:40:37 -0500
+Received: from lug-owl.de ([195.71.106.12]:47974 "EHLO lug-owl.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932144AbXBNKkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 05:40:10 -0500
+Date: Wed, 14 Feb 2007 11:40:08 +0100
+From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+To: "Ramy M. Hassan " <ramy@gawab.com>
+Cc: linux-kernel@vger.kernel.org, Ahmed El Zein <a.elzein@gawab.net>
+Subject: Re: xfs internal error on a new filesystem
+Message-ID: <20070214104008.GY23849@lug-owl.de>
+Mail-Followup-To: "Ramy M. Hassan " <ramy@gawab.com>,
+	linux-kernel@vger.kernel.org, Ahmed El Zein <a.elzein@gawab.net>
+References: <20070214102432.6346.qmail@info6.gawab.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="L4xCDQ7GT+ph8Lmk"
+Content-Disposition: inline
+In-Reply-To: <20070214102432.6346.qmail@info6.gawab.com>
+X-Operating-System: Linux mail 2.6.12.3lug-owl 
+X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
+X-gpg-key: wwwkeys.de.pgp.net
+X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch provides code paths which allow the natsemi driver to use the
-external MII port on the chip but ignore any PHYs that may be attached to it.
-The link state will be left as it was when the driver started and can be
-configured via ethtool.  Any PHYs that are present can be accessed via the MII
-ioctl()s.
 
-This is useful for systems where the device is connected without a PHY
-or where either information or actions outside the scope of the driver
-are required in order to use the PHYs.
+--L4xCDQ7GT+ph8Lmk
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-Off-By: Mark Brown <broonie@sirena.org.uk>
+On Wed, 2007-02-14 10:24:27 +0000, Ramy M. Hassan  <ramy@gawab.com> wrote:
+> Feb 14 08:28:52 info6 kernel: [238186.945610] Filesystem "sdd8": Corrupti=
+on of in-memory data detected.  Shutting down filesystem: sdd8
+[...]
+> We are wondering here if this problem is an indicator to data corruption =
+on
+> disk ? is it really necessary to run xfs_repair ?  Do u recommend that we
+> switch back to reiserfs ? Could it be a hardware related problems  ? any
+> clues how to verify that ?
 
----
+Running memtest86 for some hours could at least help to verify that
+you don't see bad memory...
 
-Previous versions of this patch exposed the new functionality as a module
-option.  This has been removed.  Any hardware that needs this should be
-identifiable by a quirk since it unlikely to behave correctly with an
-unmodified driver.
+MfG, JBG
 
-Index: linux/drivers/net/natsemi.c
-===================================================================
---- linux.orig/drivers/net/natsemi.c	2007-02-12 17:44:33.000000000 +0000
-+++ linux/drivers/net/natsemi.c	2007-02-12 18:09:44.000000000 +0000
-@@ -568,6 +568,8 @@
- 	u32 intr_status;
- 	/* Do not touch the nic registers */
- 	int hands_off;
-+	/* Don't pay attention to the reported link state. */
-+	int ignore_phy;
- 	/* external phy that is used: only valid if dev->if_port != PORT_TP */
- 	int mii;
- 	int phy_addr_external;
-@@ -696,7 +698,10 @@
- 	struct netdev_private *np = netdev_priv(dev);
- 	u32 tmp;
- 
--	netif_carrier_off(dev);
-+	if (np->ignore_phy)
-+		netif_carrier_on(dev);
-+	else
-+		netif_carrier_off(dev);
- 
- 	/* get the initial settings from hardware */
- 	tmp            = mdio_read(dev, MII_BMCR);
-@@ -806,8 +811,10 @@
- 	np->hands_off = 0;
- 	np->intr_status = 0;
- 	np->eeprom_size = natsemi_pci_info[chip_idx].eeprom_size;
-+	np->ignore_phy = 0;
- 
- 	/* Initial port:
-+	 * - If configured to ignore the PHY set up for external.
- 	 * - If the nic was configured to use an external phy and if find_mii
- 	 *   finds a phy: use external port, first phy that replies.
- 	 * - Otherwise: internal port.
-@@ -815,7 +822,7 @@
- 	 * The address would be used to access a phy over the mii bus, but
- 	 * the internal phy is accessed through mapped registers.
- 	 */
--	if (readl(ioaddr + ChipConfig) & CfgExtPhy)
-+	if (np->ignore_phy || readl(ioaddr + ChipConfig) & CfgExtPhy)
- 		dev->if_port = PORT_MII;
- 	else
- 		dev->if_port = PORT_TP;
-@@ -825,7 +832,9 @@
- 
- 	if (dev->if_port != PORT_TP) {
- 		np->phy_addr_external = find_mii(dev);
--		if (np->phy_addr_external == PHY_ADDR_NONE) {
-+		/* If we're ignoring the PHY it doesn't matter if we can't
-+		 * find one. */
-+		if (!np->ignore_phy && np->phy_addr_external == PHY_ADDR_NONE) {
- 			dev->if_port = PORT_TP;
- 			np->phy_addr_external = PHY_ADDR_INTERNAL;
- 		}
-@@ -891,6 +900,8 @@
- 		printk("%02x, IRQ %d", dev->dev_addr[i], irq);
- 		if (dev->if_port == PORT_TP)
- 			printk(", port TP.\n");
-+		else if (np->ignore_phy)
-+			printk(", port MII, ignoring PHY\n");
- 		else
- 			printk(", port MII, phy ad %d.\n", np->phy_addr_external);
- 	}
-@@ -1571,42 +1582,45 @@
- {
- 	struct netdev_private *np = netdev_priv(dev);
- 	void __iomem * ioaddr = ns_ioaddr(dev);
--	int duplex;
-+	int duplex = np->duplex;
- 	u16 bmsr;
- 
--	/* The link status field is latched: it remains low after a temporary
--	 * link failure until it's read. We need the current link status,
--	 * thus read twice.
--	 */
--	mdio_read(dev, MII_BMSR);
--	bmsr = mdio_read(dev, MII_BMSR);
-+	/* If we are ignoring the PHY then don't try reading it. */
-+	if (!np->ignore_phy) {
-+		/* The link status field is latched: it remains low
-+		 * after a temporary link failure until it's read. We
-+		 * need the current link status, thus read twice.
-+		 */
-+		mdio_read(dev, MII_BMSR);
-+		bmsr = mdio_read(dev, MII_BMSR);
- 
--	if (!(bmsr & BMSR_LSTATUS)) {
--		if (netif_carrier_ok(dev)) {
-+		if (!(bmsr & BMSR_LSTATUS)) {
-+			if (netif_carrier_ok(dev)) {
-+				if (netif_msg_link(np))
-+					printk(KERN_NOTICE "%s: link down.\n",
-+					       dev->name);
-+				netif_carrier_off(dev);
-+				undo_cable_magic(dev);
-+			}
-+			return;
-+		}
-+		if (!netif_carrier_ok(dev)) {
- 			if (netif_msg_link(np))
--				printk(KERN_NOTICE "%s: link down.\n",
--					dev->name);
--			netif_carrier_off(dev);
--			undo_cable_magic(dev);
-+				printk(KERN_NOTICE "%s: link up.\n", dev->name);
-+			netif_carrier_on(dev);
-+			do_cable_magic(dev);
- 		}
--		return;
--	}
--	if (!netif_carrier_ok(dev)) {
--		if (netif_msg_link(np))
--			printk(KERN_NOTICE "%s: link up.\n", dev->name);
--		netif_carrier_on(dev);
--		do_cable_magic(dev);
--	}
- 
--	duplex = np->full_duplex;
--	if (!duplex) {
--		if (bmsr & BMSR_ANEGCOMPLETE) {
--			int tmp = mii_nway_result(
--				np->advertising & mdio_read(dev, MII_LPA));
--			if (tmp == LPA_100FULL || tmp == LPA_10FULL)
-+		duplex = np->full_duplex;
-+		if (!duplex) {
-+			if (bmsr & BMSR_ANEGCOMPLETE) {
-+				int tmp = mii_nway_result(
-+					np->advertising & mdio_read(dev, MII_LPA));
-+				if (tmp == LPA_100FULL || tmp == LPA_10FULL)
-+					duplex = 1;
-+			} else if (mdio_read(dev, MII_BMCR) & BMCR_FULLDPLX)
- 				duplex = 1;
--		} else if (mdio_read(dev, MII_BMCR) & BMCR_FULLDPLX)
--			duplex = 1;
-+		}
- 	}
- 
- 	/* if duplex is set then bit 28 must be set, too */
-@@ -2819,6 +2833,16 @@
- 	}
- 
- 	/*
-+	 * If we're ignoring the PHY then autoneg and the internal
-+	 * transciever are really not going to work so don't let the
-+	 * user select them.
-+	 */
-+	if (np->ignore_phy && (ecmd->autoneg == AUTONEG_ENABLE ||
-+			       ecmd->port == PORT_TP)) {
-+		return -EINVAL;
-+	}
-+
-+	/*
- 	 * maxtxpkt, maxrxpkt: ignored for now.
- 	 *
- 	 * transceiver:
+--=20
+      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
+Signature of: 23:53 <@jbglaw> So, ich kletter' jetzt mal ins Bett.
+the second  : 23:57 <@jever2> .oO( kletter ..., hat er noch Gitter vorm Bet=
+t, wie fr=C3=BCher meine Kinder?)
+              00:00 <@jbglaw> jever2: *patsch*
+              00:01 <@jever2> *aua*, wof=C3=BCr, Gedanken sind frei!
+              00:02 <@jbglaw> Nee, freie Gedanken, die sind seit 1984 doch =
+aus!
+              00:03 <@jever2> 1984? ich bin erst seit 1985 verheiratet!
 
---
-"You grabbed my hand and we fell into it, like a daydream - or a fever."
+--L4xCDQ7GT+ph8Lmk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFF0ucIHb1edYOZ4bsRAkDJAKCMkiCchWv/c9oDtYXR92IEk1q9WwCdGTK+
+jBlSXdokeOxqRBUDfpaM+LE=
+=sQdE
+-----END PGP SIGNATURE-----
+
+--L4xCDQ7GT+ph8Lmk--
