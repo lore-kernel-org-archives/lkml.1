@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932274AbXBNN2q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932278AbXBNNa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932274AbXBNN2q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 08:28:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932279AbXBNN2q
+	id S932278AbXBNNa6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 08:30:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932272AbXBNNa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 08:28:46 -0500
-Received: from nz-out-0506.google.com ([64.233.162.237]:17058 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932274AbXBNN2p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 08:28:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=QUSg7fwNwtAso9Xf9jtEwgBVYtOkJEqtVVOte1OmtagRdXBp0hOi6ksMRIsb0W07C5htVgXaD7jmjsX6i34DBCio8kb+JQ4UcBufoF0zUJPv/q0VA9mOLtYAuq6Jw3CuejFkq9GiHLii70cCUDRdot5qRIbUh0lm49FmfzsAFZM=
-Date: Wed, 14 Feb 2007 15:28:34 +0200
-To: Mark Brown <broonie@sirena.org.uk>
-Cc: Tim Hockin <thockin@hockin.org>, Jeff Garzik <jgarzik@pobox.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] natsemi: Add support for using MII port with no PHY
-Message-ID: <20070214132834.GA4436@Ahmed>
-References: <20070214100203.413293000@sirena.org.uk> <20070214100226.540001000@sirena.org.uk>
+	Wed, 14 Feb 2007 08:30:58 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50879 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932278AbXBNNa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 08:30:57 -0500
+Date: Wed, 14 Feb 2007 14:30:42 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
+Cc: Robin Holt <holt@sgi.com>, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       dhowells@redhat.com, alan@lxorguk.ukuu.org.uk,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       Satoshi OSHIMA <soshima@redhat.com>,
+       "Hideo AOKI@redhat" <haoki@redhat.com>
+Subject: Re: [PATCH 0/4] coredump: core dump masking support v2
+Message-ID: <20070214133042.GJ22008@elf.ucw.cz>
+References: <45BA0A93.30004@hitachi.com> <20070126152907.GB30950@lnx-holt.americas.sgi.com> <45BEF582.7080004@hitachi.com> <20070130124417.GA7320@lnx-holt.americas.sgi.com> <45C08E33.9030300@hitachi.com> <20070203124853.GA4191@elf.ucw.cz> <45D30DEA.4020309@hitachi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070214100226.540001000@sirena.org.uk>
-User-Agent: Mutt/1.5.11
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+In-Reply-To: <45D30DEA.4020309@hitachi.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 14, 2007 at 10:02:04AM +0000, Mark Brown wrote:
+Hi!
 
-> Signed-Off-By: Mark Brown <broonie@sirena.org.uk>
+> > Can we simply add ulimit with boolean value, that says dump
+> > anon_shared... or not? It will be simpler and faster, because you'll
+> > not need locking.
 > 
-[...]
-> -		if (np->phy_addr_external == PHY_ADDR_NONE) {
-> +		/* If we're ignoring the PHY it doesn't matter if we can't
-> +		 * find one. */
-> +		if (!np->ignore_phy && np->phy_addr_external == PHY_ADDR_NONE) {
-[...]
-> +	if (!np->ignore_phy) {
-> +		/* The link status field is latched: it remains low
-> +		 * after a temporary link failure until it's read. We
-> +		 * need the current link status, thus read twice.
-> +		 */
-> +		mdio_read(dev, MII_BMSR);
-> +		bmsr = mdio_read(dev, MII_BMSR);
-[...]
->  	/*
-> +	 * If we're ignoring the PHY then autoneg and the internal
-> +	 * transciever are really not going to work so don't let the
-> +	 * user select them.
-> +	 */
-> +	if (np->ignore_phy && (ecmd->autoneg == AUTONEG_ENABLE ||
+> Yes, using ulimit will be simpler and faster, but less flexible.
 
-A trivial comment actually, Is there a point to write multi-line comments 
-in two different formats ?
+It is prefered in this case.
 
-Thanks,
+> The core dump flags can be changed only before running the program.
+> If the user modifies the program, the user will be able to change the
+> flags anytime. But the user can't always modify the program.
+
+You can do ulimit then exec from wrapper.
+
+> I need the ability to change the core dump flags anytime.
+
+Then maybe right solution is to extend _ulimit_ to change anything
+anytime. But that's definitely separate patch.
+									Pavel
 
 -- 
-Ahmed S. Darwish
-http://darwish-07.blogspot.com
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
