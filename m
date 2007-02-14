@@ -1,72 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932615AbXBNVO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932603AbXBNVVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932615AbXBNVO6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 16:14:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932617AbXBNVO6
+	id S932603AbXBNVVl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 16:21:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932624AbXBNVVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 16:14:58 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60303 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932615AbXBNVO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 16:14:57 -0500
-Date: Wed, 14 Feb 2007 22:12:31 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 05/11] syslets: core code
-Message-ID: <20070214211231.GA18326@elte.hu>
-References: <20070213142035.GF638@elte.hu> <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org> <20070214210251.GA15025@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070214210251.GA15025@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -5.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 14 Feb 2007 16:21:41 -0500
+Received: from emulex.emulex.com ([138.239.112.1]:36517 "EHLO
+	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932603AbXBNVVk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 16:21:40 -0500
+Message-ID: <45D37B2E.5050704@emulex.com>
+Date: Wed, 14 Feb 2007 16:12:14 -0500
+From: James Smart <James.Smart@Emulex.Com>
+Reply-To: James.Smart@Emulex.Com
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+MIME-Version: 1.0
+To: Linas Vepstas <linas@austin.ibm.com>
+CC: James.Bottomley@SteelEye.com, linuxppc-dev@ozlabs.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-scsi@vger.kernel.org,
+       rlary@us.ibm.com, Bino.Sebastian@Emulex.Com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] lpfc: add PCI error recovery support
+References: <20070214202836.GS923@austin.ibm.com>
+In-Reply-To: <20070214202836.GS923@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Feb 2007 21:12:15.0701 (UTC) FILETIME=[CD7C9850:01C7507C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ACK - the patch is fine for lpfc....
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+-- james s
 
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+Linas Vepstas wrote:
+> James,
 > 
-> > And the whole "lock things down in memory" approach is bad. It's 
-> > doing expensive things like mlock(), making the overhead for 
-> > _single_ system calls much more expensive. [...]
+> Please review and forward upstream.  This is a patch I'd previously
+> submitted, and reworked by Bino.Sebastian@Emulex.Com in January.
+> Not clear if I need to also nag James Smart (who is listed as the
+> maintainer) for an Acked-by (which I am lead to beleive should be
+> forthcoming? Ahh the joys of indirect communication!)
 > 
-> hm, there must be some misunderstanding here. That mlock is /only/ 
-> once per the lifetime of the whole 'head' - i.e. per 
-> sys_async_register(). (And you can even forget i ever did it - it's 5 
-> lines of code to turn the completion ring into a swappable entity.)
+> --linas
 > 
-> never does any MMU trick ever enter the picture during the whole 
-> operation of this thing, and that's very much intentional.
-
-to stress it: never does any mlocking or other lockdown happen of any 
-syslet atom - it is /only/ the completion ring of syslet pointers that i 
-made mlocked - but even that can be made generic memory no problem.
-
-It's all about asynchronous system calls, and if you want you can have a 
-terabyte of syslets in user memory, half of it swapped out. They have 
-absolutely zero kernel context attached to them in the 'cached case' (be 
-that locked memory or some other kernel resource).
-
-	Ingo
+> This patch adds PCI Error recovery support to the
+> Emulex Lightpulse Fibrechannel (lpfc) SCSI device driver.
+> Lightly tested at this point, works.
+> 
+> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+> Signed-off-by: Bino.Sebastian@Emulex.Com
+> Cc: James Smart <james.smart@emulex.com>
+> 
+> ----
+> 
+>  drivers/scsi/lpfc/lpfc_init.c |   97 ++++++++++++++++++++++++++++++++++++++++++
+>  drivers/scsi/lpfc/lpfc_sli.c  |   12 +++++
+>  2 files changed, 109 insertions(+)
+> 
+> Index: linux-2.6.20-git4/drivers/scsi/lpfc/lpfc_init.c
+> ===================================================================
+> --- linux-2.6.20-git4.orig/drivers/scsi/lpfc/lpfc_init.c	2007-02-09 17:22:30.000000000 -0600
+> +++ linux-2.6.20-git4/drivers/scsi/lpfc/lpfc_init.c	2007-02-14 14:12:22.000000000 -0600
+> @@ -518,6 +518,10 @@ lpfc_handle_eratt(struct lpfc_hba * phba
+>  	struct lpfc_sli *psli = &phba->sli;
+>  	struct lpfc_sli_ring  *pring;
+>  	uint32_t event_data;
+> +	/* If the pci channel is offline, ignore possible errors,
+> +	 * since we cannot communicate with the pci card anyway. */
+> +	if (pci_channel_offline(phba->pcidev))
+> +		return;
+>  
+>  	if (phba->work_hs & HS_FFER6 ||
+>  	    phba->work_hs & HS_FFER5) {
+> @@ -1797,6 +1801,92 @@ lpfc_pci_remove_one(struct pci_dev *pdev
+>  	pci_set_drvdata(pdev, NULL);
+>  }
+>  
+> +/**
+> + * lpfc_io_error_detected - called when PCI error is detected
+> + * @pdev: Pointer to PCI device
+> + * @state: The current pci conneection state
+> + *
+> + * This function is called after a PCI bus error affecting
+> + * this device has been detected.
+> + */
+> +static pci_ers_result_t lpfc_io_error_detected(struct pci_dev *pdev,
+> +				pci_channel_state_t state)
+> +{
+> +	struct Scsi_Host *host = pci_get_drvdata(pdev);
+> +	struct lpfc_hba *phba = (struct lpfc_hba *)host->hostdata;
+> +	struct lpfc_sli *psli = &phba->sli;
+> +	struct lpfc_sli_ring  *pring;
+> +
+> +	if (state == pci_channel_io_perm_failure) {
+> +		lpfc_pci_remove_one(pdev);
+> +		return PCI_ERS_RESULT_DISCONNECT;
+> +	}
+> +	pci_disable_device(pdev);
+> +	/*
+> +	 * There may be I/Os dropped by the firmware.
+> +	 * Error iocb (I/O) on txcmplq and let the SCSI layer
+> +	 * retry it after re-establishing link.
+> +	 */
+> +	pring = &psli->ring[psli->fcp_ring];
+> +	lpfc_sli_abort_iocb_ring(phba, pring);
+> +
+> +	/* Request a slot reset. */
+> +	return PCI_ERS_RESULT_NEED_RESET;
+> +}
+> +
+> +/**
+> + * lpfc_io_slot_reset - called after the pci bus has been reset.
+> + * @pdev: Pointer to PCI device
+> + *
+> + * Restart the card from scratch, as if from a cold-boot.
+> + */
+> +static pci_ers_result_t lpfc_io_slot_reset(struct pci_dev *pdev)
+> +{
+> +	struct Scsi_Host *host = pci_get_drvdata(pdev);
+> +	struct lpfc_hba *phba = (struct lpfc_hba *)host->hostdata;
+> +	struct lpfc_sli *psli = &phba->sli;
+> +	int bars = pci_select_bars(pdev, IORESOURCE_MEM);
+> +
+> +	dev_printk(KERN_INFO, &pdev->dev, "recovering from a slot reset.\n");
+> +	if (pci_enable_device_bars(pdev, bars)) {
+> +		printk(KERN_ERR "lpfc: Cannot re-enable "
+> +			"PCI device after reset.\n");
+> +		return PCI_ERS_RESULT_DISCONNECT;
+> +	}
+> +
+> +	pci_set_master(pdev);
+> +
+> +	/* Re-establishing Link */
+> +	spin_lock_irq(phba->host->host_lock);
+> +	phba->fc_flag |= FC_ESTABLISH_LINK;
+> +	psli->sli_flag &= ~LPFC_SLI2_ACTIVE;
+> +	spin_unlock_irq(phba->host->host_lock);
+> +
+> +
+> +	/* Take device offline; this will perform cleanup */
+> +	lpfc_offline(phba);
+> +	lpfc_sli_brdrestart(phba);
+> +
+> +	return PCI_ERS_RESULT_RECOVERED;
+> +}
+> +
+> +/**
+> + * lpfc_io_resume - called when traffic can start flowing again.
+> + * @pdev: Pointer to PCI device
+> + *
+> + * This callback is called when the error recovery driver tells us that
+> + * its OK to resume normal operation.
+> + */
+> +static void lpfc_io_resume(struct pci_dev *pdev)
+> +{
+> +	struct Scsi_Host *host = pci_get_drvdata(pdev);
+> +	struct lpfc_hba *phba = (struct lpfc_hba *)host->hostdata;
+> +
+> +	if (lpfc_online(phba) == 0) {
+> +		mod_timer(&phba->fc_estabtmo, jiffies + HZ * 60);
+> +	}
+> +}
+> +
+>  static struct pci_device_id lpfc_id_table[] = {
+>  	{PCI_VENDOR_ID_EMULEX, PCI_DEVICE_ID_VIPER,
+>  		PCI_ANY_ID, PCI_ANY_ID, },
+> @@ -1857,11 +1947,18 @@ static struct pci_device_id lpfc_id_tabl
+>  
+>  MODULE_DEVICE_TABLE(pci, lpfc_id_table);
+>  
+> +static struct pci_error_handlers lpfc_err_handler = {
+> +	.error_detected = lpfc_io_error_detected,
+> +	.slot_reset = lpfc_io_slot_reset,
+> +	.resume = lpfc_io_resume,
+> +};
+> +
+>  static struct pci_driver lpfc_driver = {
+>  	.name		= LPFC_DRIVER_NAME,
+>  	.id_table	= lpfc_id_table,
+>  	.probe		= lpfc_pci_probe_one,
+>  	.remove		= __devexit_p(lpfc_pci_remove_one),
+> +	.err_handler = &lpfc_err_handler,
+>  };
+>  
+>  static int __init
+> Index: linux-2.6.20-git4/drivers/scsi/lpfc/lpfc_sli.c
+> ===================================================================
+> --- linux-2.6.20-git4.orig/drivers/scsi/lpfc/lpfc_sli.c	2007-02-09 17:22:30.000000000 -0600
+> +++ linux-2.6.20-git4/drivers/scsi/lpfc/lpfc_sli.c	2007-02-14 14:01:31.000000000 -0600
+> @@ -2104,6 +2104,10 @@ lpfc_sli_issue_mbox(struct lpfc_hba * ph
+>  	volatile uint32_t word0, ldata;
+>  	void __iomem *to_slim;
+>  
+> +	/* If the PCI channel is in offline state, do not post mbox. */
+> +	if (unlikely(pci_channel_offline(phba->pcidev)))
+> +		return MBX_NOT_FINISHED;
+> +
+>  	psli = &phba->sli;
+>  
+>  	spin_lock_irqsave(phba->host->host_lock, drvr_flag);
+> @@ -2407,6 +2411,10 @@ lpfc_sli_issue_iocb(struct lpfc_hba *phb
+>  	struct lpfc_iocbq *nextiocb;
+>  	IOCB_t *iocb;
+>  
+> +	/* If the PCI channel is in offline state, do not post iocbs. */
+> +	if (unlikely(pci_channel_offline(phba->pcidev)))
+> +		return IOCB_ERROR;
+> +
+>  	/*
+>  	 * We should never get an IOCB if we are in a < LINK_DOWN state
+>  	 */
+> @@ -3154,6 +3162,10 @@ lpfc_intr_handler(int irq, void *dev_id)
+>  	if (unlikely(!phba))
+>  		return IRQ_NONE;
+>  
+> +	/* If the pci channel is offline, ignore all the interrupts. */
+> +	if (unlikely(pci_channel_offline(phba->pcidev)))
+> +		return IRQ_NONE;
+> +
+>  	phba->sli.slistat.sli_intr++;
+>  
+>  	/*
+> 
