@@ -1,226 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932469AbXBNVmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964774AbXBNVn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932469AbXBNVmb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 16:42:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932480AbXBNVmb
+	id S964774AbXBNVn1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 16:43:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964776AbXBNVn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 16:42:31 -0500
-Received: from ftp.linux-mips.org ([194.74.144.162]:56154 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932469AbXBNVma (ORCPT
+	Wed, 14 Feb 2007 16:43:27 -0500
+Received: from mexforward.lss.emc.com ([128.222.32.20]:22632 "EHLO
+	mexforward.lss.emc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964774AbXBNVn0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 16:42:30 -0500
-Date: Wed, 14 Feb 2007 21:42:26 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] Optimize generic get_unaligned / put_unaligned implementations.
-Message-ID: <20070214214226.GA17899@linux-mips.org>
-References: <20050830104056.GA4710@linux-mips.org> <20060306.203218.69025300.nemoto@toshiba-tops.co.jp> <20060306170552.0aab29c5.akpm@osdl.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20060306170552.0aab29c5.akpm@osdl.org>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 14 Feb 2007 16:43:26 -0500
+X-Greylist: delayed 2050 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Feb 2007 16:43:26 EST
+To: "Sorin Faibish" <sfaibish@emc.com>,
+       "kernel list" <linux-kernel@vger.kernel.org>
+Subject: Re: [ANNOUNCE] DualFS: File System with Meta-data and Data Separation
+From: sfaibish <sfaibish@emc.com>
+Organization: EMC
+Cc: "piernas@ditec.um.es" <piernas@ditec.um.es>
+Content-Type: text/plain; format=flowed; delsp=yes; charset=iso-8859-15
+MIME-Version: 1.0
+References: <op.tnkdlbgsrwwil4@brcsmondepl2c.corp.emc.com>
+Content-Transfer-Encoding: 7bit
+Date: Wed, 14 Feb 2007 16:10:26 -0500
+Message-ID: <op.tnrbrocsunckof@usensfaibisl2e.eng.emc.com>
+In-Reply-To: <op.tnkdlbgsrwwil4@brcsmondepl2c.corp.emc.com>
+User-Agent: Opera Mail/9.10 (Win32)
+X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.5.0.283055, Antispam-Data: 2007.2.14.122933
+X-PerlMx-Spam: Gauge=, SPAM=2%, Reason='EMC_FROM_0+ -2, __CP_URI_IN_BODY 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0, __USER_AGENT 0'
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Time for a little bit of dead horse flogging.
+On Sat, 10 Feb 2007 22:06:37 -0500, Sorin Faibish <sfaibish@emc.com> wrote:
 
-On Mon, Mar 06, 2006 at 05:05:52PM -0800, Andrew Morton wrote:
+> Introducing DualFS
+>
+> File System developers played with the idea of separation of
+> meta-data from data in file systems for a while. The idea was
+> lately revived by a small group of file system enthusiasts
+>  from Spain (from the little known University of Murcia) and
+> it is called DualFS. We believe that the separation idea
+> will bring to Linux file systems great value.
+>
+> We see DualFS as a next-generation journaling file system which
+> has the same consistency guaranties as traditional journaling
+> file systems but better performance characteristics. The new file
+> system puts data and meta-data on different devices (usually, two
+> partitions on the same disk or different disks), and manages them
+> in very different ways:
+>
+> 1. DualFS has only one copy of every meta-data block. This copy is
+>     in the meta-data device,
+>
+> 2. The meta-data device is a log which is used by DualFS both to
+>     read and to write meta-data blocks.
+>
+> 3. DualFS avoids an extra copy of meta-data blocks, which allow
+>     DualFS to achieve higher performance than other journaling file
+>     systems.
+>
+> 4. DualFS implements performance enhancements: meta-data prefetch,
+>     on-line meta-data relocation and faster fsck and mkfs operations.
+>
+> 5. DualFS file system is suitable for use with TB and PB of storage
+>
+> We have carried out different experiments which compare DualFS and
+> other popular Linux file systems, namely, Ext2, Ext3, XFS, JFS, and
+> ReiserFS. The results, both performance and management, prove the
+> value of the new file system design based on the separation of data
+> and metadata which increase performance dramatically up to 97% by
+> simply using an additional partition of same disk.
+>
+> We have performed extensive tests using micro-benchmarks as well
+> as macro-benchmarks including Postmark v1.5, SpecWeb99, TPCC-uva.
+> We also measured performance of maintenance tasks like mkfs and
+> fsck which all show that DualFS performance is superior to all the
+> other file systems tested with performance advantage in the range
+> between 50-300% depending on the benchmark and the configuration.
+> And all this performance advantage is a direct result of the
+> separation of the meta-data and data.
+>
+> The project started in 2000 by Juan Piernas Canovas as the primary
+> and almost unique contributor, with some small contributions by Toni
+> Cortes, and Jose M. Garcia. The project was stopped for some time. We
+> restarted the project last year, and after several months of updates
+> and tests we created a SourceForge project with the intent to share
+> the value of this old and yet new concept.
+>
+> The DualFS code, tools and performance papers are available at:
+>
+>   	<http://sourceforge.net/projects/dualfs>
+>
+> The code requires kernel patches to 2.4.19 (oldies but goodies) and
+> a separate fsck code.  The latest kernel we used it for is 2.6.11
+> and we hope with you help to port it to the latest Linux kernel.
+>
+> We will present the architecture, principles and performance
+> characterization at the LFS07 next week.
+>
+> We are very interested to get your feedback and criticism.
+>
+> Sorin Faibish and Juan Piernas Canovas
+> --------------------------------------
+>
+>
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel"  
+> in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+>
 
-> > --- a/include/asm-generic/unaligned.h
-> > +++ b/include/asm-generic/unaligned.h
-> > @@ -78,7 +78,7 @@ static inline void __ustw(__u16 val, __u
-> >  
-> >  #define __get_unaligned(ptr, size) ({		\
-> >  	const void *__gu_p = ptr;		\
-> > -	__typeof__(*(ptr)) val;			\
-> > +	__u64 val;				\
-> >  	switch (size) {				\
-> >  	case 1:					\
-> >  		val = *(const __u8 *)__gu_p;	\
-> > @@ -95,7 +95,7 @@ static inline void __ustw(__u16 val, __u
-> >  	default:				\
-> >  		bad_unaligned_access_length();	\
-> >  	};					\
-> > -	val;					\
-> > +	(__typeof__(*(ptr)))val;		\
-> >  })
-> >  
-> >  #define __put_unaligned(val, ptr, size)		\
-> 
-> I worry about what impact that change might have on code generation. 
-> Hopefully none, if gcc is good enough.
-> 
-> But I cannot think of a better fix.
 
-It does inflate the code but back then we agreed to go for Atsushi's patch
-because it was fairly obviously correct.  This patch obviously is less
-obvious but generates fairly decent, works for arbitrary data types and
-cuts down the size of unaligned.h from 122 lines to 44 so it must be good.
 
-  Ralf
-
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
-
-diff --git a/include/asm-generic/unaligned.h b/include/asm-generic/unaligned.h
-index 09ec447..d7fda33 100644
---- a/include/asm-generic/unaligned.h
-+++ b/include/asm-generic/unaligned.h
-@@ -1,122 +1,44 @@
--#ifndef _ASM_GENERIC_UNALIGNED_H_
--#define _ASM_GENERIC_UNALIGNED_H_
--
- /*
-- * For the benefit of those who are trying to port Linux to another
-- * architecture, here are some C-language equivalents. 
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file "COPYING" in the main directory of this archive
-+ * for more details.
-  *
-- * This is based almost entirely upon Richard Henderson's
-- * asm-alpha/unaligned.h implementation.  Some comments were
-- * taken from David Mosberger's asm-ia64/unaligned.h header.
-+ * Copyright (C) 2006 MIPS Technologies, Inc.
-+ *   written by Ralf Baechle <ralf@linux-mips.org>
-  */
-+#ifndef __ASM_GENERIC_UNALIGNED_H
-+#define __ASM_GENERIC_UNALIGNED_H
- 
- #include <linux/types.h>
- 
--/* 
-- * The main single-value unaligned transfer routines.
-- */
--#define get_unaligned(ptr) \
--	__get_unaligned((ptr), sizeof(*(ptr)))
--#define put_unaligned(x,ptr) \
--	__put_unaligned((__u64)(x), (ptr), sizeof(*(ptr)))
--
--/*
-- * This function doesn't actually exist.  The idea is that when
-- * someone uses the macros below with an unsupported size (datatype),
-- * the linker will alert us to the problem via an unresolved reference
-- * error.
-- */
--extern void bad_unaligned_access_length(void) __attribute__((noreturn));
--
--struct __una_u64 { __u64 x __attribute__((packed)); };
--struct __una_u32 { __u32 x __attribute__((packed)); };
--struct __una_u16 { __u16 x __attribute__((packed)); };
--
--/*
-- * Elemental unaligned loads 
-- */
--
--static inline __u64 __uldq(const __u64 *addr)
--{
--	const struct __una_u64 *ptr = (const struct __una_u64 *) addr;
--	return ptr->x;
--}
--
--static inline __u32 __uldl(const __u32 *addr)
--{
--	const struct __una_u32 *ptr = (const struct __una_u32 *) addr;
--	return ptr->x;
--}
--
--static inline __u16 __uldw(const __u16 *addr)
--{
--	const struct __una_u16 *ptr = (const struct __una_u16 *) addr;
--	return ptr->x;
--}
--
- /*
-- * Elemental unaligned stores 
-+ * The unused member __un_foo is there to suppress "warning: ´packed´
-+ * attribute ignored for field of type ´union <anonymous>´" messages if
-+ * ptr is char *.
-  */
- 
--static inline void __ustq(__u64 val, __u64 *addr)
--{
--	struct __una_u64 *ptr = (struct __una_u64 *) addr;
--	ptr->x = val;
--}
--
--static inline void __ustl(__u32 val, __u32 *addr)
--{
--	struct __una_u32 *ptr = (struct __una_u32 *) addr;
--	ptr->x = val;
--}
--
--static inline void __ustw(__u16 val, __u16 *addr)
--{
--	struct __una_u16 *ptr = (struct __una_u16 *) addr;
--	ptr->x = val;
--}
--
--#define __get_unaligned(ptr, size) ({		\
--	const void *__gu_p = ptr;		\
--	__u64 val;				\
--	switch (size) {				\
--	case 1:					\
--		val = *(const __u8 *)__gu_p;	\
--		break;				\
--	case 2:					\
--		val = __uldw(__gu_p);		\
--		break;				\
--	case 4:					\
--		val = __uldl(__gu_p);		\
--		break;				\
--	case 8:					\
--		val = __uldq(__gu_p);		\
--		break;				\
--	default:				\
--		bad_unaligned_access_length();	\
--	};					\
--	(__typeof__(*(ptr)))val;		\
-+#define get_unaligned(ptr)						\
-+({									\
-+	const struct {							\
-+		union {							\
-+			const int __un_foo[0];				\
-+			const __typeof__(*(ptr)) __un;			\
-+		} __un __attribute__ ((packed));			\
-+	} * const __gu_p = (void *) (ptr);				\
-+									\
-+	__gu_p->__un.__un;						\
- })
- 
--#define __put_unaligned(val, ptr, size)		\
--do {						\
--	void *__gu_p = ptr;			\
--	switch (size) {				\
--	case 1:					\
--		*(__u8 *)__gu_p = val;		\
--	        break;				\
--	case 2:					\
--		__ustw(val, __gu_p);		\
--		break;				\
--	case 4:					\
--		__ustl(val, __gu_p);		\
--		break;				\
--	case 8:					\
--		__ustq(val, __gu_p);		\
--		break;				\
--	default:				\
--	    	bad_unaligned_access_length();	\
--	};					\
-+#define put_unaligned(val, ptr)						\
-+do {									\
-+	struct {							\
-+		union {							\
-+			const int __un_foo[0];				\
-+			__typeof__(*(ptr)) __un;			\
-+		} __un __attribute__ ((packed));			\
-+	} * const __gu_p = (void *) (ptr);				\
-+									\
-+	__gu_p->__un.__un = (val);					\
- } while(0)
- 
--#endif /* _ASM_GENERIC_UNALIGNED_H */
-+#endif /* __ASM_GENERIC_UNALIGNED_H */
+-- 
+Using Opera's revolutionary e-mail client: http://www.opera.com/mail/
