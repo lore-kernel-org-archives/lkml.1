@@ -1,18 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932234AbXBNMkF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932229AbXBNMnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932234AbXBNMkF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 07:40:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932229AbXBNMkE
+	id S932229AbXBNMnV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 07:43:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932232AbXBNMnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 07:40:04 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:34547 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932232AbXBNMkC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 07:40:02 -0500
-Date: Wed, 14 Feb 2007 13:37:55 +0100
-From: Pavel Machek <pavel@ucw.cz>
+	Wed, 14 Feb 2007 07:43:21 -0500
+Received: from smtp8-g19.free.fr ([212.27.42.65]:41810 "EHLO smtp8-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932229AbXBNMnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 07:43:20 -0500
+Message-ID: <45D303F5.20209@yahoo.fr>
+Date: Wed, 14 Feb 2007 13:43:33 +0100
+From: Guillaume Chazarain <guichaz@yahoo.fr>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
+CC: linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Arjan van de Ven <arjan@infradead.org>,
        Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
@@ -24,32 +27,72 @@ Cc: linux-kernel@vger.kernel.org,
        Suparna Bhattacharya <suparna@in.ibm.com>,
        Davide Libenzi <davidel@xmailserver.org>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system call support
-Message-ID: <20070214123755.GC23857@elf.ucw.cz>
-References: <20060529212109.GA2058@elte.hu> <20070213142010.GA638@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070213142010.GA638@elte.hu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Subject: Re: [patch 05/11] syslets: core code
+References: <20070213142035.GF638@elte.hu>
+In-Reply-To: <20070213142035.GF638@elte.hu>
+Content-Type: multipart/mixed;
+ boundary="------------000408090606040406060005"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-  
-> The boring details:
-> 
-> Syslets consist of 'syslet atoms', where each atom represents a single 
-> system-call. These atoms can be chained to each other: serially, in 
-> branches or in loops. The return value of an executed atom is checked 
-> against the condition flags. So an atom can specify 'exit on nonzero' or 
-> 'loop until non-negative' kind of constructs.
+This is a multi-part message in MIME format.
+--------------000408090606040406060005
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Ouch, yet another interpretter in kernel :-(. Can we reuse acpi or
-something?
+Ingo Molnar a écrit :
+> +	if (unlikely(signal_pending(t) || need_resched()))
+> +		goto stop;
+>   
 
-									Pavel
+So, this is how you'll prevent me from running an infinite loop ;-)
+The attached patch adds a cond_resched() instead, to allow infinite
+loops without DoS. I dropped the unlikely() as it's already in the
+definition of signal_pending().
+
+> +asmlinkage long sys_async_wait(unsigned long min_wait_events)
+>   
+
+Here I would expect:
+
+    sys_async_wait_for_all(struct syslet_atom *atoms, long nr_atoms)
+
+and
+
+    sys_async_wait_for_any(struct syslet_atom *atoms, long nr_atoms).
+
+This way syslets can be used by different parts of a program without
+having them waiting for each other.
+
+Thanks.
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Guillaume
+
+
+--------------000408090606040406060005
+Content-Type: text/x-patch;
+ name="cond_resched.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="cond_resched.diff"
+
+--- linux-2.6/kernel/async.c
++++ linux-2.6/kernel/async.c
+@@ -433,9 +433,10 @@
+ 
+ 	last_uatom = uatom;
+ 	ret = __exec_atom(t, &atom);
+-	if (unlikely(signal_pending(t) || need_resched()))
++	if (signal_pending(t))
+ 		goto stop;
+ 
++	cond_resched();
+ 	uatom = next_uatom(&atom, uatom, ret);
+ 	if (uatom)
+ 		goto run_next;
+
+
+
+
+--------------000408090606040406060005--
