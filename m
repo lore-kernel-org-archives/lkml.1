@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932079AbXBNAOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932071AbXBNAPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932079AbXBNAOw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 19:14:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932087AbXBNAOv
+	id S932071AbXBNAPs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 19:15:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932086AbXBNAPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 19:14:51 -0500
-Received: from vms040pub.verizon.net ([206.46.252.40]:18318 "EHLO
-	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932079AbXBNAOv (ORCPT
+	Tue, 13 Feb 2007 19:15:48 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:60230 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932071AbXBNAPr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 19:14:51 -0500
-Date: Tue, 13 Feb 2007 19:14:49 -0500
-From: Gene Heskett <gene.heskett@verizon.net>
-Subject: Re: User tools for March 11
-In-reply-to: <Pine.LNX.4.61.0702131607590.27065@chaos.analogic.com>
-To: linux-kernel@vger.kernel.org,
-       "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-Message-id: <200702131914.49468.gene.heskett@verizon.net>
-Organization: Not detectable
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <Pine.LNX.4.61.0702131607590.27065@chaos.analogic.com>
-User-Agent: KMail/1.9.6
+	Tue, 13 Feb 2007 19:15:47 -0500
+Date: Tue, 13 Feb 2007 16:11:32 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@osdl.org>
+Subject: [PATCH] tty: use NULL for ptrs
+Message-Id: <20070213161132.3fb744b7.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.0 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 February 2007, linux-os (Dick Johnson) wrote:
->Hi!
->In the United States, some idiots have decided that the year 2000 scare
->wasn't enough so they changed the start date for daylight savings time
->from the first Sunday in April to the second Sunday in March.
->Does anybody know if there are new tools like `hwclock` and `date`?
->Will new 'C' runtime libraries be necessary as well?
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Dick, I believe all that is contained in the tzdata file, which most 
-distro's have already updated to reflect those changes.
+Fix sparse warning in tty_io:
+drivers/char/tty_io.c:1536:34: warning: Using plain integer as NULL pointer
 
->Cheers,
->Dick Johnson
->Penguin : Linux version 2.6.16.24 on an i686 machine (5592.61 BogoMips).
->New book: http://www.AbominableFirebug.com/
->_
->
->
->****************************************************************
->The information transmitted in this message is confidential and may be
-> privileged.  Any review, retransmission, dissemination, or other use of
-> this information by persons or entities other than the intended
-> recipient is prohibited.  If you are not the intended recipient, please
-> notify Analogic Corporation immediately - by replying to this message
-> or by sending an email to DeliveryErrors@analogic.com - and destroy all
-> copies of this information, including any attachments, without reading
-> or disclosing them.
->
->Thank you.
->-
->To unsubscribe from this list: send the line "unsubscribe linux-kernel"
-> in the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/char/tty_io.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Yahoo.com and AOL/TW attorneys please note, additions to the above
-message by Gene Heskett are:
-Copyright 2007 by Maurice Eugene Heskett, all rights reserved.
+--- linux-2.6.20-git9.orig/drivers/char/tty_io.c
++++ linux-2.6.20-git9/drivers/char/tty_io.c
+@@ -1533,7 +1533,7 @@ void disassociate_ctty(int on_exit)
+ 
+ 	spin_lock_irq(&current->sighand->siglock);
+ 	tty_pgrp = current->signal->tty_old_pgrp;
+-	current->signal->tty_old_pgrp = 0;
++	current->signal->tty_old_pgrp = NULL;
+ 	spin_unlock_irq(&current->sighand->siglock);
+ 	put_pid(tty_pgrp);
+ 
