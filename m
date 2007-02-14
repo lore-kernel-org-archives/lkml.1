@@ -1,93 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932605AbXBNWff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751263AbXBNWlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932605AbXBNWff (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 17:35:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932625AbXBNWff
+	id S1751263AbXBNWlU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 17:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbXBNWlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 17:35:35 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50164 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932605AbXBNWfe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 17:35:34 -0500
-Date: Wed, 14 Feb 2007 23:32:16 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 05/11] syslets: core code
-Message-ID: <20070214223216.GA7616@elte.hu>
-References: <20070213142035.GF638@elte.hu> <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org> <20070214210251.GA15025@elte.hu> <Pine.LNX.4.64.0702141321200.20368@woody.linux-foundation.org> <20070214215613.56d76257@localhost.localdomain>
-Mime-Version: 1.0
+	Wed, 14 Feb 2007 17:41:20 -0500
+Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:20785 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751263AbXBNWlT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 17:41:19 -0500
+X-IronPort-AV: i="4.14,170,1170662400"; 
+   d="scan'208"; a="360987220:sNHT155380548"
+To: Nick Piggin <npiggin@suse.de>
+Cc: linux-kernel@vger.kernel.org,
+       "Hugh Dickins <hugh@veritas.com> Andrew Morton" 
+	<akpm@linux-foundation.org>,
+       "Torvalds@linux-foundation.org Torvalds" 
+	<torvalds@linux-foundation.org>
+Subject: CONFIG_SWAP=n broken in latest tree
+X-Message-Flag: Warning: May contain useful information
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 14 Feb 2007 14:41:05 -0800
+Message-ID: <adak5ykz7jy.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070214215613.56d76257@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.3 required=5.9 tests=ALL_TRUSTED,BAYES_40 autolearn=no SpamAssassin version=3.1.7
-	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.3855]
+X-OriginalArrivalTime: 14 Feb 2007 22:41:07.0819 (UTC) FILETIME=[37AD3BB0:01C75089]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit 42da9cbd ("mm: mincore anon") breaks CONFIG_SWAP=n builds with:
 
-* Alan <alan@lxorguk.ukuu.org.uk> wrote:
+    mm/built-in.o: In function `sys_mincore':
+    (.text+0xe2c4): undefined reference to `swapper_space'
 
-> >    this "AIO atom" in the first place, WHICH WE KNOW IS INCORRECT, 
-> >    since current users use "aio_read()" that simply doesn't have 
-> >    that and doesn't build up any such data structures.
-> 
-> Do current users do this because that is all they have, because it is 
-> hard, or because the current option is all that makes sense ?
-> 
-> The ability to avoid asynchronous completion waits and 
-> complete/wake/despatch cycles is a good thing of itself. [...]
+because swapper_space is used unconditionally in mm/mincore.c but only
+defined in swap_state.c, which isn't built if CONFIG_SWAP=n.
 
-yeah, that's another key thing. I do plan to provide a sys_upcall() 
-syscall as well which calls a 5-parameter user-space function with a 
-special stack. (it's like a lightweight signal/event handler, without 
-any of the signal handler legacies and overhead - it's like a reverse 
-system call - a "user call". Obviously pure userspace would never use 
-sys_upcall(), unless as an act of sheer masochism.)
+I'd include a patch but I'm not sure what the right fix is really --
+the naively obvious thing to do would be to add an #ifdef to mincore.c
+like the below, but I don't know this area at all well enough to be
+confident in the fix.
 
-[ that way say a full HTTP request could be done by an asynchronous
-  context, because the HTTP parser could be done as a sys_upcall(). ]
-
-so if it's simpler/easier for a syslet to do a step in user-space - as 
-long as it's an 'atom' of processing - it can be done.
-
-or if processing is so heavily in user-space that most of the logic 
-lives there then just use plain pthreads. There's just no point in 
-moving complex user-space code to the syslet side if it's easier/faster 
-to do it in user-space. Syslets are there for asynchronous /kernel/ 
-execution, and is centered around how the kernel does stuff: system 
-calls.
-
-besides sys_upcall() i also plan two other extensions:
-
- - a CLONE_ASYNC_WORKER for user-space to be able use its pthread as an
-   optional worker thread in the async engine. A thread executing
-   user-space code qualifies as a 'busy' thread - it has to call into
-   sys_async_cachemiss_thread() to 'offer' itself as a ready thread that
-   the 'head' could switch to anytime.
-
- - support for multiple heads sharing the async context pool. All the
-   locking logic is there already (because cachemiss threads can already
-   access the queue), it only needs a refcount in struct async_head
-   (only accessed during fork/exit), and an update to the teardown logic
-   (that too is a slowpath).
-
-	Ingo
+diff --git a/mm/mincore.c b/mm/mincore.c
+index 95c5f49..266506f 100644
+--- a/mm/mincore.c
++++ b/mm/mincore.c
+@@ -109,8 +109,9 @@ static long do_mincore(unsigned long addr, unsigned char *vec, unsigned long pag
+ 		} else if (pte_file(pte)) {
+ 			pgoff = pte_to_pgoff(pte);
+ 			present = mincore_page(vma->vm_file->f_mapping, pgoff);
+-
+-		} else { /* pte is a swap entry */
++		}
++#ifdef CONFIG_SWAP
++		else { /* pte is a swap entry */
+ 			swp_entry_t entry = pte_to_swp_entry(pte);
+ 			if (is_migration_entry(entry)) {
+ 				/* migration entries are always uptodate */
+@@ -120,6 +121,7 @@ static long do_mincore(unsigned long addr, unsigned char *vec, unsigned long pag
+ 				present = mincore_page(&swapper_space, pgoff);
+ 			}
+ 		}
++#endif /* CONFIG_SWAP */
+ 	}
+ 	pte_unmap_unlock(ptep-1, ptl);
+ 
