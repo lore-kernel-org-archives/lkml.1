@@ -1,223 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751015AbXBNUjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751110AbXBNUjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751015AbXBNUjN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 15:39:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbXBNUjN
+	id S1751110AbXBNUjk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 15:39:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932567AbXBNUjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 15:39:13 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:44319 "EHLO mx1.redhat.com"
+	Wed, 14 Feb 2007 15:39:40 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:44342 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751015AbXBNUjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 15:39:12 -0500
-Message-ID: <45D37369.8060500@redhat.com>
-Date: Wed, 14 Feb 2007 15:39:05 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	id S1751110AbXBNUjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 15:39:39 -0500
+Date: Wed, 14 Feb 2007 12:38:16 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 05/11] syslets: core code
+In-Reply-To: <20070213142035.GF638@elte.hu>
+Message-ID: <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org>
+References: <20070213142035.GF638@elte.hu>
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-CC: linux-mm <linux-mm@kvack.org>
-Subject: [RFC] page replacement requirements
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Over the last few years, page replacement problems in the Linux VM
-have been getting resolved as they cropped up, but sometimes the same
-kind of bug has been getting fixed and reincroduced over and over
-again.
-
-This has convinced me that it is time to take a look at the actual
-requirements of a page replacement mechanism, so we can try to fix
-things without reintroducing other bugs.  Understanding what is going
-on should also help us deal better with really large memory systems.
-
-I have started writing down the list of requirements and explanations
-on the linux-mm wiki.  I will update this page as more requirements
-come up during this discussion.  It should also be easier to read than
-the cut'n'paste below the URL, so you'll probably want to read the page:
-
-	http://linux-mm.org/PageReplacementRequirements
 
 
-Requirements shortlist
+On Tue, 13 Feb 2007, Ingo Molnar wrote:
+> 
+> the core syslet / async system calls infrastructure code.
 
-    1. Must select good pages for eviction.
-    2. Must not submit too much I/O at once. Submitting too much I/O at 
-once can kill latency and even lead to deadlocks when bounce buffers 
-(highmem) are involved. Note that submitting sequential I/O is a good thing.
-    3. Must be able to efficiently evict the pages on which pageout I/O 
-completed.
-    4. Must be able to deal with multiple memory zones efficiently.
-    5. Must always have some pages ready to evict. Scanning 32GB of 
-"recently referenced" memory is not an option when memory gets tight.
-    6. Must be able to process pages in batches, to reduce SMP lock 
-contention.
-    7. A bad decision should have bounded consequences. The VM needs to 
-be resilient against its own heuristics going bad.
-    8. Low overhead of execution.
+Ok, having now looked at it more, I can say:
 
-Pageout selection
+ - I hate it.
 
-Scan Resistant
+I dislike it intensely, because it's so _close_ to being usable. But the 
+programming interface looks absolutely horrid for any "casual" use, and 
+while the loops etc look like fun, I think they are likely to be less than 
+useful in practice. Yeah, you can do the "setup and teardown" just once, 
+but it ends up being "once per user", and it ends up being a lot of stuff 
+to do for somebody who wants to just do some simple async stuff.
 
-A large sequential scan (eg. daily backup) should not be able to push 
-the working set out of memory.
+And the whole "lock things down in memory" approach is bad. It's doing 
+expensive things like mlock(), making the overhead for _single_ system 
+calls much more expensive. Since I don't actually believe that the 
+non-single case is even all that interesting, I really don't like it.
 
-Effective as second level cache
+I think it's clever and potentially useful to allow user mode to see the 
+data structures (and even allow user mode to *modify* them) while the 
+async thing is running, but it really seems to be a case of excessive 
+cleverness.
 
-The only hits in a second level cache are the cache misses from the 
-primary cache. This means that the inter-reference distances on eg. a 
-file server may be very large. A page replacement algorithm should be 
-able to detect and cache the most frequently accessed pages even in this 
-case.
+For example, how would you use this to emulate the *current* aio_read() 
+etc interfaces that don't have any user-level component except for the 
+actual call? And if you can't do that, the whole exercise is pointless.
 
-Recency vs. Frequency
+Or how would you do the trivial example loop that I explained was a good 
+idea:
 
-Which of the two is more important depends entirely on the workload. It 
-would be nice if the pageout selection algorithm would adapt automatically.
+        struct one_entry *prev = NULL;
+        struct dirent *de;
 
-Limited pageout I/O
+        while ((de = readdir(dir)) != NULL) {
+                struct one_entry *entry = malloc(..);
 
-Pageout I/O is submitted as pages hit the end of the LRU list. Dirty 
-pages are then rotated back onto the start of inactive list. Not only 
-does this disturb LRU order, but it can result in hundreds of megabytes 
-worth of small I/Os being submitted at once. This kills I/O latency and 
-can lead to deadlocks on 32 bit systems with highmem, where the kernel 
-needs to allocate bounce buffers and/or buffer heads from low memory.
+                /* Add it to the list, fill in the name */
+                entry->next = prev;
+                prev = entry;
+                strcpy(entry->name, de->d_name);
 
-Reclaim after I/O
+                /* Do the stat lookup async */
+                async_stat(de->d_name, &entry->stat_buf);
+        }
+        wait_for_async();
+        .. Ta-daa! All done ..
 
-The rotate_reclaimable_page() mechanism in the current 2.6 kernels fixes 
-part of the problem by moving pages back to the end of the inactive list 
-when IO finishes, but there is no effective mechanism to limit how much 
-I/O is submitted at once.
 
-The importance of sequential I/O
+Notice? This also "chains system calls together", but it does it using a 
+*much* more powerful entity called "user space". That's what user space 
+is. And yeah, it's a pretty complex sequencer, but happily we have 
+hardware support for accelerating it to the point that the kernel never 
+even needs to care.
 
-Since most disk writes are seek time dominated, the VM should aim to do 
-sequential/clustered writeouts, as well as refrain from submitting too 
-much pageout I/O at once. If the VM wants to free 10MB of memory, it 
-should not submit 500MB worth of I/O, just because there are that many 
-pages on the inactive list.
+The above is a *realistic* schenario, where you actually have things like 
+memory allocation etc going on. In contrast, just chaining system calls 
+together isn't a realistic schenario at all.
 
-Asynchronous Page-Out
+So I think we have one _known_ usage schenario:
 
-The page-out operation is not synchonous. Dirty pages that are selected 
-for reclaim are not directly freed, writeback is started against them 
-(PG_writeback is set) and they are fed back to the resident list. When 
-on completion of the write to their backing-store the reference bit is 
-still unset a callback is invoked to place them so that they are 
-immediate candidates for reclaim again (rotate_reclaimable_page).
+ - replacing the _existing_ aio_read() etc system calls (with not just 
+   existing semantics, but actually binary-compatible)
 
-When scanning for reclaimable pages make sure you are not stuck on a 
-writeback saturated list.
+ - simple code use where people are willing to perhaps do something 
+   Linux-specific, but because it's so _simple_, they'll do it.
 
-Multiple Zones
+In neither case does the "chaining atoms together" seem to really solve 
+the problem. It's clever, but it's not what people would actually do.
 
-Unlike most, linux has multiple memory zones; that is, memory is not 
-viewed as one big continuous section. There are specific sections of 
-memory where it is desirable to have the ability to free pages in. Think 
-of NUMA topologies or DMA engines that cannot operate on the full 
-address space. Hence memory is viewed in multiple zones.
+And yes, you can hide things like that behind an abstraction library, but 
+once you start doing that, I've got three questions for you:
 
-For traditional page replacement algorithms this is not a big issue 
-since we just implement per zone page replacement; eg. a CLOCK per zone. 
-However with the introduction of non-resident page state tracking in the 
-recent algorithms this does become a problem. Since a page can fault 
-into a different zone than where it came from, the non-resident page 
-state tracking needs to be over all memory, not just a single zone.
+ - what's the point?
+ - we're adding overhead, so how are we getting it back
+ - how do we handle independent libraries each doing their own thing and 
+   version skew between them?
 
-This makes for per zone resident page tracking and global non-resident 
-page tracking; this separation is not present in several proposed 
-algorithms and hence makes implementing them a challenge.
+In other words, the "let user space sort out the complexity" is not a good 
+answer. It just means that the interface is badly designed.
 
-Background aging
-
-After a day of no memory shortage, it is possible for a system to end up 
-with most pages having the referenced bit set. This has a number of bad 
-effects:
-
-     * Essentially a random page will be evicted.
-     * The system may have to scan through hundreds of thousands of 
-pages in order to find a page to be evicted.
-
-To avoid these situations, the system should always have some pages on 
-hand that are good candidates to be evicted. Light background aging of 
-pages may be one solution to get the desired result. There may be others.
-
-Batch processing
-
-To reduce SMP lock contention on the pageout list locks, the algorithms 
-must allow for pages to be moved around in batches instead of 
-individually. This is relatively easy to satisfy.
-
-Resilience
-
-Unlike many other subsystems, which are optimized for the common case, 
-the VM also needs to be optimized for the worst case. This is because 
-the latency difference between RAM and disk can be tens of millions of 
-CPU cycles.
-
-All heuristics will do the wrong thing occasionally, and the VM is no 
-exception. However, there should be mechanisms (probably feedback loops) 
-to stop the VM from blindly continuing down the wrong path and turning a 
-single mistake into a worst case scenario.
-
-Examples of worst case scenarios could be:
-
-     * LRU eviction on a circularly accessed working set slightly larger 
-than memory.
-     * Readahead window thrashing.
-     * Doing small I/Os through the pageout path, instead of larger 
-contiguous I/Os through the inode writeback path.
-
-One bad decision by the VM should never lead to the system going down 
-the drain.
-
-Low overhead of execution
-
-Evicting the wrong pages can be extremely costly, reducing system 
-performance by orders of magnitude. However, the VM also cannot go 
-overboard in trying to analyze what is going on and selecting pages to 
-evict. The algorithms used for pageout selection cannot scan the page 
-structs and page tables too often, otherwise they will end up wasting 
-too much CPU. This is especially true when thinking about large memory 
-systems, 128GB RAM is not that strange any more in 2007, and 1TB systems 
-will probably be common within a few years.
-Expensive Referenced Check
-
-Because multiple page table entries can refer to the same physical page 
-checking the referenced bit is not as cheap as most algorithms assume it 
-is (rmap). Hence we need to do the check without holding most locks. 
-This suggests a batched approach to minimize the lock/unlock frequency. 
-Modifying algorithms to do this is not usualy very hard.
-
-Other considerations
-
-Insert Referenced
-
-Since we fault in pages it is per definition that the page is going to 
-be used (readahead?) right after we switch back to userspace. Hence we 
-effectifly insert page with their reference bit set. Since most 
-algorithms assume we insert pages with their reference bit unset the 
-need arises to modify the algorithms so that pages are not promoted on 
-their first reference (use-once).
-
-Use once
-
-The use once algorithm currently in the 2.6 kernel does the wrong thing 
-in some use cases. For example, rsync can briefly touch the same pages 
-twice, and then never again. In this case, the pages should not get 
-promoted to the active list.
-
-For page replacement purposes "referenced twice" should mean that the 
-page was referenced in two time slots during which the VM scanned the 
-page referenced bit, so "referenced twice" is counted the same for page 
-tables as it is for page structs.
-
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+			Linus
