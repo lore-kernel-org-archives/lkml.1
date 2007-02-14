@@ -1,42 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932110AbXBNAlM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932122AbXBNAlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932110AbXBNAlM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 19:41:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932113AbXBNAks
+	id S932122AbXBNAlP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 19:41:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932116AbXBNAlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 19:40:48 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:40617 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932112AbXBNAkp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 19:40:45 -0500
-Date: Wed, 14 Feb 2007 01:40:39 +0100 (MET)
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-To: Neela Syam Kolli <Neela.Kolli@engenio.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Richard Knutsson <ricknu-0@student.ltu.se>
-Message-Id: <20070214004040.4514.85784.sendpatchset@thinktank.campus.ltu.se>
-Subject: [PATCH] scsi/megaraid.c: pci_module_init to pci_register_driver
+	Tue, 13 Feb 2007 19:41:15 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36833 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751478AbXBNAlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 19:41:01 -0500
+Message-ID: <45D25ABE.5080400@redhat.com>
+Date: Tue, 13 Feb 2007 19:41:34 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>
+CC: Dave Jones <davej@redhat.com>
+Subject: Is this bug too obvious?
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert pci_module_init() to pci_register_driver().
+drivers/usb/net/usbnet.c:
 
-Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
----
-Compile-tested with "allyes", "allmod" & "allno" on i386
+int
+usbnet_probe (struct usb_interface *udev, const struct usb_device_id *prod)
+{
+        struct usbnet                   *dev;
+        struct net_device               *net;
+        struct usb_host_interface       *interface;
+        struct driver_info              *info;
+        struct usb_device               *xdev;
+        int                             status;
 
+	...
 
-diff --git a/drivers/scsi/megaraid.c b/drivers/scsi/megaraid.c
-index 808a1b8..0aa3304 100644
---- a/drivers/scsi/megaraid.c
-+++ b/drivers/scsi/megaraid.c
-@@ -5072,7 +5072,7 @@ static int __init megaraid_init(void)
- 				"megaraid: failed to create megaraid root\n");
- 	}
- #endif
--	error = pci_module_init(&megaraid_pci_driver);
-+	error = pci_register_driver(&megaraid_pci_driver);
- 	if (error) {
- #ifdef CONFIG_PROC_FS
- 		remove_proc_entry("megaraid", &proc_root);
+        net = alloc_etherdev(sizeof(*dev));
+                                    ^^^^
+	                            *net ???
+
