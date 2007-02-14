@@ -1,104 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932318AbXBNO3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932324AbXBNOgL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932318AbXBNO3Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 09:29:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932319AbXBNO3Z
+	id S932324AbXBNOgL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 09:36:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932323AbXBNOgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 09:29:25 -0500
-Received: from styx.suse.cz ([82.119.242.94]:41164 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932318AbXBNO3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 09:29:24 -0500
-Date: Wed, 14 Feb 2007 15:32:50 +0100
-From: Jan Kara <jack@suse.cz>
-To: Frank Hartmann <soundart@gmx.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: 2.6.19.1 Oops while doing Disk IO + playing sound, 2.6.20 too
-Message-ID: <20070214143249.GE23203@duck.suse.cz>
-References: <877ivr6t0k.fsf@fantasio.hh.de> <20070207091841.GE24590@atrey.karlin.mff.cuni.cz> <87wt2thhux.fsf@fantasio.hh.de> <20070208093930.GB10973@duck.suse.cz> <87bqk06bhi.fsf_-_@fantasio.hh.de>
+	Wed, 14 Feb 2007 09:36:11 -0500
+Received: from qb-out-0506.google.com ([72.14.204.230]:7972 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932324AbXBNOgJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 09:36:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Qnvg0L+HGrDIiSlRdsbkztwup6qMydFott4Lr4D3bVmOm6ZLXZLHfF185GmYjVaTor6QCK5a7B3qp7P+ark8RAmSYvjmJNH5ev4k0HVtImkF9XYsJiwgNxi5FlJyML8bKcgJlD6QUCmkSIGn/+TuLzZpH1k1Q93si7hZUKGanxg=
+Message-ID: <9a8748490702140636w4ed2edb9md3cb9013823ba625@mail.gmail.com>
+Date: Wed, 14 Feb 2007 15:36:07 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "RIz Khan" <holysinn3r@yahoo.co.uk>
+Subject: Re: [KJ] Basics of linux kernel development.
+Cc: kernel-janitors@lists.osdl.org, greg@kroah.com, kpm@linux-foundation.org,
+       gregkh@suse.de, mathieu.desnoyers@polymtl.ca,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070214141020.81403.qmail@web28102.mail.ukl.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <87bqk06bhi.fsf_-_@fantasio.hh.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20070214141020.81403.qmail@web28102.mail.ukl.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 11-02-07 14:59:53, Frank Hartmann wrote:
-> Jan Kara <jack@suse.cz> writes:
-> >   OK, thanks for the news. Please, write me when you try out 2.6.20. Just
-> > if it rings bell to someone on this list: It looks like the page had no
-> > buffers but PagePrivate was set. Strange.
-> 
-> Hi Jan,
-> 
-> below is what I got using 2.6.20. 
-> 
-> Is there any correlation to my previous reports? Should I focus
-> testing memory/disks/etc. further(and how?)? Or should I focus modifying kernel
-> parameters(and which)? 
-  Yes I see some correlation. Again it seems there is a problem with buffers
-attached to a page which got truncated but Private flag of the page stayed.
-It's probably not important but just out of curiosity - do you have
-CONFIG_LBD (large block device) set? I'd just like to verify that page_bufs
-was NULL when it was passed to walk_page_buffers().
-  You said 2.6.17 worked for you, didn't you? How long does it take to
-reproduce the problem? If it is reasonably easy (e.g. a few hours), could
-you trace back when the problem started happening? If you could narrow that
-problem down to a single patch (using git-bisect), that would be great.
+On 14/02/07, RIz Khan <holysinn3r@yahoo.co.uk> wrote:
+>
+> Dear Sir/Madam,
+> I have an interview at symantec and i need to knw about Linux kernel
+> development using C. I have done prgramming in C++ but in windows enviorment
+> but i dont kknw nothing about linux and especially about kernel development.
+> I would be greatfull if u can tell me something about it and recomend me a
+> vry vry basic book.
 
-							Bye
-								Honza
+So you want to learn a new programming language (C), a new operating
+system (Linux) and dive into kernel development as well, all at the
+same time - that's no small task :)
 
-> Feb 11 14:30:47 fantasio kernel: BUG: unable to handle kernel NULL pointer dereference at virtual address 0000002d
-> Feb 11 14:30:47 fantasio kernel:  printing eip:
-> Feb 11 14:30:47 fantasio kernel: e0c55b16
-> Feb 11 14:30:47 fantasio kernel: *pde = 00000000
-> Feb 11 14:30:47 fantasio kernel: Oops: 0000 [#1]
-> Feb 11 14:30:48 fantasio kernel: Modules linked in: cbc blkcipher binfmt_misc bnep rfcomm l2cap nfs nfsd exportfs lockd sunrpc ip_tables bridge llc cryptoloop loop sha256 aes it87 hwmon_vid i2c_isa i2c_core md5 ipv6 af_packet radeon drm dm_crypt dm_mod snd_via82xx snd_ac97_codec ac97_bus snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd_page_alloc analog snd_mpu401_uart rtc gameport snd_rawmidi snd via_agp agpgart prism54 8250_pnp 8250 serial_core evdev soundcore firmware_class sd_mod ext3 jbd mbcache raid1 raid0 multipath linear md_mod ide_cd cdrom ide_disk usbhid usb_storage via82cxxx ide_core via_rhine mii ehci_hcd uhci_hcd usbcore sym53c8xx scsi_transport_spi scsi_mod unix
-> Feb 11 14:30:48 fantasio kernel: CPU:    0
-> Feb 11 14:30:48 fantasio kernel: EIP:    0060:[pg0+546224918/1070154752]    Not tainted VLI
-> Feb 11 14:30:48 fantasio kernel: EFLAGS: 00010202   (2.6.20 #1)
-> Feb 11 14:30:48 fantasio kernel: EIP is at walk_page_buffers+0x1e/0x87 [ext3]
-> Feb 11 14:30:48 fantasio kernel: eax: c38df601   ebx: 00002000   ecx: 00000029   edx: c38df601
-> Feb 11 14:30:48 fantasio kernel: esi: 00002000   edi: c38df6ec   ebp: 00000000   esp: c14f5dbc
-> Feb 11 14:30:48 fantasio kernel: ds: 007b   es: 007b   ss: 0068
-> Feb 11 14:30:48 fantasio kernel: Process pdflush (pid: 134, ti=c14f4000 task=dfc04a70 task.ti=c14f4000)
-> Feb 11 14:30:48 fantasio kernel: Stack: 00000029 00001000 00000000 dce96734 c104f700 c38df6ec dce96734 dce96734 
-> Feb 11 14:30:48 fantasio kernel:        e0c5629b 00001000 00000000 e0c561b1 c14f5e38 0000000e c14f5f58 0000000a 
-> Feb 11 14:30:48 fantasio kernel:        c104f700 0000000e c14f5f58 c0133584 00000000 0000000e 00000000 00000001 
-> Feb 11 14:30:48 fantasio kernel: Call Trace:
-> Feb 11 14:30:48 fantasio kernel:  [pg0+546226843/1070154752] ext3_ordered_writepage+0xcc/0x158 [ext3]
-> Feb 11 14:30:48 fantasio kernel:  [pg0+546226609/1070154752] bget_one+0x0/0x6 [ext3]
-> Feb 11 14:30:48 fantasio kernel:  [generic_writepages+380/690] generic_writepages+0x17c/0x2b2
-> Feb 11 14:30:48 fantasio kernel:  [pg0+546226639/1070154752] ext3_ordered_writepage+0x0/0x158 [ext3]
-> Feb 11 14:30:48 fantasio kernel:  [do_writepages+41/48] do_writepages+0x29/0x30
-> Feb 11 14:30:48 fantasio kernel:  [__sync_single_inode+81/406] __sync_single_inode+0x51/0x196
-> Feb 11 14:30:48 fantasio kernel:  [__writeback_single_inode+312/320] __writeback_single_inode+0x138/0x140
-> Feb 11 14:30:48 fantasio kernel:  [schedule_timeout+121/141] schedule_timeout+0x79/0x8d
-> Feb 11 14:30:48 fantasio kernel:  [process_timeout+0/5] process_timeout+0x0/0x5
-> Feb 11 14:30:48 fantasio kernel:  [apic_timer_interrupt+40/48] apic_timer_interrupt+0x28/0x30
-> Feb 11 14:30:48 fantasio kernel:  [congestion_wait+107/117] congestion_wait+0x6b/0x75
-> Feb 11 14:30:48 fantasio kernel:  [autoremove_wake_function+0/51] autoremove_wake_function+0x0/0x33
-> Feb 11 14:30:48 fantasio kernel:  [sync_sb_inodes+361/511] sync_sb_inodes+0x169/0x1ff
-> Feb 11 14:30:48 fantasio kernel:  [writeback_inodes+67/100] writeback_inodes+0x43/0x64
-> Feb 11 14:30:48 fantasio kernel:  [pdflush+0/40] pdflush+0x0/0x28
-> Feb 11 14:30:48 fantasio kernel:  [background_writeout+88/137] background_writeout+0x58/0x89
-> Feb 11 14:30:48 fantasio kernel:  [pdflush+0/40] pdflush+0x0/0x28
-> Feb 11 14:30:48 fantasio kernel:  [__pdflush+179/309] __pdflush+0xb3/0x135
-> Feb 11 14:30:48 fantasio kernel:  [pdflush+36/40] pdflush+0x24/0x28
-> Feb 11 14:30:48 fantasio kernel:  [background_writeout+0/137] background_writeout+0x0/0x89
-> Feb 11 14:30:48 fantasio kernel:  [pdflush+0/40] pdflush+0x0/0x28
-> Feb 11 14:30:48 fantasio kernel:  [kthread+114/151] kthread+0x72/0x97
-> Feb 11 14:30:48 fantasio kernel:  [kthread+0/151] kthread+0x0/0x97
-> Feb 11 14:30:48 fantasio kernel:  [kernel_thread_helper+7/16] kernel_thread_helper+0x7/0x10
-> Feb 11 14:30:48 fantasio kernel:  =======================
-> Feb 11 14:30:48 fantasio kernel: Code: 06 fb ff ff ff 83 c4 0c 89 c8 5b 5e c3 55 31 ed 57 89 d7 56 31 f6 53 83 ec 10 89 4c 24 08 89 44 24 0c 89 d1 8b 42 10 89 44 24 04 <8b> 41 04 89 04 24 8b 44 24 04 8d 1c 06 3b 5c 24 08 0f 96 c2 3b 
-> Feb 11 14:30:48 fantasio kernel: EIP: [pg0+546224918/1070154752] walk_page_buffers+0x1e/0x87 [ext3] SS:ESP 0068:c14f5dbc
-> 
-> 
-> regards
->   Frank
+As for the C language bit, starting with K&R's "The C programming
+language, second edition" is not a bad place to start.
+http://www.amazon.co.uk/C-Programming-Language-2nd/dp/0131103628/sr=8-1/qid=1171463251/ref=pd_ka_1/203-7856448-7676754?ie=UTF8&s=books
+
+As for the linux kernel, "Linux Kernel Development, second edition"by
+Robert Love is a good introduction that gives a good overview of most
+aspects of the kernel.
+http://www.amazon.co.uk/Linux-Kernel-Development-Novell-Press/dp/0672327201/sr=1-1/qid=1171463315/ref=sr_1_1/203-7856448-7676754?ie=UTF8&s=books
+You probably also want to read the file Documentation/HOWTO in the
+Linux kernel source dir (as well as all the files it refers you to -
+an online copy can be read here:
+http://www.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=Documentation/HOWTO
+
+And probably also won't hurt you to read "Linux in a Nutshell" by
+Ellen Siever, Aaron Weber & Stephen Figgins if you want a good general
+Linux reference.
+http://www.amazon.co.uk/Linux-Nutshell-OReilly-Ellen-Siever/dp/0596009305/ref=pd_bxgy_b_img_b/203-7856448-7676754
+
+
 -- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
