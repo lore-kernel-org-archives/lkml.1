@@ -1,66 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932644AbXBNVeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932648AbXBNVgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932644AbXBNVeE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 16:34:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932648AbXBNVeE
+	id S932648AbXBNVgR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 16:36:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932649AbXBNVgR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 16:34:04 -0500
-Received: from mail.gurulabs.com ([67.137.148.7]:43410 "EHLO mail.gurulabs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932644AbXBNVeC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 16:34:02 -0500
-Subject: Re: Linus' laptop and Num lock status
-From: Dax Kelson <dax@gurulabs.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jean Delvare <khali@linux-fr.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0702141130340.20368@woody.linux-foundation.org>
-References: <1171479361.3706.48.camel@mentorng.gurulabs.com>
-	 <Pine.LNX.4.64.0702141104210.3604@woody.linux-foundation.org>
-	 <20070214202144.1ddb930f.khali@linux-fr.org>
-	 <Pine.LNX.4.64.0702141130340.20368@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 14 Feb 2007 14:34:00 -0700
-Message-Id: <1171488840.3706.78.camel@mentorng.gurulabs.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Feb 2007 16:36:17 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:3821 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932648AbXBNVgQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 16:36:16 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 14 Feb 2007 13:36:13 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system
+ call support
+In-Reply-To: <45D3768B.7010902@goop.org>
+Message-ID: <Pine.LNX.4.64.0702141321410.7796@alien.or.mcafeemobile.com>
+References: <20070213142010.GA638@elte.hu> <45D3768B.7010902@goop.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-14 at 11:32 -0800, Linus Torvalds wrote:
-> 
-> On Wed, 14 Feb 2007, Jean Delvare wrote:
-> > 
-> > On x86, the BIOS led state can be read from byte 0x97 the BIOS RAM. The
-> > BIOS RAM is mapped at 0x400 so all we need to do is to one byte from
-> > RAM (offset 0x497). This is how Suse's hwinfo does.
-> 
-> Heh. Shows just how much I ever used DOS and BIOS.
-> 
-> > But maybe the first question to ask is: why is the BIOS setting lost in
-> > the first place? Why is the kernel resetting the led state?
-> 
-> Ehh. Silly question. "Those flags, they do nothing."
-> 
-> The kernel needs to know what they are in order to react correctly to 
-> them. And since you can't read them from hardware, the only way to know 
-> what they are (if you don't know about BIOS magic areas) is to SET THEM.
-> 
-> Which is what the kernel has traditionally always done.
+On Wed, 14 Feb 2007, Jeremy Fitzhardinge wrote:
 
-Going forward can the kernel peek at 0x497 and follow the BIOS setting?
+> Are there any special semantics that result from running the syslet
+> atoms in kernel mode?  If I wanted to, could I write a syslet emulation
+> in userspace that's functionally identical to a kernel-based
+> implementation?  (Obviously the performance characteristics will be
+> different.)
+> 
+> I'm asking from the perspective of trying to work out the Valgrind
+> binding for this if it goes into the kernel.  Valgrind needs to see all
+> the input and output values of each system call the client makes,
+> including those done within the syslet mechanism.  It seems to me that
+> the easiest way to do this would be to intercept the syslet system
+> calls, and just implement them in usermode, performing the same series
+> of syscalls directly, and applying the Valgrind machinery to each one in
+> turn.
+> 
+> Would this work?
 
-I checked, and looking at offset 0x497 seems to work fine on a couple of
-systems with USB keyboards.
+Hopefully the API will simplify enough so that emulation will becomes 
+easier.
 
-People have long grumbled and complained about the current kernel
-behavior (1).
 
-Dax Kelson
 
-(1)
-http://lkml.org/lkml/1999/2/27/6
-http://www.google.com/search?q=linux+num+lock
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=115909
+> Also, an unrelated question: is there enough control structure in place
+> to allow multiple syslet streams to synchronize with each other with
+> futexes?
+
+I think the whole point of an async execution of a syscall or a syslet, is 
+that the syscall/syslet itself includes a non interlocked operations with 
+other syscalls/syslets. So that the main scheduler thread can run in a 
+lockless/singletask fashion. There are no technical obstacles that 
+prevents you to do it, bu if you start adding locks (and hence having 
+long-living syslet-threads) at that point you'll end up with a fully 
+multithreaded solution.
+
+
+
+- Davide
+
 
