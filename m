@@ -1,49 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932326AbXBNO7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932327AbXBNPF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932326AbXBNO7d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 09:59:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932333AbXBNO7d
+	id S932327AbXBNPF3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 10:05:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932333AbXBNPF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 09:59:33 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:33549 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932326AbXBNO7c (ORCPT
+	Wed, 14 Feb 2007 10:05:29 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:20112
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932327AbXBNPF2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 09:59:32 -0500
-Date: Wed, 14 Feb 2007 20:29:14 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: akpm@osdl.org, paulmck@us.ibm.com, mingo@elte.hu, dipankar@in.ibm.com,
-       venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org,
-       oleg@tv-sign.ru, rjw@sisk.pl
-Subject: Re: [RFC PATCH(Experimental) 2/4] Revert changes to workqueue.c
-Message-ID: <20070214145914.GA1566@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070214144031.GA15257@in.ibm.com> <20070214144229.GA19789@in.ibm.com> <20070214144305.GB19789@in.ibm.com>
+	Wed, 14 Feb 2007 10:05:28 -0500
+Message-Id: <45D33344.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.1 
+Date: Wed, 14 Feb 2007 15:05:24 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <alan@redhat.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH, RFC] adjust legacy IDE resource setting
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070214144305.GB19789@in.ibm.com>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 14, 2007 at 08:13:05PM +0530, Gautham R Shenoy wrote:
-> This patch reverts all the recent workqueue hacks added to make it 
-> hotplug safe. 
+The change to force legacy mode IDE channels' resources to fixed
+non-zero values confuses (at least some versions of) X, because the
+values reported by the kernel and those readable from PCI config space
+aren't consistent anymore. Therefore, this patch arranges for the
+respective BARs to also get updated if possible.
 
-Oleg,
-	This patch probably needs review for any races we may have
-missed to account for.  Also we have considered only workqueue.c present
-in 2.6.20-rc6-mm3, which means some recent patches in mm tree which are
-yet to be published arent accounted for.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-Also I expect almost all worker threads to be frozen "for hotplug". The
-only exception I have found so far is kthread workqueue, which needs to
-remain unfrozen "for cpu hotplug" because kthread_create (in
-CPU_UP_PREPARE and stop_machine) relies on its services (while everyone else 
-is frozen). 
+--- linux-2.6.20/drivers/pci/probe.c	2007-02-04 19:44:54.000000000 +0100
++++ 2.6.20-pci-ide-legacy/drivers/pci/probe.c	2007-02-14 15:54:58.000000000 +0100
+@@ -639,7 +639,29 @@ static void pci_read_irq(struct pci_dev 
+ 	dev->irq = irq;
+ }
+ 
+-#define LEGACY_IO_RESOURCE	(IORESOURCE_IO | IORESOURCE_PCI_FIXED)
++static void change_legacy_io_resource(struct pci_dev * dev, unsigned index,
++                                      unsigned start, unsigned end)
++{
++	unsigned base = start & PCI_BASE_ADDRESS_IO_MASK;
++	unsigned len = (end | ~PCI_BASE_ADDRESS_IO_MASK) - base + 1;
++
++	if (!(pci_resource_flags(dev, index) & IORESOURCE_IO))
++		printk(KERN_WARNING "%s: cannot adjust BAR%u (not I/O)\n",
++		       pci_name(dev), index);
++	else if (pci_resource_len(dev, index) != len)
++		printk(KERN_WARNING "%s: cannot adjust BAR%u (size %04X)\n",
++		       pci_name(dev), index, (unsigned)pci_resource_len(dev, index));
++	else {
++		printk(KERN_INFO "%s: trying to change BAR%u from %04X to %04X\n",
++		       pci_name(dev), index,
++		       (unsigned)pci_resource_start(dev, index), base);
++		pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + index * 4, base);
++	}
++	pci_resource_start(dev, index) = start;
++	pci_resource_end(dev, index)   = end;
++	pci_resource_flags(dev, index) =
++		IORESOURCE_IO | IORESOURCE_PCI_FIXED | PCI_BASE_ADDRESS_SPACE_IO;
++}
+ 
+ /**
+  * pci_setup_device - fill in class and map information of a device
+@@ -692,20 +714,12 @@ static int pci_setup_device(struct pci_d
+ 			u8 progif;
+ 			pci_read_config_byte(dev, PCI_CLASS_PROG, &progif);
+ 			if ((progif & 1) == 0) {
+-				dev->resource[0].start = 0x1F0;
+-				dev->resource[0].end = 0x1F7;
+-				dev->resource[0].flags = LEGACY_IO_RESOURCE;
+-				dev->resource[1].start = 0x3F6;
+-				dev->resource[1].end = 0x3F6;
+-				dev->resource[1].flags = LEGACY_IO_RESOURCE;
++				change_legacy_io_resource(dev, 0, 0x1F0, 0x1F7);
++				change_legacy_io_resource(dev, 1, 0x3F6, 0x3F6);
+ 			}
+ 			if ((progif & 4) == 0) {
+-				dev->resource[2].start = 0x170;
+-				dev->resource[2].end = 0x177;
+-				dev->resource[2].flags = LEGACY_IO_RESOURCE;
+-				dev->resource[3].start = 0x376;
+-				dev->resource[3].end = 0x376;
+-				dev->resource[3].flags = LEGACY_IO_RESOURCE;
++				change_legacy_io_resource(dev, 2, 0x170, 0x177);
++				change_legacy_io_resource(dev, 3, 0x376, 0x376);
+ 			}
+ 		}
+ 		break;
 
--- 
-Regards,
-vatsa
+
