@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932346AbXBNPz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932357AbXBNQQN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932346AbXBNPz7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 10:55:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932350AbXBNPz6
+	id S932357AbXBNQQN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 11:16:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932356AbXBNQQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 10:55:58 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49390 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932346AbXBNPz6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 10:55:58 -0500
-Date: Wed, 14 Feb 2007 16:09:36 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: "Jan Beulich" <jbeulich@novell.com>
-Cc: <alan@redhat.com>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH, RFC] adjust legacy IDE resource setting
-Message-ID: <20070214160936.54b3c730@localhost.localdomain>
-In-Reply-To: <45D33CF9.76E4.0078.0@novell.com>
-References: <45D33344.76E4.0078.0@novell.com>
-	<20070214154014.7fa76711@localhost.localdomain>
-	<45D33CF9.76E4.0078.0@novell.com>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 14 Feb 2007 11:16:13 -0500
+Received: from smtp19.orange.fr ([80.12.242.1]:23760 "EHLO smtp19.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932357AbXBNQQM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 11:16:12 -0500
+X-ME-UUID: 20070214161608474.73B5E1C00049@mwinf1903.orange.fr
+Message-ID: <45D335A2.5080105@wanadoo.fr>
+Date: Wed, 14 Feb 2007 17:15:30 +0100
+From: Thibaud Hulin <hulin.thibaud@wanadoo.fr>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: no swap!
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The masking is done primarily to (a) calculate the correct length (from a BAR's
-> perspective), as I don't want to write the BAR if its length doesn't match the
-> expectation, and (b) to properly report the new value in the printk.
+Hi !
 
-Ok I guess you have to do something like that since you can't properly
-encode BAR 1 and BAR 3.
+After compiling the kernel, I discover that my computer don't use the swap.
+So, I try a cat .config |grep SW, and I got :
+CONFIG_SWAP=y
+# CONFIG_X86_VISWS is not set
+CONFIG_X86_BSWAP=y
+CONFIG_SUSPEND2_SWAP=y
+CONFIG_SUSPEND2_REPLACE_SWSUSP=y
+# CONFIG_AGP_SWORKS is not set
+CONFIG_USB_AUERSWALD=m
 
-> Of course I also opened a bug against X, as I too think it's doing something
-> wrong here.
+This is my fstab :
+# /etc/fstab: static file system information.
+#
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+proc            /proc           proc    defaults        0       0
+# /dev/hda1 -- converted during upgrade to edgy
+UUID=c0808eb9-790a-4a20-a3a2-26a4204d0fb2 / ext3 
+defaults,errors=remount-ro 0 1
+# /dev/hda5 -- converted during upgrade to edgy
+UUID=dfcca30e-3b78-4110-b578-9b8835ecf062 none swap sw 0 0
+#/dev/hda5	none	swap	sw	0	0
+/dev/hdc        /media/cdrom0   udf,iso9660 user,noauto     0       0
+/dev/fd0        /media/floppy0  auto    rw,user,noauto  0       0
 
-If you can add a comment about why it is done (X problem) then it looks
-fine to me.
 
-Alan
+Is it a problem of LVM or RAID ? I don't understand that very well...
+
+Thanks a lot,
+Thibaud.
+
