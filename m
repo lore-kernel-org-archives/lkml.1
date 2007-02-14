@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932119AbXBNAzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932139AbXBNA6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932119AbXBNAzW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 19:55:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932125AbXBNAzW
+	id S932139AbXBNA6c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 19:58:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932131AbXBNA6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 19:55:22 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:40987 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932119AbXBNAzV (ORCPT
+	Tue, 13 Feb 2007 19:58:31 -0500
+Received: from mga06.intel.com ([134.134.136.21]:16994 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932125AbXBNA6a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 19:55:21 -0500
-Message-ID: <45D25DE0.3090601@student.ltu.se>
-Date: Wed, 14 Feb 2007 01:54:56 +0100
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
+	Tue, 13 Feb 2007 19:58:30 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,166,1170662400"; 
+   d="scan'208"; a="196459800:sNHT22315958"
+Message-ID: <45D254C6.7050401@linux.intel.com>
+Date: Tue, 13 Feb 2007 16:16:06 -0800
+From: James Ketrenos <jketreno@linux.intel.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
 MIME-Version: 1.0
-To: Ryan Jackson <rjackson@lnxi.com>, Dave Olsen <dolsen@lnxi.com>,
-       David Woodhouse <dwmw2@infradead.org>
-CC: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] mtd/maps/ck804xrom.c: Remove #if 0'ed code
-References: <20070214004002.4391.40668.sendpatchset@thinktank.campus.ltu.se>
-In-Reply-To: <20070214004002.4391.40668.sendpatchset@thinktank.campus.ltu.se>
+To: Pavel Machek <pavel@ucw.cz>
+CC: netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ipw3945-devel@lists.sourceforge.net
+Subject: Re: [ipw3945-devel] [ANNOUNCE] d80211 based driver for Intel	PRO/Wireless
+ 3945ABG
+References: <45CCE3CA.4050904@linux.intel.com> <20070213181313.GA5350@ucw.cz>
+In-Reply-To: <20070213181313.GA5350@ucw.cz>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove #if 0'ed code (to get rid of pci_module_init()).
+Pavel Machek wrote:
+...
+>> You can find the new driver, and additional information 
+>> about it, here:
+>>
+>>   http://intellinuxwireless.org/iwlwifi.
+> ...
+>> You can find that package at:
+>>
+>>   http://intellinuxwireless.org/d80211
+>>
+>> Ok.  Now... any questions?
+> 
+> Yes... is there merged .git tree somewhere? I downloaded iwl git tree,
+> but it did not contain d80211 stack. I'm now downloading wireless-dev
+> git tree...
+> 							Pavel
 
-Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
----
-Compile-tested with "allyes", "allmod" & "allno" on i386
-More suitable description, sorry for the noise
+There isn't a singular merged iwlwifi + d80211 package tree outside of 
+wireless-dev, and iwlwifi isn't there yet (I'm cleaning out some dead 
+and duplicated code before we submit)
 
+I've put up http://intellinuxwireless.org/repos/?p=d80211.git so you can 
+pull the d80211 package via git (vs. downloading the tarball).  Running 
+'make patch_kernel' will then install the d80211 subsystem containing 
+patches not yet in wireless-dev into your kernel sources (specified via 
+KSRC=)
 
-diff --git a/drivers/mtd/maps/ck804xrom.c b/drivers/mtd/maps/ck804xrom.c
-index 238d42e..1998172 100644
---- a/drivers/mtd/maps/ck804xrom.c
-+++ b/drivers/mtd/maps/ck804xrom.c
-@@ -310,15 +310,6 @@ static struct pci_device_id ck804xrom_pci_tbl[] = {
- 
- MODULE_DEVICE_TABLE(pci, ck804xrom_pci_tbl);
- 
--#if 0
--static struct pci_driver ck804xrom_driver = {
--	.name =		MOD_NAME,
--	.id_table =	ck804xrom_pci_tbl,
--	.probe =	ck804xrom_init_one,
--	.remove =	ck804xrom_remove_one,
--};
--#endif
--
- static int __init init_ck804xrom(void)
- {
- 	struct pci_dev *pdev;
-@@ -337,9 +328,6 @@ static int __init init_ck804xrom(void)
- 		return retVal;
- 	}
- 	return -ENXIO;
--#if 0
--	return pci_module_init(&ck804xrom_driver);
--#endif
- }
- 
- static void __exit cleanup_ck804xrom(void)
-
+James
 
