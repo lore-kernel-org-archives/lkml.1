@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932386AbXBNQp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932389AbXBNQp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932386AbXBNQp4 (ORCPT <rfc822;w@1wt.eu>);
+	id S932389AbXBNQp4 (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 14 Feb 2007 11:45:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932389AbXBNQpz
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932392AbXBNQpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 11:45:55 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:24540 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932393AbXBNQpM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 11:45:12 -0500
-From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-To: rolandd@cisco.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       openib-general@openib.org, hch@infradead.org
-Subject: [PATCH 2.6.21-rc1 5/5] ehca: query_port() returns LINK_UP instead UNKNOWN
-Date: Wed, 14 Feb 2007 17:41:44 +0100
-User-Agent: KMail/1.8.2
-Cc: raisch@de.ibm.com, h.carstens@de.ibm.com
+	Wed, 14 Feb 2007 11:45:53 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:35046 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932380AbXBNQps (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 11:45:48 -0500
+Date: Wed, 14 Feb 2007 08:45:44 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bill Lear <rael@zopyra.com>
+cc: Junio C Hamano <junkio@cox.net>, git@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] GIT 1.5.0
+In-Reply-To: <17875.9043.217255.863200@lisa.zopyra.com>
+Message-ID: <Pine.LNX.4.64.0702140839560.3604@woody.linux-foundation.org>
+References: <7vlkj1v3av.fsf@assigned-by-dhcp.cox.net> <17875.9043.217255.863200@lisa.zopyra.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702141741.45135.hnguyen@linux.vnet.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-this patch sets port phys state as a result of ehca_query_port() to LINK_UP.
-On pSeries ehca actually represents a logical HCA, whose phys/link state always
-is LINK_UP. 
-Thanks
-Nam
 
 
-Signed-off-by: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
----
+On Wed, 14 Feb 2007, Bill Lear wrote:
+> 
+> This is enabled by passing the --enable=receive-pack to the
+> git-daemon (usually in the [x]?inetd configuration).
+> 
+> This has the benefit of:
 
+Before you list the benefits, you should always talk about the lack of 
+security! Let nobody enable it without realizing the dangers! Tell people 
+to _only_ do this inside a company firewall, and even then, only if you 
+trust everybody.
 
- ehca_hca.c |    3 +++
- 1 files changed, 3 insertions(+)
+>   2) A less ugly URL to use: git://server/repo, instead of, say,
+>      ssh+git://server/path/to/repos/repo.
 
+Why do people use that silly "ssh+git://" format?
 
-diff -Nurp infiniband_orig/drivers/infiniband/hw/ehca/ehca_hca.c infiniband_work/drivers/infiniband/hw/ehca/ehca_hca.c
---- infiniband_orig/drivers/infiniband/hw/ehca/ehca_hca.c       2007-02-14 13:11:45.000000000 +0100
-+++ infiniband_work/drivers/infiniband/hw/ehca/ehca_hca.c       2007-02-14 12:53:52.000000000 +0100
-@@ -162,6 +162,9 @@ int ehca_query_port(struct ib_device *ib
-        props->active_width    = IB_WIDTH_12X;
-        props->active_speed    = 0x1;
+It's a cogito thing. Native git has never done it, and only supports it 
+because cogito thought it must make sense.
 
-+       /* at the moment (logical) link state is always LINK_UP */
-+       props->phys_state      = 0x5;
-+
- query_port1:
-        ehca_free_fw_ctrlblock(rblock);
+The native git ssh URL is exactly the normal ssh URL:
 
+	server:/path/to/repos/repo
+
+and if you really want to use the "xxx://" format, you might as well just 
+use
+
+	ssh://server/path/to/repos/repo
+
+which should also work fine. 
+
+		Linus
+
+PS. This is the commit message that  added "git+ssh://":
+
+	Author: Linus Torvalds <torvalds@osdl.org>
+	Date:   Fri Oct 14 17:14:56 2005 -0700
+	
+	    Support git+ssh:// and ssh+git:// URL
+	
+	    It seemed to be such a stupid syntax. It's both what "ssh://" means,
+	    and it's what not specifying a protocol at _all_ means.
+	
+	    But hey, since we already have two ways of saying "use ssh with
+	    pack-files", here's two more.
+
+so it was deemed stupid from the get-go, and isn't even some "legacy" 
+thing. It's purely a "cogito people thought it makes sense to point out 
+that it's _both_ native git _and_ ssh protocol".
