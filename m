@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932235AbXBNMwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932247AbXBNM7K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932235AbXBNMwn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 07:52:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932241AbXBNMwn
+	id S932247AbXBNM7K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 07:59:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932246AbXBNM7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 07:52:43 -0500
-Received: from javad.com ([216.122.176.236]:3440 "EHLO javad.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932235AbXBNMwm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 07:52:42 -0500
-From: Sergei Organov <osv@javad.com>
-To: Olivier Galibert <galibert@pobox.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "J.A. =?utf-8?B?TWFn?= =?utf-8?B?YWxsw4PDg8OCwrNu?=" 
-	<jamagallon@ono.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: somebody dropped a (warning) bomb
-References: <Pine.LNX.4.61.0702081851310.1364@yvahk01.tjqt.qr>
-	<Pine.LNX.4.64.0702081145470.8424@woody.linux-foundation.org>
-	<20070208221317.5beedaeb@werewolf-wl>
-	<Pine.LNX.4.64.0702081338010.8424@woody.linux-foundation.org>
-	<Pine.LNX.4.64.0702081351410.8424@woody.linux-foundation.org>
-	<87abznsdyo.fsf@javad.com>
-	<Pine.LNX.4.64.0702090753500.8424@woody.linux-foundation.org>
-	<874pprr5nn.fsf@javad.com>
-	<Pine.LNX.4.64.0702120804520.8424@woody.linux-foundation.org>
-	<87ps8end9b.fsf@javad.com> <20070213222125.GB68966@dspnet.fr.eu.org>
-Date: Wed, 14 Feb 2007 15:52:18 +0300
-In-Reply-To: <20070213222125.GB68966@dspnet.fr.eu.org> (Olivier Galibert's
-	message of "Tue, 13 Feb 2007 23:21:25 +0100")
-Message-ID: <877iuknbp9.fsf@javad.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
+	Wed, 14 Feb 2007 07:59:09 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35049 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932242AbXBNM7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 07:59:08 -0500
+Date: Wed, 14 Feb 2007 13:58:49 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.21
+Message-ID: <20070214125849.GH22008@elf.ucw.cz>
+References: <200702071418.51058.lenb@kernel.org> <20070209230928.GD3949@ucw.cz> <20070210015836.GA24082@khazad-dum.debian.net> <20070211193517.GA15445@elf.ucw.cz> <20070211194851.GB26874@khazad-dum.debian.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070211194851.GB26874@khazad-dum.debian.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Olivier Galibert <galibert@pobox.com> writes:
-> On Tue, Feb 13, 2007 at 09:06:24PM +0300, Sergei Organov wrote:
-[...]
->> May I suggest another definition for a warning being entirely sucks?
->> "The warning is entirely sucks if and only if it never has true
->> positives." In all other cases it's only more or less sucks, IMHO.
->
-> That means a warning that triggers on every line saying "there may be
-> a bug there" does not entirely suck?
+Hi!
 
-You got me. This warning is indeed entirely sucks. My definition is
-poor.
+> > > > Not including another /proc/acpi/ibm -like nightmare, is it?
+> > > 
+> > > Don't worry, I am already on my way to kill /proc/acpi/ibm... :-)
+> > 
+> > Great, thanks!
+> > 								Pavel
+> 
+> None of the platform/hwmon/led driver model code landed there yet, but it
+> should be available at:
+> 
+> http://repo.or.cz/w/linux-2.6/linux-acpi-2.6/ibm-acpi-2.6.git queue/waiting
+> 
+> eventually.  Note, I push a lot to that branch, and it is a stgit head, so
+> it gets rewond if a change that makes sense in an earlier patch shows up.
 
--- Sergei.
+Great... if you want some testing, just mail me patch against mainline
+or whatever... (I don't think I can handle stgit).
+								Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
