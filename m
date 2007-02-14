@@ -1,109 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932091AbXBNARp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932073AbXBNASd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932091AbXBNARp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 19:17:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932073AbXBNARp
+	id S932073AbXBNASd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 19:18:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932099AbXBNASd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 19:17:45 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:55961 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932091AbXBNARo (ORCPT
+	Tue, 13 Feb 2007 19:18:33 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:4663 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932073AbXBNASc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 19:17:44 -0500
-Subject: Re: [PATCH 12/22] elevate write count files are open()ed
-From: Dave Hansen <hansendc@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, hch@infradead.org
-In-Reply-To: <20070213095817.d2a8a380.akpm@linux-foundation.org>
-References: <20070209225329.27619A62@localhost.localdomain>
-	 <20070209225337.C8EC7257@localhost.localdomain>
-	 <20070212211148.c9069c97.akpm@linux-foundation.org>
-	 <1171385896.6202.20.camel@localhost.localdomain>
-	 <20070213095817.d2a8a380.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 13 Feb 2007 16:17:37 -0800
-Message-Id: <1171412257.30997.21.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Feb 2007 19:18:32 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 13 Feb 2007 16:18:29 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 06/11] syslets: core, documentation
+In-Reply-To: <Pine.LNX.4.64.0702131457060.32055@alien.or.mcafeemobile.com>
+Message-ID: <Pine.LNX.4.64.0702131612190.32055@alien.or.mcafeemobile.com>
+References: <20070213142042.GG638@elte.hu> <Pine.LNX.4.64.0702131117120.32055@alien.or.mcafeemobile.com>
+ <20070213213422.GA22104@elte.hu> <Pine.LNX.4.64.0702131457060.32055@alien.or.mcafeemobile.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-13 at 09:58 -0800, Andrew Morton wrote:
-> > On Tue, 13 Feb 2007 08:58:16 -0800 Dave Hansen <hansendc@us.ibm.com> wrote:
-> > > yipes.  A new mount-wide spin_lock/unlock for each for-writing open() and close().
-> > > Can we have a microbenchmark on this please?
+On Tue, 13 Feb 2007, Davide Libenzi wrote:
+
+> > > I can understand that chaining syscalls requires variable sharing, but 
+> > > the majority of the parameters passed to syscalls are just direct 
+> > > ones. Maybe a smart method that allows you to know if a parameter is a 
+> > > direct one or a pointer to one? An "unsigned int pmap" where bit N is 
+> > > 1 if param N is an indirection? Hmm?
 > > 
-> > Yeah, I'll schedule some dbench time on a NUMA machine.
+> > adding such things tends to slow down atom parsing.
 > 
-> dbench doesn't do open() a lot.  To assess the worst-case we'd need one
-> process per cpu camping in an open/close loop.
+> I really think it simplifies it. You simply *copy* the parameter (I'd say 
+> that 70+% of cases falls inside here), and if the current "pmap" bit is 
+> set, then you do all the indirection copy-from-userspace stuff.
+> It also simplify userspace a lot, since you can now pass arrays and 
+> structure pointers directly, w/out saving them in a temporary variable.
 
-This is definitely a worst-case scenario.  A 32-way x86_64 NUMA machine
-(with a pretty crappy interconnect) with a process-per-cpu all beating
-on the same filesystem.  
+Very rough sketch below ...
 
-no patch:
-real: 30.111s
-user: 0.031s
- sys: 2.685s
 
-r/o bind mount patch:
-real: 48.359s
-user: 0.146s
- sys: 47.984s
+---
+struct syslet_uatom {
+	unsigned long                           flags;
+	unsigned int                            nr;
+	unsigned short                          nparams;
+	unsigned short                          pmap;
+	long __user                             *ret_ptr;
+	struct syslet_uatom     __user          *next;
+	unsigned long           __user          args[6];
+	void __user                             *private;
+};
 
-It definitely makes a huge difference in system time, although not a
-fatal one.  Christoph, what do you think?  Back to caching the
-superblock flag in the mount?
-
-#!/bin/sh
-# go.sh
-name=`uname -r`
-grep -q /mnt/ram /proc/mounts || mount -t ramfs ram /mnt/ram;
-make openbench;
-nr_cpus=`cat /proc/cpuinfo | grep -c ^processor`
-for ((run=0;run<5;run++)); do
-        dir=$name.run.$run;
-        mkdir -p $dir;
-        for ((i=0;i<nr_cpus;i++)); do
-                { time taskset -c $i ./openbench $((1<<16))  & } \
-                > $dir/openbench.time.$i 2>&1
-        done;
-        wait
-        echo run $run done
-done
-
-// openbench.c
-#include <stdio.h>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
-void main(int argc, char **argv)
+long copy_uatom(struct syslet_atom *atom, struct syslet_uatom __user *uatom)
 {
-        pid_t pid = getpid();
-        char buf[100];
-        int ret;
-        int fd;
-        int i;
-        int loops = atoi(argv[1]);
-        sprintf(&buf[0], "/mnt/ram/openbench.%d", pid);
+	unsigned short i, pmap;
+	unsigned long __user *arg_ptr;
+	long ret = 0;
 
-        for (i=0; i< loops; i++) {
-                fd = open(&buf[0], O_WRONLY|O_CREAT);
-                if (fd < 0) {
-                        perror("open error");
-                        exit(fd);
-                }
-                write(fd, "foo");
-                close(fd);
-        }
-        ret = unlink(&buf[0]);
-        if (ret)
-                perror("unlink error");
+	if (!access_ok(VERIFY_WRITE, uatom, sizeof(*uatom)))
+		return -EFAULT;
+
+	ret = __get_user(atom->nr, &uatom->nr);
+	ret |= __get_user(atom->nparams, &uatom->nparams);
+	ret |= __get_user(pmap, &uatom->pmap);
+	ret |= __get_user(atom->ret_ptr, &uatom->ret_ptr);
+	ret |= __get_user(atom->flags, &uatom->flags);
+	ret |= __get_user(atom->next, &uatom->next);
+	if (unlikely(atom->nparams >= 6))
+		return -EINVAL;
+	for (i = 0; i < atom->nparams; i++, pmap >>= 1) {
+		atom->args[i] = uatom->args[i];
+		if (unlikely(pmap & 1)) {
+			arg_ptr = (unsigned long __user *) atom->args[i];
+			if (!access_ok(VERIFY_WRITE, arg_ptr, sizeof(*arg_ptr)))
+				return -EFAULT;
+			ret |= __get_user(atom->args[i], arg_ptr);
+		}
+	}
+
+	return ret;
 }
 
--- Dave
+void init_utaom(struct syslet_uatom *ua, unsigned long flags, unsigned int nr,
+		long *ret_ptr, struct syslet_uatom *next, void *private,
+		int nparams, ...)
+{
+	int i, mode;
+	va_list args;
+
+	ua->flags = flags;
+	ua->nr = nr;
+	ua->ret_ptr = ret_ptr;
+	ua->next = next;
+	ua->private = private;
+	ua->nparams = nparams;
+	ua->pmap = 0;
+	va_start(args, nparams);
+	for (i = 0; i < nparams; i++) {
+		mode = va_arg(args, int);
+		ua->args[i] = va_arg(args, unsigned long);
+		if (mode == UASYNC_INDIR)
+			ua->pmap |= 1 << i;
+	}
+	va_end(args);
+}
+
+
+#define UASYNC_IMM 0
+#define UASYNC_INDIR 1
+#define UAPD(a) UASYNC_IMM, (unsigned long) (a)
+#define UAPI(a) UASYNC_INDIR, (unsigned long) (a)
+
+
+void foo(void)
+{
+	int fd;
+	long res;
+	struct stat stb;
+	struct syslet_uatom ua;
+
+	init_utaom(&ua, 0, __NR_fstat, &res, NULL, NULL, 2,
+		   UAPI(&fd), UAPD(&stb));
+	...
+}
+---
+
+
+
+- Davide
+
 
