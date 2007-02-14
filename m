@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932534AbXBNUVF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932562AbXBNUWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932534AbXBNUVF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 15:21:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932526AbXBNUVF
+	id S932562AbXBNUWc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 15:22:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932563AbXBNUWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 15:21:05 -0500
-Received: from kanga.kvack.org ([66.96.29.28]:51142 "EHLO kanga.kvack.org"
+	Wed, 14 Feb 2007 15:22:32 -0500
+Received: from mail.screens.ru ([213.234.233.54]:54470 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932534AbXBNUVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 15:21:04 -0500
-Date: Wed, 14 Feb 2007 18:17:36 -0200
-From: Marcelo Tosatti <marcelo@kvack.org>
-To: Dave Jones <davej@redhat.com>, Marcelo Tosatti <marcelo@kvack.org>,
-       Jordan Crouse <jordan.crouse@amd.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] use movntq version of fast_clear_page/fast_copy_page on Geode
-Message-ID: <20070214201736.GA5794@dmt.lan>
-References: <20070214190839.GA4864@dmt.lan> <20070214195546.GA2005@redhat.com>
+	id S932562AbXBNUWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 15:22:31 -0500
+Date: Wed, 14 Feb 2007 23:22:09 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: akpm@osdl.org, paulmck@us.ibm.com, mingo@elte.hu, vatsa@in.ibm.com,
+       dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, rjw@sisk.pl
+Subject: Re: [RFC PATCH(Experimental) 1/4] freezer-cpu-hotplug core
+Message-ID: <20070214202209.GC301@tv-sign.ru>
+References: <20070214144031.GA15257@in.ibm.com> <20070214144229.GA19789@in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070214195546.GA2005@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070214144229.GA19789@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 14, 2007 at 02:55:46PM -0500, Dave Jones wrote:
-> On Wed, Feb 14, 2007 at 05:08:39PM -0200, Marcelo Tosatti wrote:
->  > 
->  > movntq instruction is supported by Geode CPU's, so use
->  > fast_clear_page/fast_copy_page versions that have it.
+On 02/14, Gautham R Shenoy wrote:
+>
+> o Splits CPU_DEAD into two events namely
+>   - CPU_DEAD: which will be handled while the processes are still
+>               frozen.
 > 
-> it's supported, but is it a win ?
-> The same was also true of the VIA C3/C7's, but due to
-> poor memory bandwidth, it turned out to be slower in most cases.
+>   - CPU_DEAD_KILL_THREADS: To be handled after we thaw_processes.
 
-Do you have the numbers for VIA C3/C7 around?
 
-The Geode benefits from movntq instead of movq:
+Imho, this is not right. This change the meaning of CPU_DEAD, and so
+we should fix all users of CPU_DEAD as well.
 
-[marcelo@localhost ~]$ cat /proc/cpuinfo
-processor       : 0
-vendor_id       : Geode by NSC
-cpu family      : 5
-model           : 5
-model name      : Geode(TM) Integrated Processor by National Semi
-stepping        : 2
-cpu MHz         : 364.898
-cache size      : 32 KB
-...
+How about
 
-[marcelo@localhost ~]$ wget http://www.fenrus.demon.nl/athlon.c
-...
+	CPU_DEAD_WHATEVER
+		the processes are still frozen
 
-[marcelo@localhost ~]$ ./athlon
-Athlon test program $Id: fast.c,v 1.6 2000/09/23 09:05:45 arjan Exp $
-clear_page() tests
-clear_page function 'warm up run'        took 9565 cycles per page
-clear_page function '2.4 non MMX'        took 3347 cycles per page
-clear_page function '2.4 MMX fallback'   took 3389 cycles per page
-clear_page function '2.4 MMX version'    took 2920 cycles per page
-clear_page function 'faster_clear_page'  took 2912 cycles per page
-clear_page function 'even_faster_clear'  took 2863 cycles per page
+	CPU_DEAD
+		after we thaw_processes
 
-copy_page() tests
-copy_page function 'warm up run'         took 9409 cycles per page
-copy_page function '2.4 non MMX'         took 13161 cycles per page
-copy_page function '2.4 MMX fallback'    took 13033 cycles per page
-copy_page function '2.4 MMX version'     took 9288 cycles per page
-copy_page function 'faster_copy'         took 9806 cycles per page
-copy_page function 'even_faster'         took 8990 cycles per page
+This way we can add processing of the new CPU_DEAD_WHATEVER event where
+it may help. We don't need to change (for example) workqueue.c with this
+patch, we can do it in a separate patch.
+
+
+CPU_UP_PREPARE is called after freeze_processes()... Probably this works,
+but imho this is no good. Suppose for a moment that khelper will be frozen
+(yes, yes it can't be), then we can't do kthread_create().
+
+Oleg.
 
