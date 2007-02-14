@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932600AbXBNVXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932633AbXBNV0E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932600AbXBNVXi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 16:23:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932625AbXBNVXi
+	id S932633AbXBNV0E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 16:26:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932635AbXBNV0D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 16:23:38 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:56663 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932600AbXBNVXi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 16:23:38 -0500
-Subject: Re: [PATCH] use movntq version of fast_clear_page/fast_copy_page
-	on Geode
-From: Arjan van de Ven <arjan@infradead.org>
-To: Marcelo Tosatti <marcelo@kvack.org>
-Cc: Dave Jones <davej@redhat.com>, Jordan Crouse <jordan.crouse@amd.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070214201736.GA5794@dmt.lan>
-References: <20070214190839.GA4864@dmt.lan>
-	 <20070214195546.GA2005@redhat.com>  <20070214201736.GA5794@dmt.lan>
+	Wed, 14 Feb 2007 16:26:03 -0500
+Received: from gate.crashing.org ([63.228.1.57]:47613 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932633AbXBNV0A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 16:26:00 -0500
+Subject: Re: undefined symbol 'PS3_PS3AV'
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Thomas Meyer <thomas@m3y3r.de>
+In-Reply-To: <20070214101719.GA25319@linux-sh.org>
+References: <45D2A835.7020606@m3y3r.de>
+	 <Pine.LNX.4.62.0702140955130.17463@pademelon.sonytel.be>
+	 <20070214090701.GA11088@linux-sh.org>
+	 <Pine.LNX.4.62.0702141100470.2949@pademelon.sonytel.be>
+	 <20070214101719.GA25319@linux-sh.org>
 Content-Type: text/plain
-Organization: Intel International BV
-Date: Wed, 14 Feb 2007 22:23:28 +0100
-Message-Id: <1171488209.12771.463.camel@laptopd505.fenrus.org>
+Date: Thu, 15 Feb 2007 08:25:08 +1100
+Message-Id: <1171488308.20192.171.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-14 at 18:17 -0200, Marcelo Tosatti wrote:
-> On Wed, Feb 14, 2007 at 02:55:46PM -0500, Dave Jones wrote:
-> > On Wed, Feb 14, 2007 at 05:08:39PM -0200, Marcelo Tosatti wrote:
-> >  > 
-> >  > movntq instruction is supported by Geode CPU's, so use
-> >  > fast_clear_page/fast_copy_page versions that have it.
+On Wed, 2007-02-14 at 19:17 +0900, Paul Mundt wrote:
+> On Wed, Feb 14, 2007 at 11:02:06AM +0100, Geert Uytterhoeven wrote:
+> > On Wed, 14 Feb 2007, Paul Mundt wrote:
+> > > This would seem like a reasonable candidate for a 'depends on' instead of
+> > > a select..
 > > 
-> > it's supported, but is it a win ?
-> > The same was also true of the VIA C3/C7's, but due to
-> > poor memory bandwidth, it turned out to be slower in most cases.
+> > That's what we originally had. But for the user it's simler if he can just
+> > enable ps3fb and/or ps3snd (sound driver not yet finished), which both select
+> > PS3_PS3AV.
 > 
-> Do you have the numbers for VIA C3/C7 around?
+> Why not just have PS3_PS3AV def_bool y if ps3fb || ps3snd? Or if that
+> doesn't work, just place the PS3FB option in arch/powerpc/platforms/ps3/Kconfig.
 > 
-> The Geode benefits from movntq instead of movq:
-> 
-> [marcelo@localhost ~]$ cat /proc/cpuinfo
-> processor       : 0
-> vendor_id       : Geode by NSC
-> cpu family      : 5
-> model           : 5
-> model name      : Geode(TM) Integrated Processor by National Semi
-> stepping        : 2
-> cpu MHz         : 364.898
-> cache size      : 32 KB
-> ...
-> 
-> [marcelo@localhost ~]$ wget http://www.fenrus.demon.nl/athlon.c
-> ...
+> Of course if select obeyed the depends on, this wouldn't be a problem
+> either..
 
+I'd rather fix Kconfig to do the later...
 
-btw there is a caveat with this program: you don't see that this evicts
-the data RIGHT AFTER THE COPY, so if you use it again you pay AGAIN the
-memory bandwidth price...
+Ben.
+
 
