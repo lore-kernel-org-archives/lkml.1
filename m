@@ -1,62 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932139AbXBNA6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932211AbXBNBCG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932139AbXBNA6c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 19:58:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932131AbXBNA6b
+	id S932211AbXBNBCG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 20:02:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932208AbXBNBCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 19:58:31 -0500
-Received: from mga06.intel.com ([134.134.136.21]:16994 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932125AbXBNA6a (ORCPT
+	Tue, 13 Feb 2007 20:02:06 -0500
+Received: from mail0.lsil.com ([147.145.40.20]:40951 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932209AbXBNBCE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 19:58:30 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,166,1170662400"; 
-   d="scan'208"; a="196459800:sNHT22315958"
-Message-ID: <45D254C6.7050401@linux.intel.com>
-Date: Tue, 13 Feb 2007 16:16:06 -0800
-From: James Ketrenos <jketreno@linux.intel.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
+	Tue, 13 Feb 2007 20:02:04 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, ipw3945-devel@lists.sourceforge.net
-Subject: Re: [ipw3945-devel] [ANNOUNCE] d80211 based driver for Intel	PRO/Wireless
- 3945ABG
-References: <45CCE3CA.4050904@linux.intel.com> <20070213181313.GA5350@ucw.cz>
-In-Reply-To: <20070213181313.GA5350@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] scsi/megaraid.c: pci_module_init to pci_register_driver
+Date: Tue, 13 Feb 2007 18:01:56 -0700
+Message-ID: <0631C836DBF79F42B5A60C8C8D4E8229920F78@NAMAIL2.ad.lsil.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] scsi/megaraid.c: pci_module_init to pci_register_driver
+Thread-Index: AcdP0aek7Iixt7xIRyW53yd5a2PRWQAAgHLw
+From: "Patro, Sumant" <Sumant.Patro@lsi.com>
+To: "Richard Knutsson" <ricknu-0@student.ltu.se>,
+       "Kolli, Neela" <Neela.Kolli@lsi.com>
+Cc: <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>
+X-OriginalArrivalTime: 14 Feb 2007 01:01:57.0991 (UTC) FILETIME=[B9F56770:01C74FD3]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-...
->> You can find the new driver, and additional information 
->> about it, here:
->>
->>   http://intellinuxwireless.org/iwlwifi.
-> ...
->> You can find that package at:
->>
->>   http://intellinuxwireless.org/d80211
->>
->> Ok.  Now... any questions?
-> 
-> Yes... is there merged .git tree somewhere? I downloaded iwl git tree,
-> but it did not contain d80211 stack. I'm now downloading wireless-dev
-> git tree...
-> 							Pavel
 
-There isn't a singular merged iwlwifi + d80211 package tree outside of 
-wireless-dev, and iwlwifi isn't there yet (I'm cleaning out some dead 
-and duplicated code before we submit)
+ACK.
 
-I've put up http://intellinuxwireless.org/repos/?p=d80211.git so you can 
-pull the d80211 package via git (vs. downloading the tarball).  Running 
-'make patch_kernel' will then install the d80211 subsystem containing 
-patches not yet in wireless-dev into your kernel sources (specified via 
-KSRC=)
+--Sumant
+ 
 
-James
+-----Original Message-----
+From: linux-scsi-owner@vger.kernel.org
+[mailto:linux-scsi-owner@vger.kernel.org] On Behalf Of Richard Knutsson
+Sent: Tuesday, February 13, 2007 4:41 PM
+To: Kolli, Neela
+Cc: linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org; Richard
+Knutsson
+Subject: [PATCH] scsi/megaraid.c: pci_module_init to pci_register_driver
 
+Convert pci_module_init() to pci_register_driver().
+
+Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
+---
+Compile-tested with "allyes", "allmod" & "allno" on i386
+
+
+diff --git a/drivers/scsi/megaraid.c b/drivers/scsi/megaraid.c index
+808a1b8..0aa3304 100644
+--- a/drivers/scsi/megaraid.c
++++ b/drivers/scsi/megaraid.c
+@@ -5072,7 +5072,7 @@ static int __init megaraid_init(void)
+ 				"megaraid: failed to create megaraid
+root\n");
+ 	}
+ #endif
+-	error = pci_module_init(&megaraid_pci_driver);
++	error = pci_register_driver(&megaraid_pci_driver);
+ 	if (error) {
+ #ifdef CONFIG_PROC_FS
+ 		remove_proc_entry("megaraid", &proc_root);
+-
+To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+the body of a message to majordomo@vger.kernel.org More majordomo info
+at  http://vger.kernel.org/majordomo-info.html
