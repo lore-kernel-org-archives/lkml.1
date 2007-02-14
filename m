@@ -1,66 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751116AbXBNXqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751120AbXBNXvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751116AbXBNXqs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 18:46:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbXBNXqs
+	id S1751120AbXBNXvm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 18:51:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932253AbXBNXvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 18:46:48 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40987 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751116AbXBNXqr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 18:46:47 -0500
-Date: Thu, 15 Feb 2007 00:44:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 05/11] syslets: core code
-Message-ID: <20070214234417.GA16332@elte.hu>
-References: <20070213142035.GF638@elte.hu> <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org> <20070214220948.GA3790@elte.hu> <Pine.LNX.4.64.0702141504140.20368@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702141504140.20368@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -5.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 14 Feb 2007 18:51:42 -0500
+Received: from fmx01.freemail.hu ([195.228.245.51]:17734 "HELO
+	fmx01.freemail.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751120AbXBNXvl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 18:51:41 -0500
+Date: Thu, 15 Feb 2007 00:51:36 +0100 (CET)
+From: =?ISO-8859-2?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Subject: Re: [PATCH] input: extend EV_LED
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+In-Reply-To: <d120d5000702141149g772840e7h87e4362b3f380bc0@mail.gmail.com>
+Message-ID: <freemail.20070115005136.94224@fm13.freemail.hu>
+X-Originating-IP: [80.98.105.91]
+X-HTTP-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; hu-HU; rv:1.8.0.6) Gecko/20060729 SeaMonkey/1.0.4
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-2
+Content-Transfer-Encoding: 8BIT
+X-Freemail: message scanned
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> > case. (but with some crazier hacks i got the one-shot atom overhead 
-> > [compared to a simple synchronous null syscall] to below 10 nsecs, 
-> > so there's room in there for further optimizations. Our current null 
-> > syscall latency is around ~150 nsecs.)
+Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+
+> On 2/14/07, Németh Márton <nm127@freemail.hu> wrote:
+> >
+> >
+> > Dmitry Torokhov <dmitry.torokhov@gmail.com> írta:
+> >
+> > > On 2/11/07, Németh Márton <nm127@freemail.hu> wrote:
+> > > >
+> > > > Extend EV_LED handling code so that it can handle not
+> > > > only two states (on/off) but also others. For example
+> > > > a LED can blink using hardware acceleration. The code
+> > > > changed so that it is similar to the code at EV_SND.
+> > > >
+> > >
+> > > Hi,
+> > >
+> > > I am not sure we would need this, could you explain what
+> > are you
+> > > trying to use input leds for?
+> > >
+> > > Generally speaking leds within input subsystem are
+> > supposed to be very
+> > > simple on/off objects, mostly for reporting state of input
+> > devices
+> > > (keyboards), I am not even sure that LED_MAIL and
+> > LED_CHARGING make
+> > > much sense here. For more compex
+objects(blinking/different
+> > > colors/different brightness) we have a separate LED
+subsystem
+> > > (drivers/leds).
+> >
+> > The background is that I own a Clevo notebook model D4J,
+> > product D410J which has a mail led near to the other LEDs.
+> > The mail LED in question has three known state: off, blink
+> > slow (0.5Hz), and blink fast (1Hz).
+> >
+> > The mail LED can be programmed through the ports 0x60 and
+> > 0x64. These ports belog to the i8042 controller, which is
+> > operated by the input subsystem. To be able to access the
+> > i8042 controller correctly, I need the spinlock i8042_lock
+> > held, which is defined as static in
+> > linux/drivers/input/serio/i8042.c .
+> >
+> > What I miss currently from the input subsystem is that the
+> > EV_LED can only handle on/off state.
+> >
+> > I do not know the LED subsystem in detail, but I do not know
+> > any possibility to access the i8042 from different subsystem
+> > than the input subsystem.
+> >
+> > What do you think and recommend?
+> >
 > 
-> You are not counting the whole setup cost there, then, because your 
-> setup cost is going to be at a minimum more expensive than the null 
-> system call.
+> I think you need to use leds framework for what you are
+trying to do.
+> I could export i8042_command() so you could access
+keyboard controller
+> from your driver.
 
-hm, this one-time cost was never on my radar. [ It's really dwarved by 
-other startup costs (a single fork() takes 100 usecs, an exec() takes 
-800 usecs.) ]
+I think exporting the i8042_command() would solve my
+problem, so I could call:
 
-In any case, we can delay this cost into the first cachemiss, or can 
-eliminate it by making it a globally pooled thing. It does not seem like 
-a big issue.
+retval = i8042_command(NULL, 0x0083);
+retval = i8042_command(NULL, 0x0084);
+retval = i8042_command(NULL, 0x008A);
 
-	Ingo
+as needed.
+
+Which header file should the i8042_command() defined in?
+
+        NMarci
+
+
+
+
+
+______________________________________________________________________
+Könyvszerda a Gabo, Akkord, Talentum, Ciceró Kiadókkal! 
+Több mint 700 féle könyv 30% kedvezménnyel! 
+http://www.bookline.hu/control/news?newsid=397&affiliate=frekszkar3435
+
