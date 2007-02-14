@@ -1,100 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750819AbXBND3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932299AbXBNDxL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750819AbXBND3A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 22:29:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbXBND3A
+	id S932299AbXBNDxL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 22:53:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbXBNDxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 22:29:00 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:4697 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750819AbXBND3A (ORCPT
+	Tue, 13 Feb 2007 22:53:11 -0500
+Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:30814 "HELO
+	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751147AbXBNDxJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 22:29:00 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 13 Feb 2007 19:28:56 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system
- call support
-In-Reply-To: <20070213142010.GA638@elte.hu>
-Message-ID: <Pine.LNX.4.64.0702131900280.32055@alien.or.mcafeemobile.com>
-References: <20070213142010.GA638@elte.hu>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 13 Feb 2007 22:53:09 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=tXRc9gDXQ1+fjniPInwKAZBlufg+8LYS2g6NnYntt8PPqC0eEhzwoQcWq9fBbCtR09lplCjydD474wHHE/074GzO99lwq2fH6hwLadkaU3YKekrHYpvs4x5Z+gR0IKa/PEDM6uYIzdqy5Wtv2Zg9fsoovMst1PU2r5TNhwt6V+g=  ;
+X-YMail-OSG: cmvzZ6gVM1k0fJYNNbngDtcOhUkElD9vklrpkaaqS8Wa5sF.2cmrI_9wJiILRmntdJUUP_pPu8w15b6TSpuX8HAbbQf0EXMVJfZMgE.TnXZiwVcyc3tyZGo5m_X5LeasCrrn9BLwhddRDuc-
+Message-ID: <45D2878E.1020603@yahoo.com.au>
+Date: Wed, 14 Feb 2007 14:52:46 +1100
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Help! How do I debug oopsing kernel workqueue threads?
+References: <45D259C3.6070109@redhat.com>
+In-Reply-To: <45D259C3.6070109@redhat.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Feb 2007, Ingo Molnar wrote:
+Chuck Ebbert wrote:
+> How the hell do I tell what kernel subsystem queued
+> a bogus work item?
 
-> I'm pleased to announce the first release of the "Syslet" kernel feature 
-> and kernel subsystem, which provides generic asynchrous system call 
-> support:
-> [...]
+Can you add a new field to struct list_head and add the caller's
+address in there?
 
-Ok, I had little to time review the code, but it has been a long 
-working day, so bear with me if I missed something.
-I don't see how sys_async_exec would not block, based on your patches. 
-Let's try to follow:
-
-- We enter sys_async_exec
-
-- We may fill the pool, but that's nothing interesting ATM. A bunch of 
-  threads will be created, and they'll end up sleeping inside the 
-  cachemiss_loop
-
-- We set the async_ready pointer and we fall inside exec_atom
-
-- There we copy the atom (nothing interesting from a scheduling POV) and 
-  we fall inside __exec_atom
-
-- In __exec_atom we do the actual syscall call. Note that we're still the 
-  task/thread that called sys_async_exec
-
-- So we enter the syscall, and now we end up in schedule because we're 
-  just unlucky
-
-- We notice that the async_ready pointer is not NULL, and we call 
-  __async_schedule
-
-- Finally we're in pick_new_async_thread and we pick one of the ready 
-  threads sleeping in cachemiss_loop
-
-- We copy the pt_regs to the newly picked-up thread, we set its async head 
-  pointer, we set the current task async_ready pointer to NULL, we 
-  re-initialize the async_thread structure (the old async_ready), and we 
-  put ourselves in the busy_list
-
-- Then we roll back to the schedule that started everything, and being 
-  still "prev" for the scheduler, we go to sleep
-
-So the sys_async_exec task is going to block. Now, am I being really 
-tired, or the cachemiss fast return is simply not there?
-There's another problem AFAICS:
-
-- We woke up one of the cachemiss_loop threads in pick_new_async_thread
-
-- The threads wakes up, mark itself as busy, and look at the ->work 
-  pointer hoping to find something to work on
-
-But we never set that pointer to a userspace atom AFAICS. Me blind? :)
+> 
+> BUG: unable to handle kernel paging request at virtual address 00002074
+>  printing eip:
+> c04f3b55
+> *pde = 71bb1067
+> Oops: 0000 [#1]
+> SMP
+> last sysfs file: /class/scsi_host/host2/proc_name
+> Modules linked in: hwmon i2c_isa eeprom sunrpc ipv6 ip_nat_sip ip_nat_pptp 
+> ip_nat_ftp ip_conntrack_sip ip_conntrack_pptp ip_conntrack_ftp xt_helper ipt_LOG 
+> xt_state xt_tcpudp iptable_mangle iptable_nat ip_nat ip_conntrack nfnetlink 
+> iptable_filter ip_tables x_tables dm_mirror dm_multipath dm_mod video sbs i2c_ec 
+> button battery asus_acpi ac lp snd_hda_intel snd_hda_codec snd_seq_dummy 
+> snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss 
+> sg snd_pcm snd_timer ide_cd floppy snd serio_raw cdrom sky2 ohci1394 ieee1394 
+> soundcore pcspkr iTCO_wdt skge i2c_i801 snd_page_alloc i2c_core parport_pc 
+> parport ata_piix libata aacraid sd_mod scsi_mod ext3 jbd ehci_hcd ohci_hcd 
+> uhci_hcd
+> CPU:    0
+> EIP:    0060:[<c04f3b55>]    Not tainted VLI
+> EFLAGS: 00010046   (2.6.19-1.2895.fc6 #1)
+> EIP is at list_del+0x2d/0x6c
+> eax: 00002070   ebx: f76f0f80   ecx: 00000001   edx: 00000000
+> esi: f7ff8dc0   edi: d6ca8000   ebp: f7e6f380   esp: f7fefef0
+> ds: 007b   es: 007b   ss: 0068
+> Process events/0 (pid: 8, ti=f7fef000 task=f7e205d0 task.ti=f7fef000)
+> Stack: f7e205d0 d7ade040 f7ff8d40 f76f0f80 c04717fc f703e0c0 c07a2fc8 f703e0c0
+>        00000001 00000000 f7ff8e60 f7ff8e60 00000001 f7ff8e40 00000000 c04718ff
+>        00000000 00000000 f7e6f380 f7ff8de4 f7ff8dc0 f7e6f380 f7e0bac0 00000282
+> Call Trace:
+>  [<c04717fc>] free_block+0x77/0xf0
+>  [<c04718ff>] drain_array+0x8a/0xb5
+>  [<c0472e9c>] cache_reap+0x53/0x117
+>  [<c04368c7>] run_workqueue+0x97/0xdd
+>  [<c0437284>] worker_thread+0xd9/0x10d
+>  [<c0439810>] kthread+0xc0/0xec
+>  [<c0404c03>] kernel_thread_helper+0x7/0x10
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
 
-
-
-- Davide
-
-
+-- 
+SUSE Labs, Novell Inc.
+Send instant messages to your online friends http://au.messenger.yahoo.com 
