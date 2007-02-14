@@ -1,61 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932573AbXBNVGE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932591AbXBNVHG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932573AbXBNVGE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 16:06:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932589AbXBNVGE
+	id S932591AbXBNVHG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 16:07:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932593AbXBNVHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 16:06:04 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39063 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932573AbXBNVGC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 16:06:02 -0500
-Date: Wed, 14 Feb 2007 22:02:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Wed, 14 Feb 2007 16:07:05 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:3486 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932591AbXBNVHD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 16:07:03 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 14 Feb 2007 13:06:59 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Benjamin LaHaise <bcrl@kvack.org>
+cc: Russell King <rmk+lkml@arm.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Arjan van de Ven <arjan@infradead.org>,
        Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
        Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
        "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
        Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 05/11] syslets: core code
-Message-ID: <20070214210251.GA15025@elte.hu>
-References: <20070213142035.GF638@elte.hu> <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.3 required=5.9 tests=ALL_TRUSTED,BAYES_40 autolearn=no SpamAssassin version=3.1.7
-	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.3482]
+Subject: Re: [patch 06/11] syslets: core, documentation
+In-Reply-To: <20070214203438.GL32271@kvack.org>
+Message-ID: <Pine.LNX.4.64.0702141241030.7796@alien.or.mcafeemobile.com>
+References: <20060529212109.GA2058@elte.hu> <20070213142042.GG638@elte.hu>
+ <20070214103655.GB4241@flint.arm.linux.org.uk> <20070214105039.GC6801@elte.hu>
+ <20070214110419.GC4241@flint.arm.linux.org.uk>
+ <Pine.LNX.4.64.0702140919200.7480@alien.or.mcafeemobile.com>
+ <20070214180344.GI32271@kvack.org> <Pine.LNX.4.64.0702141135390.7796@alien.or.mcafeemobile.com>
+ <20070214200347.GK32271@kvack.org> <Pine.LNX.4.64.0702141206190.7796@alien.or.mcafeemobile.com>
+ <20070214203438.GL32271@kvack.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 14 Feb 2007, Benjamin LaHaise wrote:
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> On Wed, Feb 14, 2007 at 12:14:29PM -0800, Davide Libenzi wrote:
+> > I think you may have mis-interpreted my words. *When* a schedule would 
+> > block a synco execution try, then you do have a context switch. Noone 
+> > argue that, and the code is clear. The sys_async_exec thread will block, 
+> > and a newly woke up thread will re-emerge to sys_async_exec with a NULL 
+> > returned to userspace. But in a "cachehit" case (no schedule happens 
+> > during the syscall/*let execution), there is no context switch at all. 
+> > That is the whole point of the optimization.
+> 
+> And I will repeat myself: that cannot be done.  Tell me how the following 
+> what if scenario works: you're in an MMX optimized memory copy and you take 
+> a page fault.  How does returning to the submittor of the async operation 
+> get the correct MMX state restored?  It doesn't.
 
-> And the whole "lock things down in memory" approach is bad. It's doing 
-> expensive things like mlock(), making the overhead for _single_ system 
-> calls much more expensive. [...]
+Bear with me Ben, and let's follow this up :) If you are in the middle of 
+an MMX copy operation, inside the syscall, you are:
 
-hm, there must be some misunderstanding here. That mlock is /only/ once 
-per the lifetime of the whole 'head' - i.e. per sys_async_register(). 
-(And you can even forget i ever did it - it's 5 lines of code to turn 
-the completion ring into a swappable entity.)
+- Userspace, on task A, calls sys_async_exec
 
-never does any MMU trick ever enter the picture during the whole 
-operation of this thing, and that's very much intentional.
+- Userspace in _not_ doing any MMX stuff before the call
 
-	Ingo
+- We execute the syscall
+
+- Task A, executing the syscall and inside an MMX copy operation, gets a 
+  page fault
+
+- We get a schedule
+
+- Task A MMX state will *follow* task A, that will be put to sleep
+
+- We wake task B that will return to userspace
+
+So if the MMX work happens inside the syscall execution, we're fine 
+because its context will follow the same task being put into sleep.
+Problem would be to preserve the *caller* (userspace) context. But than 
+can be done in a lazy way (detecting if task A user the FPU) like we're 
+currently doing it, once we detect a schedule-out condition. That wouldn't 
+be the most common case for many userspace programs in any case.
+
+
+
+
+- Davide
+
+
