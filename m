@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932456AbXBNTKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932465AbXBNTKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932456AbXBNTKM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 14:10:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932459AbXBNTKM
+	id S932465AbXBNTKh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 14:10:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932474AbXBNTKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 14:10:12 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45425 "EHLO mx1.redhat.com"
+	Wed, 14 Feb 2007 14:10:37 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45512 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932456AbXBNTKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 14:10:10 -0500
+	id S932465AbXBNTKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 14:10:20 -0500
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 2/6] MODSIGN: In-kernel crypto extensions
+Subject: [PATCH 4/6] MODSIGN: Module ELF verifier
 To: torvalds@osdl.org, akpm@osdl.org, herbert.xu@redhat.com
 Cc: linux-kernel@vger.kernel.org, davej@redhat.com, arjan@infradead.org,
        linux-crypto@vger.kernel.org, dhowells@redhat.com
-Date: Wed, 14 Feb 2007 19:09:49 +0000
-Message-ID: <20070214190949.6438.28537.stgit@warthog.cambridge.redhat.com>
+Date: Wed, 14 Feb 2007 19:09:59 +0000
+Message-ID: <20070214190959.6438.64122.stgit@warthog.cambridge.redhat.com>
 In-Reply-To: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com>
 References: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com>
 User-Agent: StGIT/0.12
@@ -25,149 +25,497 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Two extensions are added:
+Do preliminary verification of the ELF structure of a module.  This is used to
+make sure that the ELF structure can then be used to check the module signature
+and access the module data without breaking the module loader.
 
- (1) Support for SHA1 digestion of in-kernel buffers directly without the use
-     of scatter-gather lists.
-
- (2) Allocation of crypto algorithm instances without resort to fallback module
-     loading.
-
-SHA1 is used by module signature checking, and so must not itself require
-loading as a module when the module signature checking is enabled.
+If the module's ELF metadata is determined to be bad, then ELIBBAD will be
+returned and a message will be logged to the kernel log.
 
 Signed-Off-By: David Howells <dhowells@redhat.com>
 ---
 
- crypto/api.c           |   46 +++++++++++++++++++++++++++++++++++++++++++++-
- crypto/digest.c        |    9 +++++++++
- include/linux/crypto.h |   11 +++++++++++
- 3 files changed, 65 insertions(+), 1 deletions(-)
+ init/Kconfig               |   11 ++
+ kernel/Makefile            |    2 
+ kernel/module-verify-elf.c |  304 ++++++++++++++++++++++++++++++++++++++++++++
+ kernel/module-verify.c     |   41 ++++++
+ kernel/module-verify.h     |   53 ++++++++
+ kernel/module.c            |    7 +
+ 6 files changed, 416 insertions(+), 2 deletions(-)
 
-diff --git a/crypto/api.c b/crypto/api.c
-index 55af8bb..3138d7c 100644
---- a/crypto/api.c
-+++ b/crypto/api.c
-@@ -341,6 +341,45 @@ out:
- EXPORT_SYMBOL_GPL(__crypto_alloc_tfm);
+diff --git a/init/Kconfig b/init/Kconfig
+index ad33c97..0013f45 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -553,6 +553,17 @@ config MODULE_SRCVERSION_ALL
+ 	  the version).  With this option, such a "srcversion" field
+ 	  will be created for all modules.  If unsure, say N.
  
- /*
-+ *	crypto_alloc_tfm2 - Find or load crypto module
-+ *	@name: Name of algorithm
-+ *	@flags: Flags to control algorithm instance
-+ *	@nomodload: True to suppress resort to module loading
++config MODULE_VERIFY_ELF
++	bool "Module ELF structure verification"
++	depends on MODULES
++	help
++	  Check ELF structure of modules upon load
++
++config MODULE_VERIFY
++	bool
++	depends on MODULES
++	default y if MODULE_VERIFY_ELF
++
+ config KMOD
+ 	bool "Automatic kernel module loading"
+ 	depends on MODULES
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 14f4d45..5ed0824 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -30,6 +30,8 @@ obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock.o
+ obj-$(CONFIG_PROVE_LOCKING) += spinlock.o
+ obj-$(CONFIG_UID16) += uid16.o
+ obj-$(CONFIG_MODULES) += module.o
++obj-$(CONFIG_MODULE_VERIFY) += module-verify.o
++obj-$(CONFIG_MODULE_VERIFY_ELF) += module-verify-elf.o
+ obj-$(CONFIG_KALLSYMS) += kallsyms.o
+ obj-$(CONFIG_PM) += power/
+ obj-$(CONFIG_BSD_PROCESS_ACCT) += acct.o
+diff --git a/kernel/module-verify-elf.c b/kernel/module-verify-elf.c
+new file mode 100644
+index 0000000..6c4f1b1
+--- /dev/null
++++ b/kernel/module-verify-elf.c
+@@ -0,0 +1,304 @@
++/* module-verify-elf.c: module ELF verifier
 + *
-+ *	Attempt to find or load a crypto algorithm module and create an
-+ *	instance of it.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
 + */
-+struct crypto_tfm *crypto_alloc_tfm2(const char *name, u32 flags,
-+				     int nomodload)
-+{
-+	struct crypto_tfm *tfm = NULL;
-+	int err;
 +
-+	do {
-+		struct crypto_alg *alg;
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/slab.h>
++#include <linux/elf.h>
++#include "module-verify.h"
 +
-+		if (!nomodload)
-+			alg = crypto_alg_mod_lookup(name, 0, CRYPTO_ALG_ASYNC);
-+		else
-+			alg = crypto_alg_lookup(name, 0, CRYPTO_ALG_ASYNC);
-+
-+		err = PTR_ERR(alg);
-+		if (IS_ERR(alg))
-+			continue;
-+
-+		tfm = __crypto_alloc_tfm(alg, flags, 0);
-+		err = 0;
-+		if (IS_ERR(tfm)) {
-+			crypto_mod_put(alg);
-+			err = PTR_ERR(tfm);
-+			tfm = NULL;
-+		}
-+	} while (err == -EAGAIN && !signal_pending(current));
-+
-+	return tfm;
-+}
++#if 0
++#define _debug(FMT, ...) printk(FMT, ##__VA_ARGS__)
++#else
++#define _debug(FMT, ...) do {} while (0)
++#endif
 +
 +/*
-  *	crypto_alloc_base - Locate algorithm and allocate transform
-  *	@alg_name: Name of algorithm
-  *	@type: Type of algorithm
-@@ -392,7 +431,12 @@ err:
- 	return ERR_PTR(err);
- }
- EXPORT_SYMBOL_GPL(crypto_alloc_base);
-- 
-+
-+struct crypto_tfm *crypto_alloc_tfm(const char *name, u32 flags)
++ * verify the ELF structure of a module
++ */
++int module_verify_elf(struct module_verify_data *mvdata)
 +{
-+	return crypto_alloc_tfm2(name, flags, 0);
-+}
++	const Elf_Ehdr *hdr = mvdata->hdr;
++	const Elf_Shdr *section, *section2, *secstop;
++	const Elf_Rela *relas, *rela, *relastop;
++	const Elf_Rel *rels, *rel, *relstop;
++	const Elf_Sym *symbol, *symstop;
++	size_t size, sssize, *secsize, tmp, tmp2;
++	long last;
++	int line;
 +
- /*
-  *	crypto_free_tfm - Free crypto transform
-  *	@tfm: Transform to free
-diff --git a/crypto/digest.c b/crypto/digest.c
-index 1bf7414..d03a4e1 100644
---- a/crypto/digest.c
-+++ b/crypto/digest.c
-@@ -91,6 +91,14 @@ static int update(struct hash_desc *desc,
- 	return update2(desc, sg, nbytes);
- }
- 
-+static void update_kernel(struct hash_desc *desc,
-+			  const void *data, size_t count)
++	size = mvdata->size;
++	mvdata->nsects = hdr->e_shnum;
++
++#define elfcheck(X)							\
++do { if (unlikely(!(X))) { line = __LINE__; goto elfcheck_error; } } while(0)
++
++#define seccheck(X)							\
++do { if (unlikely(!(X))) { line = __LINE__; goto seccheck_error; } } while(0)
++
++#define symcheck(X)							\
++do { if (unlikely(!(X))) { line = __LINE__; goto symcheck_error; } } while(0)
++
++#define relcheck(X)							\
++do { if (unlikely(!(X))) { line = __LINE__; goto relcheck_error; } } while(0)
++
++#define relacheck(X)							\
++do { if (unlikely(!(X))) { line = __LINE__; goto relacheck_error; } } while(0)
++
++	/* validate the ELF header */
++	elfcheck(hdr->e_ehsize < size);
++	elfcheck(hdr->e_entry == 0);
++	elfcheck(hdr->e_phoff == 0);
++	elfcheck(hdr->e_phnum == 0);
++
++	elfcheck(hdr->e_shnum < SHN_LORESERVE);
++	elfcheck(hdr->e_shoff < size);
++	elfcheck(hdr->e_shoff >= hdr->e_ehsize);
++	elfcheck((hdr->e_shoff & (sizeof(long) - 1)) == 0);
++	elfcheck(hdr->e_shstrndx > 0);
++	elfcheck(hdr->e_shstrndx < hdr->e_shnum);
++	elfcheck(hdr->e_shentsize == sizeof(Elf_Shdr));
++
++	tmp = (size_t) hdr->e_shentsize * (size_t) hdr->e_shnum;
++	elfcheck(tmp <= size - hdr->e_shoff);
++
++	/* allocate a table to hold in-file section sizes */
++	mvdata->secsizes = kcalloc(hdr->e_shnum, sizeof(size_t), GFP_KERNEL);
++	if (!mvdata->secsizes)
++		return -ENOMEM;
++
++	/* validate the ELF section headers */
++	mvdata->sections = mvdata->buffer + hdr->e_shoff;
++	secstop = mvdata->sections + mvdata->nsects;
++
++	sssize = mvdata->sections[hdr->e_shstrndx].sh_size;
++	elfcheck(sssize > 0);
++
++	section = mvdata->sections;
++	seccheck(section->sh_type == SHT_NULL);
++	seccheck(section->sh_size == 0);
++	seccheck(section->sh_offset == 0);
++
++	secsize = mvdata->secsizes + 1;
++	for (section++; section < secstop; secsize++, section++) {
++		seccheck(section->sh_name < sssize);
++		seccheck(section->sh_link < hdr->e_shnum);
++
++		if (section->sh_entsize > 0)
++			seccheck(section->sh_size % section->sh_entsize == 0);
++
++		seccheck(section->sh_offset >= hdr->e_ehsize);
++		seccheck(section->sh_offset < size);
++
++		/* determine the section's in-file size */
++		tmp = size - section->sh_offset;
++		if (section->sh_offset < hdr->e_shoff)
++			tmp = hdr->e_shoff - section->sh_offset;
++
++		for (section2 = mvdata->sections + 1;
++		     section2 < secstop;
++		     section2++) {
++			if (section->sh_offset < section2->sh_offset) {
++				tmp2 = section2->sh_offset -
++					section->sh_offset;
++				if (tmp2 < tmp)
++					tmp = tmp2;
++			}
++		}
++		*secsize = tmp;
++
++		_debug("Section %ld: %zx bytes at %lx\n",
++		       section - mvdata->sections,
++		       *secsize,
++		       (unsigned long) section->sh_offset);
++
++		/* perform section type specific checks */
++		switch (section->sh_type) {
++		case SHT_NOBITS:
++			break;
++
++		case SHT_REL:
++			seccheck(section->sh_entsize == sizeof(Elf_Rel));
++			goto more_rel_checks;
++
++		case SHT_RELA:
++			seccheck(section->sh_entsize == sizeof(Elf_Rela));
++		more_rel_checks:
++			seccheck(section->sh_info > 0);
++			seccheck(section->sh_info < hdr->e_shnum);
++			goto more_sec_checks;
++
++		case SHT_SYMTAB:
++			seccheck(section->sh_entsize == sizeof(Elf_Sym));
++			goto more_sec_checks;
++
++		default:
++		more_sec_checks:
++			/* most types of section must be contained entirely
++			 * within the file */
++			seccheck(section->sh_size <= *secsize);
++			break;
++		}
++	}
++
++	/* validate the ELF section names */
++	section = &mvdata->sections[hdr->e_shstrndx];
++
++	seccheck(section->sh_offset != hdr->e_shoff);
++
++	mvdata->secstrings = mvdata->buffer + section->sh_offset;
++
++	last = -1;
++	for (section = mvdata->sections + 1; section < secstop; section++) {
++		const char *secname;
++		tmp = sssize - section->sh_name;
++		secname = mvdata->secstrings + section->sh_name;
++		seccheck(secname[0] != 0);
++		if (section->sh_name > last)
++			last = section->sh_name;
++	}
++
++	if (last > -1) {
++		tmp = sssize - last;
++		elfcheck(memchr(mvdata->secstrings + last, 0, tmp) != NULL);
++	}
++
++	/* look for various sections in the module */
++	for (section = mvdata->sections + 1; section < secstop; section++) {
++		switch (section->sh_type) {
++		case SHT_SYMTAB:
++			if (strcmp(mvdata->secstrings + section->sh_name,
++				   ".symtab") == 0
++			    ) {
++				seccheck(mvdata->symbols == NULL);
++				mvdata->symbols =
++					mvdata->buffer + section->sh_offset;
++				mvdata->nsyms =
++					section->sh_size / sizeof(Elf_Sym);
++				seccheck(section->sh_size > 0);
++			}
++			break;
++
++		case SHT_STRTAB:
++			if (strcmp(mvdata->secstrings + section->sh_name,
++				   ".strtab") == 0
++			    ) {
++				seccheck(mvdata->strings == NULL);
++				mvdata->strings =
++					mvdata->buffer + section->sh_offset;
++				sssize = mvdata->nstrings = section->sh_size;
++				seccheck(section->sh_size > 0);
++			}
++			break;
++		}
++	}
++
++	if (!mvdata->symbols) {
++		printk("Couldn't locate module symbol table\n");
++		goto format_error;
++	}
++
++	if (!mvdata->strings) {
++		printk("Couldn't locate module strings table\n");
++		goto format_error;
++	}
++
++	/* validate the symbol table */
++	symstop = mvdata->symbols + mvdata->nsyms;
++
++	symbol = mvdata->symbols;
++	symcheck(ELF_ST_TYPE(symbol[0].st_info) == STT_NOTYPE);
++	symcheck(symbol[0].st_shndx == SHN_UNDEF);
++	symcheck(symbol[0].st_value == 0);
++	symcheck(symbol[0].st_size == 0);
++
++	last = -1;
++	for (symbol++; symbol < symstop; symbol++) {
++		symcheck(symbol->st_name < sssize);
++		if (symbol->st_name > last)
++			last = symbol->st_name;
++		symcheck(symbol->st_shndx < mvdata->nsects ||
++			 symbol->st_shndx >= SHN_LORESERVE);
++	}
++
++	if (last > -1) {
++		tmp = sssize - last;
++		elfcheck(memchr(mvdata->strings + last, 0, tmp) != NULL);
++	}
++
++	/* validate each relocation table as best we can */
++	for (section = mvdata->sections + 1; section < secstop; section++) {
++		section2 = mvdata->sections + section->sh_info;
++
++		switch (section->sh_type) {
++		case SHT_REL:
++			rels = mvdata->buffer + section->sh_offset;
++			relstop = mvdata->buffer +
++				section->sh_offset + section->sh_size;
++
++			for (rel = rels; rel < relstop; rel++) {
++				relcheck(rel->r_offset < section2->sh_size);
++				relcheck(ELF_R_SYM(rel->r_info) <
++					 mvdata->nsyms);
++			}
++
++			break;
++
++		case SHT_RELA:
++			relas = mvdata->buffer + section->sh_offset;
++			relastop = mvdata->buffer +
++				section->sh_offset + section->sh_size;
++
++			for (rela = relas; rela < relastop; rela++) {
++				relacheck(rela->r_offset < section2->sh_size);
++				relacheck(ELF_R_SYM(rela->r_info) <
++					  mvdata->nsyms);
++			}
++
++			break;
++
++		default:
++			break;
++		}
++	}
++
++
++	_debug("ELF okay\n");
++	return 0;
++
++elfcheck_error:
++	printk("Verify ELF error (assertion %d)\n", line);
++	goto format_error;
++
++seccheck_error:
++	printk("Verify ELF error [sec %ld] (assertion %d)\n",
++	       (long)(section - mvdata->sections), line);
++	goto format_error;
++
++symcheck_error:
++	printk("Verify ELF error [sym %ld] (assertion %d)\n",
++	       (long)(symbol - mvdata->symbols), line);
++	goto format_error;
++
++relcheck_error:
++	printk("Verify ELF error [sec %ld rel %ld] (assertion %d)\n",
++	       (long)(section - mvdata->sections),
++	       (long)(rel - rels), line);
++	goto format_error;
++
++relacheck_error:
++	printk("Verify ELF error [sec %ld rela %ld] (assertion %d)\n",
++	       (long)(section - mvdata->sections),
++	       (long)(rela - relas), line);
++	goto format_error;
++
++format_error:
++	return -ELIBBAD;
++}
+diff --git a/kernel/module-verify.c b/kernel/module-verify.c
+new file mode 100644
+index 0000000..875279f
+--- /dev/null
++++ b/kernel/module-verify.c
+@@ -0,0 +1,41 @@
++/* module-verify.c: module verifier
++ *
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/slab.h>
++#include "module-verify.h"
++
++/*
++ * verify a module's integrity
++ * - check the ELF is viable
++ */
++int module_verify(const Elf_Ehdr *hdr, size_t size)
 +{
-+	struct crypto_tfm *tfm = crypto_hash_tfm(desc->tfm);
-+	tfm->__crt_alg->cra_digest.dia_update(tfm, data, count);
-+	crypto_yield(desc->flags);
-+}
++	struct module_verify_data mvdata;
++	int ret;
 +
- static int final(struct hash_desc *desc, u8 *out)
- {
- 	struct crypto_tfm *tfm = crypto_hash_tfm(desc->tfm);
-@@ -146,6 +154,7 @@ int crypto_init_digest_ops(struct crypto_tfm *tfm)
- 	
- 	ops->init	= init;
- 	ops->update	= update;
-+	ops->update_kernel = update_kernel;
- 	ops->final	= final;
- 	ops->digest	= digest;
- 	ops->setkey	= dalg->dia_setkey ? setkey : nosetkey;
-diff --git a/include/linux/crypto.h b/include/linux/crypto.h
-index 779aa78..d960ec1 100644
---- a/include/linux/crypto.h
-+++ b/include/linux/crypto.h
-@@ -273,6 +273,8 @@ struct hash_tfm {
- 	int (*init)(struct hash_desc *desc);
- 	int (*update)(struct hash_desc *desc,
- 		      struct scatterlist *sg, unsigned int nsg);
-+	void (*update_kernel)(struct hash_desc *desc,
-+			      const void *data, size_t count);
- 	int (*final)(struct hash_desc *desc, u8 *out);
- 	int (*digest)(struct hash_desc *desc, struct scatterlist *sg,
- 		      unsigned int nsg, u8 *out);
-@@ -341,6 +343,8 @@ struct crypto_attr_alg {
-  */
-  
- struct crypto_tfm *crypto_alloc_tfm(const char *alg_name, u32 tfm_flags);
-+struct crypto_tfm *crypto_alloc_tfm2(const char *alg_name, u32 tfm_flags,
-+		int nomodload);
- struct crypto_tfm *crypto_alloc_base(const char *alg_name, u32 type, u32 mask);
- void crypto_free_tfm(struct crypto_tfm *tfm);
- 
-@@ -739,6 +743,13 @@ static inline int crypto_hash_update(struct hash_desc *desc,
- 	return crypto_hash_crt(desc->tfm)->update(desc, sg, nbytes);
- }
- 
-+static inline void crypto_hash_update_kernel(struct hash_desc *desc,
-+					     const void *data,
-+					     size_t count)
-+{
-+	return crypto_hash_crt(desc->tfm)->update_kernel(desc, data, count);
-+}
++	memset(&mvdata, 0, sizeof(mvdata));
++	mvdata.buffer	= hdr;
++	mvdata.hdr	= hdr;
++	mvdata.size	= size;
 +
- static inline int crypto_hash_final(struct hash_desc *desc, u8 *out)
- {
- 	return crypto_hash_crt(desc->tfm)->final(desc, out);
++	ret = module_verify_elf(&mvdata);
++	if (ret < 0) {
++		if (ret == -ELIBBAD)
++			printk("Module failed ELF checks\n");
++		goto error;
++	}
++
++error:
++	kfree(mvdata.secsizes);
++	kfree(mvdata.canonlist);
++	return ret;
++}
+diff --git a/kernel/module-verify.h b/kernel/module-verify.h
+new file mode 100644
+index 0000000..63f5e08
+--- /dev/null
++++ b/kernel/module-verify.h
+@@ -0,0 +1,53 @@
++/* module-verify.h: module verification definitions
++ *
++ * Copyright (C) 2004 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include <linux/types.h>
++#include <asm/module.h>
++
++#ifdef CONFIG_MODULE_VERIFY
++struct module_verify_data {
++	struct crypto_tfm	*digest;	/* module signature digest */
++	const void		*buffer;	/* module buffer */
++	const Elf_Ehdr		*hdr;		/* ELF header */
++	const Elf_Shdr		*sections;	/* ELF section table */
++	const Elf_Sym		*symbols;	/* ELF symbol table */
++	const char		*secstrings;	/* ELF section string table */
++	const char		*strings;	/* ELF string table */
++	size_t			*secsizes;	/* section size list */
++	size_t			size;		/* module object size */
++	size_t			nsects;		/* number of sections */
++	size_t			nsyms;		/* number of symbols */
++	size_t			nstrings;	/* size of strings section */
++	size_t			signed_size;	/* count of bytes contributed to digest */
++	int			*canonlist;	/* list of canonicalised sections */
++	int			*canonmap;	/* section canonicalisation map */
++	int			sig_index;	/* module signature section index */
++	uint8_t			xcsum;		/* checksum of bytes contributed to digest */
++	uint8_t			csum;		/* checksum of bytes representing a section */
++};
++
++/*
++ * module-verify.c
++ */
++extern int module_verify(const Elf_Ehdr *hdr, size_t size);
++
++/*
++ * module-verify-elf.c
++ */
++#ifdef CONFIG_MODULE_VERIFY_ELF
++extern int module_verify_elf(struct module_verify_data *mvdata);
++#else
++#define module_verify_elf(m) (0)
++#endif
++
++#else
++#define module_verify(h, s) (0)
++#endif
+diff --git a/kernel/module.c b/kernel/module.c
+index 8a94e05..86abdce 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -44,6 +44,7 @@
+ #include <asm/semaphore.h>
+ #include <asm/cacheflush.h>
+ #include <linux/license.h>
++#include "module-verify.h"
+ 
+ #if 0
+ #define DEBUGP printk
+@@ -1605,8 +1606,10 @@ static struct module *load_module(void __user *umod,
+ 		goto free_hdr;
+ 	}
+ 
+-	if (len < hdr->e_shoff + hdr->e_shnum * sizeof(Elf_Shdr))
+-		goto truncated;
++	/* Verify the module's contents */
++	err = module_verify(hdr, len);
++	if (err < 0)
++		goto free_hdr;
+ 
+ 	/* Convenience variables */
+ 	sechdrs = (void *)hdr + hdr->e_shoff;
