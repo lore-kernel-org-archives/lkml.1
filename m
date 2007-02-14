@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751381AbXBNXd3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964810AbXBNXkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751381AbXBNXd3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 18:33:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbXBNXd3
+	id S964810AbXBNXkx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 18:40:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964816AbXBNXkx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 18:33:29 -0500
-Received: from mail.gmx.net ([213.165.64.20]:56550 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751381AbXBNXd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 18:33:29 -0500
-X-Provags-ID: V01U2FsdGVkX18QXxoqEsoQO3Le1lZyGkhVpBTo9amvS5oF8//toq
-	7m9w==
-From: Frank Hartmann <soundart@gmx.net>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: 2.6.19.1 Oops while doing Disk IO + playing sound, 2.6.20 too
-In-Reply-To: <20070214143249.GE23203@duck.suse.cz> (Jan Kara's message of
-	"Wed, 14 Feb 2007 15:32:50 +0100")
-References: <877ivr6t0k.fsf@fantasio.hh.de>
-	<20070207091841.GE24590@atrey.karlin.mff.cuni.cz>
-	<87wt2thhux.fsf@fantasio.hh.de> <20070208093930.GB10973@duck.suse.cz>
-	<87bqk06bhi.fsf_-_@fantasio.hh.de> <20070214143249.GE23203@duck.suse.cz>
-Date: Thu, 15 Feb 2007 00:33:31 +0100
-Message-ID: <87r6ssl3g4.fsf@fantasio.hh.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.93 (gnu/linux)
-MIME-Version: 1.0
+	Wed, 14 Feb 2007 18:40:53 -0500
+Received: from kanga.kvack.org ([66.96.29.28]:53557 "EHLO kanga.kvack.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964810AbXBNXkw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 18:40:52 -0500
+Date: Wed, 14 Feb 2007 18:40:30 -0500
+From: Benjamin LaHaise <bcrl@kvack.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 06/11] syslets: core, documentation
+Message-ID: <20070214234030.GO32271@kvack.org>
+References: <20070214110419.GC4241@flint.arm.linux.org.uk> <Pine.LNX.4.64.0702140919200.7480@alien.or.mcafeemobile.com> <20070214180344.GI32271@kvack.org> <Pine.LNX.4.64.0702141135390.7796@alien.or.mcafeemobile.com> <20070214200347.GK32271@kvack.org> <Pine.LNX.4.64.0702141206190.7796@alien.or.mcafeemobile.com> <20070214203438.GL32271@kvack.org> <Pine.LNX.4.64.0702141241030.7796@alien.or.mcafeemobile.com> <20070214214409.GM32271@kvack.org> <Pine.LNX.4.64.0702141452240.7796@alien.or.mcafeemobile.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Y-GMX-Trusted: 0
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702141452240.7796@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara <jack@suse.cz> writes:
+On Wed, Feb 14, 2007 at 03:17:59PM -0800, Davide Libenzi wrote:
+> > That's an incorrect assumption.  Every task/thread in the system has FPU 
+> > state associated with it, in part due to the fact that glibc has to change 
+> > some of the rounding mode bits, making them different than the default from 
+> > a freshly initialized state.
+> 
+> IMO I still belive this is not a huge problem. FPU state propagation/copy 
+> can be done in a clever way, once we detect the in-async condition.
 
->   Yes I see some correlation. Again it seems there is a problem with buffers
-> attached to a page which got truncated but Private flag of the page stayed.
-> It's probably not important but just out of curiosity - do you have
-> CONFIG_LBD (large block device) set? I'd just like to verify that page_bufs
-> was NULL when it was passed to walk_page_buffers().
+Show me.  clts() and stts() are expensive hardware operations which there 
+is no means of avoiding as control register writes impact the CPU in a not 
+trivial manner.  I've spent far too much time staring at profiles of what 
+goes on in the context switch code in the process of looking for optimizations 
+on this very issue to be ignored on this point.
 
-
-fantasio:~/tmp/linux-2.6.20$ fgrep CONFIG_LBD .config
-# CONFIG_LBD is not set
-
-
->   You said 2.6.17 worked for you, didn't you? How long does it take to
-> reproduce the problem? If it is reasonably easy (e.g. a few hours), could
-> you trace back when the problem started happening? If you could narrow that
-> problem down to a single patch (using git-bisect), that would be great.
-
-Yes I said that. At least I did not notice it happen:) 
-Reproduction seems easy. So I will try. 
-
-I have some problem: I am not sufficiently familar with git!
-
-I found http://www.kernel.org/pub/software/scm/git/docs/howto/isolate-bugs-with-bisect.txt
-Is this the way to do a git-bisect?
-
->From where do I get the 'labels' for good(2.6.17) and bad(2.6.20)?
-
-regards
-  Frank
+		-ben
+-- 
+"Time is of no importance, Mr. President, only life is important."
+Don't Email: <dont@kvack.org>.
