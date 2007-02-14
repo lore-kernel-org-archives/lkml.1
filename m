@@ -1,60 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932099AbXBNASy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932097AbXBNATW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932099AbXBNASy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 19:18:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932101AbXBNASy
+	id S932097AbXBNATW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 19:19:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932100AbXBNATW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 19:18:54 -0500
-Received: from ozlabs.org ([203.10.76.45]:53399 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932099AbXBNASx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 19:18:53 -0500
+	Tue, 13 Feb 2007 19:19:22 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:14284 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932097AbXBNATV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 19:19:21 -0500
+X-AuditID: d80ac287-9f8eabb000007e48-b7-45d2587fa3a2 
+Date: Wed, 14 Feb 2007 00:19:06 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, tony.luck@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [patch] build error: allnoconfig fails on mincore/swapper_space
+In-Reply-To: <20070213144909.70943de2.randy.dunlap@oracle.com>
+Message-ID: <Pine.LNX.4.64.0702140009320.21315@blonde.wat.veritas.com>
+References: <20070212145040.c3aea56e.randy.dunlap@oracle.com>
+ <20070212150802.f240e94f.akpm@linux-foundation.org> <45D12715.4070408@yahoo.com.au>
+ <20070213121217.0f4e9f3a.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0702132224280.3729@blonde.wat.veritas.com>
+ <20070213144909.70943de2.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17874.21860.598842.609322@cargo.ozlabs.ibm.com>
-Date: Wed, 14 Feb 2007 11:18:44 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Andi Kleen <ak@suse.de>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Vojtech Pavlik <vojtech@suse.cz>, Jiri Bohac <jbohac@suse.cz>,
-       linux-kernel@vger.kernel.org, ssouhlal@freebsd.org, tglx@linutronix.de,
-       johnstul@us.ibm.com, zippel@linux-m68k.org, andrea@suse.de
-Subject: Re: [patch 4/9] Remove the TSC synchronization on SMP machines
-In-Reply-To: <200702131820.15180.ak@suse.de>
-References: <20070201095952.589234000@jet.suse.cz>
-	<1171348808.12771.19.camel@laptopd505.fenrus.org>
-	<Pine.LNX.4.64.0702130906530.23634@schroedinger.engr.sgi.com>
-	<200702131820.15180.ak@suse.de>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 14 Feb 2007 00:19:01.0309 (UTC) FILETIME=[BA22EED0:01C74FCD]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen writes:
-
-> Just to avoid spreading misinformation: modulo some new broken hardware
-> (which we always try to work around when found) i386/x86-64 gettimeofday
-> is monotonic.  AFAIK on the currently known hardware it should be generally
-> ok.
+On Tue, 13 Feb 2007, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> However ntpd can always screw you up, but that's inherent in the design.
+> Don't check for pte swap entries when CONFIG_SWAP=n.
+> And save 'present' in the vec array.
+> 
+> mm/built-in.o: In function `sys_mincore':
+> (.text+0xe584): undefined reference to `swapper_space'
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-On powerpc we manage to keep gettimeofday monotonic even when ntpd is
-adjusting the clock.  We have 3 parameters used to convert a value
-from the timebase register to the time of day, and these parameters
-are adjusted if necessary at the beginning of each tick, based on the
-value returned by current_tick_length().  The point is that
-current_tick_length() tells you at the *beginning* of each tick how
-much time will be added on to xtime at the *end* of that tick, and
-that makes it possible to aim the interpolation to hit the same value
-as xtime at the end of each tick.
+What you've done there is fine, Randy, thank you.
 
-Clearly if you make a discrete jump backwards with settimeofday or
-adjtime, it's impossible to keep gettimeofday monotonic, but apart
-from that it's monotonic on powerpc.
+But I just got out of bed to take another look, and indeed:
+what is it doing in the none_mapped !vma->vm_file case?
+passing back an uninitialized vector.
 
-At least, that's the way it's supposed to work.  I hope the recent
-timekeeping changes haven't broken it. :)
+Easy enough to fix, but I'd say Nick's patch has by now exceeded
+its embarrassment quota, and should be reverted from Linus' tree
+for now: clearly none of us have been paying enough attention,
+and other eyes are liable to find further errors lurking in it.
 
-Paul.
+Hugh
+
+> ---
+>  mm/mincore.c |    5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> --- linux-2.6.20-git9.orig/mm/mincore.c
+> +++ linux-2.6.20-git9/mm/mincore.c
+> @@ -111,6 +111,7 @@ static long do_mincore(unsigned long add
+>  			present = mincore_page(vma->vm_file->f_mapping, pgoff);
+>  
+>  		} else { /* pte is a swap entry */
+> +#ifdef CONFIG_SWAP
+>  			swp_entry_t entry = pte_to_swp_entry(pte);
+>  			if (is_migration_entry(entry)) {
+>  				/* migration entries are always uptodate */
+> @@ -119,7 +120,11 @@ static long do_mincore(unsigned long add
+>  				pgoff = entry.val;
+>  				present = mincore_page(&swapper_space, pgoff);
+>  			}
+> +#else
+> +			present = 1;
+> +#endif
+>  		}
+> +		vec[i] = present;
+>  	}
+>  	pte_unmap_unlock(ptep-1, ptl);
