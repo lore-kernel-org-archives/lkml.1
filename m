@@ -1,72 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932413AbXBNSDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932410AbXBNSFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932413AbXBNSDw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 13:03:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932417AbXBNSDv
+	id S932410AbXBNSFN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 13:05:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932417AbXBNSFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 13:03:51 -0500
-Received: from kanga.kvack.org ([66.96.29.28]:49610 "EHLO kanga.kvack.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932413AbXBNSDu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 13:03:50 -0500
-Date: Wed, 14 Feb 2007 13:03:44 -0500
-From: Benjamin LaHaise <bcrl@kvack.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 06/11] syslets: core, documentation
-Message-ID: <20070214180344.GI32271@kvack.org>
-References: <20060529212109.GA2058@elte.hu> <20070213142042.GG638@elte.hu> <20070214103655.GB4241@flint.arm.linux.org.uk> <20070214105039.GC6801@elte.hu> <20070214110419.GC4241@flint.arm.linux.org.uk> <Pine.LNX.4.64.0702140919200.7480@alien.or.mcafeemobile.com>
+	Wed, 14 Feb 2007 13:05:12 -0500
+Received: from wr-out-0506.google.com ([64.233.184.228]:44705 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932410AbXBNSFL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 13:05:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:reply-to:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=ZRusqxMK4QAyNg7jT33YN9ENV53d+g/cI1bxYiHXe6H8S69/onD6n7zd6i3TN+bISj7AMByobXYUxm2N36BsNkYylu+vd5TJMAPzXrZ6arI4WpTtcUkp841AzMJou+zrCxLV9MDu/aVShpuxBA4aMmXnCB0aRw0HupTNumf2bO4=
+Subject: Re: [NFS] [PATCH 001 of 9] knfsd: nfsd4: fix non-terminated string
+From: Ming Zhang <blackmagic02881@gmail.com>
+Reply-To: blackmagic02881@gmail.com
+To: chuck.lever@oracle.com
+Cc: NeilBrown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <45D34D0D.3040606@oracle.com>
+References: <20070213103941.28958.patches@notabene>
+	 <1070212234402.29224@suse.de>
+	 <1171458018.2638.1.camel@localhost.localdomain>
+	 <45D34D0D.3040606@oracle.com>
+Content-Type: text/plain
+Date: Wed, 14 Feb 2007 13:04:46 -0500
+Message-Id: <1171476286.3336.9.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702140919200.7480@alien.or.mcafeemobile.com>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 14, 2007 at 09:52:20AM -0800, Davide Libenzi wrote:
-> That'd be, instead of passing a chain of atoms, with the kernel 
-> interpreting conditions, and parameter lists, etc..., we let gcc 
-> do this stuff for us, and we pass the "clet" :) pointer to sys_async_exec, 
-> that exec the above under the same schedule-trapped environment, but in 
-> userspace. We setup a special userspace ad-hoc frame (ala signal), and we 
-> trap underneath task schedule attempt in the same way we do now.
-> We setup the frame and when we return from sys_async_exec, we basically 
-> enter the "clet", that will return to a ret_from_async, that will return 
-> to userspace. Or, maybe we can support both. A simple single-syscall exec 
-> in the way we do now, and a clet way for the ones that requires chains and 
-> conditions. Hmmm?
+On Wed, 2007-02-14 at 09:55 -0800, Chuck Lever wrote:
+> Ming Zhang wrote:
+> > On Tue, 2007-02-13 at 10:44 +1100, NeilBrown wrote:
+> >> From: J. Bruce Fields <bfields@citi.umich.edu>
+> >> The server name is expected to be a null-terminated string, so we can't
+> >> pass in the raw client identifier.
+> >>
+> >> What's more, the client identifier is just a binary, not necessarily
+> >> printable, blob.  Let's just use the ip address instead.  The server
+> >> name appears to exist just to help debugging by making some printk's
+> >> more informative.
+> >>
+> >> Note that the string is copies into the rpc client structure, so
+> >> the pointer to the local variable does not outlive the function call.
+> >>
+> >> Signed-off-by: "J. Bruce Fields" <bfields@citi.umich.edu>
+> >> Signed-off-by: Neil Brown <neilb@suse.de>
+> >>
+> >> ### Diffstat output
+> >>  ./fs/nfsd/nfs4callback.c |    7 ++++++-
+> >>  1 file changed, 6 insertions(+), 1 deletion(-)
+> >>
+> >> diff .prev/fs/nfsd/nfs4callback.c ./fs/nfsd/nfs4callback.c
+> >> --- .prev/fs/nfsd/nfs4callback.c	2007-02-13 09:50:26.000000000 +1100
+> >> +++ ./fs/nfsd/nfs4callback.c	2007-02-13 10:00:59.000000000 +1100
+> >> @@ -387,7 +387,6 @@ nfsd4_probe_callback(struct nfs4_client 
+> >>  		.address	= (struct sockaddr *)&addr,
+> >>  		.addrsize	= sizeof(addr),
+> >>  		.timeout	= &timeparms,
+> >> -		.servername	= clp->cl_name.data,
+> >>  		.program	= program,
+> >>  		.version	= nfs_cb_version[1]->number,
+> >>  		.authflavor	= RPC_AUTH_UNIX,	/* XXX: need AUTH_GSS... */
+> >> @@ -397,6 +396,7 @@ nfsd4_probe_callback(struct nfs4_client 
+> >>  		.rpc_proc       = &nfs4_cb_procedures[NFSPROC4_CLNT_CB_NULL],
+> >>  		.rpc_argp       = clp,
+> >>  	};
+> >> +	char clientname[16];
+> >>  	int status;
+> >>  
+> >>  	if (atomic_read(&cb->cb_set))
+> >> @@ -419,6 +419,11 @@ nfsd4_probe_callback(struct nfs4_client 
+> >>  	memset(program->stats, 0, sizeof(cb->cb_stat));
+> >>  	program->stats->program = program;
+> >>  
+> >> +	/* Just here to make some printk's more useful: */
+> >> +	snprintf(clientname, sizeof(clientname),
+> >> +		"%u.%u.%u.%u", NIPQUAD(addr.sin_addr));
+> > 
+> > can use NIPQUAD_FMT here instead of "%u.%u.%u.%u".
+> > 
+> > btw, will the ip address here possibly be an ipv6 address?
+> 
+> Some patches are in the works to build in IPv6 support.  See the patch 
+> series at http://oss.oracle.com/~cel/linux-2.6/2.6.19/patches/
 
-Which is just the same as using threads.  My argument is that once you 
-look at all the details involved, what you end up arriving at is the 
-creation of threads.  Threads are relatively cheap, it's just that the 
-hardware currently has several performance bugs with them on x86 (and more 
-on x86-64 with the MSR fiddling that hits the hot path).  Architectures 
-like powerpc are not going to benefit anywhere near as much from this 
-exercise, as the state involved is processed much more sanely.  IA64 as 
-usual is simply doomed by way of having too many registers to switch.
+thanks for the info.
 
-If people really want to go down this path, please make an effort to compare 
-threads on a properly tuned platform.  This means that things like the kernel 
-and userland stacks must take into account the cache alignment (we do some 
-of this already, but there are some very definate L1 cache colour collisions 
-between commonly hit data structures amongst threads).  The existing AIO 
-ringbuffer suffers from this, as important data is always on the beginning 
-of the first page.  Yes, these might be microoptimizations, but accumulated 
-changes of this nature have been known to buy 100%+ improvements in 
-performance.
-
-		-ben
 -- 
-"Time is of no importance, Mr. President, only life is important."
-Don't Email: <dont@kvack.org>.
+http://blackmagic02881.wordpress.com/
+
