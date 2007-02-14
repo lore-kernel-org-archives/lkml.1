@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751299AbXBNWwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932631AbXBNWxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751299AbXBNWwh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 17:52:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbXBNWwh
+	id S932631AbXBNWxR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 17:53:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932642AbXBNWxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 17:52:37 -0500
-Received: from ozlabs.org ([203.10.76.45]:40580 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751299AbXBNWwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 17:52:37 -0500
-Subject: Re: [PATCH 9/11] Panic delay fix
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Zachary Amsden <zach@vmware.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akp=m@osdl.org>, Andi Kleen <ak@muc.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Chris Wright <chrisw@sous-sol.org>, Alan <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <200702060353.l163rUmj000771@zach-dev.vmware.com>
-References: <200702060353.l163rUmj000771@zach-dev.vmware.com>
-Content-Type: text/plain
-Date: Thu, 15 Feb 2007 09:51:46 +1100
-Message-Id: <1171493506.19842.179.camel@localhost.localdomain>
+	Wed, 14 Feb 2007 17:53:17 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:61105 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932631AbXBNWxQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 17:53:16 -0500
+Date: Wed, 14 Feb 2007 14:49:15 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       "Hugh Dickins <hugh@veritas.com> Andrew Morton" 
+	<akpm@linux-foundation.org>,
+       "Torvalds@linux-foundation.org Torvalds" 
+	<torvalds@linux-foundation.org>
+Subject: Re: CONFIG_SWAP=n broken in latest tree
+Message-Id: <20070214144915.42fa803d.randy.dunlap@oracle.com>
+In-Reply-To: <adak5ykz7jy.fsf@cisco.com>
+References: <adak5ykz7jy.fsf@cisco.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-02-05 at 19:53 -0800, Zachary Amsden wrote:
-> Failure to use real-time delay here causes the keyboard to become demonically
-> possessed in the event of a kernel crash, with wildly blinking lights and
-> unpredictable behavior.  This has resulted in several injuries.
+On Wed, 14 Feb 2007 14:41:05 -0800 Roland Dreier wrote:
 
-The problem is the normal one when we introduce a new concept into the
-kernel; there are two kinds of udelay, and they've been conflated.  The
-most common case is a delay for real hardware devices; this can be
-eliminated for paravirtualization.  The other cases, the tiny minority,
-are visible delays (keyboard leds), not knowing if they're necessary
-(very early boot), and async events (other CPUs coming up): ie.
-everything else.
+> Commit 42da9cbd ("mm: mincore anon") breaks CONFIG_SWAP=n builds with:
+> 
+>     mm/built-in.o: In function `sys_mincore':
+>     (.text+0xe2c4): undefined reference to `swapper_space'
+> 
+> because swapper_space is used unconditionally in mm/mincore.c but only
+> defined in swap_state.c, which isn't built if CONFIG_SWAP=n.
+> 
+> I'd include a patch but I'm not sure what the right fix is really --
+> the naively obvious thing to do would be to add an #ifdef to mincore.c
+> like the below, but I don't know this area at all well enough to be
+> confident in the fix.
+> 
+> diff --git a/mm/mincore.c b/mm/mincore.c
+> index 95c5f49..266506f 100644
+> --- a/mm/mincore.c
+> +++ b/mm/mincore.c
+> @@ -109,8 +109,9 @@ static long do_mincore(unsigned long addr, unsigned char *vec, unsigned long pag
+>  		} else if (pte_file(pte)) {
+>  			pgoff = pte_to_pgoff(pte);
+>  			present = mincore_page(vma->vm_file->f_mapping, pgoff);
+> -
+> -		} else { /* pte is a swap entry */
+> +		}
+> +#ifdef CONFIG_SWAP
+> +		else { /* pte is a swap entry */
+>  			swp_entry_t entry = pte_to_swp_entry(pte);
+>  			if (is_migration_entry(entry)) {
+>  				/* migration entries are always uptodate */
+> @@ -120,6 +121,7 @@ static long do_mincore(unsigned long addr, unsigned char *vec, unsigned long pag
+>  				present = mincore_page(&swapper_space, pgoff);
+>  			}
+>  		}
+> +#endif /* CONFIG_SWAP */
+>  	}
+>  	pte_unmap_unlock(ptep-1, ptl);
+>  
+> -
 
-Is implementation of this distinction worth it?  The answer IMHO is no;
-this is a case where simplicity wins.
+We've beat this almost to death... just need some patch merged.
 
-Firstly, most modern distributions ship kernels which have almost no
-drivers, and modprobe in early boot.  So assuming paravirtualized
-drivers, we don't even experience the boot delays.
+or reverted.
 
-Secondly, the major delay for my current kernel is IDE probing (3 out of
-5 seconds of boot time!), but implementing the delay ops in lguest does
-*nothing* for this, because it uses "msleep()" not "mdelay()". so the
-current solution isn't sufficient anyway.  If this is a real problem for
-users I'd rather try to convince the IDE maintainer to use a
-"real_hardware_mdelay()" or something here.
-
-Cheers!
-Rusty.
-PS.  lguest doesn't implement the delay functions; I just tried
-implemented that now for testing.
-
-
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
