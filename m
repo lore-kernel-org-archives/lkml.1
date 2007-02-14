@@ -1,82 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932304AbXBNEsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932303AbXBNEt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932304AbXBNEsy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 23:48:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932303AbXBNEsx
+	id S932303AbXBNEt1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 23:49:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932306AbXBNEt1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 23:48:53 -0500
-Received: from ozlabs.org ([203.10.76.45]:45553 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932304AbXBNEsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 23:48:53 -0500
-Subject: Re: [PATCH 5/8] lguest: trivial guest network driver
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.osdl.org>,
-       jgarzik <jgarzik@pobox.com>
-In-Reply-To: <20070213140600.GA24711@gondor.apana.org.au>
-References: <1171251578.10409.17.camel@localhost.localdomain>
-	 <1171251698.10409.20.camel@localhost.localdomain>
-	 <1171251770.10409.23.camel@localhost.localdomain>
-	 <1171251894.10409.26.camel@localhost.localdomain>
-	 <1171251965.10409.28.camel@localhost.localdomain>
-	 <1171252113.10409.30.camel@localhost.localdomain>
-	 <1171252219.10409.33.camel@localhost.localdomain>
-	 <1171252321.10409.36.camel@localhost.localdomain>
-	 <20070212155553.GA15627@gondor.apana.org.au>
-	 <1171332919.19842.74.camel@localhost.localdomain>
-	 <20070213140600.GA24711@gondor.apana.org.au>
-Content-Type: text/plain
-Date: Wed, 14 Feb 2007 15:47:55 +1100
-Message-Id: <1171428475.19842.102.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Feb 2007 23:49:27 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:4735 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932303AbXBNEt0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 23:49:26 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 13 Feb 2007 20:49:23 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system
+ call support
+In-Reply-To: <Pine.LNX.4.64.0702131900280.32055@alien.or.mcafeemobile.com>
+Message-ID: <Pine.LNX.4.64.0702132041560.32055@alien.or.mcafeemobile.com>
+References: <20070213142010.GA638@elte.hu> <Pine.LNX.4.64.0702131900280.32055@alien.or.mcafeemobile.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-14 at 01:06 +1100, Herbert Xu wrote:
-> On Tue, Feb 13, 2007 at 01:15:18PM +1100, Rusty Russell wrote:
-> > 
-> > Good spotting!  This function needs to be passed skb_headlen(skb),
-> > rather than skb->len.  Patch is below (I renamed the parameter as well,
-> > for clarity).
+On Tue, 13 Feb 2007, Davide Libenzi wrote:
+
+[...]
+
+> So the sys_async_exec task is going to block. Now, am I being really 
+> tired, or the cachemiss fast return is simply not there?
+
+The former 8)
+
+pick_new_async_head()
+	new_task->ah = ah;
+
+cachemiss_loop()
+	for (;;) {
+		if (unlikely(t->ah || ...))
+			break;
+
+
+> There's another problem AFAICS:
 > 
-> How about just dropping that parameter and using skb_headlen(skb)
-> directly?
+> - We woke up one of the cachemiss_loop threads in pick_new_async_thread
+> 
+> - The threads wakes up, mark itself as busy, and look at the ->work 
+>   pointer hoping to find something to work on
+> 
+> But we never set that pointer to a userspace atom AFAICS. Me blind? :)
 
-It's also used to generate dma structs for outgoing packets.  In that
-case, skb_headlen() == 0:
+I still don't see at->work ever set to a valid userspace atom though...
 
-static struct sk_buff *lguestnet_alloc_skb(struct net_device *dev, int gfpflags)
-{
-	struct sk_buff *skb;
 
-	skb = alloc_skb(16 + ETH_HLEN + DATA_SIZE, gfpflags);
-	if (!skb)
-		return NULL;
 
-	skb->dev = dev;
-	skb_reserve(skb, 16);
-	return skb;
-}
-
-/* Find a new skb to put in this slot in shared mem. */
-static int fill_slot(struct net_device *dev, unsigned int slot)
-{
-	struct lguestnet_info *info = dev->priv;
-	/* Try to create and register a new one. */
-	info->skb[slot] = lguestnet_alloc_skb(dev, GFP_ATOMIC);
-	if (!info->skb[slot]) {
-		printk("%s: could not fill slot %i\n", dev->name, slot);
-		return -ENOMEM;
-	}
-
-	skb_to_dma(info->skb[slot], ETH_HLEN + DATA_SIZE, &info->dma[slot]);
-
-Cheers,
-Rusty.
+- Davide
 
 
