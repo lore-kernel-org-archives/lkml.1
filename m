@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932155AbXBNH2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932158AbXBNH22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932155AbXBNH2S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 02:28:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932158AbXBNH2S
+	id S932158AbXBNH22 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 02:28:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932175AbXBNH22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 02:28:18 -0500
-Received: from comtv.ru ([217.10.32.17]:62887 "EHLO comtv.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932155AbXBNH2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 02:28:17 -0500
-X-UCL: actv
-Date: Wed, 14 Feb 2007 10:28:46 +0300 (MSK)
-From: malc <av1474@comtv.ru>
-X-X-Sender: malc@home.oyster.ru
-To: Con Kolivas <kernel@kolivas.org>
-cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
-Subject: Re: CPU load
-In-Reply-To: <200702140908.44934.kernel@kolivas.org>
-Message-ID: <Pine.LNX.4.64.0702141023000.672@home.oyster.ru>
-References: <loom.20070212T063225-663@post.gmane.org> <20070212143219.GB5226@ucw.cz>
- <Pine.LNX.4.64.0702140059390.727@home.oyster.ru> <200702140908.44934.kernel@kolivas.org>
+	Wed, 14 Feb 2007 02:28:28 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:51435 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932158AbXBNH21 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 02:28:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=i+R9gE9wEuMExP7Ox07SYxtpCWggyfPUqDy17gLNaoUFJzsEkR0oXu6Bf1fwsYXyzOgKjpCWFHZVblULall9OLkHMmJYB45WW8+L3f/MLq1FFvq7UnH7HgWWA3HozGll/v1Nh4UDafc4tWNbCaCd2wAoVv9Ti7M6rkJApTVIn/s=
+Message-ID: <8d158e1f0702132328u104c89d4r3154b87c2b5f6e5c@mail.gmail.com>
+Date: Wed, 14 Feb 2007 08:28:25 +0100
+From: "Patrick Ale" <patrick.ale@gmail.com>
+To: "Bill Davidsen" <davidsen@tmr.com>
+Subject: Re: [PROBLEM] Can't start MD devices by using /dev/disk/by-id
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <45D259DD.7040505@tmr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <8d158e1f0702131351l3e3e1ae2u71a13de655391fce@mail.gmail.com>
+	 <45D259DD.7040505@tmr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Feb 2007, Con Kolivas wrote:
+> >
+> Just out of curiosity, why did you do this in such a manual way instead
+> of just using the UUID? I would think every time you replace a failed
+> drive you would have to go edit the files all over again.
 
-> On Wednesday 14 February 2007 09:01, malc wrote:
->> On Mon, 12 Feb 2007, Pavel Machek wrote:
->>> Hi!
+Oh, there is a very simple reason for that.
+These md arrays exist for a year of three allready, from the time I
+used raidtool instead of mdadm.
 
-[..snip..]
+So when I switched to to mdadm, I just got the /etc/raidtab file and
+migrated it to /etc/mdadm.conf, since /etc/raidtab worked with
+blockdevices and not UIDs (correct me if I am wrong and overlooked
+this featute), the mdadm.conf ended up with these devices too.
 
->>> I have (had?) code that 'exploits' this. I believe I could eat 90% of cpu
->>> without being noticed.
->>
->> Slightly changed version of hog(around 3 lines in total changed) does that
->> easily on 2.6.18.3 on PPC.
->>
->> http://www.boblycat.org/~malc/apc/load-hog-ppc.png
->
-> I guess it's worth mentioning this is _only_ about displaying the cpu usage to
-> userspace, as the cpu scheduler knows the accounting of each task in
-> different ways. This behaviour can not be used to exploit the cpu scheduler
-> into a starvation situation. Using the discrete per process accounting to
-> accumulate the displayed values to userspace would fix this problem, but
-> would be expensive.
+Next to that, there is a, for me at least, practicle reason. I keep
+adding harddisks, and when I use the block devices rather than UIDS,
+and I get problems like yesterday, I have the blockdevice or serial
+number of the disk, which makes it easier to look in my case where the
+potential problem might be. If I work with UIDs and something goes
+wrong when doing an mdadm --assemble, then I'll first have to look up
+which disks belong to which UID, which costs time.
 
-Guess you are right, but, once again, the problem is not so much about
-fooling the system to do something or other, but confusing the user:
+OR! which is also very possible, maybe there is a way easier way to
+pinpoint which drives belong to which array before starting the array,
+which I don't know about yet. So please, if you have suggestions, let
+me know :)
 
-a. Everything is fine - the load is 0%, the fact that the system is
-    overheating and/or that some processes do not do as much as they
-    could is probably due to the bad hardware.
 
-b. The weird load pattern must be the result of bugs in my code.
-    (And then a whole lot of time/effort is poured into fixing the
-     problem which is simply not there)
+Take care!
 
-The current situation ought to be documented. Better yet some flag can
-be introduced somewhere in the system so that it exports realy values to
-/proc, not the estimations that are innacurate in some cases (like hog)
-
--- 
-vale
+Patrick
