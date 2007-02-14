@@ -1,76 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751506AbXBNJEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932190AbXBNJGq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751506AbXBNJEl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 04:04:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932149AbXBNJEk
+	id S932190AbXBNJGq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 04:06:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932191AbXBNJGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 04:04:40 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:35858 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751506AbXBNJEj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 04:04:39 -0500
-Date: Wed, 14 Feb 2007 11:59:40 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Benjamin LaHaise <bcrl@kvack.org>, Alan <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system call support
-Message-ID: <20070214085939.GA4665@2ka.mipt.ru>
-References: <20060529212109.GA2058@elte.hu> <20070213142010.GA638@elte.hu> <20070213150019.4b4d4827@localhost.localdomain> <20070213145848.GS18311@kvack.org> <20070213165642.GB16394@elte.hu> <20070213185636.GA23987@2ka.mipt.ru> <20070213221810.GF22104@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+	Wed, 14 Feb 2007 04:06:45 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:47323 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932190AbXBNJGo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 04:06:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=QBtLHtU40E6ZB+v5Et2De59DvBfqCQ9hzoIt1XJc5d5zOO50gMUYArp/tvQ3R6MT1Oi5v6ly/BQ9PLrlyUoxwjfKcz6xEmBf1Xs9INPCsocRAI8s5ZycnwT4hfmUTIRel4VF8OfDWYFDvr+WsCHAExPlGunmHUMTpWLjIrO+2H8=
+From: Andy Parkins <andyparkins@gmail.com>
+To: git@vger.kernel.org
+Subject: Re: [ANNOUNCE] GIT 1.5.0
+Date: Wed, 14 Feb 2007 09:06:35 +0000
+User-Agent: KMail/1.9.5
+Cc: Junio C Hamano <junkio@cox.net>, linux-kernel@vger.kernel.org
+References: <7vlkj1v3av.fsf@assigned-by-dhcp.cox.net>
+In-Reply-To: <7vlkj1v3av.fsf@assigned-by-dhcp.cox.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070213221810.GF22104@elte.hu>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.7.5 (2ka.mipt.ru [0.0.0.0]); Wed, 14 Feb 2007 11:59:50 +0300 (MSK)
+Message-Id: <200702140906.37440.andyparkins@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 13, 2007 at 11:18:10PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
-> 
-> > [...] it still has a problem - syscall blocks and the same thread thus 
-> > is not allowed to continue execution and fill the pipe - so what if 
-> > system issues thousands of requests and there are only tens of working 
-> > thread at most. [...]
-> 
-> the same thread is allowed to continue execution even if the system call 
-> blocks: take a look at async_schedule(). The blocked system-call is 'put 
-> aside' (in a sleeping thread), the kernel switches the user-space 
-> context (registers) to a free kernel thread and switches to it - and 
-> returns to user-space as if nothing happened - allowing the user-space 
-> context to 'fill the pipe' as much as it can. Or did i misunderstand 
-> your point?
+On Wednesday 2007 February 14 03:14, Junio C Hamano wrote:
 
-Let me clarify what I meant.
-There is only limited number of threads, which are supposed to execute
-blocking context, so when all they are used, main one will block too - I
-asked about possibility to reuse the same thread to execute queue of
-requests attached to it, each request can block, but if blocking issue
-is removed, it would be possible to return.
+>  - There is a configuration variable core.legacyheaders that
 
-What I'm asking for is how actually kevent IO state machine functions work
-- each IO request is made not through usual mpage and bio allocations,
-but with special kevent ones, which do not wait until completion, but
-instead in destructor it is either rescheduled (if big file is
-transferred, then it is split into parts for transmission) or committed
-as ready (thus it becomes possible to read completion through kevent
-queue or ring), so there are only several threads, each one does small
-job on each request, but the same request can be rescheduled to it again
-and again (from bio destructor or ->end_io callback for example).
+> The above two are not enabled by default and you explicitly have
+> to ask for them, because these two features make repositories
 
-So I asked if it is possible to extend this state machine to work not
-only with blocked syscalls but with non-blocked functions with
-possibility to reschedule the same item again.
+It isn't really the case that you have to _enable_ legacyheaders?  It defaults 
+to on already.  You actually have to disable legacyheaders.
 
+
+Andy
 -- 
-	Evgeniy Polyakov
+Dr Andy Parkins, M Eng (hons), MIEE
+andyparkins@gmail.com
