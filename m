@@ -1,56 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751520AbXBNJtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751523AbXBNJ6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751520AbXBNJtt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 04:49:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbXBNJtt
+	id S1751523AbXBNJ6A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 04:58:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbXBNJ6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 04:49:49 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38952 "EHLO mx2.mail.elte.hu"
+	Wed, 14 Feb 2007 04:58:00 -0500
+Received: from cantor.suse.de ([195.135.220.2]:56525 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751518AbXBNJts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 04:49:48 -0500
-Date: Wed, 14 Feb 2007 10:46:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 05/11] syslets: core code
-Message-ID: <20070214094629.GA6801@elte.hu>
-References: <20060529212109.GA2058@elte.hu> <20070213142035.GF638@elte.hu> <p73bqjxhcnl.fsf@bingen.suse.de> <20070213222443.GH22104@elte.hu> <20070213223017.GJ29492@one.firstfloor.org> <20070213224131.GK22104@elte.hu> <20070214091348.GB4665@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751323AbXBNJ57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 04:57:59 -0500
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SuSE Labs, Novell
+To: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+Subject: Re: Bug in current -git tree causing dbus and gnome to chew up cpu time
+Date: Wed, 14 Feb 2007 01:57:58 -0800
+User-Agent: KMail/1.9.5
+Cc: "Greg KH" <greg@kroah.com>, torvalds@linux-foundation.org, neilb@suse.de,
+       viro@zeniv.linux.org.uk, hch@lst.de, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+References: <20070213195116.GA5181@kroah.com> <5a4c581d0702140147s7931bd63ief299780fa6963a5@mail.gmail.com>
+In-Reply-To: <5a4c581d0702140147s7931bd63ief299780fa6963a5@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070214091348.GB4665@2ka.mipt.ru>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.8
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.1.7
-	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4883]
+Message-Id: <200702140157.59252.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+I've described the problem and possible fixes in the "Re: [PATCH] Fix d_path 
+for lazy unmounts" thread, Message-Id: 200702140019.36378.agruen@suse.de.
 
-> This will end up badly - I used the same approach in the early kevent 
-> days and was proven to have swapable memory for the ring. I think it 
-> would be much better to have userspace allocated ring and use 
-> copy_to_user() there.
-
-it is a userspace allocated ring - but pinned down by the kernel.
-
-	Ingo
+Thanks,
+Andreas
