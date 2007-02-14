@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932340AbXBNP01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932347AbXBNP1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932340AbXBNP01 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 10:26:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932341AbXBNP01
+	id S932347AbXBNP1U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 10:27:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932349AbXBNP1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 10:26:27 -0500
-Received: from orangesrv.RZ.UniBw-Muenchen.de ([137.193.10.40]:60055 "EHLO
-	OrangeSrv.rz.unibw-muenchen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932340AbXBNP01 (ORCPT
+	Wed, 14 Feb 2007 10:27:20 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57351 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932347AbXBNP1T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 10:26:27 -0500
-X-Greylist: delayed 7732 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Feb 2007 10:26:26 EST
-X-Remarks: If SPAM is relayed via OrangeSrv.rz.unibw-muenchen.de to outside of unibw-muenchen.de, please report it to abuse@unibw-muenchen.de
-Message-ID: <45D30BDF.5010608@unibw.de>
-Date: Wed, 14 Feb 2007 14:17:19 +0100
-From: Johann Schuster <johann.schuster@unibw.de>
-User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Measuring cpu time using getrusage
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 14 Feb 2007 10:27:19 -0500
+Date: Wed, 14 Feb 2007 15:40:14 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: "Jan Beulich" <jbeulich@novell.com>
+Cc: <alan@redhat.com>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH, RFC] adjust legacy IDE resource setting
+Message-ID: <20070214154014.7fa76711@localhost.localdomain>
+In-Reply-To: <45D33344.76E4.0078.0@novell.com>
+References: <45D33344.76E4.0078.0@novell.com>
+X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, 14 Feb 2007 15:05:24 +0000
+"Jan Beulich" <jbeulich@novell.com> wrote:
 
-currently i'm trying to measure the cpu times for
-numerical algorithms written in C using two calls of
-getrusage() and then calculating the time difference.
+> The change to force legacy mode IDE channels' resources to fixed
+> non-zero values confuses (at least some versions of) X, because the
+> values reported by the kernel and those readable from PCI config space
+> aren't consistent anymore. Therefore, this patch arranges for the
+> respective BARs to also get updated if possible.
 
-According to the man page of getrusage i looked at the
-user time of my process. Surprisingly the measured user
-times vary strongly depending on the system load of the
-machine.
-A heavy system load nearly doubles the measured time
-for my routine.
+If X is getting confused fix X. Those BARs are *undefined* in legacy
+mode. The value in them is undefined, the results that end up there if
+you do write to them are undefined too. If X believes those BAR values
+blindly it'll do the wrong thing in some freaky cases.
 
-Does anyone know a better way to measure the used
-cpu cycles of a given process (or part of a program)
-or can anyone give me a hint if i missed some important
-fact.
+Which specific versions of X are problematic ?
 
-Any help appreciated. Thank you in advance.
+As to the implementation:
+	start and end as passed are the real I/O values so you don't need
+to mask them that I can see.
 
+I've no fundamental problem with writing the BAR values back to avoid
+confusing some apparently broken X, but I'd like to know what X, what
+circumstances and that X is also getting fixed.
 
-Johann Schuster
+Alan
