@@ -1,103 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751550AbXBNKdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751546AbXBNKha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751550AbXBNKdl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 05:33:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbXBNKdk
+	id S1751546AbXBNKha (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 05:37:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbXBNKha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 05:33:40 -0500
-Received: from info6.gawab.com ([204.97.230.44]:42238 "HELO info6.gawab.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751546AbXBNKdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 05:33:39 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Feb 2007 05:33:39 EST
-Message-ID: <20070214102432.6346.qmail@info6.gawab.com>
-From: "Ramy M. Hassan " <ramy@gawab.com>
-To: linux-kernel@vger.kernel.org
-Cc: "Ahmed El Zein" <a.elzein@gawab.net>
-Subject: xfs internal error on a new filesystem
-Date: Wed, 14 Feb 2007 10:24:27 GMT
-Content-Type: text/plain ; charset="windows-1256"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [62.135.122.240]
+	Wed, 14 Feb 2007 05:37:30 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3779 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751544AbXBNKh3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 05:37:29 -0500
+Date: Wed, 14 Feb 2007 10:36:55 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 06/11] syslets: core, documentation
+Message-ID: <20070214103655.GB4241@flint.arm.linux.org.uk>
+Mail-Followup-To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Christoph Hellwig <hch@infradead.org>,
+	Andrew Morton <akpm@zip.com.au>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Ulrich Drepper <drepper@redhat.com>,
+	Zach Brown <zach.brown@oracle.com>,
+	Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+	"David S. Miller" <davem@davemloft.net>,
+	Benjamin LaHaise <bcrl@kvack.org>,
+	Suparna Bhattacharya <suparna@in.ibm.com>,
+	Davide Libenzi <davidel@xmailserver.org>,
+	Thomas Gleixner <tglx@linutronix.de>
+References: <20060529212109.GA2058@elte.hu> <20070213142042.GG638@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070213142042.GG638@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-We got the following xfs internal error on one of our production servers:
+On Tue, Feb 13, 2007 at 03:20:42PM +0100, Ingo Molnar wrote:
+> +Arguments to the system call are implemented via pointers to arguments.
+> +This not only increases the flexibility of syslet atoms (multiple syslets
+> +can share the same variable for example), but is also an optimization:
+> +copy_uatom() will only fetch syscall parameters up until the point it
+> +meets the first NULL pointer. 50% of all syscalls have 2 or less
+> +parameters (and 90% of all syscalls have 4 or less parameters).
+> +
+> + [ Note: since the argument array is at the end of the atom, and the
+> +   kernel will not touch any argument beyond the final NULL one, atoms
+> +   might be packed more tightly. (the only special case exception to
+> +   this rule would be SKIP_TO_NEXT_ON_STOP atoms, where the kernel will
+> +   jump a full syslet_uatom number of bytes.) ]
 
-Feb 14 08:28:52 info6 kernel: [238186.676483] Filesystem "sdd8": XFS
-internal error xfs_trans_cancel at line 1138 of file fs/xfs/xfs_trans.c. 
-Caller 0xf8b906e7
-Feb 14 08:28:52 info6 kernel: [238186.869089]  [pg0+947617605/1069749248]
-xfs_trans_cancel+0x115/0x140 [xfs]
-Feb 14 08:28:52 info6 kernel: [238186.879131]  [pg0+947664615/1069749248]
-xfs_mkdir+0x2ad/0x777 [xfs]
-Feb 14 08:28:52 info6 kernel: [238186.882517]  [pg0+947664615/1069749248]
-xfs_mkdir+0x2ad/0x777 [xfs]
-Feb 14 08:28:52 info6 kernel: [238186.882558]  [pg0+947708079/1069749248]
-xfs_vn_mknod+0x46f/0x493 [xfs]
-Feb 14 08:28:52 info6 kernel: [238186.882625]  [pg0+947621368/1069749248]
-xfs_trans_unlocked_item+0x32/0x50 [xfs]
-Feb 14 08:28:52 info6 kernel: [238186.882654]  [pg0+947428195/1069749248]
-xfs_da_buf_done+0x73/0xca [xfs]
-Feb 14 08:28:52 info6 kernel: [238186.882712]  [pg0+947623330/1069749248]
-xfs_trans_brelse+0xd2/0xe5 [xfs]
-Feb 14 08:28:52 info6 kernel: [238186.882739]  [pg0+947686680/1069749248]
-xfs_buf_rele+0x21/0x77 [xfs]
-Feb 14 08:28:52 info6 kernel: [238186.882768]  [pg0+947428868/1069749248]
-xfs_da_state_free+0x64/0x6b [xfs]
-Feb 14 08:28:52 info6 kernel: [238186.882827]  [pg0+947468486/1069749248]
-xfs_dir2_node_lookup+0x85/0xbb [xfs]
-Feb 14 08:28:52 info6 kernel: [238186.882857]  [pg0+947445628/1069749248]
-xfs_dir_lookup+0x13a/0x13e [xfs]
-Feb 14 08:28:52 info6 kernel: [238186.882912]  [vfs_permission+32/36]
-vfs_permission+0x20/0x24
-Feb 14 08:28:52 info6 kernel: [238186.883395]  [__link_path_walk+119/3686]
-__link_path_walk+0x77/0xe66
-Feb 14 08:28:52 info6 kernel: [238186.883413]  [pg0+947627458/1069749248]
-xfs_dir_lookup_int+0x3c/0x121 [xfs]
-Feb 14 08:28:52 info6 kernel: [238186.883453]  [pg0+947708157/1069749248]
-xfs_vn_mkdir+0x2a/0x2e [xfs]
-Feb 14 08:28:52 info6 kernel: [238186.883481]  [vfs_mkdir+221/299]
-vfs_mkdir+0xdd/0x12b
-Feb 14 08:28:52 info6 kernel: [238186.883493]  [sys_mkdirat+156/222]
-sys_mkdirat+0x9c/0xde
-Feb 14 08:28:52 info6 kernel: [238186.883510]  [sys_mkdir+31/35]
-sys_mkdir+0x1f/0x23
-Feb 14 08:28:52 info6 kernel: [238186.883519]  [sysenter_past_esp+86/121]
-sysenter_past_esp+0x56/0x79
-Feb 14 08:28:52 info6 kernel: [238186.883804] xfs_force_shutdown(sdd8,0x8)
-called from line 1139 of file fs/xfs/xfs_trans.c.  Return address =
-0xf8b84f6b
-Feb 14 08:28:52 info6 kernel: [238186.945610] Filesystem "sdd8": Corruption
-of in-memory data detected.  Shutting down filesystem: sdd8
-Feb 14 08:28:52 info6 kernel: [238186.952732] Please umount the filesystem,
-and rectify the problem(s)
+What if you need to increase the number of arguments passed to a system
+call later?  That would be an API change since the size of syslet_uatom
+would change?
 
-We were able to unmount/remount the volume (didn't do xfs_repair because we
-thought it might take long time, and the server was already in production
-at the moement)
-The file system was created less than 48hours ago, and 370G of sensitve
-production data was moved to the server before it xfs crash.
-In fact, we have been using reiserfs for a long period of time, and we have
-suffered from several filesystem corruption incidents, so we decided to
-switch to xfs hoping that it is more stable and corrupts less than
-reiserfs, but it was disappointing to get this problem after just 48 hours
-from reformating a production server using xfs.
+Also, what if you have an ABI such that:
 
-System details :
-Kernel: 2.6.18
-Controller: 3ware 9550SX-8LP (RAID 10)
+sys_foo(int fd, long long a)
 
-We are wondering here if this problem is an indicator to data corruption on
-disk ? is it really necessary to run xfs_repair ?  Do u recommend that we
-switch back to reiserfs ? Could it be a hardware related problems  ? any
-clues how to verify that ?
+where:
+ arg[0] <= fd
+ arg[1] <= unused
+ arg[2] <= low 32-bits a
+ arg[3] <= high 32-bits a
 
-Thanks
+it seems you need to point arg[1] to some valid but dummy variable.
 
---Ramy
+How do you propose syslet users know about these kinds of ABI issues
+(including the endian-ness of 64-bit arguments) ?
 
----------------------------------------------
-Free POP3 Email from www.Gawab.com 
-Sign up NOW and get your account @gawab.com!!
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
