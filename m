@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751022AbXBNIoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751415AbXBNIsE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751022AbXBNIoN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 03:44:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbXBNIoN
+	id S1751415AbXBNIsE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 03:48:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbXBNIsE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 03:44:13 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:36259 "EHLO mx2.suse.de"
+	Wed, 14 Feb 2007 03:48:04 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:47896 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751022AbXBNIoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 03:44:12 -0500
-Message-ID: <45D2CBC5.90809@suse.de>
-Date: Wed, 14 Feb 2007 09:43:49 +0100
-From: Gerd Hoffmann <kraxel@suse.de>
-Organization: =?ISO-8859-1?Q?SUSE_LINUX_Products_GmbH=2C_GF=3A_?=
- =?ISO-8859-1?Q?Markus_Rex=2C_HRB_16746_=28AG_N=FCrnberg=29?=
-User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
-MIME-Version: 1.0
-To: Dan Hecht <dhecht@vmware.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Andrew Morton <akpm@osdl.org>,
-       Andi Kleen <ak@muc.de>, xen-devel@lists.xensource.com,
-       Chris Wright <chrisw@sous-sol.org>, virtualization@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 05/21] Xen-paravirt: paravirt_ops: allocate a fixmap slot
-References: <20070213221729.772002682@goop.org>	<20070213221829.845132535@goop.org>	<45D2649D.4080508@vmware.com> <45D26797.5090600@goop.org> <45D27534.1070608@vmware.com>
-In-Reply-To: <45D27534.1070608@vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1751415AbXBNIsC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 03:48:02 -0500
+Date: Wed, 14 Feb 2007 00:47:55 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Vitaly Wool" <vitalywool@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 8250: make probing for TXEN bug a config option
+Message-Id: <20070214004755.faa96e55.akpm@linux-foundation.org>
+In-Reply-To: <acd2a5930702140037yff0b77dl2714ea7869bdde54@mail.gmail.com>
+References: <20061226194317.3fd3ec14.vitalywool@gmail.com>
+	<20070213224643.14d27cd3.akpm@linux-foundation.org>
+	<acd2a5930702140037yff0b77dl2714ea7869bdde54@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Hecht wrote:
-> Right.  But that is only because Xen decides to allocate the page from 
-> the (machine) physical space, rather than from the pseudo-physical 
-> space.  My question is: why doesn't Xen allocate shared_info from the 
-> pseudo-physical space?
+On Wed, 14 Feb 2007 11:37:52 +0300 "Vitaly Wool" <vitalywool@gmail.com> wrote:
 
-Historical reasons ...
+> On 2/14/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> >
+> > I think this should be a module option/boot parameter, not a config-time
+> > option.
+> >
+> >
+> Hmm, why? I can't think of a platform where one 8250-compatible UART is
+> problematic and another isn't :)
+> 
 
-> If it had, then this page wouldn't need to be 
-> treated specially.  I'm not sure, but I seem to remember on 64-bit 
-> Xen/XenLinux allocated shared_info from pseudo-physical space already...
+Is it not possible that the same kernel package can be installed on systems
+which do and don't need this feature?  If so, we don't want to force the
+provider of that package to create two packages.
 
-Yep, the ia64 port which came later handles some things differently,
-specifically some "magic" pages are allocated more clever ;)
+That, plus the chances of the package creator actually knowing about this
+option aren't great.
 
-Changing that for x86 would break existing guests though.
-
-cheers,
-  Gerd
-
--- 
-Gerd Hoffmann <kraxel@suse.de>
+Generally, if it can be done at runtime it is better to do so, no?
