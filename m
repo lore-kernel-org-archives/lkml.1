@@ -1,91 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932561AbXBNUYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751205AbXBNU2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932561AbXBNUYB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 15:24:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932569AbXBNUYB
+	id S1751205AbXBNU2m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 15:28:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbXBNU2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 15:24:01 -0500
-Received: from smtp-103-wednesday.nerim.net ([62.4.16.103]:1193 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932565AbXBNUYA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 15:24:00 -0500
-Date: Wed, 14 Feb 2007 21:24:17 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: LM Sensors <lm-sensors@lm-sensors.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] hwmon updates for 2.6.21
-Message-Id: <20070214212417.c61d5cfe.khali@linux-fr.org>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Feb 2007 15:28:42 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:43284 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751205AbXBNU2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 15:28:41 -0500
+Date: Wed, 14 Feb 2007 14:28:36 -0600
+To: James.Bottomley@SteelEye.com
+Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-scsi@vger.kernel.org, rlary@us.ibm.com, Bino.Sebastian@Emulex.Com,
+       James Smart <james.smart@Emulex.Com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] lpfc: add PCI error recovery support
+Message-ID: <20070214202836.GS923@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
+From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
 
-Please pull the hwmon subsystem updates for Linux 2.6.21 from:
+James,
 
-git://jdelvare.pck.nerim.net/jdelvare-2.6 hwmon-for-linus
+Please review and forward upstream.  This is a patch I'd previously
+submitted, and reworked by Bino.Sebastian@Emulex.Com in January.
+Not clear if I need to also nag James Smart (who is listed as the
+maintainer) for an Acked-by (which I am lead to beleive should be
+forthcoming? Ahh the joys of indirect communication!)
 
-There is one new hardware monitoring driver (adm1029, for the
-relatively rare Analog Devices ADM1029 chip), support for one new chip
-(Winbond W83627DHG), PWM clock frequency control added to the it87
-driver, and individual cleanups and minor fixes to a dozen drivers.
+--linas
 
- Documentation/hwmon/it87            |   10 +
- Documentation/hwmon/sysfs-interface |   15 +
- Documentation/hwmon/w83627ehf       |   54 +++-
- MAINTAINERS                         |    6 
- drivers/hwmon/Kconfig               |   11 +
- drivers/hwmon/Makefile              |    1 
- drivers/hwmon/abituguru.c           |   30 +-
- drivers/hwmon/adm1026.c             |    1 
- drivers/hwmon/adm1029.c             |  508 +++++++++++++++++++++++++++++++++++
- drivers/hwmon/f71805f.c             |   30 --
- drivers/hwmon/hwmon.c               |    2 
- drivers/hwmon/it87.c                |   84 ++++--
- drivers/hwmon/lm70.c                |    2 
- drivers/hwmon/lm78.c                |    6 
- drivers/hwmon/lm85.c                |    8 -
- drivers/hwmon/sis5595.c             |    6 
- drivers/hwmon/via686a.c             |    5 
- drivers/hwmon/vt1211.c              |   58 ++--
- drivers/hwmon/w83627ehf.c           |   54 +++-
- drivers/hwmon/w83627hf.c            |    5 
- drivers/hwmon/w83781d.c             |   10 -
- 21 files changed, 769 insertions(+), 137 deletions(-)
- create mode 100644 drivers/hwmon/adm1029.c
+This patch adds PCI Error recovery support to the
+Emulex Lightpulse Fibrechannel (lpfc) SCSI device driver.
+Lightly tested at this point, works.
 
----------------
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+Signed-off-by: Bino.Sebastian@Emulex.Com
+Cc: James Smart <james.smart@emulex.com>
 
-Corentin Labbe:
-      hwmon: New driver for the Analog Devices ADM1029
+----
 
-David Brownell:
-      hwmon: Use subsys_initcall
+ drivers/scsi/lpfc/lpfc_init.c |   97 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/scsi/lpfc/lpfc_sli.c  |   12 +++++
+ 2 files changed, 109 insertions(+)
 
-David Hubbard:
-      hwmon/w83627ehf: Add support for the W83627DHG chip
-
-Hans de Goede:
-      hwmon/abituguru: Fix unchecked return status
-
-Jean Delvare:
-      hwmon/it87: Add PWM base frequency control
-      hwmon: Drop unused mutexes in two drivers
-      hwmon: Simplify the locking model of two drivers
-      hwmon: Cleanup a bogus legacy comment
-      hwmon/f71805f: Fix a race condition
-
-Juerg Haefliger:
-      hwmon/vt1211: Add probing of alternate config index port
-
-Ralf Baechle:
-      hwmon/lm70: Make lm70_remove a __devexit function
-
-Thanks,
--- 
-Jean Delvare
+Index: linux-2.6.20-git4/drivers/scsi/lpfc/lpfc_init.c
+===================================================================
+--- linux-2.6.20-git4.orig/drivers/scsi/lpfc/lpfc_init.c	2007-02-09 17:22:30.000000000 -0600
++++ linux-2.6.20-git4/drivers/scsi/lpfc/lpfc_init.c	2007-02-14 14:12:22.000000000 -0600
+@@ -518,6 +518,10 @@ lpfc_handle_eratt(struct lpfc_hba * phba
+ 	struct lpfc_sli *psli = &phba->sli;
+ 	struct lpfc_sli_ring  *pring;
+ 	uint32_t event_data;
++	/* If the pci channel is offline, ignore possible errors,
++	 * since we cannot communicate with the pci card anyway. */
++	if (pci_channel_offline(phba->pcidev))
++		return;
+ 
+ 	if (phba->work_hs & HS_FFER6 ||
+ 	    phba->work_hs & HS_FFER5) {
+@@ -1797,6 +1801,92 @@ lpfc_pci_remove_one(struct pci_dev *pdev
+ 	pci_set_drvdata(pdev, NULL);
+ }
+ 
++/**
++ * lpfc_io_error_detected - called when PCI error is detected
++ * @pdev: Pointer to PCI device
++ * @state: The current pci conneection state
++ *
++ * This function is called after a PCI bus error affecting
++ * this device has been detected.
++ */
++static pci_ers_result_t lpfc_io_error_detected(struct pci_dev *pdev,
++				pci_channel_state_t state)
++{
++	struct Scsi_Host *host = pci_get_drvdata(pdev);
++	struct lpfc_hba *phba = (struct lpfc_hba *)host->hostdata;
++	struct lpfc_sli *psli = &phba->sli;
++	struct lpfc_sli_ring  *pring;
++
++	if (state == pci_channel_io_perm_failure) {
++		lpfc_pci_remove_one(pdev);
++		return PCI_ERS_RESULT_DISCONNECT;
++	}
++	pci_disable_device(pdev);
++	/*
++	 * There may be I/Os dropped by the firmware.
++	 * Error iocb (I/O) on txcmplq and let the SCSI layer
++	 * retry it after re-establishing link.
++	 */
++	pring = &psli->ring[psli->fcp_ring];
++	lpfc_sli_abort_iocb_ring(phba, pring);
++
++	/* Request a slot reset. */
++	return PCI_ERS_RESULT_NEED_RESET;
++}
++
++/**
++ * lpfc_io_slot_reset - called after the pci bus has been reset.
++ * @pdev: Pointer to PCI device
++ *
++ * Restart the card from scratch, as if from a cold-boot.
++ */
++static pci_ers_result_t lpfc_io_slot_reset(struct pci_dev *pdev)
++{
++	struct Scsi_Host *host = pci_get_drvdata(pdev);
++	struct lpfc_hba *phba = (struct lpfc_hba *)host->hostdata;
++	struct lpfc_sli *psli = &phba->sli;
++	int bars = pci_select_bars(pdev, IORESOURCE_MEM);
++
++	dev_printk(KERN_INFO, &pdev->dev, "recovering from a slot reset.\n");
++	if (pci_enable_device_bars(pdev, bars)) {
++		printk(KERN_ERR "lpfc: Cannot re-enable "
++			"PCI device after reset.\n");
++		return PCI_ERS_RESULT_DISCONNECT;
++	}
++
++	pci_set_master(pdev);
++
++	/* Re-establishing Link */
++	spin_lock_irq(phba->host->host_lock);
++	phba->fc_flag |= FC_ESTABLISH_LINK;
++	psli->sli_flag &= ~LPFC_SLI2_ACTIVE;
++	spin_unlock_irq(phba->host->host_lock);
++
++
++	/* Take device offline; this will perform cleanup */
++	lpfc_offline(phba);
++	lpfc_sli_brdrestart(phba);
++
++	return PCI_ERS_RESULT_RECOVERED;
++}
++
++/**
++ * lpfc_io_resume - called when traffic can start flowing again.
++ * @pdev: Pointer to PCI device
++ *
++ * This callback is called when the error recovery driver tells us that
++ * its OK to resume normal operation.
++ */
++static void lpfc_io_resume(struct pci_dev *pdev)
++{
++	struct Scsi_Host *host = pci_get_drvdata(pdev);
++	struct lpfc_hba *phba = (struct lpfc_hba *)host->hostdata;
++
++	if (lpfc_online(phba) == 0) {
++		mod_timer(&phba->fc_estabtmo, jiffies + HZ * 60);
++	}
++}
++
+ static struct pci_device_id lpfc_id_table[] = {
+ 	{PCI_VENDOR_ID_EMULEX, PCI_DEVICE_ID_VIPER,
+ 		PCI_ANY_ID, PCI_ANY_ID, },
+@@ -1857,11 +1947,18 @@ static struct pci_device_id lpfc_id_tabl
+ 
+ MODULE_DEVICE_TABLE(pci, lpfc_id_table);
+ 
++static struct pci_error_handlers lpfc_err_handler = {
++	.error_detected = lpfc_io_error_detected,
++	.slot_reset = lpfc_io_slot_reset,
++	.resume = lpfc_io_resume,
++};
++
+ static struct pci_driver lpfc_driver = {
+ 	.name		= LPFC_DRIVER_NAME,
+ 	.id_table	= lpfc_id_table,
+ 	.probe		= lpfc_pci_probe_one,
+ 	.remove		= __devexit_p(lpfc_pci_remove_one),
++	.err_handler = &lpfc_err_handler,
+ };
+ 
+ static int __init
+Index: linux-2.6.20-git4/drivers/scsi/lpfc/lpfc_sli.c
+===================================================================
+--- linux-2.6.20-git4.orig/drivers/scsi/lpfc/lpfc_sli.c	2007-02-09 17:22:30.000000000 -0600
++++ linux-2.6.20-git4/drivers/scsi/lpfc/lpfc_sli.c	2007-02-14 14:01:31.000000000 -0600
+@@ -2104,6 +2104,10 @@ lpfc_sli_issue_mbox(struct lpfc_hba * ph
+ 	volatile uint32_t word0, ldata;
+ 	void __iomem *to_slim;
+ 
++	/* If the PCI channel is in offline state, do not post mbox. */
++	if (unlikely(pci_channel_offline(phba->pcidev)))
++		return MBX_NOT_FINISHED;
++
+ 	psli = &phba->sli;
+ 
+ 	spin_lock_irqsave(phba->host->host_lock, drvr_flag);
+@@ -2407,6 +2411,10 @@ lpfc_sli_issue_iocb(struct lpfc_hba *phb
+ 	struct lpfc_iocbq *nextiocb;
+ 	IOCB_t *iocb;
+ 
++	/* If the PCI channel is in offline state, do not post iocbs. */
++	if (unlikely(pci_channel_offline(phba->pcidev)))
++		return IOCB_ERROR;
++
+ 	/*
+ 	 * We should never get an IOCB if we are in a < LINK_DOWN state
+ 	 */
+@@ -3154,6 +3162,10 @@ lpfc_intr_handler(int irq, void *dev_id)
+ 	if (unlikely(!phba))
+ 		return IRQ_NONE;
+ 
++	/* If the pci channel is offline, ignore all the interrupts. */
++	if (unlikely(pci_channel_offline(phba->pcidev)))
++		return IRQ_NONE;
++
+ 	phba->sli.slistat.sli_intr++;
+ 
+ 	/*
