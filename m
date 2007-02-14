@@ -1,344 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932533AbXBNUNB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932525AbXBNUOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932533AbXBNUNB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 15:13:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932534AbXBNUNA
+	id S932525AbXBNUOI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 15:14:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932534AbXBNUOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 15:13:00 -0500
-Received: from mta9.adelphia.net ([68.168.78.199]:63496 "EHLO
-	mta9.adelphia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932533AbXBNUM7 (ORCPT
+	Wed, 14 Feb 2007 15:14:08 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:49814 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932525AbXBNUOH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 15:12:59 -0500
-Date: Wed, 14 Feb 2007 14:12:57 -0600
-From: Corey Minyard <minyard@acm.org>
-To: Andrew Morton <akpm@osdl.org>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [patch 4/4] ipmi: add new IPMI nmi watchdog handling
-Message-ID: <20070214201257.GD5364@localdomain>
-Reply-To: minyard@acm.org
+	Wed, 14 Feb 2007 15:14:07 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
+       Zachary Amsden <zach@vmware.com>,
+       Ian Campbell <Ian.Campbell@XenSource.com>
+Subject: Re: [patch 16/21] Xen-paravirt: Add code into head.S to handle being booted by Xen
+References: <20070213221729.772002682@goop.org>
+	<20070213221830.707197267@goop.org> <20070213235424.GA1908@muc.de>
+	<45D35ABE.1050504@goop.org>
+Date: Wed, 14 Feb 2007 13:10:42 -0700
+In-Reply-To: <45D35ABE.1050504@goop.org> (Jeremy Fitzhardinge's message of
+	"Wed, 14 Feb 2007 10:53:50 -0800")
+Message-ID: <m1zm7gpkjh.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-Convert over to the new NMI handling for getting IPMI watchdog
-timeouts via an NMI.  This add config options to know if there
-is the ability to receive NMIs and if it has an NMI post processing
-call.  Then it modifies the IPMI watchdog to take advantage of
-this so that it can know if an NMI comes in.
+> Andi Kleen wrote:
+>>> +#ifdef CONFIG_XEN
+>>> +#include "../xen/xen-head.S"
+>>> +#endif
+>>>     
+>>
+>> Can this really not be linked separately? 
+>
+> I did a patch to do this (attached).  In principle it should be pretty
+> simple, but I think I'm running into toolchain issues.  If I link
+> xen-head.S separately (with appropriate headers added), it compiles OK
+> and contains the right notes, but they don't appear in the final vmlinux
+> properly.  The note segment and section are there, but no tools will
+> parse them as notes:
+>
+> : ezr:pts/1; readelf -n vmlinux 
+> : ezr:pts/1; ../../unstable/tools/xcutils/readnotes vmlinux 
+> : ezr:pts/1; readelf -l vmlinux 
+>
+> Elf file type is EXEC (Executable file)
+> Entry point 0x2e1f70
+> There are 3 program headers, starting at offset 52
+>
+> Program Headers:
+>   Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
+>   LOAD           0x001000 0xc0100000 0x00100000 0x2a8920 0x2a8920 R E 0x1000
+>   LOAD           0x2aa000 0xc03a9000 0x003a9000 0x5f085 0xaf000 RWE 0x1000
+>   NOTE           0x26d2910 0x00239010 0x00239010 0x000e8 0x00000 R   0x4
+>
+>  Section to Segment mapping:
+>   Segment Sections...
+>    00 .text .text.head __ex_table .rodata .pci_fixup __ksymtab __ksymtab_gpl
+> __kcrctab __kcrctab_gpl __ksymtab_strings __param __bug_table
+>    01 .data .paravirtprobe .data_nosave .data.page_aligned
+> .data.cacheline_aligned .data.read_mostly .data.init_task .init.text .init.data
+> .init.setup .initcall.init .con_initcall.init .altinstructions
+> .altinstr_replacement .parainstructions .exit.text .init.ramfs .bss
+>    02     .notes 
+> : ezr:pts/1; objdump -j .notes -s vmlinux 
+>
+> vmlinux:     file format elf32-i386
+>
+> Contents of section .notes:
+>  239010 04000000 06000000 06000000 58656e00  ............Xen.
+>  239020 6c696e75 78000000 04000000 04000000  linux...........
+>  239030 07000000 58656e00 322e3600 04000000  ....Xen.2.6.....
+>  239040 08000000 05000000 58656e00 78656e2d  ........Xen.xen-
+>  239050 332e3000 04000000 04000000 03000000  3.0.............
+>  239060 58656e00 000000c0 04000000 04000000  Xen.............
+>  239070 01000000 58656e00 c80710c0 04000000  ....Xen.........
+>  239080 04000000 02000000 58656e00 00b040c0  ........Xen...@.
+>  239090 04000000 2a000000 0a000000 58656e00  ....*.......Xen.
+>  2390a0 21777269 7461626c 655f7061 67655f74  !writable_page_t
+>  2390b0 61626c65 737c7061 655f7067 6469725f  ables|pae_pgdir_
+>  2390c0 61626f76 655f3467 62000000 04000000  above_4gb.......
+>  2390d0 04000000 09000000 58656e00 79657300  ........Xen.yes.
+>  2390e0 04000000 08000000 08000000 58656e00  ............Xen.
+>  2390f0 67656e65 72696300                    generic.        
+>
+>
+> I can't see what the problem is here, but it looks like a toolchain
+> problem to me (I'm using binutils-2.17.50.0.6-2.fc6).
 
-It also adds testing that the IPMI NMI watchdog works.
+Well I did a little by hand parsing and the not I parsed looked ok.
 
-Signed-off-by: Corey Minyard <minyard@acm.org>
+How does the output differ from a what you get when xen-head.S is
+included?
 
-Index: linux-2.6.19-rc6/arch/i386/Kconfig.debug
-===================================================================
---- linux-2.6.19-rc6.orig/arch/i386/Kconfig.debug
-+++ linux-2.6.19-rc6/arch/i386/Kconfig.debug
-@@ -4,6 +4,10 @@ config TRACE_IRQFLAGS_SUPPORT
- 	bool
- 	default y
- 
-+config HAVE_STANDARD_NOTIFY_DIE
-+	bool
-+	default y
-+
- source "lib/Kconfig.debug"
- 
- config EARLY_PRINTK
-Index: linux-2.6.19-rc6/arch/x86_64/Kconfig.debug
-===================================================================
---- linux-2.6.19-rc6.orig/arch/x86_64/Kconfig.debug
-+++ linux-2.6.19-rc6/arch/x86_64/Kconfig.debug
-@@ -4,6 +4,10 @@ config TRACE_IRQFLAGS_SUPPORT
- 	bool
- 	default y
- 
-+config HAVE_STANDARD_NOTIFY_DIE
-+	bool
-+	default y
-+
- source "lib/Kconfig.debug"
- 
- config DEBUG_RODATA
-Index: linux-2.6.19-rc6/arch/i386/kernel/traps.c
-===================================================================
---- linux-2.6.19-rc6.orig/arch/i386/kernel/traps.c
-+++ linux-2.6.19-rc6/arch/i386/kernel/traps.c
-@@ -804,6 +804,11 @@ static __kprobes void default_do_nmi(str
- 		 */
- 		if (nmi_watchdog_tick(regs, reason))
- 			return;
-+#endif
-+		if (notify_die(DIE_NMI_POST, "nmi_post", regs, reason, 2, 0)
-+							== NOTIFY_STOP)
-+			return;
-+#ifdef CONFIG_X86_LOCAL_APIC
- 		if (!do_nmi_callback(regs, smp_processor_id()))
- #endif
- 			unknown_nmi_error(reason, regs);
-Index: linux-2.6.19-rc6/arch/x86_64/kernel/traps.c
-===================================================================
---- linux-2.6.19-rc6.orig/arch/x86_64/kernel/traps.c
-+++ linux-2.6.19-rc6/arch/x86_64/kernel/traps.c
-@@ -835,6 +835,8 @@ asmlinkage __kprobes void default_do_nmi
- 		 */
- 		if (nmi_watchdog_tick(regs,reason))
- 			return;
-+		if (notify_die(DIE_NMI_POST, "nmi_post", regs, reason, 2, 0)
-+								== NOTIFY_STOP)
- 		if (!do_nmi_callback(regs,cpu))
- 			unknown_nmi_error(reason, regs);
- 
-Index: linux-2.6.19-rc6/include/asm-i386/kdebug.h
-===================================================================
---- linux-2.6.19-rc6.orig/include/asm-i386/kdebug.h
-+++ linux-2.6.19-rc6/include/asm-i386/kdebug.h
-@@ -38,9 +38,12 @@ enum die_val {
- 	DIE_GPF,
- 	DIE_CALL,
- 	DIE_NMI_IPI,
-+	DIE_NMI_POST,
- 	DIE_PAGE_FAULT,
- };
- 
-+#define HAVE_DIE_NMI_POST
-+
- static inline int notify_die(enum die_val val, const char *str,
- 			struct pt_regs *regs, long err, int trap, int sig)
- {
-Index: linux-2.6.19-rc6/include/asm-x86_64/kdebug.h
-===================================================================
---- linux-2.6.19-rc6.orig/include/asm-x86_64/kdebug.h
-+++ linux-2.6.19-rc6/include/asm-x86_64/kdebug.h
-@@ -33,9 +33,12 @@ enum die_val {
- 	DIE_GPF,
- 	DIE_CALL,
- 	DIE_NMI_IPI,
-+	DIE_NMI_POST,
- 	DIE_PAGE_FAULT,
- };
- 
-+#define HAVE_DIE_NMI_POST
-+
- static inline int notify_die(enum die_val val, const char *str,
- 			struct pt_regs *regs, long err, int trap, int sig)
- {
-Index: linux-2.6.19/drivers/char/ipmi/ipmi_watchdog.c
-===================================================================
---- linux-2.6.19.orig/drivers/char/ipmi/ipmi_watchdog.c	2006-12-30 12:40:48.000000000 -0600
-+++ linux-2.6.19/drivers/char/ipmi/ipmi_watchdog.c	2006-12-30 12:57:12.000000000 -0600
-@@ -49,9 +49,10 @@
- #include <linux/poll.h>
- #include <linux/string.h>
- #include <linux/ctype.h>
-+#include <linux/delay.h>
- #include <asm/atomic.h>
--#ifdef CONFIG_X86_LOCAL_APIC
--#include <asm/apic.h>
-+#ifdef CONFIG_HAVE_STANDARD_NOTIFY_DIE
-+#include <asm/kdebug.h>
- #endif
- 
- #define	PFX "IPMI Watchdog: "
-@@ -317,6 +318,11 @@
- /* If a pretimeout occurs, this is used to allow only one panic to happen. */
- static atomic_t preop_panic_excl = ATOMIC_INIT(-1);
- 
-+#ifdef HAVE_DIE_NMI_POST
-+static int testing_nmi;
-+static int nmi_handler_registered;
-+#endif
-+
- static int ipmi_heartbeat(void);
- static void panic_halt_ipmi_heartbeat(void);
- 
-@@ -919,6 +925,45 @@
- 		printk(KERN_CRIT PFX "Unable to register misc device\n");
- 	}
- 
-+#ifdef HAVE_DIE_NMI_POST
-+	if (nmi_handler_registered) {
-+		int old_pretimeout = pretimeout;
-+		int old_timeout = timeout;
-+		int old_preop_val = preop_val;
-+
-+		/* Set the pretimeout to go off in a second and give
-+		   ourselves plenty of time to stop the timer. */
-+		ipmi_watchdog_state = WDOG_TIMEOUT_RESET;
-+		preop_val = WDOG_PREOP_NONE; /* Make sure nothing happens */
-+		pretimeout = 99;
-+		timeout = 100;
-+
-+		testing_nmi = 1;
-+
-+		rv = ipmi_set_timeout(IPMI_SET_TIMEOUT_FORCE_HB);
-+		if (rv) {
-+			printk(KERN_WARNING PFX "Error starting timer to"
-+			       " test NMI: 0x%x.  The NMI pretimeout will"
-+			       " likely not work\n", rv);
-+			rv = 0;
-+			goto out_restore;
-+		}
-+
-+		msleep(1500);
-+
-+		if (testing_nmi != 2) {
-+			printk(KERN_WARNING PFX "IPMI NMI didn't seem to"
-+			       " occur.  The NMI pretimeout will"
-+			       " likely not work\n");
-+		}
-+	out_restore:
-+		testing_nmi = 0;
-+		preop_val = old_preop_val;
-+		pretimeout = old_pretimeout;
-+		timeout = old_timeout;
-+	}
-+#endif
-+
-  out:
- 	up_write(&register_sem);
- 
-@@ -928,6 +973,10 @@
- 		ipmi_watchdog_state = action_val;
- 		ipmi_set_timeout(IPMI_SET_TIMEOUT_FORCE_HB);
- 		printk(KERN_INFO PFX "Starting now!\n");
-+	} else {
-+		/* Stop the timer now. */
-+		ipmi_watchdog_state = WDOG_TIMEOUT_NONE;
-+		ipmi_set_timeout(IPMI_SET_TIMEOUT_NO_HB);
- 	}
- }
- 
-@@ -964,17 +1013,28 @@
- 	up_write(&register_sem);
- }
- 
--#ifdef HAVE_NMI_HANDLER
-+#ifdef HAVE_DIE_NMI_POST
- static int
--ipmi_nmi(void *dev_id, int cpu, int handled)
-+ipmi_nmi(struct notifier_block *self, unsigned long val, void *data)
- {
-+	if (val != DIE_NMI_POST)
-+		return NOTIFY_OK;
-+
-+	if (testing_nmi) {
-+		testing_nmi = 2;
-+		return NOTIFY_STOP;
-+	}
-+
-         /* If we are not expecting a timeout, ignore it. */
- 	if (ipmi_watchdog_state == WDOG_TIMEOUT_NONE)
--		return NOTIFY_DONE;
-+		return NOTIFY_OK;
-+
-+	if (preaction_val != WDOG_PRETIMEOUT_NMI)
-+		return NOTIFY_OK;
- 
- 	/* If no one else handled the NMI, we assume it was the IPMI
-            watchdog. */
--	if ((!handled) && (preop_val == WDOG_PREOP_PANIC)) {
-+	if (preop_val == WDOG_PREOP_PANIC) {
- 		/* On some machines, the heartbeat will give
- 		   an error and not work unless we re-enable
- 		   the timer.   So do so. */
-@@ -983,18 +1043,12 @@
- 			panic(PFX "pre-timeout");
- 	}
- 
--	return NOTIFY_DONE;
-+	return NOTIFY_STOP;
- }
- 
--static struct nmi_handler ipmi_nmi_handler =
--{
--	.link     = LIST_HEAD_INIT(ipmi_nmi_handler.link),
--	.dev_name = "ipmi_watchdog",
--	.dev_id   = NULL,
--	.handler  = ipmi_nmi,
--	.priority = 0, /* Call us last. */
-+static struct notifier_block ipmi_nmi_handler = {
-+	.notifier_call = ipmi_nmi
- };
--int nmi_handler_registered;
- #endif
- 
- static int wdog_reboot_handler(struct notifier_block *this,
-@@ -1111,7 +1165,7 @@
- 		preaction_val = WDOG_PRETIMEOUT_NONE;
- 	else if (strcmp(inval, "pre_smi") == 0)
- 		preaction_val = WDOG_PRETIMEOUT_SMI;
--#ifdef HAVE_NMI_HANDLER
-+#ifdef HAVE_DIE_NMI_POST
- 	else if (strcmp(inval, "pre_nmi") == 0)
- 		preaction_val = WDOG_PRETIMEOUT_NMI;
- #endif
-@@ -1145,7 +1199,7 @@
- 
- static void check_parms(void)
- {
--#ifdef HAVE_NMI_HANDLER
-+#ifdef HAVE_DIE_NMI_POST
- 	int do_nmi = 0;
- 	int rv;
- 
-@@ -1158,20 +1212,9 @@
- 			preop_op("preop_none", NULL);
- 			do_nmi = 0;
- 		}
--#ifdef CONFIG_X86_LOCAL_APIC
--		if (nmi_watchdog == NMI_IO_APIC) {
--			printk(KERN_WARNING PFX "nmi_watchdog is set to IO APIC"
--			       " mode (value is %d), that is incompatible"
--			       " with using NMI in the IPMI watchdog."
--			       " Disabling IPMI nmi pretimeout.\n",
--			       nmi_watchdog);
--			preaction_val = WDOG_PRETIMEOUT_NONE;
--			do_nmi = 0;
--		}
--#endif
- 	}
- 	if (do_nmi && !nmi_handler_registered) {
--		rv = request_nmi(&ipmi_nmi_handler);
-+		rv = register_die_notifier(&ipmi_nmi_handler);
- 		if (rv) {
- 			printk(KERN_WARNING PFX
- 			       "Can't register nmi handler\n");
-@@ -1179,7 +1222,7 @@
- 		} else
- 			nmi_handler_registered = 1;
- 	} else if (!do_nmi && nmi_handler_registered) {
--		release_nmi(&ipmi_nmi_handler);
-+		unregister_die_notifier(&ipmi_nmi_handler);
- 		nmi_handler_registered = 0;
- 	}
- #endif
-@@ -1215,9 +1258,9 @@
- 
- 	rv = ipmi_smi_watcher_register(&smi_watcher);
- 	if (rv) {
--#ifdef HAVE_NMI_HANDLER
--		if (preaction_val == WDOG_PRETIMEOUT_NMI)
--			release_nmi(&ipmi_nmi_handler);
-+#ifdef HAVE_DIE_NMI_POST
-+		if (nmi_handler_registered)
-+			unregister_die_notifier(&ipmi_nmi_handler);
- #endif
- 		atomic_notifier_chain_unregister(&panic_notifier_list,
- 						 &wdog_panic_notifier);
-@@ -1236,9 +1279,9 @@
- 	ipmi_smi_watcher_unregister(&smi_watcher);
- 	ipmi_unregister_watchdog(watchdog_ifnum);
- 
--#ifdef HAVE_NMI_HANDLER
-+#ifdef HAVE_DIE_NMI_POST
- 	if (nmi_handler_registered)
--		release_nmi(&ipmi_nmi_handler);
-+		unregister_die_notifier(&ipmi_nmi_handler);
- #endif
- 
- 	atomic_notifier_chain_unregister(&panic_notifier_list,
+Eric
