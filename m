@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932278AbXBNNa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932279AbXBNNlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932278AbXBNNa6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 08:30:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932272AbXBNNa6
+	id S932279AbXBNNlz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 08:41:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932281AbXBNNlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 08:30:58 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50879 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932278AbXBNNa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 08:30:57 -0500
-Date: Wed, 14 Feb 2007 14:30:42 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
-Cc: Robin Holt <holt@sgi.com>, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       dhowells@redhat.com, alan@lxorguk.ukuu.org.uk,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       Satoshi OSHIMA <soshima@redhat.com>,
-       "Hideo AOKI@redhat" <haoki@redhat.com>
-Subject: Re: [PATCH 0/4] coredump: core dump masking support v2
-Message-ID: <20070214133042.GJ22008@elf.ucw.cz>
-References: <45BA0A93.30004@hitachi.com> <20070126152907.GB30950@lnx-holt.americas.sgi.com> <45BEF582.7080004@hitachi.com> <20070130124417.GA7320@lnx-holt.americas.sgi.com> <45C08E33.9030300@hitachi.com> <20070203124853.GA4191@elf.ucw.cz> <45D30DEA.4020309@hitachi.com>
+	Wed, 14 Feb 2007 08:41:55 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:29652 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932279AbXBNNlz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 08:41:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=sQILtMaFzuW+spV7uD3I3nHVR10v+qLevO4xLy4LGa9KufUCYNZgJmmzTWPkkwsv7K2mSwNzwX89yNuexhf1MO/fAhPYmdPTAfZCVpDM8QMlUxD9LVqfTL7MsyJjucKeXxWOvTRkZb/rD6pMmSRaWQ0/KGtDXB31Gm25JzQi6t4=
+Message-ID: <acd2a5930702140541n20752906ge1ff58efed460ed5@mail.gmail.com>
+Date: Wed, 14 Feb 2007 05:41:53 -0800
+From: "Vitaly Wool" <vitalywool@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] 8250: make probing for TXEN bug a config option
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070214004755.faa96e55.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45D30DEA.4020309@hitachi.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+References: <20061226194317.3fd3ec14.vitalywool@gmail.com>
+	 <20070213224643.14d27cd3.akpm@linux-foundation.org>
+	 <acd2a5930702140037yff0b77dl2714ea7869bdde54@mail.gmail.com>
+	 <20070214004755.faa96e55.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On 2/14/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Wed, 14 Feb 2007 11:37:52 +0300 "Vitaly Wool" <vitalywool@gmail.com> wrote:
+> > Hmm, why? I can't think of a platform where one 8250-compatible UART is
+> > problematic and another isn't :)
+> >
+>
+> Is it not possible that the same kernel package can be installed on systems
+> which do and don't need this feature?  If so, we don't want to force the
+> provider of that package to create two packages.
+>
+> That, plus the chances of the package creator actually knowing about this
+> option aren't great.
+>
+> Generally, if it can be done at runtime it is better to do so, no?
 
-> > Can we simply add ulimit with boolean value, that says dump
-> > anon_shared... or not? It will be simpler and faster, because you'll
-> > not need locking.
-> 
-> Yes, using ulimit will be simpler and faster, but less flexible.
+Okay, yes, I see your point. The same kernel might actually be
+supporting several machines.
 
-It is prefered in this case.
+But having that as a config option doesn't look too attractive to me.
+What about adding a new flag to plat_serial 8250 stuff instead?
 
-> The core dump flags can be changed only before running the program.
-> If the user modifies the program, the user will be able to change the
-> flags anytime. But the user can't always modify the program.
-
-You can do ulimit then exec from wrapper.
-
-> I need the ability to change the core dump flags anytime.
-
-Then maybe right solution is to extend _ulimit_ to change anything
-anytime. But that's definitely separate patch.
-									Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Vitaly
