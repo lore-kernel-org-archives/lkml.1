@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932593AbXBNVIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932596AbXBNVKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932593AbXBNVIt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 16:08:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932599AbXBNVIt
+	id S932596AbXBNVKS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 16:10:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932598AbXBNVKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 16:08:49 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:37006 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932593AbXBNVIs (ORCPT
+	Wed, 14 Feb 2007 16:10:18 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:3668 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932596AbXBNVKQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 16:08:48 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
-       Zachary Amsden <zach@vmware.com>,
-       Ian Campbell <Ian.Campbell@XenSource.com>
-Subject: Re: [patch 16/21] Xen-paravirt: Add code into head.S to handle being booted by Xen
-References: <20070213221729.772002682@goop.org>
-	<20070213221830.707197267@goop.org> <20070213235424.GA1908@muc.de>
-	<45D35ABE.1050504@goop.org> <m1zm7gpkjh.fsf@ebiederm.dsl.xmission.com>
-	<45D3740A.4080600@goop.org>
-Date: Wed, 14 Feb 2007 14:06:56 -0700
-In-Reply-To: <45D3740A.4080600@goop.org> (Jeremy Fitzhardinge's message of
-	"Wed, 14 Feb 2007 12:41:46 -0800")
-Message-ID: <m17iukphxr.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 14 Feb 2007 16:10:16 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 14 Feb 2007 13:09:38 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 05/11] syslets: core code
+In-Reply-To: <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0702141308240.7796@alien.or.mcafeemobile.com>
+References: <20070213142035.GF638@elte.hu> <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+On Wed, 14 Feb 2007, Linus Torvalds wrote:
 
-> Eric W. Biederman wrote:
->> Well I did a little by hand parsing and the not I parsed looked ok.
->>
->> How does the output differ from a what you get when xen-head.S is
->> included?
->>   
-> Ah!
->
-> The .notes section gets SHT_NOTE in vmlinux when xen-head.S is included;
-> PROGBITS when linked.  I tried putting @note on the .section in
-> linux/elfnote.h, but that didn't seem to help (xen-note.o got a SHT_NOTE
-> entry, but it didn't make it into vmlinux).  I couldn't see any way of
-> forcing the section type in vmlinux.lds; my experiments all ended with
-> ld dumping core.
+> 
+> 
+> On Tue, 13 Feb 2007, Ingo Molnar wrote:
+> > 
+> > the core syslet / async system calls infrastructure code.
+> 
+> Ok, having now looked at it more, I can say:
+> 
+>  - I hate it.
+> 
+> I dislike it intensely, because it's so _close_ to being usable. But the 
+> programming interface looks absolutely horrid for any "casual" use, and 
+> while the loops etc look like fun, I think they are likely to be less than 
+> useful in practice. Yeah, you can do the "setup and teardown" just once, 
+> but it ends up being "once per user", and it ends up being a lot of stuff 
+> to do for somebody who wants to just do some simple async stuff.
+> 
+> And the whole "lock things down in memory" approach is bad. It's doing 
+> expensive things like mlock(), making the overhead for _single_ system 
+> calls much more expensive. Since I don't actually believe that the 
+> non-single case is even all that interesting, I really don't like it.
+> 
+> I think it's clever and potentially useful to allow user mode to see the 
+> data structures (and even allow user mode to *modify* them) while the 
+> async thing is running, but it really seems to be a case of excessive 
+> cleverness.
 
-Ok.  If that is all this may be a difference that makes no difference.
-binutils has a bad habit of looking at sections (which are fully
-optional) instead of segments on ET_EXEC and ET_DYN objects.  Only
-ET_REL objects (.o files) are required to have sections.
+Ok, that makes the wierdo-count up to two :) I agree with you that the 
+chained API can be improved at least.
 
-It is worth checking but as long as something looking strictly at the
-program headers can find the notes and read them we are in good shape.
 
-That readelf -n has a problem there concerns me a little but as
-usually that program is better than the rest of binutils.
 
-So I recommend for testing write a 100 line program that includes
-elf.h and reads out the note segment.  If all is well we can split
-this code out.
+- Davide
 
-Eric
+
