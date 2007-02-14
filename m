@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932418AbXBNSJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932429AbXBNSVF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932418AbXBNSJo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 13:09:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932419AbXBNSJo
+	id S932429AbXBNSVF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 13:21:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932430AbXBNSVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 13:09:44 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49872 "EHLO mx1.redhat.com"
+	Wed, 14 Feb 2007 13:21:05 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:38276 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932418AbXBNSJn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 13:09:43 -0500
-Date: Wed, 14 Feb 2007 13:09:15 -0500
-From: Dave Jones <davej@redhat.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: dbrownell@users.sourceforge.net
-Subject: loosen dependancy on rtc cmos
-Message-ID: <20070214180915.GA6412@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	dbrownell@users.sourceforge.net
+	id S932429AbXBNSVC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 13:21:02 -0500
+Date: Wed, 14 Feb 2007 10:20:56 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Vitaly Wool" <vitalywool@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 8250: make probing for TXEN bug a config option
+Message-Id: <20070214102056.aa024d70.akpm@linux-foundation.org>
+In-Reply-To: <acd2a5930702140541n20752906ge1ff58efed460ed5@mail.gmail.com>
+References: <20061226194317.3fd3ec14.vitalywool@gmail.com>
+	<20070213224643.14d27cd3.akpm@linux-foundation.org>
+	<acd2a5930702140037yff0b77dl2714ea7869bdde54@mail.gmail.com>
+	<20070214004755.faa96e55.akpm@linux-foundation.org>
+	<acd2a5930702140541n20752906ge1ff58efed460ed5@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This option is useful for all of the X86 subarchs afaik (and especially X86_GENERICARCH).
+On Wed, 14 Feb 2007 05:41:53 -0800
+"Vitaly Wool" <vitalywool@gmail.com> wrote:
 
-Signed-off-by: Dave Jones <davej@redhat.com>
+> On 2/14/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > On Wed, 14 Feb 2007 11:37:52 +0300 "Vitaly Wool" <vitalywool@gmail.com> wrote:
+> > > Hmm, why? I can't think of a platform where one 8250-compatible UART is
+> > > problematic and another isn't :)
+> > >
+> >
+> > Is it not possible that the same kernel package can be installed on systems
+> > which do and don't need this feature?  If so, we don't want to force the
+> > provider of that package to create two packages.
+> >
+> > That, plus the chances of the package creator actually knowing about this
+> > option aren't great.
+> >
+> > Generally, if it can be done at runtime it is better to do so, no?
+> 
+> Okay, yes, I see your point. The same kernel might actually be
+> supporting several machines.
+> 
+> But having that as a config option doesn't look too attractive to me.
+> What about adding a new flag to plat_serial 8250 stuff instead?
 
---- linux-2.6.20.noarch/drivers/rtc/Kconfig~	2007-02-14 13:07:07.000000000 -0500
-+++ linux-2.6.20.noarch/drivers/rtc/Kconfig	2007-02-14 13:07:13.000000000 -0500
-@@ -101,7 +101,7 @@ comment "RTC drivers"
- 
- config RTC_DRV_CMOS
- 	tristate "PC-style 'CMOS' real time clock"
--	depends on RTC_CLASS && (X86_PC || ALPHA || ARM26 || ARM \
-+	depends on RTC_CLASS && (X86 || ALPHA || ARM26 || ARM \
- 		|| M32R || ATARI || POWERPC)
- 	help
- 	  Say "yes" here to get direct support for the real time clock
-
--- 
-http://www.codemonkey.org.uk
+plat_serial8250_port.flags?  Dunno, I'm unfamiliar with it.  That seems to be how
+the share_irqs option is handled.
