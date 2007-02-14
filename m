@@ -1,45 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932283AbXBNN5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932286AbXBNOIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932283AbXBNN5y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 08:57:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932308AbXBNN5y
+	id S932286AbXBNOIW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 09:08:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbXBNOIV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 08:57:54 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:2308 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932283AbXBNN5x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 08:57:53 -0500
-Date: Thu, 15 Feb 2007 00:57:10 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.osdl.org>,
-       jgarzik <jgarzik@pobox.com>
-Subject: Re: [PATCH 5/8] lguest: trivial guest network driver
-Message-ID: <20070214135710.GA2894@gondor.apana.org.au>
-References: <1171251770.10409.23.camel@localhost.localdomain> <1171251894.10409.26.camel@localhost.localdomain> <1171251965.10409.28.camel@localhost.localdomain> <1171252113.10409.30.camel@localhost.localdomain> <1171252219.10409.33.camel@localhost.localdomain> <1171252321.10409.36.camel@localhost.localdomain> <20070212155553.GA15627@gondor.apana.org.au> <1171332919.19842.74.camel@localhost.localdomain> <20070213140600.GA24711@gondor.apana.org.au> <1171428475.19842.102.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 14 Feb 2007 09:08:21 -0500
+Received: from [212.33.164.166] ([212.33.164.166]:33101 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751325AbXBNOIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 09:08:21 -0500
+X-Greylist: delayed 859 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Feb 2007 09:08:19 EST
+From: Al Boldi <a1426z@gawab.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 6/6] automatic tuning applied to some kernel components 
+Date: Wed, 14 Feb 2007 16:56:43 +0300
+User-Agent: KMail/1.5
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1171428475.19842.102.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200702141656.43301.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 14, 2007 at 03:47:55PM +1100, Rusty Russell wrote:
-> 
-> It's also used to generate dma structs for outgoing packets.  In that
-> case, skb_headlen() == 0:
+ebiederm wrote:
+> At a quick glance max_threads and max_files appear even more to be
+> DOS limits and not tunables and even less applicable to needing any
+> tuning at all.  My gut feel is at worst these values may need a little
+> better boot time defaults but otherwise they the should be good.
 
-I see, in that case you're guaranteed to have no fragments.
-Still it feels a bit weird to have a length field that only
-applies to the header part.
+Autotuning max_threads and max_files by using some sort of rate-limiter could 
+possibly be more useful than any kind of fixed default.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+
+Thanks!
+
+--
+Al
+
