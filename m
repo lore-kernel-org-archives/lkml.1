@@ -1,43 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932122AbXBNAlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932117AbXBNAlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932122AbXBNAlP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Feb 2007 19:41:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932116AbXBNAlP
+	id S932117AbXBNAlR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Feb 2007 19:41:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932115AbXBNAlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Feb 2007 19:41:15 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36833 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751478AbXBNAlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Feb 2007 19:41:01 -0500
-Message-ID: <45D25ABE.5080400@redhat.com>
-Date: Tue, 13 Feb 2007 19:41:34 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-CC: Dave Jones <davej@redhat.com>
-Subject: Is this bug too obvious?
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 13 Feb 2007 19:41:13 -0500
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:40629 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751475AbXBNAlH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Feb 2007 19:41:07 -0500
+Date: Wed, 14 Feb 2007 01:40:57 +0100 (MET)
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+To: James Bottomley <James.Bottomley@SteelEye.com>,
+       Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Richard Knutsson <ricknu-0@student.ltu.se>
+Message-Id: <20070214004058.4566.91267.sendpatchset@thinktank.campus.ltu.se>
+Subject: [PATCH] scsi/tmscsim.c: pci_module_init to pci_register_driver
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-drivers/usb/net/usbnet.c:
+Convert pci_module_init() to pci_register_driver().
 
-int
-usbnet_probe (struct usb_interface *udev, const struct usb_device_id *prod)
-{
-        struct usbnet                   *dev;
-        struct net_device               *net;
-        struct usb_host_interface       *interface;
-        struct driver_info              *info;
-        struct usb_device               *xdev;
-        int                             status;
+Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
+---
+Compile-tested with "allyes", "allmod" & "allno" on i386
 
-	...
 
-        net = alloc_etherdev(sizeof(*dev));
-                                    ^^^^
-	                            *net ???
-
+diff --git a/drivers/scsi/tmscsim.c b/drivers/scsi/tmscsim.c
+index fa5382e..ce8845e 100644
+--- a/drivers/scsi/tmscsim.c
++++ b/drivers/scsi/tmscsim.c
+@@ -2681,7 +2681,7 @@ static int __init dc390_module_init(void)
+ 		printk (KERN_INFO "DC390: Using safe settings.\n");
+ 	}
+ 
+-	return pci_module_init(&dc390_driver);
++	return pci_register_driver(&dc390_driver);
+ }
+ 
+ static void __exit dc390_module_exit(void)
