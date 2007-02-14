@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932536AbXBNUOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932534AbXBNUVF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932536AbXBNUOd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 15:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932562AbXBNUOd
+	id S932534AbXBNUVF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 15:21:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932526AbXBNUVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 15:14:33 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:2624 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932560AbXBNUOc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 15:14:32 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 14 Feb 2007 12:14:29 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Benjamin LaHaise <bcrl@kvack.org>
-cc: Russell King <rmk+lkml@arm.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 06/11] syslets: core, documentation
-In-Reply-To: <20070214200347.GK32271@kvack.org>
-Message-ID: <Pine.LNX.4.64.0702141206190.7796@alien.or.mcafeemobile.com>
-References: <20060529212109.GA2058@elte.hu> <20070213142042.GG638@elte.hu>
- <20070214103655.GB4241@flint.arm.linux.org.uk> <20070214105039.GC6801@elte.hu>
- <20070214110419.GC4241@flint.arm.linux.org.uk>
- <Pine.LNX.4.64.0702140919200.7480@alien.or.mcafeemobile.com>
- <20070214180344.GI32271@kvack.org> <Pine.LNX.4.64.0702141135390.7796@alien.or.mcafeemobile.com>
- <20070214200347.GK32271@kvack.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 14 Feb 2007 15:21:05 -0500
+Received: from kanga.kvack.org ([66.96.29.28]:51142 "EHLO kanga.kvack.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932534AbXBNUVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 15:21:04 -0500
+Date: Wed, 14 Feb 2007 18:17:36 -0200
+From: Marcelo Tosatti <marcelo@kvack.org>
+To: Dave Jones <davej@redhat.com>, Marcelo Tosatti <marcelo@kvack.org>,
+       Jordan Crouse <jordan.crouse@amd.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] use movntq version of fast_clear_page/fast_copy_page on Geode
+Message-ID: <20070214201736.GA5794@dmt.lan>
+References: <20070214190839.GA4864@dmt.lan> <20070214195546.GA2005@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070214195546.GA2005@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Feb 2007, Benjamin LaHaise wrote:
-
-> On Wed, Feb 14, 2007 at 11:45:23AM -0800, Davide Libenzi wrote:
-> > Sort of, except that the whole thing can complete syncronously w/out 
-> > context switches. The real point of the whole fibrils/syslets solution is 
-> > that kind of optimization. The solution is as good as it is now, for 
+On Wed, Feb 14, 2007 at 02:55:46PM -0500, Dave Jones wrote:
+> On Wed, Feb 14, 2007 at 05:08:39PM -0200, Marcelo Tosatti wrote:
+>  > 
+>  > movntq instruction is supported by Geode CPU's, so use
+>  > fast_clear_page/fast_copy_page versions that have it.
 > 
-> Except that You Can't Do That (tm).  Try to predict beforehand if the code 
-> path being followed will touch the FPU or SSE state, and you can't.  There is 
-> no way to avoid the context switch overhead, as you have to preserve things 
-> so that whatever state is being returned to the user is as it was.  Unless 
-> you plan on resetting the state beforehand, but then you have to call into 
-> arch specific code that ends up with a comparable overhead to the context 
-> switch.
+> it's supported, but is it a win ?
+> The same was also true of the VIA C3/C7's, but due to
+> poor memory bandwidth, it turned out to be slower in most cases.
 
-I think you may have mis-interpreted my words. *When* a schedule would 
-block a synco execution try, then you do have a context switch. Noone 
-argue that, and the code is clear. The sys_async_exec thread will block, 
-and a newly woke up thread will re-emerge to sys_async_exec with a NULL 
-returned to userspace. But in a "cachehit" case (no schedule happens 
-during the syscall/*let execution), there is no context switch at all. 
-That is the whole point of the optimization.
+Do you have the numbers for VIA C3/C7 around?
 
+The Geode benefits from movntq instead of movq:
 
+[marcelo@localhost ~]$ cat /proc/cpuinfo
+processor       : 0
+vendor_id       : Geode by NSC
+cpu family      : 5
+model           : 5
+model name      : Geode(TM) Integrated Processor by National Semi
+stepping        : 2
+cpu MHz         : 364.898
+cache size      : 32 KB
+...
 
-- Davide
+[marcelo@localhost ~]$ wget http://www.fenrus.demon.nl/athlon.c
+...
 
+[marcelo@localhost ~]$ ./athlon
+Athlon test program $Id: fast.c,v 1.6 2000/09/23 09:05:45 arjan Exp $
+clear_page() tests
+clear_page function 'warm up run'        took 9565 cycles per page
+clear_page function '2.4 non MMX'        took 3347 cycles per page
+clear_page function '2.4 MMX fallback'   took 3389 cycles per page
+clear_page function '2.4 MMX version'    took 2920 cycles per page
+clear_page function 'faster_clear_page'  took 2912 cycles per page
+clear_page function 'even_faster_clear'  took 2863 cycles per page
+
+copy_page() tests
+copy_page function 'warm up run'         took 9409 cycles per page
+copy_page function '2.4 non MMX'         took 13161 cycles per page
+copy_page function '2.4 MMX fallback'    took 13033 cycles per page
+copy_page function '2.4 MMX version'     took 9288 cycles per page
+copy_page function 'faster_copy'         took 9806 cycles per page
+copy_page function 'even_faster'         took 8990 cycles per page
 
