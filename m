@@ -1,56 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932201AbXBNLNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932215AbXBNLS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932201AbXBNLNz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 06:13:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbXBNLNz
+	id S932215AbXBNLS5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 06:18:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932219AbXBNLS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 06:13:55 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:44710 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750828AbXBNLNy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 06:13:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QfoI50hzehfy9ZvqUD7+3L2zeA9GIBD0WOA5fP0txOSRCXrZbV/prm/XJoriErt910IRfGYFVlZqgg42so+UjqJcQ9Jb2uprkfkrEFz/DbN27UY9H5yD5+YEP0rcGAu/jAoZxG/5ItWlCk5PUsXZRfraP9iv176gmz1Nn1DL7Ho=
-Message-ID: <5a4c581d0702140313q6d048eufa83d7b3d058311@mail.gmail.com>
-Date: Wed, 14 Feb 2007 12:13:52 +0100
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: "Andreas Gruenbacher" <agruen@suse.de>
-Subject: Re: Bug in current -git tree causing dbus and gnome to chew up cpu time
-Cc: "Greg KH" <greg@kroah.com>, torvalds@linux-foundation.org, neilb@suse.de,
-       viro@zeniv.linux.org.uk, hch@lst.de, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200702140157.59252.agruen@suse.de>
+	Wed, 14 Feb 2007 06:18:57 -0500
+Received: from raven.upol.cz ([158.194.120.4]:36638 "EHLO raven.upol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932215AbXBNLS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 06:18:56 -0500
+Date: Wed, 14 Feb 2007 12:27:37 +0100
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>, zippel@linux-m68k.org
+Subject: [pp] kbuild: ARCH-setup (Re: kbuild feature/question: default ARCH)
+Message-ID: <20070214112737.GA25412@flower.upol.cz>
+References: <20070213220619.ce964f58.randy.dunlap@oracle.com> <20070214091144.GA25846@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070213195116.GA5181@kroah.com>
-	 <5a4c581d0702140147s7931bd63ief299780fa6963a5@mail.gmail.com>
-	 <200702140157.59252.agruen@suse.de>
+In-Reply-To: <20070214091144.GA25846@uranus.ravnborg.org>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/14/07, Andreas Gruenbacher <agruen@suse.de> wrote:
-> Hi,
->
-> I've described the problem and possible fixes in the "Re: [PATCH] Fix d_path
-> for lazy unmounts" thread, Message-Id: 200702140019.36378.agruen@suse.de.
+Hallo.
 
-Yes, I saw that. But there isn't any patch for me to test, and my
- userspace remains broken. Please don't get me wrong - I'm
- not bitching about this, but I will effectively not be able to test
- newer snapshots until either a fix for this new bug gets in, or
- the commit that introduced the bug gets reverted.
+On Wed, Feb 14, 2007 at 10:11:44AM +0100, Sam Ravnborg wrote:
+> On Tue, Feb 13, 2007 at 10:06:19PM -0800, Randy Dunlap wrote:
+> > Hi,
+> > 
+> > I'd like for kbuild to default ARCH to the already-symlinked
+> > arch in include/asm-$(ARCH) if ARCH is not specified on the
+> > command line or in the environment.
+> Another approach I have been toying with previously was to
+> include ARCH in .config. But I somehow failed
+> to get it working and it went on my TODO list.
 
-Thanks,
+Sam, IMHO this is one inconvenience of the many, due to absence of
+conf-build, build mechanism (you have my message about just for fun
+thoughts ;).
 
---alessandro
+> If kconfig get extended to so it can include Kconfig
+> files for all archs then it could be a Kconfig
+> option like anything else to select architecture
+> and this would also solve your issue.
+> 
+> As for the "export ARCH=i386" proposal this is of no
+> use for people crosscompiling a lot.
+> Think of the 'Al Viro' setup with crosscompile for 5+
+> different architectures.
 
- "but I thought that I should let you know
-  the things that I don't always show
-  might not be worth the time it took"
+While trying to do something with lguest and "private" asm-offsets on
+AMD64, i must use ARCH=i386 for testing stuff. Thus, i give you my patch
+proposition (proposed patch, whatever) that remembers ARCH in Makefile
+in $(objtree). Once you have setup, you may use just 
+`make target' there.
 
-     (Steve Wynn, 'If My Life Was An Open Book')
+Randy, maybe this is *something* to have, than nothing. Testing is
+appreciated.
+
+,-*- shell -*-
+|olecom@flower:/mnt/work/app-src-build/kernel.org/linux-2.6.20$
+|olecom@flower:/mnt/work/app-src-build/kernel.org/linux-2.6.20$ rm -rf /tmp/linuz
+|olecom@flower:/mnt/work/app-src-build/kernel.org/linux-2.6.20$ mkdir /tmp/linuz
+|olecom@flower:/mnt/work/app-src-build/kernel.org/linux-2.6.20$ make ARCH=i386 O=/tmp/linu
+|linux-2.6.20/ linuz/
+|olecom@flower:/mnt/work/app-src-build/kernel.org/linux-2.6.20$ make ARCH=i386 O=/tmp/linuz/ defconfig > /dev/null
+|/mnt/work/app-src-build/kernel.org/linux-2.6.20/arch/i386/defconfig:1122:warning:
+|trying to assign nonexistent symbol USB_MULTITHREAD_PROBE
+|olecom@flower:/mnt/work/app-src-build/kernel.org/linux-2.6.20$ cd /tmp/linuz
+|olecom@flower:/tmp/linuz$ make prepare
+|make -C /mnt/work/app-src-build/kernel.org/linux-2.6.20 O=/dev/shm/linuz prepare
+|scripts/kconfig/conf -s arch/i386/Kconfig
+|  Using /mnt/work/app-src-build/kernel.org/linux-2.6.20 as source for kernel
+|  CHK     include/linux/version.h
+|  UPD     include/linux/version.h
+|  CHK     include/linux/utsrelease.h
+|  UPD     include/linux/utsrelease.h
+|  SYMLINK include/asm -> include/asm-i386
+|  CC      arch/i386/kernel/asm-offsets.s
+|  GEN     include/asm-i386/asm-offsets.h
+|olecom@flower:/tmp/linuz$ arch
+|x86_64
+|olecom@flower:/tmp/linuz$
+`-*-
+
+Thanks.
+
+---
+ Changes for mkmakefile:
+ * bugfix: _really_ generate Makefile once '!'
+ * use shell paramenter expansion only where needed, thus Makefile's body
+   is a little bit easy to read and write.
+
+ Makefile           |    2 +-
+ scripts/mkmakefile |   26 ++++++++++++++++----------
+ 2 files changed, 17 insertions(+), 11 deletions(-)
+
+Index: linux-2.6.20/scripts/mkmakefile
+===================================================================
+--- linux-2.6.20.orig/scripts/mkmakefile	2007-02-14 11:53:43.972144500 +0100
++++ linux-2.6.20/scripts/mkmakefile	2007-02-14 11:55:34.879075750 +0100
+@@ -9,12 +9,13 @@
+ # $3 - version
+ # $4 - patchlevel
++# $5 - ARCH
+ 
+-
+-test ! -r $2/Makefile -o -O $2/Makefile || exit 0
++test ! -r $2/Makefile -o ! -O $2/Makefile || exit 0
+ echo "  GEN     $2/Makefile"
+ 
+-cat << EOF > $2/Makefile
+-# Automatically generated by $0: don't edit
+-
++echo "#
++# Automatically generated by
++# $0
++#
+ VERSION = $3
+ PATCHLEVEL = $4
+@@ -22,15 +23,20 @@ PATCHLEVEL = $4
+ KERNELSRC    := $1
+ KERNELOUTPUT := $2
++ARCH         := $5
++" > $2/Makefile
++
++cat << "EOF" >> $2/Makefile
++MAKEFLAGS    += -rR --no-print-directory
+ 
+-MAKEFLAGS += --no-print-directory
++export ARCH
+ 
+-.PHONY: all \$(MAKECMDGOALS)
++.PHONY: all $(MAKECMDGOALS)
+ 
+ all:
+-	\$(MAKE) -C \$(KERNELSRC) O=\$(KERNELOUTPUT)
++	$(MAKE) -C $(KERNELSRC) O=$(KERNELOUTPUT)
+ 
+ Makefile:;
+ 
+-\$(filter-out all Makefile,\$(MAKECMDGOALS)) %/:
+-	\$(MAKE) -C \$(KERNELSRC) O=\$(KERNELOUTPUT) \$@
++$(filter-out all Makefile,$(MAKECMDGOALS)) %/:
++	$(MAKE) -C $(KERNELSRC) O=$(KERNELOUTPUT) $@
+ EOF
+Index: linux-2.6.20/Makefile
+===================================================================
+--- linux-2.6.20.orig/Makefile	2007-02-14 11:55:50.068025000 +0100
++++ linux-2.6.20/Makefile	2007-02-14 11:56:56.756192750 +0100
+@@ -358,5 +358,5 @@ outputmakefile:
+ ifneq ($(KBUILD_SRC),)
+ 	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/mkmakefile \
+-	    $(srctree) $(objtree) $(VERSION) $(PATCHLEVEL)
++	    $(srctree) $(objtree) $(VERSION) $(PATCHLEVEL) $(ARCH)
+ endif
+ 
