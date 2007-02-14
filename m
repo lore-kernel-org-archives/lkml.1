@@ -1,77 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751509AbXBNJsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751520AbXBNJtt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751509AbXBNJsb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 04:48:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbXBNJsb
+	id S1751520AbXBNJtt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 04:49:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbXBNJtt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 04:48:31 -0500
-Received: from fed1rmmtao105.cox.net ([68.230.241.41]:55143 "EHLO
-	fed1rmmtao105.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751059AbXBNJsa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 04:48:30 -0500
-From: Junio C Hamano <junkio@cox.net>
-To: Andy Parkins <andyparkins@gmail.com>
-Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] GIT 1.5.0
-References: <7vlkj1v3av.fsf@assigned-by-dhcp.cox.net>
-	<200702140906.37440.andyparkins@gmail.com>
-	<7vabzht72l.fsf@assigned-by-dhcp.cox.net>
-Date: Wed, 14 Feb 2007 01:48:28 -0800
-In-Reply-To: <7vabzht72l.fsf@assigned-by-dhcp.cox.net> (Junio C. Hamano's
-	message of "Wed, 14 Feb 2007 01:35:46 -0800")
-Message-ID: <7vzm7hrrwz.fsf@assigned-by-dhcp.cox.net>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Wed, 14 Feb 2007 04:49:49 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38952 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751518AbXBNJts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 04:49:48 -0500
+Date: Wed, 14 Feb 2007 10:46:29 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 05/11] syslets: core code
+Message-ID: <20070214094629.GA6801@elte.hu>
+References: <20060529212109.GA2058@elte.hu> <20070213142035.GF638@elte.hu> <p73bqjxhcnl.fsf@bingen.suse.de> <20070213222443.GH22104@elte.hu> <20070213223017.GJ29492@one.firstfloor.org> <20070213224131.GK22104@elte.hu> <20070214091348.GB4665@2ka.mipt.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070214091348.GB4665@2ka.mipt.ru>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.8
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.1.7
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4883]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Junio C Hamano <junkio@cox.net> writes:
 
-> Andy Parkins <andyparkins@gmail.com> writes:
->
->> On Wednesday 2007 February 14 03:14, Junio C Hamano wrote:
->>
->>>  - There is a configuration variable core.legacyheaders that
->>
->>> The above two are not enabled by default and you explicitly have
->>> to ask for them, because these two features make repositories
->>
->> It isn't really the case that you have to _enable_ legacyheaders?  It defaults 
->> to on already.  You actually have to disable legacyheaders.
->
-> Ah, true.  What it should have stressed is that we currently
-> default to the safer, backward compatible behaviour, and you have
-> to explicitly ask to use more efficient but incompatible
-> encoding by setting core.legacyheaders to false.
+* Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
 
-So this will be the updated explanation.
+> This will end up badly - I used the same approach in the early kevent 
+> days and was proven to have swapable memory for the ring. I think it 
+> would be much better to have userspace allocated ring and use 
+> copy_to_user() there.
 
--- >8 --
-diff --git a/Documentation/RelNotes-1.5.0.txt b/Documentation/RelNotes-1.5.0.txt
-index f0120e1..0989ded 100644
---- a/Documentation/RelNotes-1.5.0.txt
-+++ b/Documentation/RelNotes-1.5.0.txt
-@@ -25,12 +25,18 @@ Specifically, the available options are:
-    older clients over dumb transports (e.g. http) using older
-    versions of git will also be affected.
- 
-+   To let git use the new loose object format, you have to
-+   set core.legacyheaders to false.
-+
-  - Since v1.4.3, configuration repack.usedeltabaseoffset allows
-    packfile to be created in more space efficient format, which
-    cannot be read by git older than that version.
- 
--The above two are not enabled by default and you explicitly have
--to ask for them, because these two features make repositories
-+   To let git use the new format for packfiles, you have to
-+   set repack.usedeltabaseoffset to true.
-+
-+The above two new features are not enabled by default and you
-+have explicitly to ask for them, because they make repositories
- unreadable by older versions of git, and in v1.5.0 we still do
- not enable them by default for the same reason.  We will change
- this default probably 1 year after 1.4.2's release, when it is
+it is a userspace allocated ring - but pinned down by the kernel.
 
+	Ingo
