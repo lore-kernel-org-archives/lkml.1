@@ -1,162 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932215AbXBNLS5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932222AbXBNLjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932215AbXBNLS5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 06:18:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932219AbXBNLS5
+	id S932222AbXBNLjB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 06:39:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932224AbXBNLjB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 06:18:57 -0500
-Received: from raven.upol.cz ([158.194.120.4]:36638 "EHLO raven.upol.cz"
+	Wed, 14 Feb 2007 06:39:01 -0500
+Received: from rere.qmqm.pl ([86.63.132.164]:57732 "EHLO rere.qmqm.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932215AbXBNLS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 06:18:56 -0500
-Date: Wed, 14 Feb 2007 12:27:37 +0100
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>, zippel@linux-m68k.org
-Subject: [pp] kbuild: ARCH-setup (Re: kbuild feature/question: default ARCH)
-Message-ID: <20070214112737.GA25412@flower.upol.cz>
-References: <20070213220619.ce964f58.randy.dunlap@oracle.com> <20070214091144.GA25846@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S932222AbXBNLjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 06:39:00 -0500
+Date: Wed, 14 Feb 2007 12:38:41 +0100
+From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
+To: netfilter-devel@lists.netfilter.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.20 13/14] nfnetlink_log: fix reference counting
+Message-ID: <20070214113841.GA3005@rere.qmqm.pl>
+References: <20070212003738.GA8262@rere.qmqm.pl> <20070212202052.GA28704@rere.qmqm.pl> <20070212202255.GD28704@rere.qmqm.pl> <45D1B5FA.5050704@trash.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070214091144.GA25846@uranus.ravnborg.org>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <45D1B5FA.5050704@trash.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hallo.
-
-On Wed, Feb 14, 2007 at 10:11:44AM +0100, Sam Ravnborg wrote:
-> On Tue, Feb 13, 2007 at 10:06:19PM -0800, Randy Dunlap wrote:
-> > Hi,
+On Tue, Feb 13, 2007 at 01:58:34PM +0100, Patrick McHardy wrote:
+> Micha³ Miros³aw wrote:
+> > Fix reference counting (memory leak) problem in __nfulnl_send() and callers
+> > related to packet queueing.
 > > 
-> > I'd like for kbuild to default ARCH to the already-symlinked
-> > arch in include/asm-$(ARCH) if ARCH is not specified on the
-> > command line or in the environment.
-> Another approach I have been toying with previously was to
-> include ARCH in .config. But I somehow failed
-> to get it working and it went on my TODO list.
+> > Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+> > 
+> > --- linux-2.6.20/net/netfilter/nfnetlink_log.c.11	2007-02-12 17:35:50.000000000 +0100
+> > +++ linux-2.6.20/net/netfilter/nfnetlink_log.c	2007-02-12 17:58:01.000000000 +0100
+> > @@ -223,6 +223,11 @@ _instance_destroy2(struct nfulnl_instanc
+> >  
+> >  	spin_lock_bh(&inst->lock);
+> >  	if (inst->skb) {
+> > +		/* timer "holds" one reference (we have one more) */
+> > +		if (timer_pending(&inst->timer)) {
+> > +			del_timer(&inst->timer);
+> > +			instance_put(inst);
+> This should be done outside of the locked section and using
+> del_timer_sync to make sure the timer is not already active
+> and waiting for the lock.
 
-Sam, IMHO this is one inconvenience of the many, due to absence of
-conf-build, build mechanism (you have my message about just for fun
-thoughts ;).
+I found another solution, as this won't work (I explained the case in my
+reply to your comment on 07/10). I noticed that we should just check
+what del_timer() returns instead of timer_pending().
 
-> If kconfig get extended to so it can include Kconfig
-> files for all archs then it could be a Kconfig
-> option like anything else to select architecture
-> and this would also solve your issue.
-> 
-> As for the "export ARCH=i386" proposal this is of no
-> use for people crosscompiling a lot.
-> Think of the 'Al Viro' setup with crosscompile for 5+
-> different architectures.
+Heres the patch:
 
-While trying to do something with lguest and "private" asm-offsets on
-AMD64, i must use ARCH=i386 for testing stuff. Thus, i give you my patch
-proposition (proposed patch, whatever) that remembers ARCH in Makefile
-in $(objtree). Once you have setup, you may use just 
-`make target' there.
+Fix reference counting (memory leak) problem in __nfulnl_send() and callers
+related to packet queueing.
 
-Randy, maybe this is *something* to have, than nothing. Testing is
-appreciated.
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
 
-,-*- shell -*-
-|olecom@flower:/mnt/work/app-src-build/kernel.org/linux-2.6.20$
-|olecom@flower:/mnt/work/app-src-build/kernel.org/linux-2.6.20$ rm -rf /tmp/linuz
-|olecom@flower:/mnt/work/app-src-build/kernel.org/linux-2.6.20$ mkdir /tmp/linuz
-|olecom@flower:/mnt/work/app-src-build/kernel.org/linux-2.6.20$ make ARCH=i386 O=/tmp/linu
-|linux-2.6.20/ linuz/
-|olecom@flower:/mnt/work/app-src-build/kernel.org/linux-2.6.20$ make ARCH=i386 O=/tmp/linuz/ defconfig > /dev/null
-|/mnt/work/app-src-build/kernel.org/linux-2.6.20/arch/i386/defconfig:1122:warning:
-|trying to assign nonexistent symbol USB_MULTITHREAD_PROBE
-|olecom@flower:/mnt/work/app-src-build/kernel.org/linux-2.6.20$ cd /tmp/linuz
-|olecom@flower:/tmp/linuz$ make prepare
-|make -C /mnt/work/app-src-build/kernel.org/linux-2.6.20 O=/dev/shm/linuz prepare
-|scripts/kconfig/conf -s arch/i386/Kconfig
-|  Using /mnt/work/app-src-build/kernel.org/linux-2.6.20 as source for kernel
-|  CHK     include/linux/version.h
-|  UPD     include/linux/version.h
-|  CHK     include/linux/utsrelease.h
-|  UPD     include/linux/utsrelease.h
-|  SYMLINK include/asm -> include/asm-i386
-|  CC      arch/i386/kernel/asm-offsets.s
-|  GEN     include/asm-i386/asm-offsets.h
-|olecom@flower:/tmp/linuz$ arch
-|x86_64
-|olecom@flower:/tmp/linuz$
-`-*-
-
-Thanks.
-
----
- Changes for mkmakefile:
- * bugfix: _really_ generate Makefile once '!'
- * use shell paramenter expansion only where needed, thus Makefile's body
-   is a little bit easy to read and write.
-
- Makefile           |    2 +-
- scripts/mkmakefile |   26 ++++++++++++++++----------
- 2 files changed, 17 insertions(+), 11 deletions(-)
-
-Index: linux-2.6.20/scripts/mkmakefile
-===================================================================
---- linux-2.6.20.orig/scripts/mkmakefile	2007-02-14 11:53:43.972144500 +0100
-+++ linux-2.6.20/scripts/mkmakefile	2007-02-14 11:55:34.879075750 +0100
-@@ -9,12 +9,13 @@
- # $3 - version
- # $4 - patchlevel
-+# $5 - ARCH
+--- linux-2.6.20/net/netfilter/nfnetlink_log.c.11	2007-02-12 17:35:50.000000000 +0100
++++ linux-2.6.20/net/netfilter/nfnetlink_log.c.12	2007-02-14 12:27:09.000000000 +0100
+@@ -223,6 +223,9 @@ _instance_destroy2(struct nfulnl_instanc
  
+ 	spin_lock_bh(&inst->lock);
+ 	if (inst->skb) {
++		/* timer "holds" one reference (we have one more) */
++		if (del_timer(&inst->timer))
++			instance_put(inst);
+ 		if (inst->qlen)
+ 			__nfulnl_send(inst);
+ 		if (inst->skb) {
+@@ -370,9 +373,6 @@ __nfulnl_send(struct nfulnl_instance *in
+ {
+ 	int status;
+ 
+-	if (timer_pending(&inst->timer))
+-		del_timer(&inst->timer);
 -
--test ! -r $2/Makefile -o -O $2/Makefile || exit 0
-+test ! -r $2/Makefile -o ! -O $2/Makefile || exit 0
- echo "  GEN     $2/Makefile"
+ 	if (!inst->skb)
+ 		return 0;
  
--cat << EOF > $2/Makefile
--# Automatically generated by $0: don't edit
--
-+echo "#
-+# Automatically generated by
-+# $0
-+#
- VERSION = $3
- PATCHLEVEL = $4
-@@ -22,15 +23,20 @@ PATCHLEVEL = $4
- KERNELSRC    := $1
- KERNELOUTPUT := $2
-+ARCH         := $5
-+" > $2/Makefile
-+
-+cat << "EOF" >> $2/Makefile
-+MAKEFLAGS    += -rR --no-print-directory
+@@ -683,6 +683,9 @@ nfulnl_log_packet(unsigned int pf,
+ 		 * enough room in the skb left. flush to userspace. */
+ 		UDEBUG("flushing old skb\n");
  
--MAKEFLAGS += --no-print-directory
-+export ARCH
- 
--.PHONY: all \$(MAKECMDGOALS)
-+.PHONY: all $(MAKECMDGOALS)
- 
- all:
--	\$(MAKE) -C \$(KERNELSRC) O=\$(KERNELOUTPUT)
-+	$(MAKE) -C $(KERNELSRC) O=$(KERNELOUTPUT)
- 
- Makefile:;
- 
--\$(filter-out all Makefile,\$(MAKECMDGOALS)) %/:
--	\$(MAKE) -C \$(KERNELSRC) O=\$(KERNELOUTPUT) \$@
-+$(filter-out all Makefile,$(MAKECMDGOALS)) %/:
-+	$(MAKE) -C $(KERNELSRC) O=$(KERNELOUTPUT) $@
- EOF
-Index: linux-2.6.20/Makefile
-===================================================================
---- linux-2.6.20.orig/Makefile	2007-02-14 11:55:50.068025000 +0100
-+++ linux-2.6.20/Makefile	2007-02-14 11:56:56.756192750 +0100
-@@ -358,5 +358,5 @@ outputmakefile:
- ifneq ($(KBUILD_SRC),)
- 	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/mkmakefile \
--	    $(srctree) $(objtree) $(VERSION) $(PATCHLEVEL)
-+	    $(srctree) $(objtree) $(VERSION) $(PATCHLEVEL) $(ARCH)
- endif
++		/* timer "holds" one reference (we have another one) */
++		if (del_timer(&inst->timer))
++			instance_put(inst);
+ 		__nfulnl_send(inst);
+ 	}
  
