@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932152AbXBNIOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbXBNITn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932152AbXBNIOS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 03:14:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932166AbXBNIOS
+	id S932178AbXBNITn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 03:19:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932168AbXBNITn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 03:14:18 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:42818 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932152AbXBNIOR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 03:14:17 -0500
-Message-ID: <45D2C4D1.4030809@np.css.fujitsu.com>
-Date: Wed, 14 Feb 2007 17:14:09 +0900
-From: shic <shic@np.css.fujitsu.com>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Wed, 14 Feb 2007 03:19:43 -0500
+Received: from cantor.suse.de ([195.135.220.2]:50434 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932140AbXBNITm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 03:19:42 -0500
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SuSE Labs, Novell
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       Al Viro <viro@ftp.linux.org.uk>, linux-fsdevel@vger.kernel.org,
+       Tony Jones <tonyj@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Neil Brown <neilb@suse.de>, Christoph Hellwig <hch@lst.de>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>, walt <wa1ter@myrealbox.com>
+Subject: Re: [PATCH] Fix d_path for lazy unmounts
+Date: Wed, 14 Feb 2007 00:19:35 -0800
+User-Agent: KMail/1.9.5
+References: <200702021923.02491.agruen@suse.de> <200702050032.06905.agruen@suse.de>
+In-Reply-To: <200702050032.06905.agruen@suse.de>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
-Subject: A problem with the load_elf_interp() in fs/binfmt_elf
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702140019.36378.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi ,All
+On Monday 05 February 2007 00:32, Andreas Gruenbacher wrote:
+> Here is an updated patch that also catches this special case.
+> [...]
 
-When I did some NFS mount operations, I found a problem with the load_elf_interp() in the fs/binfmt_elf. 
+The d_path change was to not start unreachable paths with slashes. In the 
+extreme case, this leads to an empty string. As it turns out, we are 
+reporting meaningless paths to users in a bunch of places in /proc, like 
+in /proc/$pid/mounts, where we ended up with entries like this:
 
-I mounted a number of NFS, after lots of continuous mount operations, the fatal error "Segmentation fault" happened with the mount.nfs4, as the count of the mount operations reached about 1000~3000.
+	rootfs  rootfs rw 0 0
 
-Using the strace, I found the mount.nfs4 fails just at the execve().The strace log is as follows.
-execve("/sbin/mount.nfs4", ["mount.nfs4", "192.168.236.8:/", "/mnt/nfspt/num_mount_014847/nfs-"...], [/* 24 vars */]) = -1 EINVAL (Invalid argument)
---- SIGSEGV (Segmentation fault) @ 0 (0) ---
-+++ killed by SIGSEGV +++
+No wonder this immediately broke things; sorry for that.
 
-I have investigate it, and found the problem exists in the load_elf_interp() when the "Segmentation fault" happened.
+Mountpoints are reported relative to the chroot if they are reachable from the 
+chroot, and relative to the namespace they are defined in otherwise. This is 
+big nonsense, but it's unclear to me how to best fix it:
 
-When the mount.nfs4 is executed, the execve() in the kernel is invoked as follows.  
- sys_execve
-  | - 
-  do_execve
-       |
-       | - search_binary_handler   
-            |-  linux_binfmt= elf_format
-            |-  
-            |- elf_format-> load_elf_binary
-                 | -  elf_entry = load_elf_interp()
-                     |-    
-                     |  if  (BAD_ADDR(elf_entry)) 
-                     |  force_sig(SIGSEGV, 
-                     |     retval =-EINVAL;
+  - don't report unreachable mount points,
+  - somehow indicate which mountpoints are reachable and which are not,
+    like by prepending a question flag?
 
-In the do_execve(), after setting up some data structure, the do_execve() will invoke the search_binary_handler() to get the corresponding ELF binary loader for the mount.nfs4, and read the ELF executable image into memory.
-In my test, when the "segment fault" of mount.nfs4 happened, in the procedure of load_elf_binary(),the address elf_entry of the interp segment read from the load_elf_interp() was judged a BAD_ADDR and afterwards the kernel send a forcible signal "SIGSEGV" to the process of mount.nfs4, and exit with the retval "EINVAL".
-After I debug the kernel, I have found the cause is the address map_addr in the load_elf_interp(). 
-When the problem happens, the map_addr returned from the elf_map() is judged a valid address by BAD_ADDR() in load_elf_interp() , but unluckily the address elf_entry returned by  "map_addr - ELF_PAGESTART(eppnt->p_vaddr)" is judged an invalid address by BAD_ADDR(), then the problem happens in the load_elf_binary().
+What's the point in reporting the rootfs at all -- it's never reachable to an 
+ordinary process?
 
-By now, I've still not got a good method to resolve this problem in the load_elf_interp().
-Any good ideas?
+The same issue shows up in a few other places as well: /proc/$pid/mountstats 
+which is similar to /proc/$pid/mounts, and here:
 
-Thanks.
+  /proc/$pid/maps
+  /proc/$pid/smaps
+  /proc/$pid/numa_maps
+  /proc/swaps
+  /proc/mdstat
+  /proc/net/rpc/nfsd.fh/content
+  /proc/net/rpc/nfsd.export/content
 
-Best Regards.
-Shi Chao
+We surely do not want to hide the entries that have unreachable pathnames 
+here...
 
-
-
-
-
-
-
-
-
+Thanks,
+Andreas
