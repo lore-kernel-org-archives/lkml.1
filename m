@@ -1,68 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751021AbXBNI4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751502AbXBNI5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751021AbXBNI4L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 03:56:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502AbXBNI4K
+	id S1751502AbXBNI5t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 03:57:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbXBNI5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 03:56:10 -0500
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:54265
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751021AbXBNI4K (ORCPT
+	Wed, 14 Feb 2007 03:57:49 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:62381 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751502AbXBNI5s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 03:56:10 -0500
-Message-Id: <45D2DCB9.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.1 
-Date: Wed, 14 Feb 2007 08:56:09 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Cc: <virtualization@lists.osdl.org>, <xen-devel@lists.xensource.com>,
-       "Andi Kleen" <ak@muc.de>, "Andrew Morton" <akpm@osdl.org>,
-       "Chris Wright" <chrisw@sous-sol.org>, <linux-kernel@vger.kernel.org>,
-       "Zachary Amsden" <zach@vmware.com>
-Subject: [Xen-devel] Re: [patch 16/21] Xen-paravirt: Add code into
-	head.S to handle being booted by Xen
-References: <20070213221729.772002682@goop.org>
- <20070213221830.707197267@goop.org> <20070213235424.GA1908@muc.de>
- <45D25A56.1000706@goop.org>
-In-Reply-To: <45D25A56.1000706@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Wed, 14 Feb 2007 03:57:48 -0500
+Date: Wed, 14 Feb 2007 09:57:46 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Thomas Meyer <thomas@m3y3r.de>
+cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: undefined symbol 'PS3_PS3AV'
+In-Reply-To: <45D2A835.7020606@m3y3r.de>
+Message-ID: <Pine.LNX.4.62.0702140955130.17463@pademelon.sonytel.be>
+References: <45D2A835.7020606@m3y3r.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> @@ -528,7 +532,7 @@ ENTRY(_stext)
->>>  /*
->>>   * BSS section
->>>   */
->>> -.section ".bss.page_aligned","w"
->>> +.section ".bss.page_aligned"
->>>     
->>
->> Why? 
->>   
->
->I got complaints about section attribute mismatches without it.
+On Wed, 14 Feb 2007, Thomas Meyer wrote:
+> with 93bbad8fe13a25dcf7f3bc628a71d1a7642ae61b:
+> 
+> drivers/video/Kconfig:1604:warning: 'select' used by config symbol 'FB_PS3'
+> refer to undefined symbol 'PS3_PS3AV'
 
-Then perhaps ... "aw" is meant?
+It's defined in arch/powerpc/platforms/ps3/Kconfig, which is sourced by
+arch/powerpc/Kconfig only.
 
->>> +fastcall unsigned long long xen_pgd_val(pgd_t pgd)
->>> +{
->>> +	unsigned long long ret = pgd.pgd;
->>> +	if (ret)
->>> +		ret = machine_to_phys(XMADDR(ret)).paddr | 1;
->>>     
->>
->> Why can they be 0 here anyways?
->>
->> Normally they are all considered undefined when not present
->>   
->
->Not sure.
+I don't know what's the best way to shut this up. Anyone with a suggestion?
 
-This should probably get sync-ed up with the page table handling changes
-submitted to xen-devel yesterday. Using zero/non-zero tests in contexts
-like this was always broken; should check for _PAGE_PRESENT.
+Gr{oetje,eeting}s,
 
-Jan
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
