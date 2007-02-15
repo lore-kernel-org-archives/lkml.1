@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030394AbXBOR7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030397AbXBOR76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030394AbXBOR7U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 12:59:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030396AbXBOR7U
+	id S1030397AbXBOR76 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 12:59:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030398AbXBOR76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 12:59:20 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:55015 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030394AbXBOR7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 12:59:19 -0500
-Date: Thu, 15 Feb 2007 09:58:48 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       tony.luck@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch] build error: allnoconfig fails on mincore/swapper_space
-In-Reply-To: <20070215085500.30e57866.randy.dunlap@oracle.com>
-Message-ID: <Pine.LNX.4.64.0702150957110.20368@woody.linux-foundation.org>
-References: <20070212145040.c3aea56e.randy.dunlap@oracle.com>
- <20070212150802.f240e94f.akpm@linux-foundation.org> <45D12715.4070408@yahoo.com.au>
- <20070213121217.0f4e9f3a.randy.dunlap@oracle.com>
- <Pine.LNX.4.64.0702132224280.3729@blonde.wat.veritas.com>
- <20070213144909.70943de2.randy.dunlap@oracle.com>
- <Pine.LNX.4.64.0702140009320.21315@blonde.wat.veritas.com>
- <20070215085500.30e57866.randy.dunlap@oracle.com>
+	Thu, 15 Feb 2007 12:59:58 -0500
+Received: from v813.rev.tld.pl ([195.149.226.213]:52264 "EHLO
+	smtp.host4.kei.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030397AbXBOR75 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 12:59:57 -0500
+X-clamdmail: clamdmail 0.18a
+From: Marcin Juszkiewicz <openembedded@hrw.one.pl>
+To: Valdis.Kletnieks@vt.edu
+Subject: Re: 2.6.20-mm1
+Date: Thu, 15 Feb 2007 19:00:16 +0100
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Richard Purdie <rpurdie@rpsys.net>
+References: <20070215051408.a7fb7d81.akpm@linux-foundation.org> <200702151733.l1FHXatF025688@turing-police.cc.vt.edu>
+In-Reply-To: <200702151733.l1FHXatF025688@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200702151900.18270.openembedded@hrw.one.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dnia czwartek, 15 lutego 2007, Valdis.Kletnieks@vt.edu napisa³:
+> On Thu, 15 Feb 2007 05:14:08 PST, Andrew Morton said:
+
+> git-backlight.patch contains this:
+>
+> +config BACKLIGHT_PROGEAR
+> +       tristate "Frontpath ProGear Backlight Driver"
+> +       depends on BACKLIGHT_CLASS_DEVICE && PCI && X86
+> +       default y
+> +       help
+> +         If you have a Frontpath ProGear say Y to enable the
+> +         backlight driver.
+>
+> Should that be a default N or M, given that relatively few people have
+> that device?
+
+"default n" as this is rather rare used today device. Should I send 
+a patch or can it be changed without it?
+
+-- 
+JID: hrw-jabber.org
+OpenEmbedded developer/consultant
+
+         Great minds discuss ideas; average minds discuss events;
+         small minds discuss people.
 
 
-On Thu, 15 Feb 2007, Randy Dunlap wrote:
-> 
-> so, are we going to get a revert of 42da9cbd3eedde33a42acc2cb06f454814cf5de0 ?
-> Has that been requested?  or are there other plans?
-
-It should be fixed now (I had patches from Nick, but got sidetracked by 
-trying to fix metacity for the gnome people). 
-
-I've pushed out, but mirroring delays mean that unless you use 
-master.kernel.org you'll need to wait a bit. I think Nick cc'd the kernel 
-mailing list, though, so you can look for subjects containing "mincore" if 
-you need it fixed before that.
-
-		Linus
