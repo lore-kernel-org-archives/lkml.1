@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030346AbXBORdH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030348AbXBORdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030346AbXBORdH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 12:33:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030348AbXBORdH
+	id S1030348AbXBORdu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 12:33:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030349AbXBORdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 12:33:07 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45388 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030345AbXBORdF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 12:33:05 -0500
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0702151530260.14458@scrub.home> 
-References: <Pine.LNX.4.64.0702151530260.14458@scrub.home>  <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com> 
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: torvalds@osdl.org, akpm@osdl.org, herbert.xu@redhat.com,
-       linux-kernel@vger.kernel.org, davej@redhat.com, arjan@infradead.org,
-       linux-crypto@vger.kernel.org, dhowells@redhat.com
-Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Thu, 15 Feb 2007 17:32:50 +0000
-Message-ID: <32081.1171560770@redhat.com>
+	Thu, 15 Feb 2007 12:33:50 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:39278 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030348AbXBORdt (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 12:33:49 -0500
+Message-Id: <200702151733.l1FHXatF025688@turing-police.cc.vt.edu>
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Marcin Juszkiewicz <openembedded@hrw.one.pl>
+Cc: linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: 2.6.20-mm1
+In-Reply-To: Your message of "Thu, 15 Feb 2007 05:14:08 PST."
+             <20070215051408.a7fb7d81.akpm@linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1171560816_3639P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Thu, 15 Feb 2007 12:33:36 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roman Zippel <zippel@linux-m68k.org> wrote:
+--==_Exmh_1171560816_3639P
+Content-Type: text/plain; charset=us-ascii
 
-> > Now, this is not a complete solution by any means: the core kernel is not
-> > protected, and nor are /dev/mem or /dev/kmem, but it denies (or at least
-> > controls) one relatively simple attack vector.
+On Thu, 15 Feb 2007 05:14:08 PST, Andrew Morton said:
 > 
-> This is really the weak point - it offers no advantage over an equivalent 
-> implementation in user space (e.g. in the module tools). So why has to be 
-> done in the kernel?
+> Temporarily at
+> 
+>   http://userweb.kernel.org/~akpm/2.6.20-mm1/
+> 
+> Will appear later at
+> 
+>  ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm1/
 
-Because the init_module() system call is the common point of module submission
-to the kernel, not any particular userspace program.  There is no requirement
-for userspace to load a module by invoking a module tools program or library,
-and so userspace can bypass the checks entirely by just calling init_module().
-Assume for a moment that you can't trust userspace...  (Obviously, if you can't
-trust the kernel then you're already stuffed.)
+git-backlight.patch contains this:
 
-It is possible to protect /dev/mem and /dev/kmem or make them unavailable and
-it is possible to protect the kernel's memory whilst it is running (provided
-you don't have nommu or broken hardware and you don't let userspace concoct any
-DMA request it likes) which mostly closes those other vectors I mentioned.
-This isn't something I intended to look at with this patch.  Those are separate
-holes.
++config BACKLIGHT_PROGEAR
++       tristate "Frontpath ProGear Backlight Driver"
++       depends on BACKLIGHT_CLASS_DEVICE && PCI && X86
++       default y
++       help
++         If you have a Frontpath ProGear say Y to enable the
++         backlight driver.
 
-Making the core kernel load image inaccessible or immutable to root is not
-something I can provide a generic solution for and security checking the core
-kernel load image has to be done at an earlier layer as you can't rely on
-something guaranteeing its own integrity because if someone can alter that
-something, then they can bypass the self-checking too...
+Should that be a default N or M, given that relatively few people have that
+device?
 
-However, modules permits arbitrary modification of the running kernel to be
-attempted.
+--==_Exmh_1171560816_3639P
+Content-Type: application/pgp-signature
 
-David
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFF1JlwcC3lWbTT17ARAvpFAJ0eNWkf4yalFkvieC8Oqk8wHqbFkACgk8hd
+9GKUHsEjmVlerB5dho4jZF4=
+=Crft
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1171560816_3639P--
