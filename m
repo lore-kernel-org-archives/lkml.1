@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932294AbXBOAJF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932295AbXBOAKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932294AbXBOAJF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 19:09:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932577AbXBOAJE
+	id S932295AbXBOAKx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 19:10:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932577AbXBOAKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 19:09:04 -0500
-Received: from gw.goop.org ([64.81.55.164]:55829 "EHLO mail.goop.org"
+	Wed, 14 Feb 2007 19:10:53 -0500
+Received: from gw.goop.org ([64.81.55.164]:55848 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932294AbXBOAJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 19:09:03 -0500
-Message-ID: <45D3A49B.4030608@goop.org>
-Date: Wed, 14 Feb 2007 16:08:59 -0800
+	id S932295AbXBOAKw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 19:10:52 -0500
+Message-ID: <45D3A50A.9090303@goop.org>
+Date: Wed, 14 Feb 2007 16:10:50 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system
- call support
-References: <20070213142010.GA638@elte.hu> <45D3768B.7010902@goop.org> <Pine.LNX.4.64.0702141321410.7796@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0702141321410.7796@alien.or.mcafeemobile.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@osdl.org>,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 15/21] Xen-paravirt: Add Xen interface header files
+References: <20070213221729.772002682@goop.org>	<20070213221830.619562494@goop.org> <m1k5ykpiwv.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1k5ykpiwv.fsf@ebiederm.dsl.xmission.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide Libenzi wrote:
->> Would this work?
+Eric W. Biederman wrote:
+> Jeremy Fitzhardinge <jeremy@goop.org> writes:
+>
+>   
+>> Add Xen interface header files. These are taken fairly directly from
+>> the Xen tree and hence the style is not entirely in accordance with
+>> Linux guidelines. There is a tension between fitting with Linux coding
+>> rules and ease of maintenance.
+>>
+>> Define macros and inline functions for doing hypercalls into the
+>> hypervisor.
+>>
+>> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+>> Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
+>> Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
+>> Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+>>
+>>
+>> --
+>>  include/asm-i386/hypercall.h          |  416 +++++++++++++++++++++++++++++
+>>  include/asm-i386/hypervisor.h         |   72 +++++
 >>     
 >
-> Hopefully the API will simplify enough so that emulation will becomes 
-> easier.
+> Are hypercall.h and hypervisor.h generic or are they Xen specific.
+> If they are Xen specific (as it appears) then are inappropriately
+> named.
 >   
 
-The big question in my mind is how all this stuff interacts with
-signals.  Can a blocked syscall atom be interrupted by a signal?  If so,
-what thread does it get delivered to?  How does sigprocmask affect this
-(is it atomic with respect to blocking atoms)?
+Thanks for the reminder; I've been meaning to move/rename these.
 
->> Also, an unrelated question: is there enough control structure in place
->> to allow multiple syslet streams to synchronize with each other with
->> futexes?
+>>  include/xen/interface/arch-x86_32.h   |  187 +++++++++++++
 >>     
->
-> I think the whole point of an async execution of a syscall or a syslet, is 
-> that the syscall/syslet itself includes a non interlocked operations with 
-> other syscalls/syslets. So that the main scheduler thread can run in a 
-> lockless/singletask fashion. There are no technical obstacles that 
-> prevents you to do it, bu if you start adding locks (and hence having 
-> long-living syslet-threads) at that point you'll end up with a fully 
-> multithreaded solution.
+> Why isn't this file include-asm-i386/xen/arch-x86_32.h ?
 >   
 
-I was thinking you'd use the futexes more like barriers than locks. 
-That way you could have several streams going asynchronously, but use
-futexes to gang them together at appropriate times in the stream.  A
-handwavy example would be to have separate async streams for audio and
-video, but use futexes to stop them from drifting too far from each other.
+Those files are more or less directly copied from the Xen tree, and its
+easier if they don't drift too far in name and directory structure.
 
     J
