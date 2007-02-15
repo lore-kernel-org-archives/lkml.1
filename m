@@ -1,82 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161386AbXBOVaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161397AbXBOVb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161386AbXBOVaz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 16:30:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161394AbXBOVaz
+	id S1161397AbXBOVb4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 16:31:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161398AbXBOVb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 16:30:55 -0500
-Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:58269 "EHLO
-	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161386AbXBOVay (ORCPT
+	Thu, 15 Feb 2007 16:31:56 -0500
+Received: from senderslist.sierrawireless.com ([204.50.29.40]:58751 "EHLO
+	mx1.sierrawireless.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161397AbXBOVbz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 16:30:54 -0500
-In-Reply-To: <20070215212259.GA3466@Krystal>
-References: <117122149548-git-send-email-mathieu.desnoyers@polymtl.ca> <11712214961955-git-send-email-mathieu.desnoyers@polymtl.ca> <20070214225653.345aad29.akpm@linux-foundation.org> <20070215072024.GA9137@Krystal> <27EC3349-5FD8-47BD-B909-E1180B86AF40@kernel.crashing.org> <20070215200245.GF31359@Krystal> <906FD21B-59B6-4A30-90F0-914E0CD3CFBF@kernel.crashing.org> <20070215212259.GA3466@Krystal>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3D84FDC0-3AA0-4144-A255-19D2E20AF0AA@kernel.crashing.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+	Thu, 15 Feb 2007 16:31:55 -0500
+Message-ID: <45D4D15D.1030802@sierrawireless.com>
+Date: Thu, 15 Feb 2007 13:32:13 -0800
+From: Kevin Lloyd <klloyd@sierrawireless.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: linux@sierrawireless.com, greg@kroah.com
+CC: linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       torvalds@osdl.org
+Subject: [PATCH 2.6.20-git11 01/01] usb: Remove Airprime device from option.c
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] local_t : powerpc extension - use long for powerpc32
-Date: Thu, 15 Feb 2007 15:29:59 -0600
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-X-Mailer: Apple Mail (2.752.2)
-X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - kernel.crashing.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+X-OriginalArrivalTime: 15 Feb 2007 21:31:52.0682 (UTC) FILETIME=[B56F64A0:01C75148]
+X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15000.000
+X-TM-AS-Result: No--8.026200-5.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+from: Kevin Lloyd <linux@sierrawireless.com>
 
-On Feb 15, 2007, at 3:23 PM, Mathieu Desnoyers wrote:
+This patch removes the Airprime 5220 device (branded as Audiovox) from
+the option.c driver. This device is already supported by the sierra.c
+driver.
 
-> * Kumar Gala (galak@kernel.crashing.org) wrote:
->>
->> On Feb 15, 2007, at 2:02 PM, Mathieu Desnoyers wrote:
->>
->>> * Kumar Gala (galak@kernel.crashing.org) wrote:
->>>> is there a reason this isn't local_add_return(long a, local_t  
->>>> *l) on
->>>> ppc32?
->>>>
->>>> (same comment for other functions)
->>>>
->>>> - k
->>>
->>> no, except that we use the code is taken from atomic.h and used an
->>> int parameter. However, due to the semantics of local_t, we should
->>> manipulate longs instead of ints, even if they are the same size  
->>> on a
->>> given architecture (ppc32 and mips32 are affectec by this).
->>>
->>> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
->>
->> Right, this means we can simply for ppc version down to:
->>
->> +static __inline__ int local_add_return(int a, local_t *l)
->> +{
->> +	int t;
->> +
->> +	__asm__ __volatile__(
->> +"1:	PPC_LLARX	%0,0,%2		# local_add_return\n\
->> +	add	%0,%1,%0\n"
->> +	PPC405_ERR77(0,%2)
->> +"	PPC_STLCX	%0,0,%2 \n\
-> what about the dot after stwcx ? (stwcx.) ? Is it no longer required ?
+This was based off of the option.c driver found in kernel 2.6.20-git11.
 
-Its implied, PPC_LLARX and PPC_STLCW are #defines that expand to  
-proper instructions.
+Signed-off-by: Kevin Lloyd <linux@sierrawireless.com>
 
-(look in include/asm-powerpc/asm-compat.h) for the defines.
+--- 
 
-Also, the PPC405_ERR77 will preprocess out on ppc64 if you were  
-concerned.
+--- linux-2.6.20-git11-option-change/drivers/usb/serial/option.c.orig	2007-02-15 10:54:42.000000000 -0800
++++ linux-2.6.20-git11-option-change/drivers/usb/serial/option.c	2007-02-15 10:55:20.000000000 -0800
+@@ -69,7 +69,6 @@ static int  option_send_setup(struct usb
+ /* Vendor and product IDs */
+ #define OPTION_VENDOR_ID                0x0AF0
+ #define HUAWEI_VENDOR_ID                0x12D1
+-#define AUDIOVOX_VENDOR_ID              0x0F3D
+ #define NOVATELWIRELESS_VENDOR_ID       0x1410
+ #define ANYDATA_VENDOR_ID               0x16d5
+ 
+@@ -81,7 +80,6 @@ static int  option_send_setup(struct usb
+ #define OPTION_PRODUCT_GTMAX36          0x6701
+ #define HUAWEI_PRODUCT_E600             0x1001
+ #define HUAWEI_PRODUCT_E220             0x1003
+-#define AUDIOVOX_PRODUCT_AIRCARD        0x0112
+ #define NOVATELWIRELESS_PRODUCT_U740    0x1400
+ #define ANYDATA_PRODUCT_ID              0x6501
+ 
+@@ -94,7 +92,6 @@ static struct usb_device_id option_ids[]
+ 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_GTMAX36) },
+ 	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E600) },
+ 	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220) },
+-	{ USB_DEVICE(AUDIOVOX_VENDOR_ID, AUDIOVOX_PRODUCT_AIRCARD) },
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,NOVATELWIRELESS_PRODUCT_U740) },
+ 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ID) },
+ 	{ } /* Terminating entry */
+@@ -109,7 +106,6 @@ static struct usb_device_id option_ids1[
+ 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_GTMAX36) },
+ 	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E600) },
+ 	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220) },
+-	{ USB_DEVICE(AUDIOVOX_VENDOR_ID, AUDIOVOX_PRODUCT_AIRCARD) },
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,NOVATELWIRELESS_PRODUCT_U740) },
+ 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ID) },
+ 	{ } /* Terminating entry */
 
-- k
+
