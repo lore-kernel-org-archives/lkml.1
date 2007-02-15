@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966158AbXBOQ5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030206AbXBOQ5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966158AbXBOQ5B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 11:57:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966148AbXBOQ4m
+	id S1030206AbXBOQ5l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 11:57:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030200AbXBOQ5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 11:56:42 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40923 "EHLO mx2.mail.elte.hu"
+	Thu, 15 Feb 2007 11:57:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40989 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966150AbXBOQ4e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 11:56:34 -0500
-Date: Thu, 15 Feb 2007 17:52:24 +0100
+	id S966132AbXBOQ4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 11:56:54 -0500
+Date: Thu, 15 Feb 2007 17:52:39 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -22,41 +22,132 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Suparna Bhattacharya <suparna@in.ibm.com>,
        Davide Libenzi <davidel@xmailserver.org>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 04/14] syslets: core, data structures
-Message-ID: <20070215165224.GE4285@elte.hu>
+Subject: [patch 08/14] syslets: x86, add create_async_thread() method
+Message-ID: <20070215165239.GI4285@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 User-Agent: Mutt/1.4.2.2i
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.8
+X-ELTE-SpamScore: -5.3
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.1.7
-	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4551]
+X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ingo Molnar <mingo@elte.hu>
 
-this adds the data structures used by the syslet / async system calls
-infrastructure.
+add the create_async_thread() way of creating kernel threads:
+these threads first execute a kernel function and when they
+return from it they execute user-space.
 
-This is used only if CONFIG_ASYNC_SUPPORT is enabled.
+An architecture must implement this interface before it can turn
+CONFIG_ASYNC_SUPPORT on.
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- kernel/async.h |    2 ++
- 1 file changed, 2 insertions(+)
+ arch/i386/kernel/entry.S     |   25 +++++++++++++++++++++++++
+ arch/i386/kernel/process.c   |   31 +++++++++++++++++++++++++++++++
+ include/asm-i386/processor.h |    5 +++++
+ 3 files changed, 61 insertions(+)
 
-Index: linux/kernel/async.h
+Index: linux/arch/i386/kernel/entry.S
 ===================================================================
---- /dev/null
-+++ linux/kernel/async.h
-@@ -0,0 +1,2 @@
+--- linux.orig/arch/i386/kernel/entry.S
++++ linux/arch/i386/kernel/entry.S
+@@ -996,6 +996,31 @@ ENTRY(kernel_thread_helper)
+ 	CFI_ENDPROC
+ ENDPROC(kernel_thread_helper)
+ 
++ENTRY(async_thread_helper)
++	CFI_STARTPROC
++	/*
++	 * Allocate space on the stack for pt-regs.
++	 * sizeof(struct pt_regs) == 64, and we've got 8 bytes on the
++	 * kernel stack already:
++	 */
++	subl $64-8, %esp
++	CFI_ADJUST_CFA_OFFSET 64
++	movl %edx,%eax
++	push %edx
++	CFI_ADJUST_CFA_OFFSET 4
++	call *%ebx
++	addl $4, %esp
++	CFI_ADJUST_CFA_OFFSET -4
++
++	movl %eax, PT_EAX(%esp)
++
++	GET_THREAD_INFO(%ebp)
++
++	jmp syscall_exit
++	CFI_ENDPROC
++ENDPROC(async_thread_helper)
 +
 +
+ .section .rodata,"a"
+ #include "syscall_table.S"
+ 
+Index: linux/arch/i386/kernel/process.c
+===================================================================
+--- linux.orig/arch/i386/kernel/process.c
++++ linux/arch/i386/kernel/process.c
+@@ -352,6 +352,37 @@ int kernel_thread(int (*fn)(void *), voi
+ EXPORT_SYMBOL(kernel_thread);
+ 
+ /*
++ * This gets run with %ebx containing the
++ * function to call, and %edx containing
++ * the "args".
++ */
++extern void async_thread_helper(void);
++
++/*
++ * Create an async thread
++ */
++int create_async_thread(int (*fn)(void *), void * arg, unsigned long flags)
++{
++	struct pt_regs regs;
++
++	memset(&regs, 0, sizeof(regs));
++
++	regs.ebx = (unsigned long) fn;
++	regs.edx = (unsigned long) arg;
++
++	regs.xds = __USER_DS;
++	regs.xes = __USER_DS;
++	regs.xgs = __KERNEL_PDA;
++	regs.orig_eax = -1;
++	regs.eip = (unsigned long) async_thread_helper;
++	regs.xcs = __KERNEL_CS | get_kernel_rpl();
++	regs.eflags = X86_EFLAGS_IF | X86_EFLAGS_SF | X86_EFLAGS_PF | 0x2;
++
++	/* Ok, create the new task.. */
++	return do_fork(flags, 0, &regs, 0, NULL, NULL);
++}
++
++/*
+  * Free current thread data structures etc..
+  */
+ void exit_thread(void)
+Index: linux/include/asm-i386/processor.h
+===================================================================
+--- linux.orig/include/asm-i386/processor.h
++++ linux/include/asm-i386/processor.h
+@@ -472,6 +472,11 @@ extern void prepare_to_copy(struct task_
+  */
+ extern int kernel_thread(int (*fn)(void *), void * arg, unsigned long flags);
+ 
++/*
++ * create an async thread:
++ */
++extern int create_async_thread(int (*fn)(void *), void * arg, unsigned long flags);
++
+ extern unsigned long thread_saved_pc(struct task_struct *tsk);
+ void show_trace(struct task_struct *task, struct pt_regs *regs, unsigned long *stack);
+ 
