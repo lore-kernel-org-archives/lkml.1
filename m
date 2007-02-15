@@ -1,71 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964873AbXBOCns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964875AbXBOCpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964873AbXBOCns (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 21:43:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964875AbXBOCns
+	id S964875AbXBOCpY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 21:45:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964876AbXBOCpY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 21:43:48 -0500
-Received: from mx1.suse.de ([195.135.220.2]:60617 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964873AbXBOCnr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 21:43:47 -0500
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SuSE Labs, Novell
-To: Neil Brown <neilb@suse.de>
-Subject: Re: [PATCH] Fix d_path for lazy unmounts
-Date: Wed, 14 Feb 2007 18:43:49 -0800
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, Tony Jones <tonyj@suse.de>
-References: <200702021923.02491.agruen@suse.de> <17862.30489.694079.138765@notabene.brown>
-In-Reply-To: <17862.30489.694079.138765@notabene.brown>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 14 Feb 2007 21:45:24 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:26086 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964875AbXBOCpX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 21:45:23 -0500
+In-Reply-To: <20070213142010.GA638@elte.hu>
+References: <20070213142010.GA638@elte.hu>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <CEF9B4DA-6881-457D-9447-F263A8F81DA2@oracle.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702141843.49668.agruen@suse.de>
+From: Zach Brown <zach.brown@oracle.com>
+Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system call support
+Date: Wed, 14 Feb 2007 18:44:10 -0800
+To: Ingo Molnar <mingo@elte.hu>
+X-Mailer: Apple Mail (2.752.3)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 04 February 2007 16:15, Neil Brown wrote:
-> The behaviour in the face of a lazy unmount should be clarified in
-> this comment.
 
-Done.
+I'm finally back from my travel and conference hiatus.. you guys have  
+been busy! :)
 
-> If sys_getcwd is called on a directory that is no longer
-> connected to the root, it isn't clear to me that it should return
-> without an error.
-> Without your patch it can return garbage which is clearly wrong.
-> With you patch it will return a relative path name, which is also
-> wrong (it isn't a valid path that leads to the current working directory).
+On Feb 13, 2007, at 6:20 AM, Ingo Molnar wrote:
 
-Right, it should return -ENOENT instead in that case. Fixed as well.
+> I'm pleased to announce the first release of the "Syslet" kernel  
+> feature
+> and kernel subsystem, which provides generic asynchrous system call
+> support:
+>
+>    http://redhat.com/~mingo/syslet-patches/
 
-> I would suggest that 'fail_deleted' be (e.g.) changed to
-> 'fail_condition' where two conditions are defined
-> #define DPATH_FAIL_DELETED 1
-> #define DPATH_FAIL_DISCONNECTED 2
+In general, I really like the look of this.
 
-The much cleaner interface is to check if the path returned starts with a 
-slash. If it doesn't, we know the path is bad as far as sys_getcwd() is 
-concerned. We will construct the partial path in __d_path before figuring out 
-that the path is disconnected, so no performance penalty, either.
+I think I'm convinced that your strong preference to do this with  
+full kernel threads (1:1 task_struct -> thread_info/stack  
+relationship) is the right thing to do.  The fibrils fell on the side  
+of risking bugs by sharing task_structs amongst stacks executing  
+kernel paths.  This, correct me if I'm wrong, falls on the side of  
+risking behavioural quirks stemming from task_struct references that  
+we happen to have not enabled sharing of yet.
 
-> In reality, you are comparing "buflen < namelen+1" but spelling it as
-> "buflen <= namelen".  I would prefer the full spelling with least room
-> for confusion.
+I have strong hopes that we won't actually *care* about the  
+behavioural differences we get from having individual task structs  
+(which share the important things!) between syscall handlers.  The  
+*only* seemingly significant case I've managed to find, the IO  
+scheduler priority and context fields, is easy enough to fix up.   
+Jens and I have been talking about that.  It's been bugging him for  
+other reasons.
 
-I'm fine either way.
+So, thanks, nice work.  I'm going to focus on finding out if its  
+feasible for The Database to use this instead of the current iocb  
+mechanics.  I'm optimistic.
 
-> Maybe:
-> > +		buflen -= namelen + 1;
-> > +		buffer -= namelen + 1;
-> > +		memcpy(buffer+1, dentry->d_name.name, namelen);
-> > +		*buffer = '/';
+> Syslets are small, simple, lightweight programs (consisting of
+> system-calls, 'atoms')
 
-That's better, yes.
+I will admit, though, that I'm not at all convinced that we need  
+this.  Adding a system call for addition (just addition?  how far do  
+we go?!) sure feels like a warning sign to me that we're heading down  
+a slippery slope.  I would rather we started with an obviously  
+minimal syscall which just takes an array of calls and args and  
+executes them unconditionally.
 
-Thanks,
-Andreas
+But its existance doesn't stop the use case I care about.  So it's  
+hard to get *too* worked up about it.
+
+> Comments, suggestions, reports are welcome!
+
+For what it's worth, it looks like 'x86-optimized-copy_uatom.patch'  
+got some hunks that should have been in 'x86-optimized- 
+sys_umem_add.patch'.
+
+- z
