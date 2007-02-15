@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030552AbXBOSzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030630AbXBOTCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030552AbXBOSzQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 13:55:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030555AbXBOSzQ
+	id S1030630AbXBOTCT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 14:02:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030654AbXBOTCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 13:55:16 -0500
-Received: from spirit.analogic.com ([204.178.40.4]:3818 "EHLO
-	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030552AbXBOSzO convert rfc822-to-8bit (ORCPT
+	Thu, 15 Feb 2007 14:02:19 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:47250 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030630AbXBOTCS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 13:55:14 -0500
+	Thu, 15 Feb 2007 14:02:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HKtEjAhGloTZDpTwS7e9X3wHG+RmyH9YEKgJl+M0bnA7JGrIv4WsNUzo9U7Mx4Ys9HuVUZ3p7pNYnLzSVQxnOwNQD2My+nzi53M4EHoOKRDfZyQ1cDRhjRFwezHYhsIwWUeyVSFM5+QFrCuR276BtReqCKOOMPwdGscFir4piGs=
+Message-ID: <653402b90702151102n3a3e0435r837e2191de79b2b@mail.gmail.com>
+Date: Thu, 15 Feb 2007 20:02:16 +0100
+From: "Miguel Ojeda" <maxextreme@gmail.com>
+To: "v j" <vj.linux@gmail.com>
+Subject: Re: GPL vs non-GPL device drivers
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 15 Feb 2007 18:55:11.0775 (UTC) FILETIME=[D20ED2F0:01C75132]
-Content-class: urn:content-classes:message
-Subject: Re: APIC priorities, can they be changed?
-Date: Thu, 15 Feb 2007 13:55:11 -0500
-Message-ID: <Pine.LNX.4.61.0702151353250.2468@chaos.analogic.com>
-In-Reply-To: <45D4A692.7090108@wegener.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: APIC priorities, can they be changed?
-Thread-index: AcdRMtImtIVTHla9QVyuZ3jagKJk7w==
-References: <45D4A692.7090108@wegener.com>
-From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-To: "Mike Panetta" <m.panetta@wegener.com>
-Cc: <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+	 <20070215061149.GE15654@redhat.com>
+	 <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
+	 <20070215165339.GB5285@thunk.org>
+	 <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 2/15/07, v j <vj.linux@gmail.com> wrote:
+> So far I have heard nothing but, "if you don't contribute, screw you."
 
-On Thu, 15 Feb 2007, Mike Panetta wrote:
+Well, so far I have heard from you is "let me use my closed-source
+drivers in Linux or bye bye".
 
-> I am not on the list (corperate email sucks) so please CC any replies to
-> me.  Thanks.
+> All this is fine. Just say so. Make it black and white. Make it
+
+It is not black and white: You are the one who is using Linux; not the
+other way.
+
+In other words, you use Linux freely and don't help in any way;
+however, you come to demand things and criticize hundreds of persons
+who colaborated here.
+
+> perfectly clear what is and isn't legal. If we can't load proprietary
+> modules, then so be it. It will help everybody if this is out in the
+> clear, instead of resorting to stupid half measures like
+> EXPORT_SYMBOL_GPL.
 >
-> I am working on a project that has run in to what seems to be an
-> interrupt priority problem.  We switched mainboards in our product and
-> went from a system where the EHCI controller IRQ was of a fairly high
-> priority to one where its the lowest in the system.  Now we cannot get
-> the data off our USB device in time and we drop alot of data.  I was
-> hoping someone here may have a simple(ish) solution to the problem.
->
-> I have seen the preempt patches, but they touch a lot of files, and we
-> have gone through testing with the 2.6.16.19 kernel and do not wish to
-> change, and we cannot find a version of the patch for this kernel. Is
-> there something smaller/simpler I can do?  My understanding is the
-> priority in the APIC is set in software via the interrupt vector number
-> (higher numbers have lower priority) is this true?  If so, how hard
-> would it be for me to just change the vector numbers around?
->
-> Ideally I would love to switch to the 2.6.20 kernel and use the preempt
-> patch, but I doubt we have the time for that.
->
-> Thanks,
-> Mike
 
-Can't you muck with the BIOS settings? That's where the primary
-hardware gets 'connected'.
+Stupid, maybe. But some people just don't want closed-source
+projects/companies like yours using their free work, without any kind
+of feedback. Some others don't care, but they could in the future, as
+it is their code, and that is your risk.
 
+PD: Please don't top post.
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.16.24 on an i686 machine (5592.61 BogoMips).
-New book: http://www.AbominableFirebug.com/
-_
-
-
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
+-- 
+Miguel Ojeda
+http://maxextreme.googlepages.com/index.htm
