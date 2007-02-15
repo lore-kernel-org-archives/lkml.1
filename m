@@ -1,75 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965870AbXBOLCY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965629AbXBOLFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965870AbXBOLCY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 06:02:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965871AbXBOLCY
+	id S965629AbXBOLFQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 06:05:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965634AbXBOLFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 06:02:24 -0500
-Received: from mail.trixing.net ([87.230.125.58]:55930 "EHLO mail.trixing.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965870AbXBOLCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 06:02:23 -0500
-Message-ID: <45D43489.3060409@l4x.org>
-Date: Thu, 15 Feb 2007 11:23:05 +0100
-From: Jan Dittmer <jdi@l4x.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8) Gecko/20060228 Thunderbird/1.5 Mnenhy/0.6.0.104
+	Thu, 15 Feb 2007 06:05:16 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:62631 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965629AbXBOLFO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 06:05:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pwxNw5jAuDC4VK9NMXUvEYt90O5CnSemNbPIi1HZDVSZsrc7myYXByHQpZYObaklmil5J7OZrzphwSBYPb8GXNTLMGs69a9LbEn7DeteeEjYPWAfR9Gyj+wtCI1dYBxQiAk3GV6XbrdRVeNz8Y0fR4mZanqrcMw2ybx0y8j88tI=
+Message-ID: <3d57814d0702150305m1f752601ie9937822a309b5e7@mail.gmail.com>
+Date: Thu, 15 Feb 2007 21:05:11 +1000
+From: "Trent Waddington" <trent.waddington@gmail.com>
+To: "Xavier Bestel" <xavier.bestel@free.fr>
+Subject: Re: GPL vs non-GPL device drivers
+Cc: "Mohammed Gamal" <m.gamal005@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <1171537256.5835.60.camel@frg-rhel40-em64t-03>
 MIME-Version: 1.0
-To: stelian@popies.net, linux-acpi@vger.kernel.org, linux-pm@osdl.org,
-       adaplas@pol.net, dawes@xfree86.org
-CC: Linux kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 192.168.1.3
-X-SA-Exim-Mail-From: jdi@l4x.org
-Subject: Suspend to RAM, Sony Vaio PCG-SRX51P, lcd stays off
-X-SA-Exim-Version: 4.2.1 (built Mon, 27 Mar 2006 14:12:04 +0200)
-X-SA-Exim-Scanned: Yes (on mail.trixing.net)
+Content-Disposition: inline
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+	 <20070215061149.GE15654@redhat.com>
+	 <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
+	 <20070214231143.11ff6b46.rdunlap@xenotime.net>
+	 <9b3a62ab0702142328h87365b6i932d4f2c117f7f0e@mail.gmail.com>
+	 <1171533690.5835.40.camel@frg-rhel40-em64t-03>
+	 <52d4a3890702150251w7751da0cve55c6f2cf64e1b8e@mail.gmail.com>
+	 <1171537256.5835.60.camel@frg-rhel40-em64t-03>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi there,
+On 2/15/07, Xavier Bestel <xavier.bestel@free.fr> wrote:
+> But that's not the case with VJ's drivers, which are apparently solely
+> for linux, so should be distributed under the GPL.
 
-I own an older Sony Vaio SRX51P, European Model, P3 based. s2ram
-identifies it with
+In any case, you're free to use any driver, regardless of license..
+copyright does not cover use, only "copying" and most, if not all,
+jurisdictions make it clear that "copying into memory" is not a
+copyright matter.
 
-    sys_vendor   = "Sony Corporation    "
-    sys_product  = "PCG-SRX51P(DE)      "
-    sys_version  = "01                  "
-    bios_version = "R0232U2"
-
-Suspend to RAM by using "s2ram -v -m -f" actually works and the
-laptop comes back to life, is accessible by network, etc. kudos
-so far.
-The only but serious problem is, that the lcd stays off after
-resume. No matter what kind of options for s2ram I try, if I disable
-framebuffer or suspend from X, the lcd always stays off. Only
-a reboot fixes this. Note that the X driver also cannot dis-/enable
-the lcd (xset dpms force off). It always stays lit. I also tried
-with i810switch, but that also does not affect the lcd.
-spicctrl -b42 neither.
-Latest kernel I tested is 2.6.20-git11 from today.
-
-So has anyone of you suspend, acpi, sonypi, fb people an idea how to fix
-this? I suspect one has to call some magic ACPI method upon resume? What
-other kind of information would be needed to debug this? Anything more
-to try? Are there some sony people here listening who can fix this?
-
-Thanks very much for any help,
-
-Jan
-
-$ lspci
-00:00.0 Host bridge: Intel Corporation 82815 815 Chipset Host Bridge and Memory Controller Hub (rev 11)
-00:02.0 VGA compatible controller: Intel Corporation 82815 CGC [Chipset Graphics Controller] (rev 11)
-00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev 03)
-00:1f.0 ISA bridge: Intel Corporation 82801BAM ISA Bridge (LPC) (rev 03)
-00:1f.1 IDE interface: Intel Corporation 82801BAM IDE U100 (rev 03)
-00:1f.2 USB Controller: Intel Corporation 82801BA/BAM USB (Hub #1) (rev 03)
-00:1f.3 SMBus: Intel Corporation 82801BA/BAM SMBus (rev 03)
-00:1f.4 USB Controller: Intel Corporation 82801BA/BAM USB (Hub #2) (rev 03)
-00:1f.5 Multimedia audio controller: Intel Corporation 82801BA/BAM AC'97 Audio (rev 03)
-00:1f.6 Modem: Intel Corporation 82801BA/BAM AC'97 Modem (rev 03)
-01:00.0 FireWire (IEEE 1394): Texas Instruments TSB43AB22/A IEEE-1394a-2000 Controller (PHY/Link)
-01:02.0 CardBus bridge: Ricoh Co Ltd RL5c475 (rev 80)
-01:05.0 CardBus bridge: Texas Instruments PCI1410 PC card Cardbus Controller (rev 01)
-01:08.0 Ethernet controller: Intel Corporation 82801BA/BAM/CA/CAM Ethernet Controller (rev 03)
+Trent
