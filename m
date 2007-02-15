@@ -1,89 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030367AbXBORtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030373AbXBORvF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030367AbXBORtL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 12:49:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030371AbXBORtK
+	id S1030373AbXBORvF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 12:51:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030376AbXBORvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 12:49:10 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:54492 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030367AbXBORtI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 12:49:08 -0500
-Date: Thu, 15 Feb 2007 09:42:32 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 05/11] syslets: core code
-In-Reply-To: <20070215163704.GA32609@2ka.mipt.ru>
-Message-ID: <Pine.LNX.4.64.0702150920130.20368@woody.linux-foundation.org>
-References: <20070213142035.GF638@elte.hu> <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org>
- <20070215133550.GA29274@2ka.mipt.ru> <Pine.LNX.4.64.0702150757520.20368@woody.linux-foundation.org>
- <20070215163704.GA32609@2ka.mipt.ru>
+	Thu, 15 Feb 2007 12:51:04 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:57518 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030373AbXBORvD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 12:51:03 -0500
+Date: Thu, 15 Feb 2007 18:51:08 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.16.41-rc1
+Message-ID: <20070215175108.GB13958@stusta.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Location:
+ftp://ftp.kernel.org/pub/linux/kernel/people/bunk/linux-2.6.16.y/testing/
+
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
 
 
-On Thu, 15 Feb 2007, Evgeniy Polyakov wrote:
-> 
-> Userspace_API_is_the_ever_possible_last_thing_to_ever_think_about. Period
-> . // <- wrapped one
+Changes since 2.6.16.40:
 
-No, I really think you're wrong.
+Adrian Bunk (3):
+      Revert "[Bluetooth] Fix compat ioctl for BNEP, CMTP and HIDP"
+      [ALSA] echo3g_dsp.c shouldn't include #include <linux/irq.h>
+      Linux 2.6.16.41-rc1
 
-In many ways, the interfaces and especially data structures are *more* 
-important than the code.
+Al Viro (1):
+      [TCP]: struct tcp_sack_block annotations
 
-The code we can fix. The interfaces, on the other hand, we'll have to live 
-with forever.
+Baruch Even (1):
+      TCP: Fix sorting of SACK blocks.
 
-So complex interfaces that expose lots of implementation detail are not a 
-good thing, and it's _not_ the last thing you want to think about. Complex 
-interfaces with a lot of semantic knowledge seriously limit how you can 
-fix things up later.
+Bob Breuer (1):
+      SPARC32: Fix over-optimization by GCC near ip_fast_csum.
 
-In contrast, simple interfaces that have clear and unambiguous semantics 
-and that can be explained at a conceptual level are things that you can 
-often implement in many different ways. So the interface isn't the bottle 
-neck: you may have to have a "backwards compatibility layer" for it 
+Daniel Walker (1):
+      [ATM]: Fix for crash in adummy_init()
 
-> If system is designed that with API changes it breaks - that system sucks 
-> wildly and should be thrown away. Syslets do not suffer from that.
+David S. Miller (1):
+      AF_PACKET: Check device down state before hard header callbacks.
 
-The syslet code itself looks fine. It's the user-visible part I'm not 
-convinced about.
+Eric W. Biederman (1):
+      DECNET: Handle a failure in neigh_parms_alloc (take 2)
 
-I'm just saying: how would use use this for existing programs?
+Herbert Xu (1):
+      [NETFILTER]: Clear GSO bits for TCP reset packet
 
-For something this machine-specific, you're not going to have any big 
-project written around the "async atom" code. So realistically, the kinds 
-of usage we'd see is likely some compile-time configuration option, where 
-people replace some specific sequence of code with another one. THAT is 
-what we should aim to make easy and flexible, I think. And that is where 
-interfaces really are as important as code.
+Hugh Dickins (1):
+      fix umask when noACL kernel meets extN tuned for ACLs
 
-We know one interface: the current aio_read() one. Nobody really _likes_ 
-it (even database people would apparently like to extend it), but it has 
-the huge advantage of "being there", and having real programs that really 
-care that use it today. 
+Jeff Dike (1):
+      uml: fix signal frame alignment
 
-Others? We don't know yet. And exposing complex interfaces that may not be 
-the right ones is much *worse* than exposing simple interfaces (that 
-_also_ may not be the right ones, of course - but simple and 
-straightforward interfaces with obvious and not-very-complex semantics are 
-a lot easier to write compatibility layers for if the internal code 
-changes radically)
+Jiri Bohac (1):
+      [IPX]: Fix NULL pointer dereference on ipx unload
 
-		Linus
+John Heffner (1):
+      [TCP]: Don't apply FIN exception to full TSO segments.
+
+Linus Torvalds (1):
+      Fix up CIFS for "test_clear_page_dirty()" removal
+
+Masayuki Nakagawa (1):
+      TCP: skb is unexpectedly freed.
+
+
+ Makefile                           |    2 
+ arch/um/sys-i386/signal.c          |    2 
+ arch/um/sys-x86_64/signal.c        |    5 +
+ fs/cifs/file.c                     |   26 ++++++++-
+ fs/ext2/super.c                    |    4 +
+ fs/ext3/super.c                    |    4 +
+ include/asm-sparc/checksum.h       |    2 
+ include/linux/tcp.h                |    5 +
+ net/atm/common.c                   |    3 -
+ net/bluetooth/bnep/sock.c          |   67 ++++++------------------
+ net/bluetooth/cmtp/sock.c          |   33 ------------
+ net/bluetooth/hidp/sock.c          |   78 -----------------------------
+ net/decnet/dn_dev.c                |   11 +++-
+ net/ipv4/netfilter/ip_nat_helper.c |    2 
+ net/ipv4/netfilter/ipt_REJECT.c    |    3 +
+ net/ipv4/tcp_input.c               |   17 +++---
+ net/ipv4/tcp_output.c              |    3 -
+ net/ipx/af_ipx.c                   |   24 +++++---
+ net/packet/af_packet.c             |   16 ++---
+ sound/pci/echoaudio/echo3g_dsp.c   |    2 
+ 20 files changed, 111 insertions(+), 198 deletions(-)
+
