@@ -1,117 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965735AbXBOJBH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965352AbXBOJQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965735AbXBOJBH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 04:01:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965724AbXBOJBG
+	id S965352AbXBOJQe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 04:16:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965357AbXBOJQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 04:01:06 -0500
-Received: from madara.hpl.hp.com ([192.6.19.124]:58717 "EHLO madara.hpl.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965726AbXBOJBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 04:01:05 -0500
-Date: Thu, 15 Feb 2007 01:00:45 -0800
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-ia64@vger.kernel.org,
-       perfctr-devel@lists.sourceforge.net, perfmon@napali.hpl.hp.com,
-       linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net
-Subject: Re: 2.6.20 new perfmon code base + libpfm + pfmon
-Message-ID: <20070215090045.GA12544@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <20070213184839.GC10031@frankl.hpl.hp.com> <20070213140533.a5ca27ad.akpm@linux-foundation.org> <p737iulhcfb.fsf@bingen.suse.de>
+	Thu, 15 Feb 2007 04:16:34 -0500
+Received: from omx2-ext.sgi.com ([192.48.171.19]:38623 "EHLO omx2.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965352AbXBOJQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 04:16:33 -0500
+Date: Thu, 15 Feb 2007 20:16:10 +1100
+From: David Chinner <dgc@sgi.com>
+To: "Ramy M. Hassan " <ramy@gawab.com>
+Cc: linux-kernel@vger.kernel.org, Ahmed El Zein <a.elzein@gawab.net>,
+       xfs@oss.sgi.com
+Subject: Re: xfs internal error on a new filesystem
+Message-ID: <20070215091610.GB5743@melbourne.sgi.com>
+References: <20070214102432.6346.qmail@info6.gawab.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <p737iulhcfb.fsf@bingen.suse.de>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+In-Reply-To: <20070214102432.6346.qmail@info6.gawab.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi,
-
-On Wed, Feb 14, 2007 at 12:20:56AM +0100, Andi Kleen wrote:
-> Andrew Morton <akpm@linux-foundation.org> writes:
+On Wed, Feb 14, 2007 at 10:24:27AM +0000, Ramy M. Hassan  wrote:
+> Hello,
+> We got the following xfs internal error on one of our production servers:
 > 
-> > > On Tue, 13 Feb 2007 10:48:39 -0800 Stephane Eranian <eranian@hpl.hp.com> wrote:
-> > > I have released another version of the perfmon new code base package.
-> > 
-> > Can we have a bug push to get this merged up please?
-> 
-> Yes, there certainly seems to be user interest in this.
-> 
-> I've been merging the x86 specific infrastructure Stephane sent.
-> So hopefully the basics are there already.
-> 
-Yes, almost everything is in there now. Tony Luck told me he has integrated
-the idle notifier for IA-64. I saw that the i386 version of the notifier
-was recently integrated as well. So I think that for 2.6.21 we'll have
-everything we need for i386, x86-64 and ia64. On MIPS and PowerPC,
-a few things are still missing but they should be fixed soon.
+> Feb 14 08:28:52 info6 kernel: [238186.676483] Filesystem "sdd8": XFS
+> internal error xfs_trans_cancel at line 1138 of file fs/xfs/xfs_trans.c. 
+> Caller 0xf8b906e7
 
-On x86-64 and i386, the one last thing I would need that you do not already
-have is in the NMI handler for the architectural perfmon to switch PERFCTR0
-to PERFCTR1. This would allow certain events to be measured while the NMI
-watchdog is active. This is needed on Intel Core-based processors where
-certain events can ONLY be measured by PERFCTR0. The CPU_CLK_UNHALTED event
-used by the watchdog can be measured by any counter.
+Real stack looks to be:
 
-I have attached the x86-64 patch for this. I can submit the i386 version
-as well.
+ xfs_trans_cancel
+ xfs_mkdir
+ xfs_vn_mknod
+ xfs_vn_mkdir
+ vfs_mkdir
+ sys_mkdirat
+ sys_mkdir
 
-> The big open question was still the review of the syscall interface.
-> Probably needs some determined reviewers.
-> 
-Not a problem.
+We aborted a transaction for some reason. We got an error somewhere in
+a mkdir while we had a dirty transaction.  Unfortunately, this tells us very
+little about the error that actually caused the shutdown.
 
-> I did a review of some of the basic low level code some time ago;
-> there were some issues but I believe they are probably all resolved
-> by now (but I haven't verified that recently) 
-> 
-Yes, all the changes and fixes you and Andrew had requested have been made.
+What is your filessytem layout? (xfs_info <mntpt>) How much memory
+do you have and were you near enomem conditions?
 
+> We were able to unmount/remount the volume (didn't do xfs_repair because we
+> thought it might take long time, and the server was already in production
+> at the moement)
 
-changelog:
-	- for architectural perfmon support, switch from PERFCTR0 to PERFCTR1.
-	  this does free PERFCTR0 which is the only counter supported for certain
-	  events on Intel Core-based processors.
+Risky to run a production system on a filesystem that might be corrupted.
+You risk further problems if you don't run repair....
 
-signed-off-by: stephane eranian <eranian@hpl.hp.com>
+> The file system was created less than 48hours ago, and 370G of sensitve
+> production data was moved to the server before it xfs crash.
 
-diff --exclude=.git -urp linux-2.6.20.base/arch/x86_64/kernel/nmi.c linux-2.6.20/arch/x86_64/kernel/nmi.c
---- linux-2.6.20.base/arch/x86_64/kernel/nmi.c	2007-02-05 00:31:52.000000000 -0800
-+++ linux-2.6.20/arch/x86_64/kernel/nmi.c	2007-02-09 09:44:29.000000000 -0800
-@@ -275,7 +275,7 @@ int __init check_nmi_watchdog (void)
- 		 * 32nd bit should be 1, for 33.. to be 1.
- 		 * Find the appropriate nmi_hz
- 		 */
--	 	if (wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR0 &&
-+	 	if (wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR1 &&
- 			((u64)cpu_khz * 1000) > 0x7fffffffULL) {
- 			nmi_hz = ((u64)cpu_khz * 1000) / 0x7fffffffUL + 1;
- 		}
-@@ -615,8 +615,8 @@ static int setup_intel_arch_watchdog(voi
- 	    (ebx & ARCH_PERFMON_UNHALTED_CORE_CYCLES_PRESENT))
- 		goto fail;
- 
--	perfctr_msr = MSR_ARCH_PERFMON_PERFCTR0;
--	evntsel_msr = MSR_ARCH_PERFMON_EVENTSEL0;
-+	perfctr_msr = MSR_ARCH_PERFMON_PERFCTR1;
-+	evntsel_msr = MSR_ARCH_PERFMON_EVENTSEL1;
- 
- 	if (!reserve_perfctr_nmi(perfctr_msr))
- 		goto fail;
-@@ -855,7 +855,7 @@ int __kprobes nmi_watchdog_tick(struct p
- 				dummy &= ~P4_CCCR_OVF;
- 	 			wrmsrl(wd->cccr_msr, dummy);
- 	 			apic_write(APIC_LVTPC, APIC_DM_NMI);
--	 		} else if (wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR0) {
-+	 		} else if (wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR1) {
- 				/*
- 				 * ArchPerfom/Core Duo needs to re-unmask
- 				 * the apic vector
+So that's not a "new" filesystem at all...
 
+FWIW, did you do any offline testing before you put it into production?
+
+> System details :
+> Kernel: 2.6.18
+> Controller: 3ware 9550SX-8LP (RAID 10)
+
+Can you describe your dm/md volume layout?
+
+> We are wondering here if this problem is an indicator to data corruption on
+> disk ?
+
+It might be. You didn't run xfs_check or xfs_repair, so we don't know if
+there is any on disk corruption here.
+
+> is it really necessary to run xfs_repair ?
+
+If you want to know if you haven't left any landmines around for the
+filesystem to trip over again. i.e. You should run repair after any
+sort of XFS shutdown to make sure nothing is corrupted on disk.
+If nothing is corrupted on disk, then we are looking at an in-memory
+problem....
+
+> Do u recommend that we switch back to reiserfs ?
+
+Not yet.
+
+> Could it be a hardware related problems  ?
+
+Yes. Do you have ECC memory on your server? Have you run memtest86?
+Were there any I/O errors in the log prior to the shutdown message?
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
