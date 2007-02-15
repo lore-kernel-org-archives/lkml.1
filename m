@@ -1,85 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161647AbXBOXCD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161212AbXBOXFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161647AbXBOXCD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 18:02:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161649AbXBOXCD
+	id S1161212AbXBOXFi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 18:05:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161656AbXBOXFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 18:02:03 -0500
-Received: from mail.um.es ([155.54.212.109]:45733 "EHLO mail.um.es"
+	Thu, 15 Feb 2007 18:05:38 -0500
+Received: from gw.goop.org ([64.81.55.164]:48158 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161647AbXBOXCB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 18:02:01 -0500
-Date: Thu, 15 Feb 2007 23:59:14 +0100 (CET)
-From: Juan Piernas Canovas <piernas@ditec.um.es>
-X-X-Sender: piernas@ditec.inf.um.es
-To: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, sfaibish <sfaibish@emc.com>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [ANNOUNCE] DualFS: File System with Meta-data and Data Separation
-In-Reply-To: <20070215200922.GB24643@lazybastard.org>
-Message-ID: <Pine.LNX.4.61.0702152353060.19998@ditec.inf.um.es>
-References: <op.tnkdlbgsrwwil4@brcsmondepl2c.corp.emc.com>
- <op.tnrbrocsunckof@usensfaibisl2e.eng.emc.com> <Pine.LNX.4.61.0702142251460.19368@yvahk01.tjqt.qr>
- <Pine.LNX.4.61.0702151910370.19998@ditec.inf.um.es> <20070215200922.GB24643@lazybastard.org>
+	id S1161212AbXBOXFi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 18:05:38 -0500
+Message-ID: <45D4E740.9020504@goop.org>
+Date: Thu, 15 Feb 2007 15:05:36 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="916140492-36369700-1171580354=:19998"
+To: Ralf Baechle <ralf@linux-mips.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Optimize generic get_unaligned / put_unaligned implementations.
+References: <20050830104056.GA4710@linux-mips.org> <20060306.203218.69025300.nemoto@toshiba-tops.co.jp> <20060306170552.0aab29c5.akpm@osdl.org> <20070214214226.GA17899@linux-mips.org> <20070214203903.8d013170.akpm@linux-foundation.org> <20070215143441.GA18155@linux-mips.org> <20070215135358.020781dd.akpm@linux-foundation.org> <20070215221839.GA14103@linux-mips.org>
+In-Reply-To: <20070215221839.GA14103@linux-mips.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---916140492-36369700-1171580354=:19998
-Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-
-Hi Jörn,
-
-On Thu, 15 Feb 2007, [utf-8] Jörn Engel wrote:
-
-> On Thu, 15 February 2007 19:38:14 +0100, Juan Piernas Canovas wrote:
->>
->> The patch for 2.6.11 is not still stable enough to be released. Be patient
->> ;-)
+Ralf Baechle wrote:
+> Gcc info page says:
 >
-> While I don't want to discourage you, this is about the point in
-> development where most log structured filesystems stopped.  Doing a
-> little web research, you will notice those todo-lists with "cleaner"
-> being the top item for...years!
+> [...]
+> `packed'
+>      The `packed' attribute specifies that a variable or structure field
+>      should have the smallest possible alignment--one byte for a
+>      variable, and one bit for a field, unless you specify a larger
+>      value with the `aligned' attribute.
+> [...]
 >
-> Getting that one to work robustly is _very_ hard work and just today
-> I've noticed that mine was not as robust as I would have liked to think.
-> Also, you may note that by updating to newer kernels, the VM writeout
-> policies can change and impact your cleaner.  To an extent even that you
-> had a rock-solid filesystem with 2.6.18 and thing crumble between your
-> fingers in 2.6.19 or later.
->
-> If the latter happens, most likely the VM is not to blame, it just
-> proved that your cleaner is still getting some corner-cases wrong and
-> needs more work.  There goes another week of debugging. :(
->
-> Jörn
->
-Actually, the version of DualFS for Linux 2.4.19 implements a cleaner. In 
-our case, the cleaner is not really a problem because there is not too 
-much to clean (the meta-data device only contains meta-data blocks which 
-are 5-6% of the file system blocks; you do not have to move data blocks).
+> Qed?
 
-Anyway, thank you for warning me ;-)
+So that the compiler has to assume that if its accessing this __packed
+structure, it may be embedded unaligned within something else? And
+because the pointer is cast through (void *) it isn't allowed to use
+alias analysis to notice that the pointer wasn't originally (apparently)
+unaligned.
 
-Regards,
+Seems sound to me.
 
- 	Juan.
-
--- 
-D. Juan Piernas Cánovas
-Departamento de Ingeniería y Tecnología de Computadores
-Facultad de Informática. Universidad de Murcia
-Campus de Espinardo - 30080 Murcia (SPAIN)
-Tel.: +34968367657    Fax: +34968364151
-email: piernas@ditec.um.es
-PGP public key:
-http://pgp.rediris.es:11371/pks/lookup?search=piernas%40ditec.um.es&op=index
-
-*** Por favor, envíeme sus documentos en formato texto, HTML, PDF o PostScript :-) ***
---916140492-36369700-1171580354=:19998--
+    J
