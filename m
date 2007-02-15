@@ -1,82 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964888AbXBODnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964893AbXBODvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964888AbXBODnq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 22:43:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964893AbXBODnq
+	id S964893AbXBODvz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 22:51:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964896AbXBODvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 22:43:46 -0500
-Received: from smtp005.mail.ukl.yahoo.com ([217.12.11.36]:35899 "HELO
-	smtp005.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S964888AbXBODnp (ORCPT
+	Wed, 14 Feb 2007 22:51:55 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:37252 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S964893AbXBODvz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 22:43:45 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=TaLvNvNY+LZ2Fe/DW8lz/mgBtC0tzpreqCpHBaZJ6YQ8zg+Cb54cYZXNbFkEPpTz2VBWlLhLqZ4WVCNyadS7jWQWF9rsKEfyafJti1cn0Q8Fci8/M6gVI3MrnHubnIJk5s/jYB9lkLCL5lbQBO9M3PgfLtxb7lcCJQZdNeveNmk=  ;
-X-YMail-OSG: tTNmiSAVM1k8jUamZk.3Qc5EKOqXaemkL0CC6eygzJjuPyoCE5AR4Hkz6ew4iMhFEQAe6q59qrSaJEGVNJQ_k2s.HYi7qf113fZpaSTHQ6Z.EnQpL4Z06LNHLAxPjmrIqqnv.TxrLzSQSzvuvtAW0VBs_uKJgo0-
-From: Blaisorblade <blaisorblade@yahoo.it>
-To: user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [uml-devel] x86_64: fix 2.6.18 regression - PTRACE_OLDSETOPTIONS should be accepted
-Date: Thu, 15 Feb 2007 04:43:41 +0100
-User-Agent: KMail/1.9.5
-Cc: Jeff Dike <jdike@addtoit.com>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>,
-       stable@kernel.org
-References: <11715068631914-git-send-email-blaisorblade@yahoo.it> <20070215025423.GA9300@ccure.user-mode-linux.org>
-In-Reply-To: <20070215025423.GA9300@ccure.user-mode-linux.org>
+	Wed, 14 Feb 2007 22:51:55 -0500
+X-Sasl-enc: kZRBoi/EcnXoT8mJtpNmPvn+bTVy3k2F2Fcv55iHAHi7 1171511511
+Date: Thu, 15 Feb 2007 12:52:35 +0900 (WST)
+From: Ian Kent <raven@themaw.net>
+To: Andrew Morton <akpm@osdl.org>
+cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       autofs mailing list <autofs@linux.kernel.org>
+Subject: [PATCH] autofs4 - header file update
+Message-ID: <Pine.LNX.4.64.0702151245020.8001@raven.themaw.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702150443.42287.blaisorblade@yahoo.it>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 February 2007 03:54, Jeff Dike wrote:
-> On Thu, Feb 15, 2007 at 03:34:23AM +0100, Paolo 'Blaisorblade' Giarrusso 
-wrote:
-> > Index: linux-2.6.git/arch/x86_64/ia32/ptrace32.c
-> > ===================================================================
-> > --- linux-2.6.git.orig/arch/x86_64/ia32/ptrace32.c
-> > +++ linux-2.6.git/arch/x86_64/ia32/ptrace32.c
-> > @@ -246,6 +246,7 @@ asmlinkage long sys32_ptrace(long reques
-> >  	case PTRACE_SINGLESTEP:
-> >  	case PTRACE_DETACH:
-> >  	case PTRACE_SYSCALL:
-> > +	case PTRACE_OLDSETOPTIONS:
-> >  	case PTRACE_SETOPTIONS:
-> >  	case PTRACE_SET_THREAD_AREA:
-> >  	case PTRACE_GET_THREAD_AREA:
->
-> I sent an equivalent patch in earlier today:
-Doh! Interesting this timing...
 
-> Index: linux-2.6/arch/x86_64/ia32/ptrace32.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86_64/ia32/ptrace32.c
-> +++ linux-2.6/arch/x86_64/ia32/ptrace32.c
-> @@ -239,6 +239,8 @@ asmlinkage long sys32_ptrace(long reques
->  	__u32 val;
->
->  	switch (request) {
-> +	case PTRACE_OLDSETOPTIONS:
-> +		request = PTRACE_SETOPTIONS;
->  	case PTRACE_TRACEME:
->  	case PTRACE_ATTACH:
->  	case PTRACE_KILL:
->
-> I change the request so that PTRACE_OLDSETOPTIONS doesn't need to
-> propogate any further.  However, it is present in include/asm-x86_64,
-> so I guess that counts as being part of the x86_64 ABI.  That being
-> the case, I guess my patch can be dropped in favor of this one.
+Hi Andrew,
 
-It is handled in ptrace_request, unless there are include problems. I'm going 
-to reboot and test mine for any remaining problem.
--- 
-Inform me of my mistakes, so I can add them to my list!
-Paolo Giarrusso, aka Blaisorblade
-http://www.user-mode-linux.org/~blaisorblade
-Chiacchiera con i tuoi amici in tempo reale! 
- http://it.yahoo.com/mail_it/foot/*http://it.messenger.yahoo.com 
+The current header file definitions for autofs version 5 have
+caused a couple of problems for application builds downstream.
+
+This fixes the problem by separating the definitions.
+
+Signed-off-by: Ian Kent <raven@themaw.net>
+
+Ian
+
+---
+
+--- linux-2.6.20/fs/autofs4/waitq.c.packet-union-redefine	2007-02-13 13:29:53.000000000 +0900
++++ linux-2.6.20/fs/autofs4/waitq.c	2007-02-13 13:29:59.000000000 +0900
+@@ -84,7 +84,11 @@ static void autofs4_notify_daemon(struct
+ 				 struct autofs_wait_queue *wq,
+ 				 int type)
+ {
+-	union autofs_packet_union pkt;
++	union {
++		struct autofs_packet_hdr hdr;
++		union autofs_packet_union v4_pkt;
++		union autofs_v5_packet_union v5_pkt;
++	} pkt;
+ 	size_t pktsz;
+ 
+ 	DPRINTK("wait id = 0x%08lx, name = %.*s, type=%d",
+@@ -98,7 +102,7 @@ static void autofs4_notify_daemon(struct
+ 	/* Kernel protocol v4 missing and expire packets */
+ 	case autofs_ptype_missing:
+ 	{
+-		struct autofs_packet_missing *mp = &pkt.missing;
++		struct autofs_packet_missing *mp = &pkt.v4_pkt.missing;
+ 
+ 		pktsz = sizeof(*mp);
+ 
+@@ -110,7 +114,7 @@ static void autofs4_notify_daemon(struct
+ 	}
+ 	case autofs_ptype_expire_multi:
+ 	{
+-		struct autofs_packet_expire_multi *ep = &pkt.expire_multi;
++		struct autofs_packet_expire_multi *ep = &pkt.v4_pkt.expire_multi;
+ 
+ 		pktsz = sizeof(*ep);
+ 
+@@ -129,7 +133,7 @@ static void autofs4_notify_daemon(struct
+ 	case autofs_ptype_missing_direct:
+ 	case autofs_ptype_expire_direct:
+ 	{
+-		struct autofs_v5_packet *packet = &pkt.v5_packet;
++		struct autofs_v5_packet *packet = &pkt.v5_pkt.v5_packet;
+ 
+ 		pktsz = sizeof(*packet);
+ 
+--- linux-2.6.20/include/linux/auto_fs4.h.packet-union-redefine	2007-02-13 13:23:20.000000000 +0900
++++ linux-2.6.20/include/linux/auto_fs4.h	2007-02-13 13:26:35.000000000 +0900
+@@ -59,6 +59,13 @@ struct autofs_packet_expire_multi {
+ 	char name[NAME_MAX+1];
+ };
+ 
++union autofs_packet_union {
++	struct autofs_packet_hdr hdr;
++	struct autofs_packet_missing missing;
++	struct autofs_packet_expire expire;
++	struct autofs_packet_expire_multi expire_multi;
++};
++
+ /* autofs v5 common packet struct */
+ struct autofs_v5_packet {
+ 	struct autofs_packet_hdr hdr;
+@@ -78,12 +85,13 @@ typedef struct autofs_v5_packet autofs_p
+ typedef struct autofs_v5_packet autofs_packet_missing_direct_t;
+ typedef struct autofs_v5_packet autofs_packet_expire_direct_t;
+ 
+-union autofs_packet_union {
++union autofs_v5_packet_union {
+ 	struct autofs_packet_hdr hdr;
+-	struct autofs_packet_missing missing;
+-	struct autofs_packet_expire expire;
+-	struct autofs_packet_expire_multi expire_multi;
+ 	struct autofs_v5_packet v5_packet;
++	autofs_packet_missing_indirect_t missing_indirect;
++	autofs_packet_expire_indirect_t expire_indirect;
++	autofs_packet_missing_direct_t missing_direct;
++	autofs_packet_expire_direct_t expire_direct;
+ };
+ 
+ #define AUTOFS_IOC_EXPIRE_MULTI		_IOW(0x93,0x66,int)
