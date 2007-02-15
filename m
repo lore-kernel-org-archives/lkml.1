@@ -1,63 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751353AbXBOFq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751371AbXBOFrE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751353AbXBOFq3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 00:46:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbXBOFq3
+	id S1751371AbXBOFrE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 00:47:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbXBOFrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 00:46:29 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58977 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750780AbXBOFq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 00:46:28 -0500
-Date: Thu, 15 Feb 2007 00:45:59 -0500
-From: Dave Jones <davej@redhat.com>
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
-       herbert.xu@redhat.com, linux-kernel@vger.kernel.org,
-       arjan@infradead.org, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing
-Message-ID: <20070215054559.GD15654@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Andreas Gruenbacher <agruen@suse.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
-	herbert.xu@redhat.com, linux-kernel@vger.kernel.org,
-	arjan@infradead.org, linux-crypto@vger.kernel.org
-References: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com> <20070214194112.5bec3110.akpm@linux-foundation.org> <20070215041345.GA15654@redhat.com> <200702142135.40832.agruen@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 15 Feb 2007 00:47:04 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:60535 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751371AbXBOFrC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 00:47:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pF8AW3AEYiNhxnXAqBcEyQ7ooTFDmYiIVSvTD0/8sPM+kf47XzZM1FbYVDYKweR/SZQctr1qOu8xdV5DtJxSBpgB+yeJQEUEaAybdHcq9UHF089yVGUQg1k0fCzYbpwUI8zSxocgdEUt5mjoBUzAMXOj5mTedNu3aRytA/dOkXk=
+Message-ID: <3d57814d0702142147p4eede234ybc9880a38772f55f@mail.gmail.com>
+Date: Thu, 15 Feb 2007 15:47:00 +1000
+From: "Trent Waddington" <trent.waddington@gmail.com>
+To: "v j" <vj.linux@gmail.com>
+Subject: Re: GPL vs non-GPL device drivers
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200702142135.40832.agruen@suse.de>
-User-Agent: Mutt/1.4.2.2i
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 14, 2007 at 09:35:40PM -0800, Andreas Gruenbacher wrote:
- > On Wednesday 14 February 2007 20:13, Dave Jones wrote:
- > > I've not investigated it, but I hear rumours that suse has something
- > > similar.
- > 
- > Actually, no. We don't belive that module signing adds significant value,
+On 2/15/07, v j <vj.linux@gmail.com> wrote:
+> The drivers which we have written over the last three years are suddenly
+> under threat.
+> [..]
+> The fact that Linux is becoming more and more closed is very very alarming.
 
-ok, then I was misinformed.
+Sigh.  Someone remind me of the rules against "politics" on the list
+before I get into why vj should play nice with the other children.
 
- > and it also doesn't work well with external modules.
-
-well, the situation for external modules is no worse than usual.
-They still work, they just aren't signed. Which from a distributor point
-of view, is actually a nice thing, as they stick out like a sore thumb
-in oops reports with (U) markers :)
-
- > (The external modules we really care about are GPL ones; it gives us a way
- > to update drivers without pushing out entirely new kernels.)
-
-external modules still compile, and run just fine. The signed modules code
-doesn't prevent loading of them unless the user decides to do so with
-a special boot option (which is no different really than say, reducing
-the cap-bound sysctl to prevent module loading).
-
-		Dave
-
--- 
-http://www.codemonkey.org.uk
+Trent
