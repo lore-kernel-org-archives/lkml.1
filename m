@@ -1,108 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932391AbXBOWCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161472AbXBOWNI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932391AbXBOWCh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 17:02:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932834AbXBOWCh
+	id S1161472AbXBOWNI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 17:13:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161469AbXBOWNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 17:02:37 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:36211 "EHLO smtp.osdl.org"
+	Thu, 15 Feb 2007 17:13:07 -0500
+Received: from ns2.suse.de ([195.135.220.15]:39377 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932391AbXBOWCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 17:02:36 -0500
-Date: Thu, 15 Feb 2007 14:02:32 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: 2.6.20-mm1
-Message-Id: <20070215140232.0aba86a7.akpm@linux-foundation.org>
-In-Reply-To: <45D47020.1010309@googlemail.com>
-References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
-	<45D47020.1010309@googlemail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1161472AbXBOWNG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 17:13:06 -0500
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SuSE Labs, Novell
+To: Valdis.Kletnieks@vt.edu
+Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing
+Date: Thu, 15 Feb 2007 14:12:43 -0800
+User-Agent: KMail/1.9.5
+Cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
+       herbert.xu@redhat.com, linux-kernel@vger.kernel.org,
+       arjan@infradead.org, linux-crypto@vger.kernel.org
+References: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com> <200702142214.53625.agruen@suse.de> <200702152034.l1FKYS93012172@turing-police.cc.vt.edu>
+In-Reply-To: <200702152034.l1FKYS93012172@turing-police.cc.vt.edu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702151412.43758.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Feb 2007 15:37:20 +0100
-Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+On Thursday 15 February 2007 12:34, Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 14 Feb 2007 22:14:53 PST, Andreas Gruenbacher said:
+> > I agree, that's really what should happen. We solve this by marking
+> > modules as supported, partner supported, or unsupported, but in an
+> > "insecure" way, so partners and users could try to fake the support
+> > status of a module and/or remove status flags from Oopses, and
+> > cryptography wouldn't save us.
+>
+> Where cryptography *can* save you is that a partner or user can't fake a
+> 'Suse Supported' signature without access to the Suse private key.
 
-> Andrew Morton napisa__(a):
-> > Temporarily at
-> > 
-> >   http://userweb.kernel.org/~akpm/2.6.20-mm1/
-> > 
-> > Will appear later at
-> > 
-> >  ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm1/
-> > 
-> > 
-> 
-> BUG: sleeping function called from invalid context at /mnt/md0/devel/linux-mm/mm/slab.c:3043
-> in_atomic():1, irqs_disabled():0
-> 1 lock held by artsd/3819:
->  #0:  (&new->lock){--..}, at: [<c01d5b7c>] ipc_lock+0x35/0x4f
->  [<c0105312>] show_trace_log_lvl+0x1a/0x2f
->  [<c0105a25>] show_trace+0x12/0x14
->  [<c0105ae7>] dump_stack+0x16/0x18
->  [<c011db4a>] __might_sleep+0xc9/0xcf
->  [<c017c37a>] kmem_cache_zalloc+0x28/0xe5
->  [<c01d8c7d>] do_shmat+0x111/0x372
->  [<c0109151>] sys_ipc+0x148/0x1b5
->  [<c010432c>] syscall_call+0x7/0xb
+No question about that. We actually already get this from rpm signatures. What 
+would module signatures buy us? The kernel could then reliably determine that 
+an unsigned module was loaded. But people could still fake their Oopses, or 
+overwite the flags which indicate that a module's signature didn't match, so 
+we still wouldn't reliably get at that information.
 
-That's shm-make-sysv-ipc-shared-memory-use-stacked-files.patch, brought to
-us by Eric-who-hasnt-read-Documentation/SubmitChecklist.
-
-Like this, I guess:
-
-diff -puN ipc/shm.c~shm-make-sysv-ipc-shared-memory-use-stacked-files-fix ipc/shm.c
---- a/ipc/shm.c~shm-make-sysv-ipc-shared-memory-use-stacked-files-fix
-+++ a/ipc/shm.c
-@@ -818,7 +818,7 @@ long do_shmat(int shmid, char __user *sh
- 	int acc_mode;
- 	void *user_addr;
- 	struct ipc_namespace *ns;
--	struct shm_file_data *sfd;
-+	struct shm_file_data *sfd = NULL;
- 	mode_t f_mode;
- 
- 	if (shmid < 0) {
-@@ -856,6 +856,8 @@ long do_shmat(int shmid, char __user *sh
- 		acc_mode |= S_IXUGO;
- 	}
- 
-+	sfd = kzalloc(sizeof(*sfd), GFP_KERNEL);
-+
- 	/*
- 	 * We cannot rely on the fs check since SYSV IPC does have an
- 	 * additional creator id...
-@@ -879,13 +881,12 @@ long do_shmat(int shmid, char __user *sh
- 		goto out_unlock;
- 
- 	err = -ENOMEM;
--	sfd = kzalloc(sizeof(*sfd), GFP_KERNEL);
- 	if (!sfd)
- 		goto out_unlock;
- 
- 	file = get_empty_filp();
- 	if (!file)
--		goto out_free;
-+		goto out_unlock;
- 
- 	file->f_op = &shm_file_operations;
- 	file->private_data = sfd;
-@@ -939,9 +940,8 @@ invalid:
- 	if (IS_ERR(user_addr))
- 		err = PTR_ERR(user_addr);
- out:
--	return err;
--out_free:
- 	kfree(sfd);
-+	return err;
- out_unlock:
- 	shm_unlock(shp);
- 	goto out;
-_
-
+Andreas
