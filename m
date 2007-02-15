@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964949AbXBOHKE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964951AbXBOHMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964949AbXBOHKE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 02:10:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964951AbXBOHKE
+	id S964951AbXBOHMz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 02:12:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964952AbXBOHMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 02:10:04 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:17440 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964949AbXBOHKB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 02:10:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZMXrWwms1JUvdjYFs9IOCQtlw4Mdj4DqOyhh+Su7GAo7zAe0FgQDqsGoYHKHLbbc3LM+7vgHQYuznicoNwMs35m5r0gHNjwwXoI2TmYFnvI+NYA0XHp6xAhKdYhTjXxS7E99MqknGzx3Ocx5cV5VNGmzGFQ412hjYJOgm0xFs+w=
-Message-ID: <9b3a62ab0702142309m701789e5vf0fb5a1ebc23c1a1@mail.gmail.com>
-Date: Wed, 14 Feb 2007 23:09:59 -0800
-From: "v j" <vj.linux@gmail.com>
-To: "Trent Waddington" <trent.waddington@gmail.com>
-Subject: Re: GPL vs non-GPL device drivers
-Cc: "Neil Brown" <neilb@suse.de>, "Dave Jones" <davej@redhat.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <3d57814d0702142302k4a517e5cp74ca2e9e2d886b3d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 15 Feb 2007 02:12:55 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:37494 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964951AbXBOHMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 02:12:55 -0500
+Date: Wed, 14 Feb 2007 23:12:01 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       Ingo Molnar <mingo@redhat.com>, systemtap@sources.redhat.com,
+       ltt-dev@shafik.org
+Subject: Re: [PATCH 00/05] Linux Kernel Markers - kernel 2.6.20
+Message-Id: <20070214231201.20918c6b.akpm@linux-foundation.org>
+In-Reply-To: <1171224207118-git-send-email-mathieu.desnoyers@polymtl.ca>
+References: <1171224207118-git-send-email-mathieu.desnoyers@polymtl.ca>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
-	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
-	 <20070215061149.GE15654@redhat.com>
-	 <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
-	 <17876.296.29422.494455@notabene.brown>
-	 <9b3a62ab0702142255u16dc98e0s38876f03ac6355f7@mail.gmail.com>
-	 <3d57814d0702142302k4a517e5cp74ca2e9e2d886b3d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am well aware of what Greg KHs position is, in fact he is the reason
-I started the whole rant. This is only a plea to the "higher
-authorities". Linus, please save Linux!
+On Sun, 11 Feb 2007 15:03:22 -0500 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-vj
+> You will find, in the following posts, the latest revision of the Linux Kernel
+> Markers.
 
-On 2/14/07, Trent Waddington <trent.waddington@gmail.com> wrote:
-> On 2/15/07, v j <vj.linux@gmail.com> wrote:
-> > If adding closed drivers to Linux is illegal, I am perfectly fine with
-> > that. Just say so. I am not at a dead-end yet, until you make that
-> > statement. Once you make that statement, then all bets are off. I am
-> > betting that most companies will not even consider Linux as an
-> > alternative in the embedded space if this were the case.
->
-> Greg KH has already made that statement.
->
-> http://www.kroah.com/log/linux/ols_2006_keynote.html
->
-> half way down, "Closed source Linux kernel modules are illegal".  As
-> was said, welcome to 6 months ago.
->
-> Trent
->
+<looks for the documentation>
+
+And what can I do with these markers?
+
+And once I've done it, are there any userspace applications I can use to
+get the data out in human-usable form?
+
+It seems to me that these patches aren't sequenced correctly - the kernel won't
+build at each step of the patch sequence.  Maybe I'm mistaken in that.  We prefer
+it this way so that people don't hit wont-compile points when doing bisection searches.
