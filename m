@@ -1,48 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965417AbXBOJ5I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965418AbXBOJ62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965417AbXBOJ5I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 04:57:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965424AbXBOJ5I
+	id S965418AbXBOJ62 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 04:58:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965421AbXBOJ62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 04:57:08 -0500
-Received: from zakalwe.fi ([80.83.5.154]:37454 "EHLO zakalwe.fi"
+	Thu, 15 Feb 2007 04:58:28 -0500
+Received: from ns2.suse.de ([195.135.220.15]:53567 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965417AbXBOJ5H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 04:57:07 -0500
-Date: Thu, 15 Feb 2007 11:56:27 +0200
-From: Heikki Orsila <shdl@zakalwe.fi>
-To: Mauro Carvalho Chehab <mchehab@linuxtv.org>
-Cc: Linus Torvalds <torvalds@osdl.org>,
-       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
-       Linux and Kernel Video <video4linux-list@redhat.com>,
-       Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 000/196] V4L/DVB updates
-Message-ID: <20070215095627.GD11613@zakalwe.fi>
-References: <1171519195.6703.25.camel@areia>
+	id S965418AbXBOJ61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 04:58:27 -0500
+From: Andi Kleen <ak@suse.de>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH] x86: Unify pcspeaker platform device code between i386/x86-64
+Date: Thu, 15 Feb 2007 10:49:57 +0100
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200702150901.l1F910lp023036@hera.kernel.org> <45D4299D.6000906@garzik.org>
+In-Reply-To: <45D4299D.6000906@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1171519195.6703.25.camel@areia>
-User-Agent: Mutt/1.5.11
+Message-Id: <200702151049.57943.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 15, 2007 at 03:59:55AM -0200, Mauro Carvalho Chehab wrote:
-> Basically, this series adds support for a bunch of newer cards and newer
-> drivers, do some relevant cleanups on cx88 (improving source code 
-> readability and reducing binary code size), adds FM radio support on
-> pvrusb2 and do several other fixes and improvements.
-> 
-> A more detailed log:
-> 
-> [removed 100+ lines of stuff]
-> > 
-> PS.: Due to the size of this series, I'm not mailbombing them into LKML.
-> 
-> V4L/DVB development is hosted at http://linuxtv.org
 
-Why weren't these submitted in smaller batches? Why were all these 
-patches held back before releasing any?
+> It's always seemed broken (though perhaps this was a distro bug?) in 
+> module form, so I've been compiling it in to get it to work.
 
-Heikki Orsila
+Must have been a distro bug. It should have worked before as long 
+as the config was enabled.
 
+-Andi
