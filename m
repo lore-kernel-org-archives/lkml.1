@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030742AbXBOT0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030753AbXBOT1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030742AbXBOT0S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 14:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030750AbXBOT0S
+	id S1030753AbXBOT1j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 14:27:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030756AbXBOT1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 14:26:18 -0500
-Received: from pfx2.jmh.fr ([194.153.89.55]:60877 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030742AbXBOT0R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 14:26:17 -0500
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: bert hubert <bert.hubert@netherlabs.nl>
-Subject: Re: [patch 05/11] syslets: core code
-Date: Thu, 15 Feb 2007 20:26:08 +0100
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20070213142035.GF638@elte.hu> <Pine.LNX.4.64.0702150920130.20368@woody.linux-foundation.org> <20070215184656.GA12897@outpost.ds9a.nl>
-In-Reply-To: <20070215184656.GA12897@outpost.ds9a.nl>
+	Thu, 15 Feb 2007 14:27:39 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:58477 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030753AbXBOT1j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 14:27:39 -0500
+Date: Thu, 15 Feb 2007 20:27:37 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: v j <vj.linux@gmail.com>
+cc: Theodore Tso <tytso@mit.edu>, Dave Jones <davej@redhat.com>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: GPL vs non-GPL device drivers
+In-Reply-To: <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com>
+Message-ID: <Pine.LNX.4.62.0702152025410.7391@pademelon.sonytel.be>
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+ <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+ <20070215061149.GE15654@redhat.com> <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
+ <20070215165339.GB5285@thunk.org> <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702152026.08541.dada1@cosmosbay.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 February 2007 19:46, bert hubert wrote:
+On Thu, 15 Feb 2007, v j wrote:
+> So far I have heard nothing but, "if you don't contribute, screw you."
+> All this is fine. Just say so. Make it black and white. Make it
+> perfectly clear what is and isn't legal. If we can't load proprietary
 
-> Both 1 and 2 are currently limiting factors when I enter the 100kqps domain
-> of name serving. This doesn't mean the rest of my code is as tight as it
-> could be, but I spend a significant portion of time in the kernel even at
-> moderate (10kqps effective) loads, even though I already use epoll. A busy
-> PowerDNS recursor typically spends 25% to 50% of its time on 'sy' load.
+What's legal depends on the law. What's moral depends on...
 
-Well, I guess in your workload most of system overhead is because of sockets 
-creation/destruction, UDP/IP stack work, nic driver, interrupts... I really 
-doubt async_io could help you... Do you have some oprofile results to share 
-with us ?
+> modules, then so be it. It will help everybody if this is out in the
+> clear, instead of resorting to stupid half measures like
+> EXPORT_SYMBOL_GPL.
+
+Personally, I see no real difference between EXPORT_SYMBOL and
+EXPORT_SYMBOL_GPL.
+If you derive from GPL'ed code, your code is a derived work.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
