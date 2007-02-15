@@ -1,93 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932642AbXBOEm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932687AbXBOFQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932642AbXBOEm0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 23:42:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932682AbXBOEm0
+	id S932687AbXBOFQb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 00:16:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932688AbXBOFQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 23:42:26 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:34466 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932642AbXBOEmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 23:42:25 -0500
-Date: Wed, 14 Feb 2007 20:39:03 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Optimize generic get_unaligned / put_unaligned
- implementations.
-Message-Id: <20070214203903.8d013170.akpm@linux-foundation.org>
-In-Reply-To: <20070214214226.GA17899@linux-mips.org>
-References: <20050830104056.GA4710@linux-mips.org>
-	<20060306.203218.69025300.nemoto@toshiba-tops.co.jp>
-	<20060306170552.0aab29c5.akpm@osdl.org>
-	<20070214214226.GA17899@linux-mips.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 15 Feb 2007 00:16:31 -0500
+Received: from wr-out-0506.google.com ([64.233.184.225]:35678 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932687AbXBOFQa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 00:16:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CZD1EigBhWn5NmhgzuDozM46NedyN+gdx2LxA7ZZoZMA4wNsC1EsixglteQ+U8wsqFCcTVxxnShVfR0pfzP/t3r6FaydxqIw2pP+wFo8W8jHAF494SFjUwq4uD6WGyMWXzGM5kvGPlFj2wWII2TFToZklZtqGkUCGAqVLThZsFQ=
+Message-ID: <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+Date: Wed, 14 Feb 2007 21:16:28 -0800
+From: "v j" <vj.linux@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: GPL vs non-GPL device drivers
+In-Reply-To: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Feb 2007 21:42:26 +0000 Ralf Baechle <ralf@linux-mips.org> wrote:
+This is in reference to the following thread:
 
-> Time for a little bit of dead horse flogging.
-> 
-> On Mon, Mar 06, 2006 at 05:05:52PM -0800, Andrew Morton wrote:
-> 
-> > > --- a/include/asm-generic/unaligned.h
-> > > +++ b/include/asm-generic/unaligned.h
-> > > @@ -78,7 +78,7 @@ static inline void __ustw(__u16 val, __u
-> > >  
-> > >  #define __get_unaligned(ptr, size) ({		\
-> > >  	const void *__gu_p = ptr;		\
-> > > -	__typeof__(*(ptr)) val;			\
-> > > +	__u64 val;				\
-> > >  	switch (size) {				\
-> > >  	case 1:					\
-> > >  		val = *(const __u8 *)__gu_p;	\
-> > > @@ -95,7 +95,7 @@ static inline void __ustw(__u16 val, __u
-> > >  	default:				\
-> > >  		bad_unaligned_access_length();	\
-> > >  	};					\
-> > > -	val;					\
-> > > +	(__typeof__(*(ptr)))val;		\
-> > >  })
-> > >  
-> > >  #define __put_unaligned(val, ptr, size)		\
-> > 
-> > I worry about what impact that change might have on code generation. 
-> > Hopefully none, if gcc is good enough.
-> > 
-> > But I cannot think of a better fix.
-> 
-> It does inflate the code but back then we agreed to go for Atsushi's patch
-> because it was fairly obviously correct.  This patch obviously is less
-> obvious but generates fairly decent, works for arbitrary data types and
-> cuts down the size of unaligned.h from 122 lines to 44 so it must be good.
-> 
-> ...
->
-> +#define get_unaligned(ptr)						\
-> +({									\
-> +	const struct {							\
-> +		union {							\
-> +			const int __un_foo[0];				\
-> +			const __typeof__(*(ptr)) __un;			\
-> +		} __un __attribute__ ((packed));			\
-> +	} * const __gu_p = (void *) (ptr);				\
-> +									\
-> +	__gu_p->__un.__un;						\
->  })
+http://lkml.org/lkml/2006/12/14/63
 
-Can someone please tell us how this magic works?  (And it does appear to
-work).
+I am not sure if this is ever addressed in LKML, but linux is _very_
+popular in the embedded space. We (an embedded vendor) chose Linux 3
+years back because of its lack of royalty model, robustness and
+availability of infinite number of open-source tools.
 
-It seems to assuming that the compiler will assume that members of packed
-structures can have arbitrary alignment, even if that alignment is obvious.
+We recently decided to move to Linux 2.6 for our next product, mainly
+because Linux has worked so well for us in the past, and we would like
+to move up to keep up with the latest and greatest.
 
-Which makes sense, but I'd like to see chapter-and-verse from the spec or
-from the gcc docs so we can rely upon it working on all architectures and
-compilers from now until ever more.
+However in moving to  2.6, we noticed a number of alarming things.
+Porting drivers over from devfs to udev, though easy raised a number
+of alarming issues. Driver's no longer could dynamically allocate
+their MAJOR/MINOR numbers. Doing so would mean they would have to use
+sysfs. However it seems that sysfs (and the class_ interface) is only
+available to GPL modules. This is very concerning. The drivers which
+we have written over the last three years are suddenly under threat.
+We don't mind statically assigning MAJOR/MINOR numbers to our drivers.
+We can do this and modify our user space applications too.
 
-IOW: your changlogging sucks ;)
+However we have a worrying trend here. If at some point it becomes
+illegal to load our modules into the linux kernel, then it is
+unacceptable to us. We would have been better off choosing VxWorks or
+OSE 3 years ago when we made an OS choice. The fact that Linux is
+becoming more and more closed is very very alarming.
+
+vj.
