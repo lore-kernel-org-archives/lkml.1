@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751573AbXBOGQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751581AbXBOGWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751573AbXBOGQq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 01:16:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbXBOGQq
+	id S1751581AbXBOGWb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 01:22:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbXBOGWb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 01:16:46 -0500
-Received: from wr-out-0506.google.com ([64.233.184.233]:59068 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751573AbXBOGQp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 01:16:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=N1byKLfDa3h/5NOIl+hyM2Us1c7HwhYDqo0mRZd8UlXemNNPabcGC0Nqbv1S7A5q9CqeDv5kUqOgeNlmC7uG2yGYPcKvbtMjjHnxdccRvjES38osC3KxoncRKA88P54/TQRwlU1JKVrrRMq+NYFuwWS7k9luhCZOYyR0mIe+aKU=
-Message-ID: <9b3a62ab0702142216k64e57427m52ba74a1d28bdf90@mail.gmail.com>
-Date: Wed, 14 Feb 2007 22:16:44 -0800
-From: "v j" <vj.linux@gmail.com>
-To: "Trent Waddington" <trent.waddington@gmail.com>
-Subject: Re: GPL vs non-GPL device drivers
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <9b3a62ab0702142214p5c33a02am7e783c59ae0a64f1@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Feb 2007 01:22:31 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:37012 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751577AbXBOGWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 01:22:30 -0500
+Date: Thu, 15 Feb 2007 01:22:18 -0500
+From: Dave Jones <davej@redhat.com>
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
+       herbert.xu@redhat.com, linux-kernel@vger.kernel.org,
+       arjan@infradead.org, linux-crypto@vger.kernel.org
+Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing
+Message-ID: <20070215062218.GA917@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Andreas Gruenbacher <agruen@suse.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
+	herbert.xu@redhat.com, linux-kernel@vger.kernel.org,
+	arjan@infradead.org, linux-crypto@vger.kernel.org
+References: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com> <200702142135.40832.agruen@suse.de> <20070215054559.GD15654@redhat.com> <200702142214.53625.agruen@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
-	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
-	 <3d57814d0702142147p4eede234ybc9880a38772f55f@mail.gmail.com>
-	 <9b3a62ab0702142214p5c33a02am7e783c59ae0a64f1@mail.gmail.com>
+In-Reply-To: <200702142214.53625.agruen@suse.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/14/07, v j <vj.linux@gmail.com> wrote:
-> This has nothing to do with politics. I am not a Linux contributor. I realize that people who have contributed to the Linux Kernel have very valid points. It is their sweat and blood. They have a right to protect what they have worked on. I am purely commenting from a user perspective. If Linux becomes closed to external drivers, then it will have repercussions in the embedded space. I can say for certain that a company evaluating OSes and realizing that their drivers will have to be open-source will almost certainly go for the alternative.
->
->
->
-> On 2/14/07, Trent Waddington <trent.waddington@gmail.com> wrote:
-> >  On 2/15/07, v j <vj.linux@gmail.com> wrote:
-> > > The drivers which we have written over the last three years are suddenly
-> > > under threat.
-> > > [..]
-> > > The fact that Linux is becoming more and more closed is very very alarming.
-> >
-> > Sigh.  Someone remind me of the rules against "politics" on the list
-> > before I get into why vj should play nice with the other children.
-> >
-> > Trent
-> >
->
->
+On Wed, Feb 14, 2007 at 10:14:53PM -0800, Andreas Gruenbacher wrote:
+ > On Wednesday 14 February 2007 21:45, Dave Jones wrote:
+ > > well, the situation for external modules is no worse than usual.
+ > > They still work, they just aren't signed. Which from a distributor point
+ > > of view, is actually a nice thing, as they stick out like a sore thumb
+ > > in oops reports with (U) markers :)
+ > 
+ > I agree, that's really what should happen. We solve this by marking modules as 
+ > supported, partner supported, or unsupported, but in an "insecure" way, so 
+ > partners and users could try to fake the support status of a module and/or 
+ > remove status flags from Oopses, and cryptography wouldn't save us. We could 
+ > try to sign Oopses which I guess you guys are doing. This whole issue hasn't 
+ > been a serious problem in the past though, and we generally try to trust 
+ > users not to play games on us.
+
+For the most part it works out.  I've had users file oopses where they've editted
+out Tainted: P, and left in nvidia(U) for example :-)
+
+		Dave
+
+-- 
+http://www.codemonkey.org.uk
