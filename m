@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030677AbXBOTID@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030679AbXBOTJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030677AbXBOTID (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 14:08:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030678AbXBOTID
+	id S1030679AbXBOTJZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 14:09:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030686AbXBOTJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 14:08:03 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:1056 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030677AbXBOTIA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 14:08:00 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 15 Feb 2007 11:07:54 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 09/14] syslets: x86, add move_user_context() method
-In-Reply-To: <20070215165242.GJ4285@elte.hu>
-Message-ID: <Pine.LNX.4.64.0702151058040.11064@alien.or.mcafeemobile.com>
-References: <20070215165242.GJ4285@elte.hu>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 15 Feb 2007 14:09:25 -0500
+Received: from tomts22.bellnexxia.net ([209.226.175.184]:38069 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030682AbXBOTJY convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 14:09:24 -0500
+Date: Thu, 15 Feb 2007 14:09:20 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       Ingo Molnar <mingo@redhat.com>, systemtap@sources.redhat.com,
+       ltt-dev@shafik.org
+Subject: Re: [PATCH 05/05] Linux Kernel Markers, non optimized architectures
+Message-ID: <20070215190919.GA31359@Krystal>
+References: <1171224207118-git-send-email-mathieu.desnoyers@polymtl.ca> <1171224209195-git-send-email-mathieu.desnoyers@polymtl.ca> <20070214231635.091c7169.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20070214231635.091c7169.akpm@linux-foundation.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.4.34-grsec (i686)
+X-Uptime: 14:08:12 up 13 days,  9:16,  7 users,  load average: 1.03, 1.15, 1.34
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Feb 2007, Ingo Molnar wrote:
+* Andrew Morton (akpm@linux-foundation.org) wrote:
+> On Sun, 11 Feb 2007 15:03:27 -0500 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> 
+> > Linux Kernel Markers, non optimized architectures
+> > 
+> > This patch also includes marker code for non optimized architectures.
+> 
+> I think once we've done this we can nuke
+> CONFIG_MARKERS_ENABLE_OPTIMIZATION?  (Please, let it be true).
+> 
 
->  /*
-> + * Move user-space context from one kernel thread to another.
-> + * This includes registers and FPU state. Callers must make
-> + * sure that neither task is running user context at the moment:
-> + */
-> +void
-> +move_user_context(struct task_struct *new_task, struct task_struct *old_task)
-> +{
-> +	struct pt_regs *old_regs = task_pt_regs(old_task);
-> +	struct pt_regs *new_regs = task_pt_regs(new_task);
-> +	union i387_union *tmp;
-> +
-> +	*new_regs = *old_regs;
-> +	/*
-> +	 * Flip around the FPU state too:
-> +	 */
-> +	tmp = new_task->thread.i387;
-> +	new_task->thread.i387 = old_task->thread.i387;
-> +	old_task->thread.i387 = tmp;
-> +}
+Hi Andrew,
 
-Let's say that old_task ("prev" at the incoming schedule) has TS_USEDFPU 
-set. Its context gets moved to the new_task (the one returning to 
-userspace) *before* the __unlazy_fpu() done in __switch_to(). The 
-__unlazy_fpu() at the following schedule will save the state to the old 
-new_task context, and that fine as far as the going-to-sleep task goes.
-The next fault happening in new_task (return to userspace one) will reload 
-a non up2date context (the one we got from old_task, but never hit by 
-the __unlazy_fpu() flush). Right?
+The main goal of this config option is for embedded systems which
+doesn't support live code modification. Maybe we can put that under
+"embedded sytems" menu ?
 
-
-
-- Davide
-
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Candidate, École Polytechnique de Montréal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
