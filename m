@@ -1,156 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750903AbXBOX3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751101AbXBOXaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750903AbXBOX3f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 18:29:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbXBOX3f
+	id S1751101AbXBOXaG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 18:30:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbXBOXaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 18:29:35 -0500
-Received: from atlrel8.hp.com ([156.153.255.206]:49222 "EHLO atlrel8.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750901AbXBOX3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 18:29:34 -0500
-Subject: Re: [patch] mm: NUMA replicated pagecache
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-In-Reply-To: <20070215003810.GE29797@wotan.suse.de>
-References: <20070213060924.GB20644@wotan.suse.de>
-	 <1171485124.5099.43.camel@localhost> <20070215003810.GE29797@wotan.suse.de>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Thu, 15 Feb 2007 18:29:29 -0500
-Message-Id: <1171582169.5114.86.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Feb 2007 18:30:06 -0500
+Received: from fmx10.freemail.hu ([195.228.245.60]:47610 "HELO
+	fmx10.freemail.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751101AbXBOXaE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 18:30:04 -0500
+Date: Thu, 15 Feb 2007 23:47:56 +0100 (CET)
+From: =?ISO-8859-2?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Subject: Re: [PATCH] input: extend EV_LED
+To: Pavel Machek <pavel@ucw.cz>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Richard Purdie <rpurdie@rpsys.net>,
+       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+In-Reply-To: <20070215174009.GA6535@ucw.cz>
+Message-ID: <freemail.20070115234756.58787@fm13.freemail.hu>
+X-Originating-IP: [80.98.105.91]
+X-HTTP-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; hu-HU; rv:1.8.0.6) Gecko/20060729 SeaMonkey/1.0.4
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-2
+Content-Transfer-Encoding: 8BIT
+X-Freemail: message scanned
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-02-15 at 01:38 +0100, Nick Piggin wrote:
-> On Wed, Feb 14, 2007 at 03:32:04PM -0500, Lee Schermerhorn wrote:
-> > On Tue, 2007-02-13 at 07:09 +0100, Nick Piggin wrote:
-> > > Hi,
-> > > 
-> > > Just tinkering around with this and got something working, so I'll see
-> > > if anyone else wants to try it.
-> > > 
-> > > Not proposing for inclusion, but I'd be interested in comments or results.
-> > > 
-> > > Thanks,
-> > > Nick
-> > 
-> > I've included a small patch below that allow me to build and boot with
-> > these patches on an HP NUMA platform.  I'm still seeing an "unable to
+
+
+Pavel Machek <pavel@ucw.cz> wrote:
+
+> Hi!
 > 
-> Thanks Lee. Merged.
+> > >I do not know the LED subsystem in detail, but I do not 
+> > >know
+> > >any possibility to access the i8042 from different 
+> > >subsystem
+> > >than the input subsystem.
+> > >
+> > >What do you think and recommend?
+> > 
+> > I think you need to use leds framework for what you are 
+> > trying to do.
+> 
+> I'm actually not sure if led framework can do that. It was
+designed
+> for leds on gpios, and handles blinking itself.
+> 
+> But he could export two leds :-).
 
-No worries...
+Hi,
 
-I've attached another patch that closes one race and fixes a context
-problem [irq/preemption state] in __unreplicate_page_range().  This
-makes the locking even uglier :-(.
+what do you mean about two leds? The first one would be
+off/0.5Hz and the other off/1Hz?
 
-I get further with this patch.  Boot all the way up and can run fine
-with page replication.  However, I still get a NULL pcd in
-find_get_page_readonly() when attempting a highly parallel kernel build
-[16cpu/4node numa platform].  I'm still trying to track that down.
+I read in linux/Documentation/led-class.txt the following:
 
-Question about locking:  looks like the pcache_descriptor members are
-protected by the tree_lock of the mapping, right?
+| Some leds can be programmed to flash in hardware. As this
+isn't a generic
+| LED device property, this should be exported as a device
+specific sysfs
+| attribute rather than part of the class if this
+functionality is required.
 
-Lee
+Does it mean that neither the input subsystem nor the led
+subsystem is designed for hardware acelerated blinking leds?
+Is there any usual way what attribute a hw accelerated
+blinking LED_MAIL should export?
 
-======================
+        NMarci
 
-Additional fixes for Nick's page cache replication patch
-
-1) recheck that page is replicated after down grading mapping tree lock.
-   return results of check from __replicate_pcache().
-
-2) in __unreplicate_pcache_range(), call __unreplicate_pcache() in appropriate
-   context vis a vis irqs and preemption
-
-3) report null pcd in find_get_page_readonly().  shouldn't happen?
-
-Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
-
- mm/filemap.c |   27 +++++++++++++++++++++------
- 1 file changed, 21 insertions(+), 6 deletions(-)
-
-Index: Linux/mm/filemap.c
-===================================================================
---- Linux.orig/mm/filemap.c	2007-02-15 15:25:23.000000000 -0500
-+++ Linux/mm/filemap.c	2007-02-15 17:42:27.000000000 -0500
-@@ -669,7 +669,6 @@ static int __replicate_pcache(struct pag
- 	struct pcache_desc *pcd;
- 	int nid, page_node;
- 	int writelock = 0;
--	int ret = 0;
- 
- 	if (unlikely(PageSwapCache(page)))
- 		goto out;
-@@ -691,7 +690,7 @@ again:
- 		lock_page(page);
- 		if (!page->mapping) {
- 			unlock_page(page);
--			return 0;
-+			goto read_lock_out;	/* reacquire read lock */
- 		}
- 		write_lock_irq(&mapping->tree_lock);
- 		writelock = 1;
-@@ -716,15 +715,19 @@ again:
- 	BUG_ON(radix_tree_insert(&mapping->page_tree, offset, pcd));
- 	radix_tree_tag_set(&mapping->page_tree, offset,
- 					PAGECACHE_TAG_REPLICATED);
--	ret = 1;
- out:
- 	if (writelock) {
- 		write_unlock_irq(&mapping->tree_lock);
- 		unlock_page(page);
-+read_lock_out:
- 		read_lock_irq(&mapping->tree_lock);
- 	}
- 
--	return ret;
-+	/*
-+	 * ensure page still replicated after demoting the tree lock
-+	 */
-+	return (radix_tree_tag_get(&mapping->page_tree, offset,
-+					PAGECACHE_TAG_REPLICATED));
- }
- 
- void __unreplicate_pcache(struct address_space *mapping, unsigned long offset)
-@@ -813,6 +816,11 @@ retry:
- replicated:
- 		nid = numa_node_id();
- 		pcd = radix_tree_lookup(&mapping->page_tree, offset);
-+		if (!pcd) {
-+			printk(KERN_DEBUG "%s NULL pcd at tagged offset\n",
-+				__FUNCTION__);
-+			BUG();
-+		}
- 		if (!node_isset(nid, pcd->nodes_present)) {
- 			struct page *repl_page;
- 
-@@ -991,9 +999,16 @@ again:
- 			struct pcache_desc *pcd = (struct pcache_desc *)pages[i];
- 			pages[i] = (struct page *)pcd->master->index;
- 		}
--		read_unlock(&mapping->tree_lock);
-+		read_unlock(&mapping->tree_lock);	/* irqs/preempt off */
- 		for (i = 0; i < ret; i++) {
--			write_lock(&mapping->tree_lock);
-+			/*
-+			 * __unreplicate_pcache() expects tree write locked
-+			 * with irq/preemption disabled.
-+			 */
-+			if (i)
-+				write_lock_irq(&mapping->tree_lock);
-+			else
-+				write_lock(&mapping->tree_lock);
- 			__unreplicate_pcache(mapping, (unsigned long)pages[i]);
- 		}
- 		read_lock_irq(&mapping->tree_lock);
+______________________________________________________________________________
+10.000 Ft ajándék fotókidolgozás minden Panasonic digitális fényképezõgéphez!
+FotoMarket Online Fotóáruház 
+http://ad.adverticum.net/b/cl,1,6022,99786,162268/click.prm
 
 
