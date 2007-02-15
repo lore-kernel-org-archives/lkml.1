@@ -1,76 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946103AbXBPUMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946115AbXBPUP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946103AbXBPUMi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 15:12:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946107AbXBPUMi
+	id S1946115AbXBPUP5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 15:15:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946114AbXBPUP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 15:12:38 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:33434 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946103AbXBPUMh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 15:12:37 -0500
-Date: Fri, 16 Feb 2007 12:12:26 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric Van Hensbergen <ericvh@gmail.com>
-Cc: linux-kernel@vger.kernel.org, v9fs-developer@lists.sourceforge.net
-Subject: Re: [PATCH] 9p: add write-cache support to loose cache mode (take
- 3)
-Message-Id: <20070216121226.f2382a17.akpm@linux-foundation.org>
-In-Reply-To: <1171640221420-git-send-email-ericvh@gmail.com>
-References: <11715506591894-git-send-email-ericvh@gmail.com>
-	<1171640221420-git-send-email-ericvh@gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 16 Feb 2007 15:15:57 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1412 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1946110AbXBPUP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 15:15:56 -0500
+Date: Thu, 15 Feb 2007 22:13:04 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@osdl.org, akpm@osdl.org, herbert.xu@redhat.com,
+       linux-kernel@vger.kernel.org, davej@redhat.com, arjan@infradead.org,
+       linux-crypto@vger.kernel.org
+Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing
+Message-ID: <20070215221304.GB6602@ucw.cz>
+References: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Feb 2007 09:37:01 -0600 Eric Van Hensbergen <ericvh@gmail.com> wrote:
+Hi!
 
-> +static int v9fs_vfs_writepage(struct page *page, struct writeback_control *wbc)
-> +{
-> +	char *buffer = NULL;
-> +	struct address_space *mapping = page->mapping;
-> +	int retval = -EIO;
-> +	loff_t offset = 0;
-> +	pgoff_t end_index;
-> +	int count = PAGE_CACHE_SIZE;
-> +	struct file *filp = v9fs_find_file(page);
-> +	struct inode *inode = mapping->host;
-> +
-> +	dprintk(DEBUG_VFS, "page: %p\n", page);
-> +
-> +	if ((!inode) || (!filp))
-> +		goto UnlockPage;
-> +
-> +	end_index = inode->i_size >> PAGE_CACHE_SHIFT;
-> +
-> +	/* complicated case at end of file */
-> +	if (page->index >= end_index) {
-> +		/* things got complicated... */
-> +		count = inode->i_size & (PAGE_CACHE_SIZE - 1);
-> +		if (page->index >= end_index + 1 || !count)
-> +			return 0;	/* truncated - don't care */
-> +	}
-> +
-> +	buffer = kmap(page);
-> +	offset = ((loff_t) page->index << PAGE_CACHE_SHIFT);
-> +	page_cache_get(page);
-> +	retval = v9fs_write(filp, NULL, buffer, count, &offset);
-> +
->  	kunmap(page);
-> +
-> +      UnlockPage:
->  	unlock_page(page);
-> +	page_cache_release(page);
-> +
->  	return retval;
->  }
+> Now, this is not a complete solution by any means: the core kernel is not
+> protected, and nor are /dev/mem or /dev/kmem, but it denies (or at least
+> controls) one relatively simple attack vector.
 
-The page_cache_get/release here aren't needed: lock_page suffices.
+Could we fix the /dev/*mem holes, first? They are already used by
+malicious modules (aka rootkits...).  Or can selinux already provide
+/dev/*mem protection with no way for admin to turn it off?
 
-Are you sure the page refcounting is right if the `goto UnlockPage'
-happens?
-
-Can that goto actually happen??
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
