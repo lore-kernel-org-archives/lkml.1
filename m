@@ -1,68 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030549AbXBOSyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030552AbXBOSzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030549AbXBOSyi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 13:54:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030550AbXBOSyi
+	id S1030552AbXBOSzQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 13:55:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030555AbXBOSzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 13:54:38 -0500
-Received: from mail.gmx.net ([213.165.64.20]:57559 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1030549AbXBOSyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 13:54:37 -0500
-X-Provags-ID: V01U2FsdGVkX18/FYZdhqM/5XSj3jURXKZB9jy4nl0HRbWDqsaFZ9
-	A05g==
-From: Helge Deller <deller@gmx.de>
-To: "Cyrill V. Gorcunov" <gorcunov@gmail.com>
-Subject: Re: [PATCH] HIL: fix improper call of release_region
-Date: Thu, 15 Feb 2007 19:54:33 +0100
-User-Agent: KMail/1.9.6
-Cc: linux-kernel-list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-References: <20070215175031.GA12012@cvg>
-In-Reply-To: <20070215175031.GA12012@cvg>
-X-Face: *4/{KL3=jWs!v\UO#3e7~Vb1~CL@oP'~|*/M$!9`tb2[;fY@)WscF2iV7`,a$141g'o,=?utf-8?q?7X=0A=09=3FBt1Wb=3AL7K6z-?=<?-+-13|S_ixrq58*E`)ZkSe~NSI?u=89G'J<n]7\?[)LCCBZc}~[j(=?utf-8?q?e=7D=0A=09=60-QV=7B=23=25=26=5B=3F=5EfAke6t8QbP=3Bb=27XB?=,ZU84HeThMrO(@/K.`jxq9P({V(AzezCKMxk\F2^p^+"=?utf-8?q?=0A=09=5B?="ppalbA!zy-l)^Qa3*u/Z-1W3,o?2fes2_d\u=1\E9N+~Qo
+	Thu, 15 Feb 2007 13:55:16 -0500
+Received: from spirit.analogic.com ([204.178.40.4]:3818 "EHLO
+	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030552AbXBOSzO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 13:55:14 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702151954.33474.deller@gmx.de>
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 15 Feb 2007 18:55:11.0775 (UTC) FILETIME=[D20ED2F0:01C75132]
+Content-class: urn:content-classes:message
+Subject: Re: APIC priorities, can they be changed?
+Date: Thu, 15 Feb 2007 13:55:11 -0500
+Message-ID: <Pine.LNX.4.61.0702151353250.2468@chaos.analogic.com>
+In-Reply-To: <45D4A692.7090108@wegener.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: APIC priorities, can they be changed?
+Thread-index: AcdRMtImtIVTHla9QVyuZ3jagKJk7w==
+References: <45D4A692.7090108@wegener.com>
+From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: "Mike Panetta" <m.panetta@wegener.com>
+Cc: <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Cyrill,
 
-please include the "err1" label as well inside the #if / #endif clause.
-err1 is used only when CONFIG_HP300 is defined and in the parisc-case you currently get an unused label warning...
+On Thu, 15 Feb 2007, Mike Panetta wrote:
 
-Helge
+> I am not on the list (corperate email sucks) so please CC any replies to
+> me.  Thanks.
+>
+> I am working on a project that has run in to what seems to be an
+> interrupt priority problem.  We switched mainboards in our product and
+> went from a system where the EHCI controller IRQ was of a fairly high
+> priority to one where its the lowest in the system.  Now we cannot get
+> the data off our USB device in time and we drop alot of data.  I was
+> hoping someone here may have a simple(ish) solution to the problem.
+>
+> I have seen the preempt patches, but they touch a lot of files, and we
+> have gone through testing with the 2.6.16.19 kernel and do not wish to
+> change, and we cannot find a version of the patch for this kernel. Is
+> there something smaller/simpler I can do?  My understanding is the
+> priority in the APIC is set in software via the interrupt vector number
+> (higher numbers have lower priority) is this true?  If so, how hard
+> would it be for me to just change the vector numbers around?
+>
+> Ideally I would love to switch to the 2.6.20 kernel and use the preempt
+> patch, but I doubt we have the time for that.
+>
+> Thanks,
+> Mike
 
-On Thursday 15 February 2007, Cyrill V. Gorcunov wrote:
-> Thist patch prevents from improper call of release_region
-> if the code has been compiled without CONFIG_HP300 support.
-> 
-> Signed-off-by: Cyrill V. Gorcunov <gorcunov@gmail.com>
-> 
-> ---
-> 
->  drivers/input/keyboard/hilkbd.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/input/keyboard/hilkbd.c b/drivers/input/keyboard/hilkbd.c
-> index 255a6ec..c3c0da3 100644
-> --- a/drivers/input/keyboard/hilkbd.c
-> +++ b/drivers/input/keyboard/hilkbd.c
-> @@ -294,7 +294,9 @@ err3:
->  	disable_irq(HIL_IRQ);
->  	free_irq(HIL_IRQ, hil_dev.dev_id);
->  err2:
-> +#if defined(CONFIG_HP300)
->  	release_region(HILBASE + HIL_DATA, 2);
-> +#endif
->  err1:
->  	input_free_device(hil_dev.dev);
->  	hil_dev.dev = NULL;
-> 
+Can't you muck with the BIOS settings? That's where the primary
+hardware gets 'connected'.
 
 
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.16.24 on an i686 machine (5592.61 BogoMips).
+New book: http://www.AbominableFirebug.com/
+_
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
