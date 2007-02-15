@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161584AbXBOWju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161588AbXBOWlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161584AbXBOWju (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 17:39:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161579AbXBOWju
+	id S1161588AbXBOWlS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 17:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161583AbXBOWlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 17:39:50 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45325 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1161580AbXBOWjt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 17:39:49 -0500
-Date: Thu, 15 Feb 2007 14:39:48 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: James Morris <jmorris@namei.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-mm1 [kernel BUG at mm/swap.c:442]
-In-Reply-To: <20070215135157.18085ae3.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0702151426260.31972@schroedinger.engr.sgi.com>
-References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0702150926560.25081@d.namei> <20070215135157.18085ae3.akpm@linux-foundation.org>
+	Thu, 15 Feb 2007 17:41:18 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:60014 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161588AbXBOWlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 17:41:17 -0500
+Message-ID: <45D4E17F.10206@garzik.org>
+Date: Thu, 15 Feb 2007 17:41:03 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Bernd Petrovitsch <bernd@firmix.at>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ben Nizette <ben.nizette@iinet.net.au>, v j <vj.linux@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: GPL vs non-GPL device drivers
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>	 <45D3FC67.3000903@iinet.net.au>  <45D40E81.3050506@yahoo.com.au> <1171576397.3473.10.camel@gimli.at.home>
+In-Reply-To: <1171576397.3473.10.camel@gimli.at.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Feb 2007, Andrew Morton wrote:
+Bernd Petrovitsch wrote:
+> On Thu, 2007-02-15 at 18:40 +1100, Nick Piggin wrote:
+>> Rhetorical question: what stops me from taking somebody's copyrighted
+>> work, stripping the copyrights or falsely claiming to have a license
+>> to redistribute it, then selling it?
+> 
+> No one.
 
-> I don't immediately see why that code isn't racy: the page can remain
-> in the pagevec for arbitrary amounts of time and someone can come along
-> and mlock it again.  But given the ease with which you're hitting this,
-> it may not be a race.
+Well, that's not quite true, is it?  This little microcosm of life has 
+its checks and balances, and certainly strives for an equilibrium.
 
-As long as the page is on the pagevec it should be off the LRU. 
-Marking a page PageMlocked requires the page to be on the LRU. So a page 
-cannot be marked PageMlocked as long as it is on the regular pagevecs.
+You make a choice, as in Nick's example, to balance the risk of being 
+caught, being sued, being shamed, and/or being avoided by customers 
+against the perceived rewards.
 
-Somehow a page off the LRU was marked PageMlocked. Or a new anonymous page 
-was allocated and marked PageMlocked and then some later processing put it 
-onto the LRU?
+Negative incentives are present, is the overall answer, even if they are 
+not immediately obvious and spelled out in excruciating detail.
 
-Maybe try_to_set_mlocked does work some havoc here.
+	Jeff
 
-Could you see if this patch fixes it? This just disabled an optimization 
-to set PageMlocked early.
 
-Index: linux-2.6.20-mm1/mm/memory.c
-===================================================================
---- linux-2.6.20-mm1.orig/mm/memory.c	2007-02-15 14:35:41.000000000 -0800
-+++ linux-2.6.20-mm1/mm/memory.c	2007-02-15 14:35:54.000000000 -0800
-@@ -930,6 +930,8 @@ static void try_to_set_mlocked(struct pa
- 	struct zone *zone;
- 	unsigned long flags;
- 
-+	return;
-+
- 	if (!PageLRU(page) || PageMlocked(page))
- 		return;
- 
