@@ -1,72 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965083AbXBOIMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965107AbXBOIMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965083AbXBOIMX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 03:12:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965100AbXBOIMX
+	id S965107AbXBOIMs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 03:12:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965112AbXBOIMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 03:12:23 -0500
-Received: from cantor.suse.de ([195.135.220.2]:45922 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965083AbXBOIMW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 03:12:22 -0500
-From: Neil Brown <neilb@suse.de>
-To: "Trent Waddington" <trent.waddington@gmail.com>
-Date: Thu, 15 Feb 2007 19:11:42 +1100
+	Thu, 15 Feb 2007 03:12:48 -0500
+Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:28043 "HELO
+	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S965111AbXBOIMr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 03:12:47 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=djly5Pr4f62/6gaYkrfw4SvHWa0kkc3OpcCQvpPiW0zqmLtKxQdPtAtLYMYZiAd/XDBQFvyN2U/5ZYM9jp95NcsCKTeYvBxW4yFc0Jc8bnDzaGvzekirSwqz46PKN92Lb13LIbOzDQXJz3lMob3q7IqddvftEPIb5OaNxU2L6pU=  ;
+X-YMail-OSG: Kr95id0VM1kl8CRAUKElO2Flb.gKRLRuprdwkHgmGH_dSBbTZdTt0Tm1cBb5BOCoCvTPOM7yx.dtjmwLPVrh5UpgUS5oyb9aZlNGOOTyZTP0k9R8KEouKSx0yt6gt6DLiCh9yU9BuXtUOq0-
+Message-ID: <45D415DA.5010704@yahoo.com.au>
+Date: Thu, 15 Feb 2007 19:12:10 +1100
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17876.5566.445336.542652@notabene.brown>
-Cc: "v j" <vj.linux@gmail.com>, "Randy Dunlap" <rdunlap@xenotime.net>,
-       "Dave Jones" <davej@redhat.com>, linux-kernel@vger.kernel.org
+To: v j <vj.linux@gmail.com>
+CC: Randy Dunlap <rdunlap@xenotime.net>, Dave Jones <davej@redhat.com>,
+       linux-kernel@vger.kernel.org
 Subject: Re: GPL vs non-GPL device drivers
-In-Reply-To: message from Trent Waddington on Thursday February 15
-References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
-	<9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
-	<20070215061149.GE15654@redhat.com>
-	<9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
-	<20070214231143.11ff6b46.rdunlap@xenotime.net>
-	<9b3a62ab0702142328h87365b6i932d4f2c117f7f0e@mail.gmail.com>
-	<17876.3862.261014.44098@notabene.brown>
-	<3d57814d0702142353n2d856f32k7b8d7909ea69cb04@mail.gmail.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>	 <20070215061149.GE15654@redhat.com>	 <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>	 <20070214231143.11ff6b46.rdunlap@xenotime.net> <9b3a62ab0702142328h87365b6i932d4f2c117f7f0e@mail.gmail.com>
+In-Reply-To: <9b3a62ab0702142328h87365b6i932d4f2c117f7f0e@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday February 15, trent.waddington@gmail.com wrote:
-> On 2/15/07, Neil Brown <neilb@suse.de> wrote:
-> >  [..] then it is less clear what people believe
+v j wrote:
+> On 2/14/07, Randy Dunlap <rdunlap@xenotime.net> wrote:
 > 
-> Another area where it is less clear what people believe is if you are
-> distributing the module separately to the kernel, but, as I understand
-> it, vj says he is not.
+>> At least one of us is confused about that an embedded User is.
+>> It seems to me that you are an embedded developer, not User.
+>> I doubt that most Embedded Users care what their OS is,
+>> or even know what an OS is.
 > 
-> > But of course the person who's opinion really counts is the judge.
 > 
-> The judge's opinion only counts if you actually get to court and
-> manage to put up a legal defense.
+> I am not sure what the difference is. We are trying to use Linux to
+> support our application. It may be that Linux has a bug, or our
+> application. When it is Linux, that has the problem, I  have tried to
+> inform the community of that.
+
+
+The difference is that you are selling it and not contributing back.
+
+I think the legal term is something like distributing copyright
+material without a license.
+
+
+>> > Not everybody has to be a contributor. The reason Linux is popular is
+>> > because of its openness. Take that away and see where it goes.
+>>
+>> We seem to have different definitions of open and closed.
 > 
-> > So you need to get legal advice.
 > 
-> Or, ya know, you could take the moral/ethical advice that you're being
-> a worm and stop now.
+> Open = 3rd party Linux drivers can be loaded. Closed = No third party
+> Linux drivers can be loaded.
 
-I don't think we do ourselves any favours by calling people names....
 
-And as I understand it, an important principle in out community is
-freedom.  If vj wants to take a particular moral/ethical stance, then
-he should be free to do that.  Of course he will have to live with any
-consequences, as do we all.
+So most linux kernel developers chose to contribute to Linux because
+they prefer something closer to the GPL's notion of open (assuming
+your definitions are in the context of the legality of redistributing
+the end result).
 
-He (or maybe she? I don't know but English is forcing me to use
-gender-specific pronouns) or his company sees a business risk in open
-sourcing their code.  They now see a legal risk it not doing so.  They
-get to choose how to respond.
+Don't take offence, but most of us don't _want_ the embedded
+developers who contribute nothing back. Even if you tripled the total
+Linux userbase, how would that be a good thing for anyone but yourself?
 
-This list is a great place to seek technical advice on the different
-options.   It is not such a good place to get business or legal
-advice.
+Now imagine if nobody contributed anything back.
 
-NeilBrown
+The reason Linux is good enough that you chose in the first place is
+because of everyone contributing back. Why would we want to undermine
+that? My aim for Linux is not to have it shut down VxWorks, or to have
+a huge userbase, but to be the best OS out there.
+
+Maybe that helps explain the why others here don't share your opinion?
+
+With that said, there are some reasonable free BSD licensed operating
+systems out there that you can use without opening your source.
+
+-- 
+SUSE Labs, Novell Inc.
+Send instant messages to your online friends http://au.messenger.yahoo.com 
