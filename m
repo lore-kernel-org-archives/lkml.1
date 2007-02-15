@@ -1,43 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423552AbXBPKNH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423546AbXBPKOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423552AbXBPKNH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 05:13:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945925AbXBPKNG
+	id S1423546AbXBPKOy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 05:14:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423554AbXBPKOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 05:13:06 -0500
-Received: from tyholt.uninett.no ([158.38.62.9]:49428 "EHLO tyholt.uninett.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423551AbXBPKNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 05:13:05 -0500
-X-Greylist: delayed 1716 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Feb 2007 05:13:04 EST
-Message-ID: <45D57CF5.70503@uninett.no>
-Date: Fri, 16 Feb 2007 10:44:21 +0100
-From: Jon K Hellan <jon.kare.hellan@uninett.no>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
+	Fri, 16 Feb 2007 05:14:54 -0500
+Received: from smtp001.mail.ukl.yahoo.com ([217.12.11.32]:45652 "HELO
+	smtp001.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1423546AbXBPKOx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 05:14:53 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.it;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=QWT+cvlCr7/G0wy1ZFZBXUIrtDIcVjRa6TesCc8Et6Lgx906hlVBWs2zripl9memc8GIwgUWoUMfPt8u2YfZIBYiK/85bV15lIr65V/LBly862r0dxSl+brv3H81hLLZyElnnmniuDB9P/FPRKoG6S0GIhcYMO15zkrKwVonnB0=  ;
+X-YMail-OSG: BxC6A1YVM1mEEYFu9h587VsKq4jSh.wQBC1qFFYMDWdqRcmJz1KBCM8iAM6uqu4LkhI7Us9Zlk6.KU7.RZhuhS0KiwizZ9.60qB9fKyR4CvwrKTgVxg1u40RtgiH.ijCfSMjrVCVu9NG
+From: Blaisorblade <blaisorblade@yahoo.it>
+To: Jeff Dike <jdike@addtoit.com>
+Subject: Re: [uml-devel] x86_64: fix 2.6.18 regression - PTRACE_OLDSETOPTIONS should be accepted
+Date: Thu, 15 Feb 2007 20:05:56 +0100
+User-Agent: KMail/1.9.5
+Cc: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <11715068631914-git-send-email-blaisorblade@yahoo.it> <20070214215123.57ef2d4a.akpm@linux-foundation.org> <20070215170154.GA5641@ccure.user-mode-linux.org>
+In-Reply-To: <20070215170154.GA5641@ccure.user-mode-linux.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: GPL vs non-GPL device drivers
-References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>	 <20070215061149.GE15654@redhat.com>	 <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>	 <20070215165339.GB5285@thunk.org>	 <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com>	 <653402b90702151102n3a3e0435r837e2191de79b2b@mail.gmail.com>	 <7b69d1470702151712x685f3e0eqf6198f9bb7f2394e@mail.gmail.com>	 <Pine.LNX.4.63.0702151701510.10070@qynat.qvtvafvgr.pbz>	 <9b3a62ab0702152148p57db8b1dgd42b1c6fb15dccbb@mail.gmail.com> <1171617170.5835.101.camel@frg-rhel40-em64t-03>
-In-Reply-To: <1171617170.5835.101.camel@frg-rhel40-em64t-03>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702152005.56594.blaisorblade@yahoo.it>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xavier Bestel wrote:
-> On Thu, 2007-02-15 at 21:48 -0800, v j wrote:
->> We only get crap because no one here yet knows how to interpret
->> proprietary modules loaded into the kernel.
-> 
-> The proprietary modules where only a tiny wrapper is linux-specific and
-> the rest is cross-platform are in a grey area, yes.
-> But your modules, written specifically for linux but distributed as
-> binary-only, are specifically what the people choosing the GPL want to
-> avoid. They are a derivative work, and are, as such, illegal under the
-> GPL.
+On Thursday 15 February 2007 18:01, Jeff Dike wrote:
+> On Wed, Feb 14, 2007 at 09:51:23PM -0800, Andrew Morton wrote:
+> > Whatever happens, please ensure that the final fix makes it into -stable
+> > as well.  Jeff's version of this patch wasn't cc'ed to stable@kernel.org.
+>
+> Paolo's patch was sent to -stable.  His should be used everywhere, and mine
+> should be dropped.
 
-If they are a derivative work, they are illegal under the GPL. However, 
-it is not clear that their being written specifically *for* Linux is 
-sufficient to make them derivative works *of* Linux.
+Jeff, I verified my patch is _almost_ enough for 2.6.18 for fully booting a 
+32bit UML; on 2.6.18 I had to also add PTRACE_GET/SET_THREAD_AREA (this fix 
+was merged in 2.6.19) to avoid tons of TLS errors.
 
-Jon Kåre
+On 2.6.19, the crash at boot is removed (btw, that crash output no message - I 
+hope that with your fatal/nonfatal/etc. introduction I would get a message) 
+but another one happens when starting init. I'll test 2.6.20 ASAP.
+
+Bye
+-- 
+Inform me of my mistakes, so I can add them to my list!
+Paolo Giarrusso, aka Blaisorblade
+http://www.user-mode-linux.org/~blaisorblade
+
+Chiacchiera con i tuoi amici in tempo reale! 
+ http://it.yahoo.com/mail_it/foot/*http://it.messenger.yahoo.com 
