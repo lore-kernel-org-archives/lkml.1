@@ -1,41 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751416AbXBOAfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751418AbXBOAfr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751416AbXBOAfS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 19:35:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbXBOAfS
+	id S1751418AbXBOAfr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 19:35:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbXBOAfr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 19:35:18 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55309 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751416AbXBOAfR (ORCPT
+	Wed, 14 Feb 2007 19:35:47 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:3874 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751418AbXBOAfq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 19:35:17 -0500
-X-Greylist: delayed 1330 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Feb 2007 19:35:17 EST
-Date: Wed, 14 Feb 2007 16:13:06 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Nick Piggin <npiggin@suse.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: [patch] mm: NUMA replicated pagecache
-In-Reply-To: <20070215001053.GB29797@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0702141611300.4902@schroedinger.engr.sgi.com>
-References: <20070213060924.GB20644@wotan.suse.de>
- <Pine.LNX.4.64.0702141057060.975@schroedinger.engr.sgi.com>
- <20070215001053.GB29797@wotan.suse.de>
+	Wed, 14 Feb 2007 19:35:46 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 14 Feb 2007 16:35:44 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Benjamin LaHaise <bcrl@kvack.org>
+cc: Russell King <rmk+lkml@arm.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 06/11] syslets: core, documentation
+In-Reply-To: <20070214234030.GO32271@kvack.org>
+Message-ID: <Pine.LNX.4.64.0702141554540.7796@alien.or.mcafeemobile.com>
+References: <20070214110419.GC4241@flint.arm.linux.org.uk>
+ <Pine.LNX.4.64.0702140919200.7480@alien.or.mcafeemobile.com>
+ <20070214180344.GI32271@kvack.org> <Pine.LNX.4.64.0702141135390.7796@alien.or.mcafeemobile.com>
+ <20070214200347.GK32271@kvack.org> <Pine.LNX.4.64.0702141206190.7796@alien.or.mcafeemobile.com>
+ <20070214203438.GL32271@kvack.org> <Pine.LNX.4.64.0702141241030.7796@alien.or.mcafeemobile.com>
+ <20070214214409.GM32271@kvack.org> <Pine.LNX.4.64.0702141452240.7796@alien.or.mcafeemobile.com>
+ <20070214234030.GO32271@kvack.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Feb 2007, Nick Piggin wrote:
+On Wed, 14 Feb 2007, Benjamin LaHaise wrote:
 
-> But no arguments, this doesn't aim to do replication of the same virtual
-> address. If you did come up with such a scheme, however, you would still
-> need a replicated pagecache for it as well.
+> On Wed, Feb 14, 2007 at 03:17:59PM -0800, Davide Libenzi wrote:
+> > > That's an incorrect assumption.  Every task/thread in the system has FPU 
+> > > state associated with it, in part due to the fact that glibc has to change 
+> > > some of the rounding mode bits, making them different than the default from 
+> > > a freshly initialized state.
+> > 
+> > IMO I still belive this is not a huge problem. FPU state propagation/copy 
+> > can be done in a clever way, once we detect the in-async condition.
+> 
+> Show me.  clts() and stts() are expensive hardware operations which there 
+> is no means of avoiding as control register writes impact the CPU in a not 
+> trivial manner.  I've spent far too much time staring at profiles of what 
+> goes on in the context switch code in the process of looking for optimizations 
+> on this very issue to be ignored on this point.
 
-Well there is always the manual road. Trigger something that scans over 
-the address space and replicates pages that are not local. And yes we 
-would still need your replication infrastructure. I would definitely like 
-such a feature in the kernel.
+The trivial case is the cachehit case. Everything flows like usual since 
+we don't swap threads.
+If we're going to sleep, __async_schedule has to save/copy (depending if 
+TS_USEDFPU is set) the current FPU state to the newly selected service 
+thread (return-to-userspace thread).
+When a fault eventually happen in the new userspace thread, context is 
+restored.
+
+
+
+- Davide
 
 
