@@ -1,47 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422726AbXBOXuH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422725AbXBOXul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422726AbXBOXuH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 18:50:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422725AbXBOXuG
+	id S1422725AbXBOXul (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 18:50:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422722AbXBOXuk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 18:50:06 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:53041 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1422700AbXBOXuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 18:50:04 -0500
-Date: Fri, 16 Feb 2007 00:49:43 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Zachary Amsden <zach@vmware.com>
-Cc: Alan <alan@lxorguk.ukuu.org.uk>, Rusty Russell <rusty@rustcorp.com.au>,
-       Andi Kleen <ak@muc.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH 9/11] Panic delay fix
-Message-ID: <20070215234943.GC4176@elf.ucw.cz>
-References: <200702060353.l163rUmj000771@zach-dev.vmware.com> <20070206122729.GC47229@muc.de> <45C8FA2D.6010706@vmware.com> <20070207123552.GD4481@ucw.cz> <1170880572.11736.4.camel@localhost.localdomain> <20070214125216.2befda78@localhost.localdomain> <45D36B49.5090109@vmware.com> <20070215101713.GK26240@elf.ucw.cz> <45D4F003.4030502@vmware.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45D4F003.4030502@vmware.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Thu, 15 Feb 2007 18:50:40 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:39190 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422727AbXBOXuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 18:50:39 -0500
+Date: Thu, 15 Feb 2007 15:50:34 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Frederik Deweerdt <deweerdt@free.fr>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       viro@zeniv.linux.org.uk, Tejun Heo <htejun@gmail.com>
+Subject: Re: [-mm patch] pci_iomap_regions error handling fix (was Re:
+ 2.6.20-mm1)
+Message-Id: <20070215155034.7e55921e.akpm@linux-foundation.org>
+In-Reply-To: <20070216164159.GA32060@slug>
+References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
+	<20070216164159.GA32060@slug>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Fri, 16 Feb 2007 16:41:59 +0000
+Frederik Deweerdt <deweerdt@free.fr> wrote:
 
-> >You know it is ugly. Alan demonstrated it even hurts performance, but
-> >being ugly is the main problem.
-> >  
+> On Thu, Feb 15, 2007 at 05:14:08AM -0800, Andrew Morton wrote:
+> > 
+> > Temporarily at
+> > 
+> >   http://userweb.kernel.org/~akpm/2.6.20-mm1/
+> > 
+> Hi,
 > 
-> No argument with that.  Well, we're ok with dropping it.  Actually, 
-> reverting the entire set of udelay changes now seems wise.  The same
->bug
+> It appears that the pcim_iomap_regions() function doesn't get the error
+> handling right. It BUGs early at boot with a backtrace along the lines of:
+> 
+> ahci_init
+> pci_register_driver
+> driver_register
+> [...]
+> ahci_init_one
+> pcim_iomap_region
+> pcim_iounmap
+> 
+> The following patch allows me to boot. Only the if(mask..) continue;
+> part fixes the problem actually, the gotos where changed so that we
+> don't try to unmap something we couldn't map anyway.
+> 
+> Regards,
+> Frederik
+> 
+> Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
+> 
+> 
+> diff --git a/lib/devres.c b/lib/devres.c
+> index 2a668dd..eb38849 100644
+> --- a/lib/devres.c
+> +++ b/lib/devres.c
+> @@ -274,21 +274,21 @@ int pcim_iomap_regions(struct pci_dev *pdev, u16 mask, const char *name)
+>  
+>  		rc = pci_request_region(pdev, i, name);
+>  		if (rc)
+> -			goto err_region;
+> +			goto err_inval;
+>  
+>  		rc = -ENOMEM;
+>  		if (!pcim_iomap(pdev, i, 0))
+> -			goto err_iomap;
+> +			goto err_region;
+>  	}
+>  
+>  	return 0;
+>  
+> - err_iomap:
+> -	pcim_iounmap(pdev, iomap[i]);
+>   err_region:
+>  	pci_release_region(pdev, i);
+>   err_inval:
+>  	while (--i >= 0) {
+> +		if (!(mask & (1 << i)))
+> +			continue;
+>  		pcim_iounmap(pdev, iomap[i]);
+>  		pci_release_region(pdev, i);
+>  	}
 
-Good, thanks.
-								Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+yep, the fix looks good and is needed in mainline, thanks.
