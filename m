@@ -1,65 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030565AbXBOUAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030575AbXBOUCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030565AbXBOUAc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 15:00:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030583AbXBOUAc
+	id S1030575AbXBOUCt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 15:02:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030579AbXBOUCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 15:00:32 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:55959 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030565AbXBOUAc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 15:00:32 -0500
-Subject: Re: [PATCH 2.6.21-rc1] ibmebus: Support dynamic addition and
-	removal of adapters
-From: John Rose <johnrose@austin.ibm.com>
-To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>, External List <linuxppc-dev@ozlabs.org>,
-       lkml <linux-kernel@vger.kernel.org>, Me Notes <johnrose@us.ibm.com>,
-       fenkes@de.ibm.com, Paul Mackerras <pmac@au1.ibm.com>
-In-Reply-To: <200702151755.13009.hnguyen@linux.vnet.ibm.com>
-References: <200702151755.13009.hnguyen@linux.vnet.ibm.com>
-Content-Type: text/plain
-Message-Id: <1171569457.20758.76.camel@sinatra.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Ximian Evolution 1.4.6 (1.4.6-2) 
-Date: Thu, 15 Feb 2007 13:57:37 -0600
-Content-Transfer-Encoding: 7bit
+	Thu, 15 Feb 2007 15:02:49 -0500
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:55113 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030575AbXBOUCs convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 15:02:48 -0500
+Date: Thu, 15 Feb 2007 15:02:45 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] local_t : powerpc extension - use long for powerpc32
+Message-ID: <20070215200245.GF31359@Krystal>
+References: <117122149548-git-send-email-mathieu.desnoyers@polymtl.ca> <11712214961955-git-send-email-mathieu.desnoyers@polymtl.ca> <20070214225653.345aad29.akpm@linux-foundation.org> <20070215072024.GA9137@Krystal> <27EC3349-5FD8-47BD-B909-E1180B86AF40@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <27EC3349-5FD8-47BD-B909-E1180B86AF40@kernel.crashing.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.4.34-grsec (i686)
+X-Uptime: 14:51:22 up 13 days,  9:59,  8 users,  load average: 1.23, 2.06, 1.77
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi-
+* Kumar Gala (galak@kernel.crashing.org) wrote:
+> is there a reason this isn't local_add_return(long a, local_t *l) on  
+> ppc32?
+> 
+> (same comment for other functions)
+> 
+> - k
 
-Looks good.  Questions: how can the user space tools verify the success
-of an add or remove?  
+no, except that we use the code is taken from atomic.h and used an
+int parameter. However, due to the semantics of local_t, we should
+manipulate longs instead of ints, even if they are the same size on a
+given architecture (ppc32 and mips32 are affectec by this).
 
-Also, will /sys/bus/ibmebus exist even if the system booted with no LHEA
-nodes?
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-One more comment below.
-
-@@ -161,7 +161,9 @@ static void __devinit ibmebus_dev_releas
- static ssize_t ibmebusdev_show_name(struct device *dev, 
- 				    struct device_attribute *attr, char *buf)
+--- a/include/asm-powerpc/local.h
++++ b/include/asm-powerpc/local.h
+@@ -21,9 +21,9 @@ typedef struct
+ 
+ #ifndef __powerpc64__
+ 
+-static __inline__ int local_add_return(int a, local_t *l)
++static __inline__ long local_add_return(long a, local_t *l)
  {
--	return sprintf(buf, "%s\n", to_ibmebus_dev(dev)->name);
-+	struct ibmebus_dev *ebus_dev = to_ibmebus_dev(dev);
-+	char *name = (char*)get_property(ebus_dev->ofdev.node, "name", NULL);
-+	return sprintf(buf, "%s\n", name);
+-	int t;
++	long t;
+ 
+ 	__asm__ __volatile__(
+ "1:	lwarx	%0,0,%2		# local_add_return\n\
+@@ -40,9 +40,9 @@ static __inline__ int local_add_return(int a, local_t *l)
+ 
+ #define local_add_negative(a, l)	(local_add_return((a), (l)) < 0)
+ 
+-static __inline__ int local_sub_return(int a, local_t *l)
++static __inline__ long local_sub_return(long a, local_t *l)
+ {
+-	int t;
++	long t;
+ 
+ 	__asm__ __volatile__(
+ "1:	lwarx	%0,0,%2		# local_sub_return\n\
+@@ -57,9 +57,9 @@ static __inline__ int local_sub_return(int a, local_t *l)
+ 	return t;
  }
- static DEVICE_ATTR(name, S_IRUSR | S_IRGRP | S_IROTH, ibmebusdev_show_name, 
- 		   NULL);
-
-
-Can we also have an attribute "devspec" that communicates the open
-firmware path through sysfs?  User space DLPAR tools need a way to make
-this correlation.  This is consistent with other dynamic-capable sysfs
-objects (cpus, etc).  I assume you could get this string with something
-like ebus_dev->ofdev.node->full_name.  For example:
-
-# cat /sys/bus/ibmebus/$ebus_device/devspec
-/lhea@xxxxxxxxx/
-
-Thanks-
-John
-
+ 
+-static __inline__ int local_inc_return(local_t *l)
++static __inline__ long local_inc_return(local_t *l)
+ {
+-	int t;
++	long t;
+ 
+ 	__asm__ __volatile__(
+ "1:	lwarx	%0,0,%1		# local_inc_return\n\
+@@ -84,9 +84,9 @@ static __inline__ int local_inc_return(local_t *l)
+  */
+ #define local_inc_and_test(l) (local_inc_return(l) == 0)
+ 
+-static __inline__ int local_dec_return(local_t *l)
++static __inline__ long local_dec_return(local_t *l)
+ {
+-	int t;
++	long t;
+ 
+ 	__asm__ __volatile__(
+ "1:	lwarx	%0,0,%1		# local_dec_return\n\
+@@ -114,9 +114,9 @@ static __inline__ int local_dec_return(local_t *l)
+  * Atomically adds @a to @l, so long as it was not @u.
+  * Returns non-zero if @l was not @u, and zero otherwise.
+  */
+-static __inline__ int local_add_unless(local_t *l, int a, int u)
++static __inline__ int local_add_unless(local_t *l, long a, long u)
+ {
+-	int t;
++	long t;
+ 
+ 	__asm__ __volatile__ (
+ "1:	lwarx	%0,0,%1		# local_add_unless\n\
+@@ -144,9 +144,9 @@ static __inline__ int local_add_unless(local_t *l, int a, int u)
+  * Atomically test *l and decrement if it is greater than 0.
+  * The function returns the old value of *l minus 1.
+  */
+-static __inline__ int local_dec_if_positive(local_t *l)
++static __inline__ long local_dec_if_positive(local_t *l)
+ {
+-	int t;
++	long t;
+ 
+ 	__asm__ __volatile__(
+ "1:	lwarx	%0,0,%1		# local_dec_if_positive\n\
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Candidate, École Polytechnique de Montréal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
