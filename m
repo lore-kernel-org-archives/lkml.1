@@ -1,74 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965855AbXBOKuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965811AbXBOKvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965855AbXBOKuX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 05:50:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965809AbXBOKuX
+	id S965811AbXBOKvK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 05:51:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965857AbXBOKvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 05:50:23 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:42246 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965855AbXBOKuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 05:50:21 -0500
-Date: Thu, 15 Feb 2007 05:50:12 -0500
-From: Dave Jones <davej@redhat.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: v j <vj.linux@gmail.com>, Trent Waddington <trent.waddington@gmail.com>,
-       linux-kernel@vger.kernel.org
+	Thu, 15 Feb 2007 05:51:09 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:2061 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965811AbXBOKvI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 05:51:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qcrFCbPgTmH6+j8wHeYBMLoGbLy4qKO55lr1XNS/gtCVeidj9231HkNP/ct16FHhEyjo9ATwL2UpW8dGsOqFdLBaYJiORbU1hh6GzAHGwYwC4kPn7DR0I1qm7qr3zzIxiuR7dq5J8h2f9DvuvNu5E0Q3n5cVDGa1Jqn1Y+PyORk=
+Message-ID: <52d4a3890702150251w7751da0cve55c6f2cf64e1b8e@mail.gmail.com>
+Date: Thu, 15 Feb 2007 12:51:07 +0200
+From: "Mohammed Gamal" <m.gamal005@gmail.com>
+To: linux-kernel@vger.kernel.org
 Subject: Re: GPL vs non-GPL device drivers
-Message-ID: <20070215105011.GA4610@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Jeff Garzik <jeff@garzik.org>, v j <vj.linux@gmail.com>,
-	Trent Waddington <trent.waddington@gmail.com>,
-	linux-kernel@vger.kernel.org
-References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com> <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com> <3d57814d0702142147p4eede234ybc9880a38772f55f@mail.gmail.com> <9b3a62ab0702142214p5c33a02am7e783c59ae0a64f1@mail.gmail.com> <3d57814d0702142235i687f8481x4eb72269e7f7fa9b@mail.gmail.com> <9b3a62ab0702142246r7e4eac4bv26c2ed46ff588871@mail.gmail.com> <20070215073238.GC917@redhat.com> <45D42B93.3060209@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1171533690.5835.40.camel@frg-rhel40-em64t-03>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45D42B93.3060209@garzik.org>
-User-Agent: Mutt/1.4.2.2i
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+	 <20070215061149.GE15654@redhat.com>
+	 <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
+	 <20070214231143.11ff6b46.rdunlap@xenotime.net>
+	 <9b3a62ab0702142328h87365b6i932d4f2c117f7f0e@mail.gmail.com>
+	 <1171533690.5835.40.camel@frg-rhel40-em64t-03>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 15, 2007 at 04:44:51AM -0500, Jeff Garzik wrote:
- > Dave Jones wrote:
- > > On Wed, Feb 14, 2007 at 10:46:13PM -0800, v j wrote:
- > >  > Using our source code would not benefit anybody but
- > >  > our competitors.
- > > 
- > > This excuse has been given time and time again, and repeatedly been 
- > > proven false.  And as soon as one of your competitors makes their
- > > drivers open, guess which one gets 1000+ free developers working
- > > on their code ?
- > 
- > 
- > Customers also like to buy hardware where they -know- support will not 
- > disappear in a year, when the vendor releases a new chip.
+I am still a kernel newbie, and I am still not very much aware about
+the GPL vs. Non-GPL drivers debate. I personally think it'd be better
+that all drivers should be GPL'd but if that's the case, what would be
+the legal position of such vendors as ATI or NVIDIA who supply closed
+source drivers? Would it be illegal to use them?
 
-Absolutely. This is a very good point.
-And users of binary blobs like nvidia.ko are already beginning to see
-this problem.   (Nvidia dropped support for "legacy" cards a while back)
-
-Only open drivers ensure ongoing vendor-independant support, which
-is an important thing.   I'd not be happy buying a device that I know
-the vendor is going to ship security updates for a year after release.
-VJ, how long does your company support each product? And how much
-engineering effort is spent doing so, vs effort that you could get
-for free by opening your driver(s) ?
-
- > In fact, in some markets, the engineers who wrote the code have often 
- > moved to the next project, by the time the customers actually get their 
- > hands on the end result.  Open source means that problems found in real 
- > world field testing can be readily debugged and fixed.
-
-Even open drivers have the same problem.  Take for example longhaul.c.
-I lost interest in this a while ago and moved on to shinier new hardware
-(whilst it still had numerous problems) and rafal picked this up and has
-been fixing it up like something possessed since.
-If this were a closed driver, it would have been doomed never to improve.
-
-It's a great example of one of the strengths of the open process.
-
-		Dave
-
--- 
-http://www.codemonkey.org.uk
+I know this question might sound silly, but as I said before I have
+only little awareness about the issue.
