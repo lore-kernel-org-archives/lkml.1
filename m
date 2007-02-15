@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964875AbXBOCpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964878AbXBOCxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964875AbXBOCpY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 21:45:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964876AbXBOCpY
+	id S964878AbXBOCxj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 21:53:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964876AbXBOCxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 21:45:24 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:26086 "EHLO
+	Wed, 14 Feb 2007 21:53:39 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:27887 "EHLO
 	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964875AbXBOCpX (ORCPT
+	with ESMTP id S964878AbXBOCxj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 21:45:23 -0500
-In-Reply-To: <20070213142010.GA638@elte.hu>
-References: <20070213142010.GA638@elte.hu>
+	Wed, 14 Feb 2007 21:53:39 -0500
+In-Reply-To: <20070214213505.GA24812@elte.hu>
+References: <20070213142035.GF638@elte.hu> <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org> <20070214210251.GA15025@elte.hu> <Pine.LNX.4.64.0702141321200.20368@woody.linux-foundation.org> <20070214213505.GA24812@elte.hu>
 Mime-Version: 1.0 (Apple Message framework v752.3)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <CEF9B4DA-6881-457D-9447-F263A8F81DA2@oracle.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+Message-Id: <94CAAAF3-5EF0-4F76-BD8C-25A2B9EE0030@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Arjan van de Ven <arjan@infradead.org>,
        Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
@@ -29,8 +29,8 @@ Cc: linux-kernel@vger.kernel.org,
        Thomas Gleixner <tglx@linutronix.de>
 Content-Transfer-Encoding: 7bit
 From: Zach Brown <zach.brown@oracle.com>
-Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system call support
-Date: Wed, 14 Feb 2007 18:44:10 -0800
+Subject: Re: [patch 05/11] syslets: core code
+Date: Wed, 14 Feb 2007 18:52:46 -0800
 To: Ingo Molnar <mingo@elte.hu>
 X-Mailer: Apple Mail (2.752.3)
 X-Brightmail-Tracker: AAAAAQAAAAI=
@@ -38,58 +38,47 @@ X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-I'm finally back from my travel and conference hiatus.. you guys have  
-been busy! :)
-
-On Feb 13, 2007, at 6:20 AM, Ingo Molnar wrote:
-
-> I'm pleased to announce the first release of the "Syslet" kernel  
-> feature
-> and kernel subsystem, which provides generic asynchrous system call
-> support:
+>> But the whole point is that the notion of a "register" is wrong in  
+>> the
+>> first place. [...]
 >
->    http://redhat.com/~mingo/syslet-patches/
+> forget about it then. The thing we "register" is dead-simple:
+>
+>  struct async_head_user {
+>          struct syslet_uatom __user              **completion_ring;
+>          unsigned long                           ring_size_bytes;
+>          unsigned long                           max_nr_threads;
+>  };
+>
+> this can be passed in to sys_async_exec() as a second pointer, and the
+> kernel can put the expected-completion pointer (and the user ring idx
+> pointer) into its struct atom. It's just a few instructions, and  
+> only in
+> the cachemiss case.
+>
+> that would make completions arbitrarily split-up-able. No registration
+> whatsoever. A waiter could specify which ring's events it is  
+> interested
+> in. A 'ring' could be a single-entry thing as well, for a single
+> instance of pending IO.
 
-In general, I really like the look of this.
+I like this, too.  (Not surprisingly, having outlined something like  
+it in a mail in one of the previous threads :)).
 
-I think I'm convinced that your strong preference to do this with  
-full kernel threads (1:1 task_struct -> thread_info/stack  
-relationship) is the right thing to do.  The fibrils fell on the side  
-of risking bugs by sharing task_structs amongst stacks executing  
-kernel paths.  This, correct me if I'm wrong, falls on the side of  
-risking behavioural quirks stemming from task_struct references that  
-we happen to have not enabled sharing of yet.
+I'll bring up the POSIX AIO "list" IO case.  It wants to issue a  
+group of IOs and sleep until they all return.  Being able to cheaply  
+instantiate a ring implicitly with the submission of the IO calls in  
+the list will make implementing this almost too easy.  It'd obviously  
+just wait for that list's ring to drain.
 
-I have strong hopes that we won't actually *care* about the  
-behavioural differences we get from having individual task structs  
-(which share the important things!) between syscall handlers.  The  
-*only* seemingly significant case I've managed to find, the IO  
-scheduler priority and context fields, is easy enough to fix up.   
-Jens and I have been talking about that.  It's been bugging him for  
-other reasons.
+I hope.  There might be complications around the edges (waiting for  
+multiple list IOs to drain?), but it seems like this would be on the  
+right track.
 
-So, thanks, nice work.  I'm going to focus on finding out if its  
-feasible for The Database to use this instead of the current iocb  
-mechanics.  I'm optimistic.
-
-> Syslets are small, simple, lightweight programs (consisting of
-> system-calls, 'atoms')
-
-I will admit, though, that I'm not at all convinced that we need  
-this.  Adding a system call for addition (just addition?  how far do  
-we go?!) sure feels like a warning sign to me that we're heading down  
-a slippery slope.  I would rather we started with an obviously  
-minimal syscall which just takes an array of calls and args and  
-executes them unconditionally.
-
-But its existance doesn't stop the use case I care about.  So it's  
-hard to get *too* worked up about it.
-
-> Comments, suggestions, reports are welcome!
-
-For what it's worth, it looks like 'x86-optimized-copy_uatom.patch'  
-got some hunks that should have been in 'x86-optimized- 
-sys_umem_add.patch'.
+I might be alone in caring about having a less ridiculous POSIX AIO  
+interface in glibc, though, I'll admit.  It seems like it'd be a  
+pretty sad missed opportunity if we rolled a fantastic general AIO  
+interface and left glibc to still screw around with it's own manual  
+threading :/.
 
 - z
