@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030260AbXBORIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030261AbXBORIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030260AbXBORIZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 12:08:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030259AbXBORIZ
+	id S1030261AbXBORIn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 12:08:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030262AbXBORIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 12:08:25 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:44493 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030248AbXBORIX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 12:08:23 -0500
-Subject: Re: [PATCH 2.6.21-rc1] ehea: dynamic add / remove port
-From: John Rose <johnrose@austin.ibm.com>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Christoph Raisch <RAISCH@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <MEDER@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>, stefan.roscher@de.ibm.com,
-       netdev <netdev@vger.kernel.org>, Nathan Fontenot <nfont@austin.ibm.com>
-In-Reply-To: <1171491906.30473.3.camel@sinatra.austin.ibm.com>
-References: <200702141536.28665.ossthema@de.ibm.com>
-	 <1171491906.30473.3.camel@sinatra.austin.ibm.com>
-Content-Type: text/plain
-Message-Id: <1171559098.20758.70.camel@sinatra.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Ximian Evolution 1.4.6 (1.4.6-2) 
-Date: Thu, 15 Feb 2007 11:04:58 -0600
+	Thu, 15 Feb 2007 12:08:42 -0500
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:43067 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030261AbXBORIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 12:08:40 -0500
+Message-ID: <45D4939B.1080200@drzeus.cx>
+Date: Thu, 15 Feb 2007 18:08:43 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070131)
+MIME-Version: 1.0
+To: Eugene Ilkov <e.ilkov@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20 mmc: problem with highspeed SD card
+References: <e13597370702131746q6a5d8e79i2341f5eb9c59bf6e@mail.gmail.com>	 <45D3F41C.3020600@drzeus.cx> <e13597370702150417o3888b71dtcc42e38156b46918@mail.gmail.com> <45D48FB6.80703@drzeus.cx>
+In-Reply-To: <45D48FB6.80703@drzeus.cx>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Second, the probe and remove functions do not communicate whether an add
-> or remove was successful.  Combine this with the lack of port
-> information in the adapter sysfs directory, and the userspace tool has
-> no way of verifying a dynamic add/remove.
+Pierre Ossman wrote:
+> Eugene Ilkov wrote:
+>> PXAMCI: irq 00000004 stat 00002140
+> 
+> Hang on. PXAMCI is a MMC controller, right? Perhaps the MMC timings
+> aren't overlapping properly with the new stuff... I'm going to have to
+> recheck my diagrams.
 
-One way to communicate a return code is by making the sysfs interface
-file read/write, and having the read callback give a return code.  For
-an example of this, you can look at drivers/pci/rpadlpar_sysfs.c and
-rpadlpar_core.c.
+Hmm... depending on where you look, you get different timing schematics. The
+MMCA 4.2 specification (which should be authoritative) does indicate that things
+are incompatible though.
 
-It would still be nice to have some way from the adapter sysfs directory
-to list/examine logical ports.  Symlinks would work, but it would be
-even nicer to have a new kobject per port with attribute files for
-logical id, state, etc.
+I'll put together a patch that you can try out.
 
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
