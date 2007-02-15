@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161512AbXBOWSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161513AbXBOWTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161512AbXBOWSs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 17:18:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161478AbXBOWSr
+	id S1161513AbXBOWTf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 17:19:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161514AbXBOWTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 17:18:47 -0500
-Received: from ftp.linux-mips.org ([194.74.144.162]:51412 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161508AbXBOWSq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 17:18:46 -0500
-Date: Thu, 15 Feb 2007 22:18:39 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Optimize generic get_unaligned / put_unaligned implementations.
-Message-ID: <20070215221839.GA14103@linux-mips.org>
-References: <20050830104056.GA4710@linux-mips.org> <20060306.203218.69025300.nemoto@toshiba-tops.co.jp> <20060306170552.0aab29c5.akpm@osdl.org> <20070214214226.GA17899@linux-mips.org> <20070214203903.8d013170.akpm@linux-foundation.org> <20070215143441.GA18155@linux-mips.org> <20070215135358.020781dd.akpm@linux-foundation.org>
+	Thu, 15 Feb 2007 17:19:35 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:36816 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161513AbXBOWTe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 17:19:34 -0500
+Date: Thu, 15 Feb 2007 14:18:41 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: fche@redhat.com (Frank Ch. Eigler)
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       Ingo Molnar <mingo@redhat.com>, systemtap@sources.redhat.com,
+       ltt-dev@shafik.org
+Subject: Re: [PATCH 00/05] Linux Kernel Markers - kernel 2.6.20
+Message-Id: <20070215141841.6eed5fbb.akpm@linux-foundation.org>
+In-Reply-To: <y0mvei330ee.fsf@ton.toronto.redhat.com>
+References: <1171224207118-git-send-email-mathieu.desnoyers@polymtl.ca>
+	<20070214231201.20918c6b.akpm@linux-foundation.org>
+	<y0mvei330ee.fsf@ton.toronto.redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070215135358.020781dd.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 15, 2007 at 01:53:58PM -0800, Andrew Morton wrote:
+On 15 Feb 2007 10:28:57 -0500
+fche@redhat.com (Frank Ch. Eigler) wrote:
 
-> > The whole union thing was only needed to get rid of a warning but Marcel's
-> > solution does the same thing by attaching the packed keyword to the entire
-> > structure instead, so this patch is now using his macros but using __packed
-> > instead.
 > 
-> How do we know this trick will work as-designed across all versions of gcc
-> and icc (at least) and for all architectures and for all sets of compiler
-> options?
+> akpm wrote:
 > 
-> Basically, it has to be guaranteed by a C standard.  Is it?
+> > [...]  And what can I do with these markers?  And once I've done it,
+> > are there any userspace applications I can use to get the data out
+> > in human-usable form?  [...]
+> 
+> The LTTng user-space programs use it today.  Systemtap used to support
+> the earlier marker prototype and will be rapidly ported over to this
+> new API upon acceptance.
+> 
 
-Gcc info page says:
+That's good.
 
-[...]
-`packed'
-     The `packed' attribute specifies that a variable or structure field
-     should have the smallest possible alignment--one byte for a
-     variable, and one bit for a field, unless you specify a larger
-     value with the `aligned' attribute.
-[...]
+It would be beneficial if some people from those projects could spare the
+cycles to carefully review and runtime test this code.
 
-Qed?
-
-  Ralf
+Also, I'm not 100% clear on where we ended up with the huge
+static-vs-dynamic flamewar.  Did everyone end up happy?  Is this patchset a
+reasonable compromise?  Or do we need a rematch?
