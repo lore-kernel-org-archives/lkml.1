@@ -1,36 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161597AbXBOWor@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161607AbXBOWpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161597AbXBOWor (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 17:44:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161604AbXBOWoq
+	id S1161607AbXBOWpX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 17:45:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161608AbXBOWpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 17:44:46 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:47286 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161597AbXBOWop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 17:44:45 -0500
-Date: Thu, 15 Feb 2007 23:44:39 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@muc.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] No need to use -traditional for processing asm in i386/kernel/
-Message-ID: <20070215224439.GA7909@uranus.ravnborg.org>
-References: <45D4CE50.9020604@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 15 Feb 2007 17:45:22 -0500
+Received: from nz-out-0506.google.com ([64.233.162.228]:3367 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161607AbXBOWpU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 17:45:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=JHeEALTLYQM6OU/GA5B2wVxXoWJnzhNxX5JNFJ47DHYMAthmf4ZFvkBKaFSkEaBQaumJZH0zxGmpy2QUQWVIMmevm6e6t8l2e/pFv/cZwaYkGuGi179KkWN8IxmKhLugFhO8GntAAOfT9KXe222yeCAKh4cuSAmR+yqGn29cIk4=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.20-mm1
+Date: Thu, 15 Feb 2007 23:51:07 +0100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
+In-Reply-To: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45D4CE50.9020604@goop.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200702152351.07432.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 15, 2007 at 01:19:12PM -0800, Jeremy Fitzhardinge wrote:
-> No need to use -traditional for processing asm in i386/kernel/
-> 
-> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 
-Any possibility that you could 'fix' the three remaining
-uses of -traditional in i386?
+On Thursday 15 February 2007 14:14, Andrew Morton wrote:
 
-	Sam
+> - The IDE tree got dropped due to various linkage problems
+
+Doh, I guess this is what one gets for not testing modular
+IDE driver support properly. :(
+
+All linkage problems should be fixed now, sorry for that.
+
+Bart
