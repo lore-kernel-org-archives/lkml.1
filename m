@@ -1,41 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161120AbXBOTys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030565AbXBOUAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161120AbXBOTys (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 14:54:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161119AbXBOTys
+	id S1030565AbXBOUAc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 15:00:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030583AbXBOUAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 14:54:48 -0500
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:23366 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161120AbXBOTyr (ORCPT
+	Thu, 15 Feb 2007 15:00:32 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:55959 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030565AbXBOUAc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 14:54:47 -0500
-In-Reply-To: <adazm7fs3qb.fsf@cisco.com>
-Subject: Re: [PATCH 2.6.21-rc1 4/5] ehca: replace yield() by	wait_for_completion()
-To: Roland Dreier <rdreier@cisco.com>
-Cc: bos@patchscale.com, Christoph Raisch <raisch@de.ibm.com>,
-       hch@infradead.org, heicars2@linux.vnet.ibm.com,
-       Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linuxppc-dev-bounces+hnguyen=de.ibm.com@ozlabs.org,
-       openib-general@openib.org
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OFAA6668FF.C2E1DD58-ONC1257283.006C7A81-C1257283.006D6172@de.ibm.com>
-From: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
-Date: Thu, 15 Feb 2007 20:54:43 +0100
-X-MIMETrack: Serialize by Router on D12ML065/12/M/IBM(Release 6.5.5HF882 | September 26, 2006) at
- 15/02/2007 20:54:44
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+	Thu, 15 Feb 2007 15:00:32 -0500
+Subject: Re: [PATCH 2.6.21-rc1] ibmebus: Support dynamic addition and
+	removal of adapters
+From: John Rose <johnrose@austin.ibm.com>
+To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>, External List <linuxppc-dev@ozlabs.org>,
+       lkml <linux-kernel@vger.kernel.org>, Me Notes <johnrose@us.ibm.com>,
+       fenkes@de.ibm.com, Paul Mackerras <pmac@au1.ibm.com>
+In-Reply-To: <200702151755.13009.hnguyen@linux.vnet.ibm.com>
+References: <200702151755.13009.hnguyen@linux.vnet.ibm.com>
+Content-Type: text/plain
+Message-Id: <1171569457.20758.76.camel@sinatra.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Ximian Evolution 1.4.6 (1.4.6-2) 
+Date: Thu, 15 Feb 2007 13:57:37 -0600
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-> So I'm holding off on applying this for now.  Please think it over and
-> either tell me the current patch is OK, or fix it up.  There's not
-> really too much urgency because a change like this is something I
-> would be comfortable merging between 2.6.21-rc1 and -rc2.
-You're absolutely right. Let's target for rc2.
-Thanks for this good catch!
-Nam
+Hi-
+
+Looks good.  Questions: how can the user space tools verify the success
+of an add or remove?  
+
+Also, will /sys/bus/ibmebus exist even if the system booted with no LHEA
+nodes?
+
+One more comment below.
+
+@@ -161,7 +161,9 @@ static void __devinit ibmebus_dev_releas
+ static ssize_t ibmebusdev_show_name(struct device *dev, 
+ 				    struct device_attribute *attr, char *buf)
+ {
+-	return sprintf(buf, "%s\n", to_ibmebus_dev(dev)->name);
++	struct ibmebus_dev *ebus_dev = to_ibmebus_dev(dev);
++	char *name = (char*)get_property(ebus_dev->ofdev.node, "name", NULL);
++	return sprintf(buf, "%s\n", name);
+ }
+ static DEVICE_ATTR(name, S_IRUSR | S_IRGRP | S_IROTH, ibmebusdev_show_name, 
+ 		   NULL);
+
+
+Can we also have an attribute "devspec" that communicates the open
+firmware path through sysfs?  User space DLPAR tools need a way to make
+this correlation.  This is consistent with other dynamic-capable sysfs
+objects (cpus, etc).  I assume you could get this string with something
+like ebus_dev->ofdev.node->full_name.  For example:
+
+# cat /sys/bus/ibmebus/$ebus_device/devspec
+/lhea@xxxxxxxxx/
+
+Thanks-
+John
 
