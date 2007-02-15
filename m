@@ -1,80 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030338AbXBORcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030346AbXBORdH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030338AbXBORcn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 12:32:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030341AbXBORcn
+	id S1030346AbXBORdH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 12:33:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030348AbXBORdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 12:32:43 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:49563 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030338AbXBORcm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 12:32:42 -0500
-Date: Thu, 15 Feb 2007 17:32:18 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@muc.de>,
-       Andrew Morton <akpm@osdl.org>, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
-       Ian Pratt <ian.pratt@xensource.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 15/21] Xen-paravirt: Add Xen interface header files
-Message-ID: <20070215173218.GA6324@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Jeremy Fitzhardinge <jeremy@goop.org>,
-	"Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@muc.de>,
-	Andrew Morton <akpm@osdl.org>, virtualization@lists.osdl.org,
-	xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
-	Ian Pratt <ian.pratt@xensource.com>, linux-kernel@vger.kernel.org
-References: <20070213221729.772002682@goop.org> <20070213221830.619562494@goop.org> <m1k5ykpiwv.fsf@ebiederm.dsl.xmission.com> <45D3A50A.9090303@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45D3A50A.9090303@goop.org>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 15 Feb 2007 12:33:07 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45388 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030345AbXBORdF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 12:33:05 -0500
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <Pine.LNX.4.64.0702151530260.14458@scrub.home> 
+References: <Pine.LNX.4.64.0702151530260.14458@scrub.home>  <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com> 
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: torvalds@osdl.org, akpm@osdl.org, herbert.xu@redhat.com,
+       linux-kernel@vger.kernel.org, davej@redhat.com, arjan@infradead.org,
+       linux-crypto@vger.kernel.org, dhowells@redhat.com
+Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Thu, 15 Feb 2007 17:32:50 +0000
+Message-ID: <32081.1171560770@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 14, 2007 at 04:10:50PM -0800, Jeremy Fitzhardinge wrote:
-> Eric W. Biederman wrote:
-> > Jeremy Fitzhardinge <jeremy@goop.org> writes:
-> >
-> >   
-> >> Add Xen interface header files. These are taken fairly directly from
-> >> the Xen tree and hence the style is not entirely in accordance with
-> >> Linux guidelines. There is a tension between fitting with Linux coding
-> >> rules and ease of maintenance.
-> >>
-> >> Define macros and inline functions for doing hypercalls into the
-> >> hypervisor.
-> >>
-> >> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-> >> Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
-> >> Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-> >> Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-> >>
-> >>
-> >> --
-> >>  include/asm-i386/hypercall.h          |  416 +++++++++++++++++++++++++++++
-> >>  include/asm-i386/hypervisor.h         |   72 +++++
-> >>     
-> >
-> > Are hypercall.h and hypervisor.h generic or are they Xen specific.
-> > If they are Xen specific (as it appears) then are inappropriately
-> > named.
-> >   
-> 
-> Thanks for the reminder; I've been meaning to move/rename these.
-> 
-> >>  include/xen/interface/arch-x86_32.h   |  187 +++++++++++++
-> >>     
-> > Why isn't this file include-asm-i386/xen/arch-x86_32.h ?
-> >   
-> 
-> Those files are more or less directly copied from the Xen tree, and its
-> easier if they don't drift too far in name and directory structure.
+Roman Zippel <zippel@linux-m68k.org> wrote:
 
-Nack, we don't put per-arch crap there.  Either you'll have it in separate
-places, or you clean up the utterly braindead scheme in the Xen tree
-aswell.
+> > Now, this is not a complete solution by any means: the core kernel is not
+> > protected, and nor are /dev/mem or /dev/kmem, but it denies (or at least
+> > controls) one relatively simple attack vector.
+> 
+> This is really the weak point - it offers no advantage over an equivalent 
+> implementation in user space (e.g. in the module tools). So why has to be 
+> done in the kernel?
+
+Because the init_module() system call is the common point of module submission
+to the kernel, not any particular userspace program.  There is no requirement
+for userspace to load a module by invoking a module tools program or library,
+and so userspace can bypass the checks entirely by just calling init_module().
+Assume for a moment that you can't trust userspace...  (Obviously, if you can't
+trust the kernel then you're already stuffed.)
+
+It is possible to protect /dev/mem and /dev/kmem or make them unavailable and
+it is possible to protect the kernel's memory whilst it is running (provided
+you don't have nommu or broken hardware and you don't let userspace concoct any
+DMA request it likes) which mostly closes those other vectors I mentioned.
+This isn't something I intended to look at with this patch.  Those are separate
+holes.
+
+Making the core kernel load image inaccessible or immutable to root is not
+something I can provide a generic solution for and security checking the core
+kernel load image has to be done at an earlier layer as you can't rely on
+something guaranteeing its own integrity because if someone can alter that
+something, then they can bypass the self-checking too...
+
+However, modules permits arbitrary modification of the running kernel to be
+attempted.
+
+David
