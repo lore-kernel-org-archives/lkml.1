@@ -1,60 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030721AbXBOTTF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030724AbXBOTT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030721AbXBOTTF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 14:19:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030720AbXBOTTF
+	id S1030724AbXBOTT0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 14:19:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030726AbXBOTT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 14:19:05 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:1094 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030721AbXBOTTE (ORCPT
+	Thu, 15 Feb 2007 14:19:26 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:39953 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030724AbXBOTTY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 14:19:04 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 15 Feb 2007 11:19:00 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 06/14] syslets: core, documentation
-In-Reply-To: <20070215175654.GA20997@2ka.mipt.ru>
-Message-ID: <Pine.LNX.4.64.0702151117460.11064@alien.or.mcafeemobile.com>
-References: <20070215165232.GG4285@elte.hu> <20070215175654.GA20997@2ka.mipt.ru>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 15 Feb 2007 14:19:24 -0500
+Date: Thu, 15 Feb 2007 14:19:11 -0500
+From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+To: Eric Van Hensbergen <ericvh@gmail.com>
+Cc: linux-kernel@vger.kernel.org, v9fs-developer@lists.sourceforge.net
+Subject: Re: [PATCH] 9p: add write-cache support to loose cache mode (take 2)
+Message-ID: <20070215191911.GB14473@filer.fsl.cs.sunysb.edu>
+References: <11715506591894-git-send-email-ericvh@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <11715506591894-git-send-email-ericvh@gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Feb 2007, Evgeniy Polyakov wrote:
+On Thu, Feb 15, 2007 at 08:44:19AM -0600, Eric Van Hensbergen wrote:
+...
+> diff --git a/fs/9p/vfs_addr.c b/fs/9p/vfs_addr.c
+> index bed48fa..d43d6fb 100644
+> --- a/fs/9p/vfs_addr.c
+> +++ b/fs/9p/vfs_addr.c
+> @@ -6,6 +6,9 @@
+>   *  Copyright (C) 2005 by Eric Van Hensbergen <ericvh@gmail.com>
+>   *  Copyright (C) 2002 by Ron Minnich <rminnich@lanl.gov>
+>   *
+> + *  Some operations based on code from fs/cifs/file.c
+> + *  Copyright (C) International Business Machines  Corp., 2002,2003
+> + *
+>   *  This program is free software; you can redistribute it and/or modify
+>   *  it under the terms of the GNU General Public License version 2
+>   *  as published by the Free Software Foundation.
+> @@ -41,14 +44,14 @@
+>  #include "fid.h"
+>  
+>  /**
+> - * v9fs_vfs_readpage - read an entire page in from 9P
+> + * v9fs_vfs_readpage_worker - read an entire page in from 9P
+>   *
+>   * @file: file being read
+>   * @page: structure to page
+>   *
+>   */
+>  
+> -static int v9fs_vfs_readpage(struct file *filp, struct page *page)
+> +static int v9fs_vfs_readpage_worker(struct file *filp, struct page *page)
+>  {
+>  	char *buffer = NULL;
+>  	int retval = -EIO;
+> @@ -63,23 +66,21 @@ static int v9fs_vfs_readpage(struct file *filp, struct page *page)
+>  	int total = 0;
+>  	int result = 0;
+>  
+> -	dprintk(DEBUG_VFS, "\n");
+> -
+> +	page_cache_get(page);
+>  	buffer = kmap(page);
+>  	do {
+>  		if (count < rsize)
+>  			rsize = count;
+>  
+>  		result = v9fs_t_read(v9ses, fid, offset, rsize, &fcall);
+> -
+>  		if (result < 0) {
+> -			printk(KERN_ERR "v9fs_t_read returned %d\n",
+> -			       result);
+> +			printk(KERN_ERR "v9fs_t_read returned %d\n", result);
+>  
+>  			kfree(fcall);
+> -			goto UnmapAndUnlock;
+> -		} else
+> +			goto io_error;
+> +		} else {
+>  			offset += result;
+> +		}
 
-> On Thu, Feb 15, 2007 at 05:52:32PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
-> > +The syslet atom is a small, fixed-size (44 bytes on 32-bit) piece of
-> > +user-space memory, which is the basic unit of execution within the syslet
-> > +framework. A syslet represents a single system-call and its arguments.
-> > +In addition it also has condition flags attached to it that allows the
-> > +construction of larger programs (syslets) from these atoms.
-> > +
-> > +Arguments to the system call are implemented via pointers to arguments.
-> 
-> I've just thought, how x86/x86_64 problem is going to be solved for
-> pointer size? Is it better to wire longs/pointers to 64 bits right now?
+There are a bunch of places where you have unneeded braces.
 
-Compat code is gonna to be fun also for that (pointers to args, and "next" 
-chaining pointer).
+>  
+>  		memcpy(buffer, fcall->params.rread.data, result);
+>  
+> @@ -98,12 +99,178 @@ static int v9fs_vfs_readpage(struct file *filp, struct page *page)
+>  	SetPageUptodate(page);
+>  	retval = 0;
+>  
+> -UnmapAndUnlock:
+> +      io_error:
 
+Indentation...
 
+> +	kunmap(page);
+> +	page_cache_release(page);
+> +	return retval;
+> +}
+> +
+> +/**
+> + * v9fs_prepare_write - prepare for mmap or page-cache I/O
+> + *
+> + * @file: file being read
+> + * @page: structure to page
+> + * @from: starting offset
+> + * @to: ending offset
+> + *
+> + */
+> +
+> +int v9fs_prepare_write(struct file *file, struct page *page,
+> +		       unsigned from, unsigned to)
+> +{
+> +	if(!PageUptodate(page)) {
+> +		if (to - from != PAGE_CACHE_SIZE) {
+> +			void *kaddr = kmap_atomic(page, KM_USER0);
+> +			memset(kaddr, 0, from);
+> +			memset(kaddr + to, 0, PAGE_CACHE_SIZE - to);
+> +			flush_dcache_page(page);
+> +			kunmap_atomic(kaddr, KM_USER0);
+> +		}
+> +		if ((file->f_flags & O_ACCMODE) != O_WRONLY) {
+> +			v9fs_vfs_readpage_worker(file, page);
+> +		}
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + * v9fs_commit_write - prepare for mmap or page-cache I/O
+> + *
+> + * @file: file being read
+> + * @page: structure to page
+> + * @offset: starting offset
+> + * @to: ending offset
+> + *
+> + * TODO: Perhaps I should just do the write here?
+> + */
+> +
+> +int v9fs_commit_write(struct file *file, struct page *page,
+> +		       unsigned offset, unsigned to)
+> +{
+> +        struct inode *inode = page->mapping->host;
+> +        loff_t pos = ((loff_t)page->index << PAGE_CACHE_SHIFT) + to;
 
-- Davide
+whitespace
 
+> +
+> +	dprintk(DEBUG_VFS, "\n");
+> +
+> +	if(!PageUptodate(page))
+> +		SetPageUptodate(page);
+> +
+> +        /*
+> +	 * No need to use i_size_read() here, the i_size
+> +	 * cannot change under us because we hold the i_mutex.
+> +	 *
+> +	 */
+> +        if (pos > inode->i_size) {
+> +                i_size_write(inode, pos);
+> +		/* need to adjust inode on remote */
+> +	}
+> +        set_page_dirty(page);
+> +	dprintk(DEBUG_CURRENT, "inode->size: %llx\n",inode->i_size);
+> +
+> +	return 0;
+> +}
+...
 
+Josef "Jeff" Sipek.
+
+-- 
+Computer Science is no more about computers than astronomy is about
+telescopes.
+		- Edsger Dijkstra
