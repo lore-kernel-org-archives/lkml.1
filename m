@@ -1,79 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964916AbXBOGva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964912AbXBOGzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964916AbXBOGva (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 01:51:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964923AbXBOGv3
+	id S964912AbXBOGzi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 01:55:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964914AbXBOGzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 01:51:29 -0500
-Received: from vms048pub.verizon.net ([206.46.252.48]:56110 "EHLO
-	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964921AbXBOGv3 (ORCPT
+	Thu, 15 Feb 2007 01:55:38 -0500
+Received: from nz-out-0506.google.com ([64.233.162.238]:14055 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964912AbXBOGzi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 01:51:29 -0500
-Date: Thu, 15 Feb 2007 01:51:22 -0500
-From: Gene Heskett <gene.heskett@verizon.net>
+	Thu, 15 Feb 2007 01:55:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OgezX4nSoV8BtoALjmLSwT9NH0wkrOANJy3Iap3pVJ5bpI6I6mVQK5qJlpdWH9tNxcZwdcUG38gIS//l69Fiq41kR907vjrSXcE79Lp74I3dQ0/86xjqU0PpnuYcdt1p5JVgY4/4unJBkE+/J0n/XZabFE1aOCxWUA+F4/tk508=
+Message-ID: <9b3a62ab0702142255u16dc98e0s38876f03ac6355f7@mail.gmail.com>
+Date: Wed, 14 Feb 2007 22:55:37 -0800
+From: "v j" <vj.linux@gmail.com>
+To: "Neil Brown" <neilb@suse.de>
 Subject: Re: GPL vs non-GPL device drivers
-In-reply-to: <17875.64112.54164.635911@notabene.brown>
-To: linux-kernel@vger.kernel.org
-Cc: Neil Brown <neilb@suse.de>, "v j" <vj.linux@gmail.com>
-Message-id: <200702150151.24748.gene.heskett@verizon.net>
-Organization: Not detectable
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Content-disposition: inline
+Cc: "Dave Jones" <davej@redhat.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <17876.296.29422.494455@notabene.brown>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
- <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
- <17875.64112.54164.635911@notabene.brown>
-User-Agent: KMail/1.9.6
+	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+	 <20070215061149.GE15654@redhat.com>
+	 <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
+	 <17876.296.29422.494455@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 February 2007, Neil Brown wrote:
->On Wednesday February 14, vj.linux@gmail.com wrote:
->> However we have a worrying trend here. If at some point it becomes
->> illegal to load our modules into the linux kernel, then it is
->> unacceptable to us. We would have been better off choosing VxWorks or
->> OSE 3 years ago when we made an OS choice. The fact that Linux is
->> becoming more and more closed is very very alarming.
+On 2/14/07, Neil Brown <neilb@suse.de> wrote:
+> > Not everybody has to be a contributor. The reason Linux is popular is
+> > because of its openness. Take that away and see where it goes.
 >
->Might I suggest that you give very serious consideration to
->open-sourcing your drivers?  There are benefits and well as costs, and
->many have found that the benefits substantially out weigh the costs.
+> So tell us?  where does it go?
 >
->NeilBrown
+> You seem to have the experience already.  You took an open linux,
+> added some closed drivers and so made it closed.  So you yourself (or
+> your company) have taken that (the openness) away - where did the
+> result go?
+>
+> I'm guessing it went into a dead-end or you wouldn't be here talking to
+> us now.
 
-Speaking as one who has not contributed back to the kernel other than an 
-occasional bug report as I'm getting too old to code alongside these 
-wizards, please let me say:
-
-That's an admirable bit of advice Neil, but I have serious doubts it will 
-fall on a fertile mind.  From vj's tone here, its obvious that he thinks 
-its fine to leech his income stream from code that is free.  And giving 
-one teeny little patch for some utility back seems to make him think he 
-has paid the bill.  Methinks he has not paid the bill in kind because its 
-an ongoing rental.
-
-Now, if he _were_ to contribute his top secret drivers into the kernel 
-tree, how are we to convince vj that it is in his best interest in the 
-long run to do so?  After all, the many eyeballs theory will guarantee 
-that his codebase will not go untouched because bugs he doesn't even know 
-exist will be noticed and fixed, and routine speedups of 2x are entirely 
-possible too.  He will in the long run get back faster, more stable code 
-which can't do anything but enhance the value of his hardware, both in 
-how well it runs, but in the public's perception too, simply because it 
-IS in the kernel tree and therefore very well reviewed.  And that vj, is 
-an advertising point of no little value. 
-
-But, I suspect by now he has pulled the batteries out of his hearing aid 
-so he doesn't have to listen to any more of this blasphemous talk.  
-Sad...
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Yahoo.com and AOL/TW attorneys please note, additions to the above
-message by Gene Heskett are:
-Copyright 2007 by Maurice Eugene Heskett, all rights reserved.
+If adding closed drivers to Linux is illegal, I am perfectly fine with
+that. Just say so. I am not at a dead-end yet, until you make that
+statement. Once you make that statement, then all bets are off. I am
+betting that most companies will not even consider Linux as an
+alternative in the embedded space if this were the case.
