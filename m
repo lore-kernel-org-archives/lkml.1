@@ -1,105 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751494AbXBOBVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751231AbXBOB3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751494AbXBOBVE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 20:21:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbXBOBVE
+	id S1751231AbXBOB3A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 20:29:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbXBOB3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 20:21:04 -0500
-Received: from smtp.andrew.cmu.edu ([128.2.10.82]:51975 "EHLO
-	smtp.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751494AbXBOBVD (ORCPT
+	Wed, 14 Feb 2007 20:29:00 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:3910 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751231AbXBOB27 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 20:21:03 -0500
-X-Greylist: delayed 1165 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 Feb 2007 20:21:03 EST
-Message-ID: <45D3B0EC.8030804@cmu.edu>
-Date: Wed, 14 Feb 2007 20:01:32 -0500
-From: George Nychis <gnychis@cmu.edu>
-User-Agent: Thunderbird 2.0b1 (X11/20070206)
+	Wed, 14 Feb 2007 20:28:59 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 14 Feb 2007 17:28:56 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Alan <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 05/11] syslets: core code
+In-Reply-To: <Pine.LNX.4.64.0702141656240.7796@alien.or.mcafeemobile.com>
+Message-ID: <Pine.LNX.4.64.0702141721560.7796@alien.or.mcafeemobile.com>
+References: <20070213142035.GF638@elte.hu> <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org>
+ <20070214210251.GA15025@elte.hu> <Pine.LNX.4.64.0702141321200.20368@woody.linux-foundation.org>
+ <20070214215613.56d76257@localhost.localdomain> <20070214223216.GA7616@elte.hu>
+ <Pine.LNX.4.64.0702141656240.7796@alien.or.mcafeemobile.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: discuss-gnuradio@gnu.org
-Subject: USB ehci problems with USRP, -71 EPROTO
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey all,
+On Wed, 14 Feb 2007, Davide Libenzi wrote:
 
-I am having troubles connecting and interfacing to a device called a 
-USRP via USB which is used with GNU Radio.  At one time, the setup 
-worked perfectly fine with no errors.  Then i tried to give a regular 
-user permission to the USB device and everything went downhill.
+> On Wed, 14 Feb 2007, Ingo Molnar wrote:
+> 
+> > yeah, that's another key thing. I do plan to provide a sys_upcall() 
+> > syscall as well which calls a 5-parameter user-space function with a 
+> > special stack. (it's like a lightweight signal/event handler, without 
+> > any of the signal handler legacies and overhead - it's like a reverse 
+> > system call - a "user call". Obviously pure userspace would never use 
+> > sys_upcall(), unless as an act of sheer masochism.)
+> 
+> That is exactly what I described as clets. Instead of having complex jump 
+> and condition interpreters on the kernel (on top of new syscalls to 
+> modify/increment userspace variables), you just code it in C and you pass 
+> the clet pointer to the kernel.
+> The upcall will setup a frame, execute the clet (where jump/conditions and 
+> userspace variable changes happen in machine code - gcc is pretty good in 
+> taking care of that for us) on its return, come back through a 
+> sys_async_return, and go back to userspace.
 
-Now, whenever I plugin the device sometimes I sometimes get the error:
-usb 1-7: device descriptor read/all, error -71
+So, for example, this is the setup code for the current API (and that's a 
+really simple one - immagine going wacko with loops and userspace varaible 
+changes):
 
-Whenever I don't get the error, I try to proceed normally to uploading a 
-new image to the USRP and I get the following error from gnuradio:
-write_internal_ram failed: error sending control message: Protocol error
 
-This generates the following dmesg errors:
-usb 1-7: usbfs: USBDEVFS_CONTROL failed cmd python rqt 64 rq 160 len 3 
-ret -71
-usb 1-7: usbfs: USBDEVFS_CONTROL failed cmd python rqt 64 rq 160 len 5 
-ret -71
-usb 1-7: usbfs: USBDEVFS_CONTROL failed cmd python rqt 64 rq 160 len 8 
-ret -71
-usb 1-7: usbfs: USBDEVFS_CONTROL failed cmd python rqt 64 rq 160 len 3 
-ret -71
+static struct req *alloc_req(void)
+{
+        /*
+         * Constants can be picked up by syslets via static variables:
+         */
+        static long O_RDONLY_var = O_RDONLY;
+        static long FILE_BUF_SIZE_var = FILE_BUF_SIZE;
+                
+        struct req *req;
+                 
+        if (freelist) {
+                req = freelist;
+                freelist = freelist->next_free;
+                req->next_free = NULL;
+                return req;
+        }
+                        
+        req = calloc(1, sizeof(struct req));
+ 
+        /*
+         * This is the first atom in the syslet, it opens the file:
+         *
+         *  req->fd = open(req->filename, O_RDONLY);
+         *
+         * It is linked to the next read() atom.
+         */
+        req->filename_p = req->filename;
+        init_atom(req, &req->open_file, __NR_sys_open,
+                  &req->filename_p, &O_RDONLY_var, NULL, NULL, NULL, NULL,
+                  &req->fd, SYSLET_STOP_ON_NEGATIVE, &req->read_file);
+        
+        /*
+         * This second read() atom is linked back to itself, it skips to
+         * the next one on stop:
+         */
+        req->file_buf_ptr = req->file_buf;
+        init_atom(req, &req->read_file, __NR_sys_read,
+                  &req->fd, &req->file_buf_ptr, &FILE_BUF_SIZE_var,
+                  NULL, NULL, NULL, NULL,
+                  SYSLET_STOP_ON_NON_POSITIVE | SYSLET_SKIP_TO_NEXT_ON_STOP,
+                  &req->read_file);
+                
+        /*
+         * This close() atom has NULL as next, this finishes the syslet:
+         */
+        init_atom(req, &req->close_file, __NR_sys_close,
+                  &req->fd, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL);
+                
+        return req;
+}
 
-Another set of errors produced by gnuradio are these:
-usrp_open_interface:usb_set_alt_interface: failed
-could not set alt intf 0/0: Protocol error
-open_nth_cmd_interface: open_cmd_interface failed
 
------
+Here's how your clet would look like:
 
-I was able to plug the USRP into another machine with GNU Radio and 
-successfully flash new firmware to it 100% successfully several times. 
-I cannot get a single firmware on using my machine and the USRP.
+static long main_sync_loop(ctx *c)
+{
+        int fd;
+        char file_buf[FILE_BUF_SIZE+1];
+        
+        if ((fd = open(c->filename, O_RDONLY)) == -1)
+                return -1;
+        while (read(fd, file_buf, FILE_BUF_SIZE) > 0)
+                ;
+        close(fd);
+        return 0;
+}
 
-Heres what else I've tried:
-   - un-installing and re-installing GNU Radio
-   - switching USB ports on the machine
-   - switching USB cables
-   - rebuilding the kernel
-   - installing a newer version of udev
-   - using a different USRP on my machine (doesn't work)
 
-I'm not sure what else to try... heres what I did between when it worked 
-and broke, trying to set the USB permissions properly:
+Kinda easier to code isn't it? And the cost of the upcall to schedule the 
+clet is widely amortized by the multple syscalls you're going to do inside 
+your clet.
 
------------------
 
-I tried udev first, and created /etc/udev/rules.d/60-usrp.rules:
-# USRP without loaded firmware (FX2)
-BUS=="usb", SYSFS{idVendor}=="fffe", SYSFS{idProduct}=="0002", 
-SYSFS{bcdDevice}=="0002", GROUP="usrp", RUN+="/usr/local/bin/usrper 
-load_standard_bits"
-BUS=="usb", SYSFS{idVendor}=="fffe", SYSFS{idProduct}=="0002", 
-SYSFS{bcdDevice}=="0004", GROUP="usrp", RUN+="/usr/local/bin/usrper 
-load_standard_bits"
 
-# USRP with loaded firmware
-BUS=="usb", SYSFS{idVendor}=="fffe", SYSFS{idProduct}=="0002", 
-SYSFS{bcdDevice}=="0102", GROUP="usrp"
-BUS=="usb", SYSFS{idVendor}=="fffe", SYSFS{idProduct}=="0002", 
-SYSFS{bcdDevice}=="0104", GROUP="usrp"
 
------------------
+- Davide
 
-So the other method was with hotplug, and i made /etc/hotplug/usb/usrp:
-#!/bin/sh
-chown root:usb "$DEVICE"
-chmod ug+rw "$DEVICE"
 
-and usrp.usermap:
-usrp    0x0003  0xfffe  0x0002  0    0  0    0  0       0       0       0
-
------------------
-
-I would greatly appreciate any help and suggestions.
-
-Thanks!
-George
