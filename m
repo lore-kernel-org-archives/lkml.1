@@ -1,85 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965251AbXBOIfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965218AbXBOIke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965251AbXBOIfo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 03:35:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965232AbXBOIfo
+	id S965218AbXBOIke (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 03:40:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965317AbXBOIke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 03:35:44 -0500
-Received: from coyote.holtmann.net ([217.160.111.169]:33899 "EHLO
-	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965251AbXBOIfm (ORCPT
+	Thu, 15 Feb 2007 03:40:34 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:62499 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965218AbXBOIke (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 03:35:42 -0500
-Subject: Re: [PATCH] Optimize generic get_unaligned / put_unaligned
-	implementations.
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ralf Baechle <ralf@linux-mips.org>, Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070214203903.8d013170.akpm@linux-foundation.org>
-References: <20050830104056.GA4710@linux-mips.org>
-	 <20060306.203218.69025300.nemoto@toshiba-tops.co.jp>
-	 <20060306170552.0aab29c5.akpm@osdl.org>
-	 <20070214214226.GA17899@linux-mips.org>
-	 <20070214203903.8d013170.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 15 Feb 2007 09:35:16 +0100
-Message-Id: <1171528516.28302.30.camel@violet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.91 
+	Thu, 15 Feb 2007 03:40:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MvD6ktntAOZGf5NREMgmj6+ZVQq4SHDK3bqSG8fJN1vJc8yRwrx7ApPPBjbxfxWE7yV1jU16KvizVcT+Zr5wJv7AN6a6B69oZt0J0q3Kp3GSnAh2H3Tp7VwsziwA7ir1PX6VV7PqLUSXMUTLukwgb0n9wxXTJcSGMRpUy3R1avw=
+Message-ID: <9b3a62ab0702150040i593d4f25p4beb7fcd1a81f9a8@mail.gmail.com>
+Date: Thu, 15 Feb 2007 00:40:31 -0800
+From: "v j" <vj.linux@gmail.com>
+To: "Richard Knutsson" <ricknu-0@student.ltu.se>
+Subject: Re: GPL vs non-GPL device drivers
+Cc: "Arjan van de Ven" <arjan@infradead.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <45D416FF.4030302@student.ltu.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+	 <1171524970.12771.568.camel@laptopd505.fenrus.org>
+	 <9b3a62ab0702150004n78763d4ei652b41c7edcd0755@mail.gmail.com>
+	 <45D416FF.4030302@student.ltu.se>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Oh, I am sorry. Seems like the German courts have spoken. I am not
+sure about what, but they have spoken. Sorry for the confusion.
 
-> > +#define get_unaligned(ptr)						\
-> > +({									\
-> > +	const struct {							\
-> > +		union {							\
-> > +			const int __un_foo[0];				\
-> > +			const __typeof__(*(ptr)) __un;			\
-> > +		} __un __attribute__ ((packed));			\
-> > +	} * const __gu_p = (void *) (ptr);				\
-> > +									\
-> > +	__gu_p->__un.__un;						\
-> >  })
-> 
-> Can someone please tell us how this magic works?  (And it does appear to
-> work).
-> 
-> It seems to assuming that the compiler will assume that members of packed
-> structures can have arbitrary alignment, even if that alignment is obvious.
-> 
-> Which makes sense, but I'd like to see chapter-and-verse from the spec or
-> from the gcc docs so we can rely upon it working on all architectures and
-> compilers from now until ever more.
-
-I am far away from having any knowledge about the GCC internals and the
-reason why this code works, but I've been told the generic way of
-handling unaligned access is this:
-
-#define get_unaligned(ptr)                      \
-({                                              \
-        struct __attribute__((packed)) {        \
-                typeof(*(ptr)) __v;             \
-        } *__p = (void *) (ptr);                \
-        __p->__v;                               \
-})
-
-#define put_unaligned(val, ptr)                 \
-do {                                            \
-        struct __attribute__((packed)) {        \
-                typeof(*(ptr)) __v;             \
-        } *__p = (void *) (ptr);                \
-        __p->__v = (val);                       \
-} while(0)
-
-Actually I am using this code in the Bluetooth userspace library for
-over two years now without any complaints.
-
-Regards
-
-Marcel
-
-
+On 2/15/07, Richard Knutsson <ricknu-0@student.ltu.se> wrote:
+> v j wrote:
+> > On 2/14/07, Arjan van de Ven <arjan@infradead.org> wrote:
+> >> On Wed, 2007-02-14 at 21:16 -0800, v j wrote:
+> >> > This is in reference to the following thread:
+> >> >
+> >> > http://lkml.org/lkml/2006/12/14/63
+> >> >
+> >> > I am not sure if this is ever addressed in LKML, but linux is _very_
+> >> > popular in the embedded space. We (an embedded vendor) chose Linux 3
+> >> > years back because of its lack of royalty model, robustness and
+> >> > availability of infinite number of open-source tools.
+> >>
+> >>
+> >> I think you have a bit of a misunderstanding... Linux is not royalty
+> >> free. Just the royalty is not in the form of cash, but in the form of
+> >> having to give your improvements back to the open source world.
+> >
+> > Sure. But this is not legally binding.
+> Please clarify!
+> http://yro.slashdot.org/yro/04/07/23/1558219.shtml?tid=117&tid=123
+>
+> Richard Knutsson
+>
+>
