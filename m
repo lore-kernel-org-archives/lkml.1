@@ -1,30 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965538AbXBOOph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965563AbXBOOri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965538AbXBOOph (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 09:45:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965554AbXBOOph
+	id S965563AbXBOOri (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 09:47:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965562AbXBOOri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 09:45:37 -0500
-Received: from ns.firmix.at ([62.141.48.66]:41968 "EHLO ns.firmix.at"
+	Thu, 15 Feb 2007 09:47:38 -0500
+Received: from ns.firmix.at ([62.141.48.66]:41973 "EHLO ns.firmix.at"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965538AbXBOOpg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 09:45:36 -0500
+	id S965559AbXBOOrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 09:47:37 -0500
 Subject: Re: GPL vs non-GPL device drivers
 From: Bernd Petrovitsch <bernd@firmix.at>
-To: v j <vj.linux@gmail.com>
-Cc: Trent Waddington <trent.waddington@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <9b3a62ab0702142246r7e4eac4bv26c2ed46ff588871@mail.gmail.com>
+To: Benny Amorsen <benny+usenet@amorsen.dk>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <m3r6srcwru.fsf@ursa.amorsen.dk>
 References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
-	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
-	 <3d57814d0702142147p4eede234ybc9880a38772f55f@mail.gmail.com>
-	 <9b3a62ab0702142214p5c33a02am7e783c59ae0a64f1@mail.gmail.com>
-	 <3d57814d0702142235i687f8481x4eb72269e7f7fa9b@mail.gmail.com>
 	 <9b3a62ab0702142246r7e4eac4bv26c2ed46ff588871@mail.gmail.com>
+	 <20070215073238.GC917@redhat.com>
+	 <200702151524.18409.ml_linuxkernel_20060528@kcore.org>
+	 <m3r6srcwru.fsf@ursa.amorsen.dk>
 Content-Type: text/plain
 Organization: Firmix Software GmbH
-Date: Thu, 15 Feb 2007 15:45:29 +0100
-Message-Id: <1171550729.10976.33.camel@tara.firmix.at>
+Date: Thu, 15 Feb 2007 15:47:32 +0100
+Message-Id: <1171550852.10976.36.camel@tara.firmix.at>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
@@ -36,14 +34,17 @@ Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-14 at 22:46 -0800, v j wrote:
-> You don't get it do you. Our source code is meaningless to the Open
-> Source community at large. It is only useful to our tiny set of
+On Thu, 2007-02-15 at 15:37 +0100, Benny Amorsen wrote:
+> >>>>> "JDL" == Jan De Luyck <ml_linuxkernel_20060528@kcore.org> writes:
+> 
+> JDL> I think a nice example of that might be the Linksys WRT54G
+> JDL> routers.
+> 
+> They don't ship with Linux anymore, except the WRT54GL. Apparently
+> switching was worth it to save 2MB flash.
 
-Perhaps you should leave that decision to the open source community at
-large.
-
-[ Useless fullquote deleted ]
+If you sell that many of them (several thousand per month?), it is it
+worth.
 
 	Bernd
 -- 
