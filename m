@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965563AbXBOOri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965562AbXBOOtG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965563AbXBOOri (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 09:47:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965562AbXBOOri
+	id S965562AbXBOOtG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 09:49:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965522AbXBOOtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 09:47:38 -0500
-Received: from ns.firmix.at ([62.141.48.66]:41973 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965559AbXBOOrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 09:47:37 -0500
-Subject: Re: GPL vs non-GPL device drivers
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Benny Amorsen <benny+usenet@amorsen.dk>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <m3r6srcwru.fsf@ursa.amorsen.dk>
-References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
-	 <9b3a62ab0702142246r7e4eac4bv26c2ed46ff588871@mail.gmail.com>
-	 <20070215073238.GC917@redhat.com>
-	 <200702151524.18409.ml_linuxkernel_20060528@kcore.org>
-	 <m3r6srcwru.fsf@ursa.amorsen.dk>
+	Thu, 15 Feb 2007 09:49:06 -0500
+Received: from rrcs-24-153-217-226.sw.biz.rr.com ([24.153.217.226]:37899 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965562AbXBOOtE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 09:49:04 -0500
+Subject: [PATCH] 2.6.21 iw_cxgb3 Fail posts synchronously when in TERMINATE
+	state.
+From: Steve Wise <swise@opengridcomputing.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: openib-general <openib-general@openib.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
 Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Thu, 15 Feb 2007 15:47:32 +0100
-Message-Id: <1171550852.10976.36.camel@tara.firmix.at>
+Date: Thu, 15 Feb 2007 08:49:02 -0600
+Message-Id: <1171550942.13282.5.camel@stevo-desktop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+X-Mailer: Evolution 2.4.0 
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.416 () AWL,BAYES_00,FORGED_RCVD_HELO
-X-Firmix-Spam-Status: No, hits=-2.416 required=5
-X-Spam-Score: -2.416 () AWL,BAYES_00,FORGED_RCVD_HELO
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-02-15 at 15:37 +0100, Benny Amorsen wrote:
-> >>>>> "JDL" == Jan De Luyck <ml_linuxkernel_20060528@kcore.org> writes:
-> 
-> JDL> I think a nice example of that might be the Linksys WRT54G
-> JDL> routers.
-> 
-> They don't ship with Linux anymore, except the WRT54GL. Apparently
-> switching was worth it to save 2MB flash.
+From: Steve Wise <swise@opengridcomputing.com>
 
-If you sell that many of them (several thousand per month?), it is it
-worth.
+Fail posts synchronously when in TERMINATE state.
 
-	Bernd
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
+For T3B devices, mark user qp in error once we transition
+to TERMINATE.
+
+Signed-off-by: Steve Wise <swise@opengridcomputing.com>
+---
+
+ drivers/infiniband/hw/cxgb3/iwch_qp.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/infiniband/hw/cxgb3/iwch_qp.c b/drivers/infiniband/hw/cxgb3/iwch_qp.c
+index e066727..da13a38 100644
+--- a/drivers/infiniband/hw/cxgb3/iwch_qp.c
++++ b/drivers/infiniband/hw/cxgb3/iwch_qp.c
+@@ -846,6 +846,8 @@ int iwch_modify_qp(struct iwch_dev *rhp,
+ 			break;
+ 		case IWCH_QP_STATE_TERMINATE:
+ 			qhp->attr.state = IWCH_QP_STATE_TERMINATE;
++			if (t3b_device(qhp->rhp))
++				cxio_set_wq_in_error(&qhp->wq);
+ 			if (!internal)
+ 				terminate = 1;
+ 			break;
 
