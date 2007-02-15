@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161472AbXBOWNI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161480AbXBOWOC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161472AbXBOWNI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 17:13:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161469AbXBOWNH
+	id S1161480AbXBOWOC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 17:14:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161478AbXBOWOC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 17:13:07 -0500
-Received: from ns2.suse.de ([195.135.220.15]:39377 "EHLO mx2.suse.de"
+	Thu, 15 Feb 2007 17:14:02 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:36622 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161472AbXBOWNG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 17:13:06 -0500
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SuSE Labs, Novell
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing
-Date: Thu, 15 Feb 2007 14:12:43 -0800
-User-Agent: KMail/1.9.5
-Cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
-       herbert.xu@redhat.com, linux-kernel@vger.kernel.org,
-       arjan@infradead.org, linux-crypto@vger.kernel.org
-References: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com> <200702142214.53625.agruen@suse.de> <200702152034.l1FKYS93012172@turing-police.cc.vt.edu>
-In-Reply-To: <200702152034.l1FKYS93012172@turing-police.cc.vt.edu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702151412.43758.agruen@suse.de>
+	id S1161466AbXBOWOA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 17:14:00 -0500
+Date: Thu, 15 Feb 2007 14:13:37 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] do_basic_setup: implicit declaration of function
+ =?UTF-8?Q?=E2=80=98init=5Firq=5Fproc'?=
+Message-Id: <20070215141337.c3effca2.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.62.0702151604230.13011@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0702151604230.13011@pademelon.sonytel.be>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 February 2007 12:34, Valdis.Kletnieks@vt.edu wrote:
-> On Wed, 14 Feb 2007 22:14:53 PST, Andreas Gruenbacher said:
-> > I agree, that's really what should happen. We solve this by marking
-> > modules as supported, partner supported, or unsupported, but in an
-> > "insecure" way, so partners and users could try to fake the support
-> > status of a module and/or remove status flags from Oopses, and
-> > cryptography wouldn't save us.
->
-> Where cryptography *can* save you is that a partner or user can't fake a
-> 'Suse Supported' signature without access to the Suse private key.
+On Thu, 15 Feb 2007 16:06:23 +0100 (CET)
+Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
-No question about that. We actually already get this from rpm signatures. What 
-would module signatures buy us? The kernel could then reliably determine that 
-an unsigned module was loaded. But people could still fake their Oopses, or 
-overwite the flags which indicate that a module's signature didn't match, so 
-we still wouldn't reliably get at that information.
+> Add missing #include <linux/irq.h>, which caused
+> 
+> | init/main.c: In function ‘do_basic_setup’:
+> | init/main.c:705: warning: implicit declaration of function ‘init_irq_proc’
+> 
+> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> 
+> diff --git a/init/main.c b/init/main.c
+> index 2421e15..8bba00e 100644
+> --- a/init/main.c
+> +++ b/init/main.c
+> @@ -52,6 +52,7 @@
+>  #include <linux/lockdep.h>
+>  #include <linux/pid_namespace.h>
+>  #include <linux/device.h>
+> +#include <linux/irq.h>
+>  
 
-Andreas
+Russell will chuck a wobbly:  `head -10 include/linux/irq.h'
+
+Probably the init_irq_proc() declaration is in the wrong header.
