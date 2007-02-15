@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965888AbXBOLXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965887AbXBOLYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965888AbXBOLXk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 06:23:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965887AbXBOLXk
+	id S965887AbXBOLYZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 06:24:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965889AbXBOLYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 06:23:40 -0500
-Received: from violet.upc.es ([147.83.2.51]:34856 "EHLO violet.upc.es"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965885AbXBOLXj convert rfc822-to-8bit (ORCPT
+	Thu, 15 Feb 2007 06:24:25 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:44838 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965887AbXBOLYY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 06:23:39 -0500
-From: Leopold Palomo-Avellaneda <lepalom@wol.es>
-To: Jean Delvare <jdelvare@suse.de>
-Subject: Re: Sata_via problems in a Vintage2-AE1: Resume
-Date: Thu, 15 Feb 2007 12:23:18 +0100
-User-Agent: KMail/1.9.5
-Cc: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jeff Garzik <jgarzik@pobox.com>
-References: <200702090010.06897.lepalom@wol.es> <200702131711.11781.lepalom@wol.es> <200702131719.47507.jdelvare@suse.de>
-In-Reply-To: <200702131719.47507.jdelvare@suse.de>
+	Thu, 15 Feb 2007 06:24:24 -0500
+Date: Thu, 15 Feb 2007 11:24:06 +0000 (GMT)
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Heikki Orsila <shdl@zakalwe.fi>
+cc: Mauro Carvalho Chehab <mchehab@linuxtv.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
+       Linux and Kernel Video <video4linux-list@redhat.com>,
+       Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 000/196] V4L/DVB updates
+In-Reply-To: <20070215095627.GD11613@zakalwe.fi>
+Message-ID: <Pine.LNX.4.64.0702151117490.16819@pentafluge.infradead.org>
+References: <1171519195.6703.25.camel@areia> <20070215095627.GD11613@zakalwe.fi>
 MIME-Version: 1.0
-Message-Id: <200702151223.19333.lepalom@wol.es>
-X-MIMETrack: Itemize by SMTP Server on Ackerman/UPC(Release 5.0.12  |February 13, 2003) at
- 15/02/2007 12:23:20,
-	Serialize by Router on Ackerman/UPC(Release 5.0.12  |February 13, 2003) at
- 15/02/2007 12:23:22,
-	Serialize complete at 15/02/2007 12:23:22
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain;
-  charset="iso-8859-13"
-Content-Disposition: inline
-X-Mail-Scanned: Criba 2.0 + Clamd
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.0.2 (violet.upc.es [147.83.2.51]); Thu, 15 Feb 2007 12:23:23 +0100 (CET)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A Dimarts 13 Febrer 2007 17:19, Jean Delvare va escriure:
-> Le Mardi 13 Février 2007 17:11, Leopold Palomo-Avellaneda a écrit :
-> > A Dimarts 13 Febrer 2007 12:20, Jean Delvare va escriure:
-> > (...)
-> >
-> > > > > *If* the VT8251 needs the VIA IRQ quirk, then the attached patch
-> > > > > may help. Leopold, can you give it a try?
-> > > >
-> > > > Well, making your patch to the vanilla 2.6.20 the result is the same.
-> > > > The box doesn't boot. Always the same problem ....
-> > >
-> > > If it's not a VIA IRQ problem, then there's nothing more I can do,
-> > > sorry. Someone else will have to look into the problem.
-> > >
-> > > Out of curiosity, with my patch applied, did you see any "VIA VLink IRQ
-> > > fixup" messages on the console?
-> >
-> > No :-(
+On Thu, 15 Feb 2007, Heikki Orsila wrote:
+
+> On Thu, Feb 15, 2007 at 03:59:55AM -0200, Mauro Carvalho Chehab wrote:
+>> Basically, this series adds support for a bunch of newer cards and newer
+>> drivers, do some relevant cleanups on cx88 (improving source code
+>> readability and reducing binary code size), adds FM radio support on
+>> pvrusb2 and do several other fixes and improvements.
+>>
+>> A more detailed log:
+>>
+>> [removed 100+ lines of stuff]
+>>>
+>> PS.: Due to the size of this series, I'm not mailbombing them into LKML.
+>>
+>> V4L/DVB development is hosted at http://linuxtv.org
 >
-> OK, so maybe the VT8251 actually no longer needs the quirk. Thanks for
-> testing and reporting.
+> Why weren't these submitted in smaller batches? Why were all these
+> patches held back before releasing any?
+All those patches are meant to 2.6.21, since they are mostly 
+improvements, and are being pushed, from time to time, into -mm series, 
+during -rc cycle.
 
+It should also be noticed that they are discussed on subsystem mailing 
+lists.
 
-Hi people,
- 
-arriving to this state. What do you recommend?
-
-I have the box more or less working with irqpoll but with a lot of messages:
-APIC error on CPU0: 08(08)
-
-and the box doesn't boot without the irqpoll option. Do you think that the 
-2.6.21 have some kind of changes in this area?
-
-Thank's for all for you patience and your messages.
-
-Best regards,
-
-Leo
+-- 
+Cheers,
+Mauro Carvalho Chehab
+http://linuxtv.org
+mchehab@infradead.org
