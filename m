@@ -1,67 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161640AbXBOX1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750903AbXBOX3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161640AbXBOX1T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 18:27:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161627AbXBOX1T
+	id S1750903AbXBOX3f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 18:29:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbXBOX3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 18:27:19 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:38549 "EHLO smtp.osdl.org"
+	Thu, 15 Feb 2007 18:29:35 -0500
+Received: from atlrel8.hp.com ([156.153.255.206]:49222 "EHLO atlrel8.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161640AbXBOX1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 18:27:18 -0500
-Date: Thu, 15 Feb 2007 15:27:08 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [PATCH] MAINTAINERS: mark framebuffer as Orphan
-Message-Id: <20070215152708.2e4f8c8b.akpm@linux-foundation.org>
-In-Reply-To: <20070215132549.c182f7bf.randy.dunlap@oracle.com>
-References: <20070215132549.c182f7bf.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	id S1750901AbXBOX3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 18:29:34 -0500
+Subject: Re: [patch] mm: NUMA replicated pagecache
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+In-Reply-To: <20070215003810.GE29797@wotan.suse.de>
+References: <20070213060924.GB20644@wotan.suse.de>
+	 <1171485124.5099.43.camel@localhost> <20070215003810.GE29797@wotan.suse.de>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Thu, 15 Feb 2007 18:29:29 -0500
+Message-Id: <1171582169.5114.86.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Feb 2007 13:25:49 -0800
-Randy Dunlap <randy.dunlap@oracle.com> wrote:
+On Thu, 2007-02-15 at 01:38 +0100, Nick Piggin wrote:
+> On Wed, Feb 14, 2007 at 03:32:04PM -0500, Lee Schermerhorn wrote:
+> > On Tue, 2007-02-13 at 07:09 +0100, Nick Piggin wrote:
+> > > Hi,
+> > > 
+> > > Just tinkering around with this and got something working, so I'll see
+> > > if anyone else wants to try it.
+> > > 
+> > > Not proposing for inclusion, but I'd be interested in comments or results.
+> > > 
+> > > Thanks,
+> > > Nick
+> > 
+> > I've included a small patch below that allow me to build and boot with
+> > these patches on an HP NUMA platform.  I'm still seeing an "unable to
+> 
+> Thanks Lee. Merged.
 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Are we ready to do this?
-> I'd love for Tony to return, but he's been missing for awhile now.
-> 
-> So this give us the following major areas that are marked as Orphan:
-> 
-> Firmware loader
-> Framebuffer
-> Serial (8250/16x50)
-> 
-> and PCMCIA has a Team.  It doesn't seem to be hurting.  :)
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  MAINTAINERS |    4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
-> 
-> --- linux-2.6.20-git9.orig/MAINTAINERS
-> +++ linux-2.6.20-git9/MAINTAINERS
-> @@ -1321,11 +1321,9 @@ W:	http://www.farsite.co.uk/
->  S:	Supported
->  
->  FRAMEBUFFER LAYER
-> -P:	Antonino Daplas
-> -M:	adaplas@pol.net
->  L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
->  W:	http://linux-fbdev.sourceforge.net/
-> -S:	Maintained
-> +S:	Orphan
+No worries...
 
-No, James is keeping an eye on things, but he obviously doesn't have as
-much time to work on it as Tony did.
+I've attached another patch that closes one race and fixes a context
+problem [irq/preemption state] in __unreplicate_page_range().  This
+makes the locking even uglier :-(.
 
-My point was that for bugs such as the one Pavel identified we're no longer
-able to palm it off on the maintainer and expect magic to happen.  Either we
-all dig in and help out or things don't get fixed.
+I get further with this patch.  Boot all the way up and can run fine
+with page replication.  However, I still get a NULL pcd in
+find_get_page_readonly() when attempting a highly parallel kernel build
+[16cpu/4node numa platform].  I'm still trying to track that down.
+
+Question about locking:  looks like the pcache_descriptor members are
+protected by the tree_lock of the mapping, right?
+
+Lee
+
+======================
+
+Additional fixes for Nick's page cache replication patch
+
+1) recheck that page is replicated after down grading mapping tree lock.
+   return results of check from __replicate_pcache().
+
+2) in __unreplicate_pcache_range(), call __unreplicate_pcache() in appropriate
+   context vis a vis irqs and preemption
+
+3) report null pcd in find_get_page_readonly().  shouldn't happen?
+
+Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+
+ mm/filemap.c |   27 +++++++++++++++++++++------
+ 1 file changed, 21 insertions(+), 6 deletions(-)
+
+Index: Linux/mm/filemap.c
+===================================================================
+--- Linux.orig/mm/filemap.c	2007-02-15 15:25:23.000000000 -0500
++++ Linux/mm/filemap.c	2007-02-15 17:42:27.000000000 -0500
+@@ -669,7 +669,6 @@ static int __replicate_pcache(struct pag
+ 	struct pcache_desc *pcd;
+ 	int nid, page_node;
+ 	int writelock = 0;
+-	int ret = 0;
+ 
+ 	if (unlikely(PageSwapCache(page)))
+ 		goto out;
+@@ -691,7 +690,7 @@ again:
+ 		lock_page(page);
+ 		if (!page->mapping) {
+ 			unlock_page(page);
+-			return 0;
++			goto read_lock_out;	/* reacquire read lock */
+ 		}
+ 		write_lock_irq(&mapping->tree_lock);
+ 		writelock = 1;
+@@ -716,15 +715,19 @@ again:
+ 	BUG_ON(radix_tree_insert(&mapping->page_tree, offset, pcd));
+ 	radix_tree_tag_set(&mapping->page_tree, offset,
+ 					PAGECACHE_TAG_REPLICATED);
+-	ret = 1;
+ out:
+ 	if (writelock) {
+ 		write_unlock_irq(&mapping->tree_lock);
+ 		unlock_page(page);
++read_lock_out:
+ 		read_lock_irq(&mapping->tree_lock);
+ 	}
+ 
+-	return ret;
++	/*
++	 * ensure page still replicated after demoting the tree lock
++	 */
++	return (radix_tree_tag_get(&mapping->page_tree, offset,
++					PAGECACHE_TAG_REPLICATED));
+ }
+ 
+ void __unreplicate_pcache(struct address_space *mapping, unsigned long offset)
+@@ -813,6 +816,11 @@ retry:
+ replicated:
+ 		nid = numa_node_id();
+ 		pcd = radix_tree_lookup(&mapping->page_tree, offset);
++		if (!pcd) {
++			printk(KERN_DEBUG "%s NULL pcd at tagged offset\n",
++				__FUNCTION__);
++			BUG();
++		}
+ 		if (!node_isset(nid, pcd->nodes_present)) {
+ 			struct page *repl_page;
+ 
+@@ -991,9 +999,16 @@ again:
+ 			struct pcache_desc *pcd = (struct pcache_desc *)pages[i];
+ 			pages[i] = (struct page *)pcd->master->index;
+ 		}
+-		read_unlock(&mapping->tree_lock);
++		read_unlock(&mapping->tree_lock);	/* irqs/preempt off */
+ 		for (i = 0; i < ret; i++) {
+-			write_lock(&mapping->tree_lock);
++			/*
++			 * __unreplicate_pcache() expects tree write locked
++			 * with irq/preemption disabled.
++			 */
++			if (i)
++				write_lock_irq(&mapping->tree_lock);
++			else
++				write_lock(&mapping->tree_lock);
+ 			__unreplicate_pcache(mapping, (unsigned long)pages[i]);
+ 		}
+ 		read_lock_irq(&mapping->tree_lock);
+
+
