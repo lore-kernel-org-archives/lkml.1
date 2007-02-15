@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161220AbXBOU7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161269AbXBOVCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161220AbXBOU7M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 15:59:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161251AbXBOU7L
+	id S1161269AbXBOVCf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 16:02:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161268AbXBOVCf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 15:59:11 -0500
-Received: from mail.nagafix.co.uk ([194.145.196.85]:46168 "EHLO
-	mail.nagafix.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161220AbXBOU7K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 15:59:10 -0500
-Message-ID: <45D4C999.4080507@nagafix.co.uk>
-Date: Thu, 15 Feb 2007 20:59:05 +0000
-From: Antoine Martin <antoine@nagafix.co.uk>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+	Thu, 15 Feb 2007 16:02:35 -0500
+Received: from scrub.xs4all.nl ([194.109.195.176]:52674 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161260AbXBOVCe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 16:02:34 -0500
+Date: Thu, 15 Feb 2007 22:01:40 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: David Lang <david.lang@digitalinsight.com>
+cc: David Howells <dhowells@redhat.com>, torvalds@osdl.org, akpm@osdl.org,
+       herbert.xu@redhat.com, linux-kernel@vger.kernel.org, davej@redhat.com,
+       arjan@infradead.org, linux-crypto@vger.kernel.org
+Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing 
+In-Reply-To: <Pine.LNX.4.63.0702151155330.9862@qynat.qvtvafvgr.pbz>
+Message-ID: <Pine.LNX.4.64.0702152143470.14458@scrub.home>
+References: <Pine.LNX.4.64.0702151530260.14458@scrub.home> 
+ <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com> 
+ <32081.1171560770@redhat.com> <Pine.LNX.4.64.0702151901380.14458@scrub.home>
+ <Pine.LNX.4.63.0702151155330.9862@qynat.qvtvafvgr.pbz>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: BUG: warning at kernel/cpu.c:51/unlock_cpu_hotplug() - 2.6.18.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just caught this in the log whilst running some unit tests.
-(the test was in the process of starting 900 Java threads)
+Hi,
 
-audit(1171565587.887:96): enforcing=0 old_enforcing=1 auid=4294967295
-BUG: warning at kernel/cpu.c:51/unlock_cpu_hotplug()
+On Thu, 15 Feb 2007, David Lang wrote:
 
-Call Trace:
-  [<ffffffff80269c98>] dump_stack+0x12/0x17
-  [<ffffffff8029dfe6>] unlock_cpu_hotplug+0x3f/0x6c
-  [<ffffffff802876b6>] sched_getaffinity+0x7d/0xa2
-  [<ffffffff80287701>] sys_sched_getaffinity+0x26/0x55
-  [<ffffffff8025cb0e>] system_call+0x7e/0x83
-DWARF2 unwinder stuck at system_call+0x7e/0x83
-Leftover inexact backtrace:
+> this issue, and these holes keep comeing up in discussions, why can't these
+> holes be closed? I seem to remember seeing patches that would remove /dev/kmem
+> being sent to the list, but they weren't accepted into the kernel (and I seem
+> to remember people being against the concept of removeing them, not against
+> techincal details of the patches. but this was many years ago)
 
-audit(1171579693.653:97): avc:  denied  { connectto } for  pid=9211 
-comm="mount" name=".setrans-unix" scontext=system_u:system_r:mount_t:s0 
-tcontext=system_u:system_r:initrc_t:s0 tclass=unix_stream_socket
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on sdb3, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-SELinux: initialized (dev sdb3, type ext3), uses xattr
+1. It depends on the ratio of added code and its usefulness. I must assume 
+the first patch didn't even make it to the kernel due to its size, so I 
+think it's not unreasonable to explore the alternatives.
+2. There are many ways to load an unauthorized module, thus you have to 
+prevent any modification of the kernel not just in memory but also on 
+disk.
+
+bye, Roman
