@@ -1,66 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161276AbXBOVDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161275AbXBOVEN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161276AbXBOVDE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 16:03:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161274AbXBOVDE
+	id S1161275AbXBOVEN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 16:04:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161277AbXBOVEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 16:03:04 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:57977 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161271AbXBOVDB (ORCPT
+	Thu, 15 Feb 2007 16:04:12 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:58646 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161275AbXBOVEL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 16:03:01 -0500
-Date: Thu, 15 Feb 2007 22:03:06 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@osdl.org, akpm@osdl.org, herbert.xu@redhat.com,
-       linux-kernel@vger.kernel.org, davej@redhat.com, arjan@infradead.org,
-       linux-crypto@vger.kernel.org
-Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing
-Message-ID: <20070215210306.GF13958@stusta.de>
-References: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com>
+	Thu, 15 Feb 2007 16:04:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:references:in-reply-to:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=KB98OybK2fw9mduSb8VbW+oI+ZWdFRWJjJrYvVvHchOoEhtrvrlxhqW3/7VlFafTj1phP7wWYjy0zDOkL/cHYYsxzFIC4j19xnFFdRvrmXYb4OuVs0wf6ehTS+1gtVCzd+HisoeNZ/ryjQ06wm7PYLkOM41zqWrDsh9vM5Llmag=
+From: Maxim <maximlevitsky@gmail.com>
+To: netdev@kernel.org
+Subject: [PATCH 2.6.20 002/005] [RESEND v2] dmfe : Fix two bugs
+Date: Thu, 15 Feb 2007 23:04:03 +0200
+User-Agent: KMail/1.9.6
+References: <200702152253.53680.maximlevitsky@gmail.com>
+In-Reply-To: <200702152253.53680.maximlevitsky@gmail.com>
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200702152304.03835.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 14, 2007 at 07:09:38PM +0000, David Howells wrote:
->...
-> There are several reasons why these patches are useful, amongst which are:
->...
->  (4) to allow other support providers to do likewise, or at least to _detect_
->      the fact that unsupported modules are loaded;
-> 
->  (5) to allow the detection of modules replaced by a second-order distro or a
->      preloaded Linux purveyor.
->...
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: [PATCH 2.6.20 002/005] [RESEND v2] dmfe : Fix two bugs
 
-Who might have rebuilt the whole kernel using a new signature.
+Fix a oops on module removal due to deallocating memory before unregistring driver
+Fix a NULL pointer dereference when dev_alloc_skb fails
 
-Or a bug reporter might have edited out the parts containing the 
-information that unsupported code was loaded.
+Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 
-Or the unsupported module itself might have removed all traces of having 
-been loaded from the kernel.
+---
 
-For printing nvidia(U), you could simply add some marker similar to 
-MODULE_LICENSE() that gets added to supported modules during "official" 
-builds and gets checked when loading a module.
-
-That's 10k LOC less and the same level of security...
-
-> David
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+--- linux-2.6.20-mod/drivers/net/tulip/dmfe.c	2007-02-15 17:59:33.000000000 +0200
++++ linux-2.6.20-test/drivers/net/tulip/dmfe.c	2007-02-15 18:00:14.000000000 +0200
+@@ -501,14 +501,17 @@ static void __devexit dmfe_remove_one (s
+ 	DMFE_DBUG(0, "dmfe_remove_one()", 0);
+ 
+  	if (dev) {
++		
++		unregister_netdev(dev);
++		
+ 		pci_free_consistent(db->pdev, sizeof(struct tx_desc) *
+ 					DESC_ALL_CNT + 0x20, db->desc_pool_ptr,
+  					db->desc_pool_dma_ptr);
+ 		pci_free_consistent(db->pdev, TX_BUF_ALLOC * TX_DESC_CNT + 4,
+ 					db->buf_pool_ptr, db->buf_pool_dma_ptr);
+-		unregister_netdev(dev);
+ 		pci_release_regions(pdev);
+ 		free_netdev(dev);	/* free board information */
++		
+ 		pci_set_drvdata(pdev, NULL);
+ 	}
+ 
+@@ -927,7 +930,7 @@ static inline u32 cal_CRC(unsigned char 
+ static void dmfe_rx_packet(struct DEVICE *dev, struct dmfe_board_info * db)
+ {
+ 	struct rx_desc *rxptr;
+-	struct sk_buff *skb;
++	struct sk_buff *skb, *newskb;
+ 	int rxlen;
+ 	u32 rdes0;
+ 
+@@ -981,8 +984,10 @@ static void dmfe_rx_packet(struct DEVICE
+ 					/* Good packet, send to upper layer */
+ 					/* Shorst packet used new SKB */
+ 					if ( (rxlen < RX_COPY_SIZE) &&
+-						( (skb = dev_alloc_skb(rxlen + 2) )
++						( (newskb = dev_alloc_skb(rxlen + 2) )
+ 						!= NULL) ) {
++						
++						skb = newskb;
+ 						/* size less than COPY_SIZE, allocate a rxlen SKB */
+ 						skb->dev = dev;
+ 						skb_reserve(skb, 2); /* 16byte align */
