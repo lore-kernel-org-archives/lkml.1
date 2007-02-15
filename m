@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030630AbXBOTCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030390AbXBOTDH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030630AbXBOTCT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 14:02:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030654AbXBOTCT
+	id S1030390AbXBOTDH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 14:03:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030395AbXBOTDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 14:02:19 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:47250 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030630AbXBOTCS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 14:02:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HKtEjAhGloTZDpTwS7e9X3wHG+RmyH9YEKgJl+M0bnA7JGrIv4WsNUzo9U7Mx4Ys9HuVUZ3p7pNYnLzSVQxnOwNQD2My+nzi53M4EHoOKRDfZyQ1cDRhjRFwezHYhsIwWUeyVSFM5+QFrCuR276BtReqCKOOMPwdGscFir4piGs=
-Message-ID: <653402b90702151102n3a3e0435r837e2191de79b2b@mail.gmail.com>
-Date: Thu, 15 Feb 2007 20:02:16 +0100
-From: "Miguel Ojeda" <maxextreme@gmail.com>
-To: "v j" <vj.linux@gmail.com>
-Subject: Re: GPL vs non-GPL device drivers
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com>
+	Thu, 15 Feb 2007 14:03:07 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:57153 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030390AbXBOTDF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 14:03:05 -0500
+Date: Thu, 15 Feb 2007 11:02:32 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Sergei Organov <osv@javad.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       =?ISO-8859-1?Q?J=2EA=2E_Magall=C3=C3=C3=C3=C3=C2=B3n?= 
+	<jamagallon@ono.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: somebody dropped a (warning) bomb
+In-Reply-To: <87k5yjjlrj.fsf@javad.com>
+Message-ID: <Pine.LNX.4.64.0702151059090.20368@woody.linux-foundation.org>
+References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702081338010.8424@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0702081351410.8424@woody.linux-foundation.org>
+ <87abznsdyo.fsf@javad.com> <Pine.LNX.4.64.0702090753500.8424@woody.linux-foundation.org>
+ <874pprr5nn.fsf@javad.com> <Pine.LNX.4.64.0702120804520.8424@woody.linux-foundation.org>
+ <87ps8end9b.fsf@javad.com> <84144f020702131026q2af1afd6vbcd2708d7b7b9907@mail.gmail.com>
+ <87bqjxooog.fsf@javad.com> <84144f020702131143r767aa40blb97a39b40bee73b8@mail.gmail.com>
+ <87fy99n6mf.fsf@javad.com> <Pine.LNX.4.64.0702131513050.3604@woody.linux-foundation.org>
+ <87hctnlfqz.fsf@javad.com> <Pine.LNX.4.64.0702150736360.20368@woody.linux-foundation.org>
+ <87k5yjjlrj.fsf@javad.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
-	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
-	 <20070215061149.GE15654@redhat.com>
-	 <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
-	 <20070215165339.GB5285@thunk.org>
-	 <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/15/07, v j <vj.linux@gmail.com> wrote:
-> So far I have heard nothing but, "if you don't contribute, screw you."
 
-Well, so far I have heard from you is "let me use my closed-source
-drivers in Linux or bye bye".
 
-> All this is fine. Just say so. Make it black and white. Make it
+On Thu, 15 Feb 2007, Sergei Organov wrote:
+> 
+> I agree that if the warning has no true positives, it sucks. The problem
+> is that somehow I doubt it has none. And the reasons for the doubt are:
 
-It is not black and white: You are the one who is using Linux; not the
-other way.
+Why do you harp on "no true positives"?
 
-In other words, you use Linux freely and don't help in any way;
-however, you come to demand things and criticize hundreds of persons
-who colaborated here.
+That's a pointless thing. You can make *any* warning have "true 
+positives". My personal favorite is the unconditional warning:
 
-> perfectly clear what is and isn't legal. If we can't load proprietary
-> modules, then so be it. It will help everybody if this is out in the
-> clear, instead of resorting to stupid half measures like
-> EXPORT_SYMBOL_GPL.
->
+	warning: user is an idiot
 
-Stupid, maybe. But some people just don't want closed-source
-projects/companies like yours using their free work, without any kind
-of feedback. Some others don't care, but they could in the future, as
-it is their code, and that is your risk.
+and I _guarantee_ you that it has a lot of true positives.
 
-PD: Please don't top post.
+It's the "no false negatives" angle you should look at.
 
--- 
-Miguel Ojeda
-http://maxextreme.googlepages.com/index.htm
+THAT is what matters. The reason we don't see a lot of warnings about 
+idiot users is not that people don't do stupid things, but that 
+*sometimes* they actually don't do something stupid.
+
+Yeah, I know, it's far-fetched, but still.
+
+In other words, you're barking up *exactly* the wrong tree. You're looking 
+at it the wrong way around.
+
+Think of it this way: in science, a theory is proven to be bad by a single 
+undeniable fact just showing that it's wrong.
+
+The same is largely true of a warning. If the warning sometimes happens 
+for code that is perfectly fine, the warning is bad.
+
+		Linus
