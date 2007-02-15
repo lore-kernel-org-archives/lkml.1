@@ -1,31 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751366AbXBNX2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964786AbXBNXbG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751366AbXBNX2Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 18:28:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbXBNX2Y
+	id S964786AbXBNXbG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 18:31:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbXBNXbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 18:28:24 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45018 "EHLO
+	Wed, 14 Feb 2007 18:31:06 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45055 "EHLO
 	localhost.localdomain" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751366AbXBNX2X (ORCPT
+	with ESMTP id S1751376AbXBNXbD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 18:28:23 -0500
-Date: Thu, 15 Feb 2007 00:31:41 +0000
+	Wed, 14 Feb 2007 18:31:03 -0500
+Date: Thu, 15 Feb 2007 00:33:39 +0000
 From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Dax Kelson <dax@gurulabs.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jean Delvare <khali@linux-fr.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Linus' laptop and Num lock status
-Message-ID: <20070215003141.72b195a4@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.61.0702142257490.19368@yvahk01.tjqt.qr>
-References: <1171479361.3706.48.camel@mentorng.gurulabs.com>
-	<Pine.LNX.4.64.0702141104210.3604@woody.linux-foundation.org>
-	<20070214202144.1ddb930f.khali@linux-fr.org>
-	<Pine.LNX.4.64.0702141130340.20368@woody.linux-foundation.org>
-	<1171488840.3706.78.camel@mentorng.gurulabs.com>
-	<Pine.LNX.4.61.0702142257490.19368@yvahk01.tjqt.qr>
+To: Zachary Amsden <zach@vmware.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
+       Andi Kleen <ak@muc.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH 9/11] Panic delay fix
+Message-ID: <20070215003339.1420faff@localhost.localdomain>
+In-Reply-To: <45D384C4.2000306@vmware.com>
+References: <200702060353.l163rUmj000771@zach-dev.vmware.com>
+	<20070206122729.GC47229@muc.de>
+	<45C8FA2D.6010706@vmware.com>
+	<20070207123552.GD4481@ucw.cz>
+	<1170880572.11736.4.camel@localhost.localdomain>
+	<20070214125216.2befda78@localhost.localdomain>
+	<45D36B49.5090109@vmware.com>
+	<20070214213423.4834941b@localhost.localdomain>
+	<45D384C4.2000306@vmware.com>
 X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -33,12 +37,19 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Feb 2007 22:58:42 +0100 (MET)
-Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
+On Wed, 14 Feb 2007 13:53:08 -0800
+Zachary Amsden <zach@vmware.com> wrote:
 
-> Probably just because legacy mode was enabled. Plus I wonder what 0x497 will
-> return when there is actually more than one USB keyboard connected at boot.
+> > IDE on several platforms has performance critical paths that use
+> > ndelay(400) or failing that udelay(1)
+> 
+> Ok, I buy that.  A 486DX / 33 Mhz processor takes 10 cycles to issue a 
+> CALL / RET pair.  This is about 300ns.  Is there an issue with being too 
+> early to issue I/O operations or too late?
 
-The BIOS initial numlock value which is a singular value.
+Too early you lose, too late you just waste clock time.
 
-Alan
+> But I fail to see how such careful timing can be done at this 
+> granularity on such hardware without well tweaked assembly code. 
+
+Thats what is used  most platforms use udelay(1) in fact however
