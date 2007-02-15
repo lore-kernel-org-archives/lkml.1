@@ -1,45 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965658AbXBOLTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965888AbXBOLXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965658AbXBOLTb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 06:19:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965646AbXBOLTb
+	id S965888AbXBOLXk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 06:23:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965887AbXBOLXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 06:19:31 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55417 "EHLO mx1.redhat.com"
+	Thu, 15 Feb 2007 06:23:40 -0500
+Received: from violet.upc.es ([147.83.2.51]:34856 "EHLO violet.upc.es"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965658AbXBOLTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 06:19:30 -0500
-Date: Thu, 15 Feb 2007 06:19:20 -0500
-From: Dave Jones <davej@redhat.com>
-To: Andi Kleen <ak@suse.de>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Unify pcspeaker platform device code between i386/x86-64
-Message-ID: <20070215111920.GC8353@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Andi Kleen <ak@suse.de>,
-	Jeff Garzik <jeff@garzik.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200702150901.l1F910lp023036@hera.kernel.org> <45D4299D.6000906@garzik.org> <200702151049.57943.ak@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S965885AbXBOLXj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 06:23:39 -0500
+From: Leopold Palomo-Avellaneda <lepalom@wol.es>
+To: Jean Delvare <jdelvare@suse.de>
+Subject: Re: Sata_via problems in a Vintage2-AE1: Resume
+Date: Thu, 15 Feb 2007 12:23:18 +0100
+User-Agent: KMail/1.9.5
+Cc: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jeff Garzik <jgarzik@pobox.com>
+References: <200702090010.06897.lepalom@wol.es> <200702131711.11781.lepalom@wol.es> <200702131719.47507.jdelvare@suse.de>
+In-Reply-To: <200702131719.47507.jdelvare@suse.de>
+MIME-Version: 1.0
+Message-Id: <200702151223.19333.lepalom@wol.es>
+X-MIMETrack: Itemize by SMTP Server on Ackerman/UPC(Release 5.0.12  |February 13, 2003) at
+ 15/02/2007 12:23:20,
+	Serialize by Router on Ackerman/UPC(Release 5.0.12  |February 13, 2003) at
+ 15/02/2007 12:23:22,
+	Serialize complete at 15/02/2007 12:23:22
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-13"
 Content-Disposition: inline
-In-Reply-To: <200702151049.57943.ak@suse.de>
-User-Agent: Mutt/1.4.2.2i
+X-Mail-Scanned: Criba 2.0 + Clamd
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.0.2 (violet.upc.es [147.83.2.51]); Thu, 15 Feb 2007 12:23:23 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 15, 2007 at 10:49:57AM +0100, Andi Kleen wrote:
- > 
- > > It's always seemed broken (though perhaps this was a distro bug?) in 
- > > module form, so I've been compiling it in to get it to work.
- > 
- > Must have been a distro bug. It should have worked before as long 
- > as the config was enabled.
+A Dimarts 13 Febrer 2007 17:19, Jean Delvare va escriure:
+> Le Mardi 13 Février 2007 17:11, Leopold Palomo-Avellaneda a écrit :
+> > A Dimarts 13 Febrer 2007 12:20, Jean Delvare va escriure:
+> > (...)
+> >
+> > > > > *If* the VT8251 needs the VIA IRQ quirk, then the attached patch
+> > > > > may help. Leopold, can you give it a try?
+> > > >
+> > > > Well, making your patch to the vanilla 2.6.20 the result is the same.
+> > > > The box doesn't boot. Always the same problem ....
+> > >
+> > > If it's not a VIA IRQ problem, then there's nothing more I can do,
+> > > sorry. Someone else will have to look into the problem.
+> > >
+> > > Out of curiosity, with my patch applied, did you see any "VIA VLink IRQ
+> > > fixup" messages on the console?
+> >
+> > No :-(
+>
+> OK, so maybe the VT8251 actually no longer needs the quirk. Thanks for
+> testing and reporting.
 
-If so, I'm not sure what distro Jeff was running, as it worked
-fine in Fedora for some time on both 32bit and 64bit x86 for me.
 
-		Dave
+Hi people,
+ 
+arriving to this state. What do you recommend?
 
--- 
-http://www.codemonkey.org.uk
+I have the box more or less working with irqpoll but with a lot of messages:
+APIC error on CPU0: 08(08)
+
+and the box doesn't boot without the irqpoll option. Do you think that the 
+2.6.21 have some kind of changes in this area?
+
+Thank's for all for you patience and your messages.
+
+Best regards,
+
+Leo
