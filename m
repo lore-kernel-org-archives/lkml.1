@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946117AbXBPUQL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946114AbXBPUQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946117AbXBPUQL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 15:16:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946116AbXBPUQK
+	id S1946114AbXBPUQR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 15:16:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946120AbXBPUQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 15:16:10 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1413 "EHLO spitz.ucw.cz"
+	Fri, 16 Feb 2007 15:16:17 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1409 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1946117AbXBPUQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 15:16:09 -0500
-Date: Thu, 15 Feb 2007 17:40:10 +0000
+	id S1946114AbXBPUQM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 15:16:12 -0500
+Date: Thu, 15 Feb 2007 22:10:30 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: =?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] input: extend EV_LED
-Message-ID: <20070215174009.GA6535@ucw.cz>
-References: <d120d5000702121031o1ea5ff20lf4e0946c8c1e2980@mail.gmail.com> <freemail.20070114200635.96983@fm13.freemail.hu> <d120d5000702141149g772840e7h87e4362b3f380bc0@mail.gmail.com>
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
+       herbert.xu@redhat.com, linux-kernel@vger.kernel.org,
+       arjan@infradead.org, linux-crypto@vger.kernel.org
+Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing
+Message-ID: <20070215221030.GA6602@ucw.cz>
+References: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com> <200702142135.40832.agruen@suse.de> <20070215054559.GD15654@redhat.com> <200702142214.53625.agruen@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <d120d5000702141149g772840e7h87e4362b3f380bc0@mail.gmail.com>
+In-Reply-To: <200702142214.53625.agruen@suse.de>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> >I do not know the LED subsystem in detail, but I do not 
-> >know
-> >any possibility to access the i8042 from different 
-> >subsystem
-> >than the input subsystem.
-> >
-> >What do you think and recommend?
+> > well, the situation for external modules is no worse than usual.
+> > They still work, they just aren't signed. Which from a distributor point
+> > of view, is actually a nice thing, as they stick out like a sore thumb
+> > in oops reports with (U) markers :)
 > 
-> I think you need to use leds framework for what you are 
-> trying to do.
+> I agree, that's really what should happen. We solve this by marking modules as 
+> supported, partner supported, or unsupported, but in an "insecure" way, so 
+> partners and users could try to fake the support status of a module and/or 
+> remove status flags from Oopses, and cryptography wouldn't save us. We could 
+> try to sign Oopses which I guess you guys are doing. This whole issue hasn't 
 
-I'm actually not sure if led framework can do that. It was designed
-for leds on gpios, and handles blinking itself.
-
-But he could export two leds :-).
-
-							Pavel
+I do not think any ammount of crypto can determine that I loaded
+unsupported module, then edited oops. (TPM hw module may be able to do that, not
+sure).
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
