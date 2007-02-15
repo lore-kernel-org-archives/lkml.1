@@ -1,18 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751403AbXBOAHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932294AbXBOAJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751403AbXBOAHP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 19:07:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbXBOAHP
+	id S932294AbXBOAJF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 19:09:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932577AbXBOAJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 19:07:15 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48748 "EHLO mx2.mail.elte.hu"
+	Wed, 14 Feb 2007 19:09:04 -0500
+Received: from gw.goop.org ([64.81.55.164]:55829 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751412AbXBOAHL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 19:07:11 -0500
-Date: Thu, 15 Feb 2007 01:04:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	id S932294AbXBOAJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 19:09:03 -0500
+Message-ID: <45D3A49B.4030608@goop.org>
+Date: Wed, 14 Feb 2007 16:08:59 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Arjan van de Ven <arjan@infradead.org>,
        Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
@@ -21,58 +26,47 @@ Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        "David S. Miller" <davem@davemloft.net>,
        Benjamin LaHaise <bcrl@kvack.org>,
        Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 05/11] syslets: core code
-Message-ID: <20070215000447.GA23707@elte.hu>
-References: <20070213142035.GF638@elte.hu> <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org> <20070214220948.GA3790@elte.hu> <Pine.LNX.4.64.0702141504140.20368@woody.linux-foundation.org> <20070214234417.GA16332@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070214234417.GA16332@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -5.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Subject: Re: [patch 00/11] ANNOUNCE: "Syslets", generic asynchronous system
+ call support
+References: <20070213142010.GA638@elte.hu> <45D3768B.7010902@goop.org> <Pine.LNX.4.64.0702141321410.7796@alien.or.mcafeemobile.com>
+In-Reply-To: <Pine.LNX.4.64.0702141321410.7796@alien.or.mcafeemobile.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Davide Libenzi wrote:
+>> Would this work?
+>>     
+>
+> Hopefully the API will simplify enough so that emulation will becomes 
+> easier.
+>   
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+The big question in my mind is how all this stuff interacts with
+signals.  Can a blocked syscall atom be interrupted by a signal?  If so,
+what thread does it get delivered to?  How does sigprocmask affect this
+(is it atomic with respect to blocking atoms)?
 
-> > You are not counting the whole setup cost there, then, because your 
-> > setup cost is going to be at a minimum more expensive than the null 
-> > system call.
-> 
-> hm, this one-time cost was never on my radar. [ It's really dwarved by 
-> other startup costs (a single fork() takes 100 usecs, an exec() takes 
-> 800 usecs.) ]
+>> Also, an unrelated question: is there enough control structure in place
+>> to allow multiple syslet streams to synchronize with each other with
+>> futexes?
+>>     
+>
+> I think the whole point of an async execution of a syscall or a syslet, is 
+> that the syscall/syslet itself includes a non interlocked operations with 
+> other syscalls/syslets. So that the main scheduler thread can run in a 
+> lockless/singletask fashion. There are no technical obstacles that 
+> prevents you to do it, bu if you start adding locks (and hence having 
+> long-living syslet-threads) at that point you'll end up with a fully 
+> multithreaded solution.
+>   
 
-i really count this into the category of 'application startup', and thus 
-it's is another type of 'cachemiss': the cost of having to bootstrap a 
-new context. (Even though obviously we want this to go as fast as 
-possible too.) Library startups, linking (even with prelink), etc., is 
-quite expensive already - goes into the tens of milliseconds.
+I was thinking you'd use the futexes more like barriers than locks. 
+That way you could have several streams going asynchronously, but use
+futexes to gang them together at appropriate times in the stream.  A
+handwavy example would be to have separate async streams for audio and
+video, but use futexes to stop them from drifting too far from each other.
 
-or if it's a new thread startup - where this cost would indeed be 
-visible, if the thread exits straight after being startup up, and where 
-this thread would want to do a single AIO, then shareable async heads 
-(see my mail to Alan) ought to solve this. (But short-lifetime threads 
-are not really a good idea in themselves.)
-
-but the moment it's some fork()ed context, or even an exec()ed context, 
-this cost is very small in comparisno. And who in their right mind 
-starts up a whole new process just to do a single IO and then exit 
-without doing any other processing? (so that the async setup cost would 
-show up)
-
-but, short-lived contexts, where this cost would be visible, are 
-generally a really bad idea.
-
-	Ingo
+    J
