@@ -1,41 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751624AbXBOP3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751632AbXBOPe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751624AbXBOP3p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 10:29:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbXBOP3o
+	id S1751632AbXBOPe3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 10:34:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbXBOPe3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 10:29:44 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:40112 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751616AbXBOP3o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 10:29:44 -0500
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-       Ingo Molnar <mingo@redhat.com>, systemtap@sources.redhat.com,
-       ltt-dev@shafik.org
-Subject: Re: [PATCH 00/05] Linux Kernel Markers - kernel 2.6.20
-References: <1171224207118-git-send-email-mathieu.desnoyers@polymtl.ca>
-	<20070214231201.20918c6b.akpm@linux-foundation.org>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: 15 Feb 2007 10:28:57 -0500
-In-Reply-To: <20070214231201.20918c6b.akpm@linux-foundation.org>
-Message-ID: <y0mvei330ee.fsf@ton.toronto.redhat.com>
-User-Agent: Gnus/5.0808 (Gnus v5.8.8) Emacs/21.3
+	Thu, 15 Feb 2007 10:34:29 -0500
+Received: from webmail16.mail.yandex.net ([213.180.200.38]:33702 "EHLO
+	webmail16.mail.yandex.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751632AbXBOPe2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 10:34:28 -0500
+X-Greylist: delayed 1529 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Feb 2007 10:34:28 EST
+Date: Thu, 15 Feb 2007 18:08:41 +0300 (MSK)
+From: "Mockern" <Mockern@yandex.ru>
+Message-Id: <45D47779.000006.08064@webmail16.yandex.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Yamail [ http://yandex.ru ]
+To: linux-kernel@vger.kernel.org
+Subject: cat, cp operations for tty driver (like for char one)
+X-MsgDayCount: 4
+X-BornDate: 1134853200
+Reply-To: Mockern@yandex.ru
+X-Source-Ip: 84.185.220.38
+Content-Type: text/plain;
+  charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I have a question about linux tty driver 
 
-akpm wrote:
+how to support cp, cat operations in tty driver (like tiny_tty)?
+(e.g. echo "hello tty" > /dev/ttyS3, cat < ttyS10 etc)
 
-> [...]  And what can I do with these markers?  And once I've done it,
-> are there any userspace applications I can use to get the data out
-> in human-usable form?  [...]
+There a lot of examples with char drivers, but I could not find it for tty Linux driver. 
 
-The LTTng user-space programs use it today.  Systemtap used to support
-the earlier marker prototype and will be rapidly ported over to this
-new API upon acceptance.
 
-- FChE
