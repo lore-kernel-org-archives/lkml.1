@@ -1,76 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932290AbXBOJh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932685AbXBOJoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932290AbXBOJh0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 04:37:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932311AbXBOJh0
+	id S932685AbXBOJoz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 04:44:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932688AbXBOJoz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 04:37:26 -0500
-Received: from styx.suse.cz ([82.119.242.94]:45598 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932290AbXBOJhZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 04:37:25 -0500
-Date: Thu, 15 Feb 2007 10:40:53 +0100
-From: Jan Kara <jack@suse.cz>
-To: Frank Hartmann <soundart@gmx.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: 2.6.19.1 Oops while doing Disk IO + playing sound, 2.6.20 too
-Message-ID: <20070215094053.GA28205@duck.suse.cz>
-References: <877ivr6t0k.fsf@fantasio.hh.de> <20070207091841.GE24590@atrey.karlin.mff.cuni.cz> <87wt2thhux.fsf@fantasio.hh.de> <20070208093930.GB10973@duck.suse.cz> <87bqk06bhi.fsf_-_@fantasio.hh.de> <20070214143249.GE23203@duck.suse.cz> <87r6ssl3g4.fsf@fantasio.hh.de>
+	Thu, 15 Feb 2007 04:44:55 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:54432 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932685AbXBOJoy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 04:44:54 -0500
+Message-ID: <45D42B93.3060209@garzik.org>
+Date: Thu, 15 Feb 2007 04:44:51 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87r6ssl3g4.fsf@fantasio.hh.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Dave Jones <davej@redhat.com>, v j <vj.linux@gmail.com>,
+       Trent Waddington <trent.waddington@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: GPL vs non-GPL device drivers
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com> <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com> <3d57814d0702142147p4eede234ybc9880a38772f55f@mail.gmail.com> <9b3a62ab0702142214p5c33a02am7e783c59ae0a64f1@mail.gmail.com> <3d57814d0702142235i687f8481x4eb72269e7f7fa9b@mail.gmail.com> <9b3a62ab0702142246r7e4eac4bv26c2ed46ff588871@mail.gmail.com> <20070215073238.GC917@redhat.com>
+In-Reply-To: <20070215073238.GC917@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 15-02-07 00:33:31, Frank Hartmann wrote:
-> Jan Kara <jack@suse.cz> writes:
+Dave Jones wrote:
+> On Wed, Feb 14, 2007 at 10:46:13PM -0800, v j wrote:
+>  > Using our source code would not benefit anybody but
+>  > our competitors.
 > 
-> >   Yes I see some correlation. Again it seems there is a problem with buffers
-> > attached to a page which got truncated but Private flag of the page stayed.
-> > It's probably not important but just out of curiosity - do you have
-> > CONFIG_LBD (large block device) set? I'd just like to verify that page_bufs
-> > was NULL when it was passed to walk_page_buffers().
-> 
-> fantasio:~/tmp/linux-2.6.20$ fgrep CONFIG_LBD .config
-> # CONFIG_LBD is not set
-  OK, thanks. Then I'm slightly confused as the offset 0x2d in struct
-buffer_head is somewhere in b_assoc_buffers which is never dereferenced.
-Can you run gdb on vmlinux from the 2.6.20 kernel and send me the output
-of 'disass walk_page_buffers'? Thanks.
+> This excuse has been given time and time again, and repeatedly been 
+> proven false.  And as soon as one of your competitors makes their
+> drivers open, guess which one gets 1000+ free developers working
+> on their code ?
 
-> >   You said 2.6.17 worked for you, didn't you? How long does it take to
-> > reproduce the problem? If it is reasonably easy (e.g. a few hours), could
-> > you trace back when the problem started happening? If you could narrow that
-> > problem down to a single patch (using git-bisect), that would be great.
-> 
-> Yes I said that. At least I did not notice it happen:) 
-> Reproduction seems easy. So I will try. 
-   Great.
 
-> I have some problem: I am not sufficiently familar with git!
-> 
-> I found http://www.kernel.org/pub/software/scm/git/docs/howto/isolate-bugs-with-bisect.txt
-> Is this the way to do a git-bisect?
-  Yes, that's it.
+Customers also like to buy hardware where they -know- support will not 
+disappear in a year, when the vendor releases a new chip.
 
-> From where do I get the 'labels' for good(2.6.17) and bad(2.6.20)?
-  git bisect bad v2.6.20
-  git bisect good v2.6.17
+In fact, in some markets, the engineers who wrote the code have often 
+moved to the next project, by the time the customers actually get their 
+hands on the end result.  Open source means that problems found in real 
+world field testing can be readily debugged and fixed.
 
-(or maybe you could start with 'git bisect bad v2.6.19' if that was also
-failing for you). Git will spit out something like:
+	Jeff
 
-Bisecting: 9467 revisions left to test after this
-[ebdea46fecae40c4d7effcd33f40918a37a1df4b] Merge branch 'devel' of master.kernel.org:/home/rmk/linux-2.6-arm
 
-After you test kernel from the revision
-'ebdea46fecae40c4d7effcd33f40918a37a1df4b', you do
-  git bisect good/bad ebdea46fecae40c4d7effcd33f40918a37a1df4
-and you'll get next revision to check. I hope it's clearer now.
-
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
