@@ -1,60 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965128AbXBOINW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965141AbXBOIOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965128AbXBOINW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 03:13:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965127AbXBOINW
+	id S965141AbXBOIOF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 03:14:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965144AbXBOIOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 03:13:22 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:46791 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965124AbXBOINV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 03:13:21 -0500
-Subject: Re: GPL vs non-GPL device drivers
-From: Arjan van de Ven <arjan@infradead.org>
-To: v j <vj.linux@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <9b3a62ab0702150004n78763d4ei652b41c7edcd0755@mail.gmail.com>
-References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
-	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
-	 <1171524970.12771.568.camel@laptopd505.fenrus.org>
-	 <9b3a62ab0702150004n78763d4ei652b41c7edcd0755@mail.gmail.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Thu, 15 Feb 2007 09:13:13 +0100
-Message-Id: <1171527194.12771.575.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+	Thu, 15 Feb 2007 03:14:05 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:34794 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965141AbXBOIOD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 03:14:03 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: ego@in.ibm.com
+Subject: Re: [RFC PATCH(Experimental) 0/4] Freezer based Cpu-hotplug
+Date: Thu, 15 Feb 2007 09:09:51 +0100
+User-Agent: KMail/1.9.5
+Cc: akpm@osdl.org, paulmck@us.ibm.com, mingo@elte.hu, vatsa@in.ibm.com,
+       dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, oleg@tv-sign.ru
+References: <20070214144031.GA15257@in.ibm.com> <200702142243.37189.rjw@sisk.pl> <20070215063413.GA11950@in.ibm.com>
+In-Reply-To: <20070215063413.GA11950@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200702150909.53145.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-02-15 at 00:04 -0800, v j wrote:
-> On 2/14/07, Arjan van de Ven <arjan@infradead.org> wrote:
-> > On Wed, 2007-02-14 at 21:16 -0800, v j wrote:
-> > > This is in reference to the following thread:
-> > >
-> > > http://lkml.org/lkml/2006/12/14/63
-> > >
-> > > I am not sure if this is ever addressed in LKML, but linux is _very_
-> > > popular in the embedded space. We (an embedded vendor) chose Linux 3
-> > > years back because of its lack of royalty model, robustness and
-> > > availability of infinite number of open-source tools.
-> >
-> >
-> > I think you have a bit of a misunderstanding... Linux is not royalty
-> > free. Just the royalty is not in the form of cash, but in the form of
-> > having to give your improvements back to the open source world.
+On Thursday, 15 February 2007 07:34, Gautham R Shenoy wrote:
+> On Wed, Feb 14, 2007 at 10:43:35PM +0100, Rafael J. Wysocki wrote:
+> > Hi,
+> > 
+> > On Wednesday, 14 February 2007 15:40, Gautham R Shenoy wrote:
+> > > Hello Everybody,
+> > > 
+> > > This is an experiment towards process_freezer based implementation
+> > > of cpu-hotplug. This is mainly based on ideas of Andrew Morton, 
+> > > Ingo Molnar and Paul Mckenney featured in the discussion
+> > > http://lkml.org/lkml/2007/1/31/323.
+> > > 
+> > > This is an absolute bare-minimal implementation to check the feasibility
+> > > of using process freezer for cpu-hotplug. 
+> > > 
+> > > The patchset comprises of four patches.
+> > > o PATCH 1/4: Core implementation of freezer-based-hotplug.
+> > > o PATCH 2/4: Revert changes to workqueue to make it work with the
+> > >              freezer-cpu-hotplug.
+> > > o PATCH 3/4: Eliminate hotcpu subsystem mutexes from sched and slab.
+> > > o PATCH 4/4: Eliminate lock_cpu_hotplug from the kernel.
+> > 
+> > I think two things are missing:
+> > 
+> > 1) We should make sure there are not PF_NOFREEZE tasks running when a CPU
+> > is removed (when one is added probably too).  For this purpose we can add a
+> > parameter to freeze_processes() that will tell it to ignore PF_NOFREEZE, but
+> > at the same time we'll have to change all kernel threads that set PF_NOFREEZE
+> > to call try_to_freeze() anyway.  I can do that, but it will take me a couple of
+> > days.
 > 
-> Sure. But this is not legally binding.
+> Why should we make sure that PF_NOFREEZE tasks are also frozen for
+> cpu hotplug? Instead, we can create an infrastructure which allows threads to
+> specify for the scenarios they would want to be excempted from freeze.
+> Something like what Paul has suggested in
+> http://lkml.org/lkml/2007/1/31/323. That way, threads which have nothing
+> to do with the online_cpu_map or with handling of cpu-hotplug events can
+> mark themselves to be exempted from being frozen for cpu hotplug.
 
-that's a legal conclusion that is ... iffy at least. I'm not a lawyer,
-but I suggest you talk to a real one before making that conclusion, and
-you'll see it's not as simple as that.
+I think all kernel threads should call try_to_freeze() in suitable places
+anyway if we are going to use the freezer for anything more than just the
+suspend.  In other words, they all should be _able_ to freeze if necessary.
 
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+> Once this is achieved, it's all about classifying the threads into
+> according to their NO_FREEZE needs :)
 
+Yes, but I think it's just a generalization of ingoring PF_NOFREEZE.
+If all kernel threads are able to freeze, we can mark them as "freeze for CPU
+hotplug" or "freeze for kprobes", or "freeze for suspend" etc. and call the
+freezer with the appropriate parameter.
+
+BTW, what happens to a process running on a CPU being removed?
+ 
+> > 2) We have to change the PM code to stop using CPU hotplug for disabling
+> > nonboot CPUs. ;-)
+> 
+> Just wondering, how hard is that ?
+
+Hmmm.  In fact the problem is that the suspend code freezes tasks and then
+calls disable_nonboot_cpus() which uses (_)cpu_down/up().  In principle we
+could make disable_nonboot_cpus() call some lower-level routines to avoid the
+freezing of tasks, _but_ the suspend code may freeze too few tasks (ie. we may
+want to freeze more tasks for the CPU hotplug).  Thus I think we should do
+something like this:
+
+suspend:				CPU hotplug:
+freeze_processes(SUSPEND)	...
+...					freeze_processes(CPU_HOTPLUG)
+...					...
+...					thaw_processes(CPU_HOTPLUG)
+thaw_processes(SUSPEND)	...
+
+so freeze_processes() should be reentrant, at least for different values of
+the argument.
+
+All in all, I think we should start from modifying the freezer and the
+classification of processes with respect to the freezing.
+
+Greetings,
+Rafael
