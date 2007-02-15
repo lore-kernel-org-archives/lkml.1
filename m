@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161505AbXBOWSZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161512AbXBOWSs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161505AbXBOWSZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 17:18:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161506AbXBOWSY
+	id S1161512AbXBOWSs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 17:18:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161478AbXBOWSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 17:18:24 -0500
-Received: from web43116.mail.sp1.yahoo.com ([216.252.121.16]:33503 "HELO
-	web43116.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1161505AbXBOWSY (ORCPT
+	Thu, 15 Feb 2007 17:18:47 -0500
+Received: from ftp.linux-mips.org ([194.74.144.162]:51412 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161508AbXBOWSq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 17:18:24 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Feb 2007 17:18:23 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=aZkw5Z3j535xe9Ta3ELFyg7dw5FpBEtYe8EOLRWpZ3wDC32SksRbbAZZspS5UwDtIjkFldSZxTHA7+F1+gTSnlKguDbuSyE7Q8uvhgP5fwubKoDesgKDHSu6zX2hkMoO09Kcih5UG+GS3N0Hrc+8yFM214LlW8p6RkRpqhYm/H0=;
-X-YMail-OSG: pwkLRAMVM1kdDQXWyU2PH2eWpNBZWv1cUuWT4uKB573jewIUQp6jL5pdZFqdSTE0eA--
-Date: Thu, 15 Feb 2007 14:11:42 -0800 (PST)
-From: Tim Cullen <timcullen2001@yahoo.com>
-Subject: possible bug in page allocation mechanism
-To: linux-kernel@vger.kernel.org
-Cc: timcullen2001@yahoo.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <490976.56324.qm@web43116.mail.sp1.yahoo.com>
+	Thu, 15 Feb 2007 17:18:46 -0500
+Date: Thu, 15 Feb 2007 22:18:39 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Optimize generic get_unaligned / put_unaligned implementations.
+Message-ID: <20070215221839.GA14103@linux-mips.org>
+References: <20050830104056.GA4710@linux-mips.org> <20060306.203218.69025300.nemoto@toshiba-tops.co.jp> <20060306170552.0aab29c5.akpm@osdl.org> <20070214214226.GA17899@linux-mips.org> <20070214203903.8d013170.akpm@linux-foundation.org> <20070215143441.GA18155@linux-mips.org> <20070215135358.020781dd.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070215135358.020781dd.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There appears to be a inconsistenancy with reference
-counts on pages allocated with alloc_pages when order
-is greater than zero. In buffered_rmqueue when order
-!= 0 then __rmqueue is called. This returns a page
-pointer that is really a pointer to the first page in
-a group of pages. Subsequently prep_new_page is called
-on the first page of the group but not on any others.
-This results in the first page having a reference
-count of 1 while all other pages in the allocation
-have a reference count of 0. I would think that all
-pages in the same allocation should all have the same
-reference count at the end of the allocation.
+On Thu, Feb 15, 2007 at 01:53:58PM -0800, Andrew Morton wrote:
 
-I've looked at this in the 2.6.20, 2.6.19.1, and the
-2.6.17.7 kernels. They contain the same code in this
-area.
+> > The whole union thing was only needed to get rid of a warning but Marcel's
+> > solution does the same thing by attaching the packed keyword to the entire
+> > structure instead, so this patch is now using his macros but using __packed
+> > instead.
+> 
+> How do we know this trick will work as-designed across all versions of gcc
+> and icc (at least) and for all architectures and for all sets of compiler
+> options?
+> 
+> Basically, it has to be guaranteed by a C standard.  Is it?
 
-I don't have a solution to offer, but I wanted to
-bring it to the attention of those who have more
-knowledge about the workings of the page allocation
-system.
+Gcc info page says:
 
-tim
+[...]
+`packed'
+     The `packed' attribute specifies that a variable or structure field
+     should have the smallest possible alignment--one byte for a
+     variable, and one bit for a field, unless you specify a larger
+     value with the `aligned' attribute.
+[...]
 
+Qed?
 
-
- 
-____________________________________________________________________________________
-Don't pick lemons.
-See all the new 2007 cars at Yahoo! Autos.
-http://autos.yahoo.com/new_cars.html 
+  Ralf
