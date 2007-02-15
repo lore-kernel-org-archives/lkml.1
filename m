@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751527AbXBOGLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751564AbXBOGPF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751527AbXBOGLx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 01:11:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbXBOGLx
+	id S1751564AbXBOGPF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 01:15:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751569AbXBOGPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 01:11:53 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35033 "EHLO mx1.redhat.com"
+	Thu, 15 Feb 2007 01:15:05 -0500
+Received: from ns1.suse.de ([195.135.220.2]:41046 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751527AbXBOGLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 01:11:52 -0500
-Date: Thu, 15 Feb 2007 01:11:49 -0500
-From: Dave Jones <davej@redhat.com>
-To: v j <vj.linux@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: GPL vs non-GPL device drivers
-Message-ID: <20070215061149.GE15654@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, v j <vj.linux@gmail.com>,
-	linux-kernel@vger.kernel.org
-References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com> <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751564AbXBOGPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 01:15:03 -0500
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SuSE Labs, Novell
+To: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing
+Date: Wed, 14 Feb 2007 22:14:53 -0800
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
+       herbert.xu@redhat.com, linux-kernel@vger.kernel.org,
+       arjan@infradead.org, linux-crypto@vger.kernel.org
+References: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com> <200702142135.40832.agruen@suse.de> <20070215054559.GD15654@redhat.com>
+In-Reply-To: <20070215054559.GD15654@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <200702142214.53625.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 14, 2007 at 09:16:28PM -0800, v j wrote:
- > This is in reference to the following thread:
- > 
- > http://lkml.org/lkml/2006/12/14/63
- > 
- > I am not sure if this is ever addressed in LKML, but linux is _very_
- > popular in the embedded space. We (an embedded vendor) chose Linux 3
- > years back because of its lack of royalty model, robustness and
- > availability of infinite number of open-source tools.
- 
-Welcome to three months ago.
-Here in the future, this was deemed a non-issue.
-However this does highlight another problem.
-End-users who take linux for use in embedded systems (especially)
-tend to live in their own little world rarely contributing anything
-back to upstream, popping up occasionally when months after decisions
-have been made on things.   Remind me again why we should care about
-your out of tree binary only modules ?
+On Wednesday 14 February 2007 21:45, Dave Jones wrote:
+> well, the situation for external modules is no worse than usual.
+> They still work, they just aren't signed. Which from a distributor point
+> of view, is actually a nice thing, as they stick out like a sore thumb
+> in oops reports with (U) markers :)
 
- > The drivers which
- > we have written over the last three years are suddenly under threat.
+I agree, that's really what should happen. We solve this by marking modules as 
+supported, partner supported, or unsupported, but in an "insecure" way, so 
+partners and users could try to fake the support status of a module and/or 
+remove status flags from Oopses, and cryptography wouldn't save us. We could 
+try to sign Oopses which I guess you guys are doing. This whole issue hasn't 
+been a serious problem in the past though, and we generally try to trust 
+users not to play games on us.
 
-Were they part of the kernel tree, people might care enough to
-a) fix them so that they work and b) care enough that they _keep working_
-even if people changing APIs etc don't have the necessary hardware.
+In the end, it all seems to boils down to a difference in philosophy.
 
-This isn't the 1990s any more, we shouldn't need to explain how all this works.
-
- > However we have a worrying trend here. If at some point it becomes
- > illegal to load our modules into the linux kernel, then it is
- > unacceptable to us. We would have been better off choosing VxWorks or
- > OSE 3 years ago when we made an OS choice. The fact that Linux is
- > becoming more and more closed is very very alarming.
-
-The question is "do you care about giving back" or are you intending
-to leech of Linux and just complain when it changes in ways that
-don't mesh with your plans?
-
-		Dave
-
--- 
-http://www.codemonkey.org.uk
+Thanks,
+Andreas
