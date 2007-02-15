@@ -1,85 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965835AbXBOKpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965838AbXBOKqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965835AbXBOKpX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 05:45:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965836AbXBOKpW
+	id S965838AbXBOKqA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 05:46:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965841AbXBOKqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 05:45:22 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36159 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965835AbXBOKpV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 05:45:21 -0500
-Date: Thu, 15 Feb 2007 11:45:02 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Jan Dittmer <jdi@l4x.org>
-Cc: stelian@popies.net, linux-acpi@vger.kernel.org, linux-pm@osdl.org,
-       adaplas@pol.net, dawes@xfree86.org,
-       Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] Suspend to RAM, Sony Vaio PCG-SRX51P, lcd stays off
-Message-ID: <20070215104502.GO26240@elf.ucw.cz>
-References: <45D43489.3060409@l4x.org> <20070215103639.GB27338@elf.ucw.cz> <45D438F2.2040607@l4x.org>
-MIME-Version: 1.0
+	Thu, 15 Feb 2007 05:46:00 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3536 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965838AbXBOKp7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 05:45:59 -0500
+Date: Thu, 15 Feb 2007 10:45:47 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Paul Mundt <lethal@linux-sh.org>, Maximus <john.maximus@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: irqdesc porting help
+Message-ID: <20070215104547.GA15772@flint.arm.linux.org.uk>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Maximus <john.maximus@gmail.com>, linux-kernel@vger.kernel.org
+References: <3634de740702142231k938a4c5ic824c2eefc95c1b0@mail.gmail.com> <20070215103347.GA18690@linux-sh.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45D438F2.2040607@l4x.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <20070215103347.GA18690@linux-sh.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> >> I own an older Sony Vaio SRX51P, European Model, P3 based. s2ram
-> >> identifies it with
-> >>
-> >>     sys_vendor   = "Sony Corporation    "
-> >>     sys_product  = "PCG-SRX51P(DE)      "
-> >>     sys_version  = "01                  "
-> >>     bios_version = "R0232U2"
-> >>
-> >> Suspend to RAM by using "s2ram -v -m -f" actually works and the
-> >> laptop comes back to life, is accessible by network, etc. kudos
-> >> so far.
-> >> The only but serious problem is, that the lcd stays off after
-> >> resume. No matter what kind of options for s2ram I try, if I disable
+On Thu, Feb 15, 2007 at 07:33:47PM +0900, Paul Mundt wrote:
+> On Thu, Feb 15, 2007 at 12:01:37PM +0530, Maximus wrote:
+> > Im trying to port some drivers between 2.6.14 and 2.6.19
 > > 
-> > Is the _lcd_ off or the _backlight_ off? Use bright flashlight to
-> > tell.
-> 
-> The lcd. If you press the lid button you get the same effect (but you
-> cannot use it to turn the lcd on again :-(( ). But I'll doublecheck with
-> a flashlight nevertheless.
-
-If lid button breaks the lcd, even in grub boot loader... then I'd
-call your machine broken hardware, complain to the manufacturer. (Are
-you at latest BIOS?)
-
-> >> framebuffer or suspend from X, the lcd always stays off. Only
-> >> a reboot fixes this. Note that the X driver also cannot dis-/enable
-> >> the lcd (xset dpms force off). It always stays lit. I also tried
-> >> with i810switch, but that also does not affect the lcd.
-> >> spicctrl -b42 neither.
-> >> Latest kernel I tested is 2.6.20-git11 from today.
-> >>
-> >> So has anyone of you suspend, acpi, sonypi, fb people an idea how to fix
-> >> this? I suspect one has to call some magic ACPI method upon resume? What
-> >> other kind of information would be needed to debug this? Anything more
-> >> to try? Are there some sony people here listening who can fix this?
+> > I find that irqdesc has changed completely. how do i port
+> > the drivers between 2.6.14 and 2.6.19?
 > > 
-> > sonypi people actually might know how to help...
+> > is there a porting guide available to port the drivers
+> > which use irqdesc?.
 > > 
-> >> 00:02.0 VGA compatible controller: Intel Corporation 82815 CGC
-> > [Chipset Graphics Controller] (rev 11)
+> > my drivers use variables triggered, ... which dont exist in 2.6.19
+> > irqdesc strcuture.
 > > 
-> > Wait a moment, did not Intel release nice, commented, GPLed sources
-> > for their graphics cards somewhere? That might help.
-> 
-> URL? But I suspect the lcd on/off is controlled by some embedded controller
-> or such (reachable via acpi, at least I've an EC0 in /proc/acpi/).
+> Presumably you're talking about the struct hw_interrupt_type and the lack
+> of an irq_desc[irq].handler? There's some migration helper glue in
+> include/linux/irq.h that you can use, but you're better off converting
+> completely. You can at least get it building again by changing to
+> irq_desc[irq].chip, but you really want a proper irq_chip implementation
+> to go along with this, rather than munging in the hw_interrupt_type.
 
-Google a bit, it was a _big_ announcement. Of course it is _possible_ EC
-is responsible, but I don't quite think so.
-									Pavel
+It should be asked - why are drivers poking about in the irqdesc
+structure?
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
