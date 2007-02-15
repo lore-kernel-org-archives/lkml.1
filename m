@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161557AbXBOWak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161560AbXBOWcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161557AbXBOWak (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 17:30:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161558AbXBOWak
+	id S1161560AbXBOWcv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 17:32:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161562AbXBOWcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 17:30:40 -0500
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:58309 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161557AbXBOWaj convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 17:30:39 -0500
-Date: Thu, 15 Feb 2007 17:30:37 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@redhat.com>,
-       systemtap@sources.redhat.com, ltt-dev@shafik.org
-Subject: Re: [PATCH 00/05] Linux Kernel Markers - kernel 2.6.20
-Message-ID: <20070215223037.GA6297@Krystal>
-References: <1171224207118-git-send-email-mathieu.desnoyers@polymtl.ca> <20070214231201.20918c6b.akpm@linux-foundation.org> <y0mvei330ee.fsf@ton.toronto.redhat.com> <20070215141841.6eed5fbb.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Thu, 15 Feb 2007 17:32:51 -0500
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:37434 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161560AbXBOWcv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 17:32:51 -0500
+Date: Thu, 15 Feb 2007 17:32:50 -0500
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Sergei Organov <osv@javad.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       "J.A. Magall??????n" <jamagallon@ono.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: somebody dropped a (warning) bomb
+Message-ID: <20070215223250.GO7584@csclub.uwaterloo.ca>
+References: <874pprr5nn.fsf@javad.com> <Pine.LNX.4.64.0702120804520.8424@woody.linux-foundation.org> <87ps8end9b.fsf@javad.com> <84144f020702131026q2af1afd6vbcd2708d7b7b9907@mail.gmail.com> <87bqjxooog.fsf@javad.com> <84144f020702131143r767aa40blb97a39b40bee73b8@mail.gmail.com> <87fy99n6mf.fsf@javad.com> <Pine.LNX.4.64.0702131513050.3604@woody.linux-foundation.org> <87hctnlfqz.fsf@javad.com> <Pine.LNX.4.64.0702150736360.20368@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20070215141841.6eed5fbb.akpm@linux-foundation.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 17:22:09 up 13 days, 12:30,  7 users,  load average: 1.02, 1.08, 1.15
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <Pine.LNX.4.64.0702150736360.20368@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.9i
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton (akpm@linux-foundation.org) wrote:
-> On 15 Feb 2007 10:28:57 -0500
-> fche@redhat.com (Frank Ch. Eigler) wrote:
-> 
-> > 
-> > akpm wrote:
-> > 
-> > > [...]  And what can I do with these markers?  And once I've done it,
-> > > are there any userspace applications I can use to get the data out
-> > > in human-usable form?  [...]
-> > 
-> > The LTTng user-space programs use it today.  Systemtap used to support
-> > the earlier marker prototype and will be rapidly ported over to this
-> > new API upon acceptance.
-> > 
-> 
-> That's good.
-> 
-> It would be beneficial if some people from those projects could spare the
-> cycles to carefully review and runtime test this code.
-> 
-LTTng is using the marker infrastructure since last november. Me and my
-users have been very happy with it.
+On Thu, Feb 15, 2007 at 07:57:05AM -0800, Linus Torvalds wrote:
+> I agree that it's "unnecessary code", and in many ways exactly the same 
+> thing. I just happen to believe that casts tend to be a lot more dangerous 
+> than extraneous initializations. Casts have this nasty tendency of hiding 
+> *other* problems too (ie you later change the thing you cast completely, 
+> and now the compiler doesn't warn about a *real* bug, because the cast 
+> will just silently force it to a wrong type).
 
-> Also, I'm not 100% clear on where we ended up with the huge
-> static-vs-dynamic flamewar.  Did everyone end up happy?  Is this patchset a
-> reasonable compromise?  Or do we need a rematch?
+Well one way you could cast it and still have the compiler tell you if
+the type ever changes is doing something stupid like:
 
-I think the final agreement was the need for some kind of code marking
-system, which I tried to implement as best as I could. It gives very
-good performances while tracing (advantage of static tracing), has a
-very very minimal performance and binary size impact when disabled
-(advantage of dynamic tracing) and it can be activated dynamically
-(advantage of dynamic tracing).
+char* unsigned_char_star_to_char_star(unsigned char* in) {
+	return (char*)in;
+}
 
-Mathieu
+Then call your strlen with:
+strlen(unsigned_char_star_to_char_star(my_unfortunate_unsigned_char_string)
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Candidate, École Polytechnique de Montréal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+If you ever changed the type the compiler would warn you again since the
+convertion function doesn't accept anything other than unsigned char *
+being passed in for "convertion".  Seems safer than a direct cast since
+then you get no type checking anymore.
+
+I hope it doesn't come to this though.  Hopefully gcc will change it's
+behaviour back or give an option of --dontcomplainaboutcharstar :)
+
+--
+Len Sorensen
