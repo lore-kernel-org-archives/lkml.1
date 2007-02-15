@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030211AbXBOQ5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030200AbXBOQ5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030211AbXBOQ5l (ORCPT <rfc822;w@1wt.eu>);
+	id S1030200AbXBOQ5l (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 15 Feb 2007 11:57:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030206AbXBOQ5L
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030205AbXBOQ5F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 11:57:11 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40976 "EHLO mx2.mail.elte.hu"
+	Thu, 15 Feb 2007 11:57:05 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41002 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966157AbXBOQ4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 11:56:51 -0500
-Date: Thu, 15 Feb 2007 17:52:59 +0100
+	id S966161AbXBOQ47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 11:56:59 -0500
+Date: Thu, 15 Feb 2007 17:52:45 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -22,8 +22,8 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Suparna Bhattacharya <suparna@in.ibm.com>,
        Davide Libenzi <davidel@xmailserver.org>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 14/14] syslets: x86: optimized sys_umem_add()
-Message-ID: <20070215165259.GO4285@elte.hu>
+Subject: [patch 10/14] syslets: x86, mark async unsafe syscalls
+Message-ID: <20070215165245.GK4285@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -40,53 +40,38 @@ X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 aut
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 From: Ingo Molnar <mingo@elte.hu>
 
-provide an optimized assembly version of sys_umem_add().
-It is about 2 times faster than the C version.
+mark clone() and fork() as not available for async execution.
+Both need an intact user context beneath them to work.
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- arch/i386/lib/getuser.S |   27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
+ arch/i386/kernel/process.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Index: linux/arch/i386/lib/getuser.S
+Index: linux/arch/i386/kernel/process.c
 ===================================================================
---- linux.orig/arch/i386/lib/getuser.S
-+++ linux/arch/i386/lib/getuser.S
-@@ -11,6 +11,33 @@
- #include <asm/thread_info.h>
+--- linux.orig/arch/i386/kernel/process.c
++++ linux/arch/i386/kernel/process.c
+@@ -731,6 +731,9 @@ struct task_struct fastcall * __switch_t
  
- /*
-+ * Optimized user-memory arithmetics system-call:
-+ */
+ asmlinkage int sys_fork(struct pt_regs regs)
+ {
++	if (async_syscall(current))
++		return -ENOSYS;
 +
-+.text
-+.align 4
-+.globl sys_umem_add
-+sys_umem_add:
-+	movl 0x4(%esp), %ecx			# uptr
-+	movl 0x8(%esp), %edx			# inc
-+
-+	cmpl $__PAGE_OFFSET, %ecx		# access_ok(uptr)
-+	jae bad_sys_umem_add
-+
-+1:	addl %edx, (%ecx)			# *uptr += inc
-+2:	movl (%ecx), %eax			# return *uptr
-+	ret
-+
-+bad_sys_umem_add:
-+	movl $-14, %eax
-+	ret
-+
-+.section __ex_table,"a"
-+	.long 1b, bad_sys_umem_add
-+	.long 2b, bad_sys_umem_add
-+.previous
-+
-+/*
-  * copy_uatom() - copy a syslet_atom from user-space into kernel-space:
-  */
+ 	return do_fork(SIGCHLD, regs.esp, &regs, 0, NULL, NULL);
+ }
  
+@@ -740,6 +743,9 @@ asmlinkage int sys_clone(struct pt_regs 
+ 	unsigned long newsp;
+ 	int __user *parent_tidptr, *child_tidptr;
+ 
++	if (async_syscall(current))
++		return -ENOSYS;
++
+ 	clone_flags = regs.ebx;
+ 	newsp = regs.ecx;
+ 	parent_tidptr = (int __user *)regs.edx;
