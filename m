@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965364AbXBOJSK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932198AbXBOJgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965364AbXBOJSK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 04:18:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965747AbXBOJSK
+	id S932198AbXBOJgd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 04:36:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932205AbXBOJgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 04:18:10 -0500
-Received: from mga02.intel.com ([134.134.136.20]:31238 "EHLO mga02.intel.com"
+	Thu, 15 Feb 2007 04:36:32 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:54383 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965364AbXBOJSI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 04:18:08 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,173,1170662400"; 
-   d="scan'208"; a="197047803:sNHT498422337"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S932198AbXBOJgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 04:36:32 -0500
+Message-ID: <45D4299D.6000906@garzik.org>
+Date: Thu, 15 Feb 2007 04:36:29 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] aio: fix kernel bug when page is temporally busy
-Date: Thu, 15 Feb 2007 12:16:23 +0300
-Message-ID: <B41635854730A14CA71C92B36EC22AAC83A809@mssmsx411>
-In-Reply-To: <b040c32a0702101005q7ff4a679xd3586531aa8a99cc@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] aio: fix kernel bug when page is temporally busy
-Thread-Index: AcdNPhCje+AZGt65T76Cw7xbV0K8hgC9wNrg
-From: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>
-To: "Ken Chen" <kenchen@google.com>
-Cc: <suparna@in.ibm.com>, "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, "linux-aio" <linux-aio@kvack.org>,
-       "Zach Brown" <zach.brown@oracle.com>,
-       "Chris Mason" <chris.mason@oracle.com>
-X-OriginalArrivalTime: 15 Feb 2007 09:16:56.0169 (UTC) FILETIME=[09DD7D90:01C750E2]
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH] x86: Unify pcspeaker platform device code between i386/x86-64
+References: <200702150901.l1F910lp023036@hera.kernel.org>
+In-Reply-To: <200702150901.l1F910lp023036@hera.kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ken Chen wrote
-> It might shut up kernel
-> panic by eliminate double calls to aio_complete(), but it will
-> silently introduce data corruption.
+Linux Kernel Mailing List wrote:
+> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=62cc49396e593dd71c6595302bb10b085aefbfa5
+> Commit:     62cc49396e593dd71c6595302bb10b085aefbfa5
+> Parent:     40d22c1b5675e428b3f3f9a945d0bd62e94ca2f1
+> Author:     Andi Kleen <ak@suse.de>
+> AuthorDate: Tue Feb 13 13:26:26 2007 +0100
+> Committer:  Andi Kleen <andi@basil.nowhere.org>
+> CommitDate: Tue Feb 13 13:26:26 2007 +0100
+> 
+>     [PATCH] x86: Unify pcspeaker platform device code between i386/x86-64
+>     
+>     Trivial cleanup.
+>     
+>     Only change is that it is always compiled in now on x86-64 like on i386.
+>     
+>     Signed-off-by: Andi Kleen <ak@suse.de>
 
-I had got kernel panic after an hour of aiostress running.
-After patching I have not got aiostress massage 
-"verify error, file %s offset %Lu contents (offset:bad:good):\n"
-during 5 hour aiostress running with 'verify' option.
-Looking closely into aiostress.c 
-ftp://ftp.suse.com/pub/people/mason/utils/aio-stress.c
-we can see that this program may write in random mode THE SAME
-contents to the same file offset asynchronously from different
-buffers and do not cure about it. Does Ken consider that kernel
-panic is the best way to prevent data corruption in such kind
-of programs?
+THANK YOU.
 
-> So any error value returned from invalidate_inode_pages2_range() has
-> to be taken seriously in the direct IO submit path instead of dropping
-> it to the floor.
-If invalidate_inode_pages2_range() will return EIOCBRETRY as the patch 
-"aio: fix kernel bug when page is temporally busy"
-sets then do_sync_read/write() will not drop IO submit but will retry
-it:
-for (;;) {
-	ret = filp->f_op->aio_read(&kiocb, &iov, 1, kiocb.ki_pos);
-	if (ret != -EIOCBRETRY)
-		break;
-	wait_on_retry_sync_kiocb(&kiocb);
-	}
-And do_sync_read/write() will not return EIO if page is busy
-as it does now, before patching.
+It's always seemed broken (though perhaps this was a distro bug?) in 
+module form, so I've been compiling it in to get it to work.
 
-Ken Chen wrote:
-> I also think the original patch is wrong.
-What do you mean saying 'also'?
+	Jeff
 
-Leonid
 
