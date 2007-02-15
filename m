@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161198AbXBOUfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161202AbXBOUfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161198AbXBOUfH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 15:35:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161200AbXBOUfH
+	id S1161202AbXBOUfS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 15:35:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161200AbXBOUfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 15:35:07 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:42712 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161198AbXBOUfG (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 15:35:06 -0500
-Message-Id: <200702152034.l1FKYS93012172@turing-police.cc.vt.edu>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
-       herbert.xu@redhat.com, linux-kernel@vger.kernel.org,
-       arjan@infradead.org, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing
-In-Reply-To: Your message of "Wed, 14 Feb 2007 22:14:53 PST."
-             <200702142214.53625.agruen@suse.de>
-From: Valdis.Kletnieks@vt.edu
-References: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com> <200702142135.40832.agruen@suse.de> <20070215054559.GD15654@redhat.com>
-            <200702142214.53625.agruen@suse.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1171571668_27755P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 15 Feb 2007 15:34:28 -0500
+	Thu, 15 Feb 2007 15:35:18 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37233 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1161193AbXBOUfR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 15:35:17 -0500
+X-Greylist: delayed 1606 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Feb 2007 15:35:17 EST
+From: John Keller <jpk@sgi.com>
+To: linux-acpi@vger.kernel.org
+Cc: ayoung@sgi.com, linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       John Keller <jpk@sgi.com>
+Date: Thu, 15 Feb 2007 14:08:30 -0600
+Message-Id: <20070215200830.1822.98901.sendpatchset@attica.americas.sgi.com>
+Subject: [PATCH 1/1] -  acpi_unload_table_id() always returns error
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1171571668_27755P
-Content-Type: text/plain; charset=us-ascii
+acpi_unload_table_id() is always returning an error status.
+Also, once the matching table is found, don't bother looking
+for another match.
 
-On Wed, 14 Feb 2007 22:14:53 PST, Andreas Gruenbacher said:
-> I agree, that's really what should happen. We solve this by marking modules as
-> supported, partner supported, or unsupported, but in an "insecure" way, so
-> partners and users could try to fake the support status of a module and/or
-> remove status flags from Oopses, and cryptography wouldn't save us.
 
-Where cryptography *can* save you is that a partner or user can't fake a
-'Suse Supported' signature without access to the Suse private key.
+Signed-off-by: John Keller <jpk@sgi.com>
+---
 
---==_Exmh_1171571668_27755P
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFF1MPUcC3lWbTT17ARAh66AJ9Gzvgd0zhuDVcrNqFTnRB2GRzatwCeLVDf
-kNp5hrMChhmnQIr5y+0Zehg=
-=5kzR
------END PGP SIGNATURE-----
-
---==_Exmh_1171571668_27755P--
+Index: release/drivers/acpi/tables/tbxface.c
+===================================================================
+--- release.orig/drivers/acpi/tables/tbxface.c	2007-02-13 08:20:42.000000000 -0600
++++ release/drivers/acpi/tables/tbxface.c	2007-02-15 14:04:07.855248010 -0600
+@@ -338,9 +338,9 @@ acpi_status acpi_unload_table_id(acpi_ow
+ 	int i;
+ 	acpi_status status = AE_NOT_EXIST;
+ 
+-	ACPI_FUNCTION_TRACE(acpi_unload_table);
++	ACPI_FUNCTION_TRACE(acpi_unload_table_id);
+ 
+-	/* Find table from the requested type list */
++	/* Find table in the global table list */
+ 	for (i = 0; i < acpi_gbl_root_table_list.count; ++i) {
+ 		if (id != acpi_gbl_root_table_list.tables[i].owner_id) {
+ 			continue;
+@@ -352,8 +352,9 @@ acpi_status acpi_unload_table_id(acpi_ow
+ 		* simply a position within the hierarchy
+ 		*/
+ 		acpi_tb_delete_namespace_by_owner(i);
+-		acpi_tb_release_owner_id(i);
++		status = acpi_tb_release_owner_id(i);
+ 		acpi_tb_set_table_loaded_flag(i, FALSE);
++		break;
+ 	}
+ 	return_ACPI_STATUS(status);
+ }
