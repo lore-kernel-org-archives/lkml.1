@@ -1,81 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161051AbXBOUN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161135AbXBOUNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161051AbXBOUN3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 15:13:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161136AbXBOUN2
+	id S1161135AbXBOUNe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 15:13:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161137AbXBOUNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 15:13:28 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:60926 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161051AbXBOUN1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 15:13:27 -0500
-Date: Thu, 15 Feb 2007 12:07:38 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 05/11] syslets: core code
-In-Reply-To: <Pine.LNX.4.64.0702151120260.20368@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0702151159410.20368@woody.linux-foundation.org>
-References: <20070213142035.GF638@elte.hu> <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org>
- <20070215133550.GA29274@2ka.mipt.ru> <Pine.LNX.4.64.0702150757520.20368@woody.linux-foundation.org>
- <20070215163704.GA32609@2ka.mipt.ru> <Pine.LNX.4.64.0702150920130.20368@woody.linux-foundation.org>
- <20070215181059.GC20997@2ka.mipt.ru> <Pine.LNX.4.64.0702151019210.20368@woody.linux-foundation.org>
- <20070215190413.GA23953@2ka.mipt.ru> <Pine.LNX.4.64.0702151120260.20368@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 15 Feb 2007 15:13:34 -0500
+Received: from lazybastard.de ([212.112.238.170]:41147 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161135AbXBOUNc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 15:13:32 -0500
+Date: Thu, 15 Feb 2007 20:09:22 +0000
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Juan Piernas Canovas <piernas@ditec.um.es>
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, sfaibish <sfaibish@emc.com>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [ANNOUNCE] DualFS: File System with Meta-data and Data Separation
+Message-ID: <20070215200922.GB24643@lazybastard.org>
+References: <op.tnkdlbgsrwwil4@brcsmondepl2c.corp.emc.com> <op.tnrbrocsunckof@usensfaibisl2e.eng.emc.com> <Pine.LNX.4.61.0702142251460.19368@yvahk01.tjqt.qr> <Pine.LNX.4.61.0702151910370.19998@ditec.inf.um.es>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.61.0702151910370.19998@ditec.inf.um.es>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 15 Feb 2007, Linus Torvalds wrote:
+On Thu, 15 February 2007 19:38:14 +0100, Juan Piernas Canovas wrote:
 > 
-> So I think that a good implementation just does everything up-front, and 
-> doesn't _need_ a user buffer that is live over longer periods, except for 
-> the actual results. Exactly because the whole alloc/teardown is nasty.
+> The patch for 2.6.11 is not still stable enough to be released. Be patient 
+> ;-)
 
-Btw, this doesn't necessarily mean "not supporting multiple atoms at all".
+While I don't want to discourage you, this is about the point in
+development where most log structured filesystems stopped.  Doing a
+little web research, you will notice those todo-lists with "cleaner"
+being the top item for...years!
 
-I think the batching of async things is potentially a great idea. I think 
-it's quite workable for "open+fstat" kind of things, and I agree that it 
-can solve other things too (the "socket+bind+connect+sendmsg+rcv" kind of 
-complex setup things).
+Getting that one to work robustly is _very_ hard work and just today
+I've noticed that mine was not as robust as I would have liked to think.
+Also, you may note that by updating to newer kernels, the VM writeout
+policies can change and impact your cleaner.  To an extent even that you
+had a rock-solid filesystem with 2.6.18 and thing crumble between your
+fingers in 2.6.19 or later.
 
-But I suspect that if we just said:
- - we limit these atom sequences to just linear sequences of max "n" ops
- - we read them all in in a single go at startup
+If the latter happens, most likely the VM is not to blame, it just
+proved that your cleaner is still getting some corner-cases wrong and
+needs more work.  There goes another week of debugging. :(
 
-we actually avoid several nasty issues. Not just the memory allocation 
-issue in user space (now it's perfectly ok to build up a sequence of ops 
-in temporary memory and throw it away once it's been submitted), but also 
-issues like the 32-bit vs 64-bit compatibility stuff (the compat handlers 
-would just convert it when they do the initial copying, and then the 
-actual run-time wouldn't care about user-level pointers having different 
-sizes etc).
+Jörn
 
-Would it make the interface less cool? Yeah. Would it limit it to just a 
-few linked system calls (to avoid memory allocation issues in the kernel)? 
-Yes again. But it would simplify a lot of the interface issues.
-
-It would _also_ allow the "sys_aio_read()" function to build up its 
-*own* set of atoms in kernel space to actually do the read, and there 
-would be no impact of the actual run-time wanting to read stuff from user 
-space. Again - it's actually the same issue as with the compat system 
-call: by making the interfaces do things up-front rather than dynamically, 
-it becomes more static, but also easier to do interface translations. You 
-can translate into any arbitrary internal format _once_, and be done with 
-it.
-
-I dunno. 
-
-		Linus
+-- 
+You ain't got no problem, Jules. I'm on the motherfucker. Go back in
+there, chill them niggers out and wait for the Wolf, who should be
+coming directly.
+-- Marsellus Wallace
