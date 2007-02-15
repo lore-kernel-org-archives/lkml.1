@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965632AbXBOLGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965628AbXBOLQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965632AbXBOLGl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 06:06:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965847AbXBOLGl
+	id S965628AbXBOLQR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 06:16:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965645AbXBOLQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 06:06:41 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:1692 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965632AbXBOLGk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 06:06:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=KMHYDfSDXK+0XZtRR6BSqTxEVJTaDb4HbqJRy9rPSv+HE/6cEG33IuLKso1SIe8PMbF++/9UJ2gryKIemgCAQdhWjkW7ZV4T/bpRVySrRdWpY8Q9mSrugbk075+QE9V0RIl57l7mAtckl8bw/UKXLM20o+K+96CnAPyuSH+zHLk=
-Message-ID: <efa6f5910702150306v180bf810o15fbfe6c781f43ad@mail.gmail.com>
-Date: Thu, 15 Feb 2007 12:06:35 +0100
-From: "Ihar `Philips` Filipau" <thephilips@gmail.com>
-To: "v j" <vj.linux@gmail.com>
+	Thu, 15 Feb 2007 06:16:17 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:54305 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965628AbXBOLQQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 06:16:16 -0500
+Date: Thu, 15 Feb 2007 06:15:59 -0500
+From: Dave Jones <davej@redhat.com>
+To: Xavier Bestel <xavier.bestel@free.fr>
+Cc: Mohammed Gamal <m.gamal005@gmail.com>, linux-kernel@vger.kernel.org
 Subject: Re: GPL vs non-GPL device drivers
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-ID: <20070215111559.GA8353@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Xavier Bestel <xavier.bestel@free.fr>,
+	Mohammed Gamal <m.gamal005@gmail.com>, linux-kernel@vger.kernel.org
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com> <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com> <20070215061149.GE15654@redhat.com> <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com> <20070214231143.11ff6b46.rdunlap@xenotime.net> <9b3a62ab0702142328h87365b6i932d4f2c117f7f0e@mail.gmail.com> <1171533690.5835.40.camel@frg-rhel40-em64t-03> <52d4a3890702150251w7751da0cve55c6f2cf64e1b8e@mail.gmail.com> <1171537256.5835.60.camel@frg-rhel40-em64t-03>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1171537256.5835.60.camel@frg-rhel40-em64t-03>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Our source code is meaningless to the Open
-> Source community at large. It is only useful to our tiny set
-> of competitors that have nothing to do with Linux. The Embedded
-> space is very specific. We are only _using_ Linux. Just as we
-> could have used VxWorks or OSE. Using our source code would
-> not benefit anybody but our competitors.
+On Thu, Feb 15, 2007 at 12:00:56PM +0100, Xavier Bestel wrote:
+ > On Thu, 2007-02-15 at 12:51 +0200, Mohammed Gamal wrote:
+ > > I am still a kernel newbie, and I am still not very much aware about
+ > > the GPL vs. Non-GPL drivers debate. I personally think it'd be better
+ > > that all drivers should be GPL'd but if that's the case, what would be
+ > > the legal position of such vendors as ATI or NVIDIA who supply closed
+ > > source drivers? Would it be illegal to use them?
+ > 
+ > Yeah, this is a recurrent debate, and the positions are mixed. Linus
+ > said that the nvidia driver isn't developed only for linux but also for
+ > windows, so it's not a true derivative of the kernel, so the GPL doesn't
+ > really apply. But not everyone (I mean core developpers) fully agrees
+ > IIRC.
 
-What a load of B.S. I'm working with embedded Linux for five years and
-hear that shit more or less every day. Is it mantra for happiness here
-or what?
+to further expand on the above question it isn't really crystal clear
+whether this (from the ATI driver) is legal..
+(psuedo diff vs the kernel agp drivers)
 
-That's TOTALLY wrong. You basically are saying that your main
-competitors are your own customers. People do with stuff absolutely
-unpredictable things creators often even cannot think about. And then
-they become your /competitors/. That what is called "innovation".
 
-Linux precisely thriving, since it gave power back to consumers - and
-allowed them to use things they have bought to their fullest. Few
-people can clearly state what they need - and Linux allow them (w/o
-thinking hard formulating on bug report to you - and sparing your time
-on guessing what user really wants) to take it and adopt it to their
-own needs. I have customers who did absolutely crazy things with
-embedded systems - putting to better use those few resources original
-system had left redundant. (Just recall LinkSys' WRT54G - and it is
-just but one of the examples. In corporate world it is also happening
-all the time - just let customers in.)
 
-Also, to the question of "not benefit anybody". I have seen piles of
-rare/obscure hardware which is rare/obscure precisely because there
-are no drivers for it. And guess how hardware/OS selection works:
-primary question is availability of ready drivers and/or effort it
-would take to adopt existing drivers. This is vital part of embedded
-system costs: engineering costs. Your vendor had driven itself into
-lock-in: you have unique drivers for unique piece hardware and costs
-cannot be cut because hardware doesn't become commodity. And it can't
-become commodity (nor can be standardized) due to lack of open
-drivers.  ".. and I've seen it before, .. and I'll see it again" (c)
-Propellerheads.
++#ifdef STANDALONE_AGPGART
+ MODULE_AUTHOR("Jeff Hartmann <jhartmann@precisioninsight.com>");
+ MODULE_PARM(agp_try_unsupported, "1i");
+ #ifdef MODULE_LICENSE
+ MODULE_LICENSE("GPL and additional rights");
++#endif
+
+
+and then linking the result to their binary blob.
+I assume ATI's lawyers think its legal, as it's been a year and
+a half since I first brought this questionable act to their
+attention.
+
+		Dave
 
 -- 
-Don't walk behind me, I may not lead.
-Don't walk in front of me, I may not follow.
-Just walk beside me and be my friend.
-    -- Albert Camus (attributed to)
+http://www.codemonkey.org.uk
