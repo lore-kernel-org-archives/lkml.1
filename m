@@ -1,78 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161210AbXBOUgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161214AbXBOUpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161210AbXBOUgT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 15:36:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161213AbXBOUgT
+	id S1161214AbXBOUpx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 15:45:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161213AbXBOUpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 15:36:19 -0500
-Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:57119 "EHLO
-	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161212AbXBOUgS (ORCPT
+	Thu, 15 Feb 2007 15:45:53 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:64091 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161211AbXBOUpw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 15:36:18 -0500
-In-Reply-To: <20070215200245.GF31359@Krystal>
-References: <117122149548-git-send-email-mathieu.desnoyers@polymtl.ca> <11712214961955-git-send-email-mathieu.desnoyers@polymtl.ca> <20070214225653.345aad29.akpm@linux-foundation.org> <20070215072024.GA9137@Krystal> <27EC3349-5FD8-47BD-B909-E1180B86AF40@kernel.crashing.org> <20070215200245.GF31359@Krystal>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <906FD21B-59B6-4A30-90F0-914E0CD3CFBF@kernel.crashing.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+	Thu, 15 Feb 2007 15:45:52 -0500
+Date: Thu, 15 Feb 2007 12:41:43 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Zwane Mwaikambo <zwane@infradead.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Tobias Hain <tobias.hain@gmx.de>
+Subject: Re: [PATCH] Don't probe for DDC on VBE1.2
+Message-Id: <20070215124143.b52ad45b.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0702132145460.28458@montezuma.fsmlabs.com>
+References: <Pine.LNX.4.64.0702132145460.28458@montezuma.fsmlabs.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] local_t : powerpc extension - use long for powerpc32
-Date: Thu, 15 Feb 2007 14:35:22 -0600
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-X-Mailer: Apple Mail (2.752.2)
-X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - kernel.crashing.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 15 Feb 2007 08:29:49 -0800 (PST) Zwane Mwaikambo wrote:
 
-On Feb 15, 2007, at 2:02 PM, Mathieu Desnoyers wrote:
+> VBE1.2 doesn't support function 15h (DDC) resulting in a 'hang' whilst
+> uncompressing kernel with some video cards. Make sure we check VBE version 
+> before fiddling around with DDC.
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=1458
+> 
+> Opened: 2003-10-30 09:12 Last update: 2007-02-13 22:03
+> 
+> :(
 
-> * Kumar Gala (galak@kernel.crashing.org) wrote:
->> is there a reason this isn't local_add_return(long a, local_t *l) on
->> ppc32?
->>
->> (same comment for other functions)
->>
->> - k
->
-> no, except that we use the code is taken from atomic.h and used an
-> int parameter. However, due to the semantics of local_t, we should
-> manipulate longs instead of ints, even if they are the same size on a
-> given architecture (ppc32 and mips32 are affectec by this).
->
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+true.
 
-Right, this means we can simply for ppc version down to:
+Just one question:  why use 'je' instead of 'jle' (jge ?) : check for
+current version <= 0x0102, whatever that is in gas; I'm still used
+to intel syntax.
 
-+static __inline__ int local_add_return(int a, local_t *l)
-+{
-+	int t;
-+
-+	__asm__ __volatile__(
-+"1:	PPC_LLARX	%0,0,%2		# local_add_return\n\
-+	add	%0,%1,%0\n"
-+	PPC405_ERR77(0,%2)
-+"	PPC_STLCX	%0,0,%2 \n\
-+	bne-	1b"
-+	: "=&r" (t)
-+	: "r" (a), "r" (&(l->a.counter))
-+	: "cc", "memory");
-+
-+	return t;
-+}
+> Much thanks to Tobias Hain for help in testing and investigating the bug. 
+> Tested on;
+> 
+> i386, Chips & Technologies 65548 VESA VBE 1.2
+> CONFIG_VIDEO_SELECT=Y
+> CONFIG_FIRMWARE_EDID=Y
+> 
+> Untested on x86_64.
+> 
+> Signed-off-by: Zwane Mwaikambo <zwane@infradead.org>
+> 
+> Index: linux-2.6.20-rc6-mm1/arch/i386/boot/video.S
+> ===================================================================
+> RCS file: /home/cvsroot/linux-2.6.20-rc6-mm1/arch/i386/boot/video.S,v
+> retrieving revision 1.1.1.1
+> diff -u -p -B -r1.1.1.1 video.S
+> --- linux-2.6.20-rc6-mm1/arch/i386/boot/video.S	30 Jan 2007 05:28:31 -0000	1.1.1.1
+> +++ linux-2.6.20-rc6-mm1/arch/i386/boot/video.S	15 Feb 2007 16:27:32 -0000
+> @@ -1945,6 +1945,20 @@ store_edid:
+>  	rep
+>  	stosl
+>  
+> +	pushw	%es
+> +	pushw	%ds
+> +	popw	%es
+> +	leaw	modelist+1024, %di
+> +	movw	$0x4f00, %ax
+> +	int	$0x10
+> +	popw	%es
+> +
+> +	cmpw	$0x004f, %ax
+> +	jne	no_edid
+> +
+> +	cmpw	$0x0102, 4(%di)			# only do EDID on > 1.2
+> +	je	no_edid
+> +
+>  	pushw   %es				# save ES
+>  	xorw    %di, %di                        # Report Capability
+>  	pushw   %di
+> Index: linux-2.6.20-rc6-mm1/arch/x86_64/boot/video.S
+> ===================================================================
+> RCS file: /home/cvsroot/linux-2.6.20-rc6-mm1/arch/x86_64/boot/video.S,v
+> retrieving revision 1.1.1.1
+> diff -u -p -B -r1.1.1.1 video.S
+> --- linux-2.6.20-rc6-mm1/arch/x86_64/boot/video.S	30 Jan 2007 05:28:36 -0000	1.1.1.1
+> +++ linux-2.6.20-rc6-mm1/arch/x86_64/boot/video.S	15 Feb 2007 16:27:32 -0000
+> @@ -1945,6 +1945,20 @@ store_edid:
+>  	rep
+>  	stosl
+>  
+> +	pushw	%es
+> +	pushw	%ds
+> +	popw	%es
+> +	leaw	modelist+1024, %di
+> +	movw	$0x4f00, %ax
+> +	int	$0x10
+> +	popw	%es
+> +
+> +	cmpw	$0x004f, %ax
+> +	jne	no_edid
+> +
+> +	cmpw	$0x0102, 4(%di)			# only do EDID on > 1.2
+> +	je	no_edid
+> +
+>  	pushw   %es				# save ES
+>  	xorw    %di, %di                        # Report Capability
+>  	pushw   %di
+> -
 
-and that should work for both ppc32 & ppc64 and removes the  
-duplication between the two.
-
-- k
-
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
