@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932295AbXBOAKx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932577AbXBOAK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932295AbXBOAKx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 19:10:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932577AbXBOAKx
+	id S932577AbXBOAK5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 19:10:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932607AbXBOAK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 19:10:53 -0500
-Received: from gw.goop.org ([64.81.55.164]:55848 "EHLO mail.goop.org"
+	Wed, 14 Feb 2007 19:10:57 -0500
+Received: from mx2.suse.de ([195.135.220.15]:58399 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932295AbXBOAKw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 19:10:52 -0500
-Message-ID: <45D3A50A.9090303@goop.org>
-Date: Wed, 14 Feb 2007 16:10:50 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@osdl.org>,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 15/21] Xen-paravirt: Add Xen interface header files
-References: <20070213221729.772002682@goop.org>	<20070213221830.619562494@goop.org> <m1k5ykpiwv.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1k5ykpiwv.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S932577AbXBOAK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 19:10:56 -0500
+Date: Thu, 15 Feb 2007 01:10:53 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [patch] mm: NUMA replicated pagecache
+Message-ID: <20070215001053.GB29797@wotan.suse.de>
+References: <20070213060924.GB20644@wotan.suse.de> <Pine.LNX.4.64.0702141057060.975@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702141057060.975@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Jeremy Fitzhardinge <jeremy@goop.org> writes:
->
->   
->> Add Xen interface header files. These are taken fairly directly from
->> the Xen tree and hence the style is not entirely in accordance with
->> Linux guidelines. There is a tension between fitting with Linux coding
->> rules and ease of maintenance.
->>
->> Define macros and inline functions for doing hypercalls into the
->> hypervisor.
->>
->> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
->> Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
->> Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
->> Signed-off-by: Chris Wright <chrisw@sous-sol.org>
->>
->>
->> --
->>  include/asm-i386/hypercall.h          |  416 +++++++++++++++++++++++++++++
->>  include/asm-i386/hypervisor.h         |   72 +++++
->>     
->
-> Are hypercall.h and hypervisor.h generic or are they Xen specific.
-> If they are Xen specific (as it appears) then are inappropriately
-> named.
->   
+On Wed, Feb 14, 2007 at 11:00:02AM -0800, Christoph Lameter wrote:
+> On Tue, 13 Feb 2007, Nick Piggin wrote:
+> 
+> > This is a scheme for page replication replicates read-only pagecache pages
+> > opportunistically, at pagecache lookup time (at points where we know the
+> > page is being looked up for read only).
+> 
+> The problem is that you may only have a single page table. One process 
+> with multiple threads will just fault in one thread in order to 
+> install the mapping to the page. The others threads may be running on 
+> different nodes and different processors but will not generate any 
+> faults. Pages will not be replicated as needed. The scheme only seems to 
+> be working for special cases of multiple processes mapping the same file.
 
-Thanks for the reminder; I've been meaning to move/rename these.
+Yeah like program text, libraries. Not just mapping, also reading, FWIW.
 
->>  include/xen/interface/arch-x86_32.h   |  187 +++++++++++++
->>     
-> Why isn't this file include-asm-i386/xen/arch-x86_32.h ?
->   
+I guess if you map something in different positions, then you can have
+it replicated!
 
-Those files are more or less directly copied from the Xen tree, and its
-easier if they don't drift too far in name and directory structure.
-
-    J
+But no arguments, this doesn't aim to do replication of the same virtual
+address. If you did come up with such a scheme, however, you would still
+need a replicated pagecache for it as well.
