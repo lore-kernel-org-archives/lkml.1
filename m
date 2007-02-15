@@ -1,89 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751430AbXBOBA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751468AbXBOBBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751430AbXBOBA6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 20:00:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbXBOBA6
+	id S1751468AbXBOBBJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 20:01:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbXBOBBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 20:00:58 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:62834 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751430AbXBOBA5 (ORCPT
+	Wed, 14 Feb 2007 20:01:09 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:3895 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468AbXBOBBH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 20:00:57 -0500
-Message-ID: <45D3B08D.6040602@oracle.com>
-Date: Wed, 14 Feb 2007 16:59:57 -0800
-From: Chuck Lever <chuck.lever@oracle.com>
-Reply-To: chuck.lever@oracle.com
-Organization: Oracle Corporation
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Wed, 14 Feb 2007 20:01:07 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 14 Feb 2007 17:01:04 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Alan <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 05/11] syslets: core code
+In-Reply-To: <20070214223216.GA7616@elte.hu>
+Message-ID: <Pine.LNX.4.64.0702141656240.7796@alien.or.mcafeemobile.com>
+References: <20070213142035.GF638@elte.hu> <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org>
+ <20070214210251.GA15025@elte.hu> <Pine.LNX.4.64.0702141321200.20368@woody.linux-foundation.org>
+ <20070214215613.56d76257@localhost.localdomain> <20070214223216.GA7616@elte.hu>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: clem@clem.clem-digital.net, linux-kernel@vger.kernel.org, neilb@suse.de
-Subject: Re: 2.6.20-git8 fails compile -- net/built-in.o __ipv6_addr_type
-References: <200702130110.l1D1ADai012897@clem.clem-digital.net> <20070212.202054.104031463.davem@davemloft.net>
-In-Reply-To: <20070212.202054.104031463.davem@davemloft.net>
-Content-Type: multipart/mixed;
- boundary="------------000909080608060802030408"
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000909080608060802030408
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Wed, 14 Feb 2007, Ingo Molnar wrote:
 
-David Miller wrote:
-> From: Pete Clements <clem@clem.clem-digital.net>
-> Date: Mon, 12 Feb 2007 20:10:13 -0500 (EST)
-> 
->> 2.6.20-git8 fails compile:
->>
->>   CHK     include/linux/compile.h
->>   UPD     include/linux/compile.h
->>   CC      init/version.o
->>   LD      init/built-in.o
->>   LD      .tmp_vmlinux1
->> net/built-in.o: In function `svc_udp_recvfrom':
->> svcsock.c:(.text+0x61be4): undefined reference to `__ipv6_addr_type'
->> make: *** [.tmp_vmlinux1] Error 1
-> 
-> Chuck, you will need to somehow make CONFIG_SUNRPC "depend" upon IPV6
-> so that if IPV6 is modular SUNRPC can only be built modular.
-> 
-> Otherwise the symbols won't resolve correctly.
-> 
-> Everybody hits this problem when they add ipv6 support to
-> something. :-)
-> 
+> yeah, that's another key thing. I do plan to provide a sys_upcall() 
+> syscall as well which calls a 5-parameter user-space function with a 
+> special stack. (it's like a lightweight signal/event handler, without 
+> any of the signal handler legacies and overhead - it's like a reverse 
+> system call - a "user call". Obviously pure userspace would never use 
+> sys_upcall(), unless as an act of sheer masochism.)
 
-Interestingly, doing a build with ALLYESCONFIG, ALLMODCONFIG, and 
-ALLNOCONFIG doesn't catch this type of error.
-
-I just did a copy+paste and that brought in ipv6_addr_type.  So I'm not 
-convinced it's really needed here.  David, can you take a look at the 
-code in svcsock.c right around the ipv6_addr_type() call and let me know 
-if we can avoid that call outright?
-
---------------000909080608060802030408
-Content-Type: text/x-vcard; charset=utf-8;
- name="chuck.lever.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="chuck.lever.vcf"
-
-begin:vcard
-fn:Chuck Lever
-n:Lever;Chuck
-org:Oracle Corporation;Corporate Architecture Linux Projects Group
-email;internet:chuck dot lever at nospam oracle dot com
-title:Principal Member of Staff
-tel;work:+1 248 614 5091
-x-mozilla-html:FALSE
-version:2.1
-end:vcard
+That is exactly what I described as clets. Instead of having complex jump 
+and condition interpreters on the kernel (on top of new syscalls to 
+modify/increment userspace variables), you just code it in C and you pass 
+the clet pointer to the kernel.
+The upcall will setup a frame, execute the clet (where jump/conditions and 
+userspace variable changes happen in machine code - gcc is pretty good in 
+taking care of that for us) on its return, come back through a 
+sys_async_return, and go back to userspace.
 
 
---------------000909080608060802030408--
+
+
+- Davide
+
+
