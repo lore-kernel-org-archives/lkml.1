@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030206AbXBOQ5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030230AbXBOQ7Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030206AbXBOQ5l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 11:57:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030200AbXBOQ5J
+	id S1030230AbXBOQ7Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 11:59:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030217AbXBOQ6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 11:57:09 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40989 "EHLO mx2.mail.elte.hu"
+	Thu, 15 Feb 2007 11:58:53 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41183 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966132AbXBOQ4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 11:56:54 -0500
-Date: Thu, 15 Feb 2007 17:52:39 +0100
+	id S1030218AbXBOQ6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 11:58:46 -0500
+Date: Thu, 15 Feb 2007 17:52:20 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -22,8 +22,8 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Suparna Bhattacharya <suparna@in.ibm.com>,
        Davide Libenzi <davidel@xmailserver.org>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 08/14] syslets: x86, add create_async_thread() method
-Message-ID: <20070215165239.GI4285@elte.hu>
+Subject: [patch 03/14] syslets: generic kernel bits
+Message-ID: <20070215165220.GD4285@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -42,112 +42,135 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ingo Molnar <mingo@elte.hu>
 
-add the create_async_thread() way of creating kernel threads:
-these threads first execute a kernel function and when they
-return from it they execute user-space.
-
-An architecture must implement this interface before it can turn
-CONFIG_ASYNC_SUPPORT on.
+add the kernel generic bits - these are present even if !CONFIG_ASYNC_SUPPORT.
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- arch/i386/kernel/entry.S     |   25 +++++++++++++++++++++++++
- arch/i386/kernel/process.c   |   31 +++++++++++++++++++++++++++++++
- include/asm-i386/processor.h |    5 +++++
- 3 files changed, 61 insertions(+)
+ include/linux/sched.h |   23 ++++++++++++++++++++++-
+ kernel/exit.c         |    3 +++
+ kernel/fork.c         |    2 ++
+ kernel/sched.c        |    9 +++++++++
+ 4 files changed, 36 insertions(+), 1 deletion(-)
 
-Index: linux/arch/i386/kernel/entry.S
+Index: linux/include/linux/sched.h
 ===================================================================
---- linux.orig/arch/i386/kernel/entry.S
-+++ linux/arch/i386/kernel/entry.S
-@@ -996,6 +996,31 @@ ENTRY(kernel_thread_helper)
- 	CFI_ENDPROC
- ENDPROC(kernel_thread_helper)
+--- linux.orig/include/linux/sched.h
++++ linux/include/linux/sched.h
+@@ -83,12 +83,12 @@ struct sched_param {
+ #include <linux/timer.h>
+ #include <linux/hrtimer.h>
+ #include <linux/task_io_accounting.h>
++#include <linux/async.h>
  
-+ENTRY(async_thread_helper)
-+	CFI_STARTPROC
-+	/*
-+	 * Allocate space on the stack for pt-regs.
-+	 * sizeof(struct pt_regs) == 64, and we've got 8 bytes on the
-+	 * kernel stack already:
-+	 */
-+	subl $64-8, %esp
-+	CFI_ADJUST_CFA_OFFSET 64
-+	movl %edx,%eax
-+	push %edx
-+	CFI_ADJUST_CFA_OFFSET 4
-+	call *%ebx
-+	addl $4, %esp
-+	CFI_ADJUST_CFA_OFFSET -4
-+
-+	movl %eax, PT_EAX(%esp)
-+
-+	GET_THREAD_INFO(%ebp)
-+
-+	jmp syscall_exit
-+	CFI_ENDPROC
-+ENDPROC(async_thread_helper)
-+
-+
- .section .rodata,"a"
- #include "syscall_table.S"
+ #include <asm/processor.h>
  
-Index: linux/arch/i386/kernel/process.c
-===================================================================
---- linux.orig/arch/i386/kernel/process.c
-+++ linux/arch/i386/kernel/process.c
-@@ -352,6 +352,37 @@ int kernel_thread(int (*fn)(void *), voi
- EXPORT_SYMBOL(kernel_thread);
- 
+ struct exec_domain;
+ struct futex_pi_state;
+-
  /*
-+ * This gets run with %ebx containing the
-+ * function to call, and %edx containing
-+ * the "args".
-+ */
-+extern void async_thread_helper(void);
+  * List of flags we want to share for kernel threads,
+  * if only because they are not used by them anyway.
+@@ -997,6 +997,12 @@ struct task_struct {
+ /* journalling filesystem info */
+ 	void *journal_info;
+ 
++/* async syscall support: */
++	struct async_thread *at, *async_ready;
++	struct async_head *ah;
++	struct async_thread __at;
++	struct async_head __ah;
 +
+ /* VM state */
+ 	struct reclaim_state *reclaim_state;
+ 
+@@ -1053,6 +1059,21 @@ struct task_struct {
+ #endif
+ };
+ 
 +/*
-+ * Create an async thread
++ * Is an async syscall being executed currently?
 + */
-+int create_async_thread(int (*fn)(void *), void * arg, unsigned long flags)
++#ifdef CONFIG_ASYNC_SUPPORT
++static inline int async_syscall(struct task_struct *t)
 +{
-+	struct pt_regs regs;
-+
-+	memset(&regs, 0, sizeof(regs));
-+
-+	regs.ebx = (unsigned long) fn;
-+	regs.edx = (unsigned long) arg;
-+
-+	regs.xds = __USER_DS;
-+	regs.xes = __USER_DS;
-+	regs.xgs = __KERNEL_PDA;
-+	regs.orig_eax = -1;
-+	regs.eip = (unsigned long) async_thread_helper;
-+	regs.xcs = __KERNEL_CS | get_kernel_rpl();
-+	regs.eflags = X86_EFLAGS_IF | X86_EFLAGS_SF | X86_EFLAGS_PF | 0x2;
-+
-+	/* Ok, create the new task.. */
-+	return do_fork(flags, 0, &regs, 0, NULL, NULL);
++	return t->async_ready != NULL;
 +}
++#else /* !CONFIG_ASYNC_SUPPORT */
++static inline int async_syscall(struct task_struct *t)
++{
++	return 0;
++}
++#endif /* !CONFIG_ASYNC_SUPPORT */
 +
-+/*
-  * Free current thread data structures etc..
-  */
- void exit_thread(void)
-Index: linux/include/asm-i386/processor.h
+ static inline pid_t process_group(struct task_struct *tsk)
+ {
+ 	return tsk->signal->pgrp;
+Index: linux/kernel/exit.c
 ===================================================================
---- linux.orig/include/asm-i386/processor.h
-+++ linux/include/asm-i386/processor.h
-@@ -472,6 +472,11 @@ extern void prepare_to_copy(struct task_
-  */
- extern int kernel_thread(int (*fn)(void *), void * arg, unsigned long flags);
+--- linux.orig/kernel/exit.c
++++ linux/kernel/exit.c
+@@ -26,6 +26,7 @@
+ #include <linux/ptrace.h>
+ #include <linux/profile.h>
+ #include <linux/mount.h>
++#include <linux/async.h>
+ #include <linux/proc_fs.h>
+ #include <linux/mempolicy.h>
+ #include <linux/taskstats_kern.h>
+@@ -889,6 +890,8 @@ fastcall NORET_TYPE void do_exit(long co
+ 		schedule();
+ 	}
  
-+/*
-+ * create an async thread:
-+ */
-+extern int create_async_thread(int (*fn)(void *), void * arg, unsigned long flags);
++	async_exit(tsk);
 +
- extern unsigned long thread_saved_pc(struct task_struct *tsk);
- void show_trace(struct task_struct *task, struct pt_regs *regs, unsigned long *stack);
+ 	tsk->flags |= PF_EXITING;
  
+ 	if (unlikely(in_atomic()))
+Index: linux/kernel/fork.c
+===================================================================
+--- linux.orig/kernel/fork.c
++++ linux/kernel/fork.c
+@@ -22,6 +22,7 @@
+ #include <linux/personality.h>
+ #include <linux/mempolicy.h>
+ #include <linux/sem.h>
++#include <linux/async.h>
+ #include <linux/file.h>
+ #include <linux/key.h>
+ #include <linux/binfmts.h>
+@@ -1054,6 +1055,7 @@ static struct task_struct *copy_process(
+ 
+ 	p->lock_depth = -1;		/* -1 = no lock */
+ 	do_posix_clock_monotonic_gettime(&p->start_time);
++	async_init(p);
+ 	p->security = NULL;
+ 	p->io_context = NULL;
+ 	p->io_wait = NULL;
+Index: linux/kernel/sched.c
+===================================================================
+--- linux.orig/kernel/sched.c
++++ linux/kernel/sched.c
+@@ -38,6 +38,7 @@
+ #include <linux/vmalloc.h>
+ #include <linux/blkdev.h>
+ #include <linux/delay.h>
++#include <linux/async.h>
+ #include <linux/smp.h>
+ #include <linux/threads.h>
+ #include <linux/timer.h>
+@@ -3436,6 +3437,14 @@ asmlinkage void __sched schedule(void)
+ 	}
+ 	profile_hit(SCHED_PROFILING, __builtin_return_address(0));
+ 
++	prev = current;
++	if (unlikely(prev->async_ready)) {
++		if (prev->state && !(preempt_count() & PREEMPT_ACTIVE) &&
++			(!(prev->state & TASK_INTERRUPTIBLE) ||
++				!signal_pending(prev)))
++			__async_schedule(prev);
++	}
++
+ need_resched:
+ 	preempt_disable();
+ 	prev = current;
