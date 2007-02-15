@@ -1,56 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965838AbXBOKqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965846AbXBOKqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965838AbXBOKqA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 05:46:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965841AbXBOKqA
+	id S965846AbXBOKqW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 05:46:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965844AbXBOKqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 05:46:00 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3536 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965838AbXBOKp7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 05:45:59 -0500
-Date: Thu, 15 Feb 2007 10:45:47 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Paul Mundt <lethal@linux-sh.org>, Maximus <john.maximus@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: irqdesc porting help
-Message-ID: <20070215104547.GA15772@flint.arm.linux.org.uk>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Maximus <john.maximus@gmail.com>, linux-kernel@vger.kernel.org
-References: <3634de740702142231k938a4c5ic824c2eefc95c1b0@mail.gmail.com> <20070215103347.GA18690@linux-sh.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070215103347.GA18690@linux-sh.org>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 15 Feb 2007 05:46:22 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:54868 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965843AbXBOKqS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 05:46:18 -0500
+Message-ID: <45D439F7.3030604@garzik.org>
+Date: Thu, 15 Feb 2007 05:46:15 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
+MIME-Version: 1.0
+To: Robert Hancock <hancockr@shaw.ca>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Allen Martin <AMartin@nvidia.com>, nas@arctrix.com, B.Steinbrink@gmx.de
+Subject: Re: sata_nv ADMA controller lockup investigation
+References: <45D3E1FF.3080606@shaw.ca>
+In-Reply-To: <45D3E1FF.3080606@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 15, 2007 at 07:33:47PM +0900, Paul Mundt wrote:
-> On Thu, Feb 15, 2007 at 12:01:37PM +0530, Maximus wrote:
-> > Im trying to port some drivers between 2.6.14 and 2.6.19
-> > 
-> > I find that irqdesc has changed completely. how do i port
-> > the drivers between 2.6.14 and 2.6.19?
-> > 
-> > is there a porting guide available to port the drivers
-> > which use irqdesc?.
-> > 
-> > my drivers use variables triggered, ... which dont exist in 2.6.19
-> > irqdesc strcuture.
-> > 
-> Presumably you're talking about the struct hw_interrupt_type and the lack
-> of an irq_desc[irq].handler? There's some migration helper glue in
-> include/linux/irq.h that you can use, but you're better off converting
-> completely. You can at least get it building again by changing to
-> irq_desc[irq].chip, but you really want a proper irq_chip implementation
-> to go along with this, rather than munging in the hw_interrupt_type.
+Robert Hancock wrote:
+> It's curious that only the post-cache-flush command is having issues,
+> and normal NCQ operation seems fine. Maybe it's related to that tag 0
+> being reused repeatedly?
 
-It should be asked - why are drivers poking about in the irqdesc
-structure?
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+If you take cache flush out of the equation, what happens when NCQ is 
+enabled with a queue depth of 1 (to reproduce tag-0-used-repeatedly 
+condition)?
+
+	Jeff
+
+
