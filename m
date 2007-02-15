@@ -1,82 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964964AbXBOHW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964950AbXBOHY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964964AbXBOHW0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 02:22:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964965AbXBOHW0
+	id S964950AbXBOHY3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 02:24:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964958AbXBOHY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 02:22:26 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:37665 "EHLO smtp.osdl.org"
+	Thu, 15 Feb 2007 02:24:29 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47885 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964964AbXBOHWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 02:22:25 -0500
-Date: Wed, 14 Feb 2007 23:21:37 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-       Ingo Molnar <mingo@redhat.com>, systemtap@sources.redhat.com,
-       ltt-dev@shafik.org
-Subject: Re: [PATCH 02/05] Linux Kernel Markers, architecture independant
- code.
-Message-Id: <20070214232137.7aa86259.akpm@linux-foundation.org>
-In-Reply-To: <11712242074091-git-send-email-mathieu.desnoyers@polymtl.ca>
-References: <1171224207118-git-send-email-mathieu.desnoyers@polymtl.ca>
-	<11712242074091-git-send-email-mathieu.desnoyers@polymtl.ca>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	id S964950AbXBOHY2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 02:24:28 -0500
+Date: Thu, 15 Feb 2007 02:24:25 -0500
+From: Dave Jones <davej@redhat.com>
+To: v j <vj.linux@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: GPL vs non-GPL device drivers
+Message-ID: <20070215072425.GB917@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>, v j <vj.linux@gmail.com>,
+	linux-kernel@vger.kernel.org
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com> <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com> <20070215061149.GE15654@redhat.com> <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 Feb 2007 15:03:24 -0500 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+On Wed, Feb 14, 2007 at 10:27:10PM -0800, v j wrote:
 
-> Linux Kernel Markers, architecture independant code.
-> 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> 
-> ...
->
-> +
-> +#ifndef MARK
-> +#define MARK GEN_MARK
-> +#define MARK_ENABLE_TYPE GEN_MARK_ENABLE_TYPE
-> +#define MARK_ENABLE_IMMEDIATE_OFFSET GEN_MARK_ENABLE_IMMEDIATE_OFFSET
-> +#endif
+ > Not everybody has to be a contributor. The reason Linux is popular is
+ > because of its openness. Take that away and see where it goes.
 
-Also perhaps this nastiness can go away once each architecture has
-asm/marker.h?
+please expand on this openness.
+Especially wrt your add-ons.
 
-> +#ifdef MARK_POLYMORPHIC
+		Dave
 
-What's this?  Is it commented somewhere?  (It should be...)
-
-> +static int marker_set_ins_enable(void *address, char enable)
-> +{
-> +#ifdef CONFIG_X86_32
-> +	return arch_marker_set_ins_enable(address, enable);
-> +#else
-> +	char newi[MARK_ENABLE_IMMEDIATE_OFFSET+1];
-> +	int size = MARK_ENABLE_IMMEDIATE_OFFSET+sizeof(MARK_ENABLE_TYPE);
-> +
-> +	memcpy(newi, address, size);
-> +	MARK_ENABLE(&newi[0]) = enable;
-> +	memcpy(address, newi, size);
-> +	flush_icache_range((unsigned long)address, size);
-> +	return 0;
-> +#endif //CONFIG_X86_32
-> +}
-
-eww.  Can we put a suitable arch_marker_set_ins_enable() into each arch's
-marker.h?
-
-> +#else
-> +static int marker_set_ins_enable(void *address, char enable)
-> +{
-> +	return -EPERM;
-> +}
-> +#endif //MARK_POLYMORPHIC
-> +
->
-> ...
->
-
+-- 
+http://www.codemonkey.org.uk
