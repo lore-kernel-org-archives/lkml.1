@@ -1,110 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965910AbXBOMWL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965923AbXBOMX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965910AbXBOMWL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 07:22:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965919AbXBOMWL
+	id S965923AbXBOMX5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 07:23:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965924AbXBOMX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 07:22:11 -0500
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:33977 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965910AbXBOMWK (ORCPT
+	Thu, 15 Feb 2007 07:23:57 -0500
+Received: from nijmegen.renzel.net ([195.243.213.130]:53658 "EHLO
+	nijmegen.renzel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965923AbXBOMX4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 07:22:10 -0500
-Date: Thu, 15 Feb 2007 17:50:55 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: akpm@osdl.org, paulmck@us.ibm.com, mingo@elte.hu, vatsa@in.ibm.com,
-       dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, oleg@tv-sign.ru
-Subject: Re: [RFC PATCH(Experimental) 0/4] Freezer based Cpu-hotplug
-Message-ID: <20070215122055.GA19155@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070214144031.GA15257@in.ibm.com> <200702142243.37189.rjw@sisk.pl> <20070215063413.GA11950@in.ibm.com> <200702150909.53145.rjw@sisk.pl>
+	Thu, 15 Feb 2007 07:23:56 -0500
+X-Greylist: delayed 1749 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Feb 2007 07:23:55 EST
+From: Mws <mws@twisted-brains.org>
+To: "v j" <vj.linux@gmail.com>
+Subject: Re: GPL vs non-GPL device drivers
+Date: Thu, 15 Feb 2007 12:54:38 +0100
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com> <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+In-Reply-To: <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200702150909.53145.rjw@sisk.pl>
-User-Agent: Mutt/1.5.12-2006-07-14
+Message-Id: <200702151254.39058.mws@twisted-brains.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 15, 2007 at 09:09:51AM +0100, Rafael J. Wysocki wrote:
-> > 
-> > Why should we make sure that PF_NOFREEZE tasks are also frozen for
-> > cpu hotplug? Instead, we can create an infrastructure which allows threads to
-> > specify for the scenarios they would want to be excempted from freeze.
-> > Something like what Paul has suggested in
-> > http://lkml.org/lkml/2007/1/31/323. That way, threads which have nothing
-> > to do with the online_cpu_map or with handling of cpu-hotplug events can
-> > mark themselves to be exempted from being frozen for cpu hotplug.
-> 
-> I think all kernel threads should call try_to_freeze() in suitable places
-> anyway if we are going to use the freezer for anything more than just the
-> suspend.  In other words, they all should be _able_ to freeze if necessary.
+hi vj,
 
-Yeah! I agree. I misunderstood your earlier point. I thought you were 
-hinting at freezing *everyone* while doing a cpu hotplug.
-
+On Thursday 15 February 2007, v j wrote:
+> This is in reference to the following thread:
 > 
-> > Once this is achieved, it's all about classifying the threads into
-> > according to their NO_FREEZE needs :)
+> http://lkml.org/lkml/2006/12/14/63
 > 
-> Yes, but I think it's just a generalization of ingoring PF_NOFREEZE.
-> If all kernel threads are able to freeze, we can mark them as "freeze for CPU
-> hotplug" or "freeze for kprobes", or "freeze for suspend" etc. and call the
-> freezer with the appropriate parameter.
+> I am not sure if this is ever addressed in LKML, but linux is _very_
+> popular in the embedded space. We (an embedded vendor) chose Linux 3
+> years back because of its lack of royalty model, robustness and
+> availability of infinite number of open-source tools.
 > 
-> BTW, what happens to a process running on a CPU being removed?
+> We recently decided to move to Linux 2.6 for our next product, mainly
+> because Linux has worked so well for us in the past, and we would like
+> to move up to keep up with the latest and greatest.
+
+you choose to move to linux 2.6 for your next product - fine.
+it has worked for you well in the past - fine.
+you would like to keep along with the latest and greatest - fine.
+
+_but_
+
+for all those reasons you have to get along with all rules, licenses and
+at least all changes that the kernel community decided to perform.
+
+> However in moving to  2.6, we noticed a number of alarming things.
+> Porting drivers over from devfs to udev, though easy raised a number
+> of alarming issues. Driver's no longer could dynamically allocate
+> their MAJOR/MINOR numbers. Doing so would mean they would have to use
+> sysfs. However it seems that sysfs (and the class_ interface) is only
+> available to GPL modules. This is very concerning. The drivers which
+> we have written over the last three years are suddenly under threat.
+> We don't mind statically assigning MAJOR/MINOR numbers to our drivers.
+> We can do this and modify our user space applications too.
+> 
+> However we have a worrying trend here. If at some point it becomes
+> illegal to load our modules into the linux kernel, then it is
+> unacceptable to us. We would have been better off choosing VxWorks or
+> OSE 3 years ago when we made an OS choice. The fact that Linux is
+> becoming more and more closed is very very alarming.
+
+the trend is not worrying. we are not responsible for your decisions you made 
+in the past. 
+the only real FACT is that linux is being stated to BE OPEN and what is much more 
+important to STAY OPEN for everybody.
+
+you chose it years ago, because of those facts. of course linux is very popular on 
+embedded systems. i am working within some open source projects that also run
+on embedded hardware designs. 
+
+your main mistake in understanding linux and our way to have it also more open in 
+future than by now. 
+
+what actually costs you more in future? 
+opening your drivers, as much it must be, to have your hardware supported under 2.6
+_or_ 
+paying license fees for runtime/development tools for vxworks, ose whatever?
+
+and what will do complain at windriver or other companies, if they decide not to support 
+your used cpu architecture anymore?
+
+
+this were my 0.2$
+marcel
+ 
+p.s. you said you like linux for its royalty model - that also includes that you accept all the
+      other rules and terms. e.g. gpl license _and_ its fullfillment.
+
+> vj.
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
 
-We call stop_machine_run in _cpu_down which schedules an idle thread on 
-the cpu to be removed. Once the idle thread runs, we call __cpu_die and
-subsequently the scheduler performs task migration while handling 
-the CPU_DEAD notification (see migration_call in sched.c)
 
-> > > 2) We have to change the PM code to stop using CPU hotplug for disabling
-> > > nonboot CPUs. ;-)
-> > 
-> > Just wondering, how hard is that ?
-> 
-> Hmmm.  In fact the problem is that the suspend code freezes tasks and then
-> calls disable_nonboot_cpus() which uses (_)cpu_down/up().  In principle we
-> could make disable_nonboot_cpus() call some lower-level routines to avoid the
-> freezing of tasks, _but_ the suspend code may freeze too few tasks (ie. we may
-> want to freeze more tasks for the CPU hotplug).  Thus I think we should do
-> something like this:
-> 
-> suspend:				CPU hotplug:
-> freeze_processes(SUSPEND)	...
-> ...					freeze_processes(CPU_HOTPLUG)
-> ...					...
-> ...					thaw_processes(CPU_HOTPLUG)
-> thaw_processes(SUSPEND)	...
-> 
-> so freeze_processes() should be reentrant, at least for different values of
-> the argument.
-> 
-
-That would still mean going over the task list twice. How if we have
-
-freeze_process(SUSPEND|CPU_HOTPLUG);
-perform_pre_hotplug_suspend();
-primitive_cpu_down/_up();
-perform_post_hotplug_suspend();
-
-Does this look like a good thing to you?
-> All in all, I think we should start from modifying the freezer and the
-> classification of processes with respect to the freezing.
-> 
-
-Cool! Lets get started then ;-)
-
-> Greetings,
-> Rafael
-
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
