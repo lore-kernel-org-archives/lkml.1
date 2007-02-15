@@ -1,41 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030295AbXBORLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030306AbXBORPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030295AbXBORLp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 12:11:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030298AbXBORLp
+	id S1030306AbXBORPH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 12:15:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030307AbXBORPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 12:11:45 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:37151 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030295AbXBORLo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 12:11:44 -0500
-Date: Thu, 15 Feb 2007 12:01:54 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Blaisorblade <blaisorblade@yahoo.it>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>, stable@kernel.org
-Subject: Re: [uml-devel] x86_64: fix 2.6.18 regression - PTRACE_OLDSETOPTIONS should be accepted
-Message-ID: <20070215170154.GA5641@ccure.user-mode-linux.org>
-References: <11715068631914-git-send-email-blaisorblade@yahoo.it> <20070215025423.GA9300@ccure.user-mode-linux.org> <200702150443.42287.blaisorblade@yahoo.it> <20070214215123.57ef2d4a.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070214215123.57ef2d4a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 15 Feb 2007 12:15:06 -0500
+Received: from gw.goop.org ([64.81.55.164]:58019 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030306AbXBORPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 12:15:03 -0500
+Message-ID: <45D49516.2060106@goop.org>
+Date: Thu, 15 Feb 2007 09:15:02 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Jan Beulich <jbeulich@novell.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: BUG_TABLE not part of RODATA?
+References: <45D4966F.76E4.0078.0@novell.com>
+In-Reply-To: <45D4966F.76E4.0078.0@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 14, 2007 at 09:51:23PM -0800, Andrew Morton wrote:
-> Whatever happens, please ensure that the final fix makes it into -stable
-> as well.  Jeff's version of this patch wasn't cc'ed to stable@kernel.org.
+Jan Beulich wrote:
+> is there a particular reason for this?
+>   
 
-Paolo's patch was sent to -stable.  His should be used everywhere, and mine
-should be dropped.
+Can't think of one.
 
-				Jeff
-
--- 
-Work email - jdike at linux dot intel dot com
+    J
