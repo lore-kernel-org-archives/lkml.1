@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030230AbXBOQ7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030231AbXBOQ70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030230AbXBOQ7Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 11:59:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030217AbXBOQ6x
+	id S1030231AbXBOQ70 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 11:59:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030219AbXBOQ6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 11:58:53 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41183 "EHLO mx2.mail.elte.hu"
+	Thu, 15 Feb 2007 11:58:50 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41127 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030218AbXBOQ6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 11:58:46 -0500
-Date: Thu, 15 Feb 2007 17:52:20 +0100
+	id S1030201AbXBOQ6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 11:58:17 -0500
+Date: Thu, 15 Feb 2007 17:51:51 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -22,155 +22,84 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Suparna Bhattacharya <suparna@in.ibm.com>,
        Davide Libenzi <davidel@xmailserver.org>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 03/14] syslets: generic kernel bits
-Message-ID: <20070215165220.GD4285@elte.hu>
+Subject: [patch 00/14] Syslets, generic asynchronous system call support, v2
+Message-ID: <20070215165151.GA4285@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 User-Agent: Mutt/1.4.2.2i
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -5.3
+X-ELTE-SpamScore: -1.3
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=-1.3 required=5.9 tests=ALL_TRUSTED,BAYES_40 autolearn=no SpamAssassin version=3.1.7
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.3044]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
 
-add the kernel generic bits - these are present even if !CONFIG_ASYNC_SUPPORT.
+this is the v2 release of the syslet subsystem. This is an interim 
+release, not all known and pending items are fixed/changed yet - the 
+tree is still work in progress:
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- include/linux/sched.h |   23 ++++++++++++++++++++++-
- kernel/exit.c         |    3 +++
- kernel/fork.c         |    2 ++
- kernel/sched.c        |    9 +++++++++
- 4 files changed, 36 insertions(+), 1 deletion(-)
+   http://redhat.com/~mingo/syslet-patches/
 
-Index: linux/include/linux/sched.h
-===================================================================
---- linux.orig/include/linux/sched.h
-+++ linux/include/linux/sched.h
-@@ -83,12 +83,12 @@ struct sched_param {
- #include <linux/timer.h>
- #include <linux/hrtimer.h>
- #include <linux/task_io_accounting.h>
-+#include <linux/async.h>
- 
- #include <asm/processor.h>
- 
- struct exec_domain;
- struct futex_pi_state;
--
- /*
-  * List of flags we want to share for kernel threads,
-  * if only because they are not used by them anyway.
-@@ -997,6 +997,12 @@ struct task_struct {
- /* journalling filesystem info */
- 	void *journal_info;
- 
-+/* async syscall support: */
-+	struct async_thread *at, *async_ready;
-+	struct async_head *ah;
-+	struct async_thread __at;
-+	struct async_head __ah;
-+
- /* VM state */
- 	struct reclaim_state *reclaim_state;
- 
-@@ -1053,6 +1059,21 @@ struct task_struct {
- #endif
- };
- 
-+/*
-+ * Is an async syscall being executed currently?
-+ */
-+#ifdef CONFIG_ASYNC_SUPPORT
-+static inline int async_syscall(struct task_struct *t)
-+{
-+	return t->async_ready != NULL;
-+}
-+#else /* !CONFIG_ASYNC_SUPPORT */
-+static inline int async_syscall(struct task_struct *t)
-+{
-+	return 0;
-+}
-+#endif /* !CONFIG_ASYNC_SUPPORT */
-+
- static inline pid_t process_group(struct task_struct *tsk)
- {
- 	return tsk->signal->pgrp;
-Index: linux/kernel/exit.c
-===================================================================
---- linux.orig/kernel/exit.c
-+++ linux/kernel/exit.c
-@@ -26,6 +26,7 @@
- #include <linux/ptrace.h>
- #include <linux/profile.h>
- #include <linux/mount.h>
-+#include <linux/async.h>
- #include <linux/proc_fs.h>
- #include <linux/mempolicy.h>
- #include <linux/taskstats_kern.h>
-@@ -889,6 +890,8 @@ fastcall NORET_TYPE void do_exit(long co
- 		schedule();
- 	}
- 
-+	async_exit(tsk);
-+
- 	tsk->flags |= PF_EXITING;
- 
- 	if (unlikely(in_atomic()))
-Index: linux/kernel/fork.c
-===================================================================
---- linux.orig/kernel/fork.c
-+++ linux/kernel/fork.c
-@@ -22,6 +22,7 @@
- #include <linux/personality.h>
- #include <linux/mempolicy.h>
- #include <linux/sem.h>
-+#include <linux/async.h>
- #include <linux/file.h>
- #include <linux/key.h>
- #include <linux/binfmts.h>
-@@ -1054,6 +1055,7 @@ static struct task_struct *copy_process(
- 
- 	p->lock_depth = -1;		/* -1 = no lock */
- 	do_posix_clock_monotonic_gettime(&p->start_time);
-+	async_init(p);
- 	p->security = NULL;
- 	p->io_context = NULL;
- 	p->io_wait = NULL;
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -38,6 +38,7 @@
- #include <linux/vmalloc.h>
- #include <linux/blkdev.h>
- #include <linux/delay.h>
-+#include <linux/async.h>
- #include <linux/smp.h>
- #include <linux/threads.h>
- #include <linux/timer.h>
-@@ -3436,6 +3437,14 @@ asmlinkage void __sched schedule(void)
- 	}
- 	profile_hit(SCHED_PROFILING, __builtin_return_address(0));
- 
-+	prev = current;
-+	if (unlikely(prev->async_ready)) {
-+		if (prev->state && !(preempt_count() & PREEMPT_ACTIVE) &&
-+			(!(prev->state & TASK_INTERRUPTIBLE) ||
-+				!signal_pending(prev)))
-+			__async_schedule(prev);
-+	}
-+
- need_resched:
- 	preempt_disable();
- 	prev = current;
+The biggest conceptual change in v2 is the ability of cachemiss threads 
+to be turned into user threads. This fixes signal handling, makes them 
+ptrace-eable, etc. (I've updated the sample userspace code at the URL 
+above to also do user-space cachemiss processing - just Ctrl-Z the 
+async-test.c run to trigger it action.)
+
+Things not yet done in v2 and planned for v3:
+
+ - multiple completion rings support
+
+ - share the 'spare thread' between multiple rings, to further reduce 
+   startup costs.
+
+ - remove mlock() reliance
+
+Changes since v1:
+
+ - FPU support fixed: detach FPU state from kernel thread state 
+   (implemented by Arjan van de Ven)
+
+ - remove superfluous CLONE_VM from create_async_thread()
+   (noticed by Jens Axboe)
+
+ - sys_umem_add() does not ignore -EFAULT of __put_user()
+   (noticed by Andrew Morton)
+
+ - use VERIFY_READ instead of VERIFY_WRITE in copy_uatom()
+   (noticed by Andrew Morton)
+
+ - move schedule() to tail of loop in cachemiss_loop()
+   (noticed by Andrew Morton)
+
+ - added move_user_context() arch op
+
+ - added async_syscall() and recursion protection against re-entry of 
+   sys_async_exec(), sys_fork()/sys_clone(), etc.
+
+ - added sys_async_thread() call - a user-space thread can thus call 
+   back into the syslet subsystem and continue cachemiss work.
+
+ - further cleanups in the include files
+
+ - race fixes to sys_async_wait()
+
+ - optimized out the kmalloc()/kfree() of the async_head
+
+ - async_thread structure not on the kernel stack anymore, to allow 
+   async contexts to run user-space.
+
+ - added support for head_stack and head_eip to enable the initial 
+   thread/task to run a cachemiss user context too, if it gets turned 
+   into a cachemiss thread.
+
+As always, comments, suggestions, reports are welcome.
+
+	Ingo
