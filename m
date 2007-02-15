@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161397AbXBOVb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161399AbXBOVcF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161397AbXBOVb4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 16:31:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161398AbXBOVb4
+	id S1161399AbXBOVcF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 16:32:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161398AbXBOVcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 16:31:56 -0500
-Received: from senderslist.sierrawireless.com ([204.50.29.40]:58751 "EHLO
-	mx1.sierrawireless.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161397AbXBOVbz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 16:31:55 -0500
-Message-ID: <45D4D15D.1030802@sierrawireless.com>
-Date: Thu, 15 Feb 2007 13:32:13 -0800
-From: Kevin Lloyd <klloyd@sierrawireless.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Thu, 15 Feb 2007 16:32:04 -0500
+Received: from neon.samage.net ([83.149.67.130]:56674 "EHLO neon.samage.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161399AbXBOVcB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 16:32:01 -0500
+Message-ID: <1715.81.207.0.53.1171575112.squirrel@secure.samage.net>
+In-Reply-To: <7291.1171482057@redhat.com>
+References: <Pine.LNX.4.64.0702141121030.20368@woody.linux-foundation.org>
+    <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com>
+    <7291.1171482057@redhat.com>
+Date: Thu, 15 Feb 2007 22:31:52 +0100 (CET)
+Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing
+From: "Indan Zupancic" <indan@nul.nu>
+To: "David Howells" <dhowells@redhat.com>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       akpm@linux-foundation.org, herbert.xu@redhat.com,
+       linux-kernel@vger.kernel.org, davej@redhat.com, arjan@infradead.org,
+       linux-crypto@vger.kernel.org
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-To: linux@sierrawireless.com, greg@kroah.com
-CC: linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       torvalds@osdl.org
-Subject: [PATCH 2.6.20-git11 01/01] usb: Remove Airprime device from option.c
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 Feb 2007 21:31:52.0682 (UTC) FILETIME=[B56F64A0:01C75148]
-X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15000.000
-X-TM-AS-Result: No--8.026200-5.000000-31
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.7
+X-Scan-Signature: 8b3222cd26cce149ddb9ffa05c4da76e
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-from: Kevin Lloyd <linux@sierrawireless.com>
+Hello,
 
-This patch removes the Airprime 5220 device (branded as Audiovox) from
-the option.c driver. This device is already supported by the sierra.c
-driver.
+On Wed, February 14, 2007 20:40, David Howells wrote:
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+>> >  (1) A cut-down MPI library derived from GPG with error handling added.
+>>
+>> Do we really need to add this?
+>
+> I presume you mean the MPI library specifically?  If so, then yes.  It's
+> necessary to do DSA signature verification (or RSA for that matter).
+>
+>> Wouldn't it be much nicer to just teach people to use one of the existing
+>> signature things that we need for _other_ cases anyway, and already have
+>> merged?
+>
+> Existing signature things?  I know not of such beasts, nor can I see them
+> offhand.
 
-This was based off of the option.c driver found in kernel 2.6.20-git11.
+The question is if using DSA/RSA is the right choice for something like this.
+I think that the symmetrically encrypted hash output as signature would provide
+the same amount of security. The only additional requirement is that the key
+can't be read by userspace. But if they can reach the kernel binary, they can
+modify it too. Same for the bootloader, where you'd want the key and initial
+checking anyway. Else this whole thing could be done in user space as Roman
+Zippel said...
 
-Signed-off-by: Kevin Lloyd <linux@sierrawireless.com>
+The ELF section stuff seems like unnecessary bloat too. Can't you use/extend
+modinfo, or kernel symbols?
 
---- 
+With the above changes the code should shrink to only a few hundred new lines
+of code, instead of thousands, and signature checking will be much faster too.
 
---- linux-2.6.20-git11-option-change/drivers/usb/serial/option.c.orig	2007-02-15 10:54:42.000000000 -0800
-+++ linux-2.6.20-git11-option-change/drivers/usb/serial/option.c	2007-02-15 10:55:20.000000000 -0800
-@@ -69,7 +69,6 @@ static int  option_send_setup(struct usb
- /* Vendor and product IDs */
- #define OPTION_VENDOR_ID                0x0AF0
- #define HUAWEI_VENDOR_ID                0x12D1
--#define AUDIOVOX_VENDOR_ID              0x0F3D
- #define NOVATELWIRELESS_VENDOR_ID       0x1410
- #define ANYDATA_VENDOR_ID               0x16d5
- 
-@@ -81,7 +80,6 @@ static int  option_send_setup(struct usb
- #define OPTION_PRODUCT_GTMAX36          0x6701
- #define HUAWEI_PRODUCT_E600             0x1001
- #define HUAWEI_PRODUCT_E220             0x1003
--#define AUDIOVOX_PRODUCT_AIRCARD        0x0112
- #define NOVATELWIRELESS_PRODUCT_U740    0x1400
- #define ANYDATA_PRODUCT_ID              0x6501
- 
-@@ -94,7 +92,6 @@ static struct usb_device_id option_ids[]
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_GTMAX36) },
- 	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E600) },
- 	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220) },
--	{ USB_DEVICE(AUDIOVOX_VENDOR_ID, AUDIOVOX_PRODUCT_AIRCARD) },
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,NOVATELWIRELESS_PRODUCT_U740) },
- 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ID) },
- 	{ } /* Terminating entry */
-@@ -109,7 +106,6 @@ static struct usb_device_id option_ids1[
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_GTMAX36) },
- 	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E600) },
- 	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_E220) },
--	{ USB_DEVICE(AUDIOVOX_VENDOR_ID, AUDIOVOX_PRODUCT_AIRCARD) },
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,NOVATELWIRELESS_PRODUCT_U740) },
- 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ID) },
- 	{ } /* Terminating entry */
+Greetings,
+
+Indan
 
 
