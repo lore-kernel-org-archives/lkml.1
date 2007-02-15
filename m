@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965775AbXBOKT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965778AbXBOK1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965775AbXBOKT2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 05:19:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965773AbXBOKT2
+	id S965778AbXBOK1v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 05:27:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965785AbXBOK1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 05:19:28 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:54682 "EHLO mail.dvmed.net"
+	Thu, 15 Feb 2007 05:27:51 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:42354 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965771AbXBOKT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 05:19:27 -0500
-Message-ID: <45D433AC.7030809@pobox.com>
-Date: Thu, 15 Feb 2007 05:19:24 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Stephen Hemminger <shemminger@linux-foundation.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sk98lin: planned removal
-References: <20070207091830.59f72f46@oldman> <20070207203215.bdf3908b.akpm@linux-foundation.org>
-In-Reply-To: <20070207203215.bdf3908b.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S965778AbXBOK1u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 05:27:50 -0500
+Date: Thu, 15 Feb 2007 02:27:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: minyard@acm.org
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 3/4] ipmi: add pci remove handling
+Message-Id: <20070215022745.648ab8cb.akpm@linux-foundation.org>
+In-Reply-To: <20070214200624.GC5364@localdomain>
+References: <20070214200624.GC5364@localdomain>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 7 Feb 2007 09:18:30 -0800 Stephen Hemminger <shemminger@linux-foundation.org> wrote:
+On Wed, 14 Feb 2007 14:06:24 -0600 Corey Minyard <minyard@acm.org> wrote:
+
+> Add pci_remove handling to the driver, so it will clean up if
+> the device is hot-removed.
 > 
->> Document planned removal of sk98lin driver.
->>
->> Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
->> ---
->>  Documentation/feature-removal-schedule.txt |    7 +++++++
->>  1 files changed, 7 insertions(+), 0 deletions(-)
->>
->> diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
->> index 0ba6af0..d08a4af 100644
->> --- a/Documentation/feature-removal-schedule.txt
->> +++ b/Documentation/feature-removal-schedule.txt
->> @@ -325,3 +325,10 @@ Why:	Unmaintained for years, superceded 
->>  Who:	Jeff Garzik <jeff@garzik.org>
->>  
->>  ---------------------------
->> +
->> +What:   sk98lin network driver
->> +When:   July 2007
->> +Why:    In kernel tree version of driver is unmaintained. Sk98lin driver
->> +	replaced by the skge driver. 
->> +Who:    Stephen Hemminger <shemminger@osdl.org>
->> +
+> Signed-off-by: Corey Minyard <minyard@acm.org>
 > 
-> People don't read that file.  I'd suggest the addition of a warning printk
-> to the driver's open() method.
+> Index: linux-2.6.19/drivers/char/ipmi/ipmi_si_intf.c
+> ===================================================================
+> --- linux-2.6.19.orig/drivers/char/ipmi/ipmi_si_intf.c
+> +++ linux-2.6.19/drivers/char/ipmi/ipmi_si_intf.c
+> @@ -2191,12 +2191,15 @@ static int __devinit ipmi_pci_probe(stru
+>  		info->irq_setup = std_irq_setup;
+>  
+>  	info->dev = &pdev->dev;
+> +	pdev->dev->driver_data = info;
+>  
+>  	return try_smi_init(info);
+>  }
+>  
+>  static void __devexit ipmi_pci_remove(struct pci_dev *pdev)
+>  {
+> +	struct smi_info *info = pdev->dev->driver_data;
+> +	cleanup_one_si(info);
+>  }
 
-Fine with me.  Stephen, wanna cook up a patch?
+drivers/char/ipmi/ipmi_si_intf.c: In function 'ipmi_pci_probe':
+drivers/char/ipmi/ipmi_si_intf.c:2192: error: invalid type argument of '->'
+drivers/char/ipmi/ipmi_si_intf.c: In function 'ipmi_pci_remove':
+drivers/char/ipmi/ipmi_si_intf.c:2199: error: invalid type argument of '->'
 
-	Jeff
-
-
-
+Judging from the patch headers you were working against 2.6.19, which is
+most optimistic.  Please always prepare and test patches against the
+latest kernel.
