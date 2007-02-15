@@ -1,65 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030582AbXBOTGF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030671AbXBOTHG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030582AbXBOTGF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 14:06:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030555AbXBOTGF
+	id S1030671AbXBOTHG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 14:07:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030675AbXBOTHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 14:06:05 -0500
-Received: from pat.uio.no ([129.240.10.15]:36418 "EHLO pat.uio.no"
+	Thu, 15 Feb 2007 14:07:05 -0500
+Received: from mail.um.es ([155.54.212.109]:46830 "EHLO mail.um.es"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030582AbXBOTGD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 14:06:03 -0500
-Subject: Re: 2.6.19.2 nfs BUG: warning at
-	mm/truncate.c:398/invalidate_inode_pages2_range()
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Frank van Maarseveen <frankvm@frankvm.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linux NFS mailing list <nfs@lists.sourceforge.net>
-In-Reply-To: <20070215185228.GA3181@janus>
-References: <20070215185228.GA3181@janus>
-Content-Type: text/plain
-Date: Thu, 15 Feb 2007 11:06:01 -0800
-Message-Id: <1171566361.7333.34.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, none)
-X-UiO-Scanned: 9AA669B1A9BB48A477F086F725523B673D7B816B
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 66 total 489200 max/h 2716 blacklist 0 greylist 0 ratelimit 0
+	id S1030671AbXBOTHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 14:07:03 -0500
+X-Greylist: delayed 1734 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Feb 2007 14:07:03 EST
+Date: Thu, 15 Feb 2007 19:38:14 +0100 (CET)
+From: Juan Piernas Canovas <piernas@ditec.um.es>
+X-X-Sender: piernas@ditec.inf.um.es
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: sfaibish <sfaibish@emc.com>, kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [ANNOUNCE] DualFS: File System with Meta-data and Data Separation
+In-Reply-To: <Pine.LNX.4.61.0702142251460.19368@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.61.0702151910370.19998@ditec.inf.um.es>
+References: <op.tnkdlbgsrwwil4@brcsmondepl2c.corp.emc.com>
+ <op.tnrbrocsunckof@usensfaibisl2e.eng.emc.com> <Pine.LNX.4.61.0702142251460.19368@yvahk01.tjqt.qr>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="916140492-708553444-1171564694=:19998"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-02-15 at 19:52 +0100, Frank van Maarseveen wrote:
-> FYI,
-> 
-> Just captured this one, I'm not sure it's NFS at fault because I saw
-> at least another AIO related mm/truncate.c:398 report with a totally
-> different stack trace.
-> 
-> The machine seems still running happily, as usual with a considerable
-> load. kernel is tainted by fglrx.
-> 
-> kernel: BUG: warning at mm/truncate.c:398/invalidate_inode_pages2_range()
-> kernel:  [<c0104897>] dump_trace+0x227/0x240
-> kernel:  [<c010498f>] show_trace_log_lvl+0x2f/0x50
-> kernel:  [<c01049d7>] show_trace+0x27/0x30
-> kernel:  [<c0104b06>] dump_stack+0x26/0x30
-> kernel:  [<c015a495>] invalidate_inode_pages2_range+0x305/0x310
-> kernel:  [<c015a4c1>] invalidate_inode_pages2+0x21/0x30
-> kernel:  [<c01f7aa8>] nfs_revalidate_mapping+0x98/0x180
-> kernel:  [<c01f5726>] nfs_file_read+0x46/0xb0
-> kernel:  [<c017441e>] do_sync_read+0xde/0x130
-> kernel:  [<c0174511>] vfs_read+0xa1/0x1b0
-> kernel:  [<c0174947>] sys_read+0x47/0x70
-> kernel:  [<c0103387>] syscall_call+0x7/0xb
-> kernel:  [<b7ec0cbe>] 0xb7ec0cbe
-> kernel:  =======================
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-That is a known issue. The warning was bogus after we fixed up the NFS
-client to handle the case where invalidate_inode_pages2() returns and
-error, and so the warning was removed in 2.6.20.
+--916140492-708553444-1171564694=:19998
+Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 
-Cheers
-  Trond
+Hi all,
 
+On Wed, 14 Feb 2007, Jan Engelhardt wrote:
+
+>
+> On Feb 14 2007 16:10, sfaibish wrote:
+>>>
+>>> 1. DualFS has only one copy of every meta-data block. This copy is
+>>> in the meta-data device,
+>
+> Where does this differ from typical filesystems like xfs?
+> At least ext3 and xfs have an option to store the log/journal
+> on another device too.
+
+No, it is not the same. DualFS uses two 'logical' devices, one for data, 
+and one for meta-data, but these devices are usually partitions on the 
+same disk, they are not two different disks. And DualFS uses the meta-data 
+device to both read and write meta-data blocks, whereas the other 
+journaling file systems only use the log to write meta-data.
+
+It's true that XFS, Ext3 and other journaling file systems can use a 
+separate disk for the log, but, even then, they have to write two copies 
+of every meta-data element. However, in this case, DualFS is even better.
+
+If the data and meta-data devices of DualFS can be on different disks, 
+DualFS is able to READ and WRITE data and meta-data blocks in PARALLEL. 
+The other journaling file systems, however, can only write one of the two 
+copies of every meta-data block in parallel to other file systems 
+operations, but they can not write the second copy, and read and write 
+data and meta-data blocks, in parallel.
+
+>
+>>> The DualFS code, tools and performance papers are available at:
+>>>
+>>> <http://sourceforge.net/projects/dualfs>
+>>>
+>>> The code requires kernel patches to 2.4.19 (oldies but goodies) and
+>>> a separate fsck code.  The latest kernel we used it for is 2.6.11
+>>> and we hope with you help to port it to the latest Linux kernel.
+>
+> Where is the patch for 2.6.11? Sorry, 2.4.19 is just too old (even if
+> only considering the 2.4 branch).
+> [ And perhaps "goldies" flew better with "oldies" ;-) ]
+>
+
+The patch for 2.6.11 is not still stable enough to be released. Be patient 
+;-)
+
+
+ 	Juan.
+>
+> Jan
+>
+
+-- 
+D. Juan Piernas Cánovas
+Departamento de Ingeniería y Tecnología de Computadores
+Facultad de Informática. Universidad de Murcia
+Campus de Espinardo - 30080 Murcia (SPAIN)
+Tel.: +34968367657    Fax: +34968364151
+email: piernas@ditec.um.es
+PGP public key:
+http://pgp.rediris.es:11371/pks/lookup?search=piernas%40ditec.um.es&op=index
+
+*** Por favor, envíeme sus documentos en formato texto, HTML, PDF o PostScript :-) ***
+--916140492-708553444-1171564694=:19998--
