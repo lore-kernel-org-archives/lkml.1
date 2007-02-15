@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932865AbXBOXri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422710AbXBOXs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932865AbXBOXri (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 18:47:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932868AbXBOXri
+	id S1422710AbXBOXs0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 18:48:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422700AbXBOXs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 18:47:38 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:39074 "EHLO smtp.osdl.org"
+	Thu, 15 Feb 2007 18:48:26 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:39104 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932865AbXBOXrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 18:47:37 -0500
-Date: Thu, 15 Feb 2007 15:44:18 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org
-Subject: Re: sparse chokes on arch/i386/kernel/i8253.c (was: 2.6.20-mm1)
-Message-Id: <20070215154418.88edfcbc.akpm@linux-foundation.org>
-In-Reply-To: <20070215224656.GB6297@Krystal>
-References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
-	<45D483D7.2040609@imap.cc>
-	<20070215144142.0c13580a.akpm@linux-foundation.org>
-	<20070215224656.GB6297@Krystal>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1422687AbXBOXsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 18:48:25 -0500
+Date: Thu, 15 Feb 2007 15:48:04 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [git patches] libata updates (mostly fixes)
+In-Reply-To: <20070215233411.GA10782@havoc.gtf.org>
+Message-ID: <Pine.LNX.4.64.0702151546130.20368@woody.linux-foundation.org>
+References: <20070215233411.GA10782@havoc.gtf.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Feb 2007 17:46:56 -0500
-Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-> > Me too.  It's due to the linux-kernel-markers patches.  Mathieu, can you
-> > take a look please?
+
+On Thu, 15 Feb 2007, Jeff Garzik wrote:
 > 
-> I will give a deeper look in sparse, but I should say up front that I
-> add this to the root build tree Makefile :
-> 
-> LINUXINCLUDE    := -Iinclude \
->                    $(if $(KBUILD_SRC),-Iinclude2 -I$(srctree)/include) \
->                    -include include/linux/autoconf.h \
->                    -include linux/marker.h
-> 
-> I guess sparse is maybe not using this Makefile or variable ?
+> diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+> index db185f3..d51f0f1 100644
+> --- a/arch/ia64/Kconfig
+> +++ b/arch/ia64/Kconfig
+> @@ -22,6 +22,7 @@ config IA64
+>  
+>  config 64BIT
+>  	bool
+> +	select ATA_NONSTANDARD if ATA
+>  	default y
 
-ow, that's going to hurt - this stuff is complex and fragile.
+Ok, this is just _strange_.
 
-For what reason was that change made?
+Tying ATA_NONSTANDARD into ia64 by tying it to the 64BIT config variable 
+may work (well, I _assume_ it does), but it's just psychedelic.
 
-Pleeze, tricky things like this should be changelogged - we shouldn't need
-to ask.  I missed it.
+How about adding a separate config entry like
 
+	config IA64_ATA
+		bool
+		depends on ATA
+		select ATA_NONSTANDARD
+		default y
 
+which kind of makes sense when you squint just the right way..
+
+		Linus
