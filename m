@@ -1,57 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422710AbXBOXs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422714AbXBOXss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422710AbXBOXs0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 18:48:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422700AbXBOXs0
+	id S1422714AbXBOXss (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 18:48:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422700AbXBOXss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 18:48:26 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:39104 "EHLO smtp.osdl.org"
+	Thu, 15 Feb 2007 18:48:48 -0500
+Received: from gw.goop.org ([64.81.55.164]:58400 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422687AbXBOXsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 18:48:25 -0500
-Date: Thu, 15 Feb 2007 15:48:04 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [git patches] libata updates (mostly fixes)
-In-Reply-To: <20070215233411.GA10782@havoc.gtf.org>
-Message-ID: <Pine.LNX.4.64.0702151546130.20368@woody.linux-foundation.org>
-References: <20070215233411.GA10782@havoc.gtf.org>
+	id S1422714AbXBOXsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 18:48:47 -0500
+Message-ID: <45D4F138.9050405@goop.org>
+Date: Thu, 15 Feb 2007 15:48:08 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Andi Kleen <ak@muc.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] No need to use -traditional for processing asm in i386/kernel/
+References: <45D4CE50.9020604@goop.org> <20070215224439.GA7909@uranus.ravnborg.org>
+In-Reply-To: <20070215224439.GA7909@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Sam Ravnborg wrote:
+> On Thu, Feb 15, 2007 at 01:19:12PM -0800, Jeremy Fitzhardinge wrote:
+>   
+>> No need to use -traditional for processing asm in i386/kernel/
+>>
+>> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+>>     
+>
+> Any possibility that you could 'fix' the three remaining
+> uses of -traditional in i386?
+>   
 
+Sure.  Looks like they're not even really used.
 
-On Thu, 15 Feb 2007, Jeff Garzik wrote:
-> 
-> diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-> index db185f3..d51f0f1 100644
-> --- a/arch/ia64/Kconfig
-> +++ b/arch/ia64/Kconfig
-> @@ -22,6 +22,7 @@ config IA64
->  
->  config 64BIT
->  	bool
-> +	select ATA_NONSTANDARD if ATA
->  	default y
+    J
 
-Ok, this is just _strange_.
+--
 
-Tying ATA_NONSTANDARD into ia64 by tying it to the 64BIT config variable 
-may work (well, I _assume_ it does), but it's just psychedelic.
+No need to use -traditional for processing asm in arch/i386/
 
-How about adding a separate config entry like
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 
-	config IA64_ATA
-		bool
-		depends on ATA
-		select ATA_NONSTANDARD
-		default y
+diff -r 9e6791a29740 arch/i386/boot/Makefile
+--- a/arch/i386/boot/Makefile	Thu Feb 15 11:57:29 2007 -0800
++++ b/arch/i386/boot/Makefile	Thu Feb 15 15:45:46 2007 -0800
+@@ -36,9 +36,9 @@ HOSTCFLAGS_build.o := $(LINUXINCLUDE)
+ # ---------------------------------------------------------------------------
+ 
+ $(obj)/zImage:  IMAGE_OFFSET := 0x1000
+-$(obj)/zImage:  EXTRA_AFLAGS := -traditional $(SVGA_MODE) $(RAMDISK)
++$(obj)/zImage:  EXTRA_AFLAGS := $(SVGA_MODE) $(RAMDISK)
+ $(obj)/bzImage: IMAGE_OFFSET := 0x100000
+-$(obj)/bzImage: EXTRA_AFLAGS := -traditional $(SVGA_MODE) $(RAMDISK) -D__BIG_KERNEL__
++$(obj)/bzImage: EXTRA_AFLAGS := $(SVGA_MODE) $(RAMDISK) -D__BIG_KERNEL__
+ $(obj)/bzImage: BUILDFLAGS   := -b
+ 
+ quiet_cmd_image = BUILD   $@
+diff -r 9e6791a29740 arch/i386/boot/compressed/Makefile
+--- a/arch/i386/boot/compressed/Makefile	Thu Feb 15 11:57:29 2007 -0800
++++ b/arch/i386/boot/compressed/Makefile	Thu Feb 15 15:45:46 2007 -0800
+@@ -6,7 +6,6 @@
+ 
+ targets		:= vmlinux vmlinux.bin vmlinux.bin.gz head.o misc.o piggy.o \
+ 			vmlinux.bin.all vmlinux.relocs
+-EXTRA_AFLAGS	:= -traditional
+ 
+ LDFLAGS_vmlinux := -T
+ CFLAGS_misc.o += -fPIC
+diff -r 9e6791a29740 arch/i386/kernel/Makefile
+--- a/arch/i386/kernel/Makefile	Thu Feb 15 11:57:29 2007 -0800
++++ b/arch/i386/kernel/Makefile	Thu Feb 15 15:45:46 2007 -0800
+@@ -44,8 +44,6 @@ obj-$(CONFIG_PARAVIRT)		+= paravirt.o
+ obj-$(CONFIG_PARAVIRT)		+= paravirt.o
+ obj-y				+= pcspeaker.o
+ 
+-EXTRA_AFLAGS   := -traditional
+-
+ obj-$(CONFIG_SCx200)		+= scx200.o
+ 
+ # vsyscall.o contains the vsyscall DSO images as __initdata.
+diff -r 9e6791a29740 arch/i386/kernel/entry.S
+--- a/arch/i386/kernel/entry.S	Thu Feb 15 11:57:29 2007 -0800
++++ b/arch/i386/kernel/entry.S	Thu Feb 15 15:45:46 2007 -0800
+@@ -635,7 +635,7 @@ ENTRY(name)				\
+ 	SAVE_ALL;			\
+ 	TRACE_IRQS_OFF			\
+ 	movl %esp,%eax;			\
+-	call smp_/**/name;		\
++	call smp_##name;		\
+ 	jmp ret_from_intr;		\
+ 	CFI_ENDPROC;			\
+ ENDPROC(name)
+diff -r 9e6791a29740 include/asm-i386/percpu.h
+--- a/include/asm-i386/percpu.h	Thu Feb 15 11:57:29 2007 -0800
++++ b/include/asm-i386/percpu.h	Thu Feb 15 15:45:46 2007 -0800
+@@ -20,10 +20,10 @@
+ #ifdef CONFIG_SMP
+ #define PER_CPU(var, cpu) \
+ 	movl __per_cpu_offset(,cpu,4), cpu;	\
+-	addl $per_cpu__/**/var, cpu;
++	addl $per_cpu__##var, cpu;
+ #else /* ! SMP */
+ #define PER_CPU(var, cpu) \
+-	movl $per_cpu__/**/var, cpu;
++	movl $per_cpu__##var, cpu;
+ #endif	/* SMP */
+ 
+ #endif /* !__ASSEMBLY__ */
 
-which kind of makes sense when you squint just the right way..
-
-		Linus
