@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030240AbXBORBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030244AbXBORFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030240AbXBORBa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 12:01:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030220AbXBORBa
+	id S1030244AbXBORFT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 12:05:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030246AbXBORFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 12:01:30 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40150 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030240AbXBORB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 12:01:28 -0500
-Date: Thu, 15 Feb 2007 17:58:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	Thu, 15 Feb 2007 12:05:18 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:4687 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030244AbXBORFR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 12:05:17 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 15 Feb 2007 09:05:13 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Arjan van de Ven <arjan@infradead.org>,
        Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
        "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
        Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 04/14] syslets: core, data structures
-Message-ID: <20070215165806.GA5343@elte.hu>
-References: <20070215165224.GE4285@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070215165224.GE4285@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.8
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.1.7
-	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4950]
+Subject: Re: [patch 05/11] syslets: core code
+In-Reply-To: <Pine.LNX.4.64.0702150757520.20368@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0702150847420.10697@alien.or.mcafeemobile.com>
+References: <20070213142035.GF638@elte.hu> <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org>
+ <20070215133550.GA29274@2ka.mipt.ru> <Pine.LNX.4.64.0702150757520.20368@woody.linux-foundation.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 15 Feb 2007, Linus Torvalds wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+> I don't think the "atom" approach is bad per se. I think it could be fine 
+> to have some state information in user space. It's just that I think 
+> complex interfaces that people largely won't even use is a big mistake. We 
+> should concentrate on usability first, and some excessive cleverness 
+> really isn't a big advantage.
+> 
+> Being able to do a "open + stat" looks like a fine thing. But I doubt 
+> you'll see a lot of other combinations.
 
-> Index: linux/kernel/async.h
-> ===================================================================
-> --- /dev/null
-> +++ linux/kernel/async.h
-> @@ -0,0 +1,2 @@
-> +
-> +
+I actually think that building chains of syscalls bring you back to a 
+multithreaded solution. Why? Because suddendly the service thread become 
+from servicing a syscall (with possible cachehit optimization), to 
+servicing a whole session. So the number of service threads needed (locked 
+down by a chain) becomes big because requests goes from being short-lived 
+syscalls to long-lived chains of them. Think about the trivial web server, 
+and think about a chain that does open->fstat->sendhdrs->sendfile after an 
+accept. What's the difference with a multithreaded solution that does 
+accept->clone and execute the above code in the new thread? Nada, NIL. 
+Actually, there is a difference. The standard multithreaded function is 
+easier to code in C than with the complex atoms chains. The number of 
+service thread becomes suddendly proportional to the number of active 
+sessions.
+The more I look at this, the more I think that async_submit should submit 
+simple syscalls, or an array of them (unrelated/parallel).
 
-this one sneaked in accidentally - i have removed it from my queue now.
 
-	Ingo
+
+- Davide
+
+
