@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965546AbXBOOod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965538AbXBOOph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965546AbXBOOod (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 09:44:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965550AbXBOOod
+	id S965538AbXBOOph (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 09:45:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965554AbXBOOph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 09:44:33 -0500
-Received: from ns.firmix.at ([62.141.48.66]:41962 "EHLO ns.firmix.at"
+	Thu, 15 Feb 2007 09:45:37 -0500
+Received: from ns.firmix.at ([62.141.48.66]:41968 "EHLO ns.firmix.at"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965546AbXBOOob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 09:44:31 -0500
+	id S965538AbXBOOpg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 09:45:36 -0500
 Subject: Re: GPL vs non-GPL device drivers
 From: Bernd Petrovitsch <bernd@firmix.at>
 To: v j <vj.linux@gmail.com>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, Dave Jones <davej@redhat.com>,
+Cc: Trent Waddington <trent.waddington@gmail.com>,
        linux-kernel@vger.kernel.org
-In-Reply-To: <9b3a62ab0702142328h87365b6i932d4f2c117f7f0e@mail.gmail.com>
+In-Reply-To: <9b3a62ab0702142246r7e4eac4bv26c2ed46ff588871@mail.gmail.com>
 References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
 	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
-	 <20070215061149.GE15654@redhat.com>
-	 <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
-	 <20070214231143.11ff6b46.rdunlap@xenotime.net>
-	 <9b3a62ab0702142328h87365b6i932d4f2c117f7f0e@mail.gmail.com>
+	 <3d57814d0702142147p4eede234ybc9880a38772f55f@mail.gmail.com>
+	 <9b3a62ab0702142214p5c33a02am7e783c59ae0a64f1@mail.gmail.com>
+	 <3d57814d0702142235i687f8481x4eb72269e7f7fa9b@mail.gmail.com>
+	 <9b3a62ab0702142246r7e4eac4bv26c2ed46ff588871@mail.gmail.com>
 Content-Type: text/plain
 Organization: Firmix Software GmbH
-Date: Thu, 15 Feb 2007 15:43:54 +0100
-Message-Id: <1171550634.10976.31.camel@tara.firmix.at>
+Date: Thu, 15 Feb 2007 15:45:29 +0100
+Message-Id: <1171550729.10976.33.camel@tara.firmix.at>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
@@ -36,34 +36,14 @@ Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-14 at 23:28 -0800, v j wrote:
-> On 2/14/07, Randy Dunlap <rdunlap@xenotime.net> wrote:
-> > At least one of us is confused about that an embedded User is.
-> > It seems to me that you are an embedded developer, not User.
-> > I doubt that most Embedded Users care what their OS is,
-> > or even know what an OS is.
-> 
-> I am not sure what the difference is. We are trying to use Linux to
-> support our application. It may be that Linux has a bug, or our
-> application. When it is Linux, that has the problem, I  have tried to
-> inform the community of that.
+On Wed, 2007-02-14 at 22:46 -0800, v j wrote:
+> You don't get it do you. Our source code is meaningless to the Open
+> Source community at large. It is only useful to our tiny set of
 
-It would be much more helpful - especially for your product - to fix the
-bug. And to stay "open" you can also submit the patch.
+Perhaps you should leave that decision to the open source community at
+large.
 
-> > > Not everybody has to be a contributor. The reason Linux is popular is
-> > > because of its openness. Take that away and see where it goes.
-> >
-> > We seem to have different definitions of open and closed.
-> 
-> Open = 3rd party Linux drivers can be loaded. Closed = No third party
-> Linux drivers can be loaded.
-
-You can always load 3rd party drivers - even if you compile module
-support out of it.
-Or do you really meant: Closed == No closed source 3rd party drivers
-will be loaded because it is the decision of the company that pays the
-developers.
+[ Useless fullquote deleted ]
 
 	Bernd
 -- 
