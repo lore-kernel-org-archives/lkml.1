@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966002AbXBOQQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966054AbXBOQSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966002AbXBOQQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 11:16:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966038AbXBOQQ6
+	id S966054AbXBOQSp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 11:18:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966056AbXBOQSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 11:16:58 -0500
-Received: from wr-out-0506.google.com ([64.233.184.231]:41984 "EHLO
+	Thu, 15 Feb 2007 11:18:45 -0500
+Received: from wr-out-0506.google.com ([64.233.184.235]:43043 "EHLO
 	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966002AbXBOQQ5 (ORCPT
+	with ESMTP id S966054AbXBOQSo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 11:16:57 -0500
+	Thu, 15 Feb 2007 11:18:44 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RhaQX4k7wfoawpunP2p27+bBgkYP3cP1/bgCdquCZJKXkaqksKVuwuMiuFqbYHbmCzd0Y+pVmraHEHnIPmBy75lWRaiUwZDMcJ855gkp2MkZnaY2dHI9MF87rDN5RoJFBveQIQwvXsIx5cg+Rnv7RGUfY/n41qNjYrQcXYMzhU4=
-Message-ID: <8d158e1f0702150816gdbf3451xa68623eb5b4ea910@mail.gmail.com>
-Date: Thu, 15 Feb 2007 17:16:52 +0100
+        b=lq53Asp9HHP5O5Tp7Ws2TDhzWWXK/bjSZXWUYxW2sSpYYxbLr9IQUPNi5twyqaWi7eX+K0VwvxBNL/cSZyRPl1CGcJuMSsbqElkcBNOFif1PF7ccuarmpFSFYnwJOnMX0/ocz+v+GrPQcJCWp2Eicni3ZepCiqRuYkF1LoAXD08=
+Message-ID: <8d158e1f0702150818l1b270714oc974c56e6d90f4f@mail.gmail.com>
+Date: Thu, 15 Feb 2007 17:18:43 +0100
 From: "Patrick Ale" <patrick.ale@gmail.com>
 To: "Tejun Heo" <htejun@gmail.com>
 Subject: Re: libsata tests started
@@ -40,8 +40,10 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On 2/15/07, Tejun Heo <htejun@gmail.com> wrote:
 
-> I appreciate the testing.  One interesting but tedious test would be
-> suspend tests (both to disk and ram).  Most libata drivers using new EH
-> should be ready for them.  Oh, well, there's should and there's reality.
+Yeah and about the libsata/libata thingy, it is libata of course :)
+libsata I will test later on, so be prepared allready for more ranting for me.
 
-I will do these tests when I am at home, no problem :)
+I even bought a cool sata controller with sata disk so I can mess around :D
+
+
+Patrick
