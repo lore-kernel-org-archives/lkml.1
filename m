@@ -1,175 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161313AbXBOVQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161337AbXBOVRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161313AbXBOVQM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 16:16:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161332AbXBOVQM
+	id S1161337AbXBOVRS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 16:17:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161341AbXBOVRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 16:16:12 -0500
-Received: from hu-out-0506.google.com ([72.14.214.229]:5270 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161313AbXBOVQL convert rfc822-to-8bit (ORCPT
+	Thu, 15 Feb 2007 16:17:18 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:1175 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161337AbXBOVRR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 16:16:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:references:in-reply-to:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=SgK6c/qE2i8RaM6QM5mnDr2FlYW19q6M4N8H1cSmklD8GWuEuJvFvzSDumO9ffMiuOSEl0BsW60P32aRJDpSnjrkuN85ZldAKyiMe3LETy680bWvSbHSefboPxPquHFFMVH4JA0Z33nMXJm59J3SZhgR2HKy2Tnsk4980qgfYrA=
-From: Maxim <maximlevitsky@gmail.com>
-To: netdev@kernel.org
-Subject: [PATCH 2.6.20 005/005] [RESEND v2] dmfe: add support for Wake on lan
-Date: Thu, 15 Feb 2007 23:16:01 +0200
-User-Agent: KMail/1.9.6
-References: <200702152253.53680.maximlevitsky@gmail.com>
-In-Reply-To: <200702152253.53680.maximlevitsky@gmail.com>
-Cc: linux-kernel@vger.kernel.org
+	Thu, 15 Feb 2007 16:17:17 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 15 Feb 2007 13:17:14 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 05/11] syslets: core code
+In-Reply-To: <Pine.LNX.4.64.0702151159410.20368@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0702151257090.11064@alien.or.mcafeemobile.com>
+References: <20070213142035.GF638@elte.hu> <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org>
+ <20070215133550.GA29274@2ka.mipt.ru> <Pine.LNX.4.64.0702150757520.20368@woody.linux-foundation.org>
+ <20070215163704.GA32609@2ka.mipt.ru> <Pine.LNX.4.64.0702150920130.20368@woody.linux-foundation.org>
+ <20070215181059.GC20997@2ka.mipt.ru> <Pine.LNX.4.64.0702151019210.20368@woody.linux-foundation.org>
+ <20070215190413.GA23953@2ka.mipt.ru> <Pine.LNX.4.64.0702151120260.20368@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0702151159410.20368@woody.linux-foundation.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200702152316.02055.maximlevitsky@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [PATCH 2.6.20 005/005] [RESEND v2] dmfe: add support for Wake on lan
+On Thu, 15 Feb 2007, Linus Torvalds wrote:
 
-This patch adds support for WOL on Magic Packet and on link change
+> 
+> 
+> On Thu, 15 Feb 2007, Linus Torvalds wrote:
+> > 
+> > So I think that a good implementation just does everything up-front, and 
+> > doesn't _need_ a user buffer that is live over longer periods, except for 
+> > the actual results. Exactly because the whole alloc/teardown is nasty.
+> 
+> Btw, this doesn't necessarily mean "not supporting multiple atoms at all".
+> 
+> I think the batching of async things is potentially a great idea. I think 
+> it's quite workable for "open+fstat" kind of things, and I agree that it 
+> can solve other things too (the "socket+bind+connect+sendmsg+rcv" kind of 
+> complex setup things).
 
-Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
+If you *really* want to allow chains (note that the above could be 
+prolly be hosted on a real thread, once chains becomes that long), then 
+try to build that chain with the current API, and compare it with:
 
----
+long my_clet(ctx *c) {
+	int fd, error = -1;
 
---- linux-2.6.20-mod/drivers/net/tulip/dmfe.c	2007-02-15 18:27:37.000000000 +0200
-+++ linux-2.6.20-test/drivers/net/tulip/dmfe.c	2007-02-15 18:31:43.000000000 +0200
-@@ -122,6 +122,11 @@
- #define DM9801_NOISE_FLOOR 8
- #define DM9802_NOISE_FLOOR 5
- 
-+#define DMFE_WOL_LINKCHANGE	0x20000000
-+#define DMFE_WOL_SAMPLEPACKET	0x10000000
-+#define DMFE_WOL_MAGICPACKET	0x08000000
-+
-+
- #define DMFE_10MHF      0
- #define DMFE_100MHF     1
- #define DMFE_10MFD      4
-@@ -248,6 +253,7 @@ struct dmfe_board_info {
- 	u8 wait_reset;			/* Hardware failed, need to reset */
- 	u8 dm910x_chk_mode;		/* Operating mode check */
- 	u8 first_in_callback;		/* Flag to record state */
-+	u8 wol_mode;			/* user WOL settings */
- 	struct timer_list timer;
- 
- 	/* System defined statistic counter */
-@@ -428,6 +434,7 @@ static int __devinit dmfe_init_one (stru
- 	db->chip_id = ent->driver_data;
- 	db->ioaddr = pci_resource_start(pdev, 0);
- 	db->chip_revision = dev_rev;
-+	db->wol_mode = 0;
- 
- 	db->pdev = pdev;
- 
-@@ -1062,7 +1069,11 @@ static void dmfe_set_filter_mode(struct 
- 	spin_unlock_irqrestore(&db->lock, flags);
- }
- 
--static void netdev_get_drvinfo(struct net_device *dev,
-+/*
-+ * 	Ethtool interace 
-+ */
-+
-+static void dmfe_ethtool_get_drvinfo(struct net_device *dev,
- 			       struct ethtool_drvinfo *info)
- {
- 	struct dmfe_board_info *np = netdev_priv(dev);
-@@ -1076,9 +1087,35 @@ static void netdev_get_drvinfo(struct ne
- 			dev->base_addr, dev->irq);
- }
- 
-+static int dmfe_ethtool_set_wol(struct net_device *dev, 
-+				struct ethtool_wolinfo *wolinfo)
-+{
-+	struct dmfe_board_info *db = netdev_priv(dev);
-+	
-+	if (wolinfo->wolopts & (WAKE_UCAST | WAKE_MCAST | WAKE_BCAST | 
-+		   		WAKE_ARP | WAKE_MAGICSECURE))
-+		   return -EOPNOTSUPP;
-+	
-+	db->wol_mode = wolinfo->wolopts;
-+	return 0;
-+}
-+
-+static void dmfe_ethtool_get_wol(struct net_device *dev, 
-+				 struct ethtool_wolinfo *wolinfo)
-+{
-+	struct dmfe_board_info *db = netdev_priv(dev);
-+	
-+	wolinfo->supported = WAKE_PHY | WAKE_MAGIC;
-+	wolinfo->wolopts = db->wol_mode;
-+	return;
-+}
-+
-+
- static const struct ethtool_ops netdev_ethtool_ops = {
--	.get_drvinfo		= netdev_get_drvinfo,
-+	.get_drvinfo		= dmfe_ethtool_get_drvinfo,
- 	.get_link               = ethtool_op_get_link,
-+	.set_wol		= dmfe_ethtool_set_wol,
-+	.get_wol		= dmfe_ethtool_get_wol,
- };
- 
- /*
-@@ -2052,6 +2089,7 @@ static int dmfe_suspend(struct pci_dev *
- {
- 	struct net_device *dev = pci_get_drvdata(pci_dev);
- 	struct dmfe_board_info *db = netdev_priv(dev);
-+	u32 tmp;
- 
- 	/* Disable upper layer interface */
- 	netif_device_detach (dev);
-@@ -2067,6 +2105,20 @@ static int dmfe_suspend(struct pci_dev *
- 	/* Fre RX buffers */
- 	dmfe_free_rxbuffer (db);
- 
-+	/* Enable WOL */
-+	pci_read_config_dword(pci_dev, 0x40, &tmp);
-+	tmp &= ~(DMFE_WOL_LINKCHANGE|DMFE_WOL_MAGICPACKET);
-+
-+	if (db->wol_mode & WAKE_PHY)
-+		tmp |= DMFE_WOL_LINKCHANGE;
-+	if (db->wol_mode & WAKE_MAGIC)
-+		tmp |= DMFE_WOL_MAGICPACKET;
-+
-+	pci_write_config_dword(pci_dev, 0x40, tmp);
-+
-+	pci_enable_wake(pci_dev, PCI_D3hot, 1);
-+	pci_enable_wake(pci_dev, PCI_D3cold, 1);
-+
- 	/* Power down device*/
- 	pci_set_power_state (pci_dev, pci_choose_state (pci_dev,state));
- 	pci_save_state (pci_dev);
-@@ -2077,6 +2129,7 @@ static int dmfe_suspend(struct pci_dev *
- static int dmfe_resume (struct pci_dev *pci_dev)
- {
- 	struct net_device *dev = pci_get_drvdata (pci_dev);
-+	u32 tmp;
- 
- 	pci_restore_state(pci_dev);
- 	pci_set_power_state(pci_dev ,PCI_D0);
-@@ -2084,6 +2137,15 @@ static int dmfe_resume (struct pci_dev *
- 	/* Re-initilize DM910X board */
- 	dmfe_init_dm910x(dev);
- 
-+	/* Disable WOL */
-+	pci_read_config_dword(pci_dev, 0x40, &tmp);
-+
-+	tmp &= ~(DMFE_WOL_LINKCHANGE | DMFE_WOL_MAGICPACKET);
-+	pci_write_config_dword(pci_dev, 0x40, tmp);
-+
-+	pci_enable_wake(pci_dev, PCI_D3hot, 0);
-+	pci_enable_wake(pci_dev, PCI_D3cold, 0);
-+
- 	/* Restart upper layer interface */
- 	netif_device_attach(dev);
- 
+	if ((fd = socket(...)) == -1 ||
+	    bind(fd, &c->laddr, sizeof(c->laddr)) ||
+	    connect(fd, &c->saddr, sizeof(c->saddr)) ||
+	    sendmsg(fd, ...) == -1 ||
+	    recv(fd, ...) <= 0)
+		goto
+	error = 0;
+erxit:
+	close(fd);
+	return error;
+}
+
+Points:
+
+- Keep the submission API to submit one or an array of parallel async 
+  syscalls/clets
+
+- Keep arguments of the syscall being longs (no need for extra pointer 
+  indirection compat code, and special copy_atoms functions)
+
+- No need for the "next" atom pointer chaining (nice for compat too)
+
+- No need to create special conditions/jump interpreters into the kernel 
+  (nice for compat and emulators). C->machine-code that that for us
+
+- Easier to code. Try to build a chain like that with the current API and 
+  you will see what I saying
+
+- Did I say faster? Machine code is faster than sudo-VM interpretation of 
+  jumps/conditions done inside the kernel
+
+
+
+
+- Davide
+
+
