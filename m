@@ -1,178 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966113AbXBOQq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966080AbXBOQuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966113AbXBOQq5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 11:46:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966116AbXBOQq5
+	id S966080AbXBOQuW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 11:50:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966112AbXBOQuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 11:46:57 -0500
-Received: from [198.99.130.12] ([198.99.130.12]:37054 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S966113AbXBOQq4 (ORCPT
+	Thu, 15 Feb 2007 11:50:22 -0500
+Received: from spirit.analogic.com ([204.178.40.4]:1625 "EHLO
+	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966080AbXBOQuV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 11:46:56 -0500
-Date: Thu, 15 Feb 2007 11:38:33 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Andi Kleen <ak@suse.de>, akpm@osdl.org
-Cc: Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
-       patches@x86-64.org
-Subject: [PATCH] Fix i386 and x86_64 fault information pollution
-Message-ID: <20070215163833.GB4925@ccure.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Thu, 15 Feb 2007 11:50:21 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 15 Feb 2007 16:50:18.0118 (UTC) FILETIME=[5F7D8260:01C75121]
+Content-class: urn:content-classes:message
+Subject: Re: cat, cp operations for tty driver (like for char one)
+Date: Thu, 15 Feb 2007 11:50:17 -0500
+Message-ID: <Pine.LNX.4.61.0702151146400.2062@chaos.analogic.com>
+In-Reply-To: <45D47779.000006.08064@webmail16.yandex.ru>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: cat, cp operations for tty driver (like for char one)
+Thread-index: AcdRIV+mWzYmA7zgQcmlk7qKfM0RDw==
+References: <45D47779.000006.08064@webmail16.yandex.ru>
+From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: "Mockern" <Mockern@yandex.ru>
+Cc: <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This, I hope, is a final working version of this fix.
 
-			Jeff
--- 
-Work email - jdike at linux dot intel dot com
+On Thu, 15 Feb 2007, Mockern wrote:
 
+> I have a question about linux tty driver
+>
+> how to support cp, cat operations in tty driver (like tiny_tty)?
+> (e.g. echo "hello tty" > /dev/ttyS3, cat < ttyS10 etc)
+>
+> There a lot of examples with char drivers, but I could not find it for tty Linux driver.
+>
 
-a userspace fault or a kernelspace fault which will result in the
-immediate death of the process.  They should not be filled in as a
-result of a kernelspace fault which can be fixed up.
+It works out of the box. Just keep hardware flow-control turned off
+if there are no receivers connected to the output port. Also, you need
+to set up the port's baud-rate and (usually) to make it transparent to
+control characters (man tc-get/set-attr).
 
-Otherwise, if the process is handling SIGSEGV and examining the fault
-information, this can result in the kernel space fault trashing the
-previously stored fault information if it arrives between the
-userspace fault happening and the SIGSEGV being delivered to the process.
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.16.24 on an i686 machine (5592.61 BogoMips).
+New book: http://www.AbominableFirebug.com/
+_
+
 
-Signed-off-by: Jeff Dike <jdike@addtoit.com>
-Acked-by: Jan Beulich <jbeulich@novell.com>
---
- arch/i386/kernel/traps.c   |   24 ++++++++++++++++++------
- arch/x86_64/kernel/traps.c |   30 +++++++++++++++++++++++-------
- 2 files changed, 41 insertions(+), 13 deletions(-)
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
 
-Index: linux-2.6/arch/i386/kernel/traps.c
-===================================================================
---- linux-2.6.orig/arch/i386/kernel/traps.c
-+++ linux-2.6/arch/i386/kernel/traps.c
-@@ -473,8 +473,6 @@ static void __kprobes do_trap(int trapnr
- 			      siginfo_t *info)
- {
- 	struct task_struct *tsk = current;
--	tsk->thread.error_code = error_code;
--	tsk->thread.trap_no = trapnr;
- 
- 	if (regs->eflags & VM_MASK) {
- 		if (vm86)
-@@ -486,6 +484,18 @@ static void __kprobes do_trap(int trapnr
- 		goto kernel_trap;
- 
- 	trap_signal: {
-+		/*
-+		 * We want error_code and trap_no set for userspace faults and
-+		 * kernelspace faults which result in die(), but not
-+		 * kernelspace faults which are fixed up.  die() gives the
-+		 * process no chance to handle the signal and notice the
-+		 * kernel fault information, so that won't result in polluting
-+		 * the information about previously queued, but not yet
-+		 * delivered, faults.  See also do_general_protection below.
-+		 */
-+		tsk->thread.error_code = error_code;
-+		tsk->thread.trap_no = trapnr;
-+
- 		if (info)
- 			force_sig_info(signr, info, tsk);
- 		else
-@@ -494,8 +504,11 @@ static void __kprobes do_trap(int trapnr
- 	}
- 
- 	kernel_trap: {
--		if (!fixup_exception(regs))
-+		if (!fixup_exception(regs)) {
-+			tsk->thread.error_code = error_code;
-+			tsk->thread.trap_no = trapnr;
- 			die(str, regs, error_code);
-+		}
- 		return;
- 	}
- 
-@@ -600,9 +613,6 @@ fastcall void __kprobes do_general_prote
- 	}
- 	put_cpu();
- 
--	current->thread.error_code = error_code;
--	current->thread.trap_no = 13;
--
- 	if (regs->eflags & VM_MASK)
- 		goto gp_in_vm86;
- 
-@@ -621,6 +631,8 @@ gp_in_vm86:
- 
- gp_in_kernel:
- 	if (!fixup_exception(regs)) {
-+		current->thread.error_code = error_code;
-+		current->thread.trap_no = 13;
- 		if (notify_die(DIE_GPF, "general protection fault", regs,
- 				error_code, 13, SIGSEGV) == NOTIFY_STOP)
- 			return;
-Index: linux-2.6/arch/x86_64/kernel/traps.c
-===================================================================
---- linux-2.6.orig/arch/x86_64/kernel/traps.c
-+++ linux-2.6/arch/x86_64/kernel/traps.c
-@@ -581,10 +581,20 @@ static void __kprobes do_trap(int trapnr
- {
- 	struct task_struct *tsk = current;
- 
--	tsk->thread.error_code = error_code;
--	tsk->thread.trap_no = trapnr;
--
- 	if (user_mode(regs)) {
-+		/*
-+		 * We want error_code and trap_no set for userspace
-+		 * faults and kernelspace faults which result in
-+		 * die(), but not kernelspace faults which are fixed
-+		 * up.  die() gives the process no chance to handle
-+		 * the signal and notice the kernel fault information,
-+		 * so that won't result in polluting the information
-+		 * about previously queued, but not yet delivered,
-+		 * faults.  See also do_general_protection below.
-+		 */
-+		tsk->thread.error_code = error_code;
-+		tsk->thread.trap_no = trapnr;
-+
- 		if (exception_trace && unhandled_signal(tsk, signr))
- 			printk(KERN_INFO
- 			       "%s[%d] trap %s rip:%lx rsp:%lx error:%lx\n",
-@@ -605,8 +615,11 @@ static void __kprobes do_trap(int trapnr
- 		fixup = search_exception_tables(regs->rip);
- 		if (fixup)
- 			regs->rip = fixup->fixup;
--		else	
-+		else {
-+			tsk->thread.error_code = error_code;
-+			tsk->thread.trap_no = trapnr;
- 			die(str, regs, error_code);
-+		}
- 		return;
- 	}
- }
-@@ -682,10 +695,10 @@ asmlinkage void __kprobes do_general_pro
- 
- 	conditional_sti(regs);
- 
--	tsk->thread.error_code = error_code;
--	tsk->thread.trap_no = 13;
--
- 	if (user_mode(regs)) {
-+		tsk->thread.error_code = error_code;
-+		tsk->thread.trap_no = 13;
-+
- 		if (exception_trace && unhandled_signal(tsk, SIGSEGV))
- 			printk(KERN_INFO
- 		       "%s[%d] general protection rip:%lx rsp:%lx error:%lx\n",
-@@ -704,6 +717,9 @@ asmlinkage void __kprobes do_general_pro
- 			regs->rip = fixup->fixup;
- 			return;
- 		}
-+
-+		tsk->thread.error_code = error_code;
-+		tsk->thread.trap_no = 13;
- 		if (notify_die(DIE_GPF, "general protection fault", regs,
- 					error_code, 13, SIGSEGV) == NOTIFY_STOP)
- 			return;
+Thank you.
