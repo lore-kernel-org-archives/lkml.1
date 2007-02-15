@@ -1,71 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964919AbXBOGqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964916AbXBOGva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964919AbXBOGqP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 01:46:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964921AbXBOGqP
+	id S964916AbXBOGva (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 01:51:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964923AbXBOGv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 01:46:15 -0500
-Received: from wr-out-0506.google.com ([64.233.184.230]:6389 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964919AbXBOGqO (ORCPT
+	Thu, 15 Feb 2007 01:51:29 -0500
+Received: from vms048pub.verizon.net ([206.46.252.48]:56110 "EHLO
+	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964921AbXBOGv3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 01:46:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LUeBOu3kfibyev9W72IJdqAIQR4+t+XAXQcKDSbS4z8wtSH7+I8fXCTcqCX/v/58TwgJK4lykWf0YQkG0ey1QMyJJUGyzmGKx18RJzONtm/6TVPL0H4xuxFZRZEI5xKG+FcK2eZ+UVFo6i6aLoo1Ev3Tg4xETR7vPRNZEUi5+fc=
-Message-ID: <9b3a62ab0702142246r7e4eac4bv26c2ed46ff588871@mail.gmail.com>
-Date: Wed, 14 Feb 2007 22:46:13 -0800
-From: "v j" <vj.linux@gmail.com>
-To: "Trent Waddington" <trent.waddington@gmail.com>
+	Thu, 15 Feb 2007 01:51:29 -0500
+Date: Thu, 15 Feb 2007 01:51:22 -0500
+From: Gene Heskett <gene.heskett@verizon.net>
 Subject: Re: GPL vs non-GPL device drivers
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <3d57814d0702142235i687f8481x4eb72269e7f7fa9b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+In-reply-to: <17875.64112.54164.635911@notabene.brown>
+To: linux-kernel@vger.kernel.org
+Cc: Neil Brown <neilb@suse.de>, "v j" <vj.linux@gmail.com>
+Message-id: <200702150151.24748.gene.heskett@verizon.net>
+Organization: Not detectable
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Content-disposition: inline
 References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
-	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
-	 <3d57814d0702142147p4eede234ybc9880a38772f55f@mail.gmail.com>
-	 <9b3a62ab0702142214p5c33a02am7e783c59ae0a64f1@mail.gmail.com>
-	 <3d57814d0702142235i687f8481x4eb72269e7f7fa9b@mail.gmail.com>
+ <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+ <17875.64112.54164.635911@notabene.brown>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You don't get it do you. Our source code is meaningless to the Open
-Source community at large. It is only useful to our tiny set of
-competitors that have nothing to do with Linux. The Embedded space is
-very specific. We are only _using_ Linux. Just as we could have used
-VxWorks or OSE. Using our source code would not benefit anybody but
-our competitors. Sure we could make our drivers open-source. This is a
-decision that is made FIRST when evaluating an OS. If we we were
-required to make our drivers/HW open, we would just not have chosen
-Linux. It is as simple as that.
+On Thursday 15 February 2007, Neil Brown wrote:
+>On Wednesday February 14, vj.linux@gmail.com wrote:
+>> However we have a worrying trend here. If at some point it becomes
+>> illegal to load our modules into the linux kernel, then it is
+>> unacceptable to us. We would have been better off choosing VxWorks or
+>> OSE 3 years ago when we made an OS choice. The fact that Linux is
+>> becoming more and more closed is very very alarming.
+>
+>Might I suggest that you give very serious consideration to
+>open-sourcing your drivers?  There are benefits and well as costs, and
+>many have found that the benefits substantially out weigh the costs.
+>
+>NeilBrown
 
-On 2/14/07, Trent Waddington <trent.waddington@gmail.com> wrote:
-> On 2/15/07, v j <vj.linux@gmail.com> wrote:
-> > This has nothing to do with politics. I am not a Linux contributor.
->
-> Here-in lies the problem.  I am one of the few people willing to state
-> openly that I wish those who can, would use their legal claims to stop
-> people like you from writing proprietary drivers.  Although you (or
-> your company) clearly has the ability to contribute to Linux, you have
-> chosen not to.  Instead, you just leach off those that do.  As such, I
-> believe you and your ilk are ethically deplorable and the fact that
-> you would come here to try to point out to the contributors that they
-> are going to lose people like you if they don't stop "threatening"
-> your drivers not only baffles me, it sickens me.
->
-> At least with NVIDIA and ATI they're not actually profiting from the
-> existence of Linux, but you're actually selling the stuff and you
-> don't even consider the very reasonable proposition of sharing your
-> source code in return.  It's not like they're asking for money.. man,
-> this is the Linux project, they don't even ask for copyright
-> assignment or allegiance to an ideology..
->
-> Do the right thing, cough up your source code, get it integrated into
-> the tree and let the community do what it does so well.
->
-> Trent
->
+Speaking as one who has not contributed back to the kernel other than an 
+occasional bug report as I'm getting too old to code alongside these 
+wizards, please let me say:
+
+That's an admirable bit of advice Neil, but I have serious doubts it will 
+fall on a fertile mind.  From vj's tone here, its obvious that he thinks 
+its fine to leech his income stream from code that is free.  And giving 
+one teeny little patch for some utility back seems to make him think he 
+has paid the bill.  Methinks he has not paid the bill in kind because its 
+an ongoing rental.
+
+Now, if he _were_ to contribute his top secret drivers into the kernel 
+tree, how are we to convince vj that it is in his best interest in the 
+long run to do so?  After all, the many eyeballs theory will guarantee 
+that his codebase will not go untouched because bugs he doesn't even know 
+exist will be noticed and fixed, and routine speedups of 2x are entirely 
+possible too.  He will in the long run get back faster, more stable code 
+which can't do anything but enhance the value of his hardware, both in 
+how well it runs, but in the public's perception too, simply because it 
+IS in the kernel tree and therefore very well reviewed.  And that vj, is 
+an advertising point of no little value. 
+
+But, I suspect by now he has pulled the batteries out of his hearing aid 
+so he doesn't have to listen to any more of this blasphemous talk.  
+Sad...
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Yahoo.com and AOL/TW attorneys please note, additions to the above
+message by Gene Heskett are:
+Copyright 2007 by Maurice Eugene Heskett, all rights reserved.
