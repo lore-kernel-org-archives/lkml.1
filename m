@@ -1,36 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966085AbXBOQb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966091AbXBOQfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966085AbXBOQb2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 11:31:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966029AbXBOQb2
+	id S966091AbXBOQfp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 11:35:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966089AbXBOQfp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 11:31:28 -0500
-Received: from [198.99.130.12] ([198.99.130.12]:36993 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S966081AbXBOQb0 (ORCPT
+	Thu, 15 Feb 2007 11:35:45 -0500
+Received: from [209.190.27.106] ([209.190.27.106]:44974 "EHLO
+	wombat.diezmil.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S966083AbXBOQfo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 11:31:26 -0500
-Date: Thu, 15 Feb 2007 11:23:09 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org, patches@x86-64.org
-Subject: Re: [patches] [PATCH 2.6.21 review I] [4/25] x86: kernel-mode faults pollute current->thead
-Message-ID: <20070215162309.GA4925@ccure.user-mode-linux.org>
-References: <45D17C66.76E4.0078.0@novell.com> <20070214175114.GB5801@ccure.user-mode-linux.org> <45D42160.76E4.0078.0@novell.com>
+	Thu, 15 Feb 2007 11:35:44 -0500
+X-Greylist: delayed 2908 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Feb 2007 11:35:44 EST
+Date: Thu, 15 Feb 2007 10:47:16 -0500
+Message-ID: <30987167.1171554435992.JavaMail.root@wombat.diezmil.com>
+From: cedric.hertault@v2plus.com
+Reply-To: cedric.hertault@v2plus.com
+To: linux-kernel@vger.kernel.org
+Subject: Re: [IPV4]: Increase number of possible routing tables to 2^32
+In-Reply-To: <200609240001.k8O01VL7008533@hera.kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45D42160.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 15, 2007 at 08:01:20AM +0000, Jan Beulich wrote:
-> Ack.
+Hi,
 
-Great, thanks for your help.
+It is all I need ! no more 256 routing tables limitation !. But now it is time for me to test it, but i am working on a kernel 2.6.9, do you think it will be good ?
 
-			Jeff
+Why do I need so much routing tables? I need more than 500 routing tables because my Linux have to work with 500 VLANs !. Do you think that your patch will be integreted in the Linux kernel or it stays limited at 256?
 
--- 
-Work email - jdike at linux dot intel dot com
+A very happy kernel noob :)
+
+Cedric Hertault
+
+--
+This message was sent on behalf of cedric.hertault@v2plus.com at openSubscriber.com
+http://www.opensubscriber.com/message/linux-kernel@vger.kernel.org/4967197.html
