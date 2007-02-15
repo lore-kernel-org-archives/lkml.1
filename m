@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751059AbXBOFsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750716AbXBOFwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751059AbXBOFsL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 00:48:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbXBOFsL
+	id S1750716AbXBOFwo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 00:52:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbXBOFwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 00:48:11 -0500
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:50314 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751059AbXBOFsK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 00:48:10 -0500
-Message-ID: <45D3F41C.3020600@drzeus.cx>
-Date: Thu, 15 Feb 2007 06:48:12 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070131)
-MIME-Version: 1.0
-To: Eugene Ilkov <e.ilkov@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20 mmc: problem with highspeed SD card
-References: <e13597370702131746q6a5d8e79i2341f5eb9c59bf6e@mail.gmail.com>
-In-Reply-To: <e13597370702131746q6a5d8e79i2341f5eb9c59bf6e@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 15 Feb 2007 00:52:44 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:35778 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750716AbXBOFwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 00:52:43 -0500
+Date: Wed, 14 Feb 2007 21:51:23 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Blaisorblade <blaisorblade@yahoo.it>
+Cc: user-mode-linux-devel@lists.sourceforge.net, Jeff Dike <jdike@addtoit.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>, stable@kernel.org
+Subject: Re: [uml-devel] x86_64: fix 2.6.18 regression -
+ PTRACE_OLDSETOPTIONS should be accepted
+Message-Id: <20070214215123.57ef2d4a.akpm@linux-foundation.org>
+In-Reply-To: <200702150443.42287.blaisorblade@yahoo.it>
+References: <11715068631914-git-send-email-blaisorblade@yahoo.it>
+	<20070215025423.GA9300@ccure.user-mode-linux.org>
+	<200702150443.42287.blaisorblade@yahoo.it>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eugene Ilkov wrote:
-> I have I/O errors with Transcend SD highspeed card 2GB/150x when it's
-> mounted in r/w mode (cardreader on sharp sl-c1000)
-> It works well  if I reverse mmcv4 patch commited to 2.6.19-git2
-> (http://lkml.org/lkml/2006/10/4/27)
+On Thu, 15 Feb 2007 04:43:41 +0100 Blaisorblade <blaisorblade@yahoo.it> wrote:
 
-That patch is not the same as you are referencing in the rest of your mail.
-
-> I'm not experienced in mmc, but I figured out that problem is
-> somewhere in mmc_read_switch_caps() and when i change cmd.arg value
-> from 0x80FFFFF1 to 0x00FFFFF1 it works fine too
-> What argument should have SD_SWITCH opcode?
+> > I sent an equivalent patch in earlier today:
+> Doh! Interesting this timing...
 > 
+> > Index: linux-2.6/arch/x86_64/ia32/ptrace32.c
+> > ===================================================================
+> > --- linux-2.6.orig/arch/x86_64/ia32/ptrace32.c
+> > +++ linux-2.6/arch/x86_64/ia32/ptrace32.c
+> > @@ -239,6 +239,8 @@ asmlinkage long sys32_ptrace(long reques
+> >  	__u32 val;
+> >
+> >  	switch (request) {
+> > +	case PTRACE_OLDSETOPTIONS:
+> > +		request = PTRACE_SETOPTIONS;
+> >  	case PTRACE_TRACEME:
+> >  	case PTRACE_ATTACH:
+> >  	case PTRACE_KILL:
+> >
+> > I change the request so that PTRACE_OLDSETOPTIONS doesn't need to
+> > propogate any further.  However, it is present in include/asm-x86_64,
+> > so I guess that counts as being part of the x86_64 ABI.  That being
+> > the case, I guess my patch can be dropped in favor of this one.
+> 
+> It is handled in ptrace_request, unless there are include problems. I'm going 
+> to reboot and test mine for any remaining problem.
 
-The argument is correct, so I'm guessing that your controller might be a bit
-flaky and not handle the new timing. Can you enable MMC_DEBUG and send over the
-dmesg?
-
-Rgds
-
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+Whatever happens, please ensure that the final fix makes it into -stable
+as well.  Jeff's version of this patch wasn't cc'ed to stable@kernel.org.
