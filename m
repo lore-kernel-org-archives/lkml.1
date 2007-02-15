@@ -1,529 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964886AbXBODNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964885AbXBODaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964886AbXBODNW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 22:13:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964884AbXBODNW
+	id S964885AbXBODaz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 22:30:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964888AbXBODaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 22:13:22 -0500
-Received: from cantor.suse.de ([195.135.220.2]:33280 "EHLO mx1.suse.de"
+	Wed, 14 Feb 2007 22:30:55 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:60532 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964882AbXBODNU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 22:13:20 -0500
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SuSE Labs, Novell
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] Fix d_path for lazy unmounts
-Date: Wed, 14 Feb 2007 19:13:21 -0800
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, linux-fsdevel@vger.kernel.org,
-       Tony Jones <tonyj@suse.de>, Neil Brown <neilb@suse.de>,
-       Christoph Hellwig <hch@lst.de>, Greg Kroah-Hartman <gregkh@suse.de>,
-       walt <wa1ter@myrealbox.com>
-References: <200702021923.02491.agruen@suse.de> <200702141139.41465.agruen@suse.de> <200702141457.51218.agruen@suse.de>
-In-Reply-To: <200702141457.51218.agruen@suse.de>
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_R/80FsX6TJZ3ZJO"
-Message-Id: <200702141913.21944.agruen@suse.de>
+	id S964885AbXBODaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 22:30:55 -0500
+Date: Wed, 14 Feb 2007 19:30:51 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] aio: fix kernel bug when page is temporally busy
+Message-Id: <20070214193051.4b008d61.akpm@linux-foundation.org>
+In-Reply-To: <B41635854730A14CA71C92B36EC22AAC83F228@mssmsx411>
+References: <B41635854730A14CA71C92B36EC22AAC83F228@mssmsx411>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_R/80FsX6TJZ3ZJO
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Wed, 14 Feb 2007 20:51:33 +0300 "Ananiev, Leonid I" <leonid.i.ananiev@intel.com> wrote:
 
-On Wednesday 14 February 2007 14:57, Andreas Gruenbacher wrote:
-> [1] Always make disconnected paths relative:
->
-> From all these choices, I actually like [1] best, together with hiding
-> unreachable mount points in /proc/$pid/mounts and /proc/$pid/mountstats:
-> there is no real point in pretending that unreachable paths are reachable;
-> whichever process uses these paths is just as much in error when trying
-> from the pwd as when trying from the chroot.
+> Fix kernel bug when IO page is temporally busy:
+> invalidate_inode_pages2_range() returns EIOCBRETRY but not  EIO.
+> invalidate_inode_pages2() returns EIO as earlier.
+> 
+> Signed-off-by: Leonid Ananiev <leonid.i.ananiev@intel.com>
+> ---
+> --- linux-2.6.20/mm/truncate.c  2007-02-04 10:44:54.000000000 -0800
+> +++ linux-2.6.20p/mm/truncate.c 2007-02-08 22:56:52.000000000 -0800
+> @@ -366,7 +366,7 @@ static int do_launder_page(struct addres
+>   * Any pages which are found to be mapped into pagetables are unmapped prior to
+>   * invalidation.
+>   *
+> - * Returns -EIO if any pages could not be invalidated.
+> + * Returns -EIOCBRETRY if any pages could not be invalidated.
+>   */
+>  int invalidate_inode_pages2_range(struct address_space *mapping,
+>                                   pgoff_t start, pgoff_t end)
+> @@ -423,7 +423,7 @@ int invalidate_inode_pages2_range(struct
+>                         }
+>                         ret = do_launder_page(mapping, page);
+>                         if (ret == 0 && !invalidate_complete_page2(mapping, page))
+> -                               ret = -EIO;
+> +                               ret = -EIOCBRETRY;
+>                         unlock_page(page);
+>                 }
+>                 pagevec_release(&pvec);
+> @@ -444,6 +444,7 @@ EXPORT_SYMBOL_GPL(invalidate_inode_pages
+>   */
+>  int invalidate_inode_pages2(struct address_space *mapping)
+>  {
+> -       return invalidate_inode_pages2_range(mapping, 0, -1);
+> +       int ret =  invalidate_inode_pages2_range(mapping, 0, -1);
+> +       return (ret < 0)?-EIO:ret;
+>  }
+>  EXPORT_SYMBOL_GPL(invalidate_inode_pages2);
 
-So here is how this could be implemented. See the lengthy explanations in the 
-patch headers, too.
+If someone later uses invalidate_inode_pages2_range() elsewhere, they're
+going to need to know to convert -EIOCBRETRY into -EIO, if they weren't
+called by aio.  Or something.
 
-d_path-lazy-unmounts.diff
+Please, tell us what problem this is fixing so that we can look into
+alternative solutions.
 
-	- Now fails sys_getcwd() with -ENOENT in case the path computed
-	  doesn't lead to the chroot.
-	- No longer reports empty paths, but report '.' in that case
-	  instead.
-	- Incorporates Neil's other minor feedback.
+For example, one acceptable-but-ugly solution might be to do:
 
-no-unreachable-paths.diff
+static inline int invalidate_inode_pages2_range(struct address_space *mapping,
+				pgoff_t start, pgoff_t end)
+{
+	return __invalidate_inode_pages2_range(mapping, start, end, 0);
+}
 
-	Hide unreachable mount points in /proc/mounts and /proc/$PID/mountstats.
-	In particular, this includes the rootfs mount for all processes that
-	are not chroot()ed in that mount.
+static inline int invalidate_inode_pages2_range_for_aio(struct address_space *mapping,
+				pgoff_t start, pgoff_t end)
+{
+	return __invalidate_inode_pages2_range(mapping, start, end, 1);
+}
 
-Andreas
+and to then use invalidate_inode_pages2_range_for_aio() from the
+appropriate callsite.
 
---Boundary-00=_R/80FsX6TJZ3ZJO
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="d_path-lazy-unmounts.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="d_path-lazy-unmounts.diff"
+But without a complete description of the bug which this is fixing, it's
+hard to say how practical such an approach would be.
 
-Fix __d_path() for lazy unmounts and make it unambiguous
-
-First, when d_path() hits a lazily unmounted mount point, it tries to
-prepend the name of the lazily unmounted dentry to the path name. It
-gets this wrong, and also overwrites the slash that separates the name
-from the following pathname component.
-
-Second, it isn't always possible to tell from the __d_path result
-whether the specified root and rootmnt (i.e., the chroot) was reached:
-lazy unmounts of bind mounts will produce a path that does start with a
-non-slash so we can tell from that, but other lazy unmounts will produce
-a path that starts with a slash, just like "ordinary" paths.
-
-Third, sys_getcwd() shouldn't return disconnected paths. The patch
-checks for that, and makes it fail with -ENOENT in that case.
-
-The attached patch cleans up __d_path() to fix the bug with overlapping
-pathname components. It also adds a @fail_deleted argument, which allows
-to get rid of some of the mess in sys_getcwd(). We make sure that paths
-will only start with a slash if the path leads all the way up to the
-root. If the resulting path would otherwise be empty, we return "."
-instead so that some users of seq_path for files in /proc won't break.
-
-The @fail_deleted argument allows sys_getcwd() to be simplified.
-Grabbing the dcache_lock can be moved into __d_path().
-
-The @fail_deleted argument could be added to d_path() as well: this would
-allow callers to recognize deleted files without having to resort to the
-ambiguous check for the " (deleted)" string at the end of the pathnames.
-This is not currently done, but it might be worthwhile.
-
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-Reviewed-by: NeilBrown <neilb@suse.de>
-
-Index: b/fs/dcache.c
-===================================================================
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -1732,52 +1732,51 @@ shouldnt_be_hashed:
- }
- 
- /**
-- * d_path - return the path of a dentry
-+ * __d_path - return the path of a dentry
-  * @dentry: dentry to report
-  * @vfsmnt: vfsmnt to which the dentry belongs
-  * @root: root dentry
-  * @rootmnt: vfsmnt to which the root dentry belongs
-  * @buffer: buffer to return value in
-  * @buflen: buffer length
-+ * @fail_deleted: what to return for deleted files
-  *
-- * Convert a dentry into an ASCII path name. If the entry has been deleted
-+ * Convert a dentry into an ASCII path name. If the entry has been deleted,
-+ * then if @fail_deleted is true, ERR_PTR(-ENOENT) is returned. Otherwise,
-  * the string " (deleted)" is appended. Note that this is ambiguous.
-  *
-- * Returns the buffer or an error code if the path was too long.
-+ * If @dentry is not connected to @root, the path returned will be relative
-+ * (i.e., it will not start with a slash).
-  *
-- * "buflen" should be positive. Caller holds the dcache_lock.
-+ * Returns the buffer or an error code.
-  */
--static char * __d_path( struct dentry *dentry, struct vfsmount *vfsmnt,
--			struct dentry *root, struct vfsmount *rootmnt,
--			char *buffer, int buflen)
--{
--	char * end = buffer+buflen;
--	char * retval;
--	int namelen;
-+static char *__d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
-+		      struct dentry *root, struct vfsmount *rootmnt,
-+		      char *buffer, int buflen, int fail_deleted)
-+{
-+	int namelen, is_slash;
-+
-+	if (buflen < 2)
-+		return ERR_PTR(-ENAMETOOLONG);
-+	buffer += --buflen;
-+	*buffer = '\0';
- 
--	*--end = '\0';
--	buflen--;
-+	spin_lock(&dcache_lock);
- 	if (!IS_ROOT(dentry) && d_unhashed(dentry)) {
--		buflen -= 10;
--		end -= 10;
--		if (buflen < 0)
-+		if (fail_deleted) {
-+			buffer = ERR_PTR(-ENOENT);
-+			goto out;
-+		}
-+		if (buflen < 10)
- 			goto Elong;
--		memcpy(end, " (deleted)", 10);
-+		buflen -= 10;
-+		buffer -= 10;
-+		memcpy(buffer, " (deleted)", 10);
- 	}
--
--	if (buflen < 1)
--		goto Elong;
--	/* Get '/' right */
--	retval = end-1;
--	*retval = '/';
--
--	for (;;) {
-+	while (dentry != root || vfsmnt != rootmnt) {
- 		struct dentry * parent;
- 
--		if (dentry == root && vfsmnt == rootmnt)
--			break;
- 		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
--			/* Global root? */
- 			spin_lock(&vfsmount_lock);
- 			if (vfsmnt->mnt_parent == vfsmnt) {
- 				spin_unlock(&vfsmount_lock);
-@@ -1791,33 +1790,63 @@ static char * __d_path( struct dentry *d
- 		parent = dentry->d_parent;
- 		prefetch(parent);
- 		namelen = dentry->d_name.len;
--		buflen -= namelen + 1;
--		if (buflen < 0)
-+		if (buflen < namelen + 1)
- 			goto Elong;
--		end -= namelen;
--		memcpy(end, dentry->d_name.name, namelen);
--		*--end = '/';
--		retval = end;
-+		buflen -= namelen + 1;
-+		buffer -= namelen + 1;
-+		memcpy(buffer, dentry->d_name.name, namelen);
-+		*buffer = '/';
- 		dentry = parent;
- 	}
-+	/* Get '/' right. */
-+	if (*buffer != '/')
-+		*--buffer = '/';
- 
--	return retval;
-+out:
-+	spin_unlock(&dcache_lock);
-+	return buffer;
- 
- global_root:
-+	/*
-+	 * We went past the (vfsmount, dentry) we were looking for and have
-+	 * either hit a root dentry, a lazily unmounted dentry, an
-+	 * unconnected dentry, or the file is on a pseudo filesystem.
-+	 */
- 	namelen = dentry->d_name.len;
--	buflen -= namelen;
--	if (buflen < 0)
-+	is_slash = (namelen == 1 && *dentry->d_name.name == '/');
-+	if (is_slash || (dentry->d_sb->s_flags & MS_NOUSER)) {
-+		/*
-+		 * Make sure we won't return a pathname starting with '/'.
-+		 *
-+		 * Historically, we also glue together the root dentry and
-+		 * remaining name for pseudo filesystems like pipefs, which
-+		 * have the MS_NOUSER flag set. This results in pathnames
-+		 * like "pipe:[439336]".
-+		 */
-+		if (*buffer == '/') {
-+			buffer++;
-+			buflen++;
-+		}
-+		if (is_slash) {
-+			if (*buffer == '\0')
-+				*--buffer = '.';
-+			goto out;
-+		}
-+	}
-+	if (buflen < namelen)
- 		goto Elong;
--	retval -= namelen-1;	/* hit the slash */
--	memcpy(retval, dentry->d_name.name, namelen);
--	return retval;
-+	buffer -= namelen;
-+	memcpy(buffer, dentry->d_name.name, namelen);
-+	goto out;
-+
- Elong:
--	return ERR_PTR(-ENAMETOOLONG);
-+	buffer = ERR_PTR(-ENAMETOOLONG);
-+	goto out;
- }
- 
- /* write full pathname into buffer and return start of pathname */
--char * d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
--				char *buf, int buflen)
-+char *d_path(struct dentry *dentry, struct vfsmount *vfsmnt, char *buf,
-+	     int buflen)
- {
- 	char *res;
- 	struct vfsmount *rootmnt;
-@@ -1827,9 +1856,7 @@ char * d_path(struct dentry *dentry, str
- 	rootmnt = mntget(current->fs->rootmnt);
- 	root = dget(current->fs->root);
- 	read_unlock(&current->fs->lock);
--	spin_lock(&dcache_lock);
--	res = __d_path(dentry, vfsmnt, root, rootmnt, buf, buflen);
--	spin_unlock(&dcache_lock);
-+	res = __d_path(dentry, vfsmnt, root, rootmnt, buf, buflen, 0);
- 	dput(root);
- 	mntput(rootmnt);
- 	return res;
-@@ -1855,10 +1882,10 @@ char * d_path(struct dentry *dentry, str
-  */
- asmlinkage long sys_getcwd(char __user *buf, unsigned long size)
- {
--	int error;
-+	int error, len;
- 	struct vfsmount *pwdmnt, *rootmnt;
- 	struct dentry *pwd, *root;
--	char *page = (char *) __get_free_page(GFP_USER);
-+	char *page = (char *) __get_free_page(GFP_USER), *cwd;
- 
- 	if (!page)
- 		return -ENOMEM;
-@@ -1870,29 +1897,21 @@ asmlinkage long sys_getcwd(char __user *
- 	root = dget(current->fs->root);
- 	read_unlock(&current->fs->lock);
- 
-+	cwd = __d_path(pwd, pwdmnt, root, rootmnt, page, PAGE_SIZE, 1);
-+	error = PTR_ERR(cwd);
-+	if (IS_ERR(cwd))
-+		goto out;
- 	error = -ENOENT;
--	/* Has the current directory has been unlinked? */
--	spin_lock(&dcache_lock);
--	if (pwd->d_parent == pwd || !d_unhashed(pwd)) {
--		unsigned long len;
--		char * cwd;
--
--		cwd = __d_path(pwd, pwdmnt, root, rootmnt, page, PAGE_SIZE);
--		spin_unlock(&dcache_lock);
--
--		error = PTR_ERR(cwd);
--		if (IS_ERR(cwd))
--			goto out;
-+	if (*cwd != '/')
-+		goto out;
- 
--		error = -ERANGE;
--		len = PAGE_SIZE + page - cwd;
--		if (len <= size) {
--			error = len;
--			if (copy_to_user(buf, cwd, len))
--				error = -EFAULT;
--		}
--	} else
--		spin_unlock(&dcache_lock);
-+	error = -ERANGE;
-+	len = PAGE_SIZE + page - cwd;
-+	if (len <= size) {
-+		error = len;
-+		if (copy_to_user(buf, cwd, len))
-+			error = -EFAULT;
-+	}
- 
- out:
- 	dput(pwd);
-
---Boundary-00=_R/80FsX6TJZ3ZJO
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="no-unreachable-paths.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="no-unreachable-paths.diff"
-
-Hide unreachable mount points in /proc/mounts and /proc/$PID/mountstats
-
-What's mounted on unreachable mount points isn't interesting to
-processes: they can't get there in the first place. This patch hides
-unreachable mounts from processes.
-
-Processes living in the root namespace whill still see all mounts they
-were seeing before except for the rootfs mount, which is never reachable
-from an "ordinary" process.
-
-Only the initial initrd init process will actually have access to the
-rootfs mount. For this process that mount *is* reachable, and so it will
-show in.
-
-This patch also removes some code duplication between mounts_open() and
-mountstats_open().
-
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-
-Index: b/fs/namespace.c
-===================================================================
---- a/fs/namespace.c
-+++ b/fs/namespace.c
-@@ -348,8 +348,16 @@ static inline void mangle(struct seq_fil
- 	seq_escape(m, s, " \t\n\\");
- }
- 
-+/* Keep in sync with fs/proc/base.c! */
-+struct proc_mounts {
-+        struct seq_file m;
-+        void *page;
-+        int event;
-+};
-+
- static int show_vfsmnt(struct seq_file *m, void *v)
- {
-+	void *page = container_of(m, struct proc_mounts, m)->page;
- 	struct vfsmount *mnt = v;
- 	int err = 0;
- 	static struct proc_fs_info {
-@@ -372,9 +380,13 @@ static int show_vfsmnt(struct seq_file *
- 	};
- 	struct proc_fs_info *fs_infop;
- 
-+	char *path = d_path(mnt->mnt_root, mnt, page, PAGE_SIZE);
-+	if (IS_ERR(path) || *path != '/')
-+		return err;
-+
- 	mangle(m, mnt->mnt_devname ? mnt->mnt_devname : "none");
- 	seq_putc(m, ' ');
--	seq_path(m, mnt, mnt->mnt_root, " \t\n\\");
-+	mangle(m, path);
- 	seq_putc(m, ' ');
- 	mangle(m, mnt->mnt_sb->s_type->name);
- 	seq_puts(m, mnt->mnt_sb->s_flags & MS_RDONLY ? " ro" : " rw");
-@@ -401,9 +413,14 @@ struct seq_operations mounts_op = {
- 
- static int show_vfsstat(struct seq_file *m, void *v)
- {
-+	void *page = container_of(m, struct proc_mounts, m)->page;
- 	struct vfsmount *mnt = v;
- 	int err = 0;
- 
-+	char *path = d_path(mnt->mnt_root, mnt, page, PAGE_SIZE);
-+	if (IS_ERR(path) || *path != '/')
-+		return err; /* error or path unreachable from chroot */
-+
- 	/* device */
- 	if (mnt->mnt_devname) {
- 		seq_puts(m, "device ");
-@@ -413,7 +430,7 @@ static int show_vfsstat(struct seq_file 
- 
- 	/* mount point */
- 	seq_puts(m, " mounted on ");
--	seq_path(m, mnt, mnt->mnt_root, " \t\n\\");
-+	mangle(m, path);
- 	seq_putc(m, ' ');
- 
- 	/* file system type */
-Index: b/fs/proc/base.c
-===================================================================
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -356,13 +356,16 @@ static const struct inode_operations pro
- 	.setattr	= proc_setattr,
- };
- 
-+/* Keep in sync with fs/namespace.c! */
- extern struct seq_operations mounts_op;
- struct proc_mounts {
- 	struct seq_file m;
-+	void *page;
- 	int event;
- };
- 
--static int mounts_open(struct inode *inode, struct file *file)
-+static int __mounts_open(struct inode *inode, struct file *file,
-+			 struct seq_operations *seq_ops)
- {
- 	struct task_struct *task = get_proc_task(inode);
- 	struct mnt_namespace *ns = NULL;
-@@ -385,12 +388,16 @@ static int mounts_open(struct inode *ino
- 		p = kmalloc(sizeof(struct proc_mounts), GFP_KERNEL);
- 		if (p) {
- 			file->private_data = &p->m;
--			ret = seq_open(file, &mounts_op);
-+			p->page = (void *)__get_free_page(GFP_KERNEL);
-+			if (p->page)
-+				ret = seq_open(file, seq_ops);
- 			if (!ret) {
- 				p->m.private = ns;
- 				p->event = ns->event;
- 				return 0;
- 			}
-+			if (p->page)
-+				free_page((unsigned long)p->page);
- 			kfree(p);
- 		}
- 		put_mnt_ns(ns);
-@@ -398,17 +405,25 @@ static int mounts_open(struct inode *ino
- 	return ret;
- }
- 
-+static int mounts_open(struct inode *inode, struct file *file)
-+{
-+	return __mounts_open(inode, file, &mounts_op);
-+}
-+
- static int mounts_release(struct inode *inode, struct file *file)
- {
--	struct seq_file *m = file->private_data;
--	struct mnt_namespace *ns = m->private;
-+	struct proc_mounts *p =
-+		container_of(file->private_data, struct proc_mounts, m);
-+	struct mnt_namespace *ns = p->m.private;
-+	free_page((unsigned long)p->page);
- 	put_mnt_ns(ns);
- 	return seq_release(inode, file);
- }
- 
- static unsigned mounts_poll(struct file *file, poll_table *wait)
- {
--	struct proc_mounts *p = file->private_data;
-+	struct proc_mounts *p =
-+		container_of(file->private_data, struct proc_mounts, m);
- 	struct mnt_namespace *ns = p->m.private;
- 	unsigned res = 0;
- 
-@@ -435,31 +450,7 @@ static const struct file_operations proc
- extern struct seq_operations mountstats_op;
- static int mountstats_open(struct inode *inode, struct file *file)
- {
--	int ret = seq_open(file, &mountstats_op);
--
--	if (!ret) {
--		struct seq_file *m = file->private_data;
--		struct mnt_namespace *mnt_ns = NULL;
--		struct task_struct *task = get_proc_task(inode);
--
--		if (task) {
--			task_lock(task);
--			if (task->nsproxy)
--				mnt_ns = task->nsproxy->mnt_ns;
--			if (mnt_ns)
--				get_mnt_ns(mnt_ns);
--			task_unlock(task);
--			put_task_struct(task);
--		}
--
--		if (mnt_ns)
--			m->private = mnt_ns;
--		else {
--			seq_release(inode, file);
--			ret = -EINVAL;
--		}
--	}
--	return ret;
-+	return __mounts_open(inode, file, &mountstats_op);
- }
- 
- static const struct file_operations proc_mountstats_operations = {
-
---Boundary-00=_R/80FsX6TJZ3ZJO--
