@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751564AbXBOGPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751572AbXBOGPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751564AbXBOGPF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 01:15:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751569AbXBOGPF
+	id S1751572AbXBOGPt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 01:15:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbXBOGPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 01:15:05 -0500
-Received: from ns1.suse.de ([195.135.220.2]:41046 "EHLO mx1.suse.de"
+	Thu, 15 Feb 2007 01:15:48 -0500
+Received: from cantor.suse.de ([195.135.220.2]:41088 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751564AbXBOGPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 01:15:03 -0500
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SuSE Labs, Novell
-To: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing
-Date: Wed, 14 Feb 2007 22:14:53 -0800
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
-       herbert.xu@redhat.com, linux-kernel@vger.kernel.org,
-       arjan@infradead.org, linux-crypto@vger.kernel.org
-References: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com> <200702142135.40832.agruen@suse.de> <20070215054559.GD15654@redhat.com>
-In-Reply-To: <20070215054559.GD15654@redhat.com>
+	id S1751572AbXBOGPs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 01:15:48 -0500
+From: Neil Brown <neilb@suse.de>
+To: "v j" <vj.linux@gmail.com>
+Date: Thu, 15 Feb 2007 17:15:12 +1100
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702142214.53625.agruen@suse.de>
+Message-ID: <17875.64112.54164.635911@notabene.brown>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: GPL vs non-GPL device drivers
+In-Reply-To: message from v j on Wednesday February 14
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+	<9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 February 2007 21:45, Dave Jones wrote:
-> well, the situation for external modules is no worse than usual.
-> They still work, they just aren't signed. Which from a distributor point
-> of view, is actually a nice thing, as they stick out like a sore thumb
-> in oops reports with (U) markers :)
+On Wednesday February 14, vj.linux@gmail.com wrote:
+> 
+> However we have a worrying trend here. If at some point it becomes
+> illegal to load our modules into the linux kernel, then it is
+> unacceptable to us. We would have been better off choosing VxWorks or
+> OSE 3 years ago when we made an OS choice. The fact that Linux is
+> becoming more and more closed is very very alarming.
 
-I agree, that's really what should happen. We solve this by marking modules as 
-supported, partner supported, or unsupported, but in an "insecure" way, so 
-partners and users could try to fake the support status of a module and/or 
-remove status flags from Oopses, and cryptography wouldn't save us. We could 
-try to sign Oopses which I guess you guys are doing. This whole issue hasn't 
-been a serious problem in the past though, and we generally try to trust 
-users not to play games on us.
+Might I suggest that you give very serious consideration to
+open-sourcing your drivers?  There are benefits and well as costs, and
+many have found that the benefits substantially out weigh the costs.
 
-In the end, it all seems to boils down to a difference in philosophy.
-
-Thanks,
-Andreas
+NeilBrown
