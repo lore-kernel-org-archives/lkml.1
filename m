@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965053AbXBOIJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965083AbXBOIMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965053AbXBOIJz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 03:09:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965052AbXBOIJz
+	id S965083AbXBOIMX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 03:12:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965100AbXBOIMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 03:09:55 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:62265 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965043AbXBOIJy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 03:09:54 -0500
-Message-ID: <45D41546.3070907@student.ltu.se>
-Date: Thu, 15 Feb 2007 09:09:42 +0100
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Thu, 15 Feb 2007 03:12:23 -0500
+Received: from cantor.suse.de ([195.135.220.2]:45922 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965083AbXBOIMW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 03:12:22 -0500
+From: Neil Brown <neilb@suse.de>
+To: "Trent Waddington" <trent.waddington@gmail.com>
+Date: Thu, 15 Feb 2007 19:11:42 +1100
 MIME-Version: 1.0
-To: Sumant Patro <sumantp@lsil.com>
-CC: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, neela.kolli@lsi.com, bo.yang@lsi.com,
-       sumant.patro@lsi.com
-Subject: Re: [PATCH 3/6] scsi: megaraid_sas - throttle io if FW is busy
-References: <1171486194.4188.21.camel@dumbo>
-In-Reply-To: <1171486194.4188.21.camel@dumbo>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <17876.5566.445336.542652@notabene.brown>
+Cc: "v j" <vj.linux@gmail.com>, "Randy Dunlap" <rdunlap@xenotime.net>,
+       "Dave Jones" <davej@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: GPL vs non-GPL device drivers
+In-Reply-To: message from Trent Waddington on Thursday February 15
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+	<9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+	<20070215061149.GE15654@redhat.com>
+	<9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
+	<20070214231143.11ff6b46.rdunlap@xenotime.net>
+	<9b3a62ab0702142328h87365b6i932d4f2c117f7f0e@mail.gmail.com>
+	<17876.3862.261014.44098@notabene.brown>
+	<3d57814d0702142353n2d856f32k7b8d7909ea69cb04@mail.gmail.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sumant Patro wrote:
-> Checks added in megasas_queue_command to know if FW is able to process
-> commands within the timeout period. If number of retries is 2 or more,
-> the driver stops sending cmd to FW. IO is resumed when pending cmd count 
-> reduces to 16 or 10 seconds has elapsed from the time cmds were last 
-> sent to FW.
->
-> Signed-off-by: Sumant Patro <sumant.patro@lsi.com>
-> ---
->
->  drivers/scsi/megaraid/megaraid_sas.c |   27 +++++++++++++++++++++++++
->  drivers/scsi/megaraid/megaraid_sas.h |    3 ++
->  2 files changed, 30 insertions(+)
->
->   
-[snip]
-> diff -uprN linux-feb13-new-p2/drivers/scsi/megaraid/megaraid_sas.h linux-feb13-new-p3/drivers/scsi/megaraid/megaraid_sas.h
-> --- linux-feb13-new-p2/drivers/scsi/megaraid/megaraid_sas.h	2007-02-13 07:22:40.000000000 -0800
-> +++ linux-feb13-new-p3/drivers/scsi/megaraid/megaraid_sas.h	2007-02-13 11:37:09.000000000 -0800
-> @@ -1102,6 +1102,9 @@ struct megasas_instance {
->  	atomic_t fw_outstanding;
->  	u32 hw_crit_error;
->  
-> +	u8 is_busy;
->   
-Why not "bool is_busy:8;"? It obviously is a boolean. I would also think 
-false/true would be more descriptive then 0/1.
+On Thursday February 15, trent.waddington@gmail.com wrote:
+> On 2/15/07, Neil Brown <neilb@suse.de> wrote:
+> >  [..] then it is less clear what people believe
+> 
+> Another area where it is less clear what people believe is if you are
+> distributing the module separately to the kernel, but, as I understand
+> it, vj says he is not.
+> 
+> > But of course the person who's opinion really counts is the judge.
+> 
+> The judge's opinion only counts if you actually get to court and
+> manage to put up a legal defense.
+> 
+> > So you need to get legal advice.
+> 
+> Or, ya know, you could take the moral/ethical advice that you're being
+> a worm and stop now.
 
-Richard Knutsson
+I don't think we do ourselves any favours by calling people names....
 
+And as I understand it, an important principle in out community is
+freedom.  If vj wants to take a particular moral/ethical stance, then
+he should be free to do that.  Of course he will have to live with any
+consequences, as do we all.
+
+He (or maybe she? I don't know but English is forcing me to use
+gender-specific pronouns) or his company sees a business risk in open
+sourcing their code.  They now see a legal risk it not doing so.  They
+get to choose how to respond.
+
+This list is a great place to seek technical advice on the different
+options.   It is not such a good place to get business or legal
+advice.
+
+NeilBrown
