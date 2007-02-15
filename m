@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030490AbXBOSe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030491AbXBOSlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030490AbXBOSe0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 13:34:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030489AbXBOSe0
+	id S1030491AbXBOSlt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 13:41:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030510AbXBOSlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 13:34:26 -0500
-Received: from scrub.xs4all.nl ([194.109.195.176]:52538 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030481AbXBOSeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 13:34:25 -0500
-Date: Thu, 15 Feb 2007 19:33:52 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: David Howells <dhowells@redhat.com>
-cc: torvalds@osdl.org, akpm@osdl.org, herbert.xu@redhat.com,
-       linux-kernel@vger.kernel.org, davej@redhat.com, arjan@infradead.org,
-       linux-crypto@vger.kernel.org
-Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing 
-In-Reply-To: <32081.1171560770@redhat.com>
-Message-ID: <Pine.LNX.4.64.0702151901380.14458@scrub.home>
-References: <Pine.LNX.4.64.0702151530260.14458@scrub.home> 
- <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com> 
- <32081.1171560770@redhat.com>
+	Thu, 15 Feb 2007 13:41:49 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:25519 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030491AbXBOSls (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 13:41:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hDOyceYzbPHcJfpagK/4hY/QsKdK1R/i/cQhBMTOYrarpOB3MLNFhl1n6n6ge/jXYW9IlH2r8+l03tjoOp0R7AOILgLyu2lib1FFnc3FYbm3gZrY2IEwQq12FKjuF0LRPT2GXRBHD8K/5yiJclXT2l7mXOVCZeFelP75xKOz8Uo=
+Message-ID: <625fc13d0702151041w3621b18aw299133164db1bde4@mail.gmail.com>
+Date: Thu, 15 Feb 2007 12:41:45 -0600
+From: "Josh Boyer" <jwboyer@gmail.com>
+To: "v j" <vj.linux@gmail.com>
+Subject: Re: GPL vs non-GPL device drivers
+Cc: "Theodore Tso" <tytso@mit.edu>, "Dave Jones" <davej@redhat.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+	 <20070215061149.GE15654@redhat.com>
+	 <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
+	 <20070215165339.GB5285@thunk.org>
+	 <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 2/15/07, v j <vj.linux@gmail.com> wrote:
+> So far I have heard nothing but, "if you don't contribute, screw you."
+> All this is fine. Just say so. Make it black and white. Make it
+> perfectly clear what is and isn't legal. If we can't load proprietary
+> modules, then so be it. It will help everybody if this is out in the
+> clear, instead of resorting to stupid half measures like
+> EXPORT_SYMBOL_GPL.
 
-On Thu, 15 Feb 2007, David Howells wrote:
+That does not prevent you from loading proprietary modules.  If your
+legal team finds it acceptable to use non-GPL modules, then at your
+risk it is possible to modify the kernel source to remove the
+restriction anyway.
 
-> > This is really the weak point - it offers no advantage over an equivalent 
-> > implementation in user space (e.g. in the module tools). So why has to be 
-> > done in the kernel?
-> 
-> Because the init_module() system call is the common point of module submission
-> to the kernel, not any particular userspace program.  There is no requirement
-> for userspace to load a module by invoking a module tools program or library,
-> and so userspace can bypass the checks entirely by just calling init_module().
-> Assume for a moment that you can't trust userspace...  (Obviously, if you can't
-> trust the kernel then you're already stuffed.)
+You are not blocked by this.  Your largest gripe seems to be the fact
+that the community does not want to endorse proprietary modules.  For
+_your_ use, with advice from _your_ legal team, with _your_ company
+assuming any risk, you can certainly continue to use Linux because the
+very people you're whining at _did_ contribute the code and provide it
+under an Open Source license.  However, I would not want to be in your
+position should your company choose to go that avenue and a lawsuit
+occurred.
 
-All the security stuff in the kernel should provide the necessary means to 
-restrict this system call.
+The fact that you're asking for the community to care about
+proprietary modules seems odd to me.  It's as if you almost know that
+it's legally questionable and you want the community somehow make it
+ok to use proprietary modules so you feel better.
 
-> It is possible to protect /dev/mem and /dev/kmem or make them unavailable and
-> it is possible to protect the kernel's memory whilst it is running (provided
-> you don't have nommu or broken hardware and you don't let userspace concoct any
-> DMA request it likes) which mostly closes those other vectors I mentioned.
-> This isn't something I intended to look at with this patch.  Those are separate
-> holes.
+Anyway, Linux is not BSD.  If you want something you can take and not
+have to care about giving back to, perhaps you should look into that.
 
-Exactly and as long as there are these holes, these patches are only 
-kernel bloat. The simple verification can also be done in userspace and 
-module signing offers no real security.
-What real value do these patches provide, that can't be reached via other 
-means? Who else than distributions would be interested in this? Pretty 
-much any use you initially mentioned can be done in simpler ways, e.g. 
-anyone afraid of modules simply disables module loading completely.
-
-bye, Roman
+josh
