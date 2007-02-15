@@ -1,84 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964878AbXBOCxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964879AbXBODDh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964878AbXBOCxj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 21:53:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964876AbXBOCxj
+	id S964879AbXBODDh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 22:03:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964882AbXBODDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 21:53:39 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:27887 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964878AbXBOCxj (ORCPT
+	Wed, 14 Feb 2007 22:03:37 -0500
+Received: from [198.99.130.12] ([198.99.130.12]:34829 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S964879AbXBODDh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 21:53:39 -0500
-In-Reply-To: <20070214213505.GA24812@elte.hu>
-References: <20070213142035.GF638@elte.hu> <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org> <20070214210251.GA15025@elte.hu> <Pine.LNX.4.64.0702141321200.20368@woody.linux-foundation.org> <20070214213505.GA24812@elte.hu>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <94CAAAF3-5EF0-4F76-BD8C-25A2B9EE0030@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Transfer-Encoding: 7bit
-From: Zach Brown <zach.brown@oracle.com>
-Subject: Re: [patch 05/11] syslets: core code
-Date: Wed, 14 Feb 2007 18:52:46 -0800
-To: Ingo Molnar <mingo@elte.hu>
-X-Mailer: Apple Mail (2.752.3)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Wed, 14 Feb 2007 22:03:37 -0500
+Date: Wed, 14 Feb 2007 21:54:23 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
+Cc: Andrew Morton <akpm@osdl.org>, stable@kernel.org, Andi Kleen <ak@suse.de>,
+       Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: x86_64: fix 2.6.18 regression - PTRACE_OLDSETOPTIONS should be accepted
+Message-ID: <20070215025423.GA9300@ccure.user-mode-linux.org>
+References: <11715068631914-git-send-email-blaisorblade@yahoo.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <11715068631914-git-send-email-blaisorblade@yahoo.it>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> But the whole point is that the notion of a "register" is wrong in  
->> the
->> first place. [...]
->
-> forget about it then. The thing we "register" is dead-simple:
->
->  struct async_head_user {
->          struct syslet_uatom __user              **completion_ring;
->          unsigned long                           ring_size_bytes;
->          unsigned long                           max_nr_threads;
->  };
->
-> this can be passed in to sys_async_exec() as a second pointer, and the
-> kernel can put the expected-completion pointer (and the user ring idx
-> pointer) into its struct atom. It's just a few instructions, and  
-> only in
-> the cachemiss case.
->
-> that would make completions arbitrarily split-up-able. No registration
-> whatsoever. A waiter could specify which ring's events it is  
-> interested
-> in. A 'ring' could be a single-entry thing as well, for a single
-> instance of pending IO.
+On Thu, Feb 15, 2007 at 03:34:23AM +0100, Paolo 'Blaisorblade' Giarrusso wrote:
+> Index: linux-2.6.git/arch/x86_64/ia32/ptrace32.c
+> ===================================================================
+> --- linux-2.6.git.orig/arch/x86_64/ia32/ptrace32.c
+> +++ linux-2.6.git/arch/x86_64/ia32/ptrace32.c
+> @@ -246,6 +246,7 @@ asmlinkage long sys32_ptrace(long reques
+>  	case PTRACE_SINGLESTEP:
+>  	case PTRACE_DETACH:
+>  	case PTRACE_SYSCALL:
+> +	case PTRACE_OLDSETOPTIONS:
+>  	case PTRACE_SETOPTIONS:
+>  	case PTRACE_SET_THREAD_AREA:
+>  	case PTRACE_GET_THREAD_AREA:
+> 
 
-I like this, too.  (Not surprisingly, having outlined something like  
-it in a mail in one of the previous threads :)).
+I sent an equivalent patch in earlier today:
 
-I'll bring up the POSIX AIO "list" IO case.  It wants to issue a  
-group of IOs and sleep until they all return.  Being able to cheaply  
-instantiate a ring implicitly with the submission of the IO calls in  
-the list will make implementing this almost too easy.  It'd obviously  
-just wait for that list's ring to drain.
+Index: linux-2.6/arch/x86_64/ia32/ptrace32.c
+===================================================================
+--- linux-2.6.orig/arch/x86_64/ia32/ptrace32.c
++++ linux-2.6/arch/x86_64/ia32/ptrace32.c
+@@ -239,6 +239,8 @@ asmlinkage long sys32_ptrace(long reques
+ 	__u32 val;
+ 
+ 	switch (request) { 
++	case PTRACE_OLDSETOPTIONS:
++		request = PTRACE_SETOPTIONS;
+ 	case PTRACE_TRACEME:
+ 	case PTRACE_ATTACH:
+ 	case PTRACE_KILL:
 
-I hope.  There might be complications around the edges (waiting for  
-multiple list IOs to drain?), but it seems like this would be on the  
-right track.
+I change the request so that PTRACE_OLDSETOPTIONS doesn't need to
+propogate any further.  However, it is present in include/asm-x86_64,
+so I guess that counts as being part of the x86_64 ABI.  That being
+the case, I guess my patch can be dropped in favor of this one.
 
-I might be alone in caring about having a less ridiculous POSIX AIO  
-interface in glibc, though, I'll admit.  It seems like it'd be a  
-pretty sad missed opportunity if we rolled a fantastic general AIO  
-interface and left glibc to still screw around with it's own manual  
-threading :/.
+				Jeff
 
-- z
+-- 
+Work email - jdike at linux dot intel dot com
