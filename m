@@ -1,93 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966005AbXBOQDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966011AbXBOQED@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966005AbXBOQDY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 11:03:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966006AbXBOQDY
+	id S966011AbXBOQED (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 11:04:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966012AbXBOQED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 11:03:24 -0500
-Received: from nz-out-0506.google.com ([64.233.162.233]:61489 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966005AbXBOQDW (ORCPT
+	Thu, 15 Feb 2007 11:04:03 -0500
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:17927 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966011AbXBOQEA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 11:03:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=gon++FPd451hgj6APHRKpem4H50t+vXHhZl5yTrOR2sYUdmiol37NwKWt/rWf5P9M7jGj14Samc9w0+Tl5OLAlkH2cqgtk6GzZo9fWegQJaMcBhbT55u0QEI7jOPdr/B7iZFqUz0mVSMhgFHVYBR+hqYAMQVItPThrLxKwedqW0=
-Message-ID: <45D3F445.1030708@gmail.com>
-Date: Thu, 15 Feb 2007 14:48:53 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Thu, 15 Feb 2007 11:04:00 -0500
+From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, openib-general@openib.org, hch@infradead.org,
+       bos@pathscale.com
+Subject: [PATCH 2.6.21-rc1 2/5] ehca: fix race condition/locking issues in scaling code
+Date: Thu, 15 Feb 2007 17:07:30 +0100
+User-Agent: KMail/1.8.2
+Cc: raisch@de.ibm.com, heiko.carstens@de.ibm.com
 MIME-Version: 1.0
-To: "Martin A. Fink" <fink@mpe.mpg.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: SATA-performance: Linux vs. FreeBSD
-References: <200702121502.17130.fink@mpe.mpg.de>
-In-Reply-To: <200702121502.17130.fink@mpe.mpg.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702151707.31021.hnguyen@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Martin.
+fix a race condition in find_next_cpu_online() and some
+other locking issues in scaling code
 
-Martin A. Fink wrote:
-> Test					OpenSuSE(AHCI)			FreeBSD(AHCI)
-> ---------------------------------------------------------------------------------------------------------------------------------------
-> SSD(vfat 25GB)			41+/-2 MB/s at 4-10%		15+/-0 MB/s at 2% CPU
-> SSD(raw  25GB) 		26+/-1 MB/s at 4-10% CPU	48+/-0 MB/s at 1% CPU
-> SSD(ext3 25GB)		39+/-5 MB/s at 10-15% CPU	34+/-0 MB/s at 14% CPU
-> SSD(ext2 25GB)		42+/-1 MB/s at 10-15% CPU	32+/-0 MB/s at 10% CPU
-> ---------------------------------------------------------------------------------------------------------------------------------------
-> 
-> Test					OpenSuSE (AHCI off)		FreeBSD (AHCI off)
-> ---------------------------------------------------------------------------------------------------------------------------------------
-> SSD(vfat 25GB)			22+/-4 MB/s at 6-19% CPU	--
-> SSD(raw  25GB)		33+/-4 MB/s at 7-14% CPU	41+/-0 MB/s at 1% CPU
-> SSD(ext2 25GB)		27+/-6 MB/s at 6-14% CPU	--
-> ---------------------------------------------------------------------------------------------------------------------------------------
-> 
-> Question 1:
-> Can anybody explain to me, why writing to a SATA-I device with AHCI consumes 
-> so much CPU time using Linux, while it takes almost no CPU time on FreeBSD 
-> 6.2 ? Especially comparing values of writing to the raw device?
 
-Can't tell.  AHCI needs very few MMIOs to perform each request.  As Andi 
-suggested, please do oprofile.  It's easy.
+Signed-off-by: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
+---
 
-> Question 2:
-> Can anybody explain to me, why writing to a solid state disk (a kind of memory 
-> that always has the same constant bandwidth) has such big standard errors in 
-> writing rate using Linux (between 1 to 6 MB/s error) while FreeBSD gives an 
-> almost constant writing rate (as one would expect it for a SSD) ?
 
-The default iosched is heavily optimized for regular disks with moving 
-head and for more usual workload.  Requests are sometimes paused to wait 
-for requests in adjacent area.  Use deadline or noop for ssd.
+ ehca_irq.c |   68 +++++++++++++++++++++++++++++--------------------------------
+ 1 files changed, 33 insertions(+), 35 deletions(-)
 
-Also, try turn off NCQ.  Some of early drives from major disk vendors 
-had all kinds of issues with NCQ implementation.  SSD firmwares don't 
-tend to be of high quality.
 
-> Question 3:
-> Why is writing to a raw device in Linux slower than using e.g. ext2 ? And why 
-> is Linux writing rate much lower (-12.5 % for the best case) compared to 
-> writing rate of FreeBSD?
-
-As written above, the first thing I can think of is interaction with 
-iosched.  SSD and your workload are pretty unusual.
-
-> Question 4:
-> When writing to the SATA-II HDD Linux is around 10% slower than FreeBSD when 
-> using ext3, but around as fast as FreeBSD when writing raw. Why?
-
-Dunno much about that.  Where's the test result?
-
-> How can I improve the speed of Linux,
-
-Other ppl have pointed out but use /dev/sdX not the raw devices.  If you 
-use raw, you end up writing each chunk synchronously.
-
--- 
-tejun
+diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
+index b923b5d..9679b07 100644
+--- a/drivers/infiniband/hw/ehca/ehca_irq.c
++++ b/drivers/infiniband/hw/ehca/ehca_irq.c
+@@ -544,28 +544,30 @@ void ehca_tasklet_eq(unsigned long data)
+ 
+ static inline int find_next_online_cpu(struct ehca_comp_pool* pool)
+ {
+-	unsigned long flags_last_cpu;
++	int cpu;
++	unsigned long flags;
+ 
++	WARN_ON_ONCE(!in_interrupt());
+ 	if (ehca_debug_level)
+ 		ehca_dmp(&cpu_online_map, sizeof(cpumask_t), "");
+ 
+-	spin_lock_irqsave(&pool->last_cpu_lock, flags_last_cpu);
+-	pool->last_cpu = next_cpu(pool->last_cpu, cpu_online_map);
+-	if (pool->last_cpu == NR_CPUS)
+-		pool->last_cpu = first_cpu(cpu_online_map);
+-	spin_unlock_irqrestore(&pool->last_cpu_lock, flags_last_cpu);
++	spin_lock_irqsave(&pool->last_cpu_lock, flags);
++	cpu = next_cpu(pool->last_cpu, cpu_online_map);
++	if (cpu == NR_CPUS)
++		cpu = first_cpu(cpu_online_map);
++	pool->last_cpu = cpu;
++	spin_unlock_irqrestore(&pool->last_cpu_lock, flags);
+ 
+-	return pool->last_cpu;
++	return cpu;
+ }
+ 
+ static void __queue_comp_task(struct ehca_cq *__cq,
+ 			      struct ehca_cpu_comp_task *cct)
+ {
+-	unsigned long flags_cct;
+-	unsigned long flags_cq;
++	unsigned long flags;
+ 
+-	spin_lock_irqsave(&cct->task_lock, flags_cct);
+-	spin_lock_irqsave(&__cq->task_lock, flags_cq);
++	spin_lock_irqsave(&cct->task_lock, flags);
++	spin_lock(&__cq->task_lock);
+ 
+ 	if (__cq->nr_callbacks == 0) {
+ 		__cq->nr_callbacks++;
+@@ -576,8 +578,8 @@ static void __queue_comp_task(struct ehc
+ 	else
+ 		__cq->nr_callbacks++;
+ 
+-	spin_unlock_irqrestore(&__cq->task_lock, flags_cq);
+-	spin_unlock_irqrestore(&cct->task_lock, flags_cct);
++	spin_unlock(&__cq->task_lock);
++	spin_unlock_irqrestore(&cct->task_lock, flags);
+ }
+ 
+ static void queue_comp_task(struct ehca_cq *__cq)
+@@ -588,69 +590,69 @@ static void queue_comp_task(struct ehca_
+ 
+ 	cpu = get_cpu();
+ 	cpu_id = find_next_online_cpu(pool);
+-
+ 	BUG_ON(!cpu_online(cpu_id));
+ 
+ 	cct = per_cpu_ptr(pool->cpu_comp_tasks, cpu_id);
++	BUG_ON(!cct);
+ 
+ 	if (cct->cq_jobs > 0) {
+ 		cpu_id = find_next_online_cpu(pool);
+ 		cct = per_cpu_ptr(pool->cpu_comp_tasks, cpu_id);
++		BUG_ON(!cct);
+ 	}
+ 
+ 	__queue_comp_task(__cq, cct);
+-
+-	put_cpu();
+-
+-	return;
+ }
+ 
+ static void run_comp_task(struct ehca_cpu_comp_task* cct)
+ {
+ 	struct ehca_cq *cq;
+-	unsigned long flags_cct;
+-	unsigned long flags_cq;
++	unsigned long flags;
+ 
+-	spin_lock_irqsave(&cct->task_lock, flags_cct);
++	spin_lock_irqsave(&cct->task_lock, flags);
+ 
+ 	while (!list_empty(&cct->cq_list)) {
+ 		cq = list_entry(cct->cq_list.next, struct ehca_cq, entry);
+-		spin_unlock_irqrestore(&cct->task_lock, flags_cct);
++		spin_unlock_irqrestore(&cct->task_lock, flags);
+ 		comp_event_callback(cq);
+-		spin_lock_irqsave(&cct->task_lock, flags_cct);
++		spin_lock_irqsave(&cct->task_lock, flags);
+ 
+-		spin_lock_irqsave(&cq->task_lock, flags_cq);
++		spin_lock(&cq->task_lock);
+ 		cq->nr_callbacks--;
+ 		if (cq->nr_callbacks == 0) {
+ 			list_del_init(cct->cq_list.next);
+ 			cct->cq_jobs--;
+ 		}
+-		spin_unlock_irqrestore(&cq->task_lock, flags_cq);
+-
++		spin_unlock(&cq->task_lock);
+ 	}
+ 
+-	spin_unlock_irqrestore(&cct->task_lock, flags_cct);
+-
+-	return;
++	spin_unlock_irqrestore(&cct->task_lock, flags);
+ }
+ 
+ static int comp_task(void *__cct)
+ {
+ 	struct ehca_cpu_comp_task* cct = __cct;
++	int cql_empty;
+ 	DECLARE_WAITQUEUE(wait, current);
+ 
+ 	set_current_state(TASK_INTERRUPTIBLE);
+ 	while(!kthread_should_stop()) {
+ 		add_wait_queue(&cct->wait_queue, &wait);
+ 
+-		if (list_empty(&cct->cq_list))
++		spin_lock_irq(&cct->task_lock);
++		cql_empty = list_empty(&cct->cq_list);
++		spin_unlock_irq(&cct->task_lock);
++		if (cql_empty)
+ 			schedule();
+ 		else
+ 			__set_current_state(TASK_RUNNING);
+ 
+ 		remove_wait_queue(&cct->wait_queue, &wait);
+ 
+-		if (!list_empty(&cct->cq_list))
++		spin_lock_irq(&cct->task_lock);
++		cql_empty = list_empty(&cct->cq_list);
++		spin_unlock_irq(&cct->task_lock);
++		if (!cql_empty)
+ 			run_comp_task(__cct);
+ 
+ 		set_current_state(TASK_INTERRUPTIBLE);
+@@ -693,8 +695,6 @@ static void destroy_comp_task(struct ehc
+ 
+ 	if (task)
+ 		kthread_stop(task);
+-
+-	return;
+ }
+ 
+ static void take_over_work(struct ehca_comp_pool *pool,
+@@ -815,6 +815,4 @@ void ehca_destroy_comp_pool(void)
+ 	free_percpu(pool->cpu_comp_tasks);
+ 	kfree(pool);
+ #endif
+-
+-	return;
+ }
 
