@@ -1,65 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965736AbXBOPxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965993AbXBOP5E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965736AbXBOPxU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 10:53:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965739AbXBOPxU
+	id S965993AbXBOP5E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 10:57:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965998AbXBOP5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 10:53:20 -0500
-Received: from mta16.mail.adelphia.net ([68.168.78.211]:50952 "EHLO
-	mta16.adelphia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965736AbXBOPxU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 10:53:20 -0500
-Date: Thu, 15 Feb 2007 09:53:18 -0600
-From: Corey Minyard <minyard@acm.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 3/4] ipmi: add pci remove handling
-Message-ID: <20070215155318.GA24870@localdomain>
-Reply-To: minyard@acm.org
-References: <20070214200624.GC5364@localdomain> <20070215022745.648ab8cb.akpm@linux-foundation.org>
+	Thu, 15 Feb 2007 10:57:03 -0500
+Received: from chicken.visionpro.com ([63.91.95.13]:33297 "EHLO
+	chicken.machinevisionproducts.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S965993AbXBOP5C convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 10:57:02 -0500
+X-Ninja-PIM: Scanned by Ninja
+X-Ninja-AttachmentFiltering: (no action)
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070215022745.648ab8cb.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: FW: UI getting "killed" randomely on Fedora machines
+Date: Thu, 15 Feb 2007 07:56:59 -0800
+Message-ID: <14CFC56C96D8554AA0B8969DB825FEA001C3A3F3@chicken.machinevisionproducts.com>
+Thread-Topic: UI getting "killed" randomely on Fedora machines
+thread-index: AcdQjJBNzpYDFbx/EduUqAAwZXmXDgAjUYTQ
+From: "Brian D. McGrew" <brian@visionpro.com>
+To: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 15, 2007 at 02:27:45AM -0800, Andrew Morton wrote:
+Good morning all,
+
+We're seeing a problem where an application is being killed from what
+appears to be an out of memory issue.  Can anyone offer any insight on
+this for me?
+
+Thanks!
+
+-brian
+
+Brian D. McGrew        { brian@visionpro.com ||
+brian@doubledimension.com }
+--
+> Do not read this email while waxing that cat! 
+
+-----Original Message-----
+From: Greg Frinchaboy 
+Sent: Wednesday, February 14, 2007 3:05 PM
+To: Olga Balakina; Brian D. McGrew
+Cc: Kanyu Tsang
+Subject: Re: UI getting "killed" randomely on Fedora machines
+
+I do not have any experience with oom-killer.  Brian?
+
+Why are we getting out of memory?  Are you running with the JEditor?
+
+
+On 2/14/07 2:44 PM, "Olga Balakina" <olga@visionpro.com> wrote:
+
 > 
-> Judging from the patch headers you were working against 2.6.19, which is
-> most optimistic.  Please always prepare and test patches against the
-> latest kernel.
+> As you may be aware this is happening from time to time on our
+machines,
+> DPMS, and now 5.2 doing 3D inspections. Inspection is being "killed"
+after
+> random number, no coredump is created. I am looking at the current
+> happening on mvp-244 during 3D runs. This is what I found. All the
+kills
+> coincide with kernel messages like this one:
+> 
+> Feb 14 14:06:49 AI-8004 kernel: [17190077.644000] oom-killer:
+> gfp_mask=0x201d2, order=0
+> Feb 14 14:06:49 AI-8004 kernel: [17190077.644000]  [<c0145d6e>]
+> out_of_memory+0x9d/0xdf
+> Feb 14 14:06:49 AI-8004 kernel: [17190077.644000]  [<c0146e9b>]
+> __alloc_pages+0x2a9/0x2d1
+> Feb 14 14:06:49 AI-8004 kernel: [17190077.644000]  [<c014354f>]
+> page_cache_read+0x55/0xc4
+> Feb 14 14:06:49 AI-8004 kernel: [17190077.644000]  [<c01437df>]
+> filemap_nopage+0x221/0x371
+> Feb 14 14:06:49 AI-8004 kernel: [17190077.644000]  [<c0150254>]
+> do_no_page+0x8d/0x2c7
+> Feb 14 14:06:49 AI-8004 kernel: [17190077.644000]  [<c02fd32c>]
+> schedule+0x37c/0x78c
+> Feb 14 14:06:49 AI-8004 kernel: [17190077.644000]  [<c02fd35d>]
+> schedule+0x3ad/0x78c
+> Feb 14 14:06:49 AI-8004 kernel: [17190077.644000]  [<c01507d4>]
+> __handle_mm_fault+0x25b/0x2f1
+> Feb 14 14:06:49 AI-8004 kernel: [17190077.644000]  [<c0135468>]
+> hrtimer_cancel+0xa/0x10
+> Feb 14 14:06:49 AI-8004 kernel: [17190077.644000]  [<c011812a>]
+> do_page_fault+0x1b0/0x5c4
+> Feb 14 14:06:49 AI-8004 kernel: [17190077.644000]  [<c0117f7a>]
+> do_page_fault+0x0/0x5c4
+> 
+> After investigation I've found that kernel in some cases when memory
+usage
+> is high kills processes of such a high usage at it's discretion.
+> oom-killer (out of memory killer) is what is invoked on our ui doing
+> inspections.
+> 
+> So, Brian and Greg, I know that it is possible to disable oom-killer
+> on kernel level, just don't have the detales.
+> 
+> Do you have experience with that?
+> 
+> Thanks, Olga
+> 
 
-Well, I had it applied against a 2.6.20 kernel, but I messed up the
-testing of it.  Sorry, my bad.
 
-New patch...
-
-
-Add pci_remove handling to the driver, so it will clean up if
-the device is hot-removed.
-
-Signed-off-by: Corey Minyard <minyard@acm.org>
-
-Index: linux-2.6.20/drivers/char/ipmi/ipmi_si_intf.c
-===================================================================
---- linux-2.6.20.orig/drivers/char/ipmi/ipmi_si_intf.c
-+++ linux-2.6.20/drivers/char/ipmi/ipmi_si_intf.c
-@@ -2191,12 +2191,15 @@ static int __devinit ipmi_pci_probe(stru
- 		info->irq_setup = std_irq_setup;
- 
- 	info->dev = &pdev->dev;
-+	pdev->dev.driver_data = info;
- 
- 	return try_smi_init(info);
- }
- 
- static void __devexit ipmi_pci_remove(struct pci_dev *pdev)
- {
-+	struct smi_info *info = pdev->dev.driver_data;
-+	cleanup_one_si(info);
- }
- 
- #ifdef CONFIG_PM
