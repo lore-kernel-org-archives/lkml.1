@@ -1,78 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932705AbXBONLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932708AbXBONMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932705AbXBONLa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 08:11:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932706AbXBONLa
+	id S932708AbXBONMa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 08:12:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932709AbXBONMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 08:11:30 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:57002 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932705AbXBONL3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 08:11:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=s//w/APf0/1gGcHyIN+6depK4J4Q4HNCZJl93+EJB4/uFcsmlVX7l/5TfHfpRO+ce8r0Lc2XMiSmLU1Nv7Fr7hhTnRafQjId8cleSC5fzia6/+zG6vq3Mk1i4NIs5SF8RYSsooTJnLhgmI7hzoscJ9lrZJgj9vEy8IB3N7M76es=
-Message-ID: <3634de740702150511y52985c2ak21eb663961193f20@mail.gmail.com>
-Date: Thu, 15 Feb 2007 18:41:25 +0530
-From: Maximus <john.maximus@gmail.com>
-To: "Paul Mundt" <lethal@linux-sh.org>, linux-kernel@vger.kernel.org
-Subject: Re: irqdesc porting help
-In-Reply-To: <20070215104547.GA15772@flint.arm.linux.org.uk>
+	Thu, 15 Feb 2007 08:12:30 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:42454 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932708AbXBONM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 08:12:29 -0500
+Date: Thu, 15 Feb 2007 14:09:40 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Neil Brown <neilb@suse.de>
+cc: v j <vj.linux@gmail.com>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: GPL vs non-GPL device drivers
+In-Reply-To: <17876.3862.261014.44098@notabene.brown>
+Message-ID: <Pine.LNX.4.61.0702151408490.786@yvahk01.tjqt.qr>
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+ <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+ <20070215061149.GE15654@redhat.com> <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
+ <20070214231143.11ff6b46.rdunlap@xenotime.net>
+ <9b3a62ab0702142328h87365b6i932d4f2c117f7f0e@mail.gmail.com>
+ <17876.3862.261014.44098@notabene.brown>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3634de740702142231k938a4c5ic824c2eefc95c1b0@mail.gmail.com>
-	 <20070215103347.GA18690@linux-sh.org>
-	 <20070215104547.GA15772@flint.arm.linux.org.uk>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-   My drivers in 2.6.14 use statements like
-             desc->triggered = 1;
-   And desc also points to some members of irqdesc which arent in
-2.6.19 but in 2.6.14.
 
-   Im a newbie, What changes am i supposed to make to make it work in 2.6.19.
-   Im not sure what changes are exactly needed.
+On Feb 15 2007 18:43, Neil Brown wrote:
 
-
-  Please Advice,
-
-  Regards,
-   Jo
-
-
-
-On 2/15/07, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> On Thu, Feb 15, 2007 at 07:33:47PM +0900, Paul Mundt wrote:
-> > On Thu, Feb 15, 2007 at 12:01:37PM +0530, Maximus wrote:
-> > > Im trying to port some drivers between 2.6.14 and 2.6.19
-> > >
-> > > I find that irqdesc has changed completely. how do i port
-> > > the drivers between 2.6.14 and 2.6.19?
-> > >
-> > > is there a porting guide available to port the drivers
-> > > which use irqdesc?.
-> > >
-> > > my drivers use variables triggered, ... which dont exist in 2.6.19
-> > > irqdesc strcuture.
-> > >
-> > Presumably you're talking about the struct hw_interrupt_type and the lack
-> > of an irq_desc[irq].handler? There's some migration helper glue in
-> > include/linux/irq.h that you can use, but you're better off converting
-> > completely. You can at least get it building again by changing to
-> > irq_desc[irq].chip, but you really want a proper irq_chip implementation
-> > to go along with this, rather than munging in the hw_interrupt_type.
+>> > We seem to have different definitions of open and closed.
+>> 
+>> Open = 3rd party Linux drivers can be loaded. Closed = No third party
+>> Linux drivers can be loaded.
 >
-> It should be asked - why are drivers poking about in the irqdesc
-> structure?
->
-> --
-> Russell King
->  Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
->  maintainer of:
->
+>Loading a driver is not at issue.  Anyone may load a driver.
+
+And, after all, because loading is not distribution, you may
+rip out export_symbol_gpl and use sysfs directly. It does not
+make legal things any safer though, I'd say [ianal].
+
+
+Jan
+-- 
