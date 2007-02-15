@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030543AbXBOSyI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030549AbXBOSyi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030543AbXBOSyI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 13:54:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030545AbXBOSyI
+	id S1030549AbXBOSyi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 13:54:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030550AbXBOSyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 13:54:08 -0500
-Received: from smtp25.orange.fr ([193.252.22.24]:55745 "EHLO smtp25.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030543AbXBOSyG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 13:54:06 -0500
-X-ME-UUID: 20070215185403709.AD1CB1C00099@mwinf2501.orange.fr
-Subject: Re: GPL vs non-GPL device drivers
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: v j <vj.linux@gmail.com>
-Cc: Theodore Tso <tytso@mit.edu>, Dave Jones <davej@redhat.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com>
-References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
-	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
-	 <20070215061149.GE15654@redhat.com>
-	 <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
-	 <20070215165339.GB5285@thunk.org>
-	 <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15
-Date: Thu, 15 Feb 2007 19:58:12 +0100
-Message-Id: <1171565893.12814.14.camel@bip.parateam.prv>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
-Content-Transfer-Encoding: 8BIT
+	Thu, 15 Feb 2007 13:54:38 -0500
+Received: from mail.gmx.net ([213.165.64.20]:57559 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1030549AbXBOSyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 13:54:37 -0500
+X-Provags-ID: V01U2FsdGVkX18/FYZdhqM/5XSj3jURXKZB9jy4nl0HRbWDqsaFZ9
+	A05g==
+From: Helge Deller <deller@gmx.de>
+To: "Cyrill V. Gorcunov" <gorcunov@gmail.com>
+Subject: Re: [PATCH] HIL: fix improper call of release_region
+Date: Thu, 15 Feb 2007 19:54:33 +0100
+User-Agent: KMail/1.9.6
+Cc: linux-kernel-list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+References: <20070215175031.GA12012@cvg>
+In-Reply-To: <20070215175031.GA12012@cvg>
+X-Face: *4/{KL3=jWs!v\UO#3e7~Vb1~CL@oP'~|*/M$!9`tb2[;fY@)WscF2iV7`,a$141g'o,=?utf-8?q?7X=0A=09=3FBt1Wb=3AL7K6z-?=<?-+-13|S_ixrq58*E`)ZkSe~NSI?u=89G'J<n]7\?[)LCCBZc}~[j(=?utf-8?q?e=7D=0A=09=60-QV=7B=23=25=26=5B=3F=5EfAke6t8QbP=3Bb=27XB?=,ZU84HeThMrO(@/K.`jxq9P({V(AzezCKMxk\F2^p^+"=?utf-8?q?=0A=09=5B?="ppalbA!zy-l)^Qa3*u/Z-1W3,o?2fes2_d\u=1\E9N+~Qo
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702151954.33474.deller@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le jeudi 15 février 2007 à 10:20 -0800, v j a écrit :
-> So far I have heard nothing but, "if you don't contribute, screw you."
-> All this is fine. Just say so. Make it black and white. Make it
-> perfectly clear what is and isn't legal. If we can't load proprietary
-> modules, then so be it. It will help everybody if this is out in the
-> clear, instead of resorting to stupid half measures like
-> EXPORT_SYMBOL_GPL.
+Hi Cyrill,
 
-Well, it's written in plain english in the GPL, so you can't pretend you
-didn't know it.
+please include the "err1" label as well inside the #if / #endif clause.
+err1 is used only when CONFIG_HP300 is defined and in the parisc-case you currently get an unused label warning...
 
-And then, that was what guaranteed you you could use linux for your
-product in the first place. You're being rude denying the same right to
-others.
+Helge
 
-	Xav
+On Thursday 15 February 2007, Cyrill V. Gorcunov wrote:
+> Thist patch prevents from improper call of release_region
+> if the code has been compiled without CONFIG_HP300 support.
+> 
+> Signed-off-by: Cyrill V. Gorcunov <gorcunov@gmail.com>
+> 
+> ---
+> 
+>  drivers/input/keyboard/hilkbd.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/input/keyboard/hilkbd.c b/drivers/input/keyboard/hilkbd.c
+> index 255a6ec..c3c0da3 100644
+> --- a/drivers/input/keyboard/hilkbd.c
+> +++ b/drivers/input/keyboard/hilkbd.c
+> @@ -294,7 +294,9 @@ err3:
+>  	disable_irq(HIL_IRQ);
+>  	free_irq(HIL_IRQ, hil_dev.dev_id);
+>  err2:
+> +#if defined(CONFIG_HP300)
+>  	release_region(HILBASE + HIL_DATA, 2);
+> +#endif
+>  err1:
+>  	input_free_device(hil_dev.dev);
+>  	hil_dev.dev = NULL;
+> 
 
 
