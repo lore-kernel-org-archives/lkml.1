@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030390AbXBOTDH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030582AbXBOTGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030390AbXBOTDH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 14:03:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030395AbXBOTDH
+	id S1030582AbXBOTGF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 14:06:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030555AbXBOTGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 14:03:07 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:57153 "EHLO smtp.osdl.org"
+	Thu, 15 Feb 2007 14:06:05 -0500
+Received: from pat.uio.no ([129.240.10.15]:36418 "EHLO pat.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030390AbXBOTDF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 14:03:05 -0500
-Date: Thu, 15 Feb 2007 11:02:32 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Sergei Organov <osv@javad.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       =?ISO-8859-1?Q?J=2EA=2E_Magall=C3=C3=C3=C3=C3=C2=B3n?= 
-	<jamagallon@ono.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: somebody dropped a (warning) bomb
-In-Reply-To: <87k5yjjlrj.fsf@javad.com>
-Message-ID: <Pine.LNX.4.64.0702151059090.20368@woody.linux-foundation.org>
-References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702081338010.8424@woody.linux-foundation.org>
- <Pine.LNX.4.64.0702081351410.8424@woody.linux-foundation.org>
- <87abznsdyo.fsf@javad.com> <Pine.LNX.4.64.0702090753500.8424@woody.linux-foundation.org>
- <874pprr5nn.fsf@javad.com> <Pine.LNX.4.64.0702120804520.8424@woody.linux-foundation.org>
- <87ps8end9b.fsf@javad.com> <84144f020702131026q2af1afd6vbcd2708d7b7b9907@mail.gmail.com>
- <87bqjxooog.fsf@javad.com> <84144f020702131143r767aa40blb97a39b40bee73b8@mail.gmail.com>
- <87fy99n6mf.fsf@javad.com> <Pine.LNX.4.64.0702131513050.3604@woody.linux-foundation.org>
- <87hctnlfqz.fsf@javad.com> <Pine.LNX.4.64.0702150736360.20368@woody.linux-foundation.org>
- <87k5yjjlrj.fsf@javad.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1030582AbXBOTGD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 14:06:03 -0500
+Subject: Re: 2.6.19.2 nfs BUG: warning at
+	mm/truncate.c:398/invalidate_inode_pages2_range()
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Frank van Maarseveen <frankvm@frankvm.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linux NFS mailing list <nfs@lists.sourceforge.net>
+In-Reply-To: <20070215185228.GA3181@janus>
+References: <20070215185228.GA3181@janus>
+Content-Type: text/plain
+Date: Thu, 15 Feb 2007 11:06:01 -0800
+Message-Id: <1171566361.7333.34.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, none)
+X-UiO-Scanned: 9AA669B1A9BB48A477F086F725523B673D7B816B
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 66 total 489200 max/h 2716 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 15 Feb 2007, Sergei Organov wrote:
+On Thu, 2007-02-15 at 19:52 +0100, Frank van Maarseveen wrote:
+> FYI,
 > 
-> I agree that if the warning has no true positives, it sucks. The problem
-> is that somehow I doubt it has none. And the reasons for the doubt are:
+> Just captured this one, I'm not sure it's NFS at fault because I saw
+> at least another AIO related mm/truncate.c:398 report with a totally
+> different stack trace.
+> 
+> The machine seems still running happily, as usual with a considerable
+> load. kernel is tainted by fglrx.
+> 
+> kernel: BUG: warning at mm/truncate.c:398/invalidate_inode_pages2_range()
+> kernel:  [<c0104897>] dump_trace+0x227/0x240
+> kernel:  [<c010498f>] show_trace_log_lvl+0x2f/0x50
+> kernel:  [<c01049d7>] show_trace+0x27/0x30
+> kernel:  [<c0104b06>] dump_stack+0x26/0x30
+> kernel:  [<c015a495>] invalidate_inode_pages2_range+0x305/0x310
+> kernel:  [<c015a4c1>] invalidate_inode_pages2+0x21/0x30
+> kernel:  [<c01f7aa8>] nfs_revalidate_mapping+0x98/0x180
+> kernel:  [<c01f5726>] nfs_file_read+0x46/0xb0
+> kernel:  [<c017441e>] do_sync_read+0xde/0x130
+> kernel:  [<c0174511>] vfs_read+0xa1/0x1b0
+> kernel:  [<c0174947>] sys_read+0x47/0x70
+> kernel:  [<c0103387>] syscall_call+0x7/0xb
+> kernel:  [<b7ec0cbe>] 0xb7ec0cbe
+> kernel:  =======================
 
-Why do you harp on "no true positives"?
+That is a known issue. The warning was bogus after we fixed up the NFS
+client to handle the case where invalidate_inode_pages2() returns and
+error, and so the warning was removed in 2.6.20.
 
-That's a pointless thing. You can make *any* warning have "true 
-positives". My personal favorite is the unconditional warning:
+Cheers
+  Trond
 
-	warning: user is an idiot
-
-and I _guarantee_ you that it has a lot of true positives.
-
-It's the "no false negatives" angle you should look at.
-
-THAT is what matters. The reason we don't see a lot of warnings about 
-idiot users is not that people don't do stupid things, but that 
-*sometimes* they actually don't do something stupid.
-
-Yeah, I know, it's far-fetched, but still.
-
-In other words, you're barking up *exactly* the wrong tree. You're looking 
-at it the wrong way around.
-
-Think of it this way: in science, a theory is proven to be bad by a single 
-undeniable fact just showing that it's wrong.
-
-The same is largely true of a warning. If the warning sometimes happens 
-for code that is perfectly fine, the warning is bad.
-
-		Linus
