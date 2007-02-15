@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030218AbXBORAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030240AbXBORBa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030218AbXBORAq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 12:00:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030217AbXBORAU
+	id S1030240AbXBORBa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 12:01:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030220AbXBORBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 12:00:20 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40939 "EHLO mx2.mail.elte.hu"
+	Thu, 15 Feb 2007 12:01:30 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40150 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966154AbXBOQ4i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 11:56:38 -0500
-Date: Thu, 15 Feb 2007 17:52:55 +0100
+	id S1030240AbXBORB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 12:01:28 -0500
+Date: Thu, 15 Feb 2007 17:58:06 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -22,158 +22,37 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Suparna Bhattacharya <suparna@in.ibm.com>,
        Davide Libenzi <davidel@xmailserver.org>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 13/14] syslets: x86: optimized copy_uatom()
-Message-ID: <20070215165255.GN4285@elte.hu>
+Subject: Re: [patch 04/14] syslets: core, data structures
+Message-ID: <20070215165806.GA5343@elte.hu>
+References: <20070215165224.GE4285@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070215165224.GE4285@elte.hu>
 User-Agent: Mutt/1.4.2.2i
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -5.3
+X-ELTE-SpamScore: -0.8
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=-0.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.1.7
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4950]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
 
-provide an optimized assembly version of the copy_uatom() method.
-This is about 3 times faster than the C version.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- arch/i386/lib/getuser.S |  115 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 115 insertions(+)
+> Index: linux/kernel/async.h
+> ===================================================================
+> --- /dev/null
+> +++ linux/kernel/async.h
+> @@ -0,0 +1,2 @@
+> +
+> +
 
-Index: linux/arch/i386/lib/getuser.S
-===================================================================
---- linux.orig/arch/i386/lib/getuser.S
-+++ linux/arch/i386/lib/getuser.S
-@@ -10,6 +10,121 @@
-  */
- #include <asm/thread_info.h>
- 
-+/*
-+ * copy_uatom() - copy a syslet_atom from user-space into kernel-space:
-+ */
-+
-+.text
-+.align 4
-+.globl copy_uatom
-+copy_uatom:
-+	#
-+	# regparm(2) call, %eax: atom, %edx: uatom
-+	#
-+	movl %eax, %ecx                 # %ecx is atom, %edx remains uatom
-+
-+	cmpl $__PAGE_OFFSET-40, %edx	# access_ok(uatom-sizeof(*uatom))
-+	jae bad_copy_uatom
-+
-+
-+1:	movl (%edx), %eax		# atom->flags = uatom->flags
-+	movl %eax, (%ecx)
-+
-+2:	movl 4(%edx), %eax		# atom->nr = uatom->nr
-+	movl %eax, 4(%ecx)
-+
-+3:	movl 8(%edx), %eax		# atom->ret_ptr = uatom->ret_ptr
-+	movl %eax, 8(%ecx)
-+
-+4:	movl 12(%edx), %eax		# atom->next = uatom->next
-+	movl %eax, 12(%ecx)
-+
-+
-+10:	movl 16(%edx), %eax		# atom->arg_ptr[0] = uatom->arg_ptr[0]
-+	testl %eax, %eax
-+	jz 20f				# NULL ptr - zero out remaining args
-+	cmpl $__PAGE_OFFSET, %eax	# access_ok(arg_ptr)
-+	jae bad_copy_uatom
-+100:	movl (%eax), %eax
-+	movl %eax, 16(%ecx)
-+
-+11:	movl 20(%edx), %eax		# atom->arg_ptr[1] = uatom->arg_ptr[1]
-+	testl %eax, %eax
-+	jz 21f				# NULL ptr - zero out remaining args
-+	cmpl $__PAGE_OFFSET, %eax	# access_ok(arg_ptr)
-+	jae bad_copy_uatom
-+110:	movl (%eax), %eax
-+	movl %eax, 20(%ecx)
-+
-+12:	movl 24(%edx), %eax		# atom->arg_ptr[2] = uatom->arg_ptr[2]
-+	testl %eax, %eax
-+	jz 22f				# NULL ptr - zero out remaining args
-+	cmpl $__PAGE_OFFSET, %eax	# access_ok(arg_ptr)
-+	jae bad_copy_uatom
-+120:	movl (%eax), %eax
-+	movl %eax, 24(%ecx)
-+
-+13:	movl 28(%edx), %eax		# atom->arg_ptr[3] = uatom->arg_ptr[3]
-+	testl %eax, %eax
-+	jz 23f				# NULL ptr - zero out remaining args
-+	cmpl $__PAGE_OFFSET, %eax	# access_ok(arg_ptr)
-+	jae bad_copy_uatom
-+130:	movl (%eax), %eax
-+	movl %eax, 28(%ecx)
-+
-+14:	movl 32(%edx), %eax		# atom->arg_ptr[4] = uatom->arg_ptr[4]
-+	testl %eax, %eax
-+	jz 24f				# NULL ptr - zero out remaining args
-+	cmpl $__PAGE_OFFSET, %eax	# access_ok(arg_ptr)
-+	jae bad_copy_uatom
-+140:	movl (%eax), %eax
-+	movl %eax, 32(%ecx)
-+
-+15:	movl 36(%edx), %eax		# atom->arg_ptr[5] = uatom->arg_ptr[5]
-+	testl %eax, %eax
-+	jz 25f				# NULL ptr - zero out remaining args
-+	cmpl $__PAGE_OFFSET, %eax	# access_ok(arg_ptr)
-+	jae bad_copy_uatom
-+150:	movl (%eax), %eax
-+	movl %eax, 36(%ecx)
-+
-+	xorl %eax, %eax			# return 0
-+	ret
-+
-+	#
-+	# Zero out arg values. Since ptr was NULL, %eax is zero:
-+	#
-+20:	movl %eax, 16(%ecx)		# atom->args[0] = 0
-+21:	movl %eax, 20(%ecx)		# atom->args[1] = 0
-+22:	movl %eax, 24(%ecx)		# atom->args[2] = 0
-+23:	movl %eax, 28(%ecx)		# atom->args[3] = 0
-+24:	movl %eax, 32(%ecx)		# atom->args[4] = 0
-+25:	movl %eax, 36(%ecx)		# atom->args[5] = 0
-+
-+	ret				# return 0
-+
-+bad_copy_uatom:
-+	movl $-14, %eax
-+	ret
-+
-+.section __ex_table,"a"
-+	.long 1b,   bad_copy_uatom
-+	.long 2b,   bad_copy_uatom
-+	.long 3b,   bad_copy_uatom
-+	.long 4b,   bad_copy_uatom
-+	.long 10b,  bad_copy_uatom
-+	.long 100b, bad_copy_uatom
-+	.long 11b,  bad_copy_uatom
-+	.long 110b, bad_copy_uatom
-+	.long 12b,  bad_copy_uatom
-+	.long 120b, bad_copy_uatom
-+	.long 13b,  bad_copy_uatom
-+	.long 130b, bad_copy_uatom
-+	.long 14b,  bad_copy_uatom
-+	.long 140b, bad_copy_uatom
-+	.long 15b,  bad_copy_uatom
-+	.long 150b, bad_copy_uatom
-+.previous
- 
- /*
-  * __get_user_X
+this one sneaked in accidentally - i have removed it from my queue now.
+
+	Ingo
