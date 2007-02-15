@@ -1,66 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161249AbXBOX4I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161688AbXBOX5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161249AbXBOX4I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 18:56:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161652AbXBOX4H
+	id S1161688AbXBOX5U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 18:57:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161672AbXBOX5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 18:56:07 -0500
-Received: from cacti.profiwh.com ([85.93.165.66]:40114 "EHLO cacti.profiwh.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161249AbXBOX4G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 18:56:06 -0500
-Message-id: <25269175172137025681@wsc.cz>
-In-reply-to: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
-Subject: [PATCH 1/1] unify queue_delayed_work and queue_delayed_work_on fix
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>
-Date: Fri, 16 Feb 2007 00:56:03 +0100 (CET)
+	Thu, 15 Feb 2007 18:57:20 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:39391 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161688AbXBOX5U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 18:57:20 -0500
+Date: Fri, 16 Feb 2007 00:57:16 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Juan Piernas Canovas <piernas@ditec.um.es>
+Cc: Andi Kleen <andi@firstfloor.org>, Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       sfaibish <sfaibish@emc.com>, kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [ANNOUNCE] DualFS: File System with Meta-data and Data Separation
+Message-ID: <20070215235716.GA14199@one.firstfloor.org>
+References: <op.tnkdlbgsrwwil4@brcsmondepl2c.corp.emc.com> <op.tnrbrocsunckof@usensfaibisl2e.eng.emc.com> <Pine.LNX.4.61.0702142251460.19368@yvahk01.tjqt.qr> <Pine.LNX.4.61.0702151910370.19998@ditec.inf.um.es> <p73sld7f96t.fsf@bingen.suse.de> <Pine.LNX.4.61.0702152152460.19998@ditec.inf.um.es>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0702152152460.19998@ditec.inf.um.es>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> Temporarily at
+> >Also many storage subsystems have some internal parallelism
+> >in writing (e.g. a RAID can write on different disks in parallel for
+> >a single partition) so i'm not sure your distinction is that useful.
+> >
+> But we are talking about a different case. What I have said is that if you 
+> use two devices, one for the 'regular' file system and another one for the 
+> log, DualFS is better in that case because it can use the log for reads. 
+> Other journaling file systems can not do that.
+
+Shadow paging based systems typically can, but we have no widely used
+one on Linux (reiser4 would be probably the closest) 
+
+> >If you stripe two disks with a standard fs versus use one of them
+> >as metadata volume and the other as data volume with dualfs i would
+> >expect the striped variant usually be faster because it will give
+> >parallelism not only to data versus metadata, but also to all data
+> >versus other data.
+> >
+> If you have a RAID system, both the data and meta-data devices of DualFS 
+> can be stripped, and you get the same result. No problem for DualFS :)
+
+Sure, but then you need four disks. And if your workloads happens 
+to be much more data intensive than metadata intensive the 
+stripped spindles assigned to metadata only will be more idle
+than the ones doing data.
+
+Stripping everything from the same pool has the potential
+to adapt itself to any workload mix better.
+
+I can see that you win for some specific workloads, but it is 
+hard to see how you can win over a wide range of workloads
+because of that.
+
 > 
->   http://userweb.kernel.org/~akpm/2.6.20-mm1/
-[...]
-> +unify-queue_delayed_work-and-queue_delayed_work_on.patch
+> >Also I would expect your design to be slow for metadata read intensive
+> >workloads. E.g. have you tried to boot a root partition with dual fs?
+> >That's a very important IO benchmark for desktop Linux systems.
+> >
+> I do not think so. The performance of DualFS is superb in meta-data read 
+> intensive workloads . And it is also better than the performance of other 
+> file system when reading a directory tree with several copies of the Linux 
+> kernel source code (I showed those results on Tuesday at the LSF07 
+> workshop)
 
-I'm getting oops in delayed_work_timer_fn, since cwq->wq is NULL and accessed
-there. The patch below fixes the problem for me.
+PDFs available? 
 
---
+Is that with running a LFS style cleaner inbetween or without?
 
-unify queue_delayed_work and queue_delayed_work_on fix
+I would be interested in a "install distro with installer ; boot afterwards
+from it" type benchmark. Do you have something like this? 
 
-Since cwq->wq is unset for other than singlethread_cpu when singlethread
-workqueue was created, an oops occurs during bootup. Fix it by setting
-correct private value for workqueue.
-
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-
----
-commit 7bc281be5811f9b1dd01c25eaf492f4765737fd0
-tree 7795008066bb89e7489384cde95e63260602d5af
-parent 61c2024a2dd044e32747542cfbf4b22251df3bc2
-author Jiri Slaby <jirislaby@gmail.com> Fri, 16 Feb 2007 00:49:15 +0100
-committer Jiri Slaby <jirislaby@gmail.com> Fri, 16 Feb 2007 00:49:15 +0100
-
- kernel/workqueue.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index f2089bf..af5e597 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -210,7 +210,8 @@ int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
- 
- 		/* This stores cwq for the moment, for the timer_fn */
- 		set_wq_data(work,
--			per_cpu_ptr(wq->cpu_wq, raw_smp_processor_id()));
-+			per_cpu_ptr(wq->cpu_wq, wq->singlethread ?
-+				singlethread_cpu : raw_smp_processor_id()));
- 		timer->expires = jiffies + delay;
- 		timer->data = (unsigned long)dwork;
- 		timer->function = delayed_work_timer_fn;
+-Andi
