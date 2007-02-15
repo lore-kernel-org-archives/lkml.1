@@ -1,92 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161687AbXBOXKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161685AbXBOXK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161687AbXBOXKY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 18:10:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161686AbXBOXKY
+	id S1161685AbXBOXK0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 18:10:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161680AbXBOXK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 18:10:24 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:25977 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161680AbXBOXKV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 18:10:21 -0500
-Date: Thu, 15 Feb 2007 15:05:26 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: James Simmons <jsimmons@infradead.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@osdl.org>,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [PATCH] MAINTAINERS: mark framebuffer as Orphan
-Message-Id: <20070215150526.1fd63b3e.randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.64.0702152224570.6415@pentafluge.infradead.org>
-References: <20070215132549.c182f7bf.randy.dunlap@oracle.com>
-	<Pine.LNX.4.64.0702152224570.6415@pentafluge.infradead.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Thu, 15 Feb 2007 18:10:26 -0500
+Received: from tim.rpsys.net ([194.106.48.114]:38534 "EHLO tim.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161685AbXBOXKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 18:10:22 -0500
+Subject: Re: [PATCH] input: extend EV_LED
+From: Richard Purdie <rpurdie@rpsys.net>
+To: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Cc: Pavel Machek <pavel@ucw.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+In-Reply-To: <freemail.20070115234756.58787@fm13.freemail.hu>
+References: <freemail.20070115234756.58787@fm13.freemail.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: Thu, 15 Feb 2007 23:09:03 +0000
+Message-Id: <1171580944.5839.38.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Feb 2007 22:26:10 +0000 (GMT) James Simmons wrote:
+On Thu, 2007-02-15 at 23:47 +0100, Németh Márton wrote:
+> Pavel Machek <pavel@ucw.cz> wrote:
+> > > >I do not know the LED subsystem in detail, but I do not 
+> > > >know any possibility to access the i8042 from different 
+> > > >subsystem than the input subsystem.
+> > > >
+> > > >What do you think and recommend?
+> > > 
+> > > I think you need to use leds framework for what you are 
+> > > trying to do.
+> > 
+> > I'm actually not sure if led framework can do that. It was
+> > designed for leds on gpios, and handles blinking itself.
 
+The led framework is generic. If you can write a function to turn it
+on/off you can drive it with the LED framework.
+
+> > But he could export two leds :-).
+>
+> what do you mean about two leds? The first one would be
+> off/0.5Hz and the other off/1Hz?
 > 
-> I wouldn't say it orphan. I just can't spend 8 hours a day on it. 
-> Alot of patches have been flowing into the layer.
-
-So would you like to leave it as Maintained or change it to
-"Odd Fixes"?  (Maintained => a maintainer)  From the MAINTAINTERS file:
-
-	Supported:	Someone is actually paid to look after this.
-	Maintained:	Someone actually looks after it.
-	Odd Fixes:	It has a maintainer but they don't have time to do
-			much other than throw the odd patch in. See below..
-	Orphan:		No current maintainer [but maybe you could take the
-			role as you write your new code].
-	Obsolete:	Old code. Something tagged obsolete generally means
-			it has been replaced by a better system and you
-			should be using that.
-
-
-> On Thu, 15 Feb 2007, Randy Dunlap wrote:
+> I read in linux/Documentation/led-class.txt the following:
 > 
-> > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > 
-> > Are we ready to do this?
-> > I'd love for Tony to return, but he's been missing for awhile now.
-> > 
-> > So this give us the following major areas that are marked as Orphan:
-> > 
-> > Firmware loader
-> > Framebuffer
-> > Serial (8250/16x50)
-> > 
-> > and PCMCIA has a Team.  It doesn't seem to be hurting.  :)
-> > 
-> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> > ---
-> >  MAINTAINERS |    4 +---
-> >  1 file changed, 1 insertion(+), 3 deletions(-)
-> > 
-> > --- linux-2.6.20-git9.orig/MAINTAINERS
-> > +++ linux-2.6.20-git9/MAINTAINERS
-> > @@ -1321,11 +1321,9 @@ W:	http://www.farsite.co.uk/
-> >  S:	Supported
-> >  
-> >  FRAMEBUFFER LAYER
-> > -P:	Antonino Daplas
-> > -M:	adaplas@pol.net
-> >  L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
-> >  W:	http://linux-fbdev.sourceforge.net/
-> > -S:	Maintained
-> > +S:	Orphan
-> >  
-> >  FREESCALE SOC FS_ENET DRIVER
-> >  P:	Pantelis Antoniou
+> | Some leds can be programmed to flash in hardware. As this
+> isn't a generic
+> | LED device property, this should be exported as a device
+> specific sysfs
+> | attribute rather than part of the class if this
+> functionality is required.
+> 
+> Does it mean that neither the input subsystem nor the led
+> subsystem is designed for hardware acelerated blinking leds?
+> Is there any usual way what attribute a hw accelerated
+> blinking LED_MAIL should export?
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+This has been discussed in several places several times. The problem
+with hardware accelerated flashing is that you're are often limited to
+certain constraints (this case being no exception) and indicating what
+these are to userspace in a generic fashion is difficult.
+
+One way I've come up with is adds capability to the class to have LED
+specific triggers and you can then expose these hardware capabilities as
+an extra trigger specific to the LED.
+
+Another proposal more specific to this use case was to have some
+information behind the scenes which the software timer based trigger
+could use to turn on the "hardware acceleration" if present and capable
+of the requested mode. This might just need a function pointer in the
+core so could be quite neat.
+
+Nether patch exists yet.
+
+Cheers,
+
+Richard
+
+
