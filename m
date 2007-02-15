@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751581AbXBOGWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751589AbXBOGYK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751581AbXBOGWb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 01:22:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbXBOGWb
+	id S1751589AbXBOGYK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 01:24:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbXBOGYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 01:22:31 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:37012 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751577AbXBOGWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 01:22:30 -0500
-Date: Thu, 15 Feb 2007 01:22:18 -0500
-From: Dave Jones <davej@redhat.com>
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
-       herbert.xu@redhat.com, linux-kernel@vger.kernel.org,
-       arjan@infradead.org, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing
-Message-ID: <20070215062218.GA917@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Andreas Gruenbacher <agruen@suse.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
-	herbert.xu@redhat.com, linux-kernel@vger.kernel.org,
-	arjan@infradead.org, linux-crypto@vger.kernel.org
-References: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com> <200702142135.40832.agruen@suse.de> <20070215054559.GD15654@redhat.com> <200702142214.53625.agruen@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200702142214.53625.agruen@suse.de>
-User-Agent: Mutt/1.4.2.2i
+	Thu, 15 Feb 2007 01:24:10 -0500
+Received: from mail.velocitynet.com.au ([203.17.154.25]:56080 "EHLO
+	m0.velocity.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751593AbXBOGYJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 01:24:09 -0500
+Message-ID: <45D3FC67.3000903@iinet.net.au>
+Date: Thu, 15 Feb 2007 17:23:35 +1100
+From: Ben Nizette <ben.nizette@iinet.net.au>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+MIME-Version: 1.0
+To: v j <vj.linux@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: GPL vs non-GPL device drivers
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com> <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+In-Reply-To: <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 14, 2007 at 10:14:53PM -0800, Andreas Gruenbacher wrote:
- > On Wednesday 14 February 2007 21:45, Dave Jones wrote:
- > > well, the situation for external modules is no worse than usual.
- > > They still work, they just aren't signed. Which from a distributor point
- > > of view, is actually a nice thing, as they stick out like a sore thumb
- > > in oops reports with (U) markers :)
- > 
- > I agree, that's really what should happen. We solve this by marking modules as 
- > supported, partner supported, or unsupported, but in an "insecure" way, so 
- > partners and users could try to fake the support status of a module and/or 
- > remove status flags from Oopses, and cryptography wouldn't save us. We could 
- > try to sign Oopses which I guess you guys are doing. This whole issue hasn't 
- > been a serious problem in the past though, and we generally try to trust 
- > users not to play games on us.
+v j wrote:
+> This is in reference to the following thread:
+> 
+> http://lkml.org/lkml/2006/12/14/63
+> 
+> I am not sure if this is ever addressed in LKML, but linux is _very_
+> popular in the embedded space. We (an embedded vendor) chose Linux 3
+> years back because of its lack of royalty model, robustness and
+> availability of infinite number of open-source tools.
+[...]
+> However we have a worrying trend here. If at some point it becomes
+> illegal to load our modules into the linux kernel, then it is
+> unacceptable to us. We would have been better off choosing VxWorks or
+> OSE 3 years ago when we made an OS choice. The fact that Linux is
+> becoming more and more closed is very very alarming.
+> 
+Question to the world here:  Distros make, as a matter of course, a 
+series of modifications to the Linux Kernel so that their modules or 
+features work.  What stops VJ making a patchset which effectively 
+s/EXPORT_SYMBOL_GPL/EXPORT_SYMBOL/g 's the kernel source then 
+distributing that under the GPL?  He then supplies his un-GPL'd modules 
+to the world which just happen to only run on the modified kernel.  I've 
+read the GPL of course (IANAL though) and I can't see what this violates 
+except the /spirit/ of the license.  Don't get me wrong, I'm strongly 
+against anyone doing what I just mentioned, I believe it to be immoral 
+taking someone's GPL'd code and mangling it in such a way.  I speak as 
+an embedded developer myself whose company decided that running our code 
+under Linux and distributing our code under the GPL was far preferable 
+to running closed-source software on a closed-source platform.
 
-For the most part it works out.  I've had users file oopses where they've editted
-out Tainted: P, and left in nvidia(U) for example :-)
+I'll finish off to VJ:  If you want to be alarmed, go ahead and switch 
+to VxWorks, the Linux community will live on.  It might have a smaller 
+user-base in embedded-land but that's the nature of the beast.  A large 
+user-base doesn't mean much to something like linux unless it comes with 
+a large, open-source-minded developer-base.
 
-		Dave
-
--- 
-http://www.codemonkey.org.uk
+--Ben.
