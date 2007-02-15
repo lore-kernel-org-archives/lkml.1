@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161399AbXBOVcF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161403AbXBOVch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161399AbXBOVcF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 16:32:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161398AbXBOVcE
+	id S1161403AbXBOVch (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 16:32:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161405AbXBOVcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 16:32:04 -0500
-Received: from neon.samage.net ([83.149.67.130]:56674 "EHLO neon.samage.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161399AbXBOVcB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 16:32:01 -0500
-Message-ID: <1715.81.207.0.53.1171575112.squirrel@secure.samage.net>
-In-Reply-To: <7291.1171482057@redhat.com>
-References: <Pine.LNX.4.64.0702141121030.20368@woody.linux-foundation.org>
-    <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com>
-    <7291.1171482057@redhat.com>
-Date: Thu, 15 Feb 2007 22:31:52 +0100 (CET)
+	Thu, 15 Feb 2007 16:32:36 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:58018 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161403AbXBOVcf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 16:32:35 -0500
+Date: Thu, 15 Feb 2007 22:32:40 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Valdis.Kletnieks@vt.edu
+Cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
+       herbert.xu@redhat.com, linux-kernel@vger.kernel.org,
+       arjan@infradead.org, linux-crypto@vger.kernel.org
 Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing
-From: "Indan Zupancic" <indan@nul.nu>
-To: "David Howells" <dhowells@redhat.com>
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org, herbert.xu@redhat.com,
-       linux-kernel@vger.kernel.org, davej@redhat.com, arjan@infradead.org,
-       linux-crypto@vger.kernel.org
-User-Agent: SquirrelMail/1.4.8
+Message-ID: <20070215213240.GG13958@stusta.de>
+References: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com> <20070214194112.5bec3110.akpm@linux-foundation.org> <20070215041345.GA15654@redhat.com> <200702152055.l1FKtfTY012824@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: -1.7
-X-Scan-Signature: 8b3222cd26cce149ddb9ffa05c4da76e
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702152055.l1FKtfTY012824@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Thu, Feb 15, 2007 at 03:55:41PM -0500, Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 14 Feb 2007 23:13:45 EST, Dave Jones said:
+> > One argument in its favour is aparently Red Hat isn't the only vendor
+> > with something like this.  I've not investigated it, but I hear rumours
+> > that suse has something similar.  Having everyone using the same code
+> > would be a win for obvious reasons.
+> 
+> Another argument in its favor is that it actually allows the kernel to
+> implement *real* checking of module licenses and trumps all the proposals
+> to deal with MODULE_LICENSE("GPL\0Haha!").  A vendor (or user) that wants
+> to be *sure* that only *really really* GPL modules are loaded can simply
+> refuse to load unsigned modules - and then refuse to sign a module until
+> after they had themselves visited the source's website, verified that the
+> source code was available under GPL, and so on.
+> 
+> Remember - the GPL is about the availability of the source.  And at modprobe
+> time, the source isn't available.  So you're left with two options:
+> 
+> 1) Trust the binary to not lie to you about its license.
+> 2) Ask a trusted 3rd party (usually, the person/distro that built the kernel)
+> whether they've verified the claim that it's really GPL.
 
-On Wed, February 14, 2007 20:40, David Howells wrote:
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
->
->> >  (1) A cut-down MPI library derived from GPG with error handling added.
->>
->> Do we really need to add this?
->
-> I presume you mean the MPI library specifically?  If so, then yes.  It's
-> necessary to do DSA signature verification (or RSA for that matter).
->
->> Wouldn't it be much nicer to just teach people to use one of the existing
->> signature things that we need for _other_ cases anyway, and already have
->> merged?
->
-> Existing signature things?  I know not of such beasts, nor can I see them
-> offhand.
+There are different opinions whether the "complete source code" of the 
+GPLv2 includes in such cases public keys, making it questionable whether 
+your example will survive at court in all jurisdictions.
 
-The question is if using DSA/RSA is the right choice for something like this.
-I think that the symmetrically encrypted hash output as signature would provide
-the same amount of security. The only additional requirement is that the key
-can't be read by userspace. But if they can reach the kernel binary, they can
-modify it too. Same for the bootloader, where you'd want the key and initial
-checking anyway. Else this whole thing could be done in user space as Roman
-Zippel said...
+E.g. remember that gpl-violations.org has already successfully enforced 
+the publication of public keys for "firmware only loads signed kernels" 
+cases by threatening companies to otherwise take legal actions in 
+Germany.
 
-The ELF section stuff seems like unnecessary bloat too. Can't you use/extend
-modinfo, or kernel symbols?
+cu
+Adrian
 
-With the above changes the code should shrink to only a few hundred new lines
-of code, instead of thousands, and signature checking will be much faster too.
+-- 
 
-Greetings,
-
-Indan
-
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
