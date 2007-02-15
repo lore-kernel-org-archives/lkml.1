@@ -1,29 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932381AbXBOV5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932391AbXBOWCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932381AbXBOV5U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 16:57:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932833AbXBOV5U
+	id S932391AbXBOWCh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 17:02:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932834AbXBOWCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 16:57:20 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:36011 "EHLO smtp.osdl.org"
+	Thu, 15 Feb 2007 17:02:37 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:36211 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932381AbXBOV5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 16:57:19 -0500
-Date: Thu, 15 Feb 2007 13:53:58 -0800
+	id S932391AbXBOWCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 17:02:36 -0500
+Date: Thu, 15 Feb 2007 14:02:32 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Optimize generic get_unaligned / put_unaligned
- implementations.
-Message-Id: <20070215135358.020781dd.akpm@linux-foundation.org>
-In-Reply-To: <20070215143441.GA18155@linux-mips.org>
-References: <20050830104056.GA4710@linux-mips.org>
-	<20060306.203218.69025300.nemoto@toshiba-tops.co.jp>
-	<20060306170552.0aab29c5.akpm@osdl.org>
-	<20070214214226.GA17899@linux-mips.org>
-	<20070214203903.8d013170.akpm@linux-foundation.org>
-	<20070215143441.GA18155@linux-mips.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: 2.6.20-mm1
+Message-Id: <20070215140232.0aba86a7.akpm@linux-foundation.org>
+In-Reply-To: <45D47020.1010309@googlemail.com>
+References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
+	<45D47020.1010309@googlemail.com>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -31,32 +25,84 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Feb 2007 14:34:41 +0000
-Ralf Baechle <ralf@linux-mips.org> wrote:
+On Thu, 15 Feb 2007 15:37:20 +0100
+Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
 
-> On Wed, Feb 14, 2007 at 08:39:03PM -0800, Andrew Morton wrote:
-> 
-> > Can someone please tell us how this magic works?  (And it does appear to
-> > work).
+> Andrew Morton napisa__(a):
+> > Temporarily at
 > > 
-> > It seems to assuming that the compiler will assume that members of packed
-> > structures can have arbitrary alignment, even if that alignment is obvious.
+> >   http://userweb.kernel.org/~akpm/2.6.20-mm1/
 > > 
-> > Which makes sense, but I'd like to see chapter-and-verse from the spec or
-> > from the gcc docs so we can rely upon it working on all architectures and
-> > compilers from now until ever more.
+> > Will appear later at
 > > 
-> > IOW: your changlogging sucks ;)
+> >  ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm1/
+> > 
+> > 
 > 
-> It was my entry for the next edition of the C Puzzle Book ;-)
-> 
-> The whole union thing was only needed to get rid of a warning but Marcel's
-> solution does the same thing by attaching the packed keyword to the entire
-> structure instead, so this patch is now using his macros but using __packed
-> instead.
+> BUG: sleeping function called from invalid context at /mnt/md0/devel/linux-mm/mm/slab.c:3043
+> in_atomic():1, irqs_disabled():0
+> 1 lock held by artsd/3819:
+>  #0:  (&new->lock){--..}, at: [<c01d5b7c>] ipc_lock+0x35/0x4f
+>  [<c0105312>] show_trace_log_lvl+0x1a/0x2f
+>  [<c0105a25>] show_trace+0x12/0x14
+>  [<c0105ae7>] dump_stack+0x16/0x18
+>  [<c011db4a>] __might_sleep+0xc9/0xcf
+>  [<c017c37a>] kmem_cache_zalloc+0x28/0xe5
+>  [<c01d8c7d>] do_shmat+0x111/0x372
+>  [<c0109151>] sys_ipc+0x148/0x1b5
+>  [<c010432c>] syscall_call+0x7/0xb
 
-How do we know this trick will work as-designed across all versions of gcc
-and icc (at least) and for all architectures and for all sets of compiler
-options?
+That's shm-make-sysv-ipc-shared-memory-use-stacked-files.patch, brought to
+us by Eric-who-hasnt-read-Documentation/SubmitChecklist.
 
-Basically, it has to be guaranteed by a C standard.  Is it?
+Like this, I guess:
+
+diff -puN ipc/shm.c~shm-make-sysv-ipc-shared-memory-use-stacked-files-fix ipc/shm.c
+--- a/ipc/shm.c~shm-make-sysv-ipc-shared-memory-use-stacked-files-fix
++++ a/ipc/shm.c
+@@ -818,7 +818,7 @@ long do_shmat(int shmid, char __user *sh
+ 	int acc_mode;
+ 	void *user_addr;
+ 	struct ipc_namespace *ns;
+-	struct shm_file_data *sfd;
++	struct shm_file_data *sfd = NULL;
+ 	mode_t f_mode;
+ 
+ 	if (shmid < 0) {
+@@ -856,6 +856,8 @@ long do_shmat(int shmid, char __user *sh
+ 		acc_mode |= S_IXUGO;
+ 	}
+ 
++	sfd = kzalloc(sizeof(*sfd), GFP_KERNEL);
++
+ 	/*
+ 	 * We cannot rely on the fs check since SYSV IPC does have an
+ 	 * additional creator id...
+@@ -879,13 +881,12 @@ long do_shmat(int shmid, char __user *sh
+ 		goto out_unlock;
+ 
+ 	err = -ENOMEM;
+-	sfd = kzalloc(sizeof(*sfd), GFP_KERNEL);
+ 	if (!sfd)
+ 		goto out_unlock;
+ 
+ 	file = get_empty_filp();
+ 	if (!file)
+-		goto out_free;
++		goto out_unlock;
+ 
+ 	file->f_op = &shm_file_operations;
+ 	file->private_data = sfd;
+@@ -939,9 +940,8 @@ invalid:
+ 	if (IS_ERR(user_addr))
+ 		err = PTR_ERR(user_addr);
+ out:
+-	return err;
+-out_free:
+ 	kfree(sfd);
++	return err;
+ out_unlock:
+ 	shm_unlock(shp);
+ 	goto out;
+_
+
