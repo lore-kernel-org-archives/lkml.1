@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030231AbXBOQ70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030219AbXBOQ71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030231AbXBOQ70 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 11:59:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030219AbXBOQ6u
+	id S1030219AbXBOQ71 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 11:59:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966155AbXBOQ4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 11:58:50 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41127 "EHLO mx2.mail.elte.hu"
+	Thu, 15 Feb 2007 11:56:40 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40842 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030201AbXBOQ6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 11:58:17 -0500
-Date: Thu, 15 Feb 2007 17:51:51 +0100
+	id S966148AbXBOQ4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 11:56:08 -0500
+Date: Thu, 15 Feb 2007 17:52:04 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -22,84 +22,135 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Suparna Bhattacharya <suparna@in.ibm.com>,
        Davide Libenzi <davidel@xmailserver.org>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 00/14] Syslets, generic asynchronous system call support, v2
-Message-ID: <20070215165151.GA4285@elte.hu>
+Subject: [patch 01/14] syslets: add async.h include file, kernel-side API definitions
+Message-ID: <20070215165204.GB4285@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 User-Agent: Mutt/1.4.2.2i
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.3
+X-ELTE-SpamScore: -2.3
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.3 required=5.9 tests=ALL_TRUSTED,BAYES_40 autolearn=no SpamAssassin version=3.1.7
+X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_20 autolearn=no SpamAssassin version=3.1.7
 	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.3044]
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.0899]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Ingo Molnar <mingo@elte.hu>
 
-this is the v2 release of the syslet subsystem. This is an interim 
-release, not all known and pending items are fixed/changed yet - the 
-tree is still work in progress:
+add include/linux/async.h which contains the kernel-side API
+declarations.
 
-   http://redhat.com/~mingo/syslet-patches/
+it also provides NOP stubs for the !CONFIG_ASYNC_SUPPORT case.
 
-The biggest conceptual change in v2 is the ability of cachemiss threads 
-to be turned into user threads. This fixes signal handling, makes them 
-ptrace-eable, etc. (I've updated the sample userspace code at the URL 
-above to also do user-space cachemiss processing - just Ctrl-Z the 
-async-test.c run to trigger it action.)
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ include/linux/async.h |   96 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 96 insertions(+)
 
-Things not yet done in v2 and planned for v3:
-
- - multiple completion rings support
-
- - share the 'spare thread' between multiple rings, to further reduce 
-   startup costs.
-
- - remove mlock() reliance
-
-Changes since v1:
-
- - FPU support fixed: detach FPU state from kernel thread state 
-   (implemented by Arjan van de Ven)
-
- - remove superfluous CLONE_VM from create_async_thread()
-   (noticed by Jens Axboe)
-
- - sys_umem_add() does not ignore -EFAULT of __put_user()
-   (noticed by Andrew Morton)
-
- - use VERIFY_READ instead of VERIFY_WRITE in copy_uatom()
-   (noticed by Andrew Morton)
-
- - move schedule() to tail of loop in cachemiss_loop()
-   (noticed by Andrew Morton)
-
- - added move_user_context() arch op
-
- - added async_syscall() and recursion protection against re-entry of 
-   sys_async_exec(), sys_fork()/sys_clone(), etc.
-
- - added sys_async_thread() call - a user-space thread can thus call 
-   back into the syslet subsystem and continue cachemiss work.
-
- - further cleanups in the include files
-
- - race fixes to sys_async_wait()
-
- - optimized out the kmalloc()/kfree() of the async_head
-
- - async_thread structure not on the kernel stack anymore, to allow 
-   async contexts to run user-space.
-
- - added support for head_stack and head_eip to enable the initial 
-   thread/task to run a cachemiss user context too, if it gets turned 
-   into a cachemiss thread.
-
-As always, comments, suggestions, reports are welcome.
-
-	Ingo
+Index: linux/include/linux/async.h
+===================================================================
+--- /dev/null
++++ linux/include/linux/async.h
+@@ -0,0 +1,96 @@
++#ifndef _LINUX_ASYNC_H
++#define _LINUX_ASYNC_H
++
++#include <linux/completion.h>
++#include <linux/compiler.h>
++
++/*
++ * The syslet subsystem - asynchronous syscall execution support.
++ *
++ * Generic kernel API definitions:
++ */
++
++struct syslet_uatom;
++struct async_thread;
++struct async_head;
++
++/*
++ * The syslet subsystem - asynchronous syscall execution support.
++ *
++ * Syslet-subsystem internal definitions:
++ */
++
++/*
++ * The kernel-side copy of a syslet atom - with arguments expanded:
++ */
++struct syslet_atom {
++	unsigned long				flags;
++	unsigned long				nr;
++	long __user				*ret_ptr;
++	struct syslet_uatom	__user		*next;
++	unsigned long				args[6];
++};
++
++/*
++ * The 'async head' is the thread which has user-space context (ptregs)
++ * 'below it' - this is the one that can return to user-space:
++ */
++struct async_head {
++	spinlock_t				lock;
++	struct task_struct			*user_task;
++
++	struct list_head			ready_async_threads;
++	struct list_head			busy_async_threads;
++
++	long					events_left;
++	wait_queue_head_t			wait;
++
++	struct async_head_user	__user		*ahu;
++	struct syslet_uatom	__user		**completion_ring;
++	unsigned long				curr_ring_idx;
++	unsigned long				max_ring_idx;
++	unsigned long				ring_size_bytes;
++
++	unsigned int				nr_threads;
++	unsigned int				max_nr_threads;
++
++	unsigned long		__user		*new_stack;
++	unsigned long				new_eip;
++	struct completion			start_done;
++	struct completion			exit_done;
++};
++
++/*
++ * The 'async thread' is either a newly created async thread or it is
++ * an 'ex-head' - it cannot return to user-space and only has kernel
++ * context.
++ */
++struct async_thread {
++	struct task_struct			*task;
++	struct syslet_uatom	__user		*work;
++	unsigned long				user_stack;
++	unsigned long				user_eip;
++	struct async_head			*ah;
++
++	struct list_head			entry;
++
++	unsigned int				exit;
++};
++
++#ifdef CONFIG_ASYNC_SUPPORT
++extern void async_init(struct task_struct *t);
++extern void async_exit(struct task_struct *t);
++extern void __async_schedule(struct task_struct *t);
++#else /* !CONFIG_ASYNC_SUPPORT */
++static inline void async_init(struct task_struct *t)
++{
++}
++static inline void async_exit(struct task_struct *t)
++{
++}
++static inline void __async_schedule(struct task_struct *t)
++{
++}
++#endif /* !CONFIG_ASYNC_SUPPORT */
++
++#endif
