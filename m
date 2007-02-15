@@ -1,108 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964808AbXBOBva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964816AbXBOBwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964808AbXBOBva (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 20:51:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932618AbXBOBv3
+	id S964816AbXBOBwM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 20:52:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964817AbXBOBwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 20:51:29 -0500
-Received: from mail0.lsil.com ([147.145.40.20]:48446 "EHLO mail0.lsil.com"
+	Wed, 14 Feb 2007 20:52:12 -0500
+Received: from gw.goop.org ([64.81.55.164]:51720 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932309AbXBOBv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 20:51:29 -0500
-Subject: [PATCH 2/6] scsi: megaraid_sas - added bios_param in
-	scsi_host_template
-From: Sumant Patro <sumantp@lsil.com>
-To: James.Bottomley@SteelEye.com, akpm@osdl.org
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       neela.kolli@lsi.com, bo.yang@lsi.com, sumant.patro@lsi.com
-Content-Type: text/plain
-Date: Wed, 14 Feb 2007 12:41:55 -0800
-Message-Id: <1171485715.4188.13.camel@dumbo>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-22) 
+	id S964816AbXBOBwK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 20:52:10 -0500
+Message-ID: <45D3BCC6.9020807@goop.org>
+Date: Wed, 14 Feb 2007 17:52:06 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
+       Zachary Amsden <zach@vmware.com>,
+       Ian Campbell <Ian.Campbell@XenSource.com>
+Subject: Re: [patch 16/21] Xen-paravirt: Add code into head.S to handle being
+ booted by Xen
+References: <20070213221729.772002682@goop.org>	<20070213221830.707197267@goop.org> <20070213235424.GA1908@muc.de>	<45D35ABE.1050504@goop.org> <m1zm7gpkjh.fsf@ebiederm.dsl.xmission.com>	<45D3740A.4080600@goop.org> <m17iukphxr.fsf@ebiederm.dsl.xmission.com>	<45D3A5A4.7080804@goop.org> <m1ire4nqqy.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1ire4nqqy.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Eric W. Biederman wrote:
+> Reasonable and it's probably worth letting the binutils developer know.
+> I do agree that it is weird.   It might be that something in binutils
+> doesn't like us dropping some of the notes.
+>   
 
-Added bios_param in scsi_host_template to return disk geometry.
+What do you mean by "dropping some of the notes"?  I think the only
+notes (at least in this case) are the Xen ones, and they're all included.
 
-Signed-off-by: Sumant Patro <sumant.patro@lsi.com>
----
- drivers/scsi/megaraid/megaraid_sas.c |   45 +++++++++++++++++++++++++
- 1 files changed, 45 insertions(+)
-
-Resubmitting with following changes : ulong -> unsigned long, removed type-casting
-in size comparison of > 1Gb
-
-diff -uprN linux-feb13-new-p1/drivers/scsi/megaraid/megaraid_sas.c linux-feb13-new-p2/drivers/scsi/megaraid/megaraid_sas.c
---- linux-feb13-new-p1/drivers/scsi/megaraid/megaraid_sas.c	2007-02-13 07:18:39.000000000 -0800
-+++ linux-feb13-new-p2/drivers/scsi/megaraid/megaraid_sas.c	2007-02-13 11:34:58.000000000 -0800
-@@ -35,6 +35,7 @@
- #include <asm/uaccess.h>
- #include <linux/fs.h>
- #include <linux/compat.h>
-+#include <linux/blkdev.h>
- #include <linux/mutex.h>
- 
- #include <scsi/scsi.h>
-@@ -1015,6 +1016,49 @@ static int megasas_reset_bus_host(struct
- }
- 
- /**
-+ * megasas_bios_param - Returns disk geometry for a disk
-+ * @sdev: 		device handle
-+ * @bdev:		block device
-+ * @capacity:		drive capacity
-+ * @geom:		geometry parameters
-+ */
-+static int
-+megasas_bios_param(struct scsi_device *sdev, struct block_device *bdev,
-+		 sector_t capacity, int geom[])
-+{
-+	int heads;
-+	int sectors;
-+	sector_t cylinders;
-+	unsigned long tmp;
-+	/* Default heads (64) & sectors (32) */
-+	heads = 64;
-+	sectors = 32;
-+
-+	tmp = heads * sectors;
-+	cylinders = capacity;
-+
-+	sector_div(cylinders, tmp);
-+
-+	/*
-+	 * Handle extended translation size for logical drives > 1Gb
-+	 */
-+
-+	if (capacity >= 0x200000) {
-+		heads = 255;
-+		sectors = 63;
-+		tmp = heads*sectors;
-+		cylinders = capacity;
-+		sector_div(cylinders, tmp);
-+	}
-+
-+	geom[0] = heads;
-+	geom[1] = sectors;
-+	geom[2] = cylinders;
-+
-+	return 0;
-+}
-+
-+/**
-  * megasas_service_aen -	Processes an event notification
-  * @instance:			Adapter soft state
-  * @cmd:			AEN command completed by the ISR
-@@ -1054,6 +1098,7 @@ static struct scsi_host_template megasas
- 	.eh_device_reset_handler = megasas_reset_device,
- 	.eh_bus_reset_handler = megasas_reset_bus_host,
- 	.eh_host_reset_handler = megasas_reset_bus_host,
-+	.bios_param = megasas_bios_param,
- 	.use_clustering = ENABLE_CLUSTERING,
- };
- 
-
-
+    J
