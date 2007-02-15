@@ -1,142 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751423AbXBOAiN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751421AbXBOAjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751423AbXBOAiN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 19:38:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbXBOAiN
+	id S1751421AbXBOAjY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 19:39:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbXBOAjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 19:38:13 -0500
-Received: from mx1.suse.de ([195.135.220.2]:55544 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751423AbXBOAiM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 19:38:12 -0500
-Date: Thu, 15 Feb 2007 01:38:10 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: [patch] mm: NUMA replicated pagecache
-Message-ID: <20070215003810.GE29797@wotan.suse.de>
-References: <20070213060924.GB20644@wotan.suse.de> <1171485124.5099.43.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1171485124.5099.43.camel@localhost>
-User-Agent: Mutt/1.5.9i
+	Wed, 14 Feb 2007 19:39:24 -0500
+Received: from smtpout14-02.prod.mesa1.secureserver.net ([68.178.232.8]:59002
+	"HELO smtpout14-02.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751421AbXBOAjX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 19:39:23 -0500
+Date: Wed, 14 Feb 2007 17:39:22 -0700
+From: akennedy@techmoninc.com
+Subject: RE: Serial console issues.
+To: Alan <alan@lxorguk.ukuu.org.uk>
+cc: linux-kernel@vger.kernel.org
+Message-ID: <20070214173922.bfc52cea95091b0fffcb409eab6296ba.d67be632a9.wbe@email.secureserver.net>
+MIME-Version: 1.0
+Content-Type: TEXT/plain; CHARSET=US-ASCII
+User-Agent: Web-Based Email 4.9.14
+X-Originating-IP: 68.209.83.41
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 14, 2007 at 03:32:04PM -0500, Lee Schermerhorn wrote:
-> On Tue, 2007-02-13 at 07:09 +0100, Nick Piggin wrote:
-> > Hi,
-> > 
-> > Just tinkering around with this and got something working, so I'll see
-> > if anyone else wants to try it.
-> > 
-> > Not proposing for inclusion, but I'd be interested in comments or results.
-> > 
-> > Thanks,
-> > Nick
-> 
-> I've included a small patch below that allow me to build and boot with
-> these patches on an HP NUMA platform.  I'm still seeing an "unable to
+> > In a previous post I incorrectly stated that my serial port is a
+> > TI16750, as this is what /proc/tty/... revealed to me.  After
+> > re-reading the product manual, I see that this is actually a 16550.
+> > Since Linux is seeing this port as a 16750, could that explain why I'm
+> > seeing missing characters in the transmission.  After doing some
+> > research, I found that the 16750 has a 64-byte buffer, whereas I know
+> > this to only have a 16-byte buffer.
+>
+> The autodetect is pretty solid so you may well find the chip is 16750
+> compatible, 16550A is what is usually listed because it is what people
+> look for.
+>
+> > If my assumptions are correct and Linux is detecting this serial port
+> > incorrectly, how can I force the serial driver to see this a 16550?
+>
+> man setserial
 
-Thanks Lee. Merged.
+Well, this is the most bastardized sucker I've ever seen. . . I have had
+no end of trouble with it (couldn't even get a boot loader to work with
+it - had to write my own).  And, as luck would have it, the serial port
+is no different.  Using setserial, I changed the type of this port to a
+16550A and all my problems went away.  The question now remains:  How
+can I FORCE the Linux serial driver to see this as a 16550A -- As I
+before stated, I know that this has a 16-byte buffer.  Therefore, the
+16750 with its mammoth buffer size is killing this serial port.  Short
+of modifying the kernel (which I'd rather not do) or including the
+setserial with the kernel image (also I'd rather not do as I only have
+2.3 MB of storage on this device) I need a command line parameter to
+control the serial line -- is there one?  A build option?  PLEASE
+SOMETHING???
 
-> > - Would like to be able to control replication via userspace, and maybe
-> >   even internally to the kernel.
-> How about per cpuset?  Consider a cpuset, on a NUMA system, with cpus
-> and memories from a specific set of nodes.  One might choose to have
-> page cache pages referenced by tasks in this cpuset to be pulled into
-> the cpuset's memories for local access.  The remainder of the system may
-> choose not to replicate page cache pages--e.g., to conserve memory.
-> However, "unreplicating" on write would still need to work system wide.
-> 
-> But, note:  may [probably] want option to disable replication for shmem
-> pages?  I'm thinking here of large data base shmem regions that, at any
-> time, might have a lot of pages accessed "read only".  Probably wouldn't
-> want a lot of replication/unreplication happening behind the scene. 
-
-Yeah cpusets is an interesting possibility. A per-inode attribute could be
-another one. The good old global sysctl is also a must :)
-
-
-> > - Ideally, reclaim might reclaim replicated pages preferentially, however
-> >   I aim to be _minimally_ intrusive.
-> > - Would like to replicate PagePrivate, but filesystem may dirty page via
-> >   buffers. Any solutions? (currently should mount with 'nobh').
-> Linux migrates pages with PagePrivate using a per mapping migratepage
-> address space op to handle the buffers.  File systems can provide their
-> own or use a generic version.  How about a "replicatepage" aop?
-
-I guess the main problem is those filesystems which dirty the page via
-the buffers, via b_this_page, or b_data. However AFAIKS, these only happen
-for things like directories. I _think_ we can safely assume that regular
-file pages will not get modified (that would be data corruption!).
-
-> > +struct page * find_get_page_readonly(struct address_space *mapping, unsigned long offset)
-> > +{
-> > +	struct page *page;
-> > +
-> > +retry:
-> > +	read_lock_irq(&mapping->tree_lock);
-> > +	if (radix_tree_tag_get(&mapping->page_tree, offset,
-> > +					PAGECACHE_TAG_REPLICATED)) {
-> > +		int nid;
-> > +		struct pcache_desc *pcd;
-> > +replicated:
-> > +		nid = numa_node_id();
-> > +		pcd = radix_tree_lookup(&mapping->page_tree, offset);
-> ??? possible NULL pcd?  I believe I'm seeing one here...
-
-Hmm, OK. I'll have to do some stress testing. I'm sure there are a few bugs
-left.
-
-> 
-> > +		if (!node_isset(nid, pcd->nodes_present)) {
-> Do this check [and possible replicate] only if replication enabled
-> [system wide?, per cpuset?  based on explicit replication policy?, ...]?
-
-Yep.
-
-> > +			struct page *repl_page;
-> > +
-> > +			page = pcd->master;
-> > +			page_cache_get(page);
-> > +			read_unlock_irq(&mapping->tree_lock);
-> > +			repl_page = alloc_pages_node(nid,
-> > +					mapping_gfp_mask(mapping), 0);
-> ??? don't try to hard to allocate page, as it's only a performance
-> optimization.  E.g., add in GFP_THISNODE and remove and __GFP_WAIT?
-
-I think that has merit. The problem if we remove __GFP_WAIT is that the
-page allocator gives us access to some reserves. __GFP_NORETRY should
-be reasonable?
-
-> 
-> > +			if (!repl_page)
-> > +				return page;
-> > +			copy_highpage(repl_page, page);
-> > +			flush_dcache_page(repl_page);
-> > +			page->mapping = mapping;
-> > +			page->index = offset;
-> > +			SetPageUptodate(repl_page); /* XXX: nonatomic */
-> > +			page_cache_release(page);
-> > +			write_lock_irq(&mapping->tree_lock);
-> > +			__insert_replicated_page(repl_page, mapping, offset, nid);
-> ??? can this fail due to race?  Don't care because we retry the lookup?
-> page freed [released] in the function...
-
-Yeah, I told you it was ugly :P Sorry you had to wade through this, but
-it can be cleaned up..
-
-> >  EXPORT_SYMBOL(find_lock_page);
-> ??? should find_trylock_page() handle potential replicated page?
->     until it is removed, anyway?  
-
-It is removed upstream, but in 2.6.20 it has no callers anyway so I didn't
-worry about it.
-
-
-Thanks for the comments & patch.
-
+Andy
 
