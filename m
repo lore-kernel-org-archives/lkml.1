@@ -1,156 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030219AbXBOQ71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030225AbXBORAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030219AbXBOQ71 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 11:59:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966155AbXBOQ4k
+	id S1030225AbXBORAP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 12:00:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030217AbXBORAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 11:56:40 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40842 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966148AbXBOQ4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 11:56:08 -0500
-Date: Thu, 15 Feb 2007 17:52:04 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 01/14] syslets: add async.h include file, kernel-side API definitions
-Message-ID: <20070215165204.GB4285@elte.hu>
+	Thu, 15 Feb 2007 12:00:14 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:54761 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030218AbXBOQ70 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 11:59:26 -0500
+Date: Thu, 15 Feb 2007 08:55:00 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, tony.luck@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] build error: allnoconfig fails on mincore/swapper_space
+Message-Id: <20070215085500.30e57866.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0702140009320.21315@blonde.wat.veritas.com>
+References: <20070212145040.c3aea56e.randy.dunlap@oracle.com>
+	<20070212150802.f240e94f.akpm@linux-foundation.org>
+	<45D12715.4070408@yahoo.com.au>
+	<20070213121217.0f4e9f3a.randy.dunlap@oracle.com>
+	<Pine.LNX.4.64.0702132224280.3729@blonde.wat.veritas.com>
+	<20070213144909.70943de2.randy.dunlap@oracle.com>
+	<Pine.LNX.4.64.0702140009320.21315@blonde.wat.veritas.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_20 autolearn=no SpamAssassin version=3.1.7
-	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.0899]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
+On Wed, 14 Feb 2007 00:19:06 +0000 (GMT) Hugh Dickins wrote:
 
-add include/linux/async.h which contains the kernel-side API
-declarations.
+> On Tue, 13 Feb 2007, Randy Dunlap wrote:
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > Don't check for pte swap entries when CONFIG_SWAP=n.
+> > And save 'present' in the vec array.
+> > 
+> > mm/built-in.o: In function `sys_mincore':
+> > (.text+0xe584): undefined reference to `swapper_space'
+> > 
+> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> What you've done there is fine, Randy, thank you.
+> 
+> But I just got out of bed to take another look, and indeed:
+> what is it doing in the none_mapped !vma->vm_file case?
+> passing back an uninitialized vector.
+> 
+> Easy enough to fix, but I'd say Nick's patch has by now exceeded
+> its embarrassment quota, and should be reverted from Linus' tree
+> for now: clearly none of us have been paying enough attention,
+> and other eyes are liable to find further errors lurking in it.
+> 
+> Hugh
 
-it also provides NOP stubs for the !CONFIG_ASYNC_SUPPORT case.
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+so, are we going to get a revert of 42da9cbd3eedde33a42acc2cb06f454814cf5de0 ?
+Has that been requested?  or are there other plans?
+
+Thanks.
+
+> > ---
+> >  mm/mincore.c |    5 +++++
+> >  1 file changed, 5 insertions(+)
+> > 
+> > --- linux-2.6.20-git9.orig/mm/mincore.c
+> > +++ linux-2.6.20-git9/mm/mincore.c
+> > @@ -111,6 +111,7 @@ static long do_mincore(unsigned long add
+> >  			present = mincore_page(vma->vm_file->f_mapping, pgoff);
+> >  
+> >  		} else { /* pte is a swap entry */
+> > +#ifdef CONFIG_SWAP
+> >  			swp_entry_t entry = pte_to_swp_entry(pte);
+> >  			if (is_migration_entry(entry)) {
+> >  				/* migration entries are always uptodate */
+> > @@ -119,7 +120,11 @@ static long do_mincore(unsigned long add
+> >  				pgoff = entry.val;
+> >  				present = mincore_page(&swapper_space, pgoff);
+> >  			}
+> > +#else
+> > +			present = 1;
+> > +#endif
+> >  		}
+> > +		vec[i] = present;
+> >  	}
+> >  	pte_unmap_unlock(ptep-1, ptl);
+> 
+> --
+
 ---
- include/linux/async.h |   96 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 96 insertions(+)
-
-Index: linux/include/linux/async.h
-===================================================================
---- /dev/null
-+++ linux/include/linux/async.h
-@@ -0,0 +1,96 @@
-+#ifndef _LINUX_ASYNC_H
-+#define _LINUX_ASYNC_H
-+
-+#include <linux/completion.h>
-+#include <linux/compiler.h>
-+
-+/*
-+ * The syslet subsystem - asynchronous syscall execution support.
-+ *
-+ * Generic kernel API definitions:
-+ */
-+
-+struct syslet_uatom;
-+struct async_thread;
-+struct async_head;
-+
-+/*
-+ * The syslet subsystem - asynchronous syscall execution support.
-+ *
-+ * Syslet-subsystem internal definitions:
-+ */
-+
-+/*
-+ * The kernel-side copy of a syslet atom - with arguments expanded:
-+ */
-+struct syslet_atom {
-+	unsigned long				flags;
-+	unsigned long				nr;
-+	long __user				*ret_ptr;
-+	struct syslet_uatom	__user		*next;
-+	unsigned long				args[6];
-+};
-+
-+/*
-+ * The 'async head' is the thread which has user-space context (ptregs)
-+ * 'below it' - this is the one that can return to user-space:
-+ */
-+struct async_head {
-+	spinlock_t				lock;
-+	struct task_struct			*user_task;
-+
-+	struct list_head			ready_async_threads;
-+	struct list_head			busy_async_threads;
-+
-+	long					events_left;
-+	wait_queue_head_t			wait;
-+
-+	struct async_head_user	__user		*ahu;
-+	struct syslet_uatom	__user		**completion_ring;
-+	unsigned long				curr_ring_idx;
-+	unsigned long				max_ring_idx;
-+	unsigned long				ring_size_bytes;
-+
-+	unsigned int				nr_threads;
-+	unsigned int				max_nr_threads;
-+
-+	unsigned long		__user		*new_stack;
-+	unsigned long				new_eip;
-+	struct completion			start_done;
-+	struct completion			exit_done;
-+};
-+
-+/*
-+ * The 'async thread' is either a newly created async thread or it is
-+ * an 'ex-head' - it cannot return to user-space and only has kernel
-+ * context.
-+ */
-+struct async_thread {
-+	struct task_struct			*task;
-+	struct syslet_uatom	__user		*work;
-+	unsigned long				user_stack;
-+	unsigned long				user_eip;
-+	struct async_head			*ah;
-+
-+	struct list_head			entry;
-+
-+	unsigned int				exit;
-+};
-+
-+#ifdef CONFIG_ASYNC_SUPPORT
-+extern void async_init(struct task_struct *t);
-+extern void async_exit(struct task_struct *t);
-+extern void __async_schedule(struct task_struct *t);
-+#else /* !CONFIG_ASYNC_SUPPORT */
-+static inline void async_init(struct task_struct *t)
-+{
-+}
-+static inline void async_exit(struct task_struct *t)
-+{
-+}
-+static inline void __async_schedule(struct task_struct *t)
-+{
-+}
-+#endif /* !CONFIG_ASYNC_SUPPORT */
-+
-+#endif
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
