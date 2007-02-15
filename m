@@ -1,38 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964914AbXBOG5G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964923AbXBOHCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964914AbXBOG5G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 01:57:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964920AbXBOG5F
+	id S964923AbXBOHCR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 02:02:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964925AbXBOHCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 01:57:05 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:37000 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964914AbXBOG5D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 01:57:03 -0500
-Date: Wed, 14 Feb 2007 22:56:53 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 07/10] local_t : powerpc extension
-Message-Id: <20070214225653.345aad29.akpm@linux-foundation.org>
-In-Reply-To: <11712214961955-git-send-email-mathieu.desnoyers@polymtl.ca>
-References: <117122149548-git-send-email-mathieu.desnoyers@polymtl.ca>
-	<11712214961955-git-send-email-mathieu.desnoyers@polymtl.ca>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 15 Feb 2007 02:02:17 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:8287 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964923AbXBOHCR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 02:02:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qaeeSK2odx3DiT8c5kIB2N2UCIjBivYTvi4MB7fG/APduhRP1FdMRL3MPym024xy9db+H/pJ4TttnlRLpJEVYACVIdeHh3DqUA3IT2r0wVDmksJ6DblTc6IzCYINhZDTYQv9Q1nj5WnBba3AMKTY/tUrsihc2EMcC8+sGQANyCE=
+Message-ID: <3d57814d0702142302k4a517e5cp74ca2e9e2d886b3d@mail.gmail.com>
+Date: Thu, 15 Feb 2007 17:02:15 +1000
+From: "Trent Waddington" <trent.waddington@gmail.com>
+To: "v j" <vj.linux@gmail.com>
+Subject: Re: GPL vs non-GPL device drivers
+Cc: "Neil Brown" <neilb@suse.de>, "Dave Jones" <davej@redhat.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <9b3a62ab0702142255u16dc98e0s38876f03ac6355f7@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+	 <20070215061149.GE15654@redhat.com>
+	 <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
+	 <17876.296.29422.494455@notabene.brown>
+	 <9b3a62ab0702142255u16dc98e0s38876f03ac6355f7@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 Feb 2007 14:18:12 -0500 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+On 2/15/07, v j <vj.linux@gmail.com> wrote:
+> If adding closed drivers to Linux is illegal, I am perfectly fine with
+> that. Just say so. I am not at a dead-end yet, until you make that
+> statement. Once you make that statement, then all bets are off. I am
+> betting that most companies will not even consider Linux as an
+> alternative in the embedded space if this were the case.
 
-> local_t : powerpc extension
+Greg KH has already made that statement.
 
-This diff contains changes which are also present in "[PATCH 07/10]
-atomic.h : Add atomic64 cmpxchg, xchg and add_unless to powerpc", resulting
-in rather a mess.
+http://www.kroah.com/log/linux/ols_2006_keynote.html
 
-I dropped the duplicated hunks from the later patch rather than this one,
-but I haven't tried to compile the result yet.
+half way down, "Closed source Linux kernel modules are illegal".  As
+was said, welcome to 6 months ago.
 
+Trent
