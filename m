@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161567AbXBOWjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161584AbXBOWju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161567AbXBOWjb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 17:39:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161578AbXBOWja
+	id S1161584AbXBOWju (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 17:39:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161579AbXBOWju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 17:39:30 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51385 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161567AbXBOWja (ORCPT
+	Thu, 15 Feb 2007 17:39:50 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45325 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1161580AbXBOWjt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 17:39:30 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-mm1
+	Thu, 15 Feb 2007 17:39:49 -0500
+Date: Thu, 15 Feb 2007 14:39:48 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: James Morris <jmorris@namei.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-mm1 [kernel BUG at mm/swap.c:442]
+In-Reply-To: <20070215135157.18085ae3.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0702151426260.31972@schroedinger.engr.sgi.com>
 References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
-	<45D47020.1010309@googlemail.com>
-	<20070215140232.0aba86a7.akpm@linux-foundation.org>
-Date: Thu, 15 Feb 2007 15:38:25 -0700
-In-Reply-To: <20070215140232.0aba86a7.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Thu, 15 Feb 2007 14:02:32 -0800")
-Message-ID: <m164a3jbby.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+ <Pine.LNX.4.64.0702150926560.25081@d.namei> <20070215135157.18085ae3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+On Thu, 15 Feb 2007, Andrew Morton wrote:
 
-> That's shm-make-sysv-ipc-shared-memory-use-stacked-files.patch, brought to
-> us by Eric-who-hasnt-read-Documentation/SubmitChecklist.
+> I don't immediately see why that code isn't racy: the page can remain
+> in the pagevec for arbitrary amounts of time and someone can come along
+> and mlock it again.  But given the ease with which you're hitting this,
+> it may not be a race.
 
-Sorry I thought I had all of the interesting debugging enabled in my
-kernel build.  It must of fallen out someplace.  I think I must
-have figured shm_lock was a semaphore or mutex.
+As long as the page is on the pagevec it should be off the LRU. 
+Marking a page PageMlocked requires the page to be on the LRU. So a page 
+cannot be marked PageMlocked as long as it is on the regular pagevecs.
 
-> Like this, I guess:
+Somehow a page off the LRU was marked PageMlocked. Or a new anonymous page 
+was allocated and marked PageMlocked and then some later processing put it 
+onto the LRU?
 
-Nope.  get_empty_filp can sleep as well, unless I'm totally mistaken.
-It looks like the logic change is going to be a little more than a one
-liner.  I will get back to you in a couple of hours....
+Maybe try_to_set_mlocked does work some havoc here.
 
-Eric
+Could you see if this patch fixes it? This just disabled an optimization 
+to set PageMlocked early.
+
+Index: linux-2.6.20-mm1/mm/memory.c
+===================================================================
+--- linux-2.6.20-mm1.orig/mm/memory.c	2007-02-15 14:35:41.000000000 -0800
++++ linux-2.6.20-mm1/mm/memory.c	2007-02-15 14:35:54.000000000 -0800
+@@ -930,6 +930,8 @@ static void try_to_set_mlocked(struct pa
+ 	struct zone *zone;
+ 	unsigned long flags;
+ 
++	return;
++
+ 	if (!PageLRU(page) || PageMlocked(page))
+ 		return;
+ 
