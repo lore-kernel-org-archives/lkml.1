@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030439AbXBOSZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030462AbXBOS1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030439AbXBOSZv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 13:25:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030460AbXBOSZv
+	id S1030462AbXBOS1d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 13:27:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030465AbXBOS1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 13:25:51 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:47257 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030439AbXBOSZu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 13:25:50 -0500
-In-Reply-To: <B41635854730A14CA71C92B36EC22AAC83A809@mssmsx411>
-References: <B41635854730A14CA71C92B36EC22AAC83A809@mssmsx411>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <909AD75B-3A4F-49BA-BF47-D143D2B01B71@oracle.com>
-Cc: "Ken Chen" <kenchen@google.com>, <suparna@in.ibm.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, "linux-aio" <linux-aio@kvack.org>,
-       "Chris Mason" <chris.mason@oracle.com>
-Content-Transfer-Encoding: 7bit
-From: Zach Brown <zach.brown@oracle.com>
-Subject: Re: [PATCH] aio: fix kernel bug when page is temporally busy
-Date: Thu, 15 Feb 2007 10:25:16 -0800
-To: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>
-X-Mailer: Apple Mail (2.752.3)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Thu, 15 Feb 2007 13:27:33 -0500
+Received: from tim.rpsys.net ([194.106.48.114]:40274 "EHLO tim.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030464AbXBOS1c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 13:27:32 -0500
+Subject: Re: 2.6.20-mm1
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Marcin Juszkiewicz <openembedded@hrw.one.pl>
+Cc: Valdis.Kletnieks@vt.edu, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200702151900.18270.openembedded@hrw.one.pl>
+References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
+	 <200702151733.l1FHXatF025688@turing-police.cc.vt.edu>
+	 <200702151900.18270.openembedded@hrw.one.pl>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 15 Feb 2007 18:27:09 +0000
+Message-Id: <1171564029.5839.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If invalidate_inode_pages2_range() will return EIOCBRETRY as the patch
-> "aio: fix kernel bug when page is temporally busy"
+On Thu, 2007-02-15 at 19:00 +0100, Marcin Juszkiewicz wrote:
+> Dnia czwartek, 15 lutego 2007, Valdis.Kletnieks@vt.edu napisał:
+> > On Thu, 15 Feb 2007 05:14:08 PST, Andrew Morton said:
+> 
+> > git-backlight.patch contains this:
+> >
+> > +config BACKLIGHT_PROGEAR
+> > +       tristate "Frontpath ProGear Backlight Driver"
+> > +       depends on BACKLIGHT_CLASS_DEVICE && PCI && X86
+> > +       default y
+> > +       help
+> > +         If you have a Frontpath ProGear say Y to enable the
+> > +         backlight driver.
+> >
+> > Should that be a default N or M, given that relatively few people have
+> > that device?
+> 
+> "default n" as this is rather rare used today device. Should I send 
+> a patch or can it be changed without it?
 
-Sorry Leonid, this patch is not safe.
+Its probably easiest if I just fix that.
 
-It returns -EIOCBRETRY without guaranteeing that kick_iocb() will be  
-called.  This can lead to operations hanging, both AIO and calls that  
-come through do_sync_{read,write}.
+Cheers,
 
-It overwrites -EIOCBQUEUED, leading to an aio_complete() while a  
-retry is happening.  This can lead to reference count confusion.   
-Double-frees, referencing freed memory, that kind of thing.  This  
-isn't a new problem.  The current code that overwrites with -EIO has  
-this problem.  But moving to -EIOCBRETRY does introduce new behaviour  
-of aio_complete() and the retry path racing.
+Richard
 
-I'll have a candidate patch to address the problem of EIO being  
-raised on the way back up from a path which has returned -EIOCBQUEUED.
-
-- z
