@@ -1,100 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030671AbXBOTHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030673AbXBOTHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030671AbXBOTHG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 14:07:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030675AbXBOTHF
+	id S1030673AbXBOTHX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 14:07:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030676AbXBOTHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 14:07:05 -0500
-Received: from mail.um.es ([155.54.212.109]:46830 "EHLO mail.um.es"
+	Thu, 15 Feb 2007 14:07:23 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:40994 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030671AbXBOTHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 14:07:03 -0500
-X-Greylist: delayed 1734 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Feb 2007 14:07:03 EST
-Date: Thu, 15 Feb 2007 19:38:14 +0100 (CET)
-From: Juan Piernas Canovas <piernas@ditec.um.es>
-X-X-Sender: piernas@ditec.inf.um.es
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: sfaibish <sfaibish@emc.com>, kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [ANNOUNCE] DualFS: File System with Meta-data and Data Separation
-In-Reply-To: <Pine.LNX.4.61.0702142251460.19368@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.61.0702151910370.19998@ditec.inf.um.es>
-References: <op.tnkdlbgsrwwil4@brcsmondepl2c.corp.emc.com>
- <op.tnrbrocsunckof@usensfaibisl2e.eng.emc.com> <Pine.LNX.4.61.0702142251460.19368@yvahk01.tjqt.qr>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="916140492-708553444-1171564694=:19998"
+	id S1030673AbXBOTHV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 14:07:21 -0500
+Date: Thu, 15 Feb 2007 22:04:14 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 05/11] syslets: core code
+Message-ID: <20070215190413.GA23953@2ka.mipt.ru>
+References: <20070213142035.GF638@elte.hu> <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org> <20070215133550.GA29274@2ka.mipt.ru> <Pine.LNX.4.64.0702150757520.20368@woody.linux-foundation.org> <20070215163704.GA32609@2ka.mipt.ru> <Pine.LNX.4.64.0702150920130.20368@woody.linux-foundation.org> <20070215181059.GC20997@2ka.mipt.ru> <Pine.LNX.4.64.0702151019210.20368@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702151019210.20368@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.7.5 (2ka.mipt.ru [0.0.0.0]); Thu, 15 Feb 2007 22:04:18 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Thu, Feb 15, 2007 at 10:25:37AM -0800, Linus Torvalds (torvalds@linux-foundation.org) wrote:
+> > static void syslet_setup(struct syslet *s, int nr, void *arg1...)
+> > {
+> > 	s->flags = ...
+> > 	s->arg[1] = arg1;
+> > 	....
+> > }
+> > 
+> > long glibc_async_stat(const char *path, struct stat *buf)
+> > {
+> > 	/* What about making syslet and/or set of atoms per thread and preallocate 
+> > 	 * them when working threads are allocated? */
+> > 	struct syslet s;
+> > 	syslet_setup(&s, __NR_stat, path, buf, NULL, NULL, NULL, NULL);
+> > 	return async_submit(&s);
+> > }
+> 
+> And this is a classic example of potentially totally buggy code.
+> 
+> Why? You're releasing the automatic variable on the stack before it's 
+> necessarily all used!
+> 
+> So now you need to do a _longterm_ allocation, and that in turn means that 
+> you need to do a long-term de-allocation!
+> 
+> Ok, so do we make the rule be that all atoms *have* to be read fully 
+> before we start the async submission (so that the caller doesn't need to 
+> do a long-term allocation)?
+> 
+> Or do we make the rule be that just the *first* atom is copied by the 
+> kernel before the async_sumbit() returns, and thus it's ok to do the above 
+> *IFF* you only have a single system call?
+> 
+> See? The example you tried to use to show how "simple" the interface iswas 
+> actually EXACTLY THE REVERSE. It shows how subtle bugs can creep in!
 
---916140492-708553444-1171564694=:19998
-Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+So describe what are the requirements (constraints)?
 
-Hi all,
+Above example has exactly one syscall in the chain, so it is ok, but
+generally it is not correct.
 
-On Wed, 14 Feb 2007, Jan Engelhardt wrote:
+So instead there will be 
+s = atom_create_and_add(__NR_stat, path, stat, NULL, NULL, NULL, NULL);
+atom then can be freed in the glibc_async_wait() wrapper just before
+returning data to userspace.
 
->
-> On Feb 14 2007 16:10, sfaibish wrote:
->>>
->>> 1. DualFS has only one copy of every meta-data block. This copy is
->>> in the meta-data device,
->
-> Where does this differ from typical filesystems like xfs?
-> At least ext3 and xfs have an option to store the log/journal
-> on another device too.
+There are millions of possible ways to do that, but what exactly one
+should be used from your point of view? Describe _your_ vision of that path.
 
-No, it is not the same. DualFS uses two 'logical' devices, one for data, 
-and one for meta-data, but these devices are usually partitions on the 
-same disk, they are not two different disks. And DualFS uses the meta-data 
-device to both read and write meta-data blocks, whereas the other 
-journaling file systems only use the log to write meta-data.
+Currently generic example is following:
+allocate mem
+setup complex structure
+submit syscall
+wait syscall
+free mem
 
-It's true that XFS, Ext3 and other journaling file systems can use a 
-separate disk for the log, but, even then, they have to write two copies 
-of every meta-data element. However, in this case, DualFS is even better.
+the first two can be hidden in glibc setup/startup code, the last one -
+in waiting or cleanup entry.
 
-If the data and meta-data devices of DualFS can be on different disks, 
-DualFS is able to READ and WRITE data and meta-data blocks in PARALLEL. 
-The other journaling file systems, however, can only write one of the two 
-copies of every meta-data block in parallel to other file systems 
-operations, but they can not write the second copy, and read and write 
-data and meta-data blocks, in parallel.
+Or it can be this one (just an idea):
 
->
->>> The DualFS code, tools and performance papers are available at:
->>>
->>> <http://sourceforge.net/projects/dualfs>
->>>
->>> The code requires kernel patches to 2.4.19 (oldies but goodies) and
->>> a separate fsck code.  The latest kernel we used it for is 2.6.11
->>> and we hope with you help to port it to the latest Linux kernel.
->
-> Where is the patch for 2.6.11? Sorry, 2.4.19 is just too old (even if
-> only considering the 2.4 branch).
-> [ And perhaps "goldies" flew better with "oldies" ;-) ]
->
+glibc_async_stat(path, &stat);
 
-The patch for 2.6.11 is not still stable enough to be released. Be patient 
-;-)
+int glibc_async_stat(char *path, struct stat *stat)
+{
+	struct pthread *p;
 
+	asm ("movl %%gs:0, %0", "=r"(unsigned long)(p));
 
- 	Juan.
->
-> Jan
->
+	atom = allocate_new_atom_and_setup_initial_values();
+	setup_atom(atom, __NR_stat, path, stat, ...);
+	add_atom_into_private_tree(p, atom);
+	return async_submit(atom);
+}
+
+glibc_async_wait()
+{
+	struct pthread *p;
+
+	asm ("movl %%gs:0, %0", "=r"(unsigned long)(p));
+	
+	cookie = sys_async_wait();
+	atom = search_for_cookie_and_remove(p);
+	free_atom(atom);
+}
+
+Although that cruft might need to be extended...
+
+So, describe how exactly _you_ think it should be implemented with its
+pros and cons, so that systemn could be adopted without trying to
+mind-read of what is simple and good or complex and really bad.
+
+> 		Linus
 
 -- 
-D. Juan Piernas Cánovas
-Departamento de Ingeniería y Tecnología de Computadores
-Facultad de Informática. Universidad de Murcia
-Campus de Espinardo - 30080 Murcia (SPAIN)
-Tel.: +34968367657    Fax: +34968364151
-email: piernas@ditec.um.es
-PGP public key:
-http://pgp.rediris.es:11371/pks/lookup?search=piernas%40ditec.um.es&op=index
-
-*** Por favor, envíeme sus documentos en formato texto, HTML, PDF o PostScript :-) ***
---916140492-708553444-1171564694=:19998--
+	Evgeniy Polyakov
