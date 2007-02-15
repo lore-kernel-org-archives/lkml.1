@@ -1,120 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965731AbXBOMR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965915AbXBOMUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965731AbXBOMR1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 07:17:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965909AbXBOMR1
+	id S965915AbXBOMUL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 07:20:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965918AbXBOMUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 07:17:27 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:38852 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965731AbXBOMR0 (ORCPT
+	Thu, 15 Feb 2007 07:20:11 -0500
+Received: from moutng.kundenserver.de ([212.227.126.183]:60202 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965915AbXBOMUJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 07:17:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HBXsICTA9XhKsgkqhDT6dXXcvFxm8paYXQyGrMJ0+o+xwtIQtWM5rsYmOzg9Sz8hED+6z1Yo67XP01qPDZhSZ8LxINylwhBUQr7/cjG3bDe8F6jHRBpN642sB5KG5J995rr+O+mBQV8Db9SwBCjnynWCryT7P9QskXOxCyufW/I=
-Message-ID: <e13597370702150417o3888b71dtcc42e38156b46918@mail.gmail.com>
-Date: Thu, 15 Feb 2007 15:17:23 +0300
-From: "Eugene Ilkov" <e.ilkov@gmail.com>
-To: "Pierre Ossman" <drzeus-list@drzeus.cx>
-Subject: Re: 2.6.20 mmc: problem with highspeed SD card
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <45D3F41C.3020600@drzeus.cx>
+	Thu, 15 Feb 2007 07:20:09 -0500
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: [RFC] [PATCH] more support for memory-less-node.
+To: Andi Kleen <ak@suse.de>, "Martin J. Bligh" <mbligh@mbligh.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Christoph Lameter <clameter@sgi.com>, bob.picco@hp.com
+Reply-To: 7eggert@gmx.de
+Date: Thu, 15 Feb 2007 13:21:04 +0100
+References: <7NZO0-6et-1@gated-at.bofh.it> <7Oa6N-5If-3@gated-at.bofh.it> <7Oaq4-6ow-7@gated-at.bofh.it> <7Oaq6-6ow-17@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <e13597370702131746q6a5d8e79i2341f5eb9c59bf6e@mail.gmail.com>
-	 <45D3F41C.3020600@drzeus.cx>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1HHfbk-0000pw-Uf@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: kundenserver.de abuse@kundenserver.de login:9b3b2cc444a07783f194c895a09f1de9
+X-Provags-ID2: V01U2FsdGVkX1+vlvMc9c+8/FKGQiIcWPenlmu/SfVC+S5IhGF7ninAdoK0GegxKM2fdwMb4qUrpEeMHaLQqahGw1sljV+5QQw7K82fJ7Ii8pVZ14j+1MIKdg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/15/07, Pierre Ossman <drzeus-list@drzeus.cx> wrote:
-> Eugene Ilkov wrote:
-> > I have I/O errors with Transcend SD highspeed card 2GB/150x when it's
-> > mounted in r/w mode (cardreader on sharp sl-c1000)
-> > It works well  if I reverse mmcv4 patch commited to 2.6.19-git2
-> > (http://lkml.org/lkml/2006/10/4/27)
->
-> That patch is not the same as you are referencing in the rest of your mail.
+Andi Kleen <ak@suse.de> wrote:
 
-I geuss changes was started from that patch, I mean changes that comes
-with that:
-http://www.linuxhq.com/kernel/v2.6/19-git2/drivers/mmc/mmc.c
+> Now if it's better to set up a empty node or use a nearby node
+> for a memory less cpu can be further discussed. I still think
+> I lean towards the later.
 
-I found another related patch
-http://mailman.laptop.org/pipermail/commits-kernel/2007-January/000554.html
-so i guess i'm not alone
-
-
->
-> > I'm not experienced in mmc, but I figured out that problem is
-> > somewhere in mmc_read_switch_caps() and when i change cmd.arg value
-> > from 0x80FFFFF1 to 0x00FFFFF1 it works fine too
-> > What argument should have SD_SWITCH opcode?
-> >
->
-> The argument is correct, so I'm guessing that your controller might be a bit
-> flaky and not handle the new timing.
-
-> Can you enable MMC_DEBUG and send over the
-> dmesg?
-
-mmc debug output is too noisy
-and i can give you only this:
-
-mmc0: starting CMD18 arg 30007e00 flags 00000035
-PXAMCI: irq 00000004 stat 00002140
-PXAMCI: irq 00000005 stat 00002940
-PXAMCI: irq 00000007 stat 00003940
-mmc0: req done (CMD18): 0/0/0: 00000900 5f5a83d5 2db7ffbf 96800012
-mmc0: starting CMD18 arg 0000ae00 flags 00000035
-PXAMCI: irq 00000004 stat 00002140
-PXAMCI: irq 00000005 stat 00002940
-PXAMCI: irq 00000007 stat 00003940
-mmc0: req done (CMD18): 0/0/0: 00000900 5f5a83d5 2db7ffbf 96800012
-mmc0: starting CMD18 arg 0ab49e00 flags 00000035
-PXAMCI: irq 00000004 stat 00002140
-PXAMCI: irq 00000005 stat 00002940
-PXAMCI: irq 00000007 stat 00003940
-mmc0: req done (CMD18): 0/0/0: 00000900 5f5a83d5 2db7ffbf 96800012
-mmc0: starting CMD18 arg 0ab4ae00 flags 00000035
-PXAMCI: irq 00000004 stat 00002140
-PXAMCI: irq 00000005 stat 00002940
-PXAMCI: irq 00000007 stat 00003940
-mmc0: req done (CMD18): 0/0/0: 00000900 5f5a83d5 2db7ffbf 96800012
-
-with desabled mmc debug :
-
-Linux version 2.6.20-rc1-mm1-z2 (root@fly) (gcc version 4.1.1 (Gentoo 4.1.1-r3))
- #58 PREEMPT Thu Feb 15 13:49:39 MSK 2007
-CPU: XScale-PXA270 [69054117] revision 7 (ARMv5TE), cr=0000397f
-Machine: SHARP Akita
-
-[..skipped..]
-
-mmcblk0: mmc0:b368 SDC   2009600KiB
- mmcblk0: p1
-mmcblk0: error 2 transferring data
-mmcblk0: error 2 transferring data
-kjournald starting.  Commit interval 5 seconds
-mmcblk0: error 2 transferring data
-EXT3 FS on mmcblk0p1, internal journal
-EXT3-fs: recovery complete.
-mmcblk0: error 2 transferring data
-EXT3-fs: mounted filesystem with ordered data mode.
-VFS: Mounted root (ext3 filesystem).
-Freeing init memory: 72K
-mmcblk0: error 2 transferring data
-mmcblk0: error 2 transferring data
-mmcblk0: error 2 transferring data
-mmcblk0: error 2 transferring data
-mmcblk0: error 2 transferring data
-mmcblk0: error 2 transferring data
-mmcblk0: error 2 transferring data
-
-
-i boot into root fs on SD, and it just hangs on remounting to rw, so
-it's not easy to get full dmesg output with i/o error and mmc debug
-info, but i'll try if it helps
+Worst case: Only slot 0 is used. Plug your memoryless CPU card into the last
+slot before your plug the CPU+mem card into the last-1 slot.
+-- 
+W.I.N.D.O.W.S.:
+ Wireless Intelligent Neohuman Designed for Observation and Worldwide Sabotage
+        -- http://www.brunching.com/toys/toy-cyborger.html
+Friﬂ, Spammer: 05gZ@zzFMTbf.7eggert.dyndns.org
