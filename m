@@ -1,137 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932742AbXBONfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932693AbXBONnH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932742AbXBONfy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 08:35:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932750AbXBONfy
+	id S932693AbXBONnH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 08:43:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932759AbXBONnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 08:35:54 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:36594 "EHLO ogre.sisk.pl"
+	Thu, 15 Feb 2007 08:43:06 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:39735 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932742AbXBONfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 08:35:53 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: ego@in.ibm.com
-Subject: Re: [RFC PATCH(Experimental) 0/4] Freezer based Cpu-hotplug
-Date: Thu, 15 Feb 2007 14:31:08 +0100
-User-Agent: KMail/1.9.5
-Cc: akpm@osdl.org, paulmck@us.ibm.com, mingo@elte.hu, vatsa@in.ibm.com,
-       dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, oleg@tv-sign.ru
-References: <20070214144031.GA15257@in.ibm.com> <200702150909.53145.rjw@sisk.pl> <20070215122055.GA19155@in.ibm.com>
-In-Reply-To: <20070215122055.GA19155@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S932693AbXBONnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 08:43:05 -0500
+Date: Thu, 15 Feb 2007 16:35:50 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 05/11] syslets: core code
+Message-ID: <20070215133550.GA29274@2ka.mipt.ru>
+References: <20070213142035.GF638@elte.hu> <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-Message-Id: <200702151431.10068.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.7.5 (2ka.mipt.ru [0.0.0.0]); Thu, 15 Feb 2007 16:36:07 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 15 February 2007 13:20, Gautham R Shenoy wrote:
-> On Thu, Feb 15, 2007 at 09:09:51AM +0100, Rafael J. Wysocki wrote:
-> > > 
-> > > Why should we make sure that PF_NOFREEZE tasks are also frozen for
-> > > cpu hotplug? Instead, we can create an infrastructure which allows threads to
-> > > specify for the scenarios they would want to be excempted from freeze.
-> > > Something like what Paul has suggested in
-> > > http://lkml.org/lkml/2007/1/31/323. That way, threads which have nothing
-> > > to do with the online_cpu_map or with handling of cpu-hotplug events can
-> > > mark themselves to be exempted from being frozen for cpu hotplug.
-> > 
-> > I think all kernel threads should call try_to_freeze() in suitable places
-> > anyway if we are going to use the freezer for anything more than just the
-> > suspend.  In other words, they all should be _able_ to freeze if necessary.
+On Wed, Feb 14, 2007 at 12:38:16PM -0800, Linus Torvalds (torvalds@linux-foundation.org) wrote:
+> Or how would you do the trivial example loop that I explained was a good 
+> idea:
 > 
-> Yeah! I agree. I misunderstood your earlier point. I thought you were 
-> hinting at freezing *everyone* while doing a cpu hotplug.
-
-So I think tonight I'll start adding try_to_freeze() to the kernel threads that
-set PF_NOFREEZE.
-
+>         struct one_entry *prev = NULL;
+>         struct dirent *de;
 > 
-> > 
-> > > Once this is achieved, it's all about classifying the threads into
-> > > according to their NO_FREEZE needs :)
-> > 
-> > Yes, but I think it's just a generalization of ingoring PF_NOFREEZE.
-> > If all kernel threads are able to freeze, we can mark them as "freeze for CPU
-> > hotplug" or "freeze for kprobes", or "freeze for suspend" etc. and call the
-> > freezer with the appropriate parameter.
-> > 
-> > BTW, what happens to a process running on a CPU being removed?
-> > 
+>         while ((de = readdir(dir)) != NULL) {
+>                 struct one_entry *entry = malloc(..);
 > 
-> We call stop_machine_run in _cpu_down which schedules an idle thread on 
-> the cpu to be removed. Once the idle thread runs, we call __cpu_die and
-> subsequently the scheduler performs task migration while handling 
-> the CPU_DEAD notification (see migration_call in sched.c)
-
-Ah, thanks for the explanation.
-
-> > > > 2) We have to change the PM code to stop using CPU hotplug for disabling
-> > > > nonboot CPUs. ;-)
-> > > 
-> > > Just wondering, how hard is that ?
-> > 
-> > Hmmm.  In fact the problem is that the suspend code freezes tasks and then
-> > calls disable_nonboot_cpus() which uses (_)cpu_down/up().  In principle we
-> > could make disable_nonboot_cpus() call some lower-level routines to avoid the
-> > freezing of tasks, _but_ the suspend code may freeze too few tasks (ie. we may
-> > want to freeze more tasks for the CPU hotplug).  Thus I think we should do
-> > something like this:
-> > 
-> > suspend:				CPU hotplug:
-> > freeze_processes(SUSPEND)	...
-> > ...					freeze_processes(CPU_HOTPLUG)
-> > ...					...
-> > ...					thaw_processes(CPU_HOTPLUG)
-> > thaw_processes(SUSPEND)	...
-> > 
-> > so freeze_processes() should be reentrant, at least for different values of
-> > the argument.
-> > 
+>                 /* Add it to the list, fill in the name */
+>                 entry->next = prev;
+>                 prev = entry;
+>                 strcpy(entry->name, de->d_name);
 > 
-> That would still mean going over the task list twice.
-
-Yes, but I think this is inevitable anyway, because we have moved the
-disabling of nonboot CPUs after the suspending of devices (for
-ACPI-related reasons).
-
-Currently, we have, roughly:
-
-freeze_processes();
-shrink_memory(); (swsusp only)
-suspend_devices();
-disable_nonboot_cpus();
-suspend
-
-and the reverse during the resume.
-
-Still, the second pass will be quick, since the majority of tasks are frozen
-when disable_nonboot_cpus() is called.
-
-> How if we have 
+>                 /* Do the stat lookup async */
+>                 async_stat(de->d_name, &entry->stat_buf);
+>         }
+>         wait_for_async();
+>         .. Ta-daa! All done ..
 > 
-> freeze_process(SUSPEND|CPU_HOTPLUG);
-> perform_pre_hotplug_suspend();
-> primitive_cpu_down/_up();
-> perform_post_hotplug_suspend();
 > 
-> Does this look like a good thing to you?
-> > All in all, I think we should start from modifying the freezer and the
-> > classification of processes with respect to the freezing.
-> > 
+> Notice? This also "chains system calls together", but it does it using a 
+> *much* more powerful entity called "user space". That's what user space 
+> is. And yeah, it's a pretty complex sequencer, but happily we have 
+> hardware support for accelerating it to the point that the kernel never 
+> even needs to care.
 > 
-> Cool! Lets get started then ;-)
+> The above is a *realistic* schenario, where you actually have things like 
+> memory allocation etc going on. In contrast, just chaining system calls 
+> together isn't a realistic schenario at all.
 
-No problem with that. ;-)
+One can still perfectly fine and easily use sys_async_exec(...stat()...)
+in above scenario. Although I do think that having a web server in
+kernel is overkill, having a proper state machine for good async
+processing is a must.
+Not that I agree, that it should be done on top of syscalls as basic
+elements, but it is an initial state.
 
-Speaking of the classification, do you think it would be practical to use
-some kind of "freezing levels"?  I mean, for each task we can define the
-"freezing level" at which it should be frozen and each user of the freezer
-can call it with a specific "freezing level" as a parameter.  Of course for
-this purpose the tasks frozen at level 1 have to be a subset of the tasks
-frozen at level 2 etc. and I'm not sure if this requirement can be satisfied.
+> So I think we have one _known_ usage schenario:
+> 
+>  - replacing the _existing_ aio_read() etc system calls (with not just 
+>    existing semantics, but actually binary-compatible)
+> 
+>  - simple code use where people are willing to perhaps do something 
+>    Linux-specific, but because it's so _simple_, they'll do it.
+> 
+> In neither case does the "chaining atoms together" seem to really solve 
+> the problem. It's clever, but it's not what people would actually do.
 
-Rafael
+It is an example of what can be done. If one do not like it - do not use
+it. State machine is implemented in sendfile() syscall - and although it
+is not a good idea to have async sendfile as is in micro-thread design
+(due to network blocking and small per-page reading), it is still a state 
+machine, which can be used with syslet state machine (if it could be 
+extended).
+
+> And yes, you can hide things like that behind an abstraction library, but 
+> once you start doing that, I've got three questions for you:
+> 
+>  - what's the point?
+>  - we're adding overhead, so how are we getting it back
+>  - how do we handle independent libraries each doing their own thing and 
+>    version skew between them?
+> 
+> In other words, the "let user space sort out the complexity" is not a good 
+> answer. It just means that the interface is badly designed.
+
+Well, if we can setup iocb structure, why we can not setup syslet one?
+
+Yes, with syscalls as a state machine elements 99% of users will not use
+it (I can only think about proper fadvice()+read()/sendfile() states),
+but there is no problem to setup a structure in userspace at all. And if
+there is possibility to use it for other things, it is definitely a win.
+
+Actually complex structure setup argument is stupid - everyone forces to 
+have timeval structure instead of number of microseconds.
+
+So there is no point in 'complex setup and overhead', but there is
+a. limit of the AIO (although my point is not to have huge amount of
+	working threads - they were created by people who can not
+	program state machines (c) Alan Cox)
+b. possibility to implement a state machine (in current form likely will
+	not be used except maybe some optional hints for IO tasks like
+	fadvice)
+c. in all other ways it has all pros and cons of micro-thread design (it
+	looks neat and simple, although is utterly broken in some usage
+	cases).
+
+> 			Linus
+
+-- 
+	Evgeniy Polyakov
