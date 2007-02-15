@@ -1,58 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751421AbXBOAjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751428AbXBOAuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751421AbXBOAjY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 19:39:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbXBOAjY
+	id S1751428AbXBOAuX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 19:50:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbXBOAuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 19:39:24 -0500
-Received: from smtpout14-02.prod.mesa1.secureserver.net ([68.178.232.8]:59002
-	"HELO smtpout14-02.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751421AbXBOAjX (ORCPT
+	Wed, 14 Feb 2007 19:50:23 -0500
+Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:8971 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751428AbXBOAuW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 19:39:23 -0500
-Date: Wed, 14 Feb 2007 17:39:22 -0700
-From: akennedy@techmoninc.com
-Subject: RE: Serial console issues.
-To: Alan <alan@lxorguk.ukuu.org.uk>
-cc: linux-kernel@vger.kernel.org
-Message-ID: <20070214173922.bfc52cea95091b0fffcb409eab6296ba.d67be632a9.wbe@email.secureserver.net>
+	Wed, 14 Feb 2007 19:50:22 -0500
+X-IronPort-AV: i="4.14,170,1170662400"; 
+   d="scan'208"; a="762961210:sNHT42007792"
+To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       openib-general@openib.org, hch@infradead.org, raisch@de.ibm.com,
+       h.carstens@de.ibm.com
+Subject: Re: [PATCH 2.6.21-rc1 4/5] ehca: replace yield() by wait_for_completion()
+X-Message-Flag: Warning: May contain useful information
+References: <200702141741.35444.hnguyen@linux.vnet.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 14 Feb 2007 16:50:06 -0800
+In-Reply-To: <200702141741.35444.hnguyen@linux.vnet.ibm.com> (Hoang-Nam Nguyen's message of "Wed, 14 Feb 2007 17:41:35 +0100")
+Message-ID: <adahctow8g1.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=US-ASCII
-User-Agent: Web-Based Email 4.9.14
-X-Originating-IP: 68.209.83.41
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 15 Feb 2007 00:50:09.0282 (UTC) FILETIME=[3DF2BE20:01C7509B]
+Authentication-Results: sj-dkim-7; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim7002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > In a previous post I incorrectly stated that my serial port is a
-> > TI16750, as this is what /proc/tty/... revealed to me.  After
-> > re-reading the product manual, I see that this is actually a 16550.
-> > Since Linux is seeing this port as a 16750, could that explain why I'm
-> > seeing missing characters in the transmission.  After doing some
-> > research, I found that the 16750 has a 64-byte buffer, whereas I know
-> > this to only have a 16-byte buffer.
->
-> The autodetect is pretty solid so you may well find the chip is 16750
-> compatible, 16550A is what is usually listed because it is what people
-> look for.
->
-> > If my assumptions are correct and Linux is detecting this serial port
-> > incorrectly, how can I force the serial driver to see this a 16550?
->
-> man setserial
-
-Well, this is the most bastardized sucker I've ever seen. . . I have had
-no end of trouble with it (couldn't even get a boot loader to work with
-it - had to write my own).  And, as luck would have it, the serial port
-is no different.  Using setserial, I changed the type of this port to a
-16550A and all my problems went away.  The question now remains:  How
-can I FORCE the Linux serial driver to see this as a 16550A -- As I
-before stated, I know that this has a 16-byte buffer.  Therefore, the
-16750 with its mammoth buffer size is killing this serial port.  Short
-of modifying the kernel (which I'd rather not do) or including the
-setserial with the kernel image (also I'd rather not do as I only have
-2.3 MB of storage on this device) I need a command line parameter to
-control the serial line -- is there one?  A build option?  PLEASE
-SOMETHING???
-
-Andy
-
+I agree with Christoph -- the use of wait_for_completion() in a loop
+makes no sense.  When you send a new copy of this patch without
+whitespace damage, please fix that up too...
