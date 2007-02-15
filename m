@@ -1,89 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965107AbXBOIMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965128AbXBOINW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965107AbXBOIMs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 03:12:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965112AbXBOIMs
+	id S965128AbXBOINW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 03:13:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965127AbXBOINW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 03:12:48 -0500
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:28043 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S965111AbXBOIMr (ORCPT
+	Thu, 15 Feb 2007 03:13:22 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46791 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965124AbXBOINV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 03:12:47 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=djly5Pr4f62/6gaYkrfw4SvHWa0kkc3OpcCQvpPiW0zqmLtKxQdPtAtLYMYZiAd/XDBQFvyN2U/5ZYM9jp95NcsCKTeYvBxW4yFc0Jc8bnDzaGvzekirSwqz46PKN92Lb13LIbOzDQXJz3lMob3q7IqddvftEPIb5OaNxU2L6pU=  ;
-X-YMail-OSG: Kr95id0VM1kl8CRAUKElO2Flb.gKRLRuprdwkHgmGH_dSBbTZdTt0Tm1cBb5BOCoCvTPOM7yx.dtjmwLPVrh5UpgUS5oyb9aZlNGOOTyZTP0k9R8KEouKSx0yt6gt6DLiCh9yU9BuXtUOq0-
-Message-ID: <45D415DA.5010704@yahoo.com.au>
-Date: Thu, 15 Feb 2007 19:12:10 +1100
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: v j <vj.linux@gmail.com>
-CC: Randy Dunlap <rdunlap@xenotime.net>, Dave Jones <davej@redhat.com>,
-       linux-kernel@vger.kernel.org
+	Thu, 15 Feb 2007 03:13:21 -0500
 Subject: Re: GPL vs non-GPL device drivers
-References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>	 <20070215061149.GE15654@redhat.com>	 <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>	 <20070214231143.11ff6b46.rdunlap@xenotime.net> <9b3a62ab0702142328h87365b6i932d4f2c117f7f0e@mail.gmail.com>
-In-Reply-To: <9b3a62ab0702142328h87365b6i932d4f2c117f7f0e@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+From: Arjan van de Ven <arjan@infradead.org>
+To: v j <vj.linux@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <9b3a62ab0702150004n78763d4ei652b41c7edcd0755@mail.gmail.com>
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+	 <1171524970.12771.568.camel@laptopd505.fenrus.org>
+	 <9b3a62ab0702150004n78763d4ei652b41c7edcd0755@mail.gmail.com>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Thu, 15 Feb 2007 09:13:13 +0100
+Message-Id: <1171527194.12771.575.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-v j wrote:
-> On 2/14/07, Randy Dunlap <rdunlap@xenotime.net> wrote:
+On Thu, 2007-02-15 at 00:04 -0800, v j wrote:
+> On 2/14/07, Arjan van de Ven <arjan@infradead.org> wrote:
+> > On Wed, 2007-02-14 at 21:16 -0800, v j wrote:
+> > > This is in reference to the following thread:
+> > >
+> > > http://lkml.org/lkml/2006/12/14/63
+> > >
+> > > I am not sure if this is ever addressed in LKML, but linux is _very_
+> > > popular in the embedded space. We (an embedded vendor) chose Linux 3
+> > > years back because of its lack of royalty model, robustness and
+> > > availability of infinite number of open-source tools.
+> >
+> >
+> > I think you have a bit of a misunderstanding... Linux is not royalty
+> > free. Just the royalty is not in the form of cash, but in the form of
+> > having to give your improvements back to the open source world.
 > 
->> At least one of us is confused about that an embedded User is.
->> It seems to me that you are an embedded developer, not User.
->> I doubt that most Embedded Users care what their OS is,
->> or even know what an OS is.
-> 
-> 
-> I am not sure what the difference is. We are trying to use Linux to
-> support our application. It may be that Linux has a bug, or our
-> application. When it is Linux, that has the problem, I  have tried to
-> inform the community of that.
+> Sure. But this is not legally binding.
 
-
-The difference is that you are selling it and not contributing back.
-
-I think the legal term is something like distributing copyright
-material without a license.
-
-
->> > Not everybody has to be a contributor. The reason Linux is popular is
->> > because of its openness. Take that away and see where it goes.
->>
->> We seem to have different definitions of open and closed.
-> 
-> 
-> Open = 3rd party Linux drivers can be loaded. Closed = No third party
-> Linux drivers can be loaded.
-
-
-So most linux kernel developers chose to contribute to Linux because
-they prefer something closer to the GPL's notion of open (assuming
-your definitions are in the context of the legality of redistributing
-the end result).
-
-Don't take offence, but most of us don't _want_ the embedded
-developers who contribute nothing back. Even if you tripled the total
-Linux userbase, how would that be a good thing for anyone but yourself?
-
-Now imagine if nobody contributed anything back.
-
-The reason Linux is good enough that you chose in the first place is
-because of everyone contributing back. Why would we want to undermine
-that? My aim for Linux is not to have it shut down VxWorks, or to have
-a huge userbase, but to be the best OS out there.
-
-Maybe that helps explain the why others here don't share your opinion?
-
-With that said, there are some reasonable free BSD licensed operating
-systems out there that you can use without opening your source.
+that's a legal conclusion that is ... iffy at least. I'm not a lawyer,
+but I suggest you talk to a real one before making that conclusion, and
+you'll see it's not as simple as that.
 
 -- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+
