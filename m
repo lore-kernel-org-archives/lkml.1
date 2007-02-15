@@ -1,100 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030373AbXBORvF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030380AbXBORwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030373AbXBORvF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 12:51:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030376AbXBORvE
+	id S1030380AbXBORwc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 12:52:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030382AbXBORwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 12:51:04 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:57518 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030373AbXBORvD (ORCPT
+	Thu, 15 Feb 2007 12:52:32 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:26892 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030380AbXBORwb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 12:51:03 -0500
-Date: Thu, 15 Feb 2007 18:51:08 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.6.16.41-rc1
-Message-ID: <20070215175108.GB13958@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 15 Feb 2007 12:52:31 -0500
+In-Reply-To: <20070215165228.GF4285@elte.hu>
+References: <20070215165228.GF4285@elte.hu>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A0D7A9CD-B04B-4C54-A030-22B38DC50689@oracle.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Transfer-Encoding: 7bit
+From: Zach Brown <zach.brown@oracle.com>
+Subject: Re: [patch 05/14] syslets: core code
+Date: Thu, 15 Feb 2007 09:46:12 -0800
+To: Ingo Molnar <mingo@elte.hu>
+X-Mailer: Apple Mail (2.752.3)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Location:
-ftp://ftp.kernel.org/pub/linux/kernel/people/bunk/linux-2.6.16.y/testing/
 
-git tree:
-git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+> +static void
+> +__mark_async_thread_ready(struct async_thread *at, struct  
+> async_head *ah)
+> +{
+> +	list_del(&at->entry);
+> +	list_add_tail(&at->entry, &ah->ready_async_threads);
 
+> +__mark_async_thread_busy(struct async_thread *at, struct  
+> async_head *ah)
+> +{
+> +	list_del(&at->entry);
+> +	list_add_tail(&at->entry, &ah->busy_async_threads);
 
-Changes since 2.6.16.40:
+list_move_tail()?
 
-Adrian Bunk (3):
-      Revert "[Bluetooth] Fix compat ioctl for BNEP, CMTP and HIDP"
-      [ALSA] echo3g_dsp.c shouldn't include #include <linux/irq.h>
-      Linux 2.6.16.41-rc1
-
-Al Viro (1):
-      [TCP]: struct tcp_sack_block annotations
-
-Baruch Even (1):
-      TCP: Fix sorting of SACK blocks.
-
-Bob Breuer (1):
-      SPARC32: Fix over-optimization by GCC near ip_fast_csum.
-
-Daniel Walker (1):
-      [ATM]: Fix for crash in adummy_init()
-
-David S. Miller (1):
-      AF_PACKET: Check device down state before hard header callbacks.
-
-Eric W. Biederman (1):
-      DECNET: Handle a failure in neigh_parms_alloc (take 2)
-
-Herbert Xu (1):
-      [NETFILTER]: Clear GSO bits for TCP reset packet
-
-Hugh Dickins (1):
-      fix umask when noACL kernel meets extN tuned for ACLs
-
-Jeff Dike (1):
-      uml: fix signal frame alignment
-
-Jiri Bohac (1):
-      [IPX]: Fix NULL pointer dereference on ipx unload
-
-John Heffner (1):
-      [TCP]: Don't apply FIN exception to full TSO segments.
-
-Linus Torvalds (1):
-      Fix up CIFS for "test_clear_page_dirty()" removal
-
-Masayuki Nakagawa (1):
-      TCP: skb is unexpectedly freed.
-
-
- Makefile                           |    2 
- arch/um/sys-i386/signal.c          |    2 
- arch/um/sys-x86_64/signal.c        |    5 +
- fs/cifs/file.c                     |   26 ++++++++-
- fs/ext2/super.c                    |    4 +
- fs/ext3/super.c                    |    4 +
- include/asm-sparc/checksum.h       |    2 
- include/linux/tcp.h                |    5 +
- net/atm/common.c                   |    3 -
- net/bluetooth/bnep/sock.c          |   67 ++++++------------------
- net/bluetooth/cmtp/sock.c          |   33 ------------
- net/bluetooth/hidp/sock.c          |   78 -----------------------------
- net/decnet/dn_dev.c                |   11 +++-
- net/ipv4/netfilter/ip_nat_helper.c |    2 
- net/ipv4/netfilter/ipt_REJECT.c    |    3 +
- net/ipv4/tcp_input.c               |   17 +++---
- net/ipv4/tcp_output.c              |    3 -
- net/ipx/af_ipx.c                   |   24 +++++---
- net/packet/af_packet.c             |   16 ++---
- sound/pci/echoaudio/echo3g_dsp.c   |    2 
- 20 files changed, 111 insertions(+), 198 deletions(-)
-
+- z
