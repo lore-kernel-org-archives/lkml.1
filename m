@@ -1,22 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964885AbXBODaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964892AbXBODlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964885AbXBODaz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 22:30:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964888AbXBODaz
+	id S964892AbXBODlb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 22:41:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964888AbXBODlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 22:30:55 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:60532 "EHLO smtp.osdl.org"
+	Wed, 14 Feb 2007 22:41:31 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:60756 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964885AbXBODaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 22:30:55 -0500
-Date: Wed, 14 Feb 2007 19:30:51 -0800
+	id S964889AbXBODla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 22:41:30 -0500
+Date: Wed, 14 Feb 2007 19:41:12 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] aio: fix kernel bug when page is temporally busy
-Message-Id: <20070214193051.4b008d61.akpm@linux-foundation.org>
-In-Reply-To: <B41635854730A14CA71C92B36EC22AAC83F228@mssmsx411>
-References: <B41635854730A14CA71C92B36EC22AAC83F228@mssmsx411>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@linux-foundation.org, herbert.xu@redhat.com,
+       linux-kernel@vger.kernel.org, davej@redhat.com, arjan@infradead.org,
+       linux-crypto@vger.kernel.org
+Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing
+Message-Id: <20070214194112.5bec3110.akpm@linux-foundation.org>
+In-Reply-To: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com>
+References: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -24,68 +26,45 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Feb 2007 20:51:33 +0300 "Ananiev, Leonid I" <leonid.i.ananiev@intel.com> wrote:
+On Wed, 14 Feb 2007 19:09:38 +0000 David Howells <dhowells@redhat.com> wrote:
 
-> Fix kernel bug when IO page is temporally busy:
-> invalidate_inode_pages2_range() returns EIOCBRETRY but not  EIO.
-> invalidate_inode_pages2() returns EIO as earlier.
+> These patches provide a GPG-based kernel module signing facility.  Their use is
+> not fully automated within the confines of the kernel build process because it
+> needs provision of keys from outside of the kernel before the kernel can be
+> compiled.
 > 
-> Signed-off-by: Leonid Ananiev <leonid.i.ananiev@intel.com>
-> ---
-> --- linux-2.6.20/mm/truncate.c  2007-02-04 10:44:54.000000000 -0800
-> +++ linux-2.6.20p/mm/truncate.c 2007-02-08 22:56:52.000000000 -0800
-> @@ -366,7 +366,7 @@ static int do_launder_page(struct addres
->   * Any pages which are found to be mapped into pagetables are unmapped prior to
->   * invalidation.
->   *
-> - * Returns -EIO if any pages could not be invalidated.
-> + * Returns -EIOCBRETRY if any pages could not be invalidated.
->   */
->  int invalidate_inode_pages2_range(struct address_space *mapping,
->                                   pgoff_t start, pgoff_t end)
-> @@ -423,7 +423,7 @@ int invalidate_inode_pages2_range(struct
->                         }
->                         ret = do_launder_page(mapping, page);
->                         if (ret == 0 && !invalidate_complete_page2(mapping, page))
-> -                               ret = -EIO;
-> +                               ret = -EIOCBRETRY;
->                         unlock_page(page);
->                 }
->                 pagevec_release(&pvec);
-> @@ -444,6 +444,7 @@ EXPORT_SYMBOL_GPL(invalidate_inode_pages
->   */
->  int invalidate_inode_pages2(struct address_space *mapping)
->  {
-> -       return invalidate_inode_pages2_range(mapping, 0, -1);
-> +       int ret =  invalidate_inode_pages2_range(mapping, 0, -1);
-> +       return (ret < 0)?-EIO:ret;
->  }
->  EXPORT_SYMBOL_GPL(invalidate_inode_pages2);
+> The patches are:
+> 
+>  (1) A cut-down MPI library derived from GPG with error handling added.
+> 
+>  (2) Permit hash algorithms to hash kernel data defined by a virtual address
+>      and a length rather than trying to use scattergather lists (which require
+>      struct page pointers to be determined).
+> 
+>  (3) Add extra information to the per-arch ELF headers to more fully describe
+>      the format of the ELF metadata.
+> 
+>  (4) Add module verification capabilities, including ELF metadata verification.
+> 
+>  (5) Add a generic DSA signature checker.  Given a SHA1 hash of the data to be
+>      verified and a binary blob holding a GPG signature stream, this verifies
+>      the signature using a built-in ring of public keys.
+> 
+>  (6) Add a module signature checker that applies signature checking to modules
+>      on module load, checking the signature against the ring of public keys
+>      compiled into the kernel.
 
-If someone later uses invalidate_inode_pages2_range() elsewhere, they're
-going to need to know to convert -EIOCBRETRY into -EIO, if they weren't
-called by aio.  Or something.
+Grand total:
 
-Please, tell us what problem this is fixing so that we can look into
-alternative solutions.
+ 77 files changed, 9681 insertions(+), 10 deletions(-)
 
-For example, one acceptable-but-ugly solution might be to do:
+just to be able to sign modules.
 
-static inline int invalidate_inode_pages2_range(struct address_space *mapping,
-				pgoff_t start, pgoff_t end)
-{
-	return __invalidate_inode_pages2_range(mapping, start, end, 0);
-}
+Normally I'd collapse writhing in laughter, but..
 
-static inline int invalidate_inode_pages2_range_for_aio(struct address_space *mapping,
-				pgoff_t start, pgoff_t end)
-{
-	return __invalidate_inode_pages2_range(mapping, start, end, 1);
-}
+> These patches have been in use by RHEL and Fedora kernels for years, and so
+> have been thoroughly tested.
 
-and to then use invalidate_inode_pages2_range_for_aio() from the
-appropriate callsite.
-
-But without a complete description of the bug which this is fixing, it's
-hard to say how practical such an approach would be.
-
+so I guess there's an argument for merging them so we can send them back to
+you guys.  But there's also an argument to declare all this gunk a
+vendor-only thing.  How much pain would that cause?
