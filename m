@@ -1,129 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751510AbXBOBci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751547AbXBOBdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751510AbXBOBci (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 20:32:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbXBOBci
+	id S1751547AbXBOBdJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 20:33:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbXBOBdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 20:32:38 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:36069 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751510AbXBOBch (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 20:32:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NgJetbh113pTrep3w9L0cIm3QpDExyaWIR9hqgkb3XYz4/QqQzZf7Ldv+5VgyH3K7twxf7ewepi3BxN3vQ16OH8cYt0DXxsMmZHuemRqClJF11u/FCxV2LWadniE842IOZAmA0zapYyUtTTNLp2PG85CDFyrC/yKcTP3+VBXSHo=
-Message-ID: <f2b55d220702141732k642f17ccnc2256e54383e713@mail.gmail.com>
-Date: Wed, 14 Feb 2007 17:32:33 -0800
-From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: "Benjamin LaHaise" <bcrl@kvack.org>
-Subject: Re: [patch 06/11] syslets: core, documentation
-Cc: "Davide Libenzi" <davidel@xmailserver.org>,
-       "Russell King" <rmk+lkml@arm.linux.org.uk>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "Andrew Morton" <akpm@zip.com.au>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Ulrich Drepper" <drepper@redhat.com>,
-       "Zach Brown" <zach.brown@oracle.com>,
-       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Suparna Bhattacharya" <suparna@in.ibm.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <20070214214409.GM32271@kvack.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Feb 2007 20:33:09 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:33473 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751560AbXBOBdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 20:33:07 -0500
+Date: Thu, 15 Feb 2007 02:33:06 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [patch 2/2] fs: fix nobh data leak
+Message-ID: <20070215013306.GI29797@wotan.suse.de>
+References: <20070215013229.GH29797@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070214103655.GB4241@flint.arm.linux.org.uk>
-	 <20070214110419.GC4241@flint.arm.linux.org.uk>
-	 <Pine.LNX.4.64.0702140919200.7480@alien.or.mcafeemobile.com>
-	 <20070214180344.GI32271@kvack.org>
-	 <Pine.LNX.4.64.0702141135390.7796@alien.or.mcafeemobile.com>
-	 <20070214200347.GK32271@kvack.org>
-	 <Pine.LNX.4.64.0702141206190.7796@alien.or.mcafeemobile.com>
-	 <20070214203438.GL32271@kvack.org>
-	 <Pine.LNX.4.64.0702141241030.7796@alien.or.mcafeemobile.com>
-	 <20070214214409.GM32271@kvack.org>
+In-Reply-To: <20070215013229.GH29797@wotan.suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/14/07, Benjamin LaHaise <bcrl@kvack.org> wrote:
-> My opinion of this whole thread is that it implies that our thread creation
-> and/or context switch is too slow.  If that is the case, improve those
-> elements first.  At least some of those optimizations have to be done in
-> hardware on x86, while on other platforms are probably unnecessary.
 
-Not necessarily too slow, but too opaque in terms of system-wide
-impact and global flow control.  Here are the four practical use cases
-that I have seen come up in this discussion:
+nobh_prepare_write leaks data similarly to how simple_prepare_write did. Fix
+by not marking the page uptodate until nobh_commit_write time. Again, this
+could break weird use-cases, but none appear to exist in the tree.
 
-1) Databases that want to parallelize I/O storms, with an emphasis on
-getting results that are already cache-hot immediately (not least so
-they don't get evicted by other I/O results); there is also room to
-push some of the I/O clustering and sequencing logic down into the
-kernel.
+We can safely remove the set_page_dirty, because as the comment says,
+nobh_commit_write does set_page_dirty. If a filesystem wants to allocate
+backing store for a page dirtied via mmap, page_mkwrite is the suggested
+approach.
 
-2) Static-content-intensive network servers, with an emphasis on
-servicing those requests that can be serviced promptly (to avoid a
-ballooning connection backlog) and avoiding duplication of I/O effort
-when many clients suddenly want the same cold content; the real win
-may be in "smart prefetch" initiated from outside the network server
-proper.
+Signed-off-by: Nick Piggin <npiggin@suse.de>
 
-3) Network information gathering GUIs, which want to harvest as much
-information as possible for immediate display and then switch to an
-event-based delivery mechanism for tardy responses; these need
-throttling of concurrent requests (ideally, in-kernel traffic shaping
-by request group and destination class) and efficient cancellation of
-no-longer-interesting requests.
-
-4) Document search facilities, which need all of the above (big
-surprise there) as well as a rich diagnostic toolset, including a
-practical snooping and profiling facility to guide tuning for
-application responsiveness.
-
-Even if threads were so cheap that you could just fire off one per I/O
-request, they're a poor solution to the host of flow control issues
-raised in these use cases.  A sequential thread of execution per I/O
-request may be the friendliest mental model for the individual delayed
-I/Os, but the global traffic shaping and scheduling is a data
-structure problem.
-
-The right question to be asking is, what are the operations that need
-to be supported on the system-wide pool of pending AIOs, and on what
-data structure can they be implemented efficiently?  For instance, can
-we provide an RCU priority queue implementation (perhaps based on
-splay trees) so that userspace can scan a coherent read-only snapshot
-of the structure and select candidates for cancellation, etc., without
-interfering with kernel completions?  Or is it more important to have
-a three-sided query operation (characteristic of priority search
-trees), or perhaps a lower amortized cost bulk delete?
-
-Once you've thought through the data structure manipulation, you'll
-know what AIO submission / cancellation / reprioritization interfaces
-are practical.  Then you can work on a programming model for
-application-level "I/O completions" that is library-friendly and
-allows a "fast path" optimization for the fraction of requests that
-can be served synchronously.  Then and only then does it make sense to
-code-bum the asynchronous path.  Not that it isn't interesting to
-think in advance about what stack space completions will run in and
-which bits of the task struct needn't be in a coherent condition; but
-that's probably not going to guide you to the design that meets the
-application needs.
-
-I know I'm teaching my grandmother to suck eggs here.  But there are
-application programmers high up the code stack whose code makes
-implicit use of asynchronous I/O continuations.  In addition to the
-GUI example I blathered about a few days ago, I have in mind Narrative
-Javascript's "blocking operator" and Twisted Python's Deferred.  Those
-folks would be well served by an async I/O interface to the kernel
-which mates well to their language's closure/continuation facilities.
-If it's usable from C, that's nice too.  :-)
-
-Cheers,
-- Michael
+Index: linux-2.6/fs/buffer.c
+===================================================================
+--- linux-2.6.orig/fs/buffer.c
++++ linux-2.6/fs/buffer.c
+@@ -2245,7 +2245,6 @@ int nobh_prepare_write(struct page *page
+ 	int i;
+ 	int ret = 0;
+ 	int is_mapped_to_disk = 1;
+-	int dirtied_it = 0;
+ 
+ 	if (PageMappedToDisk(page))
+ 		return 0;
+@@ -2282,14 +2281,10 @@ int nobh_prepare_write(struct page *page
+ 			continue;
+ 		if (buffer_new(&map_bh) || !buffer_mapped(&map_bh)) {
+ 			kaddr = kmap_atomic(page, KM_USER0);
+-			if (block_start < from) {
++			if (block_start < from)
+ 				memset(kaddr+block_start, 0, from-block_start);
+-				dirtied_it = 1;
+-			}
+-			if (block_end > to) {
++			if (block_end > to)
+ 				memset(kaddr + to, 0, block_end - to);
+-				dirtied_it = 1;
+-			}
+ 			flush_dcache_page(page);
+ 			kunmap_atomic(kaddr, KM_USER0);
+ 			continue;
+@@ -2344,17 +2339,6 @@ int nobh_prepare_write(struct page *page
+ 
+ 	if (is_mapped_to_disk)
+ 		SetPageMappedToDisk(page);
+-	SetPageUptodate(page);
+-
+-	/*
+-	 * Setting the page dirty here isn't necessary for the prepare_write
+-	 * function - commit_write will do that.  But if/when this function is
+-	 * used within the pagefault handler to ensure that all mmapped pages
+-	 * have backing space in the filesystem, we will need to dirty the page
+-	 * if its contents were altered.
+-	 */
+-	if (dirtied_it)
+-		set_page_dirty(page);
+ 
+ 	return 0;
+ 
+@@ -2384,6 +2368,7 @@ int nobh_commit_write(struct file *file,
+ 	struct inode *inode = page->mapping->host;
+ 	loff_t pos = ((loff_t)page->index << PAGE_CACHE_SHIFT) + to;
+ 
++	SetPageUptodate(page);
+ 	set_page_dirty(page);
+ 	if (pos > inode->i_size) {
+ 		i_size_write(inode, pos);
