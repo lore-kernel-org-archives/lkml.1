@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964829AbXBOCK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964831AbXBOCLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964829AbXBOCK3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 Feb 2007 21:10:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964831AbXBOCK3
+	id S964831AbXBOCLS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 Feb 2007 21:11:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964835AbXBOCLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 Feb 2007 21:10:29 -0500
-Received: from mail0.lsil.com ([147.145.40.20]:48825 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964829AbXBOCK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 Feb 2007 21:10:28 -0500
-Subject: [PATCH 5/6] scsi: megaraid_sas - return sync cache call with
-	success
-From: Sumant Patro <sumantp@lsil.com>
-To: James.Bottomley@SteelEye.com, akpm@osdl.org
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       neela.kolli@lsi.com, bo.yang@lsi.com, sumant.patro@lsi.com
-Content-Type: text/plain
-Date: Wed, 14 Feb 2007 13:00:55 -0800
-Message-Id: <1171486855.4188.33.camel@dumbo>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-22) 
-Content-Transfer-Encoding: 7bit
+	Wed, 14 Feb 2007 21:11:17 -0500
+Received: from imf16aec.mail.bellsouth.net ([205.152.59.64]:61267 "EHLO
+	imf16aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S964831AbXBOCLQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 Feb 2007 21:11:16 -0500
+Date: Wed, 14 Feb 2007 20:11:06 -0600
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: jeff@garzik.org
+Cc: csnook@redhat.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       atl1-devel@lists.sourceforge.net
+Subject: [PATCH 0/6] atl1: bugfix, cleanup, enhancement
+Message-ID: <20070215021106.GA9753@osprey.hogchain.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2007-01-26)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeff,
 
-FW does not support SYNCHRONIZE_CACHE cmd. FW flush cache on its own.
-So, we just return success from the megasas_queue_command.
+Please accept the following patchset for the atl1 network device driver.
 
-Signed-off-by: Sumant Patro <sumant.patro@lsi.com>
----
+* Drop unnecessary NET_PCI config
+* Fix incorrect hash table address
+* Read MAC address from register
+* Remove unused define
+* Add Attansic L1 device id to pci_ids
+* Bump version number
 
- drivers/scsi/megaraid/megaraid_sas.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+)
+This patchset contains changes to the following files.
 
-diff -uprN linux-feb13-new-p4/drivers/scsi/megaraid/megaraid_sas.c linux-feb13-new-p5/drivers/scsi/megaraid/megaraid_sas.c
---- linux-feb13-new-p4/drivers/scsi/megaraid/megaraid_sas.c	2007-02-14 04:34:31.000000000 -0800
-+++ linux-feb13-new-p5/drivers/scsi/megaraid/megaraid_sas.c	2007-02-14 05:19:30.000000000 -0800
-@@ -857,6 +857,18 @@ megasas_queue_command(struct scsi_cmnd *
- 		goto out_done;
- 	}
- 
-+	switch (scmd->cmnd[0]) {
-+		case SYNCHRONIZE_CACHE:
-+			/*
-+			 * FW takes care of flush cache on its own
-+			 * No need to send it down
-+			 */
-+			scmd->result = DID_OK << 16;
-+			goto out_done;
-+		default:
-+			break;
-+	}
-+
- 	/* Check if we can accept cmds */
- 	if (instance->is_busy) {
- 		sec = (jiffies - instance->last_time) / HZ;
-
+ drivers/net/Kconfig          |    2 +-
+ drivers/net/atl1/atl1_hw.c   |   37 +++++++++++++++++++++----------------
+ drivers/net/atl1/atl1_main.c |    5 ++---
+ include/linux/pci_ids.h      |    1 +
+ 4 files changed, 25 insertions(+), 20 deletions(-)
 
