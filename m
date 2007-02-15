@@ -1,152 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932821AbXBOOcd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965306AbXBOOeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932821AbXBOOcd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 09:32:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932828AbXBOOcd
+	id S965306AbXBOOeu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 09:34:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965322AbXBOOeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 09:32:33 -0500
-Received: from odyssey.analogic.com ([204.178.40.5]:1251 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932821AbXBOOcc convert rfc822-to-8bit (ORCPT
+	Thu, 15 Feb 2007 09:34:50 -0500
+Received: from ftp.linux-mips.org ([194.74.144.162]:41413 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965306AbXBOOet (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 09:32:32 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 15 Feb 2007 14:32:30.0494 (UTC) FILETIME=[1F9A33E0:01C7510E]
-Content-class: urn:content-classes:message
-Subject: Re: GPL vs non-GPL device drivers
-Date: Thu, 15 Feb 2007 09:32:30 -0500
-Message-ID: <Pine.LNX.4.61.0702150913020.1735@chaos.analogic.com>
-In-Reply-To: <1a297b360702150451n3dca1140ra6827cfde020eed5@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: GPL vs non-GPL device drivers
-Thread-index: AcdRDh+mz0CN495ORkaAuKoCZek4Nw==
-References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com> <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com> <200702151254.39058.mws@twisted-brains.org> <1a297b360702150451n3dca1140ra6827cfde020eed5@mail.gmail.com>
-From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-To: "Manu Abraham" <abraham.manu@gmail.com>
-Cc: "Mws" <mws@twisted-brains.org>, "v j" <vj.linux@gmail.com>,
-       <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+	Thu, 15 Feb 2007 09:34:49 -0500
+Date: Thu, 15 Feb 2007 14:34:41 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Optimize generic get_unaligned / put_unaligned implementations.
+Message-ID: <20070215143441.GA18155@linux-mips.org>
+References: <20050830104056.GA4710@linux-mips.org> <20060306.203218.69025300.nemoto@toshiba-tops.co.jp> <20060306170552.0aab29c5.akpm@osdl.org> <20070214214226.GA17899@linux-mips.org> <20070214203903.8d013170.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070214203903.8d013170.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Feb 14, 2007 at 08:39:03PM -0800, Andrew Morton wrote:
 
-On Thu, 15 Feb 2007, Manu Abraham wrote:
+> Can someone please tell us how this magic works?  (And it does appear to
+> work).
+> 
+> It seems to assuming that the compiler will assume that members of packed
+> structures can have arbitrary alignment, even if that alignment is obvious.
+> 
+> Which makes sense, but I'd like to see chapter-and-verse from the spec or
+> from the gcc docs so we can rely upon it working on all architectures and
+> compilers from now until ever more.
+> 
+> IOW: your changlogging sucks ;)
 
-> On 2/15/07, Mws <mws@twisted-brains.org> wrote:
->> hi vj,
->>
->> On Thursday 15 February 2007, v j wrote:
->>> This is in reference to the following thread:
->>>
->>> http://lkml.org/lkml/2006/12/14/63
->>>
->>> I am not sure if this is ever addressed in LKML, but linux is _very_
->>> popular in the embedded space. We (an embedded vendor) chose Linux 3
->>> years back because of its lack of royalty model, robustness and
->>> availability of infinite number of open-source tools.
->>>
->>> We recently decided to move to Linux 2.6 for our next product, mainly
->>> because Linux has worked so well for us in the past, and we would like
->>> to move up to keep up with the latest and greatest.
->>
->> you choose to move to linux 2.6 for your next product - fine.
->> it has worked for you well in the past - fine.
->> you would like to keep along with the latest and greatest - fine.
->>
->> _but_
->>
->> for all those reasons you have to get along with all rules, licenses and
->> at least all changes that the kernel community decided to perform.
->>
->>> However in moving to  2.6, we noticed a number of alarming things.
->>> Porting drivers over from devfs to udev, though easy raised a number
->>> of alarming issues. Driver's no longer could dynamically allocate
->>> their MAJOR/MINOR numbers. Doing so would mean they would have to use
->>> sysfs. However it seems that sysfs (and the class_ interface) is only
->>> available to GPL modules. This is very concerning. The drivers which
->>> we have written over the last three years are suddenly under threat.
->>> We don't mind statically assigning MAJOR/MINOR numbers to our drivers.
->>> We can do this and modify our user space applications too.
->>>
->>> However we have a worrying trend here. If at some point it becomes
->>> illegal to load our modules into the linux kernel, then it is
->>> unacceptable to us. We would have been better off choosing VxWorks or
->>> OSE 3 years ago when we made an OS choice. The fact that Linux is
->>> becoming more and more closed is very very alarming.
->>
->> the trend is not worrying. we are not responsible for your decisions you made
->> in the past.
->> the only real FACT is that linux is being stated to BE OPEN and what is much more
->> important to STAY OPEN for everybody.
->>
->> you chose it years ago, because of those facts. of course linux is very popular on
->> embedded systems. i am working within some open source projects that also run
->> on embedded hardware designs.
->>
->> your main mistake in understanding linux and our way to have it also more open in
->> future than by now.
->>
->> what actually costs you more in future?
->> opening your drivers, as much it must be, to have your hardware supported under 2.6
->> _or_
->> paying license fees for runtime/development tools for vxworks, ose whatever?
->
->
-> marcel,
->
-> most of the vendors, who claim IP just cite nonsense. There are really
-> hardly a few vendors who are really bound to the IP issue. Just that
-> they do not know how to write proper code, they do not want to open up
-> their code.
->
-> In fact , such vendors do have a think probably like this "if we open
-> up our driver if people see the pathetic quality, the customers would
-> probably think how bad is the hardware and probably affect our sales"
-> . So it would be better if we hide under the shade of the IP umbrella.
->
-> Little do that these vendors know that customers wouldn't want to go
-> alongwith such narrow minded vendors in the long run. But somehow due
-> to a certain void people do the get along, that's it, not for long
-> though.
->
-> regards,
-> manu
-> -
+It was my entry for the next edition of the C Puzzle Book ;-)
 
-There are a lot of device drivers that will never make it into the
-mainline kernel because they are for one-of-a-kind devices or boards
-that companies embed into their products. Nobody would even want a
-copy of the software to interface with something that they would
-never even have. When Version 2.6 started, it became necessary to
-use special tools and procedures to compile a module that was not
-inside the mainline kernel. However, it was still quite easy. Recently,
-somebody, apparently with an advanced degree in obfuscation, has made
-that more difficult. This is abuse, pure and simple. That, in my
-opinion, is one of the major reasons why people who use Linux in
-embedded systems end up using very old versions.
+The whole union thing was only needed to get rid of a warning but Marcel's
+solution does the same thing by attaching the packed keyword to the entire
+structure instead, so this patch is now using his macros but using __packed
+instead.
 
-There are, however, still ways to work around this obfuscation.
-One can write a simple program or script that parses the .config
-variables and creates a header file. One can also use the correct
-(changing) search paths for the necessary included header files.
-This, of course, is a pain in the butt, but it works and provides 
-correctly-working modules. The kernel obfuscator's time would be
-better spent making kernel use easier, but what do I know.
-I don't think of GPL as a religion, only as an experiment
-that has run amok.
+  Ralf
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.16.24 on an i686 machine (5592.61 BogoMips).
-New book: http://www.AbominableFirebug.com/
-_
-
+Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
+diff --git a/include/asm-generic/unaligned.h b/include/asm-generic/unaligned.h
+index 09ec447..60d94fc 100644
+--- a/include/asm-generic/unaligned.h
++++ b/include/asm-generic/unaligned.h
+@@ -1,122 +1,27 @@
+-#ifndef _ASM_GENERIC_UNALIGNED_H_
+-#define _ASM_GENERIC_UNALIGNED_H_
+-
+-/*
+- * For the benefit of those who are trying to port Linux to another
+- * architecture, here are some C-language equivalents. 
+- *
+- * This is based almost entirely upon Richard Henderson's
+- * asm-alpha/unaligned.h implementation.  Some comments were
+- * taken from David Mosberger's asm-ia64/unaligned.h header.
+- */
+-
+-#include <linux/types.h>
+-
+-/* 
+- * The main single-value unaligned transfer routines.
+- */
+-#define get_unaligned(ptr) \
+-	__get_unaligned((ptr), sizeof(*(ptr)))
+-#define put_unaligned(x,ptr) \
+-	__put_unaligned((__u64)(x), (ptr), sizeof(*(ptr)))
+-
+ /*
+- * This function doesn't actually exist.  The idea is that when
+- * someone uses the macros below with an unsupported size (datatype),
+- * the linker will alert us to the problem via an unresolved reference
+- * error.
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
+  */
+-extern void bad_unaligned_access_length(void) __attribute__((noreturn));
+-
+-struct __una_u64 { __u64 x __attribute__((packed)); };
+-struct __una_u32 { __u32 x __attribute__((packed)); };
+-struct __una_u16 { __u16 x __attribute__((packed)); };
+-
+-/*
+- * Elemental unaligned loads 
+- */
+-
+-static inline __u64 __uldq(const __u64 *addr)
+-{
+-	const struct __una_u64 *ptr = (const struct __una_u64 *) addr;
+-	return ptr->x;
+-}
+-
+-static inline __u32 __uldl(const __u32 *addr)
+-{
+-	const struct __una_u32 *ptr = (const struct __una_u32 *) addr;
+-	return ptr->x;
+-}
+-
+-static inline __u16 __uldw(const __u16 *addr)
+-{
+-	const struct __una_u16 *ptr = (const struct __una_u16 *) addr;
+-	return ptr->x;
+-}
+-
+-/*
+- * Elemental unaligned stores 
+- */
+-
+-static inline void __ustq(__u64 val, __u64 *addr)
+-{
+-	struct __una_u64 *ptr = (struct __una_u64 *) addr;
+-	ptr->x = val;
+-}
+-
+-static inline void __ustl(__u32 val, __u32 *addr)
+-{
+-	struct __una_u32 *ptr = (struct __una_u32 *) addr;
+-	ptr->x = val;
+-}
++#ifndef __ASM_GENERIC_UNALIGNED_H
++#define __ASM_GENERIC_UNALIGNED_H
+ 
+-static inline void __ustw(__u16 val, __u16 *addr)
+-{
+-	struct __una_u16 *ptr = (struct __una_u16 *) addr;
+-	ptr->x = val;
+-}
++#include <linux/compiler.h>
+ 
+-#define __get_unaligned(ptr, size) ({		\
+-	const void *__gu_p = ptr;		\
+-	__u64 val;				\
+-	switch (size) {				\
+-	case 1:					\
+-		val = *(const __u8 *)__gu_p;	\
+-		break;				\
+-	case 2:					\
+-		val = __uldw(__gu_p);		\
+-		break;				\
+-	case 4:					\
+-		val = __uldl(__gu_p);		\
+-		break;				\
+-	case 8:					\
+-		val = __uldq(__gu_p);		\
+-		break;				\
+-	default:				\
+-		bad_unaligned_access_length();	\
+-	};					\
+-	(__typeof__(*(ptr)))val;		\
++#define get_unaligned(ptr)					\
++({								\
++	struct __packed {					\
++		typeof(*(ptr)) __v;				\
++	} *__p = (void *) (ptr);				\
++	__p->__v;						\
+ })
+ 
+-#define __put_unaligned(val, ptr, size)		\
+-do {						\
+-	void *__gu_p = ptr;			\
+-	switch (size) {				\
+-	case 1:					\
+-		*(__u8 *)__gu_p = val;		\
+-	        break;				\
+-	case 2:					\
+-		__ustw(val, __gu_p);		\
+-		break;				\
+-	case 4:					\
+-		__ustl(val, __gu_p);		\
+-		break;				\
+-	case 8:					\
+-		__ustq(val, __gu_p);		\
+-		break;				\
+-	default:				\
+-	    	bad_unaligned_access_length();	\
+-	};					\
++#define put_unaligned(val, ptr)					\
++do {								\
++	struct __packed {					\
++		typeof(*(ptr)) __v;				\
++	} *__p = (void *) (ptr);				\
++	__p->__v = (val);					\
+ } while(0)
+ 
+-#endif /* _ASM_GENERIC_UNALIGNED_H */
++#endif /* __ASM_GENERIC_UNALIGNED_H */
