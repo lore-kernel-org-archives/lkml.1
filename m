@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965887AbXBOLYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965657AbXBOLZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965887AbXBOLYZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 06:24:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965889AbXBOLYZ
+	id S965657AbXBOLZy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 06:25:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965890AbXBOLZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 06:24:25 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:44838 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965887AbXBOLYY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 06:24:24 -0500
-Date: Thu, 15 Feb 2007 11:24:06 +0000 (GMT)
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Heikki Orsila <shdl@zakalwe.fi>
-cc: Mauro Carvalho Chehab <mchehab@linuxtv.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
-       Linux and Kernel Video <video4linux-list@redhat.com>,
-       Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 000/196] V4L/DVB updates
-In-Reply-To: <20070215095627.GD11613@zakalwe.fi>
-Message-ID: <Pine.LNX.4.64.0702151117490.16819@pentafluge.infradead.org>
-References: <1171519195.6703.25.camel@areia> <20070215095627.GD11613@zakalwe.fi>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 15 Feb 2007 06:25:54 -0500
+Received: from mx10.go2.pl ([193.17.41.74]:56313 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965657AbXBOLZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 06:25:54 -0500
+Date: Thu, 15 Feb 2007 12:29:05 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Markus Trippelsdorf <markus@trippelsdorf.de>,
+       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sata_via: fix resource-managed iomap conversion
+Message-ID: <20070215112905.GA2347@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45D0C9A0.1030707@gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Feb 2007, Heikki Orsila wrote:
+On 12-02-2007 21:10, Tejun Heo wrote:
+> Markus Trippelsdorf wrote:
+>> On Mon, Feb 12, 2007 at 10:51:44AM -0800, Tejun Heo wrote:
+>>> Conversion to resource-managed iomap was buggy causing init failures
+>>> on both vt6420 and 6421 - BAR5 wasn't mapped for both controllers
+>>> while on vt6420 sata_via tried to map BAR0-4 twice.  Fix it.
+> 
+> Great, can anyone verify this on vt6421?
 
-> On Thu, Feb 15, 2007 at 03:59:55AM -0200, Mauro Carvalho Chehab wrote:
->> Basically, this series adds support for a bunch of newer cards and newer
->> drivers, do some relevant cleanups on cx88 (improving source code
->> readability and reducing binary code size), adds FM radio support on
->> pvrusb2 and do several other fixes and improvements.
->>
->> A more detailed log:
->>
->> [removed 100+ lines of stuff]
->>>
->> PS.: Due to the size of this series, I'm not mailbombing them into LKML.
->>
->> V4L/DVB development is hosted at http://linuxtv.org
->
-> Why weren't these submitted in smaller batches? Why were all these
-> patches held back before releasing any?
-All those patches are meant to 2.6.21, since they are mostly 
-improvements, and are being pushed, from time to time, into -mm series, 
-during -rc cycle.
+I'm sure they will.
 
-It should also be noticed that they are discussed on subsystem mailing 
-lists.
+I can only confirm with vt6420 too and presume it
+can't be worse, so please apply.
 
--- 
-Cheers,
-Mauro Carvalho Chehab
-http://linuxtv.org
-mchehab@infradead.org
+Thanks & regards,
+Jarek P.
