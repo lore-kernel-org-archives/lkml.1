@@ -1,40 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932423AbXBPUJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946103AbXBPUMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932423AbXBPUJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 15:09:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946091AbXBPUJ2
+	id S1946103AbXBPUMi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 15:12:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946107AbXBPUMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 15:09:28 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58454 "EHLO mx1.redhat.com"
+	Fri, 16 Feb 2007 15:12:38 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:33434 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932423AbXBPUJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 15:09:27 -0500
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070216165042.GB409@lnx-holt.americas.sgi.com> 
-References: <20070216165042.GB409@lnx-holt.americas.sgi.com>  <45D5B483.3020502@hitachi.com> <45D5B2E3.3030607@hitachi.com> <20368.1171638335@redhat.com> 
-To: Robin Holt <holt@sgi.com>
-Cc: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
-       Andrew Morton <akpm@osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <soshima@redhat.com>,
-       "Hideo AOKI@redhat" <haoki@redhat.com>
-Subject: Re: [PATCH 3/4] coredump: ELF-FDPIC: enable to omit anonymous shared memory 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Fri, 16 Feb 2007 20:09:03 +0000
-Message-ID: <18817.1171656543@redhat.com>
+	id S1946103AbXBPUMh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 15:12:37 -0500
+Date: Fri, 16 Feb 2007 12:12:26 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Van Hensbergen <ericvh@gmail.com>
+Cc: linux-kernel@vger.kernel.org, v9fs-developer@lists.sourceforge.net
+Subject: Re: [PATCH] 9p: add write-cache support to loose cache mode (take
+ 3)
+Message-Id: <20070216121226.f2382a17.akpm@linux-foundation.org>
+In-Reply-To: <1171640221420-git-send-email-ericvh@gmail.com>
+References: <11715506591894-git-send-email-ericvh@gmail.com>
+	<1171640221420-git-send-email-ericvh@gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robin Holt <holt@sgi.com> wrote:
+On Fri, 16 Feb 2007 09:37:01 -0600 Eric Van Hensbergen <ericvh@gmail.com> wrote:
 
-> How about:
-> 		if (vma->vm_mm->coredump_omit_anon_shared) {
-> 
-> Then the calls to maydump() would be unchanged:
+> +static int v9fs_vfs_writepage(struct page *page, struct writeback_control *wbc)
+> +{
+> +	char *buffer = NULL;
+> +	struct address_space *mapping = page->mapping;
+> +	int retval = -EIO;
+> +	loff_t offset = 0;
+> +	pgoff_t end_index;
+> +	int count = PAGE_CACHE_SIZE;
+> +	struct file *filp = v9fs_find_file(page);
+> +	struct inode *inode = mapping->host;
+> +
+> +	dprintk(DEBUG_VFS, "page: %p\n", page);
+> +
+> +	if ((!inode) || (!filp))
+> +		goto UnlockPage;
+> +
+> +	end_index = inode->i_size >> PAGE_CACHE_SHIFT;
+> +
+> +	/* complicated case at end of file */
+> +	if (page->index >= end_index) {
+> +		/* things got complicated... */
+> +		count = inode->i_size & (PAGE_CACHE_SIZE - 1);
+> +		if (page->index >= end_index + 1 || !count)
+> +			return 0;	/* truncated - don't care */
+> +	}
+> +
+> +	buffer = kmap(page);
+> +	offset = ((loff_t) page->index << PAGE_CACHE_SHIFT);
+> +	page_cache_get(page);
+> +	retval = v9fs_write(filp, NULL, buffer, count, &offset);
+> +
+>  	kunmap(page);
+> +
+> +      UnlockPage:
+>  	unlock_page(page);
+> +	page_cache_release(page);
+> +
+>  	return retval;
+>  }
 
-VMAs are a shared resource under NOMMU conditions.
+The page_cache_get/release here aren't needed: lock_page suffices.
 
-David
+Are you sure the page refcounting is right if the `goto UnlockPage'
+happens?
+
+Can that goto actually happen??
