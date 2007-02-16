@@ -1,113 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161022AbXBPOju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964932AbXBPOlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161022AbXBPOju (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 09:39:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964945AbXBPOju
+	id S964932AbXBPOlf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 09:41:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964935AbXBPOlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 09:39:50 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:8580 "EHLO
-	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964932AbXBPOjt (ORCPT
+	Fri, 16 Feb 2007 09:41:35 -0500
+Received: from naig.caltech.edu ([131.215.239.125]:61061 "EHLO
+	naig.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964932AbXBPOlf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 09:39:49 -0500
-Date: Fri, 16 Feb 2007 06:39:45 -0800 (PST)
-From: Zwane Mwaikambo <zwane@infradead.org>
-Subject: Re: [PATCH] Don't probe for DDC on VBE1.2
-In-reply-to: <20070215230243.515ec6b3.akpm@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Tobias Hain <tobias.hain@gmx.de>, "H. Peter Anvin" <hpa@zytor.com>
-Message-id: <Pine.LNX.4.64.0702160500210.31650@montezuma.fsmlabs.com>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <Pine.LNX.4.64.0702132145460.28458@montezuma.fsmlabs.com>
- <20070215205658.56096f97.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0702152134190.12571@montezuma.fsmlabs.com>
- <20070215214506.f795acc4.akpm@linux-foundation.org>
- <20070215215125.9161e3dc.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0702152158210.12571@montezuma.fsmlabs.com>
- <20070215230243.515ec6b3.akpm@linux-foundation.org>
+	Fri, 16 Feb 2007 09:41:35 -0500
+Date: Fri, 16 Feb 2007 16:27:49 +0480
+From: Georgeherman <ahqtyapw@bost.com.au>
+X-Mailer: The Bat! (v1.60h) Educational
+X-Priority: 3 (Normal)
+Message-ID: <807045358.45968591308926@thebat.net>
+To: mlist-ace-users@nntp-server.caltech.edu
+Subject: Kernel Hacker's Guide by Michael K. Johnson, and the manpage project coordinated by Rik Faith, which so far supplied a set of roughly 450 manual pages for most system and 
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset=Windows-1252
+Content-Transfer-Encoding: 7bit
+X-Spam: Not detected
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Feb 2007, Andrew Morton wrote:
+about creating "super children" contribute toGervasio said her report says.her kids' friends, and annual meeting in has a 
 
-> It's not an X problem - the screen is black immediately upon loading the
-> kernel.
-> 
-> But I guess you knew that and you're just after display info:
-> http://userweb.kernel.org/~akpm/Xorg.0.log.txt
+Nothing could be better than 
+ &#9679; CHINA BIOLIFE ENTERP (CBFE.PK) &#9679; SHARE!!!
 
-Thanks, the X log told me your VBE version. I tried to reproduce it on my 
-thinkpad which seems to have a very similar video setup to no avail, Could 
-you test the following on the VAIO? If this isn't the case, i suspect i'm 
-corrupting your modelist.
+New CBFE.PK SHARE this is GOOD OPPORTUNITY  to BE a rich man!!!
+Forecasts for YOU is only positive just purchase this CBFE.PK SHARE!!!
 
-P.s. Thanks for the vga=0x263!
+Trust us cause we ASSURE U the real profit!!!
+For elaborate info about CBFE.PK check brokers web-site!!!
 
-Index: linux-2.6.20-mm1/arch/i386/boot/video.S
-===================================================================
-RCS file: /home/cvsroot/linux-2.6.20-mm1/arch/i386/boot/video.S,v
-retrieving revision 1.1.1.1
-diff -u -p -B -r1.1.1.1 video.S
---- linux-2.6.20-mm1/arch/i386/boot/video.S	15 Feb 2007 17:35:57 -0000	1.1.1.1
-+++ linux-2.6.20-mm1/arch/i386/boot/video.S	16 Feb 2007 12:58:20 -0000
-@@ -1945,6 +1945,25 @@ store_edid:
- 	rep
- 	stosl
- 
-+	pushw	%es
-+	pushw	%ds
-+	popw	%es
-+	leaw	modelist+1024, %di
-+	movw    $0x02b3, %ax
-+	movw    %ax, (%di)
-+	movw    $0x9d4a, %ax
-+	movw    %ax, 2(%di)                     # set signature to "vbe2"
-+
-+	movw	$0x4f00, %ax
-+	int	$0x10
-+	popw	%es
-+
-+	cmpw	$0x004f, %ax
-+	jne	no_edid
-+
-+	cmpw	$0x0200, 4(%di)			# only do EDID on >= VBE2.0
-+	jl	no_edid
-+
- 	pushw   %es				# save ES
- 	xorw    %di, %di                        # Report Capability
- 	pushw   %di
-Index: linux-2.6.20-mm1/arch/x86_64/boot/video.S
-===================================================================
-RCS file: /home/cvsroot/linux-2.6.20-mm1/arch/x86_64/boot/video.S,v
-retrieving revision 1.1.1.1
-diff -u -p -B -r1.1.1.1 video.S
---- linux-2.6.20-mm1/arch/x86_64/boot/video.S	15 Feb 2007 17:36:18 -0000	1.1.1.1
-+++ linux-2.6.20-mm1/arch/x86_64/boot/video.S	16 Feb 2007 12:57:57 -0000
-@@ -1945,6 +1945,25 @@ store_edid:
- 	rep
- 	stosl
- 
-+	pushw	%es
-+	pushw	%ds
-+	popw	%es
-+	leaw	modelist+1024, %di
-+	movw    $0x02b3, %ax
-+	movw    %ax, (%di)
-+	movw    $0x9d4a, %ax
-+	movw    %ax, 2(%di)                     # set signature to "vbe2"
-+
-+	movw	$0x4f00, %ax
-+	int	$0x10
-+	popw	%es
-+
-+	cmpw	$0x004f, %ax
-+	jne	no_edid
-+
-+	cmpw	$0x0200, 4(%di)			# only do EDID on >= VBE2.0
-+	jl	no_edid
-+
- 	pushw   %es				# save ES
- 	xorw    %di, %di                        # Report Capability
- 	pushw   %di
+Hurry up U need purchase this CBFE.PK SHARE on FRIDAY: 02/16/07
+
+says the report, relate to others and really need for front of get-smart Social pressures about creating "super children" contribute to
