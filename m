@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945895AbXBPPC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932392AbXBPPGH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945895AbXBPPC7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 10:02:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945898AbXBPPC7
+	id S932392AbXBPPGH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 10:06:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932394AbXBPPGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 10:02:59 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:50932 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945895AbXBPPC6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 10:02:58 -0500
-Message-ID: <45D5C789.1090607@student.ltu.se>
-Date: Fri, 16 Feb 2007 16:02:33 +0100
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Vignesh Babu BM <vignesh.babu@wipro.com>
-CC: Kernel Janitors List <kernel-janitors@lists.osdl.org>, linux-mm@kvack.org,
-       tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [KJ] [PATCH] is_power_of_2 in ia64mm
-References: <1171627435.6127.0.camel@wriver-t81fb058.linuxcoe>
-In-Reply-To: <1171627435.6127.0.camel@wriver-t81fb058.linuxcoe>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Feb 2007 10:06:06 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43650 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932392AbXBPPGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 10:06:05 -0500
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <45D5B483.3020502@hitachi.com> 
+References: <45D5B483.3020502@hitachi.com>  <45D5B2E3.3030607@hitachi.com> 
+To: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
+Cc: Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, Robin Holt <holt@sgi.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <soshima@redhat.com>,
+       "Hideo AOKI@redhat" <haoki@redhat.com>
+Subject: Re: [PATCH 3/4] coredump: ELF-FDPIC: enable to omit anonymous shared memory 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Fri, 16 Feb 2007 15:05:35 +0000
+Message-ID: <20368.1171638335@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vignesh Babu BM wrote:
-> Replacing (n & (n-1)) in the context of power of 2 checks
-> with is_power_of_2
->
->
-> diff --git a/arch/ia64/mm/hugetlbpage.c b/arch/ia64/mm/hugetlbpage.c
-> index 0c7e94e..0ccc70e 100644
-> --- a/arch/ia64/mm/hugetlbpage.c
-> +++ b/arch/ia64/mm/hugetlbpage.c
-> @@ -16,6 +16,7 @@
->  #include <linux/smp_lock.h>
->  #include <linux/slab.h>
->  #include <linux/sysctl.h>
-> +#include <linux/log2.h>
->  #include <asm/mman.h>
->  #include <asm/pgalloc.h>
->  #include <asm/tlb.h>
-> @@ -175,7 +176,7 @@ static int __init hugetlb_setup_sz(char *str)
->  		tr_pages = 0x15557000UL;
->  
->  	size = memparse(str, &str);
-> -	if (*str || (size & (size-1)) || !(tr_pages & size) ||
-> +	if (*str || !is_power_of_2(size) || !(tr_pages & size) ||
->  		size <= PAGE_SIZE ||
->  		size >= (1UL << PAGE_SHIFT << MAX_ORDER)) {
->  		printk(KERN_WARNING "Invalid huge page size specified\n");
->
->   
-As we talked about before; is this really correct? !is_power_of_2(0) == 
-true while (0 & (0-1)) == 0.
+Kawai, Hidehiro <hidehiro.kawai.ez@hitachi.com> wrote:
 
-Richard Knutsson
+>  static int elf_fdpic_dump_segments(struct file *file, struct mm_struct *mm,
+> -				   size_t *size, unsigned long *limit)
+> +				   size_t *size, unsigned long *limit,
+> +				   unsigned int omit_anon_shared)
 
+Why are you passing it as an extra argument when you could just use
+mm->coredump_omit_anon_shared here:
+
+> +		if (!maydump(vma, omit_anon_shared))
+
+And here:
+
+> +		phdr.p_filesz = maydump(vma, omit_anon_shared) ? sz : 0;
+
+Actually, I think I would just pass the mm pointer you have into maydump() and
+let that dereference it here:
+
+> +		if (omit_anon_shared) {
+
+which would then be:
+
+		if (mm->coredump_omit_anon_shared) {
+
+Then the calls to maydump() would be:
+
+		if (!maydump(vma, mm))
+
+and:
+
+		phdr.p_filesz = maydump(vma, current->mm) ? sz : 0;
+
+I wouldn't worry, were I you, about the setting changing whilst it's being
+used.  If you are worried about that, you can probably do some locking against
+that.
+
+David
