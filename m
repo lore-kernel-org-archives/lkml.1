@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423366AbXBPGse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423268AbXBPGt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423366AbXBPGse (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 01:48:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423367AbXBPGse
+	id S1423268AbXBPGt4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 01:49:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423312AbXBPGt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 01:48:34 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:41437 "EHLO e5.ny.us.ibm.com"
+	Fri, 16 Feb 2007 01:49:56 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:54362 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423366AbXBPGsd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 01:48:33 -0500
-Date: Fri, 16 Feb 2007 12:18:25 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@osdl.org, paulmck@us.ibm.com,
-       mingo@elte.hu, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl
-Subject: Re: [RFC PATCH(Experimental) 1/4] freezer-cpu-hotplug core
-Message-ID: <20070216064825.GA2829@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070214144031.GA15257@in.ibm.com> <20070214144229.GA19789@in.ibm.com> <20070214194742.GA301@tv-sign.ru>
+	id S1423268AbXBPGtz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 01:49:55 -0500
+Date: Thu, 15 Feb 2007 22:48:50 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@muc.de>, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Alan <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [patch 17/21] Xen-paravirt: Add the Xen virtual console driver.
+Message-Id: <20070215224850.1d122b58.akpm@linux-foundation.org>
+In-Reply-To: <20070216022531.825832971@goop.org>
+References: <20070216022449.739760547@goop.org>
+	<20070216022531.825832971@goop.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070214194742.GA301@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 14, 2007 at 10:47:42PM +0300, Oleg Nesterov wrote:
-> >  	for (;;) {
-> > -		if (cwq->wq->freezeable)
-> > +		if (cwq->wq->freezeable) {
-> 
-> Else? This is wrong. The change like this should start from making all
-> cwq->threads freezeable, otherwise it just doesn't work.
+On Thu, 15 Feb 2007 18:25:06 -0800 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-I agree we need to have all threads frozen for hotplug. Only exception I
-have found is kthread workqueue, which needs to be active after
-freeze_processes(). stop_machine and CPU_UP_PREPARE/kthread_create()
-depend on it to work.
+> ===================================================================
+> --- a/arch/i386/kernel/early_printk.c
+> +++ b/arch/i386/kernel/early_printk.c
+> @@ -1,2 +1,4 @@
+>  
+> +#ifndef CONFIG_XEN
+>  #include "../../x86_64/kernel/early_printk.c"
+> +#endif
+> ===================================================================
 
-A worker thread (like kthread workqueue), which has exempted itself from 
-hotplug-freeze, should essentially be prepared to get preempted any time and 
-made to run on any cpu. If that is the case, do you see any problems in having 
-the if () statement above?
-
-> > +wait_to_die:
-> > +	/* Wait for kthread_stop */
-> > +	set_current_state(TASK_INTERRUPTIBLE);
-> > +	while (!kthread_should_stop()) {
-> > +		schedule();
-> > +		set_current_state(TASK_INTERRUPTIBLE);
-> > +	}
-> > +	__set_current_state(TASK_RUNNING);
-> > +	return 0;
-> >  }
-> 
-> I believe this is not needed, see the comments for the next patch.
-
-Without this, thread cleanup (cwq->should_stop)/create(CPU_UP_PREPARE) becomes 
-racy 
-
--- 
-Regards,
-vatsa
+This can be done in Kconfig: disable CONFIG_EARLY_PRINTK if CONFIG_XEN.
