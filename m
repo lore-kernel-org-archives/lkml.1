@@ -1,164 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946274AbXBPVrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932426AbXBPVuf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946274AbXBPVrr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 16:47:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946277AbXBPVrr
+	id S932426AbXBPVuf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 16:50:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932599AbXBPVuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 16:47:47 -0500
-Received: from raven.upol.cz ([158.194.120.4]:44542 "EHLO raven.upol.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946274AbXBPVrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 16:47:46 -0500
-Date: Fri, 16 Feb 2007 22:56:17 +0100
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@muc.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [pp] kbuild: asm-offsets generalized
-Message-ID: <20070216215617.GA15861@flower.upol.cz>
-References: <200702091109.20061.ak@muc.de> <1171024771.2718.129.camel@localhost.localdomain> <20070209141728.GA26749@uranus.ravnborg.org> <1171034599.2718.190.camel@localhost.localdomain> <E1HGbJz-0003Lc-6h@flower> <1171323696.19842.29.camel@localhost.localdomain> <20070213031044.GA17046@flower.upol.cz> <20070216155527.GA14687@flower.upol.cz> <20070216155929.GA14713@flower.upol.cz> <20070216185635.GA16601@uranus.ravnborg.org>
+	Fri, 16 Feb 2007 16:50:35 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:40738 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932426AbXBPVue (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 16:50:34 -0500
+Message-ID: <45D626BB.20007@vmware.com>
+Date: Fri, 16 Feb 2007 13:48:43 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070216185635.GA16601@uranus.ravnborg.org>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+To: Christoph Lameter <clameter@sgi.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@muc.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       Chris Wright <chrisw@sous-sol.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [patch 00/21] Xen-paravirt: Xen guest implementation for paravirt_ops
+ interface
+References: <20070216022449.739760547@goop.org> <Pine.LNX.4.64.0702161244380.26718@schroedinger.engr.sgi.com> <45D61C74.2000601@vmware.com> <Pine.LNX.4.64.0702161312460.28871@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0702161312460.28871@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hallo.
+Christoph Lameter wrote:
+> On Fri, 16 Feb 2007, Zachary Amsden wrote:
+>
+>   
+>> For the most part, it doesn't disturb VMware or KVM.  Xen does need some
+>> additional functionality in paravirt-ops because they took a different design
+>> choice - direct page tables instead of shadow page tables.  This is where all
+>> the requirements for the new Xen paravirt-ops hooks come from.
+>>     
+>
+> It still seems to be implemented for Xen and not to support a variety of 
+> page table methods in paravirt ops.
+>   
 
-On Fri, Feb 16, 2007 at 07:56:35PM +0100, Sam Ravnborg wrote:
-> On Fri, Feb 16, 2007 at 04:59:29PM +0100, Oleg Verych wrote:
-> > > > 
-> > > > Proposition will follow.
-> > > > 
-> > > []
-> > > 
-> > > [patch proposition] kbuild: lguest with private asm-offsets
-> > [] 
-> > >  * needs "asm-offsets magic demystified, generalized".
-> > [] 
-> 
-> To make asm-offset generic I had in mind something like the
-> following.
+Yes, but that is just because the Xen hooks happens to be near the last 
+part of the merge.  VMI required some special hooks, as do both Xen and 
+lhype (I think ... Rusty can correct me if lhype's puppy's have 
+precluded the addition of new hooks).  Xen page table handling is very 
+different, mostly it is trap and emulate so writable page tables can 
+work, which means they don't always issue hypercalls for PTE updates, 
+although they do have that option, should the hypervisor MMU model 
+change, or performance concerns prompt a different model (or perhaps, 
+migration?)
 
-Then i misunderstood, what you mean, sorry.
-
-> It uses the currect functionality, and allows for architecture override
-> as needed - but default not used. And architecture override is kept in a
-> architecture specific location.
-> 
-> 	Sam
-> 
-> commit df95bb04b04ff2f64805dfa8459099ffe469c8a5
-> Author: Sam Ravnborg <sam@uranus.ravnborg.org>
-> Date:   Fri Feb 16 19:51:29 2007 +0100
-> 
->     kbuild: Make asm-offset generic
->     
->     Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> 
-> diff --git a/include/asm-generic/asm-offset b/include/asm-generic/asm-offset
-> new file mode 100644
-> index 0000000..5e5629e
-> --- /dev/null
-> +++ b/include/asm-generic/asm-offset
-> @@ -0,0 +1,30 @@
-> +#
-> +# Support generating constant useable from assembler but defined on C-level
-> +#
-> +# See usage in top-level Kbuild file
-> +
-> +# Default sed regexp - multiline due to syntax constraints
-> +define sed-y
-> +	"/^->/{s:^->\([^ ]*\) [\$$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; s:->::; p;}"
-> +endef
-> +
-> +# let architectures override the sed expression as needed
-> +-include include/asm/asm-offset
-> +
-> +quiet_cmd_offsets = GEN     $@
-> +define cmd_offsets
-> +	(set -e; \
-> +	 echo "#ifndef __ASM_OFFSETS_H__"; \
-> +	 echo "#define __ASM_OFFSETS_H__"; \
-> +	 echo "/*"; \
-> +	 echo " * DO NOT MODIFY."; \
-> +	 echo " *"; \
-> +	 echo " * This file was generated by Kbuild"; \
-> +	 echo " *"; \
-> +	 echo " */"; \
-> +	 echo ""; \
-> +	 sed -ne $(sed-y) $<; \
-> +	 echo ""; \
-> +	 echo "#endif" ) > $@
-> +endef
-> +
-> diff --git a/include/asm-mips/asm-offset b/include/asm-mips/asm-offset
-> new file mode 100644
-> index 0000000..b2eb959
-> --- /dev/null
-> +++ b/include/asm-mips/asm-offset
-> @@ -0,0 +1,4 @@
-> +# Override default sed for MIPS when generating asm-offset
-> +sed-$(CONFIG_MIPS) := "/^@@@/{s/^@@@//; s/ \#.*\$$//; p;}"
-> +
-> +
-> diff --git a/Kbuild b/Kbuild
-> index 0451f69..0a32f5f 100644
-> --- a/Kbuild
-> +++ b/Kbuild
-> @@ -1,5 +1,8 @@
->  #
->  # Kbuild for top-level directory of the kernel
-> +
-> +
-> +
->  # This file takes care of the following:
->  # 1) Generate asm-offsets.h
->  
-> @@ -7,36 +10,14 @@ #####
->  # 1) Generate asm-offsets.h
->  #
->  
-> +include include/asm-generic/asm-offset
-> +
->  offsets-file := include/asm-$(ARCH)/asm-offsets.h
->  
->  always  := $(offsets-file)
->  targets := $(offsets-file)
->  targets += arch/$(ARCH)/kernel/asm-offsets.s
->  
-> -# Default sed regexp - multiline due to syntax constraints
-> -define sed-y
-> -	"/^->/{s:^->\([^ ]*\) [\$$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; s:->::; p;}"
-> -endef
-> -# Override default regexp for specific architectures
-> -sed-$(CONFIG_MIPS) := "/^@@@/{s/^@@@//; s/ \#.*\$$//; p;}"
-> -
-> -quiet_cmd_offsets = GEN     $@
-> -define cmd_offsets
-> -	(set -e; \
-> -	 echo "#ifndef __ASM_OFFSETS_H__"; \
-> -	 echo "#define __ASM_OFFSETS_H__"; \
-> -	 echo "/*"; \
-> -	 echo " * DO NOT MODIFY."; \
-> -	 echo " *"; \
-> -	 echo " * This file was generated by Kbuild"; \
-> -	 echo " *"; \
-> -	 echo " */"; \
-> -	 echo ""; \
-> -	 sed -ne $(sed-y) $<; \
-> -	 echo ""; \
-> -	 echo "#endif" ) > $@
-> -endef
-> -
->  # We use internal kbuild rules to avoid the "is up to date" message from make
->  arch/$(ARCH)/kernel/asm-offsets.s: arch/$(ARCH)/kernel/asm-offsets.c FORCE
->  	$(Q)mkdir -p $(dir $@)
-
-Thanks.
-
-____
+Zach
