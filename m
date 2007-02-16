@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945902AbXBPPOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945904AbXBPPOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945902AbXBPPOI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 10:14:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945904AbXBPPOI
+	id S1945904AbXBPPOT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 10:14:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945907AbXBPPOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 10:14:08 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:54543 "EHLO mx2.suse.de"
+	Fri, 16 Feb 2007 10:14:19 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:35325 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945902AbXBPPOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 10:14:06 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-Cc: Vignesh Babu BM <vignesh.babu@wipro.com>,
-       Kernel Janitors List <kernel-janitors@lists.osdl.org>,
-       linux-mm@kvack.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
+	id S1945904AbXBPPOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 10:14:18 -0500
+Date: Fri, 16 Feb 2007 18:06:19 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Michael Holzheu <holzheu2@linux.vnet.ibm.com>
+Cc: akpm@osdl.org, mschwid2@de.ltcfwd.linux.ibm.com, heiko.carstens@de.ibm.com,
        linux-kernel@vger.kernel.org
-Subject: Re: [KJ] [PATCH] is_power_of_2 in ia64mm
-References: <1171627435.6127.0.camel@wriver-t81fb058.linuxcoe>
-	<45D5C789.1090607@student.ltu.se>
-X-Yow: Now I understand the meaning of ``THE MOD SQUAD''!
-Date: Fri, 16 Feb 2007 16:13:55 +0100
-In-Reply-To: <45D5C789.1090607@student.ltu.se> (Richard Knutsson's message of
-	"Fri, 16 Feb 2007 16:02:33 +0100")
-Message-ID: <jeire2nnik.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.91 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Subject: Re: Using kevent for event logging?
+Message-ID: <20070216150618.GA25878@2ka.mipt.ru>
+References: <20070216155708.589cd47a.holzheu2@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <20070216155708.589cd47a.holzheu2@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Fri, 16 Feb 2007 18:06:21 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Richard Knutsson <ricknu-0@student.ltu.se> writes:
+On Fri, Feb 16, 2007 at 03:57:08PM +0100, Michael Holzheu (holzheu2@linux.vnet.ibm.com) wrote:
+> Hallo Evgeniy,
 
-> Vignesh Babu BM wrote:
->> @@ -175,7 +176,7 @@ static int __init hugetlb_setup_sz(char *str)
->>  		tr_pages = 0x15557000UL;
->>   	size = memparse(str, &str);
->> -	if (*str || (size & (size-1)) || !(tr_pages & size) ||
->> +	if (*str || !is_power_of_2(size) || !(tr_pages & size) ||
->>  		size <= PAGE_SIZE ||
->>  		size >= (1UL << PAGE_SHIFT << MAX_ORDER)) {
->>  		printk(KERN_WARNING "Invalid huge page size specified\n");
->>
->>   
-> As we talked about before; is this really correct? !is_power_of_2(0) ==
-> true while (0 & (0-1)) == 0.
+Hi Michael.
 
-size == 0 is also covered by the next two conditions, so the overall value
-does not change.
+> On s390 we are looking for a good mechanism to notify userspace
+> about kernel events. Currently such events are handled with printks
+> in most cases. There are automation tools, which want to automatically
+> react on kernel events. To get the event information, these tools are
+> parsing printks, which is not a really good mechanism for that
+> purpose.
+> 
+> When I read about kevents, I was wondering, if it could be used to solve
+> this problem. E.g. it would be possible to put an event number into a
+> kevent and provide another interface to get the complete event data.
+> 
+> Do you think, that kevent could be used for this purpose?
 
-Andreas.
+You will need to have implemented two types of operations - userspace
+daemon, which will request some notifications (i.e. notify me when event
+type:1, event:2 is ready), and that one which will mark such requests as
+ready.
+
+For exactly your purpose I would use userspace kevent notifications - 
+although in documentation I say that such notifications can be
+marked from userspace, you can mark them as ready from kernel too
+(obviously, since kevent is kernel mechanism).
+
+You can also create own kevent notification type and storage (userspace
+notification requests are stored in the main kevent queue (kevent_user))
+and compile them only for s390 arch and thus do not overlap with
+possible usage of userspace notifications.
+
+As another tool to do the same I would suggest netlink (raw netlink
+usage is not appreciated, but instead you can use connector or
+gennetlink).
+
+Kevent is much more lightweight especially when event is marked as ready
+compared to netlink allocation. From the other point, kevent requires
+some requests from userspace which can be marked as ready, while netlink
+allows to generate them from 'void' (i.e. withoug userspace creating
+request).
+
+> Michael
 
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+	Evgeniy Polyakov
