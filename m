@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946162AbXBPSCX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946032AbXBPSEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946162AbXBPSCX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 13:02:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946169AbXBPSCX
+	id S1946032AbXBPSEV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 13:04:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946169AbXBPSEV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 13:02:23 -0500
-Received: from mail.queued.net ([207.210.101.209]:3433 "EHLO mail.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946162AbXBPSCW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 13:02:22 -0500
-Message-ID: <45D5F1BA.4030102@debian.org>
-Date: Fri, 16 Feb 2007 13:02:34 -0500
-From: Andres Salomon <dilinger@debian.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+	Fri, 16 Feb 2007 13:04:21 -0500
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:55824 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946032AbXBPSEU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 13:04:20 -0500
+Message-ID: <45D5F21B.2010804@student.ltu.se>
+Date: Fri, 16 Feb 2007 19:04:11 +0100
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/3] Input: psmouse - create PS/2 protocol options for
- Kconfig
-References: <45D43115.6060806@debian.org> <45D50101.60802@debian.org>	 <20070215173024.adc54d6c.akpm@linux-foundation.org>	 <200702160028.09251.dtor@insightbb.com> <45D54260.7080302@debian.org> <d120d5000702160742v14ac197eica567a15cc1e85d4@mail.gmail.com>
-In-Reply-To: <d120d5000702160742v14ac197eica567a15cc1e85d4@mail.gmail.com>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: James Bottomley <James.Bottomley@SteelEye.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] drivers/scsi/aic7xxx_old: Convert to generic boolean-values
+References: <20070210174628.3764.89569.sendpatchset@thinktank.campus.ltu.se>	 <1171132062.3373.31.camel@mulgrave.il.steeleye.com>	 <20070212122738.b5e9a8af.akpm@linux-foundation.org> <1171644132.3443.27.camel@mulgrave.il.steeleye.com>
+In-Reply-To: <1171644132.3443.27.camel@mulgrave.il.steeleye.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
-> On 2/16/07, Andres Salomon <dilinger@debian.org> wrote:
->> Dmitry Torokhov wrote:
->> > On Thursday 15 February 2007 20:30, Andrew Morton wrote:
->> >> On Thu, 15 Feb 2007 19:55:29 -0500
->> >> Andres Salomon <dilinger@debian.org> wrote:
->> [...]
->> >> Perhaps a nicer implementation would be to have a separate .c file
->> for each
->> >> variant.
->> >>
->> >
->> > Having completely separate sub-drivers is very hard because of very
->> delicate
->> > PS/2 protocol probing....
->> >
->> > What do you think about patch below? It somewhat reduces #ifdef
->> clutter in main
->> > module moving it in .h files...
->> >
+James Bottomley wrote:
+> On Mon, 2007-02-12 at 12:27 -0800, Andrew Morton wrote:
+>   
+>> Given that we now have a standard kernel-wide, c99-friendly way of
+>> expressing true and false, I'd suggest that this decision can be revisited.
 >>
->> Normally, I'm a fan of that sort of thing.  However, in this case, I
->> think it makes sense to have the #ifdefs right in the probe function; at
->> least for me, it makes it easier to understand what's going on.  The
->> synaptics stuff is especially tricky; with a cursory glance over the
->> code, one might assume that all the synaptics functions disappear when
->> CONFIG_MOUSE_PS2_SYNAPTICS is unset.  However, if the #ifdef's are in
->> the probe function, it's pretty clear that some synaptics functions
->> still get called even when CONFIG_MOUSE_PS2_SYNAPTICS is unset.
->>
-> 
-> Thit is a valid point but #ifdef maze in the middle of already messy
-> psmouse-extensions() is too much for me. I guess I will just add a
-> comment explaining that synaptics probing is really special.
+>> Because a "true" is significantly more meaningful (and hence readable)
+>> thing than a bare "1".
+>>     
+>
+> OK, I'm really not happy with doing this for three reasons:
+>
+> 1. It's inviting huge amounts of driver churn changing bitfields to
+> booleans
+>   
+Have been some work done already. Has there been any problems?
+> 2. I do find it to be a readability issue.  Like most driver writers,
+> I'm used to register layouts, and those are simple bitfields, so I don't
+> tend to think true and false, I think 1 and 0.
+>   
+It is a fundamental difference between an integer and a boolean. Have 
+you seen anyone trying to do "bool var = true + true;"? ;)
+> 3. Having a different, special, type for single bit bitfields (while
+> still using u<n> for multi bit bitfields) is asking for confusion, and
+> hence trouble at the driver level.
+>   
+I don't think a boolean should be view as a single bit bitfield. Ex:
+u8 a:1;
+...
+int b = 4 + a;
+is obviously not a boolean, while:
+u8 a:1;
+...
+if (a)
+is, and a should be "bool a:1;" (imho)
 
-Fair enough.  Anything you need me to do to move that along?  :)
 
-> 
-> Btw, can I get that OLPC patch when you have time?
-> 
-
-There are some hardware workarounds (sigh) that need cleaning up, then
-I'll submit it.
+Richard Knutsson
 
