@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945960AbXBPQAJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945963AbXBPQHI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945960AbXBPQAJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 11:00:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945957AbXBPQAJ
+	id S1945963AbXBPQHI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 11:07:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945965AbXBPQHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 11:00:09 -0500
-Received: from ns1.suse.de ([195.135.220.2]:42248 "EHLO mx1.suse.de"
+	Fri, 16 Feb 2007 11:07:08 -0500
+Received: from thunk.org ([69.25.196.29]:40461 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945952AbXBPQAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 11:00:07 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-Cc: Vignesh Babu BM <vignesh.babu@wipro.com>,
-       Kernel Janitors List <kernel-janitors@lists.osdl.org>,
-       linux-mm@kvack.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [KJ] [PATCH] is_power_of_2 in ia64mm
-References: <1171627435.6127.0.camel@wriver-t81fb058.linuxcoe>
-	<45D5C789.1090607@student.ltu.se> <jeire2nnik.fsf@sykes.suse.de>
-	<45D5D47F.3000303@student.ltu.se>
-X-Yow: Yow!
-Date: Fri, 16 Feb 2007 16:59:59 +0100
-In-Reply-To: <45D5D47F.3000303@student.ltu.se> (Richard Knutsson's message of
-	"Fri, 16 Feb 2007 16:57:51 +0100")
-Message-ID: <je3b56nlds.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.91 (gnu/linux)
+	id S1945963AbXBPQHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 11:07:06 -0500
+Date: Fri, 16 Feb 2007 09:50:33 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@osdl.org>
+Subject: Re: [PATCH] update Doc/oops-tracing.txt for TAINT_USER
+Message-ID: <20070216145033.GA25957@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	lkml <linux-kernel@vger.kernel.org>, akpm <akpm@osdl.org>
+References: <20070215170414.56e6193b.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070215170414.56e6193b.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Richard Knutsson <ricknu-0@student.ltu.se> writes:
+On Thu, Feb 15, 2007 at 05:04:14PM -0800, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Add TAINT_USER description to Tainted flags in oops-tracing.txt.
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>  Documentation/oops-tracing.txt |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> --- linux-2.6.20-git9.orig/Documentation/oops-tracing.txt
+> +++ linux-2.6.20-git9/Documentation/oops-tracing.txt
+> @@ -234,6 +234,9 @@ characters, each representing a particul
+>    6: 'B' if a page-release function has found a bad page reference or
+>       some unexpected page flags.
+>  
+> +  7: 'U' if a user specifically requested that the Tainted flag be set,
+> +     ' ' otherwise.
+> +
 
-> Andreas Schwab wrote:
->> Richard Knutsson <ricknu-0@student.ltu.se> writes:
->>
->>   
->>> Vignesh Babu BM wrote:
->>>     
->>>> @@ -175,7 +176,7 @@ static int __init hugetlb_setup_sz(char *str)
->>>>  		tr_pages = 0x15557000UL;
->>>>   	size = memparse(str, &str);
->>>> -	if (*str || (size & (size-1)) || !(tr_pages & size) ||
->>>> +	if (*str || !is_power_of_2(size) || !(tr_pages & size) ||
->>>>  		size <= PAGE_SIZE ||
->>>>  		size >= (1UL << PAGE_SHIFT << MAX_ORDER)) {
->>>>  		printk(KERN_WARNING "Invalid huge page size specified\n");
->>>>
->>>>         
->>> As we talked about before; is this really correct? !is_power_of_2(0) ==
->>> true while (0 & (0-1)) == 0.
->>>     
->>
->> size == 0 is also covered by the next two conditions, so the overall value
->> does not change.
->>   
-> Yes, but is it meant to state that 'size' is not a power of two?
+I suggest you change this to read "if a user or user application".
 
-What else can it mean?
+Otherwise,
 
-Andreas.
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+
+BTW, most often it will be a specific user application.  The initial
+intended use case was a Java Virtual Machine, that will set the
+Tainted flag as a hint to support personnel that Java program it was
+running was doing something really evil and non-portable (direct
+access to physical memory) which unfortunately the RTSJ compliance
+test requires us to support .  Thank you very much, Sun....
+
+"Java: Write once, run screaming".  :-)
+
+						- Ted
