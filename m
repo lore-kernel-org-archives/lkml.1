@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422979AbXBPA6I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422890AbXBPA6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422979AbXBPA6I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 19:58:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422890AbXBPA6I
+	id S1422890AbXBPA6g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 19:58:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422983AbXBPA6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 19:58:08 -0500
-Received: from tomts43.bellnexxia.net ([209.226.175.110]:37205 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1422980AbXBPA6G (ORCPT
+	Thu, 15 Feb 2007 19:58:36 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:54484 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422890AbXBPA6f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 19:58:06 -0500
-Date: Thu, 15 Feb 2007 19:58:04 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sparse chokes on arch/i386/kernel/i8253.c
-Message-ID: <20070216005804.GA12736@Krystal>
-References: <20070215051408.a7fb7d81.akpm@linux-foundation.org> <45D483D7.2040609@imap.cc> <20070215144142.0c13580a.akpm@linux-foundation.org> <20070216002347.GB9851@Krystal> <20070215163709.720c38f0.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 15 Feb 2007 19:58:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=aggCsutio9Y+12dYncr3WX+teQgY3IUNTyolOve5ZZuBIoZBih3x8n/N/dDGy0k0j/tiX2ItmCJF6vW0yBbGikOrNK8QA6KVke98akY4KPnaIUhYlD91iStHt2A5bhDbcmRBH+wHpU/o0MBE9d6BM25cXC8QH4Lf7DBwVx7wmX0=
+Message-ID: <7b69d1470702151658w603aab4ave1d17cc0b2c40a2b@mail.gmail.com>
+Date: Thu, 15 Feb 2007 18:58:30 -0600
+From: "Scott Preece" <sepreece@gmail.com>
+To: "Theodore Tso" <tytso@mit.edu>, "v j" <vj.linux@gmail.com>,
+       "Dave Jones" <davej@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: GPL vs non-GPL device drivers
+In-Reply-To: <20070215165339.GB5285@thunk.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070215163709.720c38f0.akpm@linux-foundation.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 19:55:16 up 13 days, 15:03,  3 users,  load average: 1.46, 1.37, 1.26
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+	 <20070215061149.GE15654@redhat.com>
+	 <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
+	 <20070215165339.GB5285@thunk.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton (akpm@linux-foundation.org) wrote:
-> On Thu, 15 Feb 2007 19:23:47 -0500
-> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
-> > sparse chokes on arch/i386/kernel/i8253.c
-> > 
-> > Here is a marker fix that puts the correct -i include/linux/marker.h in
-> > the top level Makefile so sparse works correctly. The tricky part is to
-> > keep the kernel compiling correctly with a kernel build directory
-> > different from the kernel source tree too.
-> > 
-> > The fix applies on top the the Linux Kernel Markers for 2.6.20.
-> > 
-> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> > 
-> > --- a/Makefile
-> > +++ b/Makefile
-> > @@ -309,7 +309,8 @@ AFLAGS_KERNEL	=
-> >  LINUXINCLUDE    := -Iinclude \
-> >                     $(if $(KBUILD_SRC),-Iinclude2 -I$(srctree)/include) \
-> >  		   -include include/linux/autoconf.h \
-> > -		   -include linux/marker.h
-> > +		   -include \
-> > +		   	$(if $(KBUILD_SRC),$(srctree)/)include/linux/marker.h
-> >  
-> >  CPPFLAGS        := -D__KERNEL__ $(LINUXINCLUDE)
-> 
-> But what is so magical about marker.h to justify special-case treatment at the
-> kbuid level?
+On 2/15/07, Theodore Tso <tytso@mit.edu> wrote:
+>
+> But so what?  How will that hurt *Linux*?  If the Embedded developers
+> don't contribute changes back, it doesn't hurt us any if they go away
+> and start paying $$$ to VxWorks instead of using Linux for free.
+---
 
-Idealistically speaking, nothing. It is however much easier to maintain
-an external set of patches introducing markers within the kernel tree :
-most of the rejects between kernel version comes from new includes that
-comes in the way.
+Well, this is somewhat oversimplified. If the device supports add-on
+software, that may be good for the FLOSS community even if the
+underlying OS is partly closed. And if they're returning changes and
+patches from any work they do in the code kernel (aside from their
+drivers), that is also good for the community. And there is some value
+to the community in their hiring and/or growing developers who may
+later contribute directly to the kernel. And there is even some value
+in just the publicity and hype for Linux, which helps bring new people
+in. I'm not saying those things are worth "enough", just that they're
+worth
+something.
 
-So this is there more by convenience than requirement.
+---
+> Contrawise, if Embedded developers do contribute their device driver
+> changes back to the kernel, they will be fine.  ...
+---
 
-Mathieu
+In fairness, though, some of the developers WILL bitch about your not
+using a recent kernel and not providing patches until products ship,
+despite that meeting the letter of the license. Some of the notes in
+this thread do exactly that. And I HAVE seen real developers say
+something very close to "Your code is based on a kernel too old to
+have any value to us" even though they would also claim abuse if the
+code hadn't been made available at all. And I've seen lots of cases
+where laptop-centric developers rejected or simply ignored code
+submitted by embedded developers.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Candidate, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+I'm completely in line with participating fully in the community, but
+it's important that the mainstream developers recognize that the
+community is bigger than the laptop/server-room crowd.
+
+scott
