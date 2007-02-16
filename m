@@ -1,104 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932626AbXBPVpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946274AbXBPVrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932626AbXBPVpg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 16:45:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932426AbXBPVpg
+	id S1946274AbXBPVrr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 16:47:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946277AbXBPVrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 16:45:36 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54873 "EHLO mx1.redhat.com"
+	Fri, 16 Feb 2007 16:47:47 -0500
+Received: from raven.upol.cz ([158.194.120.4]:44542 "EHLO raven.upol.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750780AbXBPVpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 16:45:35 -0500
-Subject: Re: [PATCH] drivers/scsi/aic7xxx_old: Convert to generic
-	boolean-values
-From: Doug Ledford <dledford@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: James Bottomley <James.Bottomley@SteelEye.com>, ricknu-0@student.ltu.se,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <20070216105026.7bd17a79.akpm@linux-foundation.org>
-References: <20070210174628.3764.89569.sendpatchset@thinktank.campus.ltu.se>
-	 <1171132062.3373.31.camel@mulgrave.il.steeleye.com>
-	 <20070212122738.b5e9a8af.akpm@linux-foundation.org>
-	 <1171644132.3443.27.camel@mulgrave.il.steeleye.com>
-	 <20070216103422.51757e89.akpm@linux-foundation.org>
-	 <1171651347.3443.45.camel@mulgrave.il.steeleye.com>
-	 <20070216105026.7bd17a79.akpm@linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-094ve+/cXXwKfbpzhaF5"
-Organization: Red Hat, Inc.
-Date: Fri, 16 Feb 2007 16:43:04 -0500
-Message-Id: <1171662184.3161.245.camel@fc6.xsintricity.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+	id S1946274AbXBPVrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 16:47:46 -0500
+Date: Fri, 16 Feb 2007 22:56:17 +0100
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@muc.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [pp] kbuild: asm-offsets generalized
+Message-ID: <20070216215617.GA15861@flower.upol.cz>
+References: <200702091109.20061.ak@muc.de> <1171024771.2718.129.camel@localhost.localdomain> <20070209141728.GA26749@uranus.ravnborg.org> <1171034599.2718.190.camel@localhost.localdomain> <E1HGbJz-0003Lc-6h@flower> <1171323696.19842.29.camel@localhost.localdomain> <20070213031044.GA17046@flower.upol.cz> <20070216155527.GA14687@flower.upol.cz> <20070216155929.GA14713@flower.upol.cz> <20070216185635.GA16601@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070216185635.GA16601@uranus.ravnborg.org>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hallo.
 
---=-094ve+/cXXwKfbpzhaF5
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Fri, Feb 16, 2007 at 07:56:35PM +0100, Sam Ravnborg wrote:
+> On Fri, Feb 16, 2007 at 04:59:29PM +0100, Oleg Verych wrote:
+> > > > 
+> > > > Proposition will follow.
+> > > > 
+> > > []
+> > > 
+> > > [patch proposition] kbuild: lguest with private asm-offsets
+> > [] 
+> > >  * needs "asm-offsets magic demystified, generalized".
+> > [] 
+> 
+> To make asm-offset generic I had in mind something like the
+> following.
 
-On Fri, 2007-02-16 at 10:50 -0800, Andrew Morton wrote:
+Then i misunderstood, what you mean, sorry.
 
-> Me no understand.
->=20
-> If you take the specific example of
->=20
-> void
-> ahd_set_syncrate(struct ahd_softc *ahd, struct ahd_devinfo *devinfo,
-> 		 u_int period, u_int offset, u_int ppr_options,
-> 		 u_int type, int paused)
->=20
-> then if is crufty, inappropriate and wrong that `paused' is a scalar type=
-.
+> It uses the currect functionality, and allows for architecture override
+> as needed - but default not used. And architecture override is kept in a
+> architecture specific location.
+> 
+> 	Sam
+> 
+> commit df95bb04b04ff2f64805dfa8459099ffe469c8a5
+> Author: Sam Ravnborg <sam@uranus.ravnborg.org>
+> Date:   Fri Feb 16 19:51:29 2007 +0100
+> 
+>     kbuild: Make asm-offset generic
+>     
+>     Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> 
+> diff --git a/include/asm-generic/asm-offset b/include/asm-generic/asm-offset
+> new file mode 100644
+> index 0000000..5e5629e
+> --- /dev/null
+> +++ b/include/asm-generic/asm-offset
+> @@ -0,0 +1,30 @@
+> +#
+> +# Support generating constant useable from assembler but defined on C-level
+> +#
+> +# See usage in top-level Kbuild file
+> +
+> +# Default sed regexp - multiline due to syntax constraints
+> +define sed-y
+> +	"/^->/{s:^->\([^ ]*\) [\$$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; s:->::; p;}"
+> +endef
+> +
+> +# let architectures override the sed expression as needed
+> +-include include/asm/asm-offset
+> +
+> +quiet_cmd_offsets = GEN     $@
+> +define cmd_offsets
+> +	(set -e; \
+> +	 echo "#ifndef __ASM_OFFSETS_H__"; \
+> +	 echo "#define __ASM_OFFSETS_H__"; \
+> +	 echo "/*"; \
+> +	 echo " * DO NOT MODIFY."; \
+> +	 echo " *"; \
+> +	 echo " * This file was generated by Kbuild"; \
+> +	 echo " *"; \
+> +	 echo " */"; \
+> +	 echo ""; \
+> +	 sed -ne $(sed-y) $<; \
+> +	 echo ""; \
+> +	 echo "#endif" ) > $@
+> +endef
+> +
+> diff --git a/include/asm-mips/asm-offset b/include/asm-mips/asm-offset
+> new file mode 100644
+> index 0000000..b2eb959
+> --- /dev/null
+> +++ b/include/asm-mips/asm-offset
+> @@ -0,0 +1,4 @@
+> +# Override default sed for MIPS when generating asm-offset
+> +sed-$(CONFIG_MIPS) := "/^@@@/{s/^@@@//; s/ \#.*\$$//; p;}"
+> +
+> +
+> diff --git a/Kbuild b/Kbuild
+> index 0451f69..0a32f5f 100644
+> --- a/Kbuild
+> +++ b/Kbuild
+> @@ -1,5 +1,8 @@
+>  #
+>  # Kbuild for top-level directory of the kernel
+> +
+> +
+> +
+>  # This file takes care of the following:
+>  # 1) Generate asm-offsets.h
+>  
+> @@ -7,36 +10,14 @@ #####
+>  # 1) Generate asm-offsets.h
+>  #
+>  
+> +include include/asm-generic/asm-offset
+> +
+>  offsets-file := include/asm-$(ARCH)/asm-offsets.h
+>  
+>  always  := $(offsets-file)
+>  targets := $(offsets-file)
+>  targets += arch/$(ARCH)/kernel/asm-offsets.s
+>  
+> -# Default sed regexp - multiline due to syntax constraints
+> -define sed-y
+> -	"/^->/{s:^->\([^ ]*\) [\$$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; s:->::; p;}"
+> -endef
+> -# Override default regexp for specific architectures
+> -sed-$(CONFIG_MIPS) := "/^@@@/{s/^@@@//; s/ \#.*\$$//; p;}"
+> -
+> -quiet_cmd_offsets = GEN     $@
+> -define cmd_offsets
+> -	(set -e; \
+> -	 echo "#ifndef __ASM_OFFSETS_H__"; \
+> -	 echo "#define __ASM_OFFSETS_H__"; \
+> -	 echo "/*"; \
+> -	 echo " * DO NOT MODIFY."; \
+> -	 echo " *"; \
+> -	 echo " * This file was generated by Kbuild"; \
+> -	 echo " *"; \
+> -	 echo " */"; \
+> -	 echo ""; \
+> -	 sed -ne $(sed-y) $<; \
+> -	 echo ""; \
+> -	 echo "#endif" ) > $@
+> -endef
+> -
+>  # We use internal kbuild rules to avoid the "is up to date" message from make
+>  arch/$(ARCH)/kernel/asm-offsets.s: arch/$(ARCH)/kernel/asm-offsets.c FORCE
+>  	$(Q)mkdir -p $(dir $@)
 
-Although you picked a code segment out of the modern aic7xxx, there is a
-matching similar one in aic7xxx_old.  Now, in all fairness, I was at one
-point playing with a much more preemptable model for that driver that
-allowed nested pauses, at which point the value of pause would have made
-sense to be scalar, but that was a *long* time ago.
+Thanks.
 
-> =20
-> It's just not true or sensible that the code is written so that `paused'
-> can take a value of seventy eight.  It _is_ a boolean.  It is a truth
-> value.  Declaring it as such in the source is all goodness.  Passing the
-> value `true' into calls to this function improve readability over passing
-> "1".
-
-Hence the reason for the original upper case TRUE/FALSE.  I have to
-admit, I don't really like the lower case true/false, it looks like a
-variable that can be assigned, thereby changing the implementation of
-the function call when in fact each calling location is hard coding a
-constant.  But, that's just me and my crufty old C that differentiates
-between hard coded things and variables via case.
-
-> So I don't agree with (or understand) your objections.  But I can certain=
-ly
-> understand reluctance to merge a large-but-minor, do-nothing-much patch i=
-nto
-> a large and not-very-maintained driver.
-
-Hehehe...and here I was thinking of factoring that thing into files and
-actually bringing it into the current century.
-
---=20
-Doug Ledford <dledford@redhat.com>
-              GPG KeyID: CFBFF194
-              http://people.redhat.com/dledford
-
-Infiniband specific RPMs available at
-              http://people.redhat.com/dledford/Infiniband
-
---=-094ve+/cXXwKfbpzhaF5
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBF1iVoTzP9PM7pjw8RAo6jAJ0Z+jzaqOoNJGmy4I7MsjJdB0naWgCfUd4p
-T82dgbkJ193VLeVBvP48upg=
-=98iZ
------END PGP SIGNATURE-----
-
---=-094ve+/cXXwKfbpzhaF5--
-
+____
