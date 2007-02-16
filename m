@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932868AbXBPBbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932874AbXBPBcX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932868AbXBPBbS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 20:31:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932870AbXBPBbS
+	id S932874AbXBPBcX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 20:32:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932877AbXBPBcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 20:31:18 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:42324 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932438AbXBPBbR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 20:31:17 -0500
-Date: Thu, 15 Feb 2007 17:31:08 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sparse chokes on arch/i386/kernel/i8253.c
-Message-Id: <20070215173108.0fbd56ea.akpm@linux-foundation.org>
-In-Reply-To: <20070216005804.GA12736@Krystal>
-References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
-	<45D483D7.2040609@imap.cc>
-	<20070215144142.0c13580a.akpm@linux-foundation.org>
-	<20070216002347.GB9851@Krystal>
-	<20070215163709.720c38f0.akpm@linux-foundation.org>
-	<20070216005804.GA12736@Krystal>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Thu, 15 Feb 2007 20:32:23 -0500
+Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:40055 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932874AbXBPBcW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 20:32:22 -0500
+Date: Thu, 15 Feb 2007 20:32:19 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       Ingo Molnar <mingo@redhat.com>, systemtap@sources.redhat.com,
+       ltt-dev@shafik.org
+Subject: Re: [PATCH 00/05] Linux Kernel Markers - kernel 2.6.20
+Message-ID: <20070216013219.GB12736@Krystal>
+References: <1171224207118-git-send-email-mathieu.desnoyers@polymtl.ca> <20070214231201.20918c6b.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070214231201.20918c6b.akpm@linux-foundation.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.4.34-grsec (i686)
+X-Uptime: 19:59:44 up 13 days, 15:07,  3 users,  load average: 1.66, 1.49, 1.32
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Feb 2007 19:58:04 -0500
-Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-
-> > > 
-> > > --- a/Makefile
-> > > +++ b/Makefile
-> > > @@ -309,7 +309,8 @@ AFLAGS_KERNEL	=
-> > >  LINUXINCLUDE    := -Iinclude \
-> > >                     $(if $(KBUILD_SRC),-Iinclude2 -I$(srctree)/include) \
-> > >  		   -include include/linux/autoconf.h \
-> > > -		   -include linux/marker.h
-> > > +		   -include \
-> > > +		   	$(if $(KBUILD_SRC),$(srctree)/)include/linux/marker.h
-> > >  
-> > >  CPPFLAGS        := -D__KERNEL__ $(LINUXINCLUDE)
-> > 
-> > But what is so magical about marker.h to justify special-case treatment at the
-> > kbuid level?
+* Andrew Morton (akpm@linux-foundation.org) wrote:
+> On Sun, 11 Feb 2007 15:03:22 -0500 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 > 
-> Idealistically speaking, nothing. It is however much easier to maintain
-> an external set of patches introducing markers within the kernel tree :
-> most of the rejects between kernel version comes from new includes that
-> comes in the way.
+> > You will find, in the following posts, the latest revision of the Linux Kernel
+> > Markers.
 > 
-> So this is there more by convenience than requirement.
+> <looks for the documentation>
+> 
 
-No sale.  Let's kill it, please ;)
+I guess the header of include/linux/marker.h should go into
+Documentation/marker.txt. Will fix. Will be in the next reply.
+
+> And what can I do with these markers?
+> 
+
+You can put markers at important locations in the code. They act as
+lightweight hooks that can pass an abitrary number of parameters,
+described in a printk-like format string, to a function.
+
+They can be used for tracing (LTTng, LKET over SystemTAP), overall
+performance accounting (SystemTAP). They could also be used to implement
+efficient hooks for SELinux or any other subsystem the would have this
+kind of need.
+
+> And once I've done it, are there any userspace applications I can use to
+> get the data out in human-usable form?
+> 
+
+LTTng and LTTV, SystemTAP (should be updated to the new API).
+
+> It seems to me that these patches aren't sequenced correctly - the kernel won't
+> build at each step of the patch sequence.  Maybe I'm mistaken in that.  We prefer
+> it this way so that people don't hit wont-compile points when doing bisection searches.
+
+Will fix for the next complete post.
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Candidate, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
