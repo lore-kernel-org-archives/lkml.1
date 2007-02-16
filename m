@@ -1,303 +1,423 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932422AbXBPQW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945985AbXBPQXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932422AbXBPQW6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 11:22:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932448AbXBPQW6
+	id S1945985AbXBPQXx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 11:23:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945983AbXBPQXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 11:22:58 -0500
-Received: from mo32.po.2iij.net ([210.128.50.17]:12738 "EHLO mo32.po.2iij.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932422AbXBPQW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 11:22:57 -0500
-Date: Sat, 17 Feb 2007 01:22:42 +0900
-From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Cc: yoichi_yuasa@tripeaks.co.jp, linux-input@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add Cobalt button interface driver support
-Message-Id: <20070217012242.6a51f55b.yoichi_yuasa@tripeaks.co.jp>
-In-Reply-To: <d120d5000702160715x6f64853y59abb8a22e7d164c@mail.gmail.com>
-References: <20070216123608.733f04a3.yoichi_yuasa@tripeaks.co.jp>
-	<200702152309.44563.dtor@insightbb.com>
-	<200702160815.l1G8FEIr078415@mbox33.po.2iij.net>
-	<d120d5000702160715x6f64853y59abb8a22e7d164c@mail.gmail.com>
-Organization: TriPeaks Corporation
-X-Mailer: Sylpheed version 1.0.6 (GTK+ 1.2.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Feb 2007 11:23:53 -0500
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:49995 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945982AbXBPQXw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 11:23:52 -0500
+To: akpm@linux-foundation.org
+CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] consolidate generic_writepages and mpage_writepages
+Message-Id: <E1HI5rp-0000VA-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 16 Feb 2007 17:23:25 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Feb 2007 10:15:11 -0500
-"Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-> On 2/16/07, Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp> wrote:
-> > +
-> > +static int cobalt_buttons_open(struct inode *inode, struct file *file)
-> > +{
-> > +       buttons_timer.expires = jiffies + msecs_to_jiffies(BUTTONS_POLL_INTERVAL);
-> > +       add_timer(&buttons_timer);
-> > +
-> > +       return nonseekable_open(inode, file);
-> > +
-> > +}
-> 
-> Hi,
-> 
-> I am sorry, I was not clear enough - when I was talking about adding
-> cobalt_buttons_open/close I was not asking you to add a misc device to
-> the driver. I was talking about setting up open() and close() methods
-> in input_dev structure. These methods are called by input core when
-> first (or last) user opens or closes one of input interfaces, such as
-> /dev/input/eventX, /dev/input/jsX, etc and so it is naturally to
-> start/stop polling device from these functions.
-> 
-> Does this make sense?
+Clean up massive code duplication between mpage_writepages() and
+generic_writepages().
 
-make sense.
-updated my patch.
+The new generic function, write_cache_pages() takes a function pointer
+argument, which will be called for each page to be written.
 
-Yoichi
+Maybe cifs_writepages() too can use this infrastructure, but I'm not
+touching that with a ten-foot pole.
 
-Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+The upcoming page writeback support in fuse will also want this.
 
-diff -pruN -X cobalt-buttons/Documentation/dontdiff cobalt-buttons-orig/drivers/input/misc/Kconfig cobalt-buttons/drivers/input/misc/Kconfig
---- cobalt-buttons-orig/drivers/input/misc/Kconfig	2007-02-14 15:35:30.566862000 +0900
-+++ cobalt-buttons/drivers/input/misc/Kconfig	2007-02-15 17:20:28.721985250 +0900
-@@ -89,4 +89,10 @@ config HP_SDC_RTC
- 	  Say Y here if you want to support the built-in real time clock
- 	  of the HP SDC controller.
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+
+Index: linux/fs/mpage.c
+===================================================================
+--- linux.orig/fs/mpage.c	2007-02-16 16:54:41.000000000 +0100
++++ linux/fs/mpage.c	2007-02-16 16:54:42.000000000 +0100
+@@ -458,11 +458,18 @@ EXPORT_SYMBOL(mpage_readpage);
+  * written, so it can intelligently allocate a suitably-sized BIO.  For now,
+  * just allocate full-size (16-page) BIOs.
+  */
+-static struct bio *
+-__mpage_writepage(struct bio *bio, struct page *page, get_block_t get_block,
+-	sector_t *last_block_in_bio, int *ret, struct writeback_control *wbc,
+-	writepage_t writepage_fn)
++struct mpage_data {
++	struct bio *bio;
++	sector_t last_block_in_bio;
++	get_block_t *get_block;
++	unsigned use_writepage;
++};
++
++static int __mpage_writepage(struct page *page, struct writeback_control *wbc,
++			     void *data)
+ {
++	struct mpage_data *mpd = data;
++	struct bio *bio = mpd->bio;
+ 	struct address_space *mapping = page->mapping;
+ 	struct inode *inode = page->mapping->host;
+ 	const unsigned blkbits = inode->i_blkbits;
+@@ -480,6 +487,7 @@ __mpage_writepage(struct bio *bio, struc
+ 	int length;
+ 	struct buffer_head map_bh;
+ 	loff_t i_size = i_size_read(inode);
++	int ret = 0;
  
-+config INPUT_COBALT_BTNS
-+	tristate "Cobalt button interface"       
-+	depends on MIPS_COBALT
-+	help
-+	  Say Y here if you want to support MIPS Cobalt button interface.
+ 	if (page_has_buffers(page)) {
+ 		struct buffer_head *head = page_buffers(page);
+@@ -542,7 +550,7 @@ __mpage_writepage(struct bio *bio, struc
+ 
+ 		map_bh.b_state = 0;
+ 		map_bh.b_size = 1 << blkbits;
+-		if (get_block(inode, block_in_file, &map_bh, 1))
++		if (mpd->get_block(inode, block_in_file, &map_bh, 1))
+ 			goto confused;
+ 		if (buffer_new(&map_bh))
+ 			unmap_underlying_metadata(map_bh.b_bdev,
+@@ -591,7 +599,7 @@ page_is_mapped:
+ 	/*
+ 	 * This page will go to BIO.  Do we need to send this BIO off first?
+ 	 */
+-	if (bio && *last_block_in_bio != blocks[0] - 1)
++	if (bio && mpd->last_block_in_bio != blocks[0] - 1)
+ 		bio = mpage_bio_submit(WRITE, bio);
+ 
+ alloc_new:
+@@ -648,7 +656,7 @@ alloc_new:
+ 					boundary_block, 1 << blkbits);
+ 		}
+ 	} else {
+-		*last_block_in_bio = blocks[blocks_per_page - 1];
++		mpd->last_block_in_bio = blocks[blocks_per_page - 1];
+ 	}
+ 	goto out;
+ 
+@@ -656,18 +664,19 @@ confused:
+ 	if (bio)
+ 		bio = mpage_bio_submit(WRITE, bio);
+ 
+-	if (writepage_fn) {
+-		*ret = (*writepage_fn)(page, wbc);
++	if (mpd->use_writepage) {
++		ret = mapping->a_ops->writepage(page, wbc);
+ 	} else {
+-		*ret = -EAGAIN;
++		ret = -EAGAIN;
+ 		goto out;
+ 	}
+ 	/*
+ 	 * The caller has a ref on the inode, so *mapping is stable
+ 	 */
+-	mapping_set_error(mapping, *ret);
++	mapping_set_error(mapping, ret);
+ out:
+-	return bio;
++	mpd->bio = bio;
++	return ret;
+ }
+ 
+ /**
+@@ -690,120 +699,27 @@ out:
+  * the call was made get new I/O started against them.  If wbc->sync_mode is
+  * WB_SYNC_ALL then we were called for data integrity and we must wait for
+  * existing IO to complete.
+- *
+- * If you fix this you should check generic_writepages() also!
+  */
+ int
+ mpage_writepages(struct address_space *mapping,
+ 		struct writeback_control *wbc, get_block_t get_block)
+ {
+-	struct backing_dev_info *bdi = mapping->backing_dev_info;
+-	struct bio *bio = NULL;
+-	sector_t last_block_in_bio = 0;
+-	int ret = 0;
+-	int done = 0;
+-	int (*writepage)(struct page *page, struct writeback_control *wbc);
+-	struct pagevec pvec;
+-	int nr_pages;
+-	pgoff_t index;
+-	pgoff_t end;		/* Inclusive */
+-	int scanned = 0;
+-	int range_whole = 0;
+-
+-	if (wbc->nonblocking && bdi_write_congested(bdi)) {
+-		wbc->encountered_congestion = 1;
+-		return 0;
+-	}
++	int ret;
+ 
+-	writepage = NULL;
+-	if (get_block == NULL)
+-		writepage = mapping->a_ops->writepage;
+-
+-	pagevec_init(&pvec, 0);
+-	if (wbc->range_cyclic) {
+-		index = mapping->writeback_index; /* Start from prev offset */
+-		end = -1;
+-	} else {
+-		index = wbc->range_start >> PAGE_CACHE_SHIFT;
+-		end = wbc->range_end >> PAGE_CACHE_SHIFT;
+-		if (wbc->range_start == 0 && wbc->range_end == LLONG_MAX)
+-			range_whole = 1;
+-		scanned = 1;
++	if (!get_block)
++		ret = generic_writepages(mapping, wbc);
++	else {
++		struct mpage_data mpd = {
++			.bio = NULL,
++			.last_block_in_bio = 0,
++			.get_block = get_block,
++			.use_writepage = 1,
++		};
 +
- endif
-diff -pruN -X cobalt-buttons/Documentation/dontdiff cobalt-buttons-orig/drivers/input/misc/Makefile cobalt-buttons/drivers/input/misc/Makefile
---- cobalt-buttons-orig/drivers/input/misc/Makefile	2007-02-14 15:35:30.566862000 +0900
-+++ cobalt-buttons/drivers/input/misc/Makefile	2007-02-15 11:55:30.856042500 +0900
-@@ -12,3 +12,4 @@ obj-$(CONFIG_INPUT_WISTRON_BTNS)	+= wist
- obj-$(CONFIG_INPUT_ATLAS_BTNS)		+= atlas_btns.o
- obj-$(CONFIG_HP_SDC_RTC)		+= hp_sdc_rtc.o
- obj-$(CONFIG_INPUT_IXP4XX_BEEPER)	+= ixp4xx-beeper.o
-+obj-$(CONFIG_INPUT_COBALT_BTNS)		+= cobalt_btns.o
-diff -pruN -X cobalt-buttons/Documentation/dontdiff cobalt-buttons-orig/drivers/input/misc/cobalt_btns.c cobalt-buttons/drivers/input/misc/cobalt_btns.c
---- cobalt-buttons-orig/drivers/input/misc/cobalt_btns.c	1970-01-01 09:00:00.000000000 +0900
-+++ cobalt-buttons/drivers/input/misc/cobalt_btns.c	2007-02-17 01:14:33.079876500 +0900
-@@ -0,0 +1,211 @@
++		ret = write_cache_pages(mapping, wbc, __mpage_writepage, &mpd);
++		if (mpd.bio)
++			mpage_bio_submit(WRITE, mpd.bio);
+ 	}
+-retry:
+-	while (!done && (index <= end) &&
+-			(nr_pages = pagevec_lookup_tag(&pvec, mapping, &index,
+-			PAGECACHE_TAG_DIRTY,
+-			min(end - index, (pgoff_t)PAGEVEC_SIZE-1) + 1))) {
+-		unsigned i;
+-
+-		scanned = 1;
+-		for (i = 0; i < nr_pages; i++) {
+-			struct page *page = pvec.pages[i];
+-
+-			/*
+-			 * At this point we hold neither mapping->tree_lock nor
+-			 * lock on the page itself: the page may be truncated or
+-			 * invalidated (changing page->mapping to NULL), or even
+-			 * swizzled back from swapper_space to tmpfs file
+-			 * mapping
+-			 */
+-
+-			lock_page(page);
+-
+-			if (unlikely(page->mapping != mapping)) {
+-				unlock_page(page);
+-				continue;
+-			}
+-
+-			if (!wbc->range_cyclic && page->index > end) {
+-				done = 1;
+-				unlock_page(page);
+-				continue;
+-			}
+-
+-			if (wbc->sync_mode != WB_SYNC_NONE)
+-				wait_on_page_writeback(page);
+-
+-			if (PageWriteback(page) ||
+-					!clear_page_dirty_for_io(page)) {
+-				unlock_page(page);
+-				continue;
+-			}
+-
+-			if (writepage) {
+-				ret = (*writepage)(page, wbc);
+-				mapping_set_error(mapping, ret);
+-			} else {
+-				bio = __mpage_writepage(bio, page, get_block,
+-						&last_block_in_bio, &ret, wbc,
+-						page->mapping->a_ops->writepage);
+-			}
+-			if (unlikely(ret == AOP_WRITEPAGE_ACTIVATE))
+-				unlock_page(page);
+-			if (ret || (--(wbc->nr_to_write) <= 0))
+-				done = 1;
+-			if (wbc->nonblocking && bdi_write_congested(bdi)) {
+-				wbc->encountered_congestion = 1;
+-				done = 1;
+-			}
+-		}
+-		pagevec_release(&pvec);
+-		cond_resched();
+-	}
+-	if (!scanned && !done) {
+-		/*
+-		 * We hit the last page and there is more work to be done: wrap
+-		 * back to the start of the file
+-		 */
+-		scanned = 1;
+-		index = 0;
+-		goto retry;
+-	}
+-	if (wbc->range_cyclic || (range_whole && wbc->nr_to_write > 0))
+-		mapping->writeback_index = index;
+-	if (bio)
+-		mpage_bio_submit(WRITE, bio);
+ 	return ret;
+ }
+ EXPORT_SYMBOL(mpage_writepages);
+@@ -811,15 +727,15 @@ EXPORT_SYMBOL(mpage_writepages);
+ int mpage_writepage(struct page *page, get_block_t get_block,
+ 	struct writeback_control *wbc)
+ {
+-	int ret = 0;
+-	struct bio *bio;
+-	sector_t last_block_in_bio = 0;
+-
+-	bio = __mpage_writepage(NULL, page, get_block,
+-			&last_block_in_bio, &ret, wbc, NULL);
+-	if (bio)
+-		mpage_bio_submit(WRITE, bio);
+-
++	struct mpage_data mpd = {
++		.bio = NULL,
++		.last_block_in_bio = 0,
++		.get_block = get_block,
++		.use_writepage = 0,
++	};
++	int ret = __mpage_writepage(page, wbc, &mpd);
++	if (mpd.bio)
++		mpage_bio_submit(WRITE, mpd.bio);
+ 	return ret;
+ }
+ EXPORT_SYMBOL(mpage_writepage);
+Index: linux/include/linux/mpage.h
+===================================================================
+--- linux.orig/include/linux/mpage.h	2007-02-16 16:54:41.000000000 +0100
++++ linux/include/linux/mpage.h	2007-02-16 16:54:42.000000000 +0100
+@@ -12,7 +12,6 @@
+ #ifdef CONFIG_BLOCK
+ 
+ struct writeback_control;
+-typedef int (writepage_t)(struct page *page, struct writeback_control *wbc);
+ 
+ int mpage_readpages(struct address_space *mapping, struct list_head *pages,
+ 				unsigned nr_pages, get_block_t get_block);
+Index: linux/include/linux/writeback.h
+===================================================================
+--- linux.orig/include/linux/writeback.h	2007-02-16 16:54:41.000000000 +0100
++++ linux/include/linux/writeback.h	2007-02-16 16:54:42.000000000 +0100
+@@ -115,9 +115,14 @@ balance_dirty_pages_ratelimited(struct a
+ 	balance_dirty_pages_ratelimited_nr(mapping, 1);
+ }
+ 
++typedef int (*writepage_t)(struct page *, struct writeback_control *, void *);
++
+ int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0);
+-extern int generic_writepages(struct address_space *mapping,
+-			      struct writeback_control *wbc);
++int generic_writepages(struct address_space *mapping,
++		       struct writeback_control *wbc);
++int write_cache_pages(struct address_space *mapping,
++		      struct writeback_control *wbc, writepage_t writepage,
++		      void *data);
+ int do_writepages(struct address_space *mapping, struct writeback_control *wbc);
+ int sync_page_range(struct inode *inode, struct address_space *mapping,
+ 			loff_t pos, loff_t count);
+Index: linux/mm/page-writeback.c
+===================================================================
+--- linux.orig/mm/page-writeback.c	2007-02-16 16:54:41.000000000 +0100
++++ linux/mm/page-writeback.c	2007-02-16 17:04:30.000000000 +0100
+@@ -579,31 +579,27 @@ void __init page_writeback_init(void)
+ }
+ 
+ /**
+- * generic_writepages - walk the list of dirty pages of the given address space and writepage() all of them.
++ * write_cache_pages - walk the list of dirty pages of the given address space and write all of them.
+  * @mapping: address space structure to write
+  * @wbc: subtract the number of written pages from *@wbc->nr_to_write
++ * @writepage: function called for each page
++ * @data: data passed to writepage function
+  *
+- * This is a library function, which implements the writepages()
+- * address_space_operation.
+- *
+- * If a page is already under I/O, generic_writepages() skips it, even
++ * If a page is already under I/O, write_cache_pages() skips it, even
+  * if it's dirty.  This is desirable behaviour for memory-cleaning writeback,
+  * but it is INCORRECT for data-integrity system calls such as fsync().  fsync()
+  * and msync() need to guarantee that all the data which was dirty at the time
+  * the call was made get new I/O started against them.  If wbc->sync_mode is
+  * WB_SYNC_ALL then we were called for data integrity and we must wait for
+  * existing IO to complete.
+- *
+- * Derived from mpage_writepages() - if you fix this you should check that
+- * also!
+  */
+-int generic_writepages(struct address_space *mapping,
+-		       struct writeback_control *wbc)
++int write_cache_pages(struct address_space *mapping,
++		      struct writeback_control *wbc, writepage_t writepage,
++		      void *data)
+ {
+ 	struct backing_dev_info *bdi = mapping->backing_dev_info;
+ 	int ret = 0;
+ 	int done = 0;
+-	int (*writepage)(struct page *page, struct writeback_control *wbc);
+ 	struct pagevec pvec;
+ 	int nr_pages;
+ 	pgoff_t index;
+@@ -616,12 +612,6 @@ int generic_writepages(struct address_sp
+ 		return 0;
+ 	}
+ 
+-	writepage = mapping->a_ops->writepage;
+-
+-	/* deal with chardevs and other special file */
+-	if (!writepage)
+-		return 0;
+-
+ 	pagevec_init(&pvec, 0);
+ 	if (wbc->range_cyclic) {
+ 		index = mapping->writeback_index; /* Start from prev offset */
+@@ -673,8 +663,7 @@ retry:
+ 				continue;
+ 			}
+ 
+-			ret = (*writepage)(page, wbc);
+-			mapping_set_error(mapping, ret);
++			ret = (*writepage)(page, wbc, data);
+ 
+ 			if (unlikely(ret == AOP_WRITEPAGE_ACTIVATE))
+ 				unlock_page(page);
+@@ -702,6 +691,39 @@ retry:
+ 	return ret;
+ }
+ 
++EXPORT_SYMBOL(write_cache_pages);
++
 +/*
-+ *  Cobalt button interface driver.
-+ *
-+ *  Copyright (C) 2007  Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
++ * Function used by generic_writepages to call the real writepage
++ * function and set the mapping flags on error
 + */
-+#include <linux/init.h>
-+#include <linux/input.h>
-+#include <linux/ioport.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/jiffies.h>
-+#include <linux/timer.h>
-+
-+#define BUTTONS_POLL_INTERVAL	30	/* msec */
-+#define BUTTONS_COUNT_THRESHOLD	3
-+#define BUTTONS_STATUS_MASK	0xfe000000
-+
-+struct buttons_dev {
-+	struct input_dev *input;
-+	void __iomem *reg;
-+};
-+
-+struct buttons_map {
-+	uint32_t	mask;
-+	int		keycode;
-+	int		count;
-+};
-+
-+static struct buttons_map buttons_map[] = {
-+	{ 0x02000000, KEY_RESTART, },
-+	{ 0x04000000, KEY_LEFT, },
-+	{ 0x08000000, KEY_UP, },
-+	{ 0x10000000, KEY_DOWN, },
-+	{ 0x20000000, KEY_RIGHT, },
-+	{ 0x40000000, KEY_ENTER, },
-+	{ 0x80000000, KEY_SELECT, },
-+};
-+
-+static struct resource cobalt_buttons_resource __initdata = {
-+	.start	= 0x1d000000,
-+	.end	= 0x1d000003,
-+	.flags	= IORESOURCE_MEM,
-+};
-+
-+static struct platform_device *cobalt_buttons_device;
-+
-+static struct timer_list buttons_timer;
-+
-+static void handle_buttons(unsigned long data)
++static int __writepage(struct page *page, struct writeback_control *wbc,
++		       void *data)
 +{
-+	struct buttons_map *button = buttons_map;
-+	struct buttons_dev *bdev;
-+	uint32_t status;
-+	int i;
-+
-+	bdev = (struct buttons_dev *)data;
-+	status = readl(bdev->reg);
-+	status = ~status & BUTTONS_STATUS_MASK;
-+
-+	for (i = 0; i < ARRAY_SIZE(buttons_map); i++) {
-+		if (status & button->mask) {
-+			button->count++;
-+		} else {
-+			if (button->count >= BUTTONS_COUNT_THRESHOLD) {
-+				input_report_key(bdev->input, button->keycode, 0);
-+				input_sync(bdev->input);
-+			}
-+			button->count = 0;
-+		}
-+
-+		if (button->count == BUTTONS_COUNT_THRESHOLD) {
-+			input_report_key(bdev->input, button->keycode, 1);
-+			input_sync(bdev->input);
-+		}
-+
-+		button++;
-+	}
-+
-+	mod_timer(&buttons_timer, jiffies + msecs_to_jiffies(BUTTONS_POLL_INTERVAL));
++	struct address_space *mapping = data;
++	int ret = mapping->a_ops->writepage(page, wbc);
++	mapping_set_error(mapping, ret);
++	return ret;
 +}
 +
-+static int cobalt_buttons_open(struct input_dev *dev)
++/**
++ * generic_writepages - walk the list of dirty pages of the given address space and writepage() all of them.
++ * @mapping: address space structure to write
++ * @wbc: subtract the number of written pages from *@wbc->nr_to_write
++ *
++ * This is a library function, which implements the writepages()
++ * address_space_operation.
++ */
++int generic_writepages(struct address_space *mapping,
++		       struct writeback_control *wbc)
 +{
-+	buttons_timer.expires = jiffies + msecs_to_jiffies(BUTTONS_POLL_INTERVAL);
-+	add_timer(&buttons_timer);
++	/* deal with chardevs and other special file */
++	if (!mapping->a_ops->writepage)
++		return 0;
 +
-+	return 0;
++	return write_cache_pages(mapping, wbc, __writepage, mapping);
 +}
 +
-+static void cobalt_buttons_close(struct input_dev *dev)
-+{
-+	del_timer_sync(&buttons_timer);
-+}
-+
-+static int __init cobalt_buttons_probe(struct platform_device *pdev)
-+{
-+	struct buttons_dev *bdev;
-+	struct input_dev *input;
-+	struct resource *res;
-+	int retval, i;
-+
-+	bdev = kzalloc(sizeof(struct buttons_dev), GFP_KERNEL);
-+	if (!bdev)
-+		return -ENOMEM;
-+
-+	input = input_allocate_device();
-+	if (!input) {
-+		kfree(bdev);
-+		return -ENOMEM;
-+	}
-+
-+	input->name = "Cobalt buttons";
-+	input->phys = "cobalt/input0";
-+	input->id.bustype = BUS_HOST;
-+	input->cdev.dev = &pdev->dev;
-+	input->open = cobalt_buttons_open;
-+	input->close = cobalt_buttons_close;
-+
-+	input->evbit[0] = BIT(EV_KEY);
-+	for (i = 0; i < ARRAY_SIZE(buttons_map); i++) {
-+		set_bit(buttons_map[i].keycode, input->keybit);
-+		buttons_map[i].count = 0;
-+	}
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!res) {
-+		input_free_device(input);
-+		kfree(bdev);
-+		return -EBUSY;
-+	}
-+
-+	bdev->input = input;
-+	bdev->reg = ioremap(res->start, res->end - res->start + 1);
-+	dev_set_drvdata(&pdev->dev, bdev);
-+
-+	setup_timer(&buttons_timer, handle_buttons, (unsigned long)bdev);
-+
-+	retval = input_register_device(input);
-+	if (retval < 0) {
-+		del_timer_sync(&buttons_timer);
-+		dev_set_drvdata(&pdev->dev, NULL);
-+		iounmap(bdev->reg);
-+		input_free_device(input);
-+		kfree(bdev);
-+	}
-+
-+	return retval;
-+}
-+
-+static int __devexit cobalt_buttons_remove(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct buttons_dev *bdev = dev_get_drvdata(dev);
-+
-+	input_unregister_device(bdev->input);
-+	iounmap(bdev->reg);
-+	kfree(bdev);
-+	dev_set_drvdata(dev, NULL);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver cobalt_buttons_driver = {
-+	.probe	= cobalt_buttons_probe,
-+	.remove	= __devexit_p(cobalt_buttons_remove),
-+	.driver	= {
-+		.name	= "Cobalt buttons",
-+		.owner	= THIS_MODULE,
-+	},
-+};
-+
-+static int __init cobalt_buttons_init(void)
-+{
-+	int retval;
-+
-+	cobalt_buttons_device = platform_device_register_simple("Cobalt buttons", -1,
-+	                                                        &cobalt_buttons_resource, 1);
-+	if (IS_ERR(cobalt_buttons_device)) {
-+		retval = PTR_ERR(cobalt_buttons_device);
-+		return retval;
-+	}
-+
-+	retval = platform_driver_register(&cobalt_buttons_driver);
-+	if (retval < 0)
-+		platform_device_unregister(cobalt_buttons_device);
-+
-+	return retval;
-+}
-+
-+static void __exit cobalt_buttons_exit(void)
-+{
-+	platform_driver_unregister(&cobalt_buttons_driver);
-+	platform_device_unregister(cobalt_buttons_device);
-+}
-+
-+module_init(cobalt_buttons_init);
-+module_exit(cobalt_buttons_exit);
-
-
+ EXPORT_SYMBOL(generic_writepages);
+ 
+ int do_writepages(struct address_space *mapping, struct writeback_control *wbc)
