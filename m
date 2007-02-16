@@ -1,80 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161688AbXBOX5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422752AbXBPABf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161688AbXBOX5U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 18:57:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161672AbXBOX5U
+	id S1422752AbXBPABf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 19:01:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422761AbXBPABf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 18:57:20 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:39391 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161688AbXBOX5U (ORCPT
+	Thu, 15 Feb 2007 19:01:35 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:33147 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422752AbXBPABe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 18:57:20 -0500
-Date: Fri, 16 Feb 2007 00:57:16 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Juan Piernas Canovas <piernas@ditec.um.es>
-Cc: Andi Kleen <andi@firstfloor.org>, Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       sfaibish <sfaibish@emc.com>, kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [ANNOUNCE] DualFS: File System with Meta-data and Data Separation
-Message-ID: <20070215235716.GA14199@one.firstfloor.org>
-References: <op.tnkdlbgsrwwil4@brcsmondepl2c.corp.emc.com> <op.tnrbrocsunckof@usensfaibisl2e.eng.emc.com> <Pine.LNX.4.61.0702142251460.19368@yvahk01.tjqt.qr> <Pine.LNX.4.61.0702151910370.19998@ditec.inf.um.es> <p73sld7f96t.fsf@bingen.suse.de> <Pine.LNX.4.61.0702152152460.19998@ditec.inf.um.es>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0702152152460.19998@ditec.inf.um.es>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 15 Feb 2007 19:01:34 -0500
+In-Reply-To: <B41635854730A14CA71C92B36EC22AAC83AA05@mssmsx411>
+References: <B41635854730A14CA71C92B36EC22AAC83AA05@mssmsx411>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <E29B98FF-8DDE-4AA5-AD65-75112B3E0DD6@oracle.com>
+Cc: "Ken Chen" <kenchen@google.com>, <suparna@in.ibm.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, "linux-aio" <linux-aio@kvack.org>,
+       "Chris Mason" <chris.mason@oracle.com>
+Content-Transfer-Encoding: 7bit
+From: Zach Brown <zach.brown@oracle.com>
+Subject: Re: [PATCH] aio: fix kernel bug when page is temporally busy
+Date: Thu, 15 Feb 2007 16:01:06 -0800
+To: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>
+X-Mailer: Apple Mail (2.752.3)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >Also many storage subsystems have some internal parallelism
-> >in writing (e.g. a RAID can write on different disks in parallel for
-> >a single partition) so i'm not sure your distinction is that useful.
-> >
-> But we are talking about a different case. What I have said is that if you 
-> use two devices, one for the 'regular' file system and another one for the 
-> log, DualFS is better in that case because it can use the log for reads. 
-> Other journaling file systems can not do that.
 
-Shadow paging based systems typically can, but we have no widely used
-one on Linux (reiser4 would be probably the closest) 
+On Feb 15, 2007, at 3:32 PM, Ananiev, Leonid I wrote:
 
-> >If you stripe two disks with a standard fs versus use one of them
-> >as metadata volume and the other as data volume with dualfs i would
-> >expect the striped variant usually be faster because it will give
-> >parallelism not only to data versus metadata, but also to all data
-> >versus other data.
-> >
-> If you have a RAID system, both the data and meta-data devices of DualFS 
-> can be stripped, and you get the same result. No problem for DualFS :)
+>>> If EIOCBRETRY then generic_file_aio_write() will be recalled for the
+>>> same iocb.
+>> Only if kick_iocb() is called.  It won't be called if i_i_p2_r() was
+>> the only thing to return -EIOCBRETRY.
+> It is not need to call kick_iocb()
+> for generic_file_aio_write() calling.
+> It is recalled without any wakeup waiting:
+>         for (;;) {
+>                 ret = filp->f_op->aio_write(&kiocb, &iov, 1,
+> kiocb.ki_pos);
+>                 if (ret != -EIOCBRETRY)
+>                         break;
+>                 wait_on_retry_sync_kiocb(&kiocb);
+>         }
+> Note: wait_on_retry_sync_kiocb() does not wait.
 
-Sure, but then you need four disks. And if your workloads happens 
-to be much more data intensive than metadata intensive the 
-stripped spindles assigned to metadata only will be more idle
-than the ones doing data.
+Yes it does.  It will not return until kiocbSetKicked() is called,  
+and that is only called from kick_iocb().
 
-Stripping everything from the same pool has the potential
-to adapt itself to any workload mix better.
+>>> It overwrites -EIOCBQUEUED
+> Do you mean that there is one more kernel bug which
+> overwrites -EIOCBQUEUED by any errno or number of bytes and this
+> new value is returned to caller as an IO result
+> while IO is not finished yet.
+>
+> The proposed patch does not crate this bug if any.
 
-I can see that you win for some specific workloads, but it is 
-hard to see how you can win over a wide range of workloads
-because of that.
+Right, and I said that in the mail you're quoting.
 
-> 
-> >Also I would expect your design to be slow for metadata read intensive
-> >workloads. E.g. have you tried to boot a root partition with dual fs?
-> >That's a very important IO benchmark for desktop Linux systems.
-> >
-> I do not think so. The performance of DualFS is superb in meta-data read 
-> intensive workloads . And it is also better than the performance of other 
-> file system when reading a directory tree with several copies of the Linux 
-> kernel source code (I showed those results on Tuesday at the LSF07 
-> workshop)
+> It actually fixes a kernel panic bag when iocb.users count becomes
+> incorrect. The bag " Kernel BUG at fs/aio.c:509" is there because
+> aio_run_iocb() have not a chance to differ real EIO and
+> EIO which is actually means EAGAYN or EIOCBRETRY.
 
-PDFs available? 
+Yes, I understand the bug you're trying to fix.  You're introducing  
+other bugs with the patch.  It will not be merged.
 
-Is that with running a LFS style cleaner inbetween or without?
+> It is interesting that I've not seen any EIOCBQUEUED returned
+> to aio_run_iocb() during 5 hours aiostress running.
 
-I would be interested in a "install distro with installer ; boot afterwards
-from it" type benchmark. Do you have something like this? 
+What arguments are you running aio-stress with?  -EIOCBQUEUED is only  
+used for O_DIRECT, and then only in certain circumstances.
 
--Andi
+- z
