@@ -1,90 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964817AbXBPNMe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964822AbXBPNOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964817AbXBPNMe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 08:12:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964822AbXBPNMe
+	id S964822AbXBPNOm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 08:14:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964833AbXBPNOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 08:12:34 -0500
-Received: from mail.sf-mail.de ([62.27.20.61]:46451 "EHLO mail.sf-mail.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964817AbXBPNMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 08:12:33 -0500
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: minyard@acm.org
-Subject: Re: [patch 3/4] ipmi: add pci remove handling
-Date: Fri, 16 Feb 2007 14:16:17 +0100
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20070214200624.GC5364@localdomain> <20070215022745.648ab8cb.akpm@linux-foundation.org> <20070215155318.GA24870@localdomain>
-In-Reply-To: <20070215155318.GA24870@localdomain>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1666322.6071fCiHyn";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Fri, 16 Feb 2007 08:14:42 -0500
+Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:3018 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964822AbXBPNOl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 08:14:41 -0500
+Date: Fri, 16 Feb 2007 14:15:10 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] parport_pc: Fix parport_pc_probe_port section warning
+Message-Id: <20070216141510.baac6077.khali@linux-fr.org>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200702161416.22471.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1666322.6071fCiHyn
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+WARNING: drivers/parport/parport_pc.o - Section mismatch: reference
+to .init.text: from .text between 'parport_pc_probe_port' (at offset
+0x14f7) and 'parport_pc_unregister_port'
 
-Am Donnerstag, 15. Februar 2007 schrieb Corey Minyard:
-> On Thu, Feb 15, 2007 at 02:27:45AM -0800, Andrew Morton wrote:
-> > Judging from the patch headers you were working against 2.6.19, which is
-> > most optimistic.  Please always prepare and test patches against the
-> > latest kernel.
->
-> Well, I had it applied against a 2.6.20 kernel, but I messed up the
-> testing of it.  Sorry, my bad.
->
-> New patch...
->
->
-> Add pci_remove handling to the driver, so it will clean up if
-> the device is hot-removed.
->
-> Signed-off-by: Corey Minyard <minyard@acm.org>
->
-> Index: linux-2.6.20/drivers/char/ipmi/ipmi_si_intf.c
-> ===================================================================
-> --- linux-2.6.20.orig/drivers/char/ipmi/ipmi_si_intf.c
-> +++ linux-2.6.20/drivers/char/ipmi/ipmi_si_intf.c
-> @@ -2191,12 +2191,15 @@ static int __devinit ipmi_pci_probe(stru
->  		info->irq_setup = std_irq_setup;
->
->  	info->dev = &pdev->dev;
-> +	pdev->dev.driver_data = info;
->
->  	return try_smi_init(info);
->  }
->
->  static void __devexit ipmi_pci_remove(struct pci_dev *pdev)
->  {
-> +	struct smi_info *info = pdev->dev.driver_data;
-> +	cleanup_one_si(info);
->  }
+parport_dma_probe() cannot be declared __devinit as it is called
+from parport_pc_probe_port() which isn't.
 
-Please use pci_{set,get}_drvdata() to access this field.
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+---
+ drivers/parport/parport_pc.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Greetings,
+--- linux-2.6.20-rc1.orig/drivers/parport/parport_pc.c	2006-12-17 16:08:05.000000000 +0100
++++ linux-2.6.20-rc1/drivers/parport/parport_pc.c	2006-12-17 17:36:47.000000000 +0100
+@@ -1546,7 +1546,7 @@
+ }
+ #endif /* CONFIG_PARPORT_PC_SUPERIO */
+ 
+-static int __devinit get_superio_dma (struct parport *p)
++static int get_superio_dma (struct parport *p)
+ {
+ 	int i=0;
+ 	while( (superios[i].io != p->base) && (i<NR_SUPERIOS))
+@@ -2106,7 +2106,7 @@
+ /* --- DMA detection -------------------------------------- */
+ 
+ /* Only if chipset conforms to ECP ISA Interface Standard */
+-static int __devinit programmable_dma_support (struct parport *p)
++static int programmable_dma_support (struct parport *p)
+ {
+ 	unsigned char oecr = inb (ECONTROL (p));
+ 	int dma;
+@@ -2123,7 +2123,7 @@
+ 	return dma;
+ }
+ 
+-static int __devinit parport_dma_probe (struct parport *p)
++static int parport_dma_probe (struct parport *p)
+ {
+ 	const struct parport_pc_private *priv = p->private_data;
+ 	if (priv->ecr)
 
-Eike
 
---nextPart1666322.6071fCiHyn
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iD8DBQBF1a6mXKSJPmm5/E4RAr21AJ4yos6En10PtNy7t0B5Q7V/n70gDwCffHBa
-QhwBS/sQR2ZEdAGdKMHqpo4=
-=8fGJ
------END PGP SIGNATURE-----
-
---nextPart1666322.6071fCiHyn--
+-- 
+Jean Delvare
