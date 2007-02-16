@@ -1,70 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964822AbXBPNOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932305AbXBPNaF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964822AbXBPNOm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 08:14:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964833AbXBPNOm
+	id S932305AbXBPNaF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 08:30:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932310AbXBPNaE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 08:14:42 -0500
-Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:3018 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964822AbXBPNOl (ORCPT
+	Fri, 16 Feb 2007 08:30:04 -0500
+Received: from wr-out-0506.google.com ([64.233.184.231]:35718 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932305AbXBPNaD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 08:14:41 -0500
-Date: Fri, 16 Feb 2007 14:15:10 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] parport_pc: Fix parport_pc_probe_port section warning
-Message-Id: <20070216141510.baac6077.khali@linux-fr.org>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
+	Fri, 16 Feb 2007 08:30:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=AFrFixeQbaNKF3w2ir9H9zCOVkgDjFwV9R2OwPQze9n4Q+X/D1gdfar7Dc1TBKNfDOK8uc+x+8Vs2lGhquZwnNHI9ZRhqprwpC44kx5SZ/fBhhF0W/RGDGMKn64prNvUyEEE3RZizvpxKFrJFHATk9h3TyeR8kIkUNPqQd1poUw=
+Date: Fri, 16 Feb 2007 05:29:52 -0800
+From: Joshua Simmons <jas6180@gmail.com>
+To: davids@webmaster.com
+Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: GPL vs non-GPL device drivers
+Message-Id: <20070216052952.065cad3f.jas6180@gmail.com>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKGEEGBKAC.davids@webmaster.com>
+References: <20070216020050.e1955a72.jas6180@gmail.com>
+	<MDEHLPKNGKAHNMBLJOLKGEEGBKAC.davids@webmaster.com>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-WARNING: drivers/parport/parport_pc.o - Section mismatch: reference
-to .init.text: from .text between 'parport_pc_probe_port' (at offset
-0x14f7) and 'parport_pc_unregister_port'
 
-parport_dma_probe() cannot be declared __devinit as it is called
-from parport_pc_probe_port() which isn't.
+> > Not one person is claiming they have a patent on whatever it is that
+> > V J's company is putting out (especially since we have no idea what
+> > that might be).  Patents != copyright.
+> 
+> That's exactly what they're doing. Knowing only the *function* of his
+> program, they are claiming it must obey their licensing terms. They have no
+> idea exactly how he chose to implement that function, but claim they must
+> own it anyway.
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
----
- drivers/parport/parport_pc.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+They are not claiming ownership of his code.  They are claiming ownership of THEIR
+code.  V J is taking their code, adding on to it and selling the result.  Without
+the GPL, V J cannot legally do this.  With the GPL, he can legally do this IF he
+also gives out the complete source.  I fail to see how anything you are saying
+absolves him of this requirement.
 
---- linux-2.6.20-rc1.orig/drivers/parport/parport_pc.c	2006-12-17 16:08:05.000000000 +0100
-+++ linux-2.6.20-rc1/drivers/parport/parport_pc.c	2006-12-17 17:36:47.000000000 +0100
-@@ -1546,7 +1546,7 @@
- }
- #endif /* CONFIG_PARPORT_PC_SUPERIO */
- 
--static int __devinit get_superio_dma (struct parport *p)
-+static int get_superio_dma (struct parport *p)
- {
- 	int i=0;
- 	while( (superios[i].io != p->base) && (i<NR_SUPERIOS))
-@@ -2106,7 +2106,7 @@
- /* --- DMA detection -------------------------------------- */
- 
- /* Only if chipset conforms to ECP ISA Interface Standard */
--static int __devinit programmable_dma_support (struct parport *p)
-+static int programmable_dma_support (struct parport *p)
- {
- 	unsigned char oecr = inb (ECONTROL (p));
- 	int dma;
-@@ -2123,7 +2123,7 @@
- 	return dma;
- }
- 
--static int __devinit parport_dma_probe (struct parport *p)
-+static int parport_dma_probe (struct parport *p)
- {
- 	const struct parport_pc_private *priv = p->private_data;
- 	if (priv->ecr)
-
-
--- 
-Jean Delvare
+Joshua Simmons
