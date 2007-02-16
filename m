@@ -1,178 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932425AbXBPBdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932898AbXBPBnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932425AbXBPBdv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 20:33:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932869AbXBPBdv
+	id S932898AbXBPBnn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 20:43:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932897AbXBPBnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 20:33:51 -0500
-Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:44891 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932425AbXBPBdu (ORCPT
+	Thu, 15 Feb 2007 20:43:42 -0500
+Received: from mexforward.lss.emc.com ([128.222.32.20]:56821 "EHLO
+	mexforward.lss.emc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932891AbXBPBnl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 20:33:50 -0500
-Date: Thu, 15 Feb 2007 20:33:48 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-       Ingo Molnar <mingo@redhat.com>, systemtap@sources.redhat.com,
-       ltt-dev@shafik.org
-Subject: [PATCH] Linux Kernel Markers Documentation
-Message-ID: <20070216013348.GC12736@Krystal>
-References: <1171224207118-git-send-email-mathieu.desnoyers@polymtl.ca> <20070214231201.20918c6b.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 15 Feb 2007 20:43:41 -0500
+Date: Thu, 15 Feb 2007 20:43:23 -0500
+To: "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
+       "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [ANNOUNCE] DualFS: File System with Meta-data and Data Separation
+From: sfaibish <sfaibish@emc.com>
+Organization: EMC
+Cc: "Juan Piernas Canovas" <piernas@ditec.um.es>,
+       "kernel list" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Content-Type: text/plain; format=flowed; delsp=yes; charset=iso-8859-15
+MIME-Version: 1.0
+References: <op.tnkdlbgsrwwil4@brcsmondepl2c.corp.emc.com> <op.tnrbrocsunckof@usensfaibisl2e.eng.emc.com> <Pine.LNX.4.61.0702142251460.19368@yvahk01.tjqt.qr> <Pine.LNX.4.61.0702151910370.19998@ditec.inf.um.es> <p73sld7f96t.fsf@bingen.suse.de> <Pine.LNX.4.61.0702152044450.17168@yvahk01.tjqt.qr>
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070214231201.20918c6b.akpm@linux-foundation.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 20:32:20 up 13 days, 15:40,  4 users,  load average: 1.29, 1.50, 1.62
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-ID: <op.tnti2lseunckof@usensfaibisl2e.eng.emc.com>
+In-Reply-To: <Pine.LNX.4.61.0702152044450.17168@yvahk01.tjqt.qr>
+User-Agent: Opera Mail/9.10 (Win32)
+X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.5.0.283055, Antispam-Data: 2007.2.15.172934
+X-PerlMx-Spam: Gauge=, SPAM=2%, Reason='EMC_FROM_0+ -2, __CP_URI_IN_BODY 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0, __USER_AGENT 0'
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linux Kernel Markers - Documentation
+On Thu, 15 Feb 2007 14:46:34 -0500, Jan Engelhardt  
+<jengelh@linux01.gwdg.de> wrote:
 
-Here is some documentation explaining what is/how to use the Linux
-Kernel Markers.
+>
+> On Feb 15 2007 21:38, Andi Kleen wrote:
+>>
+>> Also I would expect your design to be slow for metadata read intensive
+>> workloads. E.g. have you tried to boot a root partition with dual fs?
+>> That's a very important IO benchmark for desktop Linux systems.
+>
+> Did someone say metadata intensive? Try kernel tarballs, they're a
+> perfect workload. Tons of directories, and even more files here and
+> there. Works wonders.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+I just did now per your request. To make things more relevant I
+created a file structure from the 2.4.19 kernel sources and repeated it
+recursively into the deepest dir level (10) 4 times ending up with
+7280 directories with 40 levels of directories depth and 1 GB
+data set size. I run both tar and untar operations on the tree
+for ext3, reiserfs, jfs and DualFS. I remounted the FS before
+each test. I end up with 7280 directories 40 levels depth and
+1 GB data. Both tar file and directory tree were on the FS under
+test.
 
---- /dev/null
-+++ b/Documentation/marker.txt
-@@ -0,0 +1,130 @@
-+ 	             Using the Linux Kernel Markers
-+
-+			    Mathieu Desnoyers
-+
-+
-+	This document discusses the purpose of markers. It shows some usage
-+examples of the Linux Kernel Markers : how to insert markers within the kernel
-+and how to connect probes to a marker. Finally, it has some probe module
-+examples. This is what connects to a marker.
-+
-+
-+* Purpose of markers
-+
-+You can put markers at important locations in the code. They act as
-+lightweight hooks that can pass an arbitrary number of parameters,
-+described in a printk-like format string, to a function whenever the marker
-+code is reached.
-+
-+They can be used for tracing (LTTng, LKET over SystemTAP), overall performance
-+accounting (SystemTAP). They could also be used to implement
-+efficient hooks for SELinux or any other subsystem the would have this
-+kind of need.
-+
-+Using the markers for system audit (SELinux) would require to pass a
-+variable by address that would be later checked by the marked routine.
-+
-+
-+* Usage
-+
-+MARK(subsystem_event, "%d %s %p[struct task_struct]",
-+  someint, somestring, current);
-+Where :
-+- Subsystem is the name of your subsystem.
-+- event is the name of the event to mark.
-+- "%d %s %p[struct task_struct]" is the formatted string for (printk-style).
-+- someint is an integer.
-+- somestring is a char pointer.
-+- current is a pointer to a struct task_struct.
-+
-+The expression %p[struct task_struct] is a suggested marker definition
-+standard that could eventually be used for pointer type checking in
-+sparse. The brackets contain the type to which the pointer refer.
-+
-+The marker mechanism supports multiple instances of the same marker.
-+Markers can be put in inline functions, inlined static functions and
-+unrolled loops.
-+
-+Note : It is safe to put markers within preempt-safe code : preempt_enable()
-+will not call the scheduler due to the tests in preempt_schedule().
-+
-+
-+* Optimization for a given architecture
-+
-+You will find, in asm-*/marker.h, optimisations for given architectures
-+(currently i386 and powerpc). They use a load immediate instead of a data read,
-+which saves a data cache hit, but also requires cross CPU code modification. In
-+order to support embedded systems which use read-only memory for their code, the
-+optimization can be disabled through menu options.
-+
-+
-+* Probe example
-+
-+------------------------------ CUT -------------------------------------
-+/* probe-example.c
-+ *
-+ * Loads a function at a marker call site.
-+ *
-+ * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-+ *
-+ * This file is released under the GPLv2.
-+ * See the file COPYING for more details.
-+ */
-+
-+#include <linux/sched.h>
-+#include <linux/kernel.h>
-+
-+#define SUBSYSTEM_EVENT_FORMAT "%d %s %p[struct task_struct]"
-+void probe_subsystem_event(const char *format, ...)
-+{
-+	va_list ap;
-+	/* Declare args */
-+	unsigned int value;
-+	const char *mystr;
-+	struct task_struct *task;
-+
-+	/* Assign args */
-+	va_start(ap, format);
-+	value = va_arg(ap, typeof(value));
-+	mystr = va_arg(ap, typeof(mystr));
-+	task = va_arg(ap, typeof(task));
-+
-+	/* Call tracer */
-+	trace_subsystem_event(value, mystr, task);
-+
-+	/* Or call printk */
-+	vprintk(format, ap);
-+
-+	/* or count, check rights... */
-+	
-+	va_end(ap);
-+}
-+
-+static int __init probe_init(void)
-+{
-+	int result;
-+	result = marker_set_probe("subsystem_event",
-+			FS_CLOSE_FORMAT,
-+			probe_fs_close);
-+	if (!result)
-+		goto cleanup;
-+	return 0;
-+
-+cleanup:
-+	marker_remove_probe(probe_subsystem_event);
-+	return -EPERM;
-+}
-+
-+static void __exit probe_fini(void)
-+{	
-+	marker_remove_probe(probe_subsystem_event);
-+}
-+
-+module_init(probe_init);
-+module_exit(probe_fini);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Mathieu Desnoyers");
-+MODULE_DESCRIPTION("SUBSYSTEM Probe");
-+------------------------------ CUT -------------------------------------
-+
+Here are the results - elapse time in sec:
+		tar	untar
+ext3:		144	143
+reiserfs:	100	100
+JFS:		196	140
+DualFS:		63	54
+
+Hope this helps.
+>
+>
+> Jan
+
+/Sorin
+
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Candidate, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Using Opera's revolutionary e-mail client: http://www.opera.com/mail/
