@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932923AbXBPCJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932925AbXBPCJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932923AbXBPCJP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 21:09:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932922AbXBPCJP
+	id S932925AbXBPCJs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 21:09:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423024AbXBPCJs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 21:09:15 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:33491 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932491AbXBPCJO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 21:09:14 -0500
-Message-ID: <45D51248.5070408@garzik.org>
-Date: Thu, 15 Feb 2007 21:09:12 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
+	Thu, 15 Feb 2007 21:09:48 -0500
+Received: from nz-out-0506.google.com ([64.233.162.235]:18421 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932925AbXBPCJr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 21:09:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JnsHHJb1p5jKz+EGZsSg26LesdlCtcvBBPX0tfo1PLZEImXeviY+JELsGC2pTpYbV2ofJ6Cml8PhclNoSL09XEj3dREYOjPns78poyqyxwNnbF1dD2h6O0s7DeFv3ybm1k1eV6CxUZrwi8y6wh7uUknlPMbH/pqZtQ+hscKS810=
+Message-ID: <f2b55d220702151809w3e234ec2j59f09c92a8fff441@mail.gmail.com>
+Date: Thu, 15 Feb 2007 18:09:40 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: GPL vs non-GPL device drivers
+Cc: "v j" <vj.linux@gmail.com>, "Theodore Tso" <tytso@mit.edu>,
+       "Dave Jones" <davej@redhat.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <45D4FCC7.2090206@garzik.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, "Luck, Tony" <tony.luck@intel.com>,
-       Zhang Yanmin <yanmin.zhang@intel.com>
-Subject: Re: [git patches] libata updates (mostly fixes)
-References: <20070215233411.GA10782@havoc.gtf.org> <Pine.LNX.4.64.0702151546130.20368@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0702151546130.20368@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+	 <20070215061149.GE15654@redhat.com>
+	 <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
+	 <20070215165339.GB5285@thunk.org>
+	 <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com>
+	 <45D4DCE3.9070002@garzik.org>
+	 <f2b55d220702151604l1af2dad3k61758a654244ca6c@mail.gmail.com>
+	 <45D4FCC7.2090206@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Thu, 15 Feb 2007, Jeff Garzik wrote:
->> diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
->> index db185f3..d51f0f1 100644
->> --- a/arch/ia64/Kconfig
->> +++ b/arch/ia64/Kconfig
->> @@ -22,6 +22,7 @@ config IA64
->>  
->>  config 64BIT
->>  	bool
->> +	select ATA_NONSTANDARD if ATA
->>  	default y
-> 
-> Ok, this is just _strange_.
+On 2/15/07, Jeff Garzik <jeff@garzik.org> wrote:
+> Michael K. Edwards wrote:
+> > Bzzzt.  The whole point of the GPL is to "guarantee your freedom to
+> > share and change free software--to make sure the software is free for
+> > all its users."
+>
+> No, that's the FSF marketing fluff you've been taught to recite.
 
-Agreed.
+<chuckle> Didn't read far into that e-mail, did you?  That's a quote
+from the GPL preamble, which isn't part of the offer of contract but
+is arguably legally relevant context.  It's largely consistent with
+the license as I read it.  It's also consistent with the origins of
+the GPL, as you can read anywhere that folk history is sold.
 
+> In the context of the Linux kernel, I'm referring to the original reason
+> why Linus chose the GPL for the Linux kernel.
 
-> Tying ATA_NONSTANDARD into ia64 by tying it to the 64BIT config variable 
-> may work (well, I _assume_ it does), but it's just psychedelic.
+Can't say; wasn't there.  But I doubt that anyone truly "funnels
+contributions back" to the kernel because of the letter of the GPL.
+They do so because they think it will lower their costs, raise their
+revenues, hedge their risks, earn goodwill from peers, enhance their
+employability, stroke their egos, save the world, please their Author
+and/or Linus, and so on and so forth.
 
-AFAICT it's an attempt to do an unconditional 'select'.  I'm /not/ 
-disputing its psychedilic properties, certainly, just figured that was 
-the way that IA64 arch folks did stuff like this.
+The GPL tells us what is likely to happen in the event of a conflict
+that gets as far as a courtroom.  I think the smart money's on
+conflict avoidance (that's kind of ironic, isn't it), and failing
+that, on ignoring the FSF and other armchair lawyers and reading the
+law (spelled A-P-P-E-L-L-A-T-E D-E-C-I-S-I-O-N-S) for yourself.  That
+is, after all, what judges have done and will continue to do, at least
+until the Revolution comes.
 
-
-> How about adding a separate config entry like
-> 
-> 	config IA64_ATA
-> 		bool
-> 		depends on ATA
-> 		select ATA_NONSTANDARD
-> 		default y
-> 
-> which kind of makes sense when you squint just the right way..
-
-Either way, that seems sane to me.  I'd love to have some IA64 folks to 
-comment though.
-
-	Jeff
-
-
+Cheers,
+- Michael
