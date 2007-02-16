@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932635AbXBPF5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423303AbXBPGDJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932635AbXBPF5x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 00:57:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932637AbXBPF5x
+	id S1423303AbXBPGDJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 01:03:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423304AbXBPGDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 00:57:53 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:30501 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932635AbXBPF5w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 00:57:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=t9y8Jg7pWjM/O9KLfCpnbUl4O5KqrrO21VxVEboZEekrYfLSvq/fmU7uKNto7ZmTUd9A7nEj4oluiJ97qsk1qpt2qll9y0TmPQvo88PHMWCsD8e676RGqFCl19F0AnqOZhjp/F6Kh64YtRLQVOUstjD1yUOZbAz6g3FhSri+mNA=
-Message-ID: <3d57814d0702152157n461a9f0cta0a0c20e9a592d83@mail.gmail.com>
-Date: Fri, 16 Feb 2007 15:57:50 +1000
-From: "Trent Waddington" <trent.waddington@gmail.com>
-To: "v j" <vj.linux@gmail.com>
-Subject: Re: GPL vs non-GPL device drivers
-Cc: "David Lang" <david.lang@digitalinsight.com>,
-       "Scott Preece" <sepreece@gmail.com>,
-       "Miguel Ojeda" <maxextreme@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <9b3a62ab0702152148p57db8b1dgd42b1c6fb15dccbb@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 16 Feb 2007 01:03:09 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:52065 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423303AbXBPGDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 01:03:08 -0500
+Date: Thu, 15 Feb 2007 22:01:52 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, "Len Brown" <lenb@kernel.org>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       "lkml - Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: e1000_intr in request_irq faults in 2.6.20-git
+Message-Id: <20070215220152.d137f86b.akpm@linux-foundation.org>
+In-Reply-To: <36D9DB17C6DE9E40B059440DB8D95F5201E997BA@orsmsx418.amr.corp.intel.com>
+References: <m1y7mzhw7b.fsf@ebiederm.dsl.xmission.com>
+	<36D9DB17C6DE9E40B059440DB8D95F5201E997BA@orsmsx418.amr.corp.intel.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
-	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
-	 <20070215061149.GE15654@redhat.com>
-	 <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
-	 <20070215165339.GB5285@thunk.org>
-	 <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com>
-	 <653402b90702151102n3a3e0435r837e2191de79b2b@mail.gmail.com>
-	 <7b69d1470702151712x685f3e0eqf6198f9bb7f2394e@mail.gmail.com>
-	 <Pine.LNX.4.63.0702151701510.10070@qynat.qvtvafvgr.pbz>
-	 <9b3a62ab0702152148p57db8b1dgd42b1c6fb15dccbb@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/16/07, v j <vj.linux@gmail.com> wrote:
-> This is only because of the terms of GPL. Morally, as many here have
-> pointed out this should fall into the same category.
+On Thu, 15 Feb 2007 18:10:53 -0800 "Brandeburg, Jesse" <jesse.brandeburg@intel.com> wrote:
 
-I say it does.  If you have the ability, and enjoy Linux, you should
-try and make the time to contribute some code or other assistance to
-the Linux project.
+> @@ -1431,6 +1427,10 @@ e1000_open(struct net_device *netdev)
+>                 e1000_update_mng_vlan(adapter);
+>         }
+> 
+> +       err = e1000_request_irq(adapter);
+> +       if (err)
+> +               goto err_req_irq;
+> +
+>         /* If AMT is enabled, let the firmware know that the network
+>          * interface is now open */
+>         if (adapter->hw.mac_type == e1000_82573 &&
+> @@ -1439,10 +1439,11 @@ e1000_open(struct net_device *netdev)
+> 
+>         return E1000_SUCCESS;
+> 
+> +err_req_irq:
+> +       e1000_down(adapter);
+> +       e1000_free_irq(adapter);
+>  err_up:
 
-> Atleast we try and report genuine bugs and submit patches when
-> necessary.
-
-Good stuff.
-
-> We get abuse however because it is not clear what the terms
-> of GPL are WRT loadable modules. If this were written in black and
-> white and we knew what we were fighting against, this would not be an
-> issue. We only get crap because no one here yet knows how to interpret
-> proprietary modules loaded into the kernel.
-
-It's written in black and white, in the license.  Apart from that,
-Greg KH has made his opinion clear, and you have said you understand
-and don't debate that he holds this opinion, and his code is what you
-said you were linking to (the sysfs/class stuff), so why do you keep
-saying that "it is not clear".
-
-Do you think that, somehow, Linus' opinion trumps Greg KH's opinion on
-his own code?
-
-Trent
+We don't want that e1000_free_irq(adapter) in the error path.
