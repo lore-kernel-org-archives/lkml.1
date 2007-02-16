@@ -1,79 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946144AbXBPUnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946151AbXBPUoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946144AbXBPUnS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 15:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946145AbXBPUnS
+	id S1946151AbXBPUoB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 15:44:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946146AbXBPUoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 15:43:18 -0500
-Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:52103 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946144AbXBPUnR (ORCPT
+	Fri, 16 Feb 2007 15:44:00 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:54073 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946145AbXBPUn7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 15:43:17 -0500
-Date: Fri, 16 Feb 2007 21:43:36 +0100
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com
-Message-ID: <20070216204336.GB4641@enneenne.com>
-References: <20070216185230.GO8882@enneenne.com> <20070216191207.GC2572@flint.arm.linux.org.uk>
+	Fri, 16 Feb 2007 15:43:59 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [RFC] killing the NR_IRQS arrays.
+Date: Fri, 16 Feb 2007 21:43:24 +0100
+User-Agent: KMail/1.9.5
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com> <200702162045.58857.arnd@arndb.de> <20070216195256.GE2572@flint.arm.linux.org.uk>
+In-Reply-To: <20070216195256.GE2572@flint.arm.linux.org.uk>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+X-Legal: Vorsitzender des Aufsichtsrats: Johann Weihen=0A=0D Gesch=E4ftsf=FChrung: Herbert Kircher=0A=0D Sitz der Gesellschaft: B=F6blingen=0A=0D Registergericht: Amtsgericht Stuttgart, HRB 243294
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070216191207.GC2572@flint.arm.linux.org.uk>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+Message-Id: <200702162143.25130.arnd@arndb.de>
+X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
+X-Provags-ID2: V01U2FsdGVkX18+/Z1/Vd1hMWIdmIF1jrkz5AJyDZrburd8959+b15+B31wRrLzOqxyf8j/UqsqOlJXuP6FPboVem/114PwINuUEy79KKnB4GeXUpVOuqzAyA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 16, 2007 at 07:12:08PM +0000, Russell King wrote:
+On Friday 16 February 2007 20:52, Russell King wrote:
+> On Fri, Feb 16, 2007 at 08:45:58PM +0100, Arnd Bergmann wrote:
+> > We did something like this a few years back on the s390 architecture, which
+> > happens to be lucky enough not to share any interrupt based drivers with
+> > any of the other architectures.
 > 
-> Yuck.  Please.  No.  Doing it this way means you have to modify every
-> single serial driver out there which is a mamouth task.
-> 
-> >  			uart_handle_dcd_change(&up->port, status & UART_MSR_DCD);
-> 
-> Did you not look to see what's in this helper?  You'll find within here
-> the following code:
-> 
-> #ifdef CONFIG_HARD_PPS
->         if ((port->flags & UPF_HARDPPS_CD) && status)
->                 hardpps();
-> #endif
-> 
-> which should've been a big sign lit up in bright lights in Times Square
-> pointing you towards the right place to put your code.
+> What you're proposing is looking similar to a proposal I put forward some
+> 4 years ago, but was rejected.  Maybe times have changed and there's a
+> need for it now.
 
-Ok.
+Yes, I think times have changed, with the increased popularity of MSI
+and paravirtualized devices. A few points on your old proposal though:
 
-> Why not continue to leave it as a decision of the administrator - if
-> you want ports to default to having PPS support enabled, change all
-> the registration to set UPF_HARDPPS_CD.  But leave the admin with
-> the ability to disable it.
+- Doing it per architecture no longer sounds feasible, I think it would
+  need to be done per subsystem so that the drivers can be adapted to
+  a new interface, and most drivers are used across multiple architectures.
+- struct irq sounds much more fitting than struct irq_desc
+- creating new irq_foo() functions to replace foo_irq() also sounds right.
+- I don't see the point in splitting request_irq into irq_request and
+  irq_register.
+- doing subsystem specific abstractions ideally allows the drivers to
+  not even need to worry about the irq pointer, significantly simplifying
+  the interface for register/unregister.
 
-Ok.
-
-> This means that PPS support is not available for any port which wasn't
-> autoprobed at device discovery time.  That seems quite restrictive.
-
-How I can force probing for a specified uart port?
-
-> Maybe it needs to be coupled with the setting/clearing of UPF_HARDPPS_CD ?
-
-What do you think about? I should enable the PPS support only if the
-userland sets the UPF_HARDPPS_CD flag?
-
-Thanks for your comments,
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+	Arnd <><
