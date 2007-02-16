@@ -1,47 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932483AbXBPR2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932493AbXBPRaK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932483AbXBPR2m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 12:28:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932578AbXBPR2m
+	id S932493AbXBPRaK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 12:30:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932566AbXBPRaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 12:28:42 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:22600 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932483AbXBPR2l (ORCPT
+	Fri, 16 Feb 2007 12:30:10 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:59543 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932493AbXBPRaI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 12:28:41 -0500
-Date: Fri, 16 Feb 2007 09:24:16 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Mockern@yandex.ru
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: S_NORMAL_ACTIVE, S_CLOSING
-Message-Id: <20070216092416.316c32fd.randy.dunlap@oracle.com>
-In-Reply-To: <45D5DED2.000004.05550@webmail11.yandex.ru>
-References: <45D5DED2.000004.05550@webmail11.yandex.ru>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 16 Feb 2007 12:30:08 -0500
+Date: Fri, 16 Feb 2007 18:30:12 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Heikki Orsila <shdl@zakalwe.fi>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] New driver information
+Message-ID: <20070216173012.GQ13958@stusta.de>
+References: <20070216135851.GA7939@zakalwe.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070216135851.GA7939@zakalwe.fi>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Feb 2007 19:41:54 +0300 (MSK) Mockern wrote:
-
-> Hello,
+On Fri, Feb 16, 2007 at 03:58:51PM +0200, Heikki Orsila wrote:
+> I just read
 > 
-> In which header I can find S_NORMAL_ACTIVE and S_CLOSING?
+> 	http://kerneltrap.org/node/7729
 > 
-> Thank you
+> and it occured to me that it would be informative to have a new device 
+> driver macro. The motivation for the new macro would be 4 issues:
+> 
+> 	* Is it possible to get specifications for the device?
+> 	* If yes, under what terms? (nda, public)
+> 	* Where to get public specs?
+> 	* How many closed and open drivers in the Linux source tree?
+> 
+> I suggest to add following macro:
+> 
+> MODULE_SPECIFICATION(terms, source);
+> 
+> where "terms" is one of
+> 
+>  * MODULE_SPEC_ANY_PARTY_NDA
+> 	- specification available to any party for an NDA
+>  * MODULE_SPEC_ANY_PARTY
+> 	- specification available in public, or at least available 
+> 	  without NDA to any party
+>  * MODULE_SPEC_RESTRICTED
+> 	- none of the above
+> 
+> and "source":
+> 
+>  * contact address for nda specs
+>  * any public source for a public specification (http://, email address, 
+>    ...)
+>  * empty string otherwise
+> 
+> I realise this macro somewhat circumvents the purpose of Documentation/ 
+> directory but the idea is to have a direct 1:1 mapping between drivers 
+> and specification sources so that it would be easy to collect statistics 
+> of "open" hardware by using grep et al.
+> 
+> What do you think? Useless annotations or useful information?
 
+Useless, since noone will maintain this information (e.g. an
+"email address" might no longer be valid several years from now, or a 
+company might change the policies for releaseing information).
 
-cd top_of_linux_source_tree
-find . -name \*\.h | xargs grep -w S_CLOSING
+And also useless since there doesn't seem to be a serious use case.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+> Heikki Orsila
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
