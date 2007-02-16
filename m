@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932237AbXBPMhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932266AbXBPMoI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932237AbXBPMhJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 07:37:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932272AbXBPMhI
+	id S932266AbXBPMoI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 07:44:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932212AbXBPMoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 07:37:08 -0500
-Received: from wip-ec-wd.wipro.com ([203.91.193.32]:57950 "EHLO
-	wip-ec-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932263AbXBPMhH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 07:37:07 -0500
-Subject: [KJ][PATCH] is_power_of_2 in ia64mm
-From: Vignesh Babu BM <vignesh.babu@wipro.com>
-To: Kernel Janitors List <kernel-janitors@lists.osdl.org>
-Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 16 Feb 2007 17:33:55 +0530
-Message-Id: <1171627435.6127.0.camel@wriver-t81fb058.linuxcoe>
+	Fri, 16 Feb 2007 07:44:08 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49508 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932266AbXBPMoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 07:44:07 -0500
+Date: Fri, 16 Feb 2007 13:41:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [RFC] killing the NR_IRQS arrays.
+Message-ID: <20070216124117.GB4218@elte.hu>
+References: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-X-OriginalArrivalTime: 16 Feb 2007 12:05:00.0165 (UTC) FILETIME=[AECEEB50:01C751C2]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.8
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.1.7
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.5000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replacing (n & (n-1)) in the context of power of 2 checks
-with is_power_of_2
 
+* Eric W. Biederman <ebiederm@xmission.com> wrote:
 
-diff --git a/arch/ia64/mm/hugetlbpage.c b/arch/ia64/mm/hugetlbpage.c
-index 0c7e94e..0ccc70e 100644
---- a/arch/ia64/mm/hugetlbpage.c
-+++ b/arch/ia64/mm/hugetlbpage.c
-@@ -16,6 +16,7 @@
- #include <linux/smp_lock.h>
- #include <linux/slab.h>
- #include <linux/sysctl.h>
-+#include <linux/log2.h>
- #include <asm/mman.h>
- #include <asm/pgalloc.h>
- #include <asm/tlb.h>
-@@ -175,7 +176,7 @@ static int __init hugetlb_setup_sz(char *str)
- 		tr_pages = 0x15557000UL;
- 
- 	size = memparse(str, &str);
--	if (*str || (size & (size-1)) || !(tr_pages & size) ||
-+	if (*str || !is_power_of_2(size) || !(tr_pages & size) ||
- 		size <= PAGE_SIZE ||
- 		size >= (1UL << PAGE_SHIFT << MAX_ORDER)) {
- 		printk(KERN_WARNING "Invalid huge page size specified\n");
+> So I propose we remove all assumptions from the code that we actually 
+> have an array of irqs.  That will allow for irq_desc to be dynamically 
+> allocated instead of statically allocated saving memory and reducing 
+> kernel complexity.
 
--- 
-Regards,  
-Vignesh Babu BM  
-_____________________________________________________________  
-"Why is it that every time I'm with you, makes me believe in magic?"
+hm. I'd suggest to do this without changing request_irq() - and then we 
+could avoid the 'massive, every driver affected' change, right?
+
+i.e. because we'll (have to) have an nr_to_desc() and desc_to_nr() 
+mapping facility anyway, lets just not change the driver APIs massively. 
+There dont seem to be that many drivers that assume that irq_desc[] is 
+an array - are there?
+
+otherwise, in terms of the irqchips infrastructure and the API between 
+genirq and the irqchip arch-level drivers, this change makes quite a bit 
+of sense i think.
+
+or am i missing something fundamental?
+
+	Ingo
