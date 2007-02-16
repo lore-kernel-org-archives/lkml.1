@@ -1,51 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423147AbXBPE0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161751AbXBPE3H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423147AbXBPE0f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 23:26:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161751AbXBPE0f
+	id S1161751AbXBPE3H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 23:29:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423148AbXBPE3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 23:26:35 -0500
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:42261 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161750AbXBPE0e (ORCPT
+	Thu, 15 Feb 2007 23:29:07 -0500
+Received: from ind-iport-1.cisco.com ([64.104.129.195]:14204 "EHLO
+	ind-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161754AbXBPE3F convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 23:26:34 -0500
-Message-ID: <45D5325A.2040502@gmail.com>
-Date: Fri, 16 Feb 2007 05:26:02 +0100
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+	Thu, 15 Feb 2007 23:29:05 -0500
+X-Greylist: delayed 614 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Feb 2007 23:29:04 EST
+X-IronPort-AV: i="4.14,179,1170613800"; 
+   d="scan'208"; a="75583781:sNHT66554564"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Sergei Organov <osv@javad.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       =?ISO-8859-15?Q?=22J=2EA=2E_Magall=C3=C3=C3=C3=C3=C2=B3n=22?= 
-	<jamagallon@ono.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: somebody dropped a (warning) bomb
-References: <45CB3B28.60102@garzik.org> <Pine.LNX.4.64.0702081338010.8424@woody.linux-foundation.org> <Pine.LNX.4.64.0702081351410.8424@woody.linux-foundation.org> <87abznsdyo.fsf@javad.com> <Pine.LNX.4.64.0702090753500.8424@woody.linux-foundation.org> <874pprr5nn.fsf@javad.com> <Pine.LNX.4.64.0702120804520.8424@woody.linux-foundation.org> <87ps8end9b.fsf@javad.com> <84144f020702131026q2af1afd6vbcd2708d7b7b9907@mail.gmail.com> <87bqjxooog.fsf@javad.com> <84144f020702131143r767aa40blb97a39b40bee73b8@mail.gmail.com> <87fy99n6mf.fsf@javad.com> <Pine.LNX.4.64.0702131513050.3604@woody.linux-foundation.org> <87hctnlfqz.fsf@javad.com> <Pine.LNX.4.64.0702150736360.20368@woody.linux-foundation.org> <87k5yjjlrj.fsf@javad.com> <Pine.LNX.4.64.0702151059090.20368@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0702151059090.20368@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: kernel porting query
+Date: Fri, 16 Feb 2007 09:48:45 +0530
+Message-ID: <677342AB6AE12D4DB59A9D473F40D74B028E0411@xmb-blr-416.apac.cisco.com>
+In-Reply-To: <7783925d0702151816r7df63816ld9c69b56bdb0a0b9@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: kernel porting query
+Thread-Index: AcdRcNkpR+qYBEpSTM2TXIT2QuvmOQADqvFQ
+References: <7783925d0702151816r7df63816ld9c69b56bdb0a0b9@mail.gmail.com>
+From: "Ajay Singh \(ajaysi\)" <ajaysi@cisco.com>
+To: "Rick Brown" <rick.brown.3@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "kernelnewbies" <kernelnewbies@nl.linux.org>,
+       <linux-newbie@vger.kernel.org>
+X-OriginalArrivalTime: 16 Feb 2007 04:18:45.0434 (UTC) FILETIME=[8C91B9A0:01C75181]
+Authentication-Results: ind-dkim-1; header.From=ajaysi@cisco.com; dkim=pass (
+	sig from cisco.com/inddkim1002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/15/2007 08:02 PM, Linus Torvalds wrote:
+ 
 
-> Think of it this way: in science, a theory is proven to be bad by a
-> single undeniable fact just showing that it's wrong.
-> 
-> The same is largely true of a warning. If the warning sometimes
-> happens for code that is perfectly fine, the warning is bad.
+<snip> 
+1) Can any one please shed some light on precisely and exactly what are
+differences in different boards for which we need to port linux?
 
-Slight difference; if a compulsory warning sometimes happens for code 
-that is perfectly fine, the warning is bad. I do want to be _able_ to 
-get as many warnings as a compiler can muster though.
+The differences depends on the boards ... Mostly if they belong to the
+same family the differences could be mainly in the peripherials ...
+Interrupt mappings... Serial interface ... Memory sizes (if differnet
+boards have different memory sizes) ... Sometimes some devices may be
+moved to some other locations in the memory map (Look at memory map of
+your SoC on your board). 
 
-Given char's special nature, shouldn't the conclusion of this thread 
-have long been simply that gcc needs -Wno-char-pointer-sign? (with 
-whatever default, as far as I'm concerned).
+2) Also, I would appreciate if you could point out code portions /
+source files that need to be changed in the process of porting Linux?
 
-Rene.
+Look in linux-2.6.20\arch\mips\mips-boards for help on porting to your
+board. You can add directory specific to your board here.
+I think you can start from xxx_setup.c file in the above directory.
+
+Good luck.
+Ajay.
+
+TIA,
+
+Rick
+
+--
+To unsubscribe from this list: send an email with "unsubscribe
+kernelnewbies" to ecartis@nl.linux.org Please read the FAQ at
+http://kernelnewbies.org/FAQ
