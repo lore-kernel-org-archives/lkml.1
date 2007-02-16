@@ -1,90 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946156AbXBPUvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946167AbXBPU4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946156AbXBPUvn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 15:51:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946163AbXBPUvn
+	id S1946167AbXBPU4y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 15:56:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946192AbXBPU4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 15:51:43 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2681 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946156AbXBPUvm (ORCPT
+	Fri, 16 Feb 2007 15:56:54 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:41782 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946167AbXBPU4x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 15:51:42 -0500
-Date: Fri, 16 Feb 2007 20:51:35 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
-Message-ID: <20070216205134.GF2572@flint.arm.linux.org.uk>
-Mail-Followup-To: Rodolfo Giometti <giometti@enneenne.com>,
-	linux-kernel@vger.kernel.org
-References: <20070216185230.GO8882@enneenne.com> <20070216191207.GC2572@flint.arm.linux.org.uk> <20070216204336.GB4641@enneenne.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070216204336.GB4641@enneenne.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 16 Feb 2007 15:56:53 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Fri, 16 Feb 2007 15:55:24 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: removing all "R/W" content from all semaphore.h files?
+Message-ID: <Pine.LNX.4.64.0702161544540.20402@CPE00045a9c397f-CM001225dbafb6>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 16, 2007 at 09:43:36PM +0100, Rodolfo Giometti wrote:
-> On Fri, Feb 16, 2007 at 07:12:08PM +0000, Russell King wrote:
-> > 
-> > Yuck.  Please.  No.  Doing it this way means you have to modify every
-> > single serial driver out there which is a mamouth task.
-> > 
-> > >  			uart_handle_dcd_change(&up->port, status & UART_MSR_DCD);
-> > 
-> > Did you not look to see what's in this helper?  You'll find within here
-> > the following code:
-> > 
-> > #ifdef CONFIG_HARD_PPS
-> >         if ((port->flags & UPF_HARDPPS_CD) && status)
-> >                 hardpps();
-> > #endif
-> > 
-> > which should've been a big sign lit up in bright lights in Times Square
-> > pointing you towards the right place to put your code.
-> 
-> Ok.
-> 
-> > Why not continue to leave it as a decision of the administrator - if
-> > you want ports to default to having PPS support enabled, change all
-> > the registration to set UPF_HARDPPS_CD.  But leave the admin with
-> > the ability to disable it.
-> 
-> Ok.
-> 
-> > This means that PPS support is not available for any port which wasn't
-> > autoprobed at device discovery time.  That seems quite restrictive.
-> 
-> How I can force probing for a specified uart port?
 
-You can't because it doesn't go through the interfaces you're hooking
-into.  Existing interfaces are "changed" to point at the UARTs using
-setserial, which does its work via an ioctl.
+(can anyone comment on whether i'm thinking about this clearly?)
 
-> > Maybe it needs to be coupled with the setting/clearing of UPF_HARDPPS_CD ?
-> 
-> What do you think about? I should enable the PPS support only if the
-> userland sets the UPF_HARDPPS_CD flag?
+  as i read it, there is no need for *any* of the semaphore.h files to
+include "<linux/rwsem.h>" anymore, since R/W sems now have their own
+header file <linux/rwsem.h>.  so i recently submitted a patch to
+delete all those inclusions from all semaphore.h files.  IMHO, that's
+a fairly safe and reasonable change -- anyone who specifically wants a
+R/W semaphore should be including the appropriate header file for it
+and not be picking up that definition thru semaphore.h.
 
-Not specifically only userland - if it happens to be set when the port
-is registered then enable PPS support then as well.
+  however, some of those semaphore.h files also include the macro
+definition:
 
-So:
+  #define RW_LOCK_BIAS             0x01000000
 
-1. uart_configure_port - if UPF_HARDPPS_CD is set, register the port
-   for PPS support.
-2. uart_remove_one_port - if UPF_HARDPPS_CD is set, unregister the port
-   for PPS support.
-3. uart_set_info - if changing UPF_HARDPPS_CD, appropriately register or
-   unregister the port for PPS support.
+that *also* strikes me as inappropriate content for generic
+semaphore.h files.  in fact, there's a fascinating variety of header
+files that define that macro identically:
 
-PS, linuxpps@ml.enneenne.com dropped from the cc: since it rejects my
-postings.
+$ grep -rl "#define RW_LOCK_BIAS" *
+include/asm-frv/semaphore.h
+include/asm-arm26/locks.h
+include/asm-m68knommu/semaphore.h
+include/asm-i386/rwlock.h
+include/asm-sh/spinlock_types.h
+include/asm-arm/locks.h
+include/asm-m32r/spinlock_types.h
+include/asm-m68k/semaphore.h
+include/asm-h8300/semaphore.h
+include/asm-x86_64/rwlock.h
+include/asm-cris/arch-v32/spinlock.h
+include/asm-cris/semaphore.h
+
+  so, where is the proper place for that macro definition?
+semaphore.h?  locks.h?  rwlock.h?  spinlock.h?  spinlock-types.h?
+the fact that that macro is defined in such differing locations
+*can't* be a good thing.
+
+rday
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
