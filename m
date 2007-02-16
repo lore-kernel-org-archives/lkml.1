@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946252AbXBPVT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946261AbXBPVYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946252AbXBPVT1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 16:19:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946258AbXBPVT1
+	id S1946261AbXBPVYl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 16:24:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946262AbXBPVYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 16:19:27 -0500
-Received: from mail.trixing.net ([87.230.125.58]:38091 "EHLO mail.trixing.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946252AbXBPVT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 16:19:27 -0500
-Message-ID: <45D61FC8.4020604@l4x.org>
-Date: Fri, 16 Feb 2007 22:19:04 +0100
-From: Jan Dittmer <jdi@l4x.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20061220 Thunderbird/1.5.0.9 Mnenhy/0.7.4.666
+	Fri, 16 Feb 2007 16:24:41 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:3433 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946261AbXBPVYk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 16:24:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JEyDvZGx1+xKdqng157a/FG+XWuYw/lVQUA5qOMy2M1mj6x7mTJu15JdRurGyaVWQOoATDJIais4TmTyIzFJzaixT117Xz7sH+3FMetIyCtBwNH8Rx+LY65cgw4EZjblVSaXpyRLzavI3Joz+2+K/830BKX43sWncrRJu1gJEOQ=
+Message-ID: <6bffcb0e0702161324p217198a0t88fd1058ac0005ca@mail.gmail.com>
+Date: Fri, 16 Feb 2007 22:24:39 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: tglx@linutronix.de
+Subject: Re: 2.6.20-git13 kernel BUG at /mnt/md0/devel/linux-git/kernel/time/tick-sched.c:168
+Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1171660939.30834.102.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Rodolfo Giometti <giometti@enneenne.com>
-CC: linux-kernel@vger.kernel.org
-References: <20070216185230.GO8882@enneenne.com> <45D60C62.5080806@l4x.org> <20070216205747.GC4641@enneenne.com>
-In-Reply-To: <20070216205747.GC4641@enneenne.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 192.168.1.37
-X-SA-Exim-Mail-From: jdi@l4x.org
-Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
-X-SA-Exim-Version: 4.2.1 (built Mon, 27 Mar 2006 14:12:04 +0200)
-X-SA-Exim-Scanned: Yes (on mail.trixing.net)
+Content-Disposition: inline
+References: <45D61632.1020105@googlemail.com>
+	 <1171660939.30834.102.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rodolfo Giometti wrote:
->>> +PROCFS support
->>> +--------------
->> New features shouldn't introduce new /proc stuff.
-> 
-> It's a must? I can leave procfs for backward compatibility with old
-> utilities?
+On 16/02/07, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Fri, 2007-02-16 at 21:38 +0100, Michal Piotrowski wrote:
+> > Hi,
+> >
+> > This looks like a tickless stuff
+>
+> Yup.
+>
+> > 0xc0139ea0 is in tick_nohz_stop_sched_tick (/mnt/md0/devel/linux-git/kernel/time/tick-sched.c:168).
+> > 163
+> > 164             if (need_resched())
+> > 165                     goto end;
+> > 166
+> > 167             cpu = smp_processor_id();
+> > 168             BUG_ON(local_softirq_pending());
+>
+> Hmm, the BUG_ON is inside of an interrupt disabled region, so we should
+> have bailed out early in the need_resched() check above (because we are
+> in the idle task context according to the stack trace).
+>
+> Is this reproducible ?
 
-Hmm, as this is a new feature with regard to the mainline kernel, old
-utilities don't count (if you can install a new kernel you can also
-be expected to install new user-space tools for the new feature).
+Yes.
 
->> You read the comment above your line?
-> 
-> No, sorry. I'm going to choose another id number... or can I keep 17?
+>
+>         tglx
+>
+>
+>
 
-I don't know, ask whoever is responsible for the file.
+Regards,
+Michal
 
->>> +#define to_class_dev(obj) container_of((obj), struct class_device, kobj)
->> pretty generic name.
-> 
-> I should change it?
-
-If it's of general use put it in the appropriate header file. If it's
-just for the pps subsystem name it as such.
-
->> Have you thought about 32/64bit issues?
-> 
-> No. I have no 64 bits machine to test the code...
-
-Hmm, think about x86_64 with 64-bit kernel and 32-bit userspace, probably
-having got different padding in the struct. Read LDD3, chapter 11,
-especially 11.4 .
-
-Jan
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
