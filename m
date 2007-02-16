@@ -1,209 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422815AbXBPAQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422817AbXBPARJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422815AbXBPAQy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 19:16:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422816AbXBPAQx
+	id S1422817AbXBPARJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 19:17:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422816AbXBPARJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 19:16:53 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:15636 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422815AbXBPAQw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 19:16:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=sNKZHqP3Cqf41jXkZVgH1Nyq05xyCTCcliYtR7byofaZrZ6DYYI7bAf6yiUJy5rmP5tJxT2793opoUP52lQYUPMPPGAS/TDxUbPMyPJDRDlDkHPO6wLDLD+Ich67OhHqlmDTi2Txf2tIjAh0UdpvoUUmSPCeO3zsLPJX1M+FuGE=
-Message-ID: <45D4F7EC.90908@googlemail.com>
-Date: Fri, 16 Feb 2007 01:16:44 +0100
-User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] shm:  Fix the locking and cleanup error handling in do_shmat.
-References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>	<45D47020.1010309@googlemail.com>	<20070215140232.0aba86a7.akpm@linux-foundation.org>	<45D4EBB3.2060800@googlemail.com> <m1r6srhsrt.fsf_-_@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1r6srhsrt.fsf_-_@ebiederm.dsl.xmission.com>
-X-Enigmail-Version: 0.94.1.1
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+	Thu, 15 Feb 2007 19:17:09 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:39758 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422817AbXBPARG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 19:17:06 -0500
+Date: Thu, 15 Feb 2007 16:16:50 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: 2.6.20-mm1
+Message-Id: <20070215161650.2e9ca8a8.akpm@linux-foundation.org>
+In-Reply-To: <45D4EBB3.2060800@googlemail.com>
+References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
+	<45D47020.1010309@googlemail.com>
+	<20070215140232.0aba86a7.akpm@linux-foundation.org>
+	<45D4EBB3.2060800@googlemail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman napisał(a):
-> When enhancing do_shmat I forgot to take into account that shm_lock
-> is a spinlock, and was allocating memory with the lock held.
+On Fri, 16 Feb 2007 00:24:35 +0100
+Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+
+> Andrew Morton napisa__(a):
+> > On Thu, 15 Feb 2007 15:37:20 +0100
+> > Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+> > 
+> >> Andrew Morton napisa__(a):
+> >>> Temporarily at
+> >>>
+> >>>   http://userweb.kernel.org/~akpm/2.6.20-mm1/
+> >>>
+> >>> Will appear later at
+> >>>
+> >>>  ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm1/
+> >>>
+> >>>
+> >> BUG: sleeping function called from invalid context at /mnt/md0/devel/linux-mm/mm/slab.c:3043
+> >> in_atomic():1, irqs_disabled():0
+> >> 1 lock held by artsd/3819:
+> >>  #0:  (&new->lock){--..}, at: [<c01d5b7c>] ipc_lock+0x35/0x4f
+> >>  [<c0105312>] show_trace_log_lvl+0x1a/0x2f
+> >>  [<c0105a25>] show_trace+0x12/0x14
+> >>  [<c0105ae7>] dump_stack+0x16/0x18
+> >>  [<c011db4a>] __might_sleep+0xc9/0xcf
+> >>  [<c017c37a>] kmem_cache_zalloc+0x28/0xe5
+> >>  [<c01d8c7d>] do_shmat+0x111/0x372
+> >>  [<c0109151>] sys_ipc+0x148/0x1b5
+> >>  [<c010432c>] syscall_call+0x7/0xb
+> > 
+> > That's shm-make-sysv-ipc-shared-memory-use-stacked-files.patch, brought to
+> > us by Eric-who-hasnt-read-Documentation/SubmitChecklist.
+> > 
+> > Like this, I guess:
+> > 
+> > diff -puN ipc/shm.c~shm-make-sysv-ipc-shared-memory-use-stacked-files-fix ipc/shm.c
 > 
-> This patch fixes that by grabbing a reference to the dentry and
-> mounts of shm_file before we drop the shm_lock and then performing
-> the memory allocations.
+> I might be drunk...
 > 
-> This is also a bit of a general scrub on the error handling.
-> Everything is now forced through the single return statement
-> for clarity, and the handling of the return address now uses
-> fewer casts.
+> This patch still doesn't solve the problem.
 > 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-> ---
->  ipc/shm.c |   56 ++++++++++++++++++++++++++++++++------------------------
->  1 files changed, 32 insertions(+), 24 deletions(-)
-> 
-> diff --git a/ipc/shm.c b/ipc/shm.c
-> index e0b6544..26b935b 100644
-> --- a/ipc/shm.c
-> +++ b/ipc/shm.c
-> @@ -815,15 +815,16 @@ long do_shmat(int shmid, char __user *shmaddr, int shmflg, ulong *raddr)
->  	unsigned long flags;
->  	unsigned long prot;
->  	int acc_mode;
-> -	void *user_addr;
-> +	unsigned long user_addr;
->  	struct ipc_namespace *ns;
->  	struct shm_file_data *sfd;
-> +	struct path path;
->  	mode_t f_mode;
->  
-> -	if (shmid < 0) {
-> -		err = -EINVAL;
-> +	err = -EINVAL;
-> +	if (shmid < 0)
->  		goto out;
-> -	} else if ((addr = (ulong)shmaddr)) {
-> +	else if ((addr = (ulong)shmaddr)) {
->  		if (addr & (SHMLBA-1)) {
->  			if (shmflg & SHM_RND)
->  				addr &= ~(SHMLBA-1);	   /* round down */
-> @@ -831,12 +832,12 @@ long do_shmat(int shmid, char __user *shmaddr, int shmflg, ulong *raddr)
->  #ifndef __ARCH_FORCE_SHMLBA
->  				if (addr & ~PAGE_MASK)
->  #endif
-> -					return -EINVAL;
-> +					goto out;
->  		}
->  		flags = MAP_SHARED | MAP_FIXED;
->  	} else {
->  		if ((shmflg & SHM_REMAP))
-> -			return -EINVAL;
-> +			goto out;
->  
->  		flags = MAP_SHARED;
->  	}
-> @@ -860,7 +861,6 @@ long do_shmat(int shmid, char __user *shmaddr, int shmflg, ulong *raddr)
->  	 * additional creator id...
->  	 */
->  	ns = current->nsproxy->ipc_ns;
-> -	err = -EINVAL;
->  	shp = shm_lock(ns, shmid);
->  	if(shp == NULL)
->  		goto out;
-> @@ -877,19 +877,25 @@ long do_shmat(int shmid, char __user *shmaddr, int shmflg, ulong *raddr)
->  	if (err)
->  		goto out_unlock;
->  
-> +	path.dentry = dget(shp->shm_file->f_path.dentry);
-> +	path.mnt    = mntget(shp->shm_file->f_path.mnt);
-> +	shp->shm_nattch++;
-> +	size = i_size_read(path.dentry->d_inode);
-> +	shm_unlock(shp);
-> +
->  	err = -ENOMEM;
->  	sfd = kzalloc(sizeof(*sfd), GFP_KERNEL);
->  	if (!sfd)
-> -		goto out_unlock;
-> +		goto out_put_path;
->  
-> +	err = -ENOMEM;
->  	file = get_empty_filp();
->  	if (!file)
->  		goto out_free;
->  
->  	file->f_op = &shm_file_operations;
->  	file->private_data = sfd;
-> -	file->f_path.dentry = dget(shp->shm_file->f_path.dentry);
-> -	file->f_path.mnt = mntget(shp->shm_file->f_path.mnt);
-> +	file->f_path = path;
->  	file->f_mapping = shp->shm_file->f_mapping;
->  	file->f_mode = f_mode;
->  	sfd->id = shp->id;
-> @@ -897,13 +903,9 @@ long do_shmat(int shmid, char __user *shmaddr, int shmflg, ulong *raddr)
->  	sfd->file = shp->shm_file;
->  	sfd->vm_ops = NULL;
->  
-> -	size = i_size_read(file->f_path.dentry->d_inode);
-> -	shp->shm_nattch++;
-> -	shm_unlock(shp);
-> -
->  	down_write(&current->mm->mmap_sem);
->  	if (addr && !(shmflg & SHM_REMAP)) {
-> -		user_addr = ERR_PTR(-EINVAL);
-> +		err = -EINVAL;
->  		if (find_vma_intersection(current->mm, addr, addr + size))
->  			goto invalid;
->  		/*
-> @@ -915,13 +917,17 @@ long do_shmat(int shmid, char __user *shmaddr, int shmflg, ulong *raddr)
->  			goto invalid;
->  	}
->  		
-> -	user_addr = (void*) do_mmap (file, addr, size, prot, flags, 0);
-> -
-> +	user_addr = do_mmap (file, addr, size, prot, flags, 0);
-> +	*raddr = user_addr;
-> +	err = 0;
-> +	if (IS_ERR_VALUE(user_addr))
-> +		err = (long)user_addr;
->  invalid:
->  	up_write(&current->mm->mmap_sem);
-> -
-> +	
->  	fput(file);
->  
-> +out_nattch:
->  	mutex_lock(&shm_ids(ns).mutex);
->  	shp = shm_lock(ns, shmid);
->  	BUG_ON(!shp);
-> @@ -933,17 +939,19 @@ invalid:
+> BUG: sleeping function called from invalid context at /mnt/md0/devel/linux-mm/mm/slab.c:3043
+> in_atomic():1, irqs_disabled():0
+> 1 lock held by Xorg/2885:
+>  #0:  (&new->lock){--..}, at: [<c01d5b7c>] ipc_lock+0x35/0x4f
+>  [<c0105312>] show_trace_log_lvl+0x1a/0x2f
+>  [<c0105a25>] show_trace+0x12/0x14
+>  [<c0105ae7>] dump_stack+0x16/0x18
+>  [<c011db4a>] __might_sleep+0xc9/0xcf
+>  [<c017c45f>] kmem_cache_alloc+0x28/0xbf
+>  [<c01814c3>] get_empty_filp+0x6a/0x173
+>  [<c01d8ca2>] do_shmat+0x136/0x390
+>  [<c0109151>] sys_ipc+0x148/0x1b5
+>  [<c010432c>] syscall_call+0x7/0xb
 
-^^^^
+yes, that's the other one, which Eric will be looking at.
 
-???
+>  =======================
+> BUG: MAX_LOCK_DEPTH too low!
+> turning off the locking correctness validator.
+> do_IRQ: stack overflow: -52
+>  [<c0105312>] show_trace_log_lvl+0x1a/0x2f
+>  [<c0105a25>] show_trace+0x12/0x14
+>  [<c0105ae7>] dump_stack+0x16/0x18
+>  [<c0106cc0>] do_IRQ+0x95/0xc1
+> BUG: unable to handle kernel paging request at virtual address 0e200034
+>  printing eip:
+> c01052e2
+> *pde = 00000000
+> Oops: 0000 [#1]
+> PREEMPT SMP
+> last sysfs file: /devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/vendor
+> Modules linked in: ipt_MASQUERADE iptable_nat nf_nat nfsd exportfs lockd nfs_acl autofs4 sunrpc af_packet nf_conntrack_netbios_ns ipt_REJECT nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink xt_tcpudp iptable_filter ip_tables x_tables ipv6 binfmt_misc thermal processor fan container nvram snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss evdev snd_mixer_oss snd_pcm snd_timer skge snd 8139too intel_agp sk98lin agpgart soundcore mii i2c_i801 snd_page_alloc ide_cd cdrom rtc unix
+> CPU:    0
+> EIP:    0060:[<c01052e2>]    Not tainted VLI
+> EFLAGS: 00013046   (2.6.20-mm1 #16)
+> EIP is at dump_trace+0x88/0x9e
+> eax: 00000000   ebx: f412c01c   ecx: c0429344   edx: c03cf8fa
+> BUG: unable to handle kernel paging request at virtual address 8d17ca6c
+>  printing eip:
+> c011d927
+> *pde = 00000000
+> esi: 0e200000   edi: c03daed2   ebp: f412bfd0   esp: f412bfc0
+> ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> Process Xorg (pid: 2885, ti=f412a000 task=f4a58aa0 task.ti=f412c000)
+> Stack: c7422ac0 c03daed2 00000011 00000000 f412bfe4 c0105312 c0429344 c03daed2
+>        00000004 f412bff0 c0105a25 c03daed2 f412bffc c0105ae7 f412c008 f412c01c
+> Call Trace:
+>  [<c0105312>] show_trace_log_lvl+0x1a/0x2f
+>  [<c01053c4>] show_stack_log_lvl+0x9d/0xac
+>  [<c01055c0>] show_registers+0x1ed/0x34c
+>  [<c010583c>] die+0x11d/0x234
+>  [<c011b8d1>] do_page_fault+0x47c/0x55b
+>  [<c033aaac>] error_code+0x7c/0x84
+>  [<c0105312>] show_trace_log_lvl+0x1a/0x2f
+>  [<c0105a25>] show_trace+0x12/0x14
+>  [<c0105ae7>] dump_stack+0x16/0x18
+>  [<c0106cc0>] do_IRQ+0x95/0xc1
+> BUG: unable to handle kernel paging request at virtual address 0e200034
 
-
->  		shm_unlock(shp);
->  	mutex_unlock(&shm_ids(ns).mutex);
->  
-> -	*raddr = (unsigned long) user_addr;
-> -	err = 0;
-> -	if (IS_ERR(user_addr))
-> -		err = PTR_ERR(user_addr);
->  out:
->  	return err;
-> -out_free:
-> -	kfree(sfd);
-> +
->  out_unlock:
->  	shm_unlock(shp);
->  	goto out;
-> +
-> +out_free:
-> +	kfree(sfd);
-> +out_put_path:
-> +	dput(path.dentry);
-> +	mntput(path.mnt);
-> +	goto out_nattch;
->  		
-
-^^^^ tabs
-
->  }
->  
-
-Regards,
-Michal
-
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+ooh, we broke lockdep.
