@@ -1,53 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932181AbXBPVkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751324AbXBPVny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932181AbXBPVkd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 16:40:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932426AbXBPVkd
+	id S1751324AbXBPVny (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 16:43:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbXBPVnx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 16:40:33 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:41313 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932181AbXBPVkc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 16:40:32 -0500
-Message-ID: <45D62472.9030202@mvista.com>
-Date: Fri, 16 Feb 2007 11:38:58 -1000
-From: akuster <akuster@mvista.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Fri, 16 Feb 2007 16:43:53 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:42324 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750780AbXBPVnw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 16:43:52 -0500
+Message-ID: <45D62583.5080701@us.ibm.com>
+Date: Fri, 16 Feb 2007 15:43:31 -0600
+From: Maynard Johnson <maynardj@us.ibm.com>
+Reply-To: maynardj@us.ibm.com
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.3) Gecko/20040910
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: [Question]  detach_vmas_to_be_unmapped
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Arnd Bergmann <arnd@arndb.de>
+CC: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net,
+       Carl Love <cel@us.ibm.com>
+Subject: Re: [Cbe-oss-dev] [RFC, PATCH] CELL Oprofile SPU profiling updated
+ patch
+References: <1171497138.23691.8.camel@dyn9047021078.beaverton.ibm.com> <200702151537.51202.arnd@arndb.de> <45D4FBB0.7090109@us.ibm.com> <200702161814.26855.arnd@arndb.de>
+In-Reply-To: <200702161814.26855.arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Arnd Bergmann wrote:
 
-I am a bit confused on why the vm start and end address where swapped in 
-arch_unmap_area and arch_unmap_area_topdown functions after the official 
-Avoiding mmap fragmentation ( 1363c3cd8603a913a27e2995dccbd70d5312d8e6 ) 
-patch.
+> On Friday 16 February 2007 01:32, Maynard Johnson wrote:
+> 
+>>config OPROFILE_CELL
+>>        bool "OProfile for Cell Broadband Engine"
+>>        depends on OPROFILE && SPU_FS
+>>        default y if ((SPU_FS = y && OPROFILE = y) || (SPU_FS = m && 
+>>OPROFILE = m))
+>>        help
+>>          Profiling of Cell BE SPUs requires special support enabled
+>>          by this option.  Both SPU_FS and OPROFILE options must be
+>>          set 'y' or both be set 'm'.
+>>=============
+>>
+>>Can anyone see a problem with any of this . . . or perhaps a suggestion 
+>>of a better way?
+> 
+> 
+> The text suggests it doesn't allow SPU_FS=y with OPROFILE=m, which I think
+> should be allowed. 
+Right, good catch.  I'll add another OR to the 'default y' and correct 
+the text.
 
-Prior to this patch arch_unmap_area() used area->vm_start and 
-arch_unmap_area_topdown used area->vm_end after the patch the following 
-change showed up.
+ > I also don't see any place in the code where you actually
+> use CONFIG_OPROFILE_CELL.
+As I mentioned, I will use CONFIG_OPROFILE_CELL in the 
+arch/powerpc/oprofile/Makefile as follows:
+      oprofile-$(CONFIG_OPROFILE_CELL) += op_model_cell.o \
+               cell/spu_profiler.o cell/vma_map.o cell/spu_task_sync.o
 
-if (mm->unmap_area == arch_unmap_area)
-     addr = prev ? prev->vm_start : mm->mmap_base;
-else
-     addr = vma ?  vma->vm_end : mm->mmap_base;
+> 
+> Ideally, you should be able to have an oprofile_spu module that can be
+> loaded after spufs.ko and oprofile.ko. In that case you only need
+> 
+> config OPROFILE_SPU
+> 	depends on OPROFILE && SPU_FS
+> 	default y
+> 
+> and it will automatically build oprofile_spu as a module if one of the two
+> is a module and won't build it if one of them is disabled.
+Hmmm . . . I guess that would entail splitting out the SPU-related stuff 
+from op_model_cell.c into a new file.  Maybe more -- that's just what 
+comes to mind right now.  Could be very tricky, and I wonder if it's 
+worth the bother.
+> 
+> 	Arnd <><
 
-Using Wolfgang Wander's leakme.c test, I get the same results seen with 
-his original "Avoiding mmap fragmentation" patch as I do after swapping 
-  the start & end address in the above code segment.
-
-Is it just a typo in the official patch or am I missing the much bigger 
-picture?
-
-Note: I have only run this on an Pentium4 with 1GiG memory.
-
-TIA
-
-Armin
 
