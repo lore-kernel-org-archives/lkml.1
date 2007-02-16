@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946015AbXBPRPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932503AbXBPRSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946015AbXBPRPU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 12:15:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946014AbXBPRPU
+	id S932503AbXBPRSj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 12:18:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932493AbXBPRSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 12:15:20 -0500
-Received: from moutng.kundenserver.de ([212.227.126.177]:60455 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946013AbXBPRPS convert rfc822-to-8bit (ORCPT
+	Fri, 16 Feb 2007 12:18:39 -0500
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:33212 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932503AbXBPRSj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 12:15:18 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Maynard Johnson <maynardj@us.ibm.com>
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH] CELL Oprofile SPU profiling updated patch
-Date: Fri, 16 Feb 2007 18:14:26 +0100
-User-Agent: KMail/1.9.5
-Cc: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net,
-       Carl Love <cel@us.ibm.com>
-References: <1171497138.23691.8.camel@dyn9047021078.beaverton.ibm.com> <200702151537.51202.arnd@arndb.de> <45D4FBB0.7090109@us.ibm.com>
-In-Reply-To: <45D4FBB0.7090109@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Fri, 16 Feb 2007 12:18:39 -0500
+X-Greylist: delayed 1672 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 Feb 2007 12:18:38 EST
+Date: Fri, 16 Feb 2007 10:50:42 -0600
+From: Robin Holt <holt@sgi.com>
+To: David Howells <dhowells@redhat.com>
+Cc: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
+       Andrew Morton <akpm@osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Robin Holt <holt@sgi.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <soshima@redhat.com>,
+       "Hideo AOKI@redhat" <haoki@redhat.com>
+Subject: Re: [PATCH 3/4] coredump: ELF-FDPIC: enable to omit anonymous shared memory
+Message-ID: <20070216165042.GB409@lnx-holt.americas.sgi.com>
+References: <45D5B483.3020502@hitachi.com> <45D5B2E3.3030607@hitachi.com> <20368.1171638335@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702161814.26855.arnd@arndb.de>
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
-X-Provags-ID2: V01U2FsdGVkX1/Ppz1LrcA0/nkWCymQXsvc26VfX2cfdi8KoouIOb8r/zyFh6qqD02JCuS3xRKlsIJWblM6LLU4juektpjFdxoqj3yn5bwMfVPUS1AIrIDzjg==
+In-Reply-To: <20368.1171638335@redhat.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 16 February 2007 01:32, Maynard Johnson wrote:
-> config OPROFILE_CELL
->         bool "OProfile for Cell Broadband Engine"
->         depends on OPROFILE && SPU_FS
->         default y if ((SPU_FS = y && OPROFILE = y) || (SPU_FS = m && 
-> OPROFILE = m))
->         help
->           Profiling of Cell BE SPUs requires special support enabled
->           by this option.  Both SPU_FS and OPROFILE options must be
->           set 'y' or both be set 'm'.
-> =============
+On Fri, Feb 16, 2007 at 03:05:35PM +0000, David Howells wrote:
+> Actually, I think I would just pass the mm pointer you have into maydump() and
+> let that dereference it here:
 > 
-> Can anyone see a problem with any of this . . . or perhaps a suggestion 
-> of a better way?
+> > +		if (omit_anon_shared) {
+> 
+> which would then be:
+> 
+> 		if (mm->coredump_omit_anon_shared) {
 
-The text suggests it doesn't allow SPU_FS=y with OPROFILE=m, which I think
-should be allowed. I also don't see any place in the code where you actually
-use CONFIG_OPROFILE_CELL.
+How about:
+		if (vma->vm_mm->coredump_omit_anon_shared) {
 
-Ideally, you should be able to have an oprofile_spu module that can be
-loaded after spufs.ko and oprofile.ko. In that case you only need
-
-config OPROFILE_SPU
-	depends on OPROFILE && SPU_FS
-	default y
-
-and it will automatically build oprofile_spu as a module if one of the two
-is a module and won't build it if one of them is disabled.
-
-	Arnd <><
+Then the calls to maydump() would be unchanged:
