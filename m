@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946164AbXBPVDJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946059AbXBPVEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946164AbXBPVDJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 16:03:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946208AbXBPVDJ
+	id S1946059AbXBPVEy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 16:04:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946208AbXBPVEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 16:03:09 -0500
-Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:52452 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946164AbXBPVDI (ORCPT
+	Fri, 16 Feb 2007 16:04:54 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:38005 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1946059AbXBPVEx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 16:03:08 -0500
-Date: Fri, 16 Feb 2007 22:03:28 +0100
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com
-Message-ID: <20070216210328.GE4641@enneenne.com>
-References: <20070216185230.GO8882@enneenne.com> <20070216191207.GC2572@flint.arm.linux.org.uk> <20070216204336.GB4641@enneenne.com> <20070216205134.GF2572@flint.arm.linux.org.uk>
+	Fri, 16 Feb 2007 16:04:53 -0500
+Message-ID: <45D61C74.2000601@vmware.com>
+Date: Fri, 16 Feb 2007 13:04:52 -0800
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070216205134.GF2572@flint.arm.linux.org.uk>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+To: Christoph Lameter <clameter@sgi.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@muc.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [patch 00/21] Xen-paravirt: Xen guest implementation for paravirt_ops
+ interface
+References: <20070216022449.739760547@goop.org> <Pine.LNX.4.64.0702161244380.26718@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0702161244380.26718@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 16, 2007 at 08:51:35PM +0000, Russell King wrote:
-> 
-> You can't because it doesn't go through the interfaces you're hooking
-> into.  Existing interfaces are "changed" to point at the UARTs using
-> setserial, which does its work via an ioctl.
+Christoph Lameter wrote:
+> On Thu, 15 Feb 2007, Jeremy Fitzhardinge wrote:
+>
+>   
+>> This patch series implements the Linux Xen guest in terms of the
+>> paravirt-ops interface.  The features in implemented this patch series
+>>     
+>
+> I am thoroughly confused. Maybe that is because I have not been following 
+> this issue closely but it seems that you are using the paravirt interface 
+> as an API for Xen code in the guest? I thought the idea of paravirt was to 
+> have an API that is generic? This patchset seems to be mostly realizing 
+> Xen specific functionality? How does the code here interact with KVM, 
+> VMWare and other hypervisors?
+>   
 
-I see.
+For the most part, it doesn't disturb VMware or KVM.  Xen does need some 
+additional functionality in paravirt-ops because they took a different 
+design choice - direct page tables instead of shadow page tables.  This 
+is where all the requirements for the new Xen paravirt-ops hooks come from.
 
-> Not specifically only userland - if it happens to be set when the port
-> is registered then enable PPS support then as well.
-> 
-> So:
-> 
-> 1. uart_configure_port - if UPF_HARDPPS_CD is set, register the port
->    for PPS support.
-> 2. uart_remove_one_port - if UPF_HARDPPS_CD is set, unregister the port
->    for PPS support.
-> 3. uart_set_info - if changing UPF_HARDPPS_CD, appropriately register or
->    unregister the port for PPS support.
-
-Ok. I'm going to study how to modify the code.
-
-> PS, linuxpps@ml.enneenne.com dropped from the cc: since it rejects my
-> postings.
-
-I just fixed my spam filter (at least I hope so :).
-
-Thanks,
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+Zach
