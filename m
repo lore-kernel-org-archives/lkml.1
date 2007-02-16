@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932401AbXBPPkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932394AbXBPPmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932401AbXBPPkd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 10:40:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932394AbXBPPkd
+	id S932394AbXBPPmk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 10:42:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932417AbXBPPmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 10:40:33 -0500
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:35225 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932403AbXBPPkc (ORCPT
+	Fri, 16 Feb 2007 10:42:39 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:54053 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932394AbXBPPmi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 10:40:32 -0500
-Date: Fri, 16 Feb 2007 10:40:31 -0500
-To: v j <vj.linux@gmail.com>
-Cc: Trent Waddington <trent.waddington@gmail.com>,
-       David Lang <david.lang@digitalinsight.com>,
-       Scott Preece <sepreece@gmail.com>, Miguel Ojeda <maxextreme@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: GPL vs non-GPL device drivers
-Message-ID: <20070216154031.GR7584@csclub.uwaterloo.ca>
-References: <20070215061149.GE15654@redhat.com> <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com> <20070215165339.GB5285@thunk.org> <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com> <653402b90702151102n3a3e0435r837e2191de79b2b@mail.gmail.com> <7b69d1470702151712x685f3e0eqf6198f9bb7f2394e@mail.gmail.com> <Pine.LNX.4.63.0702151701510.10070@qynat.qvtvafvgr.pbz> <9b3a62ab0702152148p57db8b1dgd42b1c6fb15dccbb@mail.gmail.com> <3d57814d0702152157n461a9f0cta0a0c20e9a592d83@mail.gmail.com> <9b3a62ab0702152225m3893318by95cb8b260c74bfc2@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 16 Feb 2007 10:42:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pQh/smdZP17lAyGPjpKwWKrdbvzEyrd8rpkJupIKa+c7Zztnp06fKE3z5P6TruRAvEnFcXm1mF8VHKlYvND0+Il44xQO/PK4aunnKiV47S6tbxIkbhH6PUNZj9We65UaHr0et9BRSYnNCo7okMaxksiNulRETLB8OlWMJytLuC4=
+Message-ID: <d120d5000702160742v14ac197eica567a15cc1e85d4@mail.gmail.com>
+Date: Fri, 16 Feb 2007 10:42:37 -0500
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Andres Salomon" <dilinger@debian.org>
+Subject: Re: [patch 1/3] Input: psmouse - create PS/2 protocol options for Kconfig
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <45D54260.7080302@debian.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <9b3a62ab0702152225m3893318by95cb8b260c74bfc2@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+References: <45D43115.6060806@debian.org> <45D50101.60802@debian.org>
+	 <20070215173024.adc54d6c.akpm@linux-foundation.org>
+	 <200702160028.09251.dtor@insightbb.com> <45D54260.7080302@debian.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 15, 2007 at 10:25:12PM -0800, v j wrote:
-> Please point me to where it says I cannot load proprietary modules in
-> the Kernel.
+On 2/16/07, Andres Salomon <dilinger@debian.org> wrote:
+> Dmitry Torokhov wrote:
+> > On Thursday 15 February 2007 20:30, Andrew Morton wrote:
+> >> On Thu, 15 Feb 2007 19:55:29 -0500
+> >> Andres Salomon <dilinger@debian.org> wrote:
+> [...]
+> >> Perhaps a nicer implementation would be to have a separate .c file for each
+> >> variant.
+> >>
+> >
+> > Having completely separate sub-drivers is very hard because of very delicate
+> > PS/2 protocol probing....
+> >
+> > What do you think about patch below? It somewhat reduces #ifdef clutter in main
+> > module moving it in .h files...
+> >
+>
+> Normally, I'm a fan of that sort of thing.  However, in this case, I
+> think it makes sense to have the #ifdefs right in the probe function; at
+> least for me, it makes it easier to understand what's going on.  The
+> synaptics stuff is especially tricky; with a cursory glance over the
+> code, one might assume that all the synaptics functions disappear when
+> CONFIG_MOUSE_PS2_SYNAPTICS is unset.  However, if the #ifdef's are in
+> the probe function, it's pretty clear that some synaptics functions
+> still get called even when CONFIG_MOUSE_PS2_SYNAPTICS is unset.
+>
 
-Some people consider modules derivative works, since they link with
-pieces of the kernel.  Distributing derivative works are considered
-distributing the original work, which means the GPL applies to the
-result.
+Thit is a valid point but #ifdef maze in the middle of already messy
+psmouse-extensions() is too much for me. I guess I will just add a
+comment explaining that synaptics probing is really special.
 
-> I know his opinion. I don't debate his opinion. It is his code. I
-> choose not to use his code because of the license issue.
-> 
-> No, just that the trend is disturbing. If enough Kernel Developers
-> choose to write their Software in a way that prevents others from
-> using it freely, then that is troubling. Especially when these Kernel
-> Developers are substituting existing interfaces in the Kernel with
-> ones that are NEW and require specific licenses.
+Btw, can I get that OLPC patch when you have time?
 
-devfs had issues.  Someone (Greg) provided something better.  devfs went
-away when nothing in the kernel needed it anymore.  That something
-outside the kernel was using devfs, well who cares.  That is the outside
-code's problem if they don't keep up.  If they happen to have any issues
-with the replacement system, then that too is their problem and only
-their problem.
-
---
-Len Sorensen
+-- 
+Dmitry
