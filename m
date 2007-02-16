@@ -1,113 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946227AbXBPTLG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946234AbXBPTMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946227AbXBPTLG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 14:11:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946232AbXBPTLG
+	id S1946234AbXBPTMR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 14:12:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946237AbXBPTMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 14:11:06 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:57366 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946225AbXBPTLE (ORCPT
+	Fri, 16 Feb 2007 14:12:17 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2302 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946234AbXBPTMQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 14:11:04 -0500
-Message-ID: <45D601BD.6010709@student.ltu.se>
-Date: Fri, 16 Feb 2007 20:10:53 +0100
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@SteelEye.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] drivers/scsi/aic7xxx_old: Convert to generic boolean-values
-References: <20070210174628.3764.89569.sendpatchset@thinktank.campus.ltu.se>	 <1171132062.3373.31.camel@mulgrave.il.steeleye.com>	 <20070212122738.b5e9a8af.akpm@linux-foundation.org>	 <1171644132.3443.27.camel@mulgrave.il.steeleye.com>	 <45D5F21B.2010804@student.ltu.se> <1171650214.3443.41.camel@mulgrave.il.steeleye.com>
-In-Reply-To: <1171650214.3443.41.camel@mulgrave.il.steeleye.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Feb 2007 14:12:16 -0500
+Date: Fri, 16 Feb 2007 19:12:08 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com
+Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
+Message-ID: <20070216191207.GC2572@flint.arm.linux.org.uk>
+Mail-Followup-To: Rodolfo Giometti <giometti@enneenne.com>,
+	linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com
+References: <20070216185230.GO8882@enneenne.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070216185230.GO8882@enneenne.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Fri, 2007-02-16 at 19:04 +0100, Richard Knutsson wrote:
->   
->> James Bottomley wrote:
->>     
->>> On Mon, 2007-02-12 at 12:27 -0800, Andrew Morton wrote:
->>>   
->>>       
->>>> Given that we now have a standard kernel-wide, c99-friendly way of
->>>> expressing true and false, I'd suggest that this decision can be revisited.
->>>>
->>>> Because a "true" is significantly more meaningful (and hence readable)
->>>> thing than a bare "1".
->>>>     
->>>>         
->>> OK, I'm really not happy with doing this for three reasons:
->>>
->>> 1. It's inviting huge amounts of driver churn changing bitfields to
->>> booleans
->>>   
->>>       
->> Have been some work done already. Has there been any problems?
->>     
->
-> There's always an issue when two people work on the same driver ... it
-> causes patch conflicts, which is why we try to avoid it where we can.
->   
-But it is (hopefully) a one-time change.
->>> 2. I do find it to be a readability issue.  Like most driver writers,
->>> I'm used to register layouts, and those are simple bitfields, so I don't
->>> tend to think true and false, I think 1 and 0.
->>>   
->>>       
->> It is a fundamental difference between an integer and a boolean. Have 
->> you seen anyone trying to do "bool var = true + true;"? ;)
->>     
->
-> I don't quite see how this is relevant to the readability issue?
->   
-Your "simple bitfields" :)
-But on the note of readability; there is in no way any constraints to 
-only use 'false'/'true'. Right now I'm converting some files who already 
-uses FALSE/TRUE and may change 0/1 for consitency.
-But I think it all boils down to what people are used to (I don't think 
-there are any C++/Java-developers who complains about boolean and 
-false/true). I am not too concerned about 0/1 being used or false/true, 
-but the proper use of booleans and values.
->   
->>> 3. Having a different, special, type for single bit bitfields (while
->>> still using u<n> for multi bit bitfields) is asking for confusion, and
->>> hence trouble at the driver level.
->>>   
->>>       
->> I don't think a boolean should be view as a single bit bitfield. Ex:
->> u8 a:1;
->> ...
->> int b = 4 + a;
->> is obviously not a boolean, while:
->> u8 a:1;
->> ...
->> if (a)
->> is, and a should be "bool a:1;" (imho)
->>     
->
-> This again, doesn't really address the argument.  I'm saying I'd rather
-> not have confusion over what types to use in the driver.  You're saying
-> that if you only check the value for truth or falsehood it should be a
-> boolean.  That's actually worse than I was anticipating because you're
-> now saying that single bit bitfields may or may not be booleans
-> depending on use.  This looks like worse potential for confusion than
-> before.
->   
-Actually I find it to be simpler. Which would you chose?:
-u8 a:1;
-or
-int a:1;
-for a value? But if 'a' is a statement, then we just use:
-bool a:1 (if the size of the variable is of relevance, otherwise just 
-"bool a"). (You know what the variables are going to be used for when 
-declaring them, right??)
-Btw, how do you know if "a += 1" is just used to flip 'a's value or if 
-it is a bug (in the case of boolean)?
+On Fri, Feb 16, 2007 at 07:52:30PM +0100, Rodolfo Giometti wrote:
+> diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+> index 98ec861..cd9a003 100644
+> --- a/drivers/serial/8250.c
+> +++ b/drivers/serial/8250.c
+> @@ -1315,8 +1315,25 @@ static unsigned int check_modem_status(struct uart_8250_port *up)
+>  			up->port.icount.rng++;
+>  		if (status & UART_MSR_DDSR)
+>  			up->port.icount.dsr++;
+> -		if (status & UART_MSR_DDCD)
+> +		if (status & UART_MSR_DDCD) {
+> +#ifdef CONFIG_PPS_CLIENT_UART_8250
+> +			if (status & UART_MSR_DCD) {
+> +				linuxpps_event(up->port.pps_source,
+> +						PPS_CAPTUREASSERT, up);
+> +				dbg("serial8250: PPS assert event at %lu "
+> +				    "on source #%d",
+> +					jiffies, up->port.pps_source);
+> +			}
+> +			else {
+> +				linuxpps_event(up->port.pps_source,
+> +						PPS_CAPTURECLEAR, up);
+> +				dbg("serial8250: PPS clear event at %lu "
+> +				    "on source #%d",
+> +					jiffies, up->port.pps_source);
+> +			}
+> +#endif
 
-Richard "come over to the dark side" Knutsson
+Yuck.  Please.  No.  Doing it this way means you have to modify every
+single serial driver out there which is a mamouth task.
 
+>  			uart_handle_dcd_change(&up->port, status & UART_MSR_DCD);
+
+Did you not look to see what's in this helper?  You'll find within here
+the following code:
+
+#ifdef CONFIG_HARD_PPS
+        if ((port->flags & UPF_HARDPPS_CD) && status)
+                hardpps();
+#endif
+
+which should've been a big sign lit up in bright lights in Times Square
+pointing you towards the right place to put your code.
+
+> +		}
+>  		if (status & UART_MSR_DCTS)
+>  			uart_handle_cts_change(&up->port, status & UART_MSR_CTS);
+>  
+> @@ -2004,6 +2021,9 @@ serial8250_set_termios(struct uart_port *port, struct ktermios *termios,
+>  		up->ier |= UART_IER_MSI;
+>  	if (up->capabilities & UART_CAP_UUE)
+>  		up->ier |= UART_IER_UUE | UART_IER_RTOIE;
+> +#ifdef CONFIG_PPS_CLIENT_UART_8250
+> +	up->ier |= UART_IER_MSI;	/* enable interrupts */
+> +#endif
+
+Why not continue to leave it as a decision of the administrator - if
+you want ports to default to having PPS support enabled, change all
+the registration to set UPF_HARDPPS_CD.  But leave the admin with
+the ability to disable it.
+
+> @@ -2124,6 +2130,33 @@ uart_configure_port(struct uart_driver *drv, struct uart_state *state,
+>  		 */
+>  		if (!uart_console(port))
+>  			uart_change_pm(state, 3);
+> +
+> +#ifdef CONFIG_PPS_CLIENT_UART
+> +		/*
+> +		 * Add the PPS support for the probed port.
+> +		 */
+> +                snprintf(state->pps_info.name, LINUXPPS_MAX_NAME_LEN,
+> +				"%s%d", drv->driver_name, port->line);
+> +		snprintf(state->pps_info.path, LINUXPPS_MAX_NAME_LEN,
+> +				"/dev/%s%d", drv->dev_name, port->line);
+> +
+> +		state->pps_info.mode = PPS_CAPTUREBOTH | \
+> +				PPS_OFFSETASSERT | PPS_OFFSETCLEAR | \
+> +				PPS_CANWAIT | PPS_TSFMT_TSPEC;
+> +
+> +		retval = linuxpps_register_source(&state->pps_info,
+> +					PPS_CAPTUREBOTH | \
+> +					PPS_OFFSETASSERT | PPS_OFFSETCLEAR,
+> +					-1 /* PPS ID is up to the system */);
+> +		if (retval < 0) {
+> +			err("cannot register PPS source \"%s\"",
+> +				state->pps_info.path);
+> +			return;
+> +		}
+> +		port->pps_source = retval;
+> +		info("PPS source #%d \"%s\" added to the system ",
+> +			port->pps_source, state->pps_info.path);
+> +#endif
+
+This means that PPS support is not available for any port which wasn't
+autoprobed at device discovery time.  That seems quite restrictive.
+Maybe it needs to be coupled with the setting/clearing of UPF_HARDPPS_CD ?
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
