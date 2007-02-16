@@ -1,34 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946057AbXBPTD2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946050AbXBPTEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946057AbXBPTD2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 14:03:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946056AbXBPTD2
+	id S1946050AbXBPTEZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 14:04:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946053AbXBPTEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 14:03:28 -0500
-Received: from mail.suse.de ([195.135.220.2]:53406 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946050AbXBPTD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 14:03:27 -0500
-To: fche@redhat.com (Frank Ch. Eigler)
-Cc: Jeff Muizelaar <jeff@infidigm.net>, linux-kernel@vger.kernel.org
-Subject: Re: Using sched_clock for mmio-trace
-References: <20070216013024.GA32287@infidigm.net>
-	<y0mr6sq2hfj.fsf@ton.toronto.redhat.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 16 Feb 2007 21:03:23 +0100
-In-Reply-To: <y0mr6sq2hfj.fsf@ton.toronto.redhat.com>
-Message-ID: <p73fy95g99w.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Fri, 16 Feb 2007 14:04:25 -0500
+Received: from zcars04f.nortel.com ([47.129.242.57]:51322 "EHLO
+	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946050AbXBPTEY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 14:04:24 -0500
+Message-ID: <45D6001E.1020605@nortel.com>
+Date: Fri, 16 Feb 2007 13:03:58 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linux-kernel@vger.kernel.org
+Subject: misleading comment in __oom_kill_task()?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Feb 2007 19:04:07.0215 (UTC) FILETIME=[3B9E3BF0:01C751FD]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fche@redhat.com (Frank Ch. Eigler) writes:
-> 
-> We in systemtap land have the same problem, and so far made do with
-> slightly postprocessed per-cpu TSC values.
 
-90+% likely you're not solving your problem correctly this way.
+Towards the end of __oom_kill_task() we see the following comment/code:
 
--Andi
+	/*
+	 * We give our sacrificial lamb high priority and access to
+	 * all the memory it needs. That way it should be able to
+	 * exit() and clear out its resources quickly...
+	 */
+	p->time_slice = HZ;
+	set_tsk_thread_flag(p, TIF_MEMDIE);
+
+	force_sig(SIGKILL, p);
+
+I see it getting a large timeslice and access to memory, but I don't 
+actually see the priority getting bumped at all.  It appears the comment 
+is inaccurate.
+
+Should the process actually get its priority bumped up as well so that 
+it can process its own death faster?  The reason I ask is that we're 
+seeing some oom-killed processes taking a very long time (multiple 
+seconds) to actually die.
+
+Chris
