@@ -1,76 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423269AbXBPFUO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423278AbXBPFVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423269AbXBPFUO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 00:20:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423268AbXBPFUO
+	id S1423278AbXBPFVP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 00:21:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423277AbXBPFVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 00:20:14 -0500
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:47033 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423270AbXBPFUM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 00:20:12 -0500
-Date: Fri, 16 Feb 2007 10:48:23 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Antoine Martin <antoine@nagafix.co.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: BUG: warning at kernel/cpu.c:51/unlock_cpu_hotplug() - 2.6.18.6
-Message-ID: <20070216051823.GA9195@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <45D4C999.4080507@nagafix.co.uk>
+	Fri, 16 Feb 2007 00:21:15 -0500
+Received: from mga01.intel.com ([192.55.52.88]:23420 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423276AbXBPFVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 00:21:14 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,179,1170662400"; 
+   d="scan'208"; a="200342311:sNHT18610277"
+Message-ID: <45D53F48.9010903@intel.com>
+Date: Thu, 15 Feb 2007 21:21:12 -0800
+From: Auke Kok <auke-jan.h.kok@intel.com>
+User-Agent: Mail/News 1.5.0.9 (X11/20061228)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45D4C999.4080507@nagafix.co.uk>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Len Brown <lenb@kernel.org>
+CC: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dim@openvz.org
+Subject: Re: e1000_intr in request_irq faults in 2.6.20-git
+References: <36D9DB17C6DE9E40B059440DB8D95F5201E997BA@orsmsx418.amr.corp.intel.com> <200702152259.34162.lenb@kernel.org>
+In-Reply-To: <200702152259.34162.lenb@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Antoine,
 
-On Thu, Feb 15, 2007 at 08:59:05PM +0000, Antoine Martin wrote:
-> I just caught this in the log whilst running some unit tests.
-> (the test was in the process of starting 900 Java threads)
+[Adding Dimitri Mishin to the CC - he proposed the same patch earlier]
+
+Len Brown wrote:
+> On Thursday 15 February 2007 21:10, Brandeburg, Jesse wrote:
+>> Eric W. Biederman wrote:
+>>> Len Brown <lenb@kernel.org> writes:
+>>>
+>>>> e1000 faults in 2.6.20-git, while 2.6.20 worked fine.
+>>>>
+>>>> System is a D875PBZ with LOM.
+>>>>
+>>>> clues?
+>>> I'm guessing this is an old bug found by the following bit of
+>>> debug coded added into since v2.6.20
+>>>
+>>> +#ifdef CONFIG_DEBUG_SHIRQ
+>>> +       if (irqflags & IRQF_SHARED) {
+>>> +               /*
+>>> +                * It's a shared IRQ -- the driver ought to be
+>>> prepared for it +                * to happen immediately, so let's
+>>> make sure.... +                * We do this before actually
+>>> registering it, to make sure that +                * a 'real' IRQ
+>>> doesn't run in parallel with our fake +                */
+>>> +               if (irqflags & IRQF_DISABLED) {
+>>> +                       unsigned long flags;
+>>> +
+>>> +                       local_irq_save(flags);
+>>> +                       handler(irq, dev_id);
+>>> +                       local_irq_restore(flags);
+>>> +               } else
+>>> +                       handler(irq, dev_id);
+>>> +       }
+>>> +#endif
+>>>
+>>> I don't have a clue why the e1000 wasn't ready though.
+>>>
+>> our code is clearly calling request_irq before we have assigned the
+>> function pointer adapter->clean_rx as well as adapter->alloc_rx_buf
+>>
+>> That would be a bug, a possible patch would be (inline and attached):
+>> compile tested, *but* I couldn't test this patch to make sure it worked
+>> because I couldn't boot 2.6.20-git due to it not finding my RAID0 + lvm
+>> disk.
+>>
+>> [PATCH] e1000: fix shared interrupt warning message
+>>
+>> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+>>
+>> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+>> ---
+>>
+>>  drivers/net/e1000/e1000_main.c |   13 +++++++------
+>>  1 files changed, 7 insertions(+), 6 deletions(-)
+>>
+>> diff --git a/drivers/net/e1000/e1000_main.c
+>> b/drivers/net/e1000/e1000_main.c
+>> index 619c892..b8c4d5c 100644
+>> --- a/drivers/net/e1000/e1000_main.c
+>> +++ b/drivers/net/e1000/e1000_main.c
+>> @@ -1417,10 +1417,6 @@ e1000_open(struct net_device *netdev)
+>>         if ((err = e1000_setup_all_rx_resources(adapter)))
+>>                 goto err_setup_rx;
+>>
+>> -       err = e1000_request_irq(adapter);
+>> -       if (err)
+>> -               goto err_req_irq;
+>> -
+>>         e1000_power_up_phy(adapter);
+>>
+>>         if ((err = e1000_up(adapter)))
+>> @@ -1431,6 +1427,10 @@ e1000_open(struct net_device *netdev)
+>>                 e1000_update_mng_vlan(adapter);
+>>         }
+>>
+>> +       err = e1000_request_irq(adapter);
+>> +       if (err)
+>> +               goto err_req_irq;
+>> +
+>>         /* If AMT is enabled, let the firmware know that the network
+>>          * interface is now open */
+>>         if (adapter->hw.mac_type == e1000_82573 &&
+>> @@ -1439,10 +1439,11 @@ e1000_open(struct net_device *netdev)
+>>
+>>         return E1000_SUCCESS;
+>>
+>> +err_req_irq:
+>> +       e1000_down(adapter);
+>> +       e1000_free_irq(adapter);
+>>  err_up:
+>>         e1000_power_down_phy(adapter);
+>> -       e1000_free_irq(adapter);
+>> -err_req_irq:
+>>         e1000_free_all_rx_resources(adapter);
+>>  err_setup_rx:
+>>         e1000_free_all_tx_resources(adapter);
+>>
 > 
-> audit(1171565587.887:96): enforcing=0 old_enforcing=1 auid=4294967295
-> BUG: warning at kernel/cpu.c:51/unlock_cpu_hotplug()
-> 
-> Call Trace:
->  [<ffffffff80269c98>] dump_stack+0x12/0x17
->  [<ffffffff8029dfe6>] unlock_cpu_hotplug+0x3f/0x6c
->  [<ffffffff802876b6>] sched_getaffinity+0x7d/0xa2
->  [<ffffffff80287701>] sys_sched_getaffinity+0x26/0x55
->  [<ffffffff8025cb0e>] system_call+0x7e/0x83
+> Works for me(tm) on latest 2.6.20-git and D875PBZ.
 
-Looks like one of those spurious unlock_cpu_hotplug warnings.
 
-Let me know if this fix works for you or not. 
+If there are no objections I'll push this patch to Jeff Garzik together with two 
+other changes I have for him.
 
-regards
-gautham.
+Cheers,
 
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
-
- kernel/cpu.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6.18/kernel/cpu.c
-===================================================================
---- linux-2.6.18.orig/kernel/cpu.c
-+++ linux-2.6.18/kernel/cpu.c
-@@ -53,8 +53,8 @@ void unlock_cpu_hotplug(void)
- 		recursive_depth--;
- 		return;
- 	}
--	mutex_unlock(&cpu_bitmask_lock);
- 	recursive = NULL;
-+	mutex_unlock(&cpu_bitmask_lock);
- }
- EXPORT_SYMBOL_GPL(unlock_cpu_hotplug);
- 
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+Auke
