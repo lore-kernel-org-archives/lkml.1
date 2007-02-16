@@ -1,74 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945996AbXBPQxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964877AbXBPQ4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945996AbXBPQxd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 11:53:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946004AbXBPQxd
+	id S964877AbXBPQ4U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 11:56:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964882AbXBPQ4U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 11:53:33 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:13187 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945996AbXBPQxc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 11:53:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Ki/ESnYpSULsgzivHOkRpyTsz0FVs38XOEBRizDyoUy1Az5FtHSl7G7bN3CQE3T4G8q2yKx0X35KNPsyH3EcCgXg6IuRa5tUvs7KwOTUuNEtFdZbIhxAix5Jr3Cs6gXE4Tc8TcQi92RpgDlXFcluMIkdqCFuSnuMhYPrmI5w6KY=
-Message-ID: <2c0942db0702160853s18f650ccsa7270c047d94a41b@mail.gmail.com>
-Date: Fri, 16 Feb 2007 08:53:30 -0800
-From: "Ray Lee" <madrabbit@gmail.com>
-Reply-To: ray-gmail@madrabbit.org
-To: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>
-Subject: Re: [patch 05/11] syslets: core code
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "Andrew Morton" <akpm@zip.com.au>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Ulrich Drepper" <drepper@redhat.com>,
-       "Zach Brown" <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Benjamin LaHaise" <bcrl@kvack.org>,
-       "Suparna Bhattacharya" <suparna@in.ibm.com>,
-       "Davide Libenzi" <davidel@xmailserver.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <20070216160525.GA21160@2ka.mipt.ru>
+	Fri, 16 Feb 2007 11:56:20 -0500
+Received: from lixom.net ([66.141.50.11]:50311 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964877AbXBPQ4T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 11:56:19 -0500
+Date: Fri, 16 Feb 2007 11:05:32 -0600
+To: trond.myklebust@fys.uio.no
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] nfs: init req_lock in nfs_alloc_inode
+Message-ID: <20070216170532.GA4895@lixom.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070215133550.GA29274@2ka.mipt.ru>
-	 <20070215163704.GA32609@2ka.mipt.ru>
-	 <Pine.LNX.4.64.0702150920130.20368@woody.linux-foundation.org>
-	 <20070215181059.GC20997@2ka.mipt.ru>
-	 <Pine.LNX.4.64.0702151019210.20368@woody.linux-foundation.org>
-	 <20070215190413.GA23953@2ka.mipt.ru>
-	 <Pine.LNX.4.64.0702151120260.20368@woody.linux-foundation.org>
-	 <20070216085706.GA22868@2ka.mipt.ru>
-	 <Pine.LNX.4.64.0702160753120.20368@woody.linux-foundation.org>
-	 <20070216160525.GA21160@2ka.mipt.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: olof@lixom.net (Olof Johansson)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/16/07, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
-> if its design is good, then
-> interface can be changed in a moment without any problem
+Seems like req_lock is never initialized. CONFIG_DEBUG_SPINLOCK reported:
 
-This isn't always the case. Sometimes the interface puts requirements
-(contract-like) upon the implementation. Case in point in the kernel,
-dnotify versus inotify. dnotify is a steaming pile of worthlessness,
-because it's userspace interface is so bad (meaning inefficient) as to
-be nearly unusable.
+BUG: spinlock bad magic on CPU#0, mount/1073
+ lock: c00000007fdca108, .magic: 00000000, .owner: /24576, .owner_cpu: 0
+Call Trace:
+[C00000007E913750] [C0000000000107B4] .show_stack+0x54/0x1f0 (unreliable)
+[C00000007E913800] [C0000000001D2234] .spin_bug+0xa4/0x120
+[C00000007E913890] [C0000000001D247C] ._raw_spin_lock+0xdc/0x1d0
+[C00000007E913930] [C0000000004DF990] ._spin_lock+0x10/0x30
+[C00000007E9139B0] [C00000000017623C] .nfs_sync_mapping_wait+0xac/0x310
+[C00000007E913AA0] [C000000000176F18] .nfs_sync_mapping_range+0x98/0x110
+[C00000007E913B80] [C00000000016CAA0] .nfs_getattr+0x40/0xf0
+[C00000007E913C20] [C0000000000BE668] .vfs_getattr+0x38/0x70
+[C00000007E913CA0] [C0000000000BF05C] .vfs_fstat+0x3c/0x70
+[C00000007E913D30] [C0000000000BF0B8] .sys_fstat64+0x28/0x60
+[C00000007E913E30] [C000000000008608] syscall_exit+0x0/0x40
 
-inotify has a different interface, one that supplies details about
-events rather that mere notice that an event occurred, and therefore
-has different requirements in implementation. dnotify probably was a
-good design, but for a worthless interface.
 
-The interface isn't always important, but it's certainly something
-that has to be understood before putting the finishing touches on the
-behind-the-scenes implementation.
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-Ray
+---
+
+Trond, is your MAINTAINERS entry up to date? Seems like you mostly post
+from @netapp.com these days.
+
+
+Index: linux-2.6/fs/nfs/inode.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/inode.c
++++ linux-2.6/fs/nfs/inode.c
+@@ -1123,6 +1123,7 @@ struct inode *nfs_alloc_inode(struct sup
+ 	nfsi->flags = 0UL;
+ 	nfsi->cache_validity = 0UL;
+ 	nfsi->cache_change_attribute = jiffies;
++	nfsi->req_lock = SPIN_LOCK_UNLOCKED;
+ #ifdef CONFIG_NFS_V3_ACL
+ 	nfsi->acl_access = ERR_PTR(-EAGAIN);
+ 	nfsi->acl_default = ERR_PTR(-EAGAIN);
