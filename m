@@ -1,98 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945966AbXBPQHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945974AbXBPQH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945966AbXBPQHp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 11:07:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945969AbXBPQHp
+	id S1945974AbXBPQH6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 11:07:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945973AbXBPQH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 11:07:45 -0500
-Received: from mail.screens.ru ([213.234.233.54]:59000 "EHLO mail.screens.ru"
+	Fri, 16 Feb 2007 11:07:58 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:39455 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945965AbXBPQHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 11:07:40 -0500
-Date: Fri, 16 Feb 2007 19:06:40 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@osdl.org, paulmck@us.ibm.com,
-       mingo@elte.hu, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl
-Subject: Re: [RFC PATCH(Experimental) 1/4] freezer-cpu-hotplug core
-Message-ID: <20070216160640.GD83@tv-sign.ru>
-References: <20070214144031.GA15257@in.ibm.com> <20070214144229.GA19789@in.ibm.com> <20070214202209.GC301@tv-sign.ru> <20070216071617.GB4527@in.ibm.com>
+	id S1945975AbXBPQH5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 11:07:57 -0500
+Date: Fri, 16 Feb 2007 19:05:25 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 05/11] syslets: core code
+Message-ID: <20070216160525.GA21160@2ka.mipt.ru>
+References: <20070215133550.GA29274@2ka.mipt.ru> <Pine.LNX.4.64.0702150757520.20368@woody.linux-foundation.org> <20070215163704.GA32609@2ka.mipt.ru> <Pine.LNX.4.64.0702150920130.20368@woody.linux-foundation.org> <20070215181059.GC20997@2ka.mipt.ru> <Pine.LNX.4.64.0702151019210.20368@woody.linux-foundation.org> <20070215190413.GA23953@2ka.mipt.ru> <Pine.LNX.4.64.0702151120260.20368@woody.linux-foundation.org> <20070216085706.GA22868@2ka.mipt.ru> <Pine.LNX.4.64.0702160753120.20368@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-In-Reply-To: <20070216071617.GB4527@in.ibm.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <Pine.LNX.4.64.0702160753120.20368@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Fri, 16 Feb 2007 19:05:34 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/16, Srivatsa Vaddagiri wrote:
->
-> On Wed, Feb 14, 2007 at 11:22:09PM +0300, Oleg Nesterov wrote:
-> > > o Splits CPU_DEAD into two events namely
-> > >   - CPU_DEAD: which will be handled while the processes are still
-> > >               frozen.
-> > > 
-> > >   - CPU_DEAD_KILL_THREADS: To be handled after we thaw_processes.
-> > 
-> > 
-> > Imho, this is not right. This change the meaning of CPU_DEAD, and so
-> > we should fix all users of CPU_DEAD as well.
+On Fri, Feb 16, 2007 at 07:54:22AM -0800, Linus Torvalds (torvalds@linux-foundation.org) wrote:
+> > Interfaces can be created and destroyed - they do not affect overall
+> > system design in anyway (well, if they do, something is broken).
 > 
-> Why should we fix all users? Only users who were doing a kthread_stop()
-> in CPU_DEAD need to be fixed. From my count, only 5 users (out of a
-> total of 35) need to be fixed to not do kthread_stop in CPU_DEAD.
+> I'm sorry, but you've obviously never maintained any piece of software 
+> that actually has users.
 
-But still we need to fix or at least check them,
+Strong. But saying for others usualy tends to show own problems.
 
-> > How about
-> > 
-> > 	CPU_DEAD_WHATEVER
-> > 		the processes are still frozen
-> > 
-> > 	CPU_DEAD
-> > 		after we thaw_processes
-> > 
-> > This way we can add processing of the new CPU_DEAD_WHATEVER event where
-> > it may help. 
-> 
-> Well, -most- of the work needs to be done in a state when processes are
-> frozen. The only exception is cleaning up of per-cpu threads (which is
-> not possible with processes frozen - if we can find a way to make that
-> possible, then everything can be done in CPU_DEAD).
-> 
-> If we go by the change suggested above, then we need to fix all users of
-> CPU_DEAD
+> As long as you think that interfaces can change, this discussion is 
+> pointless. 
 
-Sorry, I can't understand you.
+That is too cool phrase to be heared - if you will make me a favour and
+reread what was written you will (hopefully) detect that there were no
+words about interfaces being changed after put into the wild - talk was 
+only about time when system is designed and implemented, and there is
+time for discussion about its rough edges - if its design is good, then
+interface can be changed in a moment without any problem - that is what
+we see with syslets right now - they are designed and implemented (the
+formed was done several years ago), and it is time to shape its edges -
+like change userspace API - it is easy, but you do not (want/like to) 
+see that.
 
-This patch adds the new state, why should we fix all users of CPU_DEAD
-if they were correct? CPU_DEAD retains its old meaning, all users should
-work as before?
+> So go away, ponder things.
 
->           to do what they are doing in CPU_DEAD_WHATEVER (when processes
-> are frozen).
+But my above words are too lame for self-hearing Olympus liver.
+Definitely.
 
-We don't have such users! because we don't have CPU_DEAD_WHATEVER yet.
+> 		Linus
 
-IOW: I think this new state should have a new name, CPU_DEAD should continue
-to be called as a last step. Then we can teach cpu callback's to to take an
-advantage of CPU_DEAD_WHATEVER, and we can do this in a separate patches.
-
-No?
-
-> > CPU_UP_PREPARE is called after freeze_processes()... Probably this works,
-> > but imho this is no good. Suppose for a moment that khelper will be frozen
-> > (yes, yes it can't be), then we can't do kthread_create().
-> 
-> Yes, I am worried about doing so many things with processes frozen.
-> Maybe time (and more testing) will tell us if this is a bad thing or
-> not. The only dependency I have found so far is that kthread workqueue needs to
-> be up (and hence its worker thread needs to be exempted from hotplug
-> freeze). We should mark kthread workqueue accordingly as not freezable
-> for hotplug.
-
-Yes, this is what I was talking about.
-
-Oleg.
-
+-- 
+	Evgeniy Polyakov
