@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946213AbXBPSsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946038AbXBPSuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946213AbXBPSsv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 13:48:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946216AbXBPSsv
+	id S1946038AbXBPSuB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 13:50:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945968AbXBPSuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 13:48:51 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:63257 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946213AbXBPSsu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 13:48:50 -0500
-Date: Fri, 16 Feb 2007 10:44:15 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jeff Muizelaar <jeff@infidigm.net>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: Using sched_clock for mmio-trace
-Message-Id: <20070216104415.bca20c4b.randy.dunlap@oracle.com>
-In-Reply-To: <20070216183014.GD6425@infidigm.net>
-References: <20070216013024.GA32287@infidigm.net>
-	<y0mr6sq2hfj.fsf@ton.toronto.redhat.com>
-	<20070216183014.GD6425@infidigm.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Fri, 16 Feb 2007 13:50:00 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:58154 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946038AbXBPSuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 13:50:00 -0500
+Date: Fri, 16 Feb 2007 10:37:25 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steve Fox <drfickle@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-mm1 - undefined reference to `delete_module' on x86
+Message-Id: <20070216103725.fb288ab9.akpm@linux-foundation.org>
+In-Reply-To: <1171646057.3039.10.camel@drfickle.rchland.ibm.com>
+References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
+	<1171646057.3039.10.camel@drfickle.rchland.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Feb 2007 13:30:14 -0500 Jeff Muizelaar wrote:
+On Fri, 16 Feb 2007 11:14:17 -0600 Steve Fox <drfickle@linux.vnet.ibm.com> wrote:
 
-> On Fri, Feb 16, 2007 at 11:30:56AM -0500, Frank Ch. Eigler wrote:
-> > Jeff Muizelaar <jeff@infidigm.net> writes:
-> > 
-> > > I've built a tool with the goal of logging mmio writes and reads by
-> > > device drivers. See http://nouveau.freedesktop.org/wiki/MmioTrace.
-> > 
-> > FWIW, this is exactly a type of add-on trace patch that could be
-> > mooted by adoption of the ltt/systemtap "marker" facility.  With it,
-> > you would not need so much code (e.g. no new user-space tools at all,
-> > reuse of common tracing buffer logic, permanently placed hooks) and
-> > would probably get more utility.
+> Full log at
+> http://test.kernel.org/abat/71719/debug/test.log.0
+> Config at
+> http://test.kernel.org/abat/71719/build/dotconfig
 > 
-> Is there more information on this "marker" facility? e.g. what is a
-> marker? Are they just like tracepoints?
+>   CHK     include/linux/compile.h
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> kernel/built-in.o(.text+0x1426a): In function `store_mod_unload':
+> kernel/kmod.c:168: undefined reference to `delete_module'
+> make: *** [.tmp_vmlinux1] Error 1
+> 
 
-On lkml for the past few days/months.
-Look for "Linux Kernel Markers" in the subject line.
+Yes, sorry.  I believe Greg now has a replacement patch which fixes that up.
 
-Mathieu, do you have a web site for LK Markers?
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+I think the workaround is CONFIG_MODULE_UNLOAD=y (or
+CONFIG_MODULE_FORCE_UNLOAD=y).
