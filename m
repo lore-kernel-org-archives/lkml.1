@@ -1,76 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932359AbXBPOPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932376AbXBPO0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932359AbXBPOPi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 09:15:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932365AbXBPOPi
+	id S932376AbXBPO0l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 09:26:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932367AbXBPO0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 09:15:38 -0500
-Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:12512 "EHLO
-	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932359AbXBPOPh (ORCPT
+	Fri, 16 Feb 2007 09:26:41 -0500
+Received: from [221.217.24.227] ([221.217.24.227]:34150 "EHLO
+	freya.yggdrasil.com" rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932375AbXBPO0k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 09:15:37 -0500
-In-Reply-To: <Pine.LNX.4.64.0702161121540.14458@scrub.home>
-References: <930B9C2E-DCE3-4E9E-AA6B-2C58E16736B2@kernel.crashing.org> <Pine.LNX.4.64.0702161121540.14458@scrub.home>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <9AF725F4-FE65-4357-B7EB-CC03808C105D@kernel.crashing.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: kbuild question
-Date: Fri, 16 Feb 2007 08:14:40 -0600
-To: Roman Zippel <zippel@linux-m68k.org>
-X-Mailer: Apple Mail (2.752.2)
-X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - kernel.crashing.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Fri, 16 Feb 2007 09:26:40 -0500
+Date: Fri, 16 Feb 2007 22:28:30 +0800
+From: "Adam J. Richter" <adam@yggdrasil.com>
+Message-Id: <200702161428.l1GESUw9008969@freya.yggdrasil.com>
+To: linux-kernel@vger.kernel.org
+Subject: Clock running at half speed in 2.6.20?
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+	My system clock runs at approximately half speed in
+linux-2.6.20, 2.6.20-git10 and 2.6.20-git11.  That is, it takes about
+two hours for "date" to report that one hour has elapsed.  "hwclock"
+returns the correct time, of course.
 
-On Feb 16, 2007, at 4:23 AM, Roman Zippel wrote:
+	I do not have this problem in linuux 2.6.18.1.  I will try to
+narrow down the kernel version where this problem began.
 
-> Hi,
->
-> On Thu, 15 Feb 2007, Kumar Gala wrote:
->
->> I was wondering if there was some way to make a Kconfig menu  
->> either be just a
->> menu or a choice depending on another bool being set or not.
->>
->> What I'm trying to accomplish is if CONFIG_ONLY_HAVE_ONE is set I  
->> want it so
->> you can only select on option, however if CONFIG_ONLY_HAVE_ONE is  
->> not set you
->> should be able to select multiple options.
->
-> Could you please be more specific about the problem you're trying to
-> solve, instead of how you're trying to solve it?
-> A real example would help a lot to understand the actual problem.
+	The motherboard in question is an asus p4v8000-x, running a
+2.8GHz Pentium 4 that has two hyperthreads, which I suspect may be the
+problem.  I am just guessing, but perhaps some piece of code thinks
+the two hyperthreads are separate CPU's receving twice as many clock
+interrupts total.  I expect to try to some experimentation to check
+this theory.
 
-Sure, on powerpc for some of the embedded sub-architectures you can  
-only select a single board to build for.  For a lot of people this is  
-sufficient, however we are moving towards a world where you can  
-easily build in support for multiple boards into a single kernel.
+	For what it's worth, I am running CONFIG_PREEMPT=y,
+CONFIG_PREEMPT_BKL=y, CONFIG_HZ=1000.
 
-I'd like to have it such that if I'm only building support for one  
-board (CONFIG_ONLY_HAVE_ONE, not going to call it that, but for this  
-discussion its sufficient), you get a choice menu from Kconfig  
-enforcing the ability to only select one board.  However if ! 
-CONFIG_ONLY_HAVE_ONE than you can select multiple boards to build  
-into your kernel.
+	If there is a more specific mailing list for discussing this
+problem, I would be interested in knowning about it.  The MAINTAINERS
+file lists several components with the word "clock" in them, but I
+believe that all are for drivers for hardware clocks or high
+resolution timer extensions.  I tried a quick search of the
+linux-kernel mailing list for "clock" in the subject line, and did not
+notice anything that seemed like a match to this problem.
 
-if CONFIG_ONLY_HAVE_ONE is set we can optimize out the runtime checks  
-that get added for handling the multiple board case.
+	I will post more information as I collect it, but I am posting
+this bug report now in case this problem rings a bell for anyone.
 
-Hopefully that's clear.
-
-- k
+Adam Richter
