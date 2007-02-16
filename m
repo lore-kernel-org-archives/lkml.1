@@ -1,82 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932103AbXBPHQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932973AbXBPHUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932103AbXBPHQU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 02:16:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932293AbXBPHQU
+	id S932973AbXBPHUq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 02:20:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932985AbXBPHUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 02:16:20 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:34551 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932103AbXBPHQT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 02:16:19 -0500
-Date: Fri, 16 Feb 2007 12:46:17 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@osdl.org, paulmck@us.ibm.com,
-       mingo@elte.hu, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl
-Subject: Re: [RFC PATCH(Experimental) 1/4] freezer-cpu-hotplug core
-Message-ID: <20070216071617.GB4527@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070214144031.GA15257@in.ibm.com> <20070214144229.GA19789@in.ibm.com> <20070214202209.GC301@tv-sign.ru>
+	Fri, 16 Feb 2007 02:20:46 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:56379 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932973AbXBPHUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 02:20:45 -0500
+Date: Thu, 15 Feb 2007 23:19:36 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@muc.de>, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch 11/21] Xen-paravirt: Add apply_to_page_range() which
+ applies a function to a pte range.
+Message-Id: <20070215231936.073fadd3.akpm@linux-foundation.org>
+In-Reply-To: <45D55805.908@goop.org>
+References: <20070216022449.739760547@goop.org>
+	<20070216022531.344125142@goop.org>
+	<20070215223727.6819f962.akpm@linux-foundation.org>
+	<45D55805.908@goop.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070214202209.GC301@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 14, 2007 at 11:22:09PM +0300, Oleg Nesterov wrote:
-> > o Splits CPU_DEAD into two events namely
-> >   - CPU_DEAD: which will be handled while the processes are still
-> >               frozen.
-> > 
-> >   - CPU_DEAD_KILL_THREADS: To be handled after we thaw_processes.
+On Thu, 15 Feb 2007 23:06:45 -0800 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+
+> Andrew Morton wrote:
+> > On Thu, 15 Feb 2007 18:25:00 -0800 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> >
+> >   
+> >> Add a new mm function apply_to_page_range()[...]
+> > There was some discussion about this sort of thing last week.  The
+> > consensus was that it's better to run the callback against a whole pmd's
+> > worth of ptes, mainly to amortise the callback's cost (a lot).
+> >
+> > It was implemented in
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm1/broken-out/smaps-extract-pmd-walker-from-smaps-code.patch
 > 
-> 
-> Imho, this is not right. This change the meaning of CPU_DEAD, and so
-> we should fix all users of CPU_DEAD as well.
+> Yes I was looking at that and wondering what the upshot would be.  I'll
+> have a closer look, but it seems like it should be usable.
 
-Why should we fix all users? Only users who were doing a kthread_stop()
-in CPU_DEAD need to be fixed. From my count, only 5 users (out of a
-total of 35) need to be fixed to not do kthread_stop in CPU_DEAD.
+It's a question of who-merges-first.  I wasn't planning on merging the
+smaps stuff into 2.6.21.
 
-> 
-> How about
-> 
-> 	CPU_DEAD_WHATEVER
-> 		the processes are still frozen
-> 
-> 	CPU_DEAD
-> 		after we thaw_processes
-> 
-> This way we can add processing of the new CPU_DEAD_WHATEVER event where
-> it may help. 
+Perhaps the best approach is to proceed as-is and clean things up once it's
+all merged.
 
-Well, -most- of the work needs to be done in a state when processes are
-frozen. The only exception is cleaning up of per-cpu threads (which is
-not possible with processes frozen - if we can find a way to make that
-possible, then everything can be done in CPU_DEAD).
-
-If we go by the change suggested above, then we need to fix all users of
-CPU_DEAD to do what they are doing in CPU_DEAD_WHATEVER (when processes
-are frozen). I would rather avoid this invasive change and let
-CPU_DEAD be sent with processes frozen still.
-
-> CPU_UP_PREPARE is called after freeze_processes()... Probably this works,
-> but imho this is no good. Suppose for a moment that khelper will be frozen
-> (yes, yes it can't be), then we can't do kthread_create().
-
-Yes, I am worried about doing so many things with processes frozen.
-Maybe time (and more testing) will tell us if this is a bad thing or
-not. The only dependency I have found so far is that kthread workqueue needs to
-be up (and hence its worker thread needs to be exempted from hotplug
-freeze). We should mark kthread workqueue accordingly as not freezable
-for hotplug.
-
-
--- 
-Regards,
-vatsa
+I guess your pte-at-a-time walker could be quite simply implemented underneath
+the smaps pmd-at-a-time walker.
