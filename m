@@ -1,72 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423547AbXBPKKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423549AbXBPKMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423547AbXBPKKz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 05:10:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423549AbXBPKKz
+	id S1423549AbXBPKMw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 05:12:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423551AbXBPKMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 05:10:55 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:38196 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423547AbXBPKKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 05:10:54 -0500
-Date: Fri, 16 Feb 2007 02:09:47 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Christian Limpach" <Christian.Limpach@xensource.com>
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Chris Wright" <chrisw@sous-sol.org>, "Andi Kleen" <ak@muc.de>,
-       "Keir Fraser" <Keir.Fraser@cl.cam.ac.uk>,
-       <xen-devel@lists.xensource.com>, "Ian Pratt" <Ian.Pratt@xensource.com>,
-       <virtualization@lists.osdl.org>,
-       "Steven Hand" <steven.hand@cl.cam.ac.uk>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 14/21] Xen-paravirt: Add XEN config options and
- disableunsupported config options.
-Message-Id: <20070216020947.03e1726e.akpm@linux-foundation.org>
-In-Reply-To: <BBC437B5B077FF46935BA1D8C9A2172A01EBEBF4@exch2.ad.xensource.com>
-References: <BBC437B5B077FF46935BA1D8C9A2172A01EBEBF4@exch2.ad.xensource.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Feb 2007 05:12:52 -0500
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:57232 "EHLO
+	aeryn.fluff.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423549AbXBPKMw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 05:12:52 -0500
+Date: Fri, 16 Feb 2007 10:12:51 +0000
+From: Ben Dooks <ben@fluff.org.uk>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, vince@arm.linux.org.uk, ben-linux@fluff.org
+Subject: Re: [Linux-fbdev-devel] [PATCH] fb: SM501 framebuffer driver (#5)
+Message-ID: <20070216101251.GG19392@home.fluff.org>
+References: <20070216095045.GA15256@fluff.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070216095045.GA15256@fluff.org.uk>
+X-Disclaimer: I speak for me, myself, and the other one of me.
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Feb 2007 02:00:39 -0800 "Christian Limpach" <Christian.Limpach@xensource.com> wrote:
-
-> Jeremy Fitzhardinge wrote:
-> > Andrew Morton wrote:
-> > > On Thu, 15 Feb 2007 22:14:45 -0800 Dan Hecht 
-> > <dhecht@vmware.com> wrote:
-> > >
-> > >   
-> > >>>  config PREEMPT
-> > >>>  	bool "Preemptible Kernel (Low-Latency Desktop)"
-> > >>> +	depends on !XEN
-> > >>>  	help
-> > >>>  	  This option reduces the latency of the kernel by making
-> > >>>  	  all kernel code (that is not executing in a critical section)
-> > >>>
-> > >>>       
-> > >
-> > > Oh, so that's why it doesn't break when CONFIG_PREEMPT=y.  
-> > In which case
-> > > that preempt_disable() I spotted is wrong-and-unneeded.
-> > >
-> > > Why doesn't Xen work with preemption??
-> > >   
-> > 
-> > I've forgotten the details.  Ian?  Keir?  Steven?  Maybe it 
-> > can be done.
+On Fri, Feb 16, 2007 at 09:50:45AM +0000, Ben Dooks wrote:
+> Driver for the Silicon Motion SM501 multifunction device
+> framebuffer subsystem.
 > 
-> With CONFIG_PREEMPT, we can have preempted threads reference machine
-> addresses across save/restore.  After restore, these machine addresses
-> will be incorrect.
+> This driver supports both the CRT and LCD panel heads,
+> with some simple acceleration for the cursor plotting
+> and support for screen panning. There is no current
+> support for bitblt/drawing engines, which should be
+> added at a later date.
 > 
+> This has been tested on a number of configurations,
+> including PCI and generic-bus, on PPC, ARM and SH4
 
-It would help if you could define the terms "save/restore" and "machine
-addresses".  One can guess, but there are probably subtleties here..
+The difference between this and the previous version is
+that the checks in pan display have been removed, as per
+James' suggestion:
 
-Are the places where the domU code references machine addresses splattered
-all over the code?  If not, they can just be wrapped with
-preempt_disable/preempt_enable?
+diff -urpN -X ../dontdiff linux-2.6.20-sm501-2/drivers/video/sm501fb.c linux-2.6.20-sm501-3/drivers/video/sm501fb.c
+--- linux-2.6.20-sm501-2/drivers/video/sm501fb.c	2007-02-13 19:14:47.000000000 +0000
++++ linux-2.6.20-sm501-3/drivers/video/sm501fb.c	2007-02-16 09:33:07.000000000 +0000
+@@ -496,23 +496,6 @@ static void sm501fb_set_par_geometry(str
+ 	writel(reg, base + SM501_OFF_DC_V_SYNC);
+ }
+ 
+-/* sm501fb_validate_pan
+- *
+- * check panning on a var
+-*/
+-
+-static inline int sm501fb_validate_pan(struct fb_var_screeninfo *var)
+-{
+-	if (var->xoffset < 0 || var->yoffset < 0)
+-		return 0;
+-
+-	if (var->xoffset > (var->xres_virtual - var->xres) ||
+-	    var->yoffset > (var->yres_virtual - var->yres))
+-		return 0;
+-
+-	return 1;
+-}
+-
+ /* sm501fb_pan_crt
+  *
+  * pan the CRT display output within an virtual framebuffer
+@@ -527,9 +510,6 @@ static int sm501fb_pan_crt(struct fb_var
+ 	unsigned long reg;
+ 	unsigned long xoffs;
+ 
+-	if (!sm501fb_validate_pan(var))
+-		return -EINVAL;
+-
+ 	xoffs = var->xoffset * bytes_pixel;
+ 
+ 	reg = readl(fbi->regs + SM501_DC_CRT_CONTROL);
+@@ -558,9 +538,6 @@ static int sm501fb_pan_pnl(struct fb_var
+ 	struct sm501fb_info *fbi = par->info;
+ 	unsigned long reg;
+ 
+-	if (!sm501fb_validate_pan(var))
+-		return -EINVAL;
+-
+ 	reg = var->xoffset | (var->xres_virtual << 16);
+ 	writel(reg, fbi->regs + SM501_DC_PANEL_FB_WIDTH);
+ 
 
+
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
