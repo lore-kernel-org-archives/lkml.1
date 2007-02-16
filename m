@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966181AbXBPIdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966198AbXBPIgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966181AbXBPIdf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 03:33:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbXBPIdf
+	id S966198AbXBPIgM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 03:36:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966205AbXBPIgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 03:33:35 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:58763 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751894AbXBPIde (ORCPT
+	Fri, 16 Feb 2007 03:36:12 -0500
+Received: from nikam-dmz.ms.mff.cuni.cz ([195.113.20.16]:54765 "EHLO
+	nikam.ms.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S966198AbXBPIgL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 03:33:34 -0500
-Date: Fri, 16 Feb 2007 09:33:39 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Hansjoerg Lipp <hjlipp@web.de>, gigaset307x-common@lists.sourceforge.net,
-       kkeil@suse.de, kai.germaschewski@gmx.de,
-       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] drivers/isdn/gigaset/: build asyncdata.o into the gigaset module
-Message-ID: <20070216083339.GK13958@stusta.de>
-References: <20070215215638.GI13958@stusta.de> <45D4F80F.8040200@imap.cc>
-MIME-Version: 1.0
+	Fri, 16 Feb 2007 03:36:11 -0500
+Date: Fri, 16 Feb 2007 09:36:08 +0100
+From: Martin Mares <mj@ucw.cz>
+To: v j <vj.linux@gmail.com>
+Cc: Scott Preece <sepreece@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: GPL vs non-GPL device drivers
+Message-ID: <mj+md-20070216.082739.26560.nikam@ucw.cz>
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com> <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com> <20070215061149.GE15654@redhat.com> <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com> <20070215165339.GB5285@thunk.org> <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com> <7b69d1470702151705h297c3b38g138eb0138b900aea@mail.gmail.com> <9b3a62ab0702151800r3fdb6d64offc6e1de5837b4fd@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45D4F80F.8040200@imap.cc>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <9b3a62ab0702151800r3fdb6d64offc6e1de5837b4fd@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 16, 2007 at 01:17:19AM +0100, Tilman Schmidt wrote:
-> Am 15.02.2007 22:56 schrieb Adrian Bunk:
-> > This patch fixes the following compile error:
-> > 
-> > <--  snip  -->
-> > 
-> > ...
-> >   LD      drivers/isdn/gigaset/built-in.o
-> > drivers/isdn/gigaset/ser_gigaset.o: In function `gigaset_m10x_send_skb':
-> > (.text+0xe50): multiple definition of `gigaset_m10x_send_skb'
-> > drivers/isdn/gigaset/usb_gigaset.o:(.text+0x0): first defined here
-> > drivers/isdn/gigaset/ser_gigaset.o: In function `gigaset_m10x_input':
-> > (.text+0x1121): multiple definition of `gigaset_m10x_input'
-> > drivers/isdn/gigaset/usb_gigaset.o:(.text+0x2d1): first defined here
-> > make[4]: *** [drivers/isdn/gigaset/built-in.o] Error 1
-> 
-> How did you manage to produce that error? I have never encountered it.
+Hello!
 
-CONFIG_ISDN_DRV_GIGASET=y
-CONFIG_GIGASET_BASE=y
-CONFIG_GIGASET_M105=y
-CONFIG_GIGASET_M101=y
-CONFIG_GIGASET_DEBUG=y
-CONFIG_GIGASET_UNDOCREQ=y
+> Assuming these need not be GPL, I have a problem with
+> EXPORT_SYMBOL_GPL and the general trend in the direction of making
+> proprietary drivers harder on companies.
 
-It might depend on the binutils version.
+Most kernel developers did always say they don't agree with proprietary
+drivers, don't want to support them and that they are convinced such
+drivers are illegal. And according to the language of the GPL and the
+copyright law, it's quite possible they really are illegal (although
+a court _might_ rule that the modules are not a derived work of the
+kernel). Even with all that, you still decided to distribute such
+modules. What you are complaining about?
 
-> Thanks,
-> Tilman
+> So why beat about the bush? Just make it illegal to load proprietary
+> drivers, or remove EXPORT_SYMBOL_GPL.
 
-cu
-Adrian
+The point is that it's impossible to make it illegal (although many of
+the authors of the kernel would like to) -- the point is that if kernel
+modules aren't derivative works of the kernel, the kernel license cannot
+control them.
 
+				Have a nice fortnight
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Martin `MJ' Mares                          <mj@ucw.cz>   http://mj.ucw.cz/
+Faculty of Math and Physics, Charles University, Prague, Czech Rep., Earth
+This mail doesn't contain viruses, because it wasn't sent from MS Windows. Checked by eyes.
