@@ -1,82 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932417AbXBPPmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945939AbXBPPrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932417AbXBPPmv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 10:42:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932422AbXBPPmv
+	id S1945939AbXBPPrZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 10:47:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945941AbXBPPrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 10:42:51 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:54053 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932417AbXBPPmt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 10:42:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dahbFTnUWQqaQ0YIigpUt9vTiQecvShArNbA9lquO4bADY6lv+eN3ouYJwbV4Hm9HpZKV6m2Hqk0Dlgj4CecjqvvzjKnFZiUHc7nnzAxzvrDtuKEf2ZmngWLpyDbyXFZtOTu6HpApNMR/OJG+2/BxoDD88qnWsdqXnMYpg+Msic=
-Message-ID: <639c60080702160742h3c926640j52432d2198c6cb8d@mail.gmail.com>
-Date: Fri, 16 Feb 2007 16:42:48 +0100
-From: Nilshar <nilshar@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Problem with 2.6.20 and highmem64
-Cc: linux-mm@kvack.org
-In-Reply-To: <639c60080702160038o516fd790n50923afcc136ea07@mail.gmail.com>
+	Fri, 16 Feb 2007 10:47:25 -0500
+Received: from raven.upol.cz ([158.194.120.4]:60800 "EHLO raven.upol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1945939AbXBPPrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 10:47:24 -0500
+Date: Fri, 16 Feb 2007 16:55:27 +0100
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, olecom@flower.upol.cz
+Subject: [pp] kbuild: lguest with private asm-offsets (and some bloat)
+Message-ID: <20070216155527.GA14687@flower.upol.cz>
+References: <1171012296.2718.26.camel@localhost.localdomain> <1171012761.2718.40.camel@localhost.localdomain> <1171012827.2718.42.camel@localhost.localdomain> <200702091109.20061.ak@muc.de> <1171024771.2718.129.camel@localhost.localdomain> <20070209141728.GA26749@uranus.ravnborg.org> <1171034599.2718.190.camel@localhost.localdomain> <E1HGbJz-0003Lc-6h@flower> <1171323696.19842.29.camel@localhost.localdomain> <20070213031044.GA17046@flower.upol.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <639c60080702140711j1ec1b344p77133bb26f687e87@mail.gmail.com>
-	 <639c60080702160038o516fd790n50923afcc136ea07@mail.gmail.com>
+In-Reply-To: <20070213031044.GA17046@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adding linux-mm@kvack.org
+On Tue, Feb 13, 2007 at 04:10:44AM +0100, Oleg Verych wrote:
+[]
+> 
+> Proposition will follow.
+> 
+[]
 
-2007/2/16, Nilshar <nilshar@gmail.com>:
-> I can confirm that it works fine with 2.6.20-rc2.
-> Do you need me to try any other ? do you need any more info ?
->
-> 2007/2/14, Nilshar <nilshar@gmail.com>:
-> > Hello,
-> > I have an issue with latest 2.6.20 kernel..
-> > my last kernel was a 2.6.18 and I wanted to upgrade to a 2.6.20, I
-> > copied .config and did a make menuconfig, then save/quit. I compiled
-> > new kernel, all went fine.
-> > I installed it and at boot time, I had a hang just after "Freeing
-> > unused kernel memory" where INIT is supposed to start.
-> > After searching the web, I found that it is usually the case when
-> > wrong process type is configured.. I verified that, but all was fine
-> > there.
-> > After 10ish compiled kernel, I found that it is when I select highmem64.
-> >
-> > Diff between working and non working kernel :
-> >
-> > 181,182c181,182
-> > < # CONFIG_HIGHMEM4G is not set
-> > < CONFIG_HIGHMEM64G=y
-> > ---
-> > > CONFIG_HIGHMEM4G=y
-> > > # CONFIG_HIGHMEM64G is not set
-> > 185d184
-> > < CONFIG_X86_PAE=y
-> > 191c190
-> > < CONFIG_RESOURCES_64BIT=y
-> > ---
-> > > # CONFIG_RESOURCES_64BIT is not set
-> >
-> > (I just witching highmem 4G and highmem64g).
-> >
-> > I'll attach the full .config.
-> >
-> > it used to work fine with highmem64g with a kernel 2.6.18 and 2.6.19
-> > (I'm sure it was ok with .20-rc2 but I'll double check that).
-> >
-> > Is this a bug ? or something I did wrong ?
-> >
-> > Oh, I probably should add that this hang doesn't occur on all
-> > hardware, but it happen on Dell PE 850 at least.
-> >
-> > If you need additional informations, just ask :)
-> >
-> >
->
+[patch proposition] kbuild: lguest with private asm-offsets
+
+ * added some bloat to lguest's Makefile:
+   - lguest doesn't rebuild, if not changed (due to FORCED implicit %o:%S),
+   - support of kbuild's queit/nonquiet commands,
+   - (hopefully) more readable and clear build process,
+   - private asm-offsets,
+
+ * some whitespace was killed,
+
+ * needs "asm-offsets magic demystified, generalized".
+
+Done on top of first lkml post of lguest.
+
+pp-by: Oleg Verych
+---
+ arch/i386/kernel/asm-offsets.c |  23 +-----------------
+ arch/i386/lguest/Makefile      |  40 +++++++++++++++++++++++++++++---
+ arch/i386/lguest/asm-offsets.c |  31 +++++++++++++++++++++++++
+ arch/i386/lguest/hypervisor.S  |   8 +++---
+ 
+ 4 files changed, 73 insertions(+), 29 deletions(-)
+
+Index: linux-2.6.20/arch/i386/lguest/Makefile
+===================================================================
+--- linux-2.6.20.orig/arch/i386/lguest/Makefile	2007-02-16 15:32:51.665149000 +0100
++++ linux-2.6.20/arch/i386/lguest/Makefile	2007-02-16 16:16:48.525942500 +0100
+@@ -1,2 +1,6 @@
++#
++# i386/lguest/Makefile
++#
++
+ # Guest requires the paravirt_ops replacement and the bus driver.
+ obj-$(CONFIG_LGUEST_GUEST) += lguest.o lguest_bus.o
+@@ -7,4 +11,6 @@ lg-objs := core.o hypercalls.o page_tabl
+ 	segments.o io.o lguest_user.o
+ 
++asm-offsets-lg := $(objtree)/include/asm/asm-offsets-lg.h
++
+ # We use top 4MB for guest traps page, then hypervisor. */
+ HYPE_ADDR := (0xFFC00000+4096)
+@@ -13,10 +19,36 @@ HYPE_DATA_SIZE := 1024
+ CFLAGS += -DHYPE_ADDR="$(HYPE_ADDR)" -DHYPE_DATA_SIZE="$(HYPE_DATA_SIZE)"
+ 
++LD_HYPE_DATA := $(shell printf %\#x $$(($(HYPE_ADDR))))
++LD_HYPE_TEXT := $(shell printf %\#x $$(($(HYPE_ADDR)+$(HYPE_DATA_SIZE))))
++
++quiet_cmd_ld_hyber = LD [H]  $@
++      cmd_ld_hyber = $(LD) -static -Tdata=$(LD_HYPE_DATA) \
++				   -Ttext=$(LD_HYPE_TEXT) -o $@ $<
++cmd_objcopy = $(OBJCOPY) -O binary $@
++
++quiet_cmd_blob = BLOB    $@
++      cmd_blob = od -tx1 -An -v $< | sed -e 's/^ /0x/' \
++					 -e 's/$$/,/' -e 's/ /,0x/g' > $@
++quiet_cmd_offsets = GEN     $@
++      cmd_offsets = $(srctree)/scripts/mkCconstants $< $@
++
+ $(obj)/core.o: $(obj)/hypervisor-blob.c
++
++$(obj)/hypervisor-blob.c: $(obj)/hypervisor-raw
++	$(call cmd,blob)
++
+ # This links the hypervisor in the right place and turns it into a C array.
+ $(obj)/hypervisor-raw: $(obj)/hypervisor.o
+-	@$(LD) -static -Tdata=`printf %#x $$(($(HYPE_ADDR)))` -Ttext=`printf %#x $$(($(HYPE_ADDR)+$(HYPE_DATA_SIZE)))` -o $@ $< && $(OBJCOPY) -O binary $@
+-$(obj)/hypervisor-blob.c: $(obj)/hypervisor-raw
+-	@od -tx1 -An -v $< | sed -e 's/^ /0x/' -e 's/$$/,/' -e 's/ /,0x/g' > $@
++	$(call if_changed,ld_hyber)
++	$(call cmd,objcopy)
++
++$(obj)/hypervisor.o: $(src)/hypervisor.S $(asm-offsets-lg)
++	$(call if_changed_dep,as_o_S)
++
++$(asm-offsets-lg): $(obj)/asm-offsets.s
++	$(call cmd,offsets)
++
++$(obj)/asm-offsets.s: $(src)/asm-offsets.c
++	$(call if_changed_dep,cc_s_c)
+ 
+-clean-files := hypervisor-blob.c hypervisor-raw
++clean-files := $(asm-offsets-lg) hypervisor-blob.c hypervisor-raw
+Index: linux-2.6.20/arch/i386/lguest/asm-offsets.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.20/arch/i386/lguest/asm-offsets.c	2007-02-16 16:03:10.410813500 +0100
+@@ -0,0 +1,31 @@
++/*
++ * lguest's "private"
++ */
++
++#include <linux/sched.h>
++#include <asm/lguest.h>
++#include "../lguest/lg.h"
++
++#define DEFINE(sym, val) \
++	asm volatile("\n->" #sym " %0 " #val : : "i" (val))
++
++#define BLANK() asm volatile("\n->" : : )
++
++#define OFFSET(sym, str, mem) \
++	DEFINE(sym, offsetof(struct str, mem));
++
++void fell_lguest(void)
++{
++	BLANK();
++	OFFSET(LGUEST_DATA_irq_enabled, lguest_data, irq_enabled);
++	OFFSET(LGUEST_STATE_host_stackptr, lguest_state, host.stackptr);
++	OFFSET(LGUEST_STATE_host_pgdir, lguest_state, host.pgdir);
++	OFFSET(LGUEST_STATE_host_gdt, lguest_state, host.gdt);
++	OFFSET(LGUEST_STATE_host_idt, lguest_state, host.idt);
++	OFFSET(LGUEST_STATE_regs, lguest_state, regs);
++	OFFSET(LGUEST_STATE_gdt, lguest_state, gdt);
++	OFFSET(LGUEST_STATE_idt, lguest_state, idt);
++	OFFSET(LGUEST_STATE_gdt_table, lguest_state, gdt_table);
++	OFFSET(LGUEST_STATE_trapnum, lguest_state, regs.trapnum);
++	OFFSET(LGUEST_STATE_errcode, lguest_state, regs.errcode);
++}
+
+Index: linux-2.6.20/arch/i386/kernel/asm-offsets.c
+===================================================================
+--- linux-2.6.20.orig/arch/i386/kernel/asm-offsets.c	2007-02-16 16:02:11.155110250 +0100
++++ linux-2.6.20/arch/i386/kernel/asm-offsets.c	2007-02-16 16:03:52.697456250 +0100
+@@ -17,11 +17,7 @@
+ #include <asm/elf.h>
+ #include <asm/pda.h>
+-#ifdef CONFIG_LGUEST_GUEST
+-#include <asm/lguest.h>
+-#include "../lguest/lg.h"
+-#endif
+ 
+ #define DEFINE(sym, val) \
+-        asm volatile("\n->" #sym " %0 " #val : : "i" (val))
++	asm volatile("\n->" #sym " %0 " #val : : "i" (val))
+ 
+ #define BLANK() asm volatile("\n->" : : )
+@@ -104,5 +100,5 @@ void foo(void)
+ 
+ 	BLANK();
+- 	OFFSET(PDA_cpu, i386_pda, cpu_number);
++	OFFSET(PDA_cpu, i386_pda, cpu_number);
+ 	OFFSET(PDA_pcurrent, i386_pda, pcurrent);
+ 
+@@ -116,18 +112,3 @@ void foo(void)
+ 	OFFSET(PARAVIRT_read_cr0, paravirt_ops, read_cr0);
+ #endif
+-
+-#ifdef CONFIG_LGUEST_GUEST
+-	BLANK();
+-	OFFSET(LGUEST_DATA_irq_enabled, lguest_data, irq_enabled);
+-	OFFSET(LGUEST_STATE_host_stackptr, lguest_state, host.stackptr);
+-	OFFSET(LGUEST_STATE_host_pgdir, lguest_state, host.pgdir);
+-	OFFSET(LGUEST_STATE_host_gdt, lguest_state, host.gdt);
+-	OFFSET(LGUEST_STATE_host_idt, lguest_state, host.idt);
+-	OFFSET(LGUEST_STATE_regs, lguest_state, regs);
+-	OFFSET(LGUEST_STATE_gdt, lguest_state, gdt);
+-	OFFSET(LGUEST_STATE_idt, lguest_state, idt);
+-	OFFSET(LGUEST_STATE_gdt_table, lguest_state, gdt_table);
+-	OFFSET(LGUEST_STATE_trapnum, lguest_state, regs.trapnum);
+-	OFFSET(LGUEST_STATE_errcode, lguest_state, regs.errcode);
+-#endif
+ }
+Index: linux-2.6.20/arch/i386/lguest/hypervisor.S
+===================================================================
+--- linux-2.6.20.orig/arch/i386/lguest/hypervisor.S	2007-02-16 16:09:02.620825250 +0100
++++ linux-2.6.20/arch/i386/lguest/hypervisor.S	2007-02-16 16:13:19.548882250 +0100
+@@ -2,5 +2,5 @@
+    Layout is: default_idt_entries (1k), then switch_to_guest entry point. */
+ #include <linux/linkage.h>
+-#include <asm/asm-offsets.h>
++#include <asm/asm-offsets-lg.h>
+ #include "lg.h"
+ 
+@@ -104,5 +104,5 @@ switch_to_guest:
+ 	popl	%es;							\
+ 	popl	%ss
+-	
++
+ /* Return to run_guest_once. */
+ return_to_host:
+@@ -151,5 +151,5 @@ deliver_to_host_with_errcode:
+  .endr
+ .endm
+-	
++
+ /* We intercept every interrupt, because we may need to switch back to
+  * host.  Unfortunately we can't tell them apart except by entry
+@@ -158,5 +158,5 @@ deliver_to_host_with_errcode:
+ irq_stubs:
+ .data
+-default_idt_entries:	
++default_idt_entries:
+ .text
+ 	IRQ_STUBS 0 1 return_to_host		/* First two traps */
