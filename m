@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751907AbXBPKgD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751915AbXBPKiM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751907AbXBPKgD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 05:36:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbXBPKgD
+	id S1751915AbXBPKiM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 05:38:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbXBPKiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 05:36:03 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:52513 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751234AbXBPKgA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 05:36:00 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@osdl.org>,
-       Natalie Protasevich <Natalie.Protasevich@unisys.com>,
-       "lkml - Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] i386 irq: Kill NR_IRQ_VECTORS and increase NR_IRQS
-References: <200702160015.04453.lenb@kernel.org>
-	<m1mz3efn0q.fsf@ebiederm.dsl.xmission.com>
-	<200702161115.59017.ak@suse.de>
-Date: Fri, 16 Feb 2007 03:33:32 -0700
-In-Reply-To: <200702161115.59017.ak@suse.de> (Andi Kleen's message of "Fri, 16
-	Feb 2007 11:15:58 +0100")
-Message-ID: <m1y7mye6ir.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 16 Feb 2007 05:38:12 -0500
+Received: from ns.firmix.at ([62.141.48.66]:42559 "EHLO ns.firmix.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751915AbXBPKiL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 05:38:11 -0500
+Subject: Re: GPL vs non-GPL device drivers
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: v j <vj.linux@gmail.com>
+Cc: Trent Waddington <trent.waddington@gmail.com>,
+       David Lang <david.lang@digitalinsight.com>,
+       Scott Preece <sepreece@gmail.com>, Miguel Ojeda <maxextreme@gmail.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <9b3a62ab0702152225m3893318by95cb8b260c74bfc2@mail.gmail.com>
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+	 <20070215061149.GE15654@redhat.com>
+	 <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
+	 <20070215165339.GB5285@thunk.org>
+	 <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com>
+	 <653402b90702151102n3a3e0435r837e2191de79b2b@mail.gmail.com>
+	 <7b69d1470702151712x685f3e0eqf6198f9bb7f2394e@mail.gmail.com>
+	 <Pine.LNX.4.63.0702151701510.10070@qynat.qvtvafvgr.pbz>
+	 <9b3a62ab0702152148p57db8b1dgd42b1c6fb15dccbb@mail.gmail.com>
+	 <3d57814d0702152157n461a9f0cta0a0c20e9a592d83@mail.gmail.com>
+	 <9b3a62ab0702152225m3893318by95cb8b260c74bfc2@mail.gmail.com>
+Content-Type: text/plain
+Organization: Firmix software GmbH
+Date: Fri, 16 Feb 2007 11:38:05 +0100
+Message-Id: <1171622285.23981.20.camel@tara.firmix.at>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -2.417 () AWL,BAYES_00,FORGED_RCVD_HELO
+X-Firmix-Spam-Status: No, hits=-2.417 required=5
+X-Spam-Score: -2.417 () AWL,BAYES_00,FORGED_RCVD_HELO
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <ak@suse.de> writes:
+On Thu, 2007-02-15 at 22:25 -0800, v j wrote:
+[...]
+> No, just that the trend is disturbing. If enough Kernel Developers
+> choose to write their Software in a way that prevents others from
+> using it freely, then that is troubling. Especially when these Kernel
 
->> Allowing the kernel to work on big machines without complicated
->> and error prone irq remapping logic.
->
-> How much memory does this use by default? If it's much there should
-> be at least a CONFIG_* to make it smaller.
+You can use it freely - your definitions of "free" and "closed" are
+broken (at least on LKML).
 
-If you don't build a generic kernel and are not a big way smp you only
-get 200 IRQs so it is less.  
+> Developers are substituting existing interfaces in the Kernel with
+> ones that are NEW and require specific licenses.
 
-Otherwise it is either 1024 or NR_CPUS*32 depending on the subarch
-we compile.  The limits are actually unchanged from what we are doing
-today.
+That claimed "specific license" is the very same license that the rest
+of the kernel has since day 1. So what?
 
-I'm in the final stages of figuring out how to kill the stupid
-irq_desc array which should make all the memory consumption worries
-go away but that is a little ways off, and I'm putting real bug
-fixes ahead of that work.
+	Bernd
+-- 
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
 
-Basically this is just a back port from x86_64 without the
-complication of the per cpu vector logic.  So if we run into any
-issues I missed before this reaches a stable kernel we can just copy
-the fix from x86_64 where we have been doing this for a while.  
-
-So in short the existing CONFIG_ options should give us the control
-we need, and before it becomes any kind of an issue I intend to
-completely remove the compile time limit and make it dynamic.
-
-Eric
