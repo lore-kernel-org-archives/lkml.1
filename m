@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946322AbXBPXvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946319AbXBPXvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946322AbXBPXvQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 18:51:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946320AbXBPXvQ
+	id S1946319AbXBPXvW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 18:51:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946321AbXBPXvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 18:51:16 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:42070 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946316AbXBPXvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 18:51:14 -0500
-Message-ID: <45D6436C.4060209@garzik.org>
-Date: Fri, 16 Feb 2007 18:51:08 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: pata_amd dropping to PIO on resume
-References: <fa.q7ZuddHInqn2dVlS+EWjXjPvFC8@ifi.uio.no> <45D63BCE.2080700@shaw.ca>
-In-Reply-To: <45D63BCE.2080700@shaw.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Fri, 16 Feb 2007 18:51:22 -0500
+Received: from smtp.ono.com ([62.42.230.12]:7882 "EHLO resmaa03.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1946320AbXBPXvV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 18:51:21 -0500
+Date: Sat, 17 Feb 2007 00:50:59 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-mm1
+Message-ID: <20070217005059.34100823@werewolf-wl>
+In-Reply-To: <20070215213006.eeb531cf.akpm@linux-foundation.org>
+References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
+	<20070215223017.2cf5d19f@werewolf-wl>
+	<20070215153142.d631f8b7.akpm@linux-foundation.org>
+	<20070216003912.238e6ba5@werewolf-wl>
+	<20070215213006.eeb531cf.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.7.2cvs46 (GTK+ 2.10.9; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Tobias Diedrich wrote:
->> Possibly a known issue:
->>
->> After resume pata_amd drops from UDMA/33 to PIO on my system.
->> Reloading the module puts both attached optical drives (master and
->> slave) back to UDMA/33.
->>
->> AFAICS "simplex DMA is claimed by other device, disabling DMA" seems
->> to be causing it to drop to PIO (but only after a suspend/resume
->> cycle, not on boot or module load).
->>
->> Burning a DVD with 6x speed using PIO makes heavy use of burnproof
->> and makes the whole system quite sluggish. :)
+On Thu, 15 Feb 2007 21:30:06 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
+
 > 
-> Yes, the fact that it's going into simplex mode is the problem, it 
-> wasn't in simplex to start with. It looks like pata_amd does an 
-> ata_pci_clear_simplex only for certain chip models, maybe this model 
-> needs it as well?
+> Nope, can't reproduce (the bug, that is).
 > 
+> Actually, the oops you have there is the fourth one, so we might be seeing
+> downstream effects of oops #1.  Can you please capture the first oops
+> trace?  Increasing the log buffer size or using netconsole might help.
 
-Deleting the ata_pci_clear_simplex() call, then adding 
-ATA_FLAG_IGN_SIMPLEX to the ata_port_info info[] array, is also worth 
-trying.
+Well, forget it. Booting without the nVidia driver makes the oopses go away.
+I looks like nvidia is doing something strange with the i2c interface.
+D**d closed source drivers...
 
-	Jeff
-
-
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2007.1 (Cooker) for i586
+Linux 2.6.19-jam07 (gcc 4.1.2 20070115 (prerelease) (4.1.2-0.20070115.1mdv2007.1)) #2 SMP PREEMPT
