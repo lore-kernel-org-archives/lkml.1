@@ -1,52 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423019AbXBPB7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423026AbXBPCAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423019AbXBPB7p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 20:59:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423023AbXBPB7p
+	id S1423026AbXBPCAj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 21:00:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423025AbXBPCAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 20:59:45 -0500
-Received: from ftp.linux-mips.org ([194.74.144.162]:60481 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423019AbXBPB7o (ORCPT
+	Thu, 15 Feb 2007 21:00:39 -0500
+Received: from wr-out-0506.google.com ([64.233.184.224]:18665 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423026AbXBPCAi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 20:59:44 -0500
-Date: Fri, 16 Feb 2007 01:59:34 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Optimize generic get_unaligned / put_unaligned implementations.
-Message-ID: <20070216015934.GB18987@linux-mips.org>
-References: <20060306.203218.69025300.nemoto@toshiba-tops.co.jp> <20060306170552.0aab29c5.akpm@osdl.org> <20070214214226.GA17899@linux-mips.org> <20070214203903.8d013170.akpm@linux-foundation.org> <20070215143441.GA18155@linux-mips.org> <20070215135358.020781dd.akpm@linux-foundation.org> <20070215221839.GA14103@linux-mips.org> <20070215153823.239fd616.akpm@linux-foundation.org> <20070216004317.GA18987@linux-mips.org> <20070215172720.3e9ce464.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 15 Feb 2007 21:00:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Kzg9KvvujNnh2Y8X3Qe7eZY4YJuocdRCEmj1eIdIacvpaCBQk1ySnRmAodKmxmJ0nIPyt4+6Fl6OhbADfiCofs7MFnxivZcDxTqLd4HvpDnZHmifAVBoPJtyykdA2IVhSgYlezhHe0FrvVf6NbSs4L3txjPJP1l8syKx79TXI20=
+Message-ID: <9b3a62ab0702151800r3fdb6d64offc6e1de5837b4fd@mail.gmail.com>
+Date: Thu, 15 Feb 2007 18:00:36 -0800
+From: "v j" <vj.linux@gmail.com>
+To: "Scott Preece" <sepreece@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: GPL vs non-GPL device drivers
+In-Reply-To: <7b69d1470702151705h297c3b38g138eb0138b900aea@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070215172720.3e9ce464.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+	 <20070215061149.GE15654@redhat.com>
+	 <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
+	 <20070215165339.GB5285@thunk.org>
+	 <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com>
+	 <7b69d1470702151705h297c3b38g138eb0138b900aea@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 15, 2007 at 05:27:20PM -0800, Andrew Morton wrote:
+On 2/15/07, Scott Preece <sepreece@gmail.com> wrote:
+> On 2/15/07, v j <vj.linux@gmail.com> wrote:
+> > So far I have heard nothing but, "if you don't contribute, screw you."
+> > All this is fine. Just say so. Make it black and white. Make it
+> > perfectly clear what is and isn't legal. If we can't load proprietary
+> > modules, then so be it. It will help everybody if this is out in the
+> > clear, instead of resorting to stupid half measures like
+> > EXPORT_SYMBOL_GPL.
+> ---
+>
+> I'm not sure what you're asking for. Greg KH's statement was pretty
+> black-and-white, and there are a lot of comments in this stream, from
+> name-brand developers, that are in line with them. They're the best
+> answer you can hope for on this question. The question you're asking
+> is an issue of interpretation, which only a court can answer. Do you
+> want them to modify the license to make this particular issue clearer?
+> Or do you just want a statement from Linus?
 
-> No, icc surely supports attribute(packed).  My point is that we shouldn't
-> rely upon the gcc info file for this, because other compilers can (or
-> could) be used to build the kernel.
-> 
-> So it would be safer if the C spec said (or could be interpreted to say)
-> "members of packed structures are always copied bytewise".  So then we
-> can be reasonably confident that this change won't break the use of
-> those compilers.
-> 
-> But then, I don't even know if any C standard says anything about packing.
+Which statement are you talking about? First of all it is not clear to
+me if proprietary modules need to be GPL or not. If they do, I guess I
+have nothing to say. If that is the way developers want it, so be it.
 
-Memory layout and alignment of structures and members are implementation
-defined according to the C standard; the standard provides no means to
-influence these.  So it takes a compiler extension such as gcc's
-__attribute__().
+Assuming these need not be GPL, I have a problem with
+EXPORT_SYMBOL_GPL and the general trend in the direction of making
+proprietary drivers harder on companies. Our drivers use basic
+interfaces in the kernel like open, read, write, ioctl, semaphores,
+interrupts, timers etc. This is functionality we would expect from any
+operating system. We used devfs before and had no problems there. Greg
+KH has gone and made the basic sysfs interface, which any generic
+driver could use as EXPORT_SYMBOL_GPL. I don't really care, I just
+don't use sysfs. The point is that old functionality is being ripped
+off and new ones introduced, and their interfaces are not open
+anymore. Hence there will be a point where non-GPLed drivers simply
+cannot be loaded.
 
-> Ho hum.  Why are we talking about this, anyway?  Does the patch make the
-> code faster?  Or just nicer?
+So why beat about the bush? Just make it illegal to load proprietary
+drivers, or remove EXPORT_SYMBOL_GPL.
 
-Smaller binary and from looking at the disassembly a tad faster also.
-
-  Ralf
+vj.
