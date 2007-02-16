@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946268AbXBPV0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946266AbXBPV2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946268AbXBPV0k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 16:26:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946269AbXBPV0k
+	id S1946266AbXBPV2u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 16:28:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946269AbXBPV2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 16:26:40 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:5072 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946268AbXBPV0j (ORCPT
+	Fri, 16 Feb 2007 16:28:50 -0500
+Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:36893 "EHLO
+	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946266AbXBPV2t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 16:26:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=IoHwTbdNLpOdWyaUgfS5wq1dmUCU1P4vwm3gIPPIKOJpSIxzsd0tZHS9GyJA0wAU9FH0QyyE/Whi+MGHVMdwye3a49TbG7h77UPsyJ7r3IthGjcvMHfHFo1f9ex9GPPdmjmxSBLRqwlwn3Se890UH5oq4AAJdTIQ5w+52H/xv/g=
-Message-ID: <7b69d1470702161326j7f15402xfb24a741b4ff8176@mail.gmail.com>
-Date: Fri, 16 Feb 2007 15:26:37 -0600
-From: "Scott Preece" <sepreece@gmail.com>
-To: "Dave Neuer" <mr.fred.smoothie@pobox.com>
-Subject: Re: GPL vs non-GPL device drivers
-Cc: davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <161717d50702160912x6dc4efbahcfb02f665ae3ec8a@mail.gmail.com>
+	Fri, 16 Feb 2007 16:28:49 -0500
+Date: Fri, 16 Feb 2007 16:28:47 -0500 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@d.namei
+To: Christoph Lameter <clameter@sgi.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Christoph Lameter <clameter@engr.sgi.com>
+Subject: Re: 2.6.20-mm1 [kernel BUG at mm/swap.c:442]
+In-Reply-To: <Pine.LNX.4.64.0702160756020.23808@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0702161628320.5602@d.namei>
+References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0702150926560.25081@d.namei> <20070215135157.18085ae3.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0702160938300.2581@d.namei> <Pine.LNX.4.64.0702160756020.23808@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3d57814d0702152245q19e19141me0b999fb051ac7b6@mail.gmail.com>
-	 <MDEHLPKNGKAHNMBLJOLKCEDIBKAC.davids@webmaster.com>
-	 <161717d50702160912x6dc4efbahcfb02f665ae3ec8a@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/16/07, Dave Neuer <mr.fred.smoothie@pobox.com> wrote:
-> On 2/16/07, David Schwartz <davids@webmaster.com> wrote:
-> >
-> > (See, among other cases, Lexmark. v. Static
-> > Controls.) A copyright is not a patent, you can only own something if there
-> > are multiple equally good ways to do it and you claim *one* of them.
->
-> Only in a world where "write a Linux module" is a "functional idea." I
-> don't think that the legal world in the US is an example of such a
-> world, though you clearly do.
----
+On Fri, 16 Feb 2007, Christoph Lameter wrote:
 
-"Interface the xyz device to the Linux kernel" is a functional idea in
-pretty much the same sense that the Lexmark case involved. You
-generally can't copyright functional interfaces; there is a strong
-prejudice towards allowing interoperability.
+> Andrew already has this fix which cures it for me. PG_mlocked pages can 
+> be freed in some situations and thus we need the correct handling in the 
+> page allocator:
 
-[IANAL and this is, as noted preivously, subject to the winds of
-judicial favor.]
+Works for me.
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
