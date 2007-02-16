@@ -1,136 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966246AbXBPJBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423432AbXBPJLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966246AbXBPJBr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 04:01:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966247AbXBPJBr
+	id S1423432AbXBPJLX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 04:11:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423436AbXBPJLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 04:01:47 -0500
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:2525
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S966246AbXBPJBq (ORCPT
+	Fri, 16 Feb 2007 04:11:23 -0500
+Received: from wr-out-0506.google.com ([64.233.184.227]:49766 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423432AbXBPJLW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 04:01:46 -0500
-Message-Id: <45D58145.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.1 
-Date: Fri, 16 Feb 2007 09:02:45 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Andrew Morton" <akpm@osdl.org>, "Andi Kleen" <ak@suse.de>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] i386: adjustments to page table dump during oops (v4)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 16 Feb 2007 04:11:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XSZkX5ik0Msg2LXTQCBjlr+4E+oJQkENqfh4c4zveLa9sAhNP2lTaOo4mGj6UBfTLFZMUE/nk6n8VRvt70qZ6ebrIgXOL97Z9plI5Dmytwpm9LXFGH1Beu6uXA+ezE97a6RgyPsWvTq7VPKO5eqgPx4Ay0k5xUXoaQ5PjwXjN+o=
+Message-ID: <32209efe0702160111q78a32df8i70e3112e5d8da5c1@mail.gmail.com>
+Date: Fri, 16 Feb 2007 02:11:20 -0700
+From: "Natalie Protasevich" <protasnb@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>, lenb@kernel.org
+Subject: Re: FW: [PATCH] i386: irq: Kill IRQ compression
+Cc: "Andi Kleen" <ak@suse.de>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+In-Reply-To: <19D0D50E9B1D0A40A9F0323DBFA04ACC023B0E20@USRV-EXCH4.na.uis.unisys.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <19D0D50E9B1D0A40A9F0323DBFA04ACC023B0E20@USRV-EXCH4.na.uis.unisys.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- make the page table contents printing PAE capable
-- make sure the address stored in current->thread.cr2 is unmodified
-  from what was read from CR2
-- don't call oops_may_print() multiple times, when one time suffices
-- print pte even in highpte case, as long as the pte page isn't in
-  actually in high memory (which is specifically the case for all page
-  tables covering kernel space)
+> From: Eric W. Biederman [mailto:ebiederm@xmission.com]
+> Sent: Friday, February 16, 2007 12:44 AM
+> To: Len Brown
+> Cc: Andi Kleen; Protasevich, Natalie; lkml - Kernel Mailing List;
+> linux-acpi@vger.kernel.org
+> Subject: Re: [PATCH] i386: irq: Kill IRQ compression
+>
+> Len Brown <lenb@kernel.org> writes:
+>
+> > This code makes simple systems complex:
+> >
+> > ACPI: PCI Interrupt 0000:03:04.0[A] -> GSI 18 (level, low) -> IRQ 16
+> > ACPI: PCI Interrupt 0000:00:1d.0[A] -> GSI 16 (level, low) -> IRQ 17
+> > ACPI: PCI Interrupt 0000:00:1d.1[B] -> GSI 19 (level, low) -> IRQ 18
+> > ACPI: PCI Interrupt 0000:00:1d.7[D] -> GSI 23 (level, low) -> IRQ 19
+> >
+> > The same code was already removed from x86_64
+>
+> By itself I don't think we are going to observe any real problems
+> with this patch.
+>
+> However if we are going to be serious about this we need to do a
+> few more things.
+>
+> - kill iopaic_renumber_irq.
 
-(Changes to v3: Use sizeof()*2 rather than the suggested sizeof()*4 for
-printing width, use fixed 16-nibble width for PAE, and also apply the
-max_low_pfn range check to the middle level lookup on PAE.)
+This routine actually renumbers gsi's. I don't think you can kill
+ioapic_renumber_irq without bringing down ES7000 that have swapped
+legacy/PCI ranges and are still out there. Moreover, mach-es7000
+purpose is to define and use the range swapper on the first ioapic.
+Kernel still assumes legacy mapping having no overrides of that
+extent. Perhaps the real fix is to have ACPI/MPS parsers to read the
+actual pin/gsi information from the tables, which turned out pretty
+difficult last time we tried.
+--Natalie
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-
---- linux-2.6.20/arch/i386/mm/fault.c	2007-02-04 19:44:54.000000000 +0100
-+++ 2.6.20-i386-page-fault-dump/arch/i386/mm/fault.c	2007-02-14 08:31:38.000000000 +0100
-@@ -20,6 +20,7 @@
- #include <linux/tty.h>
- #include <linux/vt_kern.h>		/* For unblank_screen() */
- #include <linux/highmem.h>
-+#include <linux/bootmem.h>		/* for max_low_pfn */
- #include <linux/module.h>
- #include <linux/kprobes.h>
- #include <linux/uaccess.h>
-@@ -327,7 +328,6 @@ fastcall void __kprobes do_page_fault(st
- 	struct mm_struct *mm;
- 	struct vm_area_struct * vma;
- 	unsigned long address;
--	unsigned long page;
- 	int write, si_code;
- 
- 	/* get the address */
-@@ -538,7 +538,9 @@ no_context:
- 	bust_spinlocks(1);
- 
- 	if (oops_may_print()) {
--	#ifdef CONFIG_X86_PAE
-+		__typeof__(pte_val(__pte(0))) page;
-+
-+#ifdef CONFIG_X86_PAE
- 		if (error_code & 16) {
- 			pte_t *pte = lookup_address(address);
- 
-@@ -547,7 +549,7 @@ no_context:
- 					"NX-protected page - exploit attempt? "
- 					"(uid: %d)\n", current->uid);
- 		}
--	#endif
-+#endif
- 		if (address < PAGE_SIZE)
- 			printk(KERN_ALERT "BUG: unable to handle kernel NULL "
- 					"pointer dereference");
-@@ -557,25 +559,38 @@ no_context:
- 		printk(" at virtual address %08lx\n",address);
- 		printk(KERN_ALERT " printing eip:\n");
- 		printk("%08lx\n", regs->eip);
--	}
--	page = read_cr3();
--	page = ((unsigned long *) __va(page))[address >> 22];
--	if (oops_may_print())
-+
-+		page = read_cr3();
-+		page = ((__typeof__(page) *) __va(page))[address >> PGDIR_SHIFT];
-+#ifdef CONFIG_X86_PAE
-+		printk(KERN_ALERT "*pdpt = %016Lx\n", page);
-+		if ((page >> PAGE_SHIFT) < max_low_pfn
-+		    && page & _PAGE_PRESENT) {
-+			page &= PAGE_MASK;
-+			page = ((__typeof__(page) *) __va(page))[(address >> PMD_SHIFT)
-+			                                         & (PTRS_PER_PMD - 1)];
-+			printk(KERN_ALERT "*pde = %016Lx\n", page);
-+			page &= ~_PAGE_NX;
-+		}
-+#else
- 		printk(KERN_ALERT "*pde = %08lx\n", page);
--	/*
--	 * We must not directly access the pte in the highpte
--	 * case, the page table might be allocated in highmem.
--	 * And lets rather not kmap-atomic the pte, just in case
--	 * it's allocated already.
--	 */
--#ifndef CONFIG_HIGHPTE
--	if ((page & 1) && oops_may_print()) {
--		page &= PAGE_MASK;
--		address &= 0x003ff000;
--		page = ((unsigned long *) __va(page))[address >> PAGE_SHIFT];
--		printk(KERN_ALERT "*pte = %08lx\n", page);
--	}
- #endif
-+
-+		/*
-+		 * We must not directly access the pte in the highpte
-+		 * case if the page table is located in highmem.
-+		 * And let's rather not kmap-atomic the pte, just in case
-+		 * it's allocated already.
-+		 */
-+		if ((page >> PAGE_SHIFT) < max_low_pfn
-+		    && (page & _PAGE_PRESENT)) {
-+			page &= PAGE_MASK;
-+			page = ((__typeof__(page) *) __va(page))[(address >> PAGE_SHIFT)
-+			                                         & (PTRS_PER_PTE - 1)];
-+			printk(KERN_ALERT "*pte = %0*Lx\n", sizeof(page)*2, (u64)page);
-+		}
-+	}
-+
- 	tsk->thread.cr2 = address;
- 	tsk->thread.trap_no = 14;
- 	tsk->thread.error_code = error_code;
-
-
+> - Increase NR_IRQS.
+>
+> We will still be limited to about 208 interrupts in use at one
+> time, but we can allow more irq sources to be described.
+>
+> This reminds me.  I really need to dig up my patch that doesn't
+> allocate a vector for an irq until request irq time.
+>
+> Eric
+>
