@@ -1,76 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966253AbXBPJZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966254AbXBPJ02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966253AbXBPJZh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 04:25:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbXBPJZh
+	id S966254AbXBPJ02 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 04:26:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966258AbXBPJ02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 04:25:37 -0500
-Received: from styx.suse.cz ([82.119.242.94]:49942 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750745AbXBPJZg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 04:25:36 -0500
-Date: Fri, 16 Feb 2007 10:29:09 +0100
-From: Jan Kara <jack@suse.cz>
-To: Frank Hartmann <soundart@gmx.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: 2.6.19.1 Oops while doing Disk IO + playing sound, 2.6.20 too
-Message-ID: <20070216092909.GA1711@duck.suse.cz>
-References: <877ivr6t0k.fsf@fantasio.hh.de> <20070207091841.GE24590@atrey.karlin.mff.cuni.cz> <87wt2thhux.fsf@fantasio.hh.de> <20070208093930.GB10973@duck.suse.cz> <87bqk06bhi.fsf_-_@fantasio.hh.de> <20070214143249.GE23203@duck.suse.cz> <87r6ssl3g4.fsf@fantasio.hh.de> <20070215094053.GA28205@duck.suse.cz> <87mz3f9gab.fsf@fantasio.hh.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 16 Feb 2007 04:26:28 -0500
+Received: from ns.firmix.at ([62.141.48.66]:42485 "EHLO ns.firmix.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966254AbXBPJ01 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 04:26:27 -0500
+Subject: Re: GPL vs non-GPL device drivers
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: Valdis.Kletnieks@vt.edu
+Cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       Manu Abraham <abraham.manu@gmail.com>, Mws <mws@twisted-brains.org>,
+       v j <vj.linux@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <200702160819.l1G8JnmZ013706@turing-police.cc.vt.edu>
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+	 <200702151254.39058.mws@twisted-brains.org>
+	 <1a297b360702150451n3dca1140ra6827cfde020eed5@mail.gmail.com>
+	 <Pine.LNX.4.61.0702150913020.1735@chaos.analogic.com>
+	 <200702160819.l1G8JnmZ013706@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Organization: Firmix software GmbH
+Date: Fri, 16 Feb 2007 10:25:57 +0100
+Message-Id: <1171617957.23981.5.camel@tara.firmix.at>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -2.416 () AWL,BAYES_00,FORGED_RCVD_HELO
+X-Firmix-Spam-Status: No, hits=-2.416 required=5
+X-Spam-Score: -2.416 () AWL,BAYES_00,FORGED_RCVD_HELO
 Content-Disposition: inline
-In-Reply-To: <87mz3f9gab.fsf@fantasio.hh.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 16-02-07 00:01:32, Frank Hartmann wrote:
-> Jan Kara <jack@suse.cz> writes:
-> 
-> > On Thu 15-02-07 00:33:31, Frank Hartmann wrote:
-> >> Jan Kara <jack@suse.cz> writes:
-> >> 
-> >> >   Yes I see some correlation. Again it seems there is a problem with buffers
-> >> > attached to a page which got truncated but Private flag of the page stayed.
-> >> > It's probably not important but just out of curiosity - do you have
-> >> > CONFIG_LBD (large block device) set? I'd just like to verify that page_bufs
-> >> > was NULL when it was passed to walk_page_buffers().
-> >> 
-> >> fantasio:~/tmp/linux-2.6.20$ fgrep CONFIG_LBD .config
-> >> # CONFIG_LBD is not set
-> >   OK, thanks. Then I'm slightly confused as the offset 0x2d in struct
-> > buffer_head is somewhere in b_assoc_buffers which is never dereferenced.
-> > Can you run gdb on vmlinux from the 2.6.20 kernel and send me the output
-> > of 'disass walk_page_buffers'? Thanks.
-> 
-> 
-> I seem to missunderstand you.
-> I am running now 2.6.19., so do not wonder. 
-  In your mail from February 11, you sent an oops from 2.6.20 kernel.
-That's why I was interested in the 2.6.20 kernel's vmlinux. But 2.6.19.2
-would be interesting too.
+On Fri, 2007-02-16 at 03:19 -0500, Valdis.Kletnieks@vt.edu wrote:
+[...]
+> Actually, the *real* reason embedded systems end up using old versions is
+> much simpler.
 
-> Could you help out, what I do wrong?
-> 
-> fantasio:/home/frank/tmp/linux-2.6.19.2#   gdb vmlinux                   
-> GNU gdb 6.4.90-debian
-> Copyright (C) 2006 Free Software Foundation, Inc.
-> GDB is free software, covered by the GNU General Public License, and you are
-> welcome to change it and/or distribute copies of it under certain conditions.
-> Type "show copying" to see the conditions.
-> There is absolutely no warranty for GDB.  Type "show warranty" for details.
-> This GDB was configured as "i486-linux-gnu"...(no debugging symbols found)
-> Using host libthread_db library "/lib/tls/libthread_db.so.1".
-> 
-> (gdb) disass walk_page_buffers
-> No symbol table is loaded.  Use the "file" command.
-  Sorry, I forgot you have to have the kernel compiled with the
-CONFIG_DEBUG_INFO option (in the kernel hacking section) for the above to work.
-It is enough to get the vmlinux file from such compilation. You don't have
-to actually run the kernel...
+ACK.
 
-								Honza
+> They start developing their code on release 2.X.Y, and they keep their code
+> out-of-tree.  Then, when they come up for air, and it's at 2.X.(Y+15), they
+> discover that we weren't kidding when we shipped stable_api_nonsense.txt,
+> and since their code isn't in the tree, they have to do all the API cleanup
+> themselves, because no flock of nit-picking kernel janitor monkeys swarmed
+> over their code and magically fixed it up for them.
 
+Actually it is questionable for product development in a commercial
+environment (especially in the embedded world where you usually have a
+quite defined hardware and software on your device) if one actually
+wants that - think of the "if it's not broken, don't fix it" reason.
+
+> And unless Y+15 has some *very* compelling reasons to move forward, just
+> sticking at Y suddenly starts looking very good, because watching somebody
+> else's kernel janitor monkeys fix your code is fairly cheap, but paying your
+> own kernel janitor monkeys gets expensive really fast....
+
+It depends on the *very* compelling reason if it is easier/cheaper to
+a) fix the problem in the "old" kernel,
+b) backport something or
+c) forward port the own drivers/changes.
+And that decision depends on lots of factors (and company-internal
+bureaucracy with the QA department may not be the least important).
+
+	Bernd
 -- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
+
