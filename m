@@ -1,52 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945943AbXBPPuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945947AbXBPPvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945943AbXBPPuy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 10:50:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945947AbXBPPuy
+	id S1945947AbXBPPvV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 10:51:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945945AbXBPPvU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 10:50:54 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:55904 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945943AbXBPPux (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 10:50:53 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [RFC] killing the NR_IRQS arrays.
-References: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com>
-	<20070216124117.GB4218@elte.hu>
-Date: Fri, 16 Feb 2007 08:49:43 -0700
-In-Reply-To: <20070216124117.GB4218@elte.hu> (Ingo Molnar's message of "Fri,
-	16 Feb 2007 13:41:17 +0100")
-Message-ID: <m13b56drvs.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 16 Feb 2007 10:51:20 -0500
+Received: from raven.upol.cz ([158.194.120.4]:60921 "EHLO raven.upol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1945947AbXBPPvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 10:51:19 -0500
+Date: Fri, 16 Feb 2007 16:59:29 +0100
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: [pp] kbuild: asm-offsets generalized
+Message-ID: <20070216155929.GA14713@flower.upol.cz>
+References: <1171012761.2718.40.camel@localhost.localdomain> <1171012827.2718.42.camel@localhost.localdomain> <200702091109.20061.ak@muc.de> <1171024771.2718.129.camel@localhost.localdomain> <20070209141728.GA26749@uranus.ravnborg.org> <1171034599.2718.190.camel@localhost.localdomain> <E1HGbJz-0003Lc-6h@flower> <1171323696.19842.29.camel@localhost.localdomain> <20070213031044.GA17046@flower.upol.cz> <20070216155527.GA14687@flower.upol.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070216155527.GA14687@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
->
-> or am i missing something fundamental?
+> > 
+> > Proposition will follow.
+> > 
+> []
+> 
+> [patch proposition] kbuild: lguest with private asm-offsets
+[] 
+>  * needs "asm-offsets magic demystified, generalized".
+[] 
 
-One piece.
+[patch proposition] kbuild: asm-offsets generalized
 
-At the driver level this not a big scary change.  
-This is just a change with widespread effect.
+ * scripts/mkCconstants:
+   - asm-offsets magic demystified, generalized,
 
-It should be no worse than enabling a very revealing new compiler
-warning.
+ * (hopefully) more readable sed scripts,
 
-Every fix should be purely mechanical.  There should be no need at
-all to think to get it right (unless things are broken today and we
-just don't see it.).
+ * top Kbuild may be updated...
 
-Yes typo's and the like will happen.  There will be issues.  But 99%
-of them will be the code doesn't compile, for an obvious reason.  
+ * file needs `chmod u+x`, i don't know, how it's done in patch(1).
 
-Eric
+pp-by: Oleg Verych
+---
+ scripts/mkCconstants           |  50 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 50 insertions(+), 0 deletions(-)
+
+Index: linux-2.6.20/scripts/mkCconstants
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.20/scripts/mkCconstants	2007-02-16 15:33:51.696900750 +0100
+@@ -0,0 +1,50 @@
++#!/bin/sh
++
++# Input file, where values of interest are stored is produced by
++# `cmd_cc_s_c'. It yields calculation of constants, needed in
++# assembler modules. Output is a suitable header file.
++#
++# $1 - input filename;
++# $2 - output filename;
++# $3 - header file format: "normal" (default), "mips".
++
++set -e
++
++[ -z "$1" ] || [ -z "$2" ] && exit 1
++
++case $3 in
++    mips)
++	SED_SCRIPT='
++/^@@@/{
++s/^@@@//;
++s/ \#.*\$//;
++p;
++}'
++	;;
++    normal | *)
++	SED_SCRIPT='
++/^->/{
++s:^->\([^ ]*\) [\$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:;
++s:->::;
++p;
++}'
++	;;
++esac
++
++cat << "EOF"  > $2
++#ifndef __ASM_OFFSETS_H__
++#define __ASM_OFFSETS_H__
++
++/*
++ * This file was generated by scripts/mkCconstants
++ */
++
++EOF
++
++sed -ne "$SED_SCRIPT" $1 >> $2
++
++cat << "EOF" >> $2
++
++#endif
++
++EOF
+
+--
+-o--=O`C  info emacs : not found
+ #oo'L O  info make  : not found
+<___=E M  man gcc    : not found
