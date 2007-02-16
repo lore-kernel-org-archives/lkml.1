@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423150AbXBPEbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423159AbXBPEde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423150AbXBPEbR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 23:31:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423152AbXBPEbQ
+	id S1423159AbXBPEde (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 23:33:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423154AbXBPEde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 23:31:16 -0500
-Received: from hera.kernel.org ([140.211.167.34]:39761 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423150AbXBPEbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 23:31:15 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: John Keller <jpk@sgi.com>
-Subject: Re: [PATCH 1/1] -  acpi_unload_table_id() always returns error
-Date: Thu, 15 Feb 2007 23:29:55 -0500
-User-Agent: KMail/1.9.5
-Cc: linux-acpi@vger.kernel.org, ayoung@sgi.com, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20070215200830.1822.98901.sendpatchset@attica.americas.sgi.com>
-In-Reply-To: <20070215200830.1822.98901.sendpatchset@attica.americas.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Thu, 15 Feb 2007 23:33:34 -0500
+Received: from topsns2.toshiba-tops.co.jp ([202.230.225.126]:15535 "EHLO
+	topsns2.toshiba-tops.co.jp" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1423159AbXBPEdd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 23:33:33 -0500
+Date: Fri, 16 Feb 2007 13:33:22 +0900 (JST)
+Message-Id: <20070216.133322.48797866.nemoto@toshiba-tops.co.jp>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, romieu@fr.zoreil.com, jeff@garzik.org, torvalds@osdl.org,
+       akpm@osdl.org, davem@davemloft.net, tglx@linutronix.de
+Subject: Re: [patch] net, 8139too.c: fix netpoll deadlock
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20070214.113025.126141881.nemoto@toshiba-tops.co.jp>
+References: <20061212214939.GA470@electric-eye.fr.zoreil.com>
+	<20061213011231.GA6361@elte.hu>
+	<20070214.113025.126141881.nemoto@toshiba-tops.co.jp>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 3.3 on Emacs 21.3 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702152329.55535.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for the fix, John.
-Do you grant Intel permission to apply it to the upstream ACPICA tree (with its non-GPL license)?
+On Wed, 14 Feb 2007 11:30:25 +0900 (JST), Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+> > hm, this isnt really about NAPI polling, but about the 
+> > netconsole/netpoll/netdump poll_controller() handler.
+> > 
+> > with netconsole, printk can be called from IRQ context (and is 
+> > frequently from IRQ context during bootup or module initialization), so 
+> > a BH rule isnt enough for them.
+> 
+> I see NAPI poll routine might be called with interrupt disabled.
+> 
+> Many (all?) NAPI drivers call netif_receive_skb() from its poll
+> routine (as described in NAPI-HOWTO.txt), but I thought
+> netif_receive_skb() cannot be called from irq context or irq disabled.
+> So it seems the problem is not solved completely.  Or am I missing
+> something?
 
--Len
+Any comments for this issue?  If my understanding was correct, I think
+add some checking to netif_receive_skb() is better then fixing all
+poll routines.  Is this patch acceptable?
 
-On Thursday 15 February 2007 15:08, John Keller wrote:
-> acpi_unload_table_id() is always returning an error status.
-> Also, once the matching table is found, don't bother looking
-> for another match.
-> 
-> 
-> Signed-off-by: John Keller <jpk@sgi.com>
-> ---
-> 
-> 
-> Index: release/drivers/acpi/tables/tbxface.c
-> ===================================================================
-> --- release.orig/drivers/acpi/tables/tbxface.c	2007-02-13 08:20:42.000000000 -0600
-> +++ release/drivers/acpi/tables/tbxface.c	2007-02-15 14:04:07.855248010 -0600
-> @@ -338,9 +338,9 @@ acpi_status acpi_unload_table_id(acpi_ow
->  	int i;
->  	acpi_status status = AE_NOT_EXIST;
->  
-> -	ACPI_FUNCTION_TRACE(acpi_unload_table);
-> +	ACPI_FUNCTION_TRACE(acpi_unload_table_id);
->  
-> -	/* Find table from the requested type list */
-> +	/* Find table in the global table list */
->  	for (i = 0; i < acpi_gbl_root_table_list.count; ++i) {
->  		if (id != acpi_gbl_root_table_list.tables[i].owner_id) {
->  			continue;
-> @@ -352,8 +352,9 @@ acpi_status acpi_unload_table_id(acpi_ow
->  		* simply a position within the hierarchy
->  		*/
->  		acpi_tb_delete_namespace_by_owner(i);
-> -		acpi_tb_release_owner_id(i);
-> +		status = acpi_tb_release_owner_id(i);
->  		acpi_tb_set_table_loaded_flag(i, FALSE);
-> +		break;
->  	}
->  	return_ACPI_STATUS(status);
->  }
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+
+Subject: fix irq problem with NAPI + NETPOLL
+
+It seems netif_receive_skb() was designed not to call from irq
+context, but NAPI + NETPOLL break this rule.  If netif_receive_skb()
+was called from irq context, redirect to netif_rx() instead of
+processing the skb in that context.
+
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+---
+--- linux-2.6.20/net/core/dev.c	2007-02-05 03:44:54.000000000 +0900
++++ linux/net/core/dev.c	2007-02-16 13:19:06.000000000 +0900
+@@ -1769,8 +1769,15 @@ int netif_receive_skb(struct sk_buff *sk
+ 	__be16 type;
+ 
+ 	/* if we've gotten here through NAPI, check netpoll */
+-	if (skb->dev->poll && netpoll_rx(skb))
+-		return NET_RX_DROP;
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	if (skb->dev->poll && skb->dev->poll_controller) {
++		/* NAPI poll might be called in irq context on NETPOLL */
++		if (in_irq() || irqs_disabled())
++			return netif_rx(skb);
++		if (netpoll_rx(skb))
++			return NET_RX_DROP;
++	}
++#endif
+ 
+ 	if (!skb->tstamp.off_sec)
+ 		net_timestamp(skb);
