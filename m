@@ -1,41 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750780AbXBPVpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932626AbXBPVpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750780AbXBPVpj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 16:45:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946274AbXBPVpi
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 16:45:38 -0500
-Received: from main.gmane.org ([80.91.229.2]:59791 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750850AbXBPVpg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932626AbXBPVpg (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 16 Feb 2007 16:45:36 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Edouard Gomez <ed.gomez@free.fr>
-Subject: Re: 2.6.20-ck1
-Date: Fri, 16 Feb 2007 21:45:11 +0000 (UTC)
-Message-ID: <er58l7$o2f$2@sea.gmane.org>
-References: <200702162110.03355.kernel@kolivas.org>
-	<er582l$o2f$1@sea.gmane.org>
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932426AbXBPVpg
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 16 Feb 2007 16:45:36 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:54873 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750780AbXBPVpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 16:45:35 -0500
+Subject: Re: [PATCH] drivers/scsi/aic7xxx_old: Convert to generic
+	boolean-values
+From: Doug Ledford <dledford@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: James Bottomley <James.Bottomley@SteelEye.com>, ricknu-0@student.ltu.se,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <20070216105026.7bd17a79.akpm@linux-foundation.org>
+References: <20070210174628.3764.89569.sendpatchset@thinktank.campus.ltu.se>
+	 <1171132062.3373.31.camel@mulgrave.il.steeleye.com>
+	 <20070212122738.b5e9a8af.akpm@linux-foundation.org>
+	 <1171644132.3443.27.camel@mulgrave.il.steeleye.com>
+	 <20070216103422.51757e89.akpm@linux-foundation.org>
+	 <1171651347.3443.45.camel@mulgrave.il.steeleye.com>
+	 <20070216105026.7bd17a79.akpm@linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-094ve+/cXXwKfbpzhaF5"
+Organization: Red Hat, Inc.
+Date: Fri, 16 Feb 2007 16:43:04 -0500
+Message-Id: <1171662184.3161.245.camel@fc6.xsintricity.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: edgomez.kicks-ass.org
-User-Agent: pan 0.123 (El Nuevo Barretto)
-Cc: ck@vds.kolivas.org
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Feb 2007 21:35:17 +0000, Edouard Gomez wrote:
-> It also fixed some freezes i had when working on a repository
-> converter for mercurial, the convertion process used to be damn slow
-> with pre1, it's now just fine.
 
-I didn't mean pre1, I meant the 2.6.20-rc6-ck1 patch you were hesitating
-announcing as the final 2.6.20-ck1 when i asked you. Good to see reviews
-allowed you spotting the bug.
+--=-094ve+/cXXwKfbpzhaF5
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Edouard Gomez
+On Fri, 2007-02-16 at 10:50 -0800, Andrew Morton wrote:
+
+> Me no understand.
+>=20
+> If you take the specific example of
+>=20
+> void
+> ahd_set_syncrate(struct ahd_softc *ahd, struct ahd_devinfo *devinfo,
+> 		 u_int period, u_int offset, u_int ppr_options,
+> 		 u_int type, int paused)
+>=20
+> then if is crufty, inappropriate and wrong that `paused' is a scalar type=
+.
+
+Although you picked a code segment out of the modern aic7xxx, there is a
+matching similar one in aic7xxx_old.  Now, in all fairness, I was at one
+point playing with a much more preemptable model for that driver that
+allowed nested pauses, at which point the value of pause would have made
+sense to be scalar, but that was a *long* time ago.
+
+> =20
+> It's just not true or sensible that the code is written so that `paused'
+> can take a value of seventy eight.  It _is_ a boolean.  It is a truth
+> value.  Declaring it as such in the source is all goodness.  Passing the
+> value `true' into calls to this function improve readability over passing
+> "1".
+
+Hence the reason for the original upper case TRUE/FALSE.  I have to
+admit, I don't really like the lower case true/false, it looks like a
+variable that can be assigned, thereby changing the implementation of
+the function call when in fact each calling location is hard coding a
+constant.  But, that's just me and my crufty old C that differentiates
+between hard coded things and variables via case.
+
+> So I don't agree with (or understand) your objections.  But I can certain=
+ly
+> understand reluctance to merge a large-but-minor, do-nothing-much patch i=
+nto
+> a large and not-very-maintained driver.
+
+Hehehe...and here I was thinking of factoring that thing into files and
+actually bringing it into the current century.
+
+--=20
+Doug Ledford <dledford@redhat.com>
+              GPG KeyID: CFBFF194
+              http://people.redhat.com/dledford
+
+Infiniband specific RPMs available at
+              http://people.redhat.com/dledford/Infiniband
+
+--=-094ve+/cXXwKfbpzhaF5
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBF1iVoTzP9PM7pjw8RAo6jAJ0Z+jzaqOoNJGmy4I7MsjJdB0naWgCfUd4p
+T82dgbkJ193VLeVBvP48upg=
+=98iZ
+-----END PGP SIGNATURE-----
+
+--=-094ve+/cXXwKfbpzhaF5--
 
