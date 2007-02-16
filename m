@@ -1,174 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423183AbXBPEum@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423211AbXBPEve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423183AbXBPEum (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 23:50:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423184AbXBPEuB
+	id S1423211AbXBPEve (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 23:51:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423181AbXBPEt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 23:50:01 -0500
-Received: from dsl092-017-127.sfo4.dsl.speakeasy.net ([66.92.17.127]:36066
+	Thu, 15 Feb 2007 23:49:59 -0500
+Received: from dsl092-017-127.sfo4.dsl.speakeasy.net ([66.92.17.127]:36068
 	"EHLO mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423183AbXBPEpX (ORCPT
+	with ESMTP id S1423184AbXBPEpX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 15 Feb 2007 23:45:23 -0500
-Message-Id: <20070216022531.344125142@goop.org>
+Message-Id: <20070216022531.267584466@goop.org>
 References: <20070216022449.739760547@goop.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 15 Feb 2007 18:25:00 -0800
+Date: Thu, 15 Feb 2007 18:24:59 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@muc.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: [patch 11/21] Xen-paravirt: Add apply_to_page_range() which applies a function to a pte range.
-Content-Disposition: inline; filename=apply-to-page-range.patch
+       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>
+Subject: [patch 10/21] Xen-paravirt: add hooks to intercept mm creation and destruction
+Content-Disposition: inline; filename=mm-lifetime-hooks.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a new mm function apply_to_page_range() which applies a given
-function to every pte in a given virtual address range in a given mm
-structure. This is a generic alternative to cut-and-pasting the Linux
-idiomatic pagetable walking code in every place that a sequence of
-PTEs must be accessed.
+Add hooks to allow a paravirt implementation to track the lifetime of
+an mm.
 
-Although this interface is intended to be useful in a wide range of
-situations, it is currently used specifically by several Xen
-subsystems, for example: to ensure that pagetables have been allocated
-for a virtual address range, and to construct batched special
-pagetable update requests to map I/O memory (in ioremap()).
-
-Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
-Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Christoph Lameter <clameter@sgi.com>
-
----
- include/linux/mm.h |    5 ++
- mm/memory.c        |   94 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 99 insertions(+)
+--
+ arch/i386/kernel/paravirt.c    |    4 ++++
+ include/asm-i386/mmu_context.h |    8 ++++++--
+ include/asm-i386/paravirt.h    |   38 ++++++++++++++++++++++++++++++++++++++
+ kernel/fork.c                  |    3 +++
+ mm/mmap.c                      |    4 ++++
+ 5 files changed, 55 insertions(+), 2 deletions(-)
 
 ===================================================================
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1130,6 +1130,11 @@ struct page *follow_page(struct vm_area_
+--- a/arch/i386/kernel/paravirt.c
++++ b/arch/i386/kernel/paravirt.c
+@@ -706,6 +706,10 @@ struct paravirt_ops paravirt_ops = {
+ 	.irq_enable_sysexit = native_irq_enable_sysexit,
+ 	.iret = native_iret,
  
- unsigned long __follow_page(void *vaddr);
- 
-+typedef int (*pte_fn_t)(pte_t *pte, struct page *pmd_page, unsigned long addr,
-+			void *data);
-+extern int apply_to_page_range(struct mm_struct *mm, unsigned long address,
-+			       unsigned long size, pte_fn_t fn, void *data);
++	.dup_mmap = (void *)native_nop,
++	.exit_mmap = (void *)native_nop,
++	.activate_mm = (void *)native_nop,
 +
- #ifdef CONFIG_PROC_FS
- void vm_stat_account(struct mm_struct *, unsigned long, struct file *, long);
- #else
+ 	.startup_ipi_hook = (void *)native_nop,
+ };
+ 
 ===================================================================
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -1414,6 +1414,100 @@ int remap_pfn_range(struct vm_area_struc
- }
- EXPORT_SYMBOL(remap_pfn_range);
+--- a/include/asm-i386/mmu_context.h
++++ b/include/asm-i386/mmu_context.h
+@@ -5,6 +5,7 @@
+ #include <asm/atomic.h>
+ #include <asm/pgalloc.h>
+ #include <asm/tlbflush.h>
++#include <asm/paravirt.h>
  
-+static int apply_to_pte_range(struct mm_struct *mm, pmd_t *pmd,
-+				     unsigned long addr, unsigned long end,
-+				     pte_fn_t fn, void *data)
-+{
-+	pte_t *pte;
-+	int err;
-+	struct page *pmd_page;
-+	spinlock_t *ptl;
-+
-+	pte = (mm == &init_mm) ?
-+		pte_alloc_kernel(pmd, addr) :
-+		pte_alloc_map_lock(mm, pmd, addr, &ptl);
-+	if (!pte)
-+		return -ENOMEM;
-+
-+	BUG_ON(pmd_huge(*pmd));
-+
-+	pmd_page = pmd_page(*pmd);
-+
-+	do {
-+		err = fn(pte, pmd_page, addr, data);
-+		if (err)
-+			break;
-+	} while (pte++, addr += PAGE_SIZE, addr != end);
-+
-+	if (mm != &init_mm)
-+		pte_unmap_unlock(pte-1, ptl);
-+	return err;
-+}
-+
-+static int apply_to_pmd_range(struct mm_struct *mm, pud_t *pud,
-+				     unsigned long addr, unsigned long end,
-+				     pte_fn_t fn, void *data)
-+{
-+	pmd_t *pmd;
-+	unsigned long next;
-+	int err;
-+
-+	pmd = pmd_alloc(mm, pud, addr);
-+	if (!pmd)
-+		return -ENOMEM;
-+	do {
-+		next = pmd_addr_end(addr, end);
-+		err = apply_to_pte_range(mm, pmd, addr, next, fn, data);
-+		if (err)
-+			break;
-+	} while (pmd++, addr = next, addr != end);
-+	return err;
-+}
-+
-+static int apply_to_pud_range(struct mm_struct *mm, pgd_t *pgd,
-+				     unsigned long addr, unsigned long end,
-+				     pte_fn_t fn, void *data)
-+{
-+	pud_t *pud;
-+	unsigned long next;
-+	int err;
-+
-+	pud = pud_alloc(mm, pgd, addr);
-+	if (!pud)
-+		return -ENOMEM;
-+	do {
-+		next = pud_addr_end(addr, end);
-+		err = apply_to_pmd_range(mm, pud, addr, next, fn, data);
-+		if (err)
-+			break;
-+	} while (pud++, addr = next, addr != end);
-+	return err;
-+}
-+
-+/*
-+ * Scan a region of virtual memory, filling in page tables as necessary
-+ * and calling a provided function on each leaf page table.
-+ */
-+int apply_to_page_range(struct mm_struct *mm, unsigned long addr,
-+			unsigned long size, pte_fn_t fn, void *data)
-+{
-+	pgd_t *pgd;
-+	unsigned long next;
-+	unsigned long end = addr + size;
-+	int err;
-+
-+	BUG_ON(addr >= end);
-+	pgd = pgd_offset(mm, addr);
-+	do {
-+		next = pgd_addr_end(addr, end);
-+		err = apply_to_pud_range(mm, pgd, addr, next, fn, data);
-+		if (err)
-+			break;
-+	} while (pgd++, addr = next, addr != end);
-+	return err;
-+}
-+EXPORT_SYMBOL_GPL(apply_to_page_range);
-+
  /*
-  * handle_pte_fault chooses page fault handler according to an entry
-  * which was read non-atomically.  Before making any commitment, on
+  * Used for LDT copy/destruction.
+@@ -65,7 +66,10 @@ static inline void switch_mm(struct mm_s
+ #define deactivate_mm(tsk, mm)			\
+ 	asm("movl %0,%%gs": :"r" (0));
+ 
+-#define activate_mm(prev, next) \
+-	switch_mm((prev),(next),NULL)
++#define activate_mm(prev, next)				\
++	do {						\
++		arch_activate_mm(prev, next);		\
++		switch_mm((prev),(next),NULL);		\
++	} while(0);
+ 
+ #endif
+===================================================================
+--- a/include/asm-i386/paravirt.h
++++ b/include/asm-i386/paravirt.h
+@@ -126,6 +126,12 @@ struct paravirt_ops
+ 	void (*io_delay)(void);
+ 	void (*const_udelay)(unsigned long loops);
+ 
++	void (fastcall *activate_mm)(struct mm_struct *prev,
++				     struct mm_struct *next);
++	void (fastcall *dup_mmap)(struct mm_struct *oldmm, 
++				  struct mm_struct *mm);
++	void (fastcall *exit_mmap)(struct mm_struct *mm);
++
+ #ifdef CONFIG_X86_LOCAL_APIC
+ 	void (*apic_write)(unsigned long reg, unsigned long v);
+ 	void (*apic_write_atomic)(unsigned long reg, unsigned long v);
+@@ -429,6 +435,24 @@ static inline void startup_ipi_hook(int 
+ }
+ #endif
+ 
++#define __HAVE_ARCH_MM_LIFETIME
++static inline void arch_activate_mm(struct mm_struct *prev,
++				    struct mm_struct *next)
++{
++	paravirt_ops.activate_mm(prev, next);
++}
++
++static inline void arch_dup_mmap(struct mm_struct *oldmm,
++				 struct mm_struct *mm)
++{
++	paravirt_ops.dup_mmap(oldmm, mm);
++}
++
++static inline void arch_exit_mmap(struct mm_struct *mm)
++{
++	paravirt_ops.exit_mmap(mm);
++}
++
+ #define __flush_tlb() paravirt_ops.flush_tlb_user()
+ #define __flush_tlb_global() paravirt_ops.flush_tlb_kernel()
+ #define __flush_tlb_single(addr) paravirt_ops.flush_tlb_single(addr)
+@@ -673,5 +697,20 @@ static inline void paravirt_pagetable_se
+ 	set_pgd(&base[0], base[USER_PTRS_PER_PGD]);
+ #endif
+ }
++
++static inline void paravirt_activate_mm(struct mm_struct *prev,
++					struct mm_struct *next)
++{
++}
++
++static inline void paravirt_dup_mmap(struct mm_struct *oldmm,
++				     struct mm_struct *mm)
++{
++}
++
++static inline void paravirt_exit_mmap(struct mm_struct *mm)
++{
++}
++
+ #endif /* CONFIG_PARAVIRT */
+ #endif	/* __ASM_PARAVIRT_H */
+===================================================================
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -374,6 +374,12 @@ struct mm_struct {
+ 	rwlock_t		ioctx_list_lock;
+ 	struct kioctx		*ioctx_list;
+ };
++
++#ifndef __HAVE_ARCH_MM_LIFETIME
++#define arch_activate_mm(prev, next)	do {} while(0)
++#define arch_dup_mmap(oldmm, mm)	do {} while(0)
++#define arch_exit_mmap(mm)		do {} while(0)
++#endif
+ 
+ struct sighand_struct {
+ 	atomic_t		count;
+===================================================================
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -286,6 +286,7 @@ static inline int dup_mmap(struct mm_str
+ 		if (retval)
+ 			goto out;
+ 	}
++	arch_dup_mmap(oldmm, mm);
+ 	retval = 0;
+ out:
+ 	up_write(&mm->mmap_sem);
+===================================================================
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -1976,6 +1976,8 @@ void exit_mmap(struct mm_struct *mm)
+ 	struct vm_area_struct *vma = mm->mmap;
+ 	unsigned long nr_accounted = 0;
+ 	unsigned long end;
++
++	arch_exit_mmap(mm);
+ 
+ 	lru_add_drain();
+ 	flush_cache_mm(mm);
 
 -- 
 
