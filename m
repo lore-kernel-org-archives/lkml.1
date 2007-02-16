@@ -1,142 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966202AbXBPI6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966246AbXBPJBr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966202AbXBPI6c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 03:58:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966229AbXBPI6b
+	id S966246AbXBPJBr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 04:01:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966247AbXBPJBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 03:58:31 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:57799 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966202AbXBPI6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 03:58:30 -0500
-Date: Fri, 16 Feb 2007 11:57:07 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 05/11] syslets: core code
-Message-ID: <20070216085706.GA22868@2ka.mipt.ru>
-References: <20070213142035.GF638@elte.hu> <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org> <20070215133550.GA29274@2ka.mipt.ru> <Pine.LNX.4.64.0702150757520.20368@woody.linux-foundation.org> <20070215163704.GA32609@2ka.mipt.ru> <Pine.LNX.4.64.0702150920130.20368@woody.linux-foundation.org> <20070215181059.GC20997@2ka.mipt.ru> <Pine.LNX.4.64.0702151019210.20368@woody.linux-foundation.org> <20070215190413.GA23953@2ka.mipt.ru> <Pine.LNX.4.64.0702151120260.20368@woody.linux-foundation.org>
+	Fri, 16 Feb 2007 04:01:47 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:2525
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S966246AbXBPJBq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 04:01:46 -0500
+Message-Id: <45D58145.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.1 
+Date: Fri, 16 Feb 2007 09:02:45 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Andrew Morton" <akpm@osdl.org>, "Andi Kleen" <ak@suse.de>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] i386: adjustments to page table dump during oops (v4)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702151120260.20368@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.7.5 (2ka.mipt.ru [0.0.0.0]); Fri, 16 Feb 2007 11:57:17 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 15, 2007 at 11:28:57AM -0800, Linus Torvalds (torvalds@linux-foundation.org) wrote:
-> THAT was the point. Interfaces are really really subtle and important. 
-> It's absolutely not a case of "we can just write wrappers to fix up any 
-> library issues".
+- make the page table contents printing PAE capable
+- make sure the address stored in current->thread.cr2 is unmodified
+  from what was read from CR2
+- don't call oops_may_print() multiple times, when one time suffices
+- print pte even in highpte case, as long as the pte page isn't in
+  actually in high memory (which is specifically the case for all page
+  tables covering kernel space)
 
-Interfaces can be created and destroyed - they do not affect overall
-system design in anyway (well, if they do, something is broken).
-So let's solve problems in order of their appearence - if interfaces
-are more important for you than overall design - that is a problem I think.
+(Changes to v3: Use sizeof()*2 rather than the suggested sizeof()*4 for
+printing width, use fixed 16-nibble width for PAE, and also apply the
+max_low_pfn range check to the middle level lookup on PAE.)
 
-> > So instead there will be 
-> > s = atom_create_and_add(__NR_stat, path, stat, NULL, NULL, NULL, NULL);
-> > atom then can be freed in the glibc_async_wait() wrapper just before
-> > returning data to userspace.
-> 
-> So now you add some kind of allocation/dealloction thing. In user space or 
-> in the kernel?
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-In userspace.
-It was not added by me - it is just a wrapper.
+--- linux-2.6.20/arch/i386/mm/fault.c	2007-02-04 19:44:54.000000000 +0100
++++ 2.6.20-i386-page-fault-dump/arch/i386/mm/fault.c	2007-02-14 08:31:38.000000000 +0100
+@@ -20,6 +20,7 @@
+ #include <linux/tty.h>
+ #include <linux/vt_kern.h>		/* For unblank_screen() */
+ #include <linux/highmem.h>
++#include <linux/bootmem.h>		/* for max_low_pfn */
+ #include <linux/module.h>
+ #include <linux/kprobes.h>
+ #include <linux/uaccess.h>
+@@ -327,7 +328,6 @@ fastcall void __kprobes do_page_fault(st
+ 	struct mm_struct *mm;
+ 	struct vm_area_struct * vma;
+ 	unsigned long address;
+-	unsigned long page;
+ 	int write, si_code;
+ 
+ 	/* get the address */
+@@ -538,7 +538,9 @@ no_context:
+ 	bust_spinlocks(1);
+ 
+ 	if (oops_may_print()) {
+-	#ifdef CONFIG_X86_PAE
++		__typeof__(pte_val(__pte(0))) page;
++
++#ifdef CONFIG_X86_PAE
+ 		if (error_code & 16) {
+ 			pte_t *pte = lookup_address(address);
+ 
+@@ -547,7 +549,7 @@ no_context:
+ 					"NX-protected page - exploit attempt? "
+ 					"(uid: %d)\n", current->uid);
+ 		}
+-	#endif
++#endif
+ 		if (address < PAGE_SIZE)
+ 			printk(KERN_ALERT "BUG: unable to handle kernel NULL "
+ 					"pointer dereference");
+@@ -557,25 +559,38 @@ no_context:
+ 		printk(" at virtual address %08lx\n",address);
+ 		printk(KERN_ALERT " printing eip:\n");
+ 		printk("%08lx\n", regs->eip);
+-	}
+-	page = read_cr3();
+-	page = ((unsigned long *) __va(page))[address >> 22];
+-	if (oops_may_print())
++
++		page = read_cr3();
++		page = ((__typeof__(page) *) __va(page))[address >> PGDIR_SHIFT];
++#ifdef CONFIG_X86_PAE
++		printk(KERN_ALERT "*pdpt = %016Lx\n", page);
++		if ((page >> PAGE_SHIFT) < max_low_pfn
++		    && page & _PAGE_PRESENT) {
++			page &= PAGE_MASK;
++			page = ((__typeof__(page) *) __va(page))[(address >> PMD_SHIFT)
++			                                         & (PTRS_PER_PMD - 1)];
++			printk(KERN_ALERT "*pde = %016Lx\n", page);
++			page &= ~_PAGE_NX;
++		}
++#else
+ 		printk(KERN_ALERT "*pde = %08lx\n", page);
+-	/*
+-	 * We must not directly access the pte in the highpte
+-	 * case, the page table might be allocated in highmem.
+-	 * And lets rather not kmap-atomic the pte, just in case
+-	 * it's allocated already.
+-	 */
+-#ifndef CONFIG_HIGHPTE
+-	if ((page & 1) && oops_may_print()) {
+-		page &= PAGE_MASK;
+-		address &= 0x003ff000;
+-		page = ((unsigned long *) __va(page))[address >> PAGE_SHIFT];
+-		printk(KERN_ALERT "*pte = %08lx\n", page);
+-	}
+ #endif
++
++		/*
++		 * We must not directly access the pte in the highpte
++		 * case if the page table is located in highmem.
++		 * And let's rather not kmap-atomic the pte, just in case
++		 * it's allocated already.
++		 */
++		if ((page >> PAGE_SHIFT) < max_low_pfn
++		    && (page & _PAGE_PRESENT)) {
++			page &= PAGE_MASK;
++			page = ((__typeof__(page) *) __va(page))[(address >> PAGE_SHIFT)
++			                                         & (PTRS_PER_PTE - 1)];
++			printk(KERN_ALERT "*pte = %0*Lx\n", sizeof(page)*2, (u64)page);
++		}
++	}
++
+ 	tsk->thread.cr2 = address;
+ 	tsk->thread.trap_no = 14;
+ 	tsk->thread.error_code = error_code;
 
-> > There are millions of possible ways to do that, but what exactly one
-> > should be used from your point of view? Describe _your_ vision of that path.
-> 
-> My vision is that we should be able to do the simple things *easily* and 
-> without any extra overhead.
-> 
-> And doing wrappers in user space is almost entirely unacceptable, becasue 
-> a lot of the wrapping needs to be done at release time (for example: 
-> de-allocating memory), and that means that you no longer can do simple 
-> system calls that don't even need release notification AT ALL.
 
-syslets do work that way - they require some user memory - likely
-long-standing (100% sure for multi atom setup, maybe it can be optimized
-though) - if you do not want to allocate it explicitly - it is possible
-to have a wrapper.
-
-> > Currently generic example is following:
-> > allocate mem
-> > setup complex structure
-> > submit syscall
-> > wait syscall
-> > free mem
-> 
-> And that "allocate mem" and "free mem" is a problem. It's not just a 
-> performance problem, it is a _complexity_ problem. It means that people 
-> have to track things that they are NOT AT ALL INTERESTED IN!
-
-I proposed a way to hide allocation - it is simple, but you've cut it.
-I can create another one without special per-thread thing - 
-handle = async_init();
-async_stat(handle, path, stat);
-async_cleanup(); // not needed, since will be freed on exit automatically
-
-Another one is to preallocate set of atoms in __attribute((contructor))
-function.
-
-There are really a lot of possible ways - _I_ can use the first one with
-explicit operations, others likely can not - so I _ask_ about how should
-it look like.
-
-> > So, describe how exactly _you_ think it should be implemented with its
-> > pros and cons, so that systemn could be adopted without trying to
-> > mind-read of what is simple and good or complex and really bad.
-> 
-> So I think that a good implementation just does everything up-front, and 
-> doesn't _need_ a user buffer that is live over longer periods, except for 
-> the actual results. Exactly because the whole alloc/teardown is nasty.
-> 
-> And I think a good implementation doesn't need wrapping in user space to 
-> be useful - at *least* not wrapping at completion time, which is the 
-> really difficult one (since, by definition, in an async world completion 
-> is separated from the initial submit() event, and with kernel-only threads 
-> you actually want to *avoid* having to do user code after the operation 
-> completed).
-
-So where is a problem?
-I proposed already three ways to do the thing - user will not even know
-about something happend. You did not comment on anyone, instead you
-handwaving with talks about how in theory something should be similar
-to. What exactly do _you_ expect from interface?
-
-> I suspect Ingo's thing can do that. But I also suspect (nay, _know_, from 
-> this discussion), that you didn't even think of the problems.
-
-That is another problem - you think you know something, but you fail to
-prove that. 
-
-I can work with explicit structure allocation/deallocation/setup - 
-you do not want that - so I ask you about your opinion, and instead of 
-getting an answer I receive theoretical word-fall about how perfect 
-interface should look like.
-
-You only need to have one function call without ever thinking bout
-freeing? I proposed _two_ ways to that.
-You can live with explicit init/cleanup (opt) code? There is another
-one.
-
-So please decribe your vision of interface with details, so that it
-could be think about or/and implemented.
-
-> 		Linus
-
--- 
-	Evgeniy Polyakov
