@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423389AbXBPHEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932518AbXBPHGq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423389AbXBPHEh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 02:04:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423390AbXBPHEg
+	id S932518AbXBPHGq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 02:06:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932604AbXBPHGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 02:04:36 -0500
-Received: from gw.goop.org ([64.81.55.164]:47326 "EHLO mail.goop.org"
+	Fri, 16 Feb 2007 02:06:45 -0500
+Received: from gw.goop.org ([64.81.55.164]:47369 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423389AbXBPHEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 02:04:36 -0500
-Message-ID: <45D55784.1020000@goop.org>
-Date: Thu, 15 Feb 2007 23:04:36 -0800
+	id S932518AbXBPHGp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 02:06:45 -0500
+Message-ID: <45D55805.908@goop.org>
+Date: Thu, 15 Feb 2007 23:06:45 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-To: Dan Hecht <dhecht@vmware.com>
-CC: Andi Kleen <ak@muc.de>, Chris Wright <chrisw@sous-sol.org>,
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Andi Kleen <ak@muc.de>, linux-kernel@vger.kernel.org,
        virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
        Ian Pratt <ian.pratt@xensource.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 14/21] Xen-paravirt: Add XEN config options and disable
- unsupported config options.
-References: <20070216022449.739760547@goop.org> <20070216022531.570154735@goop.org> <45D54BD5.8010707@vmware.com>
-In-Reply-To: <45D54BD5.8010707@vmware.com>
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch 11/21] Xen-paravirt: Add apply_to_page_range() which applies
+ a function to a pte range.
+References: <20070216022449.739760547@goop.org>	<20070216022531.344125142@goop.org> <20070215223727.6819f962.akpm@linux-foundation.org>
+In-Reply-To: <20070215223727.6819f962.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Hecht wrote:
-> 1) Complete the xen paravirt-ops backend so it can handle these
-> "incompatible" options.  I realize this is just a matter of time (at
-> least for most of them, what is your plan for PREEMPT?).
-
-Hope it will go away?  There's some relatively deep reason to do with
-migration which makes preempt very difficult to support, but I've
-forgotten the details.  I've been wondering if there's some way to make
-it runtime selectable without massive performance cost.
-
-> 2) Disable the option at runtime only if the kernel is booted on Xen.
-> When the kernel is booted on native, lhype, paravirt kvm, vmware, etc
-> it should be not be inhibited.  This may not be feasible for all of
-> these options, but as Zach pointed out, is easy enough for
-> DOUBLEFAULT.  Maybe it can be done for KEXEC?  And HZ is easy to allow
-> too, even though Xen will still give interrupts at 100hz -- we do this
-> when you boot on VMI.  PREEMPT is probably the only real compile time
-> incompatible options with Xen.  You just simply have to change the
-> loop decrementors in your timer interrupt.
+Andrew Morton wrote:
+> On Thu, 15 Feb 2007 18:25:00 -0800 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 >
-> You basically chose #2 for SMP: while your backend doesn't support it
-> yet, it's not harmful to have the config option enabled; you just
-> don't allow a second vcpu to startup when running on Xen.
+>   
+>> Add a new mm function apply_to_page_range()[...]
+> There was some discussion about this sort of thing last week.  The
+> consensus was that it's better to run the callback against a whole pmd's
+> worth of ptes, mainly to amortise the callback's cost (a lot).
+>
+> It was implemented in
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm1/broken-out/smaps-extract-pmd-walker-from-smaps-code.patch
 
-Yes, this has been my preferred approach.  So for each of the restrictions:
-PREEMPT - hard, will try to do something at runtime
-HZ - I'm assuming dynticks will appear in the short term, and this will
-become moot
-KEXEC - there's been some work on making KEXEC and Xen play nicely
-together; I was waiting to see if that matures, and/or make it runtime
-switchable in the meantime
-DOUBLEFAULT - not really an issue; guests won't get them under Xen (I
-think) and we can ignore setting the gate pretty easily
+Yes I was looking at that and wondering what the upshot would be.  I'll
+have a closer look, but it seems like it should be usable.
 
     J
+
