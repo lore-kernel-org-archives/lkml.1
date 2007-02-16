@@ -1,106 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932502AbXBPRKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946011AbXBPRMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932502AbXBPRKt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 12:10:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932504AbXBPRKs
+	id S1946011AbXBPRMN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 12:12:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946015AbXBPRMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 12:10:48 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:58012 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932483AbXBPRKq (ORCPT
+	Fri, 16 Feb 2007 12:12:13 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:42849 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946014AbXBPRML (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 12:10:46 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Fri, 16 Feb 2007 12:06:03 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-cc: Andreas Schwab <schwab@suse.de>, linux-mm@kvack.org, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org,
-       Kernel Janitors List <kernel-janitors@lists.osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [KJ] [PATCH] is_power_of_2 in ia64mm
-In-Reply-To: <45D5DE6F.6030604@student.ltu.se>
-Message-ID: <Pine.LNX.4.64.0702161202270.32716@CPE00045a9c397f-CM001225dbafb6>
-References: <1171627435.6127.0.camel@wriver-t81fb058.linuxcoe>
- <45D5C789.1090607@student.ltu.se> <jeire2nnik.fsf@sykes.suse.de>
- <45D5D47F.3000303@student.ltu.se> <je3b56nlds.fsf@sykes.suse.de>
- <45D5DE6F.6030604@student.ltu.se>
+	Fri, 16 Feb 2007 12:12:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=YsKkqNjIvXR+AdZg/8OPBe2nZkthcE/MlPi09Tj2L3XkOP9sfMZ4xRTwzuZXBX57f69nvJcoE5cUvrYfvxJh+M1QTrPx3/U+ayZPYOul+HF4k1UEnVcAq3Jsy8q6D9AfvqufM3vsDcjwORnttRwiTXfmCRCYXpAXFKYY2w47SnA=
+Message-ID: <161717d50702160912x6dc4efbahcfb02f665ae3ec8a@mail.gmail.com>
+Date: Fri, 16 Feb 2007 12:12:04 -0500
+From: "Dave Neuer" <mr.fred.smoothie@pobox.com>
+To: davids@webmaster.com
+Subject: Re: GPL vs non-GPL device drivers
+Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKCEDIBKAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3d57814d0702152245q19e19141me0b999fb051ac7b6@mail.gmail.com>
+	 <MDEHLPKNGKAHNMBLJOLKCEDIBKAC.davids@webmaster.com>
+X-Google-Sender-Auth: 65a6b2d4042e4b22
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 2/16/07, David Schwartz <davids@webmaster.com> wrote:
+>
+> (See, among other cases, Lexmark. v. Static
+> Controls.) A copyright is not a patent, you can only own something if there
+> are multiple equally good ways to do it and you claim *one* of them.
 
-i'm not clear on what the possible problem is here:
+Only in a world where "write a Linux module" is a "functional idea." I
+don't think that the legal world in the US is an example of such a
+world, though you clearly do.
 
-On Fri, 16 Feb 2007, Richard Knutsson wrote:
-
-> Andreas Schwab wrote:
-> > Richard Knutsson <ricknu-0@student.ltu.se> writes:
-> >
-> >> Andreas Schwab wrote:
-> >>
-> >>> Richard Knutsson <ricknu-0@student.ltu.se> writes:
-> >>>
-> >>>
-> >>>> Vignesh Babu BM wrote:
-> >>>>
-> >>>>> @@ -175,7 +176,7 @@ static int __init hugetlb_setup_sz(char *str)
-> >>>>>  		tr_pages = 0x15557000UL;
-> >>>>>   	size = memparse(str, &str);
-> >>>>> -	if (*str || (size & (size-1)) || !(tr_pages & size) ||
-> >>>>> +	if (*str || !is_power_of_2(size) || !(tr_pages & size) ||
-> >>>>>  		size <= PAGE_SIZE ||
-> >>>>>  		size >= (1UL << PAGE_SHIFT << MAX_ORDER)) {
-> >>>>>  		printk(KERN_WARNING "Invalid huge page size specified\n");
-> >>>>>
-> >>>> As we talked about before; is this really correct? !is_power_of_2(0) ==
-> >>>> true while (0 & (0-1)) == 0.
-> >>>>
-> >>> size == 0 is also covered by the next two conditions, so the overall value
-> >>> does not change.
-> >>>
-> >> Yes, but is it meant to state that 'size' is not a power of two?
-> >>
-> >
-> > What else can it mean?
-
-> What about !one_or_less_bit()? It has not been implemented (yet?)
-> but been discussed.
-
-but whether or not it's been implemented doesn't change whether or not
-the code above can be simplified.  given what's being tested, and the
-error message about whether a page size is valid, it seems fairly
-clear that this is a power of two test.  what's the problem?
-
-> It ended by concluding that is_power_of_2() should be fixed up first
-> and then we can see about it.
-
-there's nothing about is_power_of_2() that needs "fixing".  it's
-correct as it's currently implemented.
-
-> And as I stated before; !is_power_of_2(size) != (size & (size-1))!
-> It may be a bug but then we have to be sure it is suppose to be the
-> power of 2.
-
-it may be that certain tests in the current code need to be examined
-carefully to clarify what's being tested.  but the code above seems
-straightforward.
-
-rday
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Dave
