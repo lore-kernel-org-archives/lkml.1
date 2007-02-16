@@ -1,48 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932602AbXBPReN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946024AbXBPRhL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932602AbXBPReN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 12:34:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932579AbXBPReN
+	id S1946024AbXBPRhL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 12:37:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946023AbXBPRhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 12:34:13 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:43518 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946018AbXBPReM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 12:34:12 -0500
-Message-ID: <45D5EA88.7090300@redhat.com>
-Date: Fri, 16 Feb 2007 12:31:52 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
+	Fri, 16 Feb 2007 12:37:11 -0500
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:55128 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946018AbXBPRhJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 12:37:09 -0500
+Message-ID: <45D5EBB9.4080903@student.ltu.se>
+Date: Fri, 16 Feb 2007 18:36:57 +0100
+From: Richard Knutsson <ricknu-0@student.ltu.se>
 User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-CC: linux-acpi@vger.kernel.org, lm-sensors@lm-sensors.org
-Subject: Could the k8temp driver be interfering with ACPI?
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Andreas Schwab <schwab@suse.de>, linux-mm@kvack.org, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org,
+       Kernel Janitors List <kernel-janitors@lists.osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [KJ] [PATCH] is_power_of_2 in ia64mm
+References: <1171627435.6127.0.camel@wriver-t81fb058.linuxcoe> <45D5C789.1090607@student.ltu.se> <jeire2nnik.fsf@sykes.suse.de> <45D5D47F.3000303@student.ltu.se> <je3b56nlds.fsf@sykes.suse.de> <45D5DE6F.6030604@student.ltu.se> <Pine.LNX.4.64.0702161202270.32716@CPE00045a9c397f-CM001225dbafb6>
+In-Reply-To: <Pine.LNX.4.64.0702161202270.32716@CPE00045a9c397f-CM001225dbafb6>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Recently my notebook has started shutting down with
-these messages in the logs:
+Robert P. J. Day wrote:
+> i'm not clear on what the possible problem is here:
+>
+> On Fri, 16 Feb 2007, Richard Knutsson wrote:
+>
+>   
+>> Andreas Schwab wrote:
+>>     
+>>> Richard Knutsson <ricknu-0@student.ltu.se> writes:
+>>>
+>>>       
+>>>> Andreas Schwab wrote:
+>>>>
+>>>>         
+>>>>> Richard Knutsson <ricknu-0@student.ltu.se> writes:
+>>>>>
+>>>>>
+>>>>>           
+>>>>>> Vignesh Babu BM wrote:
+>>>>>>
+>>>>>>             
+>>>>>>> @@ -175,7 +176,7 @@ static int __init hugetlb_setup_sz(char *str)
+>>>>>>>  		tr_pages = 0x15557000UL;
+>>>>>>>   	size = memparse(str, &str);
+>>>>>>> -	if (*str || (size & (size-1)) || !(tr_pages & size) ||
+>>>>>>> +	if (*str || !is_power_of_2(size) || !(tr_pages & size) ||
+>>>>>>>  		size <= PAGE_SIZE ||
+>>>>>>>  		size >= (1UL << PAGE_SHIFT << MAX_ORDER)) {
+>>>>>>>  		printk(KERN_WARNING "Invalid huge page size specified\n");
+>>>>>>>
+>>>>>>>               
+>>>>>> As we talked about before; is this really correct? !is_power_of_2(0) ==
+>>>>>> true while (0 & (0-1)) == 0.
+>>>>>>
+>>>>>>             
+>>>>> size == 0 is also covered by the next two conditions, so the overall value
+>>>>> does not change.
+>>>>>
+>>>>>           
+>>>> Yes, but is it meant to state that 'size' is not a power of two?
+>>>>
+>>>>         
+>>> What else can it mean?
+>>>       
+>> What about !one_or_less_bit()? It has not been implemented (yet?)
+>> but been discussed.
+>>     
+>
+> but whether or not it's been implemented doesn't change whether or not
+> the code above can be simplified.  given what's being tested, and the
+> error message about whether a page size is valid, it seems fairly
+> clear that this is a power of two test.  what's the problem?
+>   
+Fsck, I can't see that. But if that is what's intended, well then...
 
-	ACPI: Critical trip point
-	Critical temperature reached (128 C), shutting down.
+(5 min later)
+Ok, now I think I see it. Sorry for the noise..
+>   
+>> It ended by concluding that is_power_of_2() should be fixed up first
+>> and then we can see about it.
+>>     
+>
+> there's nothing about is_power_of_2() that needs "fixing".  it's
+> correct as it's currently implemented.
+>   
+Oh, I didn't mean that is_power_of_2() need to be fixed, I meant 
+fixing/replacing the kernel with is_power_of_2().
 
-But it didn't seem hot at all to me, so I wrote a script to
-cat /proc/acpi/thermal_zone/THRM/temperature once a second
-and eventually caught this (but no shutdown):
 
-temperature:             47 C
-temperature:             47 C
-temperature:             128 C
-temperature:             48 C
-temperature:             47 C
+Todays lesson: don't try to code while you have a cold...
+Richard Knutsson
 
-Google found several people reporting problems like mine
-after installing lm-sensors, and when I looked at the list
-of loaded modules I found k8temp and hwmon there. Then I
-realized my problems had started after installing a 2.6.19
-kernel that had the new k8temp driver.
-
-So, could ACPI and the k8temp driver be at odds?
