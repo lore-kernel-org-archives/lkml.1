@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946208AbXBPVLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946245AbXBPVNp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946208AbXBPVLY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 16:11:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946241AbXBPVLX
+	id S1946245AbXBPVNp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 16:13:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946247AbXBPVNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 16:11:23 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:39645 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946208AbXBPVLX (ORCPT
+	Fri, 16 Feb 2007 16:13:45 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37582 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1946245AbXBPVNo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 16:11:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=kUn7jhUh3xJ3Ro7yxZcbaCgsBS1nS99+5fFu4cf/DShVP51+hUtkitcJO+NJtbw2EvwX5bjXcaK1m8edtb6Rh4NrbBgyQq+5/owQuOkWNHapeEpZ5GRA11eQX+ZeA4QhlXm4zOrrSvogCZRgaiqSYO0tHZOWIGOTgxOYa9gl1ms=
-Date: Sat, 17 Feb 2007 00:08:44 +0300
-From: "Cyrill V. Gorcunov" <gorcunov@gmail.com>
-To: Randy Vinson <rvinson@mvista.com>
-Cc: linux-kernel-list <linux-kernel@vger.kernel.org>
-Subject: [PATCH] DS1374: check for workqueue creation
-Message-ID: <20070216210844.GB10190@cvg>
+	Fri, 16 Feb 2007 16:13:44 -0500
+Date: Fri, 16 Feb 2007 13:13:43 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Zachary Amsden <zach@vmware.com>
+cc: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@muc.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [patch 00/21] Xen-paravirt: Xen guest implementation for
+ paravirt_ops interface
+In-Reply-To: <45D61C74.2000601@vmware.com>
+Message-ID: <Pine.LNX.4.64.0702161312460.28871@schroedinger.engr.sgi.com>
+References: <20070216022449.739760547@goop.org>
+ <Pine.LNX.4.64.0702161244380.26718@schroedinger.engr.sgi.com>
+ <45D61C74.2000601@vmware.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch checks if workqueue creation failed.
-Further usage of NULL pointed workqueue is not
-good I guess ;)
+On Fri, 16 Feb 2007, Zachary Amsden wrote:
 
-Signed-off-by: Cyrill V. Gorcunov <gorcunov@gmail.com>
+> For the most part, it doesn't disturb VMware or KVM.  Xen does need some
+> additional functionality in paravirt-ops because they took a different design
+> choice - direct page tables instead of shadow page tables.  This is where all
+> the requirements for the new Xen paravirt-ops hooks come from.
 
----
-
- drivers/i2c/chips/ds1374.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/i2c/chips/ds1374.c b/drivers/i2c/chips/ds1374.c
-index 15edf40..8a2ff0c 100644
---- a/drivers/i2c/chips/ds1374.c
-+++ b/drivers/i2c/chips/ds1374.c
-@@ -207,6 +207,10 @@ static int ds1374_probe(struct i2c_adapter *adap, int addr, int kind)
- 	client->driver = &ds1374_driver;
- 
- 	ds1374_workqueue = create_singlethread_workqueue("ds1374");
-+	if (!ds1374_workqueue) {
-+		kfree(client);
-+		return -ENOMEM;	/* most expected reason */
-+	}
- 
- 	if ((rc = i2c_attach_client(client)) != 0) {
- 		kfree(client);
+It still seems to be implemented for Xen and not to support a variety of 
+page table methods in paravirt ops.
 
