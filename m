@@ -1,48 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423039AbXBPCQG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932913AbXBPCyL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423039AbXBPCQG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 21:16:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423045AbXBPCQG
+	id S932913AbXBPCyL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 21:54:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932933AbXBPCyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 21:16:06 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:4338 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423039AbXBPCQD (ORCPT
+	Thu, 15 Feb 2007 21:54:10 -0500
+Received: from mail0.lsil.com ([147.145.40.20]:56379 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932913AbXBPCyJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 21:16:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Fw1vsxBqLX6oHpsbUNv+k/aU9ir/4vo0DjztP7AArBC5S8bdvvJdEUluGT+gQQaTI9lQ8s3b/0O6CtK8NNFSMvPcFDnea8og0Lu+zBH0vIF9uLbIbCvS/ZjS5qiYB8kehhXVMglmPskWQdflqPXEYQL+K/ZqXMWI+K8/RcGQ02s=
-Message-ID: <7783925d0702151816r7df63816ld9c69b56bdb0a0b9@mail.gmail.com>
-Date: Fri, 16 Feb 2007 07:46:00 +0530
-From: "Rick Brown" <rick.brown.3@gmail.com>
-To: "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>,
-       linux-newbie@vger.kernel.org
-Subject: kernel porting query
+	Thu, 15 Feb 2007 21:54:09 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 3/5] scsi: megaraid_sas - throttle io if FW is busy
+Date: Thu, 15 Feb 2007 19:53:48 -0700
+Message-ID: <0631C836DBF79F42B5A60C8C8D4E8229921362@NAMAIL2.ad.lsil.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 3/5] scsi: megaraid_sas - throttle io if FW is busy
+Thread-Index: AcdRXu5BqU+dETj1RMSwt6lf6gacKwABO9Vw
+From: "Patro, Sumant" <Sumant.Patro@lsi.com>
+To: "James Bottomley" <James.Bottomley@SteelEye.com>
+Cc: <akpm@osdl.org>, <linux-scsi@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, "Kolli, Neela" <Neela.Kolli@lsi.com>,
+       "Yang, Bo" <Bo.Yang@lsi.com>
+X-OriginalArrivalTime: 16 Feb 2007 02:53:49.0948 (UTC) FILETIME=[AF6C43C0:01C75175]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hello James,
 
-I have a very basic query regarding kernel porting on different
-boards. I understand that even if two boards have the very same
-processor core (say MIPS 4KE), we need to port linux for them
-seperately. I have heard things like it is because of certain "board
-level differences", I need to provide some "board specific hooks"
-because the boards may contain "different devices" and so on ....
+	I re-submitted the patch yesterday with the "space" issue fixed
+(adhering to coding guideline).
 
-1) Can any one please shed some light on precisely and exactly what
-are differences in different boards for which we need to port linux?
+	I will check for alternative to calculate the time driver have
+been sending host busy to OS. Will check with time_before() as you have
+suggested.
 
-2) Also, I would appreciate if you could point out code portions /
-source files that need to be changed in the process of porting Linux?
+	Throttling from megasas_generic_reset() handler did not help.
+megaraid does not have feature to abort cmds. So, in the generic reset
+routine, the driver just waits for cmd completion by FW. These timed-out
+cmds gets retried by mid-layer with "retries" incremented by 1.
+Eventually we see retries equals max_allowed followed by SCSI error with
+"DRIVER_TIMEOUT".
+	
+	By throttling from the megasas_queue_command we do not hit the
+issue. In our test with this code, retries did not exceed 2. 
+	
+Regards,
 
-TIA,
+Sumant 
 
-Rick
+-----Original Message-----
+From: James Bottomley [mailto:James.Bottomley@SteelEye.com] 
+Sent: Thursday, February 15, 2007 4:11 PM
+To: Patro, Sumant
+Cc: akpm@osdl.org; linux-scsi@vger.kernel.org;
+linux-kernel@vger.kernel.org; Kolli, Neela; Yang, Bo; Patro, Sumant
+Subject: Re: [PATCH 3/5] scsi: megaraid_sas - throttle io if FW is busy
+
+On Tue, 2007-02-06 at 14:11 -0800, Sumant Patro wrote:
+> Checks added in megasas_queue_command to know if FW is able to process
+
+> commands within timeout period. If number of retries is 2 or greater, 
+> the driver stops sending cmd to FW. IO is resumed if pending cmd count
+
+> reduces to 16 or 5 seconds has elapsed from the time cmds were last 
+> sent to FW.
+> 
+> Signed-off-by: Sumant Patro <sumant.patro@lsi.com>
+> ---
+> 
+>  drivers/scsi/megaraid/megaraid_sas.c |   27 +++++++++++++++++++++++++
+>  drivers/scsi/megaraid/megaraid_sas.h |    3 ++
+>  2 files changed, 30 insertions(+)
+> 
+> diff -uprN 2.6.new-p2/drivers/scsi/megaraid/megaraid_sas.c
+2.6.new-p3/drivers/scsi/megaraid/megaraid_sas.c
+> --- 2.6.new-p2/drivers/scsi/megaraid/megaraid_sas.c	2007-02-06
+08:43:40.000000000 -0800
+> +++ 2.6.new-p3/drivers/scsi/megaraid/megaraid_sas.c	2007-02-06
+08:50:40.000000000 -0800
+> @@ -839,6 +839,7 @@ megasas_queue_command(struct scsi_cmnd *
+>  	u32 frame_count;
+>  	struct megasas_cmd *cmd;
+>  	struct megasas_instance *instance;
+> +	unsigned long sec;
+>  
+>  	instance = (struct megasas_instance *)
+>  	    scmd->device->host->hostdata;
+> @@ -856,6 +857,23 @@ megasas_queue_command(struct scsi_cmnd *
+>  		goto out_done;
+>  	}
+>  
+> +	/* Check if we can process cmds */
+> +	if(instance->is_busy){
+            ^                  ^
+       space needed per linux coding style (and the rest of the file
+
+> +		sec = (jiffies - instance->last_time) / HZ;
+
+please don't do this.  You want to be using time_before() and
+jiffies_to_msecs().  The space problems apply to the rest of the code
+
+> +		if(sec<5)
+> +			return SCSI_MLQUEUE_HOST_BUSY;
+> +		else{
+> +			instance->is_busy=0;
+> +			instance->last_time=0;
+> +		}
+> +	}
+> +
+> +	if(scmd->retries>1){
+
+I really don't think this is a good indicator of your firmware
+necessarily having problems; I really think you might want to look at
+other indicators ... jiffies_at_alloc might be better, or even
+throttling from the abort handler, which must have been called before
+you get to here if the command is actually timing out.
+
+Timeout and abort has it's own throttle anyway, since we quiesce the
+host before beginning error recovery ... are you sure this scheme
+actually solves anything for your device?
+
+James
+
+
