@@ -1,91 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946224AbXBPU7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946164AbXBPVDJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946224AbXBPU7z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 15:59:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946208AbXBPU7z
+	id S1946164AbXBPVDJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 16:03:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946208AbXBPVDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 15:59:55 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4457 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946059AbXBPU7x (ORCPT
+	Fri, 16 Feb 2007 16:03:09 -0500
+Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:52452 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946164AbXBPVDI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 15:59:53 -0500
-Date: Fri, 16 Feb 2007 20:59:42 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [RFC] killing the NR_IRQS arrays.
-Message-ID: <20070216205942.GG2572@flint.arm.linux.org.uk>
-Mail-Followup-To: Arnd Bergmann <arnd@arndb.de>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com> <200702162045.58857.arnd@arndb.de> <20070216195256.GE2572@flint.arm.linux.org.uk> <200702162143.25130.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Fri, 16 Feb 2007 16:03:08 -0500
+Date: Fri, 16 Feb 2007 22:03:28 +0100
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com
+Message-ID: <20070216210328.GE4641@enneenne.com>
+References: <20070216185230.GO8882@enneenne.com> <20070216191207.GC2572@flint.arm.linux.org.uk> <20070216204336.GB4641@enneenne.com> <20070216205134.GF2572@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200702162143.25130.arnd@arndb.de>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070216205134.GF2572@flint.arm.linux.org.uk>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 16, 2007 at 09:43:24PM +0100, Arnd Bergmann wrote:
-> On Friday 16 February 2007 20:52, Russell King wrote:
-> > On Fri, Feb 16, 2007 at 08:45:58PM +0100, Arnd Bergmann wrote:
-> > > We did something like this a few years back on the s390 architecture, which
-> > > happens to be lucky enough not to share any interrupt based drivers with
-> > > any of the other architectures.
-> > 
-> > What you're proposing is looking similar to a proposal I put forward some
-> > 4 years ago, but was rejected.  Maybe times have changed and there's a
-> > need for it now.
+On Fri, Feb 16, 2007 at 08:51:35PM +0000, Russell King wrote:
 > 
-> Yes, I think times have changed, with the increased popularity of MSI
-> and paravirtualized devices. A few points on your old proposal though:
+> You can't because it doesn't go through the interfaces you're hooking
+> into.  Existing interfaces are "changed" to point at the UARTs using
+> setserial, which does its work via an ioctl.
+
+I see.
+
+> Not specifically only userland - if it happens to be set when the port
+> is registered then enable PPS support then as well.
 > 
-> - Doing it per architecture no longer sounds feasible, I think it would
->   need to be done per subsystem so that the drivers can be adapted to
->   a new interface, and most drivers are used across multiple architectures.
-> - struct irq sounds much more fitting than struct irq_desc
-> - creating new irq_foo() functions to replace foo_irq() also sounds right.
-> - doing subsystem specific abstractions ideally allows the drivers to
->   not even need to worry about the irq pointer, significantly simplifying
->   the interface for register/unregister.
+> So:
+> 
+> 1. uart_configure_port - if UPF_HARDPPS_CD is set, register the port
+>    for PPS support.
+> 2. uart_remove_one_port - if UPF_HARDPPS_CD is set, unregister the port
+>    for PPS support.
+> 3. uart_set_info - if changing UPF_HARDPPS_CD, appropriately register or
+>    unregister the port for PPS support.
 
-I agree with your points above, except for:
+Ok. I'm going to study how to modify the code.
 
-> - I don't see the point in splitting request_irq into irq_request and
->   irq_register.
+> PS, linuxpps@ml.enneenne.com dropped from the cc: since it rejects my
+> postings.
 
-This was to work around those scenarios where you want to mark an IRQ
-resource as being in use prior to actually using it in much the same
-way as is done with IO ports.
+I just fixed my spam filter (at least I hope so :).
 
-I've come across hardware where you need to claim the interrupt with
-the controller masked, configure the device generating the interrupt
-appropriately, and only then unmask it.  Otherwise you end up spinning.
+Thanks,
 
-To work around that, we've had to introduce additional flags into the
-genirq subsystem - IRQF_NOAUTOEN - whereas separating the "obtain"
-from the "start using" bit of request_irq would've made this
-unnecessary.
-
-Another example where this (was|still is) used is the IDE code, but
-that's probably been cleaned up in some way now.
-
-There's nothing wrong with keeping a combined "request_irq" for the
-common case though.
+Rodolfo
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
