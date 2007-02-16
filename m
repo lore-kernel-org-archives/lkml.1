@@ -1,69 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945971AbXBPQ0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932468AbXBPQah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945971AbXBPQ0z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 11:26:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945981AbXBPQ0z
+	id S932468AbXBPQah (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 11:30:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932483AbXBPQah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 11:26:55 -0500
-Received: from h190.mvista.com ([63.81.120.158]:31765 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1945971AbXBPQ0y (ORCPT
+	Fri, 16 Feb 2007 11:30:37 -0500
+Received: from mother.pmc-sierra.com ([216.241.224.12]:46648 "HELO
+	mother.pmc-sierra.bc.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932438AbXBPQag (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 11:26:54 -0500
-Subject: Re: Clock running at half speed in 2.6.20?
-From: Daniel Walker <dwalker@mvista.com>
-To: "Adam J. Richter" <adam@yggdrasil.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200702161428.l1GESUw9008969@freya.yggdrasil.com>
-References: <200702161428.l1GESUw9008969@freya.yggdrasil.com>
-Content-Type: text/plain
-Date: Fri, 16 Feb 2007 08:24:54 -0800
-Message-Id: <1171643094.3422.6.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Feb 2007 11:30:36 -0500
+Message-ID: <45D5DC24.7090506@pmc-sierra.com>
+From: Marc St-Jean <Marc_St-Jean@pmc-sierra.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Marc St-Jean <stjeanma@pmc-sierra.com>, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org, linux-serial@vger.kernel.org
+Subject: Re: [PATCH] serial driver PMC MSP71xx, kernel linux-mips.git mast
+	er
+Date: Fri, 16 Feb 2007 08:30:28 -0800
+MIME-Version: 1.0
+X-Mailer: Internet Mail Service (5.5.2657.72)
+x-originalarrivaltime: 16 Feb 2007 16:30:28.0716 (UTC) FILETIME=[C4F6EAC0:01C751E7]
+user-agent: Thunderbird 1.5.0.9 (X11/20061206)
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-02-16 at 22:28 +0800, Adam J. Richter wrote:
-> 	My system clock runs at approximately half speed in
-> linux-2.6.20, 2.6.20-git10 and 2.6.20-git11.  That is, it takes about
-> two hours for "date" to report that one hour has elapsed.  "hwclock"
-> returns the correct time, of course.
+Andrew Morton wrote:
+> On Thu, 15 Feb 2007 13:26:29 -0600
+> Marc St-Jean <stjeanma@pmc-sierra.com> wrote:
 > 
-> 	I do not have this problem in linuux 2.6.18.1.  I will try to
-> narrow down the kernel version where this problem began.
+>  > +                     status = *(volatile u32 *)up->port.private_data;
 > 
-> 	The motherboard in question is an asus p4v8000-x, running a
-> 2.8GHz Pentium 4 that has two hyperthreads, which I suspect may be the
-> problem.  I am just guessing, but perhaps some piece of code thinks
-> the two hyperthreads are separate CPU's receving twice as many clock
-> interrupts total.  I expect to try to some experimentation to check
-> this theory.
+> It distresses me that this patch uses a variable which this patch
+> doesn't initialise anywhere.  It isn't complete.
 > 
-> 	For what it's worth, I am running CONFIG_PREEMPT=y,
-> CONFIG_PREEMPT_BKL=y, CONFIG_HZ=1000.
+> The sub-driver code whch sets up this field shuld be included in the
+> patch, no?
+> 
 
+OK, I'll re-post with the platform file which initializes the variable.
+That file however will reference other files in the platform which has
+not been posted yet. I thought it was better to post the driver-only code.
 
-if you run,
-
-cat /sys/devices/system/clocksource/clocksource0/current_clocksource
-
-it will tell you which hardware clock is being used by the kernel. You
-can also run,
-
-cat /sys/devices/system/clocksource/clocksource0/available_clocksource
-
-which will tell you which clocks are available on your system. You
-switch clocks by echoing the name of a clock into "current_clocksource"
-
-As an example, the following switches to the acpi_pm clocksource,
-
-echo "acpi_pm"> /sys/devices/system/clocksource/clocksource0/current_clocksource
-
-The hardware clock that your using could be running to slow. I would
-recommend switching the hardware clock and re-check if the time is still
-half speed.
-
-Daniel
-
+Marc
