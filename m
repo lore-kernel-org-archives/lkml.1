@@ -1,47 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422639AbXBPPJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422643AbXBPPJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422639AbXBPPJd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 10:09:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422643AbXBPPJd
+	id S1422643AbXBPPJp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 10:09:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422640AbXBPPJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 10:09:33 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45151 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422639AbXBPPJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 10:09:32 -0500
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <45D5B2E3.3030607@hitachi.com> 
-References: <45D5B2E3.3030607@hitachi.com> 
-To: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
-Cc: Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Robin Holt <holt@sgi.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <soshima@redhat.com>,
-       "Hideo AOKI@redhat" <haoki@redhat.com>
-Subject: Re: [PATCH 0/4] coredump: core dump masking support v3 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Fri, 16 Feb 2007 15:08:54 +0000
-Message-ID: <20425.1171638534@redhat.com>
+	Fri, 16 Feb 2007 10:09:45 -0500
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:16904 "EHLO
+	outbound6-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1945904AbXBPPJn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 10:09:43 -0500
+X-BigFish: VP
+X-Server-Uuid: 89466532-923C-4A88-82C1-66ACAA0041DF
+Date: Fri, 16 Feb 2007 16:09:29 +0100
+From: "Joerg Roedel" <joerg.roedel@amd.com>
+To: "Avi Kivity" <avi@qumranet.com>
+cc: "kvm-devel" <kvm-devel@lists.sourceforge.net>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] KVM SVM: intercept SMI to handle it at host level
+Message-ID: <20070216150929.GA27093@amd.com>
+MIME-Version: 1.0
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 16 Feb 2007 15:09:29.0972 (UTC)
+ FILETIME=[74ED6B40:01C751DC]
+X-WSS-ID: 69CB16A62EG842945-01-01
+Content-Type: multipart/mixed;
+ boundary=WIyZ46R2i8wDzkSu
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kawai, Hidehiro <hidehiro.kawai.ez@hitachi.com> wrote:
 
-> To avoid the above situation we can limit the core file size by
-> setrlimit(2) or ulimit(1). But this method can lose important data
-> such as stack because core dumping is terminated halfway.
-> So I suggest keeping shared memory segments from being dumped for
-> particular processes.
+--WIyZ46R2i8wDzkSu
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-A better way might be to place the shared memory segments last if that's
-possible (I'm not sure ELF supports out-of-order segments).
+From: Joerg Roedel <joerg.roedel@amd.com>
 
-> Because the shared memory attached to processes is common in them, we don't
-> need to dump the shared memory every time.
+This patch changes the SVM code to intercept SMIs and handle it
+outside the guest.
 
-So there's no guarantee that they'll be dumped at all...  I'm not sure there's
-any way around that, however.
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 
-David
+-- 
+Joerg Roedel
+Operating System Research Center
+AMD Saxony LLC & Co. KG
+
+--WIyZ46R2i8wDzkSu
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: attachment;
+ filename=kvm-smi.patch
+Content-Transfer-Encoding: 7bit
+
+diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
+index 83da4ea..f3ec1cb 100644
+--- a/drivers/kvm/svm.c
++++ b/drivers/kvm/svm.c
+@@ -485,6 +485,7 @@ static void init_vmcb(struct vmcb *vmcb)
+ 
+ 	control->intercept = 	(1ULL << INTERCEPT_INTR) |
+ 				(1ULL << INTERCEPT_NMI) |
++				(1ULL << INTERCEPT_SMI) |
+ 		/*
+ 		 * selective cr0 intercept bug?
+ 		 *    	0:   0f 22 d8                mov    %eax,%cr3
+
+--WIyZ46R2i8wDzkSu--
+
+
