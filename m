@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932310AbXBPNcD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964814AbXBPNdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932310AbXBPNcD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 08:32:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932313AbXBPNcD
+	id S964814AbXBPNdU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 08:33:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964834AbXBPNdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 08:32:03 -0500
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:54475 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932310AbXBPNcB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 08:32:01 -0500
-Date: Fri, 16 Feb 2007 08:32:00 -0500
-To: v j <vj.linux@gmail.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: GPL vs non-GPL device drivers
-Message-ID: <20070216133200.GP7584@csclub.uwaterloo.ca>
-References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com> <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com> <1171524970.12771.568.camel@laptopd505.fenrus.org> <9b3a62ab0702150004n78763d4ei652b41c7edcd0755@mail.gmail.com>
+	Fri, 16 Feb 2007 08:33:20 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:38230 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964814AbXBPNdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 08:33:19 -0500
+Date: Fri, 16 Feb 2007 16:28:58 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 05/11] syslets: core code
+Message-ID: <20070216132857.GA19820@2ka.mipt.ru>
+References: <20070215133550.GA29274@2ka.mipt.ru> <Pine.LNX.4.64.0702150757520.20368@woody.linux-foundation.org> <20070215163704.GA32609@2ka.mipt.ru> <Pine.LNX.4.64.0702150920130.20368@woody.linux-foundation.org> <20070215181059.GC20997@2ka.mipt.ru> <Pine.LNX.4.64.0702151019210.20368@woody.linux-foundation.org> <20070215190413.GA23953@2ka.mipt.ru> <Pine.LNX.4.64.0702151120260.20368@woody.linux-foundation.org> <Pine.LNX.4.64.0702151159410.20368@woody.linux-foundation.org> <20070216122806.GA27455@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-In-Reply-To: <9b3a62ab0702150004n78763d4ei652b41c7edcd0755@mail.gmail.com>
+In-Reply-To: <20070216122806.GA27455@elte.hu>
 User-Agent: Mutt/1.5.9i
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Fri, 16 Feb 2007 16:29:01 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 15, 2007 at 12:04:26AM -0800, v j wrote:
-> Ok so are thousands of others who are using Linux as their OS of
-> choice in embedded systems. They are not doing this because they are
-> eager to give back back. They are doing it because Linux provides
-> compelling reasons for them to choose it. They could have very well
-> chosen VxWorks or OSE too. They chose not to, but not because they
-> were unwilling to be a parasite.
+On Fri, Feb 16, 2007 at 01:28:06PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
+> OTOH, the syslet concept right now already looks very ubiquitous, and 
+> the main problem with AIO use in applications wasnt just even its broken 
+> API or its broken performance, but the fundamental lack of all Linux IO 
+> disciplines supporting AIO, and the lack of significantly parallel 
+> hardware. We have kaio that is centered around block drivers - then we 
+> have epoll that works best with networking, and inotify that deals with 
+> some (but not all) VFS events - but neither supports every IO and event 
+> disciple well, at once. My feeling is that /this/ is the main 
+> fundamental problem with AIO in general, not just its programmability 
+> limitations.
 
-Some people in the embedded world actually think having access to
-cooporating with thousands of other developers is a good thing.  I like
-being able to ask questions and get feedback.  I have contributed back
-some of my improvements, and the things I haven't are things I think
-would make the kernel's drivers worse for general case use (due to
-having a few bits of weirdness in our hardware), but anyone that wants
-the source with those changes can have it.  Our older products which are
-running a closed source OS (well as far as the customers are concerned
-at least, since we have source and they don't) are eventually intended
-to move to linux as well.  The support for the proprietary embedded OSs
-have in our experience been pathetic.  Even when sent patches to fix
-bugs they don't make it in to the next release in many cases.  No
-thanks.  What keeps customers buying our products is that when there is
-a problem we fix it as quickly as we can using whatever resources it
-takes.  It isn't really in having secret source code for some feature.
-It would be hard for a smallish company to come up with something so
-amazing that a larger company couldn't reimplement the same thing in a
-very short time if they thought it was useful.
+That is quite dissapointing to hear when weekely released kevent can
+solve that problem already more than year ago - it was designed specially to
+support every possible notification types and does support file
+descriptor ones, VFS (dropped in current releases to reduce size) and
+tons of other including POSIX times, signals, own high-performance AIO
+(which was created as a a bit complex state machine over internals of
+page population code) and essentially everything one can ever imagine 
+with quite a bit of code needed for new type.
 
---
-Len Sorensen
+I was requested to add waiting for futex through kevent queue - that is
+quite simple task, but having complete lack of feedback and ignorance of
+the project even from people who asked about its features, it looks like
+there is no need for that at all.
+
+-- 
+	Evgeniy Polyakov
