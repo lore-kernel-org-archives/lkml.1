@@ -1,72 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422788AbXBPAKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422794AbXBPAKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422788AbXBPAKV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 19:10:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422790AbXBPAKV
+	id S1422794AbXBPAKp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 19:10:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422795AbXBPAKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 19:10:21 -0500
-Received: from cacti.profiwh.com ([85.93.165.66]:49513 "EHLO cacti.profiwh.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422788AbXBPAKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 19:10:20 -0500
-Message-ID: <45D4F670.3020407@gmail.com>
-Date: Fri, 16 Feb 2007 01:10:24 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
+	Thu, 15 Feb 2007 19:10:45 -0500
+Received: from mailhub2.otago.ac.nz ([139.80.64.247]:39218 "EHLO
+	mailhub2.otago.ac.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422794AbXBPAKo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 19:10:44 -0500
+Message-ID: <45D4F67D.4030902@maths.otago.ac.nz>
+Date: Fri, 16 Feb 2007 13:10:37 +1300
+From: Greg Trounson <gregt@maths.otago.ac.nz>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [PATCH 1/1] unify queue_delayed_work and queue_delayed_work_on
- fix
-References: <25269175172137025681@wsc.cz>
-In-Reply-To: <25269175172137025681@wsc.cz>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+To: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org
+Subject: Re: GPL vs non-GPL device drivers
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com> <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com> <20070215061149.GE15654@redhat.com> <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com> <20070215165339.GB5285@thunk.org>
+In-Reply-To: <20070215165339.GB5285@thunk.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby napsal(a):
-[...]
-> unify queue_delayed_work and queue_delayed_work_on fix
+Theodore Tso wrote:
+> On Wed, Feb 14, 2007 at 10:27:10PM -0800, v j wrote:
+>> You are right. I have not contributed anything to Linux. Except one
+>> small patch to the MTD code. However, I don't think that is the point
+>> here. I am perfectly willing to live with the way Linux is today. I am
+>> telling you as a user that if Linux continues on the current path it
+>> will become less and less attractive to Embedded Users.
+> 
+> But so what?  How will that hurt *Linux*?  If the Embedded developers
+> don't contribute changes back, it doesn't hurt us any if they go away
+> and start paying $$$ to VxWorks instead of using Linux for free.  
 
-Oh sorry, the name should be
-make queue_delayed_work() friendly to flush_fork() fix
+I disagree.  Linux needs popularity at the moment.
 
-> Since cwq->wq is unset for other than singlethread_cpu when singlethread
-> workqueue was created, an oops occurs during bootup. Fix it by setting
-> correct private value for workqueue.
-> 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> 
-> ---
-> commit 7bc281be5811f9b1dd01c25eaf492f4765737fd0
-> tree 7795008066bb89e7489384cde95e63260602d5af
-> parent 61c2024a2dd044e32747542cfbf4b22251df3bc2
-> author Jiri Slaby <jirislaby@gmail.com> Fri, 16 Feb 2007 00:49:15 +0100
-> committer Jiri Slaby <jirislaby@gmail.com> Fri, 16 Feb 2007 00:49:15 +0100
-> 
->  kernel/workqueue.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-> index f2089bf..af5e597 100644
-> --- a/kernel/workqueue.c
-> +++ b/kernel/workqueue.c
-> @@ -210,7 +210,8 @@ int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
->  
->  		/* This stores cwq for the moment, for the timer_fn */
->  		set_wq_data(work,
-> -			per_cpu_ptr(wq->cpu_wq, raw_smp_processor_id()));
-> +			per_cpu_ptr(wq->cpu_wq, wq->singlethread ?
-> +				singlethread_cpu : raw_smp_processor_id()));
->  		timer->expires = jiffies + delay;
->  		timer->data = (unsigned long)dwork;
->  		timer->function = delayed_work_timer_fn;
-> 
+Otherwise, Linux may be in for a hard time once manufacturers standardize on TPM-enabled 
+processors that only allow 'authorized' code to run.  And it looks like this is going to 
+happen.
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+Unless there is a sufficient user base (ie a market) for Linux, what incentive are Intel, 
+AMD, etc going to have to make their hardware run anything except code signed by Microsoft?
+
+When taken off modern CPUs, Linux will be relegated to hobby cpu fabs, legacy hardware and 
+maybe a niche back in the embedded market.  Then watch development all but stagnate. 
+Something I'd rather not see happen.
+
+Greg
+
