@@ -1,91 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946297AbXBPXhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946292AbXBPXht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946297AbXBPXhY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 18:37:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946303AbXBPXhY
+	id S1946292AbXBPXht (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 18:37:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946303AbXBPXh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 16 Feb 2007 18:37:26 -0500
+Received: from smtp104.sbc.mail.mud.yahoo.com ([68.142.198.203]:45952 "HELO
+	smtp104.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1946301AbXBPXhY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 Feb 2007 18:37:24 -0500
-Received: from mail.suse.de ([195.135.220.2]:39366 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946297AbXBPXhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 18:37:11 -0500
-Date: Fri, 16 Feb 2007 15:35:53 -0800
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PATCH] more Driver core patches for 2.6.20
-Message-ID: <20070216233553.GC14708@kroah.com>
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=YAQRSp4CRNX7q3+fT0oK29BhPxmeTl2Ae5cYY5VrY40hZkuPRjECSAwsRuCJiWZs5/KQFl3CBv2Ess+MgZMiG3vLUgDitjX/jNfMzSSZMjLJcUNzU0z7WKkKi2VWHOeowKDjpTTfNN3zQuNq1ipwECmG8Ha130aPRn8PQgTvsBU=  ;
+X-YMail-OSG: DSzIUQoVM1l9TU5U_euYX1HB_oewfJK79JU15OMPrlQP5H9DNco6H1BGVvISTolgl_oBPIm7kHBUWyFgcu9mpSHVeCzpQdGgoQPK0.gBm7AK2ybr75393wv7IvsRzYFIvPiZgj_R8WVp4w--
+From: David Brownell <david-b@pacbell.net>
+To: linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] usbnet/rndis (was: Is this bug too obvious?)
+Date: Fri, 16 Feb 2007 15:37:20 -0800
+User-Agent: KMail/1.7.1
+Cc: Pete Zaitcev <zaitcev@redhat.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Dave Jones <davej@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <45D25ABE.5080400@redhat.com> <45D26222.9040504@redhat.com> <20070216143446.a2134b3c.zaitcev@redhat.com>
+In-Reply-To: <20070216143446.a2134b3c.zaitcev@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200702161537.21045.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some more driver core and debugfs patches and a serial port
-device id addition for 2.6.20-git.
 
-All of these have been in the -mm tree.
+> If you don't do it sooner, I'll look at the error paths in rndis
+> and/or usbnet.
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6.git/
-
-Patches will be sent as a follow-on to this message to lkml for people
-to see.
-
-thanks,
-
-greg k-h
-
- drivers/base/bus.c          |   22 ++++----
- drivers/base/class.c        |    3 +-
- drivers/pcmcia/at91_cf.c    |    2 +-
- drivers/pcmcia/soc_common.c |    8 ++--
- drivers/serial/serial_cs.c  |    5 ++
- fs/debugfs/file.c           |   12 ++++
- fs/debugfs/inode.c          |   82 ++++++++++++++++++++++++++----
- fs/partitions/check.c       |    9 +--
- include/linux/debugfs.h     |   10 ++++
- include/linux/device.h      |    1 +
- include/linux/kmod.h        |    2 +
- include/linux/module.h      |   53 ++++++++++++++++---
- include/linux/moduleparam.h |   12 ++++
- include/pcmcia/ciscode.h    |    1 +
- kernel/kmod.c               |  120 +++++++++++++++++++++++++++++++++++++++++++
- kernel/module.c             |   47 ++++++++++-------
- kernel/params.c             |   29 ++++++-----
- lib/kobject.c               |    2 +-
- 18 files changed, 343 insertions(+), 77 deletions(-)
-
----------------
-
-Alexey Dobriyan (1):
-      pcmcia: some class_device fallout
-
-Andrew Morton (1):
-      Driver core: device_add_attrs() cleanup
-
-Cornelia Huck (1):
-      debugfs: Remove misleading comments.
-
-Greg Kroah-Hartman (1):
-      Driver.h copyright update
-
-Kay Sievers (1):
-      Driver core: let request_module() send a /sys/modules/kmod/-uevent
-
-Mariusz Kozlowski (1):
-      Driver: remove redundant kobject_unregister checks
-
-Martin Stoilov (1):
-      kobject: kobj->k_name verification fix
-
-Peter Oberparleiter (1):
-      debugfs: implement symbolic links
-
-Randy Dunlap (1):
-      sysfs: fix build errors: uevent with CONFIG_SYSFS=n
-
-Sergei Organov (1):
-      serial: Add PCMCIA IDs for Quatech DSP-100 dual RS232 adapter.
-
+Try that patch I sent by this morning.  ISTR getting some
+positive reports from that...
