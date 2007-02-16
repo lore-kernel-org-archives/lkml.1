@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751823AbXBPBJb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751833AbXBPBMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751823AbXBPBJb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 20:09:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbXBPBJa
+	id S1751833AbXBPBMV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 20:12:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbXBPBMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 20:09:30 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:49585 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751823AbXBPBJa (ORCPT
+	Thu, 15 Feb 2007 20:12:21 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:3360 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751833AbXBPBMU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 20:09:30 -0500
-Date: Thu, 15 Feb 2007 17:04:14 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@osdl.org>, tytso@mit.edu
-Subject: [PATCH] update Doc/oops-tracing.txt for TAINT_USER
-Message-Id: <20070215170414.56e6193b.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 15 Feb 2007 20:12:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ViDvxiz+s9HIDCUVhnywuxnSIJ1+MkSJX7ltw+B/AwGpXAzGRuonk3MdXPedrIeak3A4hGzn1kyL3W0MQeCI9JZ0liWe4yXsUoQlIdgDXUDQGufgPAdUuSypdmVpNT8oC0GCK+SaynTmVLhx89q9CNU8JldO8EO8Gy3CrPxHais=
+Message-ID: <7b69d1470702151712x685f3e0eqf6198f9bb7f2394e@mail.gmail.com>
+Date: Thu, 15 Feb 2007 19:12:18 -0600
+From: "Scott Preece" <sepreece@gmail.com>
+To: "Miguel Ojeda" <maxextreme@gmail.com>
+Subject: Re: GPL vs non-GPL device drivers
+Cc: "v j" <vj.linux@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <653402b90702151102n3a3e0435r837e2191de79b2b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Disposition: inline
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+	 <20070215061149.GE15654@redhat.com>
+	 <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
+	 <20070215165339.GB5285@thunk.org>
+	 <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com>
+	 <653402b90702151102n3a3e0435r837e2191de79b2b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On 2/15/07, Miguel Ojeda <maxextreme@gmail.com> wrote:
 
-Add TAINT_USER description to Tainted flags in oops-tracing.txt.
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Stupid, maybe. But some people just don't want closed-source
+> projects/companies like yours using their free work, without any kind
+> of feedback. Some others don't care, but they could in the future, as
+> it is their code, and that is your risk.
+>
 ---
- Documentation/oops-tracing.txt |    3 +++
- 1 file changed, 3 insertions(+)
 
---- linux-2.6.20-git9.orig/Documentation/oops-tracing.txt
-+++ linux-2.6.20-git9/Documentation/oops-tracing.txt
-@@ -234,6 +234,9 @@ characters, each representing a particul
-   6: 'B' if a page-release function has found a bad page reference or
-      some unexpected page flags.
- 
-+  7: 'U' if a user specifically requested that the Tainted flag be set,
-+     ' ' otherwise.
-+
- The primary reason for the 'Tainted: ' string is to tell kernel
- debuggers if this is a clean kernel or if anything unusual has
- occurred.  Tainting is permanent: even if an offending module is
+So, how are such companies any different from the myriad individuals
+and companies that use Linux on the desktop or in their server rooms
+without ever modifying it and who also contribute nothing back to the
+community? They are also, in many (most?) cases taking advantage of
+the free (as in beer) nature of Linux - saving money by using the work
+of others without returning anything, but the product builders seem to
+get a lot more abuse...
+
+scott
