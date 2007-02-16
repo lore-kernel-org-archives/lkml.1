@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423485AbXBPJdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966268AbXBPJly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423485AbXBPJdp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 04:33:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423486AbXBPJdp
+	id S966268AbXBPJly (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 04:41:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966271AbXBPJly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 04:33:45 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40656 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423485AbXBPJdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 04:33:44 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: vatsa@in.ibm.com
-Subject: Re: [RFC PATCH(Experimental) 1/4] freezer-cpu-hotplug core
-Date: Fri, 16 Feb 2007 10:29:20 +0100
-User-Agent: KMail/1.9.5
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Gautham R Shenoy <ego@in.ibm.com>,
-       akpm@osdl.org, paulmck@us.ibm.com, mingo@elte.hu, dipankar@in.ibm.com,
-       venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org
-References: <20070214144031.GA15257@in.ibm.com> <20070216071617.GB4527@in.ibm.com> <20070216081209.GB2829@in.ibm.com>
-In-Reply-To: <20070216081209.GB2829@in.ibm.com>
+	Fri, 16 Feb 2007 04:41:54 -0500
+Received: from wr-out-0506.google.com ([64.233.184.225]:62718 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966268AbXBPJlx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 04:41:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=udlmT5ZRIJZ5u7LIM6/B+GqN+X8JzXOws8aZbVQGtiKYJv0pbzXVeyOVfYSPHbfAB/0jlv5OIjnSC1VYANmbfhcAZPAEwsZZx0fAeT4plwHAljUj/3uqiuBFU1rU8VIS8kzBQbm0++JPHG6QFLjX2JiGPTdj26PSZXGkhU9IPvg=
+Message-ID: <32209efe0702160141k32f16923qdf93abdf5d473886@mail.gmail.com>
+Date: Fri, 16 Feb 2007 02:41:51 -0700
+From: "Natalie Protasevich" <protasnb@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: FW: [PATCH] i386: irq: Kill IRQ compression
+Cc: lenb@kernel.org, "Andi Kleen" <ak@suse.de>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+In-Reply-To: <19D0D50E9B1D0A40A9F0323DBFA04ACC023B0E21@USRV-EXCH4.na.uis.unisys.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702161029.21560.rjw@sisk.pl>
+References: <19D0D50E9B1D0A40A9F0323DBFA04ACC023B0E21@USRV-EXCH4.na.uis.unisys.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 16 February 2007 09:12, Srivatsa Vaddagiri wrote:
-> On Fri, Feb 16, 2007 at 12:46:17PM +0530, Srivatsa Vaddagiri wrote:
-> > frozen. The only exception is cleaning up of per-cpu threads (which is
-> > not possible with processes frozen - if we can find a way to make that
-> > possible, then everything can be done in CPU_DEAD).
-> 
-> How abt a patch like below?
-> 
-> 
-> --- process.c.org	2007-02-16 13:38:39.000000000 +0530
-> +++ process.c	2007-02-16 13:38:59.000000000 +0530
-> @@ -47,7 +47,7 @@ void refrigerator(void)
->  	recalc_sigpending(); /* We sent fake signal, clean it up */
->  	spin_unlock_irq(&current->sighand->siglock);
->  
-> -	while (frozen(current)) {
-> +	while (frozen(current) && !kthread_should_stop()) {
->  		current->state = TASK_UNINTERRUPTIBLE;
->  		schedule();
->  	}
-> 
-> This should let us do kthread_stop() in CPU_DEAD itself (while processes
-> are frozen)? That would allow us to do everything from CPU_DEAD itself
-> (and not have CPU_DEAD_KILL_THREADS).
+l> From: Eric W. Biederman [mailto:ebiederm@xmission.com]
+> Sent: Friday, February 16, 2007 2:22 AM
+> To: Protasevich, Natalie
+> Cc: Len Brown; Andi Kleen; lkml - Kernel Mailing List;
+> linux-acpi@vger.kernel.org
+> Subject: Re: [PATCH] i386: irq: Kill IRQ compression
+>
+> ebiederm@xmission.com (Eric W. Biederman) writes:
+>
+> > By itself I don't think we are going to observe any real problems
+> > with this patch.
+> >
+> > However if we are going to be serious about this we need to do a
+> > few more things.
+> >
+> > - kill ioapic_renumber_irq.
+>
+> Looking closer ioapic_renumber_irq does not appear to be an irq
+> compress thing.  Rather it appears to be a work around for a weird
+> acpi implementation where gsi 0 - 15 are not the ISA irqs.
+>
+> Natalie is my reading of the code there correct?
 
-Well, the suspend code has been developed with the assumption that frozen
-threads stay frozen until _we_ let them thaw by calling thaw_processes().  I'm
-a bit afraid of this change.
+Yes, indeed.
 
-Greetings,
-Rafael
+>
+> If so keeping ioapic_renumber_irq makes sense.  Although giving
+> it a name that suggests it is working around weird implementation
+> details would be good.
+
+Sure. I think it was originally renumber_gsi something, but Len had to
+change it so it sounds more explicit as familiar "IRQ".
+--Natalie
+>
+> Eric
+>
