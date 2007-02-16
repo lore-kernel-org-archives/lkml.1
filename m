@@ -1,75 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422631AbXBPOFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932356AbXBPOI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422631AbXBPOFT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 09:05:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422632AbXBPOFT
+	id S932356AbXBPOI5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 09:08:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932359AbXBPOI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 09:05:19 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45768 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161023AbXBPOFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 09:05:17 -0500
-Date: Fri, 16 Feb 2007 15:04:51 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: =?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Richard Purdie <rpurdie@rpsys.net>,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] input: extend EV_LED
-Message-ID: <20070216140451.GA8904@elf.ucw.cz>
-References: <20070215174009.GA6535@ucw.cz> <freemail.20070115234756.58787@fm13.freemail.hu>
+	Fri, 16 Feb 2007 09:08:57 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:13319 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932356AbXBPOI4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 09:08:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tV35hnBtglY0utOulOpES7Dkaiq3MsTW3hGgbSMi6MbcJaVS5c490J2Sg4xUodKDdhhyeAmVNi1kNFOXDDEdDrhNttwmq2PAjzCVGU8nwpa27WPuKUvXOeFtTDp9GbzxhvDEV/uAHHjfDLjysWq/yJ3Qf8rCRT9sLB5AKEwT52o=
+Message-ID: <82ecf08e0702160608q3fbf1a68t16933b32e5db16ff@mail.gmail.com>
+Date: Fri, 16 Feb 2007 12:08:53 -0200
+From: "Thiago Galesi" <thiagogalesi@gmail.com>
+To: "Heikki Orsila" <shdl@zakalwe.fi>
+Subject: Re: [RFC] New driver information
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070216135851.GA7939@zakalwe.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <freemail.20070115234756.58787@fm13.freemail.hu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+References: <20070216135851.GA7939@zakalwe.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+SInce this information does not, in any way, affect the functioning of
+the driver... It is not "executable code", I don't see the point of
+it.
 
-> > > >I do not know the LED subsystem in detail, but I do not 
-> > > >know
-> > > >any possibility to access the i8042 from different 
-> > > >subsystem
-> > > >than the input subsystem.
-> > > >
-> > > >What do you think and recommend?
-> > > 
-> > > I think you need to use leds framework for what you are 
-> > > trying to do.
-> > 
-> > I'm actually not sure if led framework can do that. It was
-> designed
-> > for leds on gpios, and handles blinking itself.
-> > 
-> > But he could export two leds :-).
-> 
-> Hi,
-> 
-> what do you mean about two leds? The first one would be
-> off/0.5Hz and the other off/1Hz?
+For "module_licence" we have the restriction of some functions being
+used only for GPL code, but for this?!? I really don't see it...
+
+Just think: what would this macro do, "executable-code wise"?
 
 
-Somethinglike that.
-
-> I read in linux/Documentation/led-class.txt the following:
-> 
-> | Some leds can be programmed to flash in hardware. As this
-> isn't a generic
-> | LED device property, this should be exported as a device
-> specific sysfs
-> | attribute rather than part of the class if this
-> functionality is required.
-> 
-> Does it mean that neither the input subsystem nor the led
-> subsystem is designed for hardware acelerated blinking leds?
-
-Seems so.
-
+On 2/16/07, Heikki Orsila <shdl@zakalwe.fi> wrote:
+> I just read
+>
+>         http://kerneltrap.org/node/7729
+>
+> and it occured to me that it would be informative to have a new device
+> driver macro. The motivation for the new macro would be 4 issues:
+>
+>         * Is it possible to get specifications for the device?
+>         * If yes, under what terms? (nda, public)
+>         * Where to get public specs?
+>         * How many closed and open drivers in the Linux source tree?
+>
+> I suggest to add following macro:
+>
+> MODULE_SPECIFICATION(terms, source);
+>
+> where "terms" is one of
+>
+>  * MODULE_SPEC_ANY_PARTY_NDA
+>         - specification available to any party for an NDA
+>  * MODULE_SPEC_ANY_PARTY
+>         - specification available in public, or at least available
+>           without NDA to any party
+>  * MODULE_SPEC_RESTRICTED
+>         - none of the above
+>
+> and "source":
+>
+>  * contact address for nda specs
+>  * any public source for a public specification (http://, email address,
+>    ...)
+>  * empty string otherwise
+>
+> I realise this macro somewhat circumvents the purpose of Documentation/
+> directory but the idea is to have a direct 1:1 mapping between drivers
+> and specification sources so that it would be easy to collect statistics
+> of "open" hardware by using grep et al.
+>
+> What do you think? Useless annotations or useful information?
+>
+> --
+> Heikki Orsila                   Barbie's law:
+> heikki.orsila@iki.fi            "Math is hard, let's go shopping!"
+> http://www.iki.fi/shd
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-
+Thiago Galesi
