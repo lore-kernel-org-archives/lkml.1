@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964845AbXBPNxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932348AbXBPNzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964845AbXBPNxc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 08:53:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964834AbXBPNxb
+	id S932348AbXBPNzI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 08:55:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932349AbXBPNzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 08:53:31 -0500
-Received: from ns2.suse.de ([195.135.220.15]:48957 "EHLO mx2.suse.de"
+	Fri, 16 Feb 2007 08:55:07 -0500
+Received: from mail.screens.ru ([213.234.233.54]:49866 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964845AbXBPNxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 08:53:31 -0500
-Message-ID: <45D5B74A.6060905@suse.de>
-Date: Fri, 16 Feb 2007 14:53:14 +0100
-From: Gerd Hoffmann <kraxel@suse.de>
-Organization: =?ISO-8859-1?Q?SUSE_LINUX_Products_GmbH=2C_GF=3A_?=
- =?ISO-8859-1?Q?Markus_Rex=2C_HRB_16746_=28AG_N=FCrnberg=29?=
-User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Zachary Amsden <zach@vmware.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       xen-devel@lists.xensource.com, Ian Pratt <ian.pratt@xensource.com>,
-       Andi Kleen <ak@muc.de>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, Chris Wright <chrisw@sous-sol.org>,
-       virtualization@lists.osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-Subject: Re: [Xen-devel] Re: [patch 14/21] Xen-paravirt: Add XEN config options
- and disable unsupported config options.
-References: <20070216022449.739760547@goop.org>	<20070216022531.570154735@goop.org> <45D54BFF.80100@vmware.com> <m11wkqimjd.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m11wkqimjd.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S932348AbXBPNzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 08:55:06 -0500
+Date: Fri, 16 Feb 2007 16:55:02 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] unify queue_delayed_work and queue_delayed_work_on fix
+Message-ID: <20070216135502.GA83@tv-sign.ru>
+References: <20070215051408.a7fb7d81.akpm@linux-foundation.org> <25269175172137025681@wsc.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <25269175172137025681@wsc.cz>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Have machine_kexec_prepare fail.
+On 02/16, Jiri Slaby wrote:
 > 
-> I think your machine description or paravirt_ops or whatever it is needs
-> to hook both machine_kexec_prepare and machine_kexec.
+> unify queue_delayed_work and queue_delayed_work_on fix
 > 
-> I know there actually has been some work to get kexec actually working under
-> Xen but I don't know where that has gone.
+> Since cwq->wq is unset for other than singlethread_cpu when singlethread
+> workqueue was created, an oops occurs during bootup.
 
-Works, modulo bugs.  Shouldn't be hard to get work on top of
-paravirt_ops.  The current 2.6.18 code uses function pointers already
-because the dom0 code looks very different from domU code.  It is one of
-the items on my todo list.  I'll probably look into it once I'm done
-with the earlyprintk and console mess ...
+And I thought I tested this...
 
-cheers,
-  Gerd
+>                                                       Fix it by setting
+> correct private value for workqueue.
 
--- 
-Gerd Hoffmann <kraxel@suse.de>
+Thanks!!!
+
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> 
+> ---
+> commit 7bc281be5811f9b1dd01c25eaf492f4765737fd0
+> tree 7795008066bb89e7489384cde95e63260602d5af
+> parent 61c2024a2dd044e32747542cfbf4b22251df3bc2
+> author Jiri Slaby <jirislaby@gmail.com> Fri, 16 Feb 2007 00:49:15 +0100
+> committer Jiri Slaby <jirislaby@gmail.com> Fri, 16 Feb 2007 00:49:15 +0100
+> 
+>  kernel/workqueue.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+> index f2089bf..af5e597 100644
+> --- a/kernel/workqueue.c
+> +++ b/kernel/workqueue.c
+> @@ -210,7 +210,8 @@ int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
+>  
+>  		/* This stores cwq for the moment, for the timer_fn */
+>  		set_wq_data(work,
+> -			per_cpu_ptr(wq->cpu_wq, raw_smp_processor_id()));
+> +			per_cpu_ptr(wq->cpu_wq, wq->singlethread ?
+> +				singlethread_cpu : raw_smp_processor_id()));
+>  		timer->expires = jiffies + delay;
+>  		timer->data = (unsigned long)dwork;
+>  		timer->function = delayed_work_timer_fn;
+
