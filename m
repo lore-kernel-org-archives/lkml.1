@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751653AbXBPHgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751879AbXBPHpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751653AbXBPHgU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 02:36:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbXBPHgU
+	id S1751879AbXBPHpo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 02:45:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbXBPHpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 02:36:20 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:54961 "EHLO
+	Fri, 16 Feb 2007 02:45:44 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:56705 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751653AbXBPHgT (ORCPT
+	with ESMTP id S1751329AbXBPHpn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 02:36:19 -0500
+	Fri, 16 Feb 2007 02:45:43 -0500
 From: ebiederm@xmission.com (Eric W. Biederman)
-To: Zachary Amsden <zach@vmware.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@muc.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       Avi Kivity <avi@qumranet.com>
-Subject: Re: [patch 14/21] Xen-paravirt: Add XEN config options and disable unsupported config options.
-References: <20070216022449.739760547@goop.org>
-	<20070216022531.570154735@goop.org> <45D54BFF.80100@vmware.com>
-Date: Fri, 16 Feb 2007 00:33:58 -0700
-In-Reply-To: <45D54BFF.80100@vmware.com> (Zachary Amsden's message of "Thu, 15
-	Feb 2007 22:15:27 -0800")
-Message-ID: <m11wkqimjd.fsf@ebiederm.dsl.xmission.com>
+To: Len Brown <lenb@kernel.org>
+Cc: Andi Kleen <ak@suse.de>,
+       Natalie Protasevich <Natalie.Protasevich@unisys.com>,
+       "lkml - Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH] i386: irq: Kill IRQ compression
+References: <200702160015.04453.lenb@kernel.org>
+Date: Fri, 16 Feb 2007 00:44:07 -0700
+In-Reply-To: <200702160015.04453.lenb@kernel.org> (Len Brown's message of
+	"Fri, 16 Feb 2007 00:15:04 -0500")
+Message-ID: <m1wt2ih7i0.fsf@ebiederm.dsl.xmission.com>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden <zach@vmware.com> writes:
+Len Brown <lenb@kernel.org> writes:
 
+> This code makes simple systems complex:
 >
-> We do support different HZ values, although 100HZ is actually preferable for us,
-> so I don't object to that.  PREEMPT is supported by us, but not as tested as I
-> would like, so I also don't object to dropping it for generic paravirt guests -
-> Rusty - Avi any objections to dropping preempt in terms of lguest/KVM
-> paravirtualization?
+> ACPI: PCI Interrupt 0000:03:04.0[A] -> GSI 18 (level, low) -> IRQ 16
+> ACPI: PCI Interrupt 0000:00:1d.0[A] -> GSI 16 (level, low) -> IRQ 17
+> ACPI: PCI Interrupt 0000:00:1d.1[B] -> GSI 19 (level, low) -> IRQ 18
+> ACPI: PCI Interrupt 0000:00:1d.7[D] -> GSI 23 (level, low) -> IRQ 19
 >
-> Paravirt-ops definitely needs a hook for kexec, although we should not disable
-> kexec for the natively booted paravirt-ops.  Eric - is there a way to disable it
-> at runtime?
->
-> We do support the doublefault task gate, and it would be good to keep it, but I
-> can't complain so much if it is gone from generic paravirt kernels for now,
-> because it is non-essential, and generally fatal anyway.  We do need it for
-> native boots of paravirt-ops kernels, however, so turning off the config option
-> still needs to be revisited
+> The same code was already removed from x86_64
 
-Have machine_kexec_prepare fail.
+By itself I don't think we are going to observe any real problems
+with this patch.
 
-I think your machine description or paravirt_ops or whatever it is needs
-to hook both machine_kexec_prepare and machine_kexec.
+However if we are going to be serious about this we need to do a
+few more things.
 
-I know there actually has been some work to get kexec actually working under
-Xen but I don't know where that has gone.
+- kill iopaic_renumber_irq.
+- Increase NR_IRQS.
+
+We will still be limited to about 208 interrupts in use at one
+time, but we can allow more irq sources to be described.
+
+This reminds me.  I really need to dig up my patch that doesn't
+allocate a vector for an irq until request irq time.
 
 Eric
-
-
-
