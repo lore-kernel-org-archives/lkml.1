@@ -1,56 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423091AbXBPDf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423095AbXBPD4I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423091AbXBPDf3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 22:35:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423093AbXBPDf3
+	id S1423095AbXBPD4I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 22:56:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161734AbXBPD4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 22:35:29 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57776 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423091AbXBPDf2 (ORCPT
+	Thu, 15 Feb 2007 22:56:08 -0500
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:64623 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161731AbXBPD4H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 22:35:28 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] shm:  Fix the locking and cleanup error handling in do_shmat.
-References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
-	<45D47020.1010309@googlemail.com>
-	<20070215140232.0aba86a7.akpm@linux-foundation.org>
-	<45D4EBB3.2060800@googlemail.com>
-	<m1r6srhsrt.fsf_-_@ebiederm.dsl.xmission.com>
-	<45D4F91F.505@googlemail.com>
-Date: Thu, 15 Feb 2007 20:34:55 -0700
-In-Reply-To: <45D4F91F.505@googlemail.com> (Michal Piotrowski's message of
-	"Fri, 16 Feb 2007 01:21:51 +0100")
-Message-ID: <m18xeyixls.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Thu, 15 Feb 2007 22:56:07 -0500
+Date: Thu, 15 Feb 2007 22:56:03 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+       systemtap@sources.redhat.com, ltt-dev@shafik.org
+Subject: Re: [PATCH] Linux Kernel Markers Documentation
+Message-ID: <20070216035603.GB16075@Krystal>
+References: <1171224207118-git-send-email-mathieu.desnoyers@polymtl.ca> <20070214231201.20918c6b.akpm@linux-foundation.org> <20070216013348.GC12736@Krystal> <20070215174500.2b1b3bb9.randy.dunlap@oracle.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070215174500.2b1b3bb9.randy.dunlap@oracle.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.4.34-grsec (i686)
+X-Uptime: 22:54:45 up 13 days, 18:02,  5 users,  load average: 1.04, 1.06, 1.06
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> drivers/video/Kconfig:1606:warning: 'select' used by config symbol 'FB_PS3'
-> refer to undefined symbol 'PS3_PS3AV'
-> /mnt/md0/devel/linux-mm/ipc/shm.c: In function 'do_shmat':
-> /mnt/md0/devel/linux-mm/ipc/shm.c:945: warning: passing argument 1 of 'IS_ERR'
-> makes pointer from integer without a cast
-> /mnt/md0/devel/linux-mm/ipc/shm.c:946: warning: passing argument 1 of 'PTR_ERR'
-> makes pointer from integer without a cast
-> /mnt/md0/devel/linux-mm/ipc/shm.c:931: warning: label 'out_nattch' defined but
-> not used
-> /mnt/md0/devel/linux-mm/ipc/shm.c:890: error: label 'out_put_path' used but not
-> defined
-> make[2]: *** [ipc/shm.o] Error 1
-> make[1]: *** [ipc] Error 2
-> make: *** [_all] Error 2
+Hi Randy,
 
-Definitely some weird  patch application problem.
+* Randy Dunlap (randy.dunlap@oracle.com) wrote:
+> so is the MARK() supposed to be:
+>   MARK(subsystem, event, ...
+> 
+> Please make the 2 doc. lines above match the parameters...
+> or the parameters match the text.
+> 
 
-All of the calls to IS_ERR and PTR_ERR should have been removed.
-Michal since it didn't seem to blow up when Andrew applied it I'm
-going to assume the problem is on your end for now.
+Fixing the paragraph below.
 
-Eric
+> > +- "%d %s %p[struct task_struct]" is the formatted string for (printk-style).
+> > +- someint is an integer.
+> > +- somestring is a char pointer.
+> > +- current is a pointer to a struct task_struct.
+> > +
+> > +The expression %p[struct task_struct] is a suggested marker definition
+> > +standard that could eventually be used for pointer type checking in
+> > +sparse. The brackets contain the type to which the pointer refer.
+>                                                               refers.
+> 
+> > +
+> > +#define SUBSYSTEM_EVENT_FORMAT "%d %s %p[struct task_struct]"
+> 
+> Is SUBSYSTEM_EVENT_FORMAT used implicitly below?  or elsewhere?
+> 
 
+Yes, error follows.
 
+> > +void probe_subsystem_event(const char *format, ...)
+> > +{
+> > +	va_list ap;
+> > +	/* Declare args */
+> > +	unsigned int value;
+> > +	const char *mystr;
+> > +	struct task_struct *task;
+> > +
+> > +	/* Assign args */
+> > +	va_start(ap, format);
+> > +	value = va_arg(ap, typeof(value));
+> > +	mystr = va_arg(ap, typeof(mystr));
+> > +	task = va_arg(ap, typeof(task));
+> > +
+> > +	/* Call tracer */
+> > +	trace_subsystem_event(value, mystr, task);
+> > +
+> > +	/* Or call printk */
+> > +	vprintk(format, ap);
+> > +
+> > +	/* or count, check rights... */
+> > +	
+> > +	va_end(ap);
+> > +}
+> > +
+> > +static int __init probe_init(void)
+> > +{
+> > +	int result;
+> > +	result = marker_set_probe("subsystem_event",
+> > +			FS_CLOSE_FORMAT,
+> > +			probe_fs_close);
+> 
+> Do FS_CLOSE_FORMAT and probe_fs_close() need to be defined here?
+> I.e., is this a complete example?
+> 
+
+should be SUBSYSTEM_EVENT_FORMAT. Will fix, thanks.
+
+Regards,
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Candidate, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
