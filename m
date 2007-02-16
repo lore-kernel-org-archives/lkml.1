@@ -1,114 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945947AbXBPPvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945953AbXBPPy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945947AbXBPPvV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 10:51:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945945AbXBPPvU
+	id S1945953AbXBPPy1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 10:54:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945955AbXBPPy1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 10:51:20 -0500
-Received: from raven.upol.cz ([158.194.120.4]:60921 "EHLO raven.upol.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945947AbXBPPvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 10:51:19 -0500
-Date: Fri, 16 Feb 2007 16:59:29 +0100
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: [pp] kbuild: asm-offsets generalized
-Message-ID: <20070216155929.GA14713@flower.upol.cz>
-References: <1171012761.2718.40.camel@localhost.localdomain> <1171012827.2718.42.camel@localhost.localdomain> <200702091109.20061.ak@muc.de> <1171024771.2718.129.camel@localhost.localdomain> <20070209141728.GA26749@uranus.ravnborg.org> <1171034599.2718.190.camel@localhost.localdomain> <E1HGbJz-0003Lc-6h@flower> <1171323696.19842.29.camel@localhost.localdomain> <20070213031044.GA17046@flower.upol.cz> <20070216155527.GA14687@flower.upol.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070216155527.GA14687@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+	Fri, 16 Feb 2007 10:54:27 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:33930 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945953AbXBPPy0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 10:54:26 -0500
+Subject: Re: [PATCH 2.6.21-rc1] ehea: dynamic add / remove port
+From: John Rose <johnrose@austin.ibm.com>
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Christoph Raisch <RAISCH@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <MEDER@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>, stefan.roscher@de.ibm.com,
+       netdev <netdev@vger.kernel.org>, Nathan Fontenot <nfont@austin.ibm.com>
+In-Reply-To: <200702161606.52789.ossthema@de.ibm.com>
+References: <200702141536.28665.ossthema@de.ibm.com>
+	 <1171491906.30473.3.camel@sinatra.austin.ibm.com>
+	 <200702161606.52789.ossthema@de.ibm.com>
+Content-Type: text/plain
+Message-Id: <1171641089.9442.8.camel@sinatra.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Ximian Evolution 1.4.6 (1.4.6-2) 
+Date: Fri, 16 Feb 2007 09:51:29 -0600
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi-
+
+Sounds good.  A couple of questions/comments:
+
+> I think it is not necessary to have a special entry/kobject for each logical
+> port. I suggest we use SET_NETDEV_DEV to create links to all ethernet devices
+> that represent each a logical port. This should be in sync with all other 
+> ethernet drivers. Port attributes like the "logical port id" that might be 
+> need by the userspace application can be added to the net:ethX entry
+> (link created with SET_NETDEV_DEV) as additional attributes. 
+
+As we develop the userspace tool, we are finding a need to know the
+following for each logical port:
+
+1) the linux interface/device (a symlink would do this)
+2) the logical port number - were you suggesting communicating this
+through the name of the symlink, or in the directory of the symlink
+target?
+3) the open firmware path for the logical port.  This is typically
+communicated through a sysfs attribute file "devspec", but we can't do
+this without a new kobject for the port.
+
 > > 
-> > Proposition will follow.
-> > 
-> []
+> > Second, the probe and remove functions do not communicate whether an add
+> > or remove was successful.  Combine this with the lack of port
+> > information in the adapter sysfs directory, and the userspace tool has
+> > no way of verifying a dynamic add/remove.
 > 
-> [patch proposition] kbuild: lguest with private asm-offsets
-[] 
->  * needs "asm-offsets magic demystified, generalized".
-[] 
+> True. I suggest we return error codes (-EIO / -EINVAL) in case the adding
+> or removing of ports fails. This is possible as we know instantly if the
+> operation failed or not. It is a synchronus operation.
 
-[patch proposition] kbuild: asm-offsets generalized
+Sounds good.
 
- * scripts/mkCconstants:
-   - asm-offsets magic demystified, generalized,
+Thanks!
+John
 
- * (hopefully) more readable sed scripts,
-
- * top Kbuild may be updated...
-
- * file needs `chmod u+x`, i don't know, how it's done in patch(1).
-
-pp-by: Oleg Verych
----
- scripts/mkCconstants           |  50 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 50 insertions(+), 0 deletions(-)
-
-Index: linux-2.6.20/scripts/mkCconstants
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/scripts/mkCconstants	2007-02-16 15:33:51.696900750 +0100
-@@ -0,0 +1,50 @@
-+#!/bin/sh
-+
-+# Input file, where values of interest are stored is produced by
-+# `cmd_cc_s_c'. It yields calculation of constants, needed in
-+# assembler modules. Output is a suitable header file.
-+#
-+# $1 - input filename;
-+# $2 - output filename;
-+# $3 - header file format: "normal" (default), "mips".
-+
-+set -e
-+
-+[ -z "$1" ] || [ -z "$2" ] && exit 1
-+
-+case $3 in
-+    mips)
-+	SED_SCRIPT='
-+/^@@@/{
-+s/^@@@//;
-+s/ \#.*\$//;
-+p;
-+}'
-+	;;
-+    normal | *)
-+	SED_SCRIPT='
-+/^->/{
-+s:^->\([^ ]*\) [\$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:;
-+s:->::;
-+p;
-+}'
-+	;;
-+esac
-+
-+cat << "EOF"  > $2
-+#ifndef __ASM_OFFSETS_H__
-+#define __ASM_OFFSETS_H__
-+
-+/*
-+ * This file was generated by scripts/mkCconstants
-+ */
-+
-+EOF
-+
-+sed -ne "$SED_SCRIPT" $1 >> $2
-+
-+cat << "EOF" >> $2
-+
-+#endif
-+
-+EOF
-
---
--o--=O`C  info emacs : not found
- #oo'L O  info make  : not found
-<___=E M  man gcc    : not found
