@@ -1,66 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422876AbXBPAdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422881AbXBPAdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422876AbXBPAdc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 19:33:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422879AbXBPAdc
+	id S1422881AbXBPAdp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 19:33:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422883AbXBPAdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 19:33:32 -0500
-Received: from [62.138.223.154] ([62.138.223.154]:4570 "EHLO
-	okir.darmstadt.suse.de" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1422876AbXBPAdb (ORCPT
+	Thu, 15 Feb 2007 19:33:44 -0500
+Received: from moutng.kundenserver.de ([212.227.126.174]:57445 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422881AbXBPAdo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 19:33:31 -0500
-X-Greylist: delayed 1102 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 Feb 2007 19:33:31 EST
-Date: Fri, 16 Feb 2007 01:15:04 +0100
-From: Olaf Kirch <okir@lst.de>
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: Valdis.Kletnieks@vt.edu, Dave Jones <davej@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
-       herbert.xu@redhat.com, linux-kernel@vger.kernel.org,
-       arjan@infradead.org, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing
-Message-ID: <20070216001504.GA20951@linux.suse.de>
-References: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com> <200702142214.53625.agruen@suse.de> <200702152034.l1FKYS93012172@turing-police.cc.vt.edu> <200702151412.43758.agruen@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 15 Feb 2007 19:33:44 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: [Cbe-oss-dev] [RFC, PATCH] CELL Oprofile SPU =?iso-8859-1?q?profiling=09updated=09patch?=
+Date: Fri, 16 Feb 2007 01:33:13 +0100
+User-Agent: KMail/1.9.5
+Cc: Carl Love <cel@us.ibm.com>, linuxppc-dev@ozlabs.org,
+       cbe-oss-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+References: <1171497138.23691.8.camel@dyn9047021078.beaverton.ibm.com> <1171570918.31179.36.camel@dyn9047021078.beaverton.ibm.com> <20070215215047.GE1913@linux.vnet.ibm.com>
+In-Reply-To: <20070215215047.GE1913@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <200702151412.43758.agruen@suse.de>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200702160133.14330.arnd@arndb.de>
+X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
+X-Provags-ID2: V01U2FsdGVkX1+EG+a2ddSudI5+5JfGgVC8usLDfpSB+WZTTfOC49k2Tm4rE3+SDTl+M5X+2WxloOkxCr2i7M+ynepvpgvXhO8qxaTqTfmXtPySQArXpNzd3g==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 February 2007 12:34, Valdis.Kletnieks@vt.edu wrote:
-> On Wed, 14 Feb 2007 22:14:53 PST, Andreas Gruenbacher said:
-> > I agree, that's really what should happen. We solve this by marking
-> > modules as supported, partner supported, or unsupported, but in an
-> > "insecure" way, so partners and users could try to fake the support
-> > status of a module and/or remove status flags from Oopses, and
-> > cryptography wouldn't save us.
->
-> Where cryptography *can* save you is that a partner or user can't fake a
-> 'Suse Supported' signature without access to the Suse private key.
+On Thursday 15 February 2007 22:50, Paul E. McKenney wrote:
+> Is this 1.5ms with interrupts disabled?  This time period is problematic
+> from a realtime perspective if so -- need to be able to preempt.
 
-The user has control over the running kernel, and given enough time
-and clue, can circumvent any protection mechanism the vendor comes
-up with. And that's a good thing IMO, unless you believe in "trusted
-computing" and all those Bigbrotherisms some agencies want to put
-in your machines.
+No, interrupts should be enabled here. Still, 1.5ms is probably a little
+too long without a cond_resched() in case kernel preemption is disabled.
 
-So the user is running a system in some state that may or may not
-resemble what the vendor shipped. When the machine crashes, the
-user is free to munge the oops until it looks like a valid one.
-
-Someone mentioned in this context that you can sign the oops - but to
-do that you need a private key. And the whole point of this exercise is
-that the user does not have access to that key.
-
-So as far as support is concerned, you're back in square one.
-You cannot tell a "genuine" oops produced on a supported kernel
-from a doctored one produced on Joe Doe's Garage Kernel.
-
-Olaf
--- 
-Olaf Kirch        |  Anyone who has had to work with X.509 has probably
-okir@lst.de       |  experienced what can best be described as
-------------------+  ISO water torture. -- Peter Gutmann
+	Arnd <><
