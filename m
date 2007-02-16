@@ -1,23 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751836AbXBPBN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751828AbXBPBWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751836AbXBPBN6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 20:13:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbXBPBN6
+	id S1751828AbXBPBWv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 20:22:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbXBPBWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 20:13:58 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:41950 "EHLO smtp.osdl.org"
+	Thu, 15 Feb 2007 20:22:51 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:42134 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751836AbXBPBN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 20:13:57 -0500
-Date: Thu, 15 Feb 2007 17:10:35 -0800
+	id S1751828AbXBPBWv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 20:22:51 -0500
+Date: Thu, 15 Feb 2007 17:22:42 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Marc St-Jean <stjeanma@pmc-sierra.com>
-Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       linux-serial@vger.kernel.org
-Subject: Re: [PATCH] serial driver PMC MSP71xx, kernel linux-mips.git master
-Message-Id: <20070215171035.83918aae.akpm@linux-foundation.org>
-In-Reply-To: <200702151926.l1FJQT2o020816@pasqua.pmc-sierra.bc.ca>
-References: <200702151926.l1FJQT2o020816@pasqua.pmc-sierra.bc.ca>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org
+Subject: Re: sparse chokes on arch/i386/kernel/i8253.c (was: 2.6.20-mm1)
+Message-Id: <20070215172242.ab7a6f1e.akpm@linux-foundation.org>
+In-Reply-To: <20070216003739.GC9851@Krystal>
+References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
+	<45D483D7.2040609@imap.cc>
+	<20070215144142.0c13580a.akpm@linux-foundation.org>
+	<20070215224656.GB6297@Krystal>
+	<20070215154418.88edfcbc.akpm@linux-foundation.org>
+	<20070216003739.GC9851@Krystal>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -25,13 +29,19 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Feb 2007 13:26:29 -0600
-Marc St-Jean <stjeanma@pmc-sierra.com> wrote:
+On Thu, 15 Feb 2007 19:37:39 -0500
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-> +			status = *(volatile u32 *)up->port.private_data;
+> > For what reason was that change made?
+> > 
+> 
+> It was made so that we can use the markers in C code without actually
+> including marker.h everywhere. I am sure someone has a better way to do
+> it : I would be happy to use this-nice-build-system-feature-I-missed to
+> have marker.h included.
 
-It distresses me that this patch uses a variable which this patch
-doesn't initialise anywhere.  It isn't complete.
+Oh.  One could whack it in kernel.h: pretty much everything includes that.
 
-The sub-driver code whch sets up this field shuld be included in the
-patch, no?
+But it'd be better to simply require that the clients of this
+infrastructure include the appropriate header file.  We do that for
+everything else and markers aren't special in this regard.
