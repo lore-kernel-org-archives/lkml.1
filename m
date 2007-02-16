@@ -1,50 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932209AbXBPKrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945946AbXBPKsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932209AbXBPKrO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 05:47:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932253AbXBPKrO
+	id S1945946AbXBPKsN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 05:48:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945950AbXBPKsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 05:47:14 -0500
-Received: from 207.47.60.150.static.nextweb.net ([207.47.60.150]:18732 "EHLO
-	webmail.xensource.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932209AbXBPKrN (ORCPT
+	Fri, 16 Feb 2007 05:48:12 -0500
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:7603 "EHLO
+	amsfep18-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1945946AbXBPKsL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 05:47:13 -0500
-User-Agent: Microsoft-Entourage/11.2.5.060620
-Date: Fri, 16 Feb 2007 10:47:11 +0000
-Subject: Re: [patch 14/21] Xen-paravirt: Add XEN config options and
- disableunsupported config options.
-From: Keir Fraser <keir@xensource.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Christian Limpach <Christian.Limpach@xensource.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Chris Wright <chrisw@sous-sol.org>,
-       Andi Kleen <ak@muc.de>, <xen-devel@lists.xensource.com>,
-       Ian Pratt <Ian.Pratt@xensource.com>, <virtualization@lists.osdl.org>,
-       Steven Hand <steven.hand@cl.cam.ac.uk>, <linux-kernel@vger.kernel.org>
-Message-ID: <C1FB3C2F.98E9%keir@xensource.com>
-Thread-Topic: [patch 14/21] Xen-paravirt: Add XEN config options and
- disableunsupported config options.
-Thread-Index: AcdRt8/EDlrZar2rEduvqQAX8io7RQ==
-In-Reply-To: <20070216020947.03e1726e.akpm@linux-foundation.org>
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Content-transfer-encoding: 7bit
+	Fri, 16 Feb 2007 05:48:11 -0500
+Subject: [PATCH] lockdep: annotate BLKPG_DEL_PARTITION
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       arjan <arjan@infradead.org>, Neil Brown <neilb@suse.de>,
+       Jens Axboe <axboe@kernel.dk>
+Content-Type: text/plain
+Date: Fri, 16 Feb 2007 11:45:39 +0100
+Message-Id: <1171622739.24923.64.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16/2/07 10:09, "Andrew Morton" <akpm@linux-foundation.org> wrote:
 
-> Are the places where the domU code references machine addresses splattered
-> all over the code?  If not, they can just be wrapped with
-> preempt_disable/preempt_enable?
 
-The main places where machine addresses are 'visible' are any code that
-holds a pte_t,pmd_t,pud_t,pgd_t. We hide the machine-to-pseudophysical and
-pseudophysical-to-machine translations inside e.g., pte_val() and __pte()
-(i.e., constructors and extractors for page table entries). Obviously the
-users of these macros are open coded all over the place, quite apart from
-the performance cost of sprinkling preempt_{enable,disable} so liberally.
+>=============================================
+>[ INFO: possible recursive locking detected ]
+>2.6.19-1.2909.fc7 #1
+>---------------------------------------------
+>anaconda/587 is trying to acquire lock:
+> (&bdev->bd_mutex){--..}, at: [<c05fb380>] mutex_lock+0x21/0x24
+>
+>but task is already holding lock:
+> (&bdev->bd_mutex){--..}, at: [<c05fb380>] mutex_lock+0x21/0x24
+>
+>other info that might help us debug this:
+>1 lock held by anaconda/587:
+> #0:  (&bdev->bd_mutex){--..}, at: [<c05fb380>] mutex_lock+0x21/0x24
+>
+>stack backtrace:
+> [<c0405812>] show_trace_log_lvl+0x1a/0x2f
+> [<c0405db2>] show_trace+0x12/0x14
+> [<c0405e36>] dump_stack+0x16/0x18
+> [<c043bd84>] __lock_acquire+0x116/0xa09
+> [<c043c960>] lock_acquire+0x56/0x6f
+> [<c05fb1fa>] __mutex_lock_slowpath+0xe5/0x24a
+> [<c05fb380>] mutex_lock+0x21/0x24
+> [<c04d82fb>] blkdev_ioctl+0x600/0x76d
+> [<c04946b1>] block_ioctl+0x1b/0x1f
+> [<c047ed5a>] do_ioctl+0x22/0x68
+> [<c047eff2>] vfs_ioctl+0x252/0x265
+> [<c047f04e>] sys_ioctl+0x49/0x63
+> [<c0404070>] syscall_call+0x7/0xb
 
- -- Keir
+Annotate BLKPG_DEL_PARTITION's bd_mutex locking and add a little comment
+clarifying the bd_mutex locking, because I confused myself and initially
+thought the lock order was wrong too.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ block/ioctl.c  |    2 +-
+ fs/block_dev.c |    7 +++++++
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.20.noarch/block/ioctl.c
+===================================================================
+--- linux-2.6.20.noarch.orig/block/ioctl.c
++++ linux-2.6.20.noarch/block/ioctl.c
+@@ -82,7 +82,7 @@ static int blkpg_ioctl(struct block_devi
+ 			fsync_bdev(bdevp);
+ 			invalidate_bdev(bdevp, 0);
+ 
+-			mutex_lock(&bdev->bd_mutex);
++			mutex_lock_nested(&bdev->bd_mutex, 1);
+ 			delete_partition(disk, part);
+ 			mutex_unlock(&bdev->bd_mutex);
+ 			mutex_unlock(&bdevp->bd_mutex);
+Index: linux-2.6.20.noarch/fs/block_dev.c
+===================================================================
+--- linux-2.6.20.noarch.orig/fs/block_dev.c
++++ linux-2.6.20.noarch/fs/block_dev.c
+@@ -1101,6 +1101,13 @@ static int __blkdev_get(struct block_dev
+ 			int for_part);
+ static int __blkdev_put(struct block_device *bdev, int for_part);
+ 
++/*
++ * bd_mutex locking:
++ *
++ *  mutex_lock(part->bd_mutex)
++ *    mutex_lock_nested(whole->bd_mutex, 1)
++ */
++
+ static int do_open(struct block_device *bdev, struct file *file, int for_part)
+ {
+ 	struct module *owner = NULL;
+
 
