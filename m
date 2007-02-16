@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946125AbXBPUWB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946122AbXBPUXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946125AbXBPUWB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 15:22:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946123AbXBPUWA
+	id S1946122AbXBPUXW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 15:23:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946126AbXBPUXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 15:22:00 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34569 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946121AbXBPUV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 15:21:59 -0500
-Date: Fri, 16 Feb 2007 15:21:35 -0500
-From: Dave Jones <davej@redhat.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: David Howells <dhowells@redhat.com>, torvalds@osdl.org, akpm@osdl.org,
-       herbert.xu@redhat.com, linux-kernel@vger.kernel.org,
-       arjan@infradead.org, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH 0/6] MODSIGN: Kernel module signing
-Message-ID: <20070216202135.GA22121@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Pavel Machek <pavel@ucw.cz>, David Howells <dhowells@redhat.com>,
-	torvalds@osdl.org, akpm@osdl.org, herbert.xu@redhat.com,
-	linux-kernel@vger.kernel.org, arjan@infradead.org,
-	linux-crypto@vger.kernel.org
-References: <20070214190938.6438.15091.stgit@warthog.cambridge.redhat.com> <20070215221304.GB6602@ucw.cz>
-Mime-Version: 1.0
+	Fri, 16 Feb 2007 15:23:21 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:54254 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946122AbXBPUXV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 15:23:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=fbBrR0H8EounLMKs5lcwRyi2GGaVNM9IVSPoIfDj87rxeZoQdzVAhRDt10W/6K3loMq7rd6mNW+rrdthShx91C8zDa1wmSceBSu/t4e5p7m67Av4/FrniFL+8gh6dExbwfdRjplyEEBbArAZwGYhMOgFmU9anbVEwwTffdLnw2s=
+Date: Fri, 16 Feb 2007 23:20:36 +0300
+From: "Cyrill V. Gorcunov" <gorcunov@gmail.com>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: linux-kernel-list <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 05/11] syslets: core code
+Message-ID: <20070216202036.GA10190@cvg>
+References: <Pine.LNX.4.64.0702150920130.20368@woody.linux-foundation.org> <20070215181059.GC20997@2ka.mipt.ru> <Pine.LNX.4.64.0702151019210.20368@woody.linux-foundation.org> <20070215190413.GA23953@2ka.mipt.ru> <Pine.LNX.4.64.0702151120260.20368@woody.linux-foundation.org> <20070216085706.GA22868@2ka.mipt.ru> <Pine.LNX.4.64.0702160753120.20368@woody.linux-foundation.org> <20070216160525.GA21160@2ka.mipt.ru> <2c0942db0702160853s18f650ccsa7270c047d94a41b@mail.gmail.com> <20070216165854.GA18522@2ka.mipt.ru>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070215221304.GB6602@ucw.cz>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20070216165854.GA18522@2ka.mipt.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 15, 2007 at 10:13:04PM +0000, Pavel Machek wrote:
- > Hi!
- > 
- > > Now, this is not a complete solution by any means: the core kernel is not
- > > protected, and nor are /dev/mem or /dev/kmem, but it denies (or at least
- > > controls) one relatively simple attack vector.
- > 
- > Could we fix the /dev/*mem holes, first? They are already used by
- > malicious modules (aka rootkits...).  Or can selinux already provide
- > /dev/*mem protection with no way for admin to turn it off?
+On Fri, Feb 16, 2007 at 07:58:54PM +0300, Evgeniy Polyakov wrote:
+| Absolutely.
+| And if overall system design is good, there is no problem to change
+| (well, for those who fail to read to the end and understand my english
+| replace 'to change' with 'to create and commit') interface to the state
+| where it will satisfy all (majority of) users.
+| 
+| Situations when system is designed from interface down to system ends up
+| with one thread per IO and huge limitations on how system is going to be
+| used at all.
+| 
+| -- 
+| 	Evgeniy Polyakov
 
-There are some valid uses for peeking through /dev/mem. Things like
-dmidecode for example.  So you don't want to disable it completely
-in a lot of cases, but have fine-grained access to specific parts
-of the file.  I'm not sure SELinux can do this. Maybe the MLS stuff
-helps here (though I'm far from an expert on this, so I could be
-talking out of my rear).
-
-The restricted dev/mem patches we've had in Fedora for a while
-do the right thing, but they're a bit crufty (in part due to
-drivers/char/mem.c being a bit of a mess before we even start
-patching it).  I've had "clean these up for upstream" on my
-todo for a while. I might get around to it one of these days.
-
-		Dave
+I'm sorry for meddling in conversation but I think Linus misunderstood
+you. If I'm right you propose to "create and commit" _new_ interfaces
+only? I mean _changing_ of interfaces exported to user space is
+very painfull... for further support. Don't swear at me if I wrote
+something stupid ;)
 
 -- 
-http://www.codemonkey.org.uk
+
+		Cyrill
+
