@@ -1,88 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946246AbXBPW2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946249AbXBPWa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946246AbXBPW2d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 17:28:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946249AbXBPW2d
+	id S1946249AbXBPWa2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 17:30:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946253AbXBPWa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 17:28:33 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:51263 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946246AbXBPW2c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 17:28:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=L9GHJ1I2fJzC6lP7Q3/C27bUM8Pc+FNkF0mKZ280Z8AokoNtuDkNnlm8tFBjdD+rCm5+8OTt1xALqWNQOuQY+xAr59hLyMFk3yV+fDaYurSrVJFiwytMFQXhVV+FlZzXERplblJx7JcGKMcHDGUxp+rEPwyJ1h3G8jGmXxowfos=
-Message-ID: <a4e6962a0702161428p240ab9acwd0a384dedd1b99e6@mail.gmail.com>
-Date: Fri, 16 Feb 2007 16:28:31 -0600
-From: "Eric Van Hensbergen" <ericvh@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] 9p: add write-cache support to loose cache mode (take 3)
-Cc: linux-kernel@vger.kernel.org, v9fs-developer@lists.sourceforge.net
-In-Reply-To: <20070216121226.f2382a17.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 16 Feb 2007 17:30:27 -0500
+Received: from gate.crashing.org ([63.228.1.57]:52700 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946249AbXBPWa0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 17:30:26 -0500
+Subject: Re: [RFC] killing the NR_IRQS arrays.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com>
+References: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
+Date: Sat, 17 Feb 2007 09:29:52 +1100
+Message-Id: <1171664993.5644.92.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11715506591894-git-send-email-ericvh@gmail.com>
-	 <1171640221420-git-send-email-ericvh@gmail.com>
-	 <20070216121226.f2382a17.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/16/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Fri, 16 Feb 2007 09:37:01 -0600 Eric Van Hensbergen <ericvh@gmail.com> wrote:
->
-> > +static int v9fs_vfs_writepage(struct page *page, struct writeback_control *wbc)
-> > +{
-> > +     char *buffer = NULL;
-> > +     struct address_space *mapping = page->mapping;
-> > +     int retval = -EIO;
-> > +     loff_t offset = 0;
-> > +     pgoff_t end_index;
-> > +     int count = PAGE_CACHE_SIZE;
-> > +     struct file *filp = v9fs_find_file(page);
-> > +     struct inode *inode = mapping->host;
-> > +
-> > +     dprintk(DEBUG_VFS, "page: %p\n", page);
-> > +
-> > +     if ((!inode) || (!filp))
-> > +             goto UnlockPage;
-> > +
-> > +     end_index = inode->i_size >> PAGE_CACHE_SHIFT;
-> > +
-> > +     /* complicated case at end of file */
-> > +     if (page->index >= end_index) {
-> > +             /* things got complicated... */
-> > +             count = inode->i_size & (PAGE_CACHE_SIZE - 1);
-> > +             if (page->index >= end_index + 1 || !count)
-> > +                     return 0;       /* truncated - don't care */
-> > +     }
-> > +
-> > +     buffer = kmap(page);
-> > +     offset = ((loff_t) page->index << PAGE_CACHE_SHIFT);
-> > +     page_cache_get(page);
-> > +     retval = v9fs_write(filp, NULL, buffer, count, &offset);
-> > +
-> >       kunmap(page);
-> > +
-> > +      UnlockPage:
-> >       unlock_page(page);
-> > +     page_cache_release(page);
-> > +
-> >       return retval;
-> >  }
->
-> The page_cache_get/release here aren't needed: lock_page suffices.
->
-> Are you sure the page refcounting is right if the `goto UnlockPage'
-> happens?
->
-> Can that goto actually happen??
->
+On Fri, 2007-02-16 at 05:10 -0700, Eric W. Biederman wrote:
 
-It shouldn't, if it does we are probably in big trouble anyways.  I'll
-pull it out.  Thanks.
+> Getting the drivers changed actually looks to be pretty straight
+> forward it will just be a very large mechanical change.  We change the
+> type where of variables where appropriate and every once in a while
+> introduce an irq_nr(irq) to get the actual irq number for the places
+> that care (ISA or print statements).
 
-                  -eric
+Dunno about that irq_nr thingy. If we go that way, I'd be tempted to
+remove the number completely from the "public" side of irq_desc... or
+not.
+
+On powerpc, we have this remapped thingy because we completely separate
+the linux "virtual" interrupt domain from the physical numbering domains
+of each PIC. Your change would turn the linux virtual domain into
+pointers, removing the need for an array and associated limitations,
+which is nice.
+
+So to a given irq_desc / irq "virtual" number today, I match a pair HW
+number (which is a special typedef which is currently defined as an
+unsigned long) and a pointer to the irq "host" (which is the entity that
+define a HW number domain).
+
+That means that you can have multiple hosts and a given HW number can
+exist multiple times, once per host.
+
+Do you think the irq_hwnumber_t thingy I have should then be generalized
+and put into the irq_desc ? I would need an additional void * pointer to
+the irq host as well (it's not a 1:1 relationship to an irq chip and
+need to be accessed by generic code).
+
+Having the HW number be clearly specific to a "domain controller" makes
+also a lot of sense in the embedded field with lots of cascaded
+interrupt controllers. It avoids having to play all sorts of tricks to
+assign ranges of numbers to various controllers in the system. Only the
+local number on a given controller matters, the rest is dynamically
+assigned.
+ 
+Another option would be to have the irq_desc be created by the arch and
+"embedded" in a larger data structure, in which case the HW number would
+be part of the private part of that data structure. Though I suppose
+that could be a problem with ISA...
+
+I suspect that for backward compatibility, we will need to keep
+something (optionally maybe via CONFIG_*) for ISA/legacy interrupts.
+That is a 16 entries irq_desc* array, so we can go from a legacy IRQ
+number to an irq_desc on platform that have legacy/ISA crap floating
+around.
+
+On powerpc, what I do is that I always reserve entries 0...15 of my
+remapping array in such a way that linux virtual irq 0 is always
+reserved, and 1...15 are only ever assigned to legacy interrupts if they
+exist in the system, or left unassigned if they don't.
+
+> I think we can make this change fairly smoothly if before the code is
+> merged into Linus's tree we have a patchset prepared with a all of the
+> core infrastructure changes and a best effort at all of the driver
+> changes.  Then early some merge window we merge the patchset, and
+> fixup the drivers that were missed.
+
+As long as we do things properly and not with a big "DESIGNED FOR x86"
+hack in the middle that makes it hard for everybody else, I agree.
+
+Cheers,
+Ben.
+
