@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964824AbXBPNsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030188AbXBPNsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964824AbXBPNsA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 08:48:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964834AbXBPNsA
+	id S1030188AbXBPNsK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 08:48:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964932AbXBPNsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 08:48:00 -0500
-Received: from camay.yandex.ru ([213.180.200.33]:53202 "EHLO camay.yandex.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964824AbXBPNsA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 08:48:00 -0500
-Date: Fri, 16 Feb 2007 16:47:44 +0300 (MSK)
-From: "Mockern" <Mockern@yandex.ru>
-Message-Id: <45D5B600.000007.30983@camay.yandex.ru>
+	Fri, 16 Feb 2007 08:48:10 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:50607 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964845AbXBPNsI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 08:48:08 -0500
+Message-ID: <45D5B60F.7020104@ru.mvista.com>
+Date: Fri, 16 Feb 2007 16:47:59 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-X-Mailer: Yamail [ http://yandex.ru ]
-To: jirislaby@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: bloc_til_ready in tty driver
-X-MsgDayCount: 3
-X-BornDate: 1134853200
-In-Reply-To: <45D5A7FE.7010309@gmail.com>
-Reply-To: Mockern@yandex.ru
-References: <45D5A1E0.000004.21866@tide.yandex.ru> <45D5A7FE.7010309@gmail.com>
-X-Source-Ip: 84.185.222.204
-Content-Type: text/plain;
-  charset="KOI8-R"
-Content-Transfer-Encoding: 8bit
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Marc St-Jean <stjeanma@pmc-sierra.com>, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org, linux-serial@vger.kernel.org
+Subject: Re: [PATCH] serial driver PMC MSP71xx, kernel linux-mips.git master
+References: <200702151926.l1FJQT2o020816@pasqua.pmc-sierra.bc.ca> <20070215171035.83918aae.akpm@linux-foundation.org>
+In-Reply-To: <20070215171035.83918aae.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanx for your respond,
+Hello.
 
-I did not implement this function in my tty driver.
+Andrew Morton wrote:
 
-Does it help to work my driver with cat Linux operation?
-(e.g. cat < ttyS10)
+>>+			status = *(volatile u32 *)up->port.private_data;
 
+> It distresses me that this patch uses a variable which this patch
+> doesn't initialise anywhere.  It isn't complete.
 
->Mockern napsal(a):
->> What for is "bloc_til_ready" function in tty drivers?
->
->Most drivers waits for hardware to detect carrier and for closed callout.
->
->regards,
+    I assume this gets passed via early_serial_setup(). Marc?
 
--- 
-Сегодня удачный день, чтобы завести почту на Яндексе http://mail.yandex.ru
+> The sub-driver code whch sets up this field shuld be included in the
+> patch, no?
+
+    Hardly so, this code (not a subdriver) resides under arch/mips/ I think.
+
+WBR, Sergei
