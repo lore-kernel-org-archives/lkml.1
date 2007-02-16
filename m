@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932348AbXBPNzI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1160996AbXBPNzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932348AbXBPNzI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 08:55:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932349AbXBPNzH
+	id S1160996AbXBPNzR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 08:55:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1160999AbXBPNzP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 08:55:07 -0500
-Received: from mail.screens.ru ([213.234.233.54]:49866 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932348AbXBPNzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 08:55:06 -0500
-Date: Fri, 16 Feb 2007 16:55:02 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] unify queue_delayed_work and queue_delayed_work_on fix
-Message-ID: <20070216135502.GA83@tv-sign.ru>
-References: <20070215051408.a7fb7d81.akpm@linux-foundation.org> <25269175172137025681@wsc.cz>
-Mime-Version: 1.0
+	Fri, 16 Feb 2007 08:55:15 -0500
+Received: from omx1-ext.sgi.com ([192.48.179.11]:33446 "EHLO omx1.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S964834AbXBPNzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 08:55:12 -0500
+From: John Keller <jpk@sgi.com>
+Message-Id: <200702161353.l1GDrq4q413863@fcbayern.americas.sgi.com>
+Subject: Re: [PATCH 1/1] -  acpi_unload_table_id() always returns error
+To: lenb@kernel.org (Len Brown)
+Date: Fri, 16 Feb 2007 07:53:51 -0600 (CST)
+Cc: jpk@sgi.com (John Keller), linux-acpi@vger.kernel.org, ayoung@sgi.com,
+       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200702152329.55535.lenb@kernel.org> from "Len Brown" at Feb 15, 2007 11:29:55 PM
+X-Mailer: ELM [version 2.5 PL2]
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <25269175172137025681@wsc.cz>
-User-Agent: Mutt/1.5.11
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/16, Jiri Slaby wrote:
-> 
-> unify queue_delayed_work and queue_delayed_work_on fix
-> 
-> Since cwq->wq is unset for other than singlethread_cpu when singlethread
-> workqueue was created, an oops occurs during bootup.
+Yes.
 
-And I thought I tested this...
+      I understand and agree this project and the contribution
+      are public and that a record of the contribution (including all
+      personal information I submit with it, including my sign-off) is
+      maintained indefinitely. I thereby license this patch to be
+      redistributed under any license (GPL or non-GPL) consistent
+      with the project.
 
->                                                       Fix it by setting
-> correct private value for workqueue.
+John
 
-Thanks!!!
 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 > 
-> ---
-> commit 7bc281be5811f9b1dd01c25eaf492f4765737fd0
-> tree 7795008066bb89e7489384cde95e63260602d5af
-> parent 61c2024a2dd044e32747542cfbf4b22251df3bc2
-> author Jiri Slaby <jirislaby@gmail.com> Fri, 16 Feb 2007 00:49:15 +0100
-> committer Jiri Slaby <jirislaby@gmail.com> Fri, 16 Feb 2007 00:49:15 +0100
+> Thanks for the fix, John.
+> Do you grant Intel permission to apply it to the upstream ACPICA tree (with its non-GPL license)?
 > 
->  kernel/workqueue.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
+> -Len
 > 
-> diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-> index f2089bf..af5e597 100644
-> --- a/kernel/workqueue.c
-> +++ b/kernel/workqueue.c
-> @@ -210,7 +210,8 @@ int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
->  
->  		/* This stores cwq for the moment, for the timer_fn */
->  		set_wq_data(work,
-> -			per_cpu_ptr(wq->cpu_wq, raw_smp_processor_id()));
-> +			per_cpu_ptr(wq->cpu_wq, wq->singlethread ?
-> +				singlethread_cpu : raw_smp_processor_id()));
->  		timer->expires = jiffies + delay;
->  		timer->data = (unsigned long)dwork;
->  		timer->function = delayed_work_timer_fn;
+> On Thursday 15 February 2007 15:08, John Keller wrote:
+> > acpi_unload_table_id() is always returning an error status.
+> > Also, once the matching table is found, don't bother looking
+> > for another match.
+> > 
+> > 
+> > Signed-off-by: John Keller <jpk@sgi.com>
+> > ---
+> > 
+> > 
+> > Index: release/drivers/acpi/tables/tbxface.c
+> > ===================================================================
+> > --- release.orig/drivers/acpi/tables/tbxface.c	2007-02-13 08:20:42.000000000 -0600
+> > +++ release/drivers/acpi/tables/tbxface.c	2007-02-15 14:04:07.855248010 -0600
+> > @@ -338,9 +338,9 @@ acpi_status acpi_unload_table_id(acpi_ow
+> >  	int i;
+> >  	acpi_status status = AE_NOT_EXIST;
+> >  
+> > -	ACPI_FUNCTION_TRACE(acpi_unload_table);
+> > +	ACPI_FUNCTION_TRACE(acpi_unload_table_id);
+> >  
+> > -	/* Find table from the requested type list */
+> > +	/* Find table in the global table list */
+> >  	for (i = 0; i < acpi_gbl_root_table_list.count; ++i) {
+> >  		if (id != acpi_gbl_root_table_list.tables[i].owner_id) {
+> >  			continue;
+> > @@ -352,8 +352,9 @@ acpi_status acpi_unload_table_id(acpi_ow
+> >  		* simply a position within the hierarchy
+> >  		*/
+> >  		acpi_tb_delete_namespace_by_owner(i);
+> > -		acpi_tb_release_owner_id(i);
+> > +		status = acpi_tb_release_owner_id(i);
+> >  		acpi_tb_set_table_loaded_flag(i, FALSE);
+> > +		break;
+> >  	}
+> >  	return_ACPI_STATUS(status);
+> >  }
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > 
+> 
 
