@@ -1,91 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932570AbXBPDM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161339AbXBPDP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932570AbXBPDM0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 22:12:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932574AbXBPDM0
+	id S1161339AbXBPDP2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 22:15:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161374AbXBPDP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 22:12:26 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:48415 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932570AbXBPDMZ (ORCPT
+	Thu, 15 Feb 2007 22:15:28 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:1899 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161339AbXBPDP1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 22:12:25 -0500
-X-Sasl-enc: CzkvZACPyiCimUZpNlw9zesuFVTHmCUSjEGkgDIbl/Es 1171595553
-Date: Fri, 16 Feb 2007 01:12:19 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: linux-kernel@vger.kernel.org
-Cc: Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: [PATCH] input: extend EV_LED
-Message-ID: <20070216031219.GA2397@khazad-dum.debian.net>
-References: <freemail.20070115234756.58787@fm13.freemail.hu> <1171580944.5839.38.camel@localhost.localdomain>
+	Thu, 15 Feb 2007 22:15:27 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 15 Feb 2007 19:15:24 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 09/14] syslets: x86, add move_user_context() method
+In-Reply-To: <Pine.LNX.4.64.0702151058040.11064@alien.or.mcafeemobile.com>
+Message-ID: <Pine.LNX.4.64.0702151904570.11064@alien.or.mcafeemobile.com>
+References: <20070215165242.GJ4285@elte.hu> <Pine.LNX.4.64.0702151058040.11064@alien.or.mcafeemobile.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1171580944.5839.38.camel@localhost.localdomain>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Feb 2007, Richard Purdie wrote:
-> This has been discussed in several places several times. The problem
-> with hardware accelerated flashing is that you're are often limited to
-> certain constraints (this case being no exception) and indicating what
-> these are to userspace in a generic fashion is difficult.
+On Thu, 15 Feb 2007, Davide Libenzi wrote:
 
-The hability to blinking at one rate is *very* common on laptops.  Blinking
-at a few discrete rates is also common enough.  They should be supported in
-a generic way.
+> On Thu, 15 Feb 2007, Ingo Molnar wrote:
+> 
+> >  /*
+> > + * Move user-space context from one kernel thread to another.
+> > + * This includes registers and FPU state. Callers must make
+> > + * sure that neither task is running user context at the moment:
+> > + */
+> > +void
+> > +move_user_context(struct task_struct *new_task, struct task_struct *old_task)
+> > +{
+> > +	struct pt_regs *old_regs = task_pt_regs(old_task);
+> > +	struct pt_regs *new_regs = task_pt_regs(new_task);
+> > +	union i387_union *tmp;
+> > +
+> > +	*new_regs = *old_regs;
+> > +	/*
+> > +	 * Flip around the FPU state too:
+> > +	 */
+> > +	tmp = new_task->thread.i387;
+> > +	new_task->thread.i387 = old_task->thread.i387;
+> > +	old_task->thread.i387 = tmp;
+> > +}
+> 
+> Let's say that old_task ("prev" at the incoming schedule) has TS_USEDFPU 
+> set. Its context gets moved to the new_task (the one returning to 
+> userspace) *before* the __unlazy_fpu() done in __switch_to(). The 
+> __unlazy_fpu() at the following schedule will save the state to the old 
+> new_task context, and that fine as far as the going-to-sleep task goes.
+> The next fault happening in new_task (return to userspace one) will reload 
+> a non up2date context (the one we got from old_task, but never hit by 
+> the __unlazy_fpu() flush). Right?
 
-I want to convert ibm-acpi to the led interface, but if it means I have to
-provide custom attributes on top of the led class, it sort of defeats most
-of the purpose of using the led class to begin with -- it will NOT be
-generic.
+Yeah. Given TS_USEDFPU set, before move_user_context():
 
-If I have to provide those attributes elsewhere in the sysfs tree other than
-somewhere in the led class, then it defeats the purpose of using the led
-class completely:  I will just scrap the idea.  I am not going to remove
-functionality.  And I am not going to emulate in software something the
-hardware can do, especially when that means bothering the EC with a slow
-ACPI-subsystem-gated LPC bus IO port access for no good reason.
+CPU  => FPUc
+NTSK => FPUn
+OTSK => FPUo
 
-Here's a suggestion for a simple, non-overengineered interface: a "blink"
-attribute (on/off) for leds which can hardware-blink.  Only one blink
-frequency is common enough that this attribute by itself is very useful
-(e.g. it is all a ThinkPad and most WiFi/network card leds need).
+After move_user_context():
 
-For hardware-blink leds with various frequencies, there is the typical way
-to provide such things: give us a RO blink_available_frequencies attribute
-which says which discrete frequencies are allowed (space separated), and a
-RW blink_frequency attribute to set the frequency.  If instead of
-blink_available_frequencies, the driver provides RO blink_frequency_min and
-_max attributes, then it means it can blink on that range of freqs.
+CPU  => FPUc
+NTSK => FPUo
+OTSK => FPUn
 
-That is simple enough to implement and use, and generic enough.  You just
-need to set in stone if you want the freq in Hz, or a submultiple.  You can
-even implement an optional "blink" software emulation that drivers can hook
-into for systems where the driver *knows* that led access is fast, but there
-is no hardware blinking emulation.
+After the incoming __unlazy_fpu() in __switch_to():
 
-> One way I've come up with is adds capability to the class to have LED
-> specific triggers and you can then expose these hardware capabilities as
-> an extra trigger specific to the LED.
+CPU  => FPUc
+NTSK => FPUo
+OTSK => FPUc
 
-How would that look like?  It doesn't sound too bad.  Could you give us an
-example of what the tree would look like, and what the attributes would be
-(and do)?
+After the first fault in NTSK:
 
-> Another proposal more specific to this use case was to have some
-> information behind the scenes which the software timer based trigger
-> could use to turn on the "hardware acceleration" if present and capable
-> of the requested mode. This might just need a function pointer in the
-> core so could be quite neat.
+CPU  => FPUo
+NTSK => FPUo
+OTSK => FPUc
 
-This looks like a severely overengineered way to deal with the problem at
-first glance.
+So NTSK loads a non up2date FPUo, instead of the FPUc that was the "dirty" 
+context to migrate (since TS_USEDFPU was set).
+I think you need an early __unlazy_fpu() in that case.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+
+
+
+- Davide
+
+
