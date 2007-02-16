@@ -1,71 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932293AbXBPMxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964817AbXBPNMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932293AbXBPMxt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 07:53:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932305AbXBPMxt
+	id S964817AbXBPNMe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 08:12:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964822AbXBPNMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 07:53:49 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59132 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932293AbXBPMxr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 07:53:47 -0500
-Date: Fri, 16 Feb 2007 13:53:53 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: David Schwartz <davids@webmaster.com>
-Cc: trent.waddington@gmail.com, Neil Brown <neilb@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: GPL vs non-GPL device drivers
-Message-ID: <20070216125353.GN13958@stusta.de>
-References: <3d57814d0702151351i544f9efdh6c7dfc8be5a35c69@mail.gmail.com> <MDEHLPKNGKAHNMBLJOLKKEBDBKAC.davids@webmaster.com>
+	Fri, 16 Feb 2007 08:12:34 -0500
+Received: from mail.sf-mail.de ([62.27.20.61]:46451 "EHLO mail.sf-mail.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964817AbXBPNMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 08:12:33 -0500
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: minyard@acm.org
+Subject: Re: [patch 3/4] ipmi: add pci remove handling
+Date: Fri, 16 Feb 2007 14:16:17 +0100
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20070214200624.GC5364@localdomain> <20070215022745.648ab8cb.akpm@linux-foundation.org> <20070215155318.GA24870@localdomain>
+In-Reply-To: <20070215155318.GA24870@localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKKEBDBKAC.davids@webmaster.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: multipart/signed;
+  boundary="nextPart1666322.6071fCiHyn";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200702161416.22471.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 15, 2007 at 04:38:41PM -0800, David Schwartz wrote:
->...
-> Just to be perfectly clear, it is an outrageous claim that *every*
-> *possible* kernel module must be a derivative work of the kernel. Copyright
-> *cannot* protect every possible way to accomplish a particular function (and
-> "a Linux driver for the X800 graphics chipset" is a function).
+--nextPart1666322.6071fCiHyn
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-This is just your personal opinion.
+Am Donnerstag, 15. Februar 2007 schrieb Corey Minyard:
+> On Thu, Feb 15, 2007 at 02:27:45AM -0800, Andrew Morton wrote:
+> > Judging from the patch headers you were working against 2.6.19, which is
+> > most optimistic.  Please always prepare and test patches against the
+> > latest kernel.
+>
+> Well, I had it applied against a 2.6.20 kernel, but I messed up the
+> testing of it.  Sorry, my bad.
+>
+> New patch...
+>
+>
+> Add pci_remove handling to the driver, so it will clean up if
+> the device is hot-removed.
+>
+> Signed-off-by: Corey Minyard <minyard@acm.org>
+>
+> Index: linux-2.6.20/drivers/char/ipmi/ipmi_si_intf.c
+> ===================================================================
+> --- linux-2.6.20.orig/drivers/char/ipmi/ipmi_si_intf.c
+> +++ linux-2.6.20/drivers/char/ipmi/ipmi_si_intf.c
+> @@ -2191,12 +2191,15 @@ static int __devinit ipmi_pci_probe(stru
+>  		info->irq_setup = std_irq_setup;
+>
+>  	info->dev = &pdev->dev;
+> +	pdev->dev.driver_data = info;
+>
+>  	return try_smi_init(info);
+>  }
+>
+>  static void __devexit ipmi_pci_remove(struct pci_dev *pdev)
+>  {
+> +	struct smi_info *info = pdev->dev.driver_data;
+> +	cleanup_one_si(info);
+>  }
 
-"derivative work" is a term with many grey areas.
-Does linking create a derivative work?
-Or including the code of one "static inline" function in your binary?
-There is no border everyone agrees on.
+Please use pci_{set,get}_drvdata() to access this field.
 
-And even judges in different jurisdictions might decide differently
-based on different copyright laws.
+Greetings,
 
-Perhaps some module would be considered legal in the USA and Russia but 
-illegal in Germany and China, or the other way round.
+Eike
 
-> Copyright can
-> *only* protect the one possible way you chose to do something out of a large
-> number of equally good possible ways. (See, for example, Lexmark v. Static
-> Controls where courts held that Static Controls could take Lexmark's TLP
-> software because that was the only practical way to make a compatible toner
-> cartridge.)
->...
+--nextPart1666322.6071fCiHyn
+Content-Type: application/pgp-signature
 
-It's always funny seeing people making univeral claims only based on 
-laws and court cases that have zero relevance for > 95% of all people...
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
 
-> DS
+iD8DBQBF1a6mXKSJPmm5/E4RAr21AJ4yos6En10PtNy7t0B5Q7V/n70gDwCffHBa
+QhwBS/sQR2ZEdAGdKMHqpo4=
+=8fGJ
+-----END PGP SIGNATURE-----
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+--nextPart1666322.6071fCiHyn--
