@@ -1,80 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945920AbXBPPYE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945928AbXBPP3B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945920AbXBPPYE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 10:24:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945916AbXBPPYE
+	id S1945928AbXBPP3B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 10:29:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945927AbXBPP3B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 10:24:04 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47556 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945911AbXBPPYB (ORCPT
+	Fri, 16 Feb 2007 10:29:01 -0500
+Received: from webmail15.mail.yandex.net ([213.180.200.30]:35037 "EHLO
+	webmail15.mail.yandex.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945928AbXBPP3A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 10:24:01 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [RFC] killing the NR_IRQS arrays.
-References: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com>
-	<20070216124117.GB4218@elte.hu>
-Date: Fri, 16 Feb 2007 08:23:18 -0700
-In-Reply-To: <20070216124117.GB4218@elte.hu> (Ingo Molnar's message of "Fri,
-	16 Feb 2007 13:41:17 +0100")
-Message-ID: <m1bqjudt3t.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 16 Feb 2007 10:29:00 -0500
+Date: Fri, 16 Feb 2007 18:28:53 +0300 (MSK)
+From: "Mockern" <Mockern@yandex.ru>
+Message-Id: <45D5CDB5.000001.19383@webmail15.yandex.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Yamail [ http://yandex.ru ]
+To: linux-os@analogic.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: cat, cp operations for tty driver (like for char one)
+X-MsgDayCount: 5
+X-BornDate: 1134853200
+In-Reply-To: <Pine.LNX.4.61.0702161011080.4199@chaos.analogic.com>
+Reply-To: Mockern@yandex.ru
+References: <45D47779.000006.08064@webmail16.yandex.ru> <Pine.LNX.4.61.0702151146400.2062@chaos.analogic.com> <45D5B7E7.000004.26865@webmail19.yandex.ru> <Pine.LNX.4.61.0702161011080.4199@chaos.analogic.com>
+X-Source-Ip: 84.185.222.204
+Content-Type: text/plain;
+  charset="KOI8-R"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+Thank you very much
 
-> * Eric W. Biederman <ebiederm@xmission.com> wrote:
+
+>On Fri, 16 Feb 2007, Mockern wrote:
 >
->> So I propose we remove all assumptions from the code that we actually 
->> have an array of irqs.  That will allow for irq_desc to be dynamically 
->> allocated instead of statically allocated saving memory and reducing 
->> kernel complexity.
+>> Thanx for your respond.
+>>
+>> Does it mean I have to change nothing in my tty driver
+>> (based on serial_core.c) to use: cat and cp? No "nonstandard " special 
+>> functions to implement?
+>>
 >
-> hm. I'd suggest to do this without changing request_irq() - and then we 
-> could avoid the 'massive, every driver affected' change, right?
+>Change nothing. It you are making your own, make sure your iocl() function
+>returns the same kinds of errors as the in-kernel one.
+>
+>You can check out the existing in-kernel driver as:
+>
+>strace cp filename /dev/ttyS0
+>
+>
+>
+>>
+>>
+>>>
+>>> On Thu, 15 Feb 2007, Mockern wrote:
+>>>
+>>>> I have a question about linux tty driver
+>>>>
+>>>> how to support cp, cat operations in tty driver (like tiny_tty)?
+>>>> (e.g. echo "hello tty" > /dev/ttyS3, cat < ttyS10 etc)
+>>>>
+>>>> There a lot of examples with char drivers, but I could not find it for tty Linux driver.
+>>>>
+>>>
+>>> It works out of the box. Just keep hardware flow-control turned off
+>>> if there are no receivers connected to the output port. Also, you need
+>>> to set up the port's baud-rate and (usually) to make it transparent to
+>>> control characters (man tc-get/set-attr).
+>>>
+>>> Cheers,
+>>> Dick Johnson
+>>> Penguin : Linux version 2.6.16.24 on an i686 machine (5592.61 BogoMips).
+>>> New book: http://www.AbominableFirebug.com/
+>>> _
+>>> 
+>>>
+>>> ****************************************************************
+>>> The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+>>>
+>>> Thank you.
+>>
+>>
+>
+>Cheers,
+>Dick Johnson
+>Penguin : Linux version 2.6.16.24 on an i686 machine (5594.84 BogoMips).
+>New book: http://www.AbominableFirebug.com/
+>_
+>
+>
+>****************************************************************
+>The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+>
+>Thank you.
 
-It is a different aspect of the problem.  But we have significant
-problematic inconsistencies in what drivers are doing.  I know at
-least one driver put an irq into an unsigned char, and passed it
-to user space that way.
 
-So I think the driver change is very much worth doing because a
-pointer is a token that is much harder to abuse, than an unsigned
-int where you think you know how it works and so can take some
-liberties.
-
-> i.e. because we'll (have to) have an nr_to_desc() and desc_to_nr() 
-> mapping facility anyway, lets just not change the driver APIs massively. 
-> There dont seem to be that many drivers that assume that irq_desc[] is 
-> an array - are there?
-
-We will have to have desc_to_nr().  I don't know about nr_to_desc().
-Even if we do nr_to_desc() probably will just be a linked list walk.
-
-There are a lot of drivers and other pieces of the kernel that don't
-believe an irq is an unsigned int, and just using an unsigned int
-makes killing the array an expensive operation because operations
-go from O(1) to O(N).  Now that isn't something anyone on a small
-machine is likely to care about (N < 32).  I have no problem
-staggering the change.   But I see a lot of benefit in going the whole
-way.
-
-> otherwise, in terms of the irqchips infrastructure and the API between 
-> genirq and the irqchip arch-level drivers, this change makes quite a bit 
-> of sense i think.
-
-Sounds good, and that is certainly the level to start.
-
-Eric
-
-
-
+-- 
+Сегодня удачный день, чтобы завести почту на Яндексе http://mail.yandex.ru
