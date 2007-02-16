@@ -1,283 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946301AbXBPXjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946312AbXBPXj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946301AbXBPXjI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 18:39:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946305AbXBPXjI
+	id S1946312AbXBPXj1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 18:39:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946305AbXBPXjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 18:39:08 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:51848 "EHLO mx2.suse.de"
+	Fri, 16 Feb 2007 18:39:10 -0500
+Received: from ns1.suse.de ([195.135.220.2]:39546 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946301AbXBPXjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 18:39:04 -0500
+	id S1946303AbXBPXjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 18:39:08 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 02/10] Driver core: let request_module() send a /sys/modules/kmod/-uevent
-Date: Fri, 16 Feb 2007 15:37:28 -0800
-Message-Id: <11716690591400-git-send-email-gregkh@suse.de>
+Cc: Sergei Organov <osv@javad.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 03/10] serial: Add PCMCIA IDs for Quatech DSP-100 dual RS232 adapter.
+Date: Fri, 16 Feb 2007 15:37:29 -0800
+Message-Id: <11716690633694-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.0
-In-Reply-To: <11716690562249-git-send-email-gregkh@suse.de>
-References: <20070216233553.GC14708@kroah.com> <11716690562249-git-send-email-gregkh@suse.de>
+In-Reply-To: <11716690591400-git-send-email-gregkh@suse.de>
+References: <20070216233553.GC14708@kroah.com> <11716690562249-git-send-email-gregkh@suse.de> <11716690591400-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
+From: Sergei Organov <osv@javad.com>
 
-On recent systems, calls to /sbin/modprobe are handled by udev depending
-on the kind of device the kernel has discovered. This patch creates an
-uevent for the kernels internal request_module(), to let udev take control
-over the request, instead of forking the binary directly by the kernel.
-The direct execution of /sbin/modprobe can be disabled by setting:
-  /sys/module/kmod/mod_request_helper (/proc/sys/kernel/modprobe)
-to an empty string, the same way /proc/sys/kernel/hotplug is disabled on an
-udev system.
+Add PCMCIA IDs for Quatech DSP-100 dual RS232 adapter.
 
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Sergei Organov <osv@javad.com>
+Acked-by: Alan Cox <alan@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- include/linux/kmod.h |    2 +
- kernel/kmod.c        |  120 ++++++++++++++++++++++++++++++++++++++++++++++++++
- kernel/module.c      |   26 +++++++----
- kernel/params.c      |    1 +
- 4 files changed, 139 insertions(+), 10 deletions(-)
+ drivers/serial/serial_cs.c |    5 +++++
+ include/pcmcia/ciscode.h   |    1 +
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/kmod.h b/include/linux/kmod.h
-index 10f505c..cc8e674 100644
---- a/include/linux/kmod.h
-+++ b/include/linux/kmod.h
-@@ -28,8 +28,10 @@
- #ifdef CONFIG_KMOD
- /* modprobe exit status on success, -ve on error.  Return value
-  * usually useless though. */
-+extern void kmod_sysfs_init(void);
- extern int request_module(const char * name, ...) __attribute__ ((format (printf, 1, 2)));
- #else
-+static inline void kmod_sysfs_init(void) {};
- static inline int request_module(const char * name, ...) { return -ENOSYS; }
- #endif
- 
-diff --git a/kernel/kmod.c b/kernel/kmod.c
-index 7962761..9f923f8 100644
---- a/kernel/kmod.c
-+++ b/kernel/kmod.c
-@@ -36,6 +36,8 @@
- #include <linux/resource.h>
- #include <asm/uaccess.h>
- 
-+extern int delete_module(const char *name, unsigned int flags);
-+
- extern int max_threads;
- 
- static struct workqueue_struct *khelper_wq;
-@@ -46,6 +48,7 @@ static struct workqueue_struct *khelper_wq;
- 	modprobe_path is set via /proc/sys.
- */
- char modprobe_path[KMOD_PATH_LEN] = "/sbin/modprobe";
-+struct module_kobject kmod_mk;
- 
- /**
-  * request_module - try to load a kernel module
-@@ -75,6 +78,11 @@ int request_module(const char *fmt, ...)
- 	static atomic_t kmod_concurrent = ATOMIC_INIT(0);
- #define MAX_KMOD_CONCURRENT 50	/* Completely arbitrary value - KAO */
- 	static int kmod_loop_msg;
-+	char modalias[16 + MODULE_NAME_LEN] = "MODALIAS=";
-+	char *uevent_envp[2] = {
-+		modalias,
-+		NULL
-+	};
- 
- 	va_start(args, fmt);
- 	ret = vsnprintf(module_name, MODULE_NAME_LEN, fmt, args);
-@@ -82,6 +90,12 @@ int request_module(const char *fmt, ...)
- 	if (ret >= MODULE_NAME_LEN)
- 		return -ENAMETOOLONG;
- 
-+	strcpy(&modalias[strlen("MODALIAS=")], module_name);
-+	kobject_uevent_env(&kmod_mk.kobj, KOBJ_CHANGE, uevent_envp);
-+
-+	if (modprobe_path[0] == '\0')
-+		goto out;
-+
- 	/* If modprobe needs a service that is in a module, we get a recursive
- 	 * loop.  Limit the number of running kmod threads to max_threads/2 or
- 	 * MAX_KMOD_CONCURRENT, whichever is the smaller.  A cleaner method
-@@ -108,9 +122,115 @@ int request_module(const char *fmt, ...)
- 
- 	ret = call_usermodehelper(modprobe_path, argv, envp, 1);
- 	atomic_dec(&kmod_concurrent);
-+out:
- 	return ret;
- }
- EXPORT_SYMBOL(request_module);
-+
-+static ssize_t store_mod_request(struct module_attribute *mattr,
-+				 struct module *mod,
-+			      const char *buffer, size_t count)
-+{
-+	char name[MODULE_NAME_LEN];
-+	int ret;
-+
-+	if (count < 1 || count+1 > MODULE_NAME_LEN)
-+		return -EINVAL;
-+	memcpy(name, buffer, count);
-+	name[count] = '\0';
-+	if (name[count-1] == '\n')
-+		name[count-1] = '\0';
-+
-+	ret = request_module(name);
-+	if (ret < 0)
-+		return ret;
-+	return count;
-+}
-+
-+static struct module_attribute mod_request = {
-+	.attr = { .name = "mod_request", .mode = S_IWUSR, .owner = THIS_MODULE },
-+	.store = store_mod_request,
-+};
-+
-+#ifdef CONFIG_MODULE_UNLOAD
-+static ssize_t store_mod_unload(struct module_attribute *mattr,
-+			    struct module *mod,
-+			    const char *buffer, size_t count)
-+{
-+	char name[MODULE_NAME_LEN];
-+	int ret;
-+
-+	if (count < 1 || count+1 > MODULE_NAME_LEN)
-+		return -EINVAL;
-+	memcpy(name, buffer, count);
-+	name[count] = '\0';
-+	if (name[count-1] == '\n')
-+		name[count-1] = '\0';
-+
-+	ret = delete_module(name, O_NONBLOCK);
-+	if (ret < 0)
-+		return ret;
-+	return count;
-+}
-+
-+static struct module_attribute mod_unload = {
-+	.attr = { .name = "mod_unload", .mode = S_IWUSR, .owner = THIS_MODULE },
-+	.store = store_mod_unload,
-+};
-+#endif
-+
-+static ssize_t show_mod_request_helper(struct module_attribute *mattr,
-+				       struct module *mod,
-+				       char *buffer)
-+{
-+	return sprintf(buffer, "%s\n", modprobe_path);
-+}
-+
-+static ssize_t store_mod_request_helper(struct module_attribute *mattr,
-+					struct module *mod,
-+					const char *buffer, size_t count)
-+{
-+	if (count < 1 || count+1 > KMOD_PATH_LEN)
-+		return -EINVAL;
-+	memcpy(modprobe_path, buffer, count);
-+	modprobe_path[count] = '\0';
-+	if (modprobe_path[count-1] == '\n')
-+		modprobe_path[count-1] = '\0';
-+	return count;
-+}
-+
-+static struct module_attribute mod_request_helper = {
-+	.attr = {
-+		.name = "mod_request_helper",
-+		.mode = S_IWUSR | S_IRUGO,
-+		.owner = THIS_MODULE
-+	},
-+	.show = show_mod_request_helper,
-+	.store = store_mod_request_helper,
-+};
-+
-+void __init kmod_sysfs_init(void)
-+{
-+	int ret;
-+
-+	kmod_mk.mod = THIS_MODULE;
-+	kobj_set_kset_s(&kmod_mk, module_subsys);
-+	kobject_set_name(&kmod_mk.kobj, "kmod");
-+	kobject_init(&kmod_mk.kobj);
-+	ret = kobject_add(&kmod_mk.kobj);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = sysfs_create_file(&kmod_mk.kobj, &mod_request_helper.attr);
-+	ret = sysfs_create_file(&kmod_mk.kobj, &mod_request.attr);
-+#ifdef CONFIG_MODULE_UNLOAD
-+	ret = sysfs_create_file(&kmod_mk.kobj, &mod_unload.attr);
-+#endif
-+
-+	kobject_uevent(&kmod_mk.kobj, KOBJ_ADD);
-+out:
-+	return;
-+}
- #endif /* CONFIG_KMOD */
- 
- struct subprocess_info {
-diff --git a/kernel/module.c b/kernel/module.c
-index 8a94e05..225501f 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -653,20 +653,11 @@ static void wait_for_zero_refcount(struct module *mod)
- 	mutex_lock(&module_mutex);
- }
- 
--asmlinkage long
--sys_delete_module(const char __user *name_user, unsigned int flags)
-+int delete_module(const char *name, unsigned int flags)
- {
- 	struct module *mod;
--	char name[MODULE_NAME_LEN];
- 	int ret, forced = 0;
- 
--	if (!capable(CAP_SYS_MODULE))
--		return -EPERM;
--
--	if (strncpy_from_user(name, name_user, MODULE_NAME_LEN-1) < 0)
--		return -EFAULT;
--	name[MODULE_NAME_LEN-1] = '\0';
--
- 	if (mutex_lock_interruptible(&module_mutex) != 0)
- 		return -EINTR;
- 
-@@ -727,6 +718,21 @@ sys_delete_module(const char __user *name_user, unsigned int flags)
- 	return ret;
- }
- 
-+asmlinkage long
-+sys_delete_module(const char __user *name_user, unsigned int flags)
-+{
-+	char name[MODULE_NAME_LEN];
-+
-+	if (!capable(CAP_SYS_MODULE))
-+		return -EPERM;
-+
-+	if (strncpy_from_user(name, name_user, MODULE_NAME_LEN-1) < 0)
-+		return -EFAULT;
-+	name[MODULE_NAME_LEN-1] = '\0';
-+
-+	return delete_module(name, flags);
-+}
-+
- static void print_unload_info(struct seq_file *m, struct module *mod)
- {
- 	struct module_use *use;
-diff --git a/kernel/params.c b/kernel/params.c
-index 553cf7d..7d231c6 100644
---- a/kernel/params.c
-+++ b/kernel/params.c
-@@ -714,6 +714,7 @@ static int __init param_sysfs_init(void)
- 	}
- 
- 	param_sysfs_builtin();
-+	kmod_sysfs_init();
- 
- 	return 0;
- }
+diff --git a/drivers/serial/serial_cs.c b/drivers/serial/serial_cs.c
+index c2f1012..6b76bab 100644
+--- a/drivers/serial/serial_cs.c
++++ b/drivers/serial/serial_cs.c
+@@ -248,6 +248,10 @@ static const struct serial_quirk quirks[] = {
+ 		.multi	= 2,
+ 	}, {
+ 		.manfid	= MANFID_QUATECH,
++		.prodid	= PRODID_QUATECH_DUAL_RS232_G,
++		.multi	= 2,
++	}, {
++		.manfid	= MANFID_QUATECH,
+ 		.prodid	= PRODID_QUATECH_QUAD_RS232,
+ 		.multi	= 4,
+ 	}, {
+@@ -891,6 +895,7 @@ static struct pcmcia_device_id serial_ids[] = {
+ 	PCMCIA_DEVICE_PROD_ID12("OEM      ", "C288MX     ", 0xb572d360, 0xd2385b7a),
+ 	PCMCIA_DEVICE_PROD_ID12("PCMCIA   ", "C336MX     ", 0x99bcafe9, 0xaa25bcab),
+ 	PCMCIA_DEVICE_PROD_ID12("Quatech Inc", "PCMCIA Dual RS-232 Serial Port Card", 0xc4420b35, 0x92abc92f),
++	PCMCIA_DEVICE_PROD_ID12("Quatech Inc", "Dual RS-232 Serial Port PC Card", 0xc4420b35, 0x031a380d),
+ 	PCMCIA_PFC_DEVICE_CIS_PROD_ID12(1, "PCMCIA", "EN2218-LAN/MODEM", 0x281f1c5d, 0x570f348e, "PCMLM28.cis"),
+ 	PCMCIA_PFC_DEVICE_CIS_PROD_ID12(1, "PCMCIA", "UE2218-LAN/MODEM", 0x281f1c5d, 0x6fdcacee, "PCMLM28.cis"),
+ 	PCMCIA_PFC_DEVICE_CIS_PROD_ID12(1, "Psion Dacom", "Gold Card V34 Ethernet", 0xf5f025c2, 0x338e8155, "PCMLM28.cis"),
+diff --git a/include/pcmcia/ciscode.h b/include/pcmcia/ciscode.h
+index c1da855..eae7e2e 100644
+--- a/include/pcmcia/ciscode.h
++++ b/include/pcmcia/ciscode.h
+@@ -95,6 +95,7 @@
+ #define PRODID_QUATECH_DUAL_RS232	0x0012
+ #define PRODID_QUATECH_DUAL_RS232_D1	0x0007
+ #define PRODID_QUATECH_DUAL_RS232_D2	0x0052
++#define PRODID_QUATECH_DUAL_RS232_G	0x004d
+ #define PRODID_QUATECH_QUAD_RS232	0x001b
+ #define PRODID_QUATECH_DUAL_RS422	0x000e
+ #define PRODID_QUATECH_QUAD_RS422	0x0045
 -- 
 1.5.0
 
