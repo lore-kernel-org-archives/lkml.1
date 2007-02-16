@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946232AbXBPTXE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946240AbXBPTY6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946232AbXBPTXE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 14:23:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946240AbXBPTXE
+	id S1946240AbXBPTY6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 14:24:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946239AbXBPTY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 14:23:04 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:36633 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946239AbXBPTXC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 14:23:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Nk9HdvOjCdR83BWPw9gvg0yuFYkg84xQ/JnnbDKRNL8HypoNeR+joVeZg1FU50mzrIPIrHKXeZ/O2gm6n8avt2viYqNT/iDEJ0MOK2BzJylEx1hoW6YlqAMgDAOitkRnqBPDfXiS6dSpHy8RmSaH/H39JBADPvF2OxCnDlnUXAY=
-Message-ID: <6bffcb0e0702161123n7139afb5sd10431a160b60976@mail.gmail.com>
-Date: Fri, 16 Feb 2007 20:23:00 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [QUESTION] parallel console configuration
-Cc: linux-parport@lists.infradead.org
+	Fri, 16 Feb 2007 14:24:58 -0500
+Received: from gw.goop.org ([64.81.55.164]:46764 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946221AbXBPTY5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 14:24:57 -0500
+Message-ID: <45D60508.10000@goop.org>
+Date: Fri, 16 Feb 2007 11:24:56 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Keir Fraser <keir@xensource.com>
+CC: xen-devel@lists.xensource.com, Andi Kleen <ak@muc.de>,
+       linux-kernel@vger.kernel.org, Ian Pratt <Ian.Pratt@xensource.com>,
+       Chris Wright <chrisw@sous-sol.org>, virtualization@lists.osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Steven Hand <steven.hand@cl.cam.ac.uk>,
+       Christian Limpach <Christian.Limpach@xensource.com>
+Subject: Re: [Xen-devel] Re: [patch 14/21] Xen-paravirt: Add XEN config options
+ and disableunsupported config options.
+References: <C1FBAFD7.99AB%keir@xensource.com>
+In-Reply-To: <C1FBAFD7.99AB%keir@xensource.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Keir Fraser wrote:
+> We can extend the Xen timer interface quite easily and get rid of this one
+> too. In fact it doesn't *much* matter if the CONFIG_HZ differs from the Xen
+> ticker rate -- we modified the Linux timer ISR to handle timer interrupts at
+> arbitrary times already. The only drawback is that jiffies updates in burts
+> if CONFIG_HZ is higher than the actual tick rate, and this can affect some
+> calibration constants and cause Linux to print out some weird values at
+> start-of-day.
+>   
 
-I'm trying to setup a parallel console.
+I was wondering what would happen if we tried that.  I guess its
+equivalent to having stolen time between each Xen tick.
 
-CONFIG_PARPORT=y
-CONFIG_PARPORT_PC=y
-CONFIG_PRINTER=y
-CONFIG_LP_CONSOLE=y
-
-kernel params
-console=lp0 console=tty0
-
-System stuck on
-lp0: using parport0 (interrupt-driven).
-
-http://www.stardust.webpages.pl/files/tbf/euridica/2.6.20/00001.jpg
-
-What am I doing wrong?
-
-Regards,
-Michal
-
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+    J
