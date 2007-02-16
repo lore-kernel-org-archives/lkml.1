@@ -1,152 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423258AbXBPFQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423269AbXBPFUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423258AbXBPFQe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 00:16:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423251AbXBPFQd
+	id S1423269AbXBPFUO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 00:20:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423268AbXBPFUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 00:16:33 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48655 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423258AbXBPFQa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 00:16:30 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Andi Kleen <ak@suse.de>
-Subject: [PATCH] i386: irq: Kill IRQ compression
-Date: Fri, 16 Feb 2007 00:15:04 -0500
-User-Agent: KMail/1.9.5
-Cc: "Eric Biederman" <ebiederm@xmission.com>,
-       Natalie Protasevich <Natalie.Protasevich@unisys.com>,
-       "lkml - Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
+	Fri, 16 Feb 2007 00:20:14 -0500
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:47033 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423270AbXBPFUM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 00:20:12 -0500
+Date: Fri, 16 Feb 2007 10:48:23 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Antoine Martin <antoine@nagafix.co.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: BUG: warning at kernel/cpu.c:51/unlock_cpu_hotplug() - 2.6.18.6
+Message-ID: <20070216051823.GA9195@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <45D4C999.4080507@nagafix.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702160015.04453.lenb@kernel.org>
+In-Reply-To: <45D4C999.4080507@nagafix.co.uk>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This code makes simple systems complex:
+Hi Antoine,
 
-ACPI: PCI Interrupt 0000:03:04.0[A] -> GSI 18 (level, low) -> IRQ 16
-ACPI: PCI Interrupt 0000:00:1d.0[A] -> GSI 16 (level, low) -> IRQ 17
-ACPI: PCI Interrupt 0000:00:1d.1[B] -> GSI 19 (level, low) -> IRQ 18
-ACPI: PCI Interrupt 0000:00:1d.7[D] -> GSI 23 (level, low) -> IRQ 19
+On Thu, Feb 15, 2007 at 08:59:05PM +0000, Antoine Martin wrote:
+> I just caught this in the log whilst running some unit tests.
+> (the test was in the process of starting 900 Java threads)
+> 
+> audit(1171565587.887:96): enforcing=0 old_enforcing=1 auid=4294967295
+> BUG: warning at kernel/cpu.c:51/unlock_cpu_hotplug()
+> 
+> Call Trace:
+>  [<ffffffff80269c98>] dump_stack+0x12/0x17
+>  [<ffffffff8029dfe6>] unlock_cpu_hotplug+0x3f/0x6c
+>  [<ffffffff802876b6>] sched_getaffinity+0x7d/0xa2
+>  [<ffffffff80287701>] sys_sched_getaffinity+0x26/0x55
+>  [<ffffffff8025cb0e>] system_call+0x7e/0x83
 
-The same code was already removed from x86_64
+Looks like one of those spurious unlock_cpu_hotplug warnings.
 
-Signed-off-by: Len Brown <len.brown@intel.com>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Natalie Protasevich <Natalie.Protasevich@UNISYS.com>
----
- arch/i386/kernel/io_apic.c |    5 ----
- arch/i386/kernel/mpparse.c |   41 ---------------------------------
- include/asm-i386/io_apic.h |    1
- 3 files changed, 1 insertion(+), 46 deletions(-)
+Let me know if this fix works for you or not. 
 
-Index: linus/arch/i386/kernel/mpparse.c
+regards
+gautham.
+
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+
+ kernel/cpu.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6.18/kernel/cpu.c
 ===================================================================
---- linus.orig/arch/i386/kernel/mpparse.c
-+++ linus/arch/i386/kernel/mpparse.c
-@@ -1041,20 +1041,12 @@ void __init mp_config_acpi_legacy_irqs (
+--- linux-2.6.18.orig/kernel/cpu.c
++++ linux-2.6.18/kernel/cpu.c
+@@ -53,8 +53,8 @@ void unlock_cpu_hotplug(void)
+ 		recursive_depth--;
+ 		return;
  	}
+-	mutex_unlock(&cpu_bitmask_lock);
+ 	recursive = NULL;
++	mutex_unlock(&cpu_bitmask_lock);
  }
+ EXPORT_SYMBOL_GPL(unlock_cpu_hotplug);
  
--#define MAX_GSI_NUM	4096
--
- int mp_register_gsi(u32 gsi, int triggering, int polarity)
- {
- 	int ioapic = -1;
- 	int ioapic_pin = 0;
- 	int idx, bit = 0;
- 	static int pci_irq = 16;
--	/*
--	 * Mapping between Global System Interrups, which
--	 * represent all possible interrupts, and IRQs
--	 * assigned to actual devices.
--	 */
--	static int		gsi_to_irq[MAX_GSI_NUM];
- 
- 	/* Don't set up the ACPI SCI because it's already set up */
- 	if (acpi_gbl_FADT.sci_interrupt == gsi)
-@@ -1087,42 +1079,11 @@ int mp_register_gsi(u32 gsi, int trigger
- 	if ((1<<bit) & mp_ioapic_routing[ioapic].pin_programmed[idx]) {
- 		Dprintk(KERN_DEBUG "Pin %d-%d already programmed\n",
- 			mp_ioapic_routing[ioapic].apic_id, ioapic_pin);
--		return gsi_to_irq[gsi];
-+		return gsi;
- 	}
- 
- 	mp_ioapic_routing[ioapic].pin_programmed[idx] |= (1<<bit);
- 
--	if (triggering == ACPI_LEVEL_SENSITIVE) {
--		/*
--		 * For PCI devices assign IRQs in order, avoiding gaps
--		 * due to unused I/O APIC pins.
--		 */
--		int irq = gsi;
--		if (gsi < MAX_GSI_NUM) {
--			/*
--			 * Retain the VIA chipset work-around (gsi > 15), but
--			 * avoid a problem where the 8254 timer (IRQ0) is setup
--			 * via an override (so it's not on pin 0 of the ioapic),
--			 * and at the same time, the pin 0 interrupt is a PCI
--			 * type.  The gsi > 15 test could cause these two pins
--			 * to be shared as IRQ0, and they are not shareable.
--			 * So test for this condition, and if necessary, avoid
--			 * the pin collision.
--			 */
--			if (gsi > 15 || (gsi == 0 && !timer_uses_ioapic_pin_0))
--				gsi = pci_irq++;
--			/*
--			 * Don't assign IRQ used by ACPI SCI
--			 */
--			if (gsi == acpi_gbl_FADT.sci_interrupt)
--				gsi = pci_irq++;
--			gsi_to_irq[irq] = gsi;
--		} else {
--			printk(KERN_ERR "GSI %u is too high\n", gsi);
--			return gsi;
--		}
--	}
--
- 	io_apic_set_pci_routing(ioapic, ioapic_pin, gsi,
- 		    triggering == ACPI_EDGE_SENSITIVE ? 0 : 1,
- 		    polarity == ACPI_ACTIVE_HIGH ? 0 : 1);
-Index: linus/arch/i386/kernel/io_apic.c
-===================================================================
---- linus.orig/arch/i386/kernel/io_apic.c
-+++ linus/arch/i386/kernel/io_apic.c
-@@ -2212,8 +2212,6 @@ static inline void unlock_ExtINT_logic(v
- 	ioapic_write_entry(apic, pin, entry0);
- }
- 
--int timer_uses_ioapic_pin_0;
--
- /*
-  * This code may look a bit paranoid, but it's supposed to cooperate with
-  * a wide range of boards and BIOS bugs.  Fortunately only the timer IRQ
-@@ -2250,9 +2248,6 @@ static inline void __init check_timer(vo
- 	pin2  = ioapic_i8259.pin;
- 	apic2 = ioapic_i8259.apic;
- 
--	if (pin1 == 0)
--		timer_uses_ioapic_pin_0 = 1;
--
- 	printk(KERN_INFO "..TIMER: vector=0x%02X apic1=%d pin1=%d apic2=%d pin2=%d\n",
- 		vector, apic1, pin1, apic2, pin2);
- 
-Index: linus/include/asm-i386/io_apic.h
-===================================================================
---- linus.orig/include/asm-i386/io_apic.h
-+++ linus/include/asm-i386/io_apic.h
-@@ -142,7 +142,6 @@ extern int io_apic_get_unique_id (int io
- extern int io_apic_get_version (int ioapic);
- extern int io_apic_get_redir_entries (int ioapic);
- extern int io_apic_set_pci_routing (int ioapic, int pin, int irq, int edge_level, int active_high_low);
--extern int timer_uses_ioapic_pin_0;
- #endif /* CONFIG_ACPI */
- 
- extern int (*ioapic_renumber_irq)(int ioapic, int irq);
+-- 
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
