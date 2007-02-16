@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946004AbXBPRDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946006AbXBPRGN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946004AbXBPRDn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 12:03:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946010AbXBPRDn
+	id S1946006AbXBPRGN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 12:06:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946010AbXBPRGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 12:03:43 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:10037 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946004AbXBPRDm (ORCPT
+	Fri, 16 Feb 2007 12:06:13 -0500
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:26560 "EHLO
+	outbound4-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1946006AbXBPRGM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 12:03:42 -0500
-Date: Fri, 16 Feb 2007 08:55:46 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Steve Fox <drfickle@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-mm1
-Message-Id: <20070216085546.12248641.randy.dunlap@oracle.com>
-In-Reply-To: <1171643832.3039.6.camel@drfickle.rchland.ibm.com>
-References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
-	<1171643832.3039.6.camel@drfickle.rchland.ibm.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 16 Feb 2007 12:06:12 -0500
+X-BigFish: VP
+X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
+Date: Fri, 16 Feb 2007 18:05:51 +0100
+From: "Joerg Roedel" <joerg.roedel@amd.com>
+To: "Bill Davidsen" <davidsen@tmr.com>
+cc: "Linux Kernel M/L" <linux-kernel@vger.kernel.org>
+Subject: Re: [2.6.20-get13] KVM-12 won't build
+Message-ID: <20070216170551.GA2188@amd.com>
+References: <45D5DC8D.7010609@tmr.com>
+MIME-Version: 1.0
+In-Reply-To: <45D5DC8D.7010609@tmr.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 16 Feb 2007 17:05:52.0491 (UTC)
+ FILETIME=[B6D543B0:01C751EC]
+X-WSS-ID: 69CB3BFD2MC8425517-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Feb 2007 10:37:12 -0600 Steve Fox wrote:
-
-> bl6-13, an x86_64 box listed on test.kernel.org, tripped on this during
-> an LTP run, even with
-> unify-queue_delayed_work-and-queue_delayed_work_on-fix.patch applied. 
+On Fri, Feb 16, 2007 at 11:32:13AM -0500, Bill Davidsen wrote:
+> Goes out with an error message:
 > 
-> I'm not sure why the LTP results aren't copied over to TKO, but here's
-> the details anyway.
-> 
-> If someone can give me an idea where to look, I can start a bi-sect if
-> it would help.
-> 
-> kernel BUG at mm/swap.c:469!
-> invalid opcode: 0000 [1] SMP 
-> last sysfs file: /devices/system/node/node0/cpumap
+>    cc -I /home/davidsen/downloads/kernel.org/linux-2.6.20-git13/include -MMD -MF ./.kvmctl.d 
+> -g   -c -o kvmctl.o kvmctl.c
+>    kvmctl.c:29:2: error: #error libkvm: userspace and kernel version mismatch
+>    make[1]: *** [kvmctl.o] Error 1
+>      
+> I don't see a kvm-13 on the KVM website.
+
+You will find the kvm-13 release in the SourceForge download area of
+KVM[1]. Kvm-12 is still required for 2.6.20 kernels.
+
+Joerg
+
+[1] http://sourceforge.net/project/showfiles.php?group_id=180599
+
+-- 
+Joerg Roedel
+Operating System Research Center
+AMD Saxony LLC & Co. KG
 
 
-Try this patch?  http://lkml.org/lkml/2007/2/16/220
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
