@@ -1,100 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161740AbXBPEJr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423128AbXBPEKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161740AbXBPEJr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 23:09:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161738AbXBPEJr
+	id S1423128AbXBPEKp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 23:10:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423120AbXBPEKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 23:09:47 -0500
-Received: from gateway.insightbb.com ([74.128.0.19]:23727 "EHLO
-	asav01.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423132AbXBPEJr (ORCPT
+	Thu, 15 Feb 2007 23:10:45 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:12980 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423128AbXBPEKo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 23:09:47 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArgeALK81EVKhRO4UGdsb2JhbACHHodKAQEqknMBAQE
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-Subject: Re: [PATCH] Add Cobalt button interface driver support
-Date: Thu, 15 Feb 2007 23:09:43 -0500
-User-Agent: KMail/1.9.3
-Cc: linux-input@atrey.karlin.mff.cuni.cz,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20070216123608.733f04a3.yoichi_yuasa@tripeaks.co.jp>
-In-Reply-To: <20070216123608.733f04a3.yoichi_yuasa@tripeaks.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 15 Feb 2007 23:10:44 -0500
+X-IronPort-AV: i="4.14,179,1170651600"; 
+   d="scan'208"; a="27648125:sNHT24486525"
+Subject: Re: [PATCH] shm:  Fix the locking and cleanup error handling in
+	do_shmat.
+From: "Wu, Bryan" <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <m18xeyixls.fsf@ebiederm.dsl.xmission.com>
+References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
+	 <45D47020.1010309@googlemail.com>
+	 <20070215140232.0aba86a7.akpm@linux-foundation.org>
+	 <45D4EBB3.2060800@googlemail.com>
+	 <m1r6srhsrt.fsf_-_@ebiederm.dsl.xmission.com><45D4F91F.505@googlemail.com>
+	 <m18xeyixls.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702152309.44563.dtor@insightbb.com>
+Organization: Analog Devices, Inc.
+Date: Fri, 16 Feb 2007 12:10:26 +0800
+Message-Id: <1171599026.6853.36.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 February 2007 22:36, Yoichi Yuasa wrote:
-> Hi,
+On Thu, 2007-02-15 at 22:34 -0500, Eric W. Biederman wrote:
+> > drivers/video/Kconfig:1606:warning: 'select' used by config symbol
+> 'FB_PS3' 
+> > refer to undefined symbol 'PS3_PS3AV' 
+> > /mnt/md0/devel/linux-mm/ipc/shm.c: In function 'do_shmat': 
+> > /mnt/md0/devel/linux-mm/ipc/shm.c:945: warning: passing argument 1
+> of 'IS_ERR' 
+> > makes pointer from integer without a cast 
+> > /mnt/md0/devel/linux-mm/ipc/shm.c:946: warning: passing argument 1
+> of 'PTR_ERR' 
+> > makes pointer from integer without a cast 
+> > /mnt/md0/devel/linux-mm/ipc/shm.c:931: warning: label 'out_nattch'
+> defined but 
+> > not used 
+> > /mnt/md0/devel/linux-mm/ipc/shm.c:890: error: label 'out_put_path'
+> used but not 
+> > defined 
+> > make[2]: *** [ipc/shm.o] Error 1 
+> > make[1]: *** [ipc] Error 2 
+> > make: *** [_all] Error 2
 > 
-> This patch adds support for the back panel buttons on Cobalt server.
-> It's tested on the Cobalt Qube2.
+> Definitely some weird  patch application problem.
 > 
-
-Hi,
-
-Thank you for your patch. Couple of comments:
-
-> +
-> +		button++;
-> +	}
-> +
-> +	mod_timer(&buttons_timer, jiffies + HZ / BUTTONS_POLL_FREQUENCY);
-
-May I suggest using msecs_to_jiffies() to avoid direct computations on HZ?
-
-> +
-> +	bdev->input = input;
-> +	bdev->reg = ioremap(res->start, res->end - res->start + 1);
-> +	dev_set_drvdata(&pdev->dev, bdev);
-> +
-> +	setup_timer(&buttons_timer, handle_buttons, (unsigned long)bdev);
-> +	mod_timer(&buttons_timer, jiffies + HZ / BUTTONS_POLL_FREQUENCY);
-
-Please implement cobalt_buttons_open() and cobalt_buttons_close() methods
-and start/stop timer from there - there is no point in polling hardware
-if noone is listening to the events.
-
-> +
-> +	return retval;
-> +}
-> +
-> +static int __devexit cobalt_buttons_remove(struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	struct buttons_dev *bdev = dev_get_drvdata(dev);
-> +
-> +	del_timer(&buttons_timer);
-
-del_timer_sync? Is there any possibility it may run SMP?
-
-> +
-> +static void __exit cobalt_buttons_exit(void)
-> +{
-> +	platform_driver_unregister(&cobalt_buttons_driver);
-
-You are not allowed to unregister statically allocated devices -
-if there are references left and your module goes away then
-these references become invalid and kernel goes boom.
-
-Please convert to platform_device_alloc/platform_device_add.
-
-Is there a point of moving platform device creation code into
-platform-specific code? Is there a possibility of this driver
-being used elsewhere?
-
-> +	platform_device_unregister(&cobalt_buttons_device);
-> +}
-> +
-> +module_init(cobalt_buttons_init);
-> +module_exit(cobalt_buttons_exit);
+> All of the calls to IS_ERR and PTR_ERR should have been removed. 
+> Michal since it didn't seem to blow up when Andrew applied it I'm 
+> going to assume the problem is on your end for now.
+> 
+> Eric
 > 
 
--- 
-Dmitry
+Hi Eric,
+
+I am also troubling with the incorrect "nattch" value in do_shmat().
+Actually, I found this bugs when I do some LTP testing on
+blackfin-uClinux platform.
+The "nattch" value returned from shmctl() system call is wrong. 
+
+So I think your patch can solve this bug. But which version Linux kernel
+is your patch applying for? 
+I want to do some test on my blackfin-uClinux 2.6.20 platform.
+
+Thanks
+-Bryan    
