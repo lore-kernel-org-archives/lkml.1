@@ -1,84 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423001AbXBPBsj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932901AbXBPBv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423001AbXBPBsj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 20:48:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423008AbXBPBsj
+	id S932901AbXBPBv1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 20:51:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932904AbXBPBv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 20:48:39 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:38852 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423001AbXBPBsi (ORCPT
+	Thu, 15 Feb 2007 20:51:27 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:57955 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932901AbXBPBv0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 20:48:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=k9ZE2cZcHK3G3FxJnD04DnpsldzOIpwL6K9nehm7sXV//Mf0k0guUlCkIcOnPcwVp7pGyy9k1ZtE2aLuhXObd5V5GvyBGmjTdqpi9kvQ+Is4uUb5dzmHjs44M+Arcfyknzr9Cgzz1C+wvc9tytv2wNEKDWwQHTNCFBWav7QD01Y=
-Message-ID: <7b69d1470702151748l72a2de5ci5f8135f0f9b293b5@mail.gmail.com>
-Date: Thu, 15 Feb 2007 19:48:37 -0600
-From: "Scott Preece" <sepreece@gmail.com>
-To: "Gene Heskett" <gene.heskett@verizon.net>
-Subject: Re: GPL vs non-GPL device drivers
-Cc: linux-kernel@vger.kernel.org, "v j" <vj.linux@gmail.com>,
-       "Theodore Tso" <tytso@mit.edu>, "Dave Jones" <davej@redhat.com>
-In-Reply-To: <200702151742.15850.gene.heskett@verizon.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 15 Feb 2007 20:51:26 -0500
+Date: Thu, 15 Feb 2007 17:45:00 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+       systemtap@sources.redhat.com, ltt-dev@shafik.org
+Subject: Re: [PATCH] Linux Kernel Markers Documentation
+Message-Id: <20070215174500.2b1b3bb9.randy.dunlap@oracle.com>
+In-Reply-To: <20070216013348.GC12736@Krystal>
+References: <1171224207118-git-send-email-mathieu.desnoyers@polymtl.ca>
+	<20070214231201.20918c6b.akpm@linux-foundation.org>
+	<20070216013348.GC12736@Krystal>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
-	 <20070215165339.GB5285@thunk.org>
-	 <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com>
-	 <200702151742.15850.gene.heskett@verizon.net>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/15/07, Gene Heskett <gene.heskett@verizon.net> wrote:
+On Thu, 15 Feb 2007 20:33:48 -0500 Mathieu Desnoyers wrote:
 
-> This definition seems to be a bit like nailing jelly to a tree in that so
-> far only one companies legal dept has pursued this to the point of
-> actually getting a court verdict rendered.  That was the German ruling a
-> link was given to earlier in this thread(s).
+> Linux Kernel Markers - Documentation
+> 
+> Here is some documentation explaining what is/how to use the Linux
+> Kernel Markers.
+> 
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> 
+> --- /dev/null
+> +++ b/Documentation/marker.txt
+> @@ -0,0 +1,130 @@
+> + 	             Using the Linux Kernel Markers
+> +
+> +			    Mathieu Desnoyers
+> +
+> +
+> +	This document discusses the purpose of markers. It shows some usage
+> +examples of the Linux Kernel Markers : how to insert markers within the kernel
+> +and how to connect probes to a marker. Finally, it has some probe module
+> +examples. This is what connects to a marker.
+> +
+> +
+> +* Purpose of markers
+> +
+> +You can put markers at important locations in the code. They act as
+> +lightweight hooks that can pass an arbitrary number of parameters,
+> +described in a printk-like format string, to a function whenever the marker
+> +code is reached.
+> +
+> +They can be used for tracing (LTTng, LKET over SystemTAP), overall performance
+> +accounting (SystemTAP). They could also be used to implement
+> +efficient hooks for SELinux or any other subsystem the would have this
+                                                      that
+
+> +kind of need.
+> +
+> +Using the markers for system audit (SELinux) would require to pass a
+> +variable by address that would be later checked by the marked routine.
+> +
+> +
+> +* Usage
+> +
+> +MARK(subsystem_event, "%d %s %p[struct task_struct]",
+> +  someint, somestring, current);
+> +Where :
+> +- Subsystem is the name of your subsystem.
+> +- event is the name of the event to mark.
+
+so is the MARK() supposed to be:
+  MARK(subsystem, event, ...
+
+Please make the 2 doc. lines above match the parameters...
+or the parameters match the text.
+
+> +- "%d %s %p[struct task_struct]" is the formatted string for (printk-style).
+> +- someint is an integer.
+> +- somestring is a char pointer.
+> +- current is a pointer to a struct task_struct.
+> +
+> +The expression %p[struct task_struct] is a suggested marker definition
+> +standard that could eventually be used for pointer type checking in
+> +sparse. The brackets contain the type to which the pointer refer.
+                                                              refers.
+
+> +
+> +The marker mechanism supports multiple instances of the same marker.
+> +Markers can be put in inline functions, inlined static functions and
+> +unrolled loops.
+> +
+> +Note : It is safe to put markers within preempt-safe code : preempt_enable()
+> +will not call the scheduler due to the tests in preempt_schedule().
+> +
+> +
+> +* Optimization for a given architecture
+> +
+> +You will find, in asm-*/marker.h, optimisations for given architectures
+> +(currently i386 and powerpc). They use a load immediate instead of a data read,
+> +which saves a data cache hit, but also requires cross CPU code modification. In
+> +order to support embedded systems which use read-only memory for their code, the
+> +optimization can be disabled through menu options.
+> +
+> +
+> +* Probe example
+> +
+> +------------------------------ CUT -------------------------------------
+> +/* probe-example.c
+> + *
+> + * Loads a function at a marker call site.
+> + *
+> + * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> + *
+> + * This file is released under the GPLv2.
+> + * See the file COPYING for more details.
+> + */
+> +
+> +#include <linux/sched.h>
+> +#include <linux/kernel.h>
+> +
+> +#define SUBSYSTEM_EVENT_FORMAT "%d %s %p[struct task_struct]"
+
+Is SUBSYSTEM_EVENT_FORMAT used implicitly below?  or elsewhere?
+
+> +void probe_subsystem_event(const char *format, ...)
+> +{
+> +	va_list ap;
+> +	/* Declare args */
+> +	unsigned int value;
+> +	const char *mystr;
+> +	struct task_struct *task;
+> +
+> +	/* Assign args */
+> +	va_start(ap, format);
+> +	value = va_arg(ap, typeof(value));
+> +	mystr = va_arg(ap, typeof(mystr));
+> +	task = va_arg(ap, typeof(task));
+> +
+> +	/* Call tracer */
+> +	trace_subsystem_event(value, mystr, task);
+> +
+> +	/* Or call printk */
+> +	vprintk(format, ap);
+> +
+> +	/* or count, check rights... */
+> +	
+> +	va_end(ap);
+> +}
+> +
+> +static int __init probe_init(void)
+> +{
+> +	int result;
+> +	result = marker_set_probe("subsystem_event",
+> +			FS_CLOSE_FORMAT,
+> +			probe_fs_close);
+
+Do FS_CLOSE_FORMAT and probe_fs_close() need to be defined here?
+I.e., is this a complete example?
+
+> +	if (!result)
+> +		goto cleanup;
+> +	return 0;
+> +
+> +cleanup:
+> +	marker_remove_probe(probe_subsystem_event);
+> +	return -EPERM;
+> +}
+> +
+> +static void __exit probe_fini(void)
+> +{	
+> +	marker_remove_probe(probe_subsystem_event);
+> +}
+> +
+> +module_init(probe_init);
+> +module_exit(probe_fini);
+> +
+> +MODULE_LICENSE("GPL");
+> +MODULE_AUTHOR("Mathieu Desnoyers");
+> +MODULE_DESCRIPTION("SUBSYSTEM Probe");
+> +------------------------------ CUT -------------------------------------
+
+
+
 ---
-
-The German decision did not go anywhere near the question of kernel
-modules. It was a nice victory that the court decided the license was
-enforceable, but the details of the license are still largely
-untested.
-
----
-> ...
-
-> I'm a bit like Clint Eastwood here, do you feel lucky?  If not, then
-> please comply with the terms of the software you have chosen to base your
-> product on.
----
-
-Note that it's not just "lucy", but "rich". Both sides would spend a
-LOT of money if this went to court in the US. And, of course, "the
-terms of the software [license]" are exactly what the case would be
-deciding. There wouldn't be a case unless the two parties had
-different views of the terms of the license.
-
----
-> As you have been told here repeatedly, a distribution to
-> your customers of code that is based on the GPL'd kernel headers does
-> bring you into non-compliance with the terms of the GPL.  You can do
-> anything you want in house, but the minute that code ships, that is
-> a "distribution" and the GPL applies in full force in that its all made
-> GPL, or you cannot legally ship it.  I don't know how it can be said any
-> plainer than that.  But of course IANAL, so talk to yours, please.
----
-
-I also ANAL, but even so I can point out that your assertion and Greg
-KH's assertions do not have the force of law.  Questions like "what is
-a derived work" and "what does 'unrelated' mean" in the license are
-just not black-and-white.
-
-I don't like niggling about interpretation, either, especially with
-material that someone has contributed to the community; I think it's
-rude and possibly unethical and that not testing the limits avoids any
-danger of impropriety. But claiming it's clear what the license
-requires is simply misleading.
-
-scott
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
