@@ -1,71 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751188AbXBPKWz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751478AbXBPKYJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751188AbXBPKWz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 05:22:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbXBPKWz
+	id S1751478AbXBPKYJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 05:24:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbXBPKYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 05:22:55 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:44438 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751188AbXBPKWy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 05:22:54 -0500
-Message-ID: <45D58531.4010808@vmware.com>
-Date: Fri, 16 Feb 2007 02:19:29 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+	Fri, 16 Feb 2007 05:24:09 -0500
+Received: from scrub.xs4all.nl ([194.109.195.176]:54221 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751478AbXBPKYH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 05:24:07 -0500
+Date: Fri, 16 Feb 2007 11:23:47 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Kumar Gala <galak@kernel.crashing.org>
+cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: kbuild question
+In-Reply-To: <930B9C2E-DCE3-4E9E-AA6B-2C58E16736B2@kernel.crashing.org>
+Message-ID: <Pine.LNX.4.64.0702161121540.14458@scrub.home>
+References: <930B9C2E-DCE3-4E9E-AA6B-2C58E16736B2@kernel.crashing.org>
 MIME-Version: 1.0
-To: Keir Fraser <keir@xensource.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       xen-devel@lists.xensource.com, Ian Pratt <ian.pratt@xensource.com>,
-       Dan Hecht <dhecht@vmware.com>, linux-kernel@vger.kernel.org,
-       Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@muc.de>,
-       virtualization@lists.osdl.org, Steven Hand <steven.hand@cl.cam.ac.uk>
-Subject: Re: [Xen-devel] Re: [patch 14/21] Xen-paravirt: Add XEN config options
- and disable unsupported config options.
-References: <C1FB336B.98D6%keir@xensource.com>
-In-Reply-To: <C1FB336B.98D6%keir@xensource.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Keir Fraser wrote:
-> On 16/2/07 07:25, "Jeremy Fitzhardinge" <jeremy@goop.org> wrote:
->
->   
->>> Oh, so that's why it doesn't break when CONFIG_PREEMPT=y.  In which case
->>> that preempt_disable() I spotted is wrong-and-unneeded.
->>>
->>> Why doesn't Xen work with preemption??
->>>       
->> I've forgotten the details.  Ian?  Keir?  Steven?  Maybe it can be done.
->>     
->
-> It breaks guest save/restore for us currently because threads can be
-> sleeping with machine addresses in local storage (registers, stack). There
-> are a few ways to achieve an acceptable solution:
->
->  1. Put processes in the freezer when we suspend. This should avoid any
-> thread being in a critical section with machine addresses in its hand. We
-> haven't yet investigated the performance impact of freezing processes,
-> particularly on the downtime of live relocation.
->
->  2. Allow CONFIG_PREEMPT to be compiled in, but disable it at runtime. We
-> could do this by, for example, reserving a bit in preempt_count() so that
-> most preemption checks do not touch any more cache lines. I guess it would
-> need a bit of fixing up (e.g., so that in_atomic() would not be always
-> asserted). Even better for us would be to allow switching between
-> involuntary and voluntary preemption at runtime. It looks as though the hook
-> points for these two techniques are not usually compiled in at the same
-> time, however.
->
->   
+Hi,
 
-Doesn't stop_machine_run already take care of getting you out of all 
-kernel threads?  So you can only be sleeping, not preempted, in which 
-case, this might not be an issue?
+On Thu, 15 Feb 2007, Kumar Gala wrote:
 
-Zach
+> I was wondering if there was some way to make a Kconfig menu either be just a
+> menu or a choice depending on another bool being set or not.
+> 
+> What I'm trying to accomplish is if CONFIG_ONLY_HAVE_ONE is set I want it so
+> you can only select on option, however if CONFIG_ONLY_HAVE_ONE is not set you
+> should be able to select multiple options.
 
+Could you please be more specific about the problem you're trying to 
+solve, instead of how you're trying to solve it?
+A real example would help a lot to understand the actual problem.
+
+bye, Roman
