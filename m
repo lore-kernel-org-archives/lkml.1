@@ -1,44 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946011AbXBPRMN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932506AbXBPRMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946011AbXBPRMN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 12:12:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946015AbXBPRMN
+	id S932506AbXBPRMg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 12:12:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932504AbXBPRMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 12:12:13 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:42849 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946014AbXBPRML (ORCPT
+	Fri, 16 Feb 2007 12:12:36 -0500
+Received: from 207.47.60.150.static.nextweb.net ([207.47.60.150]:37451 "EHLO
+	webmail.xensource.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932506AbXBPRMe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 12:12:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=YsKkqNjIvXR+AdZg/8OPBe2nZkthcE/MlPi09Tj2L3XkOP9sfMZ4xRTwzuZXBX57f69nvJcoE5cUvrYfvxJh+M1QTrPx3/U+ayZPYOul+HF4k1UEnVcAq3Jsy8q6D9AfvqufM3vsDcjwORnttRwiTXfmCRCYXpAXFKYY2w47SnA=
-Message-ID: <161717d50702160912x6dc4efbahcfb02f665ae3ec8a@mail.gmail.com>
-Date: Fri, 16 Feb 2007 12:12:04 -0500
-From: "Dave Neuer" <mr.fred.smoothie@pobox.com>
-To: davids@webmaster.com
-Subject: Re: GPL vs non-GPL device drivers
-Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKCEDIBKAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3d57814d0702152245q19e19141me0b999fb051ac7b6@mail.gmail.com>
-	 <MDEHLPKNGKAHNMBLJOLKCEDIBKAC.davids@webmaster.com>
-X-Google-Sender-Auth: 65a6b2d4042e4b22
+	Fri, 16 Feb 2007 12:12:34 -0500
+User-Agent: Microsoft-Entourage/11.2.5.060620
+Date: Fri, 16 Feb 2007 17:12:31 +0000
+Subject: Re: [Xen-devel] Re: [patch 12/21] Xen-paravirt: Allocate and free
+ vmalloc areas
+From: Keir Fraser <keir@xensource.com>
+To: Keir Fraser <keir@xensource.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andi Kleen <ak@muc.de>
+CC: Zachary Amsden <zach@vmware.com>, <xen-devel@lists.xensource.com>,
+       <virtualization@lists.osdl.org>, <linux-kernel@vger.kernel.org>,
+       Jan Beulich <JBeulich@novell.com>, Chris Wright <chrisw@sous-sol.org>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
+Message-ID: <C1FB967F.998B%keir@xensource.com>
+Thread-Topic: [Xen-devel] Re: [patch 12/21] Xen-paravirt: Allocate and
+ free vmalloc areas
+Thread-Index: AcdR7VulmlTzEL3gEduvqQAX8io7RQAAEi3z
+In-Reply-To: <C1FB9605.9988%keir@xensource.com>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Content-transfer-encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/16/07, David Schwartz <davids@webmaster.com> wrote:
->
-> (See, among other cases, Lexmark. v. Static
-> Controls.) A copyright is not a patent, you can only own something if there
-> are multiple equally good ways to do it and you claim *one* of them.
+On 16/2/07 17:10, "Keir Fraser" <keir@xensource.com> wrote:
 
-Only in a world where "write a Linux module" is a "functional idea." I
-don't think that the legal world in the US is an example of such a
-world, though you clearly do.
+> On 16/2/07 16:46, "Jeremy Fitzhardinge" <jeremy@goop.org> wrote:
+> 
+>> Yes, that would work.  Unfortunately that's i386 arch-specific, whereas
+>> the rest of this code is generic.  I guess I could just move it all to
+>> arch/i386/mm.
+> 
+> This whole thing isn't an issue on ia64 (they no-op lock_vm_area) and
+> powerpc doesn't use any of the Xen driver code at this time.
+> vmalloc_sync_all is supported by both i386 and x86_64, so we can make the
+> call conditional on CONFIG_X86 so that ia64 will continue to build. This is
+> what I've done in xen-unstable.
 
-Dave
+
+In fact that file is only built for i386 and x86_64, so there really is no
+problem with using vmalloc_sync_all() directly and without ifdef.
+
+ -- Keir
+
+
