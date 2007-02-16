@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945904AbXBPPOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945910AbXBPPPP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945904AbXBPPOT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 10:14:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945907AbXBPPOT
+	id S1945910AbXBPPPP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 10:15:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945911AbXBPPPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 10:14:19 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:35325 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945904AbXBPPOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 10:14:18 -0500
-Date: Fri, 16 Feb 2007 18:06:19 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Michael Holzheu <holzheu2@linux.vnet.ibm.com>
-Cc: akpm@osdl.org, mschwid2@de.ltcfwd.linux.ibm.com, heiko.carstens@de.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Using kevent for event logging?
-Message-ID: <20070216150618.GA25878@2ka.mipt.ru>
-References: <20070216155708.589cd47a.holzheu2@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+	Fri, 16 Feb 2007 10:15:14 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:20182 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945910AbXBPPPN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 10:15:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=sTcsEPH8tRKlXT9b64ohViGYf85aegYzihN+taOh8WpVGpcDo6MibPiN8MiIPP1+YUJ9WzLqihI9uToMKysvaq1d0KLRWs7GSK4XIBY1W2jy3nSrPHUfdf5BHzjGatPxbrgKplrR0k7EhSWPftMXL4M4V2a7EUd1i6yFTyzy5pc=
+Message-ID: <d120d5000702160715x6f64853y59abb8a22e7d164c@mail.gmail.com>
+Date: Fri, 16 Feb 2007 10:15:11 -0500
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Yoichi Yuasa" <yoichi_yuasa@tripeaks.co.jp>
+Subject: Re: [PATCH] Add Cobalt button interface driver support
+Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+In-Reply-To: <200702160815.l1G8FEIr078415@mbox33.po.2iij.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070216155708.589cd47a.holzheu2@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Fri, 16 Feb 2007 18:06:21 +0300 (MSK)
+References: <20070216123608.733f04a3.yoichi_yuasa@tripeaks.co.jp>
+	 <200702152309.44563.dtor@insightbb.com>
+	 <200702160815.l1G8FEIr078415@mbox33.po.2iij.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 16, 2007 at 03:57:08PM +0100, Michael Holzheu (holzheu2@linux.vnet.ibm.com) wrote:
-> Hallo Evgeniy,
+On 2/16/07, Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp> wrote:
+> +
+> +static int cobalt_buttons_open(struct inode *inode, struct file *file)
+> +{
+> +       buttons_timer.expires = jiffies + msecs_to_jiffies(BUTTONS_POLL_INTERVAL);
+> +       add_timer(&buttons_timer);
+> +
+> +       return nonseekable_open(inode, file);
+> +
+> +}
 
-Hi Michael.
+Hi,
 
-> On s390 we are looking for a good mechanism to notify userspace
-> about kernel events. Currently such events are handled with printks
-> in most cases. There are automation tools, which want to automatically
-> react on kernel events. To get the event information, these tools are
-> parsing printks, which is not a really good mechanism for that
-> purpose.
-> 
-> When I read about kevents, I was wondering, if it could be used to solve
-> this problem. E.g. it would be possible to put an event number into a
-> kevent and provide another interface to get the complete event data.
-> 
-> Do you think, that kevent could be used for this purpose?
+I am sorry, I was not clear enough - when I was talking about adding
+cobalt_buttons_open/close I was not asking you to add a misc device to
+the driver. I was talking about setting up open() and close() methods
+in input_dev structure. These methods are called by input core when
+first (or last) user opens or closes one of input interfaces, such as
+/dev/input/eventX, /dev/input/jsX, etc and so it is naturally to
+start/stop polling device from these functions.
 
-You will need to have implemented two types of operations - userspace
-daemon, which will request some notifications (i.e. notify me when event
-type:1, event:2 is ready), and that one which will mark such requests as
-ready.
-
-For exactly your purpose I would use userspace kevent notifications - 
-although in documentation I say that such notifications can be
-marked from userspace, you can mark them as ready from kernel too
-(obviously, since kevent is kernel mechanism).
-
-You can also create own kevent notification type and storage (userspace
-notification requests are stored in the main kevent queue (kevent_user))
-and compile them only for s390 arch and thus do not overlap with
-possible usage of userspace notifications.
-
-As another tool to do the same I would suggest netlink (raw netlink
-usage is not appreciated, but instead you can use connector or
-gennetlink).
-
-Kevent is much more lightweight especially when event is marked as ready
-compared to netlink allocation. From the other point, kevent requires
-some requests from userspace which can be marked as ready, while netlink
-allows to generate them from 'void' (i.e. withoug userspace creating
-request).
-
-> Michael
+Does this make sense?
 
 -- 
-	Evgeniy Polyakov
+Dmitry
