@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423330AbXBPGP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423342AbXBPGUG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423330AbXBPGP3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 01:15:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423331AbXBPGP3
+	id S1423342AbXBPGUG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 01:20:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423341AbXBPGUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 01:15:29 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:48426 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1423330AbXBPGP2 (ORCPT
+	Fri, 16 Feb 2007 01:20:05 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:4098 "EHLO
+	pd5mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423339AbXBPGUD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 01:15:28 -0500
-Message-ID: <45D54BFF.80100@vmware.com>
-Date: Thu, 15 Feb 2007 22:15:27 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       Avi Kivity <avi@qumranet.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [patch 14/21] Xen-paravirt: Add XEN config options and disable
- unsupported config options.
-References: <20070216022449.739760547@goop.org> <20070216022531.570154735@goop.org>
-In-Reply-To: <20070216022531.570154735@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Feb 2007 01:20:03 -0500
+Date: Thu, 15 Feb 2007 21:59:06 -0800 (PST)
+From: Zwane Mwaikambo <zwane@infradead.org>
+Subject: Re: [PATCH] Don't probe for DDC on VBE1.2
+In-reply-to: <20070215215125.9161e3dc.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Tobias Hain <tobias.hain@gmx.de>, "H. Peter Anvin" <hpa@zytor.com>
+Message-id: <Pine.LNX.4.64.0702152158210.12571@montezuma.fsmlabs.com>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <Pine.LNX.4.64.0702132145460.28458@montezuma.fsmlabs.com>
+ <20070215205658.56096f97.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0702152134190.12571@montezuma.fsmlabs.com>
+ <20070215214506.f795acc4.akpm@linux-foundation.org>
+ <20070215215125.9161e3dc.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> The XEN config option enables the Xen paravirt_ops interface, which is
-> installed when the kernel finds itself running under Xen. (By some
-> as-yet fully defined mechanism, implemented in a future patch.)
->
-> Xen is no longer a sub-architecture, so the X86_XEN subarch config
-> option has gone.
->
-> The disabled config options are:
-> - PREEMPT: Xen doesn't support it
-> - HZ: set to 100Hz for now, to cut down on VCPU context switch rate.
->   This will be adapted to use tickless later.
-> - kexec: not yet supported
->
-> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-> Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
-> Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-> Signed-off-by: Chris Wright <chrisw@sous-sol.org>
->   
+On Thu, 15 Feb 2007, Andrew Morton wrote:
 
-We do support different HZ values, although 100HZ is actually preferable 
-for us, so I don't object to that.  PREEMPT is supported by us, but not 
-as tested as I would like, so I also don't object to dropping it for 
-generic paravirt guests - Rusty - Avi any objections to dropping preempt 
-in terms of lguest/KVM paravirtualization?
+> On Thu, 15 Feb 2007 21:45:06 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Thu, 15 Feb 2007 21:35:35 -0800 (PST) Zwane Mwaikambo <zwane@infradead.org> wrote:
+> > 
+> > > On Thu, 15 Feb 2007, Andrew Morton wrote:
+> > > 
+> > > > This makes the long-suffering-but-vigorously-defended Vaio come up with a
+> > > > black display.  Everything's working OK otherwise.  Sort of a Black Screen
+> > > > of Life.  I wouldn't call it an improvement though.
+> > > 
+> > > Bugger, what does your kernel commandline look like?
+> > 
+> > Kernel command line: ro root=LABEL=/ rhgb vga=0x263 clock=pit
+> 
+> Removing the vga=0x263 "fixes" it.
+> 
 
-Paravirt-ops definitely needs a hook for kexec, although we should not 
-disable kexec for the natively booted paravirt-ops.  Eric - is there a 
-way to disable it at runtime?
+Sorry i missed this earlier, could you also post up an Xorg.0.log (or 
+equivalent for your system).
 
-We do support the doublefault task gate, and it would be good to keep 
-it, but I can't complain so much if it is gone from generic paravirt 
-kernels for now, because it is non-essential, and generally fatal 
-anyway.  We do need it for native boots of paravirt-ops kernels, 
-however, so turning off the config option still needs to be revisited.
-
-Zach
+Thanks,
+	Zwane
