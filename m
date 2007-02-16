@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933003AbXBPK7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932244AbXBPLDM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933003AbXBPK7v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 05:59:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945954AbXBPK7v
+	id S932244AbXBPLDM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 06:03:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932272AbXBPLDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 05:59:51 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:55911 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933001AbXBPK7t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 05:59:49 -0500
-Date: Fri, 16 Feb 2007 11:59:31 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Jan Dittmer <jdi@l4x.org>, seife@novell.com
-Cc: Mattia Dongili <malattia@linux.it>, stelian@popies.net,
-       linux-acpi@vger.kernel.org, linux-pm@osdl.org, adaplas@pol.net,
-       dawes@xfree86.org, Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] Suspend to RAM, Sony Vaio PCG-SRX51P, lcd stays off
-Message-ID: <20070216105931.GE4176@elf.ucw.cz>
-References: <45D43489.3060409@l4x.org> <20070215103639.GB27338@elf.ucw.cz> <37556.85.47.20.193.1171540572.squirrel@picard.linux.it> <45D558D6.3050303@l4x.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45D558D6.3050303@l4x.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Fri, 16 Feb 2007 06:03:12 -0500
+Received: from 207.47.60.150.static.nextweb.net ([207.47.60.150]:19379 "EHLO
+	webmail.xensource.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932244AbXBPLDL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 06:03:11 -0500
+User-Agent: Microsoft-Entourage/11.2.5.060620
+Date: Fri, 16 Feb 2007 11:03:06 +0000
+Subject: Re: [patch 14/21] Xen-paravirt: Add XEN config options and
+ disableunsupported config options.
+From: Keir Fraser <keir@xensource.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Keir Fraser <keir@xensource.com>
+CC: Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@muc.de>,
+       <xen-devel@lists.xensource.com>, Ian Pratt <Ian.Pratt@xensource.com>,
+       <virtualization@lists.osdl.org>, Steven Hand <steven.hand@cl.cam.ac.uk>,
+       Christian Limpach <Christian.Limpach@xensource.com>,
+       <linux-kernel@vger.kernel.org>
+Message-ID: <C1FB3FEA.98F7%keir@xensource.com>
+Thread-Topic: [patch 14/21] Xen-paravirt: Add XEN config options and
+ disableunsupported config options.
+Thread-Index: AcdRugj+R6aSPL2tEduvqQAX8io7RQ==
+In-Reply-To: <20070216025452.d25e3545.akpm@linux-foundation.org>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Content-transfer-encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On 16/2/07 10:54, "Andrew Morton" <akpm@linux-foundation.org> wrote:
 
-> > On Thu, February 15, 2007 11:36 am, Pavel Machek said:
+> OK, you're screwed.  I agree that the process freezer is the way out of that
+> one.
 > 
-> >>>     sys_vendor   = "Sony Corporation    "
-> >>>     sys_product  = "PCG-SRX51P(DE)      "
-> >>>     sys_version  = "01                  "
-> >>>     bios_version = "R0232U2"
-> >>>
-...
-> >>> Latest kernel I tested is 2.6.20-git11 from today.
-> > 
-> > I read reports of successful suspends on that laptop, eg:
-> > http://freenet-homepage.de/obauer/index.html
-> 
-> Ok, now I feel totally dumb. 's2ram -s -f' actually works iff you disable
-> fb support completely in the kernel. It works even from X. Don't know how
-> many combinations I tried but that one somehow slipped through. Anyway
-> thanks for your help. So could this machine be added to the s2ram
-> database?
+> Ingo said that he's clocked the freezer at a few milliseconds.  But if it's
+> any higher than that it'll need to get sped up once we convert cpu hotplug
+> to use it.
 
-Stefan, can we add this one?
+A few milliseconds is acceptable. Presumably that is under some stress
+workload? What we'd really like is to be able to gang-hotplug CPUs to
+amortise the freezer overhead.
 
-Anyway, it would be nice to actually fix the fb support in kernel not
-to hang the machine on your Sony...
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+This initial patchset does not include save/restore support anyway, so in
+fact it would be consistent to have CONFIG_PREEMPT configurable. I'm sure
+that we are going to have some nasty bugs to fix up as a result, but we
+can't fix them until we find them! Then we can convert our save/restore code
+to use the freezer before submitting it for inclusion.
+
+ -- Keir
+
