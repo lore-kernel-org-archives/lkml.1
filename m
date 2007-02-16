@@ -1,38 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751146AbXBPG7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751349AbXBPHAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751146AbXBPG7v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 01:59:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbXBPG7v
+	id S1751349AbXBPHAf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 02:00:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbXBPHAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 01:59:51 -0500
-Received: from webmail19.mail.yandex.net ([213.180.200.53]:42342 "EHLO
-	webmail19.mail.yandex.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751146AbXBPG7u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 01:59:50 -0500
-Date: Fri, 16 Feb 2007 09:59:35 +0300 (MSK)
-From: "Mockern" <Mockern@yandex.ru>
-Message-Id: <45D55657.000003.30666@webmail19.yandex.ru>
-MIME-Version: 1.0
-X-Mailer: Yamail [ http://yandex.ru ]
-To: linux-kernel@vger.kernel.org
-Subject: cat, cp operations for tty driver (like for char one) 
-X-MsgDayCount: 1
-X-BornDate: 1134853200
-Reply-To: Mockern@yandex.ru
-X-Source-Ip: 84.185.222.204
-Content-Type: text/plain;
-  charset="US-ASCII"
+	Fri, 16 Feb 2007 02:00:35 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:55103 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751349AbXBPHAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 02:00:34 -0500
+Date: Thu, 15 Feb 2007 22:59:32 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@muc.de>, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>
+Subject: Re: [patch 00/21] Xen-paravirt: Xen guest implementation for
+ paravirt_ops interface
+Message-Id: <20070215225932.11a1b43e.akpm@linux-foundation.org>
+In-Reply-To: <20070216022449.739760547@goop.org>
+References: <20070216022449.739760547@goop.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a question about linux tty driver 
+On Thu, 15 Feb 2007 18:24:49 -0800 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-how to support cp, cat operations in tty driver (like tiny_tty)?
-(e.g. echo "hello tty" > /dev/ttyS3, cat < ttyS10 etc)
+> This patch series implements the Linux Xen guest in terms of the
+> paravirt-ops interface.
 
-There a lot of examples with char drivers, but I could not find it for tty
-Linux driver. 
+The whole patchset exports 67 symbols to modules.  How come?
 
-
+Are they all needed?
