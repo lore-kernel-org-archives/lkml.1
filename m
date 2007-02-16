@@ -1,76 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422905AbXBPAjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422912AbXBPAk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422905AbXBPAjY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 19:39:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422907AbXBPAjY
+	id S1422912AbXBPAk1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 19:40:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422913AbXBPAk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 19:39:24 -0500
-Received: from mail1.webmaster.com ([216.152.64.169]:4443 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422905AbXBPAjX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 19:39:23 -0500
-From: "David Schwartz" <davids@webmaster.com>
-To: <trent.waddington@gmail.com>
-Cc: "Neil Brown" <neilb@suse.de>, <linux-kernel@vger.kernel.org>
-Subject: RE: GPL vs non-GPL device drivers
-Date: Thu, 15 Feb 2007 16:38:41 -0800
-Message-ID: <MDEHLPKNGKAHNMBLJOLKKEBDBKAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+	Thu, 15 Feb 2007 19:40:27 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:40511 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422912AbXBPAk0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 19:40:26 -0500
+Date: Thu, 15 Feb 2007 16:37:09 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sparse chokes on arch/i386/kernel/i8253.c
+Message-Id: <20070215163709.720c38f0.akpm@linux-foundation.org>
+In-Reply-To: <20070216002347.GB9851@Krystal>
+References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
+	<45D483D7.2040609@imap.cc>
+	<20070215144142.0c13580a.akpm@linux-foundation.org>
+	<20070216002347.GB9851@Krystal>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-In-Reply-To: <3d57814d0702151351i544f9efdh6c7dfc8be5a35c69@mail.gmail.com>
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Thu, 15 Feb 2007 16:38:57 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Thu, 15 Feb 2007 16:38:58 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 15 Feb 2007 19:23:47 -0500
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-> I must have missed something, who is trying to coerce people into not
-> exercising the rights the GPL gave them?
+> sparse chokes on arch/i386/kernel/i8253.c
+> 
+> Here is a marker fix that puts the correct -i include/linux/marker.h in
+> the top level Makefile so sparse works correctly. The tricky part is to
+> keep the kernel compiling correctly with a kernel build directory
+> different from the kernel source tree too.
+> 
+> The fix applies on top the the Linux Kernel Markers for 2.6.20.
+> 
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> 
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -309,7 +309,8 @@ AFLAGS_KERNEL	=
+>  LINUXINCLUDE    := -Iinclude \
+>                     $(if $(KBUILD_SRC),-Iinclude2 -I$(srctree)/include) \
+>  		   -include include/linux/autoconf.h \
+> -		   -include linux/marker.h
+> +		   -include \
+> +		   	$(if $(KBUILD_SRC),$(srctree)/)include/linux/marker.h
+>  
+>  CPPFLAGS        := -D__KERNEL__ $(LINUXINCLUDE)
 
-Anyone who claims that it is unlawful to "circumvent" the EXPORT_SYMBOL_GPL
-stuff. Anyone who adds copyright or license enforcement mechansims to GPL'd
-code and distributes the result. Anyone who tries to frighten people into
-openening their code based on a crazy notion of what constitutes a
-derivative work. Anyone who tries to use copyrights as if they were patents
-and claims they can own *every* *way* to do a particular thing. (Especially
-if those same people *oppose* software patents!)
-
-> I don't debate that people
-> are trying to coerce people into passing on the rights the GPL gave
-> them when they distribute the kernel... coercion, that's what software
-> licenses are.  Who's changing the rules?
-
-Anyone who adds a mechanism to the Linux kernel, distributes the result, and
-then argues that one is subjected to new restrictions on how you can modify
-and distributed GPL'd works (restrictions not found in the GPL) as a result
-of the code that they added.
-
-Just to be perfectly clear, it is an outrageous claim that *every*
-*possible* kernel module must be a derivative work of the kernel. Copyright
-*cannot* protect every possible way to accomplish a particular function (and
-"a Linux driver for the X800 graphics chipset" is a function). Copyright can
-*only* protect the one possible way you chose to do something out of a large
-number of equally good possible ways. (See, for example, Lexmark v. Static
-Controls where courts held that Static Controls could take Lexmark's TLP
-software because that was the only practical way to make a compatible toner
-cartridge.)
-
-This is an absurd claim.
-
-DS
-
-
+But what is so magical about marker.h to justify special-case treatment at the
+kbuid level?
