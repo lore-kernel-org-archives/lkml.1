@@ -1,110 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423095AbXBPD4I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423108AbXBPEAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423095AbXBPD4I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 22:56:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161734AbXBPD4I
+	id S1423108AbXBPEAc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 23:00:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423120AbXBPEAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 22:56:08 -0500
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:64623 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161731AbXBPD4H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 22:56:07 -0500
-Date: Thu, 15 Feb 2007 22:56:03 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@redhat.com>,
-       systemtap@sources.redhat.com, ltt-dev@shafik.org
-Subject: Re: [PATCH] Linux Kernel Markers Documentation
-Message-ID: <20070216035603.GB16075@Krystal>
-References: <1171224207118-git-send-email-mathieu.desnoyers@polymtl.ca> <20070214231201.20918c6b.akpm@linux-foundation.org> <20070216013348.GC12736@Krystal> <20070215174500.2b1b3bb9.randy.dunlap@oracle.com>
-Mime-Version: 1.0
+	Thu, 15 Feb 2007 23:00:32 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:51694 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423108AbXBPEAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 23:00:31 -0500
+To: Jeff Garzik <jeff@garzik.org>
+Cc: "Michael K. Edwards" <medwards.linux@gmail.com>, v j <vj.linux@gmail.com>,
+       Theodore Tso <tytso@mit.edu>, Dave Jones <davej@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: GPL vs non-GPL device drivers
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+	<9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>
+	<20070215061149.GE15654@redhat.com>
+	<9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>
+	<20070215165339.GB5285@thunk.org>
+	<9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com>
+	<45D4DCE3.9070002@garzik.org>
+	<f2b55d220702151604l1af2dad3k61758a654244ca6c@mail.gmail.com>
+	<45D4FCC7.2090206@garzik.org>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Fri, 16 Feb 2007 02:00:16 -0200
+In-Reply-To: <45D4FCC7.2090206@garzik.org> (Jeff Garzik's message of "Thu\, 15 Feb 2007 19\:37\:27 -0500")
+Message-ID: <orr6sqoipb.fsf@free.oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.93 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070215174500.2b1b3bb9.randy.dunlap@oracle.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 22:54:45 up 13 days, 18:02,  5 users,  load average: 1.04, 1.06, 1.06
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Randy,
+On Feb 15, 2007, Jeff Garzik <jeff@garzik.org> wrote:
 
-* Randy Dunlap (randy.dunlap@oracle.com) wrote:
-> so is the MARK() supposed to be:
->   MARK(subsystem, event, ...
-> 
-> Please make the 2 doc. lines above match the parameters...
-> or the parameters match the text.
-> 
+> Michael K. Edwards wrote:
+>> On 2/15/07, Jeff Garzik <jeff@garzik.org> wrote:
 
-Fixing the paragraph below.
+>>> The /whole point/ of the GPL is to funnel contributions back.
 
-> > +- "%d %s %p[struct task_struct]" is the formatted string for (printk-style).
-> > +- someint is an integer.
-> > +- somestring is a char pointer.
-> > +- current is a pointer to a struct task_struct.
-> > +
-> > +The expression %p[struct task_struct] is a suggested marker definition
-> > +standard that could eventually be used for pointer type checking in
-> > +sparse. The brackets contain the type to which the pointer refer.
->                                                               refers.
-> 
-> > +
-> > +#define SUBSYSTEM_EVENT_FORMAT "%d %s %p[struct task_struct]"
-> 
-> Is SUBSYSTEM_EVENT_FORMAT used implicitly below?  or elsewhere?
-> 
+>> Bzzzt.  The whole point of the GPL is to "guarantee your freedom to
+>> share and change free software--to make sure the software is free for
+>> all its users."
 
-Yes, error follows.
+> No, that's the FSF marketing fluff you've been taught to recite.
 
-> > +void probe_subsystem_event(const char *format, ...)
-> > +{
-> > +	va_list ap;
-> > +	/* Declare args */
-> > +	unsigned int value;
-> > +	const char *mystr;
-> > +	struct task_struct *task;
-> > +
-> > +	/* Assign args */
-> > +	va_start(ap, format);
-> > +	value = va_arg(ap, typeof(value));
-> > +	mystr = va_arg(ap, typeof(mystr));
-> > +	task = va_arg(ap, typeof(task));
-> > +
-> > +	/* Call tracer */
-> > +	trace_subsystem_event(value, mystr, task);
-> > +
-> > +	/* Or call printk */
-> > +	vprintk(format, ap);
-> > +
-> > +	/* or count, check rights... */
-> > +	
-> > +	va_end(ap);
-> > +}
-> > +
-> > +static int __init probe_init(void)
-> > +{
-> > +	int result;
-> > +	result = marker_set_probe("subsystem_event",
-> > +			FS_CLOSE_FORMAT,
-> > +			probe_fs_close);
-> 
-> Do FS_CLOSE_FORMAT and probe_fs_close() need to be defined here?
-> I.e., is this a complete example?
-> 
+The same FSF that wrote the GPL, no less ;-)
 
-should be SUBSYSTEM_EVENT_FORMAT. Will fix, thanks.
+> In the context of the Linux kernel, I'm referring to the original
+> reason why Linus chose the GPL for the Linux kernel.
 
-Regards,
-
-Mathieu
+If he chose it for this reason, he chose the wrong license.  The GPL
+does not funnel contributions back.  It doesn't even require anyone to
+make contributions: you're free to keep your improvements only to
+yourself.  And even if you distribute them, you can choose whom to
+distribute it to, and that might very well leave the 'back' out.
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Candidate, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
