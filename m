@@ -1,35 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422955AbXBPAp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422722AbXBPAzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422955AbXBPAp5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 19:45:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422956AbXBPAp5
+	id S1422722AbXBPAzT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 19:55:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422858AbXBPAzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 19:45:57 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:40934 "EHLO smtp.osdl.org"
+	Thu, 15 Feb 2007 19:55:18 -0500
+Received: from mail.queued.net ([207.210.101.209]:1372 "EHLO mail.queued.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422955AbXBPAp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 19:45:56 -0500
-Date: Thu, 15 Feb 2007 16:45:53 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andres Salomon <dilinger@debian.org>
-Cc: linux-kernel@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+	id S1422722AbXBPAzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 Feb 2007 19:55:17 -0500
+Message-ID: <45D50101.60802@debian.org>
+Date: Thu, 15 Feb 2007 19:55:29 -0500
+From: Andres Salomon <dilinger@debian.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Subject: Re: [patch 1/3] Input: psmouse - create PS/2 protocol options for
  Kconfig
-Message-Id: <20070215164553.28f3f9af.akpm@linux-foundation.org>
-In-Reply-To: <45D43115.6060806@debian.org>
-References: <45D43115.6060806@debian.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <45D43115.6060806@debian.org> <20070215164553.28f3f9af.akpm@linux-foundation.org>
+In-Reply-To: <20070215164553.28f3f9af.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Feb 2007 05:08:21 -0500
-Andres Salomon <dilinger@debian.org> wrote:
+Andrew Morton wrote:
+> On Thu, 15 Feb 2007 05:08:21 -0500
+> Andres Salomon <dilinger@debian.org> wrote:
+> 
+>> Initial framework for disabling PS/2 protocol extensions.  The current
+>> protocols can only be disabled if CONFIG_EMBEDDED is selected.  No
+>> source files are changed, merely build stuff.
+> 
+> ugleee.  What benefit do we get for all this additional maintenance burden?
 
-> Initial framework for disabling PS/2 protocol extensions.  The current
-> protocols can only be disabled if CONFIG_EMBEDDED is selected.  No
-> source files are changed, merely build stuff.
+On any platform where you know exactly what ps/2 device you'll have
+plugged in, you can cut the size of psmouse.ko in half by disabling
+protocol extensions that are not in use.
 
-ugleee.  What benefit do we get for all this additional maintenance burden?
+For future protocol extension additions, we can add them without making
+the psmouse driver even larger.  We have one queued up for OLPC's
+touchpad which we'd like to get included in mainline, and it was made
+clear that being able to disable protocol extensions was a prerequisite
+for getting it included.  The OLPC ps/2 protocol extension would be
+disabled unless CONFIG_EMBEDDED and CONFIG_MOUSE_PS2_OLPC were both enabled.
+
+See http://lkml.org/lkml/2006/9/11/200
