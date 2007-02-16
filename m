@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945953AbXBPPy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932403AbXBPPzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945953AbXBPPy1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 10:54:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945955AbXBPPy1
+	id S932403AbXBPPzh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 10:55:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932421AbXBPPzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 10:54:27 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:33930 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945953AbXBPPy0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 10:54:26 -0500
-Subject: Re: [PATCH 2.6.21-rc1] ehea: dynamic add / remove port
-From: John Rose <johnrose@austin.ibm.com>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Christoph Raisch <RAISCH@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <MEDER@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>, stefan.roscher@de.ibm.com,
-       netdev <netdev@vger.kernel.org>, Nathan Fontenot <nfont@austin.ibm.com>
-In-Reply-To: <200702161606.52789.ossthema@de.ibm.com>
-References: <200702141536.28665.ossthema@de.ibm.com>
-	 <1171491906.30473.3.camel@sinatra.austin.ibm.com>
-	 <200702161606.52789.ossthema@de.ibm.com>
-Content-Type: text/plain
-Message-Id: <1171641089.9442.8.camel@sinatra.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Ximian Evolution 1.4.6 (1.4.6-2) 
-Date: Fri, 16 Feb 2007 09:51:29 -0600
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Feb 2007 10:55:37 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:48801 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932403AbXBPPzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 10:55:36 -0500
+Date: Fri, 16 Feb 2007 07:54:22 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 05/11] syslets: core code
+In-Reply-To: <20070216085706.GA22868@2ka.mipt.ru>
+Message-ID: <Pine.LNX.4.64.0702160753120.20368@woody.linux-foundation.org>
+References: <20070213142035.GF638@elte.hu> <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org>
+ <20070215133550.GA29274@2ka.mipt.ru> <Pine.LNX.4.64.0702150757520.20368@woody.linux-foundation.org>
+ <20070215163704.GA32609@2ka.mipt.ru> <Pine.LNX.4.64.0702150920130.20368@woody.linux-foundation.org>
+ <20070215181059.GC20997@2ka.mipt.ru> <Pine.LNX.4.64.0702151019210.20368@woody.linux-foundation.org>
+ <20070215190413.GA23953@2ka.mipt.ru> <Pine.LNX.4.64.0702151120260.20368@woody.linux-foundation.org>
+ <20070216085706.GA22868@2ka.mipt.ru>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi-
 
-Sounds good.  A couple of questions/comments:
 
-> I think it is not necessary to have a special entry/kobject for each logical
-> port. I suggest we use SET_NETDEV_DEV to create links to all ethernet devices
-> that represent each a logical port. This should be in sync with all other 
-> ethernet drivers. Port attributes like the "logical port id" that might be 
-> need by the userspace application can be added to the net:ethX entry
-> (link created with SET_NETDEV_DEV) as additional attributes. 
-
-As we develop the userspace tool, we are finding a need to know the
-following for each logical port:
-
-1) the linux interface/device (a symlink would do this)
-2) the logical port number - were you suggesting communicating this
-through the name of the symlink, or in the directory of the symlink
-target?
-3) the open firmware path for the logical port.  This is typically
-communicated through a sysfs attribute file "devspec", but we can't do
-this without a new kobject for the port.
-
-> > 
-> > Second, the probe and remove functions do not communicate whether an add
-> > or remove was successful.  Combine this with the lack of port
-> > information in the adapter sysfs directory, and the userspace tool has
-> > no way of verifying a dynamic add/remove.
+On Fri, 16 Feb 2007, Evgeniy Polyakov wrote:
 > 
-> True. I suggest we return error codes (-EIO / -EINVAL) in case the adding
-> or removing of ports fails. This is possible as we know instantly if the
-> operation failed or not. It is a synchronus operation.
+> Interfaces can be created and destroyed - they do not affect overall
+> system design in anyway (well, if they do, something is broken).
 
-Sounds good.
+I'm sorry, but you've obviously never maintained any piece of software 
+that actually has users.
 
-Thanks!
-John
+As long as you think that interfaces can change, this discussion is 
+pointless. 
 
+So go away, ponder things.
+
+		Linus
