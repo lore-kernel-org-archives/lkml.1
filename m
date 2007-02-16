@@ -1,88 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946188AbXBPSXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946189AbXBPSYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946188AbXBPSXo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 13:23:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946189AbXBPSXo
+	id S1946189AbXBPSYq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 13:24:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946194AbXBPSYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 13:23:44 -0500
-Received: from hancock.steeleye.com ([71.30.118.248]:39672 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1946188AbXBPSXn (ORCPT
+	Fri, 16 Feb 2007 13:24:46 -0500
+Received: from [221.217.24.227] ([221.217.24.227]:56884 "EHLO
+	freya.yggdrasil.com" rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1946189AbXBPSYo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 13:23:43 -0500
-Subject: Re: [PATCH] drivers/scsi/aic7xxx_old: Convert to generic
-	boolean-values
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <45D5F21B.2010804@student.ltu.se>
-References: <20070210174628.3764.89569.sendpatchset@thinktank.campus.ltu.se>
-	 <1171132062.3373.31.camel@mulgrave.il.steeleye.com>
-	 <20070212122738.b5e9a8af.akpm@linux-foundation.org>
-	 <1171644132.3443.27.camel@mulgrave.il.steeleye.com>
-	 <45D5F21B.2010804@student.ltu.se>
-Content-Type: text/plain
-Date: Fri, 16 Feb 2007 12:23:34 -0600
-Message-Id: <1171650214.3443.41.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-Content-Transfer-Encoding: 7bit
+	Fri, 16 Feb 2007 13:24:44 -0500
+Date: Sat, 17 Feb 2007 02:26:42 +0800
+From: "Adam J. Richter" <adam@yggdrasil.com>
+Message-Id: <200702161826.l1GIQg9j019462@freya.yggdrasil.com>
+To: dwalker@mvista.com
+Subject: Re: Clock running at half speed in 2.6.20?
+Cc: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-02-16 at 19:04 +0100, Richard Knutsson wrote:
-> James Bottomley wrote:
-> > On Mon, 2007-02-12 at 12:27 -0800, Andrew Morton wrote:
-> >   
-> >> Given that we now have a standard kernel-wide, c99-friendly way of
-> >> expressing true and false, I'd suggest that this decision can be revisited.
-> >>
-> >> Because a "true" is significantly more meaningful (and hence readable)
-> >> thing than a bare "1".
-> >>     
-> >
-> > OK, I'm really not happy with doing this for three reasons:
-> >
-> > 1. It's inviting huge amounts of driver churn changing bitfields to
-> > booleans
-> >   
-> Have been some work done already. Has there been any problems?
+On Fri, 16 Feb 2007 08:24:54 -0800, Daniel Walker wrote:
+>On Fri, 2007-02-16 at 22:28 +0800, Adam J. Richter wrote:
+>> 	My system clock runs at approximately half speed in
+>> linux-2.6.20, 2.6.20-git10 and 2.6.20-git11.
+[...]
 
-There's always an issue when two people work on the same driver ... it
-causes patch conflicts, which is why we try to avoid it where we can.
+>cat /sys/devices/system/clocksource/clocksource0/current_clocksource
 
-> > 2. I do find it to be a readability issue.  Like most driver writers,
-> > I'm used to register layouts, and those are simple bitfields, so I don't
-> > tend to think true and false, I think 1 and 0.
-> >   
-> It is a fundamental difference between an integer and a boolean. Have 
-> you seen anyone trying to do "bool var = true + true;"? ;)
+tsc
 
-I don't quite see how this is relevant to the readability issue?
+>cat /sys/devices/system/clocksource/clocksource0/available_clocksource
 
-> > 3. Having a different, special, type for single bit bitfields (while
-> > still using u<n> for multi bit bitfields) is asking for confusion, and
-> > hence trouble at the driver level.
-> >   
-> I don't think a boolean should be view as a single bit bitfield. Ex:
-> u8 a:1;
-> ...
-> int b = 4 + a;
-> is obviously not a boolean, while:
-> u8 a:1;
-> ...
-> if (a)
-> is, and a should be "bool a:1;" (imho)
+acpi_pm jiffies tsc
 
-This again, doesn't really address the argument.  I'm saying I'd rather
-not have confusion over what types to use in the driver.  You're saying
-that if you only check the value for truth or falsehood it should be a
-boolean.  That's actually worse than I was anticipating because you're
-now saying that single bit bitfields may or may not be booleans
-depending on use.  This looks like worse potential for confusion than
-before.
+	When I rebooted with "max_cpus=1", available_clocksource included a
+fourth option "pit".
 
-James
+       I have some bad news.  The problem is sporadic.  Here are the
+logs of the tests that I have made, in the order in which I recall
+making them:
 
+2.6.20-git11		problem occurred
+2.6.20-git10		problem occurred
+2.6.20			problem occurred
+2.6.18.1		no problem
+	[At this point, I made my original posting.]
 
+2.6.20-git11 maxcpus=1	no problem
+	...checked current_clocksource, was tsc			   
+
+2.6.18.1		no problem
+	...checked current_clocksource, was tsc			   
+
+2.6.20-git11		no problem (this is bad!)
+	checked current_clocksource, was tsc
+	set clocksource=acpi_pm, still no problem
+	set clocksource=jiffies, still no problem
+
+power cycled computer, unplugging power supply and powered down monitor
+
+2.6.20-git11		no problem (this is bad!)
+	checked current_clocksource, was tsc
+
+	At first, I was very happy to see the problem disappear after
+rebooting 2.6.20-git11 with "max_cpus=1", as this would tend to
+indicate some mistake related to hyperthreading, but, after that I
+have been unable to reproduce the problem, so I really don't know that
+booting with maxcpus=1 fixed it.  Perhaps the previous boot to
+2.6.18.1 did.
+
+	I should also mention, that around the time that I first
+noticed the problem, I observed audio stuttering under 2.6.20-git11
+regularly, in intervals of perhaps 300 milliseconds, which I suspect
+is a symptom of the slow system clock causing the audio driver not to
+fill output buffers in time.  Now, when I cannot reproduce the clock
+slowdown problem, audio is playing fine under the same 2.6.20-git11
+kernel.
+
+	I have observed the audio stuttering a few times in the past
+week or so.  The next time it happens, I'll see if the clock slowdown
+has returned and I'll record and experiment with the other clock
+sources.
+
+	I'll let you know when I have more useful information or mske
+other progress related to this problem.
+
+	Thank you for your help!
+
+Adam Richter
