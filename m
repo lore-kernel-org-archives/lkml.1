@@ -1,62 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946092AbXBPTy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946101AbXBPTzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946092AbXBPTy1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 14:54:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946093AbXBPTy1
+	id S1946101AbXBPTzR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 14:55:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946102AbXBPTzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 14:54:27 -0500
-Received: from beta2.look.ca ([207.136.100.3]:45930 "EHLO twiddle.look.ca"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1946092AbXBPTy0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 14:54:26 -0500
-Date: Fri, 16 Feb 2007 14:55:20 -0500
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
-Message-ID: <20070216195520.GG6425@infidigm.net>
-References: <20070216013024.GA32287@infidigm.net> <y0mr6sq2hfj.fsf@ton.toronto.redhat.com> <20070216183014.GD6425@infidigm.net> <20070216104415.bca20c4b.randy.dunlap@oracle.com>
-Mime-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20070216104415.bca20c4b.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.9i
-From: Jeff Muizelaar <jeff@infidigm.net>
-X-SA-Exim-Mail-From: jeff@infidigm.net
-Subject: Re: Using sched_clock for mmio-trace
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Version: 3.1 (built Tue Feb 24 05:09:27 GMT 2004)
-X-SA-Exim-Scanned: Yes
+	Fri, 16 Feb 2007 14:55:17 -0500
+Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:19893 "EHLO
+	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1946101AbXBPTzP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 14:55:15 -0500
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Transfer-Encoding: 7bit
+Message-Id: <6EF4DB85-C7D4-445B-B9B5-0D22D5D893CD@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: 2.6.20 kernel hang with USB drive and vfat doing ftruncate
+Date: Fri, 16 Feb 2007 13:54:20 -0600
+X-Mailer: Apple Mail (2.752.2)
+X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - kernel.crashing.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 16, 2007 at 10:44:15AM -0800, Randy Dunlap wrote:
-> On Fri, 16 Feb 2007 13:30:14 -0500 Jeff Muizelaar wrote:
-> 
-> > On Fri, Feb 16, 2007 at 11:30:56AM -0500, Frank Ch. Eigler wrote:
-> > > Jeff Muizelaar <jeff@infidigm.net> writes:
-> > > 
-> > > > I've built a tool with the goal of logging mmio writes and reads by
-> > > > device drivers. See http://nouveau.freedesktop.org/wiki/MmioTrace.
-> > > 
-> > > FWIW, this is exactly a type of add-on trace patch that could be
-> > > mooted by adoption of the ltt/systemtap "marker" facility.  With it,
-> > > you would not need so much code (e.g. no new user-space tools at all,
-> > > reuse of common tracing buffer logic, permanently placed hooks) and
-> > > would probably get more utility.
-> > 
-> > Is there more information on this "marker" facility? e.g. what is a
-> > marker? Are they just like tracepoints?
-> 
-> On lkml for the past few days/months.
-> Look for "Linux Kernel Markers" in the subject line.
-> 
-> Mathieu, do you have a web site for LK Markers?
-> 
+I'm seeing an issue with a stock 2.6.20 kernel running on an embedded  
+PPC.  I've got a usb flash drive plugged in and the filesystem on the  
+drive is vfat.  Running with 64M and no swap.
 
-Yeah, so if I understand correctly, markers are basically compile time locations
-that you can attach function calls to at run time, right?. If so, I
-don't think they are of much use to me.
+If I execute a series of large (100M+) ftruncate() on the disk the  
+kernel will hang and never return.  It seems to be stuck in the idle  
+loop().
 
-What I am doing is page-faulting on every read or write to an mmio
-region, decoding the faulting instruction and passing the decoded
-information up to userspace through relayfs.
+The following is the test program I'm running:
 
--Jeff
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <errno.h>
+
+void usage (void)
+{
+         printf ("truncate_test <filename> <size>\n\n");
+}
+
+int main(int argc, char *argv[])
+{
+         int fd, i;
+         int ret = 0;
+         unsigned int len;
+
+         if (argc != 3) {
+                 printf("Invalid number of arguments\n\n");
+                 usage();
+                 exit(1);
+         }
+
+         fd = open(argv[1], O_CREAT|O_RDWR|O_TRUNC, S_IRWXU);
+         len = strtoul(argv[2], NULL, 0);
+
+         ret = ftruncate(fd, len);
+
+         if (ret)
+                 printf ("ftruncate ret = %d %d\n", ret, errno);
+
+         close(fd);
+
+         return ret;
+}
+
+I usually run the following twice to get the hang state:
+
+time ./trunc_test bar 100000000 &
+time ./trunc_test baz 100000000 &
+
+I was wondering if anyone had any suggestions on what to poke at next  
+to try and figure out what is going on.
+
+- k
