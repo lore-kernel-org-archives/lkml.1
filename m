@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422922AbXBPAmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422932AbXBPAn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422922AbXBPAmq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 Feb 2007 19:42:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422925AbXBPAmq
+	id S1422932AbXBPAn0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 Feb 2007 19:43:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422934AbXBPAn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 Feb 2007 19:42:46 -0500
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:53179 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422922AbXBPAmp (ORCPT
+	Thu, 15 Feb 2007 19:43:26 -0500
+Received: from ftp.linux-mips.org ([194.74.144.162]:58703 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422932AbXBPAnX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 Feb 2007 19:42:45 -0500
-Date: Thu, 15 Feb 2007 19:37:39 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+	Thu, 15 Feb 2007 19:43:23 -0500
+Date: Fri, 16 Feb 2007 00:43:17 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org
-Subject: Re: sparse chokes on arch/i386/kernel/i8253.c (was: 2.6.20-mm1)
-Message-ID: <20070216003739.GC9851@Krystal>
-References: <20070215051408.a7fb7d81.akpm@linux-foundation.org> <45D483D7.2040609@imap.cc> <20070215144142.0c13580a.akpm@linux-foundation.org> <20070215224656.GB6297@Krystal> <20070215154418.88edfcbc.akpm@linux-foundation.org>
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Optimize generic get_unaligned / put_unaligned implementations.
+Message-ID: <20070216004317.GA18987@linux-mips.org>
+References: <20050830104056.GA4710@linux-mips.org> <20060306.203218.69025300.nemoto@toshiba-tops.co.jp> <20060306170552.0aab29c5.akpm@osdl.org> <20070214214226.GA17899@linux-mips.org> <20070214203903.8d013170.akpm@linux-foundation.org> <20070215143441.GA18155@linux-mips.org> <20070215135358.020781dd.akpm@linux-foundation.org> <20070215221839.GA14103@linux-mips.org> <20070215153823.239fd616.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070215154418.88edfcbc.akpm@linux-foundation.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 19:29:18 up 13 days, 14:37,  3 users,  load average: 1.02, 1.49, 1.57
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070215153823.239fd616.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton (akpm@linux-foundation.org) wrote:
-> On Thu, 15 Feb 2007 17:46:56 -0500
-> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
-> > > Me too.  It's due to the linux-kernel-markers patches.  Mathieu, can you
-> > > take a look please?
-> > 
-> > I will give a deeper look in sparse, but I should say up front that I
-> > add this to the root build tree Makefile :
-> > 
-> > LINUXINCLUDE    := -Iinclude \
-> >                    $(if $(KBUILD_SRC),-Iinclude2 -I$(srctree)/include) \
-> >                    -include include/linux/autoconf.h \
-> >                    -include linux/marker.h
-> > 
-> > I guess sparse is maybe not using this Makefile or variable ?
-> 
-> ow, that's going to hurt - this stuff is complex and fragile.
-> 
+On Thu, Feb 15, 2007 at 03:38:23PM -0800, Andrew Morton wrote:
 
-Sorry, I will remember to do more explicit changelogs.
-
-> For what reason was that change made?
+> hm.  So if I have
 > 
-
-It was made so that we can use the markers in C code without actually
-including marker.h everywhere. I am sure someone has a better way to do
-it : I would be happy to use this-nice-build-system-feature-I-missed to
-have marker.h included.
-
-> Pleeze, tricky things like this should be changelogged - we shouldn't need
-> to ask.  I missed it.
+> 	struct bar {
+> 		unsigned long b;
+> 	} __attribute__((packed));
 > 
+> 	struct foo {
+> 		unsigned long u;
+> 		struct bar b;
+> 	};
 > 
+> then the compiler can see that foo.b.b is well-aligned, regardless of the
+> packedness.
+> 
+> Plus some crazy people compile the kernel with icc (or at least they used
+> to).  What happens there?
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Candidate, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+A quick grep for __attribute__((packed)) and __packed find around 900 hits,
+I'd probably find more if I'd look for syntactical variations.  Some hits
+are in arch/{i386,x86_64,ia64}.  At a glance it seems hard to configure a
+useful x86 kernel that doesn't involve any packed attribute.  I take that
+as statistical proof that icc either has doesn't really work for building
+the kernel or groks packing.  Any compiler not implementing gcc extensions
+is lost at building the kernel but that's old news.
+
+  Ralf
