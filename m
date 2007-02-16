@@ -1,118 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946311AbXBPXs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946317AbXBPXte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946311AbXBPXs3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 18:48:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946100AbXBPXs3
+	id S1946317AbXBPXte (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 18:49:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946319AbXBPXte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 18:48:29 -0500
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:2858 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946311AbXBPXs2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 18:48:28 -0500
-X-IronPort-AV: i="4.14,182,1170662400"; 
-   d="scan'208"; a="389985926:sNHT50154676"
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, openib-general@openib.org
-Subject: [GIT PULL] please pull infiniband.git
-X-Message-Flag: Warning: May contain useful information
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 16 Feb 2007 15:48:19 -0800
-Message-ID: <adahctlacl8.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Fri, 16 Feb 2007 18:49:34 -0500
+Received: from gw.goop.org ([64.81.55.164]:48019 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946317AbXBPXtd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 18:49:33 -0500
+Message-ID: <45D6430C.4030403@goop.org>
+Date: Fri, 16 Feb 2007 15:49:32 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 16 Feb 2007 23:48:20.0296 (UTC) FILETIME=[F00BE480:01C75224]
-Authentication-Results: sj-dkim-7; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim7002 verified; ); 
+To: Christoph Lameter <clameter@sgi.com>
+CC: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
+       Zachary Amsden <zach@vmware.com>
+Subject: Re: [patch 00/21] Xen-paravirt: Xen guest implementation for paravirt_ops
+ interface
+References: <20070216022449.739760547@goop.org> <Pine.LNX.4.64.0702161244380.26718@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0702161244380.26718@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+Christoph Lameter wrote:
+> I am thoroughly confused. Maybe that is because I have not been following 
+> this issue closely but it seems that you are using the paravirt interface 
+> as an API for Xen code in the guest? I thought the idea of paravirt was to 
+> have an API that is generic? This patchset seems to be mostly realizing 
+> Xen specific functionality? How does the code here interact with KVM, 
+> VMWare and other hypervisors?
 
-    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+There are two things in this patch series: generic kernel changes, and
+the core bits of Xen itself.
 
-This tree is also available from kernel.org mirrors at:
+The earlier part of the patch contains changes to the core kernel which
+are needed for Xen, but are generally harmless to non-paravirt use, or
+to being virtualized under other hypervisors.   In some cases these are
+plain bugfixes (like dealing with absent vga hardware), or things which
+have become parameterised (like the pgd alignment, or whether we share
+the kernel pmd in PAE mode).
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+But there are also extensions to the paravirt_ops interface.  The
+largest of these is adding the appropriate hooks for
+non-shadowed-pagetable hypervisors.  While Xen is the only example of
+this at the moment, its not a Xen-specific set of hooks.  It allows a
+hypervisor backend to have detailed control over what actually gets put
+into pagetables; in Xen's case this means we can convert the kernel's
+pseudo-physical addresses into machine addresses, but you could imagine
+a hypervisor maintaining some other structure in parallel with the
+pagetable or something like that.  An analogy would be extending the IO
+DMA interfaces to account for an IOMMU, even if only one hardware
+platform actually has an IOMMU.
 
-This adds IB multicast tracking, to allow userspace to use multicast
-groups in a sane way, an ehca interrupt handling fixup, and a few
-other minor things.  I don't think there is anything major left, so we
-should be good for 2.6.21-rc1 after this pull.
+The latter part of the series is basically pure Xen-specifc stuff, which
+is almost entirely restricted to Xen-specific parts of the tree.  This
+code introduces a number of new Xen-specific interfaces, but they're
+completely distinct from paravirt_ops.
 
-Dotan Barak (1):
-      IB/mthca: Allow the QP state transition RESET->RESET
-
-Hoang-Nam Nguyen (4):
-      IB/ehca: Rework irq handler
-      IB/ehca: Fix race condition/locking issues in scaling code
-      IB/ehca: Allow en/disabling scaling code via module parameter
-      IB/ehca: Change query_port() to return LINK_UP instead UNKNOWN
-
-Michael S. Tsirkin (1):
-      IPoIB: CM error handling thinko fix
-
-Roland Dreier (5):
-      IB/mthca: Fix allocation of ICM chunks in coherent memory
-      IPoIB: Only allow root to change between datagram and connected mode
-      IB/core: Fix sparse warnings about shadowed declarations
-      IB/ipath: Make ipath_map_sg() static
-      IB/core: Set static rate in ib_init_ah_from_path()
-
-Sean Hefty (2):
-      IB/sa: Track multicast join/leave requests
-      RDMA/cma: Add multicast communication support
-
-Steve Wise (3):
-      RDMA/iwcm: iw_cm_id destruction race fixes
-      RDMA/cxgb3: Fail posts synchronously when in TERMINATE state
-      RDMA/cxgb3: Remove Open Grid Computing copyrights in iw_cxgb3 driver
-
- drivers/infiniband/core/Makefile               |    2 +-
- drivers/infiniband/core/cma.c                  |  359 +++++++++--
- drivers/infiniband/core/fmr_pool.c             |    4 +-
- drivers/infiniband/core/iwcm.c                 |   47 +-
- drivers/infiniband/core/multicast.c            |  837 ++++++++++++++++++++++++
- drivers/infiniband/core/sa.h                   |   66 ++
- drivers/infiniband/core/sa_query.c             |   30 +-
- drivers/infiniband/core/sysfs.c                |    2 -
- drivers/infiniband/core/ucma.c                 |  204 ++++++-
- drivers/infiniband/hw/cxgb3/cxio_dbg.c         |    1 -
- drivers/infiniband/hw/cxgb3/cxio_hal.c         |    1 -
- drivers/infiniband/hw/cxgb3/cxio_hal.h         |    1 -
- drivers/infiniband/hw/cxgb3/cxio_resource.c    |    1 -
- drivers/infiniband/hw/cxgb3/cxio_resource.h    |    1 -
- drivers/infiniband/hw/cxgb3/cxio_wr.h          |    1 -
- drivers/infiniband/hw/cxgb3/iwch.c             |    1 -
- drivers/infiniband/hw/cxgb3/iwch.h             |    1 -
- drivers/infiniband/hw/cxgb3/iwch_cm.c          |    1 -
- drivers/infiniband/hw/cxgb3/iwch_cm.h          |    1 -
- drivers/infiniband/hw/cxgb3/iwch_cq.c          |    1 -
- drivers/infiniband/hw/cxgb3/iwch_ev.c          |    1 -
- drivers/infiniband/hw/cxgb3/iwch_mem.c         |    1 -
- drivers/infiniband/hw/cxgb3/iwch_provider.c    |    1 -
- drivers/infiniband/hw/cxgb3/iwch_provider.h    |    1 -
- drivers/infiniband/hw/cxgb3/iwch_qp.c          |    3 +-
- drivers/infiniband/hw/cxgb3/iwch_user.h        |    1 -
- drivers/infiniband/hw/ehca/Kconfig             |    8 -
- drivers/infiniband/hw/ehca/ehca_classes.h      |   19 +-
- drivers/infiniband/hw/ehca/ehca_eq.c           |    1 +
- drivers/infiniband/hw/ehca/ehca_hca.c          |    3 +
- drivers/infiniband/hw/ehca/ehca_irq.c          |  307 +++++----
- drivers/infiniband/hw/ehca/ehca_irq.h          |    1 +
- drivers/infiniband/hw/ehca/ehca_main.c         |   32 +-
- drivers/infiniband/hw/ehca/ipz_pt_fn.h         |   11 +-
- drivers/infiniband/hw/ipath/ipath_dma.c        |    4 +-
- drivers/infiniband/hw/mthca/mthca_memfree.c    |    4 +-
- drivers/infiniband/hw/mthca/mthca_qp.c         |    5 +
- drivers/infiniband/ulp/ipoib/ipoib_cm.c        |    4 +-
- drivers/infiniband/ulp/ipoib/ipoib_multicast.c |  195 ++----
- include/rdma/ib_addr.h                         |    6 +
- include/rdma/ib_sa.h                           |  159 ++---
- include/rdma/rdma_cm.h                         |   21 +-
- include/rdma/rdma_cm_ib.h                      |    4 +-
- include/rdma/rdma_user_cm.h                    |   13 +-
- 44 files changed, 1889 insertions(+), 478 deletions(-)
- create mode 100644 drivers/infiniband/core/multicast.c
- create mode 100644 drivers/infiniband/core/sa.h
+    J
