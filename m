@@ -1,37 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964781AbXBPMry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932293AbXBPMxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964781AbXBPMry (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 07:47:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964787AbXBPMry
+	id S932293AbXBPMxt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 07:53:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932305AbXBPMxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 07:47:54 -0500
-Received: from cacti.profiwh.com ([85.93.165.66]:51322 "EHLO cacti.profiwh.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964781AbXBPMrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 07:47:53 -0500
-Message-ID: <45D5A7FE.7010309@gmail.com>
-Date: Fri, 16 Feb 2007 13:47:58 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
+	Fri, 16 Feb 2007 07:53:49 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59132 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932293AbXBPMxr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 07:53:47 -0500
+Date: Fri, 16 Feb 2007 13:53:53 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: David Schwartz <davids@webmaster.com>
+Cc: trent.waddington@gmail.com, Neil Brown <neilb@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: GPL vs non-GPL device drivers
+Message-ID: <20070216125353.GN13958@stusta.de>
+References: <3d57814d0702151351i544f9efdh6c7dfc8be5a35c69@mail.gmail.com> <MDEHLPKNGKAHNMBLJOLKKEBDBKAC.davids@webmaster.com>
 MIME-Version: 1.0
-To: Mockern@yandex.ru
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: bloc_til_ready in tty driver
-References: <45D5A1E0.000004.21866@tide.yandex.ru>
-In-Reply-To: <45D5A1E0.000004.21866@tide.yandex.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKKEBDBKAC.davids@webmaster.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mockern napsal(a):
-> What for is "bloc_til_ready" function in tty drivers?
+On Thu, Feb 15, 2007 at 04:38:41PM -0800, David Schwartz wrote:
+>...
+> Just to be perfectly clear, it is an outrageous claim that *every*
+> *possible* kernel module must be a derivative work of the kernel. Copyright
+> *cannot* protect every possible way to accomplish a particular function (and
+> "a Linux driver for the X800 graphics chipset" is a function).
 
-Most drivers waits for hardware to detect carrier and for closed callout.
+This is just your personal opinion.
 
-regards,
+"derivative work" is a term with many grey areas.
+Does linking create a derivative work?
+Or including the code of one "static inline" function in your binary?
+There is no border everyone agrees on.
+
+And even judges in different jurisdictions might decide differently
+based on different copyright laws.
+
+Perhaps some module would be considered legal in the USA and Russia but 
+illegal in Germany and China, or the other way round.
+
+> Copyright can
+> *only* protect the one possible way you chose to do something out of a large
+> number of equally good possible ways. (See, for example, Lexmark v. Static
+> Controls where courts held that Static Controls could take Lexmark's TLP
+> software because that was the only practical way to make a compatible toner
+> cartridge.)
+>...
+
+It's always funny seeing people making univeral claims only based on 
+laws and court cases that have zero relevance for > 95% of all people...
+
+> DS
+
+cu
+Adrian
+
 -- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
