@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965014AbXBQE7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932646AbXBQFGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965014AbXBQE7Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 23:59:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965018AbXBQE7Y
+	id S932646AbXBQFGf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 00:06:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932647AbXBQFGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 23:59:24 -0500
-Received: from ozlabs.org ([203.10.76.45]:44529 "EHLO ozlabs.org"
+	Sat, 17 Feb 2007 00:06:35 -0500
+Received: from ozlabs.org ([203.10.76.45]:44630 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965014AbXBQE7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 23:59:23 -0500
+	id S932646AbXBQFGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 00:06:35 -0500
 Subject: Re: [patch 00/21] Xen-paravirt: Xen guest implementation for
 	paravirt_ops interface
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Chris Wright <chrisw@sous-sol.org>,
-       Andi Kleen <ak@muc.de>, xen-devel@lists.xensource.com,
-       virtualization@lists.osdl.org,
+To: Zachary Amsden <zach@vmware.com>
+Cc: Christoph Lameter <clameter@sgi.com>, JAndi Kleen <ak@muc.de>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <Pine.LNX.4.64.0702161244380.26718@schroedinger.engr.sgi.com>
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       Chris Wright <chrisw@sous-sol.org>
+In-Reply-To: <45D626BB.20007@vmware.com>
 References: <20070216022449.739760547@goop.org>
 	 <Pine.LNX.4.64.0702161244380.26718@schroedinger.engr.sgi.com>
+	 <45D61C74.2000601@vmware.com>
+	 <Pine.LNX.4.64.0702161312460.28871@schroedinger.engr.sgi.com>
+	 <45D626BB.20007@vmware.com>
 Content-Type: text/plain
-Date: Sat, 17 Feb 2007 15:58:18 +1100
-Message-Id: <1171688298.18876.63.camel@localhost.localdomain>
+Date: Sat, 17 Feb 2007 16:05:42 +1100
+Message-Id: <1171688742.18876.69.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-02-16 at 12:49 -0800, Christoph Lameter wrote:
-> On Thu, 15 Feb 2007, Jeremy Fitzhardinge wrote:
+On Fri, 2007-02-16 at 13:48 -0800, Zachary Amsden wrote:
+> Christoph Lameter wrote:
+> > It still seems to be implemented for Xen and not to support a variety of 
+> > page table methods in paravirt ops.
 > 
-> > This patch series implements the Linux Xen guest in terms of the
-> > paravirt-ops interface.  The features in implemented this patch series
-> 
-> I am thoroughly confused. Maybe that is because I have not been following 
-> this issue closely but it seems that you are using the paravirt interface 
-> as an API for Xen code in the guest? I thought the idea of paravirt was to 
-> have an API that is generic? This patchset seems to be mostly realizing 
-> Xen specific functionality? How does the code here interact with KVM, 
-> VMWare and other hypervisors?
+> Yes, but that is just because the Xen hooks happens to be near the last 
+> part of the merge.  VMI required some special hooks, as do both Xen and 
+> lhype (I think ... Rusty can correct me if lhype's puppy's have 
+> precluded the addition of new hooks).
 
-It doesn't.  Paravirt_ops provides the hooks.  KVM, lguest, VMI and Xen
-all need to implement what they want on top of them.
+lguest was supposed to be a demonstration of paravirt_ops, so it
+shouldn't have added any.  But note that I did change some other things,
+such as the esp0 initialization for the swapper.
 
-Hope that clarifies,
+Puppies are still alive and well.  Although Andi not pushing into 2.6.21
+(yet?) made puppies sad 8(
+
+>   Xen page table handling is very 
+> different, mostly it is trap and emulate so writable page tables can 
+> work, which means they don't always issue hypercalls for PTE updates, 
+> although they do have that option, should the hypervisor MMU model 
+> change, or performance concerns prompt a different model (or perhaps, 
+> migration?)
+
+Yes, Xen really like their direct pagetable stuff.  I'm a
+traditionalist, myself, but it did require some expansion of
+paravirt_ops.
+
+KVM might well want more, although from here it's more likely we'll move
+some of the hooks up the stack a little IMHO.
+
+Cheers,
 Rusty.
+
+
+
 
