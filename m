@@ -1,39 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992474AbXBQQ5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992483AbXBQQ6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992474AbXBQQ5l (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 11:57:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992475AbXBQQ5b
+	id S2992483AbXBQQ6V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 11:58:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992481AbXBQQ6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 11:57:31 -0500
-Received: from smtp.nokia.com ([131.228.20.172]:56436 "EHLO
-	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992463AbXBQQ5W (ORCPT
+	Sat, 17 Feb 2007 11:58:08 -0500
+Received: from smtp.nokia.com ([131.228.20.173]:32988 "EHLO
+	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992471AbXBQQ5m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 11:57:22 -0500
+	Sat, 17 Feb 2007 11:57:42 -0500
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Christoph Hellwig <hch@infradead.org>,
        Artem Bityutskiy <dedekind@infradead.org>,
        Frank Haverkamp <haver@vnet.ibm.com>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
        Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>
-Date: Sat, 17 Feb 2007 18:57:00 +0200
-Message-Id: <20070217165700.5845.71318.sendpatchset@localhost.localdomain>
+       David Woodhouse <dwmw2@infradead.org>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Date: Sat, 17 Feb 2007 18:55:55 +0200
+Message-Id: <20070217165555.5845.39430.sendpatchset@localhost.localdomain>
 In-Reply-To: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
 References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
-Subject: [PATCH 31/44 take 2] [UBI] accounting unit header
-X-OriginalArrivalTime: 17 Feb 2007 16:57:00.0308 (UTC) FILETIME=[A40A5540:01C752B4]
+Subject: [PATCH 18/44 take 2] [UBI] build unit implementation
+X-OriginalArrivalTime: 17 Feb 2007 16:55:22.0427 (UTC) FILETIME=[69B2E0B0:01C752B4]
 X-eXpurgate-Category: 1/0
-X-eXpurgate-ID: 149371::070217185419-03D78BB0-7F3C9864/0-0/0-0
+X-eXpurgate-ID: 149371::070217185224-0B11ABB0-20253032/0-0/0-1
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff -auNrp tmp-from/drivers/mtd/ubi/account.h tmp-to/drivers/mtd/ubi/account.h
---- tmp-from/drivers/mtd/ubi/account.h	1970-01-01 02:00:00.000000000 +0200
-+++ tmp-to/drivers/mtd/ubi/account.h	2007-02-17 18:07:27.000000000 +0200
-@@ -0,0 +1,118 @@
+diff -auNrp tmp-from/drivers/mtd/ubi/build.c tmp-to/drivers/mtd/ubi/build.c
+--- tmp-from/drivers/mtd/ubi/build.c	1970-01-01 02:00:00.000000000 +0200
++++ tmp-to/drivers/mtd/ubi/build.c	2007-02-17 18:07:27.000000000 +0200
+@@ -0,0 +1,191 @@
 +/*
 + * Copyright (c) International Business Machines Corp., 2006
 + *
@@ -54,101 +54,174 @@ diff -auNrp tmp-from/drivers/mtd/ubi/account.h tmp-to/drivers/mtd/ubi/account.h
 + * Author: Artem B. Bityutskiy
 + */
 +
-+/*
-+ * UBI accounting unit.
-+ *
-+ * This unit is responsible for maintaining the correct physical eraseblock
-+ * accounting to prevent overcommitment.
-+ */
++#include <linux/types.h>
++#include <mtd/ubi-header.h>
++#include "ubi.h"
++#include "alloc.h"
++#include "io.h"
++#include "wl.h"
++#include "volmgmt.h"
++#include "account.h"
++#include "background.h"
++#include "vtbl.h"
++#include "eba.h"
++#include "build.h"
++#include "uif.h"
++#include "scan.h"
++#include "badeb.h"
++#include "misc.h"
++#include "debug.h"
 +
-+#ifndef __UBI_ACCOUNT_H__
-+#define __UBI_ACCOUNT_H__
++#ifdef CONFIG_MTD_UBI_DEBUG_DISABLE_BGT
++#define ENABLE_BGT 0
++#else
++#define ENABLE_BGT 1
++#endif
 +
-+#include <linux/spinlock.h>
++static int attach_by_scanning(struct ubi_info *ubi);
 +
-+struct ubi_info;
-+struct ubi_scan_info;
++int ubi_bld_attach_mtd_dev(struct ubi_info *ubi, int mtd_num,
++			   int vid_hdr_offset, int data_offset)
++{
++	int err;
++	const struct ubi_io_info *io;
++	const struct ubi_acc_info *acc;
++
++	dbg_bld("attaching mtd%d to ubi%d", mtd_num, ubi->ubi_num);
++
++	err = ubi_io_init(ubi, mtd_num, vid_hdr_offset, data_offset);
++	if (err) {
++		dbg_err("failed to initialize I/O unit, error %d", err);
++		return err;
++	}
++
++	err = ubi_bgt_init(ubi);
++	if (err) {
++		dbg_err("failed to initialize background thread unit, error %d",
++			err);
++		goto out_io;
++	}
++
++	err = attach_by_scanning(ubi);
++	if (err) {
++		dbg_err("failed to attach MTD device, error %d", err);
++		goto out_bgt;
++	}
++
++	err = ubi_beb_init(ubi);
++	if (err) {
++		dbg_err("failed to initialize bad eraseblock handling unit, "
++			"error %d", err);
++		goto out_detach;
++	}
++
++	err = ubi_uif_init(ubi);
++	if (err) {
++		dbg_err("failed to initialize user interfaces unit for UBI "
++			"device %d, error %d", ubi->ubi_num, err);
++		goto out_beb;
++	}
++
++	io = ubi->io;
++	acc = ubi->acc;
++
++	ubi_msg("attached mtd%d to ubi%d", mtd_num, ubi->ubi_num);
++	ubi_msg("MTD device name:            \"%s\"", io->mtd_name);
++	ubi_msg("MTD device size:            %llu MiB", io->flash_size >> 20);
++	ubi_msg("physical eraseblock size:   %d bytes (%d KiB)",
++		io->peb_size, io->peb_size >> 10);
++	ubi_msg("logical eraseblock size:    %d bytes", io->leb_size);
++	ubi_msg("number of good PEBs:        %d", io->good_peb_count);
++	ubi_msg("number of bad PEBs:         %d", io->bad_peb_count);
++	ubi_msg("smallest flash I/O unit:    %d", io->min_io_size);
++	ubi_msg("VID header offset:          %d (aligned %d)",
++		io->vid_hdr_offset, io->vid_hdr_aloffset);
++	ubi_msg("data offset:                %d", io->leb_start);
++	ubi_msg("max. allowed volumes:       %d", acc->max_volumes);
++	ubi_msg("wear-levelling threshold:   %d", CONFIG_MTD_UBI_WL_THRESHOLD);
++	ubi_msg("number of internal volumes: %d", acc->ivol_count);
++	ubi_msg("number of user volumes:     %d", acc->uvol_count);
++	ubi_msg("available PEBs:             %d", acc->avail_pebs);
++	ubi_msg("total number of reserved PEBs: %d", acc->rsvd_pebs);
++	ubi_msg("number of PEBs reserved for bad PEB handling: %d",
++		ubi->beb->reserved_pebs);
++
++	if (!ENABLE_BGT && !io->ro_mode)
++		ubi_bgt_enable(ubi);
++
++	return 0;
++
++out_beb:
++	ubi_beb_close(ubi);
++out_detach:
++	ubi_eba_close(ubi);
++	ubi_wl_close(ubi);
++	ubi_vmt_close(ubi);
++out_bgt:
++	ubi_bgt_kill_thread(ubi);
++	ubi_bgt_close(ubi);
++out_io:
++	ubi_io_close(ubi);
++	return err;
++}
++
++void ubi_bld_detach_mtd_dev(struct ubi_info *ubi)
++{
++	int mtd_num = ubi->io->mtd_num, ubi_num = ubi->ubi_num;
++
++	dbg_bld("detaching mtd%d from ubi%d", mtd_num, ubi_num);
++
++	ubi_bgt_kill_thread(ubi);
++	ubi_uif_close(ubi);
++	ubi_beb_close(ubi);
++	ubi_eba_close(ubi);
++	ubi_wl_close(ubi);
++	ubi_vmt_close(ubi);
++	ubi_bgt_close(ubi);
++	ubi_io_close(ubi);
++	ubi_msg("detached mtd%d from ubi%d", mtd_num, ubi_num);
++}
 +
 +/**
-+ * ubi_acc_mkvol - account creation of a volume.
++ * attach_by_scanning - attach a MTD device using scanning method.
 + *
-+ * @ubi: the UBI device description object
-+ * @reserved_pebs: how many eraseblocks are reserved for the volume
-+ *
-+ * This function reserves @reserved_pebs physical eraseblocks for the newly
-+ * created volume. Returns zero in case of success and a %-ENOSPC if there are
-+ * no enough physical eraseblocks.
-+ */
-+int ubi_acc_mkvol(const struct ubi_info *ubi, int reserved_pebs);
-+
-+/**
-+ * ubi_acc_rmvol - account removal of a volume.
-+ *
-+ * @ubi: the UBI device description object
-+ * @reserved_pebs: how many eraseblocks were reserved for the volume
-+ *
-+ * This function reclaims the physical eraseblocks occupied by a volume. Note,
-+ * UBI is trying to maintain a constant level of physical eraseblock reserved
-+ * for bad PEB handling. So, if there is a lack of reserved physical
-+ * eraseblock, this function will reserve them at once.
-+ */
-+void ubi_acc_rmvol(const struct ubi_info *ubi, int reserved_pebs);
-+
-+/**
-+ * ubi_acc_reserve - reserve a number of physical eraseblocks.
-+ *
-+ * @ubi: the UBI device description object
-+ * @pebs: how many physical eraseblocks to reserve
-+ *
-+ * This function returns zero in case of success and %-ENOSPC if there are no
-+ * enough physical eraseblocks.
-+ */
-+int ubi_acc_reserve(const struct ubi_info *ubi, int pebs);
-+
-+/**
-+ * ubi_acc_free - free a number of reserved physical eraseblocks.
-+ *
-+ * @ubi: the UBI device description object
-+ * @pebs: how many physical eraseblocks to free
-+ */
-+void ubi_acc_free(const struct ubi_info *ubi, int pebs);
-+
-+/**
-+ * ubi_acc_init_scan - initialize the accounting unit using scanning
-+ * information.
-+ *
-+ * @ubi: the UBI device description object
-+ * @si: a pointer to the scanning information
++ * @ubi: UBI device descriptor
 + *
 + * This function returns zero in case of success and a negative error code in
 + * case of failure.
 + */
-+int ubi_acc_init_scan(struct ubi_info *ubi, struct ubi_scan_info *si);
++static int attach_by_scanning(struct ubi_info *ubi)
++{
++	int err;
++	struct ubi_scan_info *si;
 +
-+/**
-+ * ubi_acc_close - close the accounting unit.
-+ *
-+ * @ubi: the UBI device description object
-+ */
-+void ubi_acc_close(const struct ubi_info *ubi);
++	dbg_bld("attach mtd device by scanning");
 +
-+/**
-+ * struct ubi_acc_info - the UBI accounting unit's description data structure.
-+ *
-+ * @ivol_count: count of internal volumes
-+ * @uvol_count: count of user volumes
-+ * @rsvd_pebs: count of reserved physical eraseblocks
-+ * @avail_pebs: count of available physical eraseblocks
-+ * @max_volumes: maximum number of volumes that users may create
-+ * @lock: protects the accounting data
-+ */
-+struct ubi_acc_info {
-+	int ivol_count;  /* public  */
-+	int uvol_count;  /* public  */
-+	int rsvd_pebs;   /* public  */
-+	int avail_pebs;  /* public  */
-+	int max_volumes; /* public  */
-+	spinlock_t lock; /* private */
-+};
++	si = ubi_scan(ubi);
++	if (IS_ERR(si))
++		return PTR_ERR(si);
 +
-+#endif /* !__UBI_ACCOUNT_H__ */
++	err = ubi_vmt_init_scan(ubi, si);
++	if (err)
++		goto out_si;
++
++	err = ubi_wl_init_scan(ubi, si);
++	if (err)
++		goto out_vmt;
++
++	err = ubi_eba_init_scan(ubi, si);
++	if (err)
++		goto out_wl;
++
++	ubi_msg("mean erase counter:         %d", si->mean_ec);
++	ubi_scan_destroy_si(si);
++	return 0;
++
++out_wl:
++	ubi_wl_close(ubi);
++out_vmt:
++	ubi_vmt_close(ubi);
++out_si:
++	ubi_scan_destroy_si(si);
++	return err;
++}
