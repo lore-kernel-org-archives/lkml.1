@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932807AbXBQT00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932819AbXBQT3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932807AbXBQT00 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 14:26:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932808AbXBQT00
+	id S932819AbXBQT3r (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 14:29:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932824AbXBQT3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 14:26:26 -0500
-Received: from h155.mvista.com ([63.81.120.155]:58451 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932807AbXBQT0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 14:26:25 -0500
-Message-ID: <45D756D7.4060106@ru.mvista.com>
-Date: Sat, 17 Feb 2007 22:26:15 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Sat, 17 Feb 2007 14:29:47 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:47641 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932819AbXBQT3q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 14:29:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bRvNCJg/ks/XsWCYwxrzBxDA34eLXWgxCZ2bgopkYwVsiQXw6/k0CObNEfvcELIh2/5NNruLPKzr+Az9D0ookZ8NfbI8hfn+JoH9sDLuN2DkKBk5lOjHxDl13D2+h0KbWUZdOKGNccvnHUQchZda+lkyXAooTx3Y02F+kVBK7WQ=
+Message-ID: <7b69d1470702171129x36c4352cyc5b3a4b217729bf5@mail.gmail.com>
+Date: Sat, 17 Feb 2007 13:29:40 -0600
+From: "Scott Preece" <sepreece@gmail.com>
+To: "Alexandre Oliva" <aoliva@redhat.com>
+Subject: Re: GPL vs non-GPL device drivers
+Cc: davids@webmaster.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <orire1s39s.fsf@free.oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@osdl.org>, Jeff Garzik <jgarzik@pobox.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.20-rc4-mm1: PCI=n: drivers/net/3c59x.c compile error
-References: <20070111222627.66bb75ab.akpm@osdl.org> <20070124135354.GI17836@stusta.de> <45B76946.1070009@ru.mvista.com>
-In-Reply-To: <45B76946.1070009@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <MDEHLPKNGKAHNMBLJOLKKEIPBKAC.davids@webmaster.com>
+	 <orire1s39s.fsf@free.oliva.athome.lsd.ic.unicamp.br>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
->> 3x59x-fix-pci-resource-management.patch causes the following compile 
->> error with CONFIG_PCI=n:
+On 2/17/07, Alexandre Oliva <aoliva@redhat.com> wrote:
 
->> <--  snip  -->
+> Per this principle, it would seem that only source code and
+> hand-crafted object code would be governed by copyright, since
+> compilation is also an automated process.
+---
 
->> ...
->>   CC      drivers/net/3c59x.o
->> /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c: 
->> In function 'vortex_init_one':
->> /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c:961: 
->> error: implicit declaration of function 'pci_request_regions'
->> /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c:985: 
->> error: implicit declaration of function 'pci_release_regions'
->> make[3]: *** [drivers/net/3c59x.o] Error 1
+Well, compilation is probably equivalent to "translation", which is
+specifically included in the Act as forming a derivative work.
 
->    Grr, at at the same time it's happy with pci_enable_device().
->    I'd say the problem is in <linux/pci.h>,  not in the patch.
-
-    Has there been any patch to fix the "unbalanced" 
-pci_{request|release}_regions() declarations? Am I suposed to create such?
-
->> cu
->> Adrian
-
-MBR, Sergei
-
-
+scott
