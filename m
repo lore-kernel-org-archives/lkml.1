@@ -1,41 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965227AbXBQM3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965219AbXBQMeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965227AbXBQM3z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 07:29:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965224AbXBQM3z
+	id S965219AbXBQMeS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 07:34:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965224AbXBQMeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 07:29:55 -0500
-Received: from webmail19.mail.yandex.net ([213.180.200.53]:35701 "EHLO
-	webmail19.mail.yandex.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965228AbXBQM3y (ORCPT
+	Sat, 17 Feb 2007 07:34:18 -0500
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:29502 "EHLO
+	amsfep13-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S965219AbXBQMeS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 07:29:54 -0500
-Date: Sat, 17 Feb 2007 15:29:31 +0300 (MSK)
-From: "Mockern" <Mockern@yandex.ru>
-Message-Id: <45D6F52B.000003.10185@webmail19.yandex.ru>
-MIME-Version: 1.0
-X-Mailer: Yamail [ http://yandex.ru ]
-To: linux-kernel@vger.kernel.org
-Subject: buffer overflows in the tty flip buffer in 2.6.17
-X-MsgDayCount: 3
-X-BornDate: 1134853200
-Reply-To: Mockern@yandex.ru
-X-Source-Ip: 84.185.244.133
-Content-Type: text/plain;
-  charset="US-ASCII"
+	Sat, 17 Feb 2007 07:34:18 -0500
+Subject: Re: [PATCH 2.6.20 1/1] fbdev,mm: hecuba/E-Ink fbdev driver
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20070217104215.GB25512@localhost>
+References: <20070217104215.GB25512@localhost>
+Content-Type: text/plain
+Date: Sat, 17 Feb 2007 13:34:12 +0100
+Message-Id: <1171715652.5186.7.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When data is received from the hardware, it needs to be placed into the tty device's flip buffer. This can be done with the following bit of code:
+On Sat, 2007-02-17 at 11:42 +0100, Jaya Kumar wrote:
+> Hi James, Geert, lkml and mm,
 
-for (i = 0; i < data_size; ++i) {
-        if (tty->flip.count >= TTY_FLIPBUF_SIZE)
-                tty_flip_buffer_push(tty);
-        tty_insert_flip_char(tty, data[i], 0);
-}
-tty_flip_buffer_push(tty);
+Hi Jaya,
 
-This example makes sure there are no buffer overflows in the tty flip buffer as the data is being added. 
+> This patch adds support for the Hecuba/E-Ink display with deferred IO.
+> The changes from the previous version are to switch to using a mutex
+> and lock_page. I welcome your feedback and advice.
 
-But how it is done in 2.6.17 linux kernel? I did check this "overflow code" in new tty driver's code. This code looks like just removed. But somehow overflow in the tty buffer must be kept.
+This changelog ought to be a little more extensive; esp. because you're
+using these fancy new functions ->page_mkwrite() and page_mkclean() in a
+novel way.
+
+Also, I'd still like to see a way to call msync() on the mmap'ed region
+to force a flush. I think providing a fb_fsync() method in fbmem.c and a
+hook down to the driver ought to work.
+
+Also, you now seem to use a fixed 1 second delay, perhaps provide an
+ioctl or something to customize this?
+
+And, as Andrew suggested last time around, could you perhaps push this
+fancy new idea into the FB layer so that more drivers can make us of it?
+
+
