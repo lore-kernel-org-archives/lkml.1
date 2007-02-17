@@ -1,63 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932803AbXBQTcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932847AbXBQTiF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932803AbXBQTcq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 14:32:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932826AbXBQTcq
+	id S932847AbXBQTiF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 14:38:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932802AbXBQTiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 14:32:46 -0500
-Received: from h155.mvista.com ([63.81.120.155]:58485 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932803AbXBQTcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 14:32:45 -0500
-Message-ID: <45D75853.1060607@ru.mvista.com>
-Date: Sat, 17 Feb 2007 22:32:35 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Sat, 17 Feb 2007 14:38:05 -0500
+Received: from mail.tmr.com ([64.65.253.246]:46058 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932847AbXBQTiE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 14:38:04 -0500
+Message-ID: <45D75A1F.8060504@tmr.com>
+Date: Sat, 17 Feb 2007 14:40:15 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@osdl.org>, Jeff Garzik <jgarzik@pobox.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.20-rc4-mm1: PCI=n: drivers/net/3c59x.c compile error
-References: <20070111222627.66bb75ab.akpm@osdl.org> <20070124135354.GI17836@stusta.de> <45B76946.1070009@ru.mvista.com> <45D756D7.4060106@ru.mvista.com>
-In-Reply-To: <45D756D7.4060106@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+To: =?ISO-8859-1?Q?C=E9dric_Augonnet?= <cedric.augonnet@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Aragones <danarag@gmail.com>, linux-kernel@vger.kernel.org,
+       Cedric.augonnet@ens-lyon.org
+Subject: Re: 2.6.20-mm1 - Oops using Minix 3 file system
+References: <f56c1ba00702161500x775fe04bl91889b5819cf9ddc@mail.gmail.com>
+In-Reply-To: <f56c1ba00702161500x775fe04bl91889b5819cf9ddc@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-
-Sergei Shtylyov wrote:
-
->>> 3x59x-fix-pci-resource-management.patch causes the following compile 
->>> error with CONFIG_PCI=n:
-
->>> <--  snip  -->
-
->>> ...
->>>   CC      drivers/net/3c59x.o
->>> /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c: 
->>> In function 'vortex_init_one':
->>> /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c:961: 
->>> error: implicit declaration of function 'pci_request_regions'
->>> /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c:985: 
->>> error: implicit declaration of function 'pci_release_regions'
->>> make[3]: *** [drivers/net/3c59x.o] Error 1
+Cédric Augonnet wrote:
+> 2007/2/15, Andrew Morton <akpm@linux-foundation.org>:
+>>
+>> Temporarily at
+>>
+>>   http://userweb.kernel.org/~akpm/2.6.20-mm1/
+>>
+>> Will appear later at
+>>
+>>
+>> Changes since 2.6.20-rc6-mm3:
+>>
+>> -minix-v3-support.patch
 > 
+> Hi Daniel,
 > 
->>    Grr, at at the same time it's happy with pci_enable_device().
->>    I'd say the problem is in <linux/pci.h>,  not in the patch.
+> On 2.6.20-rc6-mm3 and 2.6.20-mm1, i get an OOPS when using the minix 3
+> file system. I enclose the dmesg and the .config to that mail.
+> 
+> Here are the steps to reproduce this oops (they involve using qemu to
+> run Minix 3)
+> - First create a 2GB image using
+>      qemu-img create minix.img 2G
+>   (Please note that this seem to be producing an eroneous image)
+> - Then launch Minix inside qemu to make a minix partition on this
+> image using mkfs on the corresponding device.
 
->    Has there been any patch to fix the "unbalanced" 
-> pci_{request|release}_regions() declarations? Am I suposed to create such?
+That's two steps, right? First you make a partition on the "disk" qemu 
+provides, then you put a filesystem on the partition? Or did you put a 
+filesystem on the raw device?
 
-    Alternatively, vortex_{init|remove_one() and struct pci_driver there could 
-have been put under #ifdef CONFIG_PCI (good idea anyway -- should reduce 
-driver size on non-PCI systems)...
+> - Mount the image on loopback using
+>  mount -t minix -o loop minix.img /mnt/qemu/
 
->>> cu
->>> Adrian
+Does mount know to use Minux3 with this command line?
 
-MBR, Sergei
+> - issue a "df" command on /mnt/qemu
+> 
+> This oops occurs everytime i use df on this directory. However, this
+> does not occur if the image was for a 1MB partition. And it does not
+> occur if the partition on which we created minix.img was the same as
+> the partition on which qemu stands. Sounds like qemu has an issue and
+> creates an erroneous partition which linux does not handle correctly.
+> 
+> Regards, and thanks for your patch by the way !
+
+Having been burned a few times by the fact that qemu provides disk 
+images which then (normally) get partitions, I'm not sure you aren't 
+having the same problem.
+
+None of which justifies the OOPS, of course, nice kernels don't go down.
+
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
+
