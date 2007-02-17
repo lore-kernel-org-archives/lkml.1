@@ -1,129 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933063AbXBQWUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933057AbXBQWaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933063AbXBQWUZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 17:20:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933062AbXBQWUZ
+	id S933057AbXBQWaX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 17:30:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933062AbXBQWaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 17:20:25 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:34375 "EHLO havoc.gtf.org"
+	Sat, 17 Feb 2007 17:30:23 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:46810 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933060AbXBQWUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 17:20:24 -0500
-Date: Sat, 17 Feb 2007 17:20:23 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patch, resend] remove JFFS v1
-Message-ID: <20070217222023.GA30792@havoc.gtf.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S933057AbXBQWaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 17:30:22 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [RFC PATCH(Experimental) 0/4] Freezer based Cpu-hotplug
+Date: Sat, 17 Feb 2007 23:24:43 +0100
+User-Agent: KMail/1.9.5
+Cc: ego@in.ibm.com, akpm@osdl.org, paulmck@us.ibm.com, mingo@elte.hu,
+       vatsa@in.ibm.com, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+References: <20070214144031.GA15257@in.ibm.com> <200702171224.46626.rjw@sisk.pl> <20070217213406.GA541@tv-sign.ru>
+In-Reply-To: <20070217213406.GA541@tv-sign.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+Message-Id: <200702172324.44892.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday, 17 February 2007 22:34, Oleg Nesterov wrote:
+> Rafael, I am trying to understand try_to_freeze_tasks(), and I have a
+> couple of questions.
+> 
+> 	static inline int is_user_space(struct task_struct *p)
+> 	{
+> 		return p->mm && !(p->flags & PF_BORROWED_MM);
+> 	}
+> 
+> This doesn't look right. First, an exiting task has ->mm == NULL after
+> do_exit()->exit_mm(). Probably not a problem. However, PF_BORROWED_MM
+> check is racy without task_lock(), so we can have a false positive as
+> well. Is it ok? We can freeze aio_wq prematurely.
 
-[just sent this upstream; obvious file-removal patch snipped for size]
+Right now aio_wq is not freezeable (PF_NOFREEZE).
 
-(resend) 
+> 
+> 
+> 	try_to_freeze_tasks:
+> 
+> 		do_each_thread(g, p) {
+> 
+> 			if (p->state == TASK_TRACED && frozen(p->parent)) {
+> 
+> Why we are doing this check outside of "if (is_user_space(p))" ?
+> Not a bug of course, but looks strange.
 
-Why:    Unmaintained for years, superceded by JFFS2 for years.
+For no particular reason.
 
-Please pull from 'kill-jffs' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git kill-jffs
+> 
+> 				cancel_freezing(p);
+> 				continue;
+> 
+> Is it right? Shouldn't we increment "todo" counter?
 
-to receive the following updates:
+No.  It would be wrong to do that, because TASK_TRACED tasks with frozen
+parents cannot be frozen any further.
 
- Documentation/feature-removal-schedule.txt |    7 -
- fs/Kconfig                                 |   26 -
- fs/Makefile                                |    1 -
- fs/jffs/Makefile                           |   11 -
- fs/jffs/inode-v23.c                        | 1847 ---------------
- fs/jffs/intrep.c                           | 3449 ----------------------------
- fs/jffs/intrep.h                           |   58 -
- fs/jffs/jffs_fm.c                          |  798 -------
- fs/jffs/jffs_fm.h                          |  149 --
- fs/jffs/jffs_proc.c                        |  261 ---
- fs/jffs/jffs_proc.h                        |   28 -
- include/linux/jffs.h                       |  224 --
- 12 files changed, 0 insertions(+), 6859 deletions(-)
- delete mode 100644 fs/jffs/Makefile
- delete mode 100644 fs/jffs/inode-v23.c
- delete mode 100644 fs/jffs/intrep.c
- delete mode 100644 fs/jffs/intrep.h
- delete mode 100644 fs/jffs/jffs_fm.c
- delete mode 100644 fs/jffs/jffs_fm.h
- delete mode 100644 fs/jffs/jffs_proc.c
- delete mode 100644 fs/jffs/jffs_proc.h
- delete mode 100644 include/linux/jffs.h
+> 
+> 			}
+> 			if (is_user_space(p)) {
+> 				if (!freeze_user_space)
+> 					continue;
+> 
+> 				/* Freeze the task unless there is a vfork
+> 				 * completion pending
+> 				 */
+> 				if (!p->vfork_done)
+> 					freeze_process(p);
+> 
+> 
+> Racy. do_fork(CLONE_VFORK) first does copy_process() which puts 'p' on
+> the task list and unlocks tasklist_lock. This means that 'p' is visible
+> to try_to_freeze_tasks(), and p->vfork_done == NULL. try_to_freeze_tasks()
+> sets TIF_FREEZE.
+> 
+> Now, do_fork() continues, sets ->vfork_done, p goes to user space, notices
+> the fake signal and goes to refrigerator while its parent is blocked on
+> "struct completion vfork". Freezing failed.
 
-Jeff Garzik (1):
-      Remove JFFS (version 1), as scheduled.
+You are right, but this has never happened, AFAICS.
 
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index c585aa8..e1bc0c5 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -306,13 +306,6 @@ Who:	Len Brown <len.brown@intel.com>
+> So, shouldn't we do
+> 
+> 	if (p->vfork_done)
+> 		cancel_freezing(p);
+> 
+> instead?
+
+I don't think so.  If p hasn't got TIF_FREEZE set yet or it has already been
+frozen, cancel_freezing(p) is a noop.
+
+Alternatively, we can move the check into refrigerator(), like this:
+
+---
+ kernel/power/process.c |   21 +++++++--------------
+ 1 file changed, 7 insertions(+), 14 deletions(-)
+
+Index: linux-2.6.20-git13/kernel/power/process.c
+===================================================================
+--- linux-2.6.20-git13.orig/kernel/power/process.c
++++ linux-2.6.20-git13/kernel/power/process.c
+@@ -39,6 +39,11 @@ void refrigerator(void)
+ 	/* Hmm, should we be allowed to suspend when there are realtime
+ 	   processes around? */
+ 	long save;
++
++	/* Freeze the task unless there is a vfork completion pending */
++	if (current->vfork_done)
++		return;
++
+ 	save = current->state;
+ 	pr_debug("%s entered refrigerator\n", current->comm);
  
- ---------------------------
- 
--What:	JFFS (version 1)
--When:	2.6.21
--Why:	Unmaintained for years, superceded by JFFS2 for years.
--Who:	Jeff Garzik <jeff@garzik.org>
+@@ -112,22 +117,10 @@ static unsigned int try_to_freeze_tasks(
+ 				cancel_freezing(p);
+ 				continue;
+ 			}
+-			if (is_user_space(p)) {
+-				if (!freeze_user_space)
+-					continue;
 -
-----------------------------
+-				/* Freeze the task unless there is a vfork
+-				 * completion pending
+-				 */
+-				if (!p->vfork_done)
+-					freeze_process(p);
+-			} else {
+-				if (freeze_user_space)
+-					continue;
 -
- What:   sk98lin network driver
- When:   July 2007
- Why:    In kernel tree version of driver is unmaintained. Sk98lin driver
-diff --git a/fs/Kconfig b/fs/Kconfig
-index a722b5a..3c4886b 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -1189,32 +1189,6 @@ config EFS_FS
- 	  To compile the EFS file system support as a module, choose M here: the
- 	  module will be called efs.
- 
--config JFFS_FS
--	tristate "Journalling Flash File System (JFFS) support"
--	depends on MTD && BLOCK && BROKEN
--	help
--	  JFFS is the Journalling Flash File System developed by Axis
--	  Communications in Sweden, aimed at providing a crash/powerdown-safe
--	  file system for disk-less embedded devices. Further information is
--	  available at (<http://developer.axis.com/software/jffs/>).
--
--	  NOTE: This filesystem is deprecated and is scheduled for removal in
--	  2.6.21.  See Documentation/feature-removal-schedule.txt
--
--config JFFS_FS_VERBOSE
--	int "JFFS debugging verbosity (0 = quiet, 3 = noisy)"
--	depends on JFFS_FS
--	default "0"
--	help
--	  Determines the verbosity level of the JFFS debugging messages.
--
--config JFFS_PROC_FS
--	bool "JFFS stats available in /proc filesystem"
--	depends on JFFS_FS && PROC_FS
--	help
--	  Enabling this option will cause statistics from mounted JFFS file systems
--	  to be made available to the user in the /proc/fs/jffs/ directory.
--
- config JFFS2_FS
- 	tristate "Journalling Flash File System v2 (JFFS2) support"
- 	select CRC32
-diff --git a/fs/Makefile b/fs/Makefile
-index b9ffa63..9edf411 100644
---- a/fs/Makefile
-+++ b/fs/Makefile
-@@ -94,7 +94,6 @@ obj-$(CONFIG_HPFS_FS)		+= hpfs/
- obj-$(CONFIG_NTFS_FS)		+= ntfs/
- obj-$(CONFIG_UFS_FS)		+= ufs/
- obj-$(CONFIG_EFS_FS)		+= efs/
--obj-$(CONFIG_JFFS_FS)		+= jffs/
- obj-$(CONFIG_JFFS2_FS)		+= jffs2/
- obj-$(CONFIG_AFFS_FS)		+= affs/
- obj-$(CONFIG_ROMFS_FS)		+= romfs/
-[snip file deletion patch]
++			if (is_user_space(p) == !!freeze_user_space) {
+ 				freeze_process(p);
++				todo++;
+ 			}
+-			todo++;
+ 		} while_each_thread(g, p);
+ 		read_unlock(&tasklist_lock);
+ 		yield();			/* Yield is okay here */
+
+
