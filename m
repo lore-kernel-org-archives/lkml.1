@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932939AbXBQVSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932951AbXBQVUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932939AbXBQVSX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 16:18:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932941AbXBQVSX
+	id S932951AbXBQVUy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 16:20:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932950AbXBQVUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 16:18:23 -0500
-Received: from moutng.kundenserver.de ([212.227.126.179]:49811 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932939AbXBQVSW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 16:18:22 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Artem Bityutskiy <dedekind@infradead.org>
-Subject: Re: [PATCH 09/44 take 2] [UBI] debug unit header
-Date: Sat, 17 Feb 2007 22:18:21 +0100
-User-Agent: KMail/1.9.5
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Frank Haverkamp <haver@vnet.ibm.com>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>
-References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain> <20070217165509.5845.12977.sendpatchset@localhost.localdomain>
-In-Reply-To: <20070217165509.5845.12977.sendpatchset@localhost.localdomain>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-X-Legal: Vorsitzender des Aufsichtsrats: Johann Weihen=0A=0D Gesch=E4ftsf=FChrung: Herbert Kircher=0A=0D Sitz der Gesellschaft: B=F6blingen=0A=0D Registergericht: Amtsgericht Stuttgart, HRB 243294
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Sat, 17 Feb 2007 16:20:54 -0500
+Received: from gate.crashing.org ([63.228.1.57]:56269 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932948AbXBQVUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 16:20:53 -0500
+Subject: Re: [RFC] killing the NR_IRQS arrays.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <m1k5yhb00g.fsf@ebiederm.dsl.xmission.com>
+References: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com>
+	 <200702162045.58857.arnd@arndb.de>
+	 <20070216195256.GE2572@flint.arm.linux.org.uk>
+	 <m1k5yhb00g.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
+Date: Sun, 18 Feb 2007 08:20:22 +1100
+Message-Id: <1171747222.5644.143.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702172218.22709.arnd@arndb.de>
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
-X-Provags-ID2: V01U2FsdGVkX18TIG4bn4MEMrabEbuDiO+DPs4xvHHykFX/mtLgTO06ELv+SFJkctkhymkgNvzoI8zPCFtPeJ1TO11meqfhXV7JoOlUTC0/R55LaSMDVPUGRw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 17 February 2007 17:55, Artem Bityutskiy wrote:
-> +
-> +/**
-> + * UBI debugging unit.
-> + *
-> + * UBI provides rich debugging capabilities which are implemented in
-> + * this unit.
 
-Stop right here. You should be doing one thing and do it right.
-Since the point of your patches is to do volume management for MTD,
-it should do just that.
+> > #define NO_IRQ	<architecture-defined-int-constant>
+> 
+> When did you need a magic constant NO_IRQ in generic code.
+> One of the reasons I want to convert the drivers is so we can
+> kill the NO_IRQ nonsense.
+> 
+> As for struct irq.  Instead of struct irq_desc I really don't
+> care, although the C++ camp hasn't not yet weighed in and mentioned
+> how that creates a namespace conflict for them. 
 
-If you feel that Linux needs rich debugging capabilities, then submit
-a patch for that independent of UBI.
+Yeah, NO_IRQ would be NULL here...
 
-	Arnd <><
+What I do on the powerpc code is since IRQ HW numbers are defined
+locally to a domain/PIC, when creating a new domain, The PIC code passes
+a value to use as an "illegal" value in that domain. It's not exposed
+outside of the core though, it's really only used to initialize the
+remapping table with something before any interrupt on that PIC has been
+mapped. 
+
+> We might need this.  But I don't think we need reference counting in
+> the traditional sense.  For all practical purpose we already have
+> dynamic irq allocation and it hasn't proven necessary.  I would
+> prefer to go to lengths to avoid having to expose that kind of
+> an issue to driver code.
+
+I think we do need proper refcounting, but I also think that most
+drivers will not need to see it.
+
+For example, a PCI driver will most probably just do something along the
+lines of the existing request_irq(pdev->irq), the liftime of pdev->irq
+is managed by the PCI core.
+
+Same goes with MSIs imho, the MSI core can manage the lifetime
+transparently.
+
+Ben.
+
+
