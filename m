@@ -1,42 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965376AbXBQRMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992728AbXBQRN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965376AbXBQRMr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 12:12:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965379AbXBQRMq
+	id S2992728AbXBQRN0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 12:13:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992756AbXBQRN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 12:12:46 -0500
-Received: from smtp.nokia.com ([131.228.20.172]:59296 "EHLO
-	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965376AbXBQRMo (ORCPT
+	Sat, 17 Feb 2007 12:13:26 -0500
+Received: from smtp.nokia.com ([131.228.20.170]:55140 "EHLO
+	mgw-ext11.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992755AbXBQRNY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 12:12:44 -0500
+	Sat, 17 Feb 2007 12:13:24 -0500
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Christoph Hellwig <hch@infradead.org>,
        Artem Bityutskiy <dedekind@infradead.org>,
        Frank Haverkamp <haver@vnet.ibm.com>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
        Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>
-Date: Sat, 17 Feb 2007 18:56:50 +0200
-Message-Id: <20070217165650.5845.96957.sendpatchset@localhost.localdomain>
+       David Woodhouse <dwmw2@infradead.org>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Date: Sat, 17 Feb 2007 18:57:05 +0200
+Message-Id: <20070217165705.5845.13508.sendpatchset@localhost.localdomain>
 In-Reply-To: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
 References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
-Subject: [PATCH 29/44 take 2] [UBI] update unit header
-X-OriginalArrivalTime: 17 Feb 2007 16:56:50.0246 (UTC) FILETIME=[9E0AFE60:01C752B4]
+Subject: [PATCH 32/44 take 2] [UBI] accounting unit implementation
+X-OriginalArrivalTime: 17 Feb 2007 16:56:33.0065 (UTC) FILETIME=[93CD6190:01C752B4]
 X-eXpurgate-Category: 1/0
-X-eXpurgate-ID: 149371::070217185514-03D78BB0-2866A3BB/0-0/0-0
+X-eXpurgate-ID: 149371::070217185330-63EC2BB0-48866909/0-0/0-0
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff -auNrp tmp-from/drivers/mtd/ubi/upd.h tmp-to/drivers/mtd/ubi/upd.h
---- tmp-from/drivers/mtd/ubi/upd.h	1970-01-01 02:00:00.000000000 +0200
-+++ tmp-to/drivers/mtd/ubi/upd.h	2007-02-17 18:07:27.000000000 +0200
-@@ -0,0 +1,136 @@
+diff -auNrp tmp-from/drivers/mtd/ubi/account.c tmp-to/drivers/mtd/ubi/account.c
+--- tmp-from/drivers/mtd/ubi/account.c	1970-01-01 02:00:00.000000000 +0200
++++ tmp-to/drivers/mtd/ubi/account.c	2007-02-17 18:07:27.000000000 +0200
+@@ -0,0 +1,286 @@
 +/*
 + * Copyright (c) International Business Machines Corp., 2006
-+ * Copyright (C) Nokia Corporation, 2006
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -55,118 +54,269 @@ diff -auNrp tmp-from/drivers/mtd/ubi/upd.h tmp-to/drivers/mtd/ubi/upd.h
 + * Author: Artem B. Bityutskiy
 + */
 +
-+/*
-+ * The update unit.
-+ *
-+ * This unit implements the volume update operation. In the current
-+ * implementation we use an update marker for this. The update marker is
-+ * per-volume and is stored in the volume table. The update marker is set
-+ * before the update starts, and removed after the update has been finished.
-+ * So, if the update was interrupted by an unclean re-boot or due to some other
-+ * reasons, the update marker is found and we know that the volume is damaged.
-+ *
-+ * Note, in general it is possible to implement the update operation as a
-+ * transaction with a possibility to roll-back. But this is far more complex.
-+ *
-+ * This implementation does not support concurrent updates but it is not
-+ * difficult to implement this.
-+ */
-+
-+#ifndef __UBI_UPD_H__
-+#define __UBI_UPD_H__
-+
-+#include <linux/mutex.h>
++#include <linux/sched.h>
++#include <linux/string.h>
++#include <linux/spinlock.h>
++#include <linux/err.h>
 +#include <linux/types.h>
++#include <mtd/ubi-header.h>
++#include "ubi.h"
++#include "vtbl.h"
++#include "account.h"
++#include "scan.h"
++#include "alloc.h"
++#include "badeb.h"
++#include "io.h"
++#include "debug.h"
 +
-+struct ubi_info;
-+struct ubi_scan_info;
++int ubi_acc_mkvol(const struct ubi_info *ubi, int reserved_pebs)
++{
++	struct ubi_acc_info *acc = ubi->acc;
++
++	dbg_acc("reserve %d PEBs for a new volume (uvol_count %d"
++		"rsvd_pebs %d, avail_pebs %d)", reserved_pebs,
++		acc->uvol_count, acc->rsvd_pebs, acc->avail_pebs);
++	ubi_assert(reserved_pebs > 0);
++
++	spin_lock(&acc->lock);
++	if (acc->uvol_count + 1 > acc->max_volumes) {
++		dbg_err("no room for the volume");
++		goto out;
++	}
++	if (reserved_pebs > acc->avail_pebs) {
++		dbg_err("no enough PEBs");
++		goto out;
++	}
++	acc->uvol_count += 1;
++	acc->avail_pebs -= reserved_pebs;
++	acc->rsvd_pebs += reserved_pebs;
++	ubi_assert(acc->avail_pebs >= 0);
++	spin_unlock(&acc->lock);
++	return 0;
++
++out:
++	spin_unlock(&acc->lock);
++	return -ENOSPC;
++}
++
++void ubi_acc_rmvol(const struct ubi_info *ubi, int reserved_pebs)
++{
++	struct ubi_acc_info *acc = ubi->acc;
++
++	dbg_acc("remove volume and get back %d PEBs (uvol_count %d, "
++		"rsvd_pebs %d, avail_pebs %d)", reserved_pebs,
++		acc->uvol_count, acc->rsvd_pebs, acc->avail_pebs);
++	ubi_assert(reserved_pebs > 0 && reserved_pebs <= acc->rsvd_pebs);
++
++	spin_lock(&acc->lock);
++	acc->uvol_count -= 1;
++	acc->avail_pebs += reserved_pebs;
++	acc->rsvd_pebs -= reserved_pebs;
++	ubi_assert(acc->uvol_count >= 0);
++	ubi_assert(acc->rsvd_pebs >= 0);
++	spin_unlock(&acc->lock);
++
++	/* Take care about PEBs reserved for bad PEB handling */
++	ubi_beb_maintain_reserved(ubi);
++}
++
++int ubi_acc_reserve(const struct ubi_info *ubi, int pebs)
++{
++	struct ubi_acc_info *acc = ubi->acc;
++
++	dbg_acc("reserve %d PEBs (rsvd_pebs %d, avail_pebs %d)",
++		pebs, acc->rsvd_pebs, acc->avail_pebs);
++	ubi_assert(pebs > 0);
++
++	spin_lock(&acc->lock);
++	if (unlikely(pebs > acc->avail_pebs)) {
++		dbg_err("no enough PEBs");
++		spin_unlock(&acc->lock);
++		return -ENOSPC;
++	}
++	acc->avail_pebs -= pebs;
++	acc->rsvd_pebs += pebs;
++	spin_unlock(&acc->lock);
++	return 0;
++}
++
++void ubi_acc_free(const struct ubi_info *ubi, int pebs)
++{
++	struct ubi_acc_info *acc = ubi->acc;
++
++	dbg_acc("free %d PEBs (rsvd_pebs %d, avail_pebs %d)",
++		pebs, acc->rsvd_pebs, acc->avail_pebs);
++	spin_lock(&acc->lock);
++	ubi_assert(pebs > 0 && pebs <= acc->rsvd_pebs);
++	acc->rsvd_pebs -= pebs;
++	acc->avail_pebs += pebs;
++	spin_unlock(&acc->lock);
++}
++
++static int acc_info_check(const struct ubi_info *ubi,
++			  const struct ubi_scan_info *si);
++
++int ubi_acc_init_scan(struct ubi_info *ubi, struct ubi_scan_info *si)
++{
++	int err, i;
++	struct ubi_acc_info *acc;
++	const struct ubi_vtbl_vtr *vtr;
++	const struct ubi_vtbl_info *vtbl = ubi->vtbl;
++	const struct ubi_io_info *io = ubi->io;
++
++	dbg_acc("initialize the accounting unit");
++
++	acc = ubi_kzalloc(sizeof(struct ubi_acc_info));
++	if (!acc)
++		return -ENOMEM;
++	ubi->acc = acc;
++
++	spin_lock_init(&acc->lock);
++	acc->ivol_count = UBI_INT_VOL_COUNT;
++
++	for (i = 0; i < acc->ivol_count; i++) {
++		cond_resched();
++		vtr = ubi_vtbl_get_vtr(ubi, UBI_INTERNAL_VOL_START + i);
++		ubi_assert(!IS_ERR(vtr));
++		acc->rsvd_pebs += vtr->reserved_pebs;
++	}
++
++	/*
++	 * The maximum number of volumes may be less then the volume table
++	 * fits if there are too few available eraseblocks on the flash.
++	 */
++	acc->max_volumes = vtbl->vt_slots;
++	i = io->good_peb_count - acc->rsvd_pebs;
++	if (i <= 0) {
++		ubi_err("too small flash, at least %d good physical eraseblock"
++			" needed", acc->rsvd_pebs + 1);
++		err = -EINVAL;
++		goto out_acc;
++	}
++
++	if (acc->max_volumes > i)
++		acc->max_volumes = i;
++
++	for (i = 0; i < acc->max_volumes; i++) {
++		cond_resched();
++		vtr = ubi_vtbl_get_vtr(ubi, i);
++		if (IS_ERR(vtr))
++			continue;
++		acc->uvol_count += 1;
++		acc->rsvd_pebs += vtr->reserved_pebs;
++	}
++
++	acc->rsvd_pebs += si->alien_peb_count;
++	acc->avail_pebs = io->good_peb_count - acc->rsvd_pebs;
++
++	/* Check accounting information sanity and consistency */
++	err = acc_info_check(ubi, si);
++	if (err)
++		goto out_acc;
++
++	dbg_acc("uvol_count %d, ivol_count %d, avail_pebs %d rsvd_pebs %d "
++		"max_volumes %d", acc->uvol_count, acc->ivol_count,
++		acc->avail_pebs, acc->rsvd_pebs, acc->max_volumes);
++	return 0;
++
++out_acc:
++	ubi_kfree(acc);
++	return err;
++}
++
++void ubi_acc_close(const struct ubi_info *ubi)
++{
++	dbg_acc("close the accounting unit");
++	ubi_kfree(ubi->acc);
++}
 +
 +/**
-+ * ubi_upd_start - start update operation.
++ * acc_info_check - check sanity and consistency of accounting information.
 + *
 + * @ubi: the UBI device description object
-+ * @vol_id: volume ID to start update for
-+ * @bytes: how many bytes will be written to the volume
++ * @si: a pointer to the scanning information which must be consistent to accounting
++ * information
 + *
-+ * This function starts a volume update operation. If @bytes is zero, the
-+ * volume will just be fully erased. This function returns zero in case of
-+ * success and a negative error code in case of error.
-+ *
-+ * Note, this function does not check if the volume is being used by some other
-+ * user. The (upper) calling layer has to do this.
++ * As we try not to trust the data we read from the flash media, we have to
++ * check that the accounting information is sane and consistent, as it is
++ * formed using on-flash information. This function returns zero if all is fine
++ * and a negative error code if some inconsistency was found.
 + */
-+int ubi_upd_start(const struct ubi_info *ubi, int vol_id, long long bytes);
++static int acc_info_check(const struct ubi_info *ubi,
++			  const struct ubi_scan_info *si)
++{
++	int i;
++	const struct ubi_vtbl_vtr *vtr;
++	const struct ubi_acc_info *acc = ubi->acc;
++	const struct ubi_vtbl_info *vtbl = ubi->vtbl;
++	const struct ubi_io_info *io = ubi->io;
 +
-+/**
-+ * ubi_upd_write_data - write more data.
-+ *
-+ * @ubi: the UBI device description object
-+ * @vol_id: ID of the volume under update
-+ * @buf: the data to write
-+ * @count: how much bytes to write
-+ *
-+ * This function writes more data to the volume which is being updated. It may
-+ * be called arbitrary number of times until all of the update bytes arrive.
-+ * This function returns %0 in case of success, %1 if the update was
-+ * successfully finished, and a negative error code in case of failure.
-+ */
-+int ubi_upd_write_data(const struct ubi_info *ubi, int vol_id,
-+		       const void __user *buf, int count);
++	if (acc->avail_pebs < 0 || acc->rsvd_pebs < 0 || acc->uvol_count < 0 ||
++	    acc->ivol_count < 0) {
++		dbg_err("negative values");
++		goto bad;
++	}
 +
-+/**
-+ * ubi_upd_abort - abort an update operation.
-+ *
-+ * @ubi: the UBI device description object
-+ * @vol_id: ID of the volume to abort update operation for
-+ *
-+ * This function aborts an update operation. Returns zero in case of success
-+ * and a negative error code in case of failure.
-+ *
-+ * If an update operation is aborted, the update marker stays on the flash
-+ * media. A new successful update operation is required to make this volume
-+ * usable.
-+ */
-+int ubi_upd_abort(const struct ubi_info *ubi, int vol_id);
++	if (acc->avail_pebs > io->good_peb_count) {
++		dbg_err("bad avail_pebs");
++		goto bad;
++	}
 +
-+/**
-+ * ubi_upd_init_scan - initialize the update volume unit using scanning
-+ * information.
-+ *
-+ * @ubi: the UBI device description object
-+ * @si: a pointer to the scanning information
-+ *
-+ * This function returns zero in case of success, and a negative error code in
-+ * case of failure.
-+ */
-+int ubi_upd_init_scan(struct ubi_info *ubi, struct ubi_scan_info *si);
++	if (acc->rsvd_pebs > io->good_peb_count) {
++		dbg_err("bad rsvd_pebs");
++		goto bad;
++	}
 +
-+/**
-+ * ubi_upd_close - close the update volume unit.
-+ *
-+ * @ubi: the UBI device description object
-+ */
-+void ubi_upd_close(const struct ubi_info *ubi);
++	if (acc->avail_pebs + acc->rsvd_pebs != io->good_peb_count) {
++		dbg_err("accounting error");
++		goto bad;
++	}
 +
-+/**
-+ * struct ubi_upd_info - UBI update unit description data structure.
-+ *
-+ * @updating: if any volume is being updated at the moment
-+ * @vol_id: which volume utilizes the update marker at the moment
-+ * @upd_ebs: how many eraseblocks are going to be updated
-+ * @upd_received: how many bytes were already received by the update unit
-+ * @upd_bytes: how many more bytes are expected to be received
-+ * @upd_buf: a buffer which is used to collect update data during the update
-+ * operation
-+ * @mutex: serializes access to the volume update capability
-+ */
-+struct ubi_upd_info {
-+	int updating;                        /* public  */
-+	int vol_id;                          /* private */
-+	int upd_ebs;                         /* private */
-+	long long upd_received;              /* private */
-+	long long upd_bytes;                 /* private */
-+	void *upd_buf;                       /* private */
-+	struct mutex mutex;                  /* private */
-+};
++	if (acc->max_volumes > vtbl->vt_slots) {
++		dbg_err("bad max_volumes");
++		goto bad;
++	}
 +
-+#endif /* !__UBI_UPD_H__ */
++	if (acc->ivol_count + acc->uvol_count > acc->max_volumes) {
++		dbg_err("vol. count (%d + %d) > max_volumes",
++			acc->ivol_count, acc->uvol_count);
++		goto bad;
++	}
++
++	/*
++	 * Ensure that there are no volumes which exceed acc->max_volumes
++	 * exist.
++	 */
++	for (i = acc->max_volumes; i < vtbl->vt_slots; i++) {
++		cond_resched();
++		vtr = ubi_vtbl_get_vtr(ubi, i);
++		if (unlikely(!IS_ERR(vtr))) {
++			dbg_err("volume %d exists", i);
++			goto bad;
++		}
++	}
++
++	if (si->vols_found > acc->ivol_count + acc->uvol_count) {
++		dbg_err("scanning found volumes %d > %d + %d",
++			si->vols_found, acc->ivol_count, acc->uvol_count);
++		goto bad;
++	}
++
++	if (si->highest_vol_id >= acc->max_volumes &&
++	    si->highest_vol_id < UBI_INTERNAL_VOL_START) {
++		dbg_err("too large volume ID %d found by scanning",
++			si->highest_vol_id);
++		goto bad;
++	}
++
++	return 0;
++
++bad:
++	ubi_err("accounting check failed");
++	dbg_err("uvol_count %d, ivol_count %d, avail_pebs %d, rsvd_pebs %d "
++		"io->good_peb_count %d, max_volumes %d, vtbl->vt_slots %d",
++		acc->uvol_count, acc->ivol_count, acc->avail_pebs,
++		acc->rsvd_pebs, io->good_peb_count, acc->max_volumes,
++		vtbl->vt_slots);
++	return -EINVAL;
++}
