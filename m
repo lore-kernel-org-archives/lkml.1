@@ -1,36 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965268AbXBQOrB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965279AbXBQO46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965268AbXBQOrB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 09:47:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965274AbXBQOrB
+	id S965279AbXBQO46 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 09:56:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965280AbXBQO46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 09:47:01 -0500
-Received: from webmail9.mail.yandex.net ([213.180.223.100]:40865 "EHLO
-	webmail9.mail.yandex.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965268AbXBQOrA (ORCPT
+	Sat, 17 Feb 2007 09:56:58 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:38735 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965279AbXBQO46 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 09:47:00 -0500
-Date: Sat, 17 Feb 2007 17:46:45 +0300 (MSK)
-From: "Mockern" <Mockern@yandex.ru>
-Message-Id: <45D71555.000002.20869@webmail9.yandex.ru>
-MIME-Version: 1.0
-X-Mailer: Yamail [ http://yandex.ru ]
-To: linux-kernel@vger.kernel.org
-Subject: line discipline and tty driver
-X-MsgDayCount: 5
-X-BornDate: 1134853200
-Reply-To: Mockern@yandex.ru
-X-Source-Ip: 84.185.244.133
-Content-Type: text/plain;
-  charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
+	Sat, 17 Feb 2007 09:56:58 -0500
+Date: Sat, 17 Feb 2007 15:56:55 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Jeff Muizelaar <jeff@infidigm.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Using sched_clock for mmio-trace
+Message-ID: <20070217145655.GA15662@one.firstfloor.org>
+References: <20070216013024.GA32287@infidigm.net> <y0mr6sq2hfj.fsf@ton.toronto.redhat.com> <p73fy95g99w.fsf@bingen.suse.de> <20070216212630.GC27135@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070216212630.GC27135@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a question regarding line discipline:
+> This is one of the reasons why we don't just use good old
+> do_gettimeofday(), since it takes locks and can lead to lock recursion
+> if parts of itself are probed.
 
-in http://www.linux.it/~rubini/docs/serial/serial.html is shown data flow for Linux tty driver.
+do_gettimeofday doesn't take locks.
 
-When it's necessary to use line discipline in tty driver (to call ldisc.write(), ldisc.read(), ldisc.receive_buf()) and when I can ignore line discipline in my tty driver? 
+Only restriction is that you can't single step it with long 
+pauses between instructions.
 
-Thanks 
+-Andi
