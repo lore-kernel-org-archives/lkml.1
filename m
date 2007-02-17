@@ -1,58 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932893AbXBQVAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932598AbXBQVDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932893AbXBQVAZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 16:00:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932894AbXBQVAZ
+	id S932598AbXBQVDV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 16:03:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932619AbXBQVDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 16:00:25 -0500
-Received: from mail20.syd.optusnet.com.au ([211.29.132.201]:59896 "EHLO
-	mail20.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932893AbXBQVAY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 16:00:24 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: [ck] Re: 2.6.20-ck1
-Date: Sun, 18 Feb 2007 08:00:06 +1100
+	Sat, 17 Feb 2007 16:03:21 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:46608 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932598AbXBQVDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 16:03:20 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH] Documentation: Ask driver writers to provide suspend/resume support
+Date: Sat, 17 Feb 2007 21:57:58 +0100
 User-Agent: KMail/1.9.5
-Cc: michael chang <thenewme91@gmail.com>, ck mailing list <ck@vds.kolivas.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <200702162110.03355.kernel@kolivas.org> <200702171417.28376.kernel@kolivas.org> <45D74D34.5020201@redhat.com>
-In-Reply-To: <45D74D34.5020201@redhat.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Alan <alan@lxorguk.ukuu.org.uk>,
+       Nigel Cunningham <ncunningham@linuxmail.org>
+References: <200702171128.54492.rjw@sisk.pl> <200702171233.00440.rjw@sisk.pl> <20070217114009.GE9120@elf.ucw.cz>
+In-Reply-To: <20070217114009.GE9120@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702180800.07393.kernel@kolivas.org>
+Message-Id: <200702172157.58902.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 18 February 2007 05:45, Chuck Ebbert wrote:
-> Con Kolivas wrote:
-> > Maintainers are far too busy off testing code for
-> > 16+ cpus, petabytes of disk storage and so on to try it for themselves. 
-> > Plus they worry incessantly that my patches may harm those precious
-> > machines' performance...
->
-> But the one I like, mm-filesize_dependant_lru_cache_add.patch,
-> has an on-off switch.
->
-> In other words it adds an option to do things differently.
-> How could that possibly affect any workload if that option
-> isn't enabled?
+Hi,
 
-Swap prefetch not only has an on-off switch, you can even build your kernel 
-without it entirely so it costs even less than this patch... I'm not going to 
-support the argument that it might be built into the kernel and enabled 
-unknowingly and _then_ cause overhead.
+On Saturday, 17 February 2007 12:40, Pavel Machek wrote:
+> Hi!
+> 
+> > > > +PM support:	Since Linux is used on many portable and desktop systems, your
+> > > > +		driver is likely to be used on such a system and therefore it
+> > > > +		should support basic power management by implementing, if
+> > > > +		necessary, the .suspend and .resume methods used during the
+> > > > +		system-wide suspend and resume transitions.  You should verify
+> > > > +		that your driver correctly handles the suspend and resume, but
+> > > > +		if you are unable to ensure that, please at least define the
+> > > > +		.suspend method returning the -ENOSYS ("Function not
+> > > > +		implemented") error.
+> > > 
+> > > Perhaps pointer to Documentation/power/drivers-testing.txt would be
+> > > useful here?
+> > 
+> > Okay, maybe something like this:
+> > 
+> > "Please see Documentation/power/drivers-testing.txt for the driver testing
+> > instructions."
+> > 
+> > as the last sentence?
+> 
+> Looks ok. (BTW you have my ACK).
 
-Oh and this patch depends on some of the code from the swap prefetch patch 
-too. I guess since they're so suspicious of swap prefetch the swap prefetch 
-patch can be ripped apart for the portions of code required to make this 
-patch work.
+Thanks.
 
-Do you still want this patch for mainline?... 
+> > > > +Unfortunately, to effectively test the support for the system-wide suspend and
+> > > > +resume transitions in a driver, it is necessary to suspend and resume a fully
+> > > > +functional system with this driver loaded.  Moreover, that should be done many
+> > > > +times, preferably many times in a row, and separately for the suspend to disk
+> > > > +(STD) and the suspend to RAM (STR) transitions, because each of these cases
+> > > > +involves different ordering of operations and different interactions with the
+> > > > +machine's BIOS.
+> > > 
+> > > Hmm, actually it is nice to mix STR + STD, too... and not sure if
+> > > "many" is right word... It sounds scary :-).
+> > 
+> > "a couple of"?
+> 
+> Sounds good.
+> > > > +II. Testing the driver
+> > > > +
+> > > > +Once you have resolved the suspend/resume-related problems with your test system
+> > > > +without the new driver, you are ready to test it:
+> > > > +
+> > > > +1. Build the driver as a module, load it and try the STD in the test mode
+> > > > +(cf. 1a)).
+> > > > +
+> > > > +2. Compile the driver directly into the kernel and try the STD in the test mode
+> > > > +(cf. 1a)).
+> > > > +
+> > > > +3. Build the driver as a module, load it and attempt to suspend to disk in the
+> > > > +"reboot", "shutdown" and "platform" modes (cf. 1).
+> > > > +
+> > > > +4. Compile the driver directly into the kernel and attempt to suspend to disk in
+> > > > +the "reboot", "shutdown" and "platform" modes (cf. 1).
+> > > > +
+> > > > +5. Build the driver as a module, load it and attempt to run s2ram (cf. 2).
+> > > > +
+> > > > +6. Compile the driver directly into the kernel and attempt to run s2ram (cf. 2).
+> > > > +
+> > > > +Each of the above tests should be repeated several times and if any of them
+> > > > +fails, the driver cannot be regarded as suspend/resume-safe.
+> > > 
+> > > Maybe reorder the tests so that poor submitter will not have to do 3
+> > > kernel compiles?
+> > 
+> > I thought he would figure out that there's more efficient way. ;-) 
+> 
+> He probably will... but it reads strangely. 
+> 
+> 5. Build the driver as a module, load it and attempt to run s2ram. Then
+> repeat with driver build-in?
+> 
+> Hmm, and maybe driver loaded/build in is not a difference for s2ram?
 
--- 
--ck
+Good point. :-)
+
+Greetings,
+Rafael
