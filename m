@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992885AbXBQXsM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965397AbXBQXvF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992885AbXBQXsM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 18:48:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992891AbXBQXsL
+	id S965397AbXBQXvF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 18:51:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965398AbXBQXvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 18:48:11 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:49925 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965396AbXBQXsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 18:48:04 -0500
-Date: Sat, 17 Feb 2007 15:47:46 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>, michael chang <thenewme91@gmail.com>,
-       ck mailing list <ck@vds.kolivas.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: [ck] Re: 2.6.20-ck1
-Message-Id: <20070217154746.7ff10870.akpm@linux-foundation.org>
-In-Reply-To: <200702180800.07393.kernel@kolivas.org>
-References: <200702162110.03355.kernel@kolivas.org>
-	<200702171417.28376.kernel@kolivas.org>
-	<45D74D34.5020201@redhat.com>
-	<200702180800.07393.kernel@kolivas.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 17 Feb 2007 18:51:05 -0500
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:41127 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965397AbXBQXvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 18:51:04 -0500
+Message-ID: <45D794E7.3000007@drzeus.cx>
+Date: Sun, 18 Feb 2007 00:51:03 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070131)
+MIME-Version: 1.0
+To: Alex Dubov <oakad@yahoo.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Recent and not-so problems with tifm_sd driver
+References: <20070212115343.41523.qmail@web36712.mail.mud.yahoo.com>
+In-Reply-To: <20070212115343.41523.qmail@web36712.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 Feb 2007 08:00:06 +1100 Con Kolivas <kernel@kolivas.org> wrote:
+Alex Dubov wrote:
+> I removed that line altogether (it does not really needed as mmc host will not be accessed
+> anymore). The problem is more elaborate. Here, the card fails, mmc_host_remove is called without
+> sleep beforehand, and "after remove" message is printed immediately after it. Only then, mmc_block
+> remembers to finish its business. If I leave the sleep in place, mmc_block's stuff will get
+> scheduled before the mmc_remove_host and everything will be all right.
+> You may also notice that host is already powered off ("Setting ... power 0" message) and still
+> mmc_block continues to make requests like nothing happened.
+> 
 
-> On Sunday 18 February 2007 05:45, Chuck Ebbert wrote:
-> ...
-> > But the one I like, mm-filesize_dependant_lru_cache_add.patch,
-> > has an on-off switch.
-> >
->
-> ...
->
-> Do you still want this patch for mainline?... 
+I don't actually think that is what happening. The block errors tend to trail a
+bit behind, so the errors you are seeing are probably the result of the queue
+being flushed out as you remove the card. I don't see any mmc debug messages
+that indicate that is trying to send more mmc requests.
 
-Don't think so.  The problems I see are:
+You could add a printk to the queue thread in mmc_queue.c. That will allow you
+to see exactly when it exits (which should be before mmc_remove_host() returns).
 
-- It's a system-wide knob.  In many situations this will do the wrong
-  thing.  Controlling pagecache should be per-process.
+Rgds
+-- 
+     -- Pierre Ossman
 
-- Its heuristics for working out when to invalidate the pagecache will be
-  too much for some situations and too little for others.
-
-- Whatever we do, there will be some applications in some situations
-  which are hurt badly by changes like this: they'll do heaps of extra IO.
-
-
-Generally, the penalties for getting this stuff wrong are very very high:
-orders of magnitude slowdowns in the right situations.  Which I suspect
-will make any system-wide knob ultimately unsuccessful.
-
-The ideal way of getting this *right* is to change every application in the
-world to get smart about using sync_page_range() and/or posix_fadvise(),
-then to add a set of command-line options to each application in the world
-so the user can control its pagecache handling.
-
-Obviously that isn't practical.  But what _could_ be done is to put these
-pagecache smarts into glibc's read() and write() code.  So the user can do:
-
-	MAX_PAGECACHE=4M MAX_DIRTY_PAGECACHE=2M rsync foo bar
-
-This will provide pagecache control for pretty much every application.  It
-has limitations (fork+exec behaviour??) but will be useful.
-
-
-A kernel-based solution might use new rlimits, but would not be as flexible
-or successful as a libc-based one, I suspect.
-
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
