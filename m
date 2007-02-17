@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992579AbXBQRBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992582AbXBQRBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992579AbXBQRBU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 12:01:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992576AbXBQRBT
+	id S2992582AbXBQRBW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 12:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992576AbXBQRBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 12:01:19 -0500
-Received: from smtp.nokia.com ([131.228.20.173]:33721 "EHLO
-	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965369AbXBQRA7 (ORCPT
+	Sat, 17 Feb 2007 12:01:21 -0500
+Received: from smtp.nokia.com ([131.228.20.172]:57290 "EHLO
+	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992571AbXBQRBS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 12:00:59 -0500
+	Sat, 17 Feb 2007 12:01:18 -0500
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Christoph Hellwig <hch@infradead.org>,
@@ -18,22 +18,25 @@ Cc: Christoph Hellwig <hch@infradead.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        David Woodhouse <dwmw2@infradead.org>,
        Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Date: Sat, 17 Feb 2007 18:57:26 +0200
-Message-Id: <20070217165726.5845.68108.sendpatchset@localhost.localdomain>
+Date: Sat, 17 Feb 2007 18:56:55 +0200
+Message-Id: <20070217165655.5845.82676.sendpatchset@localhost.localdomain>
 In-Reply-To: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
 References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
-Subject: [PATCH 36/44 take 2] [UBI] user-interfaces unit implementation
-X-OriginalArrivalTime: 17 Feb 2007 16:56:53.0204 (UTC) FILETIME=[9FCE5940:01C752B4]
+Subject: [PATCH 30/44 take 2] [UBI] update unit implementation
+X-OriginalArrivalTime: 17 Feb 2007 16:56:22.0987 (UTC) FILETIME=[8DCB99B0:01C752B4]
+X-eXpurgate-Category: 1/0
+X-eXpurgate-ID: 149371::070217185423-03D7FBB0-531D300D/0-0/0-0
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff -auNrp tmp-from/drivers/mtd/ubi/uif.c tmp-to/drivers/mtd/ubi/uif.c
---- tmp-from/drivers/mtd/ubi/uif.c	1970-01-01 02:00:00.000000000 +0200
-+++ tmp-to/drivers/mtd/ubi/uif.c	2007-02-17 18:07:27.000000000 +0200
-@@ -0,0 +1,786 @@
+diff -auNrp tmp-from/drivers/mtd/ubi/upd.c tmp-to/drivers/mtd/ubi/upd.c
+--- tmp-from/drivers/mtd/ubi/upd.c	1970-01-01 02:00:00.000000000 +0200
++++ tmp-to/drivers/mtd/ubi/upd.c	2007-02-17 18:07:27.000000000 +0200
+@@ -0,0 +1,389 @@
 +/*
 + * Copyright (c) International Business Machines Corp., 2006
++ * Copyright (C) Nokia Corporation, 2006
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -50,771 +53,373 @@ diff -auNrp tmp-from/drivers/mtd/ubi/uif.c tmp-to/drivers/mtd/ubi/uif.c
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 + *
 + * Author: Artem B. Bityutskiy
++ *
++ * Jan 2007: Alexander Schmidt, hacked per-volume update.
 + */
 +
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/spinlock.h>
-+#include <linux/sched.h>
-+#include <linux/err.h>
-+#include <linux/list.h>
 +#include <linux/mutex.h>
++#include <linux/err.h>
 +#include <linux/types.h>
++#include <linux/sched.h>
++#include <asm/uaccess.h>
 +#include <asm/div64.h>
-+#include <mtd/ubi-header.h>
 +#include "ubi.h"
-+#include "misc.h"
-+#include "sysfs.h"
 +#include "upd.h"
 +#include "wl.h"
-+#include "uif.h"
-+#include "cdev.h"
-+#include "alloc.h"
-+#include "debug.h"
 +#include "vtbl.h"
-+#include "volmgmt.h"
 +#include "io.h"
 +#include "eba.h"
++#include "misc.h"
 +#include "account.h"
++#include "alloc.h"
++#include "scan.h"
++#include "debug.h"
 +
-+int ubi_get_device_info(int ubi_num, struct ubi_dev_info *di)
++static int ubi_wipe_out_volume(const struct ubi_info *ubi, int vol_id);
++
++int ubi_upd_start(const struct ubi_info *ubi, int vol_id, long long bytes)
 +{
-+	const struct ubi_info *ubi;
-+	int err = -ENODEV;
++	int err, rem;
++	uint64_t tmp;
++	const struct ubi_vtbl_vtr *vtr;
++	struct ubi_upd_info *upd = ubi->upd;
 +
-+	if (!try_module_get(THIS_MODULE))
-+		return err;
++	dbg_upd("start update of volume %d, %llu bytes", vol_id, bytes);
 +
-+	if (ubi_num < 0 || ubi_num >= UBI_MAX_INSTANCES) {
-+		dbg_err("bad UBI device number %d", ubi_num);
-+		goto out_put;
++	ubi_assert(vol_id >= 0 && vol_id < ubi->acc->max_volumes);
++	vtr = ubi_vtbl_get_vtr(ubi, vol_id);
++	ubi_assert(!IS_ERR(vtr));
++	ubi_assert(bytes >= 0 &&
++		   bytes <= vtr->usable_leb_size * vtr->reserved_pebs);
++
++	mutex_lock(&upd->mutex);
++
++	if (upd->updating == 1) {
++		dbg_err("volume %d is being updated", upd->vol_id);
++		mutex_unlock(&upd->mutex);
++		return -EBUSY;
 +	}
 +
-+	if (!ubis[ubi_num]) {
-+		dbg_err("UBI device %d does not exist", ubi_num);
-+		goto out_put;
-+	}
-+	ubi = ubis[ubi_num];
++	upd->updating = 1;
++	upd->vol_id = vol_id;
 +
-+	di->ubi_num = ubi->ubi_num;
-+	di->leb_size = ubi->io->leb_size;
-+	di->min_io_size = ubi->io->min_io_size;
-+	di->ro_mode = ubi->io->ro_mode;
-+	di->cdev = MKDEV(ubi->uif->major, 0);
-+	err = 0;
++	/* Set the update marker first */
++	err = ubi_vtbl_set_upd_marker(ubi, vol_id);
++	if (err)
++		goto out_unlock;
 +
-+out_put:
-+	module_put(THIS_MODULE);
-+	return err;
-+}
-+EXPORT_SYMBOL_GPL(ubi_get_device_info);
++	/* Before updating, we wipe out the volume */
++	err = ubi_wipe_out_volume(ubi, vol_id);
++	if (err)
++		goto out_unlock;
 +
-+static void fill_ubi_vol_info(const struct ubi_info *ubi, int vol_id,
-+			      struct ubi_vol_info *vi);
-+
-+void ubi_get_volume_info(struct ubi_vol_desc *udesc, struct ubi_vol_info *vi)
-+{
-+	struct ubi_vol_desc *desc = udesc;
-+	const struct ubi_info *ubi = desc->vol->ubi;
-+	int vol_id = desc->vol->vol_id;
-+
-+	fill_ubi_vol_info(ubi, vol_id, vi);
-+}
-+EXPORT_SYMBOL_GPL(ubi_get_volume_info);
-+
-+struct ubi_vol_desc *ubi_open_volume(int ubi_num, int vol_id,
-+				     enum ubi_open_mode mode)
-+{
-+	int err, found = 0;
-+	struct ubi_vol_desc *desc;
-+	const struct ubi_info *ubi;
-+	struct ubi_uif_info *uif;
-+	struct ubi_uif_volume *vol;
-+
-+	dbg_uif("open device %d volume %d, mode %d", ubi_num, vol_id, mode);
-+
-+	err = -ENODEV;
-+	if (!try_module_get(THIS_MODULE))
-+		return ERR_PTR(err);
-+
-+	if (ubi_num < 0 || ubi_num >= UBI_MAX_INSTANCES) {
-+		dbg_err("bad UBI device number %d", ubi_num);
-+		goto out_put;
-+	}
-+
-+	if (!ubis[ubi_num]) {
-+		dbg_err("UBI device %d does not exist", ubi_num);
-+		goto out_put;
-+	}
-+
-+	ubi = ubis[ubi_num];
-+	ubi_assert(ubi->ubi_num == ubi_num);
-+	uif = ubi->uif;
-+
-+	desc = ubi_kzalloc(sizeof(struct ubi_vol_desc));
-+	if (!desc) {
-+		err = -ENOMEM;
-+		goto out_put;
-+	}
-+
-+	err = -EINVAL;
-+	if (vol_id < 0 || vol_id >= ubi->acc->max_volumes) {
-+		dbg_err("bad vol_id %d", vol_id);
-+		goto out_free;
-+	}
-+
-+	if (mode != UBI_READONLY && mode != UBI_READWRITE &&
-+	    mode != UBI_EXCLUSIVE) {
-+		dbg_err("bad mode %d", mode);
-+		goto out_free;
-+	}
-+
-+	mutex_lock(&uif->volumes_list_lock);
-+	list_for_each_entry(vol, &uif->volumes, list)
-+		if (vol->vol_id == vol_id) {
-+			found = 1;
-+			break;
-+		}
-+	if (!found) {
-+		dbg_err("volume %d does not exist", vol_id);
-+		err = -ENODEV;
++	if (bytes == 0) {
++		/* Zero bytes means the volume just has to be erased */
++		err = ubi_vtbl_clear_upd_marker(ubi, vol_id, 0);
 +		goto out_unlock;
 +	}
 +
-+	err = -EBUSY;
-+	spin_lock(&vol->vol_lock);
-+	if (vol->updating) {
-+		/* If the volume is being updated, no one can open it */
-+		dbg_err("device busy - updating");
-+		goto out_unlock_vol;
-+	}
-+
-+	switch (mode) {
-+	case UBI_READONLY:
-+		if (vol->exclusive) {
-+			dbg_err("device is busy - exclusive");
-+			goto out_unlock_vol;
-+		}
-+		vol->readers += 1;
-+		break;
-+
-+	case UBI_READWRITE:
-+		if (vol->exclusive || vol->writers > 0) {
-+			if (vol->exclusive)
-+				dbg_err("device is busy - exclusive");
-+			else
-+				dbg_err("device is busy - writers");
-+			goto out_unlock_vol;
-+		}
-+		vol->writers += 1;
-+		break;
-+
-+	case UBI_EXCLUSIVE:
-+		if (vol->exclusive || vol->writers || vol->readers) {
-+			if (vol->exclusive)
-+				dbg_err("device is busy - exclusive");
-+			else if (vol->writers)
-+				dbg_err("device is busy - writers");
-+			else
-+				dbg_err("device is busy - readers");
-+			goto out_unlock_vol;
-+		}
-+		vol->exclusive = 1;
-+		break;
-+	}
-+	spin_unlock(&vol->vol_lock);
-+	mutex_unlock(&uif->volumes_list_lock);
-+
-+	desc->vol = vol;
-+	desc->mode = mode;
-+
-+	mutex_lock(&uif->vol_check);
-+	if (!vol->checked) {
-+		/*
-+		 * This is the first time this volume is being opened, we have
-+		 * to check it. If the volume is corrupted, we still return
-+		 * success.
-+		 */
-+		err = ubi_check_volume(ubi, vol_id);
-+		if (err < 0)
-+			goto unlock_close;
-+
-+		if (err == 1) {
-+			ubi_warn("volume %d on UBI device %d is corrupted",
-+				 vol_id, ubi->ubi_num);
-+			err = ubi_vtbl_set_corrupted(ubi, vol_id);
-+			if (err)
-+				goto unlock_close;
-+		}
-+		vol->checked = 1;
-+	}
-+	mutex_unlock(&uif->vol_check);
-+
-+	return desc;
-+
-+out_unlock_vol:
-+	spin_unlock(&vol->vol_lock);
-+out_unlock:
-+	mutex_unlock(&uif->volumes_list_lock);
-+out_free:
-+	ubi_kfree(desc);
-+out_put:
-+	module_put(THIS_MODULE);
-+	return ERR_PTR(err);
-+
-+unlock_close:
-+	mutex_unlock(&uif->vol_check);
-+	ubi_close_volume(desc);
-+	return ERR_PTR(err);
-+}
-+EXPORT_SYMBOL_GPL(ubi_open_volume);
-+
-+struct ubi_vol_desc *ubi_open_volume_nm(int ubi_num, const char *name,
-+					enum ubi_open_mode mode)
-+{
-+	int err, vol_id = -1, len;
-+	struct ubi_vol_desc *ret;
-+	const struct ubi_info *ubi;
-+	struct ubi_uif_info *uif;
-+	struct ubi_uif_volume *vol;
-+
-+	dbg_uif("open volume by name %s, mode %d", name, mode);
-+
-+	if (!name) {
-+		dbg_err("bad name");
-+		return ERR_PTR(-EINVAL);
-+	}
-+	len = strnlen(name, UBI_VOL_NAME_MAX + 1);
-+	if (len > UBI_VOL_NAME_MAX) {
-+		dbg_err("bad name");
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	err = -ENODEV;
-+	if (!try_module_get(THIS_MODULE))
-+		return ERR_PTR(err);
-+
-+	if (ubi_num < 0 || ubi_num >= UBI_MAX_INSTANCES) {
-+		dbg_err("bad UBI device number %d", ubi_num);
-+		goto out_put;
-+	}
-+
-+	if (!ubis[ubi_num]) {
-+		dbg_err("UBI device %d does not exist", ubi_num);
-+		goto out_put;
-+	}
-+
-+	ubi = ubis[ubi_num];
-+	ubi_assert(ubi->ubi_num == ubi_num);
-+	uif = ubi->uif;
-+
-+	/* Walk all volumes of this UBI device */
-+	mutex_lock(&uif->volumes_list_lock);
-+	list_for_each_entry(vol, &uif->volumes, list) {
-+		const struct ubi_vtbl_vtr *vtr;
-+
-+		spin_lock(&vol->vol_lock);
-+		vtr = ubi_vtbl_get_vtr(vol->ubi, vol->vol_id);
-+		if (len == vtr->name_len && !strcmp(name, vtr->name)) {
-+			vol_id = vol->vol_id;
-+			dbg_err("found volume volume %d", vol_id);
-+			spin_unlock(&vol->vol_lock);
-+			break;
-+		}
-+		spin_unlock(&vol->vol_lock);
-+	}
-+	mutex_unlock(&uif->volumes_list_lock);
-+
-+	if (vol_id < 0) {
-+		dbg_err("volume %s does not exist", name);
-+		goto out_put;
-+	}
-+
-+	ret = ubi_open_volume(ubi_num, vol_id, mode);
-+	if (!IS_ERR(ret))
-+		return ret;
-+
-+	err = PTR_ERR(ret);
-+
-+out_put:
-+	module_put(THIS_MODULE);
-+	return ERR_PTR(err);
-+}
-+EXPORT_SYMBOL_GPL(ubi_open_volume_nm);
-+
-+void ubi_close_volume(struct ubi_vol_desc *udesc)
-+{
-+	struct ubi_vol_desc *desc = udesc;
-+	struct ubi_uif_volume *vol = desc->vol;
-+
-+	dbg_uif("close volume %d, mode %d", vol->vol_id, desc->mode);
-+
-+	spin_lock(&vol->vol_lock);
-+	switch (desc->mode) {
-+	case UBI_READONLY:
-+		ubi_assert(vol->readers > 0);
-+		vol->readers -= 1;
-+		break;
-+
-+	case UBI_READWRITE:
-+		ubi_assert(vol->writers > 0);
-+		vol->writers -= 1;
-+		break;
-+
-+	case UBI_EXCLUSIVE:
-+		ubi_assert(vol->exclusive > 0);
-+		vol->exclusive = 0;
-+	}
-+	spin_unlock(&vol->vol_lock);
-+
-+	ubi_kfree(desc);
-+	module_put(THIS_MODULE);
-+}
-+EXPORT_SYMBOL_GPL(ubi_close_volume);
-+
-+int ubi_eraseblock_read(struct ubi_vol_desc *udesc, int lnum, char *buf,
-+			int offset, int len, int check)
-+{
-+	const struct ubi_vtbl_vtr *vtr;
-+	struct ubi_vol_desc *desc = udesc;
-+	const struct ubi_info *ubi = desc->vol->ubi;
-+	int err, vol_id = desc->vol->vol_id;
-+
-+	dbg_uif("read %d bytes from offset %d of LEB %d:%d",
-+		len, offset, vol_id, lnum);
-+
-+	if (unlikely(vol_id < 0 || vol_id >= ubi->acc->max_volumes)) {
-+		dbg_err("bad vol_id %d", vol_id);
-+		return -EINVAL;
-+	}
-+
-+	vtr = ubi_vtbl_get_vtr(ubi, vol_id);
-+	ubi_assert(!IS_ERR(vtr));
-+
-+	if (unlikely(lnum < 0 || lnum >= vtr->used_ebs)) {
-+		dbg_err("bad lnum %d", lnum);
-+		return -EINVAL;
-+	}
-+
-+	if (unlikely(offset < 0 || len < 0 ||
-+		     offset + len > vtr->usable_leb_size)) {
-+		dbg_err("bad offset %d or len %d", offset, len);
-+		return -EINVAL;
-+	}
-+
-+	if (unlikely(vtr->vol_type == UBI_STATIC_VOLUME &&
-+		     lnum == vtr->used_ebs - 1 &&
-+		     offset + len > vtr->last_eb_bytes)) {
-+		dbg_err("bad offset %d or len %d for last LEB", offset, len);
-+		return -EINVAL;
-+	}
-+
-+	if (unlikely(len == 0))
-+		return 0;
-+
-+	if (unlikely(vtr->upd_marker)) {
-+		dbg_err("reading from update-interrupted volume");
-+		return -EBADF;
-+	}
-+
-+	err = ubi_eba_read_leb(ubi, vol_id, lnum, buf, offset, len, check);
-+	if (unlikely(err))
-+		return err;
-+	if (unlikely(vtr->corrupted)) {
-+		ubi_assert(vtr->vol_type == UBI_STATIC_VOLUME);
-+		dbg_err("corrupted volume is read");
-+		err = -EUCLEAN;
-+	}
-+	return err;
-+}
-+EXPORT_SYMBOL_GPL(ubi_eraseblock_read);
-+
-+int ubi_eraseblock_write(struct ubi_vol_desc *udesc, int lnum, const void *buf,
-+			 int offset, int len, enum ubi_data_type dtype)
-+{
-+	const struct ubi_vtbl_vtr *vtr;
-+	struct ubi_vol_desc *desc = udesc;
-+	const struct ubi_info *ubi = desc->vol->ubi;
-+	const struct ubi_io_info *io = ubi->io;
-+	int vol_id = desc->vol->vol_id;
-+
-+	dbg_uif("write %zd bytes at offset %d of LEB %d:%d",
-+		len, offset, vol_id, lnum);
-+
-+	if (unlikely(vol_id < 0 || vol_id >= ubi->acc->max_volumes)) {
-+		dbg_err("bad vol_id %d", vol_id);
-+		return -EINVAL;
-+	}
-+
-+	vtr = ubi_vtbl_get_vtr(ubi, vol_id);
-+	ubi_assert(!IS_ERR(vtr));
-+
-+	if (unlikely(desc->mode == UBI_READONLY)) {
-+		dbg_err("read-only mode");
-+		return -EROFS;
-+	}
-+
-+	if (unlikely(vtr->vol_type == UBI_STATIC_VOLUME)) {
-+		dbg_err("static volume");
-+		return -EROFS;
-+	}
-+
-+	if (unlikely(lnum < 0 || lnum >= vtr->reserved_pebs)) {
-+		dbg_err("bad lnum %d", lnum);
-+		return -EINVAL;
-+	}
-+
-+	if (unlikely(offset < 0 || len < 0 ||
-+		     offset + len > vtr->usable_leb_size)) {
-+		dbg_err("bad offset %d or len %zd", offset, len);
-+		return -EINVAL;
-+	}
-+
-+	if (unlikely(offset % io->min_io_size || len % io->min_io_size)) {
-+		dbg_err("unaligned offset %d or len %zd", offset, len);
-+		return -EINVAL;
-+	}
-+
-+	if (unlikely(dtype != UBI_DATA_LONGTERM &&
-+		     dtype != UBI_DATA_SHORTTERM &&
-+		     dtype != UBI_DATA_UNKNOWN)) {
-+		dbg_err("bad dtype %d", dtype);
-+		return -EINVAL;
-+	}
-+
-+	if (unlikely(len == 0))
-+		return 0;
-+
-+	if (unlikely(vtr->upd_marker)) {
-+		dbg_err("writing update-interrupted volume");
-+		return -EBADF;
-+	}
-+
-+	return ubi_eba_write_leb(ubi, vol_id, lnum, buf, offset, len, dtype);
-+}
-+EXPORT_SYMBOL_GPL(ubi_eraseblock_write);
-+
-+int ubi_eraseblock_erase(struct ubi_vol_desc *udesc, int lnum)
-+{
-+	const struct ubi_vtbl_vtr *vtr;
-+	struct ubi_vol_desc *desc = udesc;
-+	const struct ubi_info *ubi = desc->vol->ubi;
-+	int vol_id = desc->vol->vol_id;
-+
-+	dbg_uif("erase LEB %d:%d", vol_id, lnum);
-+	vtr = ubi_vtbl_get_vtr(ubi, vol_id);
-+	ubi_assert(!IS_ERR(vtr));
-+
-+	if (unlikely(desc->mode == UBI_READONLY)) {
-+		dbg_err("read-only mode");
-+		return -EROFS;
-+	}
-+
-+	if (unlikely(vtr->vol_type == UBI_STATIC_VOLUME)) {
-+		dbg_err("static volume");
-+		return -EROFS;
-+	}
-+
-+	if (unlikely(lnum < 0 || lnum >= vtr->reserved_pebs)) {
-+		dbg_err("bad lnum %d", lnum);
-+		return -EINVAL;
-+	}
-+
-+	if (unlikely(vtr->upd_marker)) {
-+		dbg_err("erasing update-interrupted volume");
-+		return -EBADF;
-+	}
-+
-+	return ubi_eba_erase_leb(ubi, vol_id, lnum);
-+}
-+EXPORT_SYMBOL_GPL(ubi_eraseblock_erase);
-+
-+int ubi_eraseblock_unmap(struct ubi_vol_desc *udesc, int lnum)
-+{
-+	const struct ubi_vtbl_vtr *vtr;
-+	struct ubi_vol_desc *desc = udesc;
-+	const struct ubi_info *ubi = desc->vol->ubi;
-+	int err, vol_id = desc->vol->vol_id;
-+
-+	dbg_uif("erase LEB %d:%d", vol_id, lnum);
-+	vtr = ubi_vtbl_get_vtr(ubi, vol_id);
-+	ubi_assert(!IS_ERR(vtr));
-+
-+	if (unlikely(desc->mode == UBI_READONLY)) {
-+		dbg_err("read-only mode");
-+		return -EROFS;
-+	}
-+
-+	if (unlikely(vtr->vol_type == UBI_STATIC_VOLUME)) {
-+		dbg_err("static volume");
-+		return -EROFS;
-+	}
-+
-+	if (unlikely(lnum < 0 || lnum >= vtr->reserved_pebs)) {
-+		dbg_err("bad lnum %d", lnum);
-+		return -EINVAL;
-+	}
-+
-+	if (unlikely(vtr->upd_marker)) {
-+		dbg_err("unmapping eraseblock of an update-interrupted "
-+			"volume");
-+		return -EBADF;
-+	}
-+
-+	err = ubi_eba_erase_leb(ubi, vol_id, lnum);
-+	if (unlikely(err))
-+		return err;
-+
-+	return ubi_wl_flush(ubi);
-+}
-+EXPORT_SYMBOL_GPL(ubi_eraseblock_unmap);
-+
-+int ubi_eraseblock_is_mapped(struct ubi_vol_desc *udesc, int lnum)
-+{
-+	const struct ubi_vtbl_vtr *vtr;
-+	struct ubi_vol_desc *desc = udesc;
-+	const struct ubi_info *ubi = desc->vol->ubi;
-+	int vol_id = desc->vol->vol_id;
-+
-+	dbg_uif("check LEB %d:%d", vol_id, lnum);
-+	vtr = ubi_vtbl_get_vtr(ubi, vol_id);
-+	ubi_assert(!IS_ERR(vtr));
-+
-+	if (unlikely(lnum < 0 || lnum >= vtr->reserved_pebs)) {
-+		dbg_err("bad lnum %d", lnum);
-+		return -EINVAL;
-+	}
-+
-+	if (unlikely(vtr->upd_marker)) {
-+		dbg_err("update-interrupted volume");
-+		return -EBADF;
-+	}
-+
-+	return ubi_eba_leb_is_mapped(ubi, vol_id, lnum);
-+}
-+EXPORT_SYMBOL_GPL(ubi_eraseblock_is_mapped);
-+
-+int ubi_uif_mkvol(const struct ubi_info *ubi, int vol_id)
-+{
-+	int err;
-+	struct ubi_uif_volume *vol;
-+	struct ubi_uif_info *uif = ubi->uif;
-+	const struct ubi_vtbl_vtr *vtr;
-+
-+	vtr = ubi_vtbl_get_vtr(ubi, vol_id);
-+	ubi_assert(!IS_ERR(vtr));
-+
-+	dbg_uif("create volume %d, size %d, type %d",
-+		vol_id, vtr->reserved_pebs, vtr->vol_type);
-+
-+	vol = ubi_kzalloc(sizeof(struct ubi_uif_volume));
-+	if (!vol)
-+		return -ENOMEM;
-+	vol->ubi = ubi;
-+	vol->vol_id = vol_id;
-+	vol->exclusive = 1;
-+	spin_lock_init(&vol->vol_lock);
-+
-+	mutex_lock(&uif->volumes_list_lock);
-+	list_add(&vol->list, &uif->volumes);
-+	mutex_unlock(&uif->volumes_list_lock);
-+
-+	err = ubi_sysfs_vol_init(ubi, vol);
-+	if (err)
-+		goto out_sysfs;
-+
-+	err = ubi_cdev_vol_init(ubi, vol);
-+	if (err)
-+		goto out_sysfs;
-+
-+	err = ubi_gluebi_vol_init(ubi, vol);
-+	if (err)
-+		goto out_cdev;
-+
-+	spin_lock(&vol->vol_lock);
-+	vol->exclusive = 0;
-+	spin_unlock(&vol->vol_lock);
-+
++	tmp = bytes;
++	rem = do_div(tmp, vtr->usable_leb_size);
++	upd->upd_ebs = tmp + !!rem;
++	upd->upd_bytes = bytes;
++	upd->upd_received = 0;
++
++	mutex_unlock(&upd->mutex);
 +	return 0;
 +
-+out_cdev:
-+	ubi_cdev_vol_close(vol);
-+out_sysfs:
-+	mutex_lock(&uif->volumes_list_lock);
-+	spin_lock(&vol->vol_lock);
-+	vol->removed = 1;
-+	spin_unlock(&vol->vol_lock);
-+	list_del(&vol->list);
-+	mutex_unlock(&uif->volumes_list_lock);
-+	ubi_sysfs_vol_close(vol);
++out_unlock:
++	upd->updating = 0;
++	mutex_unlock(&upd->mutex);
 +	return err;
 +}
 +
-+int ubi_uif_close_and_rmvol(struct ubi_vol_desc *desc)
++static int write_leb(const struct ubi_info *ubi, int vol_id, int lnum,
++		     void *buf, int len, int used_ebs);
++
++int ubi_upd_write_data(const struct ubi_info *ubi, int vol_id,
++		       const void __user *buf, int count)
 +{
-+	int err;
-+	struct ubi_uif_volume *vol = desc->vol;
-+	struct ubi_uif_info *uif = vol->ubi->uif;
++	const struct ubi_vtbl_vtr *vtr;
++	struct ubi_upd_info *upd = ubi->upd;
++	int lnum, offs, err = 0, len;
++	uint64_t tmp;
 +
-+	dbg_uif("remove UBI volume %d", vol->vol_id);
-+	ubi_assert(desc->mode == UBI_EXCLUSIVE);
++	dbg_upd("write %d bytes requested", count);
 +
-+	err = ubi_gluebi_vol_close(vol);
-+	if (err)
-+		/* Somebody still holds the emulated MTD device */
-+		return err;
++	ubi_assert(vol_id >= 0 && vol_id < ubi->acc->max_volumes);
++	ubi_assert(count >= 0);
++	vtr = ubi_vtbl_get_vtr(ubi, vol_id);
++	ubi_assert(!IS_ERR(vtr));
 +
-+	spin_lock(&vol->vol_lock);
-+	vol->removed = 1;
-+	spin_unlock(&vol->vol_lock);
++	if (unlikely(count == 0))
++		return 0;
 +
-+	mutex_lock(&uif->volumes_list_lock);
-+	list_del(&vol->list);
-+	mutex_unlock(&uif->volumes_list_lock);
++	mutex_lock(&upd->mutex);
 +
-+	ubi_cdev_vol_close(vol);
-+	ubi_sysfs_vol_close(vol);
-+	ubi_kfree(desc);
-+	module_put(THIS_MODULE);
-+	return err;
-+}
-+
-+static void delete_volumes(const struct ubi_info *ubi);
-+
-+int ubi_uif_init(struct ubi_info *ubi)
-+{
-+	int i, err;
-+	struct ubi_uif_info *uif;
-+	const struct ubi_acc_info *acc = ubi->acc;
-+
-+	dbg_uif("initialize the user interface unit");
-+
-+	uif = ubi_kzalloc(sizeof(struct ubi_uif_info));
-+	if (!uif)
-+		return -ENOMEM;
-+	ubi->uif = uif;
-+	uif->ubi = ubi;
-+
-+	mutex_init(&uif->volumes_list_lock);
-+	mutex_init(&uif->vol_check);
-+	INIT_LIST_HEAD(&uif->volumes);
-+
-+	uif->ubi_name = ubi_kmalloc(sizeof(UBI_NAME_STR) + 5);
-+	if (!uif->ubi_name) {
-+		err = -ENOMEM;
-+		goto out_uif;
++	if (unlikely(!upd->updating || upd->vol_id != vol_id)) {
++		dbg_err("volume %d update was not started", vol_id);
++		err = -EINVAL;
++		goto out_unlock;
 +	}
-+	sprintf(uif->ubi_name, UBI_NAME_STR "%d", ubi->ubi_num);
 +
-+	err = ubi_cdev_init(ubi);
-+	if (err)
-+		goto out_name;
++	ubi_assert(upd->upd_received >= 0 &&
++		   upd->upd_received < upd->upd_bytes);
++	tmp = upd->upd_received;
++	offs = do_div(tmp, vtr->usable_leb_size);
++	lnum = tmp;
 +
-+	err = ubi_sysfs_init(ubi);
-+	if (err)
-+		goto out_cdev;
++	if (upd->upd_received + count > upd->upd_bytes)
++		count = upd->upd_bytes - upd->upd_received;
 +
-+	for (i = 0; i < acc->max_volumes; i++) {
-+		const struct ubi_vtbl_vtr *vtr;
++	/*
++	 * When updating volumes, we accumulate whole eraseblock and write
++	 * it at once.
++	 */
 +
++	if (offs != 0) {
++
++		/*
++		 * This is a write to the middle of the logical eraseblock. We
++		 * copy the data to our update buffer and wait for more data or
++		 * flush it (if the whole eraseblock is written or the update
++		 * is finished).
++		 */
++
++		len = vtr->usable_leb_size - offs;
++		if (len > count)
++			len = count;
++
++		dbg_upd("copy more %d bytes of data", len);
++
++		err = copy_from_user(upd->upd_buf + offs, buf, len);
++		if (err) {
++			dbg_err("memory access error");
++			err = -EFAULT;
++			goto out_unlock;
++		}
++
++		if (offs + len == vtr->usable_leb_size ||
++		    upd->upd_received + len == upd->upd_bytes) {
++			int flush_len = offs + len;
++
++			/*
++			 * OK, we gathered either the whole eraseblock or this
++			 * is the last chunk, it's time to flush our buffer.
++			 */
++
++			ubi_assert(flush_len <= vtr->usable_leb_size);
++
++			err = write_leb(ubi, vol_id, lnum, upd->upd_buf, flush_len,
++					upd->upd_ebs);
++			if (err)
++				goto out_unlock;
++		}
++
++		upd->upd_received += len;
++		count -= len;
++		buf += len;
++		lnum += 1;
++	}
++
++	/*
++	 * If we've got more to write, let's continue. At this point we know we
++	 * are starting from the beginning of an eraseblock.
++	 */
++
++	while (count) {
 +		cond_resched();
 +
-+		vtr = ubi_vtbl_get_vtr(ubi, i);
-+		if (IS_ERR(vtr))
-+			continue;
++		if (count > vtr->usable_leb_size)
++			len = vtr->usable_leb_size;
++		else
++			len = count;
 +
-+		err = ubi_uif_mkvol(ubi, i);
-+		if (unlikely(err))
-+			goto out_volumes;
++		dbg_upd("copy %d bytes of user data", len);
++		err = copy_from_user(upd->upd_buf, buf, len);
++		if (err) {
++			dbg_err("memory access error");
++			err = -EFAULT;
++			goto out_unlock;
++		}
++
++		if (len == vtr->usable_leb_size ||
++		    upd->upd_received + len == upd->upd_bytes) {
++			err = write_leb(ubi, vol_id, lnum, upd->upd_buf, len,
++					upd->upd_ebs);
++			if (unlikely(err))
++				break;
++		}
++
++		upd->upd_received += len;
++		count -= len;
++		lnum += 1;
++		buf += len;
 +	}
 +
-+	dbg_uif("the user interface unit is initialized");
-+	return 0;
++	ubi_assert(upd->upd_received <= upd->upd_bytes);
++	if (upd->upd_received == upd->upd_bytes) {
++		/* The update is finished, clear the update marker */
++		upd->updating = 0;
++		err = ubi_vtbl_clear_upd_marker(ubi, vol_id, upd->upd_bytes);
++		if (err == 0)
++			err = 1;
++	}
 +
-+out_volumes:
-+	delete_volumes(ubi);
-+	ubi_sysfs_close(ubi);
-+
-+out_cdev:
-+	ubi_cdev_close(ubi);
-+
-+out_name:
-+	ubi_kfree(uif->ubi_name);
-+
-+out_uif:
-+	ubi_kfree(uif);
++out_unlock:
++	mutex_unlock(&upd->mutex);
 +	return err;
 +}
 +
-+void ubi_uif_close(const struct ubi_info *ubi)
++int ubi_upd_abort(const struct ubi_info *ubi, int vol_id)
 +{
-+	struct ubi_uif_info *uif = ubi->uif;
++	int err = 0;
++	struct ubi_upd_info *upd = ubi->upd;
 +
-+	dbg_uif("close the user interface unit for %s", uif->ubi_name);
-+
-+	delete_volumes(ubi);
-+	ubi_sysfs_close(ubi);
-+	ubi_cdev_close(ubi);
-+	ubi_kfree(uif->ubi_name);
-+	ubi_kfree(uif);
-+}
-+
-+int __init ubi_uif_global_init(void)
-+{
-+	return ubi_sysfs_global_init();
-+}
-+
-+void ubi_uif_global_close(void)
-+{
-+	return ubi_sysfs_global_close();
-+}
-+
-+/**
-+ * delete_volumes - delete all the volume information.
-+ *
-+ * @ubi: the UBI device description object
-+ */
-+static void delete_volumes(const struct ubi_info *ubi)
-+{
-+	struct ubi_uif_volume *vol, *vol_tmp;
-+	struct ubi_uif_info *uif = ubi->uif;
-+
-+	list_for_each_entry_safe(vol, vol_tmp, &uif->volumes, list) {
-+		list_del(&vol->list);
-+		vol->removed = 1;
-+		ubi_gluebi_vol_close(vol);
-+		ubi_cdev_vol_close(vol);
-+		ubi_sysfs_vol_close(vol);
++	mutex_lock(&upd->mutex);
++	if (upd->updating && upd->vol_id == vol_id) {
++		dbg_upd("aborting volume %d update - it is damaged since now",
++			vol_id);
++		upd->updating = 0;
++	} else {
++		dbg_upd("volume %d is not under update", vol_id);
++		err = -EINVAL;
 +	}
++	mutex_unlock(&upd->mutex);
++
++	return err;
++}
++
++int ubi_upd_init_scan(struct ubi_info *ubi, struct ubi_scan_info *si)
++{
++	int err;
++	struct ubi_upd_info *upd;
++
++	dbg_upd("initialize the update unit");
++
++	upd = ubi_kzalloc(sizeof(struct ubi_upd_info));
++	if (!upd)
++		return -ENOMEM;
++	ubi->upd = upd;
++
++	upd->upd_buf = ubi_kmalloc(ubi->io->leb_size);
++	if (!upd->upd_buf) {
++		err = -ENOMEM;
++		goto out_free_upd;
++	}
++
++	mutex_init(&upd->mutex);
++
++	dbg_upd("the update unit is initialized");
++
++	return 0;
++
++out_free_upd:
++	ubi_kfree(upd);
++	return err;
++}
++
++void ubi_upd_close(const struct ubi_info *ubi)
++{
++	dbg_upd("close the update unit");
++	ubi_kfree(ubi->upd->upd_buf);
++	ubi_kfree(ubi->upd);
 +}
 +
 +/**
-+ * fill_ubi_vol_info - fill an "user volume information data structure".
++ * ubi_wipe_out_volume - wipe out an UBI volume.
 + *
 + * @ubi: the UBI device description object
-+ * @vol_id: ID of the volume
-+ * @vi: the volume information to fill
++ * @vol_id: ID of the volume to free
 + *
-+ * This function must be invoked when the @vol_id volume will for sure not go.
++ * This function erases all the volume's eraseblocks. Returns zero in case of
++ * success, and a negative error code in case of failure.
 + */
-+static void fill_ubi_vol_info(const struct ubi_info *ubi, int vol_id,
-+			      struct ubi_vol_info *vi)
++static int ubi_wipe_out_volume(const struct ubi_info *ubi, int vol_id)
 +{
++	int i, err;
++	const struct ubi_vtbl_vtr *vtr;
++
++	ubi_assert(vol_id >= 0 && vol_id < ubi->acc->max_volumes);
++
++	vtr = ubi_vtbl_get_vtr(ubi, vol_id);
++	for (i = 0; i < vtr->reserved_pebs; i++) {
++		cond_resched();
++
++		err = ubi_eba_erase_leb(ubi, vol_id, i);
++		if (unlikely(err))
++			return err;
++	}
++
++	err = ubi_wl_flush(ubi);
++	return err;
++}
++
++/**
++ * write_leb - write a portion of update data to a logical eraseblock.
++ *
++ * @ubi: the UBI device description object
++ * @vol_id: the volume ID to write to
++ * @lnum: the logical eraseblock number to write
++ * @buf: the data to write
++ * @len: how many bytes to write
++ * @used_ebs: how many logical eraseblocks will this volume contain
++ *
++ * This function writes a portion of update data to the corresponding logical
++ * eraseblock. If a dynamic volume is being updated, this function checks if
++ * the data contains 0xFF bytes at the end. If yes, the 0xFF bytes are not
++ * written. If the whole buffer contains only 0xFF bytes, the LEB is left
++ * unmapped.
++ *
++ * 0xFF bytes LEBs are skipped in case of dynamic volumes because writing of
++ * 0xFF bytes may have side effects and this PEB won't be writable anymore. In
++ * case of static volume 0xFF bytes are not got rid of because static volumes
++ * are treated specially in UBI: per-LEB CRC is calculated and checked and
++ * presence of all LEBs is taken care of. So we cannot cut amount of data
++ * written to LEBs of static volume or to skip some LEBs in case of static
++ * volumes.
++ */
++static int write_leb(const struct ubi_info *ubi, int vol_id, int lnum,
++		     void *buf, int len, int used_ebs)
++{
++	int err;
 +	const struct ubi_vtbl_vtr *vtr;
 +
 +	vtr = ubi_vtbl_get_vtr(ubi, vol_id);
 +	ubi_assert(!IS_ERR(vtr));
 +
-+	vi->vol_id = vol_id;
-+	vi->ubi_num = ubi->ubi_num;
-+	vi->size = vtr->reserved_pebs;
-+	vi->used_bytes = vtr->used_bytes;
-+	vi->vol_type = vtr->vol_type;
-+	vi->corrupted = vtr->corrupted;
-+	vi->upd_marker = vtr->upd_marker;
-+	vi->alignment = vtr->alignment;
-+	vi->usable_leb_size = vtr->usable_leb_size;
-+	vi->name_len = vtr->name_len;
-+	vi->name = vtr->name;
-+	vi->cdev = MKDEV(ubi->uif->major, vi->vol_id + 1);
++	if (vtr->vol_type == UBI_DYNAMIC_VOLUME) {
++		int l;
++
++		ubi_assert(len == vtr->usable_leb_size);
++
++		/* This is dynamic volume - skip the ending 0xFFs */
++		l = ubi_calc_data_len(ubi, buf, len);
++		if (l == 0) {
++			dbg_upd("LEB %d:%d contains only 0xFF bytes - skip",
++				vol_id, lnum);
++			return 0;
++		}
++		if (len != l)
++			dbg_upd("skip last %d bytes of data for LEB %d:%d",
++				len - l, vol_id, lnum);
++
++		err = ubi_eba_write_leb(ubi, vol_id, lnum, buf, 0, l,
++					UBI_DATA_UNKNOWN);
++	} else {
++		/*
++		 * When writing to static volumes, and this is the last logical
++		 * eraseblock, the length (@len) does not have to be aligned to
++		 * the minimal flash I/O unit. The 'ubi_eba_write_leb_st()'
++		 * function needs the exact (unaligned) length to store in the
++		 * VID header. And it will take care of proper alignment by
++		 * padding the buffer. Here we just make sure the padding will
++		 * contain zeros, not random trash.
++		 */
++		memset(buf + len, 0, vtr->usable_leb_size - len);
++		err = ubi_eba_write_leb_st(ubi, vol_id, lnum, buf, len,
++					   UBI_DATA_UNKNOWN, used_ebs);
++	}
++
++	return err;
 +}
