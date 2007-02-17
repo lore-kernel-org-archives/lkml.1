@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992458AbXBQQzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992462AbXBQQzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992458AbXBQQzR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 11:55:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992462AbXBQQzR
+	id S2992462AbXBQQzj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 11:55:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992465AbXBQQzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 11:55:17 -0500
-Received: from smtp.nokia.com ([131.228.20.170]:52118 "EHLO
+	Sat, 17 Feb 2007 11:55:39 -0500
+Received: from smtp.nokia.com ([131.228.20.170]:52202 "EHLO
 	mgw-ext11.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992458AbXBQQzP (ORCPT
+	with ESMTP id S2992462AbXBQQzi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 11:55:15 -0500
+	Sat, 17 Feb 2007 11:55:38 -0500
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Christoph Hellwig <hch@infradead.org>,
@@ -18,22 +18,22 @@ Cc: Christoph Hellwig <hch@infradead.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        David Woodhouse <dwmw2@infradead.org>,
        Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Date: Sat, 17 Feb 2007 18:54:44 +0200
-Message-Id: <20070217165444.5845.9892.sendpatchset@localhost.localdomain>
+Date: Sat, 17 Feb 2007 18:55:25 +0200
+Message-Id: <20070217165525.5845.78155.sendpatchset@localhost.localdomain>
 In-Reply-To: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
 References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
-Subject: [PATCH 04/44 take 2] [UBI] kernel-spce API header
-X-OriginalArrivalTime: 17 Feb 2007 16:54:11.0993 (UTC) FILETIME=[3FB78090:01C752B4]
+Subject: [PATCH 12/44 take 2] [UBI] allocation unit implementation
+X-OriginalArrivalTime: 17 Feb 2007 16:54:52.0241 (UTC) FILETIME=[57B4DC10:01C752B4]
 X-eXpurgate-Category: 1/0
-X-eXpurgate-ID: 149371::070217185117-5EAEEBB0-4D79D370/0-0/0-1
+X-eXpurgate-ID: 149371::070217185149-63EC2BB0-516C5DAB/0-0/0-1
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff -auNrp tmp-from/include/linux/mtd/ubi.h tmp-to/include/linux/mtd/ubi.h
---- tmp-from/include/linux/mtd/ubi.h	1970-01-01 02:00:00.000000000 +0200
-+++ tmp-to/include/linux/mtd/ubi.h	2007-02-17 18:07:26.000000000 +0200
-@@ -0,0 +1,391 @@
+diff -auNrp tmp-from/drivers/mtd/ubi/alloc.c tmp-to/drivers/mtd/ubi/alloc.c
+--- tmp-from/drivers/mtd/ubi/alloc.c	1970-01-01 02:00:00.000000000 +0200
++++ tmp-to/drivers/mtd/ubi/alloc.c	2007-02-17 18:07:26.000000000 +0200
+@@ -0,0 +1,369 @@
 +/*
 + * Copyright (c) International Business Machines Corp., 2006
 + *
@@ -54,374 +54,352 @@ diff -auNrp tmp-from/include/linux/mtd/ubi.h tmp-to/include/linux/mtd/ubi.h
 + * Author: Artem B. Bityutskiy
 + */
 +
-+#ifndef __LINUX_UBI_H__
-+#define __LINUX_UBI_H__
-+
++#include <linux/init.h>
++#include <linux/slab.h>
++#include <linux/rwsem.h>
 +#include <linux/types.h>
-+#include <asm/ioctl.h>
-+#include <mtd/ubi-user.h>
++#include <mtd/ubi-header.h>
++#include "ubi.h"
++#include "alloc.h"
++#include "io.h"
++#include "background.h"
++#include "wl.h"
++#include "debug.h"
++#include "eba.h"
++#include "scan.h"
 +
-+/**
-+ * enum ubi_data_type - UBI data type hint constants.
-+ *
-+ * @UBI_DATA_LONGTERM: long-term data
-+ * @UBI_DATA_SHORTTERM: short-term data
-+ * @UBI_DATA_UNKNOWN: data persistence is unknown
-+ *
-+ * These constants are used when data is written to UBI volumes in order to
-+ * help the UBI wear-leveling unit to find more appropriate physical
-+ * eraseblocks.
-+ */
-+enum ubi_data_type {
-+	UBI_DATA_LONGTERM = 1,
-+	UBI_DATA_SHORTTERM,
-+	UBI_DATA_UNKNOWN
-+};
++#define BGT_WORK_SLAB_NAME        "ubi_bgt_work_slab"
++#define WL_ERASE_WORK_SLAB_NAME   "ubi_wl_erase_work_slab"
++#define WL_ENTRY_SLAB_NAME        "ubi_wl_entry_slab"
++#define WL_PROT_ENTRY_SLAB_NAME   "ubi_wl_prow_entry_slab"
++#define EBA_LTREE_ENTRY_SLAB_NAME "ubi_eba_ltree_entry_slab"
++#define SCAN_EB_SLAB_NAME         "ubi_scan_leb"
++#define SCAN_VOLUME_SLAB_NAME     "ubi_scan_volume"
 +
-+/**
-+ * enum ubi_open_mode - UBI volume open mode constants.
-+ *
-+ * @UBI_READONLY: read-only mode
-+ * @UBI_READWRITE: read-write mode
-+ * @UBI_EXCLUSIVE: exclusive mode
-+ */
-+enum ubi_open_mode {
-+	UBI_READONLY = 1,
-+	UBI_READWRITE,
-+	UBI_EXCLUSIVE
-+};
++static struct kmem_cache *bgt_work_slab;
++static struct kmem_cache *wl_erase_work_slab;
++static struct kmem_cache *wl_entries_slab;
++static struct kmem_cache *wl_prot_entry_slab;
++static struct kmem_cache *eba_ltree_entry_slab;
++static struct kmem_cache *scan_eb_slab;
++static struct kmem_cache *scan_volume_slab;
 +
-+/**
-+ * struct ubi_vol_info - UBI volume description data structure.
-+ *
-+ * @vol_id: volume ID
-+ * @ubi_num: UBI device number this volume belongs to
-+ * @size: how many physical eraseblocks are reserved for this volume
-+ * @used_bytes: how many bytes of data this volume contains
-+ * @used_ebs: how many physical eraseblocks of this volume actually contain any
-+ * data
-+ * @vol_type: volume type (%UBI_DYNAMIC_VOLUME or %UBI_STATIC_VOLUME)
-+ * @corrupted: non-zero if the volume is corrupted (static volumes only)
-+ * @upd_marker: non-zero if the volume has update marker set
-+ * @alignment: volume alignment
-+ * @usable_leb_size: how many bytes are available in logical eraseblocks of
-+ * this volume
-+ * @name_len: volume name length
-+ * @name: volume name
-+ * @cdev: UBI volume character device major and minor numbers
-+ *
-+ * The @corrupted flag is only relevant to static volumes and is always zero
-+ * for dynamic ones. This is because UBI does not care about dynamic volume
-+ * data protection and only cares about protecting static volume data.
-+ *
-+ * The @upd_marker flag is set if the volume update operation was interrupted.
-+ * Before touching the volume data during the update operation, UBI first sets
-+ * the update marker flag for this volume. If the volume update operation was
-+ * further interrupted, the update marker indicates this. If the update marker
-+ * is set, the contents of the volume is certainly damaged and a new volume
-+ * update operation has to be started.
-+ *
-+ * To put it differently, @corrupted and @upd_marker fields have different
-+ * semantics:
-+ *     o the @corrupted flag means that this static volume is corrupted for some
-+ *       reasons, but not because an interrupted volume update
-+ *     o the @@upd_marker field means that the volume is damaged because of an
-+ *       interrupted update operation.
-+ *
-+ * I.e., the @corrupted flag is never set if the @upd_marker flag is set.
-+ *
-+ * The @used_bytes and @used_ebs fields are only really needed for static volumes
-+ * and contain the number of bytes stored in this static volume and how many
-+ * eraseblock this data occupies. In case of dynamic volumes, the @used_bytes
-+ * field is equivalent to @size*@usable_leb_size, and the @used_ebs field is
-+ * equivalent to @size.
-+ *
-+ * In general, logical eraseblock size is a property of the UBI device, not
-+ * of the UBI volume. Indeed, the logical eraseblock size depends on the
-+ * physical eraseblock size and on how much bytes UBI headers consume. But
-+ * because of the volume alignment (@alignment), the usable size of logical
-+ * eraseblocks if a volume may be less. The following equation is true:
-+ * 	@usable_leb_size = LEB size - (LEB size mod @alignment),
-+ * where LEB size is the logical eraseblock size defined by the UBI device.
-+ *
-+ * The alignment is multiple to the minimal flash input/output unit size or %1
-+ * if all the available space is used.
-+ *
-+ * To put this differently, alignment may be considered is a way to change
-+ * volume logical eraseblock sizes.
-+ *
-+ */
-+struct ubi_vol_info {
-+	int ubi_num;
-+	int vol_id;
-+	int size;
-+	long long used_bytes;
-+	int used_ebs;
-+	int vol_type;
-+	int corrupted;
-+	int upd_marker;
-+	int alignment;
-+	int usable_leb_size;
-+	int name_len;
++void *ubi_kzalloc(size_t size)
++{
++	void *ret;
++
++	ret = kzalloc(size, GFP_KERNEL);
++	if (unlikely(!ret)) {
++		ubi_err("cannot allocate %zd bytes", size);
++		dump_stack();
++		return NULL;
++	}
++
++	return ret;
++}
++
++void *ubi_kmalloc(size_t size)
++{
++	void *ret;
++
++	ret = kmalloc(size, GFP_KERNEL);
++	if (unlikely(!ret)) {
++		ubi_err("cannot allocate %zd bytes", size);
++		dump_stack();
++		return NULL;
++	}
++
++	return ret;
++}
++
++void ubi_kfree(const void *obj)
++{
++	if (unlikely(!obj))
++		return;
++	kfree(obj);
++}
++
++struct ubi_ec_hdr *ubi_zalloc_ec_hdr(const struct ubi_info *ubi)
++{
++	struct ubi_ec_hdr *ec_hdr;
++	const struct ubi_io_info *io = ubi->io;
++
++	ec_hdr = kzalloc(io->ec_hdr_alsize, GFP_KERNEL);
++	if (unlikely(!ec_hdr)) {
++		ubi_err("cannot allocate %d bytes", io->ec_hdr_alsize);
++		dump_stack();
++		return NULL;
++	}
++
++	return ec_hdr;
++}
++
++void ubi_free_ec_hdr(const struct ubi_info *ubi, struct ubi_ec_hdr *ec_hdr)
++{
++	if (unlikely(!ec_hdr))
++		return;
++	kfree(ec_hdr);
++}
++
++struct ubi_vid_hdr *ubi_zalloc_vid_hdr(const struct ubi_info *ubi)
++{
++	char *vid_hdr;
++	const struct ubi_io_info *io = ubi->io;
++
++	vid_hdr = kzalloc(io->vid_hdr_alsize, GFP_KERNEL);
++	if (unlikely(!vid_hdr)) {
++		ubi_err("cannot allocate %d bytes", io->vid_hdr_alsize);
++		dump_stack();
++		return NULL;
++	}
++
++	/*
++	 * If VID headers are stored at non-aligned addresses, we have to shift
++	 * the pointer.
++	 */
++	if (likely(vid_hdr))
++		vid_hdr = vid_hdr + io->vid_hdr_shift;
++
++	return (struct ubi_vid_hdr *)vid_hdr;
++}
++
++void ubi_free_vid_hdr(const struct ubi_info *ubi, struct ubi_vid_hdr *vid_hdr)
++{
++	if (unlikely(!vid_hdr))
++		return;
++	vid_hdr = (struct ubi_vid_hdr *)((char *)vid_hdr - ubi->io->vid_hdr_shift);
++	kfree(vid_hdr);
++}
++
++struct ubi_bgt_work *ubi_alloc_bgt_work(void)
++{
++	struct ubi_bgt_work *wrk;
++
++	wrk = kmem_cache_alloc(bgt_work_slab, GFP_KERNEL);
++	if (unlikely(!wrk)) {
++		ubi_err("failed to allocate memory");
++		dump_stack();
++		return NULL;
++	}
++	return wrk;
++}
++
++void ubi_free_bgt_work(struct ubi_bgt_work *wrk)
++{
++	if (unlikely(!wrk))
++		return;
++	kmem_cache_free(bgt_work_slab, wrk);
++}
++
++struct ubi_wl_erase_work *ubi_alloc_wl_erase_work(void)
++{
++	struct ubi_wl_erase_work *wrk;
++
++	wrk = kmem_cache_alloc(wl_erase_work_slab, GFP_KERNEL);
++	if (unlikely(!wrk)) {
++		ubi_err("failed to allocate memory");
++		dump_stack();
++		return NULL;
++	}
++	return wrk;
++}
++
++void ubi_free_wl_erase_work(struct ubi_wl_erase_work *wrk)
++{
++	if (unlikely(!wrk))
++		return;
++	kmem_cache_free(wl_erase_work_slab, wrk);
++}
++
++struct ubi_wl_entry *ubi_alloc_wl_entry(void)
++{
++	struct ubi_wl_entry *wle;
++
++	wle = kmem_cache_alloc(wl_entries_slab, GFP_KERNEL);
++	if (unlikely(!wle)) {
++		ubi_err("failed to allocate memory");
++		dump_stack();
++		return NULL;
++	}
++	return wle;
++}
++
++void ubi_free_wl_entry(struct ubi_wl_entry *wle)
++{
++	if (unlikely(!wle))
++		return;
++	kmem_cache_free(wl_entries_slab, wle);
++}
++
++struct ubi_wl_prot_entry *ubi_alloc_wl_prot_entry(void)
++{
++	struct ubi_wl_prot_entry *pe;
++
++	pe = kmem_cache_alloc(wl_prot_entry_slab, GFP_KERNEL);
++	if (unlikely(!pe)) {
++		ubi_err("failed to allocate memory");
++		dump_stack();
++		return NULL;
++	}
++	return pe;
++}
++
++void ubi_free_wl_prot_entry(struct ubi_wl_prot_entry *pe)
++{
++	if (unlikely(!pe))
++		return;
++	kmem_cache_free(wl_prot_entry_slab, pe);
++}
++
++struct ubi_eba_ltree_entry *ubi_alloc_eba_ltree_entry(void)
++{
++	struct ubi_eba_ltree_entry *le;
++
++	le = kmem_cache_alloc(eba_ltree_entry_slab, GFP_KERNEL);
++	if (unlikely(!le)) {
++		ubi_err("failed to allocate memory");
++		dump_stack();
++		return NULL;
++	}
++	return le;
++}
++
++void ubi_free_eba_ltree_entry(struct ubi_eba_ltree_entry *le)
++{
++	if (unlikely(!le))
++		return;
++	kmem_cache_free(eba_ltree_entry_slab, le);
++}
++
++struct ubi_scan_leb *ubi_alloc_scan_leb(void)
++{
++	struct ubi_scan_leb *seb;
++
++	seb = kmem_cache_alloc(scan_eb_slab, GFP_KERNEL);
++	if (unlikely(!seb)) {
++		ubi_err("failed to allocate memory");
++		dump_stack();
++		return NULL;
++	}
++
++	return seb;
++}
++
++void ubi_free_scan_leb(struct ubi_scan_leb *seb)
++{
++	if (unlikely(!seb))
++		return;
++	kmem_cache_free(scan_eb_slab, seb);
++}
++
++struct ubi_scan_volume *ubi_alloc_scan_volume(void)
++{
++	struct ubi_scan_volume *sv;
++
++	sv = kmem_cache_alloc(scan_volume_slab, GFP_KERNEL);
++	if (unlikely(!sv)) {
++		ubi_err("failed to allocate memory");
++		dump_stack();
++		return NULL;
++	}
++
++	return sv;
++}
++
++void ubi_free_scan_volume(struct ubi_scan_volume *sv)
++{
++	if (unlikely(!sv))
++		return;
++	kmem_cache_free(scan_volume_slab, sv);
++}
++
++static void ltree_entry_ctor(void *obj, struct kmem_cache *cache,
++			     unsigned long flags);
++
++int __init ubi_alloc_init(void)
++{
 +	const char *name;
-+	dev_t cdev;
-+};
++	size_t size;
 +
-+/**
-+ * struct ubi_dev_info - UBI device description data structure.
-+ *
-+ * @ubi_num: ubi device number
-+ * @leb_size: logical eraseblock size on this UBI device
-+ * @min_io_size: minimal I/O unit size
-+ * @ro_mode: if this device is in read-only mode
-+ * @cdev: UBI character device major and minor numbers
-+ *
-+ * Note, @leb_size is the logical eraseblock size offered by the UBI device.
-+ * Volumes of this UBI device may have smaller logical eraseblock size if their
-+ * alignment is not equivalent to %1.
-+ */
-+struct ubi_dev_info {
-+	int ubi_num;
-+	int leb_size;
-+	int min_io_size;
-+	int ro_mode;
-+	dev_t cdev;
-+};
++	name = BGT_WORK_SLAB_NAME;
++	size = sizeof(struct ubi_bgt_work);
++	bgt_work_slab = kmem_cache_create(name, size, 0, 0, NULL, NULL);
++	if (!bgt_work_slab)
++		goto out;
 +
-+/**
-+ * ubi_get_device_info - get information about an UBI device.
-+ *
-+ * @ubi_num: UBI device number
-+ * @di: the volume information is returned here
-+ *
-+ * This function returns 0 in case of success and a %-ENODEV if there is no
-+ * such UBI device.
-+ */
-+int ubi_get_device_info(int ubi_num, struct ubi_dev_info *di);
++	name = WL_ERASE_WORK_SLAB_NAME;
++	size = sizeof(struct ubi_wl_erase_work);
++	wl_erase_work_slab = kmem_cache_create(name, size, 0, 0, NULL, NULL);
++	if (!wl_erase_work_slab)
++		goto out;
 +
-+/* UBI descriptor given to users when they open UBI volumes */
-+struct ubi_vol_desc;
++	name = WL_ENTRY_SLAB_NAME;
++	size = sizeof(struct ubi_wl_entry);
++	wl_entries_slab = kmem_cache_create(name, size, 0, 0, NULL, NULL);
++	if (!wl_entries_slab)
++		goto out;
 +
-+/**
-+ * ubi_get_volume_info - get information about an UBI volume.
-+ *
-+ * @udesc: volume descriptor
-+ * @vi: the volume information is returned here
-+ */
-+void ubi_get_volume_info(struct ubi_vol_desc *udesc, struct ubi_vol_info *vi);
++	name = WL_PROT_ENTRY_SLAB_NAME;
++	size = sizeof(struct ubi_wl_prot_entry);
++	wl_prot_entry_slab = kmem_cache_create(name, size, 0, 0, NULL, NULL);
++	if (!wl_prot_entry_slab)
++		goto out;
 +
-+/*
-+ * ubi_open_volume - open an UBI volume.
-+ *
-+ * @ubi_num: the UBI device number
-+ * @vol_id: ID of the volume to open
-+ * @mode: volume open mode
-+ *
-+ * This function opens a UBI volume. The @mode parameter specifies if the
-+ * volume is opened in read-only mode, read-write mode, or exclusive mode. The
-+ * exclusive mode means that nobody else will be allowed to open this volume.
-+ * Note, UBI allows to have many volume readers and one writer at a time. And
-+ * note, static volumes may only be opened in read-only mode.
-+ *
-+ * In case of success, this function returns an UBI volume descriptor. In case
-+ * of failure, the following error codes may be returned:
-+ *
-+ * o %-EBUSY if the volume is busy (it is being updated, or it is already
-+ *   opened in exclusive or read-write mode by somebody else);
-+ * o %-EINVAL if the input arguments are invalid;
-+ * o %-ENODEV if this volume does not exist or the UBI device does not exist;
-+ * o other negative error codes in case of other errors.
-+ *
-+ * Additional node: if the volume is being opened for the first time since the
-+ * last boot, it is fully checked by this function. It's a feature of current
-+ * implementation.
-+ */
-+struct ubi_vol_desc *ubi_open_volume(int ubi_num, int vol_id,
-+				     enum ubi_open_mode mode);
++	name = EBA_LTREE_ENTRY_SLAB_NAME;
++	size = sizeof(struct ubi_eba_ltree_entry);
++	eba_ltree_entry_slab = kmem_cache_create(name, size, 0, 0,
++						 &ltree_entry_ctor, NULL);
++	if (!eba_ltree_entry_slab)
++		goto out;
 +
-+/*
-+ * ubi_open_volume_nm - open an UBI volume by volume name.
-+ *
-+ * @ubi_num: the UBI device number
-+ * @name: volume name
-+ * @mode: volume open mode
-+ *
-+ * This function is similar to the 'ubi_open_volume()' function, but opens UBI
-+ * volumes by name.
-+ */
-+struct ubi_vol_desc *ubi_open_volume_nm(int ubi_num, const char *name,
-+					enum ubi_open_mode mode);
++	name = SCAN_EB_SLAB_NAME;
++	size = sizeof(struct ubi_scan_leb);
++	scan_eb_slab = kmem_cache_create(name, size, 0, 0, NULL, NULL);
++	if (!scan_eb_slab)
++		goto out;
 +
-+/**
-+ * ubi_close_volume - close an UBI volume.
-+ *
-+ * @udesc: UBI volume descriptor
-+ */
-+void ubi_close_volume(struct ubi_vol_desc *udesc);
++	name = SCAN_VOLUME_SLAB_NAME;
++	size = sizeof(struct ubi_scan_volume);
++	scan_volume_slab = kmem_cache_create(name, size, 0, 0, NULL, NULL);
++	if (!scan_volume_slab)
++		goto out;
 +
-+/**
-+ * ubi_eraseblock_read - read data from a logical eraseblock.
-+ *
-+ * @udesc: volume descriptor
-+ * @lnum: the logical eraseblock number to read from
-+ * @buf: a buffer where to store the read data
-+ * @offset: the offset within the logical eraseblock from where to read
-+ * @len: how many bytes to read
-+ * @check: whether UBI has to check the read data's CRC or not.
-+ *
-+ * This function reads data from offset @offset of the logical eraseblock @lnum
-+ * and stores the read data at @buf. When reading from static volumes, @check
-+ * may be used to specify whether the read data has to be checked or not. If
-+ * checking is requested, the whole logical eraseblock will be read and its CRC
-+ * checksum will be checked, so checking may substantially slow down the read
-+ * speed. The @check argument is ignored in case of dynamic volumes.
-+ *
-+ * In case of success, this function returns zero. In case of error, this
-+ * function returns a negative error code. A special %-EBADMSG error code is
-+ * returned:
-+ *
-+ * o for both static and dynamic volumes if the MTD driver has detected a data
-+ * integrity problem, unrecoverable ECC checksum mismatch in case of NAND;
-+ * o for static volumes if the data CRC mismatches.
-+ *
-+ * If a corrupted static volume is read (i.e., the @corrupted flag is set in
-+ * its description object), but the data were read from flash without errors
-+ * because this particular eraseblock is not corrupted, this function returns
-+ * %-EUCLEAN, not zero. This just indicates that the read static volume is
-+ * corrupted. But the read data is actually OK.
-+ *
-+ * Note, if a volume is damaged because of an interrupted update (the
-+ * @upd_marker flag is set) this function just returns immediately with %-EBADF
-+ * error code. In other words, volumes like that cannot be read before re-doing
-+ * the update operation.
-+ */
-+int ubi_eraseblock_read(struct ubi_vol_desc *udesc, int lnum, char *buf,
-+			int offset, int len, int check);
++	return 0;
 +
-+/**
-+ * ubi_read - read data from an logical eraseblock (simplified).
-+ *
-+ * @udesc: volume descriptor
-+ * @lnum: the logical eraseblock number to read from
-+ * @buf: a buffer where to store the read data
-+ * @offset: the offset within the logical eraseblock from where to read
-+ * @len: how many bytes to read
-+ *
-+ * This function is the same as the 'ubi_eraseblock_read()' function, but it
-+ * does not provide the checking capability.
-+ */
-+static inline int ubi_read(struct ubi_vol_desc *udesc, int lnum, char *buf,
-+			   int offset, int len)
-+{
-+	return ubi_eraseblock_read(udesc, lnum, buf, offset, len, 0);
++out:
++	ubi_err("cannot create \"%s\" slab", name);
++	ubi_alloc_close();
++	return -ENOMEM;
 +}
 +
-+/**
-+ * ubi_eraseblock_write - write data to a logical eraseblock.
-+ *
-+ * @udesc: volume descriptor
-+ * @lnum: the logical eraseblock number to write to
-+ * @buf: the data to write
-+ * @offset: offset within the logical eraseblock where to write
-+ * @len: how many bytes from @buf to write
-+ * @dtype: expected data type
-+ *
-+ * This function writes @len bytes of data from buffer @buf to offset @offset
-+ * of logical eraseblock @lnum. The @dtype argument describes the expected
-+ * lifetime of the data being written.
-+ *
-+ * Note, this function takes care about write failures. If a write to the physical
-+ * eraseblock (the one this logical eraseblock is mapped to) fails, the logical
-+ * eraseblock is re-mapped to another physical eraseblock, the data is
-+ * recovered, and the write finishes.
-+ *
-+ * If all the data were successfully written, zero is returned. If an error
-+ * occurred, this function returns a negative error code. Note, in case of an
-+ * error, it is possible that something was still written to the flash media,
-+ * but may be some garbage.
-+ */
-+int ubi_eraseblock_write(struct ubi_vol_desc *udesc, int lnum, const void *buf,
-+			 int offset, int len, enum ubi_data_type dtype);
-+
-+/**
-+ * ubi_write - write data to a logical eraseblock (simplified).
-+ *
-+ * @udesc: volume descriptor
-+ * @lnum: the logical eraseblock number to write to
-+ * @buf: the data to write
-+ * @offset: offset within the logical eraseblock where to write
-+ * @len: how many bytes from @buf to write
-+ *
-+ * This function is the same as the 'ubi_eraseblock_write()' functions, but it
-+ * does not have the data type argument.
-+ */
-+static inline int ubi_write(struct ubi_vol_desc *udesc, int lnum,
-+			    const void *buf, int offset, int len)
++void ubi_alloc_close(void)
 +{
-+	return ubi_eraseblock_write(udesc, lnum, buf, offset, len,
-+				    UBI_DATA_UNKNOWN);
++	if (scan_volume_slab)
++		kmem_cache_destroy(scan_volume_slab);
++	if (scan_eb_slab)
++		kmem_cache_destroy(scan_eb_slab);
++	if (eba_ltree_entry_slab)
++		kmem_cache_destroy(eba_ltree_entry_slab);
++	if (wl_prot_entry_slab)
++		kmem_cache_destroy(wl_prot_entry_slab);
++	if (wl_entries_slab)
++		kmem_cache_destroy(wl_entries_slab);
++	if (wl_erase_work_slab)
++		kmem_cache_destroy(wl_erase_work_slab);
++	if (bgt_work_slab)
++		kmem_cache_destroy(bgt_work_slab);
 +}
 +
-+/**
-+ * ubi_eraseblock_erase - erase a logical eraseblock.
-+ *
-+ * @udesc: volume descriptor
-+ * @lnum: the logical eraseblock number to erase
-+ *
-+ * This function un-maps logical eraseblock @lnum and synchronously erases the
-+ * correspondent physical eraseblock. Returns zero in case of success and a
-+ * negative error code in case of failure.
-+ *
-+ *
-+ * Note, UBI erases eraseblocks asynchronously. This means that this function
-+ * will basically un-map this logical eraseblock from its physical eraseblock,
-+ * schedule the physical eraseblock for erasure and return.
-+ */
-+int ubi_eraseblock_erase(struct ubi_vol_desc *udesc, int lnum);
++/* Lock tree entries slab cache constructor */
++static void ltree_entry_ctor(void *obj, struct kmem_cache *cache,
++			     unsigned long flags)
++{
++	struct ubi_eba_ltree_entry *le = obj;
 +
-+/**
-+ * ubi_eraseblock_unmap - unmap a logical eraseblock.
-+ *
-+ * @udesc: volume descriptor
-+ * @lnum: the logical eraseblock number to unmap
-+ *
-+ * This function un-maps logical eraseblock @lnum and schedules the
-+ * corresponding physical eraseblock for erasure, so that it will eventually be
-+ * physically erased, probably in background. So this operation is much faster
-+ * then the synchronous erase.
-+ *
-+ * Unlike the synchronous erase, the unmap operation does not guarantee that
-+ * the logical eraseblock will contain all 0xFF bytes when UBI is initialized
-+ * again. For example, if several logical eraseblocks are unmapped, then an
-+ * unclean reboot happens, the logical eraseblocks will not necessarily be
-+ * unmapped again. They may actually be mapped to the same physical eraseblocks
-+ * again. So, this call has to be used with care.
-+ *
-+ * The main and obvious use-case of this call is re-writing the contents of a
-+ * logical eraseblock. Then it is much efficient to first unmap it, then write
-+ * new data, rather the first erase it, then write new data. Note, once new
-+ * data is written to the logical eraseblock, UBI guarantees that the old
-+ * contents has forever gone. In other words, if an unclean reboot happens
-+ * after the logical eraseblock was unmapped and then written to, it will
-+ * contain the last written data.
-+ */
-+int ubi_eraseblock_unmap(struct ubi_vol_desc *udesc, int lnum);
++	if ((flags & (SLAB_CTOR_VERIFY | SLAB_CTOR_CONSTRUCTOR)) !=
++	    SLAB_CTOR_CONSTRUCTOR)
++		return;
 +
-+/**
-+ * ubi_eraseblock_is_mapped - check if a logical eraseblock is mapped.
-+ *
-+ * @udesc: volume descriptor
-+ * @lnum: the logical eraseblock number to erase
-+ *
-+ * This function checks if a logical eraseblock is mapped to a physical
-+ * eraseblock. Unmapped logical eraseblocks are equivalent to erased logical
-+ * eraseblocks and contain only 0xFF bytes. Mapped logical eraseblocks are
-+ * those that were explicitly written to. They may also contain only 0xFF
-+ * bytes if these were written.
-+ *
-+ * This function returns %1 if the LEB is mapped, %0 if not, and a negative
-+ * error code in case of failure.
-+ */
-+int ubi_eraseblock_is_mapped(struct ubi_vol_desc *udesc, int lnum);
-+
-+#endif /* !__LINUX_UBI_H__ */
++	le->users = 0;
++	init_rwsem(&le->mutex);
++}
