@@ -1,78 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932623AbXBQCYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946340AbXBQC3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932623AbXBQCYr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 21:24:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932641AbXBQCYr
+	id S1946340AbXBQC3z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 21:29:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946350AbXBQC3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 21:24:47 -0500
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:62346 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932623AbXBQCYq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 21:24:46 -0500
-In-Reply-To: <45D4BE7E.7000109@246tNt.com>
-To: Sylvain Munaut <tnt@246tNt.com>
-Cc: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>, johnrose@us.ibm.com,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-       pmac@au1.ibm.com
-MIME-Version: 1.0
-Subject: Re: [PATCH 2.6.21-rc1] ibmebus: Support dynamic addition and removal of
-	adapters
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-From: Joachim Fenkes <FENKES@de.ibm.com>
-Message-ID: <OFD4D98910.EB8251E4-ON85257285.000A5EF1-85257285.000D3F8C@de.ibm.com>
-Date: Fri, 16 Feb 2007 21:24:43 -0500
-X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 6.5.5HF882 | September 26, 2006) at
- 17/02/2007 03:24:43,
-	Serialize complete at 17/02/2007 03:24:43
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Fri, 16 Feb 2007 21:29:54 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:33604 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946340AbXBQC3x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 21:29:53 -0500
+Date: Sat, 17 Feb 2007 07:59:40 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@osdl.org, paulmck@us.ibm.com,
+       mingo@elte.hu, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, rjw@sisk.pl
+Subject: Re: [RFC PATCH(Experimental) 2/4] Revert changes to workqueue.c
+Message-ID: <20070217022940.GB25924@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070214144031.GA15257@in.ibm.com> <20070214144229.GA19789@in.ibm.com> <20070214144305.GB19789@in.ibm.com> <20070214200904.GB301@tv-sign.ru> <20070216052626.GB8373@in.ibm.com> <20070216153321.GB83@tv-sign.ru> <20070216164730.GD21457@in.ibm.com> <20070216235939.GB244@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070216235939.GB244@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sylvain Munaut <tnt@246tNt.com> wrote on 15.02.2007 15:11:42:
+On Sat, Feb 17, 2007 at 02:59:39AM +0300, Oleg Nesterov wrote:
+> In that case (all processes are frozen when workqueue_cpu_callback()
+> calls cleanup_workqueue_thread()) I agree, it is better to just use
+> kthread_stop/kthread_should_stop.
 
-> Mmmh, I posted a patch that added a common uevent interface for all
-> of_device based bus. And that kinda clash with this one.
+Great, thanks!
 
-Oops, I was not aware of this. I had a look at your patch and yes, it's a 
-nice
-and generic interface. I concur that using your generic function is the 
-better
-approach.
+> This also means that probably it won't be convenient to do this change
+> "by small steps" as I suggested before.
 
-> But as "ibm,loc_code" is local to this bus it's not handled by my code.
-> Is it necessary to match the correct driver ?
+Yeah, thats what I thought. We will try to split it to the extent
+possible in the next iteration.
 
-The intention of adding the location code was to include a device property
-into the environment that's unique to each device. Actually, the DEVPATH 
-variable
-provides exactly this: For ebus devices, it points to the ebus device 
-itself,
-which natually is unique.
+Thanks for your feedback/review!
 
-If a userspace tool really needs the location code, the "devspec" 
-attribute of
-the ebus device will point it to the device tree node, which in turn 
-contains the
-location code property.
-
-So I think there's nothing preventing me from using your function. Thanks 
-for
-pointing this out.
-
+-- 
 Regards,
-  Joachim
-
----
-Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer 
-extraordinaire
-IBM Deutschland Entwicklung GmbH  --  Dept. 3627 (I/O Firmware Development 
-2)
-Schoenaicher Strasse 220  --  71032 Boeblingen  --  Germany
-eMail: fenkes@de.ibm.com  --  Phone: +49 7031 16 1239 
-
-Vorsitzender des Aufsichtsrats: Johann Weihen  --  Geschäftsführung: 
-Herbert Kircher
-Sitz der Gesellschaft: Böblingen  --  Registergericht: Amtsgericht 
-Stuttgart, HRB 243294
+vatsa
