@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932952AbXBQVVN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932942AbXBQV2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932952AbXBQVVN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 16:21:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932954AbXBQVVM
+	id S932942AbXBQV2n (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 16:28:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932986AbXBQV2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 16:21:12 -0500
-Received: from mail1.webmaster.com ([216.152.64.169]:1468 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932952AbXBQVVK (ORCPT
+	Sat, 17 Feb 2007 16:28:43 -0500
+Received: from moutng.kundenserver.de ([212.227.126.174]:62507 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932942AbXBQV2m convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 16:21:10 -0500
-From: "David Schwartz" <davids@webmaster.com>
-To: <sepreece@gmail.com>, "Alexandre Oliva" <aoliva@redhat.com>
-Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: GPL vs non-GPL device drivers
-Date: Sat, 17 Feb 2007 13:21:12 -0800
-Message-ID: <MDEHLPKNGKAHNMBLJOLKKEMEBKAC.davids@webmaster.com>
+	Sat, 17 Feb 2007 16:28:42 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Artem Bityutskiy <dedekind@infradead.org>
+Subject: Re: [PATCH 03/44 take 2] [UBI] user-space API header
+Date: Sat, 17 Feb 2007 22:27:27 +0100
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain> <20070217165439.5845.66537.sendpatchset@localhost.localdomain>
+In-Reply-To: <20070217165439.5845.66537.sendpatchset@localhost.localdomain>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+X-Legal: Vorsitzender des Aufsichtsrats: Johann Weihen=0A=0D Gesch=E4ftsf=FChrung: Herbert Kircher=0A=0D Sitz der Gesellschaft: B=F6blingen=0A=0D Registergericht: Amtsgericht Stuttgart, HRB 243294
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <7b69d1470702171129x36c4352cyc5b3a4b217729bf5@mail.gmail.com>
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Sat, 17 Feb 2007 13:21:08 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Sat, 17 Feb 2007 13:21:10 -0800
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200702172227.28708.arnd@arndb.de>
+X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
+X-Provags-ID2: V01U2FsdGVkX1/gBALZhFtJlZoBd2iwUnTrKCG/Q4670FPcMt/itswU+ldkVk1Tv3c8G8iu7N7raPIia8W/DJ2ra2mfz7Lxnvc5jRrDJNayKHJlYilNpxHUDw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 17 February 2007 17:54, Artem Bityutskiy wrote:
+> +struct ubi_mkvol_req {
+> +       int32_t vol_id;
+> +       int32_t alignment;
+> +       int64_t bytes;
+> +       int8_t vol_type;
+> +       int8_t padding[9];
+> +       int16_t name_len;
+> +       __user const char *name;
+> +} __attribute__ ((packed));
 
-> On 2/17/07, Alexandre Oliva <aoliva@redhat.com> wrote:
+This structure is not suitable for an ioctl call, because it has
+incompatible layout between 32 and 64 bit processes. The easiest
+fix for this would be to change the 'name' field to an array
+instead of a pointer.
 
-> > Per this principle, it would seem that only source code and
-> > hand-crafted object code would be governed by copyright, since
-> > compilation is also an automated process.
-
-> Well, compilation is probably equivalent to "translation", which is
-> specifically included in the Act as forming a derivative work.
-
-I would hope that courts will hold that "translation" still means what it
-originally meant -- the creative process of converting a work from one
-language to another where one has to choose how to map the concepts behind a
-work to the most appropriate concept in a different language. Clearly
-translating Jabberwocky into German is creative in a way that compiling the
-Linux kernel from C to x86 binary is not.
-
-Interestingly, if you are right, then what online translation services like
-babelfish (that allow you to see a web site in another language) do is
-probably illegal as they create derivative works without permission of the
-copyright holder. It's easy to argue that putting up a web site grants
-people implicit permission to copy and render it so that they can see it,
-but much harder to argue that it gives them the right to create a derivative
-work. (Of course, you could argue fair use.)
-
-As far as I know, no court has addressed this issue. But I think the
-sensible thing is to hold that "translation", in copyright law, is meant as
-an example of one type of creative process that could create a derivative
-work, not that any process that can be argued to be translation (whether
-creative or not) automatically makes the result a work for copyright
-purposes.
-
-But you never know.
-
-DS
-
-
+	Arnd <><
