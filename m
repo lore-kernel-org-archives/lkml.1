@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946742AbXBQN4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030190AbXBQOBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946742AbXBQN4a (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 08:56:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946744AbXBQN4a
+	id S1030190AbXBQOBh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 09:01:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030192AbXBQOBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 08:56:30 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:60442 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946742AbXBQN4a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 08:56:30 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 17 Feb 2007 14:55:27 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [GIT PULL] ieee1394 updates post 2.6.20, another round
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-In-Reply-To: <tkrat.792fbaf365daed11@s5r6.in-berlin.de>
-Message-ID: <tkrat.b2b116c1f23637be@s5r6.in-berlin.de>
-References: <tkrat.792fbaf365daed11@s5r6.in-berlin.de>
+	Sat, 17 Feb 2007 09:01:37 -0500
+Received: from smtp.ocgnet.org ([64.20.243.3]:33789 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030190AbXBQOBh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 09:01:37 -0500
+Date: Sat, 17 Feb 2007 22:59:22 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 2.6.20 1/1] fbdev,mm: hecuba/E-Ink fbdev driver
+Message-ID: <20070217135922.GA15373@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Jaya Kumar <jayakumar.lkml@gmail.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	linux-fbdev-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org
+References: <20070217104215.GB25512@localhost> <1171715652.5186.7.camel@lappy> <45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the for-linus branch at
-
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
-or
-    git://master.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
-
-to receive IEEE 1394 subsystem updates as listed further below. It's a
-small userspace API addition submitted two weeks ago and an unintrusive
-one week old bugfix. (The fixed code was and will be untangled further
-in linux1394-2.6.git's master branch and in -mm.)
-
- drivers/ieee1394/ieee1394-ioctl.h |    2 +
- drivers/ieee1394/ieee1394_core.c  |   43 +++++++++++++++++++++++++++++++++++++
- drivers/ieee1394/ieee1394_core.h  |    3 ++
- drivers/ieee1394/nodemgr.c        |    3 +-
- drivers/ieee1394/raw1394.c        |   20 +++++++++++++++++
- drivers/ieee1394/raw1394.h        |   10 ++++++++
- 6 files changed, 80 insertions(+), 1 deletions(-)
-
-Pieter Palmers (1):
-      ieee1394: cycle timer read extension for raw1394
-
-Stefan Richter (1):
-      ieee1394: fix another deadlock in nodemgr
--- 
-Stefan Richter
--=====-=-=== --=- =---=
-http://arcgraph.de/sr/
-
+On Sat, Feb 17, 2007 at 08:25:07AM -0500, Jaya Kumar wrote:
+> On 2/17/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> >And, as Andrew suggested last time around, could you perhaps push this
+> >fancy new idea into the FB layer so that more drivers can make us of it?
+> 
+> I would like to do that very much. I have some ideas how it could work
+> for devices that support clean partial updates by tracking touched
+> pages. But I wonder if it is too early to try to abstract this out.
+> James, Geert, what do you think?
+> 
+This would also provide an interesting hook for setting up chained DMA
+for the real framebuffer updates when there's more than a couple of pages
+that have been touched, which would also be nice to have. There's more
+than a few drivers that could take advantage of that.
