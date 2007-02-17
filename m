@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992868AbXBQXbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992881AbXBQXfc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992868AbXBQXbM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 18:31:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992876AbXBQXbM
+	id S2992881AbXBQXfc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 18:35:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992883AbXBQXfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 18:31:12 -0500
-Received: from main.gmane.org ([80.91.229.2]:50153 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992868AbXBQXbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 18:31:12 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
-Subject: RE: GPL vs non-GPL device drivers
-Date: Sun, 18 Feb 2007 00:30:46 +0100
-Message-ID: <er837a$8ks$1@sea.gmane.org>
-References: <er6mdq$ti8$1@sea.gmane.org> <MDEHLPKNGKAHNMBLJOLKKEKKBKAC.davids@webmaster.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: host-84-221-54-212.cust-adsl.tiscali.it
-User-Agent: KNode/0.10.4
-X-Face: ::w9}R^l{WGM\{y)C0QF@4^U,',W3Mk^X0HP)=:bKM^Z]A9+6bY6fe3}O*]fH{l<j1/9RTp  `KR0idy]Im#9^%}P5Dga'>AViT_'?&>&ufo2_X5Vs3C^tPO@drZRuu&6iK}x}~9`F\-dNZ>(p|V7`4
+	Sat, 17 Feb 2007 18:35:32 -0500
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:36146 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992881AbXBQXfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 18:35:31 -0500
+Message-ID: <45D79145.7000604@drzeus.cx>
+Date: Sun, 18 Feb 2007 00:35:33 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070131)
+MIME-Version: 1.0
+To: Alex Dubov <oakad@yahoo.com>
+CC: linux-kernel@vger.kernel.org, Pavel Machek <pavel@suse.cz>
+Subject: Re: [mmc] incorrect behavior on resume
+References: <77095.44448.qm@web36703.mail.mud.yahoo.com>
+In-Reply-To: <77095.44448.qm@web36703.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 17 February 2007 15:19, David Schwartz wrote:
+Alex Dubov wrote:
+> And today: yet another problem with mmc.
+> It so happens that after resume mmc layer issues requests to the device before mmc_resume_host is
+> called at all. Moreover, this prevents the machine from resuming, unless worked around, because
+> software timer does not work at this stage of the resume and interrupts may not be delivered (if
+> card was removed, for example).
 
-> Static Controls argued that taking the TLP was the only practical way to
-> make a cartridge that would work with that printer.
+Now this sounds incredibly broken. A child device should never be resumed before
+its parent. Pavel, can you comment?
 
-Which shows how that case is different from writing Linux drivers. For
-example, looking at the example the OP was himself proposing a few
-alternative approaches to work around the limitation they were hitting:
-could just switch to static major/minors instead of dynamics ones, they
-could skip sysfs, or they could even reimplement something like sysfs
-themselves, or whatever other interface they deem useful for the purpose of
-plopping in their own binary blob on top of it, sort of like what nVidia
-and ATi do for their stuff.
-
+Rgds
 -- 
-Giuseppe "Oblomov" Bilotta
+     -- Pierre Ossman
 
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
