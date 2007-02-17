@@ -1,117 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965138AbXBQKWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946623AbXBQKeL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965138AbXBQKWX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 05:22:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965139AbXBQKWX
+	id S1946623AbXBQKeL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 05:34:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946620AbXBQKeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 05:22:23 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:33178 "EHLO 2ka.mipt.ru"
+	Sat, 17 Feb 2007 05:34:11 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44702 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965138AbXBQKWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 05:22:22 -0500
-Date: Sat, 17 Feb 2007 13:15:07 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 05/11] syslets: core code
-Message-ID: <20070217101502.GB15971@2ka.mipt.ru>
-References: <20070215181059.GC20997@2ka.mipt.ru> <Pine.LNX.4.64.0702151019210.20368@woody.linux-foundation.org> <20070215190413.GA23953@2ka.mipt.ru> <Pine.LNX.4.64.0702151120260.20368@woody.linux-foundation.org> <20070216085706.GA22868@2ka.mipt.ru> <Pine.LNX.4.64.0702160753120.20368@woody.linux-foundation.org> <20070216160525.GA21160@2ka.mipt.ru> <2c0942db0702160853s18f650ccsa7270c047d94a41b@mail.gmail.com> <20070216165854.GA18522@2ka.mipt.ru> <45D68A73.90707@madrabbit.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+	id S1946623AbXBQKeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 05:34:09 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC][PATCH] Documentation: Ask driver writers to provide suspend/resume support
+Date: Sat, 17 Feb 2007 11:28:53 +0100
+User-Agent: KMail/1.9.5
+Cc: Pavel Machek <pavel@ucw.cz>, Alan <alan@lxorguk.ukuu.org.uk>,
+       Nigel Cunningham <ncunningham@linuxmail.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45D68A73.90707@madrabbit.org>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Sat, 17 Feb 2007 13:15:49 +0300 (MSK)
+Message-Id: <200702171128.54492.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 16, 2007 at 08:54:11PM -0800, Ray Lee (ray-lk@madrabbit.org) wrote:
-> (This is probably why, by the way, most people are staying silent on
-> your excellent kevent work. The kernel side is, in some ways, the easy
-> part. It's getting an interface that will handle all users [ users ==
-> producers and consumers of kevents ], that is the hard bit.)
+Add a paragraph in Documentation/SubmittingDrivers requesting that the
+susped/resume support be provided by new device drivers.
 
-Kevent interface was completely changed 4 (!) times for the last year 
-after kernel developers request without any damage to its kernel part.
+Add the document Documentation/power/drivers-testing.txt giving general
+instructions for the testing of suspend/resume support in device drivers.
 
-> Or, let me put it yet another way: How do you prove to the rest of us
-> that you, or Ingo, or whomever, are not building another dnotify? (Maybe
-> you're smart enough in this problem space that you know you're not --
-> that's actually the most likely possibility. But you still have to prove
-> it to the rest of us. Sucks, I know.)
+---
+ Documentation/SubmittingDrivers         |   10 ++
+ Documentation/power/drivers-testing.txt |  146 ++++++++++++++++++++++++++++++++
+ 2 files changed, 156 insertions(+)
 
-I only want to say that when system is designed correctly there is no
-problem to change interface (yes, I again said 'to change' just because
-I hope everyone understand that I'm talking about time when system is
-not yet committed to the tree).
-
-Btw, dnotify had problems in its design highlighted at inotify statrt -
-mainly that watchers were not attached to inode.
-
-It is right now the time to ask users what interface they expect from
-AIO - so I asked Linus and proposed three different ones, two of them
-were designed in a way that user would not even know that some
-allocation/freeing was done - and as a result I got 'you suck' response
-exactly the same as was returned on the first syslet release - just
-_anly_ fscking _just_ because it had ugly interface.
-
-> > Situations when system is designed from interface down to system ends up
-> > with one thread per IO and huge limitations on how system is going to be
-> > used at all.
-> 
-> The other side is you start from the goal in mind and get Ingo's state
-> machines with loops and conditionals and marmalade in syslets which
-> appear a bit baroque and overkill for the majority of us userspace folk.
-
-Well, I designed kevent AIO in the similar way, but it has even more
-complex one which is built on top of internal page population functions.
-
-It is complex a bit, but it works fast. And it works with any type (if I
-would not be lazy and implement bindings) of AIO.
-
-Interface of syslets is not perfect, but it can be changed (I said it
-again? I think we all understand what I mean by that already) trivially
-right now (before it is included) - it is not the way to throw thing
-just because it has bad interface which can be extended in a moment.
-
-> (No offense intended to Ingo, he's obviously quite a bit more conversant
-> on the needs of high speed interfaces than I am. However, I suspect I
-> have a bit more clarity on what us normal folk would actually use, and
-> kernel driven FSMs ain't it. Userspace often makes a lot of contextual
-> decisions that I would absolutely *hate* to write and debug as a state
-> machine that gets handed off to the kernel. I'll happily take a 10% hit
-> in efficiency that Moore's law will get me back in a few months, instead
-> of spending a bunch of time debugging difficult heisenbugs due to the
-> syslet FSM reading a userspace variable at a slightly different time
-> once in a blue moon. OTOH, I'm also not Oracle, so what do I know?)
-> 
-> The truth of this lies somewhere in the middle. It isn't kernel driven,
-> or userspace interface driven, but a tradeoff between the two.
-> 
-> So:
-> 
-> > Userspace_API_is_the_ever_possible_last_thing_to_ever_think_about.
-> > Period
-> 
-> Please listen to those of us who are saying that this might not be the
-> case. Maybe we're idiots, but then again maybe we're not, okay?
-> Sometimes the API really *DOES* change the underlying implementation.
-
-It is exactly the time to say what interface sould be good.
-System is almost ready - it is time to make it looks cool for users.
-
-> Ray
-
--- 
-	Evgeniy Polyakov
+Index: linux-2.6.20-git13/Documentation/SubmittingDrivers
+===================================================================
+--- linux-2.6.20-git13.orig/Documentation/SubmittingDrivers
++++ linux-2.6.20-git13/Documentation/SubmittingDrivers
+@@ -87,6 +87,16 @@ Clarity:	It helps if anyone can see how 
+ 		driver that intentionally obfuscates how the hardware works
+ 		it will go in the bitbucket.
+ 
++PM support:	Since Linux is used on many portable and desktop systems, your
++		driver is likely to be used on such a system and therefore it
++		should support basic power management by implementing, if
++		necessary, the .suspend and .resume methods used during the
++		system-wide suspend and resume transitions.  You should verify
++		that your driver correctly handles the suspend and resume, but
++		if you are unable to ensure that, please at least define the
++		.suspend method returning the -ENOSYS ("Function not
++		implemented") error.
++
+ Control:	In general if there is active maintainance of a driver by
+ 		the author then patches will be redirected to them unless
+ 		they are totally obvious and without need of checking.
+Index: linux-2.6.20-git13/Documentation/power/drivers-testing.txt
+===================================================================
+--- /dev/null
++++ linux-2.6.20-git13/Documentation/power/drivers-testing.txt
+@@ -0,0 +1,146 @@
++Testing suspend and resume support in drivers
++	(C) 2007 Rafael J. Wysocki <rjw@sisk.pl>
++
++Unfortunately, to effectively test the support for the system-wide suspend and
++resume transitions in a driver, it is necessary to suspend and resume a fully
++functional system with this driver loaded.  Moreover, that should be done many
++times, preferably many times in a row, and separately for the suspend to disk
++(STD) and the suspend to RAM (STR) transitions, because each of these cases
++involves different ordering of operations and different interactions with the
++machine's BIOS.
++
++Of course, for this purpose the test system has to be known to suspend and
++resume without the driver being tested.  Thus, if possible, you should first
++resolve all suspend/resume-related problems in the test system before you start
++testing the new driver.
++
++I. Preparing the test system
++
++1. Testing suspend to disk (STD)
++
++To verify that the STD works, you can try to suspend in the "reboot" mode:
++
++# echo reboot > /sys/power/disk
++# echo disk > /sys/power/state
++
++and the system should suspend, reboot, resume and get back to the command prompt
++where you have started the transition.  If that happens, the STD is most likely
++to work correctly, but you need to repeat the test at least a couple of times in
++a row for confidence.  This is necessary because some problems only show up on a
++second attempt at suspending and resuming a driver.  You should also test the
++"platform" and "shutdown" modes of suspend:
++
++# echo platform > /sys/power/disk
++# echo disk > /sys/power/state
++
++or
++
++# echo shutdown > /sys/power/disk
++# echo disk > /sys/power/state
++
++in which cases you will have to press the power button to make the system
++resume.  If that works, you are ready to test the STD with the new driver
++loaded.  Otherwise, you have to identify what is wrong.
++
++a) Test mode of STD
++
++To verify if there are any drivers that cause problems you can run the STD
++in the test mode:
++
++# echo test > /sys/power/disk
++# echo disk > /sys/power/state
++
++in which case the system should freeze tasks, suspend devices, disable nonboot
++CPUs (if any), wait for 5 seconds, enable nonboot CPUs, resume devices, thaw
++tasks and return to your command prompt.  If that fails, most likely there is
++a driver that fails to either suspend or resume (in the latter case the system
++may hang or be unstable after the test, so please take that into consideration).
++To find this driver, you can carry out a binary search according to the rules:
++- if the test fails, unload a half of the drivers currently loaded and repeat
++(that would probably involve rebooting the system, so always note what drivers
++have been loaded before the test),
++- if the test succeeds, load a half of the drivers you have unloaded most
++recently and repeat.
++
++Once you have found the failing driver (there can be more than just one of
++them), you have to unload it every time before the STD transition.  In that case
++please make sure to report the problem with the driver.
++
++It is also possible that a cycle can still fail after you have unloaded
++all modules. In that case, you would want to look in your kernel configuration
++for the drivers that can be compiled as modules (testing again with them as
++modules), and possibly also try boot time options such as "noapic" or "noacpi".
++
++b) Testing minimal configuration
++
++If the test mode of STD works, you can boot the system with "init=/bin/bash"
++and attempt to suspend in the "reboot", "shutdown" and "platform" modes.  If
++that does not work, there probably is a problem with a driver statically
++compiled into the kernel and you can try to compile more drivers as modules,
++so that they can be tested individually.  Otherwise, there is a problem with a
++modular driver and you can find it by loading a half of the modules you normally
++use and binary searching in accordance with the algorithm:
++- if there are n modules loaded and the attempt to suspend and resume fails,
++unload n/2 of the modules and try again (that would probably involve rebooting
++the system),
++- if there are n modules loaded and the attempt to suspend and resume succeeds,
++load n/2 modules more and try again.
++
++Again, if you find the offending module(s), it(they) must be unloaded every time
++before the STD transition, and please report the problem with it(them).
++
++c) Advanced debugging
++
++In case the STD does not work on your system even in the minimal configuration
++and compiling more drivers as modules is not practical or some modules cannot
++be unloaded, you can use one of the more advanced debugging techniques to find
++the problem.  First, if there is a serial port in your box, you can set the
++CONFIG_DISABLE_CONSOLE_SUSPEND kernel configuration option and try to log kernel
++messages using the serial console.  This may provide you with some information
++about the reasons of the suspend (resume) failure.  Alternatively, it may be
++possible to use a FireWire port for debugging with firescope
++(ftp://ftp.firstfloor.org/pub/ak/firescope/).  On i386 it is also possible to
++use the PM_TRACE mechanism documented in Documentation/s2ram.txt .
++
++2. Testing suspend to RAM (STR)
++
++To verify that the STR works, it is generally more convenient to use the s2ram
++tool available from http://suspend.sf.net and documented at
++http://en.opensuse.org/s2ram .  However, before doing that it is recommended to
++carry out the procedure described in section 1.
++
++Assume you have resolved the problems with the STD and you have found some
++failing drivers.  These drivers are also likely to fail during the STR or
++during the resume, so it is better to unload them every time before the STR
++transition.  Now, you can follow the instructions at
++http://en.opensuse.org/s2ram to test the system, but if it does not work
++"out of the box", you may need to boot it with "init=/bin/bash" and test
++s2ram in the minimal configuration.  In that case, you may be able to search
++for failing drivers by following the procedure analogous to the one described in
++1b).  If you find some failing drivers, you will have to unload them every time
++before the STR transition (ie. before you run s2ram), and please report the
++problem with them.
++
++II. Testing the driver
++
++Once you have resolved the suspend/resume-related problems with your test system
++without the new driver, you are ready to test it:
++
++1. Build the driver as a module, load it and try the STD in the test mode
++(cf. 1a)).
++
++2. Compile the driver directly into the kernel and try the STD in the test mode
++(cf. 1a)).
++
++3. Build the driver as a module, load it and attempt to suspend to disk in the
++"reboot", "shutdown" and "platform" modes (cf. 1).
++
++4. Compile the driver directly into the kernel and attempt to suspend to disk in
++the "reboot", "shutdown" and "platform" modes (cf. 1).
++
++5. Build the driver as a module, load it and attempt to run s2ram (cf. 2).
++
++6. Compile the driver directly into the kernel and attempt to run s2ram (cf. 2).
++
++Each of the above tests should be repeated several times and if any of them
++fails, the driver cannot be regarded as suspend/resume-safe.
