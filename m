@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932951AbXBQVUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932952AbXBQVVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932951AbXBQVUy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 16:20:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932950AbXBQVUy
+	id S932952AbXBQVVN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 16:21:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932954AbXBQVVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 16:20:54 -0500
-Received: from gate.crashing.org ([63.228.1.57]:56269 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932948AbXBQVUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 16:20:53 -0500
-Subject: Re: [RFC] killing the NR_IRQS arrays.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <m1k5yhb00g.fsf@ebiederm.dsl.xmission.com>
-References: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com>
-	 <200702162045.58857.arnd@arndb.de>
-	 <20070216195256.GE2572@flint.arm.linux.org.uk>
-	 <m1k5yhb00g.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Date: Sun, 18 Feb 2007 08:20:22 +1100
-Message-Id: <1171747222.5644.143.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Sat, 17 Feb 2007 16:21:12 -0500
+Received: from mail1.webmaster.com ([216.152.64.169]:1468 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932952AbXBQVVK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 16:21:10 -0500
+From: "David Schwartz" <davids@webmaster.com>
+To: <sepreece@gmail.com>, "Alexandre Oliva" <aoliva@redhat.com>
+Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: GPL vs non-GPL device drivers
+Date: Sat, 17 Feb 2007 13:21:12 -0800
+Message-ID: <MDEHLPKNGKAHNMBLJOLKKEMEBKAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <7b69d1470702171129x36c4352cyc5b3a4b217729bf5@mail.gmail.com>
+Importance: Normal
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Sat, 17 Feb 2007 13:21:08 -0800
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Sat, 17 Feb 2007 13:21:10 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> > #define NO_IRQ	<architecture-defined-int-constant>
-> 
-> When did you need a magic constant NO_IRQ in generic code.
-> One of the reasons I want to convert the drivers is so we can
-> kill the NO_IRQ nonsense.
-> 
-> As for struct irq.  Instead of struct irq_desc I really don't
-> care, although the C++ camp hasn't not yet weighed in and mentioned
-> how that creates a namespace conflict for them. 
+> On 2/17/07, Alexandre Oliva <aoliva@redhat.com> wrote:
 
-Yeah, NO_IRQ would be NULL here...
+> > Per this principle, it would seem that only source code and
+> > hand-crafted object code would be governed by copyright, since
+> > compilation is also an automated process.
 
-What I do on the powerpc code is since IRQ HW numbers are defined
-locally to a domain/PIC, when creating a new domain, The PIC code passes
-a value to use as an "illegal" value in that domain. It's not exposed
-outside of the core though, it's really only used to initialize the
-remapping table with something before any interrupt on that PIC has been
-mapped. 
+> Well, compilation is probably equivalent to "translation", which is
+> specifically included in the Act as forming a derivative work.
 
-> We might need this.  But I don't think we need reference counting in
-> the traditional sense.  For all practical purpose we already have
-> dynamic irq allocation and it hasn't proven necessary.  I would
-> prefer to go to lengths to avoid having to expose that kind of
-> an issue to driver code.
+I would hope that courts will hold that "translation" still means what it
+originally meant -- the creative process of converting a work from one
+language to another where one has to choose how to map the concepts behind a
+work to the most appropriate concept in a different language. Clearly
+translating Jabberwocky into German is creative in a way that compiling the
+Linux kernel from C to x86 binary is not.
 
-I think we do need proper refcounting, but I also think that most
-drivers will not need to see it.
+Interestingly, if you are right, then what online translation services like
+babelfish (that allow you to see a web site in another language) do is
+probably illegal as they create derivative works without permission of the
+copyright holder. It's easy to argue that putting up a web site grants
+people implicit permission to copy and render it so that they can see it,
+but much harder to argue that it gives them the right to create a derivative
+work. (Of course, you could argue fair use.)
 
-For example, a PCI driver will most probably just do something along the
-lines of the existing request_irq(pdev->irq), the liftime of pdev->irq
-is managed by the PCI core.
+As far as I know, no court has addressed this issue. But I think the
+sensible thing is to hold that "translation", in copyright law, is meant as
+an example of one type of creative process that could create a derivative
+work, not that any process that can be argued to be translation (whether
+creative or not) automatically makes the result a work for copyright
+purposes.
 
-Same goes with MSIs imho, the MSI core can manage the lifetime
-transparently.
+But you never know.
 
-Ben.
+DS
 
 
