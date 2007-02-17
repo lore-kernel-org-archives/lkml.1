@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932823AbXBQT35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932803AbXBQTcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932823AbXBQT35 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 14:29:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932824AbXBQT35
+	id S932803AbXBQTcq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 14:32:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932826AbXBQTcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 14:29:57 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:38609 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932823AbXBQT34 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 14:29:56 -0500
-Message-ID: <45D757AD.30208@zytor.com>
-Date: Sat, 17 Feb 2007 11:29:49 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Sat, 17 Feb 2007 14:32:46 -0500
+Received: from h155.mvista.com ([63.81.120.155]:58485 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932803AbXBQTcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 14:32:45 -0500
+Message-ID: <45D75853.1060607@ru.mvista.com>
+Date: Sat, 17 Feb 2007 22:32:35 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: Mockern@yandex.ru
-CC: linux-kernel@vger.kernel.org
-Subject: Re: serial or tty driver
-References: <45D7255D.000003.24001@webmail18.yandex.ru>
-In-Reply-To: <45D7255D.000003.24001@webmail18.yandex.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Andrew Morton <akpm@osdl.org>, Jeff Garzik <jgarzik@pobox.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.20-rc4-mm1: PCI=n: drivers/net/3c59x.c compile error
+References: <20070111222627.66bb75ab.akpm@osdl.org> <20070124135354.GI17836@stusta.de> <45B76946.1070009@ru.mvista.com> <45D756D7.4060106@ru.mvista.com>
+In-Reply-To: <45D756D7.4060106@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mockern wrote:
-> I have a question, what is really difference between serial and tty drivers?
-> As I understand tty is high level and communicates with user space. 
+Hello.
 
-That's pretty much it, yes.  When you're talking to a serial port, you 
-have a stack that looks roughly like:
+Sergei Shtylyov wrote:
 
-	(Userspace)
-	VFS layer
-	tty layer ----------------------\
-	serial core layer                line discipline
-	serial driver
-	(Hardware)
+>>> 3x59x-fix-pci-resource-management.patch causes the following compile 
+>>> error with CONFIG_PCI=n:
 
-There are other devices which can exist below the tty layer, like the 
-pty driver:
+>>> <--  snip  -->
 
-	(Userspace)
-	VFS layer
-	tty layer ----------------------\
-	pty driver                       line discipline
+>>> ...
+>>>   CC      drivers/net/3c59x.o
+>>> /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c: 
+>>> In function 'vortex_init_one':
+>>> /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c:961: 
+>>> error: implicit declaration of function 'pci_request_regions'
+>>> /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c:985: 
+>>> error: implicit declaration of function 'pci_release_regions'
+>>> make[3]: *** [drivers/net/3c59x.o] Error 1
+> 
+> 
+>>    Grr, at at the same time it's happy with pci_enable_device().
+>>    I'd say the problem is in <linux/pci.h>,  not in the patch.
 
-	-hpa
+>    Has there been any patch to fix the "unbalanced" 
+> pci_{request|release}_regions() declarations? Am I suposed to create such?
+
+    Alternatively, vortex_{init|remove_one() and struct pci_driver there could 
+have been put under #ifdef CONFIG_PCI (good idea anyway -- should reduce 
+driver size on non-PCI systems)...
+
+>>> cu
+>>> Adrian
+
+MBR, Sergei
