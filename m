@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965380AbXBQXrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992885AbXBQXsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965380AbXBQXrt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 18:47:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965388AbXBQXrs
+	id S2992885AbXBQXsM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 18:48:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992891AbXBQXsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 18:47:48 -0500
-Received: from mail.screens.ru ([213.234.233.54]:49597 "EHLO mail.screens.ru"
+	Sat, 17 Feb 2007 18:48:11 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:49925 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965380AbXBQXrs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 18:47:48 -0500
-Date: Sun, 18 Feb 2007 02:47:28 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ego@in.ibm.com, akpm@osdl.org, paulmck@us.ibm.com, mingo@elte.hu,
-       vatsa@in.ibm.com, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC PATCH(Experimental) 0/4] Freezer based Cpu-hotplug
-Message-ID: <20070217234728.GA679@tv-sign.ru>
-References: <20070214144031.GA15257@in.ibm.com> <200702171224.46626.rjw@sisk.pl> <20070217213406.GA541@tv-sign.ru> <200702172324.44892.rjw@sisk.pl> <20070217234201.GA591@tv-sign.ru>
+	id S965396AbXBQXsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 18:48:04 -0500
+Date: Sat, 17 Feb 2007 15:47:46 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>, michael chang <thenewme91@gmail.com>,
+       ck mailing list <ck@vds.kolivas.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [ck] Re: 2.6.20-ck1
+Message-Id: <20070217154746.7ff10870.akpm@linux-foundation.org>
+In-Reply-To: <200702180800.07393.kernel@kolivas.org>
+References: <200702162110.03355.kernel@kolivas.org>
+	<200702171417.28376.kernel@kolivas.org>
+	<45D74D34.5020201@redhat.com>
+	<200702180800.07393.kernel@kolivas.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070217234201.GA591@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/18, Oleg Nesterov wrote:
->
-> On 02/17, Rafael J. Wysocki wrote:
+On Sun, 18 Feb 2007 08:00:06 +1100 Con Kolivas <kernel@kolivas.org> wrote:
+
+> On Sunday 18 February 2007 05:45, Chuck Ebbert wrote:
+> ...
+> > But the one I like, mm-filesize_dependant_lru_cache_add.patch,
+> > has an on-off switch.
 > >
-> > Alternatively, we can move the check into refrigerator(), like this:
-> > 
-> > --- linux-2.6.20-git13.orig/kernel/power/process.c
-> > +++ linux-2.6.20-git13/kernel/power/process.c
-> > @@ -39,6 +39,11 @@ void refrigerator(void)
-> >  	/* Hmm, should we be allowed to suspend when there are realtime
-> >  	   processes around? */
-> >  	long save;
-> > +
-> > +	/* Freeze the task unless there is a vfork completion pending */
-> > +	if (current->vfork_done)
-> > +		return;
-> > +
-> 
-> This means that "current" returns to user space (get_signal_to_deliver
-> will clear TIF_SIGPENDING) and runs. While try_to_freeze_tasks() thinks
-> it is frozen.
+>
+> ...
+>
+> Do you still want this patch for mainline?... 
 
-Ah, sorry. I am wrong, current has no PF_FROZEN yet.
+Don't think so.  The problems I see are:
 
-However, this means that sys_vfork() makes impossible to freeze processes
-until child exits/execs. Not good.
+- It's a system-wide knob.  In many situations this will do the wrong
+  thing.  Controlling pagecache should be per-process.
 
-Oleg.
+- Its heuristics for working out when to invalidate the pagecache will be
+  too much for some situations and too little for others.
+
+- Whatever we do, there will be some applications in some situations
+  which are hurt badly by changes like this: they'll do heaps of extra IO.
+
+
+Generally, the penalties for getting this stuff wrong are very very high:
+orders of magnitude slowdowns in the right situations.  Which I suspect
+will make any system-wide knob ultimately unsuccessful.
+
+The ideal way of getting this *right* is to change every application in the
+world to get smart about using sync_page_range() and/or posix_fadvise(),
+then to add a set of command-line options to each application in the world
+so the user can control its pagecache handling.
+
+Obviously that isn't practical.  But what _could_ be done is to put these
+pagecache smarts into glibc's read() and write() code.  So the user can do:
+
+	MAX_PAGECACHE=4M MAX_DIRTY_PAGECACHE=2M rsync foo bar
+
+This will provide pagecache control for pretty much every application.  It
+has limitations (fork+exec behaviour??) but will be useful.
+
+
+A kernel-based solution might use new rlimits, but would not be as flexible
+or successful as a libc-based one, I suspect.
 
