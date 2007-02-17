@@ -1,106 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932936AbXBQVQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932939AbXBQVSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932936AbXBQVQX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 16:16:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932933AbXBQVQW
+	id S932939AbXBQVSX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 16:18:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932941AbXBQVSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 16:16:22 -0500
-Received: from gate.crashing.org ([63.228.1.57]:39099 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932932AbXBQVQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 16:16:21 -0500
-Subject: Re: [RFC] killing the NR_IRQS arrays.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Russell King <rmk+lkml@arm.linux.org.uk>,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <m1tzxlb1b0.fsf@ebiederm.dsl.xmission.com>
-References: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com>
-	 <20070216195256.GE2572@flint.arm.linux.org.uk>
-	 <1171665426.5644.99.camel@localhost.localdomain>
-	 <200702170237.42910.arnd@arndb.de>
-	 <1171684847.5644.108.camel@localhost.localdomain>
-	 <m1tzxlb1b0.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Date: Sun, 18 Feb 2007 08:15:49 +1100
-Message-Id: <1171746949.5644.137.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Sat, 17 Feb 2007 16:18:23 -0500
+Received: from moutng.kundenserver.de ([212.227.126.179]:49811 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932939AbXBQVSW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 16:18:22 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Artem Bityutskiy <dedekind@infradead.org>
+Subject: Re: [PATCH 09/44 take 2] [UBI] debug unit header
+Date: Sat, 17 Feb 2007 22:18:21 +0100
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain> <20070217165509.5845.12977.sendpatchset@localhost.localdomain>
+In-Reply-To: <20070217165509.5845.12977.sendpatchset@localhost.localdomain>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+X-Legal: Vorsitzender des Aufsichtsrats: Johann Weihen=0A=0D Gesch=E4ftsf=FChrung: Herbert Kircher=0A=0D Sitz der Gesellschaft: B=F6blingen=0A=0D Registergericht: Amtsgericht Stuttgart, HRB 243294
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702172218.22709.arnd@arndb.de>
+X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
+X-Provags-ID2: V01U2FsdGVkX18TIG4bn4MEMrabEbuDiO+DPs4xvHHykFX/mtLgTO06ELv+SFJkctkhymkgNvzoI8zPCFtPeJ1TO11meqfhXV7JoOlUTC0/R55LaSMDVPUGRw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-02-17 at 02:06 -0700, Eric W. Biederman wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> 
-> > In addition, if we remove the numbers, archs will need basically the
-> > exact same services provided by the powerpc irq core for reverse mapping
-> > (going from a HW irq number on a given PIC back to an irq_desc *).
-> 
-> Ben you seem to be under misapprehension that except for the case of
-> ISA (0-16) the linux IRQ number is a hardware number.  It is an arbitrary
-> software enumeration, and I think it has been that way a very long time.
+On Saturday 17 February 2007 17:55, Artem Bityutskiy wrote:
+> +
+> +/**
+> + * UBI debugging unit.
+> + *
+> + * UBI provides rich debugging capabilities which are implemented in
+> + * this unit.
 
-Did you actually mean "is not a hardware number" ? If not, then I don't
-understand your sentence...
+Stop right here. You should be doing one thing and do it right.
+Since the point of your patches is to do volume management for MTD,
+it should do just that.
 
-> I can only tell you that my impression of this last is that all the
-> world's not a PPC.
+If you feel that Linux needs rich debugging capabilities, then submit
+a patch for that independent of UBI.
 
-Yeah and my grandmother is not the pope, thank you.
-
-However, PowerPC is a good example because it has such a diversity of
-very different hardware setups to deal with, ranging from the multiple
-layers of cascading controllers all over the place, to interrupts
-packets encoding vector/target etc... a bit like x86 on cell, to
-hypervisors providing a single giant number space etc etc etc...
-
-Thus, it is extremely likely that something that works well for PowerPC
-(or for ARM for that matter as it's probably as a "colorful" environment
-as PowerPC is) will end up being useful for others.
-
-> I have a version of the x86 code with a partial conversion done and
-> I didn't need a reverse mapping.  What you call the hardware interrupt
-> number never happens to be interesting to me after the system is setup.
-
-Because you have the ability to tell your PIC to give you your "linux"
-interrupt number when actually sending the interrupt to the processor ?
-You need a way to get to the irq_desc * when getting an IRQ, either you
-have a way to map HW numbers back to irq_desc * in sofrware, or your HW
-allows you to do it.
-
-> I do suspect there may be an interesting chunk of your ppc work that
-> probably makes sense as a library so other arches could use it.
-
-Guess what, one of the options of my code is to not instanciate a
-remapper... for archs where it's not necessary. (We have the case for
-example of iSeries whose hypervisor can return us the number we want for
-an arbitrary interrupt).
-
-Now, I'm not saying we should take the PowerPC code and say "hey' here's
-the new generic code".
-
-I'm saying that if we're going to change the IRQ stuff that deeply, it
-would be nice if we looked into some of that stuff I've done that I
-beleive would be of use for other archs (though you seem to imply that
-it would be of no use on x86, good, still...).
-
-I found it overall very useful to have a generic remapping core and have
-cascaded PIC setups have a numbering domain local to a given PIC (pretty
-much, a domain != an irq_chip) and I'm convinced it would make life
-easier for archs with similar setups. The remapping core also shows its
-usefulness on archs with very big interrupt numbers, like sparc or
-pSeries ppc, and possibly others.
-
-Now, I -do- have a problem with one aspect of your proposed design which
-is to keep the "linux" interrupt number in the generic irq_desc, which I
-think defeats most of the purpose of moving away from those linux irq
-numbers. If you do so, then I'll have to keep a separate remapping layer
-and keep a mecanism for virtualizing linux numbers.
-
-Ben.
-
-
+	Arnd <><
