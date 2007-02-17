@@ -1,80 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946344AbXBQBB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946355AbXBQBBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946344AbXBQBB2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 20:01:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946349AbXBQBB2
+	id S1946355AbXBQBBx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 20:01:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946352AbXBQBBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 20:01:28 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:43266 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946344AbXBQBB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 20:01:28 -0500
-Date: Fri, 16 Feb 2007 17:01:22 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric Van Hensbergen <ericvh@gmail.com>
-Cc: linux-kernel@vger.kernel.org, v9fs-developer@lists.sourceforge.net
-Subject: Re: [PATCH] 9p: add write-cache support to loose cache mode (take
- 4)
-Message-Id: <20070216170122.4cdafd78.akpm@linux-foundation.org>
-In-Reply-To: <11716732192318-git-send-email-ericvh@gmail.com>
-References: <1171640221420-git-send-email-ericvh@gmail.com>
-	<11716732192318-git-send-email-ericvh@gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 16 Feb 2007 20:01:53 -0500
+Received: from smtp107.sbc.mail.mud.yahoo.com ([68.142.198.206]:39888 "HELO
+	smtp107.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1946355AbXBQBBw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 20:01:52 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=M5OdvutzJlwumKUKremzoLoRYxaO/0jI/o5SQJC6Nps4WGFKmO+NZ6VQXgh2xZ7xvcIuEJQo9d1YbHTURxKmfL414+H5c9DKsolWXyXihn7K27LKAD4znC3ZL8V07dutlePoDhryv17NjKFYmn99/oiNnC3YE4zGmv0YVJxlPxw=  ;
+X-YMail-OSG: SlhnrHIVM1mOJSCkqTrR8qPxda7G4YYViCPzJHlPkiHDLRl6O4BISSThcE1mUxjNpmhp0e9jX2CAoUDv6EbS99SgBGa2mUpmqJdF2nBGs7v4qmoHZEf6i7C4UZCPuvlPwFJl1d0Xoxz7PuU-
+From: David Brownell <david-b@pacbell.net>
+To: Len Brown <lenb@kernel.org>
+Subject: Re: loosen dependancy on rtc cmos
+Date: Fri, 16 Feb 2007 16:36:13 -0800
+User-Agent: KMail/1.7.1
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, Dave Jones <davej@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20070214180915.GA6412@redhat.com> <200702152338.47151.lenb@kernel.org> <200702152112.08970.david-b@pacbell.net>
+In-Reply-To: <200702152112.08970.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702161636.13767.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Feb 2007 18:46:59 -0600
-Eric Van Hensbergen <ericvh@gmail.com> wrote:
-
-> Loose cache mode was added primarily to asssist exclusive, read-only
-> mounts (like venti) -- however, there is also a case for using loose
-> write cacheing in support of read/write exclusive mounts.  This feature
-> is linked to the loose cache option and is disabled by default.
+On Thursday 15 February 2007 9:12 pm, David Brownell wrote:
+> On Thursday 15 February 2007 8:38 pm, Len Brown wrote:
 > 
-> This code adds the necessary code to support writes through the page
-> cache.  Write caches are not used for synthetic files or for files opened
-> in APPEND mode.
+> > So I've taken Andi's advice and checked in the patches below.
 > 
+> OK; that simplifies things for me, good!  I can discard that patch
+> (broken by Andi's pcspkr change anyway), stop worring about whether
+> most folk will even see that driver, and make time to look at the
+> ACPI hooks for RTC wakeup, instead.  :)
 
-Me again ;)
+Which, by the way, means that folk with pre-ACPI systems aren't
+going to be able to use this driver until someone else provides
+an updated patch creating an "rtc_cmos" platform device.
 
-> +int v9fs_prepare_write(struct file *file, struct page *page,
-> +		       unsigned from, unsigned to)
-> +{
-> +	if(!PageUptodate(page)) {
-> +		if (to - from != PAGE_CACHE_SIZE) {
-> +			void *kaddr = kmap_atomic(page, KM_USER0);
-> +			memset(kaddr, 0, from);
-> +			memset(kaddr + to, 0, PAGE_CACHE_SIZE - to);
-> +			flush_dcache_page(page);
-> +			kunmap_atomic(kaddr, KM_USER0);
-> +		}
-> +		if ((file->f_flags & O_ACCMODE) != O_WRONLY)
-> +			v9fs_vfs_readpage_worker(file, page);
-> +	}
-> +
-> +	return 0;
-> +}
+Or on the more modern end of things ... I suspect PCs using
+Linux-BIOS won't do PNPACPI either, and they will also need
+that platform device before using this driver.
 
-Seems strange to memset part of the page and to then go and fill the page
-in from backing store.  Perhaps some optimisation is possible here?
+What do the MiniMac systems do?  At one time I thought they
+were ACPI-free.
 
-And did the error from v9fs_vfs_readpage_worker() just get lost?
-
-> +/**
-> + * v9fs_commit_write - prepare for mmap or page-cache I/O
-> + *
-> + * @file: file being read
-
-"written"
-
-> + * @page: structure to page
-> + * @offset: starting offset
-> + * @to: ending offset
-> + *
-> + */
-> +
->
+- Dave
