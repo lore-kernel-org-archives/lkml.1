@@ -1,45 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965254AbXBQMup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965241AbXBQMzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965254AbXBQMup (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 07:50:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965253AbXBQMup
+	id S965241AbXBQMzx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 07:55:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965255AbXBQMzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 07:50:45 -0500
-Received: from gockel.physik3.uni-rostock.de ([139.30.44.16]:16609 "EHLO
-	gockel.physik3.uni-rostock.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965254AbXBQMuo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 07:50:44 -0500
-Date: Sat, 17 Feb 2007 13:50:43 +0100 (CET)
-From: Tim Schmielau <tim@physik3.uni-rostock.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Move include linux/marker.h to kernel.h
-In-Reply-To: <20070216104340.3c6f2eed.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.63.0702171345140.20161@gockel.physik3.uni-rostock.de>
-References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
- <45D483D7.2040609@imap.cc> <20070215144142.0c13580a.akpm@linux-foundation.org>
- <20070215224656.GB6297@Krystal> <20070215154418.88edfcbc.akpm@linux-foundation.org>
- <20070216003739.GC9851@Krystal> <20070215172242.ab7a6f1e.akpm@linux-foundation.org>
- <20070216180513.GC14004@Krystal> <20070216104340.3c6f2eed.akpm@linux-foundation.org>
+	Sat, 17 Feb 2007 07:55:53 -0500
+Received: from cacti.profiwh.com ([85.93.165.66]:48991 "EHLO cacti.profiwh.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965241AbXBQMzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 07:55:52 -0500
+Message-ID: <45D6FB5F.8000108@gmail.com>
+Date: Sat, 17 Feb 2007 13:55:59 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Mockern@yandex.ru
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Linux tty driver question
+References: <45D6D3A3.000001.04520@tide.yandex.ru> <45D6E094.8030006@gmail.com> <45D6E6B7.000003.09194@mfront8.yandex.ru>
+In-Reply-To: <45D6E6B7.000003.09194@mfront8.yandex.ru>
+Content-Type: text/plain; charset=KOI8-R; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Feb 2007, Andrew Morton wrote:
+Mockern napsal(a):
+> Thank you, 
+> 
+> I have no problem with my tty driver, except one thing: it does not work with cat (but there are no problems to write,read from user space application). I'll try to follow your adwise to support cat. 
 
-> No, that's still crufty.  There's no reason why marker.h needs special
-> treatment whereas, say, jiffies.h does not (is there?)
+And where does it stuck? use ptrace (e.g. strace) to investigate.
 
-Unforunately, even jiffies.h gets special treatment. sched.h still 
-includes jiffies.h, as this is where it was originally defined.
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
 
-I've had that on my to-do list for some years now, but unfortunately it 
-will probably remain there for some more.
-Somebody else who wants to check all files for properly including 
-jiffies.h and then remove the include from sched.h?
-
-Thanks,
-Tim
+Hnus <hnus@fi.muni.cz> is an alias for /dev/null
