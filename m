@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965216AbXBQMKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946669AbXBQMQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965216AbXBQMKA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 07:10:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965217AbXBQMKA
+	id S1946669AbXBQMQL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 07:16:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946651AbXBQMQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 07:10:00 -0500
-Received: from gockel.physik3.uni-rostock.de ([139.30.44.16]:10923 "EHLO
-	gockel.physik3.uni-rostock.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965216AbXBQMKA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 07:10:00 -0500
-Date: Sat, 17 Feb 2007 13:09:58 +0100 (CET)
-From: Tim Schmielau <tim@physik3.uni-rostock.de>
-To: Johann Schuster <johann.schuster@unibw.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Measuring cpu time using getrusage
-In-Reply-To: <45D30BDF.5010608@unibw.de>
-Message-ID: <Pine.LNX.4.63.0702171302570.20161@gockel.physik3.uni-rostock.de>
-References: <45D30BDF.5010608@unibw.de>
+	Sat, 17 Feb 2007 07:16:11 -0500
+Received: from ns1.suse.de ([195.135.220.2]:41715 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965219AbXBQMQK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 07:16:10 -0500
+From: Andreas Schwab <schwab@suse.de>
+To: Olaf Hering <olaf@aepfle.de>
+Cc: Oleg Verych <olecom@flower.upol.cz>, Andrew Morton <akpm@osdl.org>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+Subject: Re: exporting LANG=C (Re: [PATCH] override build timestamp)
+References: <20070216215213.GA10732@aepfle.de> <E1HIGE5-0003WZ-Ew@flower>
+	<20070217115115.GA17401@aepfle.de>
+X-Yow: FISH-NET-FISH-NET-FISH-NET-FISH-NET-FISH!!
+Date: Sat, 17 Feb 2007 13:15:59 +0100
+In-Reply-To: <20070217115115.GA17401@aepfle.de> (Olaf Hering's message of
+	"Sat, 17 Feb 2007 12:51:15 +0100")
+Message-ID: <je3b55x9mo.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.91 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Feb 2007, Johann Schuster wrote:
+Olaf Hering <olaf@aepfle.de> writes:
 
-> currently i'm trying to measure the cpu times for
-> numerical algorithms written in C using two calls of
-> getrusage() and then calculating the time difference.
-> 
-> According to the man page of getrusage i looked at the
-> user time of my process. Surprisingly the measured user
-> times vary strongly depending on the system load of the
-> machine.
-> A heavy system load nearly doubles the measured time
-> for my routine.
+> But we better build the whole kernel with LC_ALL=C LANG=C.
 
-Does your system have hyperthreading? (look at whether the siblings field 
-in /proc/cpuinfo is greater than one)
-If yes, there is no way to accurately measure runtimes because the 
-(single-threaded) performance of your CPU depends on the other tasks 
-running. Just disable hyperthreading for these measurements.
+If you have LC_ALL=C you don't need LANG=C.
 
-Tim
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
