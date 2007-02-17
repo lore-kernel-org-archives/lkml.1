@@ -1,42 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992482AbXBQQ7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992470AbXBQQ7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992482AbXBQQ7Q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 11:59:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992470AbXBQQ7M
+	id S2992470AbXBQQ7R (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 11:59:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965361AbXBQQ7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 11:59:12 -0500
-Received: from smtp.nokia.com ([131.228.20.172]:56788 "EHLO
-	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965351AbXBQQ6w (ORCPT
+	Sat, 17 Feb 2007 11:59:08 -0500
+Received: from smtp.nokia.com ([131.228.20.171]:55383 "EHLO
+	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965365AbXBQQ65 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 11:58:52 -0500
+	Sat, 17 Feb 2007 11:58:57 -0500
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Christoph Hellwig <hch@infradead.org>,
        Artem Bityutskiy <dedekind@infradead.org>,
        Frank Haverkamp <haver@vnet.ibm.com>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
        Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>
-Date: Sat, 17 Feb 2007 18:55:30 +0200
-Message-Id: <20070217165530.5845.68877.sendpatchset@localhost.localdomain>
+       David Woodhouse <dwmw2@infradead.org>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Date: Sat, 17 Feb 2007 18:57:56 +0200
+Message-Id: <20070217165756.5845.18011.sendpatchset@localhost.localdomain>
 In-Reply-To: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
 References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
-Subject: [PATCH 13/44 take 2] [UBI] I/O unit header
-X-OriginalArrivalTime: 17 Feb 2007 16:55:29.0547 (UTC) FILETIME=[6DF14DB0:01C752B4]
+Subject: [PATCH 42/44 take 2] [UBI] gluebi unit implementation
+X-OriginalArrivalTime: 17 Feb 2007 16:57:23.0422 (UTC) FILETIME=[B1D13FE0:01C752B4]
 X-eXpurgate-Category: 1/0
-X-eXpurgate-ID: 149371::070217185248-03D70BB0-1B911ED5/0-0/0-1
+X-eXpurgate-ID: 149371::070217185547-3C659BB0-3C4257A5/0-0/0-0
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff -auNrp tmp-from/drivers/mtd/ubi/io.h tmp-to/drivers/mtd/ubi/io.h
---- tmp-from/drivers/mtd/ubi/io.h	1970-01-01 02:00:00.000000000 +0200
-+++ tmp-to/drivers/mtd/ubi/io.h	2007-02-17 18:07:26.000000000 +0200
-@@ -0,0 +1,419 @@
+diff -auNrp tmp-from/drivers/mtd/ubi/gluebi.c tmp-to/drivers/mtd/ubi/gluebi.c
+--- tmp-from/drivers/mtd/ubi/gluebi.c	1970-01-01 02:00:00.000000000 +0200
++++ tmp-to/drivers/mtd/ubi/gluebi.c	2007-02-17 18:07:28.000000000 +0200
+@@ -0,0 +1,363 @@
 +/*
 + * Copyright (c) International Business Machines Corp., 2006
-+ * Copyright (C) Nokia Corporation, 2006,2007
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -52,404 +51,349 @@ diff -auNrp tmp-from/drivers/mtd/ubi/io.h tmp-to/drivers/mtd/ubi/io.h
 + * along with this program; if not, write to the Free Software
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 + *
-+ * Author: Artem B. Bityutskiy
++ * Author: Artem B. Bityutskiy (based on code written by Joern Engel)
 + */
 +
-+/*
-+ * UBI input/output unit.
-+ *
-+ * This unit provides a uniform way to work with all kinds of the underlying
-+ * MTD devices. It also implements handy functions for reading and writing UBI
-+ * headers.
-+ *
-+ * We are trying to have a paranoid mindset and not to trust to what we read
-+ * from the flash media in order to be more secure and robust. For example, we
-+ * do not want to have vulnerability when attackers feed us with an
-+ * inconsistent image end ends up with a buffer overflow. This is especially
-+ * important if UBI is ever used on removable media. So, UBI validates every
-+ * single node it reads from the flash media.
-+ */
++#include <linux/mtd/mtd.h>
++#include <linux/mtd/ubi.h>
++#include <asm/div64.h>
++#include "ubi.h"
++#include "uif.h"
++#include "gluebi.h"
++#include "vtbl.h"
++#include "misc.h"
++#include "debug.h"
++#include "alloc.h"
++#include "io.h"
++#include "eba.h"
++#include "wl.h"
 +
-+#ifndef __UBI_IO_H__
-+#define __UBI_IO_H__
-+
-+struct ubi_info;
-+struct ubi_ec_hdr;
-+struct ubi_vid_hdr;
-+struct ubi_io_info;
-+struct mtd_info;
-+
-+/*
-+ * Error codes returned by this unit.
-+ *
-+ * @UBI_IO_PEB_EMPTY: the physical eraseblock is empty, i.e. it contains only
-+ * %0xFF bytes
-+ * @UBI_IO_PEB_FREE: the physical eraseblock is free, i.e. it contains only a
-+ * valid erase counter header, and the rest are %0xFF bytes
-+ * @UBI_IO_BAD_EC_HDR: the erase counter header is corrupted (bad magic or CRC)
-+ * @UBI_IO_BAD_VID_HDR: the volume identifier header is corrupted (bad magic or
-+ * CRC)
-+ * @UBI_IO_BITFLIPS: bit-flips were detected and corrected
-+ */
-+enum {
-+	UBI_IO_PEB_EMPTY = 1,
-+	UBI_IO_PEB_FREE,
-+	UBI_IO_BAD_EC_HDR,
-+	UBI_IO_BAD_VID_HDR,
-+	UBI_IO_BITFLIPS
-+};
++static int gluebi_get_device(struct mtd_info *mtd);
++static void gluebi_put_device(struct mtd_info *mtd);
++static int gluebi_read(struct mtd_info *mtd, loff_t from, size_t len,
++		       size_t *retlen, unsigned char *buf);
++static int gluebi_write(struct mtd_info *mtd, loff_t to, size_t len,
++		       size_t *retlen, const u_char *buf);
++static int gluebi_erase(struct mtd_info *mtd, struct erase_info *instr);
 +
 +/**
-+ * ubi_io_read - read data from a physical eraseblock.
++ * mtd2vol - take the user interface volume description object by an MTD object.
 + *
-+ * @ubi: the UBI device description object
-+ * @buf: buffer where to store the read data
-+ * @pnum: physical eraseblock number to read from
-+ * @offset: offset within the physical eraseblock from where to read
++ * @mtd: the MTD object
++ *
++ * This function returns the user interface volume description object
++ * corresponding to the @mtd object.
++ */
++static inline struct ubi_uif_volume *mtd2vol(struct mtd_info *mtd)
++{
++	struct ubi_gluebi_volume *gluebi_vol;
++	struct ubi_uif_volume *vol;
++
++	gluebi_vol = container_of(mtd, struct ubi_gluebi_volume, mtd);
++	vol = container_of(gluebi_vol, struct ubi_uif_volume, gluebi_vol);
++	return vol;
++}
++
++int ubi_gluebi_vol_init(const struct ubi_info *ubi, struct ubi_uif_volume *vol)
++{
++	int err;
++	struct mtd_info *mtd = &vol->gluebi_vol.mtd;
++	const struct ubi_vtbl_vtr *vtr;
++	const struct ubi_io_info *io = ubi->io;
++
++	vtr = ubi_vtbl_get_vtr(ubi, vol->vol_id);
++	ubi_assert(!IS_ERR(vtr));
++
++	mtd->name = strdup_len(vtr->name, vtr->name_len);
++	if (!mtd->name)
++		return -ENOMEM;
++
++	mtd->type = MTD_UBIVOLUME;
++	if (!io->ro_mode)
++		mtd->flags = MTD_WRITEABLE;
++	mtd->writesize  = io->min_io_size;
++	mtd->owner      = THIS_MODULE;
++	mtd->size       = vtr->usable_leb_size * vtr->reserved_pebs;
++	mtd->erasesize  = vtr->usable_leb_size;
++	mtd->read       = gluebi_read;
++	mtd->write      = gluebi_write;
++	mtd->erase      = gluebi_erase;
++	mtd->get_device = gluebi_get_device;
++	mtd->put_device = gluebi_put_device;
++
++	if (add_mtd_device(mtd)) {
++		ubi_err("cannot not add MTD device\n");
++
++		/*
++		 * Unfortunately, add_mtd_device() does not return sane error
++		 * code. So, let's name it -ENOMEM;
++		 */
++		err = -ENOMEM;
++		goto out_free;
++	}
++
++	dbg_gluebi("added mtd%d (\"%s\"), size %u, EB size %u",
++		   mtd->index, mtd->name, mtd->size, mtd->erasesize);
++
++	return 0;
++
++out_free:
++	ubi_kfree(mtd->name);
++	return err;
++}
++
++int ubi_gluebi_vol_close(struct ubi_uif_volume *vol)
++{
++	int err;
++	struct mtd_info *mtd = &vol->gluebi_vol.mtd;
++
++	dbg_gluebi("remove mtd%d", mtd->index);
++
++	err = del_mtd_device(mtd);
++	if (err)
++		return err;
++
++	ubi_kfree(mtd->name);
++	return 0;
++}
++
++/**
++ * gluebi_get_device - get MTD device reference.
++ *
++ * @mtd: the MTD device description object
++ *
++ * This function is called every time the MTD device is being got. Returns
++ * zero in case of success and a negative error code in case of failure.
++ */
++static int gluebi_get_device(struct mtd_info *mtd)
++{
++	struct ubi_uif_volume *vol = mtd2vol(mtd);
++	struct ubi_gluebi_volume *gluebi_vol = &vol->gluebi_vol;
++
++	/*
++	 * We do not introduce locks for gluebi reference count because the
++	 * get_device()/put_device() calls are already serialized.
++	 */
++	if (gluebi_vol->refcount > 0) {
++		/*
++		 * The MTD device is already referenced and this is just one
++		 * more reference. MTD allows opening many users to open the
++		 * same volume simultaniously and do not distinguish between
++		 * readers/writers/exclusive openers as UBI does. So we do not
++		 * open the UBI volume again - just increase the reference
++		 * counter and return.
++		 */
++		gluebi_vol->refcount += 1;
++		return 0;
++	}
++
++	/*
++	 * This is the first reference to this UBI volume via the MTD device
++	 * interface. Open the corresponding volume in read-write mode.
++	 */
++	gluebi_vol->desc = ubi_open_volume(vol->ubi->ubi_num, vol->vol_id,
++					   UBI_READWRITE);
++	if (IS_ERR(gluebi_vol->desc))
++		return PTR_ERR(gluebi_vol->desc);
++	gluebi_vol->refcount += 1;
++	return 0;
++}
++
++/**
++ * gluebi_put_device - put MTD device reference.
++ *
++ * @mtd: the MTD device description object
++ *
++ * This function is called every time the MTD device is being put. Returns
++ * zero in case of success and a negative error code in case of failure.
++ */
++static void gluebi_put_device(struct mtd_info *mtd)
++{
++	struct ubi_gluebi_volume *gluebi_vol = &mtd2vol(mtd)->gluebi_vol;
++
++	gluebi_vol->refcount -= 1;
++	ubi_assert(gluebi_vol->refcount >= 0);
++	if (gluebi_vol->refcount == 0)
++		ubi_close_volume(gluebi_vol->desc);
++}
++
++/**
++ * gluebi_read - read operation of emulated MTD devices.
++ *
++ * @mtd: the MTD device description object
++ * @from: absolute offset from where to read
 + * @len: how many bytes to read
-+ *
-+ * This function reads data from offset @offset of physical eraseblock @pnum
-+ * and stores the read data in the @buf buffer. The following return codes are
-+ * possible:
-+ *
-+ * o %0 if all the requested data were successfully read;
-+ * o %UBI_IO_BITFLIPS if all the requested data were successfully read, but
-+ *   correctable bit-flips were detected; this is harmless but may indicate
-+ *   that this eraseblock may become bad soon;
-+ * o %-EBADMSG if the MTD subsystem reported about data data integrity
-+ *   problems, for example it can me an ECC error in case of NAND; this most
-+ *   probably means that the data is corrupted;
-+ * o %-EIO if some I/O error occurred;
-+ * o Other negative error codes in case of other errors.
-+ */
-+int ubi_io_read(const struct ubi_info *ubi, void *buf, int pnum, int offset,
-+		int len);
-+
-+/**
-+ * ubi_io_read_data - read logical eraseblock data from a physical eraseblock.
-+ *
-+ * @ubi: the UBI device description object
-+ * @buf: buffer where to store the read data
-+ * @pnum: physical eraseblock number to read from
-+ * @offset: offset within the logical eraseblock from where to read
-+ * @len: how many bytes to read
-+ *
-+ * This function is equivalent to 'ubi_io_read()', but @offset is relative to
-+ * the beginning of the logical eraseblock, not to the beginning of the
-+ * physical eraseblock.
-+ */
-+#define ubi_io_read_data(ubi, buf, pnum, offset, len)  ({                    \
-+	int __err;                                                           \
-+	ubi_assert((offset) >= 0);                                           \
-+	__err = ubi_io_read(ubi, buf, pnum, (offset) + (ubi)->io->leb_start, \
-+			    len);                                            \
-+	__err = __err;                                                       \
-+})
-+
-+/**
-+ * ubi_io_write - write data to a physical eraseblock.
-+ *
-+ * @ubi: the UBI device description object
-+ * @buf: buffer with the data to write
-+ * @pnum: physical eraseblock number to write to
-+ * @offset: offset within the physical eraseblock where to write
-+ * @len: how many bytes to write
-+ *
-+ * This function writes @len bytes of data from buffer @buf to offset @offset
-+ * of physical eraseblock @pnum. If all the data were successfully written,
-+ * zero is returned. If an error occurred, this function returns a negative
-+ * error code. If %-EIO is returned, the physical eraseblock most probably went
-+ * bad.
-+ *
-+ * Note, in case of an error, it is possible that something was still written
-+ * to the flash media, but may be some garbage.
-+ */
-+int ubi_io_write(const struct ubi_info *ubi, const void *buf, int pnum,
-+		 int offset, int len);
-+
-+/**
-+ * ubi_io_write_data - write logical eraseblock data to a physical eraseblock.
-+ *
-+ * @ubi: the UBI device description object
-+ * @buf: buffer with the data to write
-+ * @pnum: physical eraseblock number to write to
-+ * @offset: offset within the logical eraseblock where to write
-+ * @len: how many bytes to write
-+ *
-+ * This function is equivalent to 'ubi_io_write()', but @offset is relative to
-+ * the beginning of the logical eraseblock, not to the beginning of the
-+ * physical eraseblock.
-+ */
-+#define ubi_io_write_data(ubi, buf, pnum, offset, len) ({                     \
-+	int __err;                                                            \
-+	ubi_assert((offset) >= 0);                                            \
-+	__err = ubi_io_write(ubi, buf, pnum, (offset) + (ubi)->io->leb_start, \
-+			     len);                                            \
-+	__err = __err;                                                        \
-+})
-+
-+/**
-+ * ubi_io_sync_erase - synchronously erase a physical eraseblock.
-+ *
-+ * @ubi: the UBI device description object
-+ * @pnum: physical eraseblock number to erase
-+ * @torture: if this physical eraseblock has to be tortured
-+ *
-+ * This function synchronously erases physical eraseblock @pnum. If @torture
-+ * flag is not zero, the physical eraseblock is checked by means of writing
-+ * different patterns and reading them back. If the torturing is enabled, the
-+ * physical eraseblock is erased more then once.
-+ *
-+ * This function returns the number of erasures made in case of success, %-EIO
-+ * if erasure failed or the torturing test failed, and other negative error
-+ * codes in case of other errors. Note, %-EIO most probably means that the
-+ * physical eraseblock is bad.
-+ */
-+int ubi_io_sync_erase(const struct ubi_info *ubi, int pnum, int torture);
-+
-+/**
-+ * ubi_io_is_bad - check if a physical eraseblock is bad.
-+ *
-+ * @ubi: the UBI device description object
-+ * @pnum: the physical eraseblock number to check
-+ *
-+ * This function returns a positive number if the physical eraseblock is bad,
-+ * zero if not, and a negative error code if an error occurred.
-+ */
-+int ubi_io_is_bad(const struct ubi_info *ubi, int pnum);
-+
-+/**
-+ * ubi_io_mark_bad - mark a physical eraseblock as bad.
-+ *
-+ * @ubi: the UBI device description object
-+ * @pnum: the physical eraseblock number to mark
++ * @retlen: count of read bytes is returned here
++ * @buf: the buffer to store the data to
 + *
 + * This function returns zero in case of success and a negative error code in
 + * case of failure.
 + */
-+int ubi_io_mark_bad(const struct ubi_info *ubi, int pnum);
++static int gluebi_read(struct mtd_info *mtd, loff_t from, size_t len,
++		       size_t *retlen, unsigned char *buf)
++{
++	int err = 0, lnum, offs, total_read;
++	struct ubi_uif_volume *vol;
++	const struct ubi_info *ubi;
++
++	dbg_gluebi("read %zd bytes from offset %lld", len, from);
++
++	if (unlikely(len < 0 || from < 0 || from + len > mtd->size))
++		return -EINVAL;
++
++	vol = mtd2vol(mtd);
++	ubi = vol->ubi;
++
++	offs = do_div(from, mtd->erasesize);
++	lnum = from;
++
++	total_read = len;
++	while (total_read) {
++		size_t to_read = mtd->erasesize - offs;
++
++		if (to_read > total_read)
++			to_read = total_read;
++
++		dbg_gluebi("read %zd bytes from LEB %d:%d, offset %d",
++			   to_read, vol->vol_id, lnum, offs);
++
++		err = ubi_eba_read_leb(ubi, vol->vol_id, lnum, buf, offs,
++				       to_read, 0);
++		if (unlikely(err))
++			break;
++
++		lnum += 1;
++		offs = 0;
++		total_read -= to_read;
++		buf += to_read;
++	}
++
++	*retlen = len - total_read;
++	return err;
++}
 +
 +/**
-+ * ubi_io_read_ec_hdr - read and check an erase counter header.
++ * gluebi_write - write operation of emulated MTD devices.
 + *
-+ * @ubi: the UBI device description object
-+ * @pnum: physical eraseblock to read from
-+ * @ec_hdr: a &struct ubi_ec_hdr object where to store the read erase counter
-+ * header
-+ * @verbose: be verbose if the header is corrupted or was not found
-+ *
-+ * This function reads erase counter header from physical eraseblock @pnum and
-+ * stores it in @ec_hdr. This function also checks CRC checksum of the read
-+ * erase counter header. The following codes may be returned:
-+ *
-+ * o %0 if the CRC checksum is correct and the header was successfully read;
-+ * o %UBI_IO_BITFLIPS if the CRC is correct, but bit-flips were detected
-+ *   and corrected by the flash driver; this is harmless but may indicate that
-+ *   this eraseblock may become bad soon;
-+ * o %UBI_IO_BAD_EC_HDR if the erase counter header is corrupted (a CRC error);
-+ * o %UBI_IO_PEB_EMPTY if the physical eraseblock is empty;
-+ * o %-EIO if an input/output error occurred and this function failed to read
-+ *   the erase counter header; this may indicate serious problems;
-+ * o other negative values in case of other errors.
-+ */
-+int ubi_io_read_ec_hdr(const struct ubi_info *ubi, int pnum,
-+		       struct ubi_ec_hdr *ec_hdr, int verbose);
-+
-+/**
-+ * ubi_io_write_ec_hdr - write an erase counter header.
-+ *
-+ * @ubi: the UBI device description object
-+ * @pnum: physical eraseblock to write to
-+ * @ec_hdr: the erase counter header to write
-+ *
-+ * This function writes the erase counter header described by @ec_hdr to
-+ * physical eraseblock @pnum. This function also fills most fields of @ec_hdr
-+ * before writing, so the caller do not have to fill them. Callers must only fill
-+ * the @ec_hdr->ec field.
-+ *
-+ * This function returns zero in case of success and a negative error code in
-+ * case of failure. If %-EIO is returned, the physical eraseblock most probably
-+ * went bad.
-+ */
-+int ubi_io_write_ec_hdr(const struct ubi_info *ubi, int pnum,
-+			struct ubi_ec_hdr *ec_hdr);
-+
-+/**
-+ * ubi_io_read_vid_hdr - read and check a volume identifier header.
-+ *
-+ * @ubi: the UBI device description object
-+ * @pnum: physical eraseblock number to read from
-+ * @vid_hdr: &struct ubi_vid_hdr object where to store the read volume
-+ * identifier header
-+ * @verbose: be verbose if the header is corrupted or wasn't found
-+ *
-+ * This function reads the volume identifier header from physical eraseblock
-+ * @pnum and stores it in @vid_hdr. It also checks CRC checksum of the read
-+ * volume identifier header. The following codes may be returned:
-+ *
-+ * o %0 if the CRC checksum is correct and the header was successfully read;
-+ * o %UBI_IO_BITFLIPS if the CRC is correct, but bit-flips were detected
-+ *   and corrected by the flash driver; this is harmless but may indicate that
-+ *   this eraseblock may become bad soon;
-+ * o %UBI_IO_BAD_VID_HRD if the volume identifier header is corrupted (a CRC
-+ *   error detected);
-+ * o %UBI_IO_PEB_FREE if the physical eraseblock is free (i.e., there is no VID
-+ *   header there);
-+ * o %-EIO if an input/output error occurred and this function failed to read
-+ *   the erase counter header; this indicates some serious problems;
-+ * o other negative values in case of other errors.
-+ */
-+int ubi_io_read_vid_hdr(const struct ubi_info *ubi, int pnum,
-+			struct ubi_vid_hdr *vid_hdr, int verbose);
-+
-+/**
-+ * ubi_io_write_vid_hdr - write a volume identifier header.
-+ *
-+ * @ubi: the UBI device description object
-+ * @pnum: the physical eraseblock number to write to
-+ * @vid_hdr: the contents of the volume identifier header
-+ *
-+ * This function writes the volume identifier header described by @vid_hdr to
-+ * physical eraseblock @pnum. Callers do not have to fill all the fields of the
-+ * passed volume identifier header object as this function fills many of them
-+ * automatically. Callers have to fill only @vid_hdr->vol_type,
-+ * @vid_hdr->leb_ver, @vid_hdr->vol_id, @vid_hdr->lnum, @vid_hdr->compat,
-+ * @vid_hdr->data_size, @vid_hdr->used_ebs, and @vid_hdr->data_pad fields.
-+ *
-+ * This function returns zero in case of success and a negative error code in
-+ * case of failure. If %-EIO is returned, the physical eraseblock probably went
-+ * bad.
-+ */
-+int ubi_io_write_vid_hdr(const struct ubi_info *ubi, int pnum,
-+			 struct ubi_vid_hdr *vid_hdr);
-+
-+/**
-+ * ubi_io_init - initialize the UBI I/O unit for a given UBI device.
-+ *
-+ * @ubi: the UBI device description object
-+ * @mtd_num: the underlying MTD device number
-+ * @vid_hdr_offset: volume identifier header offset
-+ * @data_offset: logical eraseblock data offset
-+ *
-+ * If the @vid_hdr_offset and @data_offset parameters are zero, the default
-+ * offsets are assumed:
-+ *   o the EC header is always at offset zero - this cannot be changed
-+ *   o the VID header starts after the EC header at the closest address aligned
-+ *   to @io->@hdrs_min_io_size
-+ *   o data starts after the VID header at the closest address aligned to
-+ *   @io->@min_io_size
++ * @mtd: the MTD device description object
++ * @to: absolute offset where to write
++ * @len: how many bytes to write
++ * @retlen: count of written bytes is returned here
++ * @buf: the buffer with data to write
 + *
 + * This function returns zero in case of success and a negative error code in
 + * case of failure.
 + */
-+int ubi_io_init(struct ubi_info *ubi, int mtd_num, int vid_hdr_offset,
-+		int data_offset);
++static int gluebi_write(struct mtd_info *mtd, loff_t to, size_t len,
++		       size_t *retlen, const u_char *buf)
++{
++	int err = 0, lnum, offs, total_written;
++	struct ubi_uif_volume *vol;
++	const struct ubi_info *ubi;
++
++	dbg_gluebi("write %zd bytes to offset %lld", len, to);
++
++	if (unlikely(len < 0 || to < 0 || len + to > mtd->size))
++		return -EINVAL;
++
++	vol = mtd2vol(mtd);
++	ubi = vol->ubi;
++
++	if (unlikely(ubi->io->ro_mode))
++		return -EROFS;
++
++	offs = do_div(to, mtd->erasesize);
++	lnum = to;
++
++	if (unlikely(len % mtd->writesize || offs % mtd->writesize))
++		return -EINVAL;
++
++	total_written = len;
++	while (total_written) {
++		size_t to_write = mtd->erasesize - offs;
++
++		if (to_write > total_written)
++			to_write = total_written;
++
++		dbg_gluebi("write %zd bytes to LEB %d:%d, offset %d",
++			   to_write, vol->vol_id, lnum, offs);
++
++		err = ubi_eba_write_leb(ubi, vol->vol_id, lnum, buf, offs,
++					to_write, UBI_DATA_UNKNOWN);
++		if (unlikely(err))
++			break;
++
++		lnum += 1;
++		offs = 0;
++		total_written -= to_write;
++		buf += to_write;
++	}
++
++	*retlen = len - total_written;
++	return err;
++}
 +
 +/**
-+ * ubi_io_close - close the UBI I/O unit for a given UBI device.
++ * gluebi_erase - erase operation of emulated MTD devices.
 + *
-+ * @ubi: the UBI device description object
++ * @mtd: the MTD device description object
++ * @instr: the erase operation description
++ *
++ * This function calls the erase callback when finishes. Returns zero in case
++ * of success and a negative error code in case of failure.
 + */
-+void ubi_io_close(const struct ubi_info *ubi);
++static int gluebi_erase(struct mtd_info *mtd, struct erase_info *instr)
++{
++	int err, i, lnum, count;
++	struct ubi_uif_volume *vol;
++	const struct ubi_info *ubi;
 +
-+/**
-+ * struct ubi_io_info - UBI I/O unit description data structure.
-+ *
-+ * @flash_size: the underlying MTD device size (in bytes)
-+ * @peb_count: count of physical eraseblocks on the MTD device
-+ * @peb_size: physical eraseblock size
-+ * @bad_peb_count: count of bad physical eraseblocks
-+ * @good_peb_count: count of good physical eraseblocks
-+ * @min_io_size: minimal input/output unit size of the underlying MTD device
-+ * @hdrs_min_io_size: minimal I/O unit size used for VID and EC headers
-+ * @ro_mode: if the UBI device is in read-only mode
-+ * @leb_size: logical eraseblock size
-+ * @leb_start: starting offset of logical eraseblocks within physical
-+ * eraseblocks
-+ * @ec_hdr_alsize: size of the EC header aligned to @hdrs_min_io_size
-+ * @vid_hdr_alsize: size of the VID header aligned to @hdrs_min_io_size
-+ * @vid_hdr_offset: starting offset of the volume identifier header (might be
-+ * unaligned)
-+ * @vid_hdr_aloffset: starting offset of the VID header aligned to
-+ * @hdrs_min_io_size
-+ * @vid_hdr_shift: contains @vid_hdr_offset - @vid_hdr_aloffset
-+ * @bad_allowed: whether the underlying MTD device admits of bad physical
-+ * eraseblocks or not
-+ * @mtd_num: the underlying MTD device number
-+ * @mtd_name: the underlying MTD device name
-+ * @mtd: the underlying MTD device descriptor
-+ *
-+ * The erase counter header is always stored at offset zero. By default, the
-+ * VID header is stored after the EC header at the closest aligned offset
-+ * (note, aligned means aligned to the minimum I/O unit size in this context).
-+ * Data starts next to the VID header at the closest aligned offset. But for
-+ * different reasons (e.g., optimization), UBI may be asked to put the VID
-+ * header at another offset, and even at an unaligned offset. Of course, if the
-+ * offset of the VID header is unaligned, UBI adds proper padding before it.
-+ *
-+ * About minimal I/O units. In general, UBI assumes flash device model where
-+ * there is only one minimal I/O unit size. E.g., in case of NOR flash it is 1,
-+ * in case of NAND flash it is a NAND page, etc. This is reported by MTD in the
-+ * @writesize field. But as an exception, UBI admits of using another
-+ * (smaller) minimal I/O unit size for EC and VID headers to make it possible
-+ * to do different optimizations.
-+ *
-+ * For example, this is extremely useful in case of NAND flashes which admit of
-+ * several write operations to one NAND page. In this case UBI can fit EC and
-+ * VID headers at one NAND page. So, in case of such NAND flashes UBI uses
-+ * "sub-page" size as the minimal I/O unit for the headers (the
-+ * @hdrs_min_io_size field). But it still reports NAND page size (min_io_size)
-+ * as a minimal I/O unit for the UBI users.
-+ *
-+ * Example: some Samsung NANDs with 2KiB pages allow 4x 512-byte writes, so
-+ * although the minimal I/O unit is 2K, UBI uses 512 bytes for UBI and VID
-+ * headers.
-+ *
-+ * Q: why not just to treat sub-page as a minimal I/O unit of this flash
-+ * device, e.g., make @min_io_size = 512 in the example above?
-+ *
-+ * A: because when writing a sub-page, MTD still writes a full 2K page but the
-+ * bytes which are no relevant to the sub-page are 0xFF. So, basically, writing
-+ * 4x512 sub-pages is 4x times slower then writing one 2KiB NAND page. Thus, we
-+ * prefer to use sub-pages only for EV and VID headers.
-+ *
-+ * As it was noted above, the VID header may start at an non-aligned offset.
-+ * For example, in case of a 2KiB-PER-page NAND flash with a 512 bytes
-+ * sub-page, the VID header may reside at offset 1984 which is the last 64
-+ * bytes of the last sub-page (EC header is always at offset zero). This causes
-+ * some difficulties when reading and writing VID headers.
-+ *
-+ * Suppose we have a 64-byte buffer and we read VID header at it. We change the
-+ * data and wand to write this VID header to some eraseblock. As we can only
-+ * write in 512-byte chunks, we have to allocate one more buffer and copy our
-+ * VID header to offset 448 of this buffer.
-+ *
-+ * The I/O unit, together with the memory allocation unit do the following
-+ * trick in order to avoid this extra copy. The memory allocation allocates
-+ * a @vid_hdr_alsize bytes buffer for the VID header and returns a pointer to
-+ * offset @vid_hdr_shift of this buffer. When write VID headers, we shift the
-+ * VID header pointed back and write the whole sub-page.
-+ */
-+struct ubi_io_info {
-+	long long flash_size; /* public  */
-+	int peb_count;        /* public  */
-+	int peb_size;         /* public  */
-+	int bad_peb_count;    /* public  */
-+	int good_peb_count;   /* public  */
-+	int min_io_size;      /* public  */
-+	int hdrs_min_io_size; /* public  */
-+	int ro_mode;          /* public  */
-+	int leb_size;         /* public  */
-+	int leb_start;        /* public  */
-+	int ec_hdr_alsize;    /* public  */
-+	int vid_hdr_alsize;   /* public  */
-+	int vid_hdr_offset;   /* public  */
-+	int vid_hdr_aloffset; /* public  */
-+	int vid_hdr_shift;    /* public  */
-+	int bad_allowed;      /* public  */
-+	int mtd_num;          /* public  */
-+	const char *mtd_name; /* public  */
-+	struct mtd_info *mtd; /* private */
-+};
++	dbg_gluebi("erase %u bytes at offset %u", instr->len, instr->addr);
 +
-+#endif /* !__UBI_IO_H__ */
++	if (unlikely(instr->addr < 0 ||
++		     instr->addr > mtd->size - mtd->erasesize))
++		return -EINVAL;
++
++	if (unlikely(instr->len < 0 ||
++		     instr->addr + instr->len > mtd->size))
++		return -EINVAL;
++
++	if (unlikely(instr->addr % mtd->writesize ||
++		     instr->len % mtd->writesize))
++		return -EINVAL;
++
++	lnum = instr->addr / mtd->erasesize;
++	count = instr->len / mtd->erasesize;
++
++	vol = mtd2vol(mtd);
++	ubi = vol->ubi;
++
++	if (unlikely(ubi->io->ro_mode))
++		return -EROFS;
++
++	for (i = 0; i < count; i++) {
++		dbg_gluebi("erase LEB %d", lnum);
++
++		err = ubi_eba_erase_leb(ubi, vol->vol_id, lnum + i);
++		if (unlikely(err))
++			goto out_err;
++	}
++
++	/*
++	 * MTD erase operations are synchronous, so we have to make sure the
++	 * physical eraseblock is wiped out.
++	 */
++	err = ubi_wl_flush(ubi);
++	if (unlikely(err))
++		goto out_err;
++
++        instr->state = MTD_ERASE_DONE;
++        mtd_erase_callback(instr);
++
++	return 0;
++
++out_err:
++	instr->state = MTD_ERASE_FAILED;
++	instr->fail_addr = lnum * mtd->erasesize;
++	return err;
++}
