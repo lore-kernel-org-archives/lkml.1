@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992429AbXBQQIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965299AbXBQQJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992429AbXBQQIy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 11:08:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992431AbXBQQIy
+	id S965299AbXBQQJV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 11:09:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965301AbXBQQJV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 11:08:54 -0500
-Received: from madara.hpl.hp.com ([192.6.19.124]:49852 "EHLO madara.hpl.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992429AbXBQQIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 11:08:53 -0500
-Date: Sat, 17 Feb 2007 08:08:38 -0800
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: linux-kernel@vger.kernel.org
-Cc: ak@suse.de, akpm@linux-foundation.org,
-       Stephane Eranian <eranian@hpl.hp.com>
-Subject: [PATCH] x86_64 make NMI use PERFCTR1 for architectural perfmon
-Message-ID: <20070217160838.GB16715@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
+	Sat, 17 Feb 2007 11:09:21 -0500
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:58140 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965299AbXBQQJU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 11:09:20 -0500
+Date: Sat, 17 Feb 2007 11:09:19 -0500
+To: Paul Fulghum <paulkf@microgate.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Strange problem with tty layer
+Message-ID: <20070217160919.GT7584@csclub.uwaterloo.ca>
+References: <20070124204009.GA7584@csclub.uwaterloo.ca> <45B7CDB5.7020909@microgate.com> <20070125151639.GH7582@csclub.uwaterloo.ca> <20070126142041.GD7584@csclub.uwaterloo.ca> <45BA1556.8080808@microgate.com> <20070126145608.GK7582@csclub.uwaterloo.ca> <45BA190C.5040300@microgate.com> <20070126160842.GM7582@csclub.uwaterloo.ca> <20070129192707.GE7584@csclub.uwaterloo.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+In-Reply-To: <20070129192707.GE7584@csclub.uwaterloo.ca>
+User-Agent: Mutt/1.5.9i
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mon, Jan 29, 2007 at 02:27:07PM -0500, Lennart Sorensen wrote:
+> I have run some tests with 8 patches from Linus's 2.6 tree on top of the
+> 2.6.16.25 along with a bit of debug code in the n_tty.c, which ran
+> perfectly for 3 days.  I now removed the debug code to see if it will
+> still run perfectly with those 8 patches.  The patches I applied in
+> order are:
+> 
+> commit 70522e121a521aa09bd0f4e62e1aa68708b798e1
+> commit 41c28ff1635e71af072c4711ff5fadd5855d48e7
+> commit 1aef821a6b3aeca8c19d06aee012ed9db617d1e3
+> commit ee37df7877eeaa16d7761cce64854110a7c17ad9
+> commit e1a2509023785bd3199ac068ab80155aeba01265
+> commit 817d6d3bceaf34c99f5343820f9b9e6021f0655c
+> commit 2c3bb20f46709a0adfa7ea408013edbcab945d5a
+> commit 33b37a33c242542fac2980b8ccd90977388b7a8d
+> 
+> Hopefully it will stay working, and actually be a solution to my tty
+> problem in 2.6.16.25.
+> 
+> 2.6.18.2 (Debian 2.6.18-4) on the other hand was still broken, but I am
+> not sure which if any of the above commits are not in that version (the
+> date ranges made me think they all should be, but maybe I got the date
+> of 2.6.18 wrong, or not all commits in the linux-2.6 tree are actually
+> part of a given release.  I am still figuring out git).
 
-This patch against 2.6.20 makes the NMI watchdog use PERFSEL1/PERFCTR1
-instead of PERFSEL0/PERFCTR0 on processors supporting Intel architectural
-perfmon, such as Intel Core 2. Although all PMU events can work on
-both counters, the Precise Event-Based Sampling (PEBS) requires that the
-event be in PERFCTR0 to work correctly (see section 18.14.4.1 in the
-IA32 SDM Vol 3b).
+2.6.18 does work, it failed in different ways (overruns on the fifo)
+which I dealt with by ensuring disk io was synced before testing the
+serial port.
 
-Changelog:
-	- make the x86_64 NMI watchdog use PERFSEL1/PERFCTR1 instead of PERFSEL0/PERFCTR0
-	  on processors supporting the Intel architectural perfmon (e.g. Core 2 Duo).
-	  This allows PEBS to work when the NMI watchdog is active.
-
-signed-off-by: stephane eranian <eranian@hpl.hp.com>
-
-diff -urNp --exclude=.git linux-2.6.20.orig/arch/x86_64/kernel/nmi.c linux-2.6.20.base/arch/x86_64/kernel/nmi.c
---- linux-2.6.20.orig/arch/x86_64/kernel/nmi.c	2007-02-04 10:44:54.000000000 -0800
-+++ linux-2.6.20.base/arch/x86_64/kernel/nmi.c	2007-02-17 08:04:19.000000000 -0800
-@@ -275,7 +275,7 @@ int __init check_nmi_watchdog (void)
- 		 * 32nd bit should be 1, for 33.. to be 1.
- 		 * Find the appropriate nmi_hz
- 		 */
--	 	if (wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR0 &&
-+	 	if (wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR1 &&
- 			((u64)cpu_khz * 1000) > 0x7fffffffULL) {
- 			nmi_hz = ((u64)cpu_khz * 1000) / 0x7fffffffUL + 1;
- 		}
-@@ -615,8 +615,8 @@ static int setup_intel_arch_watchdog(voi
- 	    (ebx & ARCH_PERFMON_UNHALTED_CORE_CYCLES_PRESENT))
- 		goto fail;
- 
--	perfctr_msr = MSR_ARCH_PERFMON_PERFCTR0;
--	evntsel_msr = MSR_ARCH_PERFMON_EVENTSEL0;
-+	perfctr_msr = MSR_ARCH_PERFMON_PERFCTR1;
-+	evntsel_msr = MSR_ARCH_PERFMON_EVENTSEL1;
- 
- 	if (!reserve_perfctr_nmi(perfctr_msr))
- 		goto fail;
-@@ -855,7 +855,7 @@ int __kprobes nmi_watchdog_tick(struct p
- 				dummy &= ~P4_CCCR_OVF;
- 	 			wrmsrl(wd->cccr_msr, dummy);
- 	 			apic_write(APIC_LVTPC, APIC_DM_NMI);
--	 		} else if (wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR0) {
-+	 		} else if (wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR1) {
- 				/*
- 				 * ArchPerfom/Core Duo needs to re-unmask
- 				 * the apic vector
+--
+Len Sorensen
