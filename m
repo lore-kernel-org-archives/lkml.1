@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750790AbXBQPw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750852AbXBQPxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750790AbXBQPw0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 10:52:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbXBQPw0
+	id S1750852AbXBQPxU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 10:53:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750856AbXBQPxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 10:52:26 -0500
-Received: from mfront7.mail.yandex.net ([213.180.223.96]:33499 "EHLO
-	mfront7.mail.yandex.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750790AbXBQPwZ (ORCPT
+	Sat, 17 Feb 2007 10:53:20 -0500
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:59846 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750852AbXBQPxT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 10:52:25 -0500
-Date: Sat, 17 Feb 2007 18:52:03 +0300 (MSK)
-From: "Mockern" <Mockern@yandex.ru>
-Message-Id: <45D724A3.000002.25611@mfront7.yandex.ru>
+	Sat, 17 Feb 2007 10:53:19 -0500
+In-Reply-To: <45D6CC81.1040004@246tNt.com>
+To: Sylvain Munaut <tnt@246tNt.com>
+Cc: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>, johnrose@us.ibm.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+       pmac@au1.ibm.com
 MIME-Version: 1.0
-X-Mailer: Yamail [ http://yandex.ru ]
-To: lsorense@csclub.uwaterloo.ca
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: buffer overflows in the tty flip buffer in 2.6.17
-X-MsgDayCount: 6
-X-BornDate: 1134853200
-In-Reply-To: <20070217151729.GS7584@csclub.uwaterloo.ca>
-Reply-To: Mockern@yandex.ru
-References: <45D6F52B.000003.10185@webmail19.yandex.ru> <20070217151729.GS7584@csclub.uwaterloo.ca>
-X-Source-Ip: 84.185.244.133
-Content-Type: text/plain;
-  charset="KOI8-R"
-Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH 2.6.21-rc1] ibmebus: Use of_device_uevent()
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+From: Joachim Fenkes <FENKES@de.ibm.com>
+Message-ID: <OFA3D529A5.FA8E67C7-ON85257285.00570531-85257285.0057458C@de.ibm.com>
+Date: Sat, 17 Feb 2007 10:53:15 -0500
+X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 6.5.5HF882 | September 26, 2006) at
+ 17/02/2007 16:53:15,
+	Serialize complete at 17/02/2007 16:53:15
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanx for your respond. 
+Sylvain Munaut <tnt@246tNt.com> wrote on 17.02.2007 04:36:01:
 
-Could you please inform me what patches exactly you have grabbed?
+> Doesn't that oops when called with the fake parent device ?
 
->On Sat, Feb 17, 2007 at 03:29:31PM +0300, Mockern wrote:
->> When data is received from the hardware, it needs to be placed into the tty device's flip buffer. This can be done with the following bit of code:
->> 
->> for (i = 0; i < data_size; ++i) {
->>         if (tty->flip.count >= TTY_FLIPBUF_SIZE)
->>                 tty_flip_buffer_push(tty);
->>         tty_insert_flip_char(tty, data[i], 0);
->> }
->> tty_flip_buffer_push(tty);
->> 
->> This example makes sure there are no buffer overflows in the tty flip buffer as the data is being added. 
->> 
->> But how it is done in 2.6.17 linux kernel? I did check this "overflow code" in new tty driver's code. This code looks like just removed. But somehow overflow in the tty buffer must be kept.
->
->Well there was a problem in 2.6.16, which was fixed by 2.6.18, although
->I am not sure if it was done by 2.6.17.  It would loose characters due
->to buffer overflow and not properly checking under high load.  I grabbed
->a few patches from the git tree that were added after 2.6.16 to fix the
->tty problems I was having.
->
->--
->Len Sorensen
->-
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+I should stop posting patches after 12 hours of work ,)
+
+> Or, an even better approach is to add this
+> 
+> +   if (!ebus_dev->ofdev.node)
+> +      return -ENODEV;
+> 
+> inside the code of of_device_uevent itself.
+
+Nice! Patch will follow.
+
+Thanks again,
+  Joachim
+
+---
+Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer 
+extraordinaire
+IBM Deutschland Entwicklung GmbH  --  Dept. 3627 (I/O Firmware Development 
+2)
+Schoenaicher Strasse 220  --  71032 Boeblingen  --  Germany
+eMail: fenkes@de.ibm.com  --  Phone: +49 7031 16 1239 
+
+Vorsitzender des Aufsichtsrats: Johann Weihen  --  GeschДftsfЭhrung: 
+Herbert Kircher
+Sitz der Gesellschaft: BЖblingen  --  Registergericht: Amtsgericht 
+Stuttgart, HRB 243294
 
 
--- 
-Сегодня удачный день, чтобы завести почту на Яндексе http://mail.yandex.ru
