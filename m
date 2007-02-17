@@ -1,50 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965316AbXBQQfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965315AbXBQQoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965316AbXBQQfe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 11:35:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965317AbXBQQfe
+	id S965315AbXBQQoU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 11:44:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965322AbXBQQoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 11:35:34 -0500
-Received: from lazybastard.de ([212.112.238.170]:55766 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965316AbXBQQfd (ORCPT
+	Sat, 17 Feb 2007 11:44:20 -0500
+Received: from nz-out-0506.google.com ([64.233.162.239]:38981 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965315AbXBQQoT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 11:35:33 -0500
-Date: Sat, 17 Feb 2007 15:11:08 +0000
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: Juan Piernas Canovas <piernas@ditec.um.es>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, sfaibish <sfaibish@emc.com>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [ANNOUNCE] DualFS: File System with Meta-data and Data Separation
-Message-ID: <20070217151108.GA301@lazybastard.org>
-References: <op.tnkdlbgsrwwil4@brcsmondepl2c.corp.emc.com> <op.tnrbrocsunckof@usensfaibisl2e.eng.emc.com> <Pine.LNX.4.61.0702142251460.19368@yvahk01.tjqt.qr> <Pine.LNX.4.61.0702151910370.19998@ditec.inf.um.es> <20070215200922.GB24643@lazybastard.org> <Pine.LNX.4.61.0702152353060.19998@ditec.inf.um.es> <20070216091321.GA28092@lazybastard.org> <45D642A4.5010009@tmr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Sat, 17 Feb 2007 11:44:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=B3+sn+OISdRc5bxTu/RkNOGT3e4o7i0B26e8wsv9fbpyroVl2bB25PMNUcqoGGHYk9FzNibbs0il4+aSn4NBa8E9VFR52Sq2qi4H+5ia3uUHDmyyceIOm66j0ffc4mDks3pNoyo5w1iG2I6QffUK9QukY9Hd1LJxModpX112xMA=
+Message-ID: <edd3ff190702170844q120c5f92l6c7c385665048c16@mail.gmail.com>
+Date: Sat, 17 Feb 2007 17:44:18 +0100
+From: "=?ISO-8859-1?Q?Daniel_Aragon=E9s?=" <danarag@gmail.com>
+To: "=?ISO-8859-1?Q?C=E9dric_Augonnet?=" <cedric.augonnet@gmail.com>
+Subject: Re: 2.6.20-mm1 - Oops using Minix 3 file system
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Cedric.augonnet@ens-lyon.org
+In-Reply-To: <f56c1ba00702170551k7cbbf79dkfc550e3d4b387d4c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <45D642A4.5010009@tmr.com>
-User-Agent: Mutt/1.5.9i
+References: <f56c1ba00702161500x775fe04bl91889b5819cf9ddc@mail.gmail.com>
+	 <edd3ff190702170255w1c30fa08v96e5b92baacbd701@mail.gmail.com>
+	 <f56c1ba00702170551k7cbbf79dkfc550e3d4b387d4c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 February 2007 18:47:48 -0500, Bill Davidsen wrote:
-> >
-> Actually I am interested in the common case, where the machine is not 
-> out of space, or memory, or CPU, but when it is appropriately sized to 
-> the workload. Not that I lack interest in corner cases, but the "running 
-> flat out" case doesn't reflect case where there's enough hardware, now 
-> the o/s needs to use it well.
+On 2/17/07, Cédric Augonnet <cedric.augonnet@gmail.com> wrote:
 
-There is one detail about this specific corner case you may be missing.
-Most log-structured filesystems don't just drop in performance - they
-can run into a deadlock and the only recovery from this is the lovely
-backup-mkfs-restore procedure.
+> It appears that the trouble is in  the count_free of file
+> fs/minix/bitmap.c . This procedure is actually called twice when we
+> issue a df command.
+> The point where things start to get strange is
+>         i = ((numbits - (numblocks-1) * bh->b_size * 8) / 16) * 2; at line 36
+>
+> In the first call to that procedure i have
+>        i = 3506
+>        bh->b_data = 0xd4e79000
+>
+> Whereas in the second call i have something much different :
+>        i = 536838736
+>        bh->b_data = d4e78000
+>
 
-If it was just performance, I would agree with you.
+Well, that line is modified by my patch. The original one is:
+i = ((numbits-(numblocks-1)*BLOCK_SIZE*8)/16)*2;
 
-JÃ¶rn
+As you see, the constant is substituted by a variable. As you are
+running under emulation, the true value of that variable ( 4096 in
+standard minix3 releases, instead of the constant 1024 in minix1 and
+minix2), is probably found where it should not be found, or not found
+at all. And the result is what you show. Minix 3 provides for a
+variable size of the blocks. Try to find what block size you are
+emulating.
 
--- 
-He that composes himself is wiser than he that composes a book.
--- B. Franklin
+Also, though your dmesg shows a mounted loop partition, the minix
+subpartition in it is not stated. So it cannot be accessed.
+
+By the way, you don't need to support minix on your Linux box to run
+it through an emulator, do you?
+
+Regards
+
+Daniel
