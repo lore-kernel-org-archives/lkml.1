@@ -1,39 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992712AbXBQRE5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992603AbXBQRE6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992712AbXBQRE5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 12:04:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992709AbXBQREn
+	id S2992603AbXBQRE6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 12:04:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992591AbXBQREk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 12:04:43 -0500
-Received: from smtp.nokia.com ([131.228.20.171]:56132 "EHLO
-	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992603AbXBQRDT (ORCPT
+	Sat, 17 Feb 2007 12:04:40 -0500
+Received: from smtp.nokia.com ([131.228.20.170]:53763 "EHLO
+	mgw-ext11.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992709AbXBQREg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 12:03:19 -0500
+	Sat, 17 Feb 2007 12:04:36 -0500
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Christoph Hellwig <hch@infradead.org>,
        Artem Bityutskiy <dedekind@infradead.org>,
        Frank Haverkamp <haver@vnet.ibm.com>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
        Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Date: Sat, 17 Feb 2007 18:56:15 +0200
-Message-Id: <20070217165615.5845.79171.sendpatchset@localhost.localdomain>
+       David Woodhouse <dwmw2@infradead.org>
+Date: Sat, 17 Feb 2007 18:54:39 +0200
+Message-Id: <20070217165439.5845.66537.sendpatchset@localhost.localdomain>
 In-Reply-To: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
 References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
-Subject: [PATCH 22/44 take 2] [UBI] background thread unit implementation
-X-OriginalArrivalTime: 17 Feb 2007 16:55:42.0707 (UTC) FILETIME=[75C95C30:01C752B4]
+Subject: [PATCH 03/44 take 2] [UBI] user-space API header
+X-OriginalArrivalTime: 17 Feb 2007 16:54:39.0252 (UTC) FILETIME=[4FF6E540:01C752B4]
 X-eXpurgate-Category: 1/0
-X-eXpurgate-ID: 149371::070217185415-3C659BB0-06EC9986/0-0/0-0
+X-eXpurgate-ID: 149371::070217185112-5EAEEBB0-62D4C7BF/0-0/0-1
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff -auNrp tmp-from/drivers/mtd/ubi/background.c tmp-to/drivers/mtd/ubi/background.c
---- tmp-from/drivers/mtd/ubi/background.c	1970-01-01 02:00:00.000000000 +0200
-+++ tmp-to/drivers/mtd/ubi/background.c	2007-02-17 18:07:27.000000000 +0200
-@@ -0,0 +1,352 @@
+diff -auNrp tmp-from/include/mtd/ubi-user.h tmp-to/include/mtd/ubi-user.h
+--- tmp-from/include/mtd/ubi-user.h	1970-01-01 02:00:00.000000000 +0200
++++ tmp-to/include/mtd/ubi-user.h	2007-02-17 18:07:26.000000000 +0200
+@@ -0,0 +1,161 @@
 +/*
 + * Copyright (c) International Business Machines Corp., 2006
 + *
@@ -51,338 +51,147 @@ diff -auNrp tmp-from/drivers/mtd/ubi/background.c tmp-to/drivers/mtd/ubi/backgro
 + * along with this program; if not, write to the Free Software
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 + *
-+ * Authors: Thomas Gleixner, Artem B. Bityutskiy
++ * Author: Artem B. Bityutskiy
 + */
 +
-+#include <linux/string.h>
-+#include <linux/sched.h>
-+#include <linux/completion.h>
-+#include <linux/spinlock.h>
-+#include <linux/mutex.h>
-+#include <linux/freezer.h>
-+#include "ubi.h"
-+#include "alloc.h"
-+#include "debug.h"
-+#include "background.h"
-+#include "eba.h"
-+
-+/* Background thread name pattern */
-+#define BGT_NAME_PATTERN "ubi_bgt%dd"
-+
-+/* Highest number of pending works */
-+#define BGT_MAX_PENDING_WORKS 0x7FFFFFFF
++#ifndef __UBI_USER_H__
++#define __UBI_USER_H__
 +
 +/*
-+ * Maximum number of consecutive background thread failures which is enough to
-+ * disable the thread.
++ * UBI volume creation
++ * ~~~~~~~~~~~~~~~~~~~
++ *
++ * UBI volumes are created via the %UBI_IOCMKVOL IOCTL command of UBI character
++ * device. A &struct ubi_mkvol_req object has to be properly filled and a
++ * pointer to it has to be passed to the IOCTL.
++ *
++ * UBI volume deletion
++ * ~~~~~~~~~~~~~~~~~~~
++ *
++ * To delete a volume, the %UBI_IOCRMVOL IOCTL command of the UBI character
++ * device should be used. A pointer to the 32-bit volume ID hast to be passed
++ * to the IOCTL.
++ *
++ * UBI volume re-size
++ * ~~~~~~~~~~~~~~~~~~
++ *
++ * To re-size a volume, the %UBI_IOCRSVOL IOCTL command of the UBI character
++ * device should be used. A &struct ubi_rsvol_req object has to be properly
++ * filled and a pointer to it has to be passed to the IOCTL.
++ *
++ * UBI volume update
++ * ~~~~~~~~~~~~~~~~~
++ *
++ * Volume update should be done via the %UBI_IOCVOLUP IOCTL command of the
++ * corresponding UBI volume character device. A pointer to a 64-bit update
++ * size should be passed to the IOCTL. After then, UBI expects user to write
++ * this number of bytes to the volume character device. The update is finished
++ * when the claimed number of bytes is passed. So, the volume update sequence
++ * is something like:
++ *
++ * fd = open("/dev/my_volume");
++ * ioctl(fd, UBI_IOCVOLUP, &image_size);
++ * write(fd, buf, image_size);
++ * close(fd);
 + */
-+#define BGT_MAX_FAILURES 32
 +
-+int ubi_bgt_schedule(const struct ubi_info *ubi, struct ubi_bgt_work *wrk)
-+{
-+	int err = 0;
-+	struct ubi_bgt_info *bgt = ubi->bgt;
++/*
++ * When a new volume is created, users may either specify the volume number they
++ * want to create or to let UBI automatically assign a volume number using this
++ * constant.
++ */
++#define UBI_VOL_NUM_AUTO (-1)
 +
-+retry:
-+	spin_lock(&bgt->lock);
-+	dbg_bgt("%s: schedule work %p (func %p, priv %p)",
-+		bgt->bgt_name, wrk, wrk->func, wrk->priv);
++/* Maximum volume name length */
++#define UBI_MAX_VOLUME_NAME 127
 +
-+	if (unlikely(!bgt->task)) {
-+		ubi_err("task \"%s\" was killed", bgt->bgt_name);
-+		spin_unlock(&bgt->lock);
-+		return -ENODEV;
-+	}
++/* IOCTL commands of UBI character devices */
 +
-+	if (unlikely(bgt->pending_works_count == BGT_MAX_PENDING_WORKS)) {
-+		/* Too many pending works */
-+		spin_unlock(&bgt->lock);
-+		dbg_bgt("pending queue is too long, do a work now");
-+		err = ubi_bgt_do_work(ubi);
-+		if (unlikely(err))
-+			goto out;
++#define UBI_IOC_MAGIC 'o'
 +
-+		cond_resched();
-+		goto retry;
-+	}
++/* Create an UBI volume */
++#define UBI_IOCMKVOL _IOW(UBI_IOC_MAGIC, 0, struct ubi_mkvol_req)
++/* Remove an UBI volume */
++#define UBI_IOCRMVOL _IOW(UBI_IOC_MAGIC, 1, int32_t)
++/* Re-size an UBI volume */
++#define UBI_IOCRSVOL _IOW(UBI_IOC_MAGIC, 2, struct ubi_rsvol_req)
 +
-+	list_add_tail(&wrk->list, &bgt->pending_works);
-+	bgt->pending_works_count += 1;
++/* IOCTL commands of UBI volume character devices */
 +
-+	if (!bgt->active_work && likely(bgt->enabled))
-+		wake_up_process(bgt->task);
++#define UBI_VOL_IOC_MAGIC 'O'
 +
-+out:
-+	spin_unlock(&bgt->lock);
-+	return err;
-+}
++/* Start UBI volume update */
++#define UBI_IOCVOLUP _IOW(UBI_VOL_IOC_MAGIC, 0, int64_t)
++/* An eraseblock erasure command, used for debugging, disabled by default */
++#define UBI_IOCEBER _IOW(UBI_VOL_IOC_MAGIC, 1, int32_t)
 +
-+int ubi_bgt_reschedule(const struct ubi_info *ubi, struct ubi_bgt_work *wrk)
-+{
-+	struct ubi_bgt_info *bgt = ubi->bgt;
-+
-+	spin_lock(&bgt->lock);
-+	dbg_bgt("%s: re-schedule work %p (func %p, priv %p)",
-+		bgt->bgt_name, wrk, wrk->func, wrk->priv);
-+
-+	if (unlikely(!bgt->task)) {
-+		ubi_err("task \"%s\" was killed", bgt->bgt_name);
-+		spin_unlock(&bgt->lock);
-+		return -ENODEV;
-+	}
-+
-+	list_add_tail(&wrk->list, &bgt->pending_works);
-+	bgt->pending_works_count += 1;
-+
-+	if (!bgt->active_work && likely(bgt->enabled))
-+		wake_up_process(bgt->task);
-+	spin_unlock(&bgt->lock);
-+	return 0;
-+}
-+
-+int ubi_bgt_enable(const struct ubi_info *ubi)
-+{
-+	struct ubi_bgt_info *bgt = ubi->bgt;
-+
-+	spin_lock(&bgt->lock);
-+	dbg_bgt("enable \"%s\"", bgt->bgt_name);
-+
-+	if (!bgt->task) {
-+		ubi_err("task \"%s\" was killed", bgt->bgt_name);
-+		spin_unlock(&bgt->lock);
-+		return -ENODEV;
-+	}
-+
-+	bgt->enabled = 1;
-+	wake_up_process(bgt->task);
-+	spin_unlock(&bgt->lock);
-+	return 0;
-+}
-+
-+void ubi_bgt_disable(const struct ubi_info *ubi)
-+{
-+	struct ubi_bgt_info *bgt = ubi->bgt;
-+
-+	spin_lock(&bgt->lock);
-+	dbg_bgt("disable \"%s\"", bgt->bgt_name);
-+	bgt->enabled = 0;
-+	spin_unlock(&bgt->lock);
-+}
-+
-+void ubi_bgt_kill_thread(const struct ubi_info *ubi)
-+{
-+	struct ubi_bgt_info *bgt = ubi->bgt;
-+
-+	dbg_bgt("disable \"%s\"", bgt->bgt_name);
-+	if (bgt->task) {
-+		send_sig(SIGKILL, bgt->task, 1);
-+		wait_for_completion(&bgt->thread_stop);
-+	}
-+}
-+
-+int ubi_bgt_do_work(const struct ubi_info *ubi)
-+{
-+	int err;
-+	struct ubi_bgt_work *wrk;
-+	struct ubi_bgt_info *bgt = ubi->bgt;
-+
-+	mutex_lock(&bgt->wrk_mutex);
-+
-+	spin_lock(&bgt->lock);
-+
-+	if (unlikely(bgt->pending_works_count == 0)) {
-+		err = 0;
-+		goto out;
-+	}
-+
-+	bgt->active_work = wrk = list_entry(bgt->pending_works.next,
-+					    struct ubi_bgt_work, list);
-+	list_del(&wrk->list);
-+	bgt->pending_works_count -= 1;
-+	ubi_assert(bgt->pending_works_count >= 0);
-+	spin_unlock(&bgt->lock);
-+
-+	/*
-+	 * Call the worker function. Do not touch the work structure
-+	 * after this call as it will have been freed or reused by that
-+	 * time by the worker function.
-+	 */
-+	dbg_bgt("%s: do work %p (func %p, priv %p)",
-+		bgt->bgt_name, wrk, wrk->func, wrk->priv);
-+
-+	err = wrk->func(ubi, wrk, 0);
-+	if (unlikely(err))
-+		ubi_err("a work failed with error code %d", err);
-+
-+	spin_lock(&bgt->lock);
-+	bgt->active_work = NULL;
-+out:
-+	spin_unlock(&bgt->lock);
-+	mutex_unlock(&bgt->wrk_mutex);
-+	return err;
-+}
++/*
++ * UBI volume type constants.
++ *
++ * @UBI_DYNAMIC_VOLUME: dynamic volume
++ * @UBI_STATIC_VOLUME:  static volume
++ */
++enum {
++	UBI_DYNAMIC_VOLUME = 3,
++	UBI_STATIC_VOLUME = 4
++};
 +
 +/**
-+ * ubi_thread - UBI background thread.
++ * struct ubi_mkvol_req - volume description data structure used in
++ * volume creation requests.
 + *
-+ * @u: the UBI device description object pointer
++ * @vol_id: volume number
++ * @alignment: volume alignment
++ * @bytes: volume size in bytes
++ * @vol_type: volume type (%UBI_DYNAMIC_VOLUME or %UBI_STATIC_VOLUME)
++ * @padding: reserved for future, not used
++ * @name_len: volume name length
++ * @name: volume name
++ *
++ * This structure is used by userspace programs when creating new volumes. The
++ * @used_bytes field is only necessary when creating static volumes.
++ *
++ * The @alignment field specifies the required alignment of the volume logical
++ * eraseblock. This means, that the size of logical eraseblocks will be aligned
++ * to this number, i.e.,
++ * 	(UBI device logical eraseblock size) mod (@alignment) = 0.
++ *
++ * To put it differently, the logical eraseblock of this volume may be slightly
++ * shortened in order to make it properly aligned. The alignment has to be
++ * multiple of the flash minimal input/output unit, or %1 to utilize the entire
++ * available space of logical eraseblocks.
++ *
++ * The @alignment field may be useful, for example, when one wants to maintain
++ * a block device on top of an UBI volume. In this case, it is desirable to fit
++ * an integer number of blocks in logical eraseblocks of this UBI volume. With
++ * alignment it is possible to update this volume using plane UBI volume image
++ * BLOBs, without caring about how to properly write them.
 + */
-+static int ubi_thread(void *u)
-+{
-+	int failures = 0;
-+	const struct ubi_info *ubi = u;
-+	struct ubi_bgt_info *bgt = ubi->bgt;
++struct ubi_mkvol_req {
++	int32_t vol_id;
++	int32_t alignment;
++	int64_t bytes;
++	int8_t vol_type;
++	int8_t padding[9];
++	int16_t name_len;
++	__user const char *name;
++} __attribute__ ((packed));
 +
-+	daemonize(bgt->bgt_name);
-+	allow_signal(SIGKILL);
-+	allow_signal(SIGSTOP);
++/**
++ * struct ubi_rsvol_req - a data structure used in volume re-size requests.
++ *
++ * @vol_id: ID of the volume to re-size
++ * @bytes: new size of the volume in bytes
++ *
++ * Re-sizing is possible for both dynamic and static volumes. But while dynamic
++ * volumes may be re-sized arbitrarily, static volumes cannot be made to be
++ * smaller then the number of bytes they bear. To arbitrarily shrink a static
++ * volume, it must be wiped out first (by means of volume update operation with
++ * zero number of bytes).
++ */
++struct ubi_rsvol_req {
++	int64_t bytes;
++	int32_t vol_id;
++} __attribute__ ((packed));
 +
-+	ubi_msg("background thread \"%s\" started, PID %d",
-+		bgt->bgt_name, current->pid);
-+
-+	bgt->task = current;
-+	complete(&bgt->thread_start);
-+	set_current_state(TASK_INTERRUPTIBLE);
-+	schedule();
-+
-+	for (;;) {
-+		cond_resched();
-+
-+		if (unlikely(!bgt->enabled) ||
-+			     list_empty(&bgt->pending_works)) {
-+			set_current_state(TASK_INTERRUPTIBLE);
-+			schedule();
-+		}
-+
-+		if (try_to_freeze())
-+			continue;
-+
-+		while (signal_pending(current)) {
-+			siginfo_t info;
-+			unsigned long nr;
-+
-+			nr = dequeue_signal_lock(current, &current->blocked,
-+						 &info);
-+			if (nr == SIGKILL)
-+				goto out;
-+			if (nr == SIGSTOP) {
-+				bgt->enabled = !bgt->enabled;
-+				ubi_msg("%s the background thread",
-+					bgt->enabled ? "enable" : "disable");
-+			}
-+		}
-+
-+		spin_lock(&bgt->lock);
-+		while (bgt->pending_works_count > 0 && likely(bgt->enabled)) {
-+			int err;
-+
-+			ubi_assert(!list_empty(&bgt->pending_works));
-+			spin_unlock(&bgt->lock);
-+
-+			cond_resched();
-+
-+			err = ubi_bgt_do_work(ubi);
-+			if (unlikely(err)) {
-+				ubi_err("%s: work failed with error code %d",
-+					bgt->bgt_name, err);
-+				if (failures++ > BGT_MAX_FAILURES) {
-+					/*
-+					 * Too many failures, disable the
-+					 * thread and switch to read-only mode.
-+					 */
-+					ubi_msg("%d consecutive failures, "
-+						"disable the background thread",
-+						BGT_MAX_FAILURES);
-+					ubi_bgt_disable(ubi);
-+					ubi_eba_ro_mode(ubi);
-+					break;
-+				} else
-+					failures = 0;
-+			}
-+
-+			spin_lock(&bgt->lock);
-+		}
-+		spin_unlock(&bgt->lock);
-+	}
-+
-+out:
-+	dbg_bgt("killing background thread \"%s\"", bgt->bgt_name);
-+
-+	/* Cancel all pending works before exiting */
-+	spin_lock(&bgt->lock);
-+	bgt->task = NULL;
-+
-+	bgt->enabled = 0;
-+	while (!list_empty(&bgt->pending_works)) {
-+		struct ubi_bgt_work *wrk;
-+
-+		wrk = list_entry(bgt->pending_works.next, struct ubi_bgt_work,
-+				 list);
-+		list_del(&wrk->list);
-+		bgt->pending_works_count -= 1;
-+		spin_unlock(&bgt->lock);
-+		wrk->func(ubi, wrk, 1);
-+		spin_lock(&bgt->lock);
-+	}
-+	spin_unlock(&bgt->lock);
-+
-+	complete_and_exit(&bgt->thread_stop, 0);
-+}
-+
-+int ubi_bgt_init(struct ubi_info *ubi)
-+{
-+	int err;
-+	pid_t pid;
-+	struct ubi_bgt_info *bgt;
-+
-+	dbg_bgt("initialize the UBI background thread unit");
-+
-+	bgt = ubi_kzalloc(sizeof(struct ubi_bgt_info));
-+	if (!bgt)
-+		return -ENOMEM;
-+	ubi->bgt = bgt;
-+
-+	init_completion(&bgt->thread_start);
-+	init_completion(&bgt->thread_stop);
-+	INIT_LIST_HEAD(&bgt->pending_works);
-+	spin_lock_init(&bgt->lock);
-+	mutex_init(&bgt->wrk_mutex);
-+
-+	bgt->bgt_name = ubi_kmalloc(sizeof(BGT_NAME_PATTERN) + 20);
-+	if (!bgt->bgt_name) {
-+		err = -ENOMEM;
-+		goto out_bgt;
-+	}
-+	sprintf(bgt->bgt_name, BGT_NAME_PATTERN, ubi->ubi_num);
-+
-+	pid = kernel_thread(ubi_thread, ubi, CLONE_FS | CLONE_FILES);
-+	if (pid < 0) {
-+		err = pid;
-+		ubi_err("cannot spawn \"%s\", error %d", bgt->bgt_name, err);
-+		goto out_name;
-+	}
-+
-+	wait_for_completion(&bgt->thread_start);
-+	dbg_bgt("the UBI background thread unit is initialized");
-+	return 0;
-+
-+out_name:
-+	ubi_kfree(bgt->bgt_name);
-+out_bgt:
-+	ubi_kfree(bgt);
-+	return err;
-+}
-+
-+void ubi_bgt_close(struct ubi_info *ubi)
-+{
-+	struct ubi_bgt_info *bgt = ubi->bgt;
-+
-+	dbg_bgt("close the UBI background thread unit");
-+
-+	ubi_assert(!bgt->enabled);
-+	ubi_assert(bgt->pending_works_count == 0);
-+	ubi_assert(list_empty(&bgt->pending_works));
-+
-+	ubi_kfree(bgt->bgt_name);
-+	ubi_kfree(bgt);
-+}
++#endif /* __UBI_USER_H__ */
