@@ -1,39 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965305AbXBQQKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992443AbXBQQYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965305AbXBQQKl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 11:10:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965304AbXBQQKl
+	id S2992443AbXBQQYf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 11:24:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992447AbXBQQYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 11:10:41 -0500
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:58172 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965305AbXBQQKk (ORCPT
+	Sat, 17 Feb 2007 11:24:35 -0500
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:23438 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992443AbXBQQYf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 11:10:40 -0500
-Date: Sat, 17 Feb 2007 11:10:40 -0500
-To: Mockern <Mockern@yandex.ru>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: buffer overflows in the tty flip buffer in 2.6.17
-Message-ID: <20070217161040.GU7584@csclub.uwaterloo.ca>
-References: <45D6F52B.000003.10185@webmail19.yandex.ru> <20070217151729.GS7584@csclub.uwaterloo.ca> <45D724A3.000002.25611@mfront7.yandex.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 17 Feb 2007 11:24:35 -0500
+From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+To: paulus@samba.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       johnrose@us.ibm.com, Sylvain Munaut <tnt@246tnt.com>
+Subject: [PATCH 2.6.21-rc1] powerpc: Make of_device_uevent() compatible with ibmebus
+User-Agent: KMail/1.8.2
+Cc: pmac@au1.ibm.com, fenkes@de.ibm.com
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <45D724A3.000002.25611@mfront7.yandex.ru>
-User-Agent: Mutt/1.5.9i
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Date: Sat, 17 Feb 2007 17:28:15 +0100
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200702171728.15597.hnguyen@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 17, 2007 at 06:52:03PM +0300, Mockern wrote:
-> Thanx for your respond. 
-> 
-> Could you please inform me what patches exactly you have grabbed?
+ibmebus has a fake root device that's not associated with an ofdt node.
+Filter out any such devices in of_device_uevent().
 
-If you see the thread "Re: Strange problem with tty layer", which I just
-posted a final update too, it has the list of linux-2.6 git commits that
-I applied to 2.6.16 in order (some of them are probably in 2.6.17
-already, while others might not be).
 
---
-Len Sorensen
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+---
+
+
+ of_device.c |    4 ++++
+ 1 files changed, 4 insertions(+)
+
+
+diff -urp a/arch/powerpc/kernel/of_device.c b/arch/powerpc/kernel/of_device.c
+--- a/arch/powerpc/kernel/of_device.c	2007-02-17 16:36:32.116368480 +0100
++++ b/arch/powerpc/kernel/of_device.c	2007-02-17 16:44:01.319366352 +0100
+@@ -180,6 +180,10 @@ int of_device_uevent(struct device *dev,
+ 
+ 	ofdev = to_of_device(dev);
+ 
++	/* e.g. ibmebus has a fake root device w/o ofdt node -- filter that */
++	if (!ofdev->node)
++		return -ENODEV;
++
+ 	if (add_uevent_var(envp, num_envp, &i,
+ 			   buffer, buffer_size, &length,
+ 			   "OF_NAME=%s", ofdev->node->name))
+
