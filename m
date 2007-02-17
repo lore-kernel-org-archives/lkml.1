@@ -1,101 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750950AbXBQS1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751220AbXBQSgE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750950AbXBQS1U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 13:27:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbXBQS1U
+	id S1751220AbXBQSgE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 13:36:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030246AbXBQSgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 13:27:20 -0500
-Received: from weequay.is.scarlet.be ([193.74.71.24]:43308 "EHLO
-	weequay.is.scarlet.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750950AbXBQS1S (ORCPT
+	Sat, 17 Feb 2007 13:36:04 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:42884 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751220AbXBQSgD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 13:27:18 -0500
-Message-ID: <45D748E2.7020800@scarlet.be>
-Date: Sat, 17 Feb 2007 18:26:42 +0000
-From: Joel Soete <soete.joel@scarlet.be>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Sat, 17 Feb 2007 13:36:03 -0500
+X-Sasl-enc: tcdzwCTZWNK7rpbzgDEdametmRv+qUvNJwyl/oggAqAN 1171737390
+Message-ID: <45D74B46.3090602@imap.cc>
+Date: Sat, 17 Feb 2007 19:36:54 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-CC: Tejun Heo <htejun@gmail.com>, Luming Yu <luming.yu@gmail.com>,
-       Alan Cox <alan@redhat.com>, Ioan Ionita <opslynx@gmail.com>,
-       Alan <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       jgarzik@pobox.com
-Subject: Re: 2.6.20-rc6 libata PATA ATAPI CDROM is not working
-References: <459B31AE.709@gmail.com> <459BE5AC.70703@scarlet.be> <45BB51F9.5070100@scarlet.be> <3877989d0701270610h7a950125n10d439c3bebce9d0@mail.gmail.com> <45BB64F1.1000105@scarlet.be> <45CFBBD1.5090703@gmail.com> <45D0D133.8070801@scarlet.be> <45D1F6E4.2080102@scarlet.be> <20070213195729.GN7584@csclub.uwaterloo.ca> <45D6E821.5070305@scarlet.be> <20070217145959.GI7582@csclub.uwaterloo.ca>
-In-Reply-To: <20070217145959.GI7582@csclub.uwaterloo.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Adrian Bunk <bunk@stusta.de>
+CC: Hansjoerg Lipp <hjlipp@web.de>, gigaset307x-common@lists.sourceforge.net,
+       kkeil@suse.de, kai.germaschewski@gmx.de,
+       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org
+Subject: Re: Kbuild problem
+References: <20070215215638.GI13958@stusta.de> <45D4F80F.8040200@imap.cc> <20070216083339.GK13958@stusta.de> <45D64691.8070901@imap.cc> <20070217105203.GR13958@stusta.de>
+In-Reply-To: <20070217105203.GR13958@stusta.de>
+X-Enigmail-Version: 0.94.1.2
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig64CB85B673FB18D6CEFF111F"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[snip]
-> 
-> Hmm, readcd was trying to read 279884 blocks, while cdrecord said it
-> wrote 279882 blocks.
-> 
-yes and seems to be always the same:
-with new burned cd I got:
-# ll /MultiCd/cd060213.iso
--rwxr-xr-x 1 root root 3213312 Feb 13  2006 /MultiCd/cd060213.iso
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig64CB85B673FB18D6CEFF111F
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-i.e. 3213312/2048 == 1569
-
-while:
-readcd dev=/dev/hdd f=- | md5sum
-Read  speed:  1059 kB/s (CD   6x, DVD  0x).
-Write speed:   353 kB/s (CD   2x, DVD  0x).
-Capacity: 1571 Blocks = 3142 kBytes = 3 MBytes = 3 prMB
-Sectorsize: 2048 Bytes
-Copy from SCSI (1,1,0) disk to file '-'
-end:      1571
-Errno: 0 (Success), read_g1 scsi sendcmd: no error
-CDB:  28 00 00 00 06 00 00 00 23 00
-status: 0x2 (CHECK CONDITION)
-Sense Bytes:
-Sense Key: 0xFFFFFFFF [], Segment 0
-Sense Code: 0x00 Qual 0x00 (no additional sense information) Fru 0x0
-Sense flags: Blk 0 (not valid)
-cmd finished after 0.014s timeout 40s
-readcd: Success. Cannot read source disk
-readcd: Retrying from sector 1536.
-
-so always Capacity == original image size + 2 ?
-
-[snip]
-> 
-> There always seems to have been any issue with reading blocks from a cd
-> getting broken by the kernel doing readahead and getting failures by
-> trying to read past the end of the disc even though the user never asked
-> it to.  Sometimes your size just happens to hit a safe block size so the
-> readahead doesn't break.
-> 
-btw this tips:
-readcd dev=/dev/hdd sectors=0-1569 f=- | md5sum
-Read  speed:  1059 kB/s (CD   6x, DVD  0x).
-Write speed:   353 kB/s (CD   2x, DVD  0x).
-Capacity: 1571 Blocks = 3142 kBytes = 3 MBytes = 3 prMB
-Sectorsize: 2048 Bytes
-Copy from SCSI (1,1,0) disk to file '-'
-end:      1569
-addr:     1569 cnt: 33
-Time total: 5.436sec
-Read 3138.00 kB at 577.3 kB/sec.
-6a1248783a21722816b972aa9bae9d5e  -
-
-(adding sectors=0-1569 : 1569 being the size of the original image)
-
-seems to work fine
-# md5sum /MultiCd/cd060213.iso
-6a1248783a21722816b972aa9bae9d5e  /MultiCd/cd060213.iso
-
->> is the same wrong results.
+Am 17.02.2007 11:52 schrieb Adrian Bunk:
+> On Sat, Feb 17, 2007 at 01:04:33AM +0100, Tilman Schmidt wrote:
+>> [...] I'd prefer a
+>> Makefile which builds modular usb_gigaset.ko and/or ser_gigaset.ko
+>> like the present one (including asyncdata.o), but when linking
+>> usb-gigaset.o and ser-gigaset.o into the kernel includes asyncdata.o
+>> only once. Trouble is, I don't know how to express that in Kbuild.
 >>
->> mmm I always used successfully dd method at my office with scsi cdrom drive 
->> (even for bootable disk).
-> 
-> Well it seems some disks can be read that way, others can not.
-> 
-I would be curious to read same cd on scsi cdrom (at the office)?
+>> Any ideas?
+>=20
+> CONFIG_GIGASET_M105=3Dy, CONFIG_GIGASET_M101=3Dm and similar problems m=
+ight=20
+> make this quite tricky.
 
-Cheers,
-	Joel	
+I am no judge of that. All I know about the possibilities of Kbuild
+is what the files in Documentation/kbuild tell me. From browsing
+through other kernel Makefiles it would appear that there are more
+possibilities though, such as if/then/else constructs.
+
+> Shared functionality simply doesn't belong into any of the affected=20
+> modules, but to a different place where all users can access it.
+
+Alright, then so be it. But that raises another question:
+asyncdata.o is only needed for M105 and M101, not for the base
+driver. How do I express in Kbuild that asyncdata.o is to be added
+to gigaset-y only if CONFIG_GIGASET_M105 and CONFIG_GIGASET_M101
+are not both 'n'?
+
+Thanks,
+Tilman
+
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enig64CB85B673FB18D6CEFF111F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFF10tPMdB4Whm86/kRAnBBAJ4qQlQqJs1B+cgQ487xUK2V0T1jdQCePld3
+nrb5c3GubV0idet78kQcX4U=
+=GFP6
+-----END PGP SIGNATURE-----
+
+--------------enig64CB85B673FB18D6CEFF111F--
