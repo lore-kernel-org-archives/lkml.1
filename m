@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965034AbXBQFZG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965029AbXBQFeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965034AbXBQFZG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 00:25:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965035AbXBQFZG
+	id S965029AbXBQFeR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 00:34:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965039AbXBQFeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 00:25:06 -0500
-Received: from raven.upol.cz ([158.194.120.4]:55424 "EHLO raven.upol.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965034AbXBQFZD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 00:25:03 -0500
-Date: Sat, 17 Feb 2007 06:33:39 +0100
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [pp] kbuild: asm-offsets generalized
-Message-ID: <20070217053339.GB15861@flower.upol.cz>
-References: <20070209141728.GA26749@uranus.ravnborg.org> <1171034599.2718.190.camel@localhost.localdomain> <E1HGbJz-0003Lc-6h@flower> <1171323696.19842.29.camel@localhost.localdomain> <20070213031044.GA17046@flower.upol.cz> <20070216155527.GA14687@flower.upol.cz> <20070216155929.GA14713@flower.upol.cz> <20070216185635.GA16601@uranus.ravnborg.org> <20070216215617.GA15861@flower.upol.cz> <1171687429.18876.49.camel@localhost.localdomain>
+	Sat, 17 Feb 2007 00:34:17 -0500
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:61072 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965029AbXBQFeQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 00:34:16 -0500
+Date: Sat, 17 Feb 2007 11:02:33 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, akpm@osdl.org, paulmck@us.ibm.com,
+       mingo@elte.hu, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, rjw@sisk.pl
+Subject: Re: [RFC PATCH(Experimental) 1/4] freezer-cpu-hotplug core
+Message-ID: <20070217053233.GA22435@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20070214144031.GA15257@in.ibm.com> <20070214144229.GA19789@in.ibm.com> <20070214202209.GC301@tv-sign.ru> <20070216071617.GB4527@in.ibm.com> <20070216081209.GB2829@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1171687429.18876.49.camel@localhost.localdomain>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+In-Reply-To: <20070216081209.GB2829@in.ibm.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 17, 2007 at 03:43:49PM +1100, Rusty Russell wrote:
-> On Fri, 2007-02-16 at 22:56 +0100, Oleg Verych wrote:
-> > Hallo.
+On Fri, Feb 16, 2007 at 01:42:09PM +0530, Srivatsa Vaddagiri wrote:
+> On Fri, Feb 16, 2007 at 12:46:17PM +0530, Srivatsa Vaddagiri wrote:
+> > frozen. The only exception is cleaning up of per-cpu threads (which is
+> > not possible with processes frozen - if we can find a way to make that
+> > possible, then everything can be done in CPU_DEAD).
 > 
-> lguest parts look good though!
+> How abt a patch like below?
+> 
+> 
+> --- process.c.org	2007-02-16 13:38:39.000000000 +0530
+> +++ process.c	2007-02-16 13:38:59.000000000 +0530
+> @@ -47,7 +47,7 @@ void refrigerator(void)
+>  	recalc_sigpending(); /* We sent fake signal, clean it up */
+>  	spin_unlock_irq(&current->sighand->siglock);
+> 
+> -	while (frozen(current)) {
+> +	while (frozen(current) && !kthread_should_stop()) {
+>  		current->state = TASK_UNINTERRUPTIBLE;
+>  		schedule();
+>  	}
 
-Thanks.
+This looks ok, but probably we could do it in a better way.
+How about an api to thaw only a specific task something like
+thaw_process(struct task_struct p). 
 
-Well, then what about my way of doing generalization?
+That way, the CPU_DEAD handler which wants to kthread_stop a thread
+can selectively thaw the thread before it does kthread_stop.
 
-I.e. one-file shell script-let, rather many indistinguishable GNU make
-files throughout source tree?
+Rafael, does this have any negative impact on the freezer design?
 
-Sam's approach also offers using of CONGIG* options. But this has two
-issues (for me, of course):
+> This should let us do kthread_stop() in CPU_DEAD itself (while processes
+> are frozen)? That would allow us to do everything from CPU_DEAD itself
+> (and not have CPU_DEAD_KILL_THREADS).
+> 
+> 
+> -- 
+> Regards,
+> vatsa
 
-* lguest is in i386 arch, *top* Kbuild doing this for specific ARCH
-(include/asm/);
-
-* lguest wants to have private for-asm constants generated, unless CONFIG
-is set, kbuild never will reach that directory.
-
-Finally (my favorite). While i was told, that i'm doing more obfusticated
-solutions, i doubt i did now: script-let makes magic more readable, and
-GNU make's complications, like `$$' and various whitespace issues, do not
-influence.
-
-One thing is, that
-
-+quiet_cmd_offsets = GEN     $@
-+      cmd_offsets = $(srctree)/scripts/mkCconstants $< $@
-+
-
-can be moved in Kbuild.include with CONFIG* upgrade:
-....
-sed-$(CONFIG_MIPS) = mips
-....
-      cmd_offsets = $(srctree)/scripts/mkCconstants $< $@ $(sed-y)
-
-
-Kind regards!
---
--o--=O`C  info emacs : not found
- #oo'L O  info make  : not found
-<___=E M  man gcc    : not found
+thanks
+gautham.
+-- 
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
