@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946367AbXBQDEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946380AbXBQDGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946367AbXBQDEz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 22:04:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946374AbXBQDEy
+	id S1946380AbXBQDGA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 22:06:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964882AbXBQDGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 22:04:54 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:44676 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946367AbXBQDEy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 22:04:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Hf4/Pgn1k/yXhlgkhGs0FHFZNdm6/m7lCWoJ36H2pBhiuHAY55k7Gh07v1O7sXslK9QphF4pnQXx91KprxiSevm1u0NZUTT3OvIUevN8AOYit/3/miFa6RN4QFAtJ87MxXCj/YKAaZUWClWL3Hc5BcauYnEAJDbAMjGexKUXxcg=
-Message-ID: <d9def9db0702161904p68d72cc7ka2f2bd5c9d50e0a2@mail.gmail.com>
-Date: Sat, 17 Feb 2007 04:04:52 +0100
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: 2.6.20.git regression: 'PCI: add the sysfs driver name to all modules' causes hard hang on boot
-Cc: "Mike Galbraith" <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <d9def9db0702161821t737ef824p8d96ef5b3632acaa@mail.gmail.com>
+	Fri, 16 Feb 2007 22:06:00 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36765 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964874AbXBQDF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 22:05:58 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: John Keller <jpk@sgi.com>
+Subject: Re: [PATCH 1/1] -  acpi_boot_init() making bad check on return code
+Date: Fri, 16 Feb 2007 22:04:38 -0500
+User-Agent: KMail/1.9.5
+Cc: linux-acpi@vger.kernel.org, ayoung@sgi.com, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20070216210727.7407.93052.sendpatchset@attica.americas.sgi.com>
+In-Reply-To: <20070216210727.7407.93052.sendpatchset@attica.americas.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1171619710.6828.24.camel@Homer.simpson.net>
-	 <20070216223609.GA6165@kroah.com>
-	 <1171676288.6448.9.camel@Homer.simpson.net>
-	 <20070217015048.GB18591@kroah.com>
-	 <d9def9db0702161821t737ef824p8d96ef5b3632acaa@mail.gmail.com>
+Message-Id: <200702162204.38607.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/17/07, Markus Rechberger <mrechberger@gmail.com> wrote:
-> On 2/17/07, Greg KH <greg@kroah.com> wrote:
-> > On Sat, Feb 17, 2007 at 02:38:08AM +0100, Mike Galbraith wrote:
-> > > On Fri, 2007-02-16 at 14:36 -0800, Greg KH wrote:
-> > > > On Fri, Feb 16, 2007 at 10:55:10AM +0100, Mike Galbraith wrote:
-> > > > > Greetings,
-> > > > >
-> > > > > Per $subject, git.yesterday hangs hard on boot here. A git bisect
-> > > > > fingered the commit below, which I verified via git bisect reset;
-> git
-> > > > > revert -n 725522b5453dd680412f2b6463a988e4fd148757, after which box
-> > > > > boots fine.  (well, I hope I verified... i'm git-ignorant)
-> > > >
-> > > > If you change CONFIG_SYSFS_DEPRECATED to Y, does that solve the
-> problem?
-> > >
-> > > It's already set.
-> >
-> > It's not set in the config file you sent to me and the list :)
-> >
->
-> I'm having a hard lockup to when I fire up xmms in X (maybe some other
-> apps too) I'm bisecting at the moment.
-> CONFIG_SYSFS_DEPRECIATED is set to Y here too, so I might have another
-> problem here.. let's see what bisecting will show up..
->
+Applied.
 
-seems to be a "wrong" alarm here, it was caused by a new xorg.conf and
-an intel 855gm chipset.
-
-Markus
+thanks,
+-Len
+On Friday 16 February 2007 16:07, John Keller wrote:
+> acpi_boot_init() is making a bad check on the return
+> status from acpi_table_parse(). acpi_table_parse() now
+> returns zero on success, one on failure.
+> 
+> Signed-off-by: Aaron Young <ayoung@sgi.com>
+> ---
+> 
+> Index: release/arch/ia64/kernel/acpi.c
+> ===================================================================
+> --- release.orig/arch/ia64/kernel/acpi.c	2007-02-16 08:58:10.000000000 -0600
+> +++ release/arch/ia64/kernel/acpi.c	2007-02-16 09:03:16.893360100 -0600
+> @@ -651,7 +651,7 @@ int __init acpi_boot_init(void)
+>  	 * information -- the successor to MPS tables.
+>  	 */
+>  
+> -	if (acpi_table_parse(ACPI_SIG_MADT, acpi_parse_madt) < 1) {
+> +	if (acpi_table_parse(ACPI_SIG_MADT, acpi_parse_madt)) {
+>  		printk(KERN_ERR PREFIX "Can't find MADT\n");
+>  		goto skip_madt;
+>  	}
+> @@ -702,7 +702,7 @@ int __init acpi_boot_init(void)
+>  	 * gets interrupts such as power and sleep buttons.  If it's not
+>  	 * on a Legacy interrupt, it needs to be setup.
+>  	 */
+> -	if (acpi_table_parse(ACPI_SIG_FADT, acpi_parse_fadt) < 1)
+> +	if (acpi_table_parse(ACPI_SIG_FADT, acpi_parse_fadt))
+>  		printk(KERN_ERR PREFIX "Can't find FADT\n");
+>  
+>  #ifdef CONFIG_SMP
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
