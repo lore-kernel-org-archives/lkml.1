@@ -1,39 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992695AbXBQRCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992616AbXBQRCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992695AbXBQRCU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 12:02:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992690AbXBQRB5
+	id S2992616AbXBQRCf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 12:02:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992484AbXBQRCf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 12:01:57 -0500
-Received: from smtp.nokia.com ([131.228.20.172]:57374 "EHLO
-	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992680AbXBQRBy (ORCPT
+	Sat, 17 Feb 2007 12:02:35 -0500
+Received: from smtp.nokia.com ([131.228.20.170]:53094 "EHLO
+	mgw-ext11.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992617AbXBQRBg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 12:01:54 -0500
+	Sat, 17 Feb 2007 12:01:36 -0500
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Christoph Hellwig <hch@infradead.org>,
        Artem Bityutskiy <dedekind@infradead.org>,
        Frank Haverkamp <haver@vnet.ibm.com>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
        Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Date: Sat, 17 Feb 2007 18:55:04 +0200
-Message-Id: <20070217165504.5845.83050.sendpatchset@localhost.localdomain>
+       David Woodhouse <dwmw2@infradead.org>
+Date: Sat, 17 Feb 2007 18:54:59 +0200
+Message-Id: <20070217165459.5845.18967.sendpatchset@localhost.localdomain>
 In-Reply-To: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
 References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
-Subject: [PATCH 08/44 take 2] [UBI] misc unit implementation
-X-OriginalArrivalTime: 17 Feb 2007 16:54:32.0117 (UTC) FILETIME=[4BB62E50:01C752B4]
-X-eXpurgate-Category: 1/0
-X-eXpurgate-ID: 149371::070217185227-03D70BB0-41058836/0-0/0-1
+Subject: [PATCH 07/44 take 2] [UBI] misc unit header
+X-OriginalArrivalTime: 17 Feb 2007 16:54:59.0376 (UTC) FILETIME=[5BF59300:01C752B4]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff -auNrp tmp-from/drivers/mtd/ubi/misc.c tmp-to/drivers/mtd/ubi/misc.c
---- tmp-from/drivers/mtd/ubi/misc.c	1970-01-01 02:00:00.000000000 +0200
-+++ tmp-to/drivers/mtd/ubi/misc.c	2007-02-17 18:07:26.000000000 +0200
-@@ -0,0 +1,138 @@
+diff -auNrp tmp-from/drivers/mtd/ubi/misc.h tmp-to/drivers/mtd/ubi/misc.h
+--- tmp-from/drivers/mtd/ubi/misc.h	1970-01-01 02:00:00.000000000 +0200
++++ tmp-to/drivers/mtd/ubi/misc.h	2007-02-17 18:07:26.000000000 +0200
+@@ -0,0 +1,146 @@
 +/*
 + * Copyright (c) International Business Machines Corp., 2006
 + *
@@ -54,121 +52,129 @@ diff -auNrp tmp-from/drivers/mtd/ubi/misc.c tmp-to/drivers/mtd/ubi/misc.c
 + * Author: Artem B. Bityutskiy
 + */
 +
-+#include <linux/string.h>
-+#include <linux/sched.h>
-+#include "ubi.h"
-+#include "misc.h"
-+#include "vtbl.h"
-+#include "debug.h"
-+#include "eba.h"
-+#include "alloc.h"
-+#include "io.h"
-+#include "account.h"
-+#include "background.h"
++/*
++ * Here we keep miscellaneous functions which are used all over the UBI code and
++ * do not really belong to any particular unit.
++ */
 +
-+int ubi_buf_all_ff(const void *buf, int size)
++#ifndef __UBI_MISC_H__
++#define __UBI_MISC_H__
++
++#include <linux/rbtree.h>
++
++struct ubi_info;
++
++#define xquotise(s) #s
++#define quotise(s) xquotise(s)
++
++/**
++ * rb_for_each_entry - walk an RB-tree.
++ *
++ * @rb: a pointer to type 'struct rb_node' to to use as a loop counter
++ * @pos: a pointer to RB-tree entry type to use as a loop counter
++ * @root: RB-tree's root
++ * @member: the name of the 'struct rb_node' within the RB-tree entry
++ */
++#define rb_for_each_entry(rb, pos, root, member)                             \
++	for (rb = rb_first(root),                                            \
++	     pos = (rb ? container_of(rb, typeof(*pos), member) : NULL);     \
++	     rb;                                                             \
++	     rb = rb_next(rb), pos = container_of(rb, typeof(*pos), member))
++
++/*
++ * align_up - align an integer to another integer.
++ *
++ * @x: the integer to align
++ * @y: the integer to align to
++ *
++ * This function returns the lowest number which is multiple to @y and not less
++ * then @x.
++ */
++static inline int align_up(int x, int y)
 +{
-+	int i;
-+
-+	for (i = 0; i < size / sizeof(unsigned int); i++)
-+		if (((const unsigned int *)buf)[i] != ~0)
-+			return 0;
-+
-+	for (i = i; i < size; i++)
-+		if (((const uint8_t *)buf)[i] != 0xFF)
-+			return 0;
-+
-+	return 1;
++	return y*(x/y) + (!!(x % y)) * y;
 +}
 +
-+int ubi_buf_all_zeroes(const void *buf, int size)
++/*
++ * align_down - align an integer to another integer.
++ *
++ * @x: the integer to align
++ * @y: the integer to align to
++ *
++ * This function returns the highest number which is multiple to @y and not
++ * greater then @x.
++ */
++static inline int align_down(int x, int y)
 +{
-+	int i;
-+
-+	for (i = 0; i < size / sizeof(unsigned int); i++)
-+		if (((const unsigned int *)buf)[i] != 0)
-+			return 0;
-+
-+	for (i = i; i < size; i++)
-+		if (((const uint8_t *)buf)[i] != 0)
-+			return 0;
-+
-+	return 1;
++	return y*(x/y) - (!!(x % y)) * y;
 +}
 +
-+int ubi_check_pattern(const void *buf, uint8_t patt, int size)
-+{
-+	int i;
++/**
++ * ubi_buf_all_ff - check if buffer contains only 0xFF bytes.
++ *
++ * @buf: buffer to check
++ * @size: buffer size in bytes
++ *
++ * This function returns non-zero in there are only 0xFF bytes in @buf, and
++ * zero if something else was also found.
++ */
++int ubi_buf_all_ff(const void *buf, int size);
 +
-+	for (i = 0; i < size; i++)
-+		if (((const uint8_t *)buf)[i] != patt)
-+			return 0;
-+	return 1;
-+}
++/**
++ * ubi_buf_all_zeroes - check if buffer contains only zeroes.
++ *
++ * @buf: buffer to check
++ * @size: buffer size in bytes
++ *
++ * This function returns non-zero in there are only 0 bytes in @buf, and
++ * zero if something else was also found.
++ */
++int ubi_buf_all_zeroes(const void *buf, int size);
 +
-+char *strdup_len(const char *str, int len)
-+{
-+	char *dup;
++/**
++ * ubi_check_pattern - check if buffer contains only a certain byte pattern.
++ *
++ * @buf: buffer to check
++ * @patt: the pattern to check
++ * @size: buffer size in bytes
++ *
++ * This function returns non-zero in there are only @patt bytes in @buf, and
++ * zero if something else was also found.
++ */
++int ubi_check_pattern(const void *buf, uint8_t patt, int size);
 +
-+	ubi_assert(strnlen(str, len + 1) == len);
++/**
++ * strdup_len - duplicate a string with known length.
++ *
++ * @str: original string
++ * @len: the length of the string
++ */
++char *strdup_len(const char *str, int len);
 +
-+	dup = ubi_kmalloc(len + 1);
-+	if (!dup)
-+		return NULL;
-+
-+	memcpy(dup, str, len);
-+	dup[len] = '\0';
-+
-+	return dup;
-+}
-+
++/**
++ * calc_data_len - calculate how much real data is stored in a buffer.
++ *
++ * @ubi: the UBI device description object
++ * @buf: a buffer with the contents of the physical eraseblock
++ * @length: the buffer length
++ *
++ * This function calculates how much real data is stored in @buf. Continuous
++ * 0xFF bytes at the end of the buffer are not considered as data.
++ */
 +int ubi_calc_data_len(const struct ubi_info *ubi, const void *buf,
-+		      int length)
-+{
-+	int i;
++		      int length);
 +
-+	ubi_assert(length % ubi->io->min_io_size == 0);
++/**
++ * ubi_check_volume - check the contents of a (static) volume.
++ *
++ * @ubi: the UBI device description object
++ * @vol_id: ID of the volume to check
++ *
++ * This function checks if a static volume is corrupted by fully reading it and
++ * checking data CRC. This function returns %0 if the volume is not corrupted,
++ * %1 if it is corrupted and a negative error code in case of failure. Dynamic
++ * volumes are not checked and zero is returned immediately.
++ */
++int ubi_check_volume(const struct ubi_info *ubi, int vol_id);
 +
-+	for (i = length - 1; i >= 0; i--)
-+		if (((const uint8_t *)buf)[i] != 0xFF)
-+			break;
-+
-+	/* The resulting length must be aligned to the minimum flash I/O size */
-+	length = align_up(i + 1, ubi->io->min_io_size);
-+	return length;
-+}
-+
-+int ubi_check_volume(const struct ubi_info *ubi, int vol_id)
-+{
-+	void *buf;
-+	int err = 0, i;
-+	const struct ubi_vtbl_vtr *vtr;
-+
-+	vtr = ubi_vtbl_get_vtr(ubi, vol_id);
-+
-+	if (vtr->vol_type != UBI_STATIC_VOLUME)
-+		return 0;
-+
-+	buf = ubi_kmalloc(vtr->usable_leb_size);
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < vtr->used_ebs; i++) {
-+		int size;
-+
-+		if (i == vtr->used_ebs - 1)
-+			size = vtr->last_eb_bytes;
-+		else
-+			size = vtr->usable_leb_size;
-+
-+		err = ubi_eba_read_leb(ubi, vol_id, i, buf, 0, size, 1);
-+		if (err) {
-+			if (err == -EBADMSG)
-+				err = 1;
-+			break;
-+		}
-+	}
-+
-+	ubi_kfree(buf);
-+	return err;
-+}
++#endif /* !__UBI_MISC_H__ */
