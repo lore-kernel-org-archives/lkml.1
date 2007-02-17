@@ -1,75 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993042AbXBQSZB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993050AbXBQS1H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993042AbXBQSZB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 13:25:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993041AbXBQSZA
+	id S2993050AbXBQS1H (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 13:27:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993051AbXBQS1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 13:25:00 -0500
-Received: from noname.neutralserver.com ([70.84.186.210]:28739 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993028AbXBQSY7 (ORCPT
+	Sat, 17 Feb 2007 13:27:07 -0500
+Received: from hancock.steeleye.com ([71.30.118.248]:50677 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2993050AbXBQS1G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 13:24:59 -0500
-Message-ID: <45D74852.4070206@monatomic.org>
-Date: Sat, 17 Feb 2007 20:24:18 +0200
-From: Dan Aloni <da-x@monatomic.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] OOM and USB, latest Linux 2.6
-References: <Pine.LNX.4.44L0.0702171156300.4173-100000@netrider.rowland.org> <45D7462D.6080700@monatomic.org>
-In-Reply-To: <45D7462D.6080700@monatomic.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 17 Feb 2007 13:27:06 -0500
+Subject: Re: 2.6.20-git: undefined reference to `smp_call_function_single'
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: tglx@linutronix.de
+Cc: Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1171707924.30834.111.camel@localhost.localdomain>
+References: <200702162108.01206.lenb@kernel.org>
+	 <1171707924.30834.111.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 17 Feb 2007 12:25:45 -0600
+Message-Id: <1171736745.3379.24.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
 Content-Transfer-Encoding: 7bit
-X-PopBeforeSMTPSenders: da-x@monatomic.org
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Aloni wrote:
-> Alan Stern wrote:
-[...]
->> Can you be any more specific than that?  usb-storage should use only 
->> GFP_NOIO in its I/O paths.
->>
->>
->>   
-> You are right, I looked over this state with kdb, and usb-storage
-> waited in usb_stor_bulk_transfer_sg, which does pass GFP_NOIO
-> at this scenario.
->
-> It looked suspicious though, because OOM handling was invoked
-> from many processes, and it didn't print about any process being
-> killed and it didn't complain about no processes to kill either.
-Hmm, I'm pretty sure I stomped over this (from select_bad_process()):
+On Sat, 2007-02-17 at 11:25 +0100, Thomas Gleixner wrote:
+> On Fri, 2007-02-16 at 21:08 -0500, Len Brown wrote:
+> > Yes, an obscure .config, but it used to build before today:
+> >
+> > kernel/built-in.o: In function `tick_broadcast_on_off':
+> > (.text+0x1b6f0): undefined reference to `smp_call_function_single'
+> 
+> Yup, this obscure machine is missing smp_call_function_single().
+> 
+> James ?
 
-                /*
-                 * This task already has access to memory reserves and is
-                 * being killed. Don't allow any other task access to the
-                 * memory reserve.
-                 *
-                 * Note: this may have a chance of deadlock if it gets
-                 * blocked waiting for another task which itself is waiting
-                 * for memory. Is there a better alternative?
-                 */
-                if (test_tsk_thread_flag(p, TIF_MEMDIE))
-                        return ERR_PTR(-1UL);
+Where's this coming from?  smp_call_function_single() is an obscure kvm
+only API think for x86/ia64 ... it's not supported on any other
+architecure.  The symbol you have is blowing up in the kernel
+subdirectory which suggests someone has tried to use it in generic code,
+which will fail to compile on a lot more than voyager and parisc ...
 
-Which might explains why the OOM handling was behaving like it did.
+James
 
-It would have been nice if it at least printed "OOM: I'm in a deadlock,
-please FIXME...".
-
--- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
 
