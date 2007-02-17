@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965070AbXBQI5L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965081AbXBQJHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965070AbXBQI5L (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 03:57:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965074AbXBQI5J
+	id S965081AbXBQJHt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 04:07:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965082AbXBQJHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 03:57:09 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:33987 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965073AbXBQI5H (ORCPT
+	Sat, 17 Feb 2007 04:07:49 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51879 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965081AbXBQJHr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 03:57:07 -0500
-From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Michael Halcrow <mhalcrow@us.ibm.com>,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 1/2] eCryptfs: convert lookup_one_len() to lookup_one_len_nd()
-Date: Sat, 17 Feb 2007 03:56:55 -0500
-Message-Id: <11717026163831-git-send-email-jsipek@cs.sunysb.edu>
-X-Mailer: git-send-email 1.5.0.19.gddff
-In-Reply-To: <11717026161843-git-send-email-jsipek@cs.sunysb.edu>
-References: <11717026161843-git-send-email-jsipek@cs.sunysb.edu>
+	Sat, 17 Feb 2007 04:07:47 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Russell King <rmk+lkml@arm.linux.org.uk>,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [RFC] killing the NR_IRQS arrays.
+References: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com>
+	<20070216195256.GE2572@flint.arm.linux.org.uk>
+	<1171665426.5644.99.camel@localhost.localdomain>
+	<200702170237.42910.arnd@arndb.de>
+	<1171684847.5644.108.camel@localhost.localdomain>
+Date: Sat, 17 Feb 2007 02:06:43 -0700
+In-Reply-To: <1171684847.5644.108.camel@localhost.localdomain> (Benjamin
+	Herrenschmidt's message of "Sat, 17 Feb 2007 15:00:47 +1100")
+Message-ID: <m1tzxlb1b0.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Halcrow <mhalcrow@us.ibm.com>
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-Call the new lookup_one_len_nd() rather than lookup_one_len().  This fixes an
-oops when stacked on NFS.
+> In addition, if we remove the numbers, archs will need basically the
+> exact same services provided by the powerpc irq core for reverse mapping
+> (going from a HW irq number on a given PIC back to an irq_desc *).
 
-Note that there are still some issues with eCryptfs on NFS having to do with
-directory deletion (I'm not getting an oops, just an -EBUSY).
+Ben you seem to be under misapprehension that except for the case of
+ISA (0-16) the linux IRQ number is a hardware number.  It is an arbitrary
+software enumeration, and I think it has been that way a very long time.
 
-Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
----
- fs/ecryptfs/inode.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
+> Either using a linear array for simple PICs or a radix tree for
+> platforms with very big interrupt numbers (BTW. I think we have lockless
+> radix trees nowadays, I can remove the spinlocks to protect it in the
+> powerpc remapper).
 
-diff --git a/fs/ecryptfs/inode.c b/fs/ecryptfs/inode.c
-index 11f5e50..4c3d786 100644
---- a/fs/ecryptfs/inode.c
-+++ b/fs/ecryptfs/inode.c
-@@ -283,7 +283,9 @@ static struct dentry *ecryptfs_lookup(struct inode *dir, struct dentry *dentry,
- 	int rc = 0;
- 	struct dentry *lower_dir_dentry;
- 	struct dentry *lower_dentry;
-+	struct dentry *dentry_save;
- 	struct vfsmount *lower_mnt;
-+	struct vfsmount *mnt_save;
- 	char *encoded_name;
- 	unsigned int encoded_namelen;
- 	struct ecryptfs_crypt_stat *crypt_stat = NULL;
-@@ -310,9 +312,13 @@ static struct dentry *ecryptfs_lookup(struct inode *dir, struct dentry *dentry,
- 	}
- 	ecryptfs_printk(KERN_DEBUG, "encoded_name = [%s]; encoded_namelen "
- 			"= [%d]\n", encoded_name, encoded_namelen);
--	lower_dentry = lookup_one_len(encoded_name, lower_dir_dentry,
--				      encoded_namelen - 1);
-+	dentry_save = nd->dentry;
-+	mnt_save = nd->mnt;
-+	lower_dentry = lookup_one_len_nd(encoded_name, lower_dir_dentry,
-+					 (encoded_namelen - 1), nd);
- 	kfree(encoded_name);
-+	nd->mnt = mnt_save;
-+	nd->dentry = dentry_save;
- 	if (IS_ERR(lower_dentry)) {
- 		ecryptfs_printk(KERN_ERR, "ERR from lower_dentry\n");
- 		rc = PTR_ERR(lower_dentry);
--- 
-1.5.0.19.gddff
+I can only tell you that my impression of this last is that all the
+world's not a PPC.
 
+I have a version of the x86 code with a partial conversion done and
+I didn't need a reverse mapping.  What you call the hardware interrupt
+number never happens to be interesting to me after the system is setup.
+
+I do suspect there may be an interesting chunk of your ppc work that
+probably makes sense as a library so other arches could use it.
+
+Eric
