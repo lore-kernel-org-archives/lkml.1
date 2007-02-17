@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932645AbXBQWmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933073AbXBQWwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932645AbXBQWmc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 17:42:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933073AbXBQWmc
+	id S933073AbXBQWwf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 17:52:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933079AbXBQWwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 17:42:32 -0500
-Received: from webmail14.yandex.ru ([213.180.200.21]:51898 "EHLO
-	webmail14.yandex.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932645AbXBQWmb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 17:42:31 -0500
-Date: Sun, 18 Feb 2007 01:42:21 +0300 (MSK)
-From: "Mockern" <Mockern@yandex.ru>
-Message-Id: <45D784CD.00000A.17743@webmail14.yandex.ru>
+	Sat, 17 Feb 2007 17:52:35 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58335 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933073AbXBQWwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 17:52:34 -0500
+Date: Sat, 17 Feb 2007 23:52:15 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Maxim <maximlevitsky@gmail.com>
+Cc: netdev@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Subject:  [PATCH 2.6.20 004/005] dmfe: Add support for suspend/resume
+Message-ID: <20070217225215.GE14222@elf.ucw.cz>
+References: <200702152253.53680.maximlevitsky@gmail.com> <200702152311.54407.maximlevitsky@gmail.com> <20070217115029.GF9120@elf.ucw.cz> <200702180029.03651.maximlevitsky@gmail.com>
 MIME-Version: 1.0
-X-Mailer: Yamail [ http://yandex.ru ]
-To: rlrevell@joe-job.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Analog-to-Digital Converter (ADC) driver
-X-MsgDayCount: 2
-X-BornDate: 1134853200
-In-Reply-To: <75b66ecd0702171234h24779592w734fdd038677dba9@mail.gmail.com>
-Reply-To: Mockern@yandex.ru
-References: <45D760EB.000004.06949@pantene.yandex.ru> <75b66ecd0702171234h24779592w734fdd038677dba9@mail.gmail.com>
-X-Source-Ip: 84.185.244.133
-Content-Type: text/plain;
-  charset="KOI8-R"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702180029.03651.maximlevitsky@gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-AD7994 4 Channel, 12-Bit ADC with I2C Compatible Interface in 16-Lead
-TSSOP, 
+Hi!
+> 
+> Hello ,  I am sorry that I missed some parts of coding style. I need to reread it :-)
+> 
+> There is a updated patch :
 
-I think it could be I2C driver 
+It looks better.
 
+> +	/* Disable Interrupt */
+> +	outl (0, dev->base_addr + DCR7);
+> +	outl (inl(dev->base_addr + DCR5), dev->base_addr + DCR5);
 
->On 2/17/07, Mockern <Mockern@yandex.ru> wrote:
->> Hello,
->>
->> Where I can find any ADC driver example?
->>
->
->Depending on what kind of ADC and what you want to do with it,
->anything from a simple char device to an ALSA driver could be
->appropriate.  Can you provide more information?
->
->Lee
->-
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+I'd kill space after outl...
 
+> +	/* Free RX buffers */
+> +	dmfe_free_rxbuffer(db);
+> +
+> +	/* Power down device*/
+
+and add space before */.
+
+Congratulation, you passed coding-style-police-check ;-).
+									Pavel
 
 -- 
-Сегодня удачный день, чтобы завести почту на Яндексе http://mail.yandex.ru
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
