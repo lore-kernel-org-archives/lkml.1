@@ -1,98 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946354AbXBQAua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946345AbXBQAwJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946354AbXBQAua (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 19:50:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946352AbXBQAu3
+	id S1946345AbXBQAwJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 19:52:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946352AbXBQAwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 19:50:29 -0500
-Received: from mail0.lsil.com ([147.145.40.20]:61788 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946348AbXBQAu2 convert rfc822-to-8bit (ORCPT
+	Fri, 16 Feb 2007 19:52:09 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:1034 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946345AbXBQAwI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 19:50:28 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 16 Feb 2007 19:52:08 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Fri, 16 Feb 2007 16:52:04 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 05/14] syslets: core code
+In-Reply-To: <20070215165228.GF4285@elte.hu>
+Message-ID: <Pine.LNX.4.64.0702161647090.14869@alien.or.mcafeemobile.com>
+References: <20070215165228.GF4285@elte.hu>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 3/5] scsi: megaraid_sas - throttle io if FW is busy
-Date: Fri, 16 Feb 2007 17:50:11 -0700
-Message-ID: <0631C836DBF79F42B5A60C8C8D4E82299214CE@NAMAIL2.ad.lsil.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 3/5] scsi: megaraid_sas - throttle io if FW is busy
-Thread-Index: AcdR8wVFM3jFuC4AQH6dtkT+81EQAAANapdw
-From: "Patro, Sumant" <Sumant.Patro@lsi.com>
-To: "James Bottomley" <James.Bottomley@SteelEye.com>
-Cc: <akpm@osdl.org>, <linux-scsi@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, "Kolli, Neela" <Neela.Kolli@lsi.com>,
-       "Yang, Bo" <Bo.Yang@lsi.com>
-X-OriginalArrivalTime: 17 Feb 2007 00:50:13.0463 (UTC) FILETIME=[95443670:01C7522D]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 15 Feb 2007, Ingo Molnar wrote:
 
-Hello James,
+> +	spin_lock(&ah->lock);
+> +
+> +	new_async_thread = pick_ready_cachemiss_thread(ah);
+> +	if (!new_async_thread)
+> +		goto out_unlock;
+> +
+> +	async_ready = t->async_ready;
+> +	WARN_ON(!async_ready);
+> +	t->async_ready = NULL;
+> +
+> +	new_task = new_async_thread->task;
+> +
+> +	move_user_context(new_task, t);
 
-	It is difficult to know when the device will go into a state
-where it is not able to process cmds within timeout period consistently.
-Many factors may be contributing for the device to get into this state. 
-	Reducing can_queue may help but the difficult part is when does
-the can_queue value be restored to the original value. Because, the
-device may come back to normal functioning after some time. Also
-reducing it to a optimum value that will work for all possible cases is
-a challenge.
+Since I lost the email where you were describing the todo list, I'll hook 
+into this one.
+I haven't seen you mentioning it, but at least TID and signal handling 
+need to be swapped to. So it'd be better to have a generic 
+move_user_context() that does system independent work, and an 
+arch_move_user_context() that takes care of system dependent stuff (that 
+is called by move_user_context()).
 
-	In a typical setup the throttle io code may not get executed. It
-is required only when it has not been able to complete cmds more than 2
-times within timeout period.
 
-Regards,
 
-Sumant
-
------Original Message-----
-From: James Bottomley [mailto:James.Bottomley@SteelEye.com] 
-Sent: Friday, February 16, 2007 9:51 AM
-To: Patro, Sumant
-Cc: akpm@osdl.org; linux-scsi@vger.kernel.org;
-linux-kernel@vger.kernel.org; Kolli, Neela; Yang, Bo
-Subject: RE: [PATCH 3/5] scsi: megaraid_sas - throttle io if FW is busy
-
-On Thu, 2007-02-15 at 19:53 -0700, Patro, Sumant wrote:
-> Hello James,
-> 
-> 	I re-submitted the patch yesterday with the "space" issue fixed 
-> (adhering to coding guideline).
-> 
-> 	I will check for alternative to calculate the time driver have
-been 
-> sending host busy to OS. Will check with time_before() as you have 
-> suggested.
-> 
-> 	Throttling from megasas_generic_reset() handler did not help.
-> megaraid does not have feature to abort cmds. So, in the generic reset
-
-> routine, the driver just waits for cmd completion by FW. These 
-> timed-out cmds gets retried by mid-layer with "retries" incremented by
-1.
-> Eventually we see retries equals max_allowed followed by SCSI error 
-> with "DRIVER_TIMEOUT".
-
-That's rather what worries me.  When the error handler activates (which
-it will on the first timeout), it waits for all commands to complete or
-time out before running.  Your reset handler does nothing other than
-wait for the firmware to complete the commands (now uselessly), so we
-now wait for the entire firmware command queue to drain, then you tell
-the mid layer everything is OK, so it loads you up again with all the
-commands plus a few test unit readies for good measure, then you
-throttle.
-
-You really want to catch the device going into this condition and do
-something at that point ... prime candidate would be lowering the
-can_queue depth to get fewer commands transiting the firmware.
-
-James
+- Davide
 
 
