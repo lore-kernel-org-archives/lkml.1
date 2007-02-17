@@ -1,94 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964839AbXBQXEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964832AbXBQXGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964839AbXBQXEl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 18:04:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964848AbXBQXEl
+	id S964832AbXBQXGw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 18:06:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964910AbXBQXGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 18:04:41 -0500
-Received: from wr-out-0506.google.com ([64.233.184.237]:53145 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964839AbXBQXEk (ORCPT
+	Sat, 17 Feb 2007 18:06:52 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:25802 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964832AbXBQXGv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 18:04:40 -0500
+	Sat, 17 Feb 2007 18:06:51 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uK3pcm79ortWuXpNzgaw572qgl7aEWQfGA6wt9ouAb+yz8EPrFOO6F59gMZQWjZ6p3lGsT90TvS8nisNZwBZh27i/o5j6w2zqG3R0YXKQXt3TQsfwb6SdfY4vEUaNtFIscnwDhUy14T7eNeSg/Id+yN2Xk9JRnujSjosFDgIbfc=
-Message-ID: <f2b55d220702171504v1738d8fpb666a70be3a018c1@mail.gmail.com>
-Date: Sat, 17 Feb 2007 15:04:39 -0800
-From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: mr.fred.smoothie@pobox.com
-Subject: Re: GPL vs non-GPL device drivers
-Cc: davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <161717d50702171418w2eecc38bse12df666e974a08b@mail.gmail.com>
+        b=cWDFHoAFDGqtljMAxfvq4juYWOZOfKCYEmWG9oLqFrzAB/ZAUV/NCxJdScGj0gTU3EBKO2Q7u1OhVZIIvgzNQ95v9reF9zRVVVsZK9AMNDeKPT1oLK53pzu8D6Wiv0ig/FSUVgypbEw6u4C8cPtBKbKv4e0f0o6Mhp1UEYtmTYk=
+Message-ID: <6bffcb0e0702171506u68c26be0u3c8fabeb21c125ee@mail.gmail.com>
+Date: Sun, 18 Feb 2007 00:06:46 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Francois Romieu" <romieu@fr.zoreil.com>
+Subject: Re: 2.6.20-git14 rtl8139 possible circular locking dependency detected
+Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+In-Reply-To: <20070217221252.GA16954@electric-eye.fr.zoreil.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <161717d50702160912x6dc4efbahcfb02f665ae3ec8a@mail.gmail.com>
-	 <MDEHLPKNGKAHNMBLJOLKIEIMBKAC.davids@webmaster.com>
-	 <161717d50702171418w2eecc38bse12df666e974a08b@mail.gmail.com>
+References: <45D7569F.9030502@googlemail.com>
+	 <20070217221252.GA16954@electric-eye.fr.zoreil.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/17/07, Dave Neuer <mr.fred.smoothie@gmail.com> wrote:
-> I think you are reading Lexmark wrong. First off, Lexmark ruled that
-> scenes a faire applied to the toner-level calculation, not "make a
-> toner cartridge that works with a particular Lexmark printer." It was
-> the toner-calculation algorithm that could't be done any other sane
-> way, which made the TLP unprotectable via copyright. The opinion says,
-> "Both prongs of the infringement test, in other words, consider
-> 'copyrightability,' which at its heart turns on the principle that
-> copyright protection extends to expression, not to ideas."
+On 17/02/07, Francois Romieu <romieu@fr.zoreil.com> wrote:
+> Michal Piotrowski <michal.k.k.piotrowski@gmail.com> :
+> [...]
+>
+> Did you enable RTL8139_DEBUG ?
+>
+> If so you can try the patch below.
+>
 
-David S. is reading Lexmark right (IMHO, IANAL).  The byte-for-byte
-content of the TLP had to be copied in order to interoperate with the
-printer, because the printer checksummed it (apparently using SHA-1,
-but possibly truncating the result to 8 bits, which is rather comical;
-it is not 100% clear to me based on the appellate decision, which also
-seems to say that the printer cartridge contains the SHA-1 algorithm,
-which is probably just an error).  That rendered it a "lock-out code"
-within the sense of Sega v. Accolade, and ultimately that's why the
-circuit court vacated the district court's decision in Lexmark's
-favor.
+I enabled debugging
+#define RTL8139_DEBUG 3
 
-In order to vacate and remand, the appellate court had to demonstrate
-that the district court's grant of preliminary injunction to Lexmark
-was wrong _as_a_matter_of_law_.  So they had to construe the facts of
-the case in a light as favorable to Lexmark as humanly possible.  They
-concluded that, _even_ if the TLP contained copyrightable expression,
-and _even_ if all of the district court's reasoning about the other
-prongs of a preliminary injunction test (potential for irreparable
-harm, balance of harms, the public interest) were correct, neither the
-Copyright Act nor the DMCA could be used to establish the fourth
-prong: likelihood of success on the merits.
+Here is a full log
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.20-git14/bug.txt
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.20-git14/git-config
 
-Cloners rejoice:  the US Supreme Court has, by denying certioriari on
-Judge Sutton's opinion, given you carte blanche to copy and distribute
-freely any software or firmware whose author has been so stupid as to
-cryptographically checksum it as an anti-interoperability measure.
-Using copyrighted software as a "lock-out code" to create a cause of
-action against reverse engineers has the paradoxical effect of
-rendering it uncopyrightable _as_a_matter_of_law_ in the US, unless
-and until Congress or a later Supreme Court creates new law to the
-contrary.  I am not a lawyer, this is not legal advice, on your own
-head be it.
+Regards,
+Michal
 
-> You're saying that there's no other way to interface device drivers to
-> an operating system than the current Linux driver model? That's
-> strange, since it's a different driver model than Linux had
-> previously, and it's also different from the BeOS driver interface,
-> etc. If the Linux driver interface is protectable, it doesn't seem
-> like scenes a faire applies.
-
-The Linux driver interface is, as a matter of law, not copyrightable
-in the U. S. of A., no matter how many EXPORT_SYMBOL_GPLs and dactylic
-hexameters you adorn it with.  That was already true under Baker v.
-Selden, and didn't get any less so as a result of Lotus v. Borland,
-and is now inescapable (IMHO) under Lexmark, and it's not likely to
-get any less true unless RMS is elected president and appoints Eben
-Moglen to the Supreme Court.  Sorry, folks; I'm just the messenger.
-
-Cheers,
-- Michael
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
