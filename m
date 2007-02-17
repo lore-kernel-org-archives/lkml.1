@@ -1,92 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964978AbXBQETe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965010AbXBQEgF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964978AbXBQETe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 23:19:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964993AbXBQETe
+	id S965010AbXBQEgF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 23:36:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965014AbXBQEgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 23:19:34 -0500
-Received: from vms044pub.verizon.net ([206.46.252.44]:49300 "EHLO
-	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964978AbXBQETe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 23:19:34 -0500
-Date: Fri, 16 Feb 2007 23:19:31 -0500
-From: Gene Heskett <gene.heskett@verizon.net>
-Subject: Re: GPL vs non-GPL device drivers
-In-reply-to: <f2b55d220702162003kbc7a16dxca4d97252e6f2050@mail.gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: "Michael K. Edwards" <medwards.linux@gmail.com>,
-       "v j" <vj.linux@gmail.com>, "Theodore Tso" <tytso@mit.edu>,
-       "Dave Jones" <davej@redhat.com>
-Message-id: <200702162319.32251.gene.heskett@verizon.net>
-Organization: Not detectable
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
- <200702151742.15850.gene.heskett@verizon.net>
- <f2b55d220702162003kbc7a16dxca4d97252e6f2050@mail.gmail.com>
-User-Agent: KMail/1.9.6
+	Fri, 16 Feb 2007 23:36:05 -0500
+Received: from beta2.look.ca ([207.136.100.3]:48589 "EHLO twiddle.look.ca"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965010AbXBQEgE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 23:36:04 -0500
+Date: Fri, 16 Feb 2007 23:36:57 -0500
+To: Daniel Walker <dwalker@mvista.com>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
+Message-ID: <20070217043657.GB10754@infidigm.net>
+References: <20070216013024.GA32287@infidigm.net> <y0mr6sq2hfj.fsf@ton.toronto.redhat.com> <1171647921.3422.12.camel@imap.mvista.com> <20070216181027.GC6425@infidigm.net> <1171650530.3422.25.camel@imap.mvista.com> <20070216193428.GE6425@infidigm.net> <1171659979.3422.60.camel@imap.mvista.com> <20070216221022.GA8721@infidigm.net> <1171666065.3422.92.camel@imap.mvista.com>
+Mime-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <1171666065.3422.92.camel@imap.mvista.com>
+User-Agent: Mutt/1.5.9i
+From: Jeff Muizelaar <jeff@infidigm.net>
+X-SA-Exim-Mail-From: jeff@infidigm.net
+Subject: Re: Using sched_clock for mmio-trace
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Version: 3.1 (built Tue Feb 24 05:09:27 GMT 2004)
+X-SA-Exim-Scanned: Yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 16 February 2007, Michael K. Edwards wrote:
->On 2/15/07, Gene Heskett <gene.heskett@verizon.net> wrote:
->[ignorant silliness]
->
->> There is no one to my knowledge here, who would not cheer loudly once
->> a verdict was rendered because that courts decision would give the
->> FOSS community a quotable case law as to exactly what is, and is not
->> legal for you to do with GPL'd code.  We would after 16+ years of the
->> GPL, finally have a firm, well defined line drawn in the sand, a
->> precedence in US case law that at present, only exists in Germany.
->
->Oferchrissake.  We do have a US precedent, insofar as a decision in a
->court of fact on issues of fact can ever be a precedent in a common
->law system (hint: zero, unless the later judge feels like quoting some
->compelling prose).  That would be Progress Software v. MySQL (also
->known as MySQL v. NuSphere in some commentators' writings).  The FSF
->interpretation of the GPL lost.
+On Fri, Feb 16, 2007 at 02:47:45PM -0800, Daniel Walker wrote:
+> > > Gets pretty ugly .. The clocksource interface already has a positive
+> > > rating to describe the "best" clocks in the system, which is used to
+> > > return the "best" clock .. Where the maintainers of the system give each
+> > > clock a rating. I would imagine most people would just get the so called
+> > > "best" clock which has the best rating..
+> > > 
+> > > I'm starting to think this long flags stringing effect could happen with
+> > > negative flags also, but it's seems a lot less likely.
+> > 
+> > The amount of flag stringing should be the same.
+> 
+> I don't think so .. The common case with negative flags is no flags,
+> then next would be CLOCKSOURCE_UNSTABLE. At most I would guess two
+> flags .. The other direction your likely to have people using all flags
+> most of the time. That's why I showed a function call with all the flags
+> listed.
 
-Pacer citations please.
+I think you still misunderstand me. The common case is still no flags.
 
->Completely.  Which is true also of 
->the Munich and Frankfurt decisions.
->
->The plaintiffs, as authors of GPL works, got a full hearing in each
->case -- via routine reasoning about the GPL as an offer of contract,
->whose conditions either had (Progress Software) or had not
->(Fortinet/Sitecom and D-Link) been performed to the extent necessary
->for the defendant to claim license under the GPL.  MySQL did obtain a
->preliminary injunction, but on unrelated trademark license grounds;
->the GPL claim got them nowhere, for at least four distinct reasons
->stated in the opinion.  Harald's recovery was limited to statutory
->costs and, in the Munich case, an injunction to _either_ offer the
->source code of netfilter/iptables itself _or_ stop shipping product.
->Both German courts refused to find contract "in personam" (necessary
->to a breach of contract claim, in turn necessary to a demand for
->specific performance).
->
->"GPL is a creature of copyright law" lost in court, every time.
->"Section 4 is a limitation of scope, not a conditional performance"
->lost.  "You can lose your license irrevocably" lost.  "We can compel
->disclosure of source code with no alternative" lost.  "We can
->circumvent contract law standards of breach and remedy" lost.
->Everything RMS and Eben Moglen have ever written about the legal
->meaning of the GPL is wrong, and where "derivative works" are
->concerned, embarrassingly hypocritical as well.  Take the Big Lie
->elsewhere, please!
->
->- Michael
+clocksource_get_clock_must_have(0) would return clocks that are stable
+and unstable. clocksource_get_clock_must_have(CLOCKSOURCE_STABLE) would
+only return clocks that are stable, just like
+clocksource_get_clock_masked(CLOCKSOURCE_UNSTABLE) only returns clocks
+that are stable.
 
+> > > > instead of
+> > > > 
+> > > > clocksource_get_clock_masked(CLOCKSOURCE_UNSTABLE)
+> > > > clocksource_get_clock_masked(CLOCKSOURCE_PM_AFFECTED)
+> > > > 
+> > > > Especially awkward is the CLOCKSOURCE_64BIT flag, as there isn't really
+> > > > anyway to specify that I want a 64bit timer, only a way to specify that
+> > > > I don't.
+> > > 
+> > > I might add a way to get specific flags, but I still think the flags
+> > > should be mostly negative features.
+> > 
+> > Yeah, the problem is that all of the features are negative except for
+> > CLOCKSOURCE_64BIT, so you can't mask for it.
+> 
+> It's meant as a negative feature. So you can mask it if you can't handle
+> the math .. The only 64bit clock I know off is the tsc, and it's got the
+> highest rating of all clocks.
 
+Ah ok, I see that now. Maybe CLOCKSOURCE_OVER_32BITS would be a better
+name? It might convey the negativity better...
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Yahoo.com and AOL/TW attorneys please note, additions to the above
-message by Gene Heskett are:
-Copyright 2007 by Maurice Eugene Heskett, all rights reserved.
+-Jeff
