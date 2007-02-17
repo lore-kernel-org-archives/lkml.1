@@ -1,93 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965159AbXBQKv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946643AbXBQKzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965159AbXBQKv7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 05:51:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965162AbXBQKv7
+	id S1946643AbXBQKzU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 05:55:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946647AbXBQKzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 05:51:59 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:60610 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965159AbXBQKv6 (ORCPT
+	Sat, 17 Feb 2007 05:55:20 -0500
+Received: from wr-out-0506.google.com ([64.233.184.231]:19599 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946643AbXBQKzS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 05:51:58 -0500
-Date: Sat, 17 Feb 2007 11:52:03 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Hansjoerg Lipp <hjlipp@web.de>, gigaset307x-common@lists.sourceforge.net,
-       kkeil@suse.de, kai.germaschewski@gmx.de,
-       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org
-Subject: Re: Kbuild problem (was: [2.6 patch] drivers/isdn/gigaset/: build asyncdata.o into the gigaset module)
-Message-ID: <20070217105203.GR13958@stusta.de>
-References: <20070215215638.GI13958@stusta.de> <45D4F80F.8040200@imap.cc> <20070216083339.GK13958@stusta.de> <45D64691.8070901@imap.cc>
+	Sat, 17 Feb 2007 05:55:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PvMqciJV0AutF/UpWz9b5R1x4Y3Vy/96/xupaghc+UF+6Qsdx1jO3IRchU3PMYiNySoLVUURyJv5kmtMQBPEkk6Wq7BS6mC1r5xJM/9Gwev71Xfb1x/iCCXWZUJLIKqx2ftPspOKszhXVqx9oFYy5qZXvqh/wEOR/SkNmgEdYR0=
+Message-ID: <edd3ff190702170255w1c30fa08v96e5b92baacbd701@mail.gmail.com>
+Date: Sat, 17 Feb 2007 11:55:17 +0100
+From: "=?ISO-8859-1?Q?Daniel_Aragon=E9s?=" <danarag@gmail.com>
+To: "=?ISO-8859-1?Q?C=E9dric_Augonnet?=" <cedric.augonnet@gmail.com>
+Subject: Re: 2.6.20-mm1 - Oops using Minix 3 file system
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Cedric.augonnet@ens-lyon.org
+In-Reply-To: <f56c1ba00702161500x775fe04bl91889b5819cf9ddc@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <45D64691.8070901@imap.cc>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <f56c1ba00702161500x775fe04bl91889b5819cf9ddc@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 17, 2007 at 01:04:33AM +0100, Tilman Schmidt wrote:
-> Am 16.02.2007 09:33 schrieb Adrian Bunk:
-> >>> ...
-> >>>   LD      drivers/isdn/gigaset/built-in.o
-> >>> drivers/isdn/gigaset/ser_gigaset.o: In function `gigaset_m10x_send_skb':
-> >>> (.text+0xe50): multiple definition of `gigaset_m10x_send_skb'
-> >>> drivers/isdn/gigaset/usb_gigaset.o:(.text+0x0): first defined here
-> >>> drivers/isdn/gigaset/ser_gigaset.o: In function `gigaset_m10x_input':
-> >>> (.text+0x1121): multiple definition of `gigaset_m10x_input'
-> >>> drivers/isdn/gigaset/usb_gigaset.o:(.text+0x2d1): first defined here
-> >>> make[4]: *** [drivers/isdn/gigaset/built-in.o] Error 1
-> 
-> > CONFIG_ISDN_DRV_GIGASET=y
-> > CONFIG_GIGASET_BASE=y
-> > CONFIG_GIGASET_M105=y
-> > CONFIG_GIGASET_M101=y
-> 
-> Ah, thanks, I can see what's happening now. When both the M101 and M105
-> drivers are built into the kernel, asyncdata.o gets linked in twice, via
-> 
-> 	usb_gigaset-y := usb-gigaset.o asyncdata.o
-> 	obj-$(CONFIG_GIGASET_M105) += usb_gigaset.o gigaset.o
-> 
-> and
-> 
-> 	ser_gigaset-y := ser-gigaset.o asyncdata.o
-> 	obj-$(CONFIG_GIGASET_M101) += ser_gigaset.o gigaset.o
-> 
-> The assertion in Documentation/kbuild/makefiles.txt:
-> 
->         The order of files in $(obj-y) is significant.  Duplicates in
->         the lists are allowed: the first instance will be linked into
->         built-in.o and succeeding instances will be ignored.
-> 
-> doesn't work out in this case because asyncdata.o isn't added directly
-> to $(obj-y), but as part of usb_gigaset.o and ser_gigaset.o.
-> 
-> I'm not quite happy with your solution, though. I'd prefer a
-> Makefile which builds modular usb_gigaset.ko and/or ser_gigaset.ko
-> like the present one (including asyncdata.o), but when linking
-> usb-gigaset.o and ser-gigaset.o into the kernel includes asyncdata.o
-> only once. Trouble is, I don't know how to express that in Kbuild.
-> 
-> Any ideas?
+On 2/17/07, Cédric Augonnet <cedric.augonnet@gmail.com> wrote:
 
-CONFIG_GIGASET_M105=y, CONFIG_GIGASET_M101=m and similar problems might 
-make this quite tricky.
+> ...
+> Hi Daniel,
+>
+> On 2.6.20-rc6-mm3 and 2.6.20-mm1, i get an OOPS when using the minix 3
+> file system. I enclose the dmesg and the .config to that mail.
+>
+> Here are the steps to reproduce this oops (they involve using qemu to
+> run Minix 3)
+>  - First create a 2GB image using
+>       qemu-img create minix.img 2G
+>    (Please note that this seem to be producing an eroneous image)
+>  - Then launch Minix inside qemu to make a minix partition on this
+> image using mkfs on the corresponding device.
+>  - Mount the image on loopback using
+>   mount -t minix -o loop minix.img /mnt/qemu/
+>  - issue a "df" command on /mnt/qemu
+>...
 
-Shared functionality simply doesn't belong into any of the affected 
-modules, but to a different place where all users can access it.
+ Well, a glance at your dmesg doesn' show that a minix partition was
+recognized. Otherwise it would sow it. So you have not such a
+partition within your drives.
 
-> Thanks,
-> Tilman
+You are using an emulator to run minix. You will have the same problem
+if you run minix2 or minix3 through an emulator and not from a real
+minix2 or minix3 partition.
 
-cu
-Adrian
+Regards,
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Daniel
