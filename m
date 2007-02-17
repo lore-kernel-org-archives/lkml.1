@@ -1,151 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932636AbXBQVEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932580AbXBQVG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932636AbXBQVEi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 16:04:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932627AbXBQVEi
+	id S932580AbXBQVG7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 16:06:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932907AbXBQVG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 16:04:38 -0500
-Received: from gate.crashing.org ([63.228.1.57]:44973 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932636AbXBQVEh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 16:04:37 -0500
-Subject: Re: [RFC] killing the NR_IRQS arrays.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <m1y7mxb20a.fsf@ebiederm.dsl.xmission.com>
-References: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com>
-	 <1171664993.5644.92.camel@localhost.localdomain>
-	 <m1y7mxb20a.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Date: Sun, 18 Feb 2007 08:04:00 +1100
-Message-Id: <1171746241.5644.124.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Sat, 17 Feb 2007 16:06:59 -0500
+Received: from moutng.kundenserver.de ([212.227.126.177]:53703 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932580AbXBQVG6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 16:06:58 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Artem Bityutskiy <dedekind@infradead.org>
+Subject: Re: [PATCH 05/44 take 2] [UBI] internal common header
+Date: Sat, 17 Feb 2007 22:05:10 +0100
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain> <20070217165449.5845.18238.sendpatchset@localhost.localdomain>
+In-Reply-To: <20070217165449.5845.18238.sendpatchset@localhost.localdomain>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+X-Legal: Vorsitzender des Aufsichtsrats: Johann Weihen=0A=0D Gesch=E4ftsf=FChrung: Herbert Kircher=0A=0D Sitz der Gesellschaft: B=F6blingen=0A=0D Registergericht: Amtsgericht Stuttgart, HRB 243294
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702172205.11829.arnd@arndb.de>
+X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
+X-Provags-ID2: V01U2FsdGVkX18aSn2WHJIKEfAEuh4WHwNpomTkne2ZcNVVah97aqtDp8FQgWrEwssGPHk+JdaFe4JpEoy7Hjopi2Wantf0l1gDHsB9r3z+jOsFswMd9NZ5BQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 17 February 2007 17:54, Artem Bityutskiy wrote:
 
-> No.  I don't think we should make your irq_hwnumber_t thingy general
-> because it is not general.  I don't understand why you need it to be
-> an unsigned long, that still puzzles me.  But for the rest it actually
-> appears that ppc has a simpler model to deal with.
+> +/* Maximum number of supported UBI devices */
+> +#define UBI_MAX_INSTANCES 32
 
-I think you might have misunderstood becaues I do beleive it's actually
-very general :-)
+Does this need to be limited?
 
-Let me explain below.
+> +/* UBI messages printk level */
+> +#define UBI_MSG_LEVEL  KERN_INFO
+> +#define UBI_WARN_LEVEL KERN_WARNING
+> +#define UBI_ERR_LEVEL  KERN_ERR
+> +
+> +/* Prefixes of UBI messages */
+> +#define UBI_MSG_PREF  "UBI:"
+> +#define UBI_WARN_PREF "UBI warning:"
+> +#define UBI_ERR_PREF  "UBI error:"
+> +
+> +/* Normal UBI messages */
+> +#define ubi_msg(fmt, ...)                                                   \
+> +	printk(UBI_MSG_LEVEL UBI_MSG_PREF " " fmt "\n", ##__VA_ARGS__)
+> +/* UBI warning messages */
+> +#define ubi_warn(fmt, ...)                                                  \
+> +	printk(UBI_WARN_LEVEL UBI_WARN_PREF " %s: " fmt "\n", __FUNCTION__, \
+> +	       ##__VA_ARGS__)
+> +/* UBI error messages */
+> +#define ubi_err(fmt, ...)                                                   \
+> +	printk(UBI_ERR_LEVEL UBI_ERR_PREF " %s " fmt "\n", __FUNCTION__,    \
+> +	       ##__VA_ARGS__)
 
-> I don't think I actually can describe x86 hardware in you hwnumber_t
-> world.  Although I can approximate.
+You shouldn't need these helpers, just use the regular dev_dbg, dev_info
+and related macros.
 
-And I think it fits well...
+> +/**
+> + * struct ubi_info - UBI device description structure
+> + *
+> + * @ubi_num: number of the UBI device
+> + * @io: input/output unit information
+> + * @bgt: background thread unit information
+> + * @wl: wear-leveling unit information
+> + * @beb: bad eraseblock handling unit information
+> + * @vmt: volume management unit information
+> + * @ivol: internal volume management unit information
+> + * @vtbl: volume table unit information
+> + * @acc: accounting unit information
+> + * @upd: update unit information
+> + * @eba: EBA unit information
+> + * @uif: user interface unit information
+> + */
+> +struct ubi_info {
+> +	int ubi_num;
+> +	struct ubi_io_info   *io;
+> +	struct ubi_bgt_info  *bgt;
+> +	struct ubi_wl_info   *wl;
+> +	struct ubi_beb_info  *beb;
+> +	struct ubi_vmt_info  *vmt;
+> +	struct ubi_ivol_info *ivol;
+> +	struct ubi_vtbl_info *vtbl;
+> +	struct ubi_acc_info  *acc;
+> +	struct ubi_upd_info  *upd;
+> +	struct ubi_eba_info  *eba;
+> +	struct ubi_uif_info  *uif;
+> +};
 
-> In non-legacy mode at the top of the tree I have a network cooperating
-> irq controllers.  For each cpu there is an lapic next to each cpu that
-> catches interrupt packets and below that I have interrupt controllers
-> that throw interrupt packets.  In the network of cooperating interrupt
-> controllers a interrupt packet has a destination address that looks
-> like (cpu#, vector#) where cpu# is currently at 8 bits and slowly
-> growing and the vector# is a fixed 8 bits.
-> 
-> The interrupt controllers that throw those packets have a fixed
-> number of irq slots usually 24 or so.  Each slot (referred to in the
-> code as a pin) can be programmed which (cpu#, vector#) packet it
-> throws when an interrupt occurs. Including an option to vary the cpu#
-> between a set of cpus.
-> 
-> So to be frank to handle this model properly I need to deal with
-> this properly I need.
-> #define NR_IRQS (NR_CPUS*256)
-> 
-> There is enough flexibility in this model that hardware vectors
-> have not found a need to cascade interrupt controllers.
+I don't know what went wrong here, but this does not at all
+look ok. The members in here probably should all be part
+of the ubi_info structure itself.
 
-This is roughly similar to the cell "toplevel" model where interrupt
-messages encode the source unit/node, target and class. The chip has an
-interrupt "controller" (receiver of those messages) for each thread. In
-the kernel, I use a "flat" model, that is I create one host for all of
-them and my hardware numbers are mode of a similar bit encoding of those
-"routing" infos.
-
-That is, with a remapping model like mine, the x86 non-legacy situation
-could be easily expressed by having one domain (I call them hosts in the
-code) covering the whole fabric and the hw number be your (CPU << 16) |
-vector thing.
-
-In addition, but you don't need that on x86, cell has an external
-controller cascaded on one of those interrupt, I use a separate domain
-for it.
-
-The reason my hwnumber thingy is a generic type is that i provide
-generic functions to create a linux interrupt for a domain/number pair
-and generic mecanism to do the reverse mapping. That's where I think my
-code might be of some use as with the "numbers" going away, pretty
-everybody will need a wat to reverse map from HW numbers back to
-irq_desc *.
-
-I use an unsigned long because I needed to choose a type that would fit
-the biggest number potentially used by an interrupt controller, and that
-can be real big with some hypervisors for which those are "tokens" which
-are potentially 64 bits.
-
-> Ben I have no problem with a number that is specific to an irq
-> controller for dealing with the internal irq controller
-> implementations, heck I think everyone has that to some degree
-> 
-> The linux irq number will remain an arbitrary software number for
-> use by the linux system for talking about the source of the
-> interrupt.
-
-So you do intend to keep the linux number which is what I call the
-"virtual interrupt" number on powerpc... I wouldn't have thought that to
-be necessary except as a special case of an array of 16 entries for ISA
-interrupts...
-
-> Why in a sparse address space you would find it hard to allocate a
-> range of numbers to an irq controller that only has a fixed number of
-> irqs it can deal with is something I don't understand and I think
-> it is does a disservice to your users.  But that is all it is
-> a quality of implementation issue.  ia64 does the same foolish
-> thing.
-
-It would be fairly easy to change my powerpc code to pre-allocate a full
-range for a given domain/pic when initializing it instead of doing
-"lazy" scattered allocation like I do, though it won't bring much I
-think. It's not possible for all PICs though, for example, the pSeries
-needs to use the radix tree reverse mapper because of how large HW
-interrupt numbers can be.
-
-I chose not to do it. In the long run, the only remotely meaningful way
-to expose interrupt to users would be to -add- columns
-to /proc/interrupts that provide the "host" and the HW number on that
-host, though I'm not sure that wouldn't break some userland tools.
-
-> The only time it really makes sense to me to let the irq number vary
-> arbitrary are when things are truly dynamic, like with MSI, a
-> hypervisor, or hot plug interrupt controllers.
-
-I don't understand why you would go to all that lenght to replace irq
-numbers with irq_desc * and ... keep then numbers :-)
-
-But again, as I said, this is in no way a fundamental limitation of the
-powerpc code. It could be modified easily to allocate the whole range of
-a given PIC that uses the "linear" remapping. It makes no sense for PICs
-that use the "radix tree" remapping though.
-
-> Sure, and I have the same issue with a big "DESIGNED FOR ppc" in the middle,
-> or "DESIGNED FOR arch/x".   However the unfortunate truth is that the x86
-> has enough volume that frequently other architectures use some x86
-> hardware and thus get some of x86's warts.   So anything that doesn't
-> cope with the x86's warts is frequently doomed to failure.
-
-I fait to see how what I described would not apply nicely to x86 ..
-
-Ben.
-
-
+	Arnd <><
