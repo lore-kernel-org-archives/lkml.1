@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965167AbXBQLBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965137AbXBQLOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965167AbXBQLBf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 06:01:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965170AbXBQLBf
+	id S965137AbXBQLOi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 06:14:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965142AbXBQLOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 06:01:35 -0500
-Received: from cacti.profiwh.com ([85.93.165.66]:36639 "EHLO cacti.profiwh.com"
+	Sat, 17 Feb 2007 06:14:38 -0500
+Received: from charon.hkfree.org ([89.248.240.1]:52907 "EHLO charon.hkfree.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965167AbXBQLBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 06:01:34 -0500
-Message-ID: <45D6E094.8030006@gmail.com>
-Date: Sat, 17 Feb 2007 12:01:40 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
+	id S965137AbXBQLOh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 06:14:37 -0500
+X-Greylist: delayed 1485 seconds by postgrey-1.27 at vger.kernel.org; Sat, 17 Feb 2007 06:14:37 EST
+Message-ID: <45D6DDCE.5050803@assembler.cz>
+Date: Sat, 17 Feb 2007 11:49:50 +0100
+From: Rudolf Marek <r.marek@assembler.cz>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-To: Mockern@yandex.ru
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Linux tty driver question
-References: <45D6D3A3.000001.04520@tide.yandex.ru>
-In-Reply-To: <45D6D3A3.000001.04520@tide.yandex.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+References: <45D5EA88.7090300@redhat.com>
+In-Reply-To: <45D5EA88.7090300@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mockern napsal(a):
-> Hi,
-> 
-> I'm working on Linux tty driver (based on tiny_tty).
-> 
-> How can I provide in my driver Linux cat operation (e.g.cat < ttyS3)?
+Hello Chuck,
 
-call tty_insert_flip_*() from somewhere to put some data into tty recieve 
-buffer, which is pushed into ldisc by tty_flip_buffer_push() and then sent by 
-tty_read function (where ldisc read is called) to userspace for reading process.
+I'm the author of K8temp. Please can you share with us your DSDT table?
+(cat /proc/acpi/dsdt > /tmp/dsdt.bin)
 
-> What should I implement exactly?
+> So, could ACPI and the k8temp driver be at odds?
 
-open, settermios, write_room (note that this is minimal and will probably oops 
-when poll or write is invoked) + some isr or timer to fill the buffer mentioned 
-above.
+Yes because ACPI AML code has no synchronization with Linux drivers. Second
+reason is that ACPI AML code assign resource regions to itself but with cleared
+busy flag - so other drivers could bind and might possibly interfere  with ACPI.
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+This is very long term problem, I already proposed some possible solutions to
+this problem
+(http://lists.lm-sensors.org/pipermail/lm-sensors/2007-February/018788.html)
 
-Hnus <hnus@fi.muni.cz> is an alias for /dev/null
+There are some ideas, but none is implemented yet. As you already wrote, best
+solution is to stop using k8temp driver.
+
+I will check the DSDT table to confirm this fact.
+
+Thanks,
+Rudolf
