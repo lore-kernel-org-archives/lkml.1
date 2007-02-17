@@ -1,82 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946402AbXBQEBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946403AbXBQEDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946402AbXBQEBl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 Feb 2007 23:01:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946403AbXBQEBl
+	id S1946403AbXBQEDS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 Feb 2007 23:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946404AbXBQEDS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 Feb 2007 23:01:41 -0500
-Received: from gate.crashing.org ([63.228.1.57]:50711 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946402AbXBQEBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 Feb 2007 23:01:40 -0500
-Subject: Re: [RFC] killing the NR_IRQS arrays.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <200702170237.42910.arnd@arndb.de>
-References: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com>
-	 <20070216195256.GE2572@flint.arm.linux.org.uk>
-	 <1171665426.5644.99.camel@localhost.localdomain>
-	 <200702170237.42910.arnd@arndb.de>
-Content-Type: text/plain
-Date: Sat, 17 Feb 2007 15:00:47 +1100
-Message-Id: <1171684847.5644.108.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Fri, 16 Feb 2007 23:03:18 -0500
+Received: from wr-out-0506.google.com ([64.233.184.226]:21722 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946403AbXBQEDR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 Feb 2007 23:03:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LwgrauQVlTQP/1wTK66UAhDHMA6Cmi+auIYhMSmLvZHJztZh2uAwMAqOfSbG28xA2X88R9zaN+Fb3JdLRaF0Ul3V1ZT5w1zhyMMci4K7a5mso9J0I6npfw9N1RLNzFrZcPDzZYULo7Iqc9N0t/0dqb1XKWwSA/mQo6Qr2+RLXUA=
+Message-ID: <f2b55d220702162003kbc7a16dxca4d97252e6f2050@mail.gmail.com>
+Date: Fri, 16 Feb 2007 20:03:16 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Gene Heskett" <gene.heskett@verizon.net>
+Subject: Re: GPL vs non-GPL device drivers
+Cc: linux-kernel@vger.kernel.org, "v j" <vj.linux@gmail.com>,
+       "Theodore Tso" <tytso@mit.edu>, "Dave Jones" <davej@redhat.com>
+In-Reply-To: <200702151742.15850.gene.heskett@verizon.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>
+	 <20070215165339.GB5285@thunk.org>
+	 <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com>
+	 <200702151742.15850.gene.heskett@verizon.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-02-17 at 02:37 +0100, Arnd Bergmann wrote:
-> On Friday 16 February 2007 23:37, Benjamin Herrenschmidt wrote:
-> > You might want to have a look at the powerpc API with it's remaping
-> > capabilities. It's very nice for handling multiple domain spaces. It
-> > might be of some use for you.
-> 
-> I don't consider the powerpc virtual IRQs a solution for the problem.
-> While I believe you did the right thing for powerpc with generalizing
-> this over all its platforms, it really isn't more than a workaround
-> for the problem that we can't deal well with the static irq_desc
-> array.
+On 2/15/07, Gene Heskett <gene.heskett@verizon.net> wrote:
+[ignorant silliness]
+> There is no one to my knowledge here, who would not cheer loudly once a
+> verdict was rendered because that courts decision would give the FOSS
+> community a quotable case law as to exactly what is, and is not legal for
+> you to do with GPL'd code.  We would after 16+ years of the GPL, finally
+> have a firm, well defined line drawn in the sand, a precedence in US case
+> law that at present, only exists in Germany.
 
-It's not a solution per-se, though it contains elements of solution like
-the reverse mappin, which I use to map HW numbers to virtual irqs but
-can trivially adapt to map HW numbers to irq_desc pointers.
+Oferchrissake.  We do have a US precedent, insofar as a decision in a
+court of fact on issues of fact can ever be a precedent in a common
+law system (hint: zero, unless the later judge feels like quoting some
+compelling prose).  That would be Progress Software v. MySQL (also
+known as MySQL v. NuSphere in some commentators' writings).  The FSF
+interpretation of the GPL lost.  Completely.  Which is true also of
+the Munich and Frankfurt decisions.
 
-Among other things, I want to make sure that we don't end up with just
-putting an irq number in a field of the irq_desc and have half of the
-drivers peek at it and assume we can convert between irq_desc* and
-number in arbitrary ways.
+The plaintiffs, as authors of GPL works, got a full hearing in each
+case -- via routine reasoning about the GPL as an offer of contract,
+whose conditions either had (Progress Software) or had not
+(Fortinet/Sitecom and D-Link) been performed to the extent necessary
+for the defendant to claim license under the GPL.  MySQL did obtain a
+preliminary injunction, but on unrelated trademark license grounds;
+the GPL claim got them nowhere, for at least four distinct reasons
+stated in the opinion.  Harald's recovery was limited to statutory
+costs and, in the Munich case, an injunction to _either_ offer the
+source code of netfilter/iptables itself _or_ stop shipping product.
+Both German courts refused to find contract "in personam" (necessary
+to a breach of contract claim, in turn necessary to a demand for
+specific performance).
 
-The HW irq number should be as much opaque as possible from the world
-outside of the PIC code and/or arch code that assign them. That's an
-area where the powerpc and/or sparc code might be of use.
+"GPL is a creature of copyright law" lost in court, every time.
+"Section 4 is a limitation of scope, not a conditional performance"
+lost.  "You can lose your license irrevocably" lost.  "We can compel
+disclosure of source code with no alternative" lost.  "We can
+circumvent contract law standards of breach and remedy" lost.
+Everything RMS and Eben Moglen have ever written about the legal
+meaning of the GPL is wrong, and where "derivative works" are
+concerned, embarrassingly hypocritical as well.  Take the Big Lie
+elsewhere, please!
 
-
-> When that problem is now getting worse on other architectures, we
-> should try to get it right on all of them, rather than spreading
-> the workaround further.
-
-Yes, but I'd like aspects of my remapping work to be included in
-whatever we come up with, which is to have the new irq_desc either hide
-the underlying HW number, or at least associate it make it very clear
-that it's an opaque token and not guaranteed to be unique accross
-multiple PICs in the system.
-
-In addition, if we remove the numbers, archs will need basically the
-exact same services provided by the powerpc irq core for reverse mapping
-(going from a HW irq number on a given PIC back to an irq_desc *).
-
-Either using a linear array for simple PICs or a radix tree for
-platforms with very big interrupt numbers (BTW. I think we have lockless
-radix trees nowadays, I can remove the spinlocks to protect it in the
-powerpc remapper).
-
-Ben.
-
-
+- Michael
