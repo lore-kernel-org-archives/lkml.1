@@ -1,109 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932240AbXBRE67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933106AbXBRE7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932240AbXBRE67 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 23:58:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933101AbXBRE67
+	id S933106AbXBRE7t (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 23:59:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933108AbXBRE7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 23:58:59 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:41322 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932240AbXBRE66 (ORCPT
+	Sat, 17 Feb 2007 23:59:49 -0500
+Received: from web36702.mail.mud.yahoo.com ([209.191.85.36]:39971 "HELO
+	web36702.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933106AbXBRE7s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 23:58:58 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [RFC] killing the NR_IRQS arrays.
-References: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com>
-	<1171664993.5644.92.camel@localhost.localdomain>
-	<m1y7mxb20a.fsf@ebiederm.dsl.xmission.com>
-	<1171746241.5644.124.camel@localhost.localdomain>
-Date: Sat, 17 Feb 2007 21:58:16 -0700
-In-Reply-To: <1171746241.5644.124.camel@localhost.localdomain> (Benjamin
-	Herrenschmidt's message of "Sun, 18 Feb 2007 08:04:00 +1100")
-Message-ID: <m1lkiw9i53.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sat, 17 Feb 2007 23:59:48 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=gEFK37QeLMbwAznOwRP/R1Fs7WdSlGxi8penGJDXp+LZGxsEgNuFXDfJRYKRv7qm5JCxeA6nMAn+0HsBT/B800xc3sHidonqXzW/PU4MKuXwq+6u4rCUX5QStIpNlBLel8rteyj+IEReDnXtX3uwm/R969xHAeBnvtJh8BnTaMQ=;
+X-YMail-OSG: qi6FDfYVM1kz8z4cMZ_oQncr2B7c6U0fBd0rFJZpIqFbn3LkJvJEYcZFeVv2UdJZGbh2TbmP_JGik_pRvRPJ6ksnY5a3VXa4XI4O7AdE9FECTjRpDEji2l0qiaMBi8imu3ZbYNYeDm9kyT0-
+Date: Sat, 17 Feb 2007 20:59:47 -0800 (PST)
+From: Alex Dubov <oakad@yahoo.com>
+Subject: Re: Recent and not-so problems with tifm_sd driver
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <45D794E7.3000007@drzeus.cx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <397934.24280.qm@web36702.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> I don't actually think that is what happening. The block errors tend to trail a
+> bit behind, so the errors you are seeing are probably the result of the queue
+> being flushed out as you remove the card. I don't see any mmc debug messages
+> that indicate that is trying to send more mmc requests.
 
->> The only time it really makes sense to me to let the irq number vary
->> arbitrary are when things are truly dynamic, like with MSI, a
->> hypervisor, or hot plug interrupt controllers.
->
-> I don't understand why you would go to all that lenght to replace irq
-> numbers with irq_desc * and ... keep then numbers :-)
+Yes, indeed - it does not issue new requests after remove. However, mmc_remove_host does not wait
+for all issued requests to complete and it is a problem.
+Here's my remove procedure:
+1. cut off interrupt signaling call back - no tasklets will be coming from here
+2. kill request completion tasklet
+3. check if there's still an unfinished request - if yes, schedule a completion tasklet
+3a. if I'll sleep here, just scheduled tasklet will have a chance to complete
+3b. This is what happens if I don't sleep:
+(this line is printed by completion tasklet: tifm_sd0:3: num_bl 7, b_s 512, bsh 443)
+------
+Feb 18 15:22:40 mortug tifm_sd0:3 : card failed to respond for a long period of time (12, 1)
+Feb 18 15:22:40 mortug tifm_7xx1 0000:06:09.3: checking media set 8
+Feb 18 15:22:40 mortug tifm0 : demand removing card from socket 0:3
+Feb 18 15:22:40 mortug mmc0: clock 0Hz busmode 1 powermode 0 cs 0 Vdd 0 width 0
+Feb 18 15:22:40 mortug tifm_sd tifm_sd0:3: ios: clock = 0, vdd = 0, bus_mode = 1, chip_select = 0,
+power_mode = 0, bus_width = 0
+Feb 18 15:22:40 mortug tifm_sd tifm_sd0:3: after remove
+Feb 18 15:22:40 mortug tifm_sd tifm_sd0:3: num_bl 7, b_s 512, bsh 443
+Feb 18 15:22:40 mortug mmc0: req done (CMD18): 1/0/1: 00000900 00000000 00000000 00000000
+Feb 18 15:22:40 mortug mmcblk0: error 1 sending read/write command
+Feb 18 15:22:40 mortug end_request: I/O error, dev mmcblk0, sector 0
+Feb 18 15:22:40 mortug printk: 79 messages suppressed.
+Feb 18 15:22:40 mortug Buffer I/O error on device mmcblk0, logical block 0
+Feb 18 15:22:40 mortug divide error: 0000 [1] SMP 
+Feb 18 15:22:40 mortug CPU 0 
+......
+Feb 18 15:22:40 mortug Call Trace:
+Feb 18 15:22:40 mortug [<ffffffff88111280>] :mmc_block:mmc_blk_issue_rq+0xf0/0x600
+Feb 18 15:22:40 mortug [<ffffffff8020f199>] __alloc_pages+0x69/0x2f0
+Feb 18 15:22:40 mortug [<ffffffff802110f1>] do_wp_page+0x4b1/0x510
+Feb 18 15:22:40 mortug [<ffffffff8028d690>] task_rq_lock+0x50/0x90
+Feb 18 15:22:40 mortug [<ffffffff8028d958>] __activate_task+0x38/0x50
+Feb 18 15:22:40 mortug [<ffffffff80248ebb>] try_to_wake_up+0x42b/0x440
+Feb 18 15:22:40 mortug [<ffffffff8038d43d>] elv_rb_del+0x2d/0x50
+Feb 18 15:22:40 mortug [<ffffffff8038de2d>] elv_next_request+0x15d/0x1e0
+Feb 18 15:22:40 mortug [<ffffffff8821c9b8>] :mmc_core:mmc_queue_thread+0xd8/0x110
+Feb 18 15:22:40 mortug [<ffffffff8821c8e0>] :mmc_core:mmc_queue_thread+0x0/0x110
+Feb 18 15:22:40 mortug [<ffffffff802a4d30>] keventd_create_kthread+0x0/0x90
+Feb 18 15:22:40 mortug [<ffffffff80233169>] kthread+0xd9/0x120
+Feb 18 15:22:40 mortug [<ffffffff80262ec8>] child_rip+0xa/0x12
+Feb 18 15:22:40 mortug [<ffffffff802a4d30>] keventd_create_kthread+0x0/0x90
+Feb 18 15:22:40 mortug [<ffffffff80233090>] kthread+0x0/0x120
+Feb 18 15:22:40 mortug [<ffffffff80262ebe>] child_rip+0x0/0x12
+Feb 18 15:22:40 mortug 
+Feb 18 15:22:40 mortug 
+Feb 18 15:22:40 mortug Code: f7 f6 41 01 c1 41 83 f8 01 19 c0 25 10 b6 fd ff 05 90 d0 03 
+Feb 18 15:22:40 mortug RIP  [<ffffffff8821a44c>] :mmc_core:mmc_set_data_timeout+0x7c/0xb0
+Feb 18 15:22:40 mortug RSP <ffff81003ad97c98>
 
-Because I don't have something better to replace them with.
 
-We need names for irqs, currently the kernel/user space interface
-is a unsigned number.
 
-Printing out a pointer where we currently have an integer in:
-/proc/interrupts
-/proc/irq/N/...
-/sys/devices/pci0000:00/0000:00:0e.0/irq
-is a bad practice, and if  I don't retain the number that is 
-my only choice.
-
-I similar problem exists in all of the initialization messages from
-device drivers that display their irq number.
-
-Plus I think there are also a few ioctls that return the linux
-irq number.
-
-Now it may make sense to replace my irq_nr() with irq_name(), and
-return a string that can be used instead, but fixing the kernel
-user space interface is a third step that is a lot more delicate
-and will require more thinking.  So I would prefer to put that
-off until all of the internal users are using a pointer.  Then
-we can grep for irq_nr and see how many places we actually export
-the irq number to user space.
-
-The fact that the user space has been put in charge of when to
-migrate an irq from cpu to another makes this double delicate.
-
->> Sure, and I have the same issue with a big "DESIGNED FOR ppc" in the middle,
->> or "DESIGNED FOR arch/x".   However the unfortunate truth is that the x86
->> has enough volume that frequently other architectures use some x86
->> hardware and thus get some of x86's warts.   So anything that doesn't
->> cope with the x86's warts is frequently doomed to failure.
->
-> I fait to see how what I described would not apply nicely to x86 ..
-
-The model can be made to work if you force it but it isn't really
-a good fit.
-
-I can't really use the (cpu#, vector#) tuple as hw number as it
-varies at runtime, and a single interrupt can  send different (cpu#,
-vector#) tuples from one interrupt message to the next without being
-reprogrammed.   At least I don't have the impression that you support
-multiple hardware numbers going to the same linux irq.  But this
-really is the layer where I need the reverse mapping.  However I can
-optimize the reverse mapping by taking advantage of the per cpu
-nature.
-
-Currently the hardware number that I use is the pin number on
-the ioapic.  And to form the linux irq I just add the number
-of pins of all previous ioapics together and then add my pin number.
-Fairly simple.
-
-Doing the above gives me stable names that are the same from one boot
-to the next if someone doesn't change how the hardware is put
-together.  It looks to me that if I adapt the ppc scheme my irq
-numbers will change from one boot to the next one kernel to the next,
-almost at random.  Depending on driver initialization order and
-similar things.  Having names that change all of the time is confusing
-and not very useful.  The fact that in the process of making my names
-stable it actually happens to reflect part of the irq hardware
-topology is incidental.
-
-Giving up stable names is not something I want to do.
-
-Eric
+ 
+____________________________________________________________________________________
+Don't get soaked.  Take a quick peak at the forecast
+with the Yahoo! Search weather shortcut.
+http://tools.search.yahoo.com/shortcuts/#loc_weather
