@@ -1,50 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750706AbXBRD0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750718AbXBRDnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750706AbXBRD0w (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 22:26:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750709AbXBRD0w
+	id S1750718AbXBRDnP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 22:43:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750722AbXBRDnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 22:26:52 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:51431 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750706AbXBRD0v (ORCPT
+	Sat, 17 Feb 2007 22:43:15 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46693 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750718AbXBRDnO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 22:26:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sq0P85I1QqlR0TqKF385ziFIDSTmeWWWARqNvhwNOj0QhA0abKXCHVTn4NRHyAr3z+BWmOawXpYoryIRXMcw5qyxkaPkwLL4DRNs/tSvdDN3IJeGURVumtbsO+sueTgFEi/GFxK18w46It0qO2CWcTANx8tNczJw5j43MbdMDr0=
-Message-ID: <3d57814d0702171926v53812baeqaeeda326aa225acf@mail.gmail.com>
-Date: Sun, 18 Feb 2007 13:26:47 +1000
-From: "Trent Waddington" <trent.waddington@gmail.com>
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Subject: Re: GPL vs non-GPL device drivers
-Cc: "Neil Brown" <neilb@suse.de>, davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <f2b55d220702171855u59e3cc47i73e4aa48d0c0968c@mail.gmail.com>
+	Sat, 17 Feb 2007 22:43:14 -0500
+Message-ID: <45D7CB46.6060807@torque.net>
+Date: Sat, 17 Feb 2007 22:43:02 -0500
+From: Douglas Gilbert <dougg@torque.net>
+Reply-To: dougg@torque.net
+User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Alan Stern <stern@rowland.harvard.edu>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Block layer: separate out queue-oriented ioctls
+References: <Pine.LNX.4.44L0.0702161422100.3490-100000@iolanthe.rowland.org> <20070217062832.GE3689@kernel.dk>
+In-Reply-To: <20070217062832.GE3689@kernel.dk>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070216125353.GN13958@stusta.de>
-	 <MDEHLPKNGKAHNMBLJOLKKEIMBKAC.davids@webmaster.com>
-	 <17878.48376.629016.49202@notabene.brown>
-	 <f2b55d220702171855u59e3cc47i73e4aa48d0c0968c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/18/07, Michael K. Edwards <medwards.linux@gmail.com> wrote:
-> If you can
-> read that and still tolerate the stench of the FSF's argument that
-> linking against readline means they 0wn your source code, you have a
-> stronger stomach than I.
+Jens Axboe wrote:
+> On Fri, Feb 16 2007, Alan Stern wrote:
+>> From: James Bottomley <James.Bottomley@SteelEye.com>
+>>
+>> This patch (as854) separates out the two queue-oriented ioctls from
+>> the rest of the block-layer ioctls.  The idea is that they should
+>> apply to any driver using a request_queue, even if the driver doesn't
+>> implement a block-device interface.  The prototypical example is the
+>> sg driver, to which the patch adds the new interface.
+>>
+>> This will make it possible for cdrecord and related programs to
+>> retrieve reliably the max_sectors value, regardless of whether the
+>> user points it to an sr or an sg device.  In particular, this will
+>> resolve Bugzilla entry #7026.
+> 
+> The block bits are fine with me, the sg calling point is a bit of a sore
+> thumb (a char driver calling into block layer ioctls) though. So the
+> block layer bits are certainly ok with me, if Doug acks the sg bit I'll
+> merge everything up.
+> 
+> (patch left below)
 
-Such a strange attitude.. to go to all this effort to quote carefully
-and correctly one set of people and to then total misconstrue the
-words of another.
+Does this need to be in the sg driver?
 
-The FSF's argument in regards to readline is that you may not
-distribute readline with proprietary software linked to it.  They
-don't claim they "0wn" your source code.
+What is the hardware sector size of a SES or OSD device?
 
-Trent
+As for the max_sector variable, wouldn't it be better
+to generate a new ioctl that yielded the limit in bytes?
+Making a driver variable that implicitly assumes sectors
+are 512 bytes in length more visible to the user space
+seems like a step in the wrong direction.
+
+Alternatively the SG_GET_RESERVED_SIZE ioctl could be
+modified to yield no more than max_sectors*512 .
+
+Doug Gilbert
+
+
+P.S. See comment below
+
+>> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+>>
+>> ---
+>>
+>> Jens:
+>>
+>> James said that he feels you should be be the person to accept this
+>> patch, since it affects the block layer.  Please merge it and send it
+>> on up the hierarchy.
+>>
+>> Alan Stern
+>>
+>>
+>>
+>> diff --git a/block/ioctl.c b/block/ioctl.c
+>> index 58aab63..8444d0c 100644
+>> --- a/block/ioctl.c
+>> +++ b/block/ioctl.c
+>> @@ -135,6 +135,31 @@ static int put_u64(unsigned long arg, u6
+>>  	return put_user(val, (u64 __user *)arg);
+>>  }
+>>  
+>> +static int blk_queue_locked_ioctl(struct request_queue *queue,
+>> +				  unsigned cmd, unsigned long arg)
+>> +{
+>> +	switch (cmd) {
+>> +	case BLKSSZGET: /* get block device hardware sector size */
+>> +		return put_int(arg, queue_hardsect_size(queue));
+>> +	case BLKSECTGET:
+>> +		return put_ushort(arg, queue->max_sectors);
+>> +	}
+>> +	return -ENOIOCTLCMD;
+>> +}
+>> +
+>> +int blk_queue_ioctl(struct request_queue *queue, unsigned cmd,
+>> +		    unsigned long arg)
+>> +{
+>> +	int ret;
+>> +
+>> +	lock_kernel();
+>> +	ret = blk_queue_locked_ioctl(queue, cmd, arg);
+>> +	unlock_kernel();
+>> +
+>> +	return ret;
+>> +}
+>> +EXPORT_SYMBOL(blk_queue_ioctl);
+>> +
+>>  static int blkdev_locked_ioctl(struct file *file, struct block_device *bdev,
+>>  				unsigned cmd, unsigned long arg)
+>>  {
+>> @@ -154,10 +179,6 @@ static int blkdev_locked_ioctl(struct fi
+>>  		return put_int(arg, bdev_read_only(bdev) != 0);
+>>  	case BLKBSZGET: /* get the logical block size (cf. BLKSSZGET) */
+>>  		return put_int(arg, block_size(bdev));
+>> -	case BLKSSZGET: /* get block device hardware sector size */
+>> -		return put_int(arg, bdev_hardsect_size(bdev));
+>> -	case BLKSECTGET:
+>> -		return put_ushort(arg, bdev_get_queue(bdev)->max_sectors);
+>>  	case BLKRASET:
+>>  	case BLKFRASET:
+>>  		if(!capable(CAP_SYS_ADMIN))
+>> @@ -278,6 +299,8 @@ int blkdev_ioctl(struct inode *inode, st
+>>  
+>>  	lock_kernel();
+>>  	ret = blkdev_locked_ioctl(file, bdev, cmd, arg);
+>> +	if (ret == -ENOIOCTLCMD)
+>> +		ret = blk_queue_locked_ioctl(bdev_get_queue(bdev), cmd, arg);
+>>  	unlock_kernel();
+>>  	if (ret != -ENOIOCTLCMD)
+>>  		return ret;
+>> diff --git a/drivers/scsi/sg.c b/drivers/scsi/sg.c
+>> index 81e3bc7..d97244b 100644
+>> --- a/drivers/scsi/sg.c
+>> +++ b/drivers/scsi/sg.c
+>> @@ -786,6 +786,11 @@ sg_ioctl(struct inode *inode, struct fil
+>>  				   sdp->disk->disk_name, (int) cmd_in));
+>>  	read_only = (O_RDWR != (filp->f_flags & O_ACCMODE));
+>>  
+>> +	/* block ioctls first */
+
+Why first??
+That would allow the block layer to overtake any currently
+defined and working sg ioctl.
+Surely, if it was put in, it should be in the default case.
+
+>> +	result = blk_queue_ioctl(sdp->device->request_queue, cmd_in, arg);
+>> +	if (result != -ENOIOCTLCMD)
+>> +		return result;
+>> +
+>>  	switch (cmd_in) {
+>>  	case SG_IO:
+>>  		{
+>> diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+>> index e1c7286..550b04a 100644
+>> --- a/include/linux/blkdev.h
+>> +++ b/include/linux/blkdev.h
+>> @@ -754,6 +754,8 @@ extern void blk_queue_prep_rq(request_qu
+>>  extern void blk_queue_merge_bvec(request_queue_t *, merge_bvec_fn *);
+>>  extern void blk_queue_dma_alignment(request_queue_t *, int);
+>>  extern void blk_queue_softirq_done(request_queue_t *, softirq_done_fn *);
+>> +extern int blk_queue_ioctl(struct request_queue *queue, unsigned cmd,
+>> +			   unsigned long arg);
+>>  extern struct backing_dev_info *blk_get_backing_dev_info(struct block_device *bdev);
+>>  extern int blk_queue_ordered(request_queue_t *, unsigned, prepare_flush_fn *);
+>>  extern void blk_queue_issue_flush_fn(request_queue_t *, issue_flush_fn *);
+>>
+> 
+
