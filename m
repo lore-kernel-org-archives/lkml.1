@@ -1,33 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752369AbXBRWrx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752390AbXBRWul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752369AbXBRWrx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 17:47:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbXBRWrx
+	id S1752390AbXBRWul (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 17:50:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbXBRWul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 17:47:53 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:59871 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752364AbXBRWrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 17:47:52 -0500
-Date: Sun, 18 Feb 2007 14:47:43 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Miles Lane" <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: 2.6.20-mm2 -- EIP is at __make_request+0xeb/0x2ee
-Message-Id: <20070218144743.3eff0299.akpm@linux-foundation.org>
-In-Reply-To: <20070218143517.238d7a0e.akpm@linux-foundation.org>
-References: <a44ae5cd0702181347l4551aaefxf083e5260ea274ce@mail.gmail.com>
-	<20070218143517.238d7a0e.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 18 Feb 2007 17:50:41 -0500
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:39875 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752391AbXBRWuk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 17:50:40 -0500
+To: akpm@linux-foundation.org
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-reply-to: <20070218125307.4103c04a.akpm@linux-foundation.org> (message from
+	Andrew Morton on Sun, 18 Feb 2007 12:53:07 -0800)
+Subject: Re: dirty balancing deadlock
+References: <E1HIqlm-0004iZ-00@dorka.pomaz.szeredi.hu> <20070218125307.4103c04a.akpm@linux-foundation.org>
+Message-Id: <E1HIurG-0005Bw-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sun, 18 Feb 2007 23:50:14 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 Feb 2007 14:35:17 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+> > I was testing the new fuse shared writable mmap support, and finding
+> > that bash-shared-mapping deadlocks (which isn't so strange ;).  What
+> > is more strange is that this is not an OOM situation at all, with
+> > plenty of free and cached pages.
+> > 
+> > A little more investigation shows that a similar deadlock happens
+> > reliably with bash-shared-mapping on a loopback mount, even if only
+> > half the total memory is used.
+> > 
+> > The cause is slightly different in the two cases:
+> > 
+> >   - loopback mount: allocation by the underlying filesystem is stalled
+> >     on throttle_vm_writeout()
+> > 
+> >   - fuse-loop: page dirtying on the underlying filesystem is stalled on
+> >     balance_dirty_pages()
+> > 
+> > In both cases the underlying fs is totally innocent, with no
+> > dirty/writback pages, yet it's waiting for the global dirty+writeback
+> > to go below the threshold, which obviously won't, until the
+> > allocation/dirtying succeeds.
+> > 
+> > I'm not quite sure what the solution is, and asking for thoughts.
+> 
+> But....  these things don't just throttle.  They also perform large amounts
+> of writeback, which causes the dirty levels to subside.
+> 
+> >From your description it appears that this writeback isn't happening, or
+> isn't working.  How come?
 
-> I guess I need to do a git-blockless -mm3
+ - filesystems A and B
+ - write to A will end up as write to B
+ - dirty pages in A manage to go over dirty_threshold
+ - page writeback is started from A
+ - this triggers writeback for a couple of pages in B
+ - writeback finishes normally, but dirty+writeback pages are still
+   over threshold
+ - balance_dirty_pages in B gets stuck, nothing ever moves after this
 
-OK, this is looking like a pain - I'd have to drop or significantly redo
-thirty or more patches.  Jens, please fix it asap.
+At least this is my theory for what happens.
+
+Miklos
