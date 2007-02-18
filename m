@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752019AbXBRUUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752026AbXBRUUv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752019AbXBRUUd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 15:20:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbXBRUUd
+	id S1752026AbXBRUUv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 15:20:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbXBRUUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 15:20:33 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3845 "EHLO spitz.ucw.cz"
+	Sun, 18 Feb 2007 15:20:44 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3847 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752019AbXBRUUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 15:20:32 -0500
-Date: Sun, 18 Feb 2007 16:42:13 +0000
+	id S1752022AbXBRUUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 15:20:43 -0500
+Date: Sun, 18 Feb 2007 16:36:22 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: Scott Preece <sepreece@gmail.com>
-Cc: Theodore Tso <tytso@mit.edu>, v j <vj.linux@gmail.com>,
-       Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: GPL vs non-GPL device drivers
-Message-ID: <20070218164213.GB3945@ucw.cz>
-References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com> <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com> <20070215061149.GE15654@redhat.com> <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com> <20070215165339.GB5285@thunk.org> <7b69d1470702151658w603aab4ave1d17cc0b2c40a2b@mail.gmail.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Tilman Schmidt <tilman@imap.cc>, Hansjoerg Lipp <hjlipp@web.de>,
+       gigaset307x-common@lists.sourceforge.net, kkeil@suse.de,
+       kai.germaschewski@gmx.de, isdn4linux@listserv.isdn4linux.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] correct CONFIG_GIGASET_M101 Makefile entry
+Message-ID: <20070218163621.GA3945@ucw.cz>
+References: <20070215215609.GH13958@stusta.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <7b69d1470702151658w603aab4ave1d17cc0b2c40a2b@mail.gmail.com>
+In-Reply-To: <20070215215609.GH13958@stusta.de>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> >Contrawise, if Embedded developers do contribute their 
-> >device driver
-> >changes back to the kernel, they will be fine.  ...
-> ---
+> Advanced Mathematics, lesson 1:
+> 101 != 105
 > 
-> In fairness, though, some of the developers WILL bitch 
-> about your not
-> using a recent kernel and not providing patches until 
-> products ship,
-> despite that meeting the letter of the license. Some of 
-> the notes in
+> ;-)
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> 
+> ---
+> --- linux-2.6.20-mm1/drivers/isdn/gigaset/Makefile.old	2007-02-15 17:38:23.000000000 +0100
+> +++ linux-2.6.20-mm1/drivers/isdn/gigaset/Makefile	2007-02-15 17:38:41.000000000 +0100
+> @@ -5,4 +5,4 @@
+>  
+>  obj-$(CONFIG_GIGASET_M105) += usb_gigaset.o gigaset.o
+>  obj-$(CONFIG_GIGASET_BASE) += bas_gigaset.o gigaset.o
+> -obj-$(CONFIG_GIGASET_M105) += ser_gigaset.o gigaset.o
+> +obj-$(CONFIG_GIGASET_M101) += ser_gigaset.o gigaset.o
 
-Well, of course developers will complain, they _always_ complain. But
-it is very different kind of complain... first is
+Are you sure? M105 is both usb and serial?
 
-'I think you are violating the law, you are evil'
-
-and second is
-
-'Thank you for playing by the rules, but you know, your code is not
-mergeable right now'.
-
-> this thread do exactly that. And I HAVE seen real 
-> developers say
-> something very close to "Your code is based on a kernel 
-> too old to
-> have any value to us" even though they would also claim 
-> abuse if the
-> code hadn't been made available at all. And I've seen 
-
-Yep, and guess what, thats okay. Someone with more time than they do
-may decide to forward port the code and/or rewrite it for new kernel.
-
-I was doing exactly that with 2.4 sharp sl-5500 code.
-
-							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
