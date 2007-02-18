@@ -1,35 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752474AbXBRXhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752482AbXBRXik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752474AbXBRXhw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 18:37:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbXBRXhw
+	id S1752482AbXBRXik (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 18:38:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbXBRXij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 18:37:52 -0500
-Received: from eastrmmtao05.cox.net ([68.230.240.34]:45821 "EHLO
-	eastrmmtao05.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752474AbXBRXhv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 18:37:51 -0500
-X-Greylist: delayed 3927 seconds by postgrey-1.27 at vger.kernel.org; Sun, 18 Feb 2007 18:37:50 EST
-Message-ID: <9402272.1171837940683.JavaMail.root@eastrmwml04.mgt.cox.net>
-Date: Sun, 18 Feb 2007 17:32:20 -0500
-From: BELGIUM EURO MILLION <info_notice12@cox.net>
-Reply-To: belgiumeuromillion@yahoo.de
-Subject: Belgium Euro Million Lottery Results
+	Sun, 18 Feb 2007 18:38:39 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:50573 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752482AbXBRXii (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 18:38:38 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.20-mm2: compilation fix
+Date: Mon, 19 Feb 2007 00:33:26 +0100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
+In-Reply-To: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-Sensitivity: Normal
-To: unlisted-recipients:; (no To-header on input)
+Content-Disposition: inline
+Message-Id: <200702190033.26285.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Prize Winner,                       
-Your e-mail address attached to lucky reference number drew a lucky winning
-number which consequently won  US $1,000,000.00 (One Million US Dollars) only,
-in cash credited to lucky reference number
-EML.26EPG/0012-4426/0905.1/6/27/39/47-1-6. 
-Sincerely,
-Mrs.Adline Haack
-secetary.
+On Sunday, 18 February 2007 06:51, Andrew Morton wrote:
+> 
+> Temporarily at
+> 
+>   http://userweb.kernel.org/~akpm/2.6.20-mm2/
+> 
+> Will appear later at
+> 
+>  ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm2/
+
+I think something like this is generally necessary:
+
+---
+ drivers/pci/quirks.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: linux-2.6.20-mm2/drivers/pci/quirks.c
+===================================================================
+--- linux-2.6.20-mm2.orig/drivers/pci/quirks.c
++++ linux-2.6.20-mm2/drivers/pci/quirks.c
+@@ -21,6 +21,7 @@
+ #include <linux/init.h>
+ #include <linux/delay.h>
+ #include <linux/acpi.h>
++#include <asm/apicdef.h>
+ #include "pci.h"
+ 
+ /* The Mellanox Tavor device gives false positive parity errors
