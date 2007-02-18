@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751540AbXBRRUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751623AbXBRRcN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751540AbXBRRUr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 12:20:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbXBRRUr
+	id S1751623AbXBRRcN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 12:32:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbXBRRcN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 12:20:47 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:37574 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751535AbXBRRUq (ORCPT
+	Sun, 18 Feb 2007 12:32:13 -0500
+Received: from smtp-100-sunday.noc.nerim.net ([62.4.17.100]:1476 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751603AbXBRRcM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 12:20:46 -0500
-Date: Sun, 18 Feb 2007 18:20:43 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andi Kleen <andi@firstfloor.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Jeff Muizelaar <jeff@infidigm.net>, linux-kernel@vger.kernel.org
-Subject: Re: Using sched_clock for mmio-trace
-Message-ID: <20070218172043.GA7340@one.firstfloor.org>
-References: <20070216013024.GA32287@infidigm.net> <y0mr6sq2hfj.fsf@ton.toronto.redhat.com> <p73fy95g99w.fsf@bingen.suse.de> <20070216212630.GC27135@redhat.com> <20070217145655.GA15662@one.firstfloor.org> <1171725598.30834.125.camel@localhost.localdomain>
+	Sun, 18 Feb 2007 12:32:12 -0500
+Date: Sun, 18 Feb 2007 18:32:19 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-acpi@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+Message-Id: <20070218183219.557856dc.khali@linux-fr.org>
+In-Reply-To: <45D606A0.5020606@redhat.com>
+References: <45D5EA88.7090300@redhat.com>
+	<p73odntg9ga.fsf@bingen.suse.de>
+	<45D606A0.5020606@redhat.com>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1171725598.30834.125.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 17, 2007 at 04:19:58PM +0100, Thomas Gleixner wrote:
-> On Sat, 2007-02-17 at 15:56 +0100, Andi Kleen wrote:
-> > > This is one of the reasons why we don't just use good old
-> > > do_gettimeofday(), since it takes locks and can lead to lock recursion
-> > > if parts of itself are probed.
+Hi Chuck,
+
+On Fri, 16 Feb 2007 14:31:44 -0500, Chuck Ebbert wrote:
+> Andi Kleen wrote:
+> > Chuck Ebbert wrote:
+> > > So, could ACPI and the k8temp driver be at odds?
 > > 
-> > do_gettimeofday doesn't take locks.
-> > 
-> > Only restriction is that you can't single step it with long 
-> > pauses between instructions.
+> > Yes, there is no locking between ACPI and Linux drivers for register access.
+> > e.g. if there is a indexed register both try to access (and temperature
+> > sensors tend to use these things) they can race and get corrupted data.
 > 
-> Err, it uses read side of xtime lock, so you can not call it from a
-> place which write locks xtime lock.
+> I blacklisted the k8temp driver and everything looks OK now.
 
-Err, you can -- seqlocks never deadlock.
+You could blacklist the ACPI "thermal" module instead. If you're
+interested in monitoring your CPU temperature, k8temp is IMHO more
+convenient to use than ACPI, as it interfaces properly with libsensors
+and all hardware monitoring user interfaces.
 
-The only thing that doesn't work is to single step with long enough
-pauses with interrupts on inbetween that the sequence numbers increase:
-you get a livelock then.
-
--Andi
+-- 
+Jean Delvare
