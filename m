@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752449AbXBRXYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752447AbXBRX2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752449AbXBRXYu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 18:24:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbXBRXYu
+	id S1752447AbXBRX2P (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 18:28:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbXBRX2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 18:24:50 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:50492 "EHLO ogre.sisk.pl"
+	Sun, 18 Feb 2007 18:28:15 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:37672 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752449AbXBRXYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 18:24:49 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: freezer problems
-Date: Mon, 19 Feb 2007 00:19:21 +0100
-User-Agent: KMail/1.9.5
-Cc: ego@in.ibm.com, akpm@osdl.org, paulmck@us.ibm.com, mingo@elte.hu,
-       vatsa@in.ibm.com, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-References: <20070214144031.GA15257@in.ibm.com> <200702181956.11273.rjw@sisk.pl> <20070218220134.GA4243@tv-sign.ru>
-In-Reply-To: <20070218220134.GA4243@tv-sign.ru>
+	id S1752447AbXBRX2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 18:28:14 -0500
+Message-ID: <45D8E102.6090004@redhat.com>
+Date: Sun, 18 Feb 2007 18:28:02 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: linux-kernel <linux-kernel@vger.kernel.org>
+CC: Jens Axboe <axboe@suse.de>, Jeff Garzik <jeff@garzik.org>
+Subject: I2O block driver broken in kernel 2.6.19?
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702190019.23215.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 18 February 2007 23:01, Oleg Nesterov wrote:
-> On 02/18, Rafael J. Wysocki wrote:
-> > 
-> > Appended is a patch that does something along these lines.  The necessary
-> > thread_info flags are defined for i386 and x86_64, for now.
-> 
-> I'll try to look at this patch when I am not sooooo sleepy ...
-> 
-> just one small nit right now,
-> 
-> > --- linux-2.6.20-mm2.orig/include/asm-i386/thread_info.h	2007-02-18 19:49:34.000000000 +0100
-> > +++ linux-2.6.20-mm2/include/asm-i386/thread_info.h	2007-02-18 19:50:37.000000000 +0100
-> > @@ -135,6 +135,7 @@ static inline struct thread_info *curren
-> >  #define TIF_IO_BITMAP		18	/* uses I/O bitmap */
-> >  #define TIF_FREEZE		19	/* is freezing for suspend */
-> >  #define TIF_FORCED_TF		20	/* true if TF in eflags artificially */
-> > +#define TIF_FREEZER_SKIP	21	/* task freezer should not count us */
-> 
-> Do we need to put this flag into thread_info? It is always modified by
-> "current", so it could live in task_struct->flags instead.
+Fedora is getting a bunch of bug reports about the I2O block
+driver not working in 2.6.19 kernels.
 
-I thought we were running low on the task_struct->flags bits. :-)
+Everything looks like it loads OK, but no block IO can be
+done, not even reading the partition table:
 
-Apart from this, we may need to set it from somewhere else in the future.
+I2O subsystem v1.325
+i2o: max drivers = 8
+i2o: Checking for PCI I2O controllers...
+ACPI: PCI Interrupt Link [APC4] enabled at IRQ 19
+ACPI: PCI Interrupt 0000:01:07.0[A] -> Link [APC4] -> GSI 19 (level, low) -> IRQ 19
+iop0: controller found (0000:01:07.0)
+iop0: limit sectors per request to 128
+iop0: using 64-bit DMA
+iop0: PCI I2O controller at E0000000 size=1048576
+iop0: Installed at IRQ 19
+i2o: iop0: Activating I2O controller...
+i2o: iop0: This may take a few minutes if there are many devices
+iop0: HRT has 1 entries of 16 bytes each.
+Adapter 00000012: TID 0000:[HPC*]:PCI 1: Bus 1 Device 22 Function 0
+i2o: iop0: Controller added
+I2O Block Device OSM v1.325
+block-osm: registered device at major 80
+ i2o/hda:<3>Buffer I/O error on device i2o/hda, logical block 0
+Buffer I/O error on device i2o/hda, logical block 0
+Buffer I/O error on device i2o/hda, logical block 0
+ unable to read partition table
+block-osm: device added (TID: 209): i2o/hda
 
-Greetings,
-Rafael
+The driver looks unchanged except for cleanups...
+
+
