@@ -1,178 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752487AbXBRXjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752498AbXBRXnB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752487AbXBRXjI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 18:39:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbXBRXjI
+	id S1752498AbXBRXnB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 18:43:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbXBRXnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 18:39:08 -0500
-Received: from nz-out-0506.google.com ([64.233.162.237]:4532 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752486AbXBRXjG (ORCPT
+	Sun, 18 Feb 2007 18:43:01 -0500
+Received: from wr-out-0506.google.com ([64.233.184.233]:1509 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752498AbXBRXm7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 18:39:06 -0500
+	Sun, 18 Feb 2007 18:42:59 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=eq7mW/3mbMWwWGNeXgULd+hJ7rdnoTfFZkhgEzUUtgqc82ADfD3a4jwkPwVmEXnOKSW5af/imvGUgr1Nmn/W9yuUjvP7tFykRiKfSs9WMBSup6otlYVdgk6rZM0MaN8CbUZh/Xi9UOmvSvNaY1WO+FIAcCDo44oEoWy6m4xHOMc=
-Message-ID: <6bffcb0e0702181539r66d6784ay36ca4cddc749588e@mail.gmail.com>
-Date: Mon, 19 Feb 2007 00:39:04 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.20-mm2
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Neil Brown" <neilb@suse.de>, "Jeff Garzik" <jeff@garzik.org>,
-       linux-ide@vger.kernel.org, "Jens Axboe" <jens.axboe@oracle.com>
-In-Reply-To: <200702190025.49273.rjw@sisk.pl>
+        b=Dz5DRf4pgPKkGMu14Kw4vdjr3doThmaQHwDA2fxPOPieKHCT+4MzJC61m+LcvdG9XTcJ85KyyODZjZH0yIYkohbgSZQEGCTJ4+xYo8uqhiozVvQpSUlhRkcQ7JV+Jd7jFJGEbq54ivDw2KbhfMTZ2hEzSk9jGmQrXqzR1tRaepc=
+Message-ID: <f2b55d220702181542q789cd982q65f7f8bc7502ccb2@mail.gmail.com>
+Date: Sun, 18 Feb 2007 15:42:58 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Oleg Verych" <olecom@flower.upol.cz>
+Subject: Re: GPL vs non-GPL device drivers
+Cc: "Trent Waddington" <trent.waddington@gmail.com>,
+       "Neil Brown" <neilb@suse.de>, davids@webmaster.com,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <E1HIhoq-0005HC-3i@flower>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
-	 <200702181344.54959.rjw@sisk.pl>
-	 <20070218114326.35d7645b.akpm@linux-foundation.org>
-	 <200702190025.49273.rjw@sisk.pl>
+References: <20070216125353.GN13958@stusta.de>
+	 <MDEHLPKNGKAHNMBLJOLKKEIMBKAC.davids@webmaster.com>
+	 <17878.48376.629016.49202@notabene.brown>
+	 <f2b55d220702171855u59e3cc47i73e4aa48d0c0968c@mail.gmail.com>
+	 <3d57814d0702171926v53812baeqaeeda326aa225acf@mail.gmail.com>
+	 <f2b55d220702172256x1573cb6ci35cdfcdad1780d9@mail.gmail.com>
+	 <E1HIhoq-0005HC-3i@flower>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19/02/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Sunday, 18 February 2007 20:43, Andrew Morton wrote:
-> > On Sun, 18 Feb 2007 13:44:54 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> >
-> > > On Sunday, 18 February 2007 06:51, Andrew Morton wrote:
-> > > >
-> > > > Temporarily at
-> > > >
-> > > >   http://userweb.kernel.org/~akpm/2.6.20-mm2/
-> > > >
-> > > > Will appear later at
-> > > >
-> > > >  ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm2/
-> > >
-> > > Two problems:
-> > >
-> > > 1) A showstopper with the root partition on RAID1:
-> > >
-> > > md: raid1 personality registered for level 1
-> > > [--snip--]
-> > > md: multipath personality registered for level -4
-> > > register_blkdev: failed to get major for mdp
-> > > [--snip--]
-> > > VFS: Cannot open root device "md1" or unknown-block(0,0)
-> >
-> > Someone else reported that against mainline.  Can you please debug it a bit?
->
-> Sure, tomorrow I will.
->
-> > I'd suggested reverting the recent changes in there:
-> >
-> > --- a/block/genhd.c~a
-> > +++ a/block/genhd.c
-> > @@ -61,14 +61,6 @@ int register_blkdev(unsigned int major,
-> >       /* temporary */
-> >       if (major == 0) {
-> >               for (index = ARRAY_SIZE(major_names)-1; index > 0; index--) {
-> > -                     /*
-> > -                      * Disallow the LANANA-assigned LOCAL/EXPERIMENTAL
-> > -                      * majors
-> > -                      */
-> > -                     if ((60 <= index && index <= 63) ||
-> > -                                     (120 <= index && index <= 127) ||
-> > -                                     (240 <= index && index <= 254))
-> > -                             continue;
-> >                       if (major_names[index] == NULL)
-> >                               break;
-> >               }
-> > _
-> >
-> > but I don't see how they could cause this.
-> >
-> >
-> > > At the moment I have no serial console attached to the box, so I had to rewrite
-> > > the messages manually.
-> >
-> > netconsole is good.
->
-> I know. :-)
->
-> In the meantime, I've got something worse on another x86_64 box:
->
-> Asus Laptop ACPI Extras version 0.30
->   L5D model detected, supported
-> audit(1171831698.918:2): audit_pid=4281 old=0 by auid=4294967295
-> general protection fault: 0000 [2] PREEMPT
-> last sysfs file: /class/net/eth2/carrier
-> CPU 0
-> Modules linked in: af_packet ipv6 snd_pcm_oss snd_mixer_oss snd_seq snd_seq_device asus_acpi backlight button battery ac dm_mod pcmr
-> Pid: 178, comm: pdflush Not tainted 2.6.20-mm2 #1
-> RIP: 0010:[<ffffffff8034bce4>]  [<ffffffff8034bce4>] __make_request+0x134/0x370
-> RSP: 0000:ffff81005ed659a0  EFLAGS: 00010297
-> RAX: 00000000ffffffff RBX: 6b6b6b6b6b6b6b6b RCX: 000000000203396a
-> RDX: 0000000100000000 RSI: ffff810037b4dbb0 RDI: ffff81004683d8c0
-> RBP: ffff81005ed659f0 R08: ffff81004683d070 R09: ffff81003d333cc0
-> R10: 0000000000000000 R11: 0000000000000000 R12: ffff810037b4dbb0
-> R13: ffff81005daba3f0 R14: ffff810037daca90 R15: ffff81005daba3d0
-> FS:  00002ad4a29e6d00(0000) GS:ffffffff805db000(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> CR2: 00002b6a345aa000 CR3: 0000000056585000 CR4: 00000000000006e0
-> Process pdflush (pid: 178, threadinfo ffff81005ed64000, task ffff810037b060c0)
-> Stack:  ffff810002852540 0000000000000001 ffff810037b4dbb0 ffffffff8026be21
->  ffff81005ed65a40 0000000000000008 ffff810037b4dbb0 0000000000000800
->  0000000000000008 ffff8100021d94e0 ffff81005ed65a40 ffffffff80348e7c
-> Call Trace:
->  [<ffffffff8026be21>] mempool_alloc_slab+0x11/0x20
->  [<ffffffff80348e7c>] generic_make_request+0x1ec/0x230
->  [<ffffffff8034b7e6>] submit_bio+0xf6/0x110
->  [<ffffffff802b60f0>] submit_bh+0x100/0x130
->  [<ffffffff802b788a>] __block_write_full_page+0x1ca/0x2e0
->  [<ffffffff802bc040>] blkdev_get_block+0x0/0x70
->  [<ffffffff802bc040>] blkdev_get_block+0x0/0x70
->  [<ffffffff802b7a93>] block_write_full_page+0xf3/0x110
->  [<ffffffff802baeb3>] blkdev_writepage+0x13/0x20
->  [<ffffffff8026eb85>] __writepage+0x15/0x40
->  [<ffffffff8026f1e3>] write_cache_pages+0x1f3/0x360
->  [<ffffffff8026eb70>] __writepage+0x0/0x40
->  [<ffffffff8026f372>] generic_writepages+0x22/0x30
->  [<ffffffff8026f3c6>] do_writepages+0x46/0x80
->  [<ffffffff802b1f67>] __writeback_single_inode+0x1d7/0x370
->  [<ffffffff802b2355>] generic_sync_sb_inodes+0x35/0x2b0
->  [<ffffffff802b24f9>] generic_sync_sb_inodes+0x1d9/0x2b0
->  [<ffffffff802b29f2>] writeback_inodes+0x82/0x100
->  [<ffffffff802b25f5>] sync_sb_inodes+0x25/0x30
->  [<ffffffff802b2a08>] writeback_inodes+0x98/0x100
->  [<ffffffff8026fd40>] pdflush+0x0/0x1e0
->  [<ffffffff8026f934>] wb_kupdate+0x94/0x110
->  [<ffffffff8026fe68>] pdflush+0x128/0x1e0
->  [<ffffffff8026f8a0>] wb_kupdate+0x0/0x110
->  [<ffffffff8026fd40>] pdflush+0x0/0x1e0
->  [<ffffffff80240863>] kthread+0xd3/0x110
->  [<ffffffff80240700>] keventd_create_kthread+0x0/0x90
->  [<ffffffff8020a3f8>] child_rip+0xa/0x12
->  [<ffffffff80483e5b>] _spin_unlock_irq+0x2b/0x60
->  [<ffffffff80209fb0>] restore_args+0x0/0x30
->  [<ffffffff80240790>] kthread+0x0/0x110
->  [<ffffffff8020a3ee>] child_rip+0x0/0x12
->
->
-> Code: 48 8b 43 08 0f 18 08 49 39 dd 75 a2 49 8b be 38 02 00 00 e8
-> RIP  [<ffffffff8034bce4>] __make_request+0x134/0x370
->  RSP <ffff81005ed659a0>
-> PM: Adding info for No Bus:vcs10
-> PM: Adding info for No Bus:vcsa10
->
-> It looks _really_ bad to me. :-(
->
+Eensy weensy follow-up.  No screed.  Well, maybe just a _little_ screed.
 
-It looks familiar to me
+On 2/18/07, Oleg Verych <olecom@flower.upol.cz> wrote:
+> Ulrich Drepper is known to be against current FSF's position on glibc
+> licence changing.
 
-http://www.ussg.iu.edu/hypermail/linux/kernel/0702.2/0646.html
-http://www.ussg.iu.edu/hypermail/linux/kernel/0702.2/0821.html
+Will that stop the FSF?  Will it stop Red Hat, MontaVista, or
+CodeSourcery?  Even if Ulrich tells the FSF to stuff it where the sun
+don't shine, and hosts his new fork on Google Code along with the rest
+of the GNU corpus, the moment he or you or any of us wants to run any
+binary that was compiled against a newer FSF glibc, we're screwed.
+All it takes is for that binary to have a post-v3-switch symbol in its
+link table (which can easily happen _without_ any change in the
+application source code).
 
-Regards,
-Michal
+It's all very well to say we can live without anything that ships as a
+binary, but commercial applications atop glibc are a big part of how
+Linux left the hobbyist ghetto, and I don't want to go back there.  Do
+you?  Or do you really want to spend the rest of your precious time on
+Earth shimming clean-room reverse-engineered crap into
+glibc-GPLv2-fork to keep Oracle running on a distro that Moglen
+doesn't have by the 'nads?  Not that it really matters whether you're
+using Oracle or MySQL -- an RDBMS, like any racing thoroughbred, goes
+lame if you look at it funny, and once you've gotten burned once in
+production by the unreproducibility of the golden bits, you won't try
+it again.
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+The existence of GNU-free userlands is nice for us embedded folk but
+ultimately useless for desktops and servers.  Talk to the people who
+have spent untold person-years scrubbing bashisms out of Debian's
+/etc/init.d.  Talk to the people who have ported their
+industrial-scale multithreaded apps from linuxthreads (with its
+annoying non-POSIX behaviors) to NPTL (with its equally annoying POSIX
+behaviors).  Talk to the people struggling to package Gnome and KDE
+for anything other than glibc, libstdc++, and (worst of all) ld.so.2.
+Portability ain't all it's cracked up to be.
+
+If you think "embrace, extend, destroy" is tattooed on Ballmer's
+forehead, you should take a good look at an RMS word-portrait
+sometime.  And imagine a nice private chat with the
+if-you-can't-beat-'em-join-'em club -- from IBM and HP to Apple, Wind
+River, and Sun.  Say what you will about Steve Jobs, he's a survivor
+-- but the ex-CEOs of all the rest will give you an earful about being
+shot out of the saddle by the "free software" mafia and replaced with
+people who know how to do a deal with the devil and call it a
+come-to-Jesus moment in the press release.
+
+Intel is keeping mum -- they've made an industry out of playing both
+ends against the middle, and they've got a compiler that can more or
+less do Linux anyway, so they don't really care.  Google doesn't care
+either -- they've got more cash than they can spend and can afford to
+fork internally and go their merry way.  The only heavyweight that had
+refused to get on board until very recently was Oracle.  Not just
+because Larry Ellison likes to fly solo, either -- read
+http://www.internetnews.com/dev-news/article.php/3614721.  Then read
+http://www.internetnews.com/dev-news/article.php/3655261.  Larry, too,
+is a survivor.
+
+Cheers,
+- Michael
