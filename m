@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946486AbXBQIUP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946447AbXBQIXI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946486AbXBQIUP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 03:20:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946489AbXBQIUO
+	id S1946447AbXBQIXI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 03:23:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946489AbXBQIXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 03:20:14 -0500
-Received: from mail.gmx.net ([213.165.64.20]:38691 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1946486AbXBQIUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 03:20:13 -0500
-X-Provags-ID: V01U2FsdGVkX19GZkYPFoJGZpFAmrcI7dhUWmWQSvnC60+PixA1Jh
-	g+Kg==
-Subject: Re: 2.6.20.git regression: 'PCI: add the sysfs driver name to all
-	modules' causes hard hang on boot
-From: Mike Galbraith <efault@gmx.de>
-To: Greg KH <greg@kroah.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070217015048.GB18591@kroah.com>
-References: <1171619710.6828.24.camel@Homer.simpson.net>
-	 <20070216223609.GA6165@kroah.com>
-	 <1171676288.6448.9.camel@Homer.simpson.net>
-	 <20070217015048.GB18591@kroah.com>
-Content-Type: text/plain
-Date: Sat, 17 Feb 2007 09:20:01 +0100
-Message-Id: <1171700401.6443.16.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Sat, 17 Feb 2007 03:23:08 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:15899 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946447AbXBQIXF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 03:23:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=MBhZjquzX5k8opDqdO+ZZbNTeC9zpL4G6Hek7PQebeNqarUg8PJ+/GVCpPUydrK4uIeY2+54aHsXfG+LfDRy8z1/7rxq5uNmji1mdU5vklJPhyBNIwz6rTWUA+f7ECrwr4zEvVVyqY5B0BZiB/M6SnxxA1EhoU4D9gmZo0ZyI8U=
+Date: Sun, 18 Feb 2007 08:22:15 +0000
+From: Frederik Deweerdt <deweerdt@free.fr>
+To: "Berck E. Nash" <flyboy@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.20-mm1 USB-related OOPS
+Message-ID: <20070218082215.GE32060@slug>
+References: <45D657C2.4040304@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45D657C2.4040304@gmail.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-02-16 at 17:50 -0800, Greg KH wrote:
-> On Sat, Feb 17, 2007 at 02:38:08AM +0100, Mike Galbraith wrote:
-> > On Fri, 2007-02-16 at 14:36 -0800, Greg KH wrote:
-> > > On Fri, Feb 16, 2007 at 10:55:10AM +0100, Mike Galbraith wrote:
-> > > > Greetings,
-> > > > 
-> > > > Per $subject, git.yesterday hangs hard on boot here. A git bisect
-> > > > fingered the commit below, which I verified via git bisect reset; git
-> > > > revert -n 725522b5453dd680412f2b6463a988e4fd148757, after which box
-> > > > boots fine.  (well, I hope I verified... i'm git-ignorant)
-> > > 
-> > > If you change CONFIG_SYSFS_DEPRECATED to Y, does that solve the problem?
-> > 
-> > It's already set.
+On Fri, Feb 16, 2007 at 06:17:54PM -0700, Berck E. Nash wrote:
+> I get the following OOPS on boot, presumably connected with USB driver
+> loading.  I've attached the entire log.  Please CC on replies as I'm not
+> subscribed.
 > 
-> It's not set in the config file you sent to me and the list :)
+> Loading kernel module nvidia.
+> [  149.135709] nvidia: module license 'NVIDIA' taints kernel.
+Hi,
 
-Oops.  (Lysdexic mouse, or friends+Aerosmith+beer+2:30A.M.:) Makes no
-difference.  Nada from nmi_watchdog either btw.
+Could you try booting without loading the nvidia module? Oopses related
+to it have been reported for 2.6.20-mm1. 
+See http://lkml.org/lkml/2007/2/16/428
 
-	-Mike
-
+Regards,
+Frederik
