@@ -1,99 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752254AbXBRWFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752270AbXBRWUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752254AbXBRWFy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 17:05:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbXBRWFy
+	id S1752270AbXBRWUR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 17:20:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbXBRWUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 17:05:54 -0500
-Received: from ishtar.tlinx.org ([64.81.245.74]:60355 "EHLO ishtar.tlinx.org"
+	Sun, 18 Feb 2007 17:20:17 -0500
+Received: from mail.screens.ru ([213.234.233.54]:39691 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752254AbXBRWFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 17:05:53 -0500
-X-Greylist: delayed 1626 seconds by postgrey-1.27 at vger.kernel.org; Sun, 18 Feb 2007 17:05:53 EST
-Message-ID: <45D8C765.7080306@tlinx.org>
-Date: Sun, 18 Feb 2007 13:38:45 -0800
-From: Linda Walsh <xfs@tlinx.org>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
-MIME-Version: 1.0
-To: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: lock checking feedback (bug?) 2.6.20(xfs)/i386 during boot
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1752270AbXBRWUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 17:20:15 -0500
+Date: Mon, 19 Feb 2007 01:17:37 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] fix refrigerator() vs thaw_process() race
+Message-ID: <20070218221737.GA4880@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Turned on lock testing/proving/deadlock detection.  Not chasing any 
-particular
-problem, but looking for things "oddities".
+refrigerator() can miss a wakeup, "wait event" loop needs a proper memory
+ordering.
 
-Turned on options (under kernel hacking):
-   Locking API boot-time self-tests
-   RT Mutex debugging, deadlock detection
-   Lock debugging: prove locking correctness
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Multiple reboots show it to be a constant.
-I had tried the new "Asynchronous SCSI scanning" -- thought that might 
-have been
-related, but turning it off makes no difference.
+--- WQ/kernel/power/process.c~WAKE	2007-02-18 22:56:49.000000000 +0300
++++ WQ/kernel/power/process.c	2007-02-19 01:04:26.000000000 +0300
+@@ -46,8 +46,10 @@ void refrigerator(void)
+ 	recalc_sigpending(); /* We sent fake signal, clean it up */
+ 	spin_unlock_irq(&current->sighand->siglock);
+ 
+-	while (frozen(current)) {
+-		current->state = TASK_UNINTERRUPTIBLE;
++	for (;;) {
++		set_current_state(TASK_UNINTERRUPTIBLE);
++		if (!frozen(current))
++			break;
+ 		schedule();
+ 	}
+ 	pr_debug("%s left refrigerator\n", current->comm);
 
-I'm guessing this "error" has been present before this, but the lock
-proving algorithms are bringing it to light?  So I don't know how serious
-this is (if it is anything), but at the least, it doesn't look too clean...
-
-
-Maybe that
-....
-SCSI device sda: write cache: enabled, read cache: enabled, supports DPO 
-and FUA
- sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 >
-sd 0:0:0:0: Attached scsi disk sda
-UDF-fs: No VRS found
-XFS mounting filesystem sda3
-Ending clean XFS mount for filesystem: sda3
-VFS: Mounted root (xfs filesystem) readonly.
-Freeing unused kernel memory: 316k freed
-
-=============================================
-[ INFO: possible recursive locking detected ]
-2.6.20 #3
----------------------------------------------
-rm/682 is trying to acquire lock:
- (&(&ip->i_lock)->mr_lock){----}, at: [<b024068d>] xfs_ilock+0x7d/0xb0
-
-but task is already holding lock:
- (&(&ip->i_lock)->mr_lock){----}, at: [<b024068d>] xfs_ilock+0x7d/0xb0
-
-other info that might help us debug this:
-3 locks held by rm/682:
- #0:  (&inode->i_mutex/1){--..}, at: [<b016f946>] do_unlinkat+0x96/0x170
- #1:  (&inode->i_mutex){--..}, at: [<b016db9a>] vfs_unlink+0x5a/0xd0
- #2:  (&(&ip->i_lock)->mr_lock){----}, at: [<b024068d>] xfs_ilock+0x7d/0xb0
-
-stack backtrace:
- [<b013aaf1>] __lock_acquire+0xaf1/0xdf0
- [<b013ae47>] lock_acquire+0x57/0x70
- [<b024068d>] xfs_ilock+0x7d/0xb0
- [<b0135d7f>] down_write+0x2f/0x50
- [<b024068d>] xfs_ilock+0x7d/0xb0
- [<b024068d>] xfs_ilock+0x7d/0xb0
- [<b025ff2d>] xfs_lock_dir_and_entry+0xfd/0x100
- [<b0263c68>] xfs_remove+0x198/0x4e0
- [<b025fff6>] xfs_access+0x26/0x50
- [<b025fff6>] xfs_access+0x26/0x50
- [<b016db9a>] vfs_unlink+0x5a/0xd0
- [<b026d8f3>] xfs_vn_unlink+0x23/0x60
- [<b0417f72>] __mutex_lock_slowpath+0x152/0x2a0
- [<b01398bb>] mark_held_locks+0x6b/0x90
- [<b0417f72>] __mutex_lock_slowpath+0x152/0x2a0
- [<b0417f72>] __mutex_lock_slowpath+0x152/0x2a0
- [<b0139a67>] trace_hardirqs_on+0xc7/0x170
- [<b0417f65>] __mutex_lock_slowpath+0x145/0x2a0
- [<b016db9a>] vfs_unlink+0x5a/0xd0
- [<b016d077>] permission+0x137/0x140
- [<b016dbd0>] vfs_unlink+0x90/0xd0
- [<b016f983>] do_unlinkat+0xd3/0x170
- [<b0113807>] do_page_fault+0x327/0x630
- [<b0102fda>] sysenter_past_esp+0x5f/0x99
- =======================
-XFS mounting filesystem sda1
-Ending clean XFS mount for filesystem: sda1
