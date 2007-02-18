@@ -1,90 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751265AbXBRPFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751276AbXBRPKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751265AbXBRPFQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 10:05:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbXBRPFQ
+	id S1751276AbXBRPKx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 10:10:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751285AbXBRPKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 10:05:16 -0500
-Received: from hancock.steeleye.com ([71.30.118.248]:56217 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751265AbXBRPFN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 10:05:13 -0500
-Subject: [GIT PATCH] final SCSI updates for 2.6.20
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 18 Feb 2007 09:05:08 -0600
-Message-Id: <1171811108.3423.9.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+	Sun, 18 Feb 2007 10:10:53 -0500
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:41744 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751276AbXBRPKx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 10:10:53 -0500
+Message-ID: <45D86C7B.5050900@drzeus.cx>
+Date: Sun, 18 Feb 2007 16:10:51 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070131)
+MIME-Version: 1.0
+To: Alex Dubov <oakad@yahoo.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Recent and not-so problems with tifm_sd driver
+References: <306317.86250.qm@web36706.mail.mud.yahoo.com>
+In-Reply-To: <306317.86250.qm@web36706.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These represent the final updates, after which we'll move over into
-separated fixes for post 2.6.21 and bug fixes for rc candidates mode.
-The patches are available here:
+Alex Dubov wrote:
+> This is hard to trigger problem, so I'll spare you the rather lengthy log.
+> It happens if card timeouts and mmc_remove_host is called while mmc_register_card is still in
+> progress (the hint was in crash dump). If I sleep before remove, it gives the mmc_register_card
+> chance to finish/mark card as dead and everything's fine.
+> The remove callback of mmc_block is apparently not executed in this case (probably because device
+> has not finished registering).
 
-master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+Let's see, you manage to call mmc_remove_host() when a detection is pending in
+the workqueue? That could indeed generate new request (up until mmc_free_host()
+is called), but as the card is removed the mmc layer shouldn't be able to detect
+anything, hence mmc_block should never get involved.
 
-The short changelog is:
+> 
+> My proposition: lets flush the workqueue first thing in the mmc_remove_host (and make sure that
+> nothing gets scheduled into it after this). 
+> 
 
-Alan Stern (3):
-       SCSI core: better initialization for sdev->scsi_level
-       scsi_proc.c: display sdev->scsi_level correctly
-       scsi_scan.c: handle bad inquiry responses
+This is fixed in -mm. Making sure that nothing gets scheduled is the driver's
+responsibility. I've added checks to catch broken drivers though.
 
-FUJITA Tomonori (1):
-       tgt: fix the user/kernel ring buffer interface
+Rgds
+-- 
+     -- Pierre Ossman
 
-James Bottomley (1):
-       aic94xx: tie driver to the major number of the sequencer firmware
-
-Linas Vepstas (1):
-       lpfc: add PCI error recovery support
-
-peter fuerst (2):
-       sgiwd93: interfacing to wd33c93
-       wd33c93: Fast SCSI with WD33C93B
-
-Richard Knutsson (1):
-       megaraid: pci_module_init to pci_register_driver
-
-Rolf Eike Beer (2):
-       scsi_transport.h should include scsi_device.h
-       aic79xx: remove extra newline from info message
-
-Sumant Patro (5):
-       megaraid_sas: update version and author info
-       megaraid_sas: return sync cache call with success
-       megaraid_sas: replace pci_alloc_consitent with dma_alloc_coherent in ioctl path
-       megaraid_sas: add bios_param in scsi_host_template
-       megaraid_sas: do not process cmds if hw_crit_error is set
-
-and the diffstat
-
- drivers/scsi/aic7xxx/aic79xx_osm.c   |    1 
- drivers/scsi/aic94xx/aic94xx_seq.c   |   13 +
- drivers/scsi/aic94xx/aic94xx_seq.h   |    1 
- drivers/scsi/lpfc/lpfc_init.c        |   97 ++++++++++
- drivers/scsi/lpfc/lpfc_sli.c         |   12 +
- drivers/scsi/megaraid.c              |    2 
- drivers/scsi/megaraid/megaraid_sas.c |   90 ++++++++-
- drivers/scsi/megaraid/megaraid_sas.h |    6 
- drivers/scsi/scsi_proc.c             |    5 
- drivers/scsi/scsi_scan.c             |   14 +
- drivers/scsi/scsi_sysfs.c            |    2 
- drivers/scsi/scsi_tgt_if.c           |    8 
- drivers/scsi/sgiwd93.c               |    5 
- drivers/scsi/wd33c93.c               |  321 ++++++++++++++++++++++++++---------
- drivers/scsi/wd33c93.h               |    6 
- include/scsi/scsi_tgt_if.h           |    3 
- include/scsi/scsi_transport.h        |    1 
- 17 files changed, 481 insertions(+), 106 deletions(-)
-
-James
-
-
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
