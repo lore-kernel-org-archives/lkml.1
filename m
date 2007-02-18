@@ -1,73 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751334AbXBRPrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751346AbXBRPyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751334AbXBRPrz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 10:47:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbXBRPrz
+	id S1751346AbXBRPyr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 10:54:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbXBRPyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 10:47:55 -0500
-Received: from mail.exanet.com ([212.143.73.109]:53237 "EHLO mr.exanet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751334AbXBRPry convert rfc822-to-8bit (ORCPT
+	Sun, 18 Feb 2007 10:54:47 -0500
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:58533 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751346AbXBRPyq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 10:47:54 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: OOPS
-Date: Sun, 18 Feb 2007 17:47:52 +0200
-Message-ID: <A6FDE6B975803043804A49F12F49028E0F5793@hawk.exanet-il.co.il>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: OOPS
-Thread-Index: AcdTdCYxuWUs8E/WT0y+UtgkWi7Nog==
-From: "Menny Hamburger" <menny@exanet.com>
-To: <linux-kernel@vger.kernel.org>
+	Sun, 18 Feb 2007 10:54:46 -0500
+Date: Sun, 18 Feb 2007 10:54:45 -0500
+To: Udo van den Heuvel <udovdh@xs4all.nl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: PCI riser cards and PCI irq routing, etc
+Message-ID: <20070218155445.GV7584@csclub.uwaterloo.ca>
+References: <45D85DA1.7090502@xs4all.nl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45D85DA1.7090502@xs4all.nl>
+User-Agent: Mutt/1.5.9i
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, Feb 18, 2007 at 03:07:29PM +0100, Udo van den Heuvel wrote:
+> Is there some howto information available about using PCI riser cards
+> (with multiple PCI slots) under Linux?
+> Several incarnations exist of PCI riser cards with two PCI slots where
+> the Device Number of one slot can be changed.
+> How, based on what information, does Linux assign an IRQ to each card,
+> plugged into the riser?
+> How can one tweak/influence the irq routing?
+> How can I make a dual riser card work so that both cards have a working
+> interrupt?
+> Or if stuff should work all by itself, what could be wrong?
 
-We are running the 2.6 kernel with the IOCB_CMD_EPOLL_WAIT code and the
-NMI watchdog is triggered:
+The PCI specifications cover how pci to pci bridges should work.
 
-CPU:    0
-EIP:    0060:[<c0323285>]    Not tainted VLI
-EFLAGS: 00000087   (2.6.9-42dbg)
-EIP is at __write_lock_failed+0x9/0x20
-eax: c52d2d00   ebx: d9522580   ecx: 00000092   edx: c52d2d00
-esi: c52d2d00   edi: 00000000   ebp: c044dcd4   esp: c044dcd0
- nmi_watchdog_tick+0xa3/0xc1
- [<c01081c5>] default_do_nmi+0x5a/0xe8
- [<c010829a>] do_nmi+0x40/0x4a
- [<c0326dd5>] nmi_stack_correct+0x1e/0x26
- [<c017a8a6>] ep_poll_callback+0x18/0xaa
- [<c011ab83>] __wake_up_common+0x35/0x55
- [<c011abd5>] __wake_up+0x32/0x43
- [<c02b458f>] sock_def_readable+0x7b/0x7d
- [<c02f3839>] udp_queue_rcv_skb+0xfc/0x29f
- [<c02f3eac>] udp_rcv+0x1a2/0x41a
- [<c02d124d>] ip_local_deliver_finish+0x7f/0x210
- [<c02c437a>] nf_hook_slow+0xe5/0x104
- [<c02d10d9>] ip_local_deliver+0x19d/0x292
- [<c02d1afd>] ip_rcv_finish+0x1e8/0x2db
- [<c02c437a>] nf_hook_slow+0xe5/0x104
- [<c02d1759>] ip_rcv+0x37b/0x537
- [<c02bad58>] netif_receive_skb+0x2e8/0x36c
- [<f884febe>] e1000_clean_rx_irq+0xc6/0x630 [e1000]
- [<f884f9e5>] e1000_clean+0xb0/0x1a5 [e1000]
- [<c02bafb2>] net_rx_action+0xc2/0x1d2
- [<c0123604>] __do_softirq+0x64/0xd2
- [<c0109989>] do_softirq+0x53/0x5b
- =======================
- [<c01091b5>] do_IRQ+0x1a5/0x1ec
- [<c0326bc8>] common_interrupt+0x18/0x20
+My understanding (which is better of verified against the specs) is:
 
+PCI interrupts (PCI INTA to INTD) are rotated for every slot by one. So
+slot 0, 4, 8, etc see INTA->realINTA, INTB->realINTB. INTC->realINTC,
+INTD->realINTD
+slot 1, 5, 9, etc see INTA->realINTB, INTB->realINTC. INTC->realINTD,
+INTD->realINTA
+slot 2, 6, 10, etc see INTA->realINTC, INTB->realINTD. INTC->realINTA,
+INTD->realINTB
+slot 3, 7, 11, etc see INTA->realINTD, INTB->realINTA. INTC->realINTB,
+INTD->realINTC
 
-Any suggestions?
+The same rules apply behind a PCI bridge, so whatever INTA is on the
+slot with the pci bridge chip, should make to INTA on slots 0, 4, 8, etc
+behind the bridge, while INTB is seen as INTA on slots 1, 5, 9, etc.
 
-Thanks,
-Menny
+On a PC, the BIOS is supposed to assign interrupts to devices based on
+those rules, since that is how the hardware must be done according to
+the PCI specifications.  On other platforms the firmware may or may not
+handle it.  On ARM for example, the kernel takes care of assigning this
+(or it least it should).  I have seen pci interrupt swizzle routines in
+the kernel code for an arm system which went through, looking for
+devices, and assigning IRQs based on their slot number, and when it
+found a bridge it would do a mapping past the bridge and continue
+assigning interrupts to devices behind the bridge.
 
+So as long as the riser board is wired according to the PCI bridge
+rules, then interrupts assignment should simply work.  Of course if the
+riser card is NOT a proper pci bridge, but rather some weird device,
+well then it probably isn't even PCI complient and who knows how it
+shold be handled.
+
+Interrupts for PCI are assigned based on the 4 shared interrupts line on
+PCI, not really per device.  A PCI device may use up to 4 interrupts if
+it wants to, and is supposed to always use interrupt A (as seen from
+it's slot) as the first interrupt.  The rotating assignment of the 4
+interrupts to the slots are supposed to help balance the distribution of
+the interrupts between devices in the system, so that although they are
+shared interrupts, as few devices as possible get assigned to each
+interrupt.  On some systems some of the 4 PCI interrupts may in fact get
+mapped to the same interrupts if not enough are available (for example a
+system I work with only has two PCI interrupts available, so PCI INTA
+and C are the same interrupt line, and INTB and D are the same, but the
+system is still wired as if there were 4 interrupts, and the BIOS
+assigns the interrupts properly based on that, but using IRQ 11 for A
+and C and IRQ 10 for B and D.)
+
+--
+Len Sorensen
