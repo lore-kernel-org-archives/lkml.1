@@ -1,104 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751440AbXBRQoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751446AbXBRQ4K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751440AbXBRQoa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 11:44:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbXBRQoa
+	id S1751446AbXBRQ4K (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 11:56:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbXBRQ4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 11:44:30 -0500
-Received: from firewall.rowland.harvard.edu ([140.247.233.35]:11251 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1751440AbXBRQoa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 11:44:30 -0500
-Date: Sun, 18 Feb 2007 11:44:28 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Douglas Gilbert <dougg@torque.net>
-cc: Jens Axboe <jens.axboe@oracle.com>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Block layer: separate out queue-oriented ioctls
-In-Reply-To: <45D7CB46.6060807@torque.net>
-Message-ID: <Pine.LNX.4.44L0.0702181124450.6341-100000@netrider.rowland.org>
+	Sun, 18 Feb 2007 11:56:10 -0500
+Received: from ns2.suse.de ([195.135.220.15]:41568 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751446AbXBRQ4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 11:56:09 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: eranian@hpl.hp.com
+Subject: Re: [PATCH] i386 make NMI use PERFCTR1 for architectural perfmon
+Date: Sun, 18 Feb 2007 17:56:05 +0100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+References: <20070217160656.GA16715@frankl.hpl.hp.com>
+In-Reply-To: <20070217160656.GA16715@frankl.hpl.hp.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702181756.05672.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 Feb 2007, Douglas Gilbert wrote:
-
-> Jens Axboe wrote:
-> > On Fri, Feb 16 2007, Alan Stern wrote:
-> >> From: James Bottomley <James.Bottomley@SteelEye.com>
-> >>
-> >> This patch (as854) separates out the two queue-oriented ioctls from
-> >> the rest of the block-layer ioctls.  The idea is that they should
-> >> apply to any driver using a request_queue, even if the driver doesn't
-> >> implement a block-device interface.  The prototypical example is the
-> >> sg driver, to which the patch adds the new interface.
-> >>
-> >> This will make it possible for cdrecord and related programs to
-> >> retrieve reliably the max_sectors value, regardless of whether the
-> >> user points it to an sr or an sg device.  In particular, this will
-> >> resolve Bugzilla entry #7026.
-> > 
-> > The block bits are fine with me, the sg calling point is a bit of a sore
-> > thumb (a char driver calling into block layer ioctls) though. So the
-> > block layer bits are certainly ok with me, if Doug acks the sg bit I'll
-> > merge everything up.
-> > 
-> > (patch left below)
+On Saturday 17 February 2007 17:06, Stephane Eranian wrote:
+> Hello,
 > 
-> Does this need to be in the sg driver?
+> This patch against 2.6.20 
 
-Something like it does.  Otherwise cdrecord (or any other sg user) has no
-way to retrieve the max_sectors value for sg devices.
+Please always submit against mainline:
 
-> What is the hardware sector size of a SES or OSD device?
+patching file arch/i386/kernel/nmi.c
+Hunk #1 FAILED at 288.
+Hunk #2 succeeded at 740 (offset 55 lines).
+Hunk #3 succeeded at 1017 with fuzz 1 (offset 59 lines).
+1 out of 3 hunks FAILED -- rejects in file arch/i386/kernel/nmi.c
+Patch patches/i386-make-nmi-use-perfctr1-for-architectural-perfmon does not apply (enforce with -f)
 
-I have no idea, and I don't see why it is relevant.  (I don't even know 
-what "SES" and "OSD" refer to.)
 
-> As for the max_sector variable, wouldn't it be better
-> to generate a new ioctl that yielded the limit in bytes?
-
-Maybe.  I wouldn't mind doing it that way.  But we would have to leave in 
-the old ioctl, and we probably would still want it to be usable for sg 
-devices.  Not to mention that it would be silly to have two ioctls which 
-always return exactly the same values except for a factor of 512.
-
-> Making a driver variable that implicitly assumes sectors
-> are 512 bytes in length more visible to the user space
-> seems like a step in the wrong direction.
-> 
-> Alternatively the SG_GET_RESERVED_SIZE ioctl could be
-> modified to yield no more than max_sectors*512 .
-
-There should be one single ioctl which can be applied uniformly to all
-CD-type devices (in fact, to all devices using a request_queue) to learn
-max_sectors.  This rules out using SG_GET_RESERVED_SIZE.
-
-Furthermore, if you changed SG_GET_RESERVED_SIZE in this way you would 
-only increase the confusion.  The reserved size isn't directly related to 
-the maximum allowed DMA length, and there's no point pretending it is.  
-What if it turns out that the reserved size is smaller than max_sectors?  
-Then you'd force user programs to do I/O in chunks that were smaller than 
-necessary.
-
-> >> +	/* block ioctls first */
-> 
-> Why first??
-
-I don't know -- James will have to answer.  I don't see that it makes any 
-real difference; the new code can easily be moved to the end.
-
-> That would allow the block layer to overtake any currently
-> defined and working sg ioctl.
-> Surely, if it was put in, it should be in the default case.
-
-Would the patch be okay with you if I rework it to put the new ioctls 
-under the default case in sg?
-
-Alan Stern
-
+-Andi
