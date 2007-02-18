@@ -1,99 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752498AbXBRXnB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752513AbXBRXsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752498AbXBRXnB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 18:43:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbXBRXnB
+	id S1752513AbXBRXsY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 18:48:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbXBRXsY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 18:43:01 -0500
-Received: from wr-out-0506.google.com ([64.233.184.233]:1509 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752498AbXBRXm7 (ORCPT
+	Sun, 18 Feb 2007 18:48:24 -0500
+Received: from web36711.mail.mud.yahoo.com ([209.191.85.45]:33761 "HELO
+	web36711.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752513AbXBRXsX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 18:42:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Dz5DRf4pgPKkGMu14Kw4vdjr3doThmaQHwDA2fxPOPieKHCT+4MzJC61m+LcvdG9XTcJ85KyyODZjZH0yIYkohbgSZQEGCTJ4+xYo8uqhiozVvQpSUlhRkcQ7JV+Jd7jFJGEbq54ivDw2KbhfMTZ2hEzSk9jGmQrXqzR1tRaepc=
-Message-ID: <f2b55d220702181542q789cd982q65f7f8bc7502ccb2@mail.gmail.com>
-Date: Sun, 18 Feb 2007 15:42:58 -0800
-From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: "Oleg Verych" <olecom@flower.upol.cz>
-Subject: Re: GPL vs non-GPL device drivers
-Cc: "Trent Waddington" <trent.waddington@gmail.com>,
-       "Neil Brown" <neilb@suse.de>, davids@webmaster.com,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <E1HIhoq-0005HC-3i@flower>
+	Sun, 18 Feb 2007 18:48:23 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=fEb76b7gjnkS67oQN6690hT01XN/tdjJ6hRpp4nET7bBufrRL6qeUa4pIABNqY4Lx2PnoOckWJhtm9yNXIwrKTcrZkGthRTdYzv+FUdX1tlXjga+UtiuFB0DBs1jQZLJrsX17iYm8wcZjRcGRlq5mbVoGUtdK/PBHoQwbHkk5/8=;
+X-YMail-OSG: tuCjfRwVM1miSeI3PNFrDg9B67QHuqMxhBB4FMF5T1itmaa0ZYkKAN6ngNCKRSkZtrKTDE8_5knRKQSyZi3JC9uoknkPJv4o.rU_nYfpF.XFZRdpAeZ6MQPOmFZ8y1XsRESLuah6fMn9X_c-
+Date: Sun, 18 Feb 2007 15:48:22 -0800 (PST)
+From: Alex Dubov <oakad@yahoo.com>
+Subject: Re: Recent and not-so problems with tifm_sd driver
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <45D86C7B.5050900@drzeus.cx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070216125353.GN13958@stusta.de>
-	 <MDEHLPKNGKAHNMBLJOLKKEIMBKAC.davids@webmaster.com>
-	 <17878.48376.629016.49202@notabene.brown>
-	 <f2b55d220702171855u59e3cc47i73e4aa48d0c0968c@mail.gmail.com>
-	 <3d57814d0702171926v53812baeqaeeda326aa225acf@mail.gmail.com>
-	 <f2b55d220702172256x1573cb6ci35cdfcdad1780d9@mail.gmail.com>
-	 <E1HIhoq-0005HC-3i@flower>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <64677.73649.qm@web36711.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eensy weensy follow-up.  No screed.  Well, maybe just a _little_ screed.
+> > This is hard to trigger problem, so I'll spare you the rather lengthy log.
+> > It happens if card timeouts and mmc_remove_host is called while mmc_register_card is still in
+> > progress (the hint was in crash dump). If I sleep before remove, it gives the
+> mmc_register_card
+> > chance to finish/mark card as dead and everything's fine.
+> > The remove callback of mmc_block is apparently not executed in this case (probably because
+> device
+> > has not finished registering).
+> 
+> Let's see, you manage to call mmc_remove_host() when a detection is pending in
+> the workqueue? That could indeed generate new request (up until mmc_free_host()
+> is called), but as the card is removed the mmc layer shouldn't be able to detect
+> anything, hence mmc_block should never get involved.
+> 
 
-On 2/18/07, Oleg Verych <olecom@flower.upol.cz> wrote:
-> Ulrich Drepper is known to be against current FSF's position on glibc
-> licence changing.
+You'll agree, I think, that add_disk in mmc_block_probe issues a lot of requests (reads partition
+table, fs superblocks and such - plenty of room for critical errors). Then, driver's remove method
+will not be called before driver's probe method had finished. So mmc_block is quite involved, even
+though it does not affect the problem's resolution.
 
-Will that stop the FSF?  Will it stop Red Hat, MontaVista, or
-CodeSourcery?  Even if Ulrich tells the FSF to stuff it where the sun
-don't shine, and hosts his new fork on Google Code along with the rest
-of the GNU corpus, the moment he or you or any of us wants to run any
-binary that was compiled against a newer FSF glibc, we're screwed.
-All it takes is for that binary to have a post-v3-switch symbol in its
-link table (which can easily happen _without_ any change in the
-application source code).
+Besides this, I have a new version of the tifm driver to submit. It fixes quite a few problems and
+improves performance a little. Hopefully, it's better tested than the previous one.
 
-It's all very well to say we can live without anything that ships as a
-binary, but commercial applications atop glibc are a big part of how
-Linux left the hobbyist ghetto, and I don't want to go back there.  Do
-you?  Or do you really want to spend the rest of your precious time on
-Earth shimming clean-room reverse-engineered crap into
-glibc-GPLv2-fork to keep Oracle running on a distro that Moglen
-doesn't have by the 'nads?  Not that it really matters whether you're
-using Oracle or MySQL -- an RDBMS, like any racing thoroughbred, goes
-lame if you look at it funny, and once you've gotten burned once in
-production by the unreproducibility of the golden bits, you won't try
-it again.
 
-The existence of GNU-free userlands is nice for us embedded folk but
-ultimately useless for desktops and servers.  Talk to the people who
-have spent untold person-years scrubbing bashisms out of Debian's
-/etc/init.d.  Talk to the people who have ported their
-industrial-scale multithreaded apps from linuxthreads (with its
-annoying non-POSIX behaviors) to NPTL (with its equally annoying POSIX
-behaviors).  Talk to the people struggling to package Gnome and KDE
-for anything other than glibc, libstdc++, and (worst of all) ld.so.2.
-Portability ain't all it's cracked up to be.
 
-If you think "embrace, extend, destroy" is tattooed on Ballmer's
-forehead, you should take a good look at an RMS word-portrait
-sometime.  And imagine a nice private chat with the
-if-you-can't-beat-'em-join-'em club -- from IBM and HP to Apple, Wind
-River, and Sun.  Say what you will about Steve Jobs, he's a survivor
--- but the ex-CEOs of all the rest will give you an earful about being
-shot out of the saddle by the "free software" mafia and replaced with
-people who know how to do a deal with the devil and call it a
-come-to-Jesus moment in the press release.
 
-Intel is keeping mum -- they've made an industry out of playing both
-ends against the middle, and they've got a compiler that can more or
-less do Linux anyway, so they don't really care.  Google doesn't care
-either -- they've got more cash than they can spend and can afford to
-fork internally and go their merry way.  The only heavyweight that had
-refused to get on board until very recently was Oracle.  Not just
-because Larry Ellison likes to fly solo, either -- read
-http://www.internetnews.com/dev-news/article.php/3614721.  Then read
-http://www.internetnews.com/dev-news/article.php/3655261.  Larry, too,
-is a survivor.
 
-Cheers,
-- Michael
+ 
+____________________________________________________________________________________
+Finding fabulous fares is fun.  
+Let Yahoo! FareChase search your favorite travel sites to find flight and hotel bargains.
+http://farechase.yahoo.com/promo-generic-14795097
