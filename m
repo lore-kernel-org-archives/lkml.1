@@ -1,50 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752227AbXBRWCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752254AbXBRWFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752227AbXBRWCI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 17:02:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752236AbXBRWCI
+	id S1752254AbXBRWFy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 17:05:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbXBRWFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 17:02:08 -0500
-Received: from mail.screens.ru ([213.234.233.54]:58660 "EHLO mail.screens.ru"
+	Sun, 18 Feb 2007 17:05:54 -0500
+Received: from ishtar.tlinx.org ([64.81.245.74]:60355 "EHLO ishtar.tlinx.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752227AbXBRWCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 17:02:07 -0500
-Date: Mon, 19 Feb 2007 01:01:34 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ego@in.ibm.com, akpm@osdl.org, paulmck@us.ibm.com, mingo@elte.hu,
-       vatsa@in.ibm.com, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-Subject: Re: freezer problems
-Message-ID: <20070218220134.GA4243@tv-sign.ru>
-References: <20070214144031.GA15257@in.ibm.com> <200702181314.29214.rjw@sisk.pl> <20070218145246.GA80@tv-sign.ru> <200702181956.11273.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200702181956.11273.rjw@sisk.pl>
-User-Agent: Mutt/1.5.11
+	id S1752254AbXBRWFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 17:05:53 -0500
+X-Greylist: delayed 1626 seconds by postgrey-1.27 at vger.kernel.org; Sun, 18 Feb 2007 17:05:53 EST
+Message-ID: <45D8C765.7080306@tlinx.org>
+Date: Sun, 18 Feb 2007 13:38:45 -0800
+From: Linda Walsh <xfs@tlinx.org>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+MIME-Version: 1.0
+To: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
+Subject: lock checking feedback (bug?) 2.6.20(xfs)/i386 during boot
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/18, Rafael J. Wysocki wrote:
-> 
-> Appended is a patch that does something along these lines.  The necessary
-> thread_info flags are defined for i386 and x86_64, for now.
+Turned on lock testing/proving/deadlock detection.  Not chasing any 
+particular
+problem, but looking for things "oddities".
 
-I'll try to look at this patch when I am not sooooo sleepy ...
+Turned on options (under kernel hacking):
+   Locking API boot-time self-tests
+   RT Mutex debugging, deadlock detection
+   Lock debugging: prove locking correctness
 
-just one small nit right now,
+Multiple reboots show it to be a constant.
+I had tried the new "Asynchronous SCSI scanning" -- thought that might 
+have been
+related, but turning it off makes no difference.
 
-> --- linux-2.6.20-mm2.orig/include/asm-i386/thread_info.h	2007-02-18 19:49:34.000000000 +0100
-> +++ linux-2.6.20-mm2/include/asm-i386/thread_info.h	2007-02-18 19:50:37.000000000 +0100
-> @@ -135,6 +135,7 @@ static inline struct thread_info *curren
->  #define TIF_IO_BITMAP		18	/* uses I/O bitmap */
->  #define TIF_FREEZE		19	/* is freezing for suspend */
->  #define TIF_FORCED_TF		20	/* true if TF in eflags artificially */
-> +#define TIF_FREEZER_SKIP	21	/* task freezer should not count us */
+I'm guessing this "error" has been present before this, but the lock
+proving algorithms are bringing it to light?  So I don't know how serious
+this is (if it is anything), but at the least, it doesn't look too clean...
 
-Do we need to put this flag into thread_info? It is always modified by
-"current", so it could live in task_struct->flags instead.
 
-Oleg.
+Maybe that
+....
+SCSI device sda: write cache: enabled, read cache: enabled, supports DPO 
+and FUA
+ sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 >
+sd 0:0:0:0: Attached scsi disk sda
+UDF-fs: No VRS found
+XFS mounting filesystem sda3
+Ending clean XFS mount for filesystem: sda3
+VFS: Mounted root (xfs filesystem) readonly.
+Freeing unused kernel memory: 316k freed
 
+=============================================
+[ INFO: possible recursive locking detected ]
+2.6.20 #3
+---------------------------------------------
+rm/682 is trying to acquire lock:
+ (&(&ip->i_lock)->mr_lock){----}, at: [<b024068d>] xfs_ilock+0x7d/0xb0
+
+but task is already holding lock:
+ (&(&ip->i_lock)->mr_lock){----}, at: [<b024068d>] xfs_ilock+0x7d/0xb0
+
+other info that might help us debug this:
+3 locks held by rm/682:
+ #0:  (&inode->i_mutex/1){--..}, at: [<b016f946>] do_unlinkat+0x96/0x170
+ #1:  (&inode->i_mutex){--..}, at: [<b016db9a>] vfs_unlink+0x5a/0xd0
+ #2:  (&(&ip->i_lock)->mr_lock){----}, at: [<b024068d>] xfs_ilock+0x7d/0xb0
+
+stack backtrace:
+ [<b013aaf1>] __lock_acquire+0xaf1/0xdf0
+ [<b013ae47>] lock_acquire+0x57/0x70
+ [<b024068d>] xfs_ilock+0x7d/0xb0
+ [<b0135d7f>] down_write+0x2f/0x50
+ [<b024068d>] xfs_ilock+0x7d/0xb0
+ [<b024068d>] xfs_ilock+0x7d/0xb0
+ [<b025ff2d>] xfs_lock_dir_and_entry+0xfd/0x100
+ [<b0263c68>] xfs_remove+0x198/0x4e0
+ [<b025fff6>] xfs_access+0x26/0x50
+ [<b025fff6>] xfs_access+0x26/0x50
+ [<b016db9a>] vfs_unlink+0x5a/0xd0
+ [<b026d8f3>] xfs_vn_unlink+0x23/0x60
+ [<b0417f72>] __mutex_lock_slowpath+0x152/0x2a0
+ [<b01398bb>] mark_held_locks+0x6b/0x90
+ [<b0417f72>] __mutex_lock_slowpath+0x152/0x2a0
+ [<b0417f72>] __mutex_lock_slowpath+0x152/0x2a0
+ [<b0139a67>] trace_hardirqs_on+0xc7/0x170
+ [<b0417f65>] __mutex_lock_slowpath+0x145/0x2a0
+ [<b016db9a>] vfs_unlink+0x5a/0xd0
+ [<b016d077>] permission+0x137/0x140
+ [<b016dbd0>] vfs_unlink+0x90/0xd0
+ [<b016f983>] do_unlinkat+0xd3/0x170
+ [<b0113807>] do_page_fault+0x327/0x630
+ [<b0102fda>] sysenter_past_esp+0x5f/0x99
+ =======================
+XFS mounting filesystem sda1
+Ending clean XFS mount for filesystem: sda1
