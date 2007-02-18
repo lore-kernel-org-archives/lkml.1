@@ -1,102 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161027AbXBRBOG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030274AbXBRB05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161027AbXBRBOG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 20:14:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161020AbXBRBOG
+	id S1030274AbXBRB05 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 20:26:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030275AbXBRB05
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 20:14:06 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33151 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965523AbXBRBOC (ORCPT
+	Sat, 17 Feb 2007 20:26:57 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:16538 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030274AbXBRB04 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 20:14:02 -0500
-Date: Sun, 18 Feb 2007 02:14:07 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.6.16.41
-Message-ID: <20070218011406.GT13958@stusta.de>
+	Sat, 17 Feb 2007 20:26:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=F21pt7eSRsaIV3rj7vJ3fPzOQ8/IO0qBcqa+6u0VnP02D/hBww/By37aSW9i3T3NUhV6ng85fVODjGSPh2nGr6VS+43o6qWFg8m4Cz9zt66RgwXH/sdFq8MXe6+WvRhTPMMuMoOizlWH2LnoI+laxmxmVc2iC0GyPt2YCi7vEM4=
+Message-ID: <3d57814d0702171726l403c7812n19f2a226cba02e5d@mail.gmail.com>
+Date: Sun, 18 Feb 2007 11:26:54 +1000
+From: "Trent Waddington" <trent.waddington@gmail.com>
+To: davids@webmaster.com
+Subject: Re: GPL vs non-GPL device drivers
+Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       "Neil Brown" <neilb@suse.de>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKKEIMBKAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20070216125353.GN13958@stusta.de>
+	 <MDEHLPKNGKAHNMBLJOLKKEIMBKAC.davids@webmaster.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Location:
-ftp://ftp.kernel.org/pub/linux/kernel/v2.6/
+On 2/17/07, David Schwartz <davids@webmaster.com> wrote:
+> I don't think that's grey at all. I think it's perfectly clear that linking
+> cannot create a derivative work. No automated process can -- it takes
+> creativity to create a derivative work. (That doesn't mean that just because
+> you can link A to B, a cannot be a derivative work of B or vice verse, of
+> course. It just means that if A is not a derivative work of B, linking A to
+> B cannot make it so, nor can the result be a derivative work.)
 
-git tree:
-git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+Sigh.  VJ is distributing the linux kernel with proprietary
+extensions.  If you want to argue that the proprietary extensions in
+isolation are not derivative works of the kernel, fine, you might have
+a case, but the combined work, which VJ is distributing is *clearly* a
+derivative work and must be distributed under the terms of the GPL.
 
+Despite which, legal bullshit is best left for lawyers.. the *intent*
+of the GPL is that if you distribute *any* changes, extensions or
+plugins for a GPL work, you do so under the GPL.  The law may not
+allow for this to be enforced, but it shouldn't need to.. one should
+read the GPL as 100% enforceable and follow it without looking for
+"loop holes" as it is the stated desire of how the author of the code
+wants you to use his work.  Looking for loop holes, and worse yet,
+discussing those loop holes in a public place, is just insulting.
 
-Changes since 2.6.16.40:
-
-Adrian Bunk (4):
-      Revert "[Bluetooth] Fix compat ioctl for BNEP, CMTP and HIDP"
-      [ALSA] echo3g_dsp.c shouldn't include #include <linux/irq.h>
-      Linux 2.6.16.41-rc1
-      Linux 2.6.16.41
-
-Al Viro (1):
-      [TCP]: struct tcp_sack_block annotations
-
-Baruch Even (1):
-      TCP: Fix sorting of SACK blocks.
-
-Bob Breuer (1):
-      SPARC32: Fix over-optimization by GCC near ip_fast_csum.
-
-Daniel Walker (1):
-      [ATM]: Fix for crash in adummy_init()
-
-David S. Miller (1):
-      AF_PACKET: Check device down state before hard header callbacks.
-
-Eric W. Biederman (1):
-      DECNET: Handle a failure in neigh_parms_alloc (take 2)
-
-Herbert Xu (1):
-      [NETFILTER]: Clear GSO bits for TCP reset packet
-
-Hugh Dickins (1):
-      fix umask when noACL kernel meets extN tuned for ACLs
-
-Jeff Dike (1):
-      uml: fix signal frame alignment
-
-Jiri Bohac (1):
-      [IPX]: Fix NULL pointer dereference on ipx unload
-
-John Heffner (1):
-      [TCP]: Don't apply FIN exception to full TSO segments.
-
-Linus Torvalds (1):
-      Fix up CIFS for "test_clear_page_dirty()" removal
-
-Masayuki Nakagawa (1):
-      TCP: skb is unexpectedly freed.
-
-
- Makefile                           |    2 
- arch/um/sys-i386/signal.c          |    2 
- arch/um/sys-x86_64/signal.c        |    5 +
- fs/cifs/file.c                     |   26 ++++++++-
- fs/ext2/super.c                    |    4 +
- fs/ext3/super.c                    |    4 +
- include/asm-sparc/checksum.h       |    2 
- include/linux/tcp.h                |    5 +
- net/atm/common.c                   |    3 -
- net/bluetooth/bnep/sock.c          |   67 ++++++------------------
- net/bluetooth/cmtp/sock.c          |   33 ------------
- net/bluetooth/hidp/sock.c          |   78 -----------------------------
- net/decnet/dn_dev.c                |   11 +++-
- net/ipv4/netfilter/ip_nat_helper.c |    2 
- net/ipv4/netfilter/ipt_REJECT.c    |    3 +
- net/ipv4/tcp_input.c               |   17 +++---
- net/ipv4/tcp_output.c              |    3 -
- net/ipx/af_ipx.c                   |   24 +++++---
- net/packet/af_packet.c             |   16 ++---
- sound/pci/echoaudio/echo3g_dsp.c   |    2 
- 20 files changed, 111 insertions(+), 198 deletions(-)
-
-
+Trent
