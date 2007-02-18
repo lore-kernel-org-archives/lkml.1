@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933215AbXBRLNN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933217AbXBRL3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933215AbXBRLNN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 06:13:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933222AbXBRLNN
+	id S933217AbXBRL3c (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 06:29:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933234AbXBRL3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 06:13:13 -0500
-Received: from tim.rpsys.net ([194.106.48.114]:60947 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933215AbXBRLNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 06:13:12 -0500
-Subject: Re: [PATCH] input: extend EV_LED
-From: Richard Purdie <rpurdie@rpsys.net>
-To: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-Cc: Pavel Machek <pavel@ucw.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-In-Reply-To: <freemail.20070118084500.15225@fm07.freemail.hu>
-References: <freemail.20070118084500.15225@fm07.freemail.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: Sun, 18 Feb 2007 11:12:41 +0000
-Message-Id: <1171797161.5816.28.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 8bit
+	Sun, 18 Feb 2007 06:29:32 -0500
+Received: from noname.neutralserver.com ([70.84.186.210]:32271 "EHLO
+	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933217AbXBRL3b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 06:29:31 -0500
+Date: Sun, 18 Feb 2007 13:29:03 +0200
+From: Dan Aloni <da-x@monatomic.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Andi Kleen <ak@suse.de>, linux-kernel-list <linux-kernel@vger.kernel.org>
+Subject: Re: e2b2rom_init_one():  Unable to register resource
+Message-ID: <20070218112903.GA5102@localdomain>
+References: <20070217212918.GA26554@localdomain> <20070218104222.GC10865@cvg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070218104222.GC10865@cvg>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - noname.neutralserver.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - monatomic.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-02-18 at 08:45 +0100, Németh Márton wrote:
-> A blinking led is basically a PWM (Pulse Width Modulation)
-> signal. A PWM signal has three different attribute. The
-> first one is the amplitude, this attribute is already
-> provided by the led subsystem as "brightness". There are two
-> more attributes, which are the frequency [Hz] and the duty
-> cycle [%], or the on-time [ms] and off-time [ms].
+On Sun, Feb 18, 2007 at 01:42:22PM +0300, Cyrill Gorcunov wrote:
+> Hi,
 > 
-> The frequency [Hz] and duty cycle [%] parameters has the
-> problem, that if we are limited to integers, it is not
-> possible to express slower blinks than 1Hz. We could also
-> use [mHz] (milli-Hertz), but it is not very common unit.
-> 
-> The on-time [ms] and off-time [ms] seems to be easier to
-> handle (and this is also easier to simulate from software if
-> ever needed). An RO attribute could be introduced:
-> 'pwm_available', which can contain parameter pairs separated
-> by space, and the new parameter pair is in new line. An RW
-> attribute 'pwm' could accept a parameter pair separated by
-> space.
+> here is a patch attached to the mail. You may test it. Actually
+> I have no 64bit machine to test it and I'm worried about the
+> patch accuracy. So be carefull testing it. I sent a copy of the
+> message to Andi Kleen (who is a maintainer of X86-64 port) may be
+> we should wait for its answer ;)
 
-We already have a timer trigger which takes an on time and an off time
-for the reason you mention above (floating point would get ugly).
+Thanks, I'll give it a try soon.
 
-The problem is mainly about finding ways to enable hardware acceleration
-of the existing timer trigger (where possible) and maybe implementing a
-simpler blink trigger which could be hardware accelerated when the full
-blown timer trigger couldn't. 
+BTW, wouldn't it be better just to change the type of phys and size
+to u32?
 
-Regards,
+> diff --git a/drivers/mtd/maps/esb2rom.c b/drivers/mtd/maps/esb2rom.c
+> index a9d808a..d63c060 100644
+> --- a/drivers/mtd/maps/esb2rom.c
+> +++ b/drivers/mtd/maps/esb2rom.c
+> @@ -214,6 +214,9 @@ static int __devinit esb2rom_init_one(struct pci_dev *pdev,
+>  
+>  	/* reserved  0x0020 and 0x0010 */
+>  	window->phys -= 0x400000UL;
+> +#ifdef CONFIG_64BIT
+> +	window->phys &= 0xffffffffUL;
+> +#endif
+>  	window->size = (0xffffffffUL - window->phys) + 1UL;
+>  
+>  	/* Enable writes through the rom window */
 
-Richard
 
+-- 
+Dan Aloni
+XIV LTD, http://www.xivstorage.com
+da-x (at) monatomic.org, dan (at) xiv.co.il
