@@ -1,110 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751941AbXBRToI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751956AbXBRTtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751941AbXBRToI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 14:44:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbXBRToI
+	id S1751956AbXBRTtP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 14:49:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbXBRTtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 14:44:08 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:53019 "EHLO smtp.osdl.org"
+	Sun, 18 Feb 2007 14:49:15 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:53204 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751937AbXBRToG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 14:44:06 -0500
-Date: Sun, 18 Feb 2007 11:43:26 -0800
+	id S1751956AbXBRTtO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 14:49:14 -0500
+Date: Sun, 18 Feb 2007 11:49:03 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: 2.6.20-mm2
-Message-Id: <20070218114326.35d7645b.akpm@linux-foundation.org>
-In-Reply-To: <200702181344.54959.rjw@sisk.pl>
+To: Mattia Dongili <malattia@linux.it>
+Cc: Laurent Riffard <laurent.riffard@free.fr>, linux-kernel@vger.kernel.org,
+       axboe@kernel.dk
+Subject: Re: 2.6.20-mm2: Oops in generic_make_request
+Message-Id: <20070218114903.a8160301.akpm@linux-foundation.org>
+In-Reply-To: <20070218175805.GB5567@inferi.kami.home>
 References: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
-	<200702181344.54959.rjw@sisk.pl>
+	<45D84F73.8060904@free.fr>
+	<20070218175805.GB5567@inferi.kami.home>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 Feb 2007 13:44:54 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Sun, 18 Feb 2007 18:58:05 +0100 Mattia Dongili <malattia@linux.it> wrote:
 
-> On Sunday, 18 February 2007 06:51, Andrew Morton wrote:
+> On Sun, Feb 18, 2007 at 02:06:59PM +0100, Laurent Riffard wrote:
+> > Le 18.02.2007 06:51, Andrew Morton a écrit :
+> > >Temporarily at
+> > >
+> > >  http://userweb.kernel.org/~akpm/2.6.20-mm2/
+> > >
+> > >Will appear later at
+> > >
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm2/
 > > 
-> > Temporarily at
-> > 
-> >   http://userweb.kernel.org/~akpm/2.6.20-mm2/
-> > 
-> > Will appear later at
-> > 
-> >  ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm2/
+> > Hello, I've got a fully reproducible Oops. I just have to boot to 
+> > runlevel 2 and wait less than one minute.
 > 
-> Two problems:
+> Maybe this oops is related too?
+
+Looks that way.
+
+> Can't yet tell if it's easily reproducible, this is on a JFS filesystem.
 > 
-> 1) A showstopper with the root partition on RAID1:
-> 
-> md: raid1 personality registered for level 1
-> [--snip--]
-> md: multipath personality registered for level -4
-> register_blkdev: failed to get major for mdp
-> [--snip--]
-> VFS: Cannot open root device "md1" or unknown-block(0,0)
-
-Someone else reported that against mainline.  Can you please debug it a bit?
-
-I'd suggested reverting the recent changes in there:
-
---- a/block/genhd.c~a
-+++ a/block/genhd.c
-@@ -61,14 +61,6 @@ int register_blkdev(unsigned int major, 
- 	/* temporary */
- 	if (major == 0) {
- 		for (index = ARRAY_SIZE(major_names)-1; index > 0; index--) {
--			/*
--			 * Disallow the LANANA-assigned LOCAL/EXPERIMENTAL
--			 * majors
--			 */
--			if ((60 <= index && index <= 63) ||
--					(120 <= index && index <= 127) ||
--					(240 <= index && index <= 254))
--				continue;
- 			if (major_names[index] == NULL)
- 				break;
- 		}
-_
-
-but I don't see how they could cause this.
-
-
-> At the moment I have no serial console attached to the box, so I had to rewrite
-> the messages manually.
-
-netconsole is good.
-
-> 2) On HPC nx6325 I get the following 100% of the time during the resume from
-> disk:
-> 
-> BUG: at drivers/pci/pci.c:823 pcim_enable_device()
-> 
+> BUG: unable to handle kernel NULL pointer dereference at virtual address 00000004
+>  printing eip:
+> c02206aa
+> *pde = 00000000
+> Oops: 0000 [#1]
+> PREEMPT 
+> last sysfs file: /devices/pci0000:00/0000:00:00.0/class
+> CPU:    0
+> EIP:    0060:[<c02206aa>]    Not tainted VLI
+> EFLAGS: 00010297   (2.6.20-mm2-1 #1)
+> EIP is at __make_request+0x13a/0x390
+> eax: ffffffff   ebx: 00000000   ecx: 042b0dd8   edx: 00010485
+> esi: c5f8cea0   edi: cfd587f8   ebp: c653dadc   esp: c653dabc
+> ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> Process sh (pid: 4549, ti=c653c000 task=ccca2090 task.ti=c653c000)
+> Stack: c137eae8 00000001 cfd587e4 c5f8cea0 c5f893e4 c137eae8 c5f8cea0 00000008 
+>        c653db28 c021e0ca cfa3ffa0 cee6a2e0 cfa3ffa0 00000000 00000008 00000100 
+>        00011250 cfedaf60 c653db10 00000206 00000000 c653db18 c014a31e c653db48 
 > Call Trace:
->  [<ffffffff80325ff8>] pcim_enable_device+0x93/0xb3
->  [<ffffffff803a974a>] ata_pci_device_do_resume+0x21/0x5e
->  [<ffffffff803b5e6c>] sil_pci_device_resume+0x1c/0x51
->  [<ffffffff8032800d>] pci_device_resume+0x22/0x53
->  [<ffffffff8039ae58>] resume_device+0xca/0x131
->  [<ffffffff8039af40>] dpm_resume+0x81/0xd3
->  [<ffffffff8039afc2>] device_resume+0x30/0x45
->  [<ffffffff802a0792>] snapshot_ioctl+0x245/0x63e
->  [<ffffffff8023cfcc>] do_ioctl+0x5e/0x77
->  [<ffffffff8022d2b3>] vfs_ioctl+0x25c/0x279
->  [<ffffffff80246a80>] sys_ioctl+0x5f/0x82
->  [<ffffffff80215586>] sys_write+0x47/0x70
->  [<ffffffff8025711e>] system_call+0x7e/0x83
-> 
-> Nevertheless, the system seems to be fully functional after the resume.
-> 
-> [I've been observing it since 2.6.20-git10 and have reported it for a couple
-> of times, but apparently nobody cares. :-(]
+>  [<c01048ba>] show_trace_log_lvl+0x1a/0x30
+>  [<c0104979>] show_stack_log_lvl+0xa9/0xd0
+>  [<c0104ba6>] show_registers+0x206/0x350
+>  [<c0104dfe>] die+0x10e/0x210
+>  [<c0114652>] do_page_fault+0x2d2/0x600
+>  [<c0351f84>] error_code+0x74/0x7c
+>  [<c021e0ca>] generic_make_request+0x15a/0x200
+>  [<c0220318>] submit_bio+0x58/0xe0
+>  [<c0205d0f>] metapage_writepage+0x18f/0x1b0
+>  [<c014cc2b>] __writepage+0xb/0x30
+>  [<c014d20f>] write_cache_pages+0x22f/0x300
+>  [<c014d303>] generic_writepages+0x23/0x30
+>  [<c014d36c>] do_writepages+0x5c/0x60
+>  [<c0148307>] __filemap_fdatawrite_range+0x67/0x80
+>  [<c0149785>] filemap_flush+0x25/0x30
+>  [<c02080cd>] lmLogSync+0x19d/0x230
+>  [<c020871e>] lmLog+0x5e/0x190
+>  [<c020a360>] txCommit+0x8c0/0x1010
+>  [<c01eecf4>] jfs_create+0x324/0x370
+>  [<c016f38f>] vfs_create+0xaf/0x100
+>  [<c017269c>] open_namei+0x58c/0x640
+>  [<c0165b7c>] do_filp_open+0x2c/0x50
+>  [<c0165be7>] do_sys_open+0x47/0xe0
+>  [<c0165cbc>] sys_open+0x1c/0x20
+>  [<c01041c0>] syscall_call+0x7/0xb
 
-This is a Tejun thing - apparently it's due to swsusp calling suspend once
-and resume twice (or is it vice versa).  He'll be looking into it soon.
+Michal Piotrowski is hitting it too, and has bisected it down to
+git-block.patch.
+
