@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752154AbXBRVYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752161AbXBRVZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752154AbXBRVYN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 16:24:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbXBRVYN
+	id S1752161AbXBRVZT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 16:25:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbXBRVZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 16:24:13 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:45480 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752154AbXBRVYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 16:24:12 -0500
-Date: Sun, 18 Feb 2007 22:23:46 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-cc: linux-kernel@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>
-Subject: Re: Boot time Bluetooth BUG: warning: (value > m) at hid-core.c:793
-In-Reply-To: <8E8F647D7835334B985D069AE964A4F7028FE550@ECQCMTLMAIL1.quebec.int.ec.gc.ca>
-Message-ID: <Pine.LNX.4.64.0702182216060.25686@twin.jikos.cz>
-References: <1171627435.6127.0.camel@wriver-t81fb058.linuxcoe>
- <45D5C789.1090607@student.ltu.se> <8E8F647D7835334B985D069AE964A4F7028FE550@ECQCMTLMAIL1.quebec.int.ec.gc.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 18 Feb 2007 16:25:18 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:41297 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752155AbXBRVZR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 16:25:17 -0500
+Subject: Re: [RFC] killing the NR_IRQS arrays.
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20070216124117.GB4218@elte.hu>
+References: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com>
+	 <20070216124117.GB4218@elte.hu>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Sun, 18 Feb 2007 22:24:45 +0100
+Message-Id: <1171833885.3261.208.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Feb 2007, Fortier,Vincent [Montreal] wrote:
+On Fri, 2007-02-16 at 13:41 +0100, Ingo Molnar wrote:
+> * Eric W. Biederman <ebiederm@xmission.com> wrote:
+> 
+> > So I propose we remove all assumptions from the code that we actually 
+> > have an array of irqs.  That will allow for irq_desc to be dynamically 
+> > allocated instead of statically allocated saving memory and reducing 
+> > kernel complexity.
+> 
+> hm. I'd suggest to do this without changing request_irq() - and then we 
+> could avoid the 'massive, every driver affected' change, right?
 
-> I m using a Logitech MX 5000 keyboard with an included MX 1000 mouse,
-> both bluetooth using the same USB reciever.
-> When the USB reciever is already plugged-in at boot-time and the
-> Bluetooth service fires-up I get this message:
->  =======================
-> BUG: warning: (value > m) at
-> drivers/usb/input/hid-core.c:793/implement() (Tainted: P     )
->  [<c0405018>] dump_trace+0x69/0x1b6
->  [<c040517d>] show_trace_log_lvl+0x18/0x2c
->  [<c0405778>] show_trace+0xf/0x11
->  [<c0405875>] dump_stack+0x15/0x17
->  [<c05993c0>] hid_output_report+0x23c/0x2e7
->  [<c05994b7>] hid_submit_ctrl+0x4c/0x1d9
->  [<c05997fd>] hid_submit_report+0x134/0x15f
->  [<c059bd09>] hiddev_ioctl+0x327/0x88a
->  [<c04802c8>] do_ioctl+0x4c/0x62
->  [<c0480528>] vfs_ioctl+0x24a/0x25c
->  [<c0480586>] sys_ioctl+0x4c/0x66
->  [<c040404b>] syscall_call+0x7/0xb
->  [<005b5402>] 0x5b5402
->  =======================
+if request_irq() changes we might as well make a variant that takes a
+PCI device struct rather than a number, for the 99% of PCI drivers that
+use that.. (and then msi and other stuff becomes simpler :)
 
-(added Marcel to CC)
 
-This means that something (I guess that it's hid2hci command?) is trying 
-to pass through hiddev a value in a field that is greater than a given 
-bitmask (and is not going to fit into the bitfield).
-
-Vincent, does the problem go away when you don't use bluetooth (both 
-keyboard and mouse is switched to HID mode, if they support it)?
-
-Marcel, do you have any idea how this could happen?
-
-Thanks,
-
--- 
-Jiri Kosina
