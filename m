@@ -1,51 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750782AbXBRMSP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750827AbXBRMUJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750782AbXBRMSP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 07:18:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbXBRMSP
+	id S1750827AbXBRMUJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 07:20:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbXBRMUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 07:18:15 -0500
-Received: from web36713.mail.mud.yahoo.com ([209.191.85.47]:32086 "HELO
-	web36713.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750782AbXBRMSO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 07:18:14 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=1ftBRaUIF0xpgy31PA5/b11hsAqS/faCKlAsnxsC2w6cp0uAMJXG0VrbS5UFUgTACneneZgDqlMXl81es6qRKQcuvvEgZhhWBLE/YOgLXALf7TtrPPxLDpaWq6QQCYsGGYPdGIAlyeCiAsdNISJ2J8seazfhLZJ+MwIufj2scxM=;
-X-YMail-OSG: TMipz2YVM1nH8TunEVADPZZAc_0UuXYtBAF1whV8pOYQWgOxzIi3Fm6oc3tkJw6PGeaPUwuiDE1ipSpT1_ma1VH_ZC5uTtW5RDMi7BIOZNxXmzzNWUSw9Pmezs9a382FFV4xIZ3Djj3_lz8-
-Date: Sun, 18 Feb 2007 04:18:13 -0800 (PST)
-From: Alex Dubov <oakad@yahoo.com>
-Subject: Re: [mmc] incorrect behavior on resume
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070218065318.GA14251@flint.arm.linux.org.uk>
+	Sun, 18 Feb 2007 07:20:08 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:48510 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750827AbXBRMUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 07:20:05 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [RFC PATCH(Experimental) 0/4] Freezer based Cpu-hotplug
+Date: Sun, 18 Feb 2007 13:12:21 +0100
+User-Agent: KMail/1.9.5
+Cc: ego@in.ibm.com, akpm@osdl.org, paulmck@us.ibm.com, mingo@elte.hu,
+       vatsa@in.ibm.com, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+References: <20070214144031.GA15257@in.ibm.com> <200702181132.41264.rjw@sisk.pl> <20070218113259.GB100@tv-sign.ru>
+In-Reply-To: <20070218113259.GB100@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <659829.32221.qm@web36713.mail.mud.yahoo.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702181312.24633.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> I don't see that - as I say above, the correct sequence is:
+On Sunday, 18 February 2007 12:32, Oleg Nesterov wrote:
+> On 02/18, Rafael J. Wysocki wrote:
+> >
+> > On Sunday, 18 February 2007 00:42, Oleg Nesterov wrote:
+> > > On 02/17, Rafael J. Wysocki wrote:
+> > > >
+> > > > On Saturday, 17 February 2007 22:34, Oleg Nesterov wrote:
+> > > > > 
+> > > > > 	static inline int is_user_space(struct task_struct *p)
+> > > > > 	{
+> > > > > 		return p->mm && !(p->flags & PF_BORROWED_MM);
+> > > > > 	}
+> > > > > 
+> > > > > This doesn't look right. First, an exiting task has ->mm == NULL after
+> > > > > do_exit()->exit_mm(). Probably not a problem. However, PF_BORROWED_MM
+> > > > > check is racy without task_lock(), so we can have a false positive as
+> > > > > well. Is it ok? We can freeze aio_wq prematurely.
+> > > > 
+> > > > Right now aio_wq is not freezeable (PF_NOFREEZE).
+> > > 
+> > > Right now yes, but we are going to change this?
+> > 
+> > Well, is there any more reliable (and not racy) method of differentiating
+> > between kernel threads and user space processes?
 > 
->  - host device resume
->      - calls mmc_resume_host()
->  - child's device resume (mmc_blk_resume)
->      - mmc_queue_resume()
-> 
-Of course, I understand that this is a correct sequence. It simply was not obvious to me that host
-will issue requests even if mmc_resume_host is not called.
+> Not that I know of. At least, we can take task_lock() to really rule out
+> kernel threads at FREEZER_USER_SPACE stage.
 
-I'm trying to implement a hotplugable host, so I assumed that if host was removed during the
-suspended state there's no need to resume it.
+Something like this?
 
+---
+ kernel/power/process.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-
+Index: linux-2.6.20-mm2/kernel/power/process.c
+===================================================================
+--- linux-2.6.20-mm2.orig/kernel/power/process.c
++++ linux-2.6.20-mm2/kernel/power/process.c
+@@ -8,6 +8,7 @@
  
-____________________________________________________________________________________
-Food fight? Enjoy some healthy debate 
-in the Yahoo! Answers Food & Drink Q&A.
-http://answers.yahoo.com/dir/?link=list&sid=396545367
+ #undef DEBUG
+ 
++#include <linux/sched.h>
+ #include <linux/smp_lock.h>
+ #include <linux/interrupt.h>
+ #include <linux/suspend.h>
+@@ -92,7 +93,12 @@ static void cancel_freezing(struct task_
+ 
+ static inline int is_user_space(struct task_struct *p)
+ {
+-	return p->mm && !(p->flags & PF_BORROWED_MM);
++	int ret;
++
++	task_lock(p);
++	ret = p->mm && !(p->flags & PF_BORROWED_MM);
++	task_unlock(p);
++	return ret;
+ }
+ 
+ static unsigned int try_to_freeze_tasks(int freeze_user_space)
