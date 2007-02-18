@@ -1,70 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750825AbXBRMcI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750881AbXBRMjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750825AbXBRMcI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 07:32:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbXBRMcI
+	id S1750881AbXBRMjU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 07:39:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750888AbXBRMjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 07:32:08 -0500
-Received: from www.osadl.org ([213.239.205.134]:50270 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750825AbXBRMcH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 07:32:07 -0500
-Subject: Re: 2.6.20-git13 kernel BUG at
-	/mnt/md0/devel/linux-git/kernel/time/tick-sched.c:168
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Alex Riesen <fork0@users.sourceforge.net>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-In-Reply-To: <20070218095037.GA3408@steel.home>
-References: <45D61632.1020105@googlemail.com>
-	 <1171660939.30834.102.camel@localhost.localdomain>
-	 <20070217144752.GA2503@steel.home>
-	 <1171725257.30834.120.camel@localhost.localdomain>
-	 <20070217164652.GA2579@steel.home>
-	 <6bffcb0e0702171441i6ac69ac0yb1c46dbf8f43dc2e@mail.gmail.com>
-	 <1171788100.30834.169.camel@localhost.localdomain>
-	 <20070218095037.GA3408@steel.home>
-Content-Type: text/plain
-Date: Sun, 18 Feb 2007 13:36:56 +0100
-Message-Id: <1171802216.30834.172.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 18 Feb 2007 07:39:20 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:39398 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750881AbXBRMjT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 07:39:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=dZgTp6OGvi66q2RN1wCwFfV7l2iGywoHMNFflfIUEvPRdbsvGZcZ0ZHi/b50v30X6DQrM9v2TBKD1yIrgr1IuU50bsGs3Bt//TTuk1+d+/ZlZpK02280IDQL9OZq4Z/NR1KMtRXRV1xNgC2+unz/IPzlyWaq1+mAgeMzaWTyz9M=
+Date: Sun, 18 Feb 2007 15:36:36 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Dan Aloni <da-x@monatomic.org>
+Cc: Andi Kleen <ak@suse.de>, linux-kernel-list <linux-kernel@vger.kernel.org>
+Subject: Re: e2b2rom_init_one():  Unable to register resource
+Message-ID: <20070218123636.GD10865@cvg>
+References: <20070217212918.GA26554@localdomain> <20070218104222.GC10865@cvg> <20070218112903.GA5102@localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070218112903.GA5102@localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-02-18 at 10:50 +0100, Alex Riesen wrote:
-> > The arch/i386/kernel/process.c part of the patch should apply to 2.6.20
-> > as well. Can you check if the problem is there too ?
-> 
-> It does not apply and does not look trivially hackable.
-> The code for cpu_idle was introduced in 2ff2d3d7 "i386: add idle notifier".
+On Sun, Feb 18, 2007 at 01:29:03PM +0200, Dan Aloni wrote:
+| On Sun, Feb 18, 2007 at 01:42:22PM +0300, Cyrill Gorcunov wrote:
+| > Hi,
+| > 
+| > here is a patch attached to the mail. You may test it. Actually
+| > I have no 64bit machine to test it and I'm worried about the
+| > patch accuracy. So be carefull testing it. I sent a copy of the
+| > message to Andi Kleen (who is a maintainer of X86-64 port) may be
+| > we should wait for its answer ;)
+| 
+| Thanks, I'll give it a try soon.
+| 
+| BTW, wouldn't it be better just to change the type of phys and size
+| to u32?
+| 
+| > diff --git a/drivers/mtd/maps/esb2rom.c b/drivers/mtd/maps/esb2rom.c
+| > index a9d808a..d63c060 100644
+| > --- a/drivers/mtd/maps/esb2rom.c
+| > +++ b/drivers/mtd/maps/esb2rom.c
+| > @@ -214,6 +214,9 @@ static int __devinit esb2rom_init_one(struct pci_dev *pdev,
+| >  
+| >  	/* reserved  0x0020 and 0x0010 */
+| >  	window->phys -= 0x400000UL;
+| > +#ifdef CONFIG_64BIT
+| > +	window->phys &= 0xffffffffUL;
+| > +#endif
+| >  	window->size = (0xffffffffUL - window->phys) + 1UL;
+| >  
+| >  	/* Enable writes through the rom window */
+| 
+| 
+| -- 
+| Dan Aloni
+| XIV LTD, http://www.xivstorage.com
+| da-x (at) monatomic.org, dan (at) xiv.co.il
+| 
 
-Here you go.
+Hi,
 
-	tglx
+actually - I don't know... I think this could be done
+by kernel developer specialist only (as Andi Kleen is).
+So lets wait until his answer ;) Nevertheless, write
+me if the patch resolve the problem.
 
-Index: linux-2.6.20/arch/i386/kernel/process.c
-===================================================================
---- linux-2.6.20.orig/arch/i386/kernel/process.c
-+++ linux-2.6.20/arch/i386/kernel/process.c
-@@ -189,6 +189,13 @@ void cpu_idle(void)
- 				play_dead();
- 
- 			__get_cpu_var(irq_stat).idle_timestamp = jiffies;
-+
-+			local_irq_disable();
-+			if (local_softirq_pending() && !need_resched())
-+				printk(KERN_ERR
-+				       "Idle: local softirq pending: %04x\n",
-+				       local_softirq_pending());
-+			local_irq_enable();
- 			idle();
- 		}
- 		preempt_enable_no_resched();
+-- 
 
-
-
+		Cyrill
 
