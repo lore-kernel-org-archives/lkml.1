@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751012AbXBRM4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751006AbXBRND3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751012AbXBRM4e (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 07:56:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751011AbXBRM4e
+	id S1751006AbXBRND3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 08:03:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbXBRND2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 07:56:34 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59921 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750979AbXBRM4d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 07:56:33 -0500
-Date: Sun, 18 Feb 2007 13:56:10 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ego@in.ibm.com, akpm@osdl.org, paulmck@us.ibm.com, mingo@elte.hu,
-       vatsa@in.ibm.com, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, oleg@tv-sign.ru
-Subject: Re: [RFC PATCH(Experimental) 0/4] Freezer based Cpu-hotplug
-Message-ID: <20070218125610.GA16349@elf.ucw.cz>
-References: <20070214144031.GA15257@in.ibm.com> <200702151431.10068.rjw@sisk.pl> <20070215142542.GA14931@in.ibm.com> <200702171224.46626.rjw@sisk.pl>
+	Sun, 18 Feb 2007 08:03:28 -0500
+Received: from thunk.org ([69.25.196.29]:42830 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751006AbXBRND2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 08:03:28 -0500
+Date: Sun, 18 Feb 2007 08:03:20 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Mockern <Mockern@yandex.ru>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: serial and tty driver
+Message-ID: <20070218130320.GA20321@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Mockern <Mockern@yandex.ru>,
+	linux-kernel@vger.kernel.org
+References: <45D73BF6.000001.30155@pantene.yandex.ru> <45D74856.6090900@microgate.com> <20070217232054.GA11117@thunk.org> <45D813EA.000008.23689@soapbox.yandex.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200702171224.46626.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <45D813EA.000008.23689@soapbox.yandex.ru>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > So I think tonight I'll start adding try_to_freeze() to the kernel threads that
-> > > set PF_NOFREEZE.
-> > 
-> > cool! While you are at it, let me try to enhance the freezer api's
-> > to incorporate the PFE_* flags.
+On Sun, Feb 18, 2007 at 11:52:58AM +0300, Mockern wrote:
+> Thank you for you respond.
 > 
-> Here's a patch that adds try_to_freeze() to all kernel threads that didn't call
-> it before.  It shouldn't change the behavior of the threads in question, since
-> they won't be frozen because the are flagged as PF_NOFREEZE (of course
-> we are going to change this later).
-
-Looks ok.
-
-> Compile-tested on x86_64 with allmodconfig.
+> I asked this question since I have one problem with my tty driver.
+> It based on serial_core.c. It works well except Linux cat operation:(.
+> (e.g. cat < ttyS10). I thought in tty driver there is no function
+> for this operation and I wanted to know that maybe serial driver has it.
 > 
-> Pavel, do you think we can remove the PF_NOFREEZE from bluetooth,
-> BTW?
+> Could it be the reason that cat operation in tty driver does not work
+> (but I can write and read from user space application!)?
+> Or maybe I need to implement a special function in my tty driver to support Linux
+> cat operation?
 
-Yes... bluetooth has no reason to play with NOFREEZE.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+If you do something like "cat < ttyS10" it will work by opening the
+device just like a user space application --- but the shell, which is
+opening /dev/ttyS10, won't use any of the special flags that a user
+space application might use to not wait for the carrier detect line to
+go high, for example.  
+
+I'd have to see the sources of the driver and your user space
+application to be sure, but one thing you should try is "stty -F
+/dev/ttyS10 clocal" and see if that allows "cat < /dev/ttyS10" to
+work.  
+
+Regards,
+
+						- Ted
