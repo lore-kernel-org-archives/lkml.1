@@ -1,150 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752062AbXBRUh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752068AbXBRUm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752062AbXBRUh2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 15:37:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbXBRUh2
+	id S1752068AbXBRUm3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 15:42:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbXBRUm3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 15:37:28 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:1272 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752062AbXBRUh1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 15:37:27 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Sun, 18 Feb 2007 12:37:22 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Pavel Machek <pavel@ucw.cz>
-cc: Ingo Molnar <mingo@elte.hu>, Alan <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 05/11] syslets: core code
-In-Reply-To: <20070218200145.GD3945@ucw.cz>
-Message-ID: <Pine.LNX.4.64.0702181223120.27404@alien.or.mcafeemobile.com>
-References: <20070213142035.GF638@elte.hu> <Pine.LNX.4.64.0702141223270.20368@woody.linux-foundation.org>
- <20070214210251.GA15025@elte.hu> <Pine.LNX.4.64.0702141321200.20368@woody.linux-foundation.org>
- <20070214215613.56d76257@localhost.localdomain> <20070214223216.GA7616@elte.hu>
- <Pine.LNX.4.64.0702141656240.7796@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0702141721560.7796@alien.or.mcafeemobile.com>
- <20070218200145.GD3945@ucw.cz>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sun, 18 Feb 2007 15:42:29 -0500
+Received: from khc.piap.pl ([195.187.100.11]:37746 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752068AbXBRUm3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 15:42:29 -0500
+To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Cc: Udo van den Heuvel <udovdh@xs4all.nl>, linux-kernel@vger.kernel.org
+Subject: Re: PCI riser cards and PCI irq routing, etc
+References: <45D85DA1.7090502@xs4all.nl>
+	<20070218155445.GV7584@csclub.uwaterloo.ca>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sun, 18 Feb 2007 21:42:26 +0100
+In-Reply-To: <20070218155445.GV7584@csclub.uwaterloo.ca> (Lennart Sorensen's message of "Sun, 18 Feb 2007 10:54:45 -0500")
+Message-ID: <m3ejon8afh.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 Feb 2007, Pavel Machek wrote:
+lsorense@csclub.uwaterloo.ca (Lennart Sorensen) writes:
 
-> > > The upcall will setup a frame, execute the clet (where jump/conditions and 
-> > > userspace variable changes happen in machine code - gcc is pretty good in 
-> > > taking care of that for us) on its return, come back through a 
-> > > sys_async_return, and go back to userspace.
-> > 
-> > So, for example, this is the setup code for the current API (and that's a 
-> > really simple one - immagine going wacko with loops and userspace varaible 
-> > changes):
-> > 
-> > 
-> > static struct req *alloc_req(void)
-> > {
-> >         /*
-> >          * Constants can be picked up by syslets via static variables:
-> >          */
-> >         static long O_RDONLY_var = O_RDONLY;
-> >         static long FILE_BUF_SIZE_var = FILE_BUF_SIZE;
-> >                 
-> >         struct req *req;
-> >                  
-> >         if (freelist) {
-> >                 req = freelist;
-> >                 freelist = freelist->next_free;
-> >                 req->next_free = NULL;
-> >                 return req;
-> >         }
-> >                         
-> >         req = calloc(1, sizeof(struct req));
-> >  
-> >         /*
-> >          * This is the first atom in the syslet, it opens the file:
-> >          *
-> >          *  req->fd = open(req->filename, O_RDONLY);
-> >          *
-> >          * It is linked to the next read() atom.
-> >          */
-> >         req->filename_p = req->filename;
-> >         init_atom(req, &req->open_file, __NR_sys_open,
-> >                   &req->filename_p, &O_RDONLY_var, NULL, NULL, NULL, NULL,
-> >                   &req->fd, SYSLET_STOP_ON_NEGATIVE, &req->read_file);
-> >         
-> >         /*
-> >          * This second read() atom is linked back to itself, it skips to
-> >          * the next one on stop:
-> >          */
-> >         req->file_buf_ptr = req->file_buf;
-> >         init_atom(req, &req->read_file, __NR_sys_read,
-> >                   &req->fd, &req->file_buf_ptr, &FILE_BUF_SIZE_var,
-> >                   NULL, NULL, NULL, NULL,
-> >                   SYSLET_STOP_ON_NON_POSITIVE | SYSLET_SKIP_TO_NEXT_ON_STOP,
-> >                   &req->read_file);
-> >                 
-> >         /*
-> >          * This close() atom has NULL as next, this finishes the syslet:
-> >          */
-> >         init_atom(req, &req->close_file, __NR_sys_close,
-> >                   &req->fd, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL);
-> >                 
-> >         return req;
-> > }
-> > 
-> > 
-> > Here's how your clet would look like:
-> > 
-> > static long main_sync_loop(ctx *c)
-> > {
-> >         int fd;
-> >         char file_buf[FILE_BUF_SIZE+1];
-> >         
-> >         if ((fd = open(c->filename, O_RDONLY)) == -1)
-> >                 return -1;
-> >         while (read(fd, file_buf, FILE_BUF_SIZE) > 0)
-> >                 ;
-> >         close(fd);
-> >         return 0;
-> > }
-> > 
-> > 
-> > Kinda easier to code isn't it? And the cost of the upcall to schedule the 
-> > clet is widely amortized by the multple syscalls you're going to do inside 
-> > your clet.
-> 
-> I do not get it. What if clet includes
-> 
-> int *a = 0; *a = 1; /* enjoy your oops, stupid kernel? */
-> 
-> I.e. how do you make sure kernel is protected from malicious clets?
+> My understanding (which is better of verified against the specs) is:
+>
+> PCI interrupts (PCI INTA to INTD) are rotated for every slot by one. So
+> slot 0, 4, 8, etc see INTA->realINTA, INTB->realINTB. INTC->realINTC,
+> INTD->realINTD
+> slot 1, 5, 9, etc see INTA->realINTB, INTB->realINTC. INTC->realINTD,
+> INTD->realINTA
+> slot 2, 6, 10, etc see INTA->realINTC, INTB->realINTD. INTC->realINTA,
+> INTD->realINTB
+> slot 3, 7, 11, etc see INTA->realINTD, INTB->realINTA. INTC->realINTB,
+> INTD->realINTC
 
-Clets would execute in userspace, like signal handlers, but under the 
-special schedule() handler. In that way chains happens by the mean of 
-natural C code, and access to userspace variables happen by the mean of 
-natural C code too (not with special syscalls to manipulate userspace 
-memory). I'm not a big fan of chains of syscalls for the reasons I 
-already explained, but at least clets (or whatever name) has a way lower 
-cost for the programmer (easier to code than atom chains), and for the 
-kernel (no need of all that atom handling stuff, no need of limited 
-cond/jump interpreters in the kernel, and no need of nightmare compat 
-code).
+This is common and suggested practice but the PCI specs don't require
+it. There is no rule - you can, for example, have all INT lines
+connected to a single CPU IRQ input.
 
+> On a PC, the BIOS is supposed to assign interrupts to devices based on
+> those rules, since that is how the hardware must be done according to
+> the PCI specifications.  On other platforms the firmware may or may not
+> handle it.
 
+Anyway, something has to know how the IRQs are routed. BIOS, other
+firmware, Linux.
 
-- Davide
+> So as long as the riser board is wired according to the PCI bridge
+> rules,
 
+Actually it has to be wired consistently with the BIOS (which is
+probably consistent with chipset manufacturer's instructions).
 
+> Of course if the
+> riser card is NOT a proper pci bridge, but rather some weird device,
+> well then it probably isn't even PCI complient and who knows how it
+> shold be handled.
+
+Usually they are just bus splitters, they route IRQs and IDSELs
+(and maybe JTAG) as required by the BIOS, all others pins are
+connected 1:1.
+
+I.e., they are completely transparent, generally comply to PCI specs
+and are dedicated to a specific motherboard(s).
+
+> Interrupts for PCI are assigned based on the 4 shared interrupts line on
+> PCI, not really per device.  A PCI device may use up to 4 interrupts if
+> it wants to, and is supposed to always use interrupt A (as seen from
+> it's slot) as the first interrupt.
+
+Actually I think (would have to check the specs for sure) every
+subdevice (function) may use just one interrupt line.
+
+This rotating INTx scheme is common because it's cheap. There are
+systems which support more than 4 shared INTs per bus, for example
+you can have different sets of 4 INTx lines for every PCI slot, even
+if all slots are on the same PCI bus.
+
+> The rotating assignment of the 4
+> interrupts to the slots are supposed to help balance the distribution of
+> the interrupts between devices in the system, so that although they are
+> shared interrupts, as few devices as possible get assigned to each
+> interrupt.
+
+Correct. This scheme assumes at most 4 single-function devices
+on the bus, otherwise INTs are shared.
+-- 
+Krzysztof Halasa
