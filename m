@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751114AbXBRD7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751157AbXBREB3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751114AbXBRD7d (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 22:59:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbXBRD7c
+	id S1751157AbXBREB3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 23:01:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbXBREB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 22:59:32 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46937 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751019AbXBRD7b (ORCPT
+	Sat, 17 Feb 2007 23:01:29 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:54524 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751157AbXBREB2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 22:59:31 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [RFC] killing the NR_IRQS arrays.
-References: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com>
-	<200702162045.58857.arnd@arndb.de>
-	<20070216195256.GE2572@flint.arm.linux.org.uk>
-	<m1k5yhb00g.fsf@ebiederm.dsl.xmission.com>
-	<1171747222.5644.143.camel@localhost.localdomain>
-Date: Sat, 17 Feb 2007 20:58:26 -0700
-In-Reply-To: <1171747222.5644.143.camel@localhost.localdomain> (Benjamin
-	Herrenschmidt's message of "Sun, 18 Feb 2007 08:20:22 +1100")
-Message-ID: <m1zm7c9kwt.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Sat, 17 Feb 2007 23:01:28 -0500
+Date: Sun, 18 Feb 2007 04:01:27 +0000
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PULL] audit patches
+Message-ID: <20070218040127.GA5422@ftp.linux.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+Misc audit patches (resend again...); the most intrusive one is AUDIT_FD_PAIR,
+allowing to log descriptor numbers from syscalls that do not return them in
+usual way (i.e. pipe() and socketpair()).  It took some massage of
+the failure exits in sys_socketpair(); the rest is absolutely trivial.
+Please, pull from
+git.kernel.org/pub/scm/linux/kernel/git/viro/audit-current.git/ audit.b37
 
->
->> We might need this.  But I don't think we need reference counting in
->> the traditional sense.  For all practical purpose we already have
->> dynamic irq allocation and it hasn't proven necessary.  I would
->> prefer to go to lengths to avoid having to expose that kind of
->> an issue to driver code.
->
-> I think we do need proper refcounting, but I also think that most
-> drivers will not need to see it.
->
-> For example, a PCI driver will most probably just do something along the
-> lines of the existing request_irq(pdev->irq), the liftime of pdev->irq
-> is managed by the PCI core.
->
-> Same goes with MSIs imho, the MSI core can manage the lifetime
-> transparently.
+Al Viro (1):
+      AUDIT_FD_PAIR
 
-Yes.  I'm optimistic that we won't find a case where refcounting will
-be needed.
+Steve Grubb (2):
+      minor update to rule add/delete messages (ver 2)
+      audit config lockdown
 
-Eric
+ fs/pipe.c             |    7 ++
+ include/linux/audit.h |    9 ++
+ kernel/audit.c        |  216 +++++++++++++++++++++++++++++++++++-------------
+ kernel/auditfilter.c  |    9 +-
+ kernel/auditsc.c      |   40 +++++++++
+ net/socket.c          |   52 +++++++++---
+ 6 files changed, 257 insertions(+), 76 deletions(-)
