@@ -1,77 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751118AbXBRNoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751192AbXBRN50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751118AbXBRNoA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 08:44:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbXBRNoA
+	id S1751192AbXBRN50 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 08:57:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbXBRN50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 08:44:00 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:8707 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751118AbXBRNn7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 08:43:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=CdOP6pcB/QIomqiKMheKE3tz1v3ltJPPwgkHzUPzSZ9VJQpHPHGotkJ9JVkBQqgvcY2km9kFH5FadbQZl9RXEkkjVda4K1+ojpKj79DnFnViwGnvby3sajen7ZAJumHm+w4+BL0sCw4KAoYF3ZiFIySuElqcYmazTu8agYC9DqM=
-From: Maxim <maximlevitsky@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Subject:  [PATCH 2.6.20 004/005] dmfe: Add support for suspend/resume
-Date: Sun, 18 Feb 2007 15:43:53 +0200
-User-Agent: KMail/1.9.6
-Cc: netdev@kernel.org, linux-kernel@vger.kernel.org
-References: <200702152253.53680.maximlevitsky@gmail.com> <200702180029.03651.maximlevitsky@gmail.com> <20070217225215.GE14222@elf.ucw.cz>
-In-Reply-To: <20070217225215.GE14222@elf.ucw.cz>
+	Sun, 18 Feb 2007 08:57:26 -0500
+Received: from thunk.org ([69.25.196.29]:60146 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751192AbXBRN50 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 08:57:26 -0500
+Date: Sun, 18 Feb 2007 08:57:19 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Trent Waddington <trent.waddington@gmail.com>
+Cc: "Michael K. Edwards" <medwards.linux@gmail.com>,
+       Neil Brown <neilb@suse.de>, davids@webmaster.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: GPL vs non-GPL device drivers
+Message-ID: <20070218135719.GB20321@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Trent Waddington <trent.waddington@gmail.com>,
+	"Michael K. Edwards" <medwards.linux@gmail.com>,
+	Neil Brown <neilb@suse.de>, davids@webmaster.com,
+	"Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+References: <20070216125353.GN13958@stusta.de> <MDEHLPKNGKAHNMBLJOLKKEIMBKAC.davids@webmaster.com> <17878.48376.629016.49202@notabene.brown> <f2b55d220702171855u59e3cc47i73e4aa48d0c0968c@mail.gmail.com> <3d57814d0702171926v53812baeqaeeda326aa225acf@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702181543.53296.maximlevitsky@gmail.com>
+In-Reply-To: <3d57814d0702171926v53812baeqaeeda326aa225acf@mail.gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 18 February 2007 00:52:15 Pavel Machek wrote:
-> Hi!
-> > 
-> > Hello ,  I am sorry that I missed some parts of coding style. I need to reread it :-)
-> > 
-> > There is a updated patch :
+On Sun, Feb 18, 2007 at 01:26:47PM +1000, Trent Waddington wrote:
+> Such a strange attitude.. to go to all this effort to quote carefully
+> and correctly one set of people and to then total misconstrue the
+> words of another.
 > 
-> It looks better.
-> 
-> > +	/* Disable Interrupt */
-> > +	outl (0, dev->base_addr + DCR7);
-> > +	outl (inl(dev->base_addr + DCR5), dev->base_addr + DCR5);
-> 
-> I'd kill space after outl...
-> 
-> > +	/* Free RX buffers */
-> > +	dmfe_free_rxbuffer(db);
-> > +
-> > +	/* Power down device*/
-> 
-> and add space before */.
-> 
-> Congratulation, you passed coding-style-police-check ;-).
-> 									Pavel
-> 
+> The FSF's argument in regards to readline is that you may not
+> distribute readline with proprietary software linked to it.  They
+> don't claim they "0wn" your source code.
 
-Hello,
-	Thanks for reply, I just want to ask one question:
+Actually, the FSF and many of its representatives, has claimed, on
+many occassions, that the GPL infects across dynamic linking.  That
+is, if you write your own code that calls readline which links via a
+dynamically linked shared library, and perhaps even across dlopen(),
+they claim that the GPL applies to the code which you write.  Given
+that the only way this could happen is via copyright law, they are
+basically saying that if you use the readline interface, you have
+created a derived work and they therefore 0wn your source code.
 
-	Those patches are now merged in -mm, and I noticed that Andrew Morton after applying them did fix my bad coding style and check for CONFIG_PM=n that I didn't include
+Whether or not this would be laughed out of court or not will very
+much depend on the local legal precedents (and Trent Waddington has
+quoted some very interesting legal cases based on US court decisions,
+including an entertaining brief written by Eben Moglen decrying
+interface copyrights which on the surface seems to go against
+everything else the FSF has said since the Lotus case), but the
+kernel-mailing list isn't the place to debate how law can be applied
+to facts, or whether or not Eben Moglen is a hypocrite or not.
 
-	Now should I resend two last patches or not ?
+So can we please stop now?  I doubt anyone is going to be able to
+convince anyone else on this matter; people's opinions are pretty well
+formed by now, and until someone chooses to litigate on this specific
+point about whether or not the GPL (v2 or v3) can infect across a
+dynamic link in various jurisdictions, we're not going to settle it here.
 
+Regards,
 
-Regards, Maxim Levitsky
-
-
-PS:  Actualy I have planned to send those patches a little bit later , and do more checks like the coding style stuff, mailer problems, etc... 
-but I noticed that 2.6.20 breaks link detection on my card,
-and I even saw report here on LKML about that, so I decided to send them now
-
-Of cource I did check them for code correctness , and I actualy used them for about a month.
-I tried to do as little as possible changes, and verify each line.
-
+						- Ted
