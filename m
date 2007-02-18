@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751212AbXBROTF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751213AbXBRO1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751212AbXBROTF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 09:19:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbXBROTF
+	id S1751213AbXBRO1m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 09:27:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbXBRO1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 09:19:05 -0500
-Received: from web36706.mail.mud.yahoo.com ([209.191.85.40]:22191 "HELO
-	web36706.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751213AbXBROTE (ORCPT
+	Sun, 18 Feb 2007 09:27:41 -0500
+Received: from mail.edu.haifa.ac.il ([132.74.40.10]:57969 "EHLO
+	mail.edu.haifa.ac.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751213AbXBRO1l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 09:19:04 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=YFbPZx5n0MqnyxtfXjaD7mjq0MxcWvzktzm83E3wUhEsHu2CF4xU73je6Rv/8JrsDq5ujpbCXVQ1emzXiiC9zGBzVxEMj4whgCSEKuFIIiEL7p7Lk8GOxfXlsEbNntlZUkICbYCYJLM6VCbzNkKlPx1nB+0lH45eD+l0o7a21fo=;
-X-YMail-OSG: BVsrcr8VM1l.5GbIULG_aBL548h.SmVZ1yBhQfxDzFCnM4MF__QKid4iXAa5EMN.fV6bhWxV2Y0q959gkPr.QkRtmH7mBsfpv3BKCCbQArDJLm5.bAenn_yTYCsyIRc.yKmZNJVf7oCE2Vs-
-Date: Sun, 18 Feb 2007 06:19:03 -0800 (PST)
-From: Alex Dubov <oakad@yahoo.com>
-Subject: Re: Recent and not-so problems with tifm_sd driver
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <45D80A94.308@drzeus.cx>
+	Sun, 18 Feb 2007 09:27:41 -0500
+X-Greylist: delayed 2007 seconds by postgrey-1.27 at vger.kernel.org; Sun, 18 Feb 2007 09:27:41 EST
+From: "Leon Kolchinsky" <leonk@construct.haifa.ac.il>
+To: "'Ahmed El Zein'" <a.elzein@gawab.net>, "'David Chinner'" <dgc@sgi.com>
+Cc: "'Ramy M. Hassan '" <ramy@gawab.com>, <linux-kernel@vger.kernel.org>,
+       <xfs@oss.sgi.com>
+Subject: RE: xfs internal error on a new filesystem
+Date: Sun, 18 Feb 2007 15:56:01 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <306317.86250.qm@web36706.mail.mud.yahoo.com>
+Content-Type: text/plain;
+	charset="windows-1255"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook, Build 11.0.5510
+Thread-Index: AcdRIiG7SPwLE0pnQZSaMKvb/cKlogCQgjpw
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+In-Reply-To: <20070215161932.3230.qmail@info11.gawab.com>
+Message-Id: <20070218135844.9300C14A856@mail.edu.haifa.ac.il>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> >
+> >> Do u recommend that we switch back to reiserfs ?
+> >
+> >Not yet.
+> >
+> >> Could it be a hardware related problems  ?
+> >
+> >Yes. Do you have ECC memory on your server? Have you run memtest86?
+> >Were there any I/O errors in the log prior to the shutdown message?
+> Yes, we have ECC memory.
+> We will try to run memtest86 as soon as possible.
+> There were no I/O errors in the log prior to the shutdown message.
 > 
-> I don't see how that is possible. mmc_block's remove routine waits for mmcqd to
-> exit, so there can't be any code still alive that has a request going. (I am
-> also completely unable to reproduce this problem here).
+> Btw, this is a vmware image. /vol/6 is an exported physical partition.
 > 
-> Add more printk:s do verify how the code in mmc_block executes.
-> 
-This is hard to trigger problem, so I'll spare you the rather lengthy log.
-It happens if card timeouts and mmc_remove_host is called while mmc_register_card is still in
-progress (the hint was in crash dump). If I sleep before remove, it gives the mmc_register_card
-chance to finish/mark card as dead and everything's fine.
-The remove callback of mmc_block is apparently not executed in this case (probably because device
-has not finished registering).
 
-My proposition: lets flush the workqueue first thing in the mmc_remove_host (and make sure that
-nothing gets scheduled into it after this). 
+I've read that vmware do disk caching by default and we know xfs has problem
+with when disaster strikes.
+
+You definitely should disable disk caching on you side. 
+
+> >Cheers,
+> >
+> >Dave.
+> >--
+> >Dave Chinner
+> >Principal Engineer
+> >SGI Australian Software Group
+> >
+>
 
 
-
+Regards,
+Leon Kolchinsky
  
-____________________________________________________________________________________
-Don't pick lemons.
-See all the new 2007 cars at Yahoo! Autos.
-http://autos.yahoo.com/new_cars.html 
+
+
