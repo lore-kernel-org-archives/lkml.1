@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751857AbXBRS7L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751870AbXBRTBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751857AbXBRS7L (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 13:59:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbXBRS7L
+	id S1751870AbXBRTBg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 14:01:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbXBRTBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 13:59:11 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:37298 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751857AbXBRS7J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 13:59:09 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Sun, 18 Feb 2007 13:53:13 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: Roman Zippel <zippel@linux-m68k.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kbuild: Add the code maturity levels DEPRECATED and
- OBSOLETE.
-In-Reply-To: <200702181935.07454.bzolnier@gmail.com>
-Message-ID: <Pine.LNX.4.64.0702181348510.4861@CPE00045a9c397f-CM001225dbafb6>
-References: <Pine.LNX.4.64.0702181203360.5131@CPE00045a9c397f-CM001225dbafb6>
- <200702181935.07454.bzolnier@gmail.com>
+	Sun, 18 Feb 2007 14:01:36 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:49678 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751870AbXBRTBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 14:01:35 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: freezer problems
+Date: Sun, 18 Feb 2007 19:14:44 +0100
+User-Agent: KMail/1.9.5
+Cc: ego@in.ibm.com, akpm@osdl.org, paulmck@us.ibm.com, mingo@elte.hu,
+       vatsa@in.ibm.com, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+References: <20070214144031.GA15257@in.ibm.com> <200702181614.38315.rjw@sisk.pl> <20070218161953.GB143@tv-sign.ru>
+In-Reply-To: <20070218161953.GB143@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702181914.45757.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 Feb 2007, Bartlomiej Zolnierkiewicz wrote:
+On Sunday, 18 February 2007 17:19, Oleg Nesterov wrote:
+> On 02/18, Rafael J. Wysocki wrote:
+> >
+> > On Sunday, 18 February 2007 15:52, Oleg Nesterov wrote:
+> > > 
+> > > And now another problem: exec. de_thread() sleeps in TASK_UNINTERRUPTIBLE
+> > > waiting for all sub-threads to die, and we have the same "deadlock" if
+> > > one of them is frozen. This is nasty. Probably we can change the ->state
+> > > to TASK_INTERRUPTIBLE and add try_to_freeze(), or play with the new PF_
+> > > flag, but I am not sure it is safe to freeze() the task which is deep
+> > > in the exec() path.
+> > 
+> > Hm, I haven't been aware of this case.
+> > 
+> > Well, probably we can do something like in the patch that I've just sent: the
+> > child that enters the refrigerator should know that the parent is
+> > uninterruptible and will wait for it to exit.  Thus it can either mark the
+> > parent as frozen or just exit the refrigerator without freezing itself.
+> 
+> Sub-thread could already sleep in refrigerator when another thread does exec.
+> So we have no choice but somehow freeze the execer. But again, I don't know
+> if it is safe to freeze it here, at de_thread() stage. It is called from
+> load_xxx_binary(), we may hold some important locks...
 
-> Hi,
->
-> Would it be possible to get this patch merged
-> (or at least DEPRECATED part of it)?
->
-> I think that the patch is useful and that the distinction between
-> DEPRECATED and OBSOLETE options is quite clear:
->
-> * DEPRECATED == new better code is available, old code scheduled for removal
->
-> * OBSOLETE == no replacement yet but the code is broken by design
->   and unreliable, not scheduled for removal yet (BTW Robert, I think
->   CONFIG_OBSOLETE should also be "default y", at least initially)
+So it probably isn't safe.
 
-for the most part, that doesn't matter to me one way or the other but,
-personally, i'd make obsolete kernel features default to "n".  after
-all, if someone has gone to the trouble to actually make that config
-option *depend* on OBSOLETE, that's a powerful argument that you
-should have to work a bit to get it back again. :-)
+Rafael
 
-but i'm good either way.
-
-rday
-
-p.s.  for people who missed it the first time, a record of the initial
-discussion is here:
-
-  http://kerneltrap.org/node/7593
