@@ -1,96 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750766AbXBRRN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751281AbXBRRQJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750766AbXBRRN6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 12:13:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750819AbXBRRN6
+	id S1751281AbXBRRQJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 12:16:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbXBRRQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 12:13:58 -0500
-Received: from mx2.suse.de ([195.135.220.15]:42886 "EHLO mx2.suse.de"
+	Sun, 18 Feb 2007 12:16:09 -0500
+Received: from scrub.xs4all.nl ([194.109.195.176]:59009 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750766AbXBRRN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 12:13:57 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: Re: e2b2rom_init_one():  Unable to register resource
-Date: Sun, 18 Feb 2007 18:13:38 +0100
-User-Agent: KMail/1.9.5
-Cc: Dan Aloni <da-x@monatomic.org>,
-       linux-kernel-list <linux-kernel@vger.kernel.org>, dwmw2@infradead.org
-References: <20070217212918.GA26554@localdomain> <20070218104222.GC10865@cvg>
-In-Reply-To: <20070218104222.GC10865@cvg>
+	id S1751281AbXBRRQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 12:16:08 -0500
+Date: Sun, 18 Feb 2007 18:16:00 +0100 (CET)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Kumar Gala <galak@kernel.crashing.org>
+cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: kbuild question
+In-Reply-To: <9AF725F4-FE65-4357-B7EB-CC03808C105D@kernel.crashing.org>
+Message-ID: <Pine.LNX.4.64.0702181811220.14457@scrub.home>
+References: <930B9C2E-DCE3-4E9E-AA6B-2C58E16736B2@kernel.crashing.org>
+ <Pine.LNX.4.64.0702161121540.14458@scrub.home>
+ <9AF725F4-FE65-4357-B7EB-CC03808C105D@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702181813.38814.ak@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[adding mtd maintainer]
+Hi,
 
-On Sunday 18 February 2007 11:42, Cyrill Gorcunov wrote:
-> On Sat, Feb 17, 2007 at 11:29:19PM +0200, Dan Aloni wrote:
-> | Hello,
-> | 
-> | I'm running the x86_64 arch of Linux 2.6.20 on a Supermicro X6DH8-XG2 
-> | board and I got this during boot:
-> | 
-> | [248660.950695] device id = 2440
-> | [248660.950699] device id = 2480
-> | [248660.950703] device id = 24c0
-> | [248660.950706] device id = 24d0
-> | [248660.950709] matched device = 24d0
-> | [248660.950712] matched device id 24d0
-> | [248660.950716] pci_read_config_byte : 4
-> | [248660.950723] esb2rom: esb2rom_init_one(): Unable to register resource 
-> | 0xffffffffffc00000-0xffffffff - kernel bug?
-> | [248660.950729] esb2rom: ioremap(ffffffffffc00000, 100400000) failed
-> | [248660.956859] retVal = -19
-> | 
-> | Looks like some kind of a 64-bit portability bug...
-> | 
-> | -- 
-> | Dan Aloni
-> | XIV LTD, http://www.xivstorage.com
-> | da-x (at) monatomic.org, dan (at) xiv.co.il
-> | -
-> | To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> | the body of a message to majordomo@vger.kernel.org
-> | More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> | Please read the FAQ at  http://www.tux.org/lkml/
-> | 
+On Fri, 16 Feb 2007, Kumar Gala wrote:
+
+> > Could you please be more specific about the problem you're trying to
+> > solve, instead of how you're trying to solve it?
+> > A real example would help a lot to understand the actual problem.
 > 
-> Hi,
+> Sure, on powerpc for some of the embedded sub-architectures you can only
+> select a single board to build for.  For a lot of people this is sufficient,
+> however we are moving towards a world where you can easily build in support
+> for multiple boards into a single kernel.
 > 
-> here is a patch attached to the mail. You may test it. Actually
-> I have no 64bit machine to test it and I'm worried about the
-> patch accuracy. So be carefull testing it. I sent a copy of the
-> message to Andi Kleen (who is a maintainer of X86-64 port) may be
-> we should wait for its answer ;)
+> I'd like to have it such that if I'm only building support for one board
+> (CONFIG_ONLY_HAVE_ONE, not going to call it that, but for this discussion its
+> sufficient), you get a choice menu from Kconfig enforcing the ability to only
+> select one board.  However if !CONFIG_ONLY_HAVE_ONE than you can select
+> multiple boards to build into your kernel.
+> 
+> if CONFIG_ONLY_HAVE_ONE is set we can optimize out the runtime checks that get
+> added for handling the multiple board case.
 
-Making window->phys u32 seems like a cleaner fix.
-(untested) 
+On m68k we have the same problem, but what I'm what I'm considering is to 
+add a new mode for choice groups - at least one must be selected and 
+kconfig generates the extra information if only one is selected.
 
--Andi
-
-Fix 64bit arithmetic bug in esb2rom.c 
-
-Index: linux/drivers/mtd/maps/esb2rom.c
-===================================================================
---- linux.orig/drivers/mtd/maps/esb2rom.c
-+++ linux/drivers/mtd/maps/esb2rom.c
-@@ -95,8 +95,8 @@
- 
- struct esb2rom_window {
- 	void __iomem* virt;
--	unsigned long phys;
--	unsigned long size;
-+	u32 phys;
-+	u32 size;
- 	struct list_head maps;
- 	struct resource rsrc;
- 	struct pci_dev *pdev;
-
-
+bye, Roman
