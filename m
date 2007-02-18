@@ -1,100 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751246AbXBRPEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751265AbXBRPFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751246AbXBRPEW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 10:04:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbXBRPEW
+	id S1751265AbXBRPFQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 10:05:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbXBRPFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 10:04:22 -0500
-Received: from mail.screens.ru ([213.234.233.54]:35062 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751246AbXBRPEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 10:04:22 -0500
-Date: Sun, 18 Feb 2007 18:06:52 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ego@in.ibm.com, akpm@osdl.org, paulmck@us.ibm.com, mingo@elte.hu,
-       vatsa@in.ibm.com, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC PATCH(Experimental) 0/4] Freezer based Cpu-hotplug
-Message-ID: <20070218150652.GB80@tv-sign.ru>
-References: <20070214144031.GA15257@in.ibm.com> <200702181132.41264.rjw@sisk.pl> <20070218113259.GB100@tv-sign.ru> <200702181312.24633.rjw@sisk.pl>
+	Sun, 18 Feb 2007 10:05:16 -0500
+Received: from hancock.steeleye.com ([71.30.118.248]:56217 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751265AbXBRPFN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 10:05:13 -0500
+Subject: [GIT PATCH] final SCSI updates for 2.6.20
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 18 Feb 2007 09:05:08 -0600
+Message-Id: <1171811108.3423.9.camel@mulgrave.il.steeleye.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200702181312.24633.rjw@sisk.pl>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/18, Rafael J. Wysocki wrote:
->
-> On Sunday, 18 February 2007 12:32, Oleg Nesterov wrote:
-> > On 02/18, Rafael J. Wysocki wrote:
-> > >
-> > > On Sunday, 18 February 2007 00:42, Oleg Nesterov wrote:
-> > > > On 02/17, Rafael J. Wysocki wrote:
-> > > > >
-> > > > > On Saturday, 17 February 2007 22:34, Oleg Nesterov wrote:
-> > > > > > 
-> > > > > > 	static inline int is_user_space(struct task_struct *p)
-> > > > > > 	{
-> > > > > > 		return p->mm && !(p->flags & PF_BORROWED_MM);
-> > > > > > 	}
-> > > > > > 
-> > > > > > This doesn't look right. First, an exiting task has ->mm == NULL after
-> > > > > > do_exit()->exit_mm(). Probably not a problem. However, PF_BORROWED_MM
-> > > > > > check is racy without task_lock(), so we can have a false positive as
-> > > > > > well. Is it ok? We can freeze aio_wq prematurely.
-> > > > > 
-> > > > > Right now aio_wq is not freezeable (PF_NOFREEZE).
-> > > > 
-> > > > Right now yes, but we are going to change this?
-> > > 
-> > > Well, is there any more reliable (and not racy) method of differentiating
-> > > between kernel threads and user space processes?
-> > 
-> > Not that I know of. At least, we can take task_lock() to really rule out
-> > kernel threads at FREEZER_USER_SPACE stage.
-> 
-> Something like this?
+These represent the final updates, after which we'll move over into
+separated fixes for post 2.6.21 and bug fixes for rc candidates mode.
+The patches are available here:
 
-I think yes, as a first step.
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
 
-In the long term, I think it would be really nice to have CLONE_KERNEL_THREAD
-(filtered out in sys_clone). This also allows us to cleanup copy_process().
-For example, we can then introduce CLONE_UNHASHED (currently denoted as pid==0)
-and kill the ugly "int pid" copy_process's parameter.
+The short changelog is:
 
-Oleg.
+Alan Stern (3):
+       SCSI core: better initialization for sdev->scsi_level
+       scsi_proc.c: display sdev->scsi_level correctly
+       scsi_scan.c: handle bad inquiry responses
 
-> ---
->  kernel/power/process.c |    8 +++++++-
->  1 file changed, 7 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6.20-mm2/kernel/power/process.c
-> ===================================================================
-> --- linux-2.6.20-mm2.orig/kernel/power/process.c
-> +++ linux-2.6.20-mm2/kernel/power/process.c
-> @@ -8,6 +8,7 @@
->  
->  #undef DEBUG
->  
-> +#include <linux/sched.h>
->  #include <linux/smp_lock.h>
->  #include <linux/interrupt.h>
->  #include <linux/suspend.h>
-> @@ -92,7 +93,12 @@ static void cancel_freezing(struct task_
->  
->  static inline int is_user_space(struct task_struct *p)
->  {
-> -	return p->mm && !(p->flags & PF_BORROWED_MM);
-> +	int ret;
-> +
-> +	task_lock(p);
-> +	ret = p->mm && !(p->flags & PF_BORROWED_MM);
-> +	task_unlock(p);
-> +	return ret;
->  }
->  
->  static unsigned int try_to_freeze_tasks(int freeze_user_space)
+FUJITA Tomonori (1):
+       tgt: fix the user/kernel ring buffer interface
+
+James Bottomley (1):
+       aic94xx: tie driver to the major number of the sequencer firmware
+
+Linas Vepstas (1):
+       lpfc: add PCI error recovery support
+
+peter fuerst (2):
+       sgiwd93: interfacing to wd33c93
+       wd33c93: Fast SCSI with WD33C93B
+
+Richard Knutsson (1):
+       megaraid: pci_module_init to pci_register_driver
+
+Rolf Eike Beer (2):
+       scsi_transport.h should include scsi_device.h
+       aic79xx: remove extra newline from info message
+
+Sumant Patro (5):
+       megaraid_sas: update version and author info
+       megaraid_sas: return sync cache call with success
+       megaraid_sas: replace pci_alloc_consitent with dma_alloc_coherent in ioctl path
+       megaraid_sas: add bios_param in scsi_host_template
+       megaraid_sas: do not process cmds if hw_crit_error is set
+
+and the diffstat
+
+ drivers/scsi/aic7xxx/aic79xx_osm.c   |    1 
+ drivers/scsi/aic94xx/aic94xx_seq.c   |   13 +
+ drivers/scsi/aic94xx/aic94xx_seq.h   |    1 
+ drivers/scsi/lpfc/lpfc_init.c        |   97 ++++++++++
+ drivers/scsi/lpfc/lpfc_sli.c         |   12 +
+ drivers/scsi/megaraid.c              |    2 
+ drivers/scsi/megaraid/megaraid_sas.c |   90 ++++++++-
+ drivers/scsi/megaraid/megaraid_sas.h |    6 
+ drivers/scsi/scsi_proc.c             |    5 
+ drivers/scsi/scsi_scan.c             |   14 +
+ drivers/scsi/scsi_sysfs.c            |    2 
+ drivers/scsi/scsi_tgt_if.c           |    8 
+ drivers/scsi/sgiwd93.c               |    5 
+ drivers/scsi/wd33c93.c               |  321 ++++++++++++++++++++++++++---------
+ drivers/scsi/wd33c93.h               |    6 
+ include/scsi/scsi_tgt_if.h           |    3 
+ include/scsi/scsi_transport.h        |    1 
+ 17 files changed, 481 insertions(+), 106 deletions(-)
+
+James
+
 
