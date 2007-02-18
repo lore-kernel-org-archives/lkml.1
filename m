@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161109AbXBRIM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161131AbXBRINJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161109AbXBRIM3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 03:12:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161127AbXBRIM2
+	id S1161131AbXBRINJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 03:13:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161111AbXBRINI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 03:12:28 -0500
-Received: from mail-out.m-online.net ([212.18.0.9]:58019 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161109AbXBRIM2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 03:12:28 -0500
-Date: Sun, 18 Feb 2007 09:12:43 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Andrew Morton <akpm@osdl.org>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] override build timestamp
-Message-ID: <20070218081243.GA25618@aepfle.de>
-References: <20070216215213.GA10732@aepfle.de> <Pine.LNX.4.64.0702180259210.14458@scrub.home>
+	Sun, 18 Feb 2007 03:13:08 -0500
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:47066 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161132AbXBRINH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 03:13:07 -0500
+Message-ID: <45D80A94.308@drzeus.cx>
+Date: Sun, 18 Feb 2007 09:13:08 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070131)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702180259210.14458@scrub.home>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Alex Dubov <oakad@yahoo.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Recent and not-so problems with tifm_sd driver
+References: <397934.24280.qm@web36702.mail.mud.yahoo.com>
+In-Reply-To: <397934.24280.qm@web36702.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 18, Roman Zippel wrote:
+Alex Dubov wrote:
+>> I don't actually think that is what happening. The block errors tend to trail a
+>> bit behind, so the errors you are seeing are probably the result of the queue
+>> being flushed out as you remove the card. I don't see any mmc debug messages
+>> that indicate that is trying to send more mmc requests.
+> 
+> Yes, indeed - it does not issue new requests after remove. However, mmc_remove_host does not wait
+> for all issued requests to complete and it is a problem.
 
-> Hi,
-> 
-> On Fri, 16 Feb 2007, Olaf Hering wrote:
-> 
-> > Pass a timestamp to kbuild via an enviroment variable.
-> > 
-> >     TZ=UTC BUILD_TIMESTAMP=2007-01-01 make -kj O=../O vmlinux
-> > 
-> > This can be used when the kernel source is in a SCM and uname -v
-> > is supposed to give the commit date and not the package build time.
-> 
-> Is this really necessary? I don't really see the point of this.
+I don't see how that is possible. mmc_block's remove routine waits for mmcqd to
+exit, so there can't be any code still alive that has a request going. (I am
+also completely unable to reproduce this problem here).
 
-The package/kernel buildtime does not mean much, but the commit date
-gives you a way to restore the source state for a given binary.
+Add more printk:s do verify how the code in mmc_block executes.
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
