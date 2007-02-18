@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932891AbXBRFTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933101AbXBRFWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932891AbXBRFTV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 00:19:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933117AbXBRFTV
+	id S933101AbXBRFWP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 00:22:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933120AbXBRFWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 00:19:21 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53206 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932891AbXBRFTV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 00:19:21 -0500
-To: davids@webmaster.com
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: GPL vs non-GPL device drivers
-References: <MDEHLPKNGKAHNMBLJOLKKEKKBKAC.davids@webmaster.com>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Sun, 18 Feb 2007 03:15:10 -0200
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKKEKKBKAC.davids@webmaster.com> (David Schwartz's message of "Sat\, 17 Feb 2007 06\:19\:07 -0800")
-Message-ID: <orire0dp29.fsf@free.oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.93 (gnu/linux)
+	Sun, 18 Feb 2007 00:22:14 -0500
+Received: from artemis.sr.unh.edu ([132.177.249.69]:19554 "EHLO
+	artemis.sr.unh.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933101AbXBRFWO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 00:22:14 -0500
+Date: Sun, 18 Feb 2007 00:22:10 -0500 (EST)
+From: Kai Germaschewski <kai.germaschewski@unh.edu>
+X-X-Sender: kai@artemis.sr.unh.edu
+To: Tilman Schmidt <tilman@imap.cc>
+cc: Adrian Bunk <bunk@stusta.de>, Hansjoerg Lipp <hjlipp@web.de>,
+       gigaset307x-common@lists.sourceforge.net, kkeil@suse.de,
+       kai.germaschewski@gmx.de, isdn4linux@listserv.isdn4linux.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: Kbuild problem
+In-Reply-To: <45D74B46.3090602@imap.cc>
+Message-ID: <Pine.LNX.4.44.0702180017170.1150-100000@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 17, 2007, "David Schwartz" <davids@webmaster.com> wrote:
+On Sat, 17 Feb 2007, Tilman Schmidt wrote:
 
->> On Saturday 17 February 2007 03:42, David Schwartz wrote:
->> 
->> > Again, see Lexmark v. Static Controls. If "make a toner cartridge
->> > that works with a particular Lexmark printer" is a functional
->> > idea, why is "make a graphics driver that works with a particular
->> > Linux kernel" not? What is the difference you think matters?
+> Alright, then so be it. But that raises another question:
+> asyncdata.o is only needed for M105 and M101, not for the base
+> driver. How do I express in Kbuild that asyncdata.o is to be added
+> to gigaset-y only if CONFIG_GIGASET_M105 and CONFIG_GIGASET_M101
+> are not both 'n'?
 
->> That you cannot build such modules without integrating parts of
->> actual Linux kernel code (via #includes etc), whereas you can build
->> compatible toner cartridges without using any original component.
+The way this is typically done is via Kconfig. Add a config option 
+ASYNCDATA (actually something more descriptive/specific would be better), 
+add a "select ASYNCDATA" to the config options for m101 and m105, and then 
+you can use CONFIG_ASYNCDATA to decide whether to add asyncdata.o in the 
+Makefile.
 
-> Static Controls actually put a copy of Lexmark's 'Toner Loading Program' on
-> each compatible cartridge they made. The printer actually copies the TLP off
-> the cartridge. In other words, to make a compatible catridge, you do have to
-> use an original component. (Or at least, it's much more difficult not to.)
+--Kai
 
-Besides, you *can* build a module for Linux without using any kernel
-code.  It just takes a lot of work to implement all you'd otherwise
-need from the kernel in a clean-room fashion.
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
