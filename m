@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752198AbXBRVoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752231AbXBRVzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752198AbXBRVoa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 16:44:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752197AbXBRVoa
+	id S1752231AbXBRVzn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 16:55:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbXBRVzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 16:44:30 -0500
-Received: from mail.screens.ru ([213.234.233.54]:56915 "EHLO mail.screens.ru"
+	Sun, 18 Feb 2007 16:55:43 -0500
+Received: from ns.suse.de ([195.135.220.2]:35927 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752192AbXBRVoO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 16:44:14 -0500
-Date: Mon, 19 Feb 2007 00:44:15 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] drivers/media/video/cpia_pp.c: don't use _WORK_NAR
-Message-ID: <20070218214415.GA4232@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752228AbXBRVzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 16:55:43 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Zwane Mwaikambo <zwane@infradead.org>
+Subject: Re: [PATCH] Don't probe for DDC on VBE1.2
+Date: Sun, 18 Feb 2007 22:53:10 +0100
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Tobias Hain <tobias.hain@gmx.de>, "H. Peter Anvin" <hpa@zytor.com>
+References: <Pine.LNX.4.64.0702132145460.28458@montezuma.fsmlabs.com> <20070216102206.343e0b0d.akpm@linux-foundation.org> <Pine.LNX.4.64.0702170024270.11321@montezuma.fsmlabs.com>
+In-Reply-To: <Pine.LNX.4.64.0702170024270.11321@montezuma.fsmlabs.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Message-Id: <200702182253.10423.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pp_cam_entry->cb_task need not to be _NOAUTOREL ... because in fact it is
-never used ???
+On Saturday 17 February 2007 09:35, Zwane Mwaikambo wrote:
+> On Fri, 16 Feb 2007, Andrew Morton wrote:
+> 
+> > On Fri, 16 Feb 2007 06:39:45 -0800 (PST) Zwane Mwaikambo <zwane@infradead.org> wrote:
+> > 
+> > > On Thu, 15 Feb 2007, Andrew Morton wrote:
+> > > 
+> > > > It's not an X problem - the screen is black immediately upon loading the
+> > > > kernel.
+> > > > 
+> > > > But I guess you knew that and you're just after display info:
+> > > > http://userweb.kernel.org/~akpm/Xorg.0.log.txt
+> > > 
+> > > Thanks, the X log told me your VBE version. I tried to reproduce it on my 
+> > > thinkpad which seems to have a very similar video setup to no avail, Could 
+> > > you test the following on the VAIO? If this isn't the case, i suspect i'm 
+> > > corrupting your modelist.
+> > 
+> > It's still all black.
+> 
+> Ok it looks like i was corrupting the modelist. The following should take 
+> care of your VAIO, but i haven't tested the failure case as Tobias is away 
+> this weekend.
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+I merged this version of the patch now. Still needs some x86-64 testing
+I guess (any volunteers?), although I don't expect much trouble
+because the early boot code is very similar.
 
---- WQ/drivers/media/video/cpia_pp.c~3_cpia_pp	2006-12-17 19:06:40.000000000 +0300
-+++ WQ/drivers/media/video/cpia_pp.c	2007-02-19 00:27:41.000000000 +0300
-@@ -141,7 +141,6 @@ static void cpia_pp_run_callback(struct 
- 	cam = container_of(work, struct pp_cam_entry, cb_task);
- 	cb_func = cam->cb_func;
- 	cb_data = cam->cb_data;
--	work_release(work);
- 
- 	cb_func(cb_data);
- }
-@@ -682,7 +681,7 @@ static int cpia_pp_registerCallback(void
- 	if(cam->port->irq != PARPORT_IRQ_NONE) {
- 		cam->cb_func = cb;
- 		cam->cb_data = cbdata;
--		INIT_WORK_NAR(&cam->cb_task, cpia_pp_run_callback);
-+		INIT_WORK(&cam->cb_task, cpia_pp_run_callback);
- 	} else {
- 		retval = -1;
- 	}
+-Andi
 
+> 
