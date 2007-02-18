@@ -1,67 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751254AbXBROzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751246AbXBRPEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751254AbXBROzg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 09:55:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751251AbXBROzg
+	id S1751246AbXBRPEW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 10:04:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbXBRPEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 09:55:36 -0500
-Received: from hancock.steeleye.com ([71.30.118.248]:56171 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751244AbXBROzf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 09:55:35 -0500
-Subject: Re: Which architectures need to sync vmalloc mappings between
-	processes?
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: linux-arch@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <45D7E438.4020902@goop.org>
-References: <45D7E438.4020902@goop.org>
-Content-Type: text/plain
-Date: Sun, 18 Feb 2007 08:55:31 -0600
-Message-Id: <1171810531.3423.5.camel@mulgrave.il.steeleye.com>
+	Sun, 18 Feb 2007 10:04:22 -0500
+Received: from mail.screens.ru ([213.234.233.54]:35062 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751246AbXBRPEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 10:04:22 -0500
+Date: Sun, 18 Feb 2007 18:06:52 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ego@in.ibm.com, akpm@osdl.org, paulmck@us.ibm.com, mingo@elte.hu,
+       vatsa@in.ibm.com, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC PATCH(Experimental) 0/4] Freezer based Cpu-hotplug
+Message-ID: <20070218150652.GB80@tv-sign.ru>
+References: <20070214144031.GA15257@in.ibm.com> <200702181132.41264.rjw@sisk.pl> <20070218113259.GB100@tv-sign.ru> <200702181312.24633.rjw@sisk.pl>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702181312.24633.rjw@sisk.pl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-02-17 at 21:29 -0800, Jeremy Fitzhardinge wrote:
-> I'm looking at making all architectures export a vmalloc_sync_all()
-> function, so that generic code can be sure that a particular vmalloc
-> mapping is present in all address spaces.   I need this to implement a
-> function to reserve a chunk of vmalloc address space complete with
-> constructed pagetables, but without allocating any actual data pages.
+On 02/18, Rafael J. Wysocki wrote:
+>
+> On Sunday, 18 February 2007 12:32, Oleg Nesterov wrote:
+> > On 02/18, Rafael J. Wysocki wrote:
+> > >
+> > > On Sunday, 18 February 2007 00:42, Oleg Nesterov wrote:
+> > > > On 02/17, Rafael J. Wysocki wrote:
+> > > > >
+> > > > > On Saturday, 17 February 2007 22:34, Oleg Nesterov wrote:
+> > > > > > 
+> > > > > > 	static inline int is_user_space(struct task_struct *p)
+> > > > > > 	{
+> > > > > > 		return p->mm && !(p->flags & PF_BORROWED_MM);
+> > > > > > 	}
+> > > > > > 
+> > > > > > This doesn't look right. First, an exiting task has ->mm == NULL after
+> > > > > > do_exit()->exit_mm(). Probably not a problem. However, PF_BORROWED_MM
+> > > > > > check is racy without task_lock(), so we can have a false positive as
+> > > > > > well. Is it ok? We can freeze aio_wq prematurely.
+> > > > > 
+> > > > > Right now aio_wq is not freezeable (PF_NOFREEZE).
+> > > > 
+> > > > Right now yes, but we are going to change this?
+> > > 
+> > > Well, is there any more reliable (and not racy) method of differentiating
+> > > between kernel threads and user space processes?
+> > 
+> > Not that I know of. At least, we can take task_lock() to really rule out
+> > kernel threads at FREEZER_USER_SPACE stage.
 > 
-> On i386 with PAE, this is not necessary because the kernel's mappings
-> are shared between all processes anyway, so it would be a no-op.  
-> However, non-PAE i386 has a separate kernel mapping for each process,
-> and so needs to sync them - typically lazily on faults, but
-> vmalloc_sync_all exists to allow mass syncing when required.
+> Something like this?
+
+I think yes, as a first step.
+
+In the long term, I think it would be really nice to have CLONE_KERNEL_THREAD
+(filtered out in sys_clone). This also allows us to cleanup copy_process().
+For example, we can then introduce CLONE_UNHASHED (currently denoted as pid==0)
+and kill the ugly "int pid" copy_process's parameter.
+
+Oleg.
+
+> ---
+>  kernel/power/process.c |    8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
 > 
-> What other architectures would require syncing of vmalloc mappings, and
-> what architectures would implement it as a no-op?
-
-Er, but there are fundamental assumptions that vmalloc_sync_all() makes
-that simply aren't true on other architectures.  Really, it's an
-artifact of the Intel x86 processor's inability to flush by %cr3, so we
-try to keep the kernel mappings alive in a process so that a sys call
-and return doesn't do a full TLB flush ... and thus, because we have a
-hidden piece of kernel in userspace, we get the HIGHMEM issues.
-
-A substantial number of other architectures do have a selective TLB
-flush, so a lot operate with a fully separated kernel and user space,
-and thus vmalloc mappings appear only in the single kernel address space
-and nowhere else.
-
-Could you elaborate on exactly what you think you need
-vmalloc_sync_all() exported for ... your explanation of a reserved
-vmalloc range sounds reasonable, but should in no way depend on
-vmalloc_sync_all().  It really sounds like this should be an arch
-specific function so the architectures can decide the implementation
-details.
-
-James
-
+> Index: linux-2.6.20-mm2/kernel/power/process.c
+> ===================================================================
+> --- linux-2.6.20-mm2.orig/kernel/power/process.c
+> +++ linux-2.6.20-mm2/kernel/power/process.c
+> @@ -8,6 +8,7 @@
+>  
+>  #undef DEBUG
+>  
+> +#include <linux/sched.h>
+>  #include <linux/smp_lock.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/suspend.h>
+> @@ -92,7 +93,12 @@ static void cancel_freezing(struct task_
+>  
+>  static inline int is_user_space(struct task_struct *p)
+>  {
+> -	return p->mm && !(p->flags & PF_BORROWED_MM);
+> +	int ret;
+> +
+> +	task_lock(p);
+> +	ret = p->mm && !(p->flags & PF_BORROWED_MM);
+> +	task_unlock(p);
+> +	return ret;
+>  }
+>  
+>  static unsigned int try_to_freeze_tasks(int freeze_user_space)
 
