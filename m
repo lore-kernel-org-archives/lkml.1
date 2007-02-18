@@ -1,128 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030402AbXBRHpG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161097AbXBRHzH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030402AbXBRHpG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 02:45:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030410AbXBRHpG
+	id S1161097AbXBRHzH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 02:55:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161086AbXBRHzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 02:45:06 -0500
-Received: from fmx13.freemail.hu ([195.228.245.63]:38663 "HELO
-	fmx13.freemail.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1030402AbXBRHpE convert rfc822-to-8bit (ORCPT
+	Sun, 18 Feb 2007 02:55:06 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:11699 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161097AbXBRHzF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 02:45:04 -0500
-Date: Sun, 18 Feb 2007 08:45:00 +0100 (CET)
-From: =?ISO-8859-2?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-Subject: Re: [PATCH] input: extend EV_LED
-To: Richard Purdie <rpurdie@rpsys.net>
-cc: Pavel Machek <pavel@ucw.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-In-Reply-To: <1171580944.5839.38.camel@localhost.localdomain>
-Message-ID: <freemail.20070118084500.15225@fm07.freemail.hu>
-X-Originating-IP: [80.98.105.91]
-X-HTTP-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.7.12) Gecko/20050920
+	Sun, 18 Feb 2007 02:55:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=r6KibbmG4i0EL7FMpku/wsFr8qqNY/gch0XVqPpOl724oJXsxuUju8UKQsII8RpN2ITC61KPXwc4gFFJpq5UOoI2olOFPsOyvRyjk1ZUS/MJyPbQ6afdH/Hz9ow0kQwWZ341ieRfIF4r+lQXNEn/gZu1aAwSUdMSKMtISUwBhiw=
+Date: Sun, 18 Feb 2007 10:52:09 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Dan Aloni <da-x@monatomic.org>
+Cc: Lew Glendenning <lglendenning@lnxi.com>,
+       linux-kernel-list <linux-kernel@vger.kernel.org>
+Subject: Re: e2b2rom_init_one():  Unable to register resource
+Message-ID: <20070218075209.GA10865@cvg>
+References: <20070217212918.GA26554@localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-2
-Content-Transfer-Encoding: 8BIT
-X-Freemail: message scanned
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070217212918.GA26554@localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Feb 17, 2007 at 11:29:19PM +0200, Dan Aloni wrote:
+| Hello,
+| 
+| I'm running the x86_64 arch of Linux 2.6.20 on a Supermicro X6DH8-XG2 
+| board and I got this during boot:
+| 
+| [248660.950695] device id = 2440
+| [248660.950699] device id = 2480
+| [248660.950703] device id = 24c0
+| [248660.950706] device id = 24d0
+| [248660.950709] matched device = 24d0
+| [248660.950712] matched device id 24d0
+| [248660.950716] pci_read_config_byte : 4
+| [248660.950723] esb2rom: esb2rom_init_one(): Unable to register resource 
+| 0xffffffffffc00000-0xffffffff - kernel bug?
+| [248660.950729] esb2rom: ioremap(ffffffffffc00000, 100400000) failed
+| [248660.956859] retVal = -19
+| 
+| Looks like some kind of a 64-bit portability bug...
+| 
+| -- 
+| Dan Aloni
+| XIV LTD, http://www.xivstorage.com
+| da-x (at) monatomic.org, dan (at) xiv.co.il
+| -
+| To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+| the body of a message to majordomo@vger.kernel.org
+| More majordomo info at  http://vger.kernel.org/majordomo-info.html
+| Please read the FAQ at  http://www.tux.org/lkml/
+| 
 
-On Fri, 16 Feb 2007, Henrique de Moraes Holschuh wrote:
-> On Thu, 15 Feb 2007, Richard Purdie wrote:
-> > This has been discussed in several places several times.
-The problem
-> > with hardware accelerated flashing is that you're are
-often limited to
-> > certain constraints (this case being no exception) and
-indicating what
-> > these are to userspace in a generic fashion is difficult.
-> 
-> The hability to blinking at one rate is *very* common on
-laptops.  Blinking
-> at a few discrete rates is also common enough.  They
-should be supported in
-> a generic way.
-> [...]
-> Here's a suggestion for a simple, non-overengineered
-interface: a "blink"
-> attribute (on/off) for leds which can hardware-blink. 
-Only one blink
-> frequency is common enough that this attribute by itself
-is very useful
-> (e.g. it is all a ThinkPad and most WiFi/network card leds
-need).
-> 
-> For hardware-blink leds with various frequencies, there is
-the typical way
-> to provide such things: give us a RO
-blink_available_frequencies attribute
-> which says which discrete frequencies are allowed (space
-separated), and a
-> RW blink_frequency attribute to set the frequency.  If
-instead of
-> blink_available_frequencies, the driver provides RO
-blink_frequency_min and
-> _max attributes, then it means it can blink on that range
-of freqs.
-> 
-> That is simple enough to implement and use, and generic
-enough.  You just
-> need to set in stone if you want the freq in Hz, or a
-submultiple.  You can
-> even implement an optional "blink" software emulation that
-drivers can hook
-> into for systems where the driver *knows* that led access
-is fast, but there
-> is no hardware blinking emulation.
-> 
+Hi Dan,
 
-A blinking led is basically a PWM (Pulse Width Modulation)
-signal. A PWM signal has three different attribute. The
-first one is the amplitude, this attribute is already
-provided by the led subsystem as "brightness". There are two
-more attributes, which are the frequency [Hz] and the duty
-cycle [%], or the on-time [ms] and off-time [ms].
+I think that is not 64-bit portability bug and the code should be
+reviewed by Lew Glendenning (who wrote it). I'm sending a copy of
+the message to Lew and hope he'll check the code ;)
 
-The frequency [Hz] and duty cycle [%] parameters has the
-problem, that if we are limited to integers, it is not
-possible to express slower blinks than 1Hz. We could also
-use [mHz] (milli-Hertz), but it is not very common unit.
+P.S. (for Lew)
+	Lew, I think window->phys in esb2rom_init_one() remains in zero
+	and then sets it to 0xffffffffffc00000 after 
 
-The on-time [ms] and off-time [ms] seems to be easier to
-handle (and this is also easier to simulate from software if
-ever needed). An RO attribute could be introduced:
-'pwm_available', which can contain parameter pairs separated
-by space, and the new parameter pair is in new line. An RW
-attribute 'pwm' could accept a parameter pair separated by
-space.
+		window->phys -= 0x400000UL
 
-A range could be also given in 'pwm_available', like this:
-'500-1000 500-1000'. This has the limitation that if there
-is a hardware which can blink a LED in differet freqencies,
-but only with fixed 50% duty cycle, the on-time off-time
-pair cannot express this range easily.
+	May be something wrong with word returned at pci_read_config_word()?
 
-My real-world example would be my Clevo D4J (D410J)
-notebook's mail led. It has three known state: off, PWM at
-1Hz (50%), PWM at 0.5Hz (50%). In case the on-time [ms]
-off-time [ms] parameter pairs are used:
-
-$ cat pwm_available
-500 500
-1000 1000
-
-What is your opinion?
-Is there more real-world hardware accelerated blinking LED
-parameter examples?
-
-        NMarci
-
-
-
-__________________________________________________________________________
-Kedvezõ tandíjak, különleges kedvezmények és magas szintû szolgáltatások. 
-Ez az Educomm online nyelviskola és az egyedülálló EDUCATOR. Kattints ide!
-http://ad.adverticum.net/b/cl,1,6022,131839,203066/click.prm
-
+		Cyrill
 
