@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751835AbXBRS37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751863AbXBRS55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751835AbXBRS37 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 13:29:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751829AbXBRS37
+	id S1751863AbXBRS55 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 13:57:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbXBRS55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 13:29:59 -0500
-Received: from mailhub.fokus.fraunhofer.de ([193.174.154.14]:32992 "EHLO
-	mailhub.fokus.fraunhofer.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751831AbXBRS36 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 13:29:58 -0500
-Date: Sun, 18 Feb 2007 19:27:23 +0100
-From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
-To: stern@rowland.harvard.edu, dougg@torque.net
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       James.Bottomley@steeleye.com
-Subject: Re: [PATCH] Block layer: separate out queue-oriented ioctls
-Message-ID: <45d89a8b.QpxTpRwQB4A12sQN%Joerg.Schilling@fokus.fraunhofer.de>
-References: <Pine.LNX.4.44L0.0702181124450.6341-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0702181124450.6341-100000@netrider.rowland.org>
-User-Agent: nail 11.22 3/20/05
+	Sun, 18 Feb 2007 13:57:57 -0500
+Received: from mail.gmx.net ([213.165.64.20]:41840 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751863AbXBRS5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 13:57:53 -0500
+X-Provags-ID: V01U2FsdGVkX1/gVUwR5T/gEStyxWwpLa2zZB5tAfmekf3LC6mQKA
+	MNvQ==
+From: "Tobias Hain" <tobias.hain@gmx.de>
+To: "'Zwane Mwaikambo'" <zwane@infradead.org>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>
+Cc: "'Linux Kernel'" <linux-kernel@vger.kernel.org>,
+       "'Andi Kleen'" <ak@suse.de>, "'H. Peter Anvin'" <hpa@zytor.com>
+Subject: AW: [PATCH] Don't probe for DDC on VBE1.2
+Date: Sun, 18 Feb 2007 19:57:48 +0100
+Message-ID: <000001c7538e$b1000b20$797ba8c0@broy.ad.informatik.tumuenchen.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+Thread-Index: AcdSbqYaJ+b+NUzdRmqlqXFLu+KFkgBH6erQ
+In-Reply-To: <Pine.LNX.4.64.0702170024270.11321@montezuma.fsmlabs.com>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern <stern@rowland.harvard.edu> wrote:
+> Ok it looks like i was corrupting the modelist. The following should take 
+> care of your VAIO, but i haven't tested the failure case as Tobias is away
 
-> > Alternatively the SG_GET_RESERVED_SIZE ioctl could be
-> > modified to yield no more than max_sectors*512 .
->
-> There should be one single ioctl which can be applied uniformly to all
-> CD-type devices (in fact, to all devices using a request_queue) to learn
-> max_sectors.  This rules out using SG_GET_RESERVED_SIZE.
+> this weekend.
 
-This has nothing to do with CD-type devices!
-It is related to SCSI tansport.
+Yes, this last patch also works on VBE 1.2: It skips the EDID calls, which
+would crash my system here, and consequently boots the kernel fine.
 
-> Furthermore, if you changed SG_GET_RESERVED_SIZE in this way you would 
-> only increase the confusion.  The reserved size isn't directly related to 
-> the maximum allowed DMA length, and there's no point pretending it is.  
-> What if it turns out that the reserved size is smaller than max_sectors?  
-> Then you'd force user programs to do I/O in chunks that were smaller than 
-> necessary.
+Thanks,
+tobias
 
-It would not increase confusion but reduce confusion because all
-programs would later behave correctly without the need to change them.
-
-Jörg
-
--- 
- EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
-       js@cs.tu-berlin.de                (uni)  
-       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
- URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
