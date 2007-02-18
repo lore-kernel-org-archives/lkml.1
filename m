@@ -1,148 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030326AbXBRGFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965479AbXBRGLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030326AbXBRGFl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 01:05:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030318AbXBRGFl
+	id S965479AbXBRGLY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 01:11:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965561AbXBRGLY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 01:05:41 -0500
-Received: from mail31.syd.optusnet.com.au ([211.29.132.102]:41958 "EHLO
-	mail31.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030326AbXBRGFk (ORCPT
+	Sun, 18 Feb 2007 01:11:24 -0500
+Received: from lazybastard.de ([212.112.238.170]:37222 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965479AbXBRGLX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 01:05:40 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: ck@vds.kolivas.org
-Subject: Re: [ck] Re: 2.6.20-ck1
-Date: Sun, 18 Feb 2007 17:05:33 +1100
-User-Agent: KMail/1.9.5
-Cc: "mdew." <some.nzguy@gmail.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <200702162110.03355.kernel@kolivas.org> <1c1c86360702171814m35265b01pe391df87d5f9db76@mail.gmail.com> <cone.1171766339.618918.14587.501@kolivas.org>
-In-Reply-To: <cone.1171766339.618918.14587.501@kolivas.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sun, 18 Feb 2007 01:11:23 -0500
+Date: Sun, 18 Feb 2007 05:59:37 +0000
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Sorin Faibish <sfaibish@emc.com>
+Cc: Bill Davidsen <davidsen@tmr.com>,
+       Juan Piernas Canovas <piernas@ditec.um.es>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [ANNOUNCE] DualFS: File System with Meta-data and Data Separation
+Message-ID: <20070218055936.GF301@lazybastard.org>
+References: <Pine.LNX.4.61.0702142251460.19368@yvahk01.tjqt.qr> <Pine.LNX.4.61.0702151910370.19998@ditec.inf.um.es> <20070215200922.GB24643@lazybastard.org> <Pine.LNX.4.61.0702152353060.19998@ditec.inf.um.es> <20070216091321.GA28092@lazybastard.org> <45D642A4.5010009@tmr.com> <20070217151108.GA301@lazybastard.org> <45D7450F.6090309@tmr.com> <20070217183646.GE301@lazybastard.org> <op.tnwuonh3rwwil4@muki-1mj5c5mxes>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200702181705.34231.kernel@kolivas.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <op.tnwuonh3rwwil4@muki-1mj5c5mxes>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 18 February 2007 13:38, Con Kolivas wrote:
-> mdew . writes:
-> > On 2/16/07, Con Kolivas <kernel@kolivas.org> wrote:
-> >> This patchset is designed to improve system responsiveness and
-> >> interactivity. It is configurable to any workload but the default -ck
-> >> patch is aimed at the desktop and -cks is available with more emphasis
-> >> on serverspace.
-> >>
-> >> Apply to 2.6.20
-> >
-> > any benchmarks for 2.6.20-ck vs 2.6.20?
+On Sat, 17 February 2007 15:47:01 -0500, Sorin Faibish wrote:
 >
-> Would some -ck user on the mailing list like to perform a set of interbench
-> benchmarks? They're pretty straight forward to do; see:
->
-> http://interbench.kolivas.org
+> DualFS can probably get around this corner case as it is up to the user
+> to select the size of the MD device size. If you want to prevent this
+> corner case you can always use a device bigger than 10% of the data device
+> which is exagerate for any FS assuming that the directory files are so
+> large (this is when you have billions of files with long names).
+> In general the problem you mention is mainly due to the data blocks
+> filling the file system. In DualFS case you have the choice of selecting
+> different sizes for the MD and Data volume. When Data volume gets full
+> the GC will have a problem but the MD device will not have a problem.
+> It is my understanding that most of the GC problem you mention is
+> due to the filling of the FS with data and the result is a MD operation
+> being disrupted by the filling of the FS with data blocks. As about the
+> performance impact on solving this problem, as you mentioned all
+> journal FSs will have this problem, I am sure that DualFS performance
+> impact will be less than others at least due to using only one MD
+> write instead of 2.
 
-I couldn't take down any lower power machine for these benchmarks... A lower 
-power single cpu machine would be better for this. Feel free to throw any 
-other benchmarks at it.
+You seem to make the usual mistakes when people start to think about
+this problem.  But I could misinterpret you, so let me paraphrase your
+mail in questions and answer what I believe you said.
 
-This core2 duo 2.4 GHz with 2GB ram and 7200 rpm 16MB cache hard drive is not 
-too discrimanatory, but here are the results (use fixed font to see):
+Q: Are journaling filesystems identical to log-structured filesystems?
 
-Using 2392573 loops per ms, running every load for 30 seconds
-Benchmarking kernel 2.6.20 at datestamp 200702181608
+Not quite.  Journaling filesystems usually have a very small journal (or
+log, same thing) and only store the information necessary for atomic
+transactions in the journal.  Not sure what a "journal FS" is, but the
+name seems closer to a journaling filesystem.
 
---- Benchmarking simulated cpu of Audio in the presence of simulated ---
-Load	Latency +/- SD (ms)  Max Latency   % Desired CPU  % Deadlines Met
-None	  0.002 +/- 0.00329    0.006		 100	        100
-Video	  0.002 +/- 0.00356     0.01		 100	        100
-X	  0.007 +/- 0.0819         2		 100	        100
-Burn	  0.002 +/- 0.00335    0.005		 100	        100
-Write	  0.105 +/- 1.55        35.5		 100	        100
-Read	  0.006 +/- 0.00707    0.014		 100	        100
-Compile	  0.312 +/- 5.61         135		99.8	       99.8
-Memload	   0.01 +/- 0.037       0.72		 100	        100
+Q: DualFS seperates Data and Metadata.  Does that make a difference?
 
---- Benchmarking simulated cpu of Video in the presence of simulated ---
-Load	Latency +/- SD (ms)  Max Latency   % Desired CPU  % Deadlines Met
-None	  0.004 +/- 0.00431    0.017		 100	        100
-X	  0.006 +/- 0.00608    0.013		 100	        100
-Burn	  0.003 +/- 0.00392    0.012		 100	        100
-Write	  0.097 +/- 3.44         144		99.8	       99.8
-Read	  0.005 +/- 0.00523    0.013		 100	        100
-Compile	  0.059 +/- 1.2         36.7		99.8	       99.8
-Memload	   0.01 +/- 0.0767      1.85		 100	        100
+Not really.  What I called "data" in my previous mail is a
+log-structured filesystems view of data.  DualFS stored file content
+seperately, so from an lfs view, that doesn't even exist.  But directory
+content exists and behaves just like file content wrt. the deadlock
+problem.  Any data or metadata that cannot be GC'd by simply copying but
+requires writing further information like indirect blocks, B-Tree nodes,
+etc. will cause the problem.
 
---- Benchmarking simulated cpu of X in the presence of simulated ---
-Load	Latency +/- SD (ms)  Max Latency   % Desired CPU  % Deadlines Met
-None	  0.056 +/- 0.379          3		98.4	       96.7
-Video	  0.033 +/- 0.258          2		98.7	       97.7
-Burn	      0 +/- 0              0		 100	        100
-Write	  0.051 +/- 0.67        11.2		99.3	         99
-Read	  0.053 +/- 0.384          3		  98	       96.7
-Compile	  0.139 +/- 2.29          39		  99	       98.6
-Memload	  0.166 +/- 2.25          39		98.1	       97.1
+Q: If the user simply reserves some extra space, does the problem go
+away?
 
---- Benchmarking simulated cpu of Gaming in the presence of simulated ---
-Load	Latency +/- SD (ms)  Max Latency   % Desired CPU
-None	  0.551 +/- 0.553      0.665		99.5
-Video	  0.594 +/- 0.596      0.656		99.4
-X	  0.019 +/- 0.317       5.49		 100
-Burn	    179 +/- 186          193		35.9
-Write	   1.16 +/- 5.87        69.2		98.9
-Read	  0.876 +/- 0.884       1.31		99.1
-Compile	    193 +/- 209          499		34.1
-Memload	   1.11 +/- 1.59        15.3		98.9
+Definitely not.  It will be harder to hit, but a rare deadlock is still
+a deadlock.  Again, this is only concerned with the log-structured part
+of DualFS, so we can ignore the Data volume.
 
+When data is spread perfectly across all segments, the best segment one
+can pick for GC is just as bad as the worst.  So let us take some
+examples.  If 50% of the lfs is free, you can pick a 50% segment for GC.
+Writing every single block in it may require writing one additional
+indirect block, so GC is required to write out a 100% segment.  It
+doesn't make any progress at 50% (in a worst case scenario) and could
+deadlock if less than 50% were free.
 
-Using 2392573 loops per ms, running every load for 30 seconds
-Benchmarking kernel 2.6.20-ck1 at datestamp 200702181542
+If, however, GC has to write out a singly and a doubly indirect block,
+67% of the lfs need to be free.  In general, if the maximum height of
+your tree is N, you need (N-1)/N * 100% free space.  Most people refer
+to that as "too much".
 
---- Benchmarking simulated cpu of Audio in the presence of simulated ---
-Load	Latency +/- SD (ms)  Max Latency   % Desired CPU  % Deadlines Met
-None	  0.002 +/- 0.00333    0.005		 100	        100
-Video	  0.004 +/- 0.0309     0.717		 100	        100
-X	  0.008 +/- 0.124       2.99		 100	        100
-Burn	  0.002 +/- 0.00339    0.005		 100	        100
-Write	   0.03 +/- 0.228       2.99		 100	        100
-Read	  0.005 +/- 0.00636    0.017		 100	        100
-Compile	  0.041 +/- 0.268       3.06		 100	        100
-Memload	   0.31 +/- 4.83         6.3		 100	        100
+If you have less free space, the filesystem will work just fine "most of
+the time".  That is nice and cool, but it won't help your rare user that
+happens to hit the rare deadlock.  Any lfs needs a strategy to prevent
+this deadlock for good, not just make it mildly unlikely.
 
---- Benchmarking simulated cpu of Video in the presence of simulated ---
-Load	Latency +/- SD (ms)  Max Latency   % Desired CPU  % Deadlines Met
-None	  0.003 +/- 0.00383    0.014		 100	        100
-X	  0.008 +/- 0.143       5.99		 100	        100
-Burn	  0.003 +/- 0.00383    0.009		 100	        100
-Write	  0.023 +/- 0.219       4.57		 100	        100
-Read	  0.004 +/- 0.0047     0.017		 100	        100
-Compile	  0.027 +/- 0.214       3.73		 100	        100
-Memload	  0.015 +/- 0.113          3		 100	        100
-
---- Benchmarking simulated cpu of X in the presence of simulated ---
-Load	Latency +/- SD (ms)  Max Latency   % Desired CPU  % Deadlines Met
-None	      0 +/- 0.000351   0.006		 100	        100
-Video	      0 +/- 0              0		 100	        100
-Burn	      0 +/- 0.000293   0.005		 100	        100
-Write	      0 +/- 5.85e-05   0.001		 100	        100
-Read	  0.003 +/- 0.0585         1		 100	       99.7
-Compile	   0.15 +/- 1.09          14		97.3	       95.6
-Memload	      0 +/- 0.00105    0.018		 100	        100
-
---- Benchmarking simulated cpu of Gaming in the presence of simulated ---
-Load	Latency +/- SD (ms)  Max Latency   % Desired CPU
-None	      0 +/- 0              0		 100
-Video	  0.006 +/- 0.115       1.99		 100
-X	      0 +/- 0.00283    0.049		 100
-Burn	    187 +/- 225          270		34.8
-Write	   1.38 +/- 6.8         99.4		98.6
-Read	      0 +/- 0              0		 100
-Compile	    205 +/- 246          440		32.8
-Memload	  0.005 +/- 0.0295     0.282		 100
-
+Jörn
 
 -- 
--ck
+"Error protection by error detection and correction."
+-- from a university class
