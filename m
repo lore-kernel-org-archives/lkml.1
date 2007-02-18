@@ -1,55 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751281AbXBRRQJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751466AbXBRRQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751281AbXBRRQJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 12:16:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbXBRRQJ
+	id S1751466AbXBRRQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 12:16:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbXBRRQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 12:16:09 -0500
-Received: from scrub.xs4all.nl ([194.109.195.176]:59009 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751281AbXBRRQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 12:16:08 -0500
-Date: Sun, 18 Feb 2007 18:16:00 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Kumar Gala <galak@kernel.crashing.org>
-cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: kbuild question
-In-Reply-To: <9AF725F4-FE65-4357-B7EB-CC03808C105D@kernel.crashing.org>
-Message-ID: <Pine.LNX.4.64.0702181811220.14457@scrub.home>
-References: <930B9C2E-DCE3-4E9E-AA6B-2C58E16736B2@kernel.crashing.org>
- <Pine.LNX.4.64.0702161121540.14458@scrub.home>
- <9AF725F4-FE65-4357-B7EB-CC03808C105D@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 18 Feb 2007 12:16:59 -0500
+Received: from smtp-100-sunday.noc.nerim.net ([62.4.17.100]:4163 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751466AbXBRRQ6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 12:16:58 -0500
+Date: Sun, 18 Feb 2007 18:17:09 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       LM Sensors <lm-sensors@lm-sensors.org>
+Subject: Re: [GIT PULL] hwmon updates for 2.6.21
+Message-Id: <20070218181709.91d56555.khali@linux-fr.org>
+In-Reply-To: <20070214212417.c61d5cfe.khali@linux-fr.org>
+References: <20070214212417.c61d5cfe.khali@linux-fr.org>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Linus,
 
-On Fri, 16 Feb 2007, Kumar Gala wrote:
+Please don't forget to pull the hwmon subsystem updates for Linux
+2.6.21 from:
 
-> > Could you please be more specific about the problem you're trying to
-> > solve, instead of how you're trying to solve it?
-> > A real example would help a lot to understand the actual problem.
-> 
-> Sure, on powerpc for some of the embedded sub-architectures you can only
-> select a single board to build for.  For a lot of people this is sufficient,
-> however we are moving towards a world where you can easily build in support
-> for multiple boards into a single kernel.
-> 
-> I'd like to have it such that if I'm only building support for one board
-> (CONFIG_ONLY_HAVE_ONE, not going to call it that, but for this discussion its
-> sufficient), you get a choice menu from Kconfig enforcing the ability to only
-> select one board.  However if !CONFIG_ONLY_HAVE_ONE than you can select
-> multiple boards to build into your kernel.
-> 
-> if CONFIG_ONLY_HAVE_ONE is set we can optimize out the runtime checks that get
-> added for handling the multiple board case.
+git://jdelvare.pck.nerim.net/jdelvare-2.6 hwmon-for-linus
 
-On m68k we have the same problem, but what I'm what I'm considering is to 
-add a new mode for choice groups - at least one must be selected and 
-kconfig generates the extra information if only one is selected.
+The merge window is closing soon and I'd like these changes to be in
+2.6.21-rc1.
 
-bye, Roman
+Thanks,
+-- 
+Jean Delvare
