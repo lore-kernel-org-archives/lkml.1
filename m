@@ -1,99 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752286AbXBRW0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752309AbXBRWfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752286AbXBRW0i (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 17:26:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbXBRW0i
+	id S1752309AbXBRWfX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 17:35:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752310AbXBRWfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 17:26:38 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:20114 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752284AbXBRW0h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 17:26:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:subject:message-id:mail-followup-to:mime-version:content-type:content-disposition:user-agent:from;
-        b=dAuRHgbTuYodAzCGBeT7r2f8qXZar2f6aFZlmQRUdfS2v9ChLtdDVXKeY4wCiv9wr0sNVBzsP5ziigVr+jNcVy6zRVcUgLVPw0eUFgYjS/5RUXa+U7/JQJZod+Bo5L4TwFETDmw94HksHNyeiqy9z0nv78rVcgGUmS3cxktwDjY=
-Date: Sun, 18 Feb 2007 23:26:19 +0100
-To: linux-kernel@vger.kernel.org
-Subject: [Patch] net/core: change hlist_for_each/hlist_entry to
-	hlist_for_each_entry
-Message-ID: <20070218222619.GA7366@unknown-00-0d-60-79-ca-00.lan>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2007-02-12)
-From: Thomas Hisch <t.hisch@gmail.com>
+	Sun, 18 Feb 2007 17:35:23 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:59502 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752307AbXBRWfX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 17:35:23 -0500
+Date: Sun, 18 Feb 2007 14:35:17 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Miles Lane" <miles.lane@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: 2.6.20-mm2 -- EIP is at __make_request+0xeb/0x2ee
+Message-Id: <20070218143517.238d7a0e.akpm@linux-foundation.org>
+In-Reply-To: <a44ae5cd0702181347l4551aaefxf083e5260ea274ce@mail.gmail.com>
+References: <a44ae5cd0702181347l4551aaefxf083e5260ea274ce@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-change occurrence of hlist_for_each/hlist_entry to hlist_for_each_entry as it
-combines the previous two macros
+On Sun, 18 Feb 2007 13:47:44 -0800 "Miles Lane" <miles.lane@gmail.com> wrote:
 
-Signed-off-by: Thomas Hisch <t.hisch@gmail.com>
----
- net/core/dev.c |   17 ++++++-----------
- 1 files changed, 6 insertions(+), 11 deletions(-)
+> It looks like there are some slight differences between the stack traces I
+> have and the ones that have already been posted.
+> I hope this helps,
+>           Miles
+> 
+> psmouse.c: TouchPad at isa0060/serio1/input0 lost synchronization, throwing
+> 1 bytes away.
+> BUG: unable to handle kernel paging request at virtual address 6b6b6b6f
+>  printing eip:
+> c01f238c
+> *pde = 00000000
+> Oops: 0000 [#1]
+> PREEMPT SMP
+> last sysfs file: /devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+> Modules linked in: ieee80211_crypt_wep binfmt_misc rfcomm l2cap bluetooth
+> ipv6 capability commoncap apm i915 drm acpi_cpufreq cpufreq_powersave
+> cpufreq_performance cpufreq_conservative video dock container button battery
+> ac nls_ascii nls_cp437 vfat fat nls_base fuse sbp2 parport_pc lp parport
+> pcmcia snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm_oss snd_mixer_oss
+> snd_pcm snd_seq_dummy snd_seq_oss snd_seq_midi snd_rawmidi
+> snd_seq_midi_event snd_seq snd_timer snd_seq_device sdhci mmc_core tifm_7xx1
+> tifm_core yenta_socket rsrc_nonstatic pcmcia_core snd soundcore ipw2200
+> ieee80211 ieee80211_crypt firmware_class rtc snd_page_alloc iTCO_wdt
+> iTCO_vendor_support shpchp pci_hotplug sg sr_mod cdrom sd_mod ohci1394
+> ieee1394 8139too mii ehci_hcd uhci_hcd usbcore thermal processor fan unix
+> CPU:    0
+> EIP:    0060:[<c01f238c>]    Not tainted VLI
+> EFLAGS: 00210297   (2.6.20-mm2 #13)
+> EIP is at __make_request+0xeb/0x2ee
 
-diff --git a/net/core/dev.c b/net/core/dev.c
-index cf71614..83c2f43 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -475,13 +475,11 @@ __setup("netdev=", netdev_boot_setup);
- struct net_device *__dev_get_by_name(const char *name)
- {
- 	struct hlist_node *p;
-+	struct net_device *dev;
- 
--	hlist_for_each(p, dev_name_hash(name)) {
--		struct net_device *dev
--			= hlist_entry(p, struct net_device, name_hlist);
-+	hlist_for_each_entry(dev, p, dev_name_hash(name), name_hlist)
- 		if (!strncmp(dev->name, name, IFNAMSIZ))
- 			return dev;
--	}
- 	return NULL;
- }
- 
-@@ -522,13 +520,11 @@ struct net_device *dev_get_by_name(const char *name)
- struct net_device *__dev_get_by_index(int ifindex)
- {
- 	struct hlist_node *p;
-+	struct net_device *dev;
- 
--	hlist_for_each(p, dev_index_hash(ifindex)) {
--		struct net_device *dev
--			= hlist_entry(p, struct net_device, index_hlist);
-+	hlist_for_each_entry(dev, p, dev_index_hash(ifindex), index_hlist)
- 		if (dev->ifindex == ifindex)
- 			return dev;
--	}
- 	return NULL;
- }
- 
-@@ -2878,6 +2874,7 @@ int register_netdevice(struct net_device *dev)
- {
- 	struct hlist_head *head;
- 	struct hlist_node *p;
-+	struct net_device *d;
- 	int ret;
- 
- 	BUG_ON(dev_boot_phase);
-@@ -2918,9 +2915,7 @@ int register_netdevice(struct net_device *dev)
- 
- 	/* Check for existence of name */
- 	head = dev_name_hash(dev->name);
--	hlist_for_each(p, head) {
--		struct net_device *d
--			= hlist_entry(p, struct net_device, name_hlist);
-+	hlist_for_each_entry(d, p, head, name_hlist) {
- 		if (!strncmp(d->name, dev->name, IFNAMSIZ)) {
- 			ret = -EEXIST;
- 			goto out;
--- 
-1.5.0-rc2.GIT
-
--- 
-Thomas Hisch
-e0625874@stud.tuwien.ac.at
+Looks fairly similar.  I guess I need to do a git-blockless -mm3 :(
