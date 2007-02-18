@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751157AbXBREB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932129AbXBRECX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751157AbXBREB3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 23:01:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbXBREB3
+	id S932129AbXBRECX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 23:02:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932231AbXBRECX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 23:01:29 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:54524 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751157AbXBREB2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 23:01:28 -0500
-Date: Sun, 18 Feb 2007 04:01:27 +0000
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PULL] audit patches
-Message-ID: <20070218040127.GA5422@ftp.linux.org.uk>
+	Sat, 17 Feb 2007 23:02:23 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43722 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932129AbXBRECW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 23:02:22 -0500
+Date: Sat, 17 Feb 2007 23:02:14 -0500
+From: Dave Jones <davej@redhat.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] sysctl: move init_irq_proc into init/main where it belongs
+Message-ID: <20070218040214.GA28143@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	"Eric W. Biederman" <ebiederm@xmission.com>
+References: <200702141700.l1EH0JWj005429@hera.kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <200702141700.l1EH0JWj005429@hera.kernel.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Misc audit patches (resend again...); the most intrusive one is AUDIT_FD_PAIR,
-allowing to log descriptor numbers from syscalls that do not return them in
-usual way (i.e. pipe() and socketpair()).  It took some massage of
-the failure exits in sys_socketpair(); the rest is absolutely trivial.
-Please, pull from
-git.kernel.org/pub/scm/linux/kernel/git/viro/audit-current.git/ audit.b37
+On Wed, Feb 14, 2007 at 05:00:19PM +0000, Linux Kernel wrote:
+ > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b04c3afb2b6e2f902b41bb62b73684d92d7e6c34
+ > Commit:     b04c3afb2b6e2f902b41bb62b73684d92d7e6c34
+ > Parent:     0e03036c97b70b2602f7dedaa3a223ed7563c2c9
+ > Author:     Eric W. Biederman <ebiederm@xmission.com>
+ > AuthorDate: Wed Feb 14 00:33:57 2007 -0800
+ > Committer:  Linus Torvalds <torvalds@woody.linux-foundation.org>
+ > CommitDate: Wed Feb 14 08:09:58 2007 -0800
+ > 
+ >     [PATCH] sysctl: move init_irq_proc into init/main where it belongs
+ >     
+ >     Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+ >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+ >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
-Al Viro (1):
-      AUDIT_FD_PAIR
+This causes an implicit declaration which broke ppc32 builds for me..
+(my builds use -Werror-implicit to catch this flaw early)
 
-Steve Grubb (2):
-      minor update to rule add/delete messages (ver 2)
-      audit config lockdown
+init/main.c: In function 'do_basic_setup':
+init/main.c:744: error: implicit declaration of function 'init_irq_proc'
 
- fs/pipe.c             |    7 ++
- include/linux/audit.h |    9 ++
- kernel/audit.c        |  216 +++++++++++++++++++++++++++++++++++-------------
- kernel/auditfilter.c  |    9 +-
- kernel/auditsc.c      |   40 +++++++++
- net/socket.c          |   52 +++++++++---
- 6 files changed, 257 insertions(+), 76 deletions(-)
+		Dave
+
+-- 
+http://www.codemonkey.org.uk
