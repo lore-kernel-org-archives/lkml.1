@@ -1,101 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993067AbXBRCzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993098AbXBRC5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993067AbXBRCzi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 21:55:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993096AbXBRCzi
+	id S2993098AbXBRC5F (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 21:57:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993109AbXBRC5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 21:55:38 -0500
-Received: from nz-out-0506.google.com ([64.233.162.225]:23627 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993067AbXBRCzh (ORCPT
+	Sat, 17 Feb 2007 21:57:04 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:58387 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993098AbXBRC5C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 21:55:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Cl4Mr+fRoMCs55BiHnRtxwV4Ru5J1Vbf3g78JPEq8qauHz/GPuqtyeVw6r7IMJ9NICKJMgGr24JctEzaHO4bdIwJmGvppAs6/3c9QvL8/J/Js4IUn+fBIQNkslbEgHM888cUUP+k3jDUDvMPjEj5yApHOwj4WDzss3zP65phRmU=
-Message-ID: <f2b55d220702171855u59e3cc47i73e4aa48d0c0968c@mail.gmail.com>
-Date: Sat, 17 Feb 2007 18:55:36 -0800
-From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: "Neil Brown" <neilb@suse.de>
-Subject: Re: GPL vs non-GPL device drivers
-Cc: davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       trent.waddington@gmail.com
-In-Reply-To: <17878.48376.629016.49202@notabene.brown>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 17 Feb 2007 21:57:02 -0500
+Date: Sat, 17 Feb 2007 21:02:17 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Artem Bityutskiy <dedekind@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH 41/44 take 2] [UBI] gluebi unit header
+Message-ID: <20070218030217.GH1038@crusty.rchland.ibm.com>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain> <200702172214.55654.arnd@arndb.de> <20070218020429.GE1038@crusty.rchland.ibm.com> <200702180315.25067.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <20070216125353.GN13958@stusta.de>
-	 <MDEHLPKNGKAHNMBLJOLKKEIMBKAC.davids@webmaster.com>
-	 <17878.48376.629016.49202@notabene.brown>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200702180315.25067.arnd@arndb.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/17/07, Neil Brown <neilb@suse.de> wrote:
-> Suppose someone created a work of fiction titled - for example -
-> "Picnic at Hanging Rock".  And suppose further that this someone left
-> some issues unresolved at the end of the story, leaving many readers
-> feeling that they wanted one more chapter to complete the story and
-> give them a sense of closure.
->
-> Suppose that a number of independent individuals wrote such a chapter
-> that in very different ways completed the story.
-[snip]
-> They are derived works because they borrow the characters, the setting,
-> the theme, etc of the original work, and build on it.
+On Sun, Feb 18, 2007 at 03:15:23AM +0100, Arnd Bergmann wrote:
+> On Sunday 18 February 2007 03:04, Josh Boyer wrote:
+> > No, the MTD interface isn't flawed.  gluebi is present to make things like
+> > JFFS2 work on top of UBI volumes with very little adaptations.  If you go
+> > changing _every_ MTD user to now use either an MTD device or a native UBI
+> > device, then the code for those users just gets bloated.
+> 
+> Right, that was my point. If the MTD API in the kernel is not flawed, why
+> do we need the 'native' UBI interface? Just merge gluebi into UBI and
+> get rid of the extra abstraction.
 
-Very well put.  That doctrine is sometimes known as "mise en scene",
-and is every bit as applicable to software as to any other sort of
-creative work.  When, that is, the software has characters, setting,
-theme, etc.  See Micro Star v. Formgen (available anywhere Google hits
-are sold).
+That suggestion came up several times.  gluebi represents a compromise
+between the two groups.  IIRC, the issue was that representing UBI volumes
+as MTD devices only makes sense in the dynamic volume case.  Static UBI
+volumes require special write/update handling and so there was a need for
+a native interface anyway.
 
-> In a similar way, people claim that any driver written for Linux will
-> inevitably borrow some creative content that is in Linux, via the
-> various interfaces that are used (and it is the nature of kernel
-> modules that the interface between the module and the kernel is quite
-> intimate).  And so, they claim that any driver written for Linux will
-> ipso-facto be a derived work.  The interface that ties the kernel and
-> the module together is certainly more intimate than the interface
-> between the Printer and the Toner in the Lexmark case.
+> 
+> > Assuming your SD card isn't doing wear-leveling itself within the device,
+> > yes that is what you would get.  
+> 
+> While probably all modern SD cards have some amount of wear leveling
+> built in, I wouldn't want to rely on that for anything but the simple
+> large-file-on-fatfs (jpeg or mp3) case. Using UBI on top of the
+> native wear-leveling sounds like the right solution.
 
-Yes, people claim these things.  It's just that they're wrong.  Read
-Lexmark.  Read the First Circuit opinion in Lotus v. Borland.  For
-some really eye-opening dialogue, read the transcript of oral argument
-before the Supreme Court in the Lotus v. Borland certioriari
-proceeding.  For some long-winded but cogent discourse, read the
-amicus curiae brief of the League for Programming Freedom in Lotus v.
-Borland, submitted to the Supremes by one Eben Moglen.  If you can
-read that and still tolerate the stench of the FSF's argument that
-linking against readline means they 0wn your source code, you have a
-stronger stomach than I.
+Yeah.  Unfortunately, SD/USB/CF cards are all in sort of an awkward spot
+when it comes to things like that.  They don't expose the raw flash
+underneath, and they don't provide any indication of how robust the
+built in wear-leveling is.  Ugh.
 
-> Also, the "every practical way" point doesn't entirely apply.  In a
-> growing number of cases, it is possible to write a driver in
-> user-space.  This is apparently true for USB and is becoming true for
-> PCI.  And writing drivers as user-space programs is explicitly not a
-> derived work for the purposes of the Linux kernel license.
+> > Or you could do something slightly more sane 
+> > and use:
+> > 
+> > 1. MMC
+> > 2. block2mtd
+> > 3. JFFS2
+> 
+> Not on a 4GB SD medium, with the current jffs2 version. The problem
+> is that jffs2 doesn't scale that well, so you want a different fs.
 
-"Possible" doesn't mean "practical".  Compare Galoob and Micro Star,
-Atari v. Nintendo and Sega v. Accolade.  There's a fine line, and
-Judge Sutton walked up one side of it and down the other, and his
-fellow panelists ably advocated drawing it either to the left or to
-the right of where he had.  When the Supremes denied cert. -- in a
-case where the appellate court had vacated and remanded to the
-district court, meaning that they had to demonstrate that the lower
-court had erred _as_a_matter_of_law_ -- they endorsed Judge Sutton's
-reading of the record.  Lexmark is now settled law.
-MODULE_LICENSE("GPL") on a binary-only turd is -- insofar as you can
-demonstrate to the court of fact that it resembles the Lexmark fact
-pattern, anywhere in the US -- as legal as an 8.5" x 14" pad of yellow
-paper.  IANAL, TINLA.
+Oh, believe me I know. :)
 
-> So while that case sets an interesting precedent, I don't think it can
-> apply to the general issue of Linux kernel modules.
+> Since logfs isn't stable yet, you end up with something like ext3,
+> which in turn means that you need a UBI-like concept to avoid
+> wearing out the blocks that store your metadata.
 
-I mean this in the nicest possible way:  Think again.
+That just sounds like we need Jörn to get off his butt and finish logfs ;)
+Seriously, until something like that is done we'll be stuck with some not
+so pleasant solutions for these kind of devices.
 
-Cheers,
-- Michael
+josh
