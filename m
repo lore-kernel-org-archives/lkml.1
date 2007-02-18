@@ -1,79 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750881AbXBRMjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750908AbXBRMk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750881AbXBRMjU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 07:39:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750888AbXBRMjU
+	id S1750908AbXBRMk0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 07:40:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750900AbXBRMk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 07:39:20 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:39398 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750881AbXBRMjT (ORCPT
+	Sun, 18 Feb 2007 07:40:26 -0500
+Received: from mailhub.fokus.fraunhofer.de ([193.174.154.14]:37509 "EHLO
+	mailhub.fokus.fraunhofer.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750897AbXBRMkZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 07:39:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=dZgTp6OGvi66q2RN1wCwFfV7l2iGywoHMNFflfIUEvPRdbsvGZcZ0ZHi/b50v30X6DQrM9v2TBKD1yIrgr1IuU50bsGs3Bt//TTuk1+d+/ZlZpK02280IDQL9OZq4Z/NR1KMtRXRV1xNgC2+unz/IPzlyWaq1+mAgeMzaWTyz9M=
-Date: Sun, 18 Feb 2007 15:36:36 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Dan Aloni <da-x@monatomic.org>
-Cc: Andi Kleen <ak@suse.de>, linux-kernel-list <linux-kernel@vger.kernel.org>
-Subject: Re: e2b2rom_init_one():  Unable to register resource
-Message-ID: <20070218123636.GD10865@cvg>
-References: <20070217212918.GA26554@localdomain> <20070218104222.GC10865@cvg> <20070218112903.GA5102@localdomain>
+	Sun, 18 Feb 2007 07:40:25 -0500
+Date: Sun, 18 Feb 2007 13:37:49 +0100
+From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
+To: jens.axboe@oracle.com, dougg@torque.net
+Cc: stern@rowland.harvard.edu, linux-kernel@vger.kernel.org,
+       James.Bottomley@steeleye.com
+Subject: Re: [PATCH] Block layer: separate out queue-oriented ioctls
+Message-ID: <45d8489d.1z3gW/oKAYBXy2Ws%Joerg.Schilling@fokus.fraunhofer.de>
+References: <Pine.LNX.4.44L0.0702161422100.3490-100000@iolanthe.rowland.org>
+ <20070217062832.GE3689@kernel.dk> <45D7CB46.6060807@torque.net>
+In-Reply-To: <45D7CB46.6060807@torque.net>
+User-Agent: nail 11.22 3/20/05
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070218112903.GA5102@localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=ISO8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 18, 2007 at 01:29:03PM +0200, Dan Aloni wrote:
-| On Sun, Feb 18, 2007 at 01:42:22PM +0300, Cyrill Gorcunov wrote:
-| > Hi,
-| > 
-| > here is a patch attached to the mail. You may test it. Actually
-| > I have no 64bit machine to test it and I'm worried about the
-| > patch accuracy. So be carefull testing it. I sent a copy of the
-| > message to Andi Kleen (who is a maintainer of X86-64 port) may be
-| > we should wait for its answer ;)
-| 
-| Thanks, I'll give it a try soon.
-| 
-| BTW, wouldn't it be better just to change the type of phys and size
-| to u32?
-| 
-| > diff --git a/drivers/mtd/maps/esb2rom.c b/drivers/mtd/maps/esb2rom.c
-| > index a9d808a..d63c060 100644
-| > --- a/drivers/mtd/maps/esb2rom.c
-| > +++ b/drivers/mtd/maps/esb2rom.c
-| > @@ -214,6 +214,9 @@ static int __devinit esb2rom_init_one(struct pci_dev *pdev,
-| >  
-| >  	/* reserved  0x0020 and 0x0010 */
-| >  	window->phys -= 0x400000UL;
-| > +#ifdef CONFIG_64BIT
-| > +	window->phys &= 0xffffffffUL;
-| > +#endif
-| >  	window->size = (0xffffffffUL - window->phys) + 1UL;
-| >  
-| >  	/* Enable writes through the rom window */
-| 
-| 
-| -- 
-| Dan Aloni
-| XIV LTD, http://www.xivstorage.com
-| da-x (at) monatomic.org, dan (at) xiv.co.il
-| 
+Douglas Gilbert <dougg@torque.net> wrote:
 
-Hi,
+> Jens Axboe wrote:
+> > On Fri, Feb 16 2007, Alan Stern wrote:
+> >> From: James Bottomley <James.Bottomley@SteelEye.com>
+> >>
+> >> This patch (as854) separates out the two queue-oriented ioctls from
+> >> the rest of the block-layer ioctls.  The idea is that they should
+> >> apply to any driver using a request_queue, even if the driver doesn't
+> >> implement a block-device interface.  The prototypical example is the
+> >> sg driver, to which the patch adds the new interface.
+> >>
+> >> This will make it possible for cdrecord and related programs to
+> >> retrieve reliably the max_sectors value, regardless of whether the
+> >> user points it to an sr or an sg device.  In particular, this will
+> >> resolve Bugzilla entry #7026.
+> > 
+> > The block bits are fine with me, the sg calling point is a bit of a sore
+> > thumb (a char driver calling into block layer ioctls) though. So the
+> > block layer bits are certainly ok with me, if Doug acks the sg bit I'll
+> > merge everything up.
+> > 
+> > (patch left below)
+>
+> Does this need to be in the sg driver?
+>
+> What is the hardware sector size of a SES or OSD device?
+>
+> As for the max_sector variable, wouldn't it be better
+> to generate a new ioctl that yielded the limit in bytes?
+> Making a driver variable that implicitly assumes sectors
+> are 512 bytes in length more visible to the user space
+> seems like a step in the wrong direction.
 
-actually - I don't know... I think this could be done
-by kernel developer specialist only (as Andi Kleen is).
-So lets wait until his answer ;) Nevertheless, write
-me if the patch resolve the problem.
+This is what I did propose. I know of no SCSI device made since 1986 that
+has a "hardware sector size". This is really a DMA size limit in bytes
+and if you return the number in an unrelated multiple of a fraction, you
+will not be able to use the optmium max transfer size.
+
+> Alternatively the SG_GET_RESERVED_SIZE ioctl could be
+> modified to yield no more than max_sectors*512 .
+
+This is what I did propose 3 months ago and already 2 years ago.
+
+Jörg
 
 -- 
-
-		Cyrill
-
+ EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
+       js@cs.tu-berlin.de                (uni)  
+       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
+ URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
