@@ -1,62 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752231AbXBRVzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752227AbXBRWCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752231AbXBRVzn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 16:55:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbXBRVzn
+	id S1752227AbXBRWCI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 17:02:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752236AbXBRWCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 16:55:43 -0500
-Received: from ns.suse.de ([195.135.220.2]:35927 "EHLO mx1.suse.de"
+	Sun, 18 Feb 2007 17:02:08 -0500
+Received: from mail.screens.ru ([213.234.233.54]:58660 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752228AbXBRVzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 16:55:43 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Zwane Mwaikambo <zwane@infradead.org>
-Subject: Re: [PATCH] Don't probe for DDC on VBE1.2
-Date: Sun, 18 Feb 2007 22:53:10 +0100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Tobias Hain <tobias.hain@gmx.de>, "H. Peter Anvin" <hpa@zytor.com>
-References: <Pine.LNX.4.64.0702132145460.28458@montezuma.fsmlabs.com> <20070216102206.343e0b0d.akpm@linux-foundation.org> <Pine.LNX.4.64.0702170024270.11321@montezuma.fsmlabs.com>
-In-Reply-To: <Pine.LNX.4.64.0702170024270.11321@montezuma.fsmlabs.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1752227AbXBRWCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 17:02:07 -0500
+Date: Mon, 19 Feb 2007 01:01:34 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ego@in.ibm.com, akpm@osdl.org, paulmck@us.ibm.com, mingo@elte.hu,
+       vatsa@in.ibm.com, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Subject: Re: freezer problems
+Message-ID: <20070218220134.GA4243@tv-sign.ru>
+References: <20070214144031.GA15257@in.ibm.com> <200702181314.29214.rjw@sisk.pl> <20070218145246.GA80@tv-sign.ru> <200702181956.11273.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702182253.10423.ak@suse.de>
+In-Reply-To: <200702181956.11273.rjw@sisk.pl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 17 February 2007 09:35, Zwane Mwaikambo wrote:
-> On Fri, 16 Feb 2007, Andrew Morton wrote:
+On 02/18, Rafael J. Wysocki wrote:
 > 
-> > On Fri, 16 Feb 2007 06:39:45 -0800 (PST) Zwane Mwaikambo <zwane@infradead.org> wrote:
-> > 
-> > > On Thu, 15 Feb 2007, Andrew Morton wrote:
-> > > 
-> > > > It's not an X problem - the screen is black immediately upon loading the
-> > > > kernel.
-> > > > 
-> > > > But I guess you knew that and you're just after display info:
-> > > > http://userweb.kernel.org/~akpm/Xorg.0.log.txt
-> > > 
-> > > Thanks, the X log told me your VBE version. I tried to reproduce it on my 
-> > > thinkpad which seems to have a very similar video setup to no avail, Could 
-> > > you test the following on the VAIO? If this isn't the case, i suspect i'm 
-> > > corrupting your modelist.
-> > 
-> > It's still all black.
-> 
-> Ok it looks like i was corrupting the modelist. The following should take 
-> care of your VAIO, but i haven't tested the failure case as Tobias is away 
-> this weekend.
+> Appended is a patch that does something along these lines.  The necessary
+> thread_info flags are defined for i386 and x86_64, for now.
 
-I merged this version of the patch now. Still needs some x86-64 testing
-I guess (any volunteers?), although I don't expect much trouble
-because the early boot code is very similar.
+I'll try to look at this patch when I am not sooooo sleepy ...
 
--Andi
+just one small nit right now,
 
-> 
+> --- linux-2.6.20-mm2.orig/include/asm-i386/thread_info.h	2007-02-18 19:49:34.000000000 +0100
+> +++ linux-2.6.20-mm2/include/asm-i386/thread_info.h	2007-02-18 19:50:37.000000000 +0100
+> @@ -135,6 +135,7 @@ static inline struct thread_info *curren
+>  #define TIF_IO_BITMAP		18	/* uses I/O bitmap */
+>  #define TIF_FREEZE		19	/* is freezing for suspend */
+>  #define TIF_FORCED_TF		20	/* true if TF in eflags artificially */
+> +#define TIF_FREEZER_SKIP	21	/* task freezer should not count us */
+
+Do we need to put this flag into thread_info? It is always modified by
+"current", so it could live in task_struct->flags instead.
+
+Oleg.
+
