@@ -1,62 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993101AbXBRDEE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750706AbXBRD0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993101AbXBRDEE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 Feb 2007 22:04:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993123AbXBRDEE
+	id S1750706AbXBRD0w (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 Feb 2007 22:26:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750709AbXBRD0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 Feb 2007 22:04:04 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36880 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993101AbXBRDED (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 Feb 2007 22:04:03 -0500
+	Sat, 17 Feb 2007 22:26:52 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:51431 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750706AbXBRD0v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 Feb 2007 22:26:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=sq0P85I1QqlR0TqKF385ziFIDSTmeWWWARqNvhwNOj0QhA0abKXCHVTn4NRHyAr3z+BWmOawXpYoryIRXMcw5qyxkaPkwLL4DRNs/tSvdDN3IJeGURVumtbsO+sueTgFEi/GFxK18w46It0qO2CWcTANx8tNczJw5j43MbdMDr0=
+Message-ID: <3d57814d0702171926v53812baeqaeeda326aa225acf@mail.gmail.com>
+Date: Sun, 18 Feb 2007 13:26:47 +1000
+From: "Trent Waddington" <trent.waddington@gmail.com>
+To: "Michael K. Edwards" <medwards.linux@gmail.com>
+Subject: Re: GPL vs non-GPL device drivers
+Cc: "Neil Brown" <neilb@suse.de>, davids@webmaster.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <f2b55d220702171855u59e3cc47i73e4aa48d0c0968c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-X-Fcc: ~/Mail/utrace
-Cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Kwatch: kernel watchpoints using CPU debug registers
-In-Reply-To: Alan Stern's message of  Friday, 9 February 2007 23:32:17 -0500 <Pine.LNX.4.44L0.0702092316550.3251-100000@netrider.rowland.org>
-X-Zippy-Says: I didn't order any WOO-WOO...  Maybe a YUBBA..  But no WOO-WOO!
-Message-Id: <20070218030359.D941F1800E4@magilla.sf.frob.com>
-Date: Sat, 17 Feb 2007 19:03:59 -0800 (PST)
+Content-Disposition: inline
+References: <20070216125353.GN13958@stusta.de>
+	 <MDEHLPKNGKAHNMBLJOLKKEIMBKAC.davids@webmaster.com>
+	 <17878.48376.629016.49202@notabene.brown>
+	 <f2b55d220702171855u59e3cc47i73e4aa48d0c0968c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> How do you suggest this be handled?  Maybe we should just keep track of a
-> maximum user priority level for each slot, allowing it to go up but not
-> down until all user processes have given up the slot.  (I.e., in the
-> example above the later kwatch requests would still fail because we would
-> continue to remember the high user priority level so long as the first
-> process maintained its allocation.)  That would be overly pessimistic, but
-> it would at least be safe.
+On 2/18/07, Michael K. Edwards <medwards.linux@gmail.com> wrote:
+> If you can
+> read that and still tolerate the stench of the FSF's argument that
+> linking against readline means they 0wn your source code, you have a
+> stronger stomach than I.
 
-I think that is certainly fine to start with.  Like I said before, we can
-start conservative and then worry about more complexity as the concrete
-needs arise.  I don't think it will really be any trouble to change some of
-these low-level interfaces later to accomodate more sophisticated callers
-and implementations.  
+Such a strange attitude.. to go to all this effort to quote carefully
+and correctly one set of people and to then total misconstrue the
+words of another.
 
-When the issue does arise, scanning all the necessary tasks may not really
-need to be so costly.  That is, if rather than scanning all tasks in the
-system, it's a list of debugreg allocations.  The callers doing fancy
-allocation can be responsible for passing in storage for a struct
-containing the list structure.  That would naturally embed in struct
-kwatch.  Having the debugreg allocation routines pass in such a structure
-would also be useful for another kind of flexibility I'd like to have
-eventually.  That is, "local" allocations that are local to a group of
-tasks rather than just one.  For example, a debugger most often actually
-wants to share watchpoints among all the threads sharing an address space.
-If identical settings are in fact shared, the storage requirements for
-using watchpoints in many-threaded processes scale that much better.
+The FSF's argument in regards to readline is that you may not
+distribute readline with proprietary software linked to it.  They
+don't claim they "0wn" your source code.
 
-I think we have a while before we have to actually figure any of that out
-in detail.  The simple starting point covers all our immediate concrete
-concerns.
-
-
-Thanks,
-Roland
-
+Trent
