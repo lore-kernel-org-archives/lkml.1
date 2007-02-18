@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752193AbXBRVoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752195AbXBRVoI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752193AbXBRVoB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 16:44:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbXBRVoA
+	id S1752195AbXBRVoI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 16:44:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbXBRVoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 16:44:00 -0500
-Received: from mail.screens.ru ([213.234.233.54]:56899 "EHLO mail.screens.ru"
+	Sun, 18 Feb 2007 16:44:08 -0500
+Received: from mail.screens.ru ([213.234.233.54]:56909 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752192AbXBRVoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 16:44:00 -0500
-Date: Mon, 19 Feb 2007 00:43:59 +0300
+	id S1752192AbXBRVoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 16:44:07 -0500
+Date: Mon, 19 Feb 2007 00:44:07 +0300
 From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>, Jarek Poplawski <jarkao2@o2.pl>,
-       "David S. Miller" <davem@davemloft.net>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Jun Nakajima <jun.nakajima@intel.com>
 Cc: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] net/bridge/br_if.c: don't use _WORK_NAR
-Message-ID: <20070218214359.GA4226@tv-sign.ru>
+Subject: [PATCH 2/3] cpufreq_ondemand.c: don't use _WORK_NAR
+Message-ID: <20070218214407.GA4229@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,31 +24,30 @@ User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Afaics, noautorel work_struct buys nothing for "struct net_bridge_port".
-
-If del_nbp()->cancel_delayed_work(&p->carrier_check) fails, port_carrier_check
-may be called later anyway. So the reading of *work in port_carrier_check() is
-equally unsafe with or without this patch.
+Looks like dbs_timer() is very careful wrt per_cpu(cpu_dbs_info),
+and it doesn't need the help of WORK_STRUCT_NOAUTOREL.
 
 Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
---- WQ/net/bridge/br_if.c~1_bridge	2007-02-18 22:56:49.000000000 +0300
-+++ WQ/net/bridge/br_if.c	2007-02-18 23:06:15.000000000 +0300
-@@ -85,7 +85,6 @@ static void port_carrier_check(struct wo
+--- WQ/drivers/cpufreq/cpufreq_ondemand.c~2_cpufreq	2007-02-18 22:56:47.000000000 +0300
++++ WQ/drivers/cpufreq/cpufreq_ondemand.c	2007-02-19 00:07:46.000000000 +0300
+@@ -432,9 +432,6 @@ static void do_dbs_timer(struct work_str
+ 	/* We want all CPUs to do sampling nearly on same jiffy */
+ 	int delay = usecs_to_jiffies(dbs_tuners_ins.sampling_rate);
  
- 	dev = container_of(work, struct net_bridge_port,
- 			   carrier_check.work)->dev;
+-	/* Permit rescheduling of this work item */
 -	work_release(work);
+-
+ 	delay -= jiffies % delay;
  
- 	rtnl_lock();
- 	p = dev->br_port;
-@@ -282,7 +281,7 @@ static struct net_bridge_port *new_nbp(s
- 	p->port_no = index;
- 	br_init_port(p);
- 	p->state = BR_STATE_DISABLED;
--	INIT_DELAYED_WORK_NAR(&p->carrier_check, port_carrier_check);
-+	INIT_DELAYED_WORK(&p->carrier_check, port_carrier_check);
- 	br_stp_port_timer_init(p);
- 
- 	kobject_init(&p->kobj);
+ 	if (lock_policy_rwsem_write(cpu) < 0)
+@@ -473,7 +470,7 @@ static inline void dbs_timer_init(struct
+ 	dbs_info->enable = 1;
+ 	ondemand_powersave_bias_init();
+ 	dbs_info->sample_type = DBS_NORMAL_SAMPLE;
+-	INIT_DELAYED_WORK_NAR(&dbs_info->work, do_dbs_timer);
++	INIT_DELAYED_WORK(&dbs_info->work, do_dbs_timer);
+ 	queue_delayed_work_on(dbs_info->cpu, kondemand_wq, &dbs_info->work,
+ 	                      delay);
+ }
 
