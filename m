@@ -1,45 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932500AbXBSTNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932459AbXBSTQI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932500AbXBSTNW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 14:13:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932498AbXBSTNW
+	id S932459AbXBSTQI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 14:16:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932487AbXBSTQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 14:13:22 -0500
-Received: from outbound-cpk.frontbridge.com ([207.46.163.16]:34673 "EHLO
-	outbound2-cpk-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932500AbXBSTNV (ORCPT
+	Mon, 19 Feb 2007 14:16:07 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41486 "EHLO
+	localhost.localdomain" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932459AbXBSTQG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 14:13:21 -0500
-X-BigFish: VP
-X-FB-SS: 0
-X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
-Date: Mon, 19 Feb 2007 20:13:05 +0100
-From: "Joerg Roedel" <joerg.roedel@amd.com>
-To: discuss@x86-64.org
-cc: linux-kernel@vger.kernel.org, "Andi Kleen" <ak@suse.de>
-Subject: Re: [discuss] [PATCH 1/3] x86_64: additions to the i386
- alternative extensions to support x86_64 architecture
-Message-ID: <20070219191305.GE6083@amd.com>
-References: <20070219190132.GA6083@amd.com>
- <20070219190709.GC6083@amd.com>
-MIME-Version: 1.0
-In-Reply-To: <20070219190709.GC6083@amd.com>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 19 Feb 2007 19:13:07.0059 (UTC)
- FILETIME=[FCA12430:01C75459]
-X-WSS-ID: 69C7294D2MC8620376-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+	Mon, 19 Feb 2007 14:16:06 -0500
+Date: Mon, 19 Feb 2007 20:19:51 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Mockern@yandex.ru
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: buffer overflows in the tty flip buffer in 2.6.17
+Message-ID: <20070219201951.1ac6728d@localhost.localdomain>
+In-Reply-To: <45D6F52B.000003.10185@webmail19.yandex.ru>
+References: <45D6F52B.000003.10185@webmail19.yandex.ru>
+X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Patch 2/3] of course.
+> But how it is done in 2.6.17 linux kernel? I did check this "overflow code" in new tty driver's code. This code looks like just removed. But somehow overflow in the tty buffer must be kept.
 
--- 
-Joerg Roedel
-Operating System Research Center
-AMD Saxony LLC & Co. KG
-
-
+The new tty layer manages memory allocation dynamically and handles
+overflows itself. Just throw data at it and the right thing will occur in
+current kernels.
