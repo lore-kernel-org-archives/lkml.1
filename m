@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932689AbXBSVNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932686AbXBSVPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932689AbXBSVNG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 16:13:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932696AbXBSVNG
+	id S932686AbXBSVPk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 16:15:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932696AbXBSVPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 16:13:06 -0500
-Received: from zrtps0kn.nortel.com ([47.140.192.55]:49545 "EHLO
-	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932689AbXBSVNF (ORCPT
+	Mon, 19 Feb 2007 16:15:40 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:49123 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932686AbXBSVPk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 16:13:05 -0500
-Message-ID: <45DA12D5.6090905@nortel.com>
-Date: Mon, 19 Feb 2007 15:12:53 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: wierd bug, help decoding sysrq output?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 19 Feb 2007 16:15:40 -0500
+Subject: Re: [PATCH 0/7] [RFC] hugetlb: pagetable_operations API
+From: Arjan van de Ven <arjan@infradead.org>
+To: Adam Litke <agl@us.ibm.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1171913691.22940.30.camel@localhost.localdomain>
+References: <20070219183123.27318.27319.stgit@localhost.localdomain>
+	 <1171910581.3531.89.camel@laptopd505.fenrus.org>
+	 <1171913691.22940.30.camel@localhost.localdomain>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Mon, 19 Feb 2007 22:15:35 +0100
+Message-Id: <1171919736.3531.98.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Feb 2007 21:12:58.0626 (UTC) FILETIME=[BB232E20:01C7546A]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-02-19 at 13:34 -0600, Adam Litke wrote:
+> On Mon, 2007-02-19 at 19:43 +0100, Arjan van de Ven wrote:
+> > On Mon, 2007-02-19 at 10:31 -0800, Adam Litke wrote:
+> > > The page tables for hugetlb mappings are handled differently than page tables
+> > > for normal pages.  Rather than integrating multiple page size support into the
+> > > main VM (which would tremendously complicate the code) some hooks were created.
+> > > This allows hugetlb special cases to be handled "out of line" by a separate
+> > > interface.
+> > 
+> > ok it makes sense to clean this up.. what I don't like is that there
+> > STILL are all the double cases... for this to work and be worth it both
+> > the common case and the hugetlb case should be using the ops structure
+> > always! Anything else and you're just replacing bad code with bad
+> > code ;(
+> 
+> Hmm.  Do you think everyone would support an extra pointer indirection
+> for every handle_pte_fault() call?  
 
-I'm looking for some help decoding an x86 stack trace.
+maybe. I'm not entirely convinced... (I like the cleanup potential a lot
+code wise.. but if it costs performance, then... well I'd hate to see
+linux get slower for hugetlbfs)
 
-We have a process showing as defunct, but its parent is listed as init. 
-  It shows up in top as using basically 100% cpu, and one cpu out of 
-four is showing spending all its time in "sys".
+> If not, then I definitely wouldn't
+> mind creating a default_pagetable_ops and calling into that.
 
-Dumping all tasks via sysrq gave the following information for the 
-affected process:
-
-
-oamFmLogServe X C8A5E610     0 23551      1         23553 20706 (L-TLB)
-ee45fe58 00000046 c8a5ebf0 c8a5e610 00000a3c 00000000 00000003 c04cfb74
-        f91a919f c01406ce c8a5ebf0 00000000 c8a5e610 c515c060 00000001 
-00000174
-        e132a861 00000a3c c8a5e610 c8a5ebf0 c8a5ed64 00005bff c8a5e610 
-00000020
-Call Trace:
-  [<c011e742>] do_exit+0x31e/0x48a
-  [<c011e95e>] do_group_exit+0x3a/0xa9
-  [<c01277d1>] get_signal_to_deliver+0x21f/0x342
-  [<c010238a>] do_signal+0x72/0x12f
-  [<c0102482>] do_notify_resume+0x3b/0x3d
-  [<c010265e>] work_notifysig+0x13/0x15
+... but without it to be honest, your patch adds nothing real.. there's
+ONE user of your code, and there's no real cleanup unless you get rid of
+all the special casing.... since the special casing is the really ugly
+part of hugetlbfs, not the actual code inside the special case..
 
 
-Disassembling vmlinux gives:
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
 
-0xc011e73d <do_exit+793>:       call   0xc046194c <schedule>
-0xc011e742 <do_exit+798>:       ud2a
-
-I haven't been able to find any kernel code that would match up to a 
-program counter of "C8A5E610".
-
-Anyone have any ideas?
-
-Chris
