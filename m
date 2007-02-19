@@ -1,78 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965102AbXBSW3P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932758AbXBSWcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965102AbXBSW3P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 17:29:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965060AbXBSW3P
+	id S932758AbXBSWcV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 17:32:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932759AbXBSWcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 17:29:15 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:47405 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965102AbXBSW3O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 17:29:14 -0500
-Date: Mon, 19 Feb 2007 22:29:06 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Adam Litke <agl@us.ibm.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/7] Introduce the pagetable_operations and associated helper macros.
-Message-ID: <20070219222906.GA16385@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Adam Litke <agl@us.ibm.com>, linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org
-References: <20070219183123.27318.27319.stgit@localhost.localdomain> <20070219183133.27318.92920.stgit@localhost.localdomain>
+	Mon, 19 Feb 2007 17:32:21 -0500
+Received: from madara.hpl.hp.com ([192.6.19.124]:52533 "EHLO madara.hpl.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932758AbXBSWcU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 17:32:20 -0500
+Date: Mon, 19 Feb 2007 14:32:06 -0800
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: linux-kernel@vger.kernel.org
+Cc: ak@suse.de, akpm@linux-foundation.org
+Subject: Re: [PATCH] i386 make NMI use PERFCTR1 for architectural perfmon (take 2)
+Message-ID: <20070219223206.GA30469@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20070217160656.GA16715@frankl.hpl.hp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070219183133.27318.92920.stgit@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20070217160656.GA16715@frankl.hpl.hp.com>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 19, 2007 at 10:31:34AM -0800, Adam Litke wrote:
-> Signed-off-by: Adam Litke <agl@us.ibm.com>
-> ---
-> 
->  include/linux/mm.h |   25 +++++++++++++++++++++++++
->  1 files changed, 25 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index 2d2c08d..a2fa66d 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -98,6 +98,7 @@ struct vm_area_struct {
->  
->  	/* Function pointers to deal with this struct. */
->  	struct vm_operations_struct * vm_ops;
-> +	struct pagetable_operations_struct * pagetable_ops;
->  
->  	/* Information about our backing store: */
->  	unsigned long vm_pgoff;		/* Offset (within vm_file) in PAGE_SIZE
-> @@ -218,6 +219,30 @@ struct vm_operations_struct {
->  };
->  
->  struct mmu_gather;
-> +
-> +struct pagetable_operations_struct {
-> +	int (*fault)(struct mm_struct *mm,
-> +		struct vm_area_struct *vma,
-> +		unsigned long address, int write_access);
-> +	int (*copy_vma)(struct mm_struct *dst, struct mm_struct *src,
-> +		struct vm_area_struct *vma);
-> +	int (*pin_pages)(struct mm_struct *mm, struct vm_area_struct *vma,
-> +		struct page **pages, struct vm_area_struct **vmas,
-> +		unsigned long *position, int *length, int i);
-> +	void (*change_protection)(struct vm_area_struct *vma,
-> +		unsigned long address, unsigned long end, pgprot_t newprot);
-> +	unsigned long (*unmap_page_range)(struct vm_area_struct *vma,
-> +		unsigned long address, unsigned long end, long *zap_work);
-> +	void (*free_pgtable_range)(struct mmu_gather **tlb,
-> +		unsigned long addr, unsigned long end,
-> +		unsigned long floor, unsigned long ceiling);
-> +};
+Hello,
 
-I don't think adding another operation vector is a good idea.  But I'd
-rather extend the vma operations vector to deal with all nessecary
-buts ubstead if addubg a second one.
+This patch against 2.6.20-git14 makes the NMI watchdog use PERFSEL1/PERFCTR1
+instead of PERFSEL0/PERFCTR0 on processors supporting Intel architectural
+perfmon, such as Intel Core 2. Although all PMU events can work on
+both counters, the Precise Event-Based Sampling (PEBS) requires that the
+event be in PERFCTR0 to work correctly (see section 18.14.4.1 in the
+IA32 SDM Vol 3b).
 
+A similar patch for x86-64 is to follow.
+
+Changelog:
+        - make the i386 NMI watchdog use PERFSEL1/PERFCTR1 instead of PERFSEL0/PERFCTR0
+          on processors supporting the Intel architectural perfmon (e.g. Core 2 Duo).
+          This allows PEBS to work when the NMI watchdog is active.
+
+signed-off-by: stephane eranian <eranian@hpl.hp.com>
+
+
+diff -urNp --exclude=.git linux-2.6.20.orig/arch/i386/kernel/nmi.c linux-2.6.20.base/arch/i386/kernel/nmi.c
+--- linux-2.6.20.orig/arch/i386/kernel/nmi.c	2007-02-19 13:37:26.000000000 -0800
++++ linux-2.6.20.base/arch/i386/kernel/nmi.c	2007-02-19 13:54:42.000000000 -0800
+@@ -307,7 +307,7 @@ static int __init check_nmi_watchdog(voi
+ 		nmi_hz = 1;
+ 
+ 		if (wd->perfctr_msr == MSR_P6_PERFCTR0 ||
+-		    wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR0) {
++		    wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR1) {
+ 			nmi_hz = adjust_for_32bit_ctr(nmi_hz);
+ 		}
+ 	}
+@@ -741,8 +741,8 @@ static int setup_intel_arch_watchdog(voi
+ 	    (ebx & ARCH_PERFMON_UNHALTED_CORE_CYCLES_PRESENT))
+ 		goto fail;
+ 
+-	perfctr_msr = MSR_ARCH_PERFMON_PERFCTR0;
+-	evntsel_msr = MSR_ARCH_PERFMON_EVENTSEL0;
++	perfctr_msr = MSR_ARCH_PERFMON_PERFCTR1;
++	evntsel_msr = MSR_ARCH_PERFMON_EVENTSEL1;
+ 
+ 	if (!reserve_perfctr_nmi(perfctr_msr))
+ 		goto fail;
+@@ -1022,7 +1022,7 @@ __kprobes int nmi_watchdog_tick(struct p
+ 				write_watchdog_counter(wd->perfctr_msr, NULL);
+ 	 		}
+ 			else if (wd->perfctr_msr == MSR_P6_PERFCTR0 ||
+-				 wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR0) {
++				 wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR1) {
+ 				/* P6 based Pentium M need to re-unmask
+ 				 * the apic vector but it doesn't hurt
+ 				 * other P6 variant.
