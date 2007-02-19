@@ -1,87 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932241AbXBSNqD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932247AbXBSNwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932241AbXBSNqD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 08:46:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932251AbXBSNqD
+	id S932247AbXBSNwZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 08:52:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932250AbXBSNwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 08:46:03 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4145 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932241AbXBSNqB (ORCPT
+	Mon, 19 Feb 2007 08:52:25 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:11903 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932247AbXBSNwY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 08:46:01 -0500
-Date: Mon, 19 Feb 2007 13:45:39 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Frederik Deweerdt <deweerdt@free.fr>
-Cc: jose.goncalves@inov.pt, tie-fei.zang@freescale.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: Serial related oops
-Message-ID: <20070219134539.GA27370@flint.arm.linux.org.uk>
-Mail-Followup-To: Frederik Deweerdt <deweerdt@free.fr>,
-	jose.goncalves@inov.pt, tie-fei.zang@freescale.com,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-References: <20070220132909.GD566@slug>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 19 Feb 2007 08:52:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=aKoKkBTtg9qyMN+6FATue+BM/f9W0AfDR1k3skKveJBgZ175WQCVD54jVzCjlgD+JPYTblnSO+ngznY24L+HDhgWH25w6z2NJOf4YMO215nPGnezX7o+YGRIT1NeWY06FO4FgzWtU9+NssPrYzmNJ3GRCyvjsoib7ENMKdW2yV4=
+Message-ID: <6bffcb0e0702190552r67f878csb5e5c49dfa7c050c@mail.gmail.com>
+Date: Mon, 19 Feb 2007 14:52:21 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Frederik Deweerdt" <deweerdt@free.fr>
+Subject: Re: [-mm patch] fix locking in __make_request (was Re: 2.6.20-mm2: Oops in generic_make_request)
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Mattia Dongili" <malattia@linux.it>,
+       "Laurent Riffard" <laurent.riffard@free.fr>,
+       linux-kernel@vger.kernel.org, axboe@kernel.dk,
+       "Jens Axboe" <jens.axboe@oracle.com>
+In-Reply-To: <20070220130408.GB566@slug>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070220132909.GD566@slug>
-User-Agent: Mutt/1.4.2.1i
+References: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
+	 <45D84F73.8060904@free.fr> <20070218175805.GB5567@inferi.kami.home>
+	 <20070218114903.a8160301.akpm@linux-foundation.org>
+	 <6bffcb0e0702181205v5755fc0es284c5be32f85d304@mail.gmail.com>
+	 <20070220130408.GB566@slug>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 20, 2007 at 01:29:09PM +0000, Frederik Deweerdt wrote:
-> (Sorry for the resend, I forgot to cc the list)
-> Hi Russell,
-> 
-> It seems that the following change in drivers/serial/8250.c
-> 
-> +
-> +	/*
-> +	 * Do a quick test to see if we receive an
-> +	 * interrupt when we enable the TX irq.
-> +	 */
-> +	serial_outp(up, UART_IER, UART_IER_THRI);
-> +	lsr = serial_in(up, UART_LSR);
-> +	iir = serial_in(up, UART_IIR);
-> +	serial_outp(up, UART_IER, 0);
-> +
-> +	if (lsr & UART_LSR_TEMT && iir & UART_IIR_NO_INT) {
-> +		if (!(up->capabilities & UART_BUG_TXEN)) {
-> +			up->capabilities |= UART_BUG_TXEN;
-> +			pr_debug("ttyS%d - enabling bad tx status workarounds\n",
-> +				 port->line);
-> +		}
-> +	} else {
-> +		up->capabilities &= ~UART_BUG_TXEN;
-> +	}
-> +
-> 
-> that was introduced in 2.6.12[1], is causing oopses on some hardware. In
-> particular Jose Goncalves reported[2] an oops in 2.6.16.38 reproducible
+Hi Frederik,
 
-I don't see that.  The oops your referring to is a NULL pointer
-dereference.  The only dereferences the above code does is via
-'up' and 'port' both of which are provably always non-null here.
+On 20/02/07, Frederik Deweerdt <deweerdt@free.fr> wrote:
+> Hi Michal,
+>
+> This seems to be a locking problem in __make_request, check_plug_merge()
+> should be called with the q->queue_lock held.
+> Could you try the following patch? It silenced the oops for me.
 
-> I was wondering:
-> - what is the goal of the test?
+For me too, but Jens dislikes this patch.
 
-To detect UARTs which do not assert an interrupt when the transmit
-interrupt is enabled, which then causes no data to ever be transmitted
-without this work-around.
+>
+> Regards,
+> Frederik
 
-> - could this be CONFIGed ?
-
-No, it's only runtime because you can't tell which ports might be
-affected, and you might have a mixture of ports which are affected
-and those which aren't.
-
-> PS: CCing Andrew and Zang Roy-r61911 as they seemed to discuss this in
-> http://lkml.org/lkml/2006/6/13/21
-
-I don't see any reference to this problem there.
+Regards,
+Michal
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
