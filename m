@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752524AbXBSAWJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752564AbXBSAZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752524AbXBSAWJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 19:22:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbXBSAWJ
+	id S1752564AbXBSAZT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 19:25:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752566AbXBSAZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 19:22:09 -0500
-Received: from ozlabs.org ([203.10.76.45]:59128 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752524AbXBSAWH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 19:22:07 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 18 Feb 2007 19:25:19 -0500
+Received: from coyote.holtmann.net ([217.160.111.169]:39235 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752564AbXBSAZS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 19:25:18 -0500
+Subject: Re: Boot time Bluetooth BUG: warning: (value > m) at hid-core.c:793
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0702182216060.25686@twin.jikos.cz>
+References: <1171627435.6127.0.camel@wriver-t81fb058.linuxcoe>
+	 <45D5C789.1090607@student.ltu.se>
+	 <8E8F647D7835334B985D069AE964A4F7028FE550@ECQCMTLMAIL1.quebec.int.ec.gc.ca>
+	 <Pine.LNX.4.64.0702182216060.25686@twin.jikos.cz>
+Content-Type: text/plain
+Date: Mon, 19 Feb 2007 01:25:33 +0100
+Message-Id: <1171844733.2488.33.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.91 
 Content-Transfer-Encoding: 7bit
-Message-ID: <17880.60841.973258.612628@cargo.ozlabs.ibm.com>
-Date: Mon, 19 Feb 2007 11:22:01 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 02/11] syslets: add syslet.h include file, user API/ABI definitions
-In-Reply-To: <20070213142024.GC638@elte.hu>
-References: <20060529212109.GA2058@elte.hu>
-	<20070213142024.GC638@elte.hu>
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar writes:
+Hi Jiri,
 
-> add include/linux/syslet.h which contains the user-space API/ABI
-> declarations. Add the new header to include/linux/Kbuild as well.
+> > I m using a Logitech MX 5000 keyboard with an included MX 1000 mouse,
+> > both bluetooth using the same USB reciever.
+> > When the USB reciever is already plugged-in at boot-time and the
+> > Bluetooth service fires-up I get this message:
+> >  =======================
+> > BUG: warning: (value > m) at
+> > drivers/usb/input/hid-core.c:793/implement() (Tainted: P     )
+> >  [<c0405018>] dump_trace+0x69/0x1b6
+> >  [<c040517d>] show_trace_log_lvl+0x18/0x2c
+> >  [<c0405778>] show_trace+0xf/0x11
+> >  [<c0405875>] dump_stack+0x15/0x17
+> >  [<c05993c0>] hid_output_report+0x23c/0x2e7
+> >  [<c05994b7>] hid_submit_ctrl+0x4c/0x1d9
+> >  [<c05997fd>] hid_submit_report+0x134/0x15f
+> >  [<c059bd09>] hiddev_ioctl+0x327/0x88a
+> >  [<c04802c8>] do_ioctl+0x4c/0x62
+> >  [<c0480528>] vfs_ioctl+0x24a/0x25c
+> >  [<c0480586>] sys_ioctl+0x4c/0x66
+> >  [<c040404b>] syscall_call+0x7/0xb
+> >  [<005b5402>] 0x5b5402
+> >  =======================
+> 
+> (added Marcel to CC)
+> 
+> This means that something (I guess that it's hid2hci command?) is trying 
+> to pass through hiddev a value in a field that is greater than a given 
+> bitmask (and is not going to fit into the bitfield).
+> 
+> Vincent, does the problem go away when you don't use bluetooth (both 
+> keyboard and mouse is switched to HID mode, if they support it)?
+> 
+> Marcel, do you have any idea how this could happen?
 
-> +struct syslet_uatom {
-> +	unsigned long				flags;
-> +	unsigned long				nr;
-> +	long __user				*ret_ptr;
-> +	struct syslet_uatom	__user		*next;
-> +	unsigned long		__user		*arg_ptr[6];
-> +	/*
-> +	 * User-space can put anything in here, kernel will not
-> +	 * touch it:
-> +	 */
-> +	void __user				*private;
-> +};
+we understand the original CSR HID proxy dongles, but for the Logitech
+ones, it is wild guesses. The current support in hid2hci has been tested
+on Logitech diNovo first generation and I have no other Logitech
+hardware to verify it with. We might simply need the full HID report
+descriptor to see who is at fault.
 
-This structure, with its unsigned longs and pointers, is going to
-create enormous headaches for 32-bit processes on 64-bit machines as
-far as I can see---and on ppc64 machines, almost all processes are
-32-bit, since there is no inherent speed penalty for running in 32-bit
-mode, and some space savings.
+Regards
 
-Have you thought about how you will handle compatibility for 32-bit
-processes?  The issue will arise for x86_64 and ia64 (among others)
-too, I would think.
+Marcel
 
-Paul.
+
