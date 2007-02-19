@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932304AbXBSOx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932324AbXBSOzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932304AbXBSOx1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 09:53:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932309AbXBSOx1
+	id S932324AbXBSOzR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 09:55:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932309AbXBSOzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 09:53:27 -0500
-Received: from mail.screens.ru ([213.234.233.54]:46756 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932304AbXBSOx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 09:53:26 -0500
-Date: Mon, 19 Feb 2007 17:56:13 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jarek Poplawski <jarkao2@o2.pl>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] net/bridge/br_if.c: don't use _WORK_NAR
-Message-ID: <20070219145613.GB75@tv-sign.ru>
-References: <20070219115955.GB91@tv-sign.ru> <20070218214359.GA4226@tv-sign.ru> <8462.1171884453@redhat.com> <15331.1171890900@redhat.com>
+	Mon, 19 Feb 2007 09:55:17 -0500
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:53916 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932318AbXBSOzP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 09:55:15 -0500
+Date: Mon, 19 Feb 2007 09:55:14 -0500
+To: takada <takada@mbf.nifty.com>
+Cc: pcnet32@verizon.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: MediaGX/GeodeGX1 requires X86_OOSTORE.
+Message-ID: <20070219145514.GO7582@csclub.uwaterloo.ca>
+References: <20070216222728.GF7585@csclub.uwaterloo.ca> <20070216224824.GG7585@csclub.uwaterloo.ca> <20070217000019.GH7582@csclub.uwaterloo.ca> <20070217.231113.193678444.takada@mbf.nifty.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <15331.1171890900@redhat.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070217.231113.193678444.takada@mbf.nifty.com>
+User-Agent: Mutt/1.5.9i
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/19, David Howells wrote:
->
-> Hmmm...  You've got a work_struct (well, a delayed_work actually) - can you
-> just punt the destruction of the object over to keventd to perform, I wonder?
-
-Yes, this is close (I think) to what I suggested, see below,
-
-> The big problem with that that I see is that the workqueue facility has no
-> guards in place against a work_struct's handler function running on several
-> CPUs at once in response to the same work_struct.
-
-Yes. And for this problem WORK_STRUCT_NOAUTOREL does help, but not so much.
-It can prevent re-scheduling of the same work, but only if work->func() did
-not do work_release() yet.
-
-> > I think the fix should be so that port_carrier_check() does get/put on
-> > "struct net_bridge_port" (container), but not on "struct net_device", and
+On Sat, Feb 17, 2007 at 11:11:13PM +0900, takada wrote:
+> is it mean what doesn't help with doesn't call set_cx86_reoder()?
+> this function disable to reorder at 0x4000:0000 to 0xffff:ffff.
+> does pcnet32 access at out of above range?
 > 
-> I'm not sure how this helps.  You still have to get rid of the net_device at
-> some point.
+> --- arch/i386/Kconfig.cpu~	2007-02-05 03:44:54.000000000 +0900
+> +++ arch/i386/Kconfig.cpu	2007-02-17 21:25:52.000000000 +0900
+> @@ -322,7 +322,7 @@ config X86_USE_3DNOW
+>  
+>  config X86_OOSTORE
+>  	bool
+> -	depends on (MWINCHIP3D || MWINCHIP2 || MWINCHIPC6) && MTRR
+> +	depends on (MWINCHIP3D || MWINCHIP2 || MWINCHIPC6) && MTRR || MGEODEGX1
+>  	default y
+>  
+>  config X86_TSC
 
-Yes, destroy_nbp() does dev_put(dev). del_nbp() sets dev->br_port = NULL,
-port_carrier_check() goes to "done" in that case. So everething looks safe
-to me (but again, I do not even know what the "bridge" is :), so we should
-only take care about container, nothing more.
+Well it turns out that enabling OOSTORE doesn't elliminate the problem,
+but it does make it go from occouring within seconds to occouring within
+many hours.  I am off to investigate some more.
 
-I'll try to make a patch for illustration on evening.
+Does anyone know if there is any way to flush a cache line of the cpu to
+force rereading system memory for a given address or address range?
 
-Oleg.
-
+--
+Len Sorensen
