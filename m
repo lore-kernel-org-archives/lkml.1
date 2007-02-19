@@ -1,38 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932674AbXBSVFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932685AbXBSVGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932674AbXBSVFV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 16:05:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932686AbXBSVFV
+	id S932685AbXBSVGh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 16:06:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932686AbXBSVGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 16:05:21 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58451 "EHLO
-	localhost.localdomain" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932672AbXBSVFU (ORCPT
+	Mon, 19 Feb 2007 16:06:37 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:37952 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932685AbXBSVGg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 16:05:20 -0500
-Date: Mon, 19 Feb 2007 22:08:12 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-Subject: Re: pata_amd dropping to PIO on resume
-Message-ID: <20070219220812.11c3baba@localhost.localdomain>
-In-Reply-To: <45D6436C.4060209@garzik.org>
-References: <fa.q7ZuddHInqn2dVlS+EWjXjPvFC8@ifi.uio.no>
-	<45D63BCE.2080700@shaw.ca>
-	<45D6436C.4060209@garzik.org>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 19 Feb 2007 16:06:36 -0500
+Message-ID: <45DA1154.9020601@zytor.com>
+Date: Mon, 19 Feb 2007 13:06:28 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>,
+       Mike Frysinger <vapier.adi@gmail.com>
+CC: "David S. Miller" <davem@davemloft.net>
+Subject: <linux/socket.h>, <linux/stat.h> breakage: AF_* constants are part
+ of ABI definition
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Deleting the ata_pci_clear_simplex() call, then adding 
-> ATA_FLAG_IGN_SIMPLEX to the ata_port_info info[] array, is also worth 
-> trying.
+In the current git tree, commit 57a87bb0720a5cf7a9ece49a8c8ed288398fd1bb 
+removes any way to automatically extracting a whole lot of ABI constants 
+from the kernel headers, especially AF_* and the various S_* constants.
 
-I think I know what is going on here. Firstly the simplex bits
-need re-clearing on a resume. On my todo list now I'm back
+Furthermore, the patch breaks <linux/in.h> which uses sa_family_t, which 
+is now defined under __KERNEL__.
+
+The comment that is included:
+
+     [PATCH] scrub non-__GLIBC__ checks in linux/socket.h and
+  	     linux/stat.h
+
+     Userspace should be worrying about userspace, so having the socket.h
+     and stat.h pollute the namespace in the non-glibc case is wrong and
+     pretty much prevents any other libc from utilizing these headers
+     sanely unless they set up the __GLIBC__ define themselves (which
+     sucks)
+
+... seems to imply that virtually nothing out of these files should be 
+"sanely" utilized, but why, pray tell, include them at all?  The balance 
+of these files is about 10 lines.
+
+This patch breaks klibc in ways that are painfully hard to fix, and 
+*definitely* cannot be fixed by anything less than replication of all 
+these definitions, which is exactly the Wrong Thing[TM].
+
+A much better solution (or complement) would be something like:
+
+#if defined(__KERNEL__) || defined(__KHDR_CONSTANTS)
+
+We could have __KHDR_CONSTANTS for the AF_* constants and __KHDR_MACROS 
+for the various macros (cmsg et al).  That way the userspace library can 
+ask for what it wants.
+
+	-hpa
+
