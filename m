@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932190AbXBSLjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932119AbXBSLll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932190AbXBSLjB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 06:39:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932189AbXBSLjA
+	id S932119AbXBSLll (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 06:41:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932120AbXBSLlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 06:39:00 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:53077 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932143AbXBSLi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 06:38:59 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.20-mm2: compilation fix
-Date: Mon, 19 Feb 2007 12:33:20 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <20070217215146.30e7ffa3.akpm@linux-foundation.org> <200702190033.26285.rjw@sisk.pl> <20070218162917.602153af.akpm@linux-foundation.org>
-In-Reply-To: <20070218162917.602153af.akpm@linux-foundation.org>
+	Mon, 19 Feb 2007 06:41:40 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35765 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932119AbXBSLlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 06:41:39 -0500
+Date: Mon, 19 Feb 2007 12:41:17 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Maxim <maximlevitsky@gmail.com>
+Cc: netdev@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Subject:  [PATCH 2.6.20 004/005] dmfe: Add support for suspend/resume
+Message-ID: <20070219114117.GB19184@elf.ucw.cz>
+References: <200702152253.53680.maximlevitsky@gmail.com> <200702180029.03651.maximlevitsky@gmail.com> <20070217225215.GE14222@elf.ucw.cz> <200702181543.53296.maximlevitsky@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702191233.21252.rjw@sisk.pl>
+In-Reply-To: <200702181543.53296.maximlevitsky@gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 19 February 2007 01:29, Andrew Morton wrote:
-> On Mon, 19 Feb 2007 00:33:26 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Hi!
+
+> > and add space before */.
+> > 
+> > Congratulation, you passed coding-style-police-check ;-).
+> > 									Pavel
+> > 
 > 
-> > On Sunday, 18 February 2007 06:51, Andrew Morton wrote:
-> > > 
-> > > Temporarily at
-> > > 
-> > >   http://userweb.kernel.org/~akpm/2.6.20-mm2/
-> > > 
-> > > Will appear later at
-> > > 
-> > >  ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm2/
-> > 
-> > I think something like this is generally necessary:
-> > 
-> > ---
-> >  drivers/pci/quirks.c |    1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > Index: linux-2.6.20-mm2/drivers/pci/quirks.c
-> > ===================================================================
-> > --- linux-2.6.20-mm2.orig/drivers/pci/quirks.c
-> > +++ linux-2.6.20-mm2/drivers/pci/quirks.c
-> > @@ -21,6 +21,7 @@
-> >  #include <linux/init.h>
-> >  #include <linux/delay.h>
-> >  #include <linux/acpi.h>
-> > +#include <asm/apicdef.h>
-> >  #include "pci.h"
-> >  
-> >  /* The Mellanox Tavor device gives false positive parity errors
+> Hello,
+> 	Thanks for reply, I just want to ask one question:
 > 
-> Will break all non-x86.
+> 	Those patches are now merged in -mm, and I noticed that Andrew Morton after applying them did fix my bad coding style and check for CONFIG_PM=n that I didn't include
+> 	Now should I resend two last patches or not ?
 
-You're right, I should have put that somewhere under #ifdef
+Well,  i guess you should wait for next -mm tree, and if you see some
+problem you fixed and akpm did not, fix it and send a incremental
+patch...
 
-> What are we trying to fix here?
-
-MAX_IO_APICS undefined.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
