@@ -1,42 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965132AbXBSWmF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965133AbXBSWnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965132AbXBSWmF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 17:42:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965129AbXBSWmF
+	id S965133AbXBSWnZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 17:43:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965136AbXBSWnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 17:42:05 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53467 "EHLO mx1.redhat.com"
+	Mon, 19 Feb 2007 17:43:25 -0500
+Received: from mail.screens.ru ([213.234.233.54]:60457 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965132AbXBSWmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 17:42:03 -0500
-To: Zach Brown <zach.brown@oracle.com>
-Cc: linux-aio@kvack.org, linux-kernel@vger.kernel.org,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna bhattacharya <suparna@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Leonid Ananiev <leonid.i.ananiev@intel.com>
-Subject: Re: [PATCH 1/2] aio: create aio_ring_insert_entry() function
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-References: <20070219213830.4032.71308.sendpatchset@tetsuo.zabbo.net>
-From: Jeff Moyer <jmoyer@redhat.com>
-Date: Mon, 19 Feb 2007 17:41:04 -0500
-In-Reply-To: <20070219213830.4032.71308.sendpatchset@tetsuo.zabbo.net> (Zach Brown's message of "Mon, 19 Feb 2007 13:38:30 -0800 (PST)")
-Message-ID: <x49649x6a9r.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.5-b27 (linux)
-MIME-Version: 1.0
+	id S965133AbXBSWnY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 17:43:24 -0500
+Date: Tue, 20 Feb 2007 01:41:41 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ego@in.ibm.com, akpm@osdl.org, paulmck@us.ibm.com, mingo@elte.hu,
+       vatsa@in.ibm.com, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Subject: Re: freezer problems
+Message-ID: <20070219224141.GB5070@tv-sign.ru>
+References: <20070214144031.GA15257@in.ibm.com> <200702190019.23215.rjw@sisk.pl> <20070219202349.GA87@tv-sign.ru> <200702192221.35219.rjw@sisk.pl>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702192221.35219.rjw@sisk.pl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-==> On Mon, 19 Feb 2007 13:38:30 -0800 (PST), Zach Brown <zach.brown@oracle.com> said:
+On 02/19, Rafael J. Wysocki wrote:
+>
+> On Monday, 19 February 2007 21:23, Oleg Nesterov wrote:
+> 
+> > > @@ -199,6 +189,10 @@ static void thaw_tasks(int thaw_user_spa
+> > >
+> > >         do_each_thread(g, p) {
+> > > +               if (freezer_should_skip(p))
+> > > +                       cancel_freezing(p);
+> > > +       } while_each_thread(g, p);
+> > > +       do_each_thread(g, p) {
+> > >                 if (!freezeable(p))
+> > >                         continue;
+> > 
+> > Any reason for 2 separate do_each_thread() loops ?
+> 
+> Yes.  If there is a "freeze" request pending for the vfork parent (TIF_FREEZE
+> set), we have to cancel it before the child is unfrozen, since otherwise the
+> parent may go freezing after we try to reset PF_FROZEN for it.
 
-Zach> This patch just hoists the process of inserting an entry into the completion
-Zach> ring into its own function.  No functionality is changed.  This is in
-Zach> preparation for calling ring insertion from another path with slightly
-Zach> different mechanics.
+I see, thanks... thaw_process() doesn't take TIF_FREEZE into account.
 
-Looks harmless.
+But doesn't this mean we have a race?
 
-Acked-by: Jeff Moyer <jmoyer@redhat.com>
+Suppose that try_to_freeze_tasks() failed. It does cancel_freezing() for each
+process before return, but what if some thread already checked TIF_FREEZE and
+(for simplicity) it is preempted before frozen_process() in refrigerator().
+
+thaw_tasks() runs, ignores this task (P), returns. P gets CPU, and becomes
+frozen, but nobody will thaw it.
+
+No?
+
+Oleg.
+
