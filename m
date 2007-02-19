@@ -1,83 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750777AbXBSJTD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750720AbXBSJUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750777AbXBSJTD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 04:19:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750720AbXBSJTD
+	id S1750720AbXBSJUU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 04:20:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750787AbXBSJUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 04:19:03 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:7244 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750777AbXBSJTB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 04:19:01 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=eLGjRBxiR3Vk4xcGARfr2Ke99V6DV4MGu9kqHLA/PpNEJ5LgaU/Leet3N40eY3ose
-	wBBM3+9Y/r8Wtj4quANbQ==
-Message-ID: <6599ad830702190118r20b477d3q254c167c2fc2732@mail.gmail.com>
-Date: Mon, 19 Feb 2007 01:18:55 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Balbir Singh" <balbir@in.ibm.com>
-Subject: Re: [RFC][PATCH][1/4] RSS controller setup
-Cc: linux-kernel@vger.kernel.org, vatsa@in.ibm.com,
-       ckrm-tech@lists.sourceforge.net, xemul@sw.ru, linux-mm@kvack.org,
-       svaidy@linux.vnet.ibm.com, devel@openvz.org
-In-Reply-To: <20070219005727.da2acdab.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 19 Feb 2007 04:20:20 -0500
+Received: from tim.rpsys.net ([194.106.48.114]:36816 "EHLO tim.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750720AbXBSJUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 04:20:19 -0500
+Subject: Re: no backlight on radeon after recent kernel "upgrade"s
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Yaroslav Halchenko <kernel@onerussian.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+In-Reply-To: <20070219000412.acad13de.akpm@linux-foundation.org>
+References: <20070219044616.GC25659@washoe.onerussian.com>
+	 <20070219000412.acad13de.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 19 Feb 2007 09:19:48 +0000
+Message-Id: <1171876788.6046.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070219065019.3626.33947.sendpatchset@balbir-laptop>
-	 <20070219065026.3626.36882.sendpatchset@balbir-laptop>
-	 <20070219005727.da2acdab.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/19/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->
-> This output is hard to parse and to extend.  I'd suggest either two
-> separate files, or multi-line output:
->
-> usage: %lu kB
-> limit: %lu kB
+On Mon, 2007-02-19 at 00:04 -0800, Andrew Morton wrote:
+> On Sun, 18 Feb 2007 23:46:16 -0500 Yaroslav Halchenko <kernel@onerussian.com> wrote:
+> > Since the most recent successful for me kernel 2.6.19-rc6-mm1, I've
+> > tried few times to build more recent snapshots and now finally
+> > 2.6.20-mm2. In all those cases I have a sad outcome -- kernel boots but
+> > at some point during boot (few moments after Penguin icon in the top left
+> > corner appears), light turns off... I still can see something, especially
+> > if I light a strong flashlight at a sharp angle.
+> > 
+> > I've enabled back-light support and lcd support for those unsuccessful
+> > kernels (with all backlight support features disabled kernel boots
+> > ok and backlight shines as bright as always)
+> > 
+> > All my changes of values for files under
+> > /sys/class/backlight/radeonbl0
+> > had no impact on the screen. Also I had no files under /sys/class/lcd.
+> > 
+> > Running 
+> > radeontool light off
+> > caused complete turning off of LCD - I could not see
+> > anything anymore.
+> > 
+> > sony's spictl -b had no effect as well.
+> > 
+> > Config can be found at
+> > http://www.onerussian.com/Linux/bugs/nobacklight.1/config-2.6.20-mm2
+> > lshw
+> > http://www.onerussian.com/Linux/bugs/nobacklight.1/lshw
+> > other details are available from
+> > http://www.onerussian.com/Linux/bugs/nobacklight.1/
+> > 
+> > Could you please advise?
+> 
+> (cc's added)
+> 
+> Is 2.6.20 broken?  I assume the latest 2.6.20-gitN snapshot are failing..
 
-Two separate files would be the container usage model that I
-envisaged, inherited from the way cpusets does things.
+It would be extremely useful to know which kernel versions you tested
+and which ones failed. There are a number of backlight changes which are
+just in 2.6.20-mm1 and -mm2 which it would be useful to rule out or
+identify as the cause.
 
-And in this case, it should definitely be the limit in one file,
-readable and writeable, and the usage in another, probably only
-readable.
+Also, do you normally see files under /sys/class/lcd?
 
-Having to read a file called memctlr_usage to find the current limit
-sounds wrong.
+Regards,
 
-Hmm, I don't appear to have documented this yet, but I think a good
-naming scheme for container files is <subsystem>.<whatever> - i.e.
-these should be memctlr.usage and memctlr.limit. The existing
-grandfathered Cpusets names violate this, but I'm not sure there's a
-lot we can do about that.
+Richard
 
-> > +static int memctlr_populate(struct container_subsys *ss,
-> > +                             struct container *cont)
-> > +{
-> > +     int rc;
-> > +     if ((rc = container_add_file(cont, &memctlr_usage)) < 0)
-> > +             return rc;
-> > +     if ((rc = container_add_file(cont, &memctlr_limit)) < 0)
->
-> Clean up the first file here?
 
-Containers don't currently provide an API for a subsystem to clean up
-files from a directory - that's done automatically when the directory
-is deleted.
-
-I think I'll probably change the API for container_add_file to return
-void, but mark an error in the container itself if something goes
-wrong - that way rather than all the subsystems having to check for
-error, container_populate_dir() can do so at the end of calling all
-the subsystems' populate methods.
-
-Paul
