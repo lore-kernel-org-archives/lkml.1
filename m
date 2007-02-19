@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932365AbXBSPXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932364AbXBSPl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932365AbXBSPXS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 10:23:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932364AbXBSPXS
+	id S932364AbXBSPl3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 10:41:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932368AbXBSPl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 10:23:18 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:1833 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932354AbXBSPXR (ORCPT
+	Mon, 19 Feb 2007 10:41:29 -0500
+Received: from moutng.kundenserver.de ([212.227.126.183]:57918 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932364AbXBSPl2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 10:23:17 -0500
-Message-ID: <45D9C0DD.6070500@ru.mvista.com>
-Date: Mon, 19 Feb 2007 18:23:09 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Mon, 19 Feb 2007 10:41:28 -0500
+From: "Daniel Stempel" <daniel.stempel@inat.de>
+Subject: TCP timeout problem
+To: linux-kernel@vger.kernel.org
+Date: Mon, 19 Feb 2007 15:41:27 +0000
+X-Priority: 3 (Normal)
+Importance: normal
+X-Mailer: DvISE by Tobit Software, Germany (0233.43484A4549464D4B4F4D), Mime Converter 101.20
+X-David-Sym: 0
+X-David-Flags: 0
+Message-ID: <0004B32F.45D9D336@192.168.1.132>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [git patches] more IDE updates
-References: <200702170325.02337.bzolnier@gmail.com> <45D9BFD2.6030509@ru.mvista.com>
-In-Reply-To: <45D9BFD2.6030509@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+ charset="iso-8859-1"
+Content-Transfer-Encoding: 7Bit
+X-Provags-ID: kundenserver.de abuse@kundenserver.de login:895132d4fa561d9874c581248551c4a8
+X-Provags-ID2: V01U2FsdGVkX199ByaVPuULjIqPfiXbIiWYqvW/GQzijIFJUrqAJgbC3LXBrAMkNgCdAbN3tbe5z8k9hel8WAGyiz5fVz60RAZexQQDYdT5R5DRTs/lxYOZbg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Greetings,
 
-Sergei Shtylyov wrote:
+I need some advice concerning tcp-timeout behaviour.
 
->> Contains: IRQ-ack fix for ICH chipsets (Albert Lee), ide-floppy 
->> unformatted
->> media fix (Alan Cox), more fixes for IDE PCI drivers (Sergei Shtylyov),
->> new driver for Toshiba Cell Reference Board (Kou Ishizaki <kou.ishizaki
->> at toshiba.co.jp>) and a bunch of rather obvious cleanups/improvements 
->> (me).
+I've got two devices communicating with eachother via TCP. Pulling the network cable from one of these devices interrpts the connection and it should timeout (timeout is set to e.g. 30 seconds). Thats where the problem lies. The connection does not timeout, because the keepalive_timer always gets reset by this piece of code:
 
->> There are still some bugfix patches in my tree which should go into 
->> 2.6.21
->> but since they are quite fresh and there have already been a lot of IDE
->> changes since the merge window was opened I will wait for -rc1 to push
->> them upstream.
+:code begin:
+/* It is alive without keepalive 8) */
+if (tp->packets_out || tp->send_head)
+    goto resched;
+:code end:
 
->> [ Andrew, IDE quilt tree has already been updated wrt to this update ]
+(in tcp_timer.c -> tcp_keepalive_timer(unsigned long data))
 
->    Which quilt tree do you mean? I've noticed that in 
-> http://kernel.org/pub/linux/kernel/people/bart/pata-2.6/ the series file 
-> itself hasn't been updated, so this tree appears broken currently.
 
-    Begging your pardon, it's all browser caching. :-<
+A timeout never occurs and the connection will not terminate.
 
-WBR, Sergei
+What is the reason for this behaviour (what exactly does this code do?) and is there any solution to this. If I delete the above mentioned code, timeout works fine. But changing proven kernel code is no appropriate solution. The kernel version I use is 2.4.18.
+
+Thx in advance
+Daniel Stempel
+
+
