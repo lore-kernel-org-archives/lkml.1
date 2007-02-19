@@ -1,53 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932324AbXBSOzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932318AbXBSOzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932324AbXBSOzR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 09:55:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932309AbXBSOzR
+	id S932318AbXBSOzz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 09:55:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932325AbXBSOzz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 09:55:17 -0500
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:53916 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932318AbXBSOzP (ORCPT
+	Mon, 19 Feb 2007 09:55:55 -0500
+Received: from smtp.nokia.com ([131.228.20.173]:55471 "EHLO
+	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932318AbXBSOzy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 09:55:15 -0500
-Date: Mon, 19 Feb 2007 09:55:14 -0500
-To: takada <takada@mbf.nifty.com>
-Cc: pcnet32@verizon.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: MediaGX/GeodeGX1 requires X86_OOSTORE.
-Message-ID: <20070219145514.GO7582@csclub.uwaterloo.ca>
-References: <20070216222728.GF7585@csclub.uwaterloo.ca> <20070216224824.GG7585@csclub.uwaterloo.ca> <20070217000019.GH7582@csclub.uwaterloo.ca> <20070217.231113.193678444.takada@mbf.nifty.com>
+	Mon, 19 Feb 2007 09:55:54 -0500
+Subject: Re: [PATCH 16/44 take 2] [UBI] scanning unit implementation
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20070219110543.GE16930@infradead.org>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
+	 <20070217165545.5845.27214.sendpatchset@localhost.localdomain>
+	 <20070219110543.GE16930@infradead.org>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 19 Feb 2007 16:11:14 +0200
+Message-Id: <1171894274.14817.9.camel@sauron>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070217.231113.193678444.takada@mbf.nifty.com>
-User-Agent: Mutt/1.5.9i
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 19 Feb 2007 14:11:14.0179 (UTC) FILETIME=[D082FD30:01C7542F]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 17, 2007 at 11:11:13PM +0900, takada wrote:
-> is it mean what doesn't help with doesn't call set_cx86_reoder()?
-> this function disable to reorder at 0x4000:0000 to 0xffff:ffff.
-> does pcnet32 access at out of above range?
+On Mon, 2007-02-19 at 11:05 +0000, Christoph Hellwig wrote:
+> > +	cond_resched();
+> > +	list_for_each_entry(seb, &si->erase, u.list)
+> > +		if (seb->ec == NAND_SCAN_UNKNOWN_EC)
+> > +			seb->ec = si->mean_ec;
 > 
-> --- arch/i386/Kconfig.cpu~	2007-02-05 03:44:54.000000000 +0900
-> +++ arch/i386/Kconfig.cpu	2007-02-17 21:25:52.000000000 +0900
-> @@ -322,7 +322,7 @@ config X86_USE_3DNOW
->  
->  config X86_OOSTORE
->  	bool
-> -	depends on (MWINCHIP3D || MWINCHIP2 || MWINCHIPC6) && MTRR
-> +	depends on (MWINCHIP3D || MWINCHIP2 || MWINCHIPC6) && MTRR || MGEODEGX1
->  	default y
->  
->  config X86_TSC
+> You really shouldn't need random cond_resched all over the place.
 
-Well it turns out that enabling OOSTORE doesn't elliminate the problem,
-but it does make it go from occouring within seconds to occouring within
-many hours.  I am off to investigate some more.
+Good point. I will review the code and clean up stuff like this.
 
-Does anyone know if there is any way to flush a cache line of the cpu to
-force rereading system memory for a given address or address range?
+While we are on the point, could you please formulate your criteria of
+when cond_resched() should be used.
 
---
-Len Sorensen
+> > +static int compare_lebs(const struct ubi_info *ubi,
+> > +			const struct ubi_scan_leb *seb, int pnum,
+> > +			const struct ubi_vid_hdr *vid_hdr);
+> 
+> forward declarations in the middle of the file are really annoying.  Please try
+> to reorder the code to not need them at all if needed, and if needed add them
+> to the top of the file.
+
+I tried to layout the code like: top level functions first, low level
+last. This is matter of taste, isn't it? I am reluctant to change this,
+because it is big useless work (I'll need to change it everywhere in
+UBI). But will do this with great delight if it annoys too many people
+(you are the second so far).
+
+> > +	list_for_each_entry_safe(seb, seb_tmp, &si->alien, u.list) {
+> > +		list_del(&seb->u.list);
+> > +		ubi_free_scan_leb(seb);
+> > +	}
+> 
+> no locking needed here?
+
+No, initialization stage does not need any locking.
+
+
+Thanks,
+Artem.
+
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
