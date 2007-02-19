@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965148AbXBSW6D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965156AbXBSW6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965148AbXBSW6D (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 17:58:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965149AbXBSW6D
+	id S965156AbXBSW6h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 17:58:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965162AbXBSW6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 17:58:03 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:49947 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965148AbXBSW6B (ORCPT
+	Mon, 19 Feb 2007 17:58:37 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:42835 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965156AbXBSW6g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 17:58:01 -0500
-In-Reply-To: <x49y7mt4vdd.fsf@segfault.boston.devel.redhat.com>
-References: <20070219213830.4032.71308.sendpatchset@tetsuo.zabbo.net> <20070219213835.4032.87439.sendpatchset@tetsuo.zabbo.net> <x49y7mt4vdd.fsf@segfault.boston.devel.redhat.com>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <46C10DE9-B203-4A1F-AF18-7E8A0A899EAF@oracle.com>
-Cc: linux-aio@kvack.org, linux-kernel@vger.kernel.org,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna bhattacharya <suparna@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Leonid Ananiev <leonid.i.ananiev@intel.com>
+	Mon, 19 Feb 2007 17:58:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TuEFn+H2Uf8SI0AxF7vJurfN6ix9MrG/pwdVph5mzjSyN9xrvwjFRQsBJMVycQpOjISU9HAnHuFeCOWOVpwZAUK40cbj1GtiGpzGEIku1iiGryZhQOp+fXwOfCd2yX6c+UxuwwQt6UXj3mdQf/6iE5zC+cxrG2JQoHhALsWOtTA=
+Message-ID: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>
+Date: Tue, 20 Feb 2007 08:58:34 +1000
+From: "Trent Waddington" <trent.waddington@gmail.com>
+To: "Michael K. Edwards" <medwards.linux@gmail.com>
+Subject: Re: GPL vs non-GPL device drivers
+Cc: davids@webmaster.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       "Neil Brown" <neilb@suse.de>
+In-Reply-To: <f2b55d220702191448g6077c6aav43ff99edbaf77bdb@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Zach Brown <zach.brown@oracle.com>
-Subject: Re: [PATCH 2/2] aio: propogate post-EIOCBQUEUED errors to completion event
-Date: Mon, 19 Feb 2007 14:57:09 -0800
-To: Jeff Moyer <jmoyer@redhat.com>
-X-Mailer: Apple Mail (2.752.3)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <3d57814d0702171726l403c7812n19f2a226cba02e5d@mail.gmail.com>
+	 <MDEHLPKNGKAHNMBLJOLKCEDPBLAC.davids@webmaster.com>
+	 <3d57814d0702191255l2ef21f72rf7d999a62c4ec19a@mail.gmail.com>
+	 <f2b55d220702191353m19b563a6t4c1dcf6fd86a6dc9@mail.gmail.com>
+	 <3d57814d0702191426m2fc3c1c6had125a2db165befe@mail.gmail.com>
+	 <f2b55d220702191448g6077c6aav43ff99edbaf77bdb@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 2/20/07, Michael K. Edwards <medwards.linux@gmail.com> wrote:
+> There is no legal meaning to "combining" two works of authorship under
+> the Berne Convention or any national implementation thereof.  If you
+> "compile" or "collect" them, you're in one area of law, and if you
+> create a work that "adapts" or "recasts" (or more generally "derives
+> from") them, you're in another area of law.
 
-> Zach> So this patch introduces a helper, aio_propogate_error(),
->
-> ...which is spelled incorrectly:  aio_propagate_error.
+As I said, you're having a purely semantic argument.
 
-Man, I am batting 1000!  Randy also made fun of my 'intead'.
+Regardless of what you *call* it, shoving two works together does not
+excuse you from the conditions of the license on one of those works,
+*when you make a copy*.  And that's the GPL in a nutshell, if you want
+to copy the work, you need a license, if you want a license, you must
+abide the conditions, and one of the conditions is that you may not
+combine it with a work that is under an incompatible license unless it
+is mere aggregation.
 
-> Zach> which queues post-submission errors in the iocb so that they are
-> Zach> given to the user completion event when aio_complete() is
-> Zach> finally called.
->
-> Ugly, but I can't think of a better way to do it, either.
+Of course, now you're going to argue that there's no such thing as an
+"incompatible license" or "mere aggregation" and that these are just
+words that were made up for the GPL, so they can be ignored.. another
+pointless semantic argument because it doesn't change the very simple
+fact that you don't have any rights to copy the work unless you have a
+license and you don't have a license if you fail to abide the
+conditions of the license.
 
-Yeah, this seemed to be the lesser of the available evils.  We (Chris  
-and I, while in california) considered introducing a primitive to  
-have the submission path wait for aio_complete() to be called so that  
-it could just return the error.  We also thought about turning EIOCB 
-{RETRY,QUEUED} into bits on the iocb instead of return codes that we  
-have to lovingly pass back up to fs/aio.c.
-
-This seemed to be the least intrusive :/.
-
-- z
+Trent
