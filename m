@@ -1,39 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932206AbXBSMig@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932196AbXBSMkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932206AbXBSMig (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 07:38:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932207AbXBSMig
+	id S932196AbXBSMkm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 07:40:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932208AbXBSMkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 07:38:36 -0500
-Received: from relay5.ptmail.sapo.pt ([212.55.154.25]:50273 "HELO sapo.pt"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S932206AbXBSMif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 07:38:35 -0500
-X-AntiVirus: PTMail-AV 0.3-0.90.0
-Subject: Re: 2.6.20-rt5 Oops on boot [-rt8 OK]
-From: Sergio Monteiro Basto <sergio@sergiomb.no-ip.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Rui Nuno Capela <rncbc@rncbc.org>, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070216082551.GA26948@elte.hu>
-References: <23932.213.58.131.130.1170156409.squirrel@www.rncbc.org>
-	 <45CCC3CF.4090604@rncbc.org> <45D4FEFC.5070306@rncbc.org>
-	 <20070216082551.GA26948@elte.hu>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 19 Feb 2007 12:38:46 +0000
-Message-Id: <1171888726.3784.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-Content-Transfer-Encoding: 8bit
+	Mon, 19 Feb 2007 07:40:42 -0500
+Received: from mail.sf-mail.de ([62.27.20.61]:48250 "EHLO mail.sf-mail.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932196AbXBSMkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 07:40:41 -0500
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [BUG?] register_blkdev: failed to get major for device mapper
+Date: Mon, 19 Feb 2007 13:40:56 +0100
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com
+References: <200702161437.34063.eike-kernel@sf-tec.de> <200702191101.09192.eike-kernel@sf-tec.de> <20070219022955.f734006a.akpm@linux-foundation.org>
+In-Reply-To: <20070219022955.f734006a.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1609073.x1QvuiNTH3";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200702191340.56855.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-02-16 at 09:25 +0100, Ingo Molnar wrote:
-> > 
-> > News are that 2.6.20-rt8 got it all back to business :) 
+--nextPart1609073.x1QvuiNTH3
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-yes!, my Pentium D back in business too  .
+Andrew Morton wrote:
+> On Mon, 19 Feb 2007 11:01:02 +0100 Rolf Eike Beer <eike-kernel@sf-tec.de>=
+=20
+wrote:
+> > Andrew Morton wrote:
+> > > On Fri, 16 Feb 2007 14:37:28 +0100
+> > >
+> > > Rolf Eike Beer <eike-kernel@sf-tec.de> wrote:
+> > > > I can't bring up my machine with root LVM anymore using x86_64. The
+> > > > same machine from same kernel tree boots fine as x86. The error
+> > > > message is quoted in subject. The tree is at
+> > > > 86a71dbd3e81e8870d0f0e56b87875f57e58222b (for those not using git:
+> > > > somewhere after 2.6.20).
+> > >
+> > > Does this fix it?  I don't see why it would, but this was recently
+> > > added.
+> >
+> > Yes. But now usb complains "unable to get a dynamic major for usb
+> > endpoints". Nevertheless the USB mouse works.
+>
+> That's just nutty.
+>
+> Can you add this, see what it says just prior to that "unable to get a
+> dynamic major for usb endpoints"?
 
---
-Sérgio M .B. 
+It's totally weird. It prints the "skipped" message for every (!) number, n=
+ot=20
+just for the blacklisted ones. And I've triple checked that I don't have=20
+missed the '{'.
 
+Compiler is SuSEs 4.1.0 from their 10.1. I remember some rumors that this=20
+thing is just broken?
+
+Eike
+
+--nextPart1609073.x1QvuiNTH3
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQBF2ZrYXKSJPmm5/E4RAoMGAJ94m5Ka7/TsNTeQRK7EFgQcRQsXsgCgkMxE
+UgZvTojaplFpDnbJIAqHj5o=
+=iMBq
+-----END PGP SIGNATURE-----
+
+--nextPart1609073.x1QvuiNTH3--
