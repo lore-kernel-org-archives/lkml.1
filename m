@@ -1,39 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932611AbXBSUjJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932638AbXBSUqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932611AbXBSUjJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 15:39:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932609AbXBSUjJ
+	id S932638AbXBSUqY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 15:46:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932629AbXBSUqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 15:39:09 -0500
-Received: from mail-dub.bigfish.com ([213.199.154.10]:54978 "EHLO
+	Mon, 19 Feb 2007 15:46:24 -0500
+Received: from mail-dub.bigfish.com ([213.199.154.10]:29233 "EHLO
 	outbound1-dub-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932611AbXBSUjH (ORCPT
+	by vger.kernel.org with ESMTP id S932638AbXBSUqX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 15:39:07 -0500
-X-Greylist: delayed 5661 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Feb 2007 15:39:06 EST
+	Mon, 19 Feb 2007 15:46:23 -0500
 X-BigFish: VP
-X-Server-Uuid: 519AC16A-9632-469E-B354-112C592D09E8
-Date: Mon, 19 Feb 2007 20:04:29 +0100
+X-Server-Uuid: 89466532-923C-4A88-82C1-66ACAA0041DF
+Date: Mon, 19 Feb 2007 20:07:09 +0100
 From: "Joerg Roedel" <joerg.roedel@amd.com>
 To: discuss@x86-64.org
 cc: linux-kernel@vger.kernel.org, "Andi Kleen" <ak@suse.de>
-Subject: [PATCH 1/3] i386: extend alternative instruction framwork
-Message-ID: <20070219190429.GB6083@amd.com>
+Subject: [PATCH 1/3] x86_64: additions to the i386 alternative
+ extensions to support x86_64 architecture
+Message-ID: <20070219190709.GC6083@amd.com>
 References: <20070219190132.GA6083@amd.com>
 MIME-Version: 1.0
 In-Reply-To: <20070219190132.GA6083@amd.com>
 User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 19 Feb 2007 19:04:30.0374 (UTC)
- FILETIME=[C8A94460:01C75458]
-X-WSS-ID: 69C72B482X0967403-01-01
+X-OriginalArrivalTime: 19 Feb 2007 19:07:10.0315 (UTC)
+ FILETIME=[27FE53B0:01C75459]
+X-WSS-ID: 69C72AEB2EG983534-01-01
 Content-Type: multipart/mixed;
- boundary="HcAYCG3uE/tztfnV"
+ boundary=98e8jtXdkpgskNou
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---HcAYCG3uE/tztfnV
+--98e8jtXdkpgskNou
 Content-Type: text/plain;
  charset=us-ascii
 Content-Disposition: inline
@@ -41,8 +41,8 @@ Content-Transfer-Encoding: 7bit
 
 From: Joerg Roedel <joerg.roedel@amd.com>
 
-This patch extends the alternative instruction framework to support an
-arbitrary number of alternatives on the i386 architecture.
+This patch adds the necessary changes to extend the i386 alternative
+instruction framework extension on the x86_64 architecture.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 
@@ -51,82 +51,83 @@ Joerg Roedel
 Operating System Research Center
 AMD Saxony LLC & Co. KG
 
---HcAYCG3uE/tztfnV
+--98e8jtXdkpgskNou
 Content-Type: text/plain;
  charset=us-ascii
 Content-Disposition: attachment;
- filename=alternative-extension-i386.patch
+ filename=alternative-extension-x86_84.patch
 Content-Transfer-Encoding: 7bit
 
-diff --git a/arch/i386/kernel/alternative.c b/arch/i386/kernel/alternative.c
-index 9eca21b..2dedf4b 100644
---- a/arch/i386/kernel/alternative.c
-+++ b/arch/i386/kernel/alternative.c
-@@ -149,19 +149,38 @@ extern u8 __smp_alt_begin[], __smp_alt_end[];
-    self modifying code. This implies that assymetric systems where
-    APs have less capabilities than the boot processor are not handled.
-    Tough. Make sure you disable such features by hand. */
--
- void apply_alternatives(struct alt_instr *start, struct alt_instr *end)
- {
- 	struct alt_instr *a;
--	u8 *instr;
-+	u8 *instr = NULL, *new_instr = NULL;
-+	u8 instr_len = 0, new_instr_len = 0;
- 	int diff;
- 
- 	DPRINTK("%s: alt table %p -> %p\n", __FUNCTION__, start, end);
- 	for (a = start; a < end; a++) {
--		BUG_ON(a->replacementlen > a->instrlen);
--		if (!boot_cpu_has(a->cpuid))
-+
-+		if (a->used == 0) {
-+			instr = a->instr;
-+			instr_len = a->instrlen;
-+			new_instr =
-+				boot_cpu_has(a->cpuid) ? a->replacement : NULL;
-+			new_instr_len =
-+				boot_cpu_has(a->cpuid) ? a->replacementlen : 0;
-+		} else if (a->used >= 1 && boot_cpu_has(a->instr_cpuid)) {
-+			BUG_ON(instr == NULL);
-+			new_instr = a->instr;
-+			new_instr_len = a->instrlen;
-+		} else if (a->used == 2 && boot_cpu_has(a->cpuid)) {
-+			BUG_ON(instr == NULL);
-+			new_instr = a->replacement;
-+			new_instr_len = a->replacementlen;
-+		}
-+
-+		if (instr == NULL || new_instr == NULL)
- 			continue;
--		instr = a->instr;
-+
-+		BUG_ON(new_instr_len > instr_len);
-+
- #ifdef CONFIG_X86_64
- 		/* vsyscall code is not mapped yet. resolve it manually. */
- 		if (instr >= (u8 *)VSYSCALL_START && instr < (u8*)VSYSCALL_END) {
-@@ -170,9 +189,10 @@ void apply_alternatives(struct alt_instr *start, struct alt_instr *end)
- 				__FUNCTION__, a->instr, instr);
- 		}
- #endif
--		memcpy(instr, a->replacement, a->replacementlen);
--		diff = a->instrlen - a->replacementlen;
--		nop_out(instr + a->replacementlen, diff);
-+		memcpy(instr, new_instr, new_instr_len);
-+		diff = instr_len - new_instr_len;
-+		nop_out(instr + new_instr_len, diff);
-+		instr = new_instr = NULL;
- 	}
- }
- 
-diff --git a/include/asm-i386/alternative.h b/include/asm-i386/alternative.h
-index b8fa955..b899e61 100644
---- a/include/asm-i386/alternative.h
-+++ b/include/asm-i386/alternative.h
+diff --git a/arch/x86_64/lib/clear_page.S b/arch/x86_64/lib/clear_page.S
+index 9a10a78..4e34c12 100644
+--- a/arch/x86_64/lib/clear_page.S
++++ b/arch/x86_64/lib/clear_page.S
+@@ -53,6 +53,8 @@ ENDPROC(clear_page)
+ 	.align 8
+ 	.quad clear_page
+ 	.quad 1b
++	.byte 0x00
++	.byte 0x00
+ 	.byte X86_FEATURE_REP_GOOD
+ 	.byte .Lclear_page_end - clear_page
+ 	.byte 2b - 1b
+diff --git a/arch/x86_64/lib/copy_page.S b/arch/x86_64/lib/copy_page.S
+index 727a5d4..2aa51c2 100644
+--- a/arch/x86_64/lib/copy_page.S
++++ b/arch/x86_64/lib/copy_page.S
+@@ -113,6 +113,8 @@ ENDPROC(copy_page)
+ 	.align 8
+ 	.quad copy_page
+ 	.quad 1b
++	.byte 0x00
++	.byte 0x00
+ 	.byte X86_FEATURE_REP_GOOD
+ 	.byte .Lcopy_page_end - copy_page
+ 	.byte 2b - 1b
+diff --git a/arch/x86_64/lib/copy_user.S b/arch/x86_64/lib/copy_user.S
+index 70bebd3..2dd39d1 100644
+--- a/arch/x86_64/lib/copy_user.S
++++ b/arch/x86_64/lib/copy_user.S
+@@ -27,6 +27,8 @@
+ 	.align 8
+ 	.quad  0b
+ 	.quad  2b
++	.byte  0x00
++	.byte  0x00
+ 	.byte  \feature		     /* when feature is set */
+ 	.byte  5
+ 	.byte  5
+diff --git a/arch/x86_64/lib/memcpy.S b/arch/x86_64/lib/memcpy.S
+index 0ea0ddc..ee42a08 100644
+--- a/arch/x86_64/lib/memcpy.S
++++ b/arch/x86_64/lib/memcpy.S
+@@ -123,6 +123,8 @@ ENDPROC(__memcpy)
+ 	.align 8
+ 	.quad memcpy
+ 	.quad 1b
++	.byte 0x00
++	.byte 0x00
+ 	.byte X86_FEATURE_REP_GOOD
+ 	.byte .Lfinal - memcpy
+ 	.byte 2b - 1b
+diff --git a/arch/x86_64/lib/memset.S b/arch/x86_64/lib/memset.S
+index 2c59481..814e091 100644
+--- a/arch/x86_64/lib/memset.S
++++ b/arch/x86_64/lib/memset.S
+@@ -127,6 +127,8 @@ ENDPROC(__memset)
+ 	.align 8
+ 	.quad memset
+ 	.quad 1b
++	.byte 0x00
++	.byte 0x00
+ 	.byte X86_FEATURE_REP_GOOD
+ 	.byte .Lfinal - memset
+ 	.byte 2b - 1b
+--- a/include/asm-x86_64/alternative.h
++++ b/include/asm-x86_64/alternative.h
 @@ -7,14 +7,31 @@
  #include <linux/stddef.h>
- #include <linux/types.h>
+ #include <asm/cpufeature.h>
  
 +/* struct alt_instr - define replacement sequences
 + *
@@ -145,72 +146,64 @@ index b8fa955..b899e61 100644
  	u8 *instr; 		/* original instruction */
  	u8 *replacement;
 +	u8  used;               /* count the number of replacements in
-+				   this struct (only for succeeding entries) */
++	                           this struct (only for succeeding entries) */
 +	u8  instr_cpuid;        /* cpuid bit set if instr is used
 +				   as replacement */
  	u8  cpuid;		/* cpuid bit set for replacement */
  	u8  instrlen;		/* length of original instruction */
  	u8  replacementlen; 	/* length of new instruction, <= instrlen */
--	u8  pad;
+-	u8  pad[5];
 -};
 +	u8  pad[3];
 +} __attribute__ ((packed));
  
  extern void apply_alternatives(struct alt_instr *start, struct alt_instr *end);
  
-@@ -36,6 +53,12 @@ static inline void alternatives_smp_switch(int smp) {}
+@@ -36,6 +53,13 @@ static inline void alternatives_smp_switch(int smp) {}
+ 
  #endif
  
- /*
++
++/*
 + * Use or extend the following macros if you need more than one
 + * output argument in the alternative_io() macro
 + */
 +#define ALTERNATIVE_OUTPUT2(a,b) a,b
 +
-+/*
+ /*
   * Alternative instructions for different CPU types or capabilities.
   *
-  * This allows to use optimized instructions even on generic binary
-@@ -53,6 +76,8 @@ static inline void alternatives_smp_switch(int smp) {}
- 		      "  .align 4\n"					\
- 		      "  .long 661b\n"            /* label */		\
- 		      "  .long 663f\n"		  /* new instruction */	\
-+		      "  .byte 0x00\n"            /* used count */      \
-+		      "  .byte 0x00\n"            /* instr_cpuid */     \
+@@ -54,6 +78,8 @@ static inline void alternatives_smp_switch(int smp) {}
+ 		      "  .align 8\n"				       \
+ 		      "  .quad 661b\n"            /* label */          \
+ 		      "  .quad 663f\n"		  /* new instruction */ \
++		      "  .byte 0x00\n"            /* first entry */ \
++		      "  .byte 0x00\n"            /* zero for first entry */ \
+ 		      "  .byte %c0\n"             /* feature bit */    \
+ 		      "  .byte 662b-661b\n"       /* sourcelen */      \
+ 		      "  .byte 664f-663f\n"       /* replacementlen */ \
+@@ -78,6 +104,8 @@ static inline void alternatives_smp_switch(int smp) {}
+ 		      "  .align 8\n"					\
+ 		      "  .quad 661b\n"            /* label */		\
+ 		      "  .quad 663f\n"		  /* new instruction */	\
++		      "  .byte 0x00\n"            /* first entry */ \
++		      "  .byte 0x00\n"            /* zero for first entry */ \
  		      "  .byte %c0\n"             /* feature bit */	\
  		      "  .byte 662b-661b\n"       /* sourcelen */	\
  		      "  .byte 664f-663f\n"       /* replacementlen */	\
-@@ -77,6 +102,8 @@ static inline void alternatives_smp_switch(int smp) {}
- 		      "  .align 4\n"					\
- 		      "  .long 661b\n"            /* label */		\
- 		      "  .long 663f\n"		  /* new instruction */ \
-+		      "  .byte 0x00\n"            /* used count */      \
-+		      "  .byte 0x00\n"            /* instr_cpuid */     \
- 		      "  .byte %c0\n"             /* feature bit */	\
- 		      "  .byte 662b-661b\n"       /* sourcelen */	\
- 		      "  .byte 664f-663f\n"       /* replacementlen */ 	\
-@@ -85,6 +112,62 @@ static inline void alternatives_smp_switch(int smp) {}
- 		      "663:\n\t" newinstr "\n664:\n"   /* replacement */\
- 		      ".previous" :: "i" (feature), ##input)
- 
-+/* Like alternative_input, but with a single output argument */
-+#define alternative_io(oldinstr, newinstr, feature, output, input...) \
-+	asm volatile ("661:\n\t" oldinstr "\n662:\n"                    \
-+		      ".section .altinstructions,\"a\"\n"               \
-+		      "  .align 4\n"                                    \
-+		      "  .long 661b\n"            /* label */           \
-+		      "  .long 663f\n"            /* new instruction */ \
+@@ -93,6 +121,8 @@ static inline void alternatives_smp_switch(int smp) {}
+ 		      "  .align 8\n"					\
+ 		      "  .quad 661b\n"            /* label */		\
+ 		      "  .quad 663f\n"		  /* new instruction */	\
 +		      "  .byte 0x00\n"            /* first entry */ \
 +		      "  .byte 0x00\n"            /* zero for first entry */ \
-+		      "  .byte %c[feat]\n"        /* feature bit */     \
-+		      "  .byte 662b-661b\n"       /* sourcelen */       \
-+		      "  .byte 664f-663f\n"       /* replacementlen */  \
-+		      ".previous\n"                                     \
-+		      ".section .altinstr_replacement,\"ax\"\n"         \
-+		      "663:\n\t" newinstr "\n664:\n"   /* replacement */ \
-+		      ".previous" : output : [feat] "i" (feature), ##input)
-+
-+/*
+ 		      "  .byte %c[feat]\n"        /* feature bit */	\
+ 		      "  .byte 662b-661b\n"       /* sourcelen */	\
+ 		      "  .byte 664f-663f\n"       /* replacementlen */	\
+@@ -102,6 +132,45 @@ static inline void alternatives_smp_switch(int smp) {}
+ 		      ".previous" : output : [feat] "i" (feature), ##input)
+ 
+ /*
 + * additional alternatives
 + *
 + * In the case where more than one alternative for an instruction exist,
@@ -220,9 +213,9 @@ index b8fa955..b899e61 100644
 +
 +#define alternative_add_one(newinstr2, feature2) \
 +	asm volatile(".section .altinstructions,\"a\"\n" \
-+		     "  .align 4\n" \
-+		     "  .long 661f\n" \
-+		     "  .long 0x00\n" \
++		     "  .align 8\n" \
++		     "  .quad 661f\n" \
++		     "  .quad 0x00\n" \
 +		     "  .byte 0x01\n" \
 +		     "  .byte %c[feat2]\n" \
 +		     "  .byte 0x00\n" \
@@ -235,9 +228,9 @@ index b8fa955..b899e61 100644
 +
 +#define alternative_add_two(newinstr2, feature2, newinstr3, feature3) \
 +	asm volatile(".section .altinstructions,\"a\"\n" \
-+		     "  .align 4\n" \
-+		     "  .long 661f\n" \
-+		     "  .long 663f\n" \
++		     "  .align 8\n" \
++		     "  .quad 661f\n" \
++		     "  .quad 663f\n" \
 +		     "  .byte 0x02\n" \
 +		     "  .byte %c[feat2]\n" \
 +		     "  .byte %c[feat3]\n" \
@@ -247,12 +240,13 @@ index b8fa955..b899e61 100644
 +		     ".section .altinstr_replacement,\"ax\"\n" \
 +		     "661:\n\t" newinstr2 "\n662:\n" \
 +		     "663:\n\t" newinstr3 "\n664:\n" \
-+		    ".previous" : : [feat2] "i" (feature2), [feat3] "i" (feature3))
++		     ".previous" : : [feat2] "i" (feature2), [feat3] "i" (feature3) )
 +
- /*
++/*
   * Alternative inline assembly for SMP.
   *
+  * The LOCK_PREFIX macro defined here replaces the LOCK and
 
---HcAYCG3uE/tztfnV--
+--98e8jtXdkpgskNou--
 
 
