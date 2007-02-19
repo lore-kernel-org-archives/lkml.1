@@ -1,81 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932378AbXBSQSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932387AbXBSQbE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932378AbXBSQSx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 11:18:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932387AbXBSQSx
+	id S932387AbXBSQbE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 11:31:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932390AbXBSQbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 11:18:53 -0500
-Received: from mail.gmx.net ([213.165.64.20]:54055 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932378AbXBSQSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 11:18:53 -0500
-X-Provags-ID: V01U2FsdGVkX1/6GMMTBlP6CGFaF+/PA8IiSNaYOOSSRNCD/N8OiJ
-	GBgw==
-From: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>
-To: Paulo Marques <pmarques@grupopie.com>
-Subject: Re: linux-2.6.19.3 build faild with "Inconsistent kallsyms data"
-Date: Mon, 19 Feb 2007 17:18:48 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <200702190917.16533.toralf.foerster@gmx.de> <45D9B356.9050009@grupopie.com>
-In-Reply-To: <45D9B356.9050009@grupopie.com>
+	Mon, 19 Feb 2007 11:31:03 -0500
+Received: from lmv.inov.pt ([146.193.64.2]:51664 "EHLO lmv.inov.pt"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932387AbXBSQbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 11:31:01 -0500
+Message-ID: <45D9D073.7020701@inov.pt>
+Date: Mon, 19 Feb 2007 16:29:39 +0000
+From: Jose Goncalves <jose.goncalves@inov.pt>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070111)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3432945.ZKtDJfZ3Jm";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200702191718.50650.toralf.foerster@gmx.de>
-X-Y-GMX-Trusted: 0
+To: Frederik Deweerdt <deweerdt@free.fr>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Serial related oops
+References: <20070220132909.GD566@slug> <20070219134539.GA27370@flint.arm.linux.org.uk> <20070220142442.GF566@slug> <20070219143520.GB27370@flint.arm.linux.org.uk> <20070220144814.GJ566@slug> <20070219150508.GD27370@flint.arm.linux.org.uk>
+In-Reply-To: <20070219150508.GD27370@flint.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-INOV-EmailServer-Information: Please contact the Email service provider for more information
+X-INOV-EmailServer: Found to be clean
+X-INOV-EmailServer-From: jose.goncalves@inov.pt
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3432945.ZKtDJfZ3Jm
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Russell King wrote:
+> On Tue, Feb 20, 2007 at 02:48:14PM +0000, Frederik Deweerdt wrote:
+>   
+>> (trimmed tie-fei.zang from the CC, added by mistake)
+>> On Mon, Feb 19, 2007 at 02:35:20PM +0000, Russell King wrote:
+>>     
+>>>> Neither did I, but introducing printk's through the function, we narrowed
+>>>> the problem to this part of the code. And removing it makes the problem
+>>>> go away. We inserted 37 printk's in the function body, and Jose bisected
+>>>> those until the problem went away.
+>>>>         
+>>> Well, there's still little clue about why this is causing a NULL pointer
+>>> dereference.  The only thing I can think is that somehow performing
+>>> this test is causing a power glitch to your CPU, causing its registers
+>>> to get corrupted, and which results in it doing a NULL pointer deref.
+>>>       
+>> That may be the case, indeed.
+>>     
 
-Am Montag, 19. Februar 2007 15:25 schrieb Paulo Marques:
-> Toralf F=F6rster wrote:
-> > Hello,
-> >=20
-> > the build with the attached .config failed, make ends with:
-> > ...
-> > scripts/kconfig/conf -s arch/i386/Kconfig
-> >   CHK     include/linux/version.h
-> >   CHK     include/linux/utsrelease.h
-> >   CHK     include/linux/compile.h
-> >   AS      .tmp_kallsyms2.o
-> >   LD      vmlinux
-> >   SYSMAP  System.map
-> >   SYSMAP  .tmp_System.map
-> > Inconsistent kallsyms data
-> > Try setting CONFIG_KALLSYMS_EXTRA_PASS
-> > make: *** [vmlinux] Error 1
-> >=20
-> > Here's the config:
->=20
-> Hummm, I just tried that .config with a vanilla 2.6.19.3 and it built=20
-> just fine.
->=20
-You're right, I tried it twice again and it buils fine - don't know what ha=
-ppend during the first build - sorry for the noise.
+But if the problem was a power glitch I should get Oops with or without
+printk() inserted, shouldn't I?
 
-=2D-=20
-MfG/Sincerely
+>>> Are you saying that the NULL pointer occurred while executing this code?
+>>> If not, where does the NULL pointer occur?
+>>>       
+>> The thing is, the NULL pointer deref dissapeared as soon as we
+>> instrumented (printk'ed) the code. So it's seems to be triggered by
+>> check+timing+hardware.
+>>     
+>
+> So to summarise, we have some code somewhere which is causing a NULL
+> pointer deref in uart_startup().  If we remove some code, the NULL
+> pointer deref stops happening.
+>
+> And that's about the sum total of the information we know.  We don't
+> know precisely where the NULL pointer deref occurs, and we don't know
+> what's causing it.
+>
+> It doesn't sound like there's much understanding of the problem at hand. ;(
+>
+>   
+>>> Andrew's said no (in that the thread you refer to) and suggested an
+>>> alternative, I've said no, how many more 'no's do you need to turn
+>>> you away from the wrong approach?
+>>>       
+>> One is usually sufficient once I've understood :). I missed the module
+>> option approach. Is it ok with you? If yes, I'll put up a patch to do
+>> this.
+>>     
+>
+> I guess so, but how does the user know whether they need this enabled or
+> disabled?
+>
+>   
+>> The problem appears to be reproducible on Jose's hardware within 2-3 days.
+>>     
 
-Toralf F=F6rster
+In a kernel without instrumentation I get problems within a 1 day period.
 
---nextPart3432945.ZKtDJfZ3Jm
-Content-Type: application/pgp-signature
+>> If you see other tests to be performed...
+>>     
+>
+> Maybe adding some delays in that bit of code?  I'm sure you've already
+> thought of that though.  Since no one has a proper understanding of the
+> problem, the only suggestions possible are mere shots in the dark.
+>   
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+I'm no kernel expert, but it's not possible to trace what is the
+instruction that is causing the NULL pointer dereference? The kernel
+dump does not show this?
 
-iD8DBQBF2c3qhyrlCH22naMRAtTFAJ0Us6NlfqWlweRrZ6fGhOwOQbXgUQCeLrHY
-pAUjmbkhlwOLIOI5GwAY8V8=
-=BhP4
------END PGP SIGNATURE-----
+I have no clue on what is causing this problem but, what I know, is that
+I can always reproduce it, and it always happens in the same code
+section of serial8250_startup().
 
---nextPart3432945.ZKtDJfZ3Jm--
+Regards,
+José Gonçalves
