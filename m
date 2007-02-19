@@ -1,63 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932247AbXBSNwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932250AbXBSN7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932247AbXBSNwZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 08:52:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932250AbXBSNwZ
+	id S932250AbXBSN7X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 08:59:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932255AbXBSN7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 08:52:25 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:11903 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932247AbXBSNwY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 08:52:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aKoKkBTtg9qyMN+6FATue+BM/f9W0AfDR1k3skKveJBgZ175WQCVD54jVzCjlgD+JPYTblnSO+ngznY24L+HDhgWH25w6z2NJOf4YMO215nPGnezX7o+YGRIT1NeWY06FO4FgzWtU9+NssPrYzmNJ3GRCyvjsoib7ENMKdW2yV4=
-Message-ID: <6bffcb0e0702190552r67f878csb5e5c49dfa7c050c@mail.gmail.com>
-Date: Mon, 19 Feb 2007 14:52:21 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Frederik Deweerdt" <deweerdt@free.fr>
-Subject: Re: [-mm patch] fix locking in __make_request (was Re: 2.6.20-mm2: Oops in generic_make_request)
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Mattia Dongili" <malattia@linux.it>,
-       "Laurent Riffard" <laurent.riffard@free.fr>,
-       linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       "Jens Axboe" <jens.axboe@oracle.com>
-In-Reply-To: <20070220130408.GB566@slug>
+	Mon, 19 Feb 2007 08:59:23 -0500
+Received: from javad.com ([216.122.176.236]:4556 "EHLO javad.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932250AbXBSN7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 08:59:22 -0500
+From: Sergei Organov <osv@javad.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "J.A. =?utf-8?B?TWFnYWxsw4M=?= =?utf-8?B?w4PDg8ODw4PDgsKzbg==?=" 
+	<jamagallon@ono.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: somebody dropped a (warning) bomb
+References: <45CB3B28.60102@garzik.org>
+	<Pine.LNX.4.64.0702081338010.8424@woody.linux-foundation.org>
+	<Pine.LNX.4.64.0702081351410.8424@woody.linux-foundation.org>
+	<87abznsdyo.fsf@javad.com>
+	<Pine.LNX.4.64.0702090753500.8424@woody.linux-foundation.org>
+	<874pprr5nn.fsf@javad.com>
+	<Pine.LNX.4.64.0702120804520.8424@woody.linux-foundation.org>
+	<87ps8end9b.fsf@javad.com>
+	<84144f020702131026q2af1afd6vbcd2708d7b7b9907@mail.gmail.com>
+	<87bqjxooog.fsf@javad.com>
+	<84144f020702131143r767aa40blb97a39b40bee73b8@mail.gmail.com>
+	<87fy99n6mf.fsf@javad.com>
+	<Pine.LNX.4.64.0702131513050.3604@woody.linux-foundation.org>
+	<87hctnlfqz.fsf@javad.com>
+	<Pine.LNX.4.64.0702150736360.20368@woody.linux-foundation.org>
+	<87k5yjjlrj.fsf@javad.com>
+	<Pine.LNX.4.64.0702151059090.20368@woody.linux-foundation.org>
+Date: Mon, 19 Feb 2007 16:58:52 +0300
+In-Reply-To: <Pine.LNX.4.64.0702151059090.20368@woody.linux-foundation.org>
+	(Linus Torvalds's message of "Thu, 15 Feb 2007 11:02:32 -0800 (PST)")
+Message-ID: <871wkmgsf7.fsf@javad.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
-	 <45D84F73.8060904@free.fr> <20070218175805.GB5567@inferi.kami.home>
-	 <20070218114903.a8160301.akpm@linux-foundation.org>
-	 <6bffcb0e0702181205v5755fc0es284c5be32f85d304@mail.gmail.com>
-	 <20070220130408.GB566@slug>
+Content-Type: text/plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Frederik,
-
-On 20/02/07, Frederik Deweerdt <deweerdt@free.fr> wrote:
-> Hi Michal,
+Linus Torvalds <torvalds@linux-foundation.org> writes:
+> On Thu, 15 Feb 2007, Sergei Organov wrote:
+>> 
+>> I agree that if the warning has no true positives, it sucks. The problem
+>> is that somehow I doubt it has none. And the reasons for the doubt are:
 >
-> This seems to be a locking problem in __make_request, check_plug_merge()
-> should be called with the q->queue_lock held.
-> Could you try the following patch? It silenced the oops for me.
+> Why do you harp on "no true positives"?
 
-For me too, but Jens dislikes this patch.
+Because if somebody is capable to proof a warning has no true positives,
+I immediately agree it's useless. I just wanted to check if it's indeed
+the case. It seems it is not.
 
+> That's a pointless thing. You can make *any* warning have "true 
+> positives". My personal favorite is the unconditional warning:
 >
-> Regards,
-> Frederik
+> 	warning: user is an idiot
+>
+> and I _guarantee_ you that it has a lot of true positives.
 
-Regards,
-Michal
+Yes, but there is obviously 0 correlation between the warning and the
+user being an idiot (except that non-idiot will probably find a way to
+either turn this warning off, or filter it out).
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+I already agreed that a warning may have true positives and still be
+bad; and a warning having "no false negatives" is obviously a pretty
+one, though unfortunately not that common in practice; and a warning
+that has no true positives is useless. What we are arguing about are
+intermediate cases that are most common in practice.
+
+As programmers, we in fact are interested in correlation between a
+warning and actual problem in the software, but for the kind of warnings
+we are discussing (sign-correctness and type-safety in general), the
+correlation depends on the style the program is written is, making it
+difficult to use as a criteria in the discussion.
+
+> It's the "no false negatives" angle you should look at.
+
+I'd like to, but then I'll need to classify most of (all?) the GCC
+warnings as bad, I'm afraid.
+
+> THAT is what matters. The reason we don't see a lot of warnings about 
+> idiot users is not that people don't do stupid things, but that 
+> *sometimes* they actually don't do something stupid.
+>
+> Yeah, I know, it's far-fetched, but still.
+>
+> In other words, you're barking up *exactly* the wrong tree. You're looking 
+> at it the wrong way around.
+>
+> Think of it this way: in science, a theory is proven to be bad by a single 
+> undeniable fact just showing that it's wrong.
+>
+> The same is largely true of a warning. If the warning sometimes happens 
+> for code that is perfectly fine, the warning is bad.
+
+Consider:
+
+int find_first_zero(const int *a)
+{
+	int index = 0;
+	while(*a++ != 0)
+		index++;
+	return index;
+}
+
+unsigned int array[] = { 1, 2, 3, 0, 25, 14 };
+int index = find_first_zero(array);  *WARNING*
+
+So, by your logic, -Wpointer-sign warning is bad in general? If not,
+then how will you "fix" the code above? And the upside of the fix is
+what?
+
+IMHO, the "problem" is that this warning is about violation of type
+safety. Type safety by itself doesn't guarantee the code is perfectly
+fine. Violation of type safety doesn't necessarily mean the code is
+broken. A warning that warns about violation of type safety has the same
+properties.  Now, it's up to you to decide if you want warnings on type
+safety or not.
+
+What you are saying, on the other hand, for me reads like this: "I do
+want warnings on violations of type safety in general, except for
+"signed char" or "unsigned char" being used instead of "char"". I think
+I do understand your reasons, -- I just don't agree with them.
+
+-- Sergei.
