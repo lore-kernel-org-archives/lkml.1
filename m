@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932386AbXBSQKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932388AbXBSQLH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932386AbXBSQKy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 11:10:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932387AbXBSQKy
+	id S932388AbXBSQLH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 11:11:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932389AbXBSQLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 11:10:54 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:42676 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932386AbXBSQKx (ORCPT
+	Mon, 19 Feb 2007 11:11:07 -0500
+Received: from mailhub.fokus.fraunhofer.de ([193.174.154.14]:61187 "EHLO
+	mailhub.fokus.fraunhofer.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932388AbXBSQLG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 11:10:53 -0500
-Subject: Re: 2.6.20-mm1
-From: Steve Fox <drfickle@linux.vnet.ibm.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070216085546.12248641.randy.dunlap@oracle.com>
-References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
-	 <1171643832.3039.6.camel@drfickle.rchland.ibm.com>
-	 <20070216085546.12248641.randy.dunlap@oracle.com>
-Content-Type: text/plain
-Date: Mon, 19 Feb 2007 10:10:51 -0600
-Message-Id: <1171901451.3039.25.camel@drfickle.rchland.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Feb 2007 11:11:06 -0500
+Date: Mon, 19 Feb 2007 17:08:18 +0100
+From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
+To: stern@rowland.harvard.edu
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       James.Bottomley@steeleye.com, dougg@torque.net
+Subject: Re: [PATCH] Block layer: separate out queue-oriented ioctls
+Message-ID: <45d9cb72.je+WdtrFM7WV89m8%Joerg.Schilling@fokus.fraunhofer.de>
+References: <Pine.LNX.4.44L0.0702191051210.13197-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0702191051210.13197-100000@netrider.rowland.org>
+User-Agent: nail 11.22 3/20/05
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-02-16 at 08:55 -0800, Randy Dunlap wrote:
-> On Fri, 16 Feb 2007 10:37:12 -0600 Steve Fox wrote:
-> 
-> > bl6-13, an x86_64 box listed on test.kernel.org, tripped on this during
-> > an LTP run, even with
-> > unify-queue_delayed_work-and-queue_delayed_work_on-fix.patch applied. 
-> > 
-> > I'm not sure why the LTP results aren't copied over to TKO, but here's
-> > the details anyway.
-> > 
-> > If someone can give me an idea where to look, I can start a bi-sect if
-> > it would help.
-> > 
-> > kernel BUG at mm/swap.c:469!
-> > invalid opcode: 0000 [1] SMP 
-> > last sysfs file: /devices/system/node/node0/cpumap
-> 
-> 
-> Try this patch?  http://lkml.org/lkml/2007/2/16/220
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-That fixed it. Thanks.
+> Well, if Doug wants to reduce the value returned by SG_GET_RESERVED_SIZE, 
+> it's okay with me.  An advantage of doing this is that older versions of 
+> cdrecord would then work correctly.
+>
+> However you don't seem to realize that people can use programs like
+> cdrecord with devices whose drivers don't support SG_GET_RESERVED_SIZE --
+> because that ioctl works only with sg.  Programs would have to try
+> SG_GET_RESERVED_SIZE and if it faied, then try BLKSECTGET.
+
+Is there any reason not to have one single ioctl for one basic feature?
+
+> Remember also, the "reserved size" is _not_ the maximum allowed size of a
+> DMA transfer.  Rather, it is the size of an internal buffer maintained by
+> sg.  It's legal to do an I/O transfer larger than the "reserved size", but 
+> it is not legal to do an I/O transfer larger than max_sectors.
+
+At the time the call SG_GET_RESERVED_SIZE has been discussed/defined, we did 
+originally agree that the max value should be limited to what the HW allows
+as DMA size. This is why I did originally files a bug against 
+SG_GET_RESERVED_SIZE.
+
+Jörg
 
 -- 
-
-Steve Fox
-IBM Linux Technology Center
-
+ EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
+       js@cs.tu-berlin.de                (uni)  
+       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
+ URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
