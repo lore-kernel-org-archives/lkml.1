@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750708AbXBSI7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750714AbXBSJAW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750708AbXBSI7l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 03:59:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750722AbXBSI7l
+	id S1750714AbXBSJAW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 04:00:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750722AbXBSJAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 03:59:41 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:46045 "EHLO smtp.osdl.org"
+	Mon, 19 Feb 2007 04:00:21 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:46081 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750708AbXBSI7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 03:59:40 -0500
-Date: Mon, 19 Feb 2007 00:58:28 -0800
+	id S1750714AbXBSJAU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 04:00:20 -0500
+Date: Mon, 19 Feb 2007 00:57:27 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Balbir Singh <balbir@in.ibm.com>
 Cc: linux-kernel@vger.kernel.org, vatsa@in.ibm.com,
        ckrm-tech@lists.sourceforge.net, xemul@sw.ru, linux-mm@kvack.org,
        menage@google.com, svaidy@linux.vnet.ibm.com, devel@openvz.org
-Subject: Re: [RFC][PATCH][2/4] Add RSS accounting and control
-Message-Id: <20070219005828.3b774d8f.akpm@linux-foundation.org>
-In-Reply-To: <20070219065034.3626.2658.sendpatchset@balbir-laptop>
+Subject: Re: [RFC][PATCH][1/4] RSS controller setup
+Message-Id: <20070219005727.da2acdab.akpm@linux-foundation.org>
+In-Reply-To: <20070219065026.3626.36882.sendpatchset@balbir-laptop>
 References: <20070219065019.3626.33947.sendpatchset@balbir-laptop>
-	<20070219065034.3626.2658.sendpatchset@balbir-laptop>
+	<20070219065026.3626.36882.sendpatchset@balbir-laptop>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,187 +27,147 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Feb 2007 12:20:34 +0530 Balbir Singh <balbir@in.ibm.com> wrote:
+On Mon, 19 Feb 2007 12:20:26 +0530 Balbir Singh <balbir@in.ibm.com> wrote:
 
 > 
-> This patch adds the basic accounting hooks to account for pages allocated
-> into the RSS of a process. Accounting is maintained at two levels, in
-> the mm_struct of each task and in the memory controller data structure
-> associated with each node in the container.
-> 
-> When the limit specified for the container is exceeded, the task is killed.
-> RSS accounting is consistent with the current definition of RSS in the
-> kernel. Shared pages are accounted into the RSS of each process as is
-> done in the kernel currently. The code is flexible in that it can be easily
-> modified to work with any definition of RSS.
-> 
-> ..
->
-> +static inline int memctlr_mm_init(struct mm_struct *mm)
-> +{
-> +	return 0;
-> +}
+> This patch sets up the basic controller infrastructure on top of the
+> containers infrastructure. Two files are provided for monitoring
+> and control  memctlr_usage and memctlr_limit.
 
-So it returns zero on success.  OK.
+The patches use the identifier "memctlr" a lot.  It is hard to remember,
+and unpronounceable.  Something like memcontrol or mem_controller or
+memory_controller would be more typical.
 
-> --- linux-2.6.20/kernel/fork.c~memctlr-acct	2007-02-18 22:55:50.000000000 +0530
-> +++ linux-2.6.20-balbir/kernel/fork.c	2007-02-18 22:55:50.000000000 +0530
-> @@ -50,6 +50,7 @@
->  #include <linux/taskstats_kern.h>
->  #include <linux/random.h>
->  #include <linux/numtasks.h>
-> +#include <linux/memctlr.h>
->  
->  #include <asm/pgtable.h>
->  #include <asm/pgalloc.h>
-> @@ -342,10 +343,15 @@ static struct mm_struct * mm_init(struct
->  	mm->free_area_cache = TASK_UNMAPPED_BASE;
->  	mm->cached_hole_size = ~0UL;
->  
-> +	if (!memctlr_mm_init(mm))
-> +		goto err;
-> +
-
-But here we treat zero as an error?
-
->  	if (likely(!mm_alloc_pgd(mm))) {
->  		mm->def_flags = 0;
->  		return mm;
->  	}
-> +
-> +err:
->  	free_mm(mm);
->  	return NULL;
->  }
->
 > ...
 >
-> +int memctlr_mm_init(struct mm_struct *mm)
-> +{
-> +	mm->counter = kmalloc(sizeof(struct res_counter), GFP_KERNEL);
-> +	if (!mm->counter)
-> +		return 0;
-> +	atomic_long_set(&mm->counter->usage, 0);
-> +	atomic_long_set(&mm->counter->limit, 0);
-> +	rwlock_init(&mm->container_lock);
-> +	return 1;
-> +}
+> +	BUG_ON(!mem);
+> +	if ((buffer = kmalloc(nbytes + 1, GFP_KERNEL)) == 0)
+> +		return -ENOMEM;
 
-ah-ha, we have another Documentation/SubmitChecklist customer.
+Please prefer to do
 
-It would be more conventional to make this return -EFOO on error,
-zero on success.
+	buffer = kmalloc(nbytes + 1, GFP_KERNEL);
+	if (buffer == NULL)
+		reutrn -ENOMEM;
 
-> +void memctlr_mm_free(struct mm_struct *mm)
-> +{
-> +	kfree(mm->counter);
-> +}
+ie: avoid the assign-and-test-in-the-same-statement thing.  This affects
+the whole patchset.
+
+Also, please don't compare pointers to literal zero like that.  It makes me
+get buried it patches to convert it to "NULL".  I think this is a sparse
+thing.
+
+> +	buffer[nbytes] = 0;
+> +	if (copy_from_user(buffer, userbuf, nbytes)) {
+> +		ret = -EFAULT;
+> +		goto out_err;
+> +	}
 > +
-> +static inline void memctlr_mm_assign_container_direct(struct mm_struct *mm,
-> +							struct container *cont)
-> +{
-> +	write_lock(&mm->container_lock);
-> +	mm->container = cont;
-> +	write_unlock(&mm->container_lock);
-> +}
+> +	container_manage_lock();
+> +	if (container_is_removed(cont)) {
+> +		ret = -ENODEV;
+> +		goto out_unlock;
+> +	}
+> +
+> +	limit = simple_strtoul(buffer, NULL, 10);
+> +	/*
+> +	 * 0 is a valid limit (unlimited resource usage)
+> +	 */
+> +	if (!limit && strcmp(buffer, "0"))
+> +		goto out_unlock;
+> +
+> +	spin_lock(&mem->lock);
+> +	mem->counter.limit = limit;
+> +	spin_unlock(&mem->lock);
 
-More weird locking here.
+The patches do this a lot: a single atomic assignment with a
+pointless-looking lock/unlock around it.  It's often the case that this
+idiom indicates a bug, or needless locking.  I think the only case where it
+makes sense is when there's some other code somewhere which is doing
 
-> +void memctlr_mm_assign_container(struct mm_struct *mm, struct task_struct *p)
+	spin_lock(&mem->lock);
+	...
+	use1(mem->counter.limit);
+	...
+	use2(mem->counter.limit);
+	...
+	spin_unlock(&mem->lock);
+
+where use1() and use2() expect the two reads of mem->counter.limit to
+return the same value.
+
+Is that the case in these patches?  If not, we might have a problem in
+there.
+
+> +
+> +static ssize_t memctlr_read(struct container *cont, struct cftype *cft,
+> +				struct file *file, char __user *userbuf,
+> +				size_t nbytes, loff_t *ppos)
 > +{
-> +	struct container *cont = task_container(p, &memctlr_subsys);
+> +	unsigned long usage, limit;
+> +	char usagebuf[64];		/* Move away from stack later */
+> +	char *s = usagebuf;
 > +	struct memctlr *mem = memctlr_from_cont(cont);
 > +
-> +	BUG_ON(!mem);
-> +	write_lock(&mm->container_lock);
-> +	mm->container = cont;
-> +	write_unlock(&mm->container_lock);
+> +	spin_lock(&mem->lock);
+> +	usage = mem->counter.usage;
+> +	limit = mem->counter.limit;
+> +	spin_unlock(&mem->lock);
+> +
+> +	s += sprintf(s, "usage %lu, limit %ld\n", usage, limit);
+> +	return simple_read_from_buffer(userbuf, nbytes, ppos, usagebuf,
+> +					s - usagebuf);
 > +}
 
-And here.
+This output is hard to parse and to extend.  I'd suggest either two
+separate files, or multi-line output:
 
-> +/*
-> + * Update the rss usage counters for the mm_struct and the container it belongs
-> + * to. We do not fail rss for pages shared during fork (see copy_one_pte()).
-> + */
-> +int memctlr_update_rss(struct mm_struct *mm, int count, bool check)
-> +{
-> +	int ret = 1;
-> +	struct container *cont;
-> +	long usage, limit;
-> +	struct memctlr *mem;
+usage: %lu kB
+limit: %lu kB
+
+and what are the units of these numbers?  Page counts?  If so, please don't
+do that: it requires appplications and humans to know the current kernel's
+page size.
+
+> +static struct cftype memctlr_usage = {
+> +	.name = "memctlr_usage",
+> +	.read = memctlr_read,
+> +};
 > +
-> +	read_lock(&mm->container_lock);
-> +	cont = mm->container;
-> +	read_unlock(&mm->container_lock);
+> +static struct cftype memctlr_limit = {
+> +	.name = "memctlr_limit",
+> +	.write = memctlr_write,
+> +};
 > +
-> +	if (!cont)
-> +		goto done;
-
-And here.  I mean, if there was a reason for taking the lock around that
-read, then testing `cont' outside the lock just invalidated that reason.
-
-> +static inline void memctlr_double_lock(struct memctlr *mem1,
-> +					struct memctlr *mem2)
+> +static int memctlr_populate(struct container_subsys *ss,
+> +				struct container *cont)
 > +{
-> +	if (mem1 > mem2) {
-> +		spin_lock(&mem1->lock);
-> +		spin_lock(&mem2->lock);
-> +	} else {
-> +		spin_lock(&mem2->lock);
-> +		spin_lock(&mem1->lock);
-> +	}
-> +}
+> +	int rc;
+> +	if ((rc = container_add_file(cont, &memctlr_usage)) < 0)
+> +		return rc;
+> +	if ((rc = container_add_file(cont, &memctlr_limit)) < 0)
 
-Conventionally we take the lower-addressed lock first when doing this, not
-the higher-addressed one.
+Clean up the first file here?
 
-> +static inline void memctlr_double_unlock(struct memctlr *mem1,
-> +						struct memctlr *mem2)
-> +{
-> +	if (mem1 > mem2) {
-> +		spin_unlock(&mem2->lock);
-> +		spin_unlock(&mem1->lock);
-> +	} else {
-> +		spin_unlock(&mem1->lock);
-> +		spin_unlock(&mem2->lock);
-> +	}
+> +		return rc;
+> +	return 0;
 > +}
 > +
-> ...
->
->  	retval = -ENOMEM;
+> +static struct container_subsys memctlr_subsys = {
+> +	.name = "memctlr",
+> +	.create = memctlr_create,
+> +	.destroy = memctlr_destroy,
+> +	.populate = memctlr_populate,
+> +};
 > +
-> +	if (!memctlr_update_rss(mm, 1, MEMCTLR_CHECK_LIMIT))
-> +		goto out;
+> +int __init memctlr_init(void)
+> +{
+> +	int id;
 > +
-
-Again, please use zero for success and -EFOO for error.
-
-That way, you don't have to assume that the reason memctlr_update_rss()
-failed was out-of-memory.  Just propagate the error back.
-
->  	flush_dcache_page(page);
->  	pte = get_locked_pte(mm, addr, &ptl);
->  	if (!pte)
-> @@ -1580,6 +1587,9 @@ gotten:
->  		cow_user_page(new_page, old_page, address, vma);
->  	}
->  
-> +	if (!memctlr_update_rss(mm, 1, MEMCTLR_CHECK_LIMIT))
-> +		goto oom;
+> +	id = container_register_subsys(&memctlr_subsys);
+> +	printk("Initializing memctlr version %s, id %d\n", version, id);
+> +	return id < 0 ? id : 0;
+> +}
 > +
->  	/*
->  	 * Re-check the pte - we dropped the lock
->  	 */
-> @@ -1612,7 +1622,9 @@ gotten:
->  		/* Free the old page.. */
->  		new_page = old_page;
->  		ret |= VM_FAULT_WRITE;
-> -	}
-> +	} else
-> +		memctlr_update_rss(mm, -1, MEMCTLR_DONT_CHECK_LIMIT);
+> +module_init(memctlr_init);
 
-This one doesn't get checked?
-
-Why does MEMCTLR_DONT_CHECK_LIMIT exist?
