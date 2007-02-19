@@ -1,98 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965123AbXBSWro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965143AbXBSWs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965123AbXBSWro (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 17:47:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965145AbXBSWrn
+	id S965143AbXBSWs2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 17:48:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965151AbXBSWs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 17:47:43 -0500
-Received: from mail1.webmaster.com ([216.152.64.169]:4909 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965123AbXBSWrn (ORCPT
+	Mon, 19 Feb 2007 17:48:27 -0500
+Received: from nz-out-0506.google.com ([64.233.162.232]:30757 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965143AbXBSWs1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 17:47:43 -0500
-From: "David Schwartz" <davids@webmaster.com>
-To: <trent.waddington@gmail.com>
-Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+	Mon, 19 Feb 2007 17:48:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PTDm0GOCm7luaK6eYzGvWW5tPkbJfN9hTle5dwKkefoL9mmjvghhFjWOh+Mm2+7okz45g2bQRDgFg+pjWxIVucltP6nqOB5aHJ/5KOGkH97yIofKuh1RXKMjxJimUiLKkRPpyJSBJida+bNA0eJz8cXUa8k0qVkhCjXT6G8Cums=
+Message-ID: <f2b55d220702191448g6077c6aav43ff99edbaf77bdb@mail.gmail.com>
+Date: Mon, 19 Feb 2007 14:48:24 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Trent Waddington" <trent.waddington@gmail.com>
+Subject: Re: GPL vs non-GPL device drivers
+Cc: davids@webmaster.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
        "Neil Brown" <neilb@suse.de>
-Subject: RE: GPL vs non-GPL device drivers
-Date: Mon, 19 Feb 2007 14:47:00 -0800
-Message-ID: <MDEHLPKNGKAHNMBLJOLKKEEPBLAC.davids@webmaster.com>
+In-Reply-To: <3d57814d0702191426m2fc3c1c6had125a2db165befe@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <3d57814d0702191255l2ef21f72rf7d999a62c4ec19a@mail.gmail.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Mon, 19 Feb 2007 14:47:18 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Mon, 19 Feb 2007 14:47:20 -0800
+Content-Disposition: inline
+References: <3d57814d0702171726l403c7812n19f2a226cba02e5d@mail.gmail.com>
+	 <MDEHLPKNGKAHNMBLJOLKCEDPBLAC.davids@webmaster.com>
+	 <3d57814d0702191255l2ef21f72rf7d999a62c4ec19a@mail.gmail.com>
+	 <f2b55d220702191353m19b563a6t4c1dcf6fd86a6dc9@mail.gmail.com>
+	 <3d57814d0702191426m2fc3c1c6had125a2db165befe@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> On 2/20/07, David Schwartz <davids@webmaster.com> wrote:
-> > There is no such thing as the "combined work". If I put a DVD
-> > of The Phantom
-> > Menace in the same box as a DVD of The Big Lebowski, the box is not a
-> > "combined work".
-
-> If you can't even agree on that the legal concept of a combined work
-> exists then you're obviously too far from reality for anyone to reason
-> with.
-
-The term "combined work" is sometimes used to mean a combination of two or
-more works whether or not the result is a work. It is also sometimes used to
-refer to a work that contains literal elements from one or more other works.
-There is a very important distinction between these two uses. (And it's
-sometimes used to mean something that contains literal elements from one or
-more works, whether or not that thing is a work and whether or not the
-elements taken are protectable.)
-
-In your example, there is no "the combined work" because the combination
-does not produce a work. Look at my example, if you put a DVD of The Phantom
-Menace in the same box as a DVD of The Big Lebowski, is the box a "combined
-work"? Obviously not, it simply contains two works.
-
-In any event, I've been unable to find anything remotely resembling a clear
-definition of "combined work". It's not clear whether a "combined work" is
-supposed to be a type of work or can be a combination of works that is not
-itself a work.
-
-I have seen many people say that something is "legally considered a combined
-work", but as far as I can tell, there is no such legal term. If you have a
-citation to the contrary, I'd very much like to see it.
-
+On 2/19/07, Trent Waddington <trent.waddington@gmail.com> wrote:
+> On 2/20/07, Michael K. Edwards <medwards.linux@gmail.com> wrote:
+> > Bah.  Show us a citation to treaty, statute, or case law, anywhere in
+> > the world, Mr. Consensus-Reality.
+>
 > It's a given.. are you seriously contending that if you combine two
 > copyright works you are not obliged to conform with the conditions of
 > the license on one of them when making a copy of the combined work?
 
-The problem with statements like the above is that it's imposisble to tell
-what you're talking about. You use terms like "combined work", which as far
-as I can tell, could mean almost anything. You talk about when you "combine
-two works", but there are many different types of combination that have very
-many different meanings. (For example, mere aggregation versus creative
-selective combination.)
+There is no legal meaning to "combining" two works of authorship under
+the Berne Convention or any national implementation thereof.  If you
+"compile" or "collect" them, you're in one area of law, and if you
+create a work that "adapts" or "recasts" (or more generally "derives
+from") them, you're in another area of law.  A non-exclusive license
+can authorize one of these categories of conduct and not the other, or
+can slice and dice the scope of the license along almost any axis of
+law or fact.  But what it can't do is use the phrase "derivative work"
+passim -- a legal term of art invented by US judges and legislators to
+corral a class of infringing works and treat them differently from
+compilations -- and pretend that it also encompasses compilations
+(copyrightable and otherwise; there is an originality threshold here
+too) and use by reference.
 
-The short answer to your question is yes. Owners of intellectual property
-have some rights but not all rights, and in many cases, the right you are
-talking about is not one of the rights they have. This is not arbitrary or
-some kind of loophole, this is for very fundamental and important reasons.
+> If you are just arguing about the term, what term do you find more
+> appropriate?  Compilation?
 
-Copyright is not supposed to make any ideas any more difficult to express.
-You are only supposed to be able to protect the one way you chose to express
-an idea. It is a serious abuse of copyright to claim that your copyright
-protects certain functional ideas such that all those who try to express
-them must follow your rules.
+If the amount of "adapting, translating, and recasting" done to the
+pre-existing works crosses a minimum threshold of creative expression
+(not "sweat of the brow", at least not under Feist), then you've
+created a derivative work.  If the amount of "selecting and arranging"
+done to create a compilation crosses a similar threshold of creative
+expression, you've created a copyrightable compilation or collective
+work.  If neither, then all you've done is copy and distribute.
+That's how the law works.  IANAL, TINLA.
 
-DS
+> You guys seem to love pointless semantic arguments.  Are you always in
+> violent agreement?
 
+Perhaps pointless if you were the sole audience, since you seem
+disinclined to evaluate the accuracy of your beliefs given novel
+information backed by extensive citations to the primary literature.
+Not pointless if it disabuses other people, with less deeply ingrained
+errors of understanding, of the notion that they can trust certain
+very heavily financially interested parties to tell them the truth
+about what the law says.
 
+Cheers,
+- Michael
