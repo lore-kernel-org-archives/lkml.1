@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932472AbXBSSdI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932470AbXBSSdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932472AbXBSSdI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 13:33:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932470AbXBSSct
+	id S932470AbXBSSdJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 13:33:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932478AbXBSScq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 13:32:49 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:37851 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932459AbXBSSc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 13:32:27 -0500
+	Mon, 19 Feb 2007 13:32:46 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:43383 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932472AbXBSSc3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 13:32:29 -0500
 From: Adam Litke <agl@us.ibm.com>
-Subject: [PATCH 5/7] change_protection for hugetlb
-Date: Mon, 19 Feb 2007 10:32:16 -0800
+Subject: [PATCH 6/7] free_pgtable_range for hugetlb
+Date: Mon, 19 Feb 2007 10:32:27 -0800
 To: linux-mm@kvack.org
 Cc: linux-kernel@vger.kernel.org, agl@us.ibm.com
-Message-Id: <20070219183216.27318.81665.stgit@localhost.localdomain>
+Message-Id: <20070219183227.27318.12572.stgit@localhost.localdomain>
 In-Reply-To: <20070219183123.27318.27319.stgit@localhost.localdomain>
 References: <20070219183123.27318.27319.stgit@localhost.localdomain>
 Content-Type: text/plain; charset=utf-8; format=fixed
@@ -28,34 +29,41 @@ Signed-off-by: Adam Litke <agl@us.ibm.com>
 ---
 
  fs/hugetlbfs/inode.c |    1 +
- mm/mprotect.c        |    5 +++--
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ mm/memory.c          |    6 +++---
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
-index 146a4b7..1016694 100644
+index 1016694..3461f9b 100644
 --- a/fs/hugetlbfs/inode.c
 +++ b/fs/hugetlbfs/inode.c
-@@ -566,6 +566,7 @@ static struct pagetable_operations_struct hugetlbfs_pagetable_ops = {
- 	.copy_vma		= copy_hugetlb_page_range,
+@@ -567,6 +567,7 @@ static struct pagetable_operations_struct hugetlbfs_pagetable_ops = {
  	.pin_pages		= follow_hugetlb_page,
  	.unmap_page_range	= unmap_hugepage_range,
-+	.change_protection	= hugetlb_change_protection,
+ 	.change_protection	= hugetlb_change_protection,
++	.free_pgtable_range	= hugetlb_free_pgd_range,
  };
  
  static struct inode_operations hugetlbfs_dir_inode_operations = {
-diff --git a/mm/mprotect.c b/mm/mprotect.c
-index 3b8f3c0..172e204 100644
---- a/mm/mprotect.c
-+++ b/mm/mprotect.c
-@@ -201,8 +201,9 @@ success:
- 		dirty_accountable = 1;
- 	}
+diff --git a/mm/memory.c b/mm/memory.c
+index aa6b06e..442e6b2 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -279,15 +279,15 @@ void free_pgtables(struct mmu_gather **tlb, struct vm_area_struct *vma,
+ 		anon_vma_unlink(vma);
+ 		unlink_file_vma(vma);
  
--	if (is_vm_hugetlb_page(vma))
--		hugetlb_change_protection(vma, start, end, vma->vm_page_prot);
-+	if (has_pt_op(vma, change_protection))
-+		pt_op(vma, change_protection)(vma, start, end,
-+			vma->vm_page_prot);
- 	else
- 		change_protection(vma, start, end, vma->vm_page_prot, dirty_accountable);
- 	vm_stat_account(mm, oldflags, vma->vm_file, -nrpages);
+-		if (is_vm_hugetlb_page(vma)) {
+-			hugetlb_free_pgd_range(tlb, addr, vma->vm_end,
++		if (has_pt_op(vma, free_pgtable_range)) {
++			pt_op(vma, free_pgtable_range)(tlb, addr, vma->vm_end,
+ 				floor, next? next->vm_start: ceiling);
+ 		} else {
+ 			/*
+ 			 * Optimization: gather nearby vmas into one call down
+ 			 */
+ 			while (next && next->vm_start <= vma->vm_end + PMD_SIZE
+-			       && !is_vm_hugetlb_page(next)) {
++			       && !has_pt_op(next, free_pgtable_range)) {
+ 				vma = next;
+ 				next = vma->vm_next;
+ 				anon_vma_unlink(vma);
