@@ -1,67 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932289AbXBSOdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932286AbXBSOfc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932289AbXBSOdt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 09:33:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932288AbXBSOdt
+	id S932286AbXBSOfc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 09:35:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932272AbXBSOfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 09:33:49 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:45783 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932289AbXBSOds (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 09:33:48 -0500
-To: linux-kernel@vger.kernel.org
-CC: devel@openvz.org
-Subject: [PATCH] ecryptfs lower_file handling issues 
-From: Dmitriy Monakhov <dmonakhov@openvz.org>
-Date: Mon, 19 Feb 2007 17:34:13 +0300
-Message-ID: <87wt2ew716.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-=-="
+	Mon, 19 Feb 2007 09:35:32 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4549 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932286AbXBSOfb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 09:35:31 -0500
+Date: Mon, 19 Feb 2007 14:35:20 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Frederik Deweerdt <deweerdt@free.fr>
+Cc: jose.goncalves@inov.pt, tie-fei.zang@freescale.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: Serial related oops
+Message-ID: <20070219143520.GB27370@flint.arm.linux.org.uk>
+Mail-Followup-To: Frederik Deweerdt <deweerdt@free.fr>,
+	jose.goncalves@inov.pt, tie-fei.zang@freescale.com,
+	akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+References: <20070220132909.GD566@slug> <20070219134539.GA27370@flint.arm.linux.org.uk> <20070220142442.GF566@slug>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070220142442.GF566@slug>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
+On Tue, Feb 20, 2007 at 02:24:42PM +0000, Frederik Deweerdt wrote:
+> On Mon, Feb 19, 2007 at 01:45:39PM +0000, Russell King wrote:
+> > On Tue, Feb 20, 2007 at 01:29:09PM +0000, Frederik Deweerdt wrote:
+> > > (Sorry for the resend, I forgot to cc the list)
+> > > Hi Russell,
+> > > 
+> > > It seems that the following change in drivers/serial/8250.c
+> > > 
+> > > +
+> > > +	/*
+> > > +	 * Do a quick test to see if we receive an
+> > > +	 * interrupt when we enable the TX irq.
+> > > +	 */
+> > > +	serial_outp(up, UART_IER, UART_IER_THRI);
+> > > +	lsr = serial_in(up, UART_LSR);
+> > > +	iir = serial_in(up, UART_IIR);
+> > > +	serial_outp(up, UART_IER, 0);
+> > > +
+> > > +	if (lsr & UART_LSR_TEMT && iir & UART_IIR_NO_INT) {
+> > > +		if (!(up->capabilities & UART_BUG_TXEN)) {
+> > > +			up->capabilities |= UART_BUG_TXEN;
+> > > +			pr_debug("ttyS%d - enabling bad tx status workarounds\n",
+> > > +				 port->line);
+> > > +		}
+> > > +	} else {
+> > > +		up->capabilities &= ~UART_BUG_TXEN;
+> > > +	}
+> > > +
+> > > 
+> > > that was introduced in 2.6.12[1], is causing oopses on some hardware. In
+> > > particular Jose Goncalves reported[2] an oops in 2.6.16.38 reproducible
+> > 
+> > I don't see that.  The oops your referring to is a NULL pointer
+> > dereference.  The only dereferences the above code does is via
+> > 'up' and 'port' both of which are provably always non-null here.
+>
+> Neither did I, but introducing printk's through the function, we narrowed
+> the problem to this part of the code. And removing it makes the problem
+> go away. We inserted 37 printk's in the function body, and Jose bisected
+> those until the problem went away.
 
+Well, there's still little clue about why this is causing a NULL pointer
+dereference.  The only thing I can think is that somehow performing
+this test is causing a power glitch to your CPU, causing its registers
+to get corrupted, and which results in it doing a NULL pointer deref.
 
-1)Function ecryptfs_do_readpage() calls flush_dcache_page(lower_page),
-  but lower_page was't changed here. So remove this line.
+Are you saying that the NULL pointer occurred while executing this code?
+If not, where does the NULL pointer occur?
 
-2)prepare_write ret val was ignored in ecryptfs_write_inode_size_to_header().
-If error happends we can't call commit_write, just do cleanup and fial.
-It is issue easy to reproduce with full lower_fs, in this case prepare_write()
-will return ENOSPC.
-Signed-off-by: Dmitriy Monakhov <dmonakhov@openvz.org>
--------------
+> > No, it's only runtime because you can't tell which ports might be
+> > affected, and you might have a mixture of ports which are affected
+> > and those which aren't.
+> Hmm, ok. And what about a CONFIG_I_KNOW_MY_SERIAL_IS_BROKEN option?
 
---=-=-=
-Content-Disposition: inline; filename=diff-mm-ecryptfs-mmap-fix-2_6_20-mm2
+Andrew's said no (in that the thread you refer to) and suggested an
+alternative, I've said no, how many more 'no's do you need to turn
+you away from the wrong approach?
 
-diff --git a/fs/ecryptfs/mmap.c b/fs/ecryptfs/mmap.c
-index 1e5d2ba..0cebb75 100644
---- a/fs/ecryptfs/mmap.c
-+++ b/fs/ecryptfs/mmap.c
-@@ -238,7 +238,6 @@ int ecryptfs_do_readpage(struct file *file, struct page *page,
- 	lower_page_data = kmap_atomic(lower_page, KM_USER1);
- 	memcpy(page_data, lower_page_data, PAGE_CACHE_SIZE);
- 	kunmap_atomic(lower_page_data, KM_USER1);
--	flush_dcache_page(lower_page);
- 	kunmap_atomic(page_data, KM_USER0);
- 	flush_dcache_page(page);
- 	rc = 0;
-@@ -454,6 +453,12 @@ static int ecryptfs_write_inode_size_to_header(struct file *lower_file,
- 	}
- 	lower_a_ops = lower_inode->i_mapping->a_ops;
- 	rc = lower_a_ops->prepare_write(lower_file, header_page, 0, 8);
-+	if (rc) {
-+		ecryptfs_printk(KERN_ERR, "Error preparing header page "
-+			"write\n");
-+		ecryptfs_release_lower_page(header_page);
-+		goto out;
-+	}
- 	file_size = (u64)i_size_read(inode);
- 	ecryptfs_printk(KERN_DEBUG, "Writing size: [0x%.16x]\n", file_size);
- 	file_size = cpu_to_be64(file_size);
+> > > PS: CCing Andrew and Zang Roy-r61911 as they seemed to discuss this in
+> > > http://lkml.org/lkml/2006/6/13/21
+> > 
+> > I don't see any reference to this problem there.
+>
+> Sorry, I suck, I got that mixed with that one:
+> http://lkml.org/lkml/2006/12/26/63
+> "probing for UART_BUG_TXEN in 8250 driver leads to weird effects on some
+> ARM boards"
 
---=-=-=--
+The "weird effects" were never quantified, so that's one of the reasons
+I ignored that report (another being is that I stopped being the serial
+maintainer a while ago, and now serial is maintainerless.)
 
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
