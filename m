@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932738AbXBSWTO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932739AbXBSWUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932738AbXBSWTO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 17:19:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932739AbXBSWTO
+	id S932739AbXBSWUL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 17:20:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932864AbXBSWUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 17:19:14 -0500
-Received: from mail.parknet.jp ([210.171.160.80]:1620 "EHLO parknet.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932738AbXBSWTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 17:19:13 -0500
-X-AuthUser: hirofumi@parknet.jp
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.20 kernel hang with USB drive and vfat doing ftruncate
-References: <6EF4DB85-C7D4-445B-B9B5-0D22D5D893CD@kernel.crashing.org>
-	<87vehzqwf6.fsf@duaron.myhome.or.jp>
-	<04C493C2-1D8D-41B7-955A-F5C5B08023BB@kernel.crashing.org>
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Date: Tue, 20 Feb 2007 07:19:06 +0900
-In-Reply-To: <04C493C2-1D8D-41B7-955A-F5C5B08023BB@kernel.crashing.org> (Kumar Gala's message of "Mon\, 19 Feb 2007 15\:58\:53 -0600")
-Message-ID: <87ejolkcyt.fsf@duaron.myhome.or.jp>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.93 (gnu/linux)
+	Mon, 19 Feb 2007 17:20:10 -0500
+Received: from mail-out.m-online.net ([212.18.0.9]:40983 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932744AbXBSWUI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 17:20:08 -0500
+Date: Mon, 19 Feb 2007 23:20:28 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 12/15] ide: make ide_hwif_t.ide_dma_host_on void
+Message-ID: <20070219222028.GA9297@aepfle.de>
+References: <20070203135301.2546.54884.sendpatchset@localhost.localdomain> <20070203135307.2546.94874.sendpatchset@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070203135307.2546.94874.sendpatchset@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kumar Gala <galak@kernel.crashing.org> writes:
+On Sat, Feb 03, Bartlomiej Zolnierkiewicz wrote:
 
->>> I usually run the following twice to get the hang state:
->>>
->>> time ./trunc_test bar 100000000 &
->>> time ./trunc_test baz 100000000 &
->>>
->>> I was wondering if anyone had any suggestions on what to poke at next
->>> to try and figure out what is going on.
->>
->> Can you check /sys/block/xxx/stat or something to make sure there is
->> no outstanding IO request?
->>
->> It seems to be no response from the lower layer...
->
-> Once the system locks up I dont have any ability to do anything.
+> [PATCH] ide: make ide_hwif_t.ide_dma_host_on void
 
-Ah, doesn't sysrq also work? If sysrq work, it can use to see IO
-request state with a patch.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> +++ b/drivers/ide/ppc/pmac.c
+> @@ -1984,10 +1984,8 @@ static void pmac_ide_dma_host_off(ide_dr
+>  {
+>  }
+>  
+> -static int
+> -pmac_ide_dma_host_on (ide_drive_t *drive)
+> +static int pmac_ide_dma_host_on(ide_drive_t *drive)
+>  {
+> -	return 0;
+>  }
+>  
+>  static int
+
+This missed the s/int/void/
