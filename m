@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752573AbXBSA1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752577AbXBSA20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752573AbXBSA1D (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 19:27:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbXBSA1D
+	id S1752577AbXBSA20 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 19:28:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbXBSA20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 19:27:03 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:43257 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752573AbXBSA1B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 19:27:01 -0500
-Message-ID: <45D8EEC1.4030203@zytor.com>
-Date: Sun, 18 Feb 2007 16:26:41 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Jean Delvare <khali@linux-fr.org>,
+	Sun, 18 Feb 2007 19:28:26 -0500
+Received: from gate.crashing.org ([63.228.1.57]:58630 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752577AbXBSA2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 19:28:25 -0500
+Subject: Re: [RFC] killing the NR_IRQS arrays.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Dax Kelson <dax@gurulabs.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Linus' laptop and Num lock status
-References: <1171479361.3706.48.camel@mentorng.gurulabs.com>	<Pine.LNX.4.64.0702141104210.3604@woody.linux-foundation.org>	<20070214202144.1ddb930f.khali@linux-fr.org>	<45D46F7B.3060105@zytor.com>	<20070218170401.286e0fc6.khali@linux-fr.org>	<45D88D9F.7090705@zytor.com> <20070218100644.e7c40a88.randy.dunlap@oracle.com>
-In-Reply-To: <20070218100644.e7c40a88.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <1171833885.3261.208.camel@laptopd505.fenrus.org>
+References: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com>
+	 <20070216124117.GB4218@elte.hu>
+	 <1171833885.3261.208.camel@laptopd505.fenrus.org>
+Content-Type: text/plain
+Date: Mon, 19 Feb 2007 11:25:53 +1100
+Message-Id: <1171844753.5644.174.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Sun, 18 Feb 2007 09:32:15 -0800 H. Peter Anvin wrote:
+On Sun, 2007-02-18 at 22:24 +0100, Arjan van de Ven wrote:
+> On Fri, 2007-02-16 at 13:41 +0100, Ingo Molnar wrote:
+> > * Eric W. Biederman <ebiederm@xmission.com> wrote:
+> > 
+> > > So I propose we remove all assumptions from the code that we actually 
+> > > have an array of irqs.  That will allow for irq_desc to be dynamically 
+> > > allocated instead of statically allocated saving memory and reducing 
+> > > kernel complexity.
+> > 
+> > hm. I'd suggest to do this without changing request_irq() - and then we 
+> > could avoid the 'massive, every driver affected' change, right?
 > 
->> Jean Delvare wrote:
->>> On Thu, 15 Feb 2007 06:34:35 -0800, H. Peter Anvin wrote:
->>>> Jean Delvare wrote:
->>>>> On x86, the BIOS led state can be read from byte 0x97 the BIOS RAM. The
->>>>> BIOS RAM is mapped at 0x400 so all we need to do is to one byte from
->>>>> RAM (offset 0x497). This is how Suse's hwinfo does.
->>>> Perhaps that's what Suse does, but the proper address is 0x417.
->>>>
->>>> 0x497 is the rarely-used LPT2 timeout counter.
->>> Still, the information printed by hwinfo is correct, I've tested it
->>> myself. Is there some publicly available documentation about the x86
->>> BIOS RAM mapping?
->>>
->> Google for Ralf Brown's Interrupt List.
-> 
-> (Ralph)
-> 
-> I didn't find the BIOS data areas/tables in Ralph's web pages...
-> 
+> if request_irq() changes we might as well make a variant that takes a
+> PCI device struct rather than a number, for the 99% of PCI drivers that
+> use that.. (and then msi and other stuff becomes simpler :)
 
-It's called memory.lst in the Interrupt List.
+As a matter of fact, if IRQs has to be handled properly as resources of
+their respective devices, I think request_irq replacement should take a
+struct device...
 
-	-hpa
+In fact, having IRQs hanging off their respective devices would give a
+proper way to access them via sysfs and implement the affinity etc...
+thus providing a long term replacement for the current number based
+APIs.
+
+In addition, to facilitate the job of things like IRQ balancing daemons,
+a /sys/irqs/ could be created containing symlinks to all irqs in the
+system.
+
+Ben.
+ 
+
