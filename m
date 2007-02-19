@@ -1,97 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932418AbXBSRsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932432AbXBSRvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932418AbXBSRsu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 12:48:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932432AbXBSRsu
+	id S932432AbXBSRvs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 12:51:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932439AbXBSRvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 12:48:50 -0500
-Received: from mail1.webmaster.com ([216.152.64.169]:1309 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932418AbXBSRst (ORCPT
+	Mon, 19 Feb 2007 12:51:48 -0500
+Received: from smtp.nokia.com ([131.228.20.172]:65142 "EHLO
+	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932432AbXBSRvr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 12:48:49 -0500
-From: "David Schwartz" <davids@webmaster.com>
-To: <trent.waddington@gmail.com>
-Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>
-Subject: RE: GPL vs non-GPL device drivers
-Date: Mon, 19 Feb 2007 09:48:51 -0800
-Message-ID: <MDEHLPKNGKAHNMBLJOLKCEDPBLAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <3d57814d0702171726l403c7812n19f2a226cba02e5d@mail.gmail.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Mon, 19 Feb 2007 09:49:03 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Mon, 19 Feb 2007 09:49:03 -0800
+	Mon, 19 Feb 2007 12:51:47 -0500
+Subject: Re: [PATCH 00/44 take 2] [UBI] Unsorted Block Images
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Theodore Tso <tytso@mit.edu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20070219143321.GE25490@thunk.org>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
+	 <20070217224952.GB16522@thunk.org> <1171889303.13817.29.camel@sauron>
+	 <20070219143321.GE25490@thunk.org>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 19 Feb 2007 19:07:46 +0200
+Message-Id: <1171904866.14817.36.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 19 Feb 2007 17:08:03.0271 (UTC) FILETIME=[8405F570:01C75448]
+X-eXpurgate-Category: 1/0
+X-eXpurgate-ID: 149371::070219190544-1EE55BB0-65105C80/0-0/0-1
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-02-19 at 09:33 -0500, Theodore Tso wrote:
+> It made it much, much, MUCH harder to review.  Especially given that
+> the documentation was separated from the implementation.  As I looked
+> at the implementation, there was no way to look and what it was
+> supposed to do without flipping back to a previous e-mail message and
+> losing my place.
 
-> Sigh.  VJ is distributing the linux kernel with proprietary
-> extensions.  If you want to argue that the proprietary extensions in
-> isolation are not derivative works of the kernel, fine, you might have
-> a case, but the combined work, which VJ is distributing is *clearly* a
-> derivative work and must be distributed under the terms of the GPL.
+I will send Build stuff as the last patch next time, thanks, point
+taken.
 
-There is no such thing as the "combined work". If I put a DVD of The Phantom
-Menace in the same box as a DVD of The Big Lebowski, the box is not a
-"combined work".
+I just used different concept: one looks at declaration and the overall
+picture becomes clear because _there is_ documentation. One does not
+look at the implementation to grasp picture on surface.
 
-VJ is, presumably, distributing the Linux kernel and some additional works
-that he has written. There is no "combined work" just because the two works
-are distributed on the same media. There isn't even a "combined work" just
-because the two works were designed to work together. (The DVD of the
-Phantom Menace was designed to work with the firmware in my DVD player, but
-it's absurd to argue that there is a "combined work" or that one is
-derivative of the other.)
+But your point is fair. I assume _programmers_ look in .c first. Users
+may always generate a pdf. I will do what you advise.
 
-> Despite which, legal bullshit is best left for lawyers.. the *intent*
-> of the GPL is that if you distribute *any* changes, extensions or
-> plugins for a GPL work, you do so under the GPL.
+May be a good compromise would be to have just brief comments at
+headers, and full specification at .c. I will think about this, thanks.
 
-Suppose the intent of the Microsoft EULA was that if you ever used Windows,
-Microsoft owned every work of software you ever wrote. Should this "intent"
-be honored? This kind of intent -- the intent of a license author to try to
-leverage the license to own someone else's work, should be ridiculed and
-dishonored.
+> > This reflects the way of my thinking. I see UBI as a set of units with
+> > defined interfaces. So I even physically split the interface description
+> > into files. I still think it is easier to grasp the architecture this
+> > way.
+> 
+> Speaking as someone who was coming into it cold, it actually made it
+> far more difficult.  Your units were too small, so that meant the
+> number of interfaces that were created as a result were huge!  (Around
+> 20 _sets_ of interfaces, all of which had to be comprehended for what
+> should have been a relatively simple set of functionality!)
 
-> The law may not
-> allow for this to be enforced, but it shouldn't need to.. one should
-> read the GPL as 100% enforceable and follow it without looking for
-> "loop holes" as it is the stated desire of how the author of the code
-> wants you to use his work.  Looking for loop holes, and worse yet,
-> discussing those loop holes in a public place, is just insulting.
+Why not? Some stuff may probably be merged. _Specific_ advices are
+welcome.
 
-I think this is a completely irrational view. The GPL *is* the rule we've
-all been playing by. Not something in RMS' head. People who have chosen to
-apply the GPL know what the GPL says, and only to some extent know what
-other people meant or intended by it. The GPL *is* the rule.
+> And when you create that many interfaces, it adds inertia to changing
+> the interfaces later on, because it's sometimes not clear how many
+> users of the interface there really are.  My general rule of thumb is
+> that if an interface only has one user, then it may be a good idea to
+> combine it with the user of that interface, and then make the
+> functions involved be a static, so that it becomes clear the only user
+> of that functoin is within that one file.  You can take this too far,
+> and to extremes it doesn't work all that well, but the UBI layer has
+> gone waaaaaay off the deep end in terms of functional decomposition.
 
-As for law and loop holes, that's the supreme irony. The same people who
-argue that people have too little freedom and intellectual property rights
-are too great (and who oppose software patents) still seem to argue that
-when *their* intellectual property is at stake, not even the law and the
-text of their license limits their powers and control.
+Well... I do not want any flame on this topic. It is about taste,
+trade-offs, compromises. It is difficult to provide _objective_ and
+killing arguments here. But I will think on this, point taken, thanks.
 
-Let's not be a bunch of hypocrites.
-
-> Yes, it does matter.. the author of the work has defined the terms
-> under which you may use it.. if you don't like it, don't use the work.
-
-Right, don't believe all that crap about "freedom". That's just PR speak.
-
-DS
-
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
