@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932759AbXBSWeN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965128AbXBSWly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932759AbXBSWeN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 17:34:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932761AbXBSWeN
+	id S965128AbXBSWly (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 17:41:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965129AbXBSWly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 17:34:13 -0500
-Received: from madara.hpl.hp.com ([192.6.19.124]:52693 "EHLO madara.hpl.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932759AbXBSWeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 17:34:12 -0500
-Date: Mon, 19 Feb 2007 14:34:00 -0800
-From: Stephane Eranian <eranian@hpl.hp.com>
+	Mon, 19 Feb 2007 17:41:54 -0500
+Received: from cytosin.uni-konstanz.de ([134.34.240.61]:35848 "EHLO
+	cytosin.uni-konstanz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965128AbXBSWlx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 17:41:53 -0500
+X-Greylist: delayed 1746 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Feb 2007 17:41:53 EST
+X-IronPort-AV: i="4.14,192,1170633600"; 
+   d="scan'208"; a="8103010:sNHT15155826"
+From: Michael Dreher <michael.dreher@uni-konstanz.de>
 To: linux-kernel@vger.kernel.org
-Cc: ak@suse.de, akpm@linux-foundation.org
-Subject: Re: [PATCH] x86_64 make NMI use PERFCTR1 for architectural perfmon (take 2)
-Message-ID: <20070219223400.GB30469@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <20070217160838.GB16715@frankl.hpl.hp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: GPL vs non-GPL device drivers
+Date: Mon, 19 Feb 2007 23:12:45 +0100
+User-Agent: KMail/1.6.2
+Cc: "Michael K. Edwards" <medwards.linux@gmail.com>,
+       "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       Alan <alan@lxorguk.ukuu.org.uk>, "Scott Preece" <sepreece@gmail.com>,
+       "Alexandre Oliva" <aoliva@redhat.com>, davids@webmaster.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+References: <MDEHLPKNGKAHNMBLJOLKKEIPBKAC.davids@webmaster.com> <Pine.LNX.4.61.0702191535010.18507@chaos.analogic.com> <f2b55d220702191350t142fcce5r463a4c9b2d878c12@mail.gmail.com>
+In-Reply-To: <f2b55d220702191350t142fcce5r463a4c9b2d878c12@mail.gmail.com>
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20070217160838.GB16715@frankl.hpl.hp.com>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200702192312.45511.michael.dreher@uni-konstanz.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Am Montag, 19. Februar 2007 22:50 schrieb Michael K. Edwards:
+> On 2/19/07, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
+> > FWIW. A license is NOT a contract in the United States, according to
+> > contract law. A primary requirement of a contract is an agreement. A
+> > contract cannot, therefore, be forced. Licenses, on the other hand,
+> > can be forced upon the user of the licensed material.
+>
+> Wrong.  Acceptance through conduct has been integral to contract law
+> in common-law countries since the days of writs in Chancery, and is
+> part of the codification of the difference between contracts "in
+> personam" and "in rem".  Allow me to recommend Kevin Teeven's "A
+> History of the Anglo-American Common Law of Contract".  It is settled
+> law throughout the Western world that non-exclusive licenses of
+> copyright need not be formalized, or even put in writing.  
 
-This patch against 2.6.20-git14 makes the NMI watchdog use PERFSEL1/PERFCTR1
-instead of PERFSEL0/PERFCTR0 on processors supporting Intel architectural
-perfmon, such as Intel Core 2. Although all PMU events can work on
-both counters, the Precise Event-Based Sampling (PEBS) requires that the
-event be in PERFCTR0 to work correctly (see section 18.14.4.1 in the
-IA32 SDM Vol 3b). This versions has 3 chunks compared to previous where
-we had missed on check.
+Well, what you write is certainly not correct in Germany.
+At least here in Germany, a licence is NOT a contract.
+If you go into a shop and buy a cardboard box with a software CD in it, 
+the only contract you have made is that contract with the shop
+owner about purchasing this very box. The german law is very
+explicit in stating that there is absolute NO contract with the producer
+i.e., the software company which has the rights on the software.
+And as a consequence, that funny microsoft eula is totally void,
+even if you have clicked at "I agree". Never ever (at least in Germany)
+constitutes the act of clicking this button a contract with the software
+company. Because the law says that a contract is not valid without an 
+agreement, and the law gives some requirements on the form of an agreement in
+order to be valid, and "clicking somewhere" is not enough.
 
-Changelog:
-        - make the x86-64 NMI watchdog use PERFSEL1/PERFCTR1 instead of PERFSEL0/PERFCTR0
-          on processors supporting the Intel architectural perfmon (e.g. Core 2 Duo).
-          This allows PEBS to work when the NMI watchdog is active.
-
-signed-off-by: stephane eranian <eranian@hpl.hp.com>
+Of course, the user has to honor the general law which forbids copying and
+distributing the software (except with permission from the creator).
 
 
-diff -urNp --exclude=.git linux-2.6.20.orig/arch/x86_64/kernel/nmi.c linux-2.6.20.base/arch/x86_64/kernel/nmi.c
---- linux-2.6.20.orig/arch/x86_64/kernel/nmi.c	2007-02-19 13:37:27.000000000 -0800
-+++ linux-2.6.20.base/arch/x86_64/kernel/nmi.c	2007-02-19 14:27:45.000000000 -0800
-@@ -285,7 +285,7 @@ int __init check_nmi_watchdog (void)
- 		struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
- 
- 		nmi_hz = 1;
--	 	if (wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR0)
-+	 	if (wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR1)
- 			nmi_hz = adjust_for_32bit_ctr(nmi_hz);
- 	}
- 
-@@ -650,8 +650,8 @@ static int setup_intel_arch_watchdog(voi
- 	    (ebx & ARCH_PERFMON_UNHALTED_CORE_CYCLES_PRESENT))
- 		goto fail;
- 
--	perfctr_msr = MSR_ARCH_PERFMON_PERFCTR0;
--	evntsel_msr = MSR_ARCH_PERFMON_EVENTSEL0;
-+	perfctr_msr = MSR_ARCH_PERFMON_PERFCTR1;
-+	evntsel_msr = MSR_ARCH_PERFMON_EVENTSEL1;
- 
- 	if (!reserve_perfctr_nmi(perfctr_msr))
- 		goto fail;
-@@ -895,7 +895,7 @@ int __kprobes nmi_watchdog_tick(struct p
- 				/* start the cycle over again */
- 				wrmsrl(wd->perfctr_msr,
- 				       -((u64)cpu_khz * 1000 / nmi_hz));
--	 		} else if (wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR0) {
-+	 		} else if (wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR1) {
- 				/*
- 				 * ArchPerfom/Core Duo needs to re-unmask
- 				 * the apic vector
+Michael
