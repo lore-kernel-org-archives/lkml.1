@@ -1,70 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965128AbXBSWly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965132AbXBSWmF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965128AbXBSWly (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 17:41:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965129AbXBSWly
+	id S965132AbXBSWmF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 17:42:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965129AbXBSWmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 17:41:54 -0500
-Received: from cytosin.uni-konstanz.de ([134.34.240.61]:35848 "EHLO
-	cytosin.uni-konstanz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965128AbXBSWlx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 17:41:53 -0500
-X-Greylist: delayed 1746 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Feb 2007 17:41:53 EST
-X-IronPort-AV: i="4.14,192,1170633600"; 
-   d="scan'208"; a="8103010:sNHT15155826"
-From: Michael Dreher <michael.dreher@uni-konstanz.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: GPL vs non-GPL device drivers
-Date: Mon, 19 Feb 2007 23:12:45 +0100
-User-Agent: KMail/1.6.2
-Cc: "Michael K. Edwards" <medwards.linux@gmail.com>,
-       "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       Alan <alan@lxorguk.ukuu.org.uk>, "Scott Preece" <sepreece@gmail.com>,
-       "Alexandre Oliva" <aoliva@redhat.com>, davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-References: <MDEHLPKNGKAHNMBLJOLKKEIPBKAC.davids@webmaster.com> <Pine.LNX.4.61.0702191535010.18507@chaos.analogic.com> <f2b55d220702191350t142fcce5r463a4c9b2d878c12@mail.gmail.com>
-In-Reply-To: <f2b55d220702191350t142fcce5r463a4c9b2d878c12@mail.gmail.com>
+	Mon, 19 Feb 2007 17:42:05 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:53467 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965132AbXBSWmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 17:42:03 -0500
+To: Zach Brown <zach.brown@oracle.com>
+Cc: linux-aio@kvack.org, linux-kernel@vger.kernel.org,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna bhattacharya <suparna@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Leonid Ananiev <leonid.i.ananiev@intel.com>
+Subject: Re: [PATCH 1/2] aio: create aio_ring_insert_entry() function
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+References: <20070219213830.4032.71308.sendpatchset@tetsuo.zabbo.net>
+From: Jeff Moyer <jmoyer@redhat.com>
+Date: Mon, 19 Feb 2007 17:41:04 -0500
+In-Reply-To: <20070219213830.4032.71308.sendpatchset@tetsuo.zabbo.net> (Zach Brown's message of "Mon, 19 Feb 2007 13:38:30 -0800 (PST)")
+Message-ID: <x49649x6a9r.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.5-b27 (linux)
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200702192312.45511.michael.dreher@uni-konstanz.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 19. Februar 2007 22:50 schrieb Michael K. Edwards:
-> On 2/19/07, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
-> > FWIW. A license is NOT a contract in the United States, according to
-> > contract law. A primary requirement of a contract is an agreement. A
-> > contract cannot, therefore, be forced. Licenses, on the other hand,
-> > can be forced upon the user of the licensed material.
->
-> Wrong.  Acceptance through conduct has been integral to contract law
-> in common-law countries since the days of writs in Chancery, and is
-> part of the codification of the difference between contracts "in
-> personam" and "in rem".  Allow me to recommend Kevin Teeven's "A
-> History of the Anglo-American Common Law of Contract".  It is settled
-> law throughout the Western world that non-exclusive licenses of
-> copyright need not be formalized, or even put in writing.  
+==> On Mon, 19 Feb 2007 13:38:30 -0800 (PST), Zach Brown <zach.brown@oracle.com> said:
 
-Well, what you write is certainly not correct in Germany.
-At least here in Germany, a licence is NOT a contract.
-If you go into a shop and buy a cardboard box with a software CD in it, 
-the only contract you have made is that contract with the shop
-owner about purchasing this very box. The german law is very
-explicit in stating that there is absolute NO contract with the producer
-i.e., the software company which has the rights on the software.
-And as a consequence, that funny microsoft eula is totally void,
-even if you have clicked at "I agree". Never ever (at least in Germany)
-constitutes the act of clicking this button a contract with the software
-company. Because the law says that a contract is not valid without an 
-agreement, and the law gives some requirements on the form of an agreement in
-order to be valid, and "clicking somewhere" is not enough.
+Zach> This patch just hoists the process of inserting an entry into the completion
+Zach> ring into its own function.  No functionality is changed.  This is in
+Zach> preparation for calling ring insertion from another path with slightly
+Zach> different mechanics.
 
-Of course, the user has to honor the general law which forbids copying and
-distributing the software (except with permission from the creator).
+Looks harmless.
 
-
-Michael
+Acked-by: Jeff Moyer <jmoyer@redhat.com>
