@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750891AbXBSKpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750916AbXBSKuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750891AbXBSKpL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 05:45:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbXBSKpL
+	id S1750916AbXBSKuX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 05:50:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbXBSKuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 05:45:11 -0500
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:53635 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750891AbXBSKpJ (ORCPT
+	Mon, 19 Feb 2007 05:50:23 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:50809 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750916AbXBSKuW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 05:45:09 -0500
-Message-ID: <45D97FAD.9070009@in.ibm.com>
-Date: Mon, 19 Feb 2007 16:15:01 +0530
-From: Balbir Singh <balbir@in.ibm.com>
-Reply-To: balbir@in.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
-MIME-Version: 1.0
-To: Magnus Damm <magnus.damm@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       vatsa@in.ibm.com, ckrm-tech@lists.sourceforge.net, xemul@sw.ru,
-       linux-mm@kvack.org, menage@google.com, svaidy@linux.vnet.ibm.com,
-       devel@openvz.org
-Subject: Re: [RFC][PATCH][0/4] Memory controller (RSS Control)
-References: <20070219065019.3626.33947.sendpatchset@balbir-laptop> <20070219005441.7fa0eccc.akpm@linux-foundation.org> <aec7e5c30702190116j26efcba3oe5223584f99ac25a@mail.gmail.com>
-In-Reply-To: <aec7e5c30702190116j26efcba3oe5223584f99ac25a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Feb 2007 05:50:22 -0500
+Date: Mon, 19 Feb 2007 10:50:09 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Artem Bityutskiy <dedekind@infradead.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 00/44 take 2] [UBI] Unsorted Block Images
+Message-ID: <20070219105009.GA15792@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Artem Bityutskiy <dedekind@infradead.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Frank Haverkamp <haver@vnet.ibm.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Josh Boyer <jwboyer@linux.vnet.ibm.com>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Magnus Damm wrote:
-> On 2/19/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->> On Mon, 19 Feb 2007 12:20:19 +0530 Balbir Singh <balbir@in.ibm.com> 
->> wrote:
->>
->> > This patch applies on top of Paul Menage's container patches (V7) 
->> posted at
->> >
->> >       http://lkml.org/lkml/2007/2/12/88
->> >
->> > It implements a controller within the containers framework for limiting
->> > memory usage (RSS usage).
-> 
->> The key part of this patchset is the reclaim algorithm:
->>
->> Alas, I fear this might have quite bad worst-case behaviour.  One small
->> container which is under constant memory pressure will churn the
->> system-wide LRUs like mad, and will consume rather a lot of system time.
->> So it's a point at which container A can deleteriously affect things 
->> which
->> are running in other containers, which is exactly what we're supposed to
->> not do.
-> 
-> Nice with a simple memory controller. The downside seems to be that it
-> doesn't scale very well when it comes to reclaim, but maybe that just
-> comes with being simple. Step by step, and maybe this is a good first
-> step?
-> 
+On Sat, Feb 17, 2007 at 06:54:24PM +0200, Artem Bityutskiy wrote:
+> The structure of the UBI code is very simple. Whole UBI consists of units.
+> Each unit has one .c file which implements it and one .h file which defines
+> the interface of this unit. So I've split the UBI code so that there is
+> a distinct patch for each unit header and implementations. Plus there are
+> several patches like JFFS2 support, user-space-visible headers, etc.
+> To realize what is the unit responsible for, glance at its header - there
+> is a short description.
 
-Thanks, I totally agree.
+I think this is the wrong approach.  For one thing the unit terms is
+rather foregin in Linux, and second this one header file "unit" is
+definitly too much.  Normally you'd have as little as possible and at
+most four:
 
-> Ideally I'd like to see unmapped pages handled on a per-container LRU
-> with a fallback to the system-wide LRUs. Shared/mapped pages could be
-> handled using PTE ageing/unmapping instead of page ageing, but that
-> may consume too much resources to be practical.
-> 
-> / magnus
+ (1) internal definitions of the driver
+ (2) external kernel interface of the driver if nessecary
+ (3) user interface of the driver if nessecary
+ (4) ondisk structure if nessecary
 
-Keeping unmapped pages per container sounds interesting. I am not quite
-sure what PTE ageing, will it look it up.
-
-
--- 
-	Warm Regards,
-	Balbir Singh
+Also please make sure you submit patches at this driver level.  You really
+want one git commit per driver that is totally self-contained.  If nessecary
+you'd split this into multiple patches if a single one would be bigger then
+the message size limit.
