@@ -1,61 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750837AbXBSKZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750842AbXBSKZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750837AbXBSKZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 05:25:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbXBSKZ1
+	id S1750842AbXBSKZy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 05:25:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbXBSKZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 05:25:27 -0500
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:37141 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750841AbXBSKZY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 05:25:24 -0500
-Message-ID: <45D97AC7.2000903@in.ibm.com>
-Date: Mon, 19 Feb 2007 15:54:07 +0530
-From: Balbir Singh <balbir@in.ibm.com>
-Reply-To: balbir@in.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
-MIME-Version: 1.0
-To: Kirill Korotaev <dev@sw.ru>
-CC: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
-       vatsa@in.ibm.com, ckrm-tech@lists.sourceforge.net, xemul@sw.ru,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       svaidy@linux.vnet.ibm.com, devel@openvz.org
-Subject: Re: [ckrm-tech] [RFC][PATCH][0/4] Memory controller (RSS Control)
-References: <20070219065019.3626.33947.sendpatchset@balbir-laptop>	<20070219005441.7fa0eccc.akpm@linux-foundation.org> <6599ad830702190106m3f391de4x170326fef2e4872@mail.gmail.com> <45D972CC.2010702@sw.ru>
-In-Reply-To: <45D972CC.2010702@sw.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Feb 2007 05:25:54 -0500
+Received: from il.qumranet.com ([82.166.9.18]:35429 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750840AbXBSKZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 05:25:53 -0500
+Subject: [PATCH 5/13] KVM: Use ARRAY_SIZE macro instead of manual calculation.
+From: Avi Kivity <avi@qumranet.com>
+Date: Mon, 19 Feb 2007 10:25:51 -0000
+To: kvm-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, mingo@elte.hu
+References: <45D979D3.2020907@qumranet.com>
+In-Reply-To: <45D979D3.2020907@qumranet.com>
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <20070219102551.EF9A725016B@il.qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kirill Korotaev wrote:
->> On 2/19/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->>
->>> Alas, I fear this might have quite bad worst-case behaviour.  One small
->>> container which is under constant memory pressure will churn the
->>> system-wide LRUs like mad, and will consume rather a lot of system time.
->>> So it's a point at which container A can deleteriously affect things which
->>> are running in other containers, which is exactly what we're supposed to
->>> not do.
->>
->> I think it's OK for a container to consume lots of system time during
->> reclaim, as long as we can account that time to the container involved
->> (i.e. if it's done during direct reclaim rather than by something like
->> kswapd).
-> hmm, is it ok to scan 100Gb of RAM for 10MB RAM container?
-> in UBC patch set we used page beancounters to track containter pages.
-> This allows to make efficient scan contoler and reclamation.
-> 
-> Thanks,
-> Kirill
+From: Ahmed S. Darwish <darwish.07@gmail.com>
 
-Hi, Kirill,
+Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+Signed-off-by: Dor Laor <dor.laor@qumranet.com>
+Signed-off-by: Avi Kivity <avi@qumranet.com>
 
-Yes, that's a problem, but I think it's a problem that can be solved
-in steps. First step, add reclaim. Second step, optimize reclaim.
-
--- 
-	Warm Regards,
-	Balbir Singh
+Index: linux-2.6/drivers/kvm/svm.c
+===================================================================
+--- linux-2.6.orig/drivers/kvm/svm.c
++++ linux-2.6/drivers/kvm/svm.c
+@@ -15,6 +15,7 @@
+  */
+ 
+ #include <linux/module.h>
++#include <linux/kernel.h>
+ #include <linux/vmalloc.h>
+ #include <linux/highmem.h>
+ #include <linux/profile.h>
+@@ -75,7 +76,7 @@ struct svm_init_data {
+ 
+ static u32 msrpm_ranges[] = {0, 0xc0000000, 0xc0010000};
+ 
+-#define NUM_MSR_MAPS (sizeof(msrpm_ranges) / sizeof(*msrpm_ranges))
++#define NUM_MSR_MAPS ARRAY_SIZE(msrpm_ranges)
+ #define MSRS_RANGE_SIZE 2048
+ #define MSRS_IN_RANGE (MSRS_RANGE_SIZE * 8 / 2)
+ 
+@@ -1297,7 +1298,7 @@ static int handle_exit(struct kvm_vcpu *
+ 		       __FUNCTION__, vcpu->svm->vmcb->control.exit_int_info,
+ 		       exit_code);
+ 
+-	if (exit_code >= sizeof(svm_exit_handlers) / sizeof(*svm_exit_handlers)
++	if (exit_code >= ARRAY_SIZE(svm_exit_handlers)
+ 	    || svm_exit_handlers[exit_code] == 0) {
+ 		kvm_run->exit_reason = KVM_EXIT_UNKNOWN;
+ 		printk(KERN_ERR "%s: 0x%x @ 0x%llx cr0 0x%lx rflags 0x%llx\n",
+Index: linux-2.6/drivers/kvm/vmx.c
+===================================================================
+--- linux-2.6.orig/drivers/kvm/vmx.c
++++ linux-2.6/drivers/kvm/vmx.c
+@@ -19,6 +19,7 @@
+ #include "vmx.h"
+ #include "kvm_vmx.h"
+ #include <linux/module.h>
++#include <linux/kernel.h>
+ #include <linux/mm.h>
+ #include <linux/highmem.h>
+ #include <linux/profile.h>
+@@ -75,7 +76,7 @@ static const u32 vmx_msr_index[] = {
+ #endif
+ 	MSR_EFER, MSR_K6_STAR,
+ };
+-#define NR_VMX_MSR (sizeof(vmx_msr_index) / sizeof(*vmx_msr_index))
++#define NR_VMX_MSR ARRAY_SIZE(vmx_msr_index)
+ 
+ static inline int is_page_fault(u32 intr_info)
+ {
+Index: linux-2.6/drivers/kvm/kvm_svm.h
+===================================================================
+--- linux-2.6.orig/drivers/kvm/kvm_svm.h
++++ linux-2.6/drivers/kvm/kvm_svm.h
+@@ -1,6 +1,7 @@
+ #ifndef __KVM_SVM_H
+ #define __KVM_SVM_H
+ 
++#include <linux/kernel.h>
+ #include <linux/types.h>
+ #include <linux/list.h>
+ #include <asm/msr.h>
+@@ -18,7 +19,7 @@ static const u32 host_save_msrs[] = {
+ 	MSR_IA32_LASTBRANCHTOIP, MSR_IA32_LASTINTFROMIP,MSR_IA32_LASTINTTOIP,*/
+ };
+ 
+-#define NR_HOST_SAVE_MSRS (sizeof(host_save_msrs) / sizeof(*host_save_msrs))
++#define NR_HOST_SAVE_MSRS ARRAY_SIZE(host_save_msrs)
+ #define NUM_DB_REGS 4
+ 
+ struct vcpu_svm {
