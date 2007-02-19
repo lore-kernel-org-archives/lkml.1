@@ -1,31 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752619AbXBSAp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbXBSAsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752619AbXBSAp2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 19:45:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbXBSAp2
+	id S1752623AbXBSAsO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 19:48:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbXBSAsO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 19:45:28 -0500
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:39533 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752619AbXBSAp1 (ORCPT
+	Sun, 18 Feb 2007 19:48:14 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:62364 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752623AbXBSAsN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 19:45:27 -0500
-To: akpm@linux-foundation.org
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-reply-to: <E1HIwLJ-0005N4-00@dorka.pomaz.szeredi.hu> (message from Miklos
-	Szeredi on Mon, 19 Feb 2007 01:25:21 +0100)
+	Sun, 18 Feb 2007 19:48:13 -0500
+Date: Sun, 18 Feb 2007 19:45:37 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
 Subject: Re: dirty balancing deadlock
-References: <E1HIqlm-0004iZ-00@dorka.pomaz.szeredi.hu>
-	<20070218125307.4103c04a.akpm@linux-foundation.org>
-	<E1HIurG-0005Bw-00@dorka.pomaz.szeredi.hu>
-	<20070218145929.547c21c7.akpm@linux-foundation.org>
-	<E1HIvMB-0005Fd-00@dorka.pomaz.szeredi.hu> <20070218155916.0d3c73a9.akpm@linux-foundation.org> <E1HIwLJ-0005N4-00@dorka.pomaz.szeredi.hu>
-Message-Id: <E1HIweQ-0005RQ-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 19 Feb 2007 01:45:06 +0100
+Message-ID: <20070219004537.GB9289@think.oraclecorp.com>
+References: <E1HIqlm-0004iZ-00@dorka.pomaz.szeredi.hu> <20070218125307.4103c04a.akpm@linux-foundation.org> <E1HIurG-0005Bw-00@dorka.pomaz.szeredi.hu> <20070218145929.547c21c7.akpm@linux-foundation.org> <E1HIvMB-0005Fd-00@dorka.pomaz.szeredi.hu> <20070218155916.0d3c73a9.akpm@linux-foundation.org> <E1HIwLJ-0005N4-00@dorka.pomaz.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1HIwLJ-0005N4-00@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Feb 19, 2007 at 01:25:21AM +0100, Miklos Szeredi wrote:
 > > > > If so, writes to B will decrease the dirty memory threshold.
 > > > 
 > > > Yes, but not by enough.  Say A dirties a 1100 pages, limit is 1000.
@@ -38,8 +43,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > 
 > Doesn't help the fuse case, but does seem to help the loopback mount
 > one.
+> 
+> For fuse it's worse with the patch: now the write triggered by the
+> balance recurses into fuse, with disastrous results, since the fuse
+> writeback is now blocked on the userspace queue.
+> 
+> fusexmp_fh_no D 40136678     0   505    494           506   504 (NOTLB)
+> 08982b78 00000001 00000000 08f9f9b4 0805d8cb 089a75f8 08982b78 08f98000
+>        08f98000 08f9f9dc 0805a38a 089a7100 08982680 08f9f9cc 08f98000 08f98000
+>        085d8300 08982680 089a7100 08f9fa34 08183006 089a7100 08982680 089a7100 Call Trace:
+> 08f9f9a0:  [<0805d8cb>] switch_to_skas+0x3b/0x83
+> 08f9f9b8:  [<0805a38a>] _switch_to+0x49/0x99
+> 08f9f9e0:  [<08183006>] schedule+0x246/0x547
+> 08f9fa38:  [<08103c7e>] fuse_get_req_wp+0xe9/0x14a
+> 08f9fa70:  [<08103d2e>] fuse_writepage+0x4f/0x12c
 
-No sorry, it doesn't even help the loopback deadlock.  It sometimes
-takes quite a while to trigger...
+In general, writepage is supposed to do work without blocking on
+expensive locks that will get pdflush and dirty reclaim stuck in this
+fashion.  You'll probably have to take the same approach reiserfs does
+in data=journal mode, which is leaving the page dirty if fuse_get_req_wp
+is going to block without making progress.
 
-Miklos
+Queue it somewhere else (ie an internal Fs cleaning thread) and leave
+the page dirty so that we can move on to other pages that have a chance
+of being cleaned.
+
+-chris
