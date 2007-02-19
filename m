@@ -1,87 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932578AbXBSUut@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932650AbXBSUwG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932578AbXBSUut (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 15:50:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932634AbXBSUus
+	id S932650AbXBSUwG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 15:52:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932652AbXBSUwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 15:50:48 -0500
-Received: from spirit.analogic.com ([204.178.40.4]:4032 "EHLO
-	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932578AbXBSUur convert rfc822-to-8bit (ORCPT
+	Mon, 19 Feb 2007 15:52:06 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4581 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932650AbXBSUwE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 15:50:47 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 19 Feb 2007 20:48:48.0775 (UTC) FILETIME=[5AF57970:01C75467]
-Content-class: urn:content-classes:message
-Subject: Re: GPL vs non-GPL device drivers
-Date: Mon, 19 Feb 2007 15:48:43 -0500
-Message-ID: <Pine.LNX.4.61.0702191535010.18507@chaos.analogic.com>
-In-Reply-To: <f2b55d220702191220yab592adw213e7d76db39e7e2@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: GPL vs non-GPL device drivers
-Thread-Index: AcdUZ1r/cX0ajRabQcycm3L5wWiJAQ==
-References: <MDEHLPKNGKAHNMBLJOLKKEIPBKAC.davids@webmaster.com> <orire1s39s.fsf@free.oliva.athome.lsd.ic.unicamp.br> <7b69d1470702171129x36c4352cyc5b3a4b217729bf5@mail.gmail.com> <f2b55d220702171315xb82d37cx4f98dc9d96d51b10@mail.gmail.com> <20070219203149.27c3b696@localhost.localdomain> <f2b55d220702191220yab592adw213e7d76db39e7e2@mail.gmail.com>
-From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+	Mon, 19 Feb 2007 15:52:04 -0500
+Date: Mon, 19 Feb 2007 20:51:53 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
 To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Cc: "Alan" <alan@lxorguk.ukuu.org.uk>, "Scott Preece" <sepreece@gmail.com>,
-       "Alexandre Oliva" <aoliva@redhat.com>, <davids@webmaster.com>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+Cc: Jose Goncalves <jose.goncalves@inov.pt>,
+       Frederik Deweerdt <deweerdt@free.fr>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Serial related oops
+Message-ID: <20070219205153.GH27370@flint.arm.linux.org.uk>
+Mail-Followup-To: "Michael K. Edwards" <medwards.linux@gmail.com>,
+	Jose Goncalves <jose.goncalves@inov.pt>,
+	Frederik Deweerdt <deweerdt@free.fr>, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
+References: <20070220132909.GD566@slug> <20070219134539.GA27370@flint.arm.linux.org.uk> <20070220142442.GF566@slug> <20070219143520.GB27370@flint.arm.linux.org.uk> <20070220144814.GJ566@slug> <20070219150508.GD27370@flint.arm.linux.org.uk> <45D9D073.7020701@inov.pt> <20070219164200.GF27370@flint.arm.linux.org.uk> <45D9E46C.4030408@inov.pt> <f2b55d220702191237o2e6c4211u58a77deae1febe70@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f2b55d220702191237o2e6c4211u58a77deae1febe70@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Feb 19, 2007 at 12:37:00PM -0800, Michael K. Edwards wrote:
+> What we've seen on our embedded ARM is that enabling an interrupt that
+> is shared between multiple UARTs, at a stage when you have not set up
+> all the data structures touched by the ISR and softirq, can have
+> horrible consequences, including soft lockups and fandangos on core.
 
-On Mon, 19 Feb 2007, Michael K. Edwards wrote:
+Incorrect.  We have:
 
-> On 2/19/07, Alan <alan@lxorguk.ukuu.org.uk> wrote:
->>> jurisdiction.  Copyright infringement is a statutory tort, and the
->>> only limits to contracting away the right to sue for this tort are
->>> those provided in the copyright statute itself.  A contract not to sue
->>> for tort is called a "license".)
->>
->> I'd insert large quantities of "In the USA" in the above and probably
->> some "not what I've heard from a lawyer" cases.
->
-> Name ANY counterexample in the entire history of copyright, anywhere
-> in the world.  I've sifted through the past couple of decades of US
-> appellate history until I'm blue in the face, and reviewed Canadian
-> and British and German and French and EU statutes and decisions, and
-> read Nimmer on Copyright and Corbin on Contracts and historical
-> analyses of copyright law going back to the Statute of Anne.  And yes,
-> I too have conversed with attorneys and other individuals with legal
-> educations, in the US and Belgium and Brazil.
->
-> You have been lied to.  You have been hoodwinked.  You have neglected
-> to inform yourself about the simplest truths.  The GPL is not a
-> "copyright-based license", anywhere in the developed world.  There.
-> Is.  No.  Such.  Thing.
+1. registered an interrupt handler at this point.
+2. disabled interrupts (we're under the spin lock)
 
-FWIW. A license is NOT a contract in the United States, according to
-contract law. A primary requirement of a contract is an agreement. A
-contract cannot, therefore, be forced. Licenses, on the other hand,
-can be forced upon the user of the licensed material.
+So, no interrupt will be seen by the CPU since the interrupt is masked.
 
-A license is a document that states the conditions under which an
-item may be used. A prerequisite of the licensor is that he/she/they
-have a legal right to control the thing being licensed. When a licensed
-item has its license modified by a party, not the original licensor,
-it is quite possible that such attempts to control the item are
-invalid (moot). Lawyers like this because it gives them work since
-the final resolution of such a action can old be determined by a
-court!
+The test is intentionally designed to be safe from the interrupt
+generation point of view.
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.16.24 on an i686 machine (5594.84 BogoMips).
-New book: http://www.AbominableFirebug.com/
-_
-
-
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
