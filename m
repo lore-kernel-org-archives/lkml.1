@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932303AbXBSOtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932304AbXBSOx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932303AbXBSOtc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 09:49:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932304AbXBSOtc
+	id S932304AbXBSOx1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 09:53:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932309AbXBSOx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 09:49:32 -0500
-Received: from 195-13-16-24.net.novis.pt ([195.23.16.24]:43502 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S932303AbXBSOtb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 09:49:31 -0500
-X-Greylist: delayed 1443 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Feb 2007 09:49:31 EST
-Message-ID: <45D9B356.9050009@grupopie.com>
-Date: Mon, 19 Feb 2007 14:25:26 +0000
-From: Paulo Marques <pmarques@grupopie.com>
-Organization: Grupo PIE
-User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: linux-2.6.19.3 build faild with "Inconsistent kallsyms data"
-References: <200702190917.16533.toralf.foerster@gmx.de>
-In-Reply-To: <200702190917.16533.toralf.foerster@gmx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Mon, 19 Feb 2007 09:53:27 -0500
+Received: from mail.screens.ru ([213.234.233.54]:46756 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932304AbXBSOx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 09:53:26 -0500
+Date: Mon, 19 Feb 2007 17:56:13 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: David Howells <dhowells@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jarek Poplawski <jarkao2@o2.pl>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] net/bridge/br_if.c: don't use _WORK_NAR
+Message-ID: <20070219145613.GB75@tv-sign.ru>
+References: <20070219115955.GB91@tv-sign.ru> <20070218214359.GA4226@tv-sign.ru> <8462.1171884453@redhat.com> <15331.1171890900@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <15331.1171890900@redhat.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Toralf Förster wrote:
-> Hello,
+On 02/19, David Howells wrote:
+>
+> Hmmm...  You've got a work_struct (well, a delayed_work actually) - can you
+> just punt the destruction of the object over to keventd to perform, I wonder?
+
+Yes, this is close (I think) to what I suggested, see below,
+
+> The big problem with that that I see is that the workqueue facility has no
+> guards in place against a work_struct's handler function running on several
+> CPUs at once in response to the same work_struct.
+
+Yes. And for this problem WORK_STRUCT_NOAUTOREL does help, but not so much.
+It can prevent re-scheduling of the same work, but only if work->func() did
+not do work_release() yet.
+
+> > I think the fix should be so that port_carrier_check() does get/put on
+> > "struct net_bridge_port" (container), but not on "struct net_device", and
 > 
-> the build with the attached .config failed, make ends with:
-> ...
-> scripts/kconfig/conf -s arch/i386/Kconfig
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   CHK     include/linux/compile.h
->   AS      .tmp_kallsyms2.o
->   LD      vmlinux
->   SYSMAP  System.map
->   SYSMAP  .tmp_System.map
-> Inconsistent kallsyms data
-> Try setting CONFIG_KALLSYMS_EXTRA_PASS
-> make: *** [vmlinux] Error 1
-> 
-> Here's the config:
+> I'm not sure how this helps.  You still have to get rid of the net_device at
+> some point.
 
-Hummm, I just tried that .config with a vanilla 2.6.19.3 and it built 
-just fine.
+Yes, destroy_nbp() does dev_put(dev). del_nbp() sets dev->br_port = NULL,
+port_carrier_check() goes to "done" in that case. So everething looks safe
+to me (but again, I do not even know what the "bridge" is :), so we should
+only take care about container, nothing more.
 
-So either you have some patches that make a difference, or it's a 
-binutils version problem.
+I'll try to make a patch for illustration on evening.
 
-Can you send the output of scripts/ver_linux to see what binutils 
-version you are using?
+Oleg.
 
-Also you can try a "make debug_kallsyms" build that creates a .tmp_map1 
-and a .tmp_map2 files that might help diagnose the problem.
-
--- 
-Paulo Marques - www.grupopie.com
-
-"The face of a child can say it all, especially the
-mouth part of the face."
