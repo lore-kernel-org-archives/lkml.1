@@ -1,108 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965525AbXBSXNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965531AbXBSXPJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965525AbXBSXNL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 18:13:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965526AbXBSXNK
+	id S965531AbXBSXPJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 18:15:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965533AbXBSXPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 18:13:10 -0500
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:56683 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965525AbXBSXNJ (ORCPT
+	Mon, 19 Feb 2007 18:15:08 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:51537 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965531AbXBSXPE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 18:13:09 -0500
-To: akpm@linux-foundation.org
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-reply-to: <E1HJC3P-0006tz-00@dorka.pomaz.szeredi.hu> (message from Miklos
-	Szeredi on Mon, 19 Feb 2007 18:11:55 +0100)
-Subject: Re: dirty balancing deadlock
-References: <E1HIqlm-0004iZ-00@dorka.pomaz.szeredi.hu>
-	<20070218125307.4103c04a.akpm@linux-foundation.org>
-	<E1HIurG-0005Bw-00@dorka.pomaz.szeredi.hu>
-	<20070218145929.547c21c7.akpm@linux-foundation.org>
-	<E1HIvMB-0005Fd-00@dorka.pomaz.szeredi.hu> <20070218155916.0d3c73a9.akpm@linux-foundation.org> <E1HJC3P-0006tz-00@dorka.pomaz.szeredi.hu>
-Message-Id: <E1HJHgV-0007UQ-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 20 Feb 2007 00:12:39 +0100
+	Mon, 19 Feb 2007 18:15:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=BWzq/5biVHw/kWiUFXgpJJAjSuR0i8shv/XzjvAMFTUw/I9gjflrN0uOJmTvqlBnJeNmGJQr+6ZcxH3h0NzPwYjpSBUpAgdO7+Z3lbOIhVnVsoEclHsPQApMb2RXj7sjQbtkyAUDiyPmf64ym1M3OZocXfxOa9tdUqUrj+vZep4=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: [PATCH 12/15] ide: make ide_hwif_t.ide_dma_host_on void
+Date: Tue, 20 Feb 2007 00:21:07 +0100
+User-Agent: KMail/1.9.5
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20070203135301.2546.54884.sendpatchset@localhost.localdomain> <20070203135307.2546.94874.sendpatchset@localhost.localdomain> <20070219222028.GA9297@aepfle.de>
+In-Reply-To: <20070219222028.GA9297@aepfle.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702200021.07419.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Solves the FUSE deadlock, but not the throttle_vm_writeout() one.
-> I'll try to tackle that one as well.
+
+On Monday 19 February 2007 23:20, Olaf Hering wrote:
+> On Sat, Feb 03, Bartlomiej Zolnierkiewicz wrote:
 > 
-> If the per-bdi dirty counter goes below 16, balance_dirty_pages()
-> returns.
+> > [PATCH] ide: make ide_hwif_t.ide_dma_host_on void
 > 
-> Does the constant need to tunable?  If it's too large, then the global
-> threshold is more easily exceeded.  If it's too small, then in a tight
-> situation progress will be slower.
+> > +++ b/drivers/ide/ppc/pmac.c
+> > @@ -1984,10 +1984,8 @@ static void pmac_ide_dma_host_off(ide_dr
+> >  {
+> >  }
+> >  
+> > -static int
+> > -pmac_ide_dma_host_on (ide_drive_t *drive)
+> > +static int pmac_ide_dma_host_on(ide_drive_t *drive)
+> >  {
+> > -	return 0;
+> >  }
+> >  
+> >  static int
+> 
+> This missed the s/int/void/
 
-Similar in spirit, this should solve the deadlock on throttle_vm_writeout().
-Totally untested.
+yes, sorry for that
 
-Does this approach look workable?
+akpm has fixed this along with other things in pmac driver
+and the patch is already in the IDE quilt tree
 
-Thanks,
-Miklos
-
-
-Index: linux/include/linux/swap.h
-===================================================================
---- linux.orig/include/linux/swap.h	2007-02-19 23:39:36.000000000 +0100
-+++ linux/include/linux/swap.h	2007-02-20 00:03:38.000000000 +0100
-@@ -277,10 +277,14 @@ static inline void disable_swap_token(vo
- 	put_swap_token(swap_token_mm);
- }
- 
-+#define nr_swap_writeback \
-+	atomic_long_read(&swapper_space.backing_dev_info->nr_writeback)
-+
- #else /* CONFIG_SWAP */
- 
- #define total_swap_pages			0
- #define total_swapcache_pages			0UL
-+#define nr_swap_writeback			0UL
- 
- #define si_swapinfo(val) \
- 	do { (val)->freeswap = (val)->totalswap = 0; } while (0)
-Index: linux/mm/page-writeback.c
-===================================================================
---- linux.orig/mm/page-writeback.c	2007-02-19 23:43:03.000000000 +0100
-+++ linux/mm/page-writeback.c	2007-02-20 00:03:49.000000000 +0100
-@@ -33,6 +33,7 @@
- #include <linux/syscalls.h>
- #include <linux/buffer_head.h>
- #include <linux/pagevec.h>
-+#include <linux/swap.h>
- 
- /*
-  * The maximum number of pages to writeout in a single bdflush/kupdate
-@@ -332,6 +333,9 @@ void throttle_vm_writeout(void)
-                 if (global_page_state(NR_UNSTABLE_NFS) +
- 			global_page_state(NR_WRITEBACK) <= dirty_thresh)
-                         	break;
-+
-+		if (nr_swap_writeback < 16)
-+			break;
-                 congestion_wait(WRITE, HZ/10);
-         }
- }
-Index: linux/mm/page_io.c
-===================================================================
---- linux.orig/mm/page_io.c	2007-02-19 23:24:23.000000000 +0100
-+++ linux/mm/page_io.c	2007-02-19 23:42:21.000000000 +0100
-@@ -70,6 +70,7 @@ static int end_swap_bio_write(struct bio
- 		ClearPageReclaim(page);
- 	}
- 	end_page_writeback(page);
-+	atomic_long_dec(&swapper_space.backing_dev_info->nr_writeback);
- 	bio_put(bio);
- 	return 0;
- }
-@@ -121,6 +122,7 @@ int swap_writepage(struct page *page, st
- 	if (wbc->sync_mode == WB_SYNC_ALL)
- 		rw |= (1 << BIO_RW_SYNC);
- 	count_vm_event(PSWPOUT);
-+	atomic_long_inc(&swapper_space.backing_dev_info->nr_writeback);
- 	set_page_writeback(page);
- 	unlock_page(page);
- 	submit_bio(rw, bio);
+Bart
