@@ -1,96 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932274AbXBSOZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932278AbXBSO1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932274AbXBSOZk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 09:25:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932278AbXBSOZk
+	id S932278AbXBSO1S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 09:27:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932280AbXBSO1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 09:25:40 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:13992 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932274AbXBSOZj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 09:25:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=PYqGV5k8/oCDgHO3PwdENYtsNA1oY5TXIl40hlqvMISVL7SS2GeRiGuXNkY+g1yjBaM+Fwol3PQe+1rUHPSCcA5RwIHR0goojqjIu5vg8GiqiVcsOKKtYrzXJ5tWdVph8f5CAQy+jwBKr9X3Kgj8UIGyp9efHHT5JQPTgPS1+CM=
-Date: Tue, 20 Feb 2007 14:24:42 +0000
-From: Frederik Deweerdt <deweerdt@free.fr>
-To: jose.goncalves@inov.pt, tie-fei.zang@freescale.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: Serial related oops
-Message-ID: <20070220142442.GF566@slug>
-References: <20070220132909.GD566@slug> <20070219134539.GA27370@flint.arm.linux.org.uk>
+	Mon, 19 Feb 2007 09:27:17 -0500
+Received: from il.qumranet.com ([82.166.9.18]:47816 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932278AbXBSO1R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 09:27:17 -0500
+X-Greylist: delayed 1299 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Feb 2007 09:27:17 EST
+Message-ID: <45D9AE8D.4060300@argo.co.il>
+Date: Mon, 19 Feb 2007 16:05:01 +0200
+From: Avi Kivity <avi@argo.co.il>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070219134539.GA27370@flint.arm.linux.org.uk>
-User-Agent: mutt-ng/devel-r804 (Linux)
+To: Francis Moreau <francis.moro@gmail.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: memparse(), simple_strtoul() prototypes...
+References: <38b2ab8a0702180804l26d99a01y558bce2ee964d973@mail.gmail.com>	 <45D8EFB8.4050805@zytor.com> <38b2ab8a0702190503n32caeab3j2c2139c71cb5a9c5@mail.gmail.com>
+In-Reply-To: <38b2ab8a0702190503n32caeab3j2c2139c71cb5a9c5@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 19, 2007 at 01:45:39PM +0000, Russell King wrote:
-> On Tue, Feb 20, 2007 at 01:29:09PM +0000, Frederik Deweerdt wrote:
-> > (Sorry for the resend, I forgot to cc the list)
-> > Hi Russell,
-> > 
-> > It seems that the following change in drivers/serial/8250.c
-> > 
-> > +
-> > +	/*
-> > +	 * Do a quick test to see if we receive an
-> > +	 * interrupt when we enable the TX irq.
-> > +	 */
-> > +	serial_outp(up, UART_IER, UART_IER_THRI);
-> > +	lsr = serial_in(up, UART_LSR);
-> > +	iir = serial_in(up, UART_IIR);
-> > +	serial_outp(up, UART_IER, 0);
-> > +
-> > +	if (lsr & UART_LSR_TEMT && iir & UART_IIR_NO_INT) {
-> > +		if (!(up->capabilities & UART_BUG_TXEN)) {
-> > +			up->capabilities |= UART_BUG_TXEN;
-> > +			pr_debug("ttyS%d - enabling bad tx status workarounds\n",
-> > +				 port->line);
-> > +		}
-> > +	} else {
-> > +		up->capabilities &= ~UART_BUG_TXEN;
-> > +	}
-> > +
-> > 
-> > that was introduced in 2.6.12[1], is causing oopses on some hardware. In
-> > particular Jose Goncalves reported[2] an oops in 2.6.16.38 reproducible
-> 
-> I don't see that.  The oops your referring to is a NULL pointer
-> dereference.  The only dereferences the above code does is via
-> 'up' and 'port' both of which are provably always non-null here.
-Neither did I, but introducing printk's through the function, we narrowed
-the problem to this part of the code. And removing it makes the problem
-go away. We inserted 37 printk's in the function body, and Jose bisected
-those until the problem went away.
+Francis Moreau wrote:
+>> > unsigned long simple_strtoul(const char *cp, char **endp,unsigned 
+>> int base)
 >
-> > I was wondering:
-> > - what is the goal of the test?
-> 
-> To detect UARTs which do not assert an interrupt when the transmit
-> interrupt is enabled, which then causes no data to ever be transmitted
-> without this work-around.
-OK, thanks for clarifying.
-> 
-> > - could this be CONFIGed ?
-> 
-> No, it's only runtime because you can't tell which ports might be
-> affected, and you might have a mixture of ports which are affected
-> and those which aren't.
-Hmm, ok. And what about a CONFIG_I_KNOW_MY_SERIAL_IS_BROKEN option?
-> 
-> > PS: CCing Andrew and Zang Roy-r61911 as they seemed to discuss this in
-> > http://lkml.org/lkml/2006/6/13/21
-> 
-> I don't see any reference to this problem there.
-Sorry, I suck, I got that mixed with that one:
-http://lkml.org/lkml/2006/12/26/63
-"probing for UART_BUG_TXEN in 8250 driver leads to weird effects on some
-ARM boards"
+> hm, I don't get your point. I understand why we cast 'cp' into a (char
+> *) but that's not my point. My point is why aren't all function
+> parameters are not const ?
+>
 
-Regards,
-Frederik
+'cp' can be passed as const, because simple_strtoul() does not modify 
+it. 'endp' cannot be passed as const, because simple_strtoul() cannot 
+know whether the caller would want to modify the string or not.
+
+Whichever way it is written, it is broken.  If changed to 'const', it 
+would preclude the caller from modifying the string if one has a 
+non-const string.  As written, it can silently convert a const string to 
+a non-const string.  However, as written it is (a) standard conforming, 
+and (b) more useful.
+
+-- 
+error compiling committee.c: too many arguments to function
+
