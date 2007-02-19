@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752662AbXBSBPG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbXBSBlK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752662AbXBSBPG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 20:15:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbXBSBPG
+	id S1752664AbXBSBlK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 20:41:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbXBSBlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 20:15:06 -0500
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:52427 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752662AbXBSBPF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 20:15:05 -0500
-To: chris.mason@oracle.com
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-reply-to: <20070219010102.GC9289@think.oraclecorp.com> (message from Chris
-	Mason on Sun, 18 Feb 2007 20:01:02 -0500)
-Subject: Re: dirty balancing deadlock
-References: <E1HIqlm-0004iZ-00@dorka.pomaz.szeredi.hu> <20070218125307.4103c04a.akpm@linux-foundation.org> <E1HIurG-0005Bw-00@dorka.pomaz.szeredi.hu> <20070218145929.547c21c7.akpm@linux-foundation.org> <E1HIvMB-0005Fd-00@dorka.pomaz.szeredi.hu> <20070218155916.0d3c73a9.akpm@linux-foundation.org> <E1HIwLJ-0005N4-00@dorka.pomaz.szeredi.hu> <20070219004537.GB9289@think.oraclecorp.com> <E1HIwnX-0005Sr-00@dorka.pomaz.szeredi.hu> <20070219010102.GC9289@think.oraclecorp.com>
-Message-Id: <E1HIx6d-0005V4-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 19 Feb 2007 02:14:15 +0100
+	Sun, 18 Feb 2007 20:41:07 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:32772 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752664AbXBSBlG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 20:41:06 -0500
+Message-ID: <45D90007.5060006@redhat.com>
+Date: Sun, 18 Feb 2007 19:40:23 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 1.5.0.9 (Macintosh/20061207)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Rusty Russell <rusty@rustcorp.com.au>, sct@redhat.com,
+       adilger@clusterfs.com,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Subject: Re: loopback mount EXT3 oops
+References: <1171842762.7918.47.camel@localhost.localdomain> <20070218163100.a4b95b3a.akpm@linux-foundation.org>
+In-Reply-To: <20070218163100.a4b95b3a.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > In general, writepage is supposed to do work without blocking on
-> > > expensive locks that will get pdflush and dirty reclaim stuck in this
-> > > fashion.  You'll probably have to take the same approach reiserfs does
-> > > in data=journal mode, which is leaving the page dirty if fuse_get_req_wp
-> > > is going to block without making progress.
-> > 
-> > Pdflush, and dirty reclaim set wbc->nonblocking to true.
-> > balance_dirty_pages and fsync don't.  The problem here is that
-> > Andrew's patch is wrong to let balance_dirty_pages() try to write back
-> > pages from a different queue.
+Andrew Morton wrote:
+> On Mon, 19 Feb 2007 10:52:42 +1100 Rusty Russell <rusty@rustcorp.com.au> wrote:
 > 
-> async or sync, writepage is supposed to either make progress or bail.
-> loopback aside, if the fuse call is blocking long term, you're going to
-> run into problems.
+>> Hi all,
+>>
+>> 	This happened on 2.6.20-rc6-mm3, so I upgraded to 2.6.20-git14, and
+>> same thing happened.  Doing a forced fsck on the (corrupted by
+>> double-mounting I think) filesystem fixed it, but I took a copy before
+>> doing that.
+>>
+>> Do we care about ext3 barfing on corrupted filesystems?
+...
+> 
+> I thought Eric fixed that.  Maybe he broke it instead ;)
 
-Hmm, like what?
+Eeek... I'll reserve judgment on who broke what until I see that 
+corrupted image... ;)  is it available?  How huge?
 
-Thanks,
-Miklos
+-Eric
