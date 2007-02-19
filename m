@@ -1,62 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932073AbXBSLEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932083AbXBSLFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932073AbXBSLEI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 06:04:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932078AbXBSLEH
+	id S932083AbXBSLFp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 06:05:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932082AbXBSLFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 06:04:07 -0500
-Received: from vulpecula.futurs.inria.fr ([195.83.212.5]:48489 "EHLO
-	vulpecula.futurs.inria.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932073AbXBSLEG (ORCPT
+	Mon, 19 Feb 2007 06:05:45 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:53959 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932083AbXBSLFo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 06:04:06 -0500
-Message-ID: <45D98420.5060604@tremplin-utc.net>
-Date: Mon, 19 Feb 2007 12:04:00 +0100
-From: =?UTF-8?B?w4lyaWMgUGllbA==?= <Eric.Piel@tremplin-utc.net>
-User-Agent: Thunderbird 2.0b2 (X11/20070215)
-MIME-Version: 1.0
-To: Markus Rechberger <mrechberger@gmail.com>
-Cc: Oliver Neukum <oliver@neukum.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: O2micro smartcard reader driver.
-References: <20061127182817.d52dfdf1.l.bigonville@edpnet.be>	 <456C0BD0.7080606@tremplin-utc.net>	 <200611281249.45243.oliver@neukum.org>	 <457F1F0F.20109@tremplin-utc.net>	 <d9def9db0702161536i64cf6fb3o1c3c8ff850c38994@mail.gmail.com> <d9def9db0702161955y1543e995o48b63eb1265e22a8@mail.gmail.com>
-In-Reply-To: <d9def9db0702161955y1543e995o48b63eb1265e22a8@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Mon, 19 Feb 2007 06:05:44 -0500
+Date: Mon, 19 Feb 2007 11:05:43 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Artem Bityutskiy <dedekind@infradead.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 16/44 take 2] [UBI] scanning unit implementation
+Message-ID: <20070219110543.GE16930@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Artem Bityutskiy <dedekind@infradead.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Frank Haverkamp <haver@vnet.ibm.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Josh Boyer <jwboyer@linux.vnet.ibm.com>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain> <20070217165545.5845.27214.sendpatchset@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070217165545.5845.27214.sendpatchset@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-02/17/2007 04:55 AM, Markus Rechberger wrote/a écrit:
-> Hi Eric,
-> 
-> I committed your code to linuxtv.org to review and modify it there.
-> http://linuxtv.org/hg/~mrechberger/chipcardreader
-> 
-> one thing I noticed is the error handling in ozscr_probe.
-> 
-> I'll continue the rest during the next few days, I'd like to see it as
-> soon as possible in the upstream kernel before some kernel api changes
-> again which affects your current driver.
+> +	for (pnum = 0; pnum < io->peb_count; pnum++) {
+> +		cond_resched();
+> +
+> +		err = process_eb(ubi, si, pnum);
+> +		if (unlikely(err < 0))
+> +			goto out_vidh;
+> +	}
 
-Hi Markus,
+> +	rb_for_each_entry(rb1, sv, &si->volumes, rb) {
+> +		cond_resched();
+> +		rb_for_each_entry(rb2, seb, &sv->root, u.rb)
+> +			if (seb->ec == NAND_SCAN_UNKNOWN_EC)
+> +				seb->ec = si->mean_ec;
+> +	}
+> +
+> +	cond_resched();
+> +	list_for_each_entry(seb, &si->free, u.list)
+> +		if (seb->ec == NAND_SCAN_UNKNOWN_EC)
+> +			seb->ec = si->mean_ec;
+> +
+> +	cond_resched();
+> +	list_for_each_entry(seb, &si->corr, u.list)
+> +		if (seb->ec == NAND_SCAN_UNKNOWN_EC)
+> +			seb->ec = si->mean_ec;
+> +
+> +	cond_resched();
+> +	list_for_each_entry(seb, &si->erase, u.list)
+> +		if (seb->ec == NAND_SCAN_UNKNOWN_EC)
+> +			seb->ec = si->mean_ec;
 
-Thank you very much for finding new bugs ;-) Actually, right now I've 
-just moved and don't have internet at home which is kind of slowing down 
-development... Anyway, I'll check if I have some more fixes on my 
-computer than on my website. Also, it would be good to double check some 
-lines which I've commented XXX. In particular, IIRC there were some 
-suspicious sleep saying it was sleeping a microsecond and sleeping one 
-millisecond!
+You really shouldn't need random cond_resched all over the place.
 
-I'm also a bit concerned about the userspace "driver" for pscd which 
-comes with the original driver once the patch will be part of the 
-default kernel. Maybe this userspace part could become part of the 
-pscdlite distribution.
+> +static int vid_hdr_sanity_check(const struct ubi_info *ubi,
+> +				const struct ubi_vid_hdr *vid_hdr,
+> +				const struct ubi_scan_volume *sv, int pnum);
+> +
+> +static int add_to_erase(struct ubi_scan_info *si, int pnum, int ec);
+> +
+> +static struct ubi_scan_volume *add_volume(const struct ubi_info *ubi,
+> +					  struct ubi_scan_info *si, int vol_id,
+> +					  int pnum,
+> +					  const struct ubi_vid_hdr *vid_hdr);
+> +
+> +static int compare_lebs(const struct ubi_info *ubi,
+> +			const struct ubi_scan_leb *seb, int pnum,
+> +			const struct ubi_vid_hdr *vid_hdr);
 
-Wrt the module having always a usecount value of 1, it was worrying me 
-too at the begining until I noticed it decreased back to 0 once the card 
-is "ejected" (pccardctl eject 1). Although a bit surprising, I don't 
-think it's a bug, is it?
+forward declarations in the middle of the file are really annoying.  Please try
+to reorder the code to not need them at all if needed, and if needed add them
+to the top of the file.
 
-See you,
-Eric
+> +void ubi_scan_destroy_si(struct ubi_scan_info *si)
+> +{
+> +	struct ubi_scan_leb *seb, *seb_tmp;
+> +	struct ubi_scan_volume *sv;
+> +	struct rb_node *rb;
+> +
+> +	list_for_each_entry_safe(seb, seb_tmp, &si->alien, u.list) {
+> +		list_del(&seb->u.list);
+> +		ubi_free_scan_leb(seb);
+> +	}
+
+no locking needed here?
 
