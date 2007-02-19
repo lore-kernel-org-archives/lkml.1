@@ -1,66 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932201AbXBSMJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932155AbXBSMNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932201AbXBSMJt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 07:09:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932197AbXBSMJq
+	id S932155AbXBSMNc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 07:13:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932194AbXBSMNb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 07:09:46 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:21966 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932195AbXBSMJp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 07:09:45 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=YODEItNr+M8IfdJ60N5hpD1K8wqDu5Elsgmw8OB9Q57JXBWJo/Wkbe0dffM7dLhGg
-	Ix2ymg2Lg3nGE8JzddaTA==
-Message-ID: <6599ad830702190409x4f64e56ex4044a12d949e44af@mail.gmail.com>
-Date: Mon, 19 Feb 2007 04:09:38 -0800
-From: "Paul Menage" <menage@google.com>
-To: balbir@in.ibm.com
-Subject: Re: [ckrm-tech] [RFC][PATCH][2/4] Add RSS accounting and control
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, vatsa@in.ibm.com,
-       ckrm-tech@lists.sourceforge.net, xemul@sw.ru,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       svaidy@linux.vnet.ibm.com, devel@openvz.org
-In-Reply-To: <45D9906F.2090605@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Feb 2007 07:13:31 -0500
+Received: from mail.screens.ru ([213.234.233.54]:47636 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932155AbXBSMNb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 07:13:31 -0500
+Date: Mon, 19 Feb 2007 15:12:36 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix refrigerator() vs thaw_process() race
+Message-ID: <20070219121236.GD91@tv-sign.ru>
+References: <20070218221737.GA4880@tv-sign.ru> <20070219105008.GA19184@elf.ucw.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070219065019.3626.33947.sendpatchset@balbir-laptop>
-	 <20070219065034.3626.2658.sendpatchset@balbir-laptop>
-	 <20070219005828.3b774d8f.akpm@linux-foundation.org>
-	 <45D97DF8.5080000@in.ibm.com>
-	 <20070219030141.42c65bc0.akpm@linux-foundation.org>
-	 <45D9856D.1070902@in.ibm.com>
-	 <20070219032352.2856af36.akpm@linux-foundation.org>
-	 <45D9906F.2090605@in.ibm.com>
+In-Reply-To: <20070219105008.GA19184@elf.ucw.cz>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/19/07, Balbir Singh <balbir@in.ibm.com> wrote:
-> >
-> > More worrisome is the potential for use-after-free.  What prevents the
-> > pointer at mm->container from referring to freed memory after we're dropped
-> > the lock?
-> >
->
-> The container cannot be freed unless all tasks holding references to it are
-> gone,
+On 02/19, Pavel Machek wrote:
+> 
+> > refrigerator() can miss a wakeup, "wait event" loop needs a proper memory
+> > ordering.
+> > 
+> > Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> > 
+> > --- WQ/kernel/power/process.c~WAKE	2007-02-18 22:56:49.000000000 +0300
+> > +++ WQ/kernel/power/process.c	2007-02-19 01:04:26.000000000 +0300
+> > @@ -46,8 +46,10 @@ void refrigerator(void)
+> >  	recalc_sigpending(); /* We sent fake signal, clean it up */
+> >  	spin_unlock_irq(&current->sighand->siglock);
+> >  
+> > -		current->state = TASK_UNINTERRUPTIBLE;
+> > +		set_current_state(TASK_UNINTERRUPTIBLE);
+> 
+> 
+> Looks okay to me... but this one liner would be exactly as effective,
+> right?
 
-... or have been moved to other containers. If you're not holding
-task->alloc_lock or one of the container mutexes, there's nothing to
-stop the task being moved to another container, and the container
-being deleted.
+I think no, with this one liner we have
 
-If you're in an RCU section then you can guarantee that the container
-(that you originally read from the task) and its subsystems at least
-won't be deleted while you're accessing them, but for accounting like
-this I suspect that's not enough, since you need to be adding to the
-accounting stats on the correct container. I think you'll need to hold
-mm->container_lock for the duration of memctl_update_rss()
+	while (frozen(current)) {
+		// ------ WINDOW ------------
+		set_current_state(TASK_UNINTERRUPTIBLE);
+		schedule();
+	}
 
-Paul
+What if thaw_process() happens in the window above?
+
+We need the barrier exactly because LOAD (check condition) should not
+come before STORE (set task->state).
+
+Oleg.
+
