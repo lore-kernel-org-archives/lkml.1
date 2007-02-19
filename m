@@ -1,253 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932711AbXBSVih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932655AbXBSVuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932711AbXBSVih (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 16:38:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932712AbXBSVih
+	id S932655AbXBSVuI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 16:50:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932715AbXBSVuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 16:38:37 -0500
-Received: from tetsuo.zabbo.net ([207.173.201.20]:43921 "EHLO tetsuo.zabbo.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932711AbXBSVig (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 16:38:36 -0500
-From: Zach Brown <zach.brown@oracle.com>
-To: linux-aio@kvack.org, linux-kernel@vger.kernel.org
-Cc: Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna bhattacharya <suparna@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Leonid Ananiev <leonid.i.ananiev@intel.com>
-Message-Id: <20070219213835.4032.87439.sendpatchset@tetsuo.zabbo.net>
-In-Reply-To: <20070219213830.4032.71308.sendpatchset@tetsuo.zabbo.net>
-References: <20070219213830.4032.71308.sendpatchset@tetsuo.zabbo.net>
-Subject: [PATCH 2/2] aio: propogate post-EIOCBQUEUED errors to completion event
-Date: Mon, 19 Feb 2007 13:38:35 -0800 (PST)
+	Mon, 19 Feb 2007 16:50:08 -0500
+Received: from wr-out-0506.google.com ([64.233.184.232]:34198 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932655AbXBSVuG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 16:50:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=saeEEPDlUGxJ8/suuGPdGSS7I54922RQ+oSbx0u0QJ7vzIKH5HKxJMQ3B3lcSVbZqJ71lSWxzzbhxXBb4IvUxkh55jIzimbedHYakXnOiV1pvuYmFV4vO7DaKJzyJagb8V4GqHmATS3fADw0T6erQsbedPIruGWuMZsAHQfzuyE=
+Message-ID: <f2b55d220702191350t142fcce5r463a4c9b2d878c12@mail.gmail.com>
+Date: Mon, 19 Feb 2007 13:50:05 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Subject: Re: GPL vs non-GPL device drivers
+Cc: Alan <alan@lxorguk.ukuu.org.uk>, "Scott Preece" <sepreece@gmail.com>,
+       "Alexandre Oliva" <aoliva@redhat.com>, davids@webmaster.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.61.0702191535010.18507@chaos.analogic.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <MDEHLPKNGKAHNMBLJOLKKEIPBKAC.davids@webmaster.com>
+	 <orire1s39s.fsf@free.oliva.athome.lsd.ic.unicamp.br>
+	 <7b69d1470702171129x36c4352cyc5b3a4b217729bf5@mail.gmail.com>
+	 <f2b55d220702171315xb82d37cx4f98dc9d96d51b10@mail.gmail.com>
+	 <20070219203149.27c3b696@localhost.localdomain>
+	 <f2b55d220702191220yab592adw213e7d76db39e7e2@mail.gmail.com>
+	 <Pine.LNX.4.61.0702191535010.18507@chaos.analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-aio: propogate post-EIOCBQUEUED errors to completion event
+On 2/19/07, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
+> FWIW. A license is NOT a contract in the United States, according to
+> contract law. A primary requirement of a contract is an agreement. A
+> contract cannot, therefore, be forced. Licenses, on the other hand,
+> can be forced upon the user of the licensed material.
 
-This addresses an oops reported by Leonid Ananiev <leonid.i.ananiev@intel.com>
-as archived at http://lkml.org/lkml/2007/2/8/337.
+Wrong.  Acceptance through conduct has been integral to contract law
+in common-law countries since the days of writs in Chancery, and is
+part of the codification of the difference between contracts "in
+personam" and "in rem".  Allow me to recommend Kevin Teeven's "A
+History of the Anglo-American Common Law of Contract".  It is settled
+law throughout the Western world that non-exclusive licenses of
+copyright need not be formalized, or even put in writing.  Licenses
+cannot in any sense be forced on anyone; they are simply a defense
+against an action for tort, a conditional waiver of the right to sue,
+and cannot even be introduced as evidence by a plaintiff.
 
-O_DIRECT kicks off bios and returns -EIOCBQUEUED to indicate its intention to
-call aio_complete() once the bios complete.   As we return from submission we
-must preserve the -EIOCBQUEUED return code so that fs/aio.c knows to let the
-bio completion call aio_complete().  This stops us from returning errors after
-O_DIRECT submission.
+> A license is a document that states the conditions under which an
+> item may be used. A prerequisite of the licensor is that he/she/they
+> have a legal right to control the thing being licensed. When a licensed
+> item has its license modified by a party, not the original licensor,
+> it is quite possible that such attempts to control the item are
+> invalid (moot). Lawyers like this because it gives them work since
+> the final resolution of such a action can old be determined by a
+> court!
 
-But we have a few places that are very interested in generating errors after
-bio submission.
+Wrong again.  A copyright license is a term in an otherwise valid
+written, oral, or implied offer of contract, with certain limitations
+of scope and certain conditions and covenants of return performance,
+waiving the right to sue for the statutory tort of copyright
+infringement.  Read Nimmer on Copyright, or follow the links in this
+paragraph (another self-quotation from two years ago,
+http://lists.debian.org/debian-legal/2005/01/msg00621.html):
 
-The most critical of these is invalidating the page cache after a write.  This
-avoids exposing stale data to buffered operations that are performed after the
-O_DIRECT write succeeds.  We must do this after submission because the user
-buffer might have been an mmap()ed buffer of the region being written to.  The
-get_user_pages() in the O_DIRECT completion path could have faulted in stale
-data.
+<old>
+Same difference, legally.  Non-exclusive license has a longer history
+in patent cases than in copyright, and copyright cases frequently
+point to patent cases as precedent.  The commonly cited Supreme Court
+precedent that a non-exclusive patent license is "a mere waiver of the
+right to sue" is a 1927 case (De Forest Radio Telephone v. United
+States, http://laws.findlaw.com/us/273/236.html ), which in turn cites
+Robinson on Patents -- so it was evidently already well established by
+then, at least with respect to patents.  Everex Systems v Cadtrak (aka
+in re CFLC) 1996, for instance, cites De Forest in concluding that
+such a license constitutes significant continuing performance
+(settling, as far as I am concerned, the question about whether GPL
+release is a "one-shot" act with no continuing performance -- it's
+not).  For an example that all this applies to copyright, see Jacob
+Maxwell v. Veeck 1997 ( http://laws.findlaw.com/11th/962636opa.html ),
+which brings in re CFLC over to the copyright arena.
+</old>
 
-So this patch introduces a helper, aio_propogate_error(), which queues
-post-submission errors in the iocb so that they are given to the user
-completion event when aio_complete() is finally called.
+Please do not bother to trot out Webster's definition or medieval uses
+of the word "license", or the theory of unilateral license with regard
+to trespass and third-party beneficiaries.  These are concepts
+different from "license" as used in the phrase "non-exclusive
+copyright license", and just happen to be spelled the same.
 
-To get this working we change the aio_complete() path so that the ring
-insertion is performed as the final iocb reference is dropped.  This gives the
-submission path time to queue its pending error before it drops its reference.
-This increases the space in the iocb as it has to record the two result codes
-from aio_complete() and the pending error from the submission path.
-
-This was tested by running O_DIRECT aio-stress concurrently with buffered reads
-while triggering EIO in invalidate_inode_pages2_range() with the help of a
-debugfs bool hack.  Previously the kernel would oops as fs/aio.c and bio
-completion both called aio_complete().  With this patch aio-stress sees -EIO.
-
-Signed-off-by: Zach Brown <zach.brown@oracle.com>
----
-
- fs/aio.c            |   49 +++++++++++++++++++++---------------------
- include/linux/aio.h |   30 +++++++++++++++++++++++++
- mm/filemap.c        |    4 +--
- 3 files changed, 57 insertions(+), 26 deletions(-)
-
---- a/fs/aio.c	Mon Feb 19 13:12:20 2007 -0800
-+++ b/fs/aio.c	Mon Feb 19 13:16:00 2007 -0800
-@@ -193,8 +193,7 @@ static int aio_setup_ring(struct kioctx 
- 	kunmap_atomic((void *)((unsigned long)__event & PAGE_MASK), km); \
- } while(0)
- 
--static void aio_ring_insert_entry(struct kioctx *ctx, struct kiocb *iocb,
--				  long res, long res2)
-+static void aio_ring_insert_entry(struct kioctx *ctx, struct kiocb *iocb)
- {
- 	struct aio_ring_info	*info;
- 	struct aio_ring		*ring;
-@@ -213,12 +212,12 @@ static void aio_ring_insert_entry(struct
- 
- 	event->obj = (u64)(unsigned long)iocb->ki_obj.user;
- 	event->data = iocb->ki_user_data;
--	event->res = res;
--	event->res2 = res2;
--
--	dprintk("aio_complete: %p[%lu]: %p: %p %Lx %lx %lx\n",
-+	event->res = iocb->ki_pending_err ? iocb->ki_pending_err : iocb->ki_res;
-+	event->res2 = iocb->ki_res2;
-+
-+	dprintk("aio_complete: %p[%lu]: %p: %p %Lx %d %lx %lx\n",
- 		ctx, tail, iocb, iocb->ki_obj.user, iocb->ki_user_data,
--		res, res2);
-+		iocb->ki_pending_err, iocb->ki_res, iocb->ki_res2);
- 
- 	/* after flagging the request as done, we
- 	 * must never even look at it again
-@@ -459,6 +458,7 @@ static struct kiocb fastcall *__aio_get_
- 	req->ki_cancel = NULL;
- 	req->ki_retry = NULL;
- 	req->ki_dtor = NULL;
-+	req->ki_pending_err = 0;
- 	req->private = NULL;
- 	req->ki_iovec = NULL;
- 	INIT_LIST_HEAD(&req->ki_run_list);
-@@ -548,10 +548,14 @@ static int __aio_put_req(struct kioctx *
- 
- 	assert_spin_locked(&ctx->ctx_lock);
- 
--	req->ki_users --;
-+	req->ki_users--;
- 	BUG_ON(req->ki_users < 0);
- 	if (likely(req->ki_users))
- 		return 0;
-+
-+	if (kiocbIsInserted(req))
-+		aio_ring_insert_entry(ctx, req);
-+
- 	list_del(&req->ki_list);		/* remove from active_reqs */
- 	req->ki_cancel = NULL;
- 	req->ki_retry = NULL;
-@@ -983,27 +987,24 @@ int fastcall aio_complete(struct kiocb *
- 		return 1;
- 	}
- 
--	/* add a completion event to the ring buffer.
--	 * must be done holding ctx->ctx_lock to prevent
--	 * other code from messing with the tail
--	 * pointer since we might be called from irq
--	 * context.
--	 */
-+	/*
-+	 * We queue up the completion codes into the iocb.  They are combined
-+	 * with a potential error from the submission path and inserted into
-+	 * the ring once the last reference to the iocb is dropped.  Cancelled
-+	 * iocbs don't insert events on completion because userland was given
-+	 * an event directly as part of the cancelation interface.
-+ 	 */
- 	spin_lock_irqsave(&ctx->ctx_lock, flags);
- 
- 	if (iocb->ki_run_list.prev && !list_empty(&iocb->ki_run_list))
- 		list_del_init(&iocb->ki_run_list);
- 
--	/*
--	 * cancelled requests don't get events, userland was given one
--	 * when the event got cancelled.
--	 */
--	if (kiocbIsCancelled(iocb))
--		goto put_rq;
--
--	aio_ring_insert_entry(ctx, iocb, res, res2);
--
--put_rq:
-+	if (!kiocbIsCancelled(iocb)) {
-+		iocb->ki_res = res;
-+		iocb->ki_res2 = res2;
-+		kiocbSetInserted(iocb);
-+	}
-+
- 	/* everything turned out well, dispose of the aiocb. */
- 	ret = __aio_put_req(ctx, iocb);
- 
-diff -r 8a740eb579d4 include/linux/aio.h
---- a/include/linux/aio.h	Mon Feb 19 13:12:20 2007 -0800
-+++ b/include/linux/aio.h	Mon Feb 19 13:16:00 2007 -0800
-@@ -34,6 +34,7 @@ struct kioctx;
- /* #define KIF_LOCKED		0 */
- #define KIF_KICKED		1
- #define KIF_CANCELLED		2
-+#define KIF_INSERTED		4
- 
- #define kiocbTryLock(iocb)	test_and_set_bit(KIF_LOCKED, &(iocb)->ki_flags)
- #define kiocbTryKick(iocb)	test_and_set_bit(KIF_KICKED, &(iocb)->ki_flags)
-@@ -41,6 +42,7 @@ struct kioctx;
- #define kiocbSetLocked(iocb)	set_bit(KIF_LOCKED, &(iocb)->ki_flags)
- #define kiocbSetKicked(iocb)	set_bit(KIF_KICKED, &(iocb)->ki_flags)
- #define kiocbSetCancelled(iocb)	set_bit(KIF_CANCELLED, &(iocb)->ki_flags)
-+#define kiocbSetInserted(iocb)	set_bit(KIF_INSERTED, &(iocb)->ki_flags)
- 
- #define kiocbClearLocked(iocb)	clear_bit(KIF_LOCKED, &(iocb)->ki_flags)
- #define kiocbClearKicked(iocb)	clear_bit(KIF_KICKED, &(iocb)->ki_flags)
-@@ -49,6 +51,7 @@ struct kioctx;
- #define kiocbIsLocked(iocb)	test_bit(KIF_LOCKED, &(iocb)->ki_flags)
- #define kiocbIsKicked(iocb)	test_bit(KIF_KICKED, &(iocb)->ki_flags)
- #define kiocbIsCancelled(iocb)	test_bit(KIF_CANCELLED, &(iocb)->ki_flags)
-+#define kiocbIsInserted(iocb)	test_bit(KIF_INSERTED, &(iocb)->ki_flags)
- 
- /* is there a better place to document function pointer methods? */
- /**
-@@ -119,6 +122,10 @@ struct kiocb {
- 
- 	struct list_head	ki_list;	/* the aio core uses this
- 						 * for cancellation */
-+	/* we store and combine return codes from submission and completion */ 
-+	int			ki_pending_err;
-+	long			ki_res;
-+	long			ki_res2;
- };
- 
- #define is_sync_kiocb(iocb)	((iocb)->ki_key == KIOCB_SYNC_KEY)
-@@ -246,6 +253,29 @@ static inline struct kiocb *list_kiocb(s
- 	return list_entry(h, struct kiocb, ki_list);
- }
- 
-+/*
-+ * This function is used to make sure that an error is communicated to
-+ * userspace on iocb completion without stopping -EIOCBQUEUED from bubbling up
-+ * to fs/aio.c from the place where it originated.
-+ *
-+ * If we have an existing -EIOCBQUEUED it must be returned all the way to
-+ * fs/aio.c so that it doesn't double-complete the iocb along with whoever
-+ * returned -EIOCBQUEUED..  In that case we put the new error in the iocb.  It
-+ * will be returned to userspace *intead of* the first result code given to
-+ * aio_complete().  Use this only for errors which must overwrite whatever the
-+ * return code might have been.  The first non-zero new_err given to this
-+ * function for a given iocb will be returned to userspace.
-+ */
-+static inline int aio_propogate_error(struct kiocb *iocb, int existing_err,
-+				      int new_err)
-+{
-+	if (existing_err != -EIOCBQUEUED)
-+		return new_err;
-+	if (!iocb->ki_pending_err)
-+		iocb->ki_pending_err = new_err;
-+	return -EIOCBQUEUED;
-+}
-+
- /* for sysctl: */
- extern unsigned long aio_nr;
- extern unsigned long aio_max_nr;
-diff -r 8a740eb579d4 mm/filemap.c
---- a/mm/filemap.c	Mon Feb 19 13:12:20 2007 -0800
-+++ b/mm/filemap.c	Mon Feb 19 13:16:00 2007 -0800
-@@ -2031,7 +2031,7 @@ generic_file_direct_write(struct kiocb *
- 	    ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
- 		int err = generic_osync_inode(inode, mapping, OSYNC_METADATA);
- 		if (err < 0)
--			written = err;
-+			written = aio_propogate_error(iocb, written, err);
- 	}
- 	return written;
- }
-@@ -2396,7 +2396,7 @@ generic_file_direct_IO(int rw, struct ki
- 			int err = invalidate_inode_pages2_range(mapping,
- 					offset >> PAGE_CACHE_SHIFT, end);
- 			if (err)
--				retval = err;
-+				retval = aio_propogate_error(iocb, retval, err);
- 		}
- 	}
- 	return retval;
+Cheers,
+- Michael
