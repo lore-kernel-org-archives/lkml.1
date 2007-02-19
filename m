@@ -1,126 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750807AbXBSKA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750819AbXBSKA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750807AbXBSKA4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 05:00:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750811AbXBSKAz
+	id S1750819AbXBSKA5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 05:00:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750811AbXBSKA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 05:00:55 -0500
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:47167 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750807AbXBSKAz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 05:00:55 -0500
-Message-ID: <45D97547.3000502@in.ibm.com>
-Date: Mon, 19 Feb 2007 15:30:39 +0530
-From: Balbir Singh <balbir@in.ibm.com>
-Reply-To: balbir@in.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
-MIME-Version: 1.0
+	Mon, 19 Feb 2007 05:00:57 -0500
+Received: from mail.sf-mail.de ([62.27.20.61]:50033 "EHLO mail.sf-mail.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750819AbXBSKA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 05:00:56 -0500
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, vatsa@in.ibm.com,
-       ckrm-tech@lists.sourceforge.net, xemul@sw.ru, linux-mm@kvack.org,
-       menage@google.com, svaidy@linux.vnet.ibm.com, devel@openvz.org
-Subject: Re: [RFC][PATCH][0/4] Memory controller (RSS Control)
-References: <20070219065019.3626.33947.sendpatchset@balbir-laptop> <20070219005441.7fa0eccc.akpm@linux-foundation.org>
-In-Reply-To: <20070219005441.7fa0eccc.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: [BUG?] register_blkdev: failed to get major for device mapper
+Date: Mon, 19 Feb 2007 11:01:02 +0100
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com
+References: <200702161437.34063.eike-kernel@sf-tec.de> <20070216160920.27c1167a.akpm@linux-foundation.org>
+In-Reply-To: <20070216160920.27c1167a.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1194680.IX0xHVM6LP";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200702191101.09192.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart1194680.IX0xHVM6LP
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
 Andrew Morton wrote:
-> On Mon, 19 Feb 2007 12:20:19 +0530 Balbir Singh <balbir@in.ibm.com> wrote:
-> 
->> This patch applies on top of Paul Menage's container patches (V7) posted at
->>
->> 	http://lkml.org/lkml/2007/2/12/88
->>
->> It implements a controller within the containers framework for limiting
->> memory usage (RSS usage).
-> 
-> It's good to see someone building on someone else's work for once, rather
-> than everyone going off in different directions.  It makes one hope that we
-> might actually achieve something at last.
-> 
+> On Fri, 16 Feb 2007 14:37:28 +0100
+> Rolf Eike Beer <eike-kernel@sf-tec.de> wrote:
 
-Thanks! It's good to know we are headed in the right direction.
+> > I can't bring up my machine with root LVM anymore using x86_64. The same
+> > machine from same kernel tree boots fine as x86. The error message is
+> > quoted in subject. The tree is at
+> > 86a71dbd3e81e8870d0f0e56b87875f57e58222b (for those not using git:
+> > somewhere after 2.6.20).
+>
+> Does this fix it?  I don't see why it would, but this was recently added.
 
-> 
-> The key part of this patchset is the reclaim algorithm:
-> 
->> @@ -636,6 +642,15 @@ static unsigned long isolate_lru_pages(u
->>  
->>  		list_del(&page->lru);
->>  		target = src;
->> +		/*
->> + 		 * For containers, do not scan the page unless it
->> + 		 * belongs to the container we are reclaiming for
->> + 		 */
->> +		if (container && !page_in_container(page, zone, container)) {
->> +			scan--;
->> +			goto done;
->> +		}
-> 
-> Alas, I fear this might have quite bad worst-case behaviour.  One small
-> container which is under constant memory pressure will churn the
-> system-wide LRUs like mad, and will consume rather a lot of system time. 
-> So it's a point at which container A can deleteriously affect things which
-> are running in other containers, which is exactly what we're supposed to
-> not do.
-> 
+Yes. But now usb complains "unable to get a dynamic major for usb endpoints=
+".=20
+Nevertheless the USB mouse works.
 
-Hmm.. I guess it's space vs time then :-) A CPU controller could
-control how much time is spent reclaiming ;)
+Eike
 
-Coming back, I see the problem you mentioned and we have been thinking
-of several possible solutions. In my introduction I pointed out
+--nextPart1194680.IX0xHVM6LP
+Content-Type: application/pgp-signature
 
-    "Come up with cool page replacement algorithms for containers
-    (if possible without any changes to struct page)"
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
 
+iD8DBQBF2XVlXKSJPmm5/E4RAgu0AKCnKK3iFYAx5HKDklGw/YYZPzETWACfeZmo
+8CJxnNBg3ocSVIJfHOLa2c4=
+=FxQF
+-----END PGP SIGNATURE-----
 
-The solutions we have looked at are
-
-1. Overload the LRU list_head in struct page to have a global
-    LRU + a per container LRU
-
-+------+           prev       +------+
-| page +--------------------->| page +---------
-|  0   |<---------------------+  1   |<--------
-+------+           next       +------+
-
-                  Global LRU
-
-             +------+
-    +------- + prev |
-    |        | next +-------------------------------------------+
-    |        +------+                                           |
-    V            ^                                              V
-+------+        |  prev       +------+                     +------+
-| page +        +------------ + page +---------.....       | page +
-|  0   |--------------------->+  1   |<--------            |  n   |
-+------+           next       +------+                     +------+
-
-                  Global LRU + Container LRU
-
-
-Page 1 and n belong to the same container, to get to page 0, you need
-two de-references
-
-
-2. Modify struct page to point to a container and allow each container to
-    have a per-container LRU along with the global LRU
-
-
-For efficiency we need the container LRU and we don't want to split
-the global LRU either.
-
-We need to optimize the reclaim path, but I thought of that as a secondary
-problem. Once we all agree that the controller looks simple, accounts well
-and works. We can/should definitely optimize the reclaim path.
-
-
--- 
-	Warm Regards,
-	Balbir Singh
+--nextPart1194680.IX0xHVM6LP--
