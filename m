@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750730AbXBSJFL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750725AbXBSJGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750730AbXBSJFL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 04:05:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750757AbXBSJFL
+	id S1750725AbXBSJGX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 04:06:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750772AbXBSJGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 04:05:11 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:46231 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750730AbXBSJFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 04:05:09 -0500
-Date: Mon, 19 Feb 2007 00:54:41 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Balbir Singh <balbir@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org, vatsa@in.ibm.com,
-       ckrm-tech@lists.sourceforge.net, xemul@sw.ru, linux-mm@kvack.org,
-       menage@google.com, svaidy@linux.vnet.ibm.com, devel@openvz.org
+	Mon, 19 Feb 2007 04:06:23 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:6287 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750725AbXBSJGW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 04:06:22 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=eK3aDhmqs4LJI7TLlk2BNSP6ytpLe1wVziDYcskhpkFM5mWJz04VZr/HUuidspmAe
+	bnDpGn68Sejh9Jfq8AWug==
+Message-ID: <6599ad830702190106m3f391de4x170326fef2e4872@mail.gmail.com>
+Date: Mon, 19 Feb 2007 01:06:10 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
 Subject: Re: [RFC][PATCH][0/4] Memory controller (RSS Control)
-Message-Id: <20070219005441.7fa0eccc.akpm@linux-foundation.org>
-In-Reply-To: <20070219065019.3626.33947.sendpatchset@balbir-laptop>
-References: <20070219065019.3626.33947.sendpatchset@balbir-laptop>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Cc: "Balbir Singh" <balbir@in.ibm.com>, linux-kernel@vger.kernel.org,
+       vatsa@in.ibm.com, ckrm-tech@lists.sourceforge.net, xemul@sw.ru,
+       linux-mm@kvack.org, svaidy@linux.vnet.ibm.com, devel@openvz.org
+In-Reply-To: <20070219005441.7fa0eccc.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070219065019.3626.33947.sendpatchset@balbir-laptop>
+	 <20070219005441.7fa0eccc.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Feb 2007 12:20:19 +0530 Balbir Singh <balbir@in.ibm.com> wrote:
+On 2/19/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+> Alas, I fear this might have quite bad worst-case behaviour.  One small
+> container which is under constant memory pressure will churn the
+> system-wide LRUs like mad, and will consume rather a lot of system time.
+> So it's a point at which container A can deleteriously affect things which
+> are running in other containers, which is exactly what we're supposed to
+> not do.
 
-> This patch applies on top of Paul Menage's container patches (V7) posted at
-> 
-> 	http://lkml.org/lkml/2007/2/12/88
-> 
-> It implements a controller within the containers framework for limiting
-> memory usage (RSS usage).
+I think it's OK for a container to consume lots of system time during
+reclaim, as long as we can account that time to the container involved
+(i.e. if it's done during direct reclaim rather than by something like
+kswapd).
 
-It's good to see someone building on someone else's work for once, rather
-than everyone going off in different directions.  It makes one hope that we
-might actually achieve something at last.
+Churning the LRU could well be bad though, I agree.
 
-
-The key part of this patchset is the reclaim algorithm:
-
-> @@ -636,6 +642,15 @@ static unsigned long isolate_lru_pages(u
->  
->  		list_del(&page->lru);
->  		target = src;
-> +		/*
-> + 		 * For containers, do not scan the page unless it
-> + 		 * belongs to the container we are reclaiming for
-> + 		 */
-> +		if (container && !page_in_container(page, zone, container)) {
-> +			scan--;
-> +			goto done;
-> +		}
-
-Alas, I fear this might have quite bad worst-case behaviour.  One small
-container which is under constant memory pressure will churn the
-system-wide LRUs like mad, and will consume rather a lot of system time. 
-So it's a point at which container A can deleteriously affect things which
-are running in other containers, which is exactly what we're supposed to
-not do.
-
+Paul
