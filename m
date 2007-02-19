@@ -1,83 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932288AbXBSOdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932289AbXBSOdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932288AbXBSOdv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 09:33:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932291AbXBSOdu
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 09:33:50 -0500
-Received: from thunk.org ([69.25.196.29]:33009 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932294AbXBSOdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932289AbXBSOdt (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 19 Feb 2007 09:33:49 -0500
-Date: Mon, 19 Feb 2007 09:33:21 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Artem Bityutskiy <dedekind@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Frank Haverkamp <haver@vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 00/44 take 2] [UBI] Unsorted Block Images
-Message-ID: <20070219143321.GE25490@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Artem Bityutskiy <dedekind@infradead.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Christoph Hellwig <hch@infradead.org>,
-	Frank Haverkamp <haver@vnet.ibm.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	David Woodhouse <dwmw2@infradead.org>,
-	Josh Boyer <jwboyer@linux.vnet.ibm.com>
-References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain> <20070217224952.GB16522@thunk.org> <1171889303.13817.29.camel@sauron>
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932288AbXBSOdt
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 19 Feb 2007 09:33:49 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:45783 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932289AbXBSOds (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 09:33:48 -0500
+To: linux-kernel@vger.kernel.org
+CC: devel@openvz.org
+Subject: [PATCH] ecryptfs lower_file handling issues 
+From: Dmitriy Monakhov <dmonakhov@openvz.org>
+Date: Mon, 19 Feb 2007 17:34:13 +0300
+Message-ID: <87wt2ew716.fsf@sw.ru>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1171889303.13817.29.camel@sauron>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: multipart/mixed; boundary="=-=-="
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 19, 2007 at 02:48:23PM +0200, Artem Bityutskiy wrote:
-> I actually did not mean these patches should be included to a git. We
-> have UBI git to pull from for these purposes. I basically manually split
-> the UBI sources to make UBI easier to review. I should have added an
-> "RFC" tag, apologies.
+--=-=-=
 
-It made it much, much, MUCH harder to review.  Especially given that
-the documentation was separated from the implementation.  As I looked
-at the implementation, there was no way to look and what it was
-supposed to do without flipping back to a previous e-mail message and
-losing my place.  
 
-> This reflects the way of my thinking. I see UBI as a set of units with
-> defined interfaces. So I even physically split the interface description
-> into files. I still think it is easier to grasp the architecture this
-> way.
+1)Function ecryptfs_do_readpage() calls flush_dcache_page(lower_page),
+  but lower_page was't changed here. So remove this line.
 
-Speaking as someone who was coming into it cold, it actually made it
-far more difficult.  Your units were too small, so that meant the
-number of interfaces that were created as a result were huge!  (Around
-20 _sets_ of interfaces, all of which had to be comprehended for what
-should have been a relatively simple set of functionality!)
+2)prepare_write ret val was ignored in ecryptfs_write_inode_size_to_header().
+If error happends we can't call commit_write, just do cleanup and fial.
+It is issue easy to reproduce with full lower_fs, in this case prepare_write()
+will return ENOSPC.
+Signed-off-by: Dmitriy Monakhov <dmonakhov@openvz.org>
+-------------
 
-And when you create that many interfaces, it adds inertia to changing
-the interfaces later on, because it's sometimes not clear how many
-users of the interface there really are.  My general rule of thumb is
-that if an interface only has one user, then it may be a good idea to
-combine it with the user of that interface, and then make the
-functions involved be a static, so that it becomes clear the only user
-of that functoin is within that one file.  You can take this too far,
-and to extremes it doesn't work all that well, but the UBI layer has
-gone waaaaaay off the deep end in terms of functional decomposition.
+--=-=-=
+Content-Disposition: inline; filename=diff-mm-ecryptfs-mmap-fix-2_6_20-mm2
 
-Adding lots of units so you can have formal functional interfaces is
-not always the right answer in terms of making code more readable or
-maintainable.  And in my humble opinion, UBI is a picture-perfect
-demonstration of this.
+diff --git a/fs/ecryptfs/mmap.c b/fs/ecryptfs/mmap.c
+index 1e5d2ba..0cebb75 100644
+--- a/fs/ecryptfs/mmap.c
++++ b/fs/ecryptfs/mmap.c
+@@ -238,7 +238,6 @@ int ecryptfs_do_readpage(struct file *file, struct page *page,
+ 	lower_page_data = kmap_atomic(lower_page, KM_USER1);
+ 	memcpy(page_data, lower_page_data, PAGE_CACHE_SIZE);
+ 	kunmap_atomic(lower_page_data, KM_USER1);
+-	flush_dcache_page(lower_page);
+ 	kunmap_atomic(page_data, KM_USER0);
+ 	flush_dcache_page(page);
+ 	rc = 0;
+@@ -454,6 +453,12 @@ static int ecryptfs_write_inode_size_to_header(struct file *lower_file,
+ 	}
+ 	lower_a_ops = lower_inode->i_mapping->a_ops;
+ 	rc = lower_a_ops->prepare_write(lower_file, header_page, 0, 8);
++	if (rc) {
++		ecryptfs_printk(KERN_ERR, "Error preparing header page "
++			"write\n");
++		ecryptfs_release_lower_page(header_page);
++		goto out;
++	}
+ 	file_size = (u64)i_size_read(inode);
+ 	ecryptfs_printk(KERN_DEBUG, "Writing size: [0x%.16x]\n", file_size);
+ 	file_size = cpu_to_be64(file_size);
 
-Regards,
+--=-=-=--
 
-						- Ted
