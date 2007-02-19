@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751131AbXBSEjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751546AbXBSE54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751131AbXBSEjd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 23:39:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbXBSEjd
+	id S1751546AbXBSE54 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 23:57:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbXBSE54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 23:39:33 -0500
-Received: from 1wt.eu ([62.212.114.60]:2476 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751131AbXBSEjc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 23:39:32 -0500
-Date: Mon, 19 Feb 2007 05:39:27 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Phy Prabab <phyprabab@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Question about setting affinity in 2.4
-Message-ID: <20070219043927.GE943@1wt.eu>
-References: <2fe399760702181802q39e75b42iea7f80124506f169@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2fe399760702181802q39e75b42iea7f80124506f169@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+	Sun, 18 Feb 2007 23:57:56 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37484 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751532AbXBSE5z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 23:57:55 -0500
+From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, Erez Zadok <ezk@cs.sunysb.edu>,
+       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+Subject: [PATCH 1/1] fs/stack.c: Copy i_nlink after all other attributes are copied
+Date: Sun, 18 Feb 2007 23:57:45 -0500
+Message-Id: <11718610652955-git-send-email-jsipek@cs.sunysb.edu>
+X-Mailer: git-send-email 1.5.0.19.gddff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Phy !
+From: Erez Zadok <ezk@cs.sunysb.edu>
 
-On Sun, Feb 18, 2007 at 06:02:17PM -0800, Phy Prabab wrote:
-> Hello everyone,
-> 
-> I am trying to set affinity on a program to make sure I can get the
-> best use of the cache as possible and to eliminate as much noise as
-> possible with running my program.  I have tried unsuccessfully to set
-> affinity using sched_set/getaffinity and the CPU_SET macros.  In
-> particular, I can not seem to get the process to use affinity I
-> specify as in:
-> 
-> int main () {
->  cpu_set_t mask;
->  cpu_set_t setmask;
->  long long x;
->  double foo;
->  printf("Mask set to %08lx\n", sched_getaffinity(0, &mask));
->  CPU_SET(1, &mask);
->  if (sched_setaffinity(0, &mask) == -1) {
->     printf("error setting affinity.");
->  }
-> 
->  printf("Mask is reset to %08lx\n", sched_getaffinity(0, &mask));
->  // do some long lasting calculations ....
-> 
->  return;
-> }
-> 
-> No mater what I do, the process is never bond to the processor in
-> question as exposed by this little appy and by cat /proc/<pid>/cpu.
-> Is this just impossible to do?
-> 
-> Ah, the kernel I am using is RH 2.4.21-37.ELsmp.
+A user-specified get_nlinks may depend on other inode attributes.
 
-I don't know for RH kernel, but the affinity syscalls are not in 2.4
-mainline. You can apply the patch without much hassle if you want. It's
-in Robert Love's directory :
+Cc: Michael Halcrow <mhalcrow@us.ibm.com>
+Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
+Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
+---
+ fs/stack.c |   14 +++++++++-----
+ 1 files changed, 9 insertions(+), 5 deletions(-)
 
- http://www.kernel.org/pub/linux/kernel/people/rml/cpu-affinity/v2.4/
-
-I believe you'll have to use an -ac patch for RHEL.
-
-> TIA!
-> Phy
-
-regards,
-Willy
+diff --git a/fs/stack.c b/fs/stack.c
+index 8ffb880..67716f6 100644
+--- a/fs/stack.c
++++ b/fs/stack.c
+@@ -20,11 +20,6 @@ EXPORT_SYMBOL_GPL(fsstack_copy_inode_size);
+ void fsstack_copy_attr_all(struct inode *dest, const struct inode *src,
+ 				int (*get_nlinks)(struct inode *))
+ {
+-	if (!get_nlinks)
+-		dest->i_nlink = src->i_nlink;
+-	else
+-		dest->i_nlink = (*get_nlinks)(dest);
+-
+ 	dest->i_mode = src->i_mode;
+ 	dest->i_uid = src->i_uid;
+ 	dest->i_gid = src->i_gid;
+@@ -34,5 +29,14 @@ void fsstack_copy_attr_all(struct inode *dest, const struct inode *src,
+ 	dest->i_ctime = src->i_ctime;
+ 	dest->i_blkbits = src->i_blkbits;
+ 	dest->i_flags = src->i_flags;
++
++	/*
++	 * Update the nlinks AFTER updating the above fields, because the
++	 * get_links callback may depend on them.
++	 */
++	if (!get_nlinks)
++		dest->i_nlink = src->i_nlink;
++	else
++		dest->i_nlink = (*get_nlinks)(dest);
+ }
+ EXPORT_SYMBOL_GPL(fsstack_copy_attr_all);
+-- 
+1.5.0.19.gddff
 
