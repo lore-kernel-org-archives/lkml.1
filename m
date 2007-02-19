@@ -1,62 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbXBSCCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752701AbXBSCHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752712AbXBSCCV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 21:02:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbXBSCCV
+	id S1752701AbXBSCHq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 21:07:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752715AbXBSCHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 21:02:21 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:37251 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752712AbXBSCCU (ORCPT
+	Sun, 18 Feb 2007 21:07:46 -0500
+Received: from fed1rmmtao107.cox.net ([68.230.241.39]:48451 "EHLO
+	fed1rmmtao107.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752701AbXBSCHo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 21:02:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=H9RlQgORinB6BjiQiYkChrhWGCXkFXTVLMDSc2M907I8DOwszn4MeX0BBEl+fqY/DmUFn85pNddJPRHl1wRdpPohmfN+7x5VNu9x8rUgLe42h6D8UfEDik4irO1gWxd1RA7VP85vaTGDZSGZB34/Tx/WvoMkbxMebfOlZnxGeKk=
-Message-ID: <2fe399760702181802q39e75b42iea7f80124506f169@mail.gmail.com>
-Date: Sun, 18 Feb 2007 18:02:17 -0800
-From: "Phy Prabab" <phyprabab@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Question about setting affinity in 2.4
+	Sun, 18 Feb 2007 21:07:44 -0500
+From: Junio C Hamano <junkio@cox.net>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.5.0.1
+cc: linux-kernel@vger.kernel.org
+Date: Sun, 18 Feb 2007 18:07:42 -0800
+Message-ID: <7vwt2ec32p.fsf@assigned-by-dhcp.cox.net>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+The latest maintenance release GIT 1.5.0.1 is available at the
+usual places:
 
-I am trying to set affinity on a program to make sure I can get the
-best use of the cache as possible and to eliminate as much noise as
-possible with running my program.  I have tried unsuccessfully to set
-affinity using sched_set/getaffinity and the CPU_SET macros.  In
-particular, I can not seem to get the process to use affinity I
-specify as in:
+  http://www.kernel.org/pub/software/scm/git/
 
-int main () {
-  cpu_set_t mask;
-  cpu_set_t setmask;
-  long long x;
-  double foo;
-  printf("Mask set to %08lx\n", sched_getaffinity(0, &mask));
-  CPU_SET(1, &mask);
-  if (sched_setaffinity(0, &mask) == -1) {
-     printf("error setting affinity.");
-  }
+  git-1.5.0.1.tar.{gz,bz2}			(tarball)
+  git-htmldocs-1.5.0.1.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.5.0.1.tar.{gz,bz2}		(preformatted docs)
+  RPMS/$arch/git-*-1.5.0.1-1.$arch.rpm	(RPM)
 
-  printf("Mask is reset to %08lx\n", sched_getaffinity(0, &mask));
-  // do some long lasting calculations ....
+GIT v1.5.0.1 Release Notes
+==========================
 
-  return;
-}
+Fixes since v1.5.0
+------------------
 
-No mater what I do, the process is never bond to the processor in
-question as exposed by this little appy and by cat /proc/<pid>/cpu.
-Is this just impossible to do?
+* Documentation updates
 
-Ah, the kernel I am using is RH 2.4.21-37.ELsmp.
+  - Clarifications and corrections to 1.5.0 release notes.
 
-TIA!
-Phy
+  - The main documentation did not link to git-remote documentation.
+
+  - Clarified introductory text of git-rebase documentation.
+
+  - Converted remaining mentions of update-index on Porcelain
+    documents to git-add/git-rm.
+
+  - Some i18n.* configuration variables were incorrectly
+    described as core.*; fixed.
+
+* Bugfixes
+
+  - git-add and git-update-index on a filesystem on which
+    executable bits are unreliable incorrectly reused st_mode
+    bits even when the path changed between symlink and regular
+    file.
+
+  - git-daemon marks the listening sockets with FD_CLOEXEC so
+    that it won't be leaked into the children.
+
+  - segfault from git-blame when the mandatory pathname
+    parameter was missing was fixed; usage() message is given
+    instead.
+
+  - git-rev-list did not read $GIT_DIR/config file, which means
+    that did not honor i18n.logoutputencoding correctly.
+
+* Tweaks
+
+  - sliding mmap() inefficiently mmaped the same region of a
+    packfile with an access pattern that used objects in the
+    reverse order.  This has been made more efficient.
+
+----------------------------------------------------------------
+
+Changes since v1.5.0 are as follows (gitk changes were already
+in v1.5.0 -- listed below are the commits that came through
+Paul's official gitk repository):
+
+Alexandre Julliard (2):
+      git-daemon: Avoid leaking the listening sockets into child processes.
+      sha1_file.c: Round the mmap offset to half the window size.
+
+Fredrik Kuivinen (2):
+      Read the config in rev-list
+      Documentation/i18n.txt: it is i18n.commitencoding not core.commitencoding
+
+Junio C Hamano (15):
+      Documentation: Drop full-stop from git-fast-import title.
+      cmd-list: add git-remote
+      Makefile: update check-docs target
+      Clarify two backward incompatible repository options.
+      Still updating 1.5.0 release notes.
+      Add RelNotes 1.5.0.1
+      Make sure packedgitwindowsize is multiple of (pagesize * 2)
+      Make gitk work reasonably well on Cygwin.
+      gitk: Use show-ref instead of ls-remote
+      GIT-VERSION-FILE: check ./version first.
+      pretend-sha1: grave bugfix.
+      git-merge: minor fix for no_trivial_merge_strategies.
+      Do not take mode bits from index after type change.
+      Update draft release notes for 1.5.0.1
+      GIT 1.5.0.1
+
+Mark Levedahl (3):
+      gitk - remove trailing whitespace from a few lines.
+      Make gitk save and restore the user set window position.
+      Make gitk save and restore window pane position on Linux and Cygwin.
+
+Nicolas Pitre (1):
+      Minor corrections to release notes
+
+Paul Mackerras (1):
+      Change git repo-config to git config
+
+Shawn O. Pearce (2):
+      Attempt to improve git-rebase lead-in description.
+      Convert update-index references in docs to add.
+
+Tommi Kyntola (1):
+      git-blame: prevent argument parsing segfault
+
