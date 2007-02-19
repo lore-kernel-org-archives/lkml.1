@@ -1,64 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752637AbXBSAzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752646AbXBSBAH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752637AbXBSAzg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 19:55:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbXBSAzg
+	id S1752646AbXBSBAH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 20:00:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbXBSBAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 19:55:36 -0500
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:58991 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752637AbXBSAzf (ORCPT
+	Sun, 18 Feb 2007 20:00:06 -0500
+Received: from nz-out-0506.google.com ([64.233.162.232]:29853 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752646AbXBSBAD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 19:55:35 -0500
-To: chris.mason@oracle.com
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-reply-to: <20070219004537.GB9289@think.oraclecorp.com> (message from Chris
-	Mason on Sun, 18 Feb 2007 19:45:37 -0500)
-Subject: Re: dirty balancing deadlock
-References: <E1HIqlm-0004iZ-00@dorka.pomaz.szeredi.hu> <20070218125307.4103c04a.akpm@linux-foundation.org> <E1HIurG-0005Bw-00@dorka.pomaz.szeredi.hu> <20070218145929.547c21c7.akpm@linux-foundation.org> <E1HIvMB-0005Fd-00@dorka.pomaz.szeredi.hu> <20070218155916.0d3c73a9.akpm@linux-foundation.org> <E1HIwLJ-0005N4-00@dorka.pomaz.szeredi.hu> <20070219004537.GB9289@think.oraclecorp.com>
-Message-Id: <E1HIwnX-0005Sr-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 19 Feb 2007 01:54:31 +0100
+	Sun, 18 Feb 2007 20:00:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rXmmIVVjs4OeOlJSOur8AwMgfKDPljy5e5oNuTNnZik+8iBzcHdXgDE6zWlWCM8IDPDOe2CUnBKYl69YnwGshTQF7vB1KdJadhqZMehzlvGDz/6sej7Qbxo0IXGmZom5FWmLqSl2zWCHsf9vXqNButYu9wOJrIB22n8MHbwf3IA=
+Message-ID: <6bffcb0e0702181700x17d9a100v1e6cf4638464459d@mail.gmail.com>
+Date: Mon, 19 Feb 2007 02:00:02 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Alex Riesen" <fork0@users.sourceforge.net>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@osdl.org>
+Subject: Re: 2.6.20-git13 kernel BUG at /mnt/md0/devel/linux-git/kernel/time/tick-sched.c:168
+In-Reply-To: <20070218172410.GA2421@steel.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <45D61632.1020105@googlemail.com>
+	 <1171660939.30834.102.camel@localhost.localdomain>
+	 <20070217144752.GA2503@steel.home>
+	 <1171725257.30834.120.camel@localhost.localdomain>
+	 <20070217164652.GA2579@steel.home>
+	 <6bffcb0e0702171441i6ac69ac0yb1c46dbf8f43dc2e@mail.gmail.com>
+	 <1171788100.30834.169.camel@localhost.localdomain>
+	 <20070218095037.GA3408@steel.home>
+	 <1171802216.30834.172.camel@localhost.localdomain>
+	 <20070218172410.GA2421@steel.home>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > > If so, writes to B will decrease the dirty memory threshold.
-> > > > 
-> > > > Yes, but not by enough.  Say A dirties a 1100 pages, limit is 1000.
-> > > > Some pages queued for writeback (doesn't matter how much).  B writes
-> > > > back 1, 1099 dirty remain in A, zero in B.  balance_dirty_pages() for
-> > > > B doesn't know that there's nothing more to write back for B, it's
-> > > > just waiting there for those 1099, which'll never get written.
-> > > 
-> > > hm, OK, arguable.  I guess something like this..
-> > 
-> > Doesn't help the fuse case, but does seem to help the loopback mount
-> > one.
-> > 
-> > For fuse it's worse with the patch: now the write triggered by the
-> > balance recurses into fuse, with disastrous results, since the fuse
-> > writeback is now blocked on the userspace queue.
-> > 
-> > fusexmp_fh_no D 40136678     0   505    494           506   504 (NOTLB)
-> > 08982b78 00000001 00000000 08f9f9b4 0805d8cb 089a75f8 08982b78 08f98000
-> >        08f98000 08f9f9dc 0805a38a 089a7100 08982680 08f9f9cc 08f98000 08f98000
-> >        085d8300 08982680 089a7100 08f9fa34 08183006 089a7100 08982680 089a7100 Call Trace:
-> > 08f9f9a0:  [<0805d8cb>] switch_to_skas+0x3b/0x83
-> > 08f9f9b8:  [<0805a38a>] _switch_to+0x49/0x99
-> > 08f9f9e0:  [<08183006>] schedule+0x246/0x547
-> > 08f9fa38:  [<08103c7e>] fuse_get_req_wp+0xe9/0x14a
-> > 08f9fa70:  [<08103d2e>] fuse_writepage+0x4f/0x12c
-> 
-> In general, writepage is supposed to do work without blocking on
-> expensive locks that will get pdflush and dirty reclaim stuck in this
-> fashion.  You'll probably have to take the same approach reiserfs does
-> in data=journal mode, which is leaving the page dirty if fuse_get_req_wp
-> is going to block without making progress.
+On 18/02/07, Alex Riesen <fork0@users.sourceforge.net> wrote:
+> Thomas Gleixner, Sun, Feb 18, 2007 13:36:56 +0100:
+> > On Sun, 2007-02-18 at 10:50 +0100, Alex Riesen wrote:
+> > > > The arch/i386/kernel/process.c part of the patch should apply to 2.6.20
+> > > > as well. Can you check if the problem is there too ?
+> > >
+> > > It does not apply and does not look trivially hackable.
+> > > The code for cpu_idle was introduced in 2ff2d3d7 "i386: add idle notifier".
+> >
+> > Here you go.
+> >
+>
+> Ok, I confirm the message in vanilla v2.6.20
+>
 
-Pdflush, and dirty reclaim set wbc->nonblocking to true.
-balance_dirty_pages and fsync don't.  The problem here is that
-Andrew's patch is wrong to let balance_dirty_pages() try to write back
-pages from a different queue.
+dmesg | grep Idle
+Idle: local softirq pending: 0020
 
-Miklos
+uname -a
+Linux bitis-gabonica.linuxtestersgroup.org 2.6.20 #1 SMP PREEMPT Sun
+Feb 18 15:20:27 CET 2007 i686 i686 i386 GNU/Linux
+
+Regards,
+Michal
+
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
