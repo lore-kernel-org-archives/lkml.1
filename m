@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932079AbXBSLAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932073AbXBSLEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932079AbXBSLAo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 06:00:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932077AbXBSLAo
+	id S932073AbXBSLEI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 06:04:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932078AbXBSLEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 06:00:44 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55020 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932073AbXBSLAn (ORCPT
+	Mon, 19 Feb 2007 06:04:07 -0500
+Received: from vulpecula.futurs.inria.fr ([195.83.212.5]:48489 "EHLO
+	vulpecula.futurs.inria.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932073AbXBSLEG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 06:00:43 -0500
-Date: Mon, 19 Feb 2007 11:00:36 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Artem Bityutskiy <dedekind@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Frank Haverkamp <haver@vnet.ibm.com>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH 09/44 take 2] [UBI] debug unit header
-Message-ID: <20070219110036.GD16930@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Artem Bityutskiy <dedekind@infradead.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Frank Haverkamp <haver@vnet.ibm.com>,
-	Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	David Woodhouse <dwmw2@infradead.org>
-References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain> <20070217165509.5845.12977.sendpatchset@localhost.localdomain> <200702172218.22709.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200702172218.22709.arnd@arndb.de>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 19 Feb 2007 06:04:06 -0500
+Message-ID: <45D98420.5060604@tremplin-utc.net>
+Date: Mon, 19 Feb 2007 12:04:00 +0100
+From: =?UTF-8?B?w4lyaWMgUGllbA==?= <Eric.Piel@tremplin-utc.net>
+User-Agent: Thunderbird 2.0b2 (X11/20070215)
+MIME-Version: 1.0
+To: Markus Rechberger <mrechberger@gmail.com>
+Cc: Oliver Neukum <oliver@neukum.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: O2micro smartcard reader driver.
+References: <20061127182817.d52dfdf1.l.bigonville@edpnet.be>	 <456C0BD0.7080606@tremplin-utc.net>	 <200611281249.45243.oliver@neukum.org>	 <457F1F0F.20109@tremplin-utc.net>	 <d9def9db0702161536i64cf6fb3o1c3c8ff850c38994@mail.gmail.com> <d9def9db0702161955y1543e995o48b63eb1265e22a8@mail.gmail.com>
+In-Reply-To: <d9def9db0702161955y1543e995o48b63eb1265e22a8@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 17, 2007 at 10:18:21PM +0100, Arnd Bergmann wrote:
-> On Saturday 17 February 2007 17:55, Artem Bityutskiy wrote:
-> > +
-> > +/**
-> > + * UBI debugging unit.
-> > + *
-> > + * UBI provides rich debugging capabilities which are implemented in
-> > + * this unit.
+02/17/2007 04:55 AM, Markus Rechberger wrote/a écrit:
+> Hi Eric,
 > 
-> Stop right here. You should be doing one thing and do it right.
-> Since the point of your patches is to do volume management for MTD,
-> it should do just that.
+> I committed your code to linuxtv.org to review and modify it there.
+> http://linuxtv.org/hg/~mrechberger/chipcardreader
 > 
-> If you feel that Linux needs rich debugging capabilities, then submit
-> a patch for that independent of UBI.
+> one thing I noticed is the error handling in ozscr_probe.
 > 
+> I'll continue the rest during the next few days, I'd like to see it as
+> soon as possible in the upstream kernel before some kernel api changes
+> again which affects your current driver.
 
-*nod*
+Hi Markus,
+
+Thank you very much for finding new bugs ;-) Actually, right now I've 
+just moved and don't have internet at home which is kind of slowing down 
+development... Anyway, I'll check if I have some more fixes on my 
+computer than on my website. Also, it would be good to double check some 
+lines which I've commented XXX. In particular, IIRC there were some 
+suspicious sleep saying it was sleeping a microsecond and sleeping one 
+millisecond!
+
+I'm also a bit concerned about the userspace "driver" for pscd which 
+comes with the original driver once the patch will be part of the 
+default kernel. Maybe this userspace part could become part of the 
+pscdlite distribution.
+
+Wrt the module having always a usecount value of 1, it was worrying me 
+too at the begining until I noticed it decreased back to 0 once the card 
+is "ejected" (pccardctl eject 1). Although a bit surprising, I don't 
+think it's a bug, is it?
+
+See you,
+Eric
+
