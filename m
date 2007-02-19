@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932189AbXBSMJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932201AbXBSMJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932189AbXBSMJK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 07:09:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932192AbXBSMJK
+	id S932201AbXBSMJt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 07:09:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932197AbXBSMJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 07:09:10 -0500
-Received: from web36706.mail.mud.yahoo.com ([209.191.85.40]:25966 "HELO
-	web36706.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932189AbXBSMJJ (ORCPT
+	Mon, 19 Feb 2007 07:09:46 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:21966 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932195AbXBSMJp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 07:09:09 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=D2c3r8yNZe0JaMTqTwNa0TXuhf+FZQOvE1LMS/cFiaoDBiY2sBXB/s8R0F9h3Ozi6GrtiXwbKzrblCIpsDeZ8HgpVQsjJ+cmpSiA6IvNIRtpyctTAc+5dgn8v/ag6WRSguZ1oOLuFY0ySKyohqCkA9rYAc5VajLQsfkKHEZiBX0=;
-X-YMail-OSG: 9XKko3AVM1nuV62TV2PRSmNs0CsG4Etn4QwVrCDZn4DxeHMbacM4Y6065cwaYr2a1oZzOs.ENnQ9cm3kwlfLEOJObOcWnGRMBynKfIyOwonTsAE8f1Lceg--
-Date: Mon, 19 Feb 2007 04:09:08 -0800 (PST)
-From: Alex Dubov <oakad@yahoo.com>
-Subject: Re: Recent and not-so problems with tifm_sd driver
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <45D94C70.1080802@drzeus.cx>
+	Mon, 19 Feb 2007 07:09:45 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=YODEItNr+M8IfdJ60N5hpD1K8wqDu5Elsgmw8OB9Q57JXBWJo/Wkbe0dffM7dLhGg
+	Ix2ymg2Lg3nGE8JzddaTA==
+Message-ID: <6599ad830702190409x4f64e56ex4044a12d949e44af@mail.gmail.com>
+Date: Mon, 19 Feb 2007 04:09:38 -0800
+From: "Paul Menage" <menage@google.com>
+To: balbir@in.ibm.com
+Subject: Re: [ckrm-tech] [RFC][PATCH][2/4] Add RSS accounting and control
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, vatsa@in.ibm.com,
+       ckrm-tech@lists.sourceforge.net, xemul@sw.ru,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       svaidy@linux.vnet.ibm.com, devel@openvz.org
+In-Reply-To: <45D9906F.2090605@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <570331.88389.qm@web36706.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070219065019.3626.33947.sendpatchset@balbir-laptop>
+	 <20070219065034.3626.2658.sendpatchset@balbir-laptop>
+	 <20070219005828.3b774d8f.akpm@linux-foundation.org>
+	 <45D97DF8.5080000@in.ibm.com>
+	 <20070219030141.42c65bc0.akpm@linux-foundation.org>
+	 <45D9856D.1070902@in.ibm.com>
+	 <20070219032352.2856af36.akpm@linux-foundation.org>
+	 <45D9906F.2090605@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 2/19/07, Balbir Singh <balbir@in.ibm.com> wrote:
+> >
+> > More worrisome is the potential for use-after-free.  What prevents the
+> > pointer at mm->container from referring to freed memory after we're dropped
+> > the lock?
+> >
+>
+> The container cannot be freed unless all tasks holding references to it are
+> gone,
 
---- Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
+... or have been moved to other containers. If you're not holding
+task->alloc_lock or one of the container mutexes, there's nothing to
+stop the task being moved to another container, and the container
+being deleted.
 
-> Alex Dubov wrote:
-> > 
-> > You'll agree, I think, that add_disk in mmc_block_probe issues a lot of requests (reads
-> partition
-> > table, fs superblocks and such - plenty of room for critical errors). Then, driver's remove
-> method
-> > will not be called before driver's probe method had finished. So mmc_block is quite involved,
-> even
-> > though it does not affect the problem's resolution.
-> 
-> I agree that mmc_block's probe method will generate a whole bunch of requests.
-> But I don't see how that can be called given the scenario you describe.
+If you're in an RCU section then you can guarantee that the container
+(that you originally read from the task) and its subsystems at least
+won't be deleted while you're accessing them, but for accounting like
+this I suspect that's not enough, since you need to be adding to the
+accounting stats on the correct container. I think you'll need to hold
+mm->container_lock for the duration of memctl_update_rss()
 
-mmc_rescan
-  mmc_register_card
-    device_add
-      mmc_block_probe
-        mmc_block_alloc
-          -> queue thread starts running
-        add_disk
-          -> issues a lot of requests; card fails, my drivers calls mmc_remove_host, which in 
-             turn calls device_del, though we are still in device_add
-
-
-
- 
-____________________________________________________________________________________
-Have a burning question?  
-Go to www.Answers.yahoo.com and get answers from real people who know.
+Paul
