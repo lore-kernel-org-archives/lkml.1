@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932686AbXBSVPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932692AbXBSVQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932686AbXBSVPk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 16:15:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932696AbXBSVPk
+	id S932692AbXBSVQt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 16:16:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932697AbXBSVQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 16:15:40 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:49123 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932686AbXBSVPk (ORCPT
+	Mon, 19 Feb 2007 16:16:49 -0500
+Received: from noname.neutralserver.com ([70.84.186.210]:60042 "EHLO
+	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932692AbXBSVQs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 16:15:40 -0500
-Subject: Re: [PATCH 0/7] [RFC] hugetlb: pagetable_operations API
-From: Arjan van de Ven <arjan@infradead.org>
-To: Adam Litke <agl@us.ibm.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1171913691.22940.30.camel@localhost.localdomain>
-References: <20070219183123.27318.27319.stgit@localhost.localdomain>
-	 <1171910581.3531.89.camel@laptopd505.fenrus.org>
-	 <1171913691.22940.30.camel@localhost.localdomain>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Mon, 19 Feb 2007 22:15:35 +0100
-Message-Id: <1171919736.3531.98.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+	Mon, 19 Feb 2007 16:16:48 -0500
+Message-ID: <45DA139D.7070807@monatomic.org>
+Date: Mon, 19 Feb 2007 23:16:13 +0200
+From: Dan Aloni <da-x@monatomic.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Andi Kleen <ak@suse.de>, linux-kernel-list <linux-kernel@vger.kernel.org>
+Subject: Re: e2b2rom_init_one():  Unable to register resource
+References: <20070217212918.GA26554@localdomain> <20070219155829.GA10111@cvg>
+In-Reply-To: <20070219155829.GA10111@cvg>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - noname.neutralserver.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - monatomic.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-02-19 at 13:34 -0600, Adam Litke wrote:
-> On Mon, 2007-02-19 at 19:43 +0100, Arjan van de Ven wrote:
-> > On Mon, 2007-02-19 at 10:31 -0800, Adam Litke wrote:
-> > > The page tables for hugetlb mappings are handled differently than page tables
-> > > for normal pages.  Rather than integrating multiple page size support into the
-> > > main VM (which would tremendously complicate the code) some hooks were created.
-> > > This allows hugetlb special cases to be handled "out of line" by a separate
-> > > interface.
-> > 
-> > ok it makes sense to clean this up.. what I don't like is that there
-> > STILL are all the double cases... for this to work and be worth it both
-> > the common case and the hugetlb case should be using the ops structure
-> > always! Anything else and you're just replacing bad code with bad
-> > code ;(
-> 
-> Hmm.  Do you think everyone would support an extra pointer indirection
-> for every handle_pte_fault() call?  
+Cyrill Gorcunov wrote:
+> Hi, Dan
+>
+> did you try setup forsed 8MB value on window->phys?
+>
+>   
+Actually, I tried to force it at 4MB starting at 0xff800000 since it 
+made much sense looking at the e820 map. Or maybe I misunderstood 
+something. It crashed with this:
 
-maybe. I'm not entirely convinced... (I like the cleanup potential a lot
-code wise.. but if it costs performance, then... well I'd hate to see
-linux get slower for hugetlbfs)
+<7>[ 9237.432181] esb2rom: esb2rom_init_one(): Unable to register 
+resource 0xff800000-0xffbfffff - kernel bug?
+<1>[ 9237.432262] Unable to handle kernel paging request at 
+ffffc20010500000 RIP:
+<1>[ 9237.436910] [<ffffffff8041f7ba>] cfi_probe_chip+0x14a/0x10e0
+<4>[ 9237.445246] PGD 12fc20067 PUD 12fc21067 PMD 12fcf6067 PTE 0
+<0>[ 9237.451057] Oops: 0002 [1] SMP
+<0>[ 9237.454346] do_IRQ: 1.251 No irq handler for vector
 
-> If not, then I definitely wouldn't
-> mind creating a default_pagetable_ops and calling into that.
-
-... but without it to be honest, your patch adds nothing real.. there's
-ONE user of your code, and there's no real cleanup unless you get rid of
-all the special casing.... since the special casing is the really ugly
-part of hugetlbfs, not the actual code inside the special case..
-
+I can dump here the disassembly of cfi_probe_chip if it's interesting...
 
 -- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+Dan Aloni
+XIV LTD, http://www.xivstorage.com
+da-x (at) monatomic.org, dan (at) xiv.co.il
 
