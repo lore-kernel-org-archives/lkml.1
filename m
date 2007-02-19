@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbXBSABF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752524AbXBSAWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752542AbXBSABF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 19:01:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbXBSABF
+	id S1752524AbXBSAWJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 19:22:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbXBSAWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 19:01:05 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:33791 "EHLO smtp.osdl.org"
+	Sun, 18 Feb 2007 19:22:09 -0500
+Received: from ozlabs.org ([203.10.76.45]:59128 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752538AbXBSABB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 19:01:01 -0500
-Date: Sun, 18 Feb 2007 16:00:26 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: 2.6.20-mm2
-Message-Id: <20070218160026.2988d59f.akpm@linux-foundation.org>
-In-Reply-To: <200702190025.49273.rjw@sisk.pl>
-References: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
-	<200702181344.54959.rjw@sisk.pl>
-	<20070218114326.35d7645b.akpm@linux-foundation.org>
-	<200702190025.49273.rjw@sisk.pl>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1752524AbXBSAWH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 19:22:07 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <17880.60841.973258.612628@cargo.ozlabs.ibm.com>
+Date: Mon, 19 Feb 2007 11:22:01 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 02/11] syslets: add syslet.h include file, user API/ABI definitions
+In-Reply-To: <20070213142024.GC638@elte.hu>
+References: <20060529212109.GA2058@elte.hu>
+	<20070213142024.GC638@elte.hu>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Feb 2007 00:25:48 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Ingo Molnar writes:
 
-> > netconsole is good.
-> 
-> I know. :-)
-> 
-> In the meantime, I've got something worse on another x86_64 box:
-> 
-> Asus Laptop ACPI Extras version 0.30
->   L5D model detected, supported
-> audit(1171831698.918:2): audit_pid=4281 old=0 by auid=4294967295
-> general protection fault: 0000 [2] PREEMPT
-> last sysfs file: /class/net/eth2/carrier
-> CPU 0
-> Modules linked in: af_packet ipv6 snd_pcm_oss snd_mixer_oss snd_seq snd_seq_device asus_acpi backlight button battery ac dm_mod pcmr
-> Pid: 178, comm: pdflush Not tainted 2.6.20-mm2 #1
-> RIP: 0010:[<ffffffff8034bce4>]  [<ffffffff8034bce4>] __make_request+0x134/0x370
-> RSP: 0000:ffff81005ed659a0  EFLAGS: 00010297
-> RAX: 00000000ffffffff RBX: 6b6b6b6b6b6b6b6b RCX: 000000000203396a
-> RDX: 0000000100000000 RSI: ffff810037b4dbb0 RDI: ffff81004683d8c0
-> RBP: ffff81005ed659f0 R08: ffff81004683d070 R09: ffff81003d333cc0
-> R10: 0000000000000000 R11: 0000000000000000 R12: ffff810037b4dbb0
-> R13: ffff81005daba3f0 R14: ffff810037daca90 R15: ffff81005daba3d0
-> FS:  00002ad4a29e6d00(0000) GS:ffffffff805db000(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> CR2: 00002b6a345aa000 CR3: 0000000056585000 CR4: 00000000000006e0
-> Process pdflush (pid: 178, threadinfo ffff81005ed64000, task ffff810037b060c0)
-> Stack:  ffff810002852540 0000000000000001 ffff810037b4dbb0 ffffffff8026be21
->  ffff81005ed65a40 0000000000000008 ffff810037b4dbb0 0000000000000800
->  0000000000000008 ffff8100021d94e0 ffff81005ed65a40 ffffffff80348e7c
-> Call Trace:
->  [<ffffffff8026be21>] mempool_alloc_slab+0x11/0x20
->  [<ffffffff80348e7c>] generic_make_request+0x1ec/0x230
+> add include/linux/syslet.h which contains the user-space API/ABI
+> declarations. Add the new header to include/linux/Kbuild as well.
 
-yeah. everyone except me is hitting that.
+> +struct syslet_uatom {
+> +	unsigned long				flags;
+> +	unsigned long				nr;
+> +	long __user				*ret_ptr;
+> +	struct syslet_uatom	__user		*next;
+> +	unsigned long		__user		*arg_ptr[6];
+> +	/*
+> +	 * User-space can put anything in here, kernel will not
+> +	 * touch it:
+> +	 */
+> +	void __user				*private;
+> +};
+
+This structure, with its unsigned longs and pointers, is going to
+create enormous headaches for 32-bit processes on 64-bit machines as
+far as I can see---and on ppc64 machines, almost all processes are
+32-bit, since there is no inherent speed penalty for running in 32-bit
+mode, and some space savings.
+
+Have you thought about how you will handle compatibility for 32-bit
+processes?  The issue will arise for x86_64 and ia64 (among others)
+too, I would think.
+
+Paul.
