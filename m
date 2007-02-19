@@ -1,46 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932131AbXBSGV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932136AbXBSGY6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932131AbXBSGV1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 01:21:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932133AbXBSGV0
+	id S932136AbXBSGY6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 01:24:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932142AbXBSGY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 01:21:26 -0500
-Received: from 1wt.eu ([62.212.114.60]:2480 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932131AbXBSGV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 01:21:26 -0500
-Date: Mon, 19 Feb 2007 07:21:21 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Phy Prabab <phyprabab@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Question about setting affinity in 2.4
-Message-ID: <20070219062121.GA27518@1wt.eu>
-References: <2fe399760702181802q39e75b42iea7f80124506f169@mail.gmail.com> <20070219043927.GE943@1wt.eu> <2fe399760702182114v33f6825ckef91936c4a28b3f1@mail.gmail.com>
+	Mon, 19 Feb 2007 01:24:58 -0500
+Received: from mail.gmx.net ([213.165.64.20]:49547 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932136AbXBSGY5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 01:24:57 -0500
+X-Provags-ID: V01U2FsdGVkX1/5ofcFQrf5qSfQNO6KdryAZspbeHX9+Ebkc+CBzb
+	R/8w==
+Subject: [patch] Re: 2.6.20.git regression: 'PCI: add the sysfs driver name
+	to all modules' causes hard hang on boot
+From: Mike Galbraith <efault@gmx.de>
+To: Greg KH <greg@kroah.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1171790847.6844.5.camel@Homer.simpson.net>
+References: <1171619710.6828.24.camel@Homer.simpson.net>
+	 <20070216223609.GA6165@kroah.com>
+	 <1171676288.6448.9.camel@Homer.simpson.net>
+	 <20070217015048.GB18591@kroah.com>
+	 <1171700401.6443.16.camel@Homer.simpson.net>
+	 <1171785752.6787.17.camel@Homer.simpson.net>
+	 <1171790847.6844.5.camel@Homer.simpson.net>
+Content-Type: text/plain
+Date: Mon, 19 Feb 2007 07:24:47 +0100
+Message-Id: <1171866287.6771.14.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2fe399760702182114v33f6825ckef91936c4a28b3f1@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 18, 2007 at 09:14:21PM -0800, Phy Prabab wrote:
-> Willy,
+On Sun, 2007-02-18 at 10:27 +0100, Mike Galbraith wrote:
+> On Sun, 2007-02-18 at 09:02 +0100, Mike Galbraith wrote:
 > 
-> Thanks for the heads up and patch location.  It looks like the guys at
-> RH seemed to have applied a patch to allow one to set affinity,
-> however, it might be that it is broken.  Guess I will have to contact
-> the RH people to get an update as to what they did/did not do.
+> > The reason it's hanging is that nobody releases the driver, so we wait
+> > forever in driver_unregister().  With the below, box boots fine...
+> > 
+> > --- drivers/base/bus.c.org	2007-02-18 08:38:57.000000000 +0100
+> > +++ drivers/base/bus.c	2007-02-18 08:39:09.000000000 +0100
+> > @@ -593,6 +593,7 @@ void bus_remove_driver(struct device_dri
+> >  	driver_detach(drv);
+> >  	module_remove_driver(drv);
+> >  	kobject_unregister(&drv->kobj);
+> > +	driver_release(&drv->kobj);
+> >  	put_bus(drv->bus);
+> >  }
+> >  
+> > 
+> > ...but that can't be right given that the darn thing booted just fine
+> > prior to the naming patch with an equally unhappy init_ipmi_si().  Hmm.
+> 
+> Ok.  The path it's supposed to take to driver_release() goes like so....
+> 
+> [   17.495312] bus platform: add driver ipmi
+> [   17.506560] ipmi message handler version 39.1
+> [   17.518099] ipmi device interface
+> [   17.528491] device class 'ipmi': registering
+> [   17.539854] bus platform: add driver ipmi_si
+> [   17.551210] IPMI System Interface driver.
+> [   17.562242] bus pci: add driver ipmi_si
+> [   17.583686] bus pci: remove driver ipmi_si
+> [   17.594721] BUG: at drivers/base/bus.c:65 driver_release()
+> [   17.607224]  [<c0105136>] show_trace_log_lvl+0x1a/0x30
+> [   17.619434]  [<c0105862>] show_trace+0x12/0x14
+> [   17.630822]  [<c0105906>] dump_stack+0x16/0x18
+> [   17.642098]  [<c034b632>] driver_release+0x37/0x39
+> [   17.653703]  [<c02c73b9>] kobject_cleanup+0x43/0x64
+> [   17.665359]  [<c02c73e5>] kobject_release+0xb/0xd
+> [   17.676748]  [<c02c8017>] kref_put+0x28/0x8c
+> [   17.687626]  [<c02c7374>] kobject_put+0x14/0x16
+> [   17.698712]  [<c02c74c4>] kobject_unregister+0x22/0x25
+> [   17.710359]  [<c034b7e0>] bus_remove_driver+0x95/0xa5
+> [   17.721911]  [<c034c87b>] driver_unregister+0xe/0x47
+> [   17.733317]  [<c02d59ac>] pci_unregister_driver+0x13/0x73
+> [   17.745149]  [<c033e141>] init_ipmi_si+0x798/0x7ba
+> [   17.756339]  [<c065b58c>] init+0x114/0x23c
+> [   17.766748]  [<c0104dab>] kernel_thread_helper+0x7/0x1c
+> 
+> ...so I guess it's a ref counting problem somewhere.
 
-You should ensure that the syscall has really been added to the syscall
-table. Their kernel also has a fully working epoll() implementation, but
-the syscall is missing from the table. It's a shame because you have to
-add a 10-lines patch to enable it again ! It may be the same problem in
-your case.
+The below fixes a reference counting bug exposed by commit
+725522b5453dd680412f2b6463a988e4fd148757.  If driver.mod_name exists, we
+take a reference in module_add_driver(), and never release it.  Undo
+that reference in module_remove_driver().
 
-> Thanks!
-> Phy
+My box now boots fine, and modprobe/rmmod didn't explode, so I'll add a
+blame line.
 
-Regards,
-Willy
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+
+--- a/kernel/module.c.org	2007-02-19 06:41:02.000000000 +0100
++++ b/kernel/module.c	2007-02-19 06:49:08.000000000 +0100
+@@ -2417,6 +2417,12 @@ void module_remove_driver(struct device_
+ 			kfree(driver_name);
+ 		}
+ 	}
++	/*
++	 * Undo the additional reference we added in module_add_driver()
++	 * via kset_find_obj()
++	 */
++	if (drv->mod_name)
++		kobject_put(&drv->kobj);
+ }
+ EXPORT_SYMBOL(module_remove_driver);
+ 
+
+
+
 
