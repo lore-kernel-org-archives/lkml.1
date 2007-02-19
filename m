@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932596AbXBSUSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932605AbXBSUUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932596AbXBSUSk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 15:18:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932597AbXBSUSk
+	id S932605AbXBSUUY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 15:20:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932607AbXBSUUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 15:18:40 -0500
-Received: from outmx008.isp.belgacom.be ([195.238.5.235]:56081 "EHLO
-	outmx008.isp.belgacom.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932596AbXBSUSj (ORCPT
+	Mon, 19 Feb 2007 15:20:24 -0500
+Received: from an-out-0708.google.com ([209.85.132.250]:45247 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932605AbXBSUUX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 15:18:39 -0500
-Date: Mon, 19 Feb 2007 21:19:00 +0100
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [WATCHDOG] machzwd-warning-fix
-Message-ID: <20070219201900.GA2512@infomag.infomag.iguana.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 19 Feb 2007 15:20:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=X0iY7snHnhiNkBCoOuaN0X9Y0Ka2CPaCZdQelFzh91SAnkBH4JMZ6xJL6zdvJ9ijYHm19NiGAsESuaGLpKo5NLMsm2tBxbhJX2m8PicQ6JT0e6KKOpjQenigHohDxrOwMvMEv/AfS3dFGVBIaTucpG7UdLIqIs7QpFWRFOdP7L0=
+Message-ID: <f2b55d220702191220yab592adw213e7d76db39e7e2@mail.gmail.com>
+Date: Mon, 19 Feb 2007 12:20:21 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Subject: Re: GPL vs non-GPL device drivers
+Cc: "Scott Preece" <sepreece@gmail.com>, "Alexandre Oliva" <aoliva@redhat.com>,
+       davids@webmaster.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070219203149.27c3b696@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+References: <MDEHLPKNGKAHNMBLJOLKKEIPBKAC.davids@webmaster.com>
+	 <orire1s39s.fsf@free.oliva.athome.lsd.ic.unicamp.br>
+	 <7b69d1470702171129x36c4352cyc5b3a4b217729bf5@mail.gmail.com>
+	 <f2b55d220702171315xb82d37cx4f98dc9d96d51b10@mail.gmail.com>
+	 <20070219203149.27c3b696@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On 2/19/07, Alan <alan@lxorguk.ukuu.org.uk> wrote:
+> > jurisdiction.  Copyright infringement is a statutory tort, and the
+> > only limits to contracting away the right to sue for this tort are
+> > those provided in the copyright statute itself.  A contract not to sue
+> > for tort is called a "license".)
+>
+> I'd insert large quantities of "In the USA" in the above and probably
+> some "not what I've heard from a lawyer" cases.
 
-Please pull from 'master' branch of
-	git://git.kernel.org/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
-or if master.kernel.org hasn't synced up yet:
-	master.kernel.org:/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
+Name ANY counterexample in the entire history of copyright, anywhere
+in the world.  I've sifted through the past couple of decades of US
+appellate history until I'm blue in the face, and reviewed Canadian
+and British and German and French and EU statutes and decisions, and
+read Nimmer on Copyright and Corbin on Contracts and historical
+analyses of copyright law going back to the Statute of Anne.  And yes,
+I too have conversed with attorneys and other individuals with legal
+educations, in the US and Belgium and Brazil.
 
-This will update the following files:
-
- drivers/char/watchdog/machzwd.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-with these Changes:
-
-Author: Andrew Morton <akpm@linux-foundation.org>
-Date:   Sat Feb 17 03:13:07 2007 -0800
-
-    [WATCHDOG] machzwd warning fix
-    From: Andrew Morton <akpm@linux-foundation.org>
-    
-    drivers/char/watchdog/machzwd.c: In function 'zf_ioctl':
-    drivers/char/watchdog/machzwd.c:327: warning: passing argument 1 of 'zf_ping' makes integer from pointer without a cast
-    
-    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-
-The Changes can also be looked at on:
-	http://www.kernel.org/git/?p=linux/kernel/git/wim/linux-2.6-watchdog.git;a=summary
-
-For completeness, I added the overal diff below.
-
-Greetings,
-Wim.
-
-================================================================================
-diff --git a/drivers/char/watchdog/machzwd.c b/drivers/char/watchdog/machzwd.c
-index 81fb3de..4a328ba 100644
---- a/drivers/char/watchdog/machzwd.c
-+++ b/drivers/char/watchdog/machzwd.c
-@@ -324,7 +324,7 @@ static int zf_ioctl(struct inode *inode,
- 			return put_user(0, p);
- 
- 		case WDIOC_KEEPALIVE:
--			zf_ping(NULL);
-+			zf_ping(0);
- 			break;
- 
- 		default:
+You have been lied to.  You have been hoodwinked.  You have neglected
+to inform yourself about the simplest truths.  The GPL is not a
+"copyright-based license", anywhere in the developed world.  There.
+Is.  No.  Such.  Thing.
