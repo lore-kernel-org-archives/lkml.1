@@ -1,91 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932408AbXBSQmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932409AbXBSQzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932408AbXBSQmc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 11:42:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932410AbXBSQmc
+	id S932409AbXBSQzu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 11:55:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932412AbXBSQzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 11:42:32 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:46129 "EHLO mx1.redhat.com"
+	Mon, 19 Feb 2007 11:55:50 -0500
+Received: from mail.parknet.jp ([210.171.160.80]:1551 "EHLO parknet.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932408AbXBSQma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 11:42:30 -0500
-Message-ID: <45D9D368.5010900@redhat.com>
-Date: Mon, 19 Feb 2007 11:42:16 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	id S932409AbXBSQzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 11:55:49 -0500
+X-AuthUser: hirofumi@parknet.jp
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Racy NLS behaviour in FAT (and possible other fs)
+References: <45D9C80A.2030905@drzeus.cx>
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Date: Tue, 20 Feb 2007 01:55:39 +0900
+In-Reply-To: <45D9C80A.2030905@drzeus.cx> (Pierre Ossman's message of "Mon\, 19 Feb 2007 16\:53\:46 +0100")
+Message-ID: <87tzxim6ic.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.93 (gnu/linux)
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>, nfs@lists.sourceforge.net
-Subject: sunrpc oops in cache_clean(), kernel 2.6.19.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is happening at line 443 in cache_clean() -- "ch" (in ebx)
-points into userspace data addresses:
+Pierre Ossman <drzeus-list@drzeus.cx> writes:
 
+> Hi,
 
-420 /* find a cleanable entry in the bucket and clean it, or set to next bucket */
-421
-422 if (current_detail && current_index < current_detail->hash_size) {
-423 	struct cache_head *ch, **cp;
-424 	struct cache_detail *d;
-425
-426 	write_lock(&current_detail->hash_lock);
-427
-428 	/* Ok, now to clean this strand */
-429
-430 	cp = & current_detail->hash_table[current_index];
-431 	ch = *cp;
-432 	for (; ch; cp= & ch->next, ch= *cp) {
-433 		if (current_detail->nextcheck > ch->expiry_time)
-434 			current_detail->nextcheck = ch->expiry_time+1;
-435 		if (ch->expiry_time >= get_seconds()
-436 		    && ch->last_refresh >= current_detail->flush_time
-437 			)
-438 			continue;
-439 		if (test_and_clear_bit(CACHE_PENDING, &ch->flags))
-440 			queue_loose(current_detail, ch);
-441
-442 		if (atomic_read(&ch->ref.refcount) == 1)
-443 			break;
-444 	}
+Hi,
 
+> I'm experiencing a rather odd behaviour with the character set
+> conversion. If I mount a vfat fs with utf8 and then create a file
+> with invalid utf-8 sequences, the file will briefly exist with these
+> invalid sequences, then quickly convert to a stripped version.
 
-BUG: unable to handle kernel paging request at virtual address 51c503f6
- printing eip:
-f0b973d9
-*pde = 00000000
-Oops: 0000 [#1]
-SMP
-last sysfs file: /devices/pci0000:00/0000:00:01.0/irq
-Modules linked in: nfsd exportfs lockd nfs_acl sunrpc ipv6 ipt_REJECT xt_state
-ip_conntrack nfnetlink xt_tcpudp iptable_filter ip_tables x_tables video sbs
-i2c_ec button battery asus_acpi ac lp sg scb2_flash floppy mtdcore chipreg
-map_funcs 3c59x i2c_piix4 mii pcspkr i2c_core tg3 parport_pc parport serio_raw
-ide_cd cdrom dm_snapshot dm_zero dm_mirror dm_mod mptspi mptscsih mptbase
-scsi_transport_spi sd_mod scsi_mod raid456 xor ext3 jbd ehci_hcd ohci_hcd uhci_hcd
-   1
-   0060:[<f0b973d9>]    Not tainted VLI
-EFLAGS: 00010202   (2.6.19-1.2911.fc6 #1)
-EIP is at cache_clean+0xb5/0x194 [sunrpc]
-eax: ffffffff   ebx: 51c503f2   ecx: f0bae840   edx: f0bae840
-cce9dc80   edi: efd811c0   ebp: 00000282   esp: c17d9f58
-ds: 007b   es: 007b   ss: 0068
-Process events/1 (pid: 9, ti=c17d9000 task=eff45630 task.ti=c17d9000)
-Stack: f0baea00 f0baea04 f0b97cd4 c043692f 00000282 efd811c0 efd811e0 f0b97ccf
-       00000000 efd811e0 efd811c0 efd811d8 00000000 c04372ec 00000001 00000000
-       00000001 00010000 00000000 00000000 eff45630 c04215f1 00100100 00200200
-Call Trace:
- [<f0b97cd4>] do_cache_clean+0x5/0x2e [sunrpc]
- [<c043692f>] run_workqueue+0x97/0xdd
- [<c04372ec>] worker_thread+0xd9/0x10d
- [<c0439878>] kthread+0xc0/0xec
- [<c0404c03>] kernel_thread_helper+0x7/0x10
- =======================
-Code: 8d f6 00 00 00 8d 41 0c e8 37 e5 a8 cf a1 64 08 bb f0 8d 34 85 00 00 00 00
-a1 60 08 bb f0 03 70 08 8b 1e eb 47 8b 15 60 08 bb f0 <8b> 43 04 39 42 50 7e 04
-40 89 42 50 8b 43 04 3b 05 00 60 85 c0
-[<f0b973d9>] cache_clean+0xb5/0x194 [sunrpc] SS:ESP 0068:c17d9f58
+Yes. utf8 support is broken, and it will fail to convert letter case
+on many case. And it's why that is not recommended.
 
+> I haven't found an easy way to catch the race, but if I have
+> nautilus open it tends to catch it now and then (I get a file name
+> with "<?>" replacing each bad byte).
+
+`?' is meaning the character can't be converted.
+
+> The race also seems to corrupt the in-memory state of the fs now and then. I
+> managed to create a file where "ls" shows "?" for most fields. Data seemed to
+> have made it to disk ok though (fsck didn't complain and a remount showed
+> everything as it should be).
+
+It seems readdir() was success, but stat() was failed. And the dosfsck
+doesn't check filename correctly.
+
+Those problem seem to be relateing to poor utf8 support...
+
+> Third, there seems to be a problem with not all syscalls being subjected to the
+> NLS transformation. Example:
+>
+> $ echo foo > baråäö.txt
+> $ ls
+> foo.txt
+> $ echo foo > baråäö.txt
+> bash: baråäö.txt: File exists
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
