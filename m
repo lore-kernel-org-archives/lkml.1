@@ -1,39 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750893AbXBSKwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932065AbXBSKxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750893AbXBSKwY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 05:52:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750933AbXBSKwY
+	id S932065AbXBSKxb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 05:53:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932067AbXBSKxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 05:52:24 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:57729 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750893AbXBSKwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 05:52:23 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Zwane Mwaikambo <zwane@infradead.org>
-Subject: Re: [PATCH] Don't probe for DDC on VBE1.2
-Date: Mon, 19 Feb 2007 11:37:21 +0100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Tobias Hain <tobias.hain@gmx.de>, "H. Peter Anvin" <hpa@zytor.com>
-References: <Pine.LNX.4.64.0702132145460.28458@montezuma.fsmlabs.com> <200702182253.10423.ak@suse.de> <Pine.LNX.4.64.0702181636420.26450@montezuma.fsmlabs.com>
-In-Reply-To: <Pine.LNX.4.64.0702181636420.26450@montezuma.fsmlabs.com>
+	Mon, 19 Feb 2007 05:53:31 -0500
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:60697 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932065AbXBSKxa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 05:53:30 -0500
+Message-ID: <45D98173.6060107@in.ibm.com>
+Date: Mon, 19 Feb 2007 16:22:35 +0530
+From: Balbir Singh <balbir@in.ibm.com>
+Reply-To: balbir@in.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: linux-kernel@vger.kernel.org, vatsa@in.ibm.com,
+       ckrm-tech@lists.sourceforge.net, xemul@sw.ru, linux-mm@kvack.org,
+       menage@google.com, svaidy@linux.vnet.ibm.com, devel@openvz.org
+Subject: Re: [RFC][PATCH][3/4] Add reclaim support
+References: <20070219065019.3626.33947.sendpatchset@balbir-laptop> <20070219065042.3626.95544.sendpatchset@balbir-laptop> <20070219184839.db9f3bc1.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070219184839.db9f3bc1.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702191137.21516.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+KAMEZAWA Hiroyuki wrote:
+> On Mon, 19 Feb 2007 12:20:42 +0530
+> Balbir Singh <balbir@in.ibm.com> wrote:
+> 
+>> +int memctlr_mm_overlimit(struct mm_struct *mm, void *sc_cont)
+>> +{
+>> +	struct container *cont;
+>> +	struct memctlr *mem;
+>> +	long usage, limit;
+>> +	int ret = 1;
+>> +
+>> +	if (!sc_cont)
+>> +		goto out;
+>> +
+>> +	read_lock(&mm->container_lock);
+>> +	cont = mm->container;
+> 
+>> +out:
+>> +	read_unlock(&mm->container_lock);
+>> +	return ret;
+>> +}
+>> +
+> 
+> should be
+> ==
+> out_and_unlock:
+> 	read_unlock(&mm->container_lock);
+> out_:
+> 	return ret;
+> 
 
-> I tested the x86_64 VBE3 case (similar to Andrew's VAIO), so we just need 
-> a VBE1.2 on x86_64 test.
 
-Does this mean you want to have an updated patch or not? 
+Thanks, that's a much convention!
 
--Andi
+> 
+> -Kame
+> 
 
+
+-- 
+	Warm Regards,
+	Balbir Singh
