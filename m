@@ -1,88 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932431AbXBSRGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932383AbXBSRM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932431AbXBSRGg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 12:06:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932427AbXBSRGg
+	id S932383AbXBSRM2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 12:12:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932427AbXBSRM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 12:06:36 -0500
-Received: from firewall.rowland.harvard.edu ([140.247.233.35]:20304 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S932429AbXBSRGf (ORCPT
+	Mon, 19 Feb 2007 12:12:28 -0500
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:41800 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932383AbXBSRM1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 12:06:35 -0500
-Date: Mon, 19 Feb 2007 12:06:32 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>
-cc: linux-kernel@vger.kernel.org, <jens.axboe@oracle.com>,
-       <James.Bottomley@steeleye.com>, <dougg@torque.net>
-Subject: Re: [PATCH] Block layer: separate out queue-oriented ioctls
-In-Reply-To: <45d9cb72.je+WdtrFM7WV89m8%Joerg.Schilling@fokus.fraunhofer.de>
-Message-ID: <Pine.LNX.4.44L0.0702191148421.13197-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 19 Feb 2007 12:12:27 -0500
+To: akpm@linux-foundation.org
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-reply-to: <20070218155916.0d3c73a9.akpm@linux-foundation.org> (message from
+	Andrew Morton on Sun, 18 Feb 2007 15:59:16 -0800)
+Subject: Re: dirty balancing deadlock
+References: <E1HIqlm-0004iZ-00@dorka.pomaz.szeredi.hu>
+	<20070218125307.4103c04a.akpm@linux-foundation.org>
+	<E1HIurG-0005Bw-00@dorka.pomaz.szeredi.hu>
+	<20070218145929.547c21c7.akpm@linux-foundation.org>
+	<E1HIvMB-0005Fd-00@dorka.pomaz.szeredi.hu> <20070218155916.0d3c73a9.akpm@linux-foundation.org>
+Message-Id: <E1HJC3P-0006tz-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 19 Feb 2007 18:11:55 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Feb 2007, Joerg Schilling wrote:
+How about this?
 
-> Alan Stern <stern@rowland.harvard.edu> wrote:
-> 
-> > Well, if Doug wants to reduce the value returned by SG_GET_RESERVED_SIZE, 
-> > it's okay with me.  An advantage of doing this is that older versions of 
-> > cdrecord would then work correctly.
-> >
-> > However you don't seem to realize that people can use programs like
-> > cdrecord with devices whose drivers don't support SG_GET_RESERVED_SIZE --
-> > because that ioctl works only with sg.  Programs would have to try
-> > SG_GET_RESERVED_SIZE and if it faied, then try BLKSECTGET.
-> 
-> Is there any reason not to have one single ioctl for one basic feature?
+Solves the FUSE deadlock, but not the throttle_vm_writeout() one.
+I'll try to tackle that one as well.
 
-Indeed there is not.  That's what I wrote in an earlier email:
+If the per-bdi dirty counter goes below 16, balance_dirty_pages()
+returns.
 
-  "There should be one single ioctl which can be applied uniformly to all
-  CD-type devices (in fact, to all devices using a request_queue) to learn
-  max_sectors.  This rules out using SG_GET_RESERVED_SIZE."
+Does the constant need to tunable?  If it's too large, then the global
+threshold is more easily exceeded.  If it's too small, then in a tight
+situation progress will be slower.
 
-> > Remember also, the "reserved size" is _not_ the maximum allowed size of a
-> > DMA transfer.  Rather, it is the size of an internal buffer maintained by
-> > sg.  It's legal to do an I/O transfer larger than the "reserved size", but 
-> > it is not legal to do an I/O transfer larger than max_sectors.
-> 
-> At the time the call SG_GET_RESERVED_SIZE has been discussed/defined, we did 
-> originally agree that the max value should be limited to what the HW allows
-> as DMA size. This is why I did originally files a bug against 
-> SG_GET_RESERVED_SIZE.
+Thanks,
+Miklos
 
-How do you feel about the patch below, either in addition to or instead of 
-the previous patch?
-
-Alan Stern
-
-
-
-Index: usb-2.6/drivers/scsi/sg.c
+Index: linux/mm/page-writeback.c
 ===================================================================
---- usb-2.6.orig/drivers/scsi/sg.c
-+++ usb-2.6/drivers/scsi/sg.c
-@@ -917,6 +917,8 @@ sg_ioctl(struct inode *inode, struct fil
- 			return result;
-                 if (val < 0)
-                         return -EINVAL;
-+		if (val > sdp->device->request_queue->max_sectors * 512)
-+			return -EOVERFLOW;
- 		if (val != sfp->reserve.bufflen) {
- 			if (sg_res_in_use(sfp) || sfp->mmap_called)
- 				return -EBUSY;
-@@ -925,7 +927,8 @@ sg_ioctl(struct inode *inode, struct fil
- 		}
- 		return 0;
- 	case SG_GET_RESERVED_SIZE:
--		val = (int) sfp->reserve.bufflen;
-+		val = min_t(int, sfp->reserve.bufflen,
-+				sdp->device->request_queue->max_sectors * 512);
- 		return put_user(val, ip);
- 	case SG_SET_COMMAND_Q:
- 		result = get_user(val, ip);
-
+--- linux.orig/mm/page-writeback.c	2007-02-19 17:32:41.000000000 +0100
++++ linux/mm/page-writeback.c	2007-02-19 18:05:28.000000000 +0100
+@@ -198,6 +198,25 @@ static void balance_dirty_pages(struct a
+ 			dirty_thresh)
+ 				break;
+ 
++		/*
++		 * Acquit this producer if there's little or nothing
++		 * to write back to this particular queue
++		 *
++		 * Without this check a deadlock is possible in the
++		 * following case:
++		 *
++		 * - filesystem A writes data through filesystem B
++		 * - filesystem A has dirty pages over dirty_thresh
++		 * - writeback is started, this triggers a write in B
++		 * - balance_dirty_pages() is called synchronously
++		 * - the write to B blocks
++		 * - the writeback completes, but dirty is still over threshold
++		 * - the blocking write prevents futher writes from happening
++		 */
++		if (atomic_long_read(&bdi->nr_dirty) +
++		    atomic_long_read(&bdi->nr_writeback) < 16)
++			break;
++
+ 		if (!dirty_exceeded)
+ 			dirty_exceeded = 1;
+ 
