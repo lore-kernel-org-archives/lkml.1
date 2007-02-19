@@ -1,106 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932387AbXBSQbE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932390AbXBSQga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932387AbXBSQbE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 11:31:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932390AbXBSQbD
+	id S932390AbXBSQga (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 11:36:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932396AbXBSQg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 11:31:03 -0500
-Received: from lmv.inov.pt ([146.193.64.2]:51664 "EHLO lmv.inov.pt"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932387AbXBSQbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 11:31:01 -0500
-Message-ID: <45D9D073.7020701@inov.pt>
-Date: Mon, 19 Feb 2007 16:29:39 +0000
-From: Jose Goncalves <jose.goncalves@inov.pt>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070111)
+	Mon, 19 Feb 2007 11:36:29 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:24126 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932390AbXBSQg3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 11:36:29 -0500
+In-Reply-To: <1171759045.5644.148.camel@localhost.localdomain>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>, johnrose@us.ibm.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+       pmac@au1.ibm.com, Sylvain Munaut <tnt@246tnt.com>
 MIME-Version: 1.0
-To: Frederik Deweerdt <deweerdt@free.fr>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Serial related oops
-References: <20070220132909.GD566@slug> <20070219134539.GA27370@flint.arm.linux.org.uk> <20070220142442.GF566@slug> <20070219143520.GB27370@flint.arm.linux.org.uk> <20070220144814.GJ566@slug> <20070219150508.GD27370@flint.arm.linux.org.uk>
-In-Reply-To: <20070219150508.GD27370@flint.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-INOV-EmailServer-Information: Please contact the Email service provider for more information
-X-INOV-EmailServer: Found to be clean
-X-INOV-EmailServer-From: jose.goncalves@inov.pt
+Subject: Re: [PATCH 2.6.21-rc1] powerpc: Make of_device_uevent()	compatible	with
+ ibmebus
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+From: Joachim Fenkes <FENKES@de.ibm.com>
+Message-ID: <OF18F067AE.FF85D78B-ON85257287.005ADAC3-85257287.005B37D9@de.ibm.com>
+Date: Mon, 19 Feb 2007 11:36:23 -0500
+X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
+ 19/02/2007 17:36:24,
+	Serialize complete at 19/02/2007 17:36:24
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King wrote:
-> On Tue, Feb 20, 2007 at 02:48:14PM +0000, Frederik Deweerdt wrote:
->   
->> (trimmed tie-fei.zang from the CC, added by mistake)
->> On Mon, Feb 19, 2007 at 02:35:20PM +0000, Russell King wrote:
->>     
->>>> Neither did I, but introducing printk's through the function, we narrowed
->>>> the problem to this part of the code. And removing it makes the problem
->>>> go away. We inserted 37 printk's in the function body, and Jose bisected
->>>> those until the problem went away.
->>>>         
->>> Well, there's still little clue about why this is causing a NULL pointer
->>> dereference.  The only thing I can think is that somehow performing
->>> this test is causing a power glitch to your CPU, causing its registers
->>> to get corrupted, and which results in it doing a NULL pointer deref.
->>>       
->> That may be the case, indeed.
->>     
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 17.02.2007 
+19:37:25:
 
-But if the problem was a power glitch I should get Oops with or without
-printk() inserted, shouldn't I?
+> > > Doh ! You are creating an of_device with no attached device-node ? 
+That
+> > > is totally evil ! Why do you need that ?
+> > 
+> > The driver creates a fake "ibmebus" device so all ibmebus based 
+devices 
+> > have
+> > a common parent device -- the vio bus does the same.
+> > 
+> > What do you think about linking this device to the device tree "/" 
+node? 
+> > All
+> > ibmebus-based devices are linked to dt nodes residing directly beneath 
 
->>> Are you saying that the NULL pointer occurred while executing this code?
->>> If not, where does the NULL pointer occur?
->>>       
->> The thing is, the NULL pointer deref dissapeared as soon as we
->> instrumented (printk'ed) the code. So it's seems to be triggered by
->> check+timing+hardware.
->>     
->
-> So to summarise, we have some code somewhere which is causing a NULL
-> pointer deref in uart_startup().  If we remove some code, the NULL
-> pointer deref stops happening.
->
-> And that's about the sum total of the information we know.  We don't
-> know precisely where the NULL pointer deref occurs, and we don't know
-> what's causing it.
->
-> It doesn't sound like there's much understanding of the problem at hand. ;(
->
->   
->>> Andrew's said no (in that the thread you refer to) and suggested an
->>> alternative, I've said no, how many more 'no's do you need to turn
->>> you away from the wrong approach?
->>>       
->> One is usually sufficient once I've understood :). I missed the module
->> option approach. Is it ok with you? If yes, I'll put up a patch to do
->> this.
->>     
->
-> I guess so, but how does the user know whether they need this enabled or
-> disabled?
->
->   
->> The problem appears to be reproducible on Jose's hardware within 2-3 days.
->>     
+> > "/",
+> > so the mapping would fit.
+> 
+> No. If you do that, it shouldn't be an of_device based device.
+> 
+> If you want then to be below a common parent, then create that parent of
+> a basic struct device type, that sort of thing. You should never
+> instanciate an of_device that has a NULL device node.
 
-In a kernel without instrumentation I get problems within a 1 day period.
+If I make the root device a basic struct device, it can't be part of 
+ibmebus any
+longer. If we could create a busless device, we wouldn't have a problem, 
+but I
+doubt that is possible.
 
->> If you see other tests to be performed...
->>     
->
-> Maybe adding some delays in that bit of code?  I'm sure you've already
-> thought of that though.  Since no one has a proper understanding of the
-> problem, the only suggestions possible are mere shots in the dark.
->   
+Do you have any creative ideas?
+ 
+> It's a generic problem with sysfs, I agree it somewhat sucks.
 
-I'm no kernel expert, but it's not possible to trace what is the
-instruction that is causing the NULL pointer dereference? The kernel
-dump does not show this?
+With ya.
 
-I have no clue on what is causing this problem but, what I know, is that
-I can always reproduce it, and it always happens in the same code
-section of serial8250_startup().
+Later,
+  Joachim
 
-Regards,
-José Gonçalves
+---
+Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer 
+extraordinaire
+IBM Deutschland Entwicklung GmbH  --  Dept. 3627 (I/O Firmware Development 
+2)
+Schoenaicher Strasse 220  --  71032 Boeblingen  --  Germany
+eMail: fenkes@de.ibm.com  --  Phone: +49 7031 16 1239 
+
+Vorsitzender des Aufsichtsrats: Johann Weihen  --  Geschäftsführung: 
+Herbert Kircher
+Sitz der Gesellschaft: Böblingen  --  Registergericht: Amtsgericht 
+Stuttgart, HRB 243294
