@@ -1,114 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932136AbXBSGY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932170AbXBSGua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932136AbXBSGY6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 01:24:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932142AbXBSGY6
+	id S932170AbXBSGua (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 01:50:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932173AbXBSGua
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 01:24:58 -0500
-Received: from mail.gmx.net ([213.165.64.20]:49547 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932136AbXBSGY5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 01:24:57 -0500
-X-Provags-ID: V01U2FsdGVkX1/5ofcFQrf5qSfQNO6KdryAZspbeHX9+Ebkc+CBzb
-	R/8w==
-Subject: [patch] Re: 2.6.20.git regression: 'PCI: add the sysfs driver name
-	to all modules' causes hard hang on boot
-From: Mike Galbraith <efault@gmx.de>
-To: Greg KH <greg@kroah.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1171790847.6844.5.camel@Homer.simpson.net>
-References: <1171619710.6828.24.camel@Homer.simpson.net>
-	 <20070216223609.GA6165@kroah.com>
-	 <1171676288.6448.9.camel@Homer.simpson.net>
-	 <20070217015048.GB18591@kroah.com>
-	 <1171700401.6443.16.camel@Homer.simpson.net>
-	 <1171785752.6787.17.camel@Homer.simpson.net>
-	 <1171790847.6844.5.camel@Homer.simpson.net>
-Content-Type: text/plain
-Date: Mon, 19 Feb 2007 07:24:47 +0100
-Message-Id: <1171866287.6771.14.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Mon, 19 Feb 2007 01:50:30 -0500
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:52766 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932170AbXBSGu3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 01:50:29 -0500
+From: Balbir Singh <balbir@in.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: vatsa@in.ibm.com, ckrm-tech@lists.sourceforge.net, xemul@sw.ru,
+       linux-mm@kvack.org, menage@google.com, svaidy@linux.vnet.ibm.com,
+       Balbir Singh <balbir@in.ibm.com>, devel@openvz.org
+Date: Mon, 19 Feb 2007 12:20:19 +0530
+Message-Id: <20070219065019.3626.33947.sendpatchset@balbir-laptop>
+Subject: [RFC][PATCH][0/4] Memory controller (RSS Control)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-02-18 at 10:27 +0100, Mike Galbraith wrote:
-> On Sun, 2007-02-18 at 09:02 +0100, Mike Galbraith wrote:
-> 
-> > The reason it's hanging is that nobody releases the driver, so we wait
-> > forever in driver_unregister().  With the below, box boots fine...
-> > 
-> > --- drivers/base/bus.c.org	2007-02-18 08:38:57.000000000 +0100
-> > +++ drivers/base/bus.c	2007-02-18 08:39:09.000000000 +0100
-> > @@ -593,6 +593,7 @@ void bus_remove_driver(struct device_dri
-> >  	driver_detach(drv);
-> >  	module_remove_driver(drv);
-> >  	kobject_unregister(&drv->kobj);
-> > +	driver_release(&drv->kobj);
-> >  	put_bus(drv->bus);
-> >  }
-> >  
-> > 
-> > ...but that can't be right given that the darn thing booted just fine
-> > prior to the naming patch with an equally unhappy init_ipmi_si().  Hmm.
-> 
-> Ok.  The path it's supposed to take to driver_release() goes like so....
-> 
-> [   17.495312] bus platform: add driver ipmi
-> [   17.506560] ipmi message handler version 39.1
-> [   17.518099] ipmi device interface
-> [   17.528491] device class 'ipmi': registering
-> [   17.539854] bus platform: add driver ipmi_si
-> [   17.551210] IPMI System Interface driver.
-> [   17.562242] bus pci: add driver ipmi_si
-> [   17.583686] bus pci: remove driver ipmi_si
-> [   17.594721] BUG: at drivers/base/bus.c:65 driver_release()
-> [   17.607224]  [<c0105136>] show_trace_log_lvl+0x1a/0x30
-> [   17.619434]  [<c0105862>] show_trace+0x12/0x14
-> [   17.630822]  [<c0105906>] dump_stack+0x16/0x18
-> [   17.642098]  [<c034b632>] driver_release+0x37/0x39
-> [   17.653703]  [<c02c73b9>] kobject_cleanup+0x43/0x64
-> [   17.665359]  [<c02c73e5>] kobject_release+0xb/0xd
-> [   17.676748]  [<c02c8017>] kref_put+0x28/0x8c
-> [   17.687626]  [<c02c7374>] kobject_put+0x14/0x16
-> [   17.698712]  [<c02c74c4>] kobject_unregister+0x22/0x25
-> [   17.710359]  [<c034b7e0>] bus_remove_driver+0x95/0xa5
-> [   17.721911]  [<c034c87b>] driver_unregister+0xe/0x47
-> [   17.733317]  [<c02d59ac>] pci_unregister_driver+0x13/0x73
-> [   17.745149]  [<c033e141>] init_ipmi_si+0x798/0x7ba
-> [   17.756339]  [<c065b58c>] init+0x114/0x23c
-> [   17.766748]  [<c0104dab>] kernel_thread_helper+0x7/0x1c
-> 
-> ...so I guess it's a ref counting problem somewhere.
+This patch applies on top of Paul Menage's container patches (V7) posted at
 
-The below fixes a reference counting bug exposed by commit
-725522b5453dd680412f2b6463a988e4fd148757.  If driver.mod_name exists, we
-take a reference in module_add_driver(), and never release it.  Undo
-that reference in module_remove_driver().
+	http://lkml.org/lkml/2007/2/12/88
 
-My box now boots fine, and modprobe/rmmod didn't explode, so I'll add a
-blame line.
+It implements a controller within the containers framework for limiting
+memory usage (RSS usage).
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
+The memory controller was discussed at length in the RFC posted to lkml
+	http://lkml.org/lkml/2006/10/30/51
 
---- a/kernel/module.c.org	2007-02-19 06:41:02.000000000 +0100
-+++ b/kernel/module.c	2007-02-19 06:49:08.000000000 +0100
-@@ -2417,6 +2417,12 @@ void module_remove_driver(struct device_
- 			kfree(driver_name);
- 		}
- 	}
-+	/*
-+	 * Undo the additional reference we added in module_add_driver()
-+	 * via kset_find_obj()
-+	 */
-+	if (drv->mod_name)
-+		kobject_put(&drv->kobj);
- }
- EXPORT_SYMBOL(module_remove_driver);
- 
+Steps to use the controller
+--------------------------
 
 
+0. Download the patches, apply the patches
+1. Turn on CONFIG_CONTAINER_MEMCTLR in kernel config, build the kernel
+   and boot into the new kernel
+2. mount -t container container -o memctlr /<mount point>
+3. cd /<mount point>
+   optionally do (mkdir <directory>; cd <directory>) under /<mount point>
+4. echo $$ > tasks (attaches the current shell to the container)
+5. echo -n (limit value) > memctlr_limit
+6. cat memctlr_usage
+7. Run tasks, check the usage of the controller, reclaim behaviour
+8. Report bugs, get bug fixes and iterate (goto step 0).
 
+Advantages of the patchset
+--------------------------
 
+1. Zero overhead in struct page (struct page is not expanded)
+2. Minimal changes to the core-mm code
+3. Shared pages are not reclaimed unless all mappings belong to overlimit
+   containers.
+4. It can be used to debug drivers/applications/kernel components in a
+   constrained memory environment (similar to mem=XXX option), except that
+   several containers can be created simultaneously without rebooting and
+   the limits can be changed. NOTE: There is no support for limiting
+   kernel memory allocations and page cache control (presently).
+
+Testing
+-------
+Ran kernbench and lmbench with containers enabled (container filesystem not
+mounted), they seemed to run fine
+Created containers, attached tasks to containers with lower limits than
+the memory the tasks require (memory hog tests) and ran some basic tests on
+them
+
+TODO's and improvement areas
+----------------------------
+1. Come up with cool page replacement algorithms for containers
+   (if possible without any changes to struct page)
+2. Add page cache control
+3. Add kernel memory allocator control
+4. Extract benchmark numbers and overhead data
+
+Comments & criticism are welcome.
+
+Series
+------
+memctlr-setup.patch
+memctlr-acct.patch
+memctlr-reclaim-on-limit.patch
+memctlr-doc.patch
+
+-- 
+	Warm Regards,
+	Balbir Singh
