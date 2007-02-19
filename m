@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932217AbXBSNPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932216AbXBSNR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932217AbXBSNPZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 08:15:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932218AbXBSNPZ
+	id S932216AbXBSNR2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 08:17:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932219AbXBSNR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 08:15:25 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:40189 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932217AbXBSNPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 08:15:24 -0500
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070219115955.GB91@tv-sign.ru> 
-References: <20070219115955.GB91@tv-sign.ru>  <20070218214359.GA4226@tv-sign.ru> <8462.1171884453@redhat.com> 
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jarek Poplawski <jarkao2@o2.pl>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] net/bridge/br_if.c: don't use _WORK_NAR 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Mon, 19 Feb 2007 13:15:00 +0000
-Message-ID: <15331.1171890900@redhat.com>
+	Mon, 19 Feb 2007 08:17:28 -0500
+Received: from smtp.nokia.com ([131.228.20.173]:27075 "EHLO
+	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932218AbXBSNR1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 08:17:27 -0500
+Subject: Re: [PATCH 09/44 take 2] [UBI] debug unit header
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <200702172218.22709.arnd@arndb.de>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
+	 <20070217165509.5845.12977.sendpatchset@localhost.localdomain>
+	 <200702172218.22709.arnd@arndb.de>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 19 Feb 2007 14:33:19 +0200
+Message-Id: <1171888399.13817.21.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 19 Feb 2007 12:33:19.0270 (UTC) FILETIME=[22CB0460:01C75422]
+X-eXpurgate-Category: 1/0
+X-eXpurgate-ID: 149371::070219142954-7389ABB0-2FF25288/0-0/0-1
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> wrote:
+On Sat, 2007-02-17 at 22:18 +0100, Arnd Bergmann wrote:
+> If you feel that Linux needs rich debugging capabilities, then submit
+> a patch for that independent of UBI.
 
-> > Called by what?  Something outside of br_if.c?
-> 
-> No. if cancel_delayed_work() fails, the work may sit pending in cwq->worklist,
-> or it may be running right now, waiting for rtnl_mutex.
+I will fix the comment which annoys.
 
-OIC.  I understood "called" to mean "scheduled", but that's not what you meant.
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
-> > Hmmm... cancel_delayed_work() in del_nbp() probably ought to be followed by
-> > a flush_scheduled_work().
-> 
-> Yes, but this deadlocks: we hold rtnl_mutex, and work->func() takes it too.
-
-Oh, yuck!
-
-Hmmm...  You've got a work_struct (well, a delayed_work actually) - can you
-just punt the destruction of the object over to keventd to perform, I wonder?
-
-The big problem with that that I see is that the workqueue facility has no
-guards in place against a work_struct's handler function running on several
-CPUs at once in response to the same work_struct.
-
-> I think the fix should be so that port_carrier_check() does get/put on
-> "struct net_bridge_port" (container), but not on "struct net_device", and
-
-I'm not sure how this helps.  You still have to get rid of the net_device at
-some point.
-
-David
