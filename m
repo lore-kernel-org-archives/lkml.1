@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932127AbXBSL7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932165AbXBSMAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932127AbXBSL7i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 06:59:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932148AbXBSL7h
+	id S932165AbXBSMAA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 07:00:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932193AbXBSMAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 06:59:37 -0500
-Received: from javad.com ([216.122.176.236]:1912 "EHLO javad.com"
+	Mon, 19 Feb 2007 07:00:00 -0500
+Received: from mail.screens.ru ([213.234.233.54]:34794 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932127AbXBSL7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 06:59:37 -0500
-From: Sergei Organov <osv@javad.com>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       =?utf-8?B?Si5BLiBNYWdhbGzDg8ODw4PDg8ODw4LCs24=?= 
-	<jamagallon@ono.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: somebody dropped a (warning) bomb
-References: <45CB3B28.60102@garzik.org>
-	<Pine.LNX.4.64.0702081338010.8424@woody.linux-foundation.org>
-	<Pine.LNX.4.64.0702081351410.8424@woody.linux-foundation.org>
-	<87abznsdyo.fsf@javad.com>
-	<Pine.LNX.4.64.0702090753500.8424@woody.linux-foundation.org>
-	<874pprr5nn.fsf@javad.com>
-	<Pine.LNX.4.64.0702120804520.8424@woody.linux-foundation.org>
-	<87ps8end9b.fsf@javad.com>
-	<84144f020702131026q2af1afd6vbcd2708d7b7b9907@mail.gmail.com>
-	<87bqjxooog.fsf@javad.com>
-	<84144f020702131143r767aa40blb97a39b40bee73b8@mail.gmail.com>
-	<87fy99n6mf.fsf@javad.com>
-	<Pine.LNX.4.64.0702131513050.3604@woody.linux-foundation.org>
-	<87hctnlfqz.fsf@javad.com>
-	<Pine.LNX.4.64.0702150736360.20368@woody.linux-foundation.org>
-	<87k5yjjlrj.fsf@javad.com>
-	<Pine.LNX.4.64.0702151059090.20368@woody.linux-foundation.org>
-	<45D5325A.2040502@gmail.com>
-Date: Mon, 19 Feb 2007 14:58:54 +0300
-Message-ID: <87mz3agxz5.fsf@javad.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	id S932180AbXBSL77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 06:59:59 -0500
+Date: Mon, 19 Feb 2007 14:59:55 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: David Howells <dhowells@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jarek Poplawski <jarkao2@o2.pl>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] net/bridge/br_if.c: don't use _WORK_NAR
+Message-ID: <20070219115955.GB91@tv-sign.ru>
+References: <20070218214359.GA4226@tv-sign.ru> <8462.1171884453@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8462.1171884453@redhat.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman <rene.herman@gmail.com> writes:
-[...]
-> Given char's special nature, shouldn't the conclusion of this thread
-> have long been simply that gcc needs -Wno-char-pointer-sign? (with
-> whatever default, as far as I'm concerned).
+On 02/19, David Howells wrote:
+>
+> Oleg Nesterov <oleg@tv-sign.ru> wrote:
+> 
+> > Afaics, noautorel work_struct buys nothing for "struct net_bridge_port".
+> 
+> You may be right.
+> 
+> > If del_nbp()->cancel_delayed_work(&p->carrier_check) fails, port_carrier_check
+> > may be called later anyway.
+> 
+> Called by what?  Something outside of br_if.c?
 
-I entirely agree that all the char business in C is messy enough to
-justify separate warning switch(es) in GCC.
+No. if cancel_delayed_work() fails, the work may sit pending in cwq->worklist,
+or it may be running right now, waiting for rtnl_mutex.
 
-However, I still insist that the problem with the code:
+> > So the reading of *work in port_carrier_check() is equally unsafe with or
+> > without this patch.
+> 
+> Hmmm... cancel_delayed_work() in del_nbp() probably ought to be followed by a
+> flush_scheduled_work().
 
-   void foo(char *c);
-   unsigned char *u;
-   signed char *s;
-   ...
-   foo(u);
-   foo(s);
+Yes, but this deadlocks: we hold rtnl_mutex, and work->func() takes it too.
 
-is not (only) in signedness, as neither 'u' nor 's' has compatible type
-with the "char*", no matter what is the sign of "char", so if one cares
-about type safety he needs warnings on both invocations of foo().
+I think the fix should be so that port_carrier_check() does get/put on
+"struct net_bridge_port" (container), but not on "struct net_device", and
 
--- Sergei.
+del_nbp(struct net_bridge_port *p)
+
+	if (cancel_delayed_work(&p->carrier_check))
+-		dev_put(p->dev);
++		kobject_put(&p->kobj);
+
+Oleg.
+
