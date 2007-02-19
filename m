@@ -1,96 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932210AbXBSNFF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932214AbXBSNMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932210AbXBSNFF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 08:05:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932216AbXBSNFF
+	id S932214AbXBSNMz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 08:12:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932215AbXBSNMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 08:05:05 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:16136 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932210AbXBSNFC (ORCPT
+	Mon, 19 Feb 2007 08:12:55 -0500
+Received: from smtp.nokia.com ([131.228.20.172]:41310 "EHLO
+	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932214AbXBSNMy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 08:05:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent:sender;
-        b=VVdgLC3yNOmZr2zGXrDnMrAZcdYkadx1K/4i1632UEfLNs0czfa4JBxo9SatzGhihpJsBdQmHfbAfn9eHY7eMMTgCJooO4z7w8JyxbVy78jPFWQH8SOVzGNzsEsYkc8RdJA4PIr1sLu17caS298IvsqMZbn4QekmyCn3akIvaf4=
-Date: Tue, 20 Feb 2007 13:04:08 +0000
-From: Frederik Deweerdt <deweerdt@free.fr>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mattia Dongili <malattia@linux.it>,
-       Laurent Riffard <laurent.riffard@free.fr>, linux-kernel@vger.kernel.org,
-       axboe@kernel.dk
-Subject: [-mm patch] fix locking in __make_request (was Re: 2.6.20-mm2: Oops in generic_make_request)
-Message-ID: <20070220130408.GB566@slug>
-References: <20070217215146.30e7ffa3.akpm@linux-foundation.org> <45D84F73.8060904@free.fr> <20070218175805.GB5567@inferi.kami.home> <20070218114903.a8160301.akpm@linux-foundation.org> <6bffcb0e0702181205v5755fc0es284c5be32f85d304@mail.gmail.com>
-MIME-Version: 1.0
+	Mon, 19 Feb 2007 08:12:54 -0500
+Subject: Re: [PATCH 10/44 take 2] [UBI] debug unit implementation
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <200702172200.12910.arnd@arndb.de>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
+	 <20070217165514.5845.31845.sendpatchset@localhost.localdomain>
+	 <200702172200.12910.arnd@arndb.de>
 Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <6bffcb0e0702181205v5755fc0es284c5be32f85d304@mail.gmail.com>
-User-Agent: mutt-ng/devel-r804 (Linux)
+Date: Mon, 19 Feb 2007 14:29:20 +0200
+Message-Id: <1171888160.13817.18.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 19 Feb 2007 12:29:20.0154 (UTC) FILETIME=[9444CFA0:01C75421]
+X-eXpurgate-Category: 1/0
+X-eXpurgate-ID: 149371::070219142649-202B7BB0-18013630/0-0/0-1
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 18, 2007 at 09:05:33PM +0100, Michal Piotrowski wrote:
-> On 18/02/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> >On Sun, 18 Feb 2007 18:58:05 +0100 Mattia Dongili <malattia@linux.it> wrote:
-> >
-> >> On Sun, Feb 18, 2007 at 02:06:59PM +0100, Laurent Riffard wrote:
-> >> > Le 18.02.2007 06:51, Andrew Morton a �crit :
-> >> > >Temporarily at
-> >> > >
-> >> > >  http://userweb.kernel.org/~akpm/2.6.20-mm2/
-> >> > >
-> >> > >Will appear later at
-> >> > >
-> >> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm2/
-> >> >
-> >> > Hello, I've got a fully reproducible Oops. I just have to boot to
-> >> > runlevel 2 and wait less than one minute.
-> >>
-> >> Maybe this oops is related too?
-> >
-> >Looks that way.
-> >
-Hi Michal,
+On Sat, 2007-02-17 at 22:00 +0100, Arnd Bergmann wrote:
+> This whole file looks like it can be removed, as nothing in here
+> is really relevant for regular operation. I'm sure that much of it
+> was a good help in developing the code and finding the bugs in here,
+> but why would you want to merge it into the mainline kernel?
 
-This seems to be a locking problem in __make_request, check_plug_merge()
-should be called with the q->queue_lock held.
-Could you try the following patch? It silenced the oops for me.
+UBI is a new thing and it will likely be tweaked, improved, etc. When I
+have a bugreport, I just ask to enable debugging and provide me the log.
+I is a great help.
 
-Regards,
-Frederik
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
-Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
-
-diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
-index 577f448..666f34e 100644
---- a/block/ll_rw_blk.c
-+++ b/block/ll_rw_blk.c
-@@ -2919,14 +2919,14 @@ static int __make_request(request_queue_
- 	 */
- 	blk_queue_bounce(q, &bio);
- 
-+	spin_lock_irq(q->queue_lock);
- 	/*
- 	 * Check if we can merge with the plugged list before grabbing
- 	 * any locks.
- 	 */
- 	if (!check_plug_merge(q, ioc, bio))
--		goto out;
-+		goto out_unlock;
- 
--	spin_lock_irq(q->queue_lock);
- 	el_ret = elv_merge(q, &req, bio);
- 	if (el_ret == ELEVATOR_BACK_MERGE) {
- 		if (bio_attempt_back_merge(q, req, bio)) {
-@@ -2984,7 +2984,6 @@ out_unlock:
- 		list_add_tail(&req->queuelist, &ioc->plugged_list);
- 	}
- 
--out:
- 	return 0;
- 
- end_io_eopnotsupp:
