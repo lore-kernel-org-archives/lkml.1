@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161068AbXBTXXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161080AbXBTXXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161068AbXBTXXY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 18:23:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161078AbXBTXXY
+	id S1161080AbXBTXXZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 18:23:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161081AbXBTXXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 18:23:24 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:48050 "EHLO amd.ucw.cz"
+	Tue, 20 Feb 2007 18:23:25 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:48054 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161068AbXBTXXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 18:23:23 -0500
-Date: Mon, 19 Feb 2007 23:20:33 +0100
+	id S1161080AbXBTXXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 18:23:24 -0500
+Date: Mon, 19 Feb 2007 23:47:25 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       David Brownell <david-b@pacbell.net>,
-       Nigel Cunningham <ncunningham@linuxmail.org>,
-       Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Documentation: Ask driver writers to provide PM support
-Message-ID: <20070219222033.GA21199@elf.ucw.cz>
-References: <200702192311.36710.rjw@sisk.pl>
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix refrigerator() vs thaw_process() race
+Message-ID: <20070219224725.GF21199@elf.ucw.cz>
+References: <20070218221737.GA4880@tv-sign.ru> <20070219105008.GA19184@elf.ucw.cz> <20070219121236.GD91@tv-sign.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200702192311.36710.rjw@sisk.pl>
+In-Reply-To: <20070219121236.GD91@tv-sign.ru>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,29 +30,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> Add a paragraph in Documentation/SubmittingDrivers requesting that the
-> basic PM support be provided by new device drivers.
+> > > refrigerator() can miss a wakeup, "wait event" loop needs a proper memory
+> > > ordering.
+> > > 
+> > > Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> > > 
+> > > --- WQ/kernel/power/process.c~WAKE	2007-02-18 22:56:49.000000000 +0300
+> > > +++ WQ/kernel/power/process.c	2007-02-19 01:04:26.000000000 +0300
+> > > @@ -46,8 +46,10 @@ void refrigerator(void)
+> > >  	recalc_sigpending(); /* We sent fake signal, clean it up */
+> > >  	spin_unlock_irq(&current->sighand->siglock);
+> > >  
+> > > -		current->state = TASK_UNINTERRUPTIBLE;
+> > > +		set_current_state(TASK_UNINTERRUPTIBLE);
+> > 
+> > 
+> > Looks okay to me... but this one liner would be exactly as effective,
+> > right?
 > 
-> Add two new documents in Documentation/power/ giving general instructions on
-> debugging the suspend/resume functionality and testing the suspend and resume
-> support in device drivers.
+> I think no, with this one liner we have
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  Documentation/SubmittingDrivers            |   15 ++++
->  Documentation/power/basic-pm-debugging.txt |  106 +++++++++++++++++++++++++++++
->  Documentation/power/drivers-testing.txt    |   42 +++++++++++
->  3 files changed, 163 insertions(+)
+> 	while (frozen(current)) {
+> 		// ------ WINDOW ------------
+> 		set_current_state(TASK_UNINTERRUPTIBLE);
+> 		schedule();
+> 	}
+> 
+> What if thaw_process() happens in the window above?
+> 
+> We need the barrier exactly because LOAD (check condition) should not
+> come before STORE (set task->state).
 
-ACK.
-
-> +		drivers see Documentation/power/drivers.txt .
-
-
-Does this file exist for you? Should it exist for me? (I have pretty
-current -git here...)
-
-								Pavel
+Aha, ok :-). You already have my ACK ;-).
+									Pavel
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
