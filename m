@@ -1,82 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932072AbXBSK73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932074AbXBSLAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932072AbXBSK73 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 05:59:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932074AbXBSK73
+	id S932074AbXBSLAY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 06:00:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932073AbXBSLAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 05:59:29 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55008 "EHLO
+	Mon, 19 Feb 2007 06:00:24 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55015 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932072AbXBSK72 (ORCPT
+	with ESMTP id S932071AbXBSLAX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 05:59:28 -0500
-Date: Mon, 19 Feb 2007 10:59:27 +0000
+	Mon, 19 Feb 2007 06:00:23 -0500
+Date: Mon, 19 Feb 2007 11:00:17 +0000
 From: Christoph Hellwig <hch@infradead.org>
-To: Artem Bityutskiy <dedekind@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+To: Theodore Tso <tytso@mit.edu>, Artem Bityutskiy <dedekind@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Christoph Hellwig <hch@infradead.org>,
        Frank Haverkamp <haver@vnet.ibm.com>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
        Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 06/44 take 2] [UBI] startup code
-Message-ID: <20070219105927.GB16930@infradead.org>
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH 07/44 take 2] [UBI] misc unit header
+Message-ID: <20070219110017.GC16930@infradead.org>
 Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Theodore Tso <tytso@mit.edu>,
 	Artem Bityutskiy <dedekind@infradead.org>,
 	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
 	Frank Haverkamp <haver@vnet.ibm.com>,
+	Josh Boyer <jwboyer@linux.vnet.ibm.com>,
 	Thomas Gleixner <tglx@linutronix.de>,
-	David Woodhouse <dwmw2@infradead.org>,
-	Josh Boyer <jwboyer@linux.vnet.ibm.com>
-References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain> <20070217165454.5845.30875.sendpatchset@localhost.localdomain>
+	David Woodhouse <dwmw2@infradead.org>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain> <20070217165459.5845.18967.sendpatchset@localhost.localdomain> <20070217225908.GC16522@thunk.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070217165454.5845.30875.sendpatchset@localhost.localdomain>
+In-Reply-To: <20070217225908.GC16522@thunk.org>
 User-Agent: Mutt/1.4.2.2i
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 17, 2007 at 06:54:54PM +0200, Artem Bityutskiy wrote:
-> +/* UBI headers must take 64 bytes. The below is a hacky way to ensure this */
-> +static int __ubi_check_ec_hdr_size[(UBI_EC_HDR_SIZE == 64) - 1]
-> +    __attribute__ ((__unused__));
-> +static int __ubi_check_ec_hdr_size[(UBI_VID_HDR_SIZE == 64) - 1]
-> +    __attribute__ ((__unused__));
+On Sat, Feb 17, 2007 at 05:59:08PM -0500, Theodore Tso wrote:
+> On Sat, Feb 17, 2007 at 06:54:59PM +0200, Artem Bityutskiy wrote:
+> > diff -auNrp tmp-from/drivers/mtd/ubi/misc.h tmp-to/drivers/mtd/ubi/misc.h
+> > --- tmp-from/drivers/mtd/ubi/misc.h	1970-01-01 02:00:00.000000000 +0200
+> > +++ tmp-to/drivers/mtd/ubi/misc.h	2007-02-17 18:07:26.000000000 +0200
+> > @@ -0,0 +1,146 @@
+> > +#define xquotise(s) #s
+> > +#define quotise(s) xquotise(s)
+> 
+> Nothing in your patch series uses this, and it's identical to
+> stringify().   Please remove?
+> 
+> > +/**
+> > + * rb_for_each_entry - walk an RB-tree.
+> > + *
+> > + * @rb: a pointer to type 'struct rb_node' to to use as a loop counter
+> > + * @pos: a pointer to RB-tree entry type to use as a loop counter
+> > + * @root: RB-tree's root
+> > + * @member: the name of the 'struct rb_node' within the RB-tree entry
+> > + */
+> > +#define rb_for_each_entry(rb, pos, root, member)...
+> 
+> Shouldn't this be added to include/linux/rbtree.h?
+> 
+> > +/**
+> > + * strdup_len - duplicate a string with known length.
+> > + *
+> > + * @str: original string
+> > + * @len: the length of the string
+> > + */
+> > +char *strdup_len(const char *str, int len);
+> 
+> I'm not sure this should be polluting the kernel symbol namespace,
+> especially since the implementation calls ubi_assert()....
+> 
+> It's not clear the assertion is all that useful, but if you must have
+> it, why not do the check as an inline (with the assertion normally
+> turned off), and then call out to kmemdup()?
 
-please use BUILD_BUG_ON instead.
-
-> +
-> +static int ubi_attach_mtd_dev(const char *mtd_dev, int vid_hdr_offset,
-> +			      int data_offset);
-> +static void ubi_destroy_dev(int ubi_num);
-
-Can you reorder the code to avoid all these forward declarations please?
-
-> +	/* Attach MTD devices */
-> +	for (i = 0; i < mtd_devs; i++) {
-> +		struct mtd_dev_param *p = &mtd_dev_param[i];
-> +
-> +		cond_resched();
-> +		err = -EINVAL;
-
-This looks very odd.
-
-> +module_param_call(mtd, ubi_mtd_param_parse, NULL, NULL, 000);
-> +MODULE_PARM_DESC(mtd, "MTD devices to attach. Parameter format: "
-> +		      "mtd=<name|num>[,<vid_hdr_offs>,<data_offs>]. "
-> +		      "Multiple \"mtd\" parameters may be specified.\n"
-> +		      "MTD devices may be specified by their number or name. "
-> +		      "Optional \"vid_hdr_offs\" and \"data_offs\" parameters "
-> +		      "specify UBI VID header position and data starting "
-> +		      "position to be used by UBI.\n"
-> +		      "Example: mtd=content,1984,2048 mtd=4 - attach MTD device"
-> +		      "with name content using VID header offset 1984 and data "
-> +		      "start 2048, and MTD device number 4 using default "
-> +		      "offsets");
-
-This is a very odd paramater interface.  We really don't want drivers to use
-module_param_call directly.  You probably want various module_param_array calls
-instead.
+Agreement to all of the above.  And _please_ move all kdoc comments to
+the implementation files.
