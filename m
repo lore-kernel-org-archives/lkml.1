@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752700AbXBSB54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbXBSCCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752700AbXBSB54 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 Feb 2007 20:57:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbXBSB54
+	id S1752712AbXBSCCV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 Feb 2007 21:02:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbXBSCCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 Feb 2007 20:57:56 -0500
-Received: from ozlabs.org ([203.10.76.45]:34862 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752700AbXBSB5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 Feb 2007 20:57:55 -0500
-Subject: Re: loopback mount EXT3 oops
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, sct@redhat.com,
-       adilger@clusterfs.com,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-In-Reply-To: <45D90007.5060006@redhat.com>
-References: <1171842762.7918.47.camel@localhost.localdomain>
-	 <20070218163100.a4b95b3a.akpm@linux-foundation.org>
-	 <45D90007.5060006@redhat.com>
-Content-Type: text/plain
-Date: Mon, 19 Feb 2007 12:57:01 +1100
-Message-Id: <1171850221.7918.58.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Sun, 18 Feb 2007 21:02:21 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:37251 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752712AbXBSCCU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 Feb 2007 21:02:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=H9RlQgORinB6BjiQiYkChrhWGCXkFXTVLMDSc2M907I8DOwszn4MeX0BBEl+fqY/DmUFn85pNddJPRHl1wRdpPohmfN+7x5VNu9x8rUgLe42h6D8UfEDik4irO1gWxd1RA7VP85vaTGDZSGZB34/Tx/WvoMkbxMebfOlZnxGeKk=
+Message-ID: <2fe399760702181802q39e75b42iea7f80124506f169@mail.gmail.com>
+Date: Sun, 18 Feb 2007 18:02:17 -0800
+From: "Phy Prabab" <phyprabab@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Question about setting affinity in 2.4
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-02-18 at 19:40 -0600, Eric Sandeen wrote:
-> Andrew Morton wrote:
-> > I thought Eric fixed that.  Maybe he broke it instead ;)
-> 
-> Eeek... I'll reserve judgment on who broke what until I see that 
-> corrupted image... ;)  is it available?  How huge?
+Hello everyone,
 
-2G, but bzip'ed e2image -r is 54M:
+I am trying to set affinity on a program to make sure I can get the
+best use of the cache as possible and to eliminate as much noise as
+possible with running my program.  I have tried unsuccessfully to set
+affinity using sched_set/getaffinity and the CPU_SET macros.  In
+particular, I can not seem to get the process to use affinity I
+specify as in:
 
-http://ozlabs.org/~rusty/ubuntu-oopses-e2image-r.bz2 
+int main () {
+  cpu_set_t mask;
+  cpu_set_t setmask;
+  long long x;
+  double foo;
+  printf("Mask set to %08lx\n", sched_getaffinity(0, &mask));
+  CPU_SET(1, &mask);
+  if (sched_setaffinity(0, &mask) == -1) {
+     printf("error setting affinity.");
+  }
 
-Cheers!
-Rusty.
+  printf("Mask is reset to %08lx\n", sched_getaffinity(0, &mask));
+  // do some long lasting calculations ....
 
+  return;
+}
+
+No mater what I do, the process is never bond to the processor in
+question as exposed by this little appy and by cat /proc/<pid>/cpu.
+Is this just impossible to do?
+
+Ah, the kernel I am using is RH 2.4.21-37.ELsmp.
+
+TIA!
+Phy
