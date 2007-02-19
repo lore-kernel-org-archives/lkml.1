@@ -1,52 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750701AbXBSI6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750708AbXBSI7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750701AbXBSI6M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 03:58:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750708AbXBSI6L
+	id S1750708AbXBSI7l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 03:59:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750722AbXBSI7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 03:58:11 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:51567 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750701AbXBSI6K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 03:58:10 -0500
-Date: Mon, 19 Feb 2007 10:58:08 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mcr@sandelman.ca,
-       clameter@sgi.com
-Subject: Re: [PATCH] slab: ensure cache_alloc_refill terminates
-In-Reply-To: <20070219174814.ec942249.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0702191051060.3230@sbz-30.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0702191020490.2085@sbz-30.cs.Helsinki.FI>
- <20070219174814.ec942249.kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 19 Feb 2007 03:59:41 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:46045 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750708AbXBSI7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 03:59:40 -0500
+Date: Mon, 19 Feb 2007 00:58:28 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Balbir Singh <balbir@in.ibm.com>
+Cc: linux-kernel@vger.kernel.org, vatsa@in.ibm.com,
+       ckrm-tech@lists.sourceforge.net, xemul@sw.ru, linux-mm@kvack.org,
+       menage@google.com, svaidy@linux.vnet.ibm.com, devel@openvz.org
+Subject: Re: [RFC][PATCH][2/4] Add RSS accounting and control
+Message-Id: <20070219005828.3b774d8f.akpm@linux-foundation.org>
+In-Reply-To: <20070219065034.3626.2658.sendpatchset@balbir-laptop>
+References: <20070219065019.3626.33947.sendpatchset@balbir-laptop>
+	<20070219065034.3626.2658.sendpatchset@balbir-laptop>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Feb 2007, KAMEZAWA Hiroyuki wrote:
-> From my experience, this infinite loop in cache_alloc_refill() is caused by 
-> double-free, always...(I'm sorry if my knowledge around the slab is too old.)
+On Mon, 19 Feb 2007 12:20:34 +0530 Balbir Singh <balbir@in.ibm.com> wrote:
 
-Well, I don't know what exactly caused slabp->inuse (could be cachep->num 
-too, although sounds unlikely) to corrupt for Michael. But yeah, freeing 
-an object twice obviously corrupts slabp->inuse too.
+> 
+> This patch adds the basic accounting hooks to account for pages allocated
+> into the RSS of a process. Accounting is maintained at two levels, in
+> the mm_struct of each task and in the memory controller data structure
+> associated with each node in the container.
+> 
+> When the limit specified for the container is exceeded, the task is killed.
+> RSS accounting is consistent with the current definition of RSS in the
+> kernel. Shared pages are accounted into the RSS of each process as is
+> done in the kernel currently. The code is flexible in that it can be easily
+> modified to work with any definition of RSS.
+> 
+> ..
+>
+> +static inline int memctlr_mm_init(struct mm_struct *mm)
+> +{
+> +	return 0;
+> +}
 
-On Mon, 19 Feb 2007, KAMEZAWA Hiroyuki wrote:
-> And it looks this additional check can caught the problem but maybe no help for
-> fixing problem...How about adding printk like this ?
-> ==
-> if (unlikely(slabp->inuse >= cachep->num)) {
-> 	printk("A problem is detected on slab %s\n", cachep->name);//this information is useful.
-> 	printk("please use DEBUG_SLAB kernel for detecting what happens.");
-> 	BUG(); 
-> }
+So it returns zero on success.  OK.
 
-I don't think cachep->name is enough to debug the problem and as soon as 
-you turn on CONFIG_SLAB_DEBUG double-frees should show up in 
-verify_redzone_free with nice debugging info. So, I'd prefer we keep the 
-simple BUG_ON and simply ask people to turn on debugging if they hit it.
+> --- linux-2.6.20/kernel/fork.c~memctlr-acct	2007-02-18 22:55:50.000000000 +0530
+> +++ linux-2.6.20-balbir/kernel/fork.c	2007-02-18 22:55:50.000000000 +0530
+> @@ -50,6 +50,7 @@
+>  #include <linux/taskstats_kern.h>
+>  #include <linux/random.h>
+>  #include <linux/numtasks.h>
+> +#include <linux/memctlr.h>
+>  
+>  #include <asm/pgtable.h>
+>  #include <asm/pgalloc.h>
+> @@ -342,10 +343,15 @@ static struct mm_struct * mm_init(struct
+>  	mm->free_area_cache = TASK_UNMAPPED_BASE;
+>  	mm->cached_hole_size = ~0UL;
+>  
+> +	if (!memctlr_mm_init(mm))
+> +		goto err;
+> +
 
-				Pekka
+But here we treat zero as an error?
+
+>  	if (likely(!mm_alloc_pgd(mm))) {
+>  		mm->def_flags = 0;
+>  		return mm;
+>  	}
+> +
+> +err:
+>  	free_mm(mm);
+>  	return NULL;
+>  }
+>
+> ...
+>
+> +int memctlr_mm_init(struct mm_struct *mm)
+> +{
+> +	mm->counter = kmalloc(sizeof(struct res_counter), GFP_KERNEL);
+> +	if (!mm->counter)
+> +		return 0;
+> +	atomic_long_set(&mm->counter->usage, 0);
+> +	atomic_long_set(&mm->counter->limit, 0);
+> +	rwlock_init(&mm->container_lock);
+> +	return 1;
+> +}
+
+ah-ha, we have another Documentation/SubmitChecklist customer.
+
+It would be more conventional to make this return -EFOO on error,
+zero on success.
+
+> +void memctlr_mm_free(struct mm_struct *mm)
+> +{
+> +	kfree(mm->counter);
+> +}
+> +
+> +static inline void memctlr_mm_assign_container_direct(struct mm_struct *mm,
+> +							struct container *cont)
+> +{
+> +	write_lock(&mm->container_lock);
+> +	mm->container = cont;
+> +	write_unlock(&mm->container_lock);
+> +}
+
+More weird locking here.
+
+> +void memctlr_mm_assign_container(struct mm_struct *mm, struct task_struct *p)
+> +{
+> +	struct container *cont = task_container(p, &memctlr_subsys);
+> +	struct memctlr *mem = memctlr_from_cont(cont);
+> +
+> +	BUG_ON(!mem);
+> +	write_lock(&mm->container_lock);
+> +	mm->container = cont;
+> +	write_unlock(&mm->container_lock);
+> +}
+
+And here.
+
+> +/*
+> + * Update the rss usage counters for the mm_struct and the container it belongs
+> + * to. We do not fail rss for pages shared during fork (see copy_one_pte()).
+> + */
+> +int memctlr_update_rss(struct mm_struct *mm, int count, bool check)
+> +{
+> +	int ret = 1;
+> +	struct container *cont;
+> +	long usage, limit;
+> +	struct memctlr *mem;
+> +
+> +	read_lock(&mm->container_lock);
+> +	cont = mm->container;
+> +	read_unlock(&mm->container_lock);
+> +
+> +	if (!cont)
+> +		goto done;
+
+And here.  I mean, if there was a reason for taking the lock around that
+read, then testing `cont' outside the lock just invalidated that reason.
+
+> +static inline void memctlr_double_lock(struct memctlr *mem1,
+> +					struct memctlr *mem2)
+> +{
+> +	if (mem1 > mem2) {
+> +		spin_lock(&mem1->lock);
+> +		spin_lock(&mem2->lock);
+> +	} else {
+> +		spin_lock(&mem2->lock);
+> +		spin_lock(&mem1->lock);
+> +	}
+> +}
+
+Conventionally we take the lower-addressed lock first when doing this, not
+the higher-addressed one.
+
+> +static inline void memctlr_double_unlock(struct memctlr *mem1,
+> +						struct memctlr *mem2)
+> +{
+> +	if (mem1 > mem2) {
+> +		spin_unlock(&mem2->lock);
+> +		spin_unlock(&mem1->lock);
+> +	} else {
+> +		spin_unlock(&mem1->lock);
+> +		spin_unlock(&mem2->lock);
+> +	}
+> +}
+> +
+> ...
+>
+>  	retval = -ENOMEM;
+> +
+> +	if (!memctlr_update_rss(mm, 1, MEMCTLR_CHECK_LIMIT))
+> +		goto out;
+> +
+
+Again, please use zero for success and -EFOO for error.
+
+That way, you don't have to assume that the reason memctlr_update_rss()
+failed was out-of-memory.  Just propagate the error back.
+
+>  	flush_dcache_page(page);
+>  	pte = get_locked_pte(mm, addr, &ptl);
+>  	if (!pte)
+> @@ -1580,6 +1587,9 @@ gotten:
+>  		cow_user_page(new_page, old_page, address, vma);
+>  	}
+>  
+> +	if (!memctlr_update_rss(mm, 1, MEMCTLR_CHECK_LIMIT))
+> +		goto oom;
+> +
+>  	/*
+>  	 * Re-check the pte - we dropped the lock
+>  	 */
+> @@ -1612,7 +1622,9 @@ gotten:
+>  		/* Free the old page.. */
+>  		new_page = old_page;
+>  		ret |= VM_FAULT_WRITE;
+> -	}
+> +	} else
+> +		memctlr_update_rss(mm, -1, MEMCTLR_DONT_CHECK_LIMIT);
+
+This one doesn't get checked?
+
+Why does MEMCTLR_DONT_CHECK_LIMIT exist?
