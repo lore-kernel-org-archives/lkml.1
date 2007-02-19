@@ -1,52 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932200AbXBSMeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932206AbXBSMig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932200AbXBSMeg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 07:34:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932197AbXBSMeg
+	id S932206AbXBSMig (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 07:38:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932207AbXBSMig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 07:34:36 -0500
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:44535 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932203AbXBSMeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 07:34:36 -0500
-Message-ID: <45D9995F.9070108@drzeus.cx>
-Date: Mon, 19 Feb 2007 13:34:39 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070131)
-MIME-Version: 1.0
-To: Alex Dubov <oakad@yahoo.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Recent and not-so problems with tifm_sd driver
-References: <570331.88389.qm@web36706.mail.mud.yahoo.com>
-In-Reply-To: <570331.88389.qm@web36706.mail.mud.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 19 Feb 2007 07:38:36 -0500
+Received: from relay5.ptmail.sapo.pt ([212.55.154.25]:50273 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S932206AbXBSMif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 07:38:35 -0500
+X-AntiVirus: PTMail-AV 0.3-0.90.0
+Subject: Re: 2.6.20-rt5 Oops on boot [-rt8 OK]
+From: Sergio Monteiro Basto <sergio@sergiomb.no-ip.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Rui Nuno Capela <rncbc@rncbc.org>, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070216082551.GA26948@elte.hu>
+References: <23932.213.58.131.130.1170156409.squirrel@www.rncbc.org>
+	 <45CCC3CF.4090604@rncbc.org> <45D4FEFC.5070306@rncbc.org>
+	 <20070216082551.GA26948@elte.hu>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 19 Feb 2007 12:38:46 +0000
+Message-Id: <1171888726.3784.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Dubov wrote:
-> 
-> mmc_rescan
->   mmc_register_card
->     device_add
->       mmc_block_probe
->         mmc_block_alloc
->           -> queue thread starts running
->         add_disk
->           -> issues a lot of requests; card fails, my drivers calls mmc_remove_host, which in 
->              turn calls device_del, though we are still in device_add
-> 
+On Fri, 2007-02-16 at 09:25 +0100, Ingo Molnar wrote:
+> > 
+> > News are that 2.6.20-rt8 got it all back to business :) 
 
-Ahhh, now I see. Well that's an entirely different kettle of fish.
+yes!, my Pentium D back in business too  .
 
-Removing the device in this stack is not supported (we would have a whole bunch
-of nasty dead lock possibilities to consider). You need to delay the removal in
-some form, e.g. using the mmc workqueue.
+--
+Sérgio M .B. 
 
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
