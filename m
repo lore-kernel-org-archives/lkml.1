@@ -1,121 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932174AbXBSL4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932183AbXBSL4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932174AbXBSL4J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 06:56:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932165AbXBSL4J
+	id S932183AbXBSL4m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 06:56:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932185AbXBSL4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 06:56:09 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:50496 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932174AbXBSL4I (ORCPT
+	Mon, 19 Feb 2007 06:56:42 -0500
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:40154 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932183AbXBSL4l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 06:56:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CFkmZ6DdISwUwZpIXMV3DFiP069ljC0W8kEIjm5eTJQR4ofSyMjBtN8kdl+jbl69T26xBEsIjJhUT3kbF89b/DmKvvP/sIviArwPf8ctlsY4aHQORVkdGD20BpAHHjGwt2z5GlT3wJU1zjbcqktIk0fRAwIm86o+dG3GmLn+OdU=
-Message-ID: <aec7e5c30702190356v31e4997pf02e2887264299ce@mail.gmail.com>
-Date: Mon, 19 Feb 2007 20:56:06 +0900
-From: "Magnus Damm" <magnus.damm@gmail.com>
-To: balbir@in.ibm.com
-Subject: Re: [RFC][PATCH][0/4] Memory controller (RSS Control)
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       vatsa@in.ibm.com, ckrm-tech@lists.sourceforge.net, xemul@sw.ru,
-       linux-mm@kvack.org, menage@google.com, svaidy@linux.vnet.ibm.com,
-       devel@openvz.org
-In-Reply-To: <45D97FAD.9070009@in.ibm.com>
+	Mon, 19 Feb 2007 06:56:41 -0500
+Message-ID: <45D9906F.2090605@in.ibm.com>
+Date: Mon, 19 Feb 2007 17:26:31 +0530
+From: Balbir Singh <balbir@in.ibm.com>
+Reply-To: balbir@in.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
 MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: vatsa@in.ibm.com, ckrm-tech@lists.sourceforge.net, xemul@sw.ru,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, menage@google.com,
+       svaidy@linux.vnet.ibm.com, devel@openvz.org
+Subject: Re: [ckrm-tech] [RFC][PATCH][2/4] Add RSS accounting and control
+References: <20070219065019.3626.33947.sendpatchset@balbir-laptop> <20070219065034.3626.2658.sendpatchset@balbir-laptop> <20070219005828.3b774d8f.akpm@linux-foundation.org> <45D97DF8.5080000@in.ibm.com> <20070219030141.42c65bc0.akpm@linux-foundation.org> <45D9856D.1070902@in.ibm.com> <20070219032352.2856af36.akpm@linux-foundation.org>
+In-Reply-To: <20070219032352.2856af36.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070219065019.3626.33947.sendpatchset@balbir-laptop>
-	 <20070219005441.7fa0eccc.akpm@linux-foundation.org>
-	 <aec7e5c30702190116j26efcba3oe5223584f99ac25a@mail.gmail.com>
-	 <45D97FAD.9070009@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/19/07, Balbir Singh <balbir@in.ibm.com> wrote:
-> Magnus Damm wrote:
-> > On 2/19/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> >> On Mon, 19 Feb 2007 12:20:19 +0530 Balbir Singh <balbir@in.ibm.com>
-> >> wrote:
-> >>
-> >> > This patch applies on top of Paul Menage's container patches (V7)
-> >> posted at
-> >> >
-> >> >       http://lkml.org/lkml/2007/2/12/88
-> >> >
-> >> > It implements a controller within the containers framework for limiting
-> >> > memory usage (RSS usage).
-> >
-> >> The key part of this patchset is the reclaim algorithm:
-> >>
-> >> Alas, I fear this might have quite bad worst-case behaviour.  One small
-> >> container which is under constant memory pressure will churn the
-> >> system-wide LRUs like mad, and will consume rather a lot of system time.
-> >> So it's a point at which container A can deleteriously affect things
-> >> which
-> >> are running in other containers, which is exactly what we're supposed to
-> >> not do.
-> >
-> > Nice with a simple memory controller. The downside seems to be that it
-> > doesn't scale very well when it comes to reclaim, but maybe that just
-> > comes with being simple. Step by step, and maybe this is a good first
-> > step?
-> >
->
-> Thanks, I totally agree.
->
-> > Ideally I'd like to see unmapped pages handled on a per-container LRU
-> > with a fallback to the system-wide LRUs. Shared/mapped pages could be
-> > handled using PTE ageing/unmapping instead of page ageing, but that
-> > may consume too much resources to be practical.
-> >
-> > / magnus
->
-> Keeping unmapped pages per container sounds interesting. I am not quite
-> sure what PTE ageing, will it look it up.
+Andrew Morton wrote:
+> On Mon, 19 Feb 2007 16:39:33 +0530 Balbir Singh <balbir@in.ibm.com> wrote:
+> 
+>> Andrew Morton wrote:
+>>> On Mon, 19 Feb 2007 16:07:44 +0530 Balbir Singh <balbir@in.ibm.com> wrote:
+>>>
+>>>>>> +void memctlr_mm_free(struct mm_struct *mm)
+>>>>>> +{
+>>>>>> +	kfree(mm->counter);
+>>>>>> +}
+>>>>>> +
+>>>>>> +static inline void memctlr_mm_assign_container_direct(struct mm_struct *mm,
+>>>>>> +							struct container *cont)
+>>>>>> +{
+>>>>>> +	write_lock(&mm->container_lock);
+>>>>>> +	mm->container = cont;
+>>>>>> +	write_unlock(&mm->container_lock);
+>>>>>> +}
+>>>>> More weird locking here.
+>>>>>
+>>>> The container field of the mm_struct is protected by a read write spin lock.
+>>> That doesn't mean anything to me.
+>>>
+>>> What would go wrong if the above locking was simply removed?  And how does
+>>> the locking prevent that fault?
+>>>
+>> Some pages could charged to the wrong container. Apart from that I do not
+>> see anything going bad (I'll double check that).
+> 
+> Argh.  Please, think about this.
+> 
 
-You will most likely have no luck looking it up, so here is what I
-mean by PTE ageing:
+Sure, I will. I guess I am short circuiting my thinking process :-)
 
-The most common unit for memory resource control seems to be physical
-pages. Keeping track of pages is simple in the case of a single user
-per page, but for shared pages tracking the owner becomes more
-complex.
 
-I consider unmapped pages to only have a single user at a time, so the
-unit for unmapped memory resource control is physical pages. Apart
-from implementation details such as fun with struct page and
-scalability, handling this case is not so complicated.
+> That locking *doesn't do anything*.  Except for that one situation I
+> described: some other holder of the lock reads mm->container twice inside
+> the lock and requires that the value be the same both times (and that sort
+> of code should be converted to take a local copy, so this locking here can
+> be removed).
+> 
 
-Mapped or shared pages should be handled in a different way IMO. PTEs
-should be used instead of using physical pages as unit for resource
-control and reclaim. For the user this looks pretty much the same as
-physical pages, apart for memory overcommit.
+Yes, that makes sense.
 
-So instead of using a global page reclaim policy and reserving
-physical pages per container I propose that resource controlled shared
-pages should be handled using a PTE replacement policy. This policy is
-used to keep the most active PTEs in the container backed by physical
-pages. Inactive PTEs gets unmapped in favour over newer PTEs.
+>>>>>> +
+>>>>>> +	read_lock(&mm->container_lock);
+>>>>>> +	cont = mm->container;
+>>>>>> +	read_unlock(&mm->container_lock);
+>>>>>> +
+>>>>>> +	if (!cont)
+>>>>>> +		goto done;
+>>>>> And here.  I mean, if there was a reason for taking the lock around that
+>>>>> read, then testing `cont' outside the lock just invalidated that reason.
+>>>>>
+>>>> We took a consistent snapshot of cont. It cannot change outside the lock,
+>>>> we check the value outside. I am sure I missed something.
+>>> If it cannot change outside the lock then we don't need to take the lock!
+>>>
+>> We took a snapshot that we thought was consistent.
+> 
+> Consistent with what?  That's a single-word read inside that lock.
+> 
 
-One way to implement this could be by populating the address space of
-resource controlled processes with multiple smaller LRU2Qs. The
-compact data structure that I have in mind is basically an array of
-256 bytes, one byte per PTE. Associated with this data strucuture are
-start indexes and lengths for two lists. The indexes are used in a
-FAT-type of chain to form single linked lists. So we create active and
-inactive list here - and we move PTEs between the lists when we check
-the young bits from the page reclaim and when we apply memory
-pressure. Unmapping is done through the normal page reclaimer but
-using information from the PTE LRUs.
+Yes, that makes sense.
 
-In my mind this should lead to more fair resource control of mapped
-pages, but if it is possible to implement with low overhead, that's
-another question. =)
+>> We check for the value
+>> outside. I guess there is no harm, the worst thing that could happen
+>> is wrong accounting during mm->container changes (when a task changes
+>> container).
+> 
+> If container->lock is held when a task is removed from the
+> container then yes, `cont' here can refer to a container to which the task
+> no longer belongs.
+> 
+> More worrisome is the potential for use-after-free.  What prevents the
+> pointer at mm->container from referring to freed memory after we're dropped
+> the lock?
+> 
 
-Thanks for listening.
+The container cannot be freed unless all tasks holding references to it are
+gone, that would ensure that all mm->containers are pointing elsewhere and
+never to a stale value.
 
-/ magnus
+I hope my short-circuited brain got this right :-)
+
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
