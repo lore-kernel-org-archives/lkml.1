@@ -1,132 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932250AbXBSN7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932265AbXBSOA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932250AbXBSN7X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 08:59:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932255AbXBSN7X
+	id S932265AbXBSOA0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 09:00:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932267AbXBSOAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 08:59:23 -0500
-Received: from javad.com ([216.122.176.236]:4556 "EHLO javad.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932250AbXBSN7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 08:59:22 -0500
-From: Sergei Organov <osv@javad.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       "J.A. =?utf-8?B?TWFnYWxsw4M=?= =?utf-8?B?w4PDg8ODw4PDgsKzbg==?=" 
-	<jamagallon@ono.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
+	Mon, 19 Feb 2007 09:00:25 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:46374 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932265AbXBSOAX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 09:00:23 -0500
+Subject: Re: [PATCH 41/44 take 2] [UBI] gluebi unit header
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Artem Bityutskiy <dedekind@infradead.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: somebody dropped a (warning) bomb
-References: <45CB3B28.60102@garzik.org>
-	<Pine.LNX.4.64.0702081338010.8424@woody.linux-foundation.org>
-	<Pine.LNX.4.64.0702081351410.8424@woody.linux-foundation.org>
-	<87abznsdyo.fsf@javad.com>
-	<Pine.LNX.4.64.0702090753500.8424@woody.linux-foundation.org>
-	<874pprr5nn.fsf@javad.com>
-	<Pine.LNX.4.64.0702120804520.8424@woody.linux-foundation.org>
-	<87ps8end9b.fsf@javad.com>
-	<84144f020702131026q2af1afd6vbcd2708d7b7b9907@mail.gmail.com>
-	<87bqjxooog.fsf@javad.com>
-	<84144f020702131143r767aa40blb97a39b40bee73b8@mail.gmail.com>
-	<87fy99n6mf.fsf@javad.com>
-	<Pine.LNX.4.64.0702131513050.3604@woody.linux-foundation.org>
-	<87hctnlfqz.fsf@javad.com>
-	<Pine.LNX.4.64.0702150736360.20368@woody.linux-foundation.org>
-	<87k5yjjlrj.fsf@javad.com>
-	<Pine.LNX.4.64.0702151059090.20368@woody.linux-foundation.org>
-Date: Mon, 19 Feb 2007 16:58:52 +0300
-In-Reply-To: <Pine.LNX.4.64.0702151059090.20368@woody.linux-foundation.org>
-	(Linus Torvalds's message of "Thu, 15 Feb 2007 11:02:32 -0800 (PST)")
-Message-ID: <871wkmgsf7.fsf@javad.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+       Christoph Hellwig <hch@infradead.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <200702182337.53314.arnd@arndb.de>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
+	 <200702180315.25067.arnd@arndb.de>
+	 <20070218030217.GH1038@crusty.rchland.ibm.com>
+	 <200702182337.53314.arnd@arndb.de>
+Content-Type: text/plain
+Date: Mon, 19 Feb 2007 08:01:24 -0600
+Message-Id: <1171893684.24204.12.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
-> On Thu, 15 Feb 2007, Sergei Organov wrote:
->> 
->> I agree that if the warning has no true positives, it sucks. The problem
->> is that somehow I doubt it has none. And the reasons for the doubt are:
->
-> Why do you harp on "no true positives"?
+On Sun, 2007-02-18 at 23:37 +0100, Arnd Bergmann wrote:
+> On Sunday 18 February 2007 04:02:17 Josh Boyer wrote:
+> > On Sun, Feb 18, 2007 at 03:15:23AM +0100, Arnd Bergmann wrote:
+> > > On Sunday 18 February 2007 03:04, Josh Boyer wrote:
+> > > > No, the MTD interface isn't flawed.  gluebi is present to make things
+> > > > like JFFS2 work on top of UBI volumes with very little adaptations.  If
+> > > > you go changing _every_ MTD user to now use either an MTD device or a
+> > > > native UBI device, then the code for those users just gets bloated.
+> > >
+> > > Right, that was my point. If the MTD API in the kernel is not flawed, why
+> > > do we need the 'native' UBI interface? Just merge gluebi into UBI and
+> > > get rid of the extra abstraction.
+> >
+> > That suggestion came up several times.  gluebi represents a compromise
+> > between the two groups.  IIRC, the issue was that representing UBI volumes
+> > as MTD devices only makes sense in the dynamic volume case.  Static UBI
+> > volumes require special write/update handling and so there was a need for
+> > a native interface anyway.
+> 
+> Which brings be back to my original point ;-)
+> 
+> I'm sure this has been discussed before, but I'd still like to understand
+> what is so special with 'static UBI volumes' that they can't be used with
+> a slightly extended MTD interface.
 
-Because if somebody is capable to proof a warning has no true positives,
-I immediately agree it's useless. I just wanted to check if it's indeed
-the case. It seems it is not.
+Since I personally loath the standard "RTFM" response, I'll try and
+explain briefly.
 
-> That's a pointless thing. You can make *any* warning have "true 
-> positives". My personal favorite is the unconditional warning:
->
-> 	warning: user is an idiot
->
-> and I _guarantee_ you that it has a lot of true positives.
+Think of static volumes as containers for chunks of whole binary data.
+You don't want partial updates to this data, or it's inconsistent.  So a
+static volume must be written wholesale.  As UBI writes out the data,
+each block has a field in the VID header with the data size and the CRC
+for that block.
 
-Yes, but there is obviously 0 correlation between the warning and the
-user being an idiot (except that non-idiot will probably find a way to
-either turn this warning off, or filter it out).
+Take a vmlinux binary for example.  By putting that in a static UBI
+volume, a bootloader can read each block in the volume in order, verify
+the block CRC and know that the resulting reconstructed image is valid.
+If the CRC doesn't match on a block, the data is invalid and the
+bootloader can do whatever it determines to be the correct behavior.
 
-I already agreed that a warning may have true positives and still be
-bad; and a warning having "no false negatives" is obviously a pretty
-one, though unfortunately not that common in practice; and a warning
-that has no true positives is useless. What we are arguing about are
-intermediate cases that are most common in practice.
+One could arguably create a new MTD interface called "update" and
+provide only that and the read function for static volumes.  But that is
+essentially what has been done within UBI itself.  I won't speak for
+Artem, who could explain much more than I as to why it was done the way
+it currently is.
 
-As programmers, we in fact are interested in correlation between a
-warning and actual problem in the software, but for the kind of warnings
-we are discussing (sign-correctness and type-safety in general), the
-correlation depends on the style the program is written is, making it
-difficult to use as a criteria in the discussion.
+josh
 
-> It's the "no false negatives" angle you should look at.
-
-I'd like to, but then I'll need to classify most of (all?) the GCC
-warnings as bad, I'm afraid.
-
-> THAT is what matters. The reason we don't see a lot of warnings about 
-> idiot users is not that people don't do stupid things, but that 
-> *sometimes* they actually don't do something stupid.
->
-> Yeah, I know, it's far-fetched, but still.
->
-> In other words, you're barking up *exactly* the wrong tree. You're looking 
-> at it the wrong way around.
->
-> Think of it this way: in science, a theory is proven to be bad by a single 
-> undeniable fact just showing that it's wrong.
->
-> The same is largely true of a warning. If the warning sometimes happens 
-> for code that is perfectly fine, the warning is bad.
-
-Consider:
-
-int find_first_zero(const int *a)
-{
-	int index = 0;
-	while(*a++ != 0)
-		index++;
-	return index;
-}
-
-unsigned int array[] = { 1, 2, 3, 0, 25, 14 };
-int index = find_first_zero(array);  *WARNING*
-
-So, by your logic, -Wpointer-sign warning is bad in general? If not,
-then how will you "fix" the code above? And the upside of the fix is
-what?
-
-IMHO, the "problem" is that this warning is about violation of type
-safety. Type safety by itself doesn't guarantee the code is perfectly
-fine. Violation of type safety doesn't necessarily mean the code is
-broken. A warning that warns about violation of type safety has the same
-properties.  Now, it's up to you to decide if you want warnings on type
-safety or not.
-
-What you are saying, on the other hand, for me reads like this: "I do
-want warnings on violations of type safety in general, except for
-"signed char" or "unsigned char" being used instead of "char"". I think
-I do understand your reasons, -- I just don't agree with them.
-
--- Sergei.
