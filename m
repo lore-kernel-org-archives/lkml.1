@@ -1,59 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932283AbXBSOcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932288AbXBSOdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932283AbXBSOcz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 09:32:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932286AbXBSOcz
+	id S932288AbXBSOdv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 09:33:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932291AbXBSOdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 09:32:55 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:22022 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932283AbXBSOcy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 09:32:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent:sender;
-        b=QGEeqnzVqxgCTr5rv/x6sMOg7eIzInfOcg5BJ3RbiT+GR1LU9mxLAU32yAYCK2HXOB6pTZ/81Ju4fv6otohSYHNDacKBZn6jCOVvAi66RSsZODRRgyVPi4XaYBuhI67RGchIbrkrUqAaOt6SutjE+ro057jV6Bb0V7Pl96AV6RA=
-Date: Tue, 20 Feb 2007 14:32:01 +0000
-From: Frederik Deweerdt <deweerdt@free.fr>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mattia Dongili <malattia@linux.it>,
-       Laurent Riffard <laurent.riffard@free.fr>, linux-kernel@vger.kernel.org,
-       axboe@kernel.dk, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [-mm patch] fix locking in __make_request (was Re: 2.6.20-mm2: Oops in generic_make_request)
-Message-ID: <20070220143201.GH566@slug>
-References: <20070217215146.30e7ffa3.akpm@linux-foundation.org> <45D84F73.8060904@free.fr> <20070218175805.GB5567@inferi.kami.home> <20070218114903.a8160301.akpm@linux-foundation.org> <6bffcb0e0702181205v5755fc0es284c5be32f85d304@mail.gmail.com> <20070220130408.GB566@slug> <6bffcb0e0702190552r67f878csb5e5c49dfa7c050c@mail.gmail.com> <45D9AF43.6010406@googlemail.com>
+	Mon, 19 Feb 2007 09:33:50 -0500
+Received: from thunk.org ([69.25.196.29]:33009 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932294AbXBSOdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 09:33:49 -0500
+Date: Mon, 19 Feb 2007 09:33:21 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Artem Bityutskiy <dedekind@infradead.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 00/44 take 2] [UBI] Unsorted Block Images
+Message-ID: <20070219143321.GE25490@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Artem Bityutskiy <dedekind@infradead.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Christoph Hellwig <hch@infradead.org>,
+	Frank Haverkamp <haver@vnet.ibm.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Josh Boyer <jwboyer@linux.vnet.ibm.com>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain> <20070217224952.GB16522@thunk.org> <1171889303.13817.29.camel@sauron>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <45D9AF43.6010406@googlemail.com>
-User-Agent: mutt-ng/devel-r804 (Linux)
+In-Reply-To: <1171889303.13817.29.camel@sauron>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 19, 2007 at 03:08:03PM +0100, Michal Piotrowski wrote:
-> Michal Piotrowski napisał(a):
-> > Hi Frederik,
-> > 
-> > On 20/02/07, Frederik Deweerdt <deweerdt@free.fr> wrote:
-> >> Hi Michal,
-> >>
-> >> This seems to be a locking problem in __make_request, check_plug_merge()
-> >> should be called with the q->queue_lock held.
-> >> Could you try the following patch? It silenced the oops for me.
-> > 
-> > For me too, but Jens dislikes this patch.
-> 
-> Now I know why...
-> 
-> Code:  Bad EIP value.
-> EIP: [<6b6b6b6b>] 0x6b6b6b6b SS:ESP 0068:f45f9bf8
+On Mon, Feb 19, 2007 at 02:48:23PM +0200, Artem Bityutskiy wrote:
+> I actually did not mean these patches should be included to a git. We
+> have UBI git to pull from for these purposes. I basically manually split
+> the UBI sources to make UBI easier to review. I should have added an
+> "RFC" tag, apologies.
 
-:) It may not be related though. I think that my patch avoids the
-BUG_ON(!rq_mergeable(req)); in ll_rw_blk.c:2782. This looks like another
-beast to me.
+It made it much, much, MUCH harder to review.  Especially given that
+the documentation was separated from the implementation.  As I looked
+at the implementation, there was no way to look and what it was
+supposed to do without flipping back to a previous e-mail message and
+losing my place.  
+
+> This reflects the way of my thinking. I see UBI as a set of units with
+> defined interfaces. So I even physically split the interface description
+> into files. I still think it is easier to grasp the architecture this
+> way.
+
+Speaking as someone who was coming into it cold, it actually made it
+far more difficult.  Your units were too small, so that meant the
+number of interfaces that were created as a result were huge!  (Around
+20 _sets_ of interfaces, all of which had to be comprehended for what
+should have been a relatively simple set of functionality!)
+
+And when you create that many interfaces, it adds inertia to changing
+the interfaces later on, because it's sometimes not clear how many
+users of the interface there really are.  My general rule of thumb is
+that if an interface only has one user, then it may be a good idea to
+combine it with the user of that interface, and then make the
+functions involved be a static, so that it becomes clear the only user
+of that functoin is within that one file.  You can take this too far,
+and to extremes it doesn't work all that well, but the UBI layer has
+gone waaaaaay off the deep end in terms of functional decomposition.
+
+Adding lots of units so you can have formal functional interfaces is
+not always the right answer in terms of making code more readable or
+maintainable.  And in my humble opinion, UBI is a picture-perfect
+demonstration of this.
 
 Regards,
-Frederik
+
+						- Ted
