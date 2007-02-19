@@ -1,82 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932196AbXBSMkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932207AbXBSMss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932196AbXBSMkm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 07:40:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932208AbXBSMkm
+	id S932207AbXBSMss (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 07:48:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932210AbXBSMsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 07:40:42 -0500
-Received: from mail.sf-mail.de ([62.27.20.61]:48250 "EHLO mail.sf-mail.de"
+	Mon, 19 Feb 2007 07:48:47 -0500
+Received: from mail.atmel.fr ([81.80.104.162]:61145 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932196AbXBSMkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 07:40:41 -0500
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG?] register_blkdev: failed to get major for device mapper
-Date: Mon, 19 Feb 2007 13:40:56 +0100
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com
-References: <200702161437.34063.eike-kernel@sf-tec.de> <200702191101.09192.eike-kernel@sf-tec.de> <20070219022955.f734006a.akpm@linux-foundation.org>
-In-Reply-To: <20070219022955.f734006a.akpm@linux-foundation.org>
+	id S932207AbXBSMsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 07:48:47 -0500
+Message-ID: <45D99C81.7080401@rfo.atmel.com>
+Date: Mon, 19 Feb 2007 13:48:01 +0100
+From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1609073.x1QvuiNTH3";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org
+CC: Patrice Vilchez <patrice.vilchez@rfo.atmel.com>,
+       Andrew Victor <andrew@sanpeople.com>
+Subject: Re: [PATCH] input/spi: add ads7843 support to ads7846 touchscreen driver
+References: <20061222192536.A206A1F0CDB@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <200612291226.46984.david-b@pacbell.net>	
+	 <45D5EBC3.8090208@rfo.atmel.com> <200702161108.51014.david-b@pacbell.net>
+In-Reply-To: <200702161108.51014.david-b@pacbell.net>
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200702191340.56855.eike-kernel@sf-tec.de>
+X-ESAFE-STATUS: Mail clean
+X-ESAFE-DETAILS: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1609073.x1QvuiNTH3
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+David Brownell :
+> Did you find out what was causing the jerky behavior (draw a circle,
+> it looks like a square) before?
 
-Andrew Morton wrote:
-> On Mon, 19 Feb 2007 11:01:02 +0100 Rolf Eike Beer <eike-kernel@sf-tec.de>=
-=20
-wrote:
-> > Andrew Morton wrote:
-> > > On Fri, 16 Feb 2007 14:37:28 +0100
-> > >
-> > > Rolf Eike Beer <eike-kernel@sf-tec.de> wrote:
-> > > > I can't bring up my machine with root LVM anymore using x86_64. The
-> > > > same machine from same kernel tree boots fine as x86. The error
-> > > > message is quoted in subject. The tree is at
-> > > > 86a71dbd3e81e8870d0f0e56b87875f57e58222b (for those not using git:
-> > > > somewhere after 2.6.20).
-> > >
-> > > Does this fix it?  I don't see why it would, but this was recently
-> > > added.
-> >
-> > Yes. But now usb complains "unable to get a dynamic major for usb
-> > endpoints". Nevertheless the USB mouse works.
->
-> That's just nutty.
->
-> Can you add this, see what it says just prior to that "unable to get a
-> dynamic major for usb endpoints"?
+No, my previous rework based on your patches (2.6.19) had this
+jerky behavior. I was obliged to go back to old style timers.
+On this build, with the htimer framework, it seems ok.
+  
+>> -	/* maybe off internal vREF */
+>> -	if (use_internal) {
+> 
+> This part doesn't make sense.  Could you say what you're trying
+> to do?  The ads7846 requres an external vREF.  Is the issue that
+> maybe the REF_OFF command isn't just turning off the (non-existent)
+> internal voltage reference?  If so the comments need updating, and
+> maybe the name REF_OFF needs to change too...
 
-It's totally weird. It prints the "skipped" message for every (!) number, n=
-ot=20
-just for the blacklisted ones. And I've triple checked that I don't have=20
-missed the '{'.
+Well, on the ads7843, this command allow to put converter in low power
+mode and, more important, enable the PENIRQ (otherwise disabled).
 
-Compiler is SuSEs 4.1.0 from their 10.1. I remember some rumors that this=20
-thing is just broken?
+The REF_OFF command can be replaced by the PWRDOWN one (exactly the
+same command). This last name matches better the ads7843
+datasheet description (and seems ok considering the ads7846 one).
 
-Eike
+>> -		req->ref_off = REF_OFF;
+>> -		req->xfer[4].tx_buf = &req->ref_off;
+>> -		req->xfer[4].len = 1;
+>> -		spi_message_add_tail(&req->xfer[4], &req->msg);
+>> -
+>> -		req->xfer[5].rx_buf = &req->scratch;
+>> -		req->xfer[5].len = 2;
+>> -		CS_CHANGE(req->xfer[5]);
+>> -		spi_message_add_tail(&req->xfer[5], &req->msg);
+>> -	}
+>> +	req->ref_off = REF_OFF;
+>> +	req->xfer[4].tx_buf = &req->ref_off;
+>> +	req->xfer[4].len = 1;
+>> +	spi_message_add_tail(&req->xfer[4], &req->msg);
+>> +
+>> +	req->xfer[5].rx_buf = &req->scratch;
+>> +	req->xfer[5].len = 2;
+>> +	CS_CHANGE(req->xfer[5]);
+>> +	spi_message_add_tail(&req->xfer[5], &req->msg);
+>>  
+>>  	ts->irq_disabled = 1;
+>>  	disable_irq(spi->irq);
 
---nextPart1609073.x1QvuiNTH3
-Content-Type: application/pgp-signature
+Regards,
+-- 
+Nicolas Ferre
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
 
-iD8DBQBF2ZrYXKSJPmm5/E4RAoMGAJ94m5Ka7/TsNTeQRK7EFgQcRQsXsgCgkMxE
-UgZvTojaplFpDnbJIAqHj5o=
-=iMBq
------END PGP SIGNATURE-----
-
---nextPart1609073.x1QvuiNTH3--
