@@ -1,64 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965156AbXBSW6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965525AbXBSXNL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965156AbXBSW6h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 17:58:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965162AbXBSW6h
+	id S965525AbXBSXNL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 18:13:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965526AbXBSXNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 17:58:37 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:42835 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965156AbXBSW6g (ORCPT
+	Mon, 19 Feb 2007 18:13:10 -0500
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:56683 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965525AbXBSXNJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 17:58:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TuEFn+H2Uf8SI0AxF7vJurfN6ix9MrG/pwdVph5mzjSyN9xrvwjFRQsBJMVycQpOjISU9HAnHuFeCOWOVpwZAUK40cbj1GtiGpzGEIku1iiGryZhQOp+fXwOfCd2yX6c+UxuwwQt6UXj3mdQf/6iE5zC+cxrG2JQoHhALsWOtTA=
-Message-ID: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>
-Date: Tue, 20 Feb 2007 08:58:34 +1000
-From: "Trent Waddington" <trent.waddington@gmail.com>
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Subject: Re: GPL vs non-GPL device drivers
-Cc: davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>
-In-Reply-To: <f2b55d220702191448g6077c6aav43ff99edbaf77bdb@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3d57814d0702171726l403c7812n19f2a226cba02e5d@mail.gmail.com>
-	 <MDEHLPKNGKAHNMBLJOLKCEDPBLAC.davids@webmaster.com>
-	 <3d57814d0702191255l2ef21f72rf7d999a62c4ec19a@mail.gmail.com>
-	 <f2b55d220702191353m19b563a6t4c1dcf6fd86a6dc9@mail.gmail.com>
-	 <3d57814d0702191426m2fc3c1c6had125a2db165befe@mail.gmail.com>
-	 <f2b55d220702191448g6077c6aav43ff99edbaf77bdb@mail.gmail.com>
+	Mon, 19 Feb 2007 18:13:09 -0500
+To: akpm@linux-foundation.org
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-reply-to: <E1HJC3P-0006tz-00@dorka.pomaz.szeredi.hu> (message from Miklos
+	Szeredi on Mon, 19 Feb 2007 18:11:55 +0100)
+Subject: Re: dirty balancing deadlock
+References: <E1HIqlm-0004iZ-00@dorka.pomaz.szeredi.hu>
+	<20070218125307.4103c04a.akpm@linux-foundation.org>
+	<E1HIurG-0005Bw-00@dorka.pomaz.szeredi.hu>
+	<20070218145929.547c21c7.akpm@linux-foundation.org>
+	<E1HIvMB-0005Fd-00@dorka.pomaz.szeredi.hu> <20070218155916.0d3c73a9.akpm@linux-foundation.org> <E1HJC3P-0006tz-00@dorka.pomaz.szeredi.hu>
+Message-Id: <E1HJHgV-0007UQ-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 20 Feb 2007 00:12:39 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/20/07, Michael K. Edwards <medwards.linux@gmail.com> wrote:
-> There is no legal meaning to "combining" two works of authorship under
-> the Berne Convention or any national implementation thereof.  If you
-> "compile" or "collect" them, you're in one area of law, and if you
-> create a work that "adapts" or "recasts" (or more generally "derives
-> from") them, you're in another area of law.
+> Solves the FUSE deadlock, but not the throttle_vm_writeout() one.
+> I'll try to tackle that one as well.
+> 
+> If the per-bdi dirty counter goes below 16, balance_dirty_pages()
+> returns.
+> 
+> Does the constant need to tunable?  If it's too large, then the global
+> threshold is more easily exceeded.  If it's too small, then in a tight
+> situation progress will be slower.
 
-As I said, you're having a purely semantic argument.
+Similar in spirit, this should solve the deadlock on throttle_vm_writeout().
+Totally untested.
 
-Regardless of what you *call* it, shoving two works together does not
-excuse you from the conditions of the license on one of those works,
-*when you make a copy*.  And that's the GPL in a nutshell, if you want
-to copy the work, you need a license, if you want a license, you must
-abide the conditions, and one of the conditions is that you may not
-combine it with a work that is under an incompatible license unless it
-is mere aggregation.
+Does this approach look workable?
 
-Of course, now you're going to argue that there's no such thing as an
-"incompatible license" or "mere aggregation" and that these are just
-words that were made up for the GPL, so they can be ignored.. another
-pointless semantic argument because it doesn't change the very simple
-fact that you don't have any rights to copy the work unless you have a
-license and you don't have a license if you fail to abide the
-conditions of the license.
+Thanks,
+Miklos
 
-Trent
+
+Index: linux/include/linux/swap.h
+===================================================================
+--- linux.orig/include/linux/swap.h	2007-02-19 23:39:36.000000000 +0100
++++ linux/include/linux/swap.h	2007-02-20 00:03:38.000000000 +0100
+@@ -277,10 +277,14 @@ static inline void disable_swap_token(vo
+ 	put_swap_token(swap_token_mm);
+ }
+ 
++#define nr_swap_writeback \
++	atomic_long_read(&swapper_space.backing_dev_info->nr_writeback)
++
+ #else /* CONFIG_SWAP */
+ 
+ #define total_swap_pages			0
+ #define total_swapcache_pages			0UL
++#define nr_swap_writeback			0UL
+ 
+ #define si_swapinfo(val) \
+ 	do { (val)->freeswap = (val)->totalswap = 0; } while (0)
+Index: linux/mm/page-writeback.c
+===================================================================
+--- linux.orig/mm/page-writeback.c	2007-02-19 23:43:03.000000000 +0100
++++ linux/mm/page-writeback.c	2007-02-20 00:03:49.000000000 +0100
+@@ -33,6 +33,7 @@
+ #include <linux/syscalls.h>
+ #include <linux/buffer_head.h>
+ #include <linux/pagevec.h>
++#include <linux/swap.h>
+ 
+ /*
+  * The maximum number of pages to writeout in a single bdflush/kupdate
+@@ -332,6 +333,9 @@ void throttle_vm_writeout(void)
+                 if (global_page_state(NR_UNSTABLE_NFS) +
+ 			global_page_state(NR_WRITEBACK) <= dirty_thresh)
+                         	break;
++
++		if (nr_swap_writeback < 16)
++			break;
+                 congestion_wait(WRITE, HZ/10);
+         }
+ }
+Index: linux/mm/page_io.c
+===================================================================
+--- linux.orig/mm/page_io.c	2007-02-19 23:24:23.000000000 +0100
++++ linux/mm/page_io.c	2007-02-19 23:42:21.000000000 +0100
+@@ -70,6 +70,7 @@ static int end_swap_bio_write(struct bio
+ 		ClearPageReclaim(page);
+ 	}
+ 	end_page_writeback(page);
++	atomic_long_dec(&swapper_space.backing_dev_info->nr_writeback);
+ 	bio_put(bio);
+ 	return 0;
+ }
+@@ -121,6 +122,7 @@ int swap_writepage(struct page *page, st
+ 	if (wbc->sync_mode == WB_SYNC_ALL)
+ 		rw |= (1 << BIO_RW_SYNC);
+ 	count_vm_event(PSWPOUT);
++	atomic_long_inc(&swapper_space.backing_dev_info->nr_writeback);
+ 	set_page_writeback(page);
+ 	unlock_page(page);
+ 	submit_bio(rw, bio);
