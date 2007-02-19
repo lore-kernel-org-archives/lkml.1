@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932316AbXBSPBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932328AbXBSPB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932316AbXBSPBw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 10:01:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932328AbXBSPBw
+	id S932328AbXBSPB4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 10:01:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932330AbXBSPB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 10:01:52 -0500
-Received: from il.qumranet.com ([82.166.9.18]:33766 "EHLO il.qumranet.com"
+	Mon, 19 Feb 2007 10:01:56 -0500
+Received: from mail.screens.ru ([213.234.233.54]:34338 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932316AbXBSPBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 10:01:52 -0500
-Message-ID: <45D9BBBC.3050302@qumranet.com>
-Date: Mon, 19 Feb 2007 17:01:16 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: kvm-devel <kvm-devel@lists.sourceforge.net>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: kvm development moving to git
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S932328AbXBSPBz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 10:01:55 -0500
+Date: Mon, 19 Feb 2007 18:04:45 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] net/bridge/br_if.c: don't use _WORK_NAR
+Message-ID: <20070219150445.GC75@tv-sign.ru>
+References: <20070218214359.GA4226@tv-sign.ru> <20070219110021.GA2190@ff.dom.local> <20070219120353.GC91@tv-sign.ru> <20070219132703.GC2190@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070219132703.GC2190@ff.dom.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kvm kernel code is now developed using git.  This was done for two reasons:
-- with the paravirtualization work, we have code in the kernel beyond 
-drivers/kvm/.  Subversion is not quite up to hosting an entire kernel 
-tree efficiently.
-- people have expressed interest in maintaining long-term branches of 
-kvm.  This is something that git is quite good at, while with subversion 
-this requires an account on our systems.
+On 02/19, Jarek Poplawski wrote:
+>
+> On Mon, Feb 19, 2007 at 03:03:53PM +0300, Oleg Nesterov wrote:
+> > On 02/19, Jarek Poplawski wrote:
+> ...
+> > kfree() doesn't check WORK_STRUCT_PENDING, it makes no
+> > difference if it is set or not when work->func() runs.
+> 
+> It looks like it's to be checked before kfree.
 
-You can pull from my repository by issuing the command
+Here,
+	br_add_if:
 
-  git pull git://kvm.qumranet.com/home/avi/kvm/linux-2.6
+		schedule_delayed_work(&p->carrier_check, BR_PORT_DEBOUNCE);
 
-Please do not clone from this URL.  Instead, clone from git.kernel.org 
-so that you clog their pipes instead of mine.  Then issue the pull 
-command as described above.
+schedule_delayed_work() fails if this bit is set. So the only difference with
+this patch is:
 
-The module source files have been removed from the subversion tree.  To 
-compile an external module, first copy the files from a Linux tree:
+	before:
+		schedule_delayed_work() fails unless port_carrier_check() passed
+		work_release() (before rtnl_lock())
 
-  make LINUX=/path/to/linux/tree/that/has/pulled/from/the/kvm/repo sync
-  make
+	after:
+		schedule_delayed_work() fails unless run_workqueue() cleared this
+		bit (before calling port_carrier_check())
 
--- 
-error compiling committee.c: too many arguments to function
+> > We are going to kill _NAR stuff.
+> 
+> If you're sure nobody uses this in any way then it
+> seems the right decision.
+
+Yes, this series converts all users.
+
+Oleg.
 
