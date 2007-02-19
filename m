@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932744AbXBSW0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965101AbXBSW2F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932744AbXBSW0c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 17:26:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932759AbXBSW0c
+	id S965101AbXBSW2F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 17:28:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965104AbXBSW2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 17:26:32 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:12128 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932756AbXBSW0b (ORCPT
+	Mon, 19 Feb 2007 17:28:05 -0500
+Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:47044 "EHLO
+	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965101AbXBSW2E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 17:26:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=j+U8ISDcDVy8g3hagD98iFTpGDg7xmS+rj3jE1uA3RT2VFaVNpBR6AfJmAUtPy7qJgiBpKK47/rOEtdIuj2B0kNKQlGcneTYv25arbVePG9losy4fexkxVRIQzcxv6KEchPoSKNF7co1wD6C3qa4F0eBmxhqA6KFpTrHPFQRUyY=
-Message-ID: <3d57814d0702191426m2fc3c1c6had125a2db165befe@mail.gmail.com>
-Date: Tue, 20 Feb 2007 08:26:28 +1000
-From: "Trent Waddington" <trent.waddington@gmail.com>
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Subject: Re: GPL vs non-GPL device drivers
-Cc: davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>
-In-Reply-To: <f2b55d220702191353m19b563a6t4c1dcf6fd86a6dc9@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 19 Feb 2007 17:28:04 -0500
+In-Reply-To: <87ejolkcyt.fsf@duaron.myhome.or.jp>
+References: <6EF4DB85-C7D4-445B-B9B5-0D22D5D893CD@kernel.crashing.org> <87vehzqwf6.fsf@duaron.myhome.or.jp> <04C493C2-1D8D-41B7-955A-F5C5B08023BB@kernel.crashing.org> <87ejolkcyt.fsf@duaron.myhome.or.jp>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3D8A0565-36F9-4216-839E-4B4815E9AC78@kernel.crashing.org>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3d57814d0702171726l403c7812n19f2a226cba02e5d@mail.gmail.com>
-	 <MDEHLPKNGKAHNMBLJOLKCEDPBLAC.davids@webmaster.com>
-	 <3d57814d0702191255l2ef21f72rf7d999a62c4ec19a@mail.gmail.com>
-	 <f2b55d220702191353m19b563a6t4c1dcf6fd86a6dc9@mail.gmail.com>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: 2.6.20 kernel hang with USB drive and vfat doing ftruncate
+Date: Mon, 19 Feb 2007 16:27:03 -0600
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+X-Mailer: Apple Mail (2.752.2)
+X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - kernel.crashing.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/20/07, Michael K. Edwards <medwards.linux@gmail.com> wrote:
-> Bah.  Show us a citation to treaty, statute, or case law, anywhere in
-> the world, Mr. Consensus-Reality.
 
-It's a given.. are you seriously contending that if you combine two
-copyright works you are not obliged to conform with the conditions of
-the license on one of them when making a copy of the combined work?
+On Feb 19, 2007, at 4:19 PM, OGAWA Hirofumi wrote:
 
-If you are just arguing about the term, what term do you find more
-appropriate?  Compilation?
+> Kumar Gala <galak@kernel.crashing.org> writes:
+>
+>>>> I usually run the following twice to get the hang state:
+>>>>
+>>>> time ./trunc_test bar 100000000 &
+>>>> time ./trunc_test baz 100000000 &
+>>>>
+>>>> I was wondering if anyone had any suggestions on what to poke at  
+>>>> next
+>>>> to try and figure out what is going on.
+>>>
+>>> Can you check /sys/block/xxx/stat or something to make sure there is
+>>> no outstanding IO request?
+>>>
+>>> It seems to be no response from the lower layer...
+>>
+>> Once the system locks up I dont have any ability to do anything.
+>
+> Ah, doesn't sysrq also work? If sysrq work, it can use to see IO
+> request state with a patch.
 
-You guys seem to love pointless semantic arguments.  Are you always in
-violent agreement?
+Yeah, got sysrq working today.  If you can point me at the patch I  
+happy to apply it and get data.
 
-Trent
+- k
+
