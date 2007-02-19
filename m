@@ -1,94 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932402AbXBSQmK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932408AbXBSQmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932402AbXBSQmK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 11:42:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932406AbXBSQmK
+	id S932408AbXBSQmc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 11:42:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932410AbXBSQmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 11:42:10 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3478 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932402AbXBSQmJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 11:42:09 -0500
-Date: Mon, 19 Feb 2007 16:42:00 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Jose Goncalves <jose.goncalves@inov.pt>
-Cc: Frederik Deweerdt <deweerdt@free.fr>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Serial related oops
-Message-ID: <20070219164200.GF27370@flint.arm.linux.org.uk>
-Mail-Followup-To: Jose Goncalves <jose.goncalves@inov.pt>,
-	Frederik Deweerdt <deweerdt@free.fr>, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
-References: <20070220132909.GD566@slug> <20070219134539.GA27370@flint.arm.linux.org.uk> <20070220142442.GF566@slug> <20070219143520.GB27370@flint.arm.linux.org.uk> <20070220144814.GJ566@slug> <20070219150508.GD27370@flint.arm.linux.org.uk> <45D9D073.7020701@inov.pt>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45D9D073.7020701@inov.pt>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 19 Feb 2007 11:42:32 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46129 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932408AbXBSQma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 11:42:30 -0500
+Message-ID: <45D9D368.5010900@redhat.com>
+Date: Mon, 19 Feb 2007 11:42:16 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>, nfs@lists.sourceforge.net
+Subject: sunrpc oops in cache_clean(), kernel 2.6.19.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 19, 2007 at 04:29:39PM +0000, Jose Goncalves wrote:
-> Russell King wrote:
-> > On Tue, Feb 20, 2007 at 02:48:14PM +0000, Frederik Deweerdt wrote:
-> >   
-> >> (trimmed tie-fei.zang from the CC, added by mistake)
-> >> On Mon, Feb 19, 2007 at 02:35:20PM +0000, Russell King wrote:
-> >>     
-> >>>> Neither did I, but introducing printk's through the function, we narrowed
-> >>>> the problem to this part of the code. And removing it makes the problem
-> >>>> go away. We inserted 37 printk's in the function body, and Jose bisected
-> >>>> those until the problem went away.
-> >>>>         
-> >>> Well, there's still little clue about why this is causing a NULL pointer
-> >>> dereference.  The only thing I can think is that somehow performing
-> >>> this test is causing a power glitch to your CPU, causing its registers
-> >>> to get corrupted, and which results in it doing a NULL pointer deref.
-> >>>       
-> >> That may be the case, indeed.
-> >>     
-> 
-> But if the problem was a power glitch I should get Oops with or without
-> printk() inserted, shouldn't I?
+This is happening at line 443 in cache_clean() -- "ch" (in ebx)
+points into userspace data addresses:
 
-That depends if the printk() changes the timing such that it doesn't occur.
-Don't know, I'm only grasping at straws due to the lack of any concrete
-information.
 
-> >> If you see other tests to be performed...
-> >
-> > Maybe adding some delays in that bit of code?  I'm sure you've already
-> > thought of that though.  Since no one has a proper understanding of the
-> > problem, the only suggestions possible are mere shots in the dark.
-> 
-> I'm no kernel expert, but it's not possible to trace what is the
-> instruction that is causing the NULL pointer dereference?
+420 /* find a cleanable entry in the bucket and clean it, or set to next bucket */
+421
+422 if (current_detail && current_index < current_detail->hash_size) {
+423 	struct cache_head *ch, **cp;
+424 	struct cache_detail *d;
+425
+426 	write_lock(&current_detail->hash_lock);
+427
+428 	/* Ok, now to clean this strand */
+429
+430 	cp = & current_detail->hash_table[current_index];
+431 	ch = *cp;
+432 	for (; ch; cp= & ch->next, ch= *cp) {
+433 		if (current_detail->nextcheck > ch->expiry_time)
+434 			current_detail->nextcheck = ch->expiry_time+1;
+435 		if (ch->expiry_time >= get_seconds()
+436 		    && ch->last_refresh >= current_detail->flush_time
+437 			)
+438 			continue;
+439 		if (test_and_clear_bit(CACHE_PENDING, &ch->flags))
+440 			queue_loose(current_detail, ch);
+441
+442 		if (atomic_read(&ch->ref.refcount) == 1)
+443 			break;
+444 	}
 
-The reported dump shows that the kernel tried to access virtual address 0,
-and the instruction pointer seems to be the cause of that - it has a value
-of zero in that dump.
 
-The call trace indicates that the last function was called from around
-"uart_startup+0x63/0xf4" which is probably the indirect function call
-to serial8250_startup().  That's unconfirmed - the only way to get it
-confirmed is if you could dump the entire uart_startup() function.
+BUG: unable to handle kernel paging request at virtual address 51c503f6
+ printing eip:
+f0b973d9
+*pde = 00000000
+Oops: 0000 [#1]
+SMP
+last sysfs file: /devices/pci0000:00/0000:00:01.0/irq
+Modules linked in: nfsd exportfs lockd nfs_acl sunrpc ipv6 ipt_REJECT xt_state
+ip_conntrack nfnetlink xt_tcpudp iptable_filter ip_tables x_tables video sbs
+i2c_ec button battery asus_acpi ac lp sg scb2_flash floppy mtdcore chipreg
+map_funcs 3c59x i2c_piix4 mii pcspkr i2c_core tg3 parport_pc parport serio_raw
+ide_cd cdrom dm_snapshot dm_zero dm_mirror dm_mod mptspi mptscsih mptbase
+scsi_transport_spi sd_mod scsi_mod raid456 xor ext3 jbd ehci_hcd ohci_hcd uhci_hcd
+   1
+   0060:[<f0b973d9>]    Not tainted VLI
+EFLAGS: 00010202   (2.6.19-1.2911.fc6 #1)
+EIP is at cache_clean+0xb5/0x194 [sunrpc]
+eax: ffffffff   ebx: 51c503f2   ecx: f0bae840   edx: f0bae840
+cce9dc80   edi: efd811c0   ebp: 00000282   esp: c17d9f58
+ds: 007b   es: 007b   ss: 0068
+Process events/1 (pid: 9, ti=c17d9000 task=eff45630 task.ti=c17d9000)
+Stack: f0baea00 f0baea04 f0b97cd4 c043692f 00000282 efd811c0 efd811e0 f0b97ccf
+       00000000 efd811e0 efd811c0 efd811d8 00000000 c04372ec 00000001 00000000
+       00000001 00010000 00000000 00000000 eff45630 c04215f1 00100100 00200200
+Call Trace:
+ [<f0b97cd4>] do_cache_clean+0x5/0x2e [sunrpc]
+ [<c043692f>] run_workqueue+0x97/0xdd
+ [<c04372ec>] worker_thread+0xd9/0x10d
+ [<c0439878>] kthread+0xc0/0xec
+ [<c0404c03>] kernel_thread_helper+0x7/0x10
+ =======================
+Code: 8d f6 00 00 00 8d 41 0c e8 37 e5 a8 cf a1 64 08 bb f0 8d 34 85 00 00 00 00
+a1 60 08 bb f0 03 70 08 8b 1e eb 47 8b 15 60 08 bb f0 <8b> 43 04 39 42 50 7e 04
+40 89 42 50 8b 43 04 3b 05 00 60 85 c0
+[<f0b973d9>] cache_clean+0xb5/0x194 [sunrpc] SS:ESP 0068:c17d9f58
 
-$ grep uart_startup System.map
-(address) T uart_startup
-$ objdump -r -d vmlinux --start-addr=0x<address> --stop-addr=0x<address+256>
-
-The grep should get you the address of uart_startup.  Replace <address>
-with that value and <address+256> with the value plus 256 (0x100) and
-mail the result.
-
-> I have no clue on what is causing this problem but, what I know, is
-> that I can always reproduce it, and it always happens in the same code
-> section of serial8250_startup().
-
-We're both at the same level of clue about the problem then.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
