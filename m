@@ -1,99 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932336AbXBSPDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932290AbXBSPFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932336AbXBSPDS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 10:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932339AbXBSPDS
+	id S932290AbXBSPFT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 10:05:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932327AbXBSPFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 10:03:18 -0500
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:54329 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932336AbXBSPDR (ORCPT
+	Mon, 19 Feb 2007 10:05:19 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2286 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932290AbXBSPFS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 10:03:17 -0500
-Date: Mon, 19 Feb 2007 10:03:16 -0500
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Udo van den Heuvel <udovdh@xs4all.nl>, linux-kernel@vger.kernel.org
-Subject: Re: PCI riser cards and PCI irq routing, etc
-Message-ID: <20070219150316.GP7582@csclub.uwaterloo.ca>
-References: <45D85DA1.7090502@xs4all.nl> <20070218155445.GV7584@csclub.uwaterloo.ca> <m3ejon8afh.fsf@maximus.localdomain>
+	Mon, 19 Feb 2007 10:05:18 -0500
+Date: Mon, 19 Feb 2007 15:05:08 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Frederik Deweerdt <deweerdt@free.fr>
+Cc: jose.goncalves@inov.pt, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Serial related oops
+Message-ID: <20070219150508.GD27370@flint.arm.linux.org.uk>
+Mail-Followup-To: Frederik Deweerdt <deweerdt@free.fr>,
+	jose.goncalves@inov.pt, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org
+References: <20070220132909.GD566@slug> <20070219134539.GA27370@flint.arm.linux.org.uk> <20070220142442.GF566@slug> <20070219143520.GB27370@flint.arm.linux.org.uk> <20070220144814.GJ566@slug>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m3ejon8afh.fsf@maximus.localdomain>
-User-Agent: Mutt/1.5.9i
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+In-Reply-To: <20070220144814.GJ566@slug>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 18, 2007 at 09:42:26PM +0100, Krzysztof Halasa wrote:
-> lsorense@csclub.uwaterloo.ca (Lennart Sorensen) writes:
-> 
-> > My understanding (which is better of verified against the specs) is:
-> >
-> > PCI interrupts (PCI INTA to INTD) are rotated for every slot by one. So
-> > slot 0, 4, 8, etc see INTA->realINTA, INTB->realINTB. INTC->realINTC,
-> > INTD->realINTD
-> > slot 1, 5, 9, etc see INTA->realINTB, INTB->realINTC. INTC->realINTD,
-> > INTD->realINTA
-> > slot 2, 6, 10, etc see INTA->realINTC, INTB->realINTD. INTC->realINTA,
-> > INTD->realINTB
-> > slot 3, 7, 11, etc see INTA->realINTD, INTB->realINTA. INTC->realINTB,
-> > INTD->realINTC
-> 
-> This is common and suggested practice but the PCI specs don't require
-> it. There is no rule - you can, for example, have all INT lines
-> connected to a single CPU IRQ input.
+On Tue, Feb 20, 2007 at 02:48:14PM +0000, Frederik Deweerdt wrote:
+> (trimmed tie-fei.zang from the CC, added by mistake)
+> On Mon, Feb 19, 2007 at 02:35:20PM +0000, Russell King wrote:
+> > > Neither did I, but introducing printk's through the function, we narrowed
+> > > the problem to this part of the code. And removing it makes the problem
+> > > go away. We inserted 37 printk's in the function body, and Jose bisected
+> > > those until the problem went away.
+> > 
+> > Well, there's still little clue about why this is causing a NULL pointer
+> > dereference.  The only thing I can think is that somehow performing
+> > this test is causing a power glitch to your CPU, causing its registers
+> > to get corrupted, and which results in it doing a NULL pointer deref.
+> That may be the case, indeed.
+> > 
+> > Are you saying that the NULL pointer occurred while executing this code?
+> > If not, where does the NULL pointer occur?
+> The thing is, the NULL pointer deref dissapeared as soon as we
+> instrumented (printk'ed) the code. So it's seems to be triggered by
+> check+timing+hardware.
 
-The PCI spec doesn't require 4 seperate interrupts.  They certainly can
-all be the same.  I do believe it does require the rotation method on
-anything using PCI bridges and such if you want your card to work in PCI
-compliant systems since that is how they will assume the lines are
-routed and hence will assume that is how to set the interrupts.  If you
-make a mainboard on the other hand you can do whatever you want since
-you get to design the firmware that assigns the interrupts.
+So to summarise, we have some code somewhere which is causing a NULL
+pointer deref in uart_startup().  If we remove some code, the NULL
+pointer deref stops happening.
 
-> Anyway, something has to know how the IRQs are routed. BIOS, other
-> firmware, Linux.
-> 
-> Actually it has to be wired consistently with the BIOS (which is
-> probably consistent with chipset manufacturer's instructions).
+And that's about the sum total of the information we know.  We don't
+know precisely where the NULL pointer deref occurs, and we don't know
+what's causing it.
 
-Depends if the riser card is specific to that system, or if it is
-supposed to be a generic PCI card.
+It doesn't sound like there's much understanding of the problem at hand. ;(
 
-> Usually they are just bus splitters, they route IRQs and IDSELs
-> (and maybe JTAG) as required by the BIOS, all others pins are
-> connected 1:1.
-> 
-> I.e., they are completely transparent, generally comply to PCI specs
-> and are dedicated to a specific motherboard(s).
+> > Andrew's said no (in that the thread you refer to) and suggested an
+> > alternative, I've said no, how many more 'no's do you need to turn
+> > you away from the wrong approach?
+> One is usually sufficient once I've understood :). I missed the module
+> option approach. Is it ok with you? If yes, I'll put up a patch to do
+> this.
 
-Well dedicated hardware would be different.  Of course if it is
-dedicated the BIOS better do the right thing when configuring it.
+I guess so, but how does the user know whether they need this enabled or
+disabled?
 
-> Actually I think (would have to check the specs for sure) every
-> subdevice (function) may use just one interrupt line.
+> The problem appears to be reproducible on Jose's hardware within 2-3 days.
+> If you see other tests to be performed...
 
-It may.  But using just INTB and INTD on a card is not allowed by the
-spec as far as I understand it.
+Maybe adding some delays in that bit of code?  I'm sure you've already
+thought of that though.  Since no one has a proper understanding of the
+problem, the only suggestions possible are mere shots in the dark.
 
-> This rotating INTx scheme is common because it's cheap. There are
-> systems which support more than 4 shared INTs per bus, for example
-> you can have different sets of 4 INTx lines for every PCI slot, even
-> if all slots are on the same PCI bus.
-
-Sure.  But if you have a PCI to PCI bridge on a card, then you only get
-4 interrupt lines into the card, and you have to distribute them by the
-spec to the chips behind the bridge if you want the system to know how
-the interrupts should be used (although I guess a driver could do its
-own thing if it really wanted to).
-
-> Correct. This scheme assumes at most 4 single-function devices
-> on the bus, otherwise INTs are shared.
-
-It does help make sure that if you have 8 devices, each IRQ is used by
-only two devices, so the interrupt handler doesn't have too many devices
-to check when an interrupt occours.
-
---
-Len Sorensen
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
