@@ -1,51 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932128AbXBSLrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932143AbXBSLs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932128AbXBSLrk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 06:47:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932145AbXBSLrk
+	id S932143AbXBSLs0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 06:48:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932155AbXBSLs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 06:47:40 -0500
-Received: from mail.screens.ru ([213.234.233.54]:44062 "EHLO mail.screens.ru"
+	Mon, 19 Feb 2007 06:48:26 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:51869 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932128AbXBSLrj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 06:47:39 -0500
-Date: Mon, 19 Feb 2007 14:47:36 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] drivers/media/video/cpia_pp.c: don't use _WORK_NAR
-Message-ID: <20070219114736.GA91@tv-sign.ru>
-References: <20070218214415.GA4232@tv-sign.ru> <8637.1171885038@redhat.com>
+	id S932143AbXBSLsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 06:48:25 -0500
+Date: Mon, 19 Feb 2007 03:23:52 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: balbir@in.ibm.com
+Cc: vatsa@in.ibm.com, ckrm-tech@lists.sourceforge.net, xemul@sw.ru,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, menage@google.com,
+       svaidy@linux.vnet.ibm.com, devel@openvz.org
+Subject: Re: [ckrm-tech] [RFC][PATCH][2/4] Add RSS accounting and control
+Message-Id: <20070219032352.2856af36.akpm@linux-foundation.org>
+In-Reply-To: <45D9856D.1070902@in.ibm.com>
+References: <20070219065019.3626.33947.sendpatchset@balbir-laptop>
+	<20070219065034.3626.2658.sendpatchset@balbir-laptop>
+	<20070219005828.3b774d8f.akpm@linux-foundation.org>
+	<45D97DF8.5080000@in.ibm.com>
+	<20070219030141.42c65bc0.akpm@linux-foundation.org>
+	<45D9856D.1070902@in.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8637.1171885038@redhat.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/19, David Howells wrote:
->
-> Oleg Nesterov <oleg@tv-sign.ru> wrote:
+On Mon, 19 Feb 2007 16:39:33 +0530 Balbir Singh <balbir@in.ibm.com> wrote:
+
+> Andrew Morton wrote:
+> > On Mon, 19 Feb 2007 16:07:44 +0530 Balbir Singh <balbir@in.ibm.com> wrote:
+> > 
+> >>>> +void memctlr_mm_free(struct mm_struct *mm)
+> >>>> +{
+> >>>> +	kfree(mm->counter);
+> >>>> +}
+> >>>> +
+> >>>> +static inline void memctlr_mm_assign_container_direct(struct mm_struct *mm,
+> >>>> +							struct container *cont)
+> >>>> +{
+> >>>> +	write_lock(&mm->container_lock);
+> >>>> +	mm->container = cont;
+> >>>> +	write_unlock(&mm->container_lock);
+> >>>> +}
+> >>> More weird locking here.
+> >>>
+> >> The container field of the mm_struct is protected by a read write spin lock.
+> > 
+> > That doesn't mean anything to me.
+> > 
+> > What would go wrong if the above locking was simply removed?  And how does
+> > the locking prevent that fault?
+> > 
 > 
-> > pp_cam_entry->cb_task need not to be _NOAUTOREL ... because in fact it is
-> > never used ???
+> Some pages could charged to the wrong container. Apart from that I do not
+> see anything going bad (I'll double check that).
+
+Argh.  Please, think about this.
+
+That locking *doesn't do anything*.  Except for that one situation I
+described: some other holder of the lock reads mm->container twice inside
+the lock and requires that the value be the same both times (and that sort
+of code should be converted to take a local copy, so this locking here can
+be removed).
+
+> >>>> +
+> >>>> +	read_lock(&mm->container_lock);
+> >>>> +	cont = mm->container;
+> >>>> +	read_unlock(&mm->container_lock);
+> >>>> +
+> >>>> +	if (!cont)
+> >>>> +		goto done;
+> >>> And here.  I mean, if there was a reason for taking the lock around that
+> >>> read, then testing `cont' outside the lock just invalidated that reason.
+> >>>
+> >> We took a consistent snapshot of cont. It cannot change outside the lock,
+> >> we check the value outside. I am sure I missed something.
+> > 
+> > If it cannot change outside the lock then we don't need to take the lock!
+> > 
 > 
-> That's a remarkably good point.  Did something get deleted since I made my
-> modifications?
+> We took a snapshot that we thought was consistent.
 
-At first I thought the same. But no, it looks unused as well in 2.6.18.
+Consistent with what?  That's a single-word read inside that lock.
 
->                  Perhaps the workqueue stuff in that file should just be
-> deleted entirely.
+> We check for the value
+> outside. I guess there is no harm, the worst thing that could happen
+> is wrong accounting during mm->container changes (when a task changes
+> container).
 
-I think yes.
+If container->lock is held when a task is removed from the
+container then yes, `cont' here can refer to a container to which the task
+no longer belongs.
 
-> Acked-By: David Howells <dhowells@redhat.com>
-
-Thanks.
-
-Oleg.
+More worrisome is the potential for use-after-free.  What prevents the
+pointer at mm->container from referring to freed memory after we're dropped
+the lock?
 
