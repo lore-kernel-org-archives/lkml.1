@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750916AbXBSKuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750919AbXBSKuc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750916AbXBSKuX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 05:50:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbXBSKuX
+	id S1750919AbXBSKuc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 05:50:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750922AbXBSKuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 05:50:23 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:50809 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750916AbXBSKuW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 05:50:22 -0500
-Date: Mon, 19 Feb 2007 10:50:09 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Artem Bityutskiy <dedekind@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Frank Haverkamp <haver@vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 00/44 take 2] [UBI] Unsorted Block Images
-Message-ID: <20070219105009.GA15792@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Artem Bityutskiy <dedekind@infradead.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Frank Haverkamp <haver@vnet.ibm.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	David Woodhouse <dwmw2@infradead.org>,
-	Josh Boyer <jwboyer@linux.vnet.ibm.com>
-References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
-Mime-Version: 1.0
+	Mon, 19 Feb 2007 05:50:32 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58905 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750919AbXBSKua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 05:50:30 -0500
+Date: Mon, 19 Feb 2007 11:50:08 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix refrigerator() vs thaw_process() race
+Message-ID: <20070219105008.GA19184@elf.ucw.cz>
+References: <20070218221737.GA4880@tv-sign.ru>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20070218221737.GA4880@tv-sign.ru>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 17, 2007 at 06:54:24PM +0200, Artem Bityutskiy wrote:
-> The structure of the UBI code is very simple. Whole UBI consists of units.
-> Each unit has one .c file which implements it and one .h file which defines
-> the interface of this unit. So I've split the UBI code so that there is
-> a distinct patch for each unit header and implementations. Plus there are
-> several patches like JFFS2 support, user-space-visible headers, etc.
-> To realize what is the unit responsible for, glance at its header - there
-> is a short description.
+Hi!
 
-I think this is the wrong approach.  For one thing the unit terms is
-rather foregin in Linux, and second this one header file "unit" is
-definitly too much.  Normally you'd have as little as possible and at
-most four:
+> refrigerator() can miss a wakeup, "wait event" loop needs a proper memory
+> ordering.
+> 
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> 
+> --- WQ/kernel/power/process.c~WAKE	2007-02-18 22:56:49.000000000 +0300
+> +++ WQ/kernel/power/process.c	2007-02-19 01:04:26.000000000 +0300
+> @@ -46,8 +46,10 @@ void refrigerator(void)
+>  	recalc_sigpending(); /* We sent fake signal, clean it up */
+>  	spin_unlock_irq(&current->sighand->siglock);
+>  
+> -		current->state = TASK_UNINTERRUPTIBLE;
+> +		set_current_state(TASK_UNINTERRUPTIBLE);
 
- (1) internal definitions of the driver
- (2) external kernel interface of the driver if nessecary
- (3) user interface of the driver if nessecary
- (4) ondisk structure if nessecary
 
-Also please make sure you submit patches at this driver level.  You really
-want one git commit per driver that is totally self-contained.  If nessecary
-you'd split this into multiple patches if a single one would be bigger then
-the message size limit.
+Looks okay to me... but this one liner would be exactly as effective,
+right?
+
+								Pavel
+
+>  		schedule();
+>  	}
+>  	pr_debug("%s left refrigerator\n", current->comm);
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
