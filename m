@@ -1,121 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932183AbXBSL4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932185AbXBSL4z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932183AbXBSL4m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 06:56:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932185AbXBSL4m
+	id S932185AbXBSL4z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 06:56:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932189AbXBSL4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 06:56:42 -0500
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:40154 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932183AbXBSL4l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 06:56:41 -0500
-Message-ID: <45D9906F.2090605@in.ibm.com>
-Date: Mon, 19 Feb 2007 17:26:31 +0530
-From: Balbir Singh <balbir@in.ibm.com>
-Reply-To: balbir@in.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
+	Mon, 19 Feb 2007 06:56:54 -0500
+Received: from javad.com ([216.122.176.236]:1846 "EHLO javad.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932185AbXBSL4x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 06:56:53 -0500
+From: Sergei Organov <osv@javad.com>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       =?utf-8?B?Si5BLiBN?= =?utf-8?B?YWdhbGzDg8ODw4PDgsKzbg==?= 
+	<jamagallon@ono.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: somebody dropped a (warning) bomb
+References: <7Mj5f-3oz-21@gated-at.bofh.it> <7MktH-5EW-35@gated-at.bofh.it>
+	<7Mmvy-vj-17@gated-at.bofh.it> <7MnBC-2fk-13@gated-at.bofh.it>
+	<7MoQx-4p8-11@gated-at.bofh.it> <7MpjE-50z-7@gated-at.bofh.it>
+	<7MpCS-5Fe-9@gated-at.bofh.it> <7MDd7-17w-1@gated-at.bofh.it>
+	<7MGkB-62k-31@gated-at.bofh.it> <7NHoe-2Mb-37@gated-at.bofh.it>
+	<7NMe9-1ZN-7@gated-at.bofh.it> <7Oagl-6bO-1@gated-at.bofh.it>
+	<7ObvW-89N-23@gated-at.bofh.it> <7Oc8t-NS-1@gated-at.bofh.it>
+	<E1HHmuB-0001lW-E1@be1.lrz> <874ppmjqko.fsf@javad.com>
+	<Pine.LNX.4.58.0702161505460.2481@be1.lrz>
+Date: Mon, 19 Feb 2007 14:56:26 +0300
+Message-ID: <87tzxigy39.fsf@javad.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: vatsa@in.ibm.com, ckrm-tech@lists.sourceforge.net, xemul@sw.ru,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, menage@google.com,
-       svaidy@linux.vnet.ibm.com, devel@openvz.org
-Subject: Re: [ckrm-tech] [RFC][PATCH][2/4] Add RSS accounting and control
-References: <20070219065019.3626.33947.sendpatchset@balbir-laptop> <20070219065034.3626.2658.sendpatchset@balbir-laptop> <20070219005828.3b774d8f.akpm@linux-foundation.org> <45D97DF8.5080000@in.ibm.com> <20070219030141.42c65bc0.akpm@linux-foundation.org> <45D9856D.1070902@in.ibm.com> <20070219032352.2856af36.akpm@linux-foundation.org>
-In-Reply-To: <20070219032352.2856af36.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 19 Feb 2007 16:39:33 +0530 Balbir Singh <balbir@in.ibm.com> wrote:
-> 
->> Andrew Morton wrote:
->>> On Mon, 19 Feb 2007 16:07:44 +0530 Balbir Singh <balbir@in.ibm.com> wrote:
->>>
->>>>>> +void memctlr_mm_free(struct mm_struct *mm)
->>>>>> +{
->>>>>> +	kfree(mm->counter);
->>>>>> +}
->>>>>> +
->>>>>> +static inline void memctlr_mm_assign_container_direct(struct mm_struct *mm,
->>>>>> +							struct container *cont)
->>>>>> +{
->>>>>> +	write_lock(&mm->container_lock);
->>>>>> +	mm->container = cont;
->>>>>> +	write_unlock(&mm->container_lock);
->>>>>> +}
->>>>> More weird locking here.
->>>>>
->>>> The container field of the mm_struct is protected by a read write spin lock.
->>> That doesn't mean anything to me.
->>>
->>> What would go wrong if the above locking was simply removed?  And how does
->>> the locking prevent that fault?
->>>
->> Some pages could charged to the wrong container. Apart from that I do not
->> see anything going bad (I'll double check that).
-> 
-> Argh.  Please, think about this.
-> 
+Bodo Eggert <7eggert@gmx.de> writes:
+> On Fri, 16 Feb 2007, Sergei Organov wrote:
+>> Bodo Eggert <7eggert@gmx.de> writes:
+>> > Sergei Organov <osv@javad.com> wrote:
+>> >> Linus Torvalds <torvalds@linux-foundation.org> writes:
+>
+[...]
+>> If we start talking about the C language, my opinion is that it's C
+>> problem that it allows numeric comparison of "char" variables at
+>> all. If one actually needs to compare alphabetic characters numerically,
+>> he should first cast to required integer type.
+>
+> Char values are indexes in a character set. Taking the difference of
+> indexes is legal. Other languages have ord('x'), but it's only an
+> expensive typecast (byte('x') does exactly the same thing).
 
-Sure, I will. I guess I am short circuiting my thinking process :-)
+Why this typecast should be expensive? Is
 
+   char c1, c2;
+   ...
+   if((unsigned char)c1 < (unsigned char)c2)
 
-> That locking *doesn't do anything*.  Except for that one situation I
-> described: some other holder of the lock reads mm->container twice inside
-> the lock and requires that the value be the same both times (and that sort
-> of code should be converted to take a local copy, so this locking here can
-> be removed).
-> 
+any more expensive than if(c1 < c2)?
 
-Yes, that makes sense.
+[...]
 
->>>>>> +
->>>>>> +	read_lock(&mm->container_lock);
->>>>>> +	cont = mm->container;
->>>>>> +	read_unlock(&mm->container_lock);
->>>>>> +
->>>>>> +	if (!cont)
->>>>>> +		goto done;
->>>>> And here.  I mean, if there was a reason for taking the lock around that
->>>>> read, then testing `cont' outside the lock just invalidated that reason.
->>>>>
->>>> We took a consistent snapshot of cont. It cannot change outside the lock,
->>>> we check the value outside. I am sure I missed something.
->>> If it cannot change outside the lock then we don't need to take the lock!
->>>
->> We took a snapshot that we thought was consistent.
-> 
-> Consistent with what?  That's a single-word read inside that lock.
-> 
+>> Comparison of characters being numeric is not a very good property of
+>> the C language.
+>
+> NACK, as above
 
-Yes, that makes sense.
+The point was not to entirely disable it or to make it any more
+expensive, but to somehow force programmer to be explicit that he indeed
+needs numeric comparison of characters' indexes. Well, I do realize that
+the above is not in the C "spirit" that is to allow implicit conversions
+almost everywhere.
 
->> We check for the value
->> outside. I guess there is no harm, the worst thing that could happen
->> is wrong accounting during mm->container changes (when a task changes
->> container).
-> 
-> If container->lock is held when a task is removed from the
-> container then yes, `cont' here can refer to a container to which the task
-> no longer belongs.
-> 
-> More worrisome is the potential for use-after-free.  What prevents the
-> pointer at mm->container from referring to freed memory after we're dropped
-> the lock?
-> 
+>> > I repeat: Thanks to using signed chars, the programs only
+>> > work /by/ /accident/! Promoting the use of signed char strings is promoting
+>> > bugs and endangering the stability of all our systems. You should stop this
+>> > bullshit now, instead of increasing the pile.
+>> 
+>> Where did you see I promoted using of "singed char strings"?!
+>
+> char strings are often signed char strings, only using unsigned char 
+> prevents this in a portable way. If you care about ordinal values of
+> your strings, use unsigned.
 
-The container cannot be freed unless all tasks holding references to it are
-gone, that would ensure that all mm->containers are pointing elsewhere and
-never to a stale value.
+It means that (as I don't want to change the type of my
+strings/characters in case I suddenly start to care about ordinal values
+of the characters) I must always use "unsigned char" for storing
+characters in practice. Right?
 
-I hope my short-circuited brain got this right :-)
+There are at least three problems then:
 
+1. The type of "abc" remains "char*", so effectively I'll have two
+   different representations of strings.
 
+2. I can't mix two different representations of strings in C without
+   compromising type safety. In C, the type for characters is "char",
+   that by definition is different type than "unsigned char".
 
--- 
-	Warm Regards,
-	Balbir Singh
+3. As I now represent characters by unsigned tiny integers, I loose
+   distinct type for unsigned tiny integers. Effectively this brings me
+   back in time to the old days when C didn't have distinct type for
+   signed tiny integers.
+
+Therefore, your "solution" to one problem creates a bunch of
+others. Worse yet, you in fact don't solve initial problem of comparing
+strings. Take, for example, KOI8-R encoding. Comparing characters from
+this encoding using "unsigned char" representation of character indexes
+makes no more sense than comparing "signed char" representations, as
+both comparisons will bring meaningless results, due to the fact that
+the order of (some of) the characters in the table doesn't match their
+alphabetical order.
+
+>> If you don't like the fact that in C language characters are "char",
+>> strings are "char*", and the sign of char is implementation-defined,
+>> please argue with the C committee, not with me.
+>> 
+>> Or use -funsigned-char to get dialect of C that fits your requirements
+>> better.
+>
+> If you restrict yourself to a specific C compiler, you are doomed, and 
+> that's not a good start.
+
+Isn't it you who insists that "char" should always be unsigned? It's
+your problem then to use compiler that understands those imaginary
+language that meets the requirement.
+
+-- Sergei.
