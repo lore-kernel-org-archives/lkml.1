@@ -1,73 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932379AbXBSQG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932385AbXBSQIH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932379AbXBSQG1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 11:06:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932384AbXBSQG0
+	id S932385AbXBSQIH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 11:08:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932386AbXBSQIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 11:06:26 -0500
-Received: from firewall.rowland.harvard.edu ([140.247.233.35]:18801 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S932379AbXBSQG0 (ORCPT
+	Mon, 19 Feb 2007 11:08:07 -0500
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:37479 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932385AbXBSQIE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 11:06:26 -0500
-Date: Mon, 19 Feb 2007 11:06:22 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>
-cc: dougg@torque.net, <linux-kernel@vger.kernel.org>, <jens.axboe@oracle.com>,
-       <James.Bottomley@steeleye.com>
-Subject: Re: [PATCH] Block layer: separate out queue-oriented ioctls
-In-Reply-To: <45d89a8b.QpxTpRwQB4A12sQN%Joerg.Schilling@fokus.fraunhofer.de>
-Message-ID: <Pine.LNX.4.44L0.0702191051210.13197-100000@netrider.rowland.org>
+	Mon, 19 Feb 2007 11:08:04 -0500
+Message-ID: <45D9CB43.6000909@linux.vnet.ibm.com>
+Date: Mon, 19 Feb 2007 21:37:31 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.5 (X11/20060728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: balbir@in.ibm.com
+CC: Paul Menage <menage@google.com>, vatsa@in.ibm.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       xemul@sw.ru, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>, devel@openvz.org
+Subject: Re: [ckrm-tech] [RFC][PATCH][2/4] Add RSS accounting and control
+References: <20070219065019.3626.33947.sendpatchset@balbir-laptop> <20070219065034.3626.2658.sendpatchset@balbir-laptop> <20070219005828.3b774d8f.akpm@linux-foundation.org> <45D97DF8.5080000@in.ibm.com> <20070219030141.42c65bc0.akpm@linux-foundation.org> <45D9856D.1070902@in.ibm.com> <20070219032352.2856af36.akpm@linux-foundation.org> <45D9906F.2090605@in.ibm.com> <6599ad830702190409x4f64e56ex4044a12d949e44af@mail.gmail.com> <45D9AFBE.5020107@in.ibm.com>
+In-Reply-To: <45D9AFBE.5020107@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 Feb 2007, Joerg Schilling wrote:
 
-> Alan Stern <stern@rowland.harvard.edu> wrote:
+
+Balbir Singh wrote:
+> Paul Menage wrote:
+>> On 2/19/07, Balbir Singh <balbir@in.ibm.com> wrote:
+>>>> More worrisome is the potential for use-after-free.  What prevents the
+>>>> pointer at mm->container from referring to freed memory after we're dropped
+>>>> the lock?
+>>>>
+>>> The container cannot be freed unless all tasks holding references to it are
+>>> gone,
+>> ... or have been moved to other containers. If you're not holding
+>> task->alloc_lock or one of the container mutexes, there's nothing to
+>> stop the task being moved to another container, and the container
+>> being deleted.
+>>
+>> If you're in an RCU section then you can guarantee that the container
+>> (that you originally read from the task) and its subsystems at least
+>> won't be deleted while you're accessing them, but for accounting like
+>> this I suspect that's not enough, since you need to be adding to the
+>> accounting stats on the correct container. I think you'll need to hold
+>> mm->container_lock for the duration of memctl_update_rss()
+>>
+>> Paul
+>>
 > 
-> > > Alternatively the SG_GET_RESERVED_SIZE ioctl could be
-> > > modified to yield no more than max_sectors*512 .
-> >
-> > There should be one single ioctl which can be applied uniformly to all
-> > CD-type devices (in fact, to all devices using a request_queue) to learn
-> > max_sectors.  This rules out using SG_GET_RESERVED_SIZE.
+> Yes, that sounds like the correct thing to do.
 > 
-> This has nothing to do with CD-type devices!
-> It is related to SCSI tansport.
 
-Actually, it isn't even related to SCSI transport; it is related to the
-request_queue interface.  Even for devices which don't use a SCSI
-transport, the request_queue code limits transfer lengths to max_sectors.
+Accounting accuracy will anyway be affected when a process is migrated
+while it is still allocating pages.  Having a lock here does not
+necessarily improve the accounting accuracy.  Charges from the old
+container would have to be moved to the new container before deletion
+which implies all tasks have already left the container and no
+mm_struct is holding a pointer to it.
 
-> > Furthermore, if you changed SG_GET_RESERVED_SIZE in this way you would 
-> > only increase the confusion.  The reserved size isn't directly related to 
-> > the maximum allowed DMA length, and there's no point pretending it is.  
-> > What if it turns out that the reserved size is smaller than max_sectors?  
-> > Then you'd force user programs to do I/O in chunks that were smaller than 
-> > necessary.
+The only condition that will break our code will be if the container
+pointer becomes invalid while we are updating stats.  This can be
+prevented by RCU section as mentioned by Paul.  I believe explicit
+lock and unlock may not provide additional benefit here.
 
-I take back that last sentence.  If the reserved size was smaller than 
-max_sectors then nothing would be changed.
-
-> It would not increase confusion but reduce confusion because all
-> programs would later behave correctly without the need to change them.
-
-Well, if Doug wants to reduce the value returned by SG_GET_RESERVED_SIZE, 
-it's okay with me.  An advantage of doing this is that older versions of 
-cdrecord would then work correctly.
-
-However you don't seem to realize that people can use programs like
-cdrecord with devices whose drivers don't support SG_GET_RESERVED_SIZE --
-because that ioctl works only with sg.  Programs would have to try
-SG_GET_RESERVED_SIZE and if it faied, then try BLKSECTGET.
-
-Remember also, the "reserved size" is _not_ the maximum allowed size of a
-DMA transfer.  Rather, it is the size of an internal buffer maintained by
-sg.  It's legal to do an I/O transfer larger than the "reserved size", but 
-it is not legal to do an I/O transfer larger than max_sectors.
-
-Alan Stern
+--Vaidy
 
