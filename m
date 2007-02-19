@@ -1,163 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932625AbXBSUX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932621AbXBSUZB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932625AbXBSUX4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 15:23:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932624AbXBSUXe
+	id S932621AbXBSUZB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 15:25:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932624AbXBSUZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 15:23:34 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:1561 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932621AbXBSUX3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 15:23:29 -0500
-Message-Id: <20070219201858.688614000@sirena.org.uk>
-References: <20070219201538.420238000@sirena.org.uk>
-User-Agent: quilt/0.45-1
-Date: Mon, 19 Feb 2007 20:15:39 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: Tim Hockin <thockin@hockin.org>, Jeff Garzik <jgarzik@pobox.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [patch 1/2] natsemi: Add support for using MII port with no PHY
-Content-Disposition: inline; filename=natsemi-ignore-phy.patch
-X-Spam-Score: -2.4 (--)
+	Mon, 19 Feb 2007 15:25:00 -0500
+Received: from mail.screens.ru ([213.234.233.54]:54965 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932621AbXBSUY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 15:24:59 -0500
+Date: Mon, 19 Feb 2007 23:23:49 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ego@in.ibm.com, akpm@osdl.org, paulmck@us.ibm.com, mingo@elte.hu,
+       vatsa@in.ibm.com, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Subject: Re: freezer problems
+Message-ID: <20070219202349.GA87@tv-sign.ru>
+References: <20070214144031.GA15257@in.ibm.com> <200702181956.11273.rjw@sisk.pl> <20070218220134.GA4243@tv-sign.ru> <200702190019.23215.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702190019.23215.rjw@sisk.pl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch provides code paths which allow the natsemi driver to use the
-external MII port on the chip but ignore any PHYs that may be attached to it.
-The link state will be left as it was when the driver started and can be
-configured via ethtool.  Any PHYs that are present can be accessed via the MII
-ioctl()s.
+On 02/19, Rafael J. Wysocki wrote:
+>
+> On Sunday, 18 February 2007 23:01, Oleg Nesterov wrote:
+> > > --- linux-2.6.20-mm2.orig/include/asm-i386/thread_info.h	2007-02-18 19:49:34.000000000 +0100
+> > > +++ linux-2.6.20-mm2/include/asm-i386/thread_info.h	2007-02-18 19:50:37.000000000 +0100
+> > > @@ -135,6 +135,7 @@ static inline struct thread_info *curren
+> > >  #define TIF_IO_BITMAP		18	/* uses I/O bitmap */
+> > >  #define TIF_FREEZE		19	/* is freezing for suspend */
+> > >  #define TIF_FORCED_TF		20	/* true if TF in eflags artificially */
+> > > +#define TIF_FREEZER_SKIP	21	/* task freezer should not count us */
+> > 
+> > Do we need to put this flag into thread_info? It is always modified by
+> > "current", so it could live in task_struct->flags instead.
+> 
+> I thought we were running low on the task_struct->flags bits. :-)
 
-This is useful for systems where the device is connected without a PHY
-or where either information or actions outside the scope of the driver
-are required in order to use the PHYs.
+Didn't think about that :)
 
-Signed-Off-By: Mark Brown <broonie@sirena.org.uk>
+> Apart from this, we may need to set it from somewhere else in the future.
 
----
+I doubt. In any case, since you provided the nice helpers, it would be very
+easy to convert from thread to process flags. My main concern is that we
+have 24 include/asm-*/thread_info.h files, but only 1 include/linux/sched.h.
+It seems more easy to start with PF_ flags at first.
 
-This revision of the patch fixes some issues brought up during review.
+> @@ -1393,7 +1394,10 @@ long do_fork(unsigned long clone_flags,
+>
+> 		if (clone_flags & CLONE_VFORK) {
+> +                       freezer_do_not_count(current);
+> 			  wait_for_completion(&vfork);
+> +                       try_to_freeze();
+> +                       freezer_count(current);
 
-Previous versions of this patch exposed the new functionality as a module
-option.  This has been removed.  Any hardware that needs this should be
-identifiable by a quirk since it unlikely to behave correctly with an
-unmodified driver.
+freezer_do_not_count() implies that we must do try_to_freeze() later, I'd
+suggest to shift try_to_freeze() into freezer_count(). Actually, I think that
+freezer_do_not_count/freezer_count should be "(void)", like try_to_freeze().
+IOW,
 
-Index: linux/drivers/net/natsemi.c
-===================================================================
---- linux.orig/drivers/net/natsemi.c	2007-02-19 10:10:40.000000000 +0000
-+++ linux/drivers/net/natsemi.c	2007-02-19 10:20:45.000000000 +0000
-@@ -568,6 +568,8 @@
- 	u32 intr_status;
- 	/* Do not touch the nic registers */
- 	int hands_off;
-+	/* Don't pay attention to the reported link state. */
-+	int ignore_phy;
- 	/* external phy that is used: only valid if dev->if_port != PORT_TP */
- 	int mii;
- 	int phy_addr_external;
-@@ -696,7 +698,10 @@
- 	struct netdev_private *np = netdev_priv(dev);
- 	u32 tmp;
- 
--	netif_carrier_off(dev);
-+	if (np->ignore_phy)
-+		netif_carrier_on(dev);
-+	else
-+		netif_carrier_off(dev);
- 
- 	/* get the initial settings from hardware */
- 	tmp            = mdio_read(dev, MII_BMCR);
-@@ -806,8 +811,10 @@
- 	np->hands_off = 0;
- 	np->intr_status = 0;
- 	np->eeprom_size = natsemi_pci_info[chip_idx].eeprom_size;
-+	np->ignore_phy = 0;
- 
- 	/* Initial port:
-+	 * - If configured to ignore the PHY set up for external.
- 	 * - If the nic was configured to use an external phy and if find_mii
- 	 *   finds a phy: use external port, first phy that replies.
- 	 * - Otherwise: internal port.
-@@ -815,7 +822,7 @@
- 	 * The address would be used to access a phy over the mii bus, but
- 	 * the internal phy is accessed through mapped registers.
- 	 */
--	if (readl(ioaddr + ChipConfig) & CfgExtPhy)
-+	if (np->ignore_phy || readl(ioaddr + ChipConfig) & CfgExtPhy)
- 		dev->if_port = PORT_MII;
- 	else
- 		dev->if_port = PORT_TP;
-@@ -825,7 +832,9 @@
- 
- 	if (dev->if_port != PORT_TP) {
- 		np->phy_addr_external = find_mii(dev);
--		if (np->phy_addr_external == PHY_ADDR_NONE) {
-+		/* If we're ignoring the PHY it doesn't matter if we can't
-+		 * find one. */
-+		if (!np->ignore_phy && np->phy_addr_external == PHY_ADDR_NONE) {
- 			dev->if_port = PORT_TP;
- 			np->phy_addr_external = PHY_ADDR_INTERNAL;
- 		}
-@@ -891,6 +900,8 @@
- 		printk("%02x, IRQ %d", dev->dev_addr[i], irq);
- 		if (dev->if_port == PORT_TP)
- 			printk(", port TP.\n");
-+		else if (np->ignore_phy)
-+			printk(", port MII, ignoring PHY\n");
- 		else
- 			printk(", port MII, phy ad %d.\n", np->phy_addr_external);
- 	}
-@@ -1571,9 +1582,13 @@
- {
- 	struct netdev_private *np = netdev_priv(dev);
- 	void __iomem * ioaddr = ns_ioaddr(dev);
--	int duplex;
-+	int duplex = np->duplex;
- 	u16 bmsr;
- 
-+	/* If we are ignoring the PHY then don't try reading it. */
-+	if (np->ignore_phy)
-+		goto propagate_state;
-+
- 	/* The link status field is latched: it remains low after a temporary
- 	 * link failure until it's read. We need the current link status,
- 	 * thus read twice.
-@@ -1585,7 +1600,7 @@
- 		if (netif_carrier_ok(dev)) {
- 			if (netif_msg_link(np))
- 				printk(KERN_NOTICE "%s: link down.\n",
--					dev->name);
-+				       dev->name);
- 			netif_carrier_off(dev);
- 			undo_cable_magic(dev);
- 		}
-@@ -1609,6 +1624,7 @@
- 			duplex = 1;
- 	}
- 
-+propagate_state:
- 	/* if duplex is set then bit 28 must be set, too */
- 	if (duplex ^ !!(np->rx_config & RxAcceptTx)) {
- 		if (netif_msg_link(np))
-@@ -2819,6 +2835,15 @@
- 	}
- 
- 	/*
-+	 * If we're ignoring the PHY then autoneg and the internal
-+	 * transciever are really not going to work so don't let the
-+	 * user select them.
-+	 */
-+	if (np->ignore_phy && (ecmd->autoneg == AUTONEG_ENABLE ||
-+			       ecmd->port == PORT_TP))
-+		return -EINVAL;
-+
-+	/*
- 	 * maxtxpkt, maxrxpkt: ignored for now.
- 	 *
- 	 * transceiver:
+	freezer_do_not_count()
+	... sleep in 'D' state ...
+	freezer_count()
 
---
-"You grabbed my hand and we fell into it, like a daydream - or a fever."
+means that current doesn't hold any "important" locks, may be considered as
+frozen, it can do nothing except enter refrigerator if it gets CPU.
+
+(Please feel free to ignore, this is a matter of taste of course).
+
+> @@ -199,6 +189,10 @@ static void thaw_tasks(int thaw_user_spa
+>
+>         read_lock(&tasklist_lock);
+>         do_each_thread(g, p) {
+> +               if (freezer_should_skip(p))
+> +                       cancel_freezing(p);
+> +       } while_each_thread(g, p);
+> +       do_each_thread(g, p) {
+>                 if (!freezeable(p))
+>                         continue;
+
+Any reason for 2 separate do_each_thread() loops ?
+
+I think this patch is correct, but I still can't convince myself I really
+understand freezer :)
+
+Btw,
+
+On 02/18, Some Idiot wrote:
+>
+> On 02/18, Rafael J. Wysocki wrote:
+> >
+> > +   /* The parent is uninterruptible and will stay so until this task exits,
+> > +    * so we can mark it as frozen.
+> > +    */
+> > +   if (current->vfork_done)
+> > +           frozen_process(current->parent);
+>
+> This is not safe. task->flags is not atomic, we can change ->flags only
+> if we know the task won't touch it itself (ptrace, thaw_process).
+> The parent could be interrupted, irq may play with current->flags (slab,
+> for example).
+
+Irq only does atomic allocations, so the slab won't play with task->flags.
+Still I believe the concern was valid in general and I personally think
+the new patch is better (and more generic).
+
+Oleg.
+
