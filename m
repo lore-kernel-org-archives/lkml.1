@@ -1,130 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750869AbXBSKaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750863AbXBSKby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750869AbXBSKaz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 05:30:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbXBSKaz
+	id S1750863AbXBSKby (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 05:31:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbXBSKby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 05:30:55 -0500
-Received: from il.qumranet.com ([82.166.9.18]:57107 "EHLO il.qumranet.com"
+	Mon, 19 Feb 2007 05:31:54 -0500
+Received: from il.qumranet.com ([82.166.9.18]:57137 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750869AbXBSKay (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 05:30:54 -0500
-Subject: [PATCH 10/13] KVM: Wire up hypercall handlers to a central
-	arch-independent location
+	id S1750863AbXBSKbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 05:31:53 -0500
+Subject: [PATCH 11/13] KVM: svm: init cr0 with the wp bit set
 From: Avi Kivity <avi@qumranet.com>
-Date: Mon, 19 Feb 2007 10:30:52 -0000
+Date: Mon, 19 Feb 2007 10:31:52 -0000
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, mingo@elte.hu
 References: <45D979D3.2020907@qumranet.com>
 In-Reply-To: <45D979D3.2020907@qumranet.com>
 Content-Type: text/plain; charset=UTF-8
-Message-Id: <20070219103052.4D23725016B@il.qumranet.com>
+Message-Id: <20070219103152.560EE25016B@il.qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 
-Index: linux-2.6/drivers/kvm/kvm_main.c
-===================================================================
---- linux-2.6.orig/drivers/kvm/kvm_main.c
-+++ linux-2.6/drivers/kvm/kvm_main.c
-@@ -1138,6 +1138,42 @@ int emulate_instruction(struct kvm_vcpu 
- }
- EXPORT_SYMBOL_GPL(emulate_instruction);
- 
-+int kvm_hypercall(struct kvm_vcpu *vcpu, struct kvm_run *run)
-+{
-+	unsigned long nr, a0, a1, a2, a3, a4, a5, ret;
-+
-+	kvm_arch_ops->decache_regs(vcpu);
-+	ret = -KVM_EINVAL;
-+#ifdef CONFIG_X86_64
-+	if (is_long_mode(vcpu)) {
-+		nr = vcpu->regs[VCPU_REGS_RAX];
-+		a0 = vcpu->regs[VCPU_REGS_RDI];
-+		a1 = vcpu->regs[VCPU_REGS_RSI];
-+		a2 = vcpu->regs[VCPU_REGS_RDX];
-+		a3 = vcpu->regs[VCPU_REGS_RCX];
-+		a4 = vcpu->regs[VCPU_REGS_R8];
-+		a5 = vcpu->regs[VCPU_REGS_R9];
-+	} else
-+#endif
-+	{
-+		nr = vcpu->regs[VCPU_REGS_RBX] & -1u;
-+		a0 = vcpu->regs[VCPU_REGS_RAX] & -1u;
-+		a1 = vcpu->regs[VCPU_REGS_RCX] & -1u;
-+		a2 = vcpu->regs[VCPU_REGS_RDX] & -1u;
-+		a3 = vcpu->regs[VCPU_REGS_RSI] & -1u;
-+		a4 = vcpu->regs[VCPU_REGS_RDI] & -1u;
-+		a5 = vcpu->regs[VCPU_REGS_RBP] & -1u;
-+	}
-+	switch (nr) {
-+	default:
-+		;
-+	}
-+	vcpu->regs[VCPU_REGS_RAX] = ret;
-+	kvm_arch_ops->cache_regs(vcpu);
-+	return 1;
-+}
-+EXPORT_SYMBOL_GPL(kvm_hypercall);
-+
- static u64 mk_cr_64(u64 curr_cr, u32 new_val)
- {
- 	return (curr_cr & ~((1ULL << 32) - 1)) | new_val;
-Index: linux-2.6/drivers/kvm/kvm.h
-===================================================================
---- linux-2.6.orig/drivers/kvm/kvm.h
-+++ linux-2.6/drivers/kvm/kvm.h
-@@ -482,6 +482,8 @@ void kvm_mmu_post_write(struct kvm_vcpu 
- int kvm_mmu_unprotect_page_virt(struct kvm_vcpu *vcpu, gva_t gva);
- void kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu);
- 
-+int kvm_hypercall(struct kvm_vcpu *vcpu, struct kvm_run *run);
-+
- static inline int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gva_t gva,
- 				     u32 error_code)
- {
 Index: linux-2.6/drivers/kvm/svm.c
 ===================================================================
 --- linux-2.6.orig/drivers/kvm/svm.c
 +++ linux-2.6/drivers/kvm/svm.c
-@@ -1078,16 +1078,8 @@ static int halt_interception(struct kvm_
- 
- static int vmmcall_interception(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- {
--	printk(KERN_DEBUG "got vmmcall at RIP %08llx\n",
--	       vcpu->svm->vmcb->save.rip);
--	printk(KERN_DEBUG "vmmcall params: %08llx, %08lx, %08lx, %08lx\n",
--	       vcpu->svm->vmcb->save.rax,
--	       vcpu->regs[VCPU_REGS_RCX],
--	       vcpu->regs[VCPU_REGS_RDX],
--	       vcpu->regs[VCPU_REGS_RBP]);
--	vcpu->svm->vmcb->save.rax = 0;
- 	vcpu->svm->vmcb->save.rip += 3;
--	return 1;
-+	return kvm_hypercall(vcpu, kvm_run);
+@@ -554,7 +554,7 @@ static void init_vmcb(struct vmcb *vmcb)
+ 	 * cr0 val on cpu init should be 0x60000010, we enable cpu
+ 	 * cache by default. the orderly way is to enable cache in bios.
+ 	 */
+-	save->cr0 = 0x00000010 | CR0_PG_MASK;
++	save->cr0 = 0x00000010 | CR0_PG_MASK | CR0_WP_MASK;
+ 	save->cr4 = CR4_PAE_MASK;
+ 	/* rdx = ?? */
  }
- 
- static int invalid_op_interception(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
-Index: linux-2.6/drivers/kvm/vmx.c
-===================================================================
---- linux-2.6.orig/drivers/kvm/vmx.c
-+++ linux-2.6/drivers/kvm/vmx.c
-@@ -1659,16 +1659,8 @@ static int handle_halt(struct kvm_vcpu *
- 
- static int handle_vmcall(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- {
--	kvm_run->exit_reason = KVM_EXIT_DEBUG;
--	printk(KERN_DEBUG "got vmcall at RIP %08lx\n", vmcs_readl(GUEST_RIP));
--	printk(KERN_DEBUG "vmcall params: %08lx, %08lx, %08lx, %08lx\n",
--		vcpu->regs[VCPU_REGS_RAX],
--		vcpu->regs[VCPU_REGS_RCX],
--		vcpu->regs[VCPU_REGS_RDX],
--		vcpu->regs[VCPU_REGS_RBP]);
--	vcpu->regs[VCPU_REGS_RAX] = 0;
- 	vmcs_writel(GUEST_RIP, vmcs_readl(GUEST_RIP)+3);
--	return 1;
-+	return kvm_hypercall(vcpu, kvm_run);
- }
- 
- /*
