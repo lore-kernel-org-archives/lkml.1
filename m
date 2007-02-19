@@ -1,85 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965143AbXBSWs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965145AbXBSWup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965143AbXBSWs2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 17:48:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965151AbXBSWs1
+	id S965145AbXBSWup (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 17:50:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965148AbXBSWuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 17:48:27 -0500
-Received: from nz-out-0506.google.com ([64.233.162.232]:30757 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965143AbXBSWs1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 17:48:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PTDm0GOCm7luaK6eYzGvWW5tPkbJfN9hTle5dwKkefoL9mmjvghhFjWOh+Mm2+7okz45g2bQRDgFg+pjWxIVucltP6nqOB5aHJ/5KOGkH97yIofKuh1RXKMjxJimUiLKkRPpyJSBJida+bNA0eJz8cXUa8k0qVkhCjXT6G8Cums=
-Message-ID: <f2b55d220702191448g6077c6aav43ff99edbaf77bdb@mail.gmail.com>
-Date: Mon, 19 Feb 2007 14:48:24 -0800
-From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: "Trent Waddington" <trent.waddington@gmail.com>
-Subject: Re: GPL vs non-GPL device drivers
-Cc: davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>
-In-Reply-To: <3d57814d0702191426m2fc3c1c6had125a2db165befe@mail.gmail.com>
+	Mon, 19 Feb 2007 17:50:44 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56779 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965145AbXBSWun (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 17:50:43 -0500
+To: Zach Brown <zach.brown@oracle.com>
+Cc: linux-aio@kvack.org, linux-kernel@vger.kernel.org,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Suparna bhattacharya <suparna@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Leonid Ananiev <leonid.i.ananiev@intel.com>
+Subject: Re: [PATCH 2/2] aio: propogate post-EIOCBQUEUED errors to completion event
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+References: <20070219213830.4032.71308.sendpatchset@tetsuo.zabbo.net>
+	<20070219213835.4032.87439.sendpatchset@tetsuo.zabbo.net>
+From: Jeff Moyer <jmoyer@redhat.com>
+Date: Mon, 19 Feb 2007 17:48:14 -0500
+In-Reply-To: <20070219213835.4032.87439.sendpatchset@tetsuo.zabbo.net> (Zach Brown's message of "Mon, 19 Feb 2007 13:38:35 -0800 (PST)")
+Message-ID: <x49y7mt4vdd.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.5-b27 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3d57814d0702171726l403c7812n19f2a226cba02e5d@mail.gmail.com>
-	 <MDEHLPKNGKAHNMBLJOLKCEDPBLAC.davids@webmaster.com>
-	 <3d57814d0702191255l2ef21f72rf7d999a62c4ec19a@mail.gmail.com>
-	 <f2b55d220702191353m19b563a6t4c1dcf6fd86a6dc9@mail.gmail.com>
-	 <3d57814d0702191426m2fc3c1c6had125a2db165befe@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/19/07, Trent Waddington <trent.waddington@gmail.com> wrote:
-> On 2/20/07, Michael K. Edwards <medwards.linux@gmail.com> wrote:
-> > Bah.  Show us a citation to treaty, statute, or case law, anywhere in
-> > the world, Mr. Consensus-Reality.
->
-> It's a given.. are you seriously contending that if you combine two
-> copyright works you are not obliged to conform with the conditions of
-> the license on one of them when making a copy of the combined work?
+==> On Mon, 19 Feb 2007 13:38:35 -0800 (PST), Zach Brown <zach.brown@oracle.com> said:
 
-There is no legal meaning to "combining" two works of authorship under
-the Berne Convention or any national implementation thereof.  If you
-"compile" or "collect" them, you're in one area of law, and if you
-create a work that "adapts" or "recasts" (or more generally "derives
-from") them, you're in another area of law.  A non-exclusive license
-can authorize one of these categories of conduct and not the other, or
-can slice and dice the scope of the license along almost any axis of
-law or fact.  But what it can't do is use the phrase "derivative work"
-passim -- a legal term of art invented by US judges and legislators to
-corral a class of infringing works and treat them differently from
-compilations -- and pretend that it also encompasses compilations
-(copyrightable and otherwise; there is an originality threshold here
-too) and use by reference.
+Zach> This addresses an oops reported by Leonid Ananiev <leonid.i.ananiev@intel.com>
+Zach> as archived at http://lkml.org/lkml/2007/2/8/337.
+[snip]
+Zach> So this patch introduces a helper, aio_propogate_error(), 
 
-> If you are just arguing about the term, what term do you find more
-> appropriate?  Compilation?
+...which is spelled incorrectly:  aio_propagate_error.
 
-If the amount of "adapting, translating, and recasting" done to the
-pre-existing works crosses a minimum threshold of creative expression
-(not "sweat of the brow", at least not under Feist), then you've
-created a derivative work.  If the amount of "selecting and arranging"
-done to create a compilation crosses a similar threshold of creative
-expression, you've created a copyrightable compilation or collective
-work.  If neither, then all you've done is copy and distribute.
-That's how the law works.  IANAL, TINLA.
+Zach> which queues post-submission errors in the iocb so that they are
+Zach> given to the user completion event when aio_complete() is
+Zach> finally called.
 
-> You guys seem to love pointless semantic arguments.  Are you always in
-> violent agreement?
+Ugly, but I can't think of a better way to do it, either.
 
-Perhaps pointless if you were the sole audience, since you seem
-disinclined to evaluate the accuracy of your beliefs given novel
-information backed by extensive citations to the primary literature.
-Not pointless if it disabuses other people, with less deeply ingrained
-errors of understanding, of the notion that they can trust certain
-very heavily financially interested parties to tell them the truth
-about what the law says.
+> +
+> +	if (kiocbIsInserted(req))
+> +		aio_ring_insert_entry(ctx, req);
+> +
 
-Cheers,
-- Michael
+This confused me at first reading.  If it's inserted, then insert it.
+Perhaps KIF_COMPLETED would be a better name?
+
+> +/*
+> + * This function is used to make sure that an error is communicated to
+> + * userspace on iocb completion without stopping -EIOCBQUEUED from bubbling up
+> + * to fs/aio.c from the place where it originated.
+> + *
+> + * If we have an existing -EIOCBQUEUED it must be returned all the way to
+> + * fs/aio.c so that it doesn't double-complete the iocb along with whoever
+> + * returned -EIOCBQUEUED..  In that case we put the new error in the iocb.  It
+> + * will be returned to userspace *intead of* the first result code given to
+> + * aio_complete().  Use this only for errors which must overwrite whatever the
+> + * return code might have been.  The first non-zero new_err given to this
+> + * function for a given iocb will be returned to userspace.
+> + */
+> +static inline int aio_propogate_error(struct kiocb *iocb, int existing_err,
+> +				      int new_err)
+> +{
+> +	if (existing_err != -EIOCBQUEUED)
+> +		return new_err;
+> +	if (!iocb->ki_pending_err)
+> +		iocb->ki_pending_err = new_err;
+> +	return -EIOCBQUEUED;
+> +}
+> +
+
+I think that we would ideally cancel the I/Os in flight since we are
+going to throw away the results.  However, we don't exactly support
+cancellation today.  So, I have no objection to this less optimal
+solution.
+
+-Jeff
