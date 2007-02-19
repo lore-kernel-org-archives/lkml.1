@@ -1,77 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750720AbXBSJUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750793AbXBSJXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750720AbXBSJUU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 04:20:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750787AbXBSJUU
+	id S1750793AbXBSJXd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 04:23:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750796AbXBSJXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 04:20:20 -0500
-Received: from tim.rpsys.net ([194.106.48.114]:36816 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750720AbXBSJUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 04:20:19 -0500
-Subject: Re: no backlight on radeon after recent kernel "upgrade"s
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Yaroslav Halchenko <kernel@onerussian.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
-In-Reply-To: <20070219000412.acad13de.akpm@linux-foundation.org>
-References: <20070219044616.GC25659@washoe.onerussian.com>
-	 <20070219000412.acad13de.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 19 Feb 2007 09:19:48 +0000
-Message-Id: <1171876788.6046.3.camel@localhost.localdomain>
+	Mon, 19 Feb 2007 04:23:33 -0500
+Received: from smtp-101-monday.noc.nerim.net ([62.4.17.101]:2322 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750793AbXBSJXc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 04:23:32 -0500
+Date: Mon, 19 Feb 2007 10:23:35 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Dmitry Torokhov <dtor@insightbb.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] platform: reorder platform_device_del
+Message-Id: <20070219102335.8d56dddd.khali@linux-fr.org>
+In-Reply-To: <200702190105.31051.dtor@insightbb.com>
+References: <20070218213020.5618eb98.khali@linux-fr.org>
+	<200702190105.31051.dtor@insightbb.com>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-02-19 at 00:04 -0800, Andrew Morton wrote:
-> On Sun, 18 Feb 2007 23:46:16 -0500 Yaroslav Halchenko <kernel@onerussian.com> wrote:
-> > Since the most recent successful for me kernel 2.6.19-rc6-mm1, I've
-> > tried few times to build more recent snapshots and now finally
-> > 2.6.20-mm2. In all those cases I have a sad outcome -- kernel boots but
-> > at some point during boot (few moments after Penguin icon in the top left
-> > corner appears), light turns off... I still can see something, especially
-> > if I light a strong flashlight at a sharp angle.
+Hi Dmitry,
+
+On Mon, 19 Feb 2007 01:05:30 -0500, Dmitry Torokhov wrote:
+> On Sunday 18 February 2007 15:30, Jean Delvare wrote:
+> > In platform_device_del(), we currently delete the device resources
+> > first, then we delete the device itself. This causes a (minor) bug to
+> > occur when one unregisters a platform device before unregistering its
+> > platform driver, and the driver is requesting (in .probe()) and
+> > releasing (in .remove()) a resource of the device. The device
+> > resources are already gone by the time the driver gets the chance to
+> > release the resources it had been requesting, causing an error like:
+> > Trying to free nonexistent resource <0000000000000295-0000000000000296>
 > > 
-> > I've enabled back-light support and lcd support for those unsuccessful
-> > kernels (with all backlight support features disabled kernel boots
-> > ok and backlight shines as bright as always)
-> > 
-> > All my changes of values for files under
-> > /sys/class/backlight/radeonbl0
-> > had no impact on the screen. Also I had no files under /sys/class/lcd.
-> > 
-> > Running 
-> > radeontool light off
-> > caused complete turning off of LCD - I could not see
-> > anything anymore.
-> > 
-> > sony's spictl -b had no effect as well.
-> > 
-> > Config can be found at
-> > http://www.onerussian.com/Linux/bugs/nobacklight.1/config-2.6.20-mm2
-> > lshw
-> > http://www.onerussian.com/Linux/bugs/nobacklight.1/lshw
-> > other details are available from
-> > http://www.onerussian.com/Linux/bugs/nobacklight.1/
-> > 
-> > Could you please advise?
+> > If the platform driver is unregistered first, the problem doesn't
+> > occur, as the driver will have the opportunity to release the
+> > resources it had requested before the device resources themselves are
+> > released. It's a bit odd that unregistering the driver first or the
+> > device first doesn't lead to the same result.
 > 
-> (cc's added)
-> 
-> Is 2.6.20 broken?  I assume the latest 2.6.20-gitN snapshot are failing..
+> I am not sure that this is correct argument. Why does a driver request
+> and release device's resources? "Higher power" has already requested 
+> these resources for the device and this is not drivers task to free
+> them.
 
-It would be extremely useful to know which kernel versions you tested
-and which ones failed. There are a number of backlight changes which are
-just in 2.6.20-mm1 and -mm2 which it would be useful to rule out or
-identify as the cause.
+My understanding is that, in the device driver model, devices _declare_
+resources, and it's up to the drivers to actually request the ones they
+wish to use. Looking at /proc/ioports, this hierarchy is quite visible.
+And while not all platform drivers actually request their device's
+resource, quite a few do (I counted 95 out of 228), so I'm definitely
+not the only one thinking it is the right thing to do.
 
-Also, do you normally see files under /sys/class/lcd?
+If the intent was that devices request the resources and the drivers
+don't have to care, then a driver requesting a device's resource should
+be returned an error. Instead, it works fine, which make me confident
+that I got the idea right.
 
-Regards,
+>       However you are right that we should not free resources until
+> device is marked for deletion and driver's ->remove() method completes
+> but I would not rely on surrounding code for keeping an extra reference
+> and would just take one explicitely in platform_device_del().
 
-Richard
+You mean that you wouldn't trust the rest of the platform driver core,
+which lives in the same source file, to do the right thing? That's
+being too defensive IMHO, and I don't think we usually do that. Greg?
 
-
+-- 
+Jean Delvare
