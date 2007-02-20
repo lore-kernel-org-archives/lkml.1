@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965662AbXBTAVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965615AbXBTAVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965662AbXBTAVu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 19:21:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750947AbXBTAVq
+	id S965615AbXBTAVv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 19:21:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965588AbXBTAUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 19:21:46 -0500
-Received: from kanga.kvack.org ([66.96.29.28]:35713 "EHLO kanga.kvack.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750992AbXBTAVn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 19:21:43 -0500
-Date: Mon, 19 Feb 2007 19:21:09 -0500
-From: Benjamin LaHaise <bcrl@kvack.org>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>,
-       Zach Brown <zach.brown@oracle.com>, linux-aio@kvack.org,
-       linux-kernel@vger.kernel.org, Suparna bhattacharya <suparna@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] aio: propogate post-EIOCBQUEUED errors to completion event
-Message-ID: <20070220002109.GG31205@kvack.org>
-References: <20070219203527.20419.68418.sendpatchset@tetsuo.zabbo.net> <B41635854730A14CA71C92B36EC22AAC83B044@mssmsx411> <20070219215048.GI6133@think.oraclecorp.com>
-Mime-Version: 1.0
+	Mon, 19 Feb 2007 19:20:09 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:36052 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750948AbXBTAHC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 19:07:02 -0500
+Date: Tue, 20 Feb 2007 01:07:01 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] arch/i386/kernel/alternative.c should #include <asm/bugs.h>
+Message-ID: <20070220000701.GM13958@stusta.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070219215048.GI6133@think.oraclecorp.com>
-User-Agent: Mutt/1.4.1i
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 19, 2007 at 04:50:48PM -0500, Chris Mason wrote:
-> aio is not responsible for this particular synchronization.  Those fixes
-> (if we make them) should come from other places.  The patch is important
-> to get aio error handling right.
-> 
-> I would argue that one common cause of the EIO is userland
-> error (mmap concurrent with O_DIRECT), and EIO is the correct answer.
+Every file should include the headers containing the prototypes for
+it's global functions.
 
-I disagree.  That means that using the pagecache to synchronize things like 
-the proposed online defragmentation will occasionally make O_DIRECT users 
-fail.  O_DIRECT doesn't prevent the sysadmin from copying files or other 
-page cache uses, which implies that generating an error in these cases is 
-horrifically broken.  If only root could do it, I wouldn't complain, but 
-this would seem to imply that user vs root holes still exist.
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-		-ben
--- 
-"Time is of no importance, Mr. President, only life is important."
-Don't Email: <dont@kvack.org>.
+---
+
+This patch was already sent on:
+- 18 Jan 2007
+- 4 Jan 2007
+
+--- linux-2.6.20-rc2-mm1/arch/i386/kernel/alternative.c.old	2007-01-03 23:13:18.000000000 +0100
++++ linux-2.6.20-rc2-mm1/arch/i386/kernel/alternative.c	2007-01-03 23:13:32.000000000 +0100
+@@ -4,6 +4,7 @@
+ #include <linux/list.h>
+ #include <asm/alternative.h>
+ #include <asm/sections.h>
++#include <asm/bugs.h>
+ 
+ static int no_replacement    = 0;
+ static int smp_alt_once      = 0;
+
