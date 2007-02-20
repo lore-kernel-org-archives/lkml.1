@@ -1,53 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965747AbXBTAgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965760AbXBTAhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965747AbXBTAgm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 19:36:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965749AbXBTAgl
+	id S965760AbXBTAhj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 19:37:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965765AbXBTAhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 19:36:41 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:62091 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965747AbXBTAgj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 19:36:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iMPCpQuZpxAwA1ZcpJeI35HeTThTe29S0AWVftmZ2ymM8PV+xDgAbC7DPXQ4JgVIQ0x0nTxJ5HpDg4YjMdXYDARgppn0Gk9eF+2LDV0keliQvpS3n4DOsHv2FH7G3K2WkytYiOp8f1TsuO5f2q2EgFiMgXl2g918fcvE9lyRfF4=
-Message-ID: <3d57814d0702191636q3a9f96a2xc029ea92a27a3748@mail.gmail.com>
-Date: Tue, 20 Feb 2007 10:36:38 +1000
-From: "Trent Waddington" <trent.waddington@gmail.com>
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Subject: Re: GPL vs non-GPL device drivers
-Cc: davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>
-In-Reply-To: <f2b55d220702191628v67c5b7ccvec0547ca7869ae46@mail.gmail.com>
+	Mon, 19 Feb 2007 19:37:39 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:56183 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965760AbXBTAhi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 19:37:38 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: freezer problems
+Date: Tue, 20 Feb 2007 01:32:11 +0100
+User-Agent: KMail/1.9.5
+Cc: ego@in.ibm.com, akpm@osdl.org, paulmck@us.ibm.com, mingo@elte.hu,
+       vatsa@in.ibm.com, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+References: <20070214144031.GA15257@in.ibm.com> <200702200036.01515.rjw@sisk.pl> <20070220001209.GA15991@tv-sign.ru>
+In-Reply-To: <20070220001209.GA15991@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <3d57814d0702171726l403c7812n19f2a226cba02e5d@mail.gmail.com>
-	 <MDEHLPKNGKAHNMBLJOLKCEDPBLAC.davids@webmaster.com>
-	 <3d57814d0702191255l2ef21f72rf7d999a62c4ec19a@mail.gmail.com>
-	 <f2b55d220702191353m19b563a6t4c1dcf6fd86a6dc9@mail.gmail.com>
-	 <3d57814d0702191426m2fc3c1c6had125a2db165befe@mail.gmail.com>
-	 <f2b55d220702191448g6077c6aav43ff99edbaf77bdb@mail.gmail.com>
-	 <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>
-	 <f2b55d220702191518o349c04br2e42fabecba8ea44@mail.gmail.com>
-	 <3d57814d0702191526r5f594374t50a0203d2dc6d36e@mail.gmail.com>
-	 <f2b55d220702191628v67c5b7ccvec0547ca7869ae46@mail.gmail.com>
+Message-Id: <200702200132.12847.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/20/07, Michael K. Edwards <medwards.linux@gmail.com> wrote:
-> Can we put the gamesmanship on "low" here for a moment?  Ask yourself
-> which is more likely: am I a crank who spends years researching the
-> legal background of the GPL solely for the purpose of ranting
-> incoherently on debian-legal and LKML,
+On Tuesday, 20 February 2007 01:12, Oleg Nesterov wrote:
+> On 02/20, Rafael J. Wysocki wrote:
+> >
+> > On Monday, 19 February 2007 23:41, Oleg Nesterov wrote:
+> > > On 02/19, Rafael J. Wysocki wrote:
+> > > >
+> > > > On Monday, 19 February 2007 21:23, Oleg Nesterov wrote:
+> > > > 
+> > > > > > @@ -199,6 +189,10 @@ static void thaw_tasks(int thaw_user_spa
+> > > > > >
+> > > > > >         do_each_thread(g, p) {
+> > > > > > +               if (freezer_should_skip(p))
+> > > > > > +                       cancel_freezing(p);
+> > > > > > +       } while_each_thread(g, p);
+> > > > > > +       do_each_thread(g, p) {
+> > > > > >                 if (!freezeable(p))
+> > > > > >                         continue;
+> > > > > 
+> > > > > Any reason for 2 separate do_each_thread() loops ?
+> > > > 
+> > > > Yes.  If there is a "freeze" request pending for the vfork parent (TIF_FREEZE
+> > > > set), we have to cancel it before the child is unfrozen, since otherwise the
+> > > > parent may go freezing after we try to reset PF_FROZEN for it.
+> > > 
+> > > I see, thanks... thaw_process() doesn't take TIF_FREEZE into account.
+> > > 
+> > > But doesn't this mean we have a race?
+> > > 
+> > > Suppose that try_to_freeze_tasks() failed. It does cancel_freezing() for each
+> > > process before return, but what if some thread already checked TIF_FREEZE and
+> > > (for simplicity) it is preempted before frozen_process() in refrigerator().
+> > > 
+> > > thaw_tasks() runs, ignores this task (P), returns. P gets CPU, and becomes
+> > > frozen, but nobody will thaw it.
+> > > 
+> > > No?
+> > 
+> > Well, I think this is highly theoretical.  Namely, try_to_freeze_tasks() only
+> > fails after the timeout that's currently set to 20 sec., and it yields the CPU
+> > in each iteration of the main loop.  The task in question would have to refuse
+> > being frozen for 20 sec. and then suddenly decide to freeze itself right before
+> > try_to_freeze_tasks() checks the timeout for the very last time.  Then, it
+> > would have to get preempted at this very moment and stay unfrozen at least
+> > until thaw_tasks() starts running and in fact even longer.
+> 
+> Yes, yes, it is pure theroretical,
+> 
+> > I think we may avoid this by making try_to_freeze_tasks() sleep for some time
+> > after it has reset TIF_FREEZE for all tasks in the error path, if anyone is
+> > ever able to trigger it.
+> 
+> This makes this race  (pure theroretical) ** 2  :)
+> 
+> Still. May be it make sense to introduce cancel_freezing_and_thaw() function
+> (not right now) which stops the task from sleeping in refrigirator reliably.
 
-that's what I figured yes, as you're obviously not interested in
-convincing anyone of your opinions, otherwise you wouldn't mind
-repeating yourself when someone asks you a simple question.
+Hm.  In the case discussed above we have a task that's right before calling
+frozen_process(), so we can't thaw it, because it's not frozen.  It will be
+frozen just in a while, but try_to_freeze_tasks() and thaw_tasks() have no
+way to check this.
 
-Trent
+I think to close this race the refrigerator should check TIF_FREEZE and set
+PF_FROZEN _and_ reset TIF_FREEZE under a lock that would also have to be
+taken by try_to_freeze_tasks() in the beginning of the error path.  This will
+ensure that all tasks either freeze themselves before the error path in
+try_to_freeze_tasks() is executed, or remain unfrozen.
+
+I'll try to prepare a patch to illustrate this, but right now I'm too tired to
+do it. :-)
+
+> I didn't think much about this, but it looks like we can fix coredump/exec
+> problems. Of course, this is not so important, we can ignore them at least
+> for now (->vfork_done is different, should be imho solved, because any user
+> can block freezer forever).
+> 
+> The fix:
+> 
+> 	refrigerator:
+> 
+> 	+	// we are going to call do_exit() really soon,
+> 	+	// we have a pending SIGKILL
+> 	+	if (current->signal->flags & SIGNAL_GROUP_EXIT)
+> 	+		return;
+> 
+> 		frozen_process(current);
+> 		...
+> 
+> 
+> 	zap_other_threads:
+> 
+> 		for_each_subthread() {
+> 			...
+> 
+> 	+		// ---- SIGNAL_GROUP_EXIT is set ------
+> 	+		// we can check sig->group_exit_task to detect de_thread,
+> 	+		// but perhaps it doesn't hurt if the caller is do_group_exit
+> 	+		cancel_freezing_and_thaw(p);
+> 			sigaddset(&t->pending.signal, SIGKILL);
+> 			signal_wake_up(t, 1);
+> 		}
+> 
+> This way execer reliably kills all sub-threads and proceeds without blocking
+> try_to_freeze_tasks(). The same change could be done for zap_process() to fix
+> coredump.
+
+Yes, at first sight it looks good.
+
+BTW, what do you think of the updated patch I sent two messages ago?
+
+Rafael
