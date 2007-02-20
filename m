@@ -1,87 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964972AbXBTPHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964981AbXBTPIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964972AbXBTPHh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 10:07:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964976AbXBTPHh
+	id S964981AbXBTPIs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 10:08:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964983AbXBTPIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 10:07:37 -0500
-Received: from outbound-fra.frontbridge.com ([62.209.45.174]:17159 "EHLO
-	outbound2-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S964972AbXBTPHg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 10:07:36 -0500
-X-BigFish: VP
-X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
-Message-ID: <45DB0EDB.3090803@amd.com>
-Date: Tue, 20 Feb 2007 16:08:11 +0100
-From: "Markus Rechberger" <markus.rechberger@amd.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070206)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] pcmcia/pccard deadlock fix
-X-OriginalArrivalTime: 20 Feb 2007 15:07:12.0907 (UTC)
- FILETIME=[CCE1F5B0:01C75500]
-X-WSS-ID: 69C5D13B2MC8681599-01-01
-Content-Type: multipart/mixed;
- boundary=------------080305010609040003020609
+	Tue, 20 Feb 2007 10:08:48 -0500
+Received: from mx1.suse.de ([195.135.220.2]:33588 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964981AbXBTPIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 10:08:47 -0500
+Date: Tue, 20 Feb 2007 16:08:45 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Stephane Eranian <eranian@hpl.hp.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] perfmon ia64: fix file/vma lifetime
+Message-ID: <20070220150844.GB5044@wotan.suse.de>
+References: <20070220141856.GB31343@wotan.suse.de> <20070220143454.GD30911@frankl.hpl.hp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070220143454.GD30911@frankl.hpl.hp.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080305010609040003020609
-Content-Type: text/plain;
- charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
+On Tue, Feb 20, 2007 at 06:34:54AM -0800, Stephane Eranian wrote:
+> nick,
+> 
+> On Tue, Feb 20, 2007 at 03:18:56PM +0100, Nick Piggin wrote:
+> > From: Nick Piggin <npiggin@suse.de>
+> > 
+> > Perfmon associates vmalloc()ed memory with a file descriptor, and installs
+> > a vma mapping that memory. Unfortunately, the vm_file field is not filled in,
+> > so processes with mappings to that memory do not prevent the file from being
+> > closed and the memory freed. This results in use-after-free bugs and multiple
+> > freeing of pages, etc.
+> > 
+> > I saw this bug on an Altix on SLES9. Haven't reproduced upstream but it looks
+> > like the same issue is there.
+> > 
+> 
+> I think this is possible for the old perfmon v2.0 codebase that is currently in
+> mainline for IA-64.
 
-following patch prevents a mutex/semaphore deadlock within the pcmcia
-framework when ejecting devices multiple times using pccardctl eject.
+OK, I take that as an Ack? (the patch definitely applies, I just can't
+get the Altix to boot 2.6.20 to verify it).
 
-For some more details see:
-http://lkml.org/lkml/2007/2/19/58
+> I have corrected this with the multi-arch v2.3 code base 
+> available as a  kernel patch for the moment.
 
-Signed-off-by: Markus Rechberger <markus.rechberger@amd.com>
+Not that I've looked at the code, but can I be hopeful that v2.3
+using the traditional mmap file operation to set up the vma and map
+in pages, rather than the way that v2.0 works?
 
--- 
-Markus Rechberger
-Operating System Research Center
-AMD Saxony LLC & Co. KG
+Or is there some particular reason why you avoided that?
 
-
---------------080305010609040003020609
-Content-Type: text/plain;
- name=pcmcia-pccard-deadlock-fix.diff
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename=pcmcia-pccard-deadlock-fix.diff
-
-index ac00424..c02bf0d 100644
---- a/drivers/pcmcia/cs.c
-+++ b/drivers/pcmcia/cs.c
-@@ -856,7 +856,8 @@ int pcmcia_eject_card(struct pcmcia_socket *skt)
-     
- 	cs_dbg(skt, 1, "user eject request\n");
- 
--	mutex_lock(&skt->skt_mutex);
-+	if (!mutex_trylock(&skt->skt_mutex)) 
-+		return -EAGAIN;
- 	do {
- 		if (!(skt->state & SOCKET_PRESENT)) {
- 			ret = -ENODEV;
-index 18e111e..b9d3440 100644
---- a/drivers/pcmcia/ds.c
-+++ b/drivers/pcmcia/ds.c
-@@ -1100,7 +1100,9 @@ static ssize_t pcmcia_store_allow_func_id_match(struct device *dev,
- 	if (!count)
- 		return -EINVAL;
- 
--	mutex_lock(&p_dev->socket->skt_mutex);
-+	if (!mutex_trylock(&p_dev->socket->skt_mutex)) 
-+		return -EAGAIN;
-+
- 	p_dev->allow_func_id_match = 1;
- 	mutex_unlock(&p_dev->socket->skt_mutex);
- 
-
---------------080305010609040003020609--
-
+Thanks,
+Nick
 
