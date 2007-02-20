@@ -1,99 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932299AbXBSOkN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932301AbXBSOt2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932299AbXBSOkN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 09:40:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932309AbXBSOkM
+	id S932301AbXBSOt2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 09:49:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932303AbXBSOt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 09:40:12 -0500
-Received: from wr-out-0506.google.com ([64.233.184.226]:44626 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932303AbXBSOkL (ORCPT
+	Mon, 19 Feb 2007 09:49:28 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:23380 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932301AbXBSOt1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 09:40:11 -0500
+	Mon, 19 Feb 2007 09:49:27 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fZRFZliSAlZjNbVedkxyAknYG+mHPzIIBHOx7zsKH6245hPnfzqvnSAZICY9gMHZRxpNjq15wW3avNZEDMiRZ7LBo50iwmFO6yanwyYJHdbEsWbMSWwjKtCke7ebsRAKBqMR+QqIcESfV5xaSZCutqXEWxUmhKoiD+dc52+jvWc=
-Message-ID: <d120d5000702190640y58b0d75akb1579b7c611879eb@mail.gmail.com>
-Date: Mon, 19 Feb 2007 09:40:09 -0500
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: [PATCH] platform: reorder platform_device_del
-Cc: "Greg Kroah-Hartman" <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070219102335.8d56dddd.khali@linux-fr.org>
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=SaGekI6CYMzzl2QXqVaaAsudD/e7m8U7qmmhK7q3iQqvLmw0emJPPUaAvLnWGRVe8LyQQgItvYRvBcuUspc9iEIkPc3mgNA1qeZE/hutvf7VxRcORCpkjDK2UAlw08Peu1Ns5NIyZoALOfOcqXqkArQ1BBdUxhC4HNVXFOR9Fwo=
+Date: Tue, 20 Feb 2007 14:48:14 +0000
+From: Frederik Deweerdt <deweerdt@free.fr>
+To: rmk+lkml@arm.linux.org.uk
+Cc: jose.goncalves@inov.pt, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Serial related oops
+Message-ID: <20070220144814.GJ566@slug>
+References: <20070220132909.GD566@slug> <20070219134539.GA27370@flint.arm.linux.org.uk> <20070220142442.GF566@slug> <20070219143520.GB27370@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070218213020.5618eb98.khali@linux-fr.org>
-	 <200702190105.31051.dtor@insightbb.com>
-	 <20070219102335.8d56dddd.khali@linux-fr.org>
+In-Reply-To: <20070219143520.GB27370@flint.arm.linux.org.uk>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean,
-
-On 2/19/07, Jean Delvare <khali@linux-fr.org> wrote:
-> Hi Dmitry,
->
-> On Mon, 19 Feb 2007 01:05:30 -0500, Dmitry Torokhov wrote:
-> > On Sunday 18 February 2007 15:30, Jean Delvare wrote:
-> > > In platform_device_del(), we currently delete the device resources
-> > > first, then we delete the device itself. This causes a (minor) bug to
-> > > occur when one unregisters a platform device before unregistering its
-> > > platform driver, and the driver is requesting (in .probe()) and
-> > > releasing (in .remove()) a resource of the device. The device
-> > > resources are already gone by the time the driver gets the chance to
-> > > release the resources it had been requesting, causing an error like:
-> > > Trying to free nonexistent resource <0000000000000295-0000000000000296>
-> > >
-> > > If the platform driver is unregistered first, the problem doesn't
-> > > occur, as the driver will have the opportunity to release the
-> > > resources it had requested before the device resources themselves are
-> > > released. It's a bit odd that unregistering the driver first or the
-> > > device first doesn't lead to the same result.
+(trimmed tie-fei.zang from the CC, added by mistake)
+On Mon, Feb 19, 2007 at 02:35:20PM +0000, Russell King wrote:
+> > Neither did I, but introducing printk's through the function, we narrowed
+> > the problem to this part of the code. And removing it makes the problem
+> > go away. We inserted 37 printk's in the function body, and Jose bisected
+> > those until the problem went away.
+> 
+> Well, there's still little clue about why this is causing a NULL pointer
+> dereference.  The only thing I can think is that somehow performing
+> this test is causing a power glitch to your CPU, causing its registers
+> to get corrupted, and which results in it doing a NULL pointer deref.
+That may be the case, indeed.
+> 
+> Are you saying that the NULL pointer occurred while executing this code?
+> If not, where does the NULL pointer occur?
+The thing is, the NULL pointer deref dissapeared as soon as we
+instrumented (printk'ed) the code. So it's seems to be triggered by
+check+timing+hardware.
+> 
+> > > No, it's only runtime because you can't tell which ports might be
+> > > affected, and you might have a mixture of ports which are affected
+> > > and those which aren't.
+> > Hmm, ok. And what about a CONFIG_I_KNOW_MY_SERIAL_IS_BROKEN option?
+> 
+> Andrew's said no (in that the thread you refer to) and suggested an
+> alternative, I've said no, how many more 'no's do you need to turn
+> you away from the wrong approach?
+One is usually sufficient once I've understood :). I missed the module
+option approach. Is it ok with you? If yes, I'll put up a patch to do
+this.
+> 
+> > > > PS: CCing Andrew and Zang Roy-r61911 as they seemed to discuss this in
+> > > > http://lkml.org/lkml/2006/6/13/21
+> > > 
+> > > I don't see any reference to this problem there.
 > >
-> > I am not sure that this is correct argument. Why does a driver request
-> > and release device's resources? "Higher power" has already requested
-> > these resources for the device and this is not drivers task to free
-> > them.
->
-> My understanding is that, in the device driver model, devices _declare_
-> resources, and it's up to the drivers to actually request the ones they
-> wish to use. Looking at /proc/ioports, this hierarchy is quite visible.
-> And while not all platform drivers actually request their device's
-> resource, quite a few do (I counted 95 out of 228), so I'm definitely
-> not the only one thinking it is the right thing to do.
->
-> If the intent was that devices request the resources and the drivers
-> don't have to care, then a driver requesting a device's resource should
-> be returned an error. Instead, it works fine, which make me confident
-> that I got the idea right.
+> > Sorry, I suck, I got that mixed with that one:
+> > http://lkml.org/lkml/2006/12/26/63
+> > "probing for UART_BUG_TXEN in 8250 driver leads to weird effects on some
+> > ARM boards"
+> 
+> The "weird effects" were never quantified, so that's one of the reasons
+> I ignored that report (another being is that I stopped being the serial
+> maintainer a while ago, and now serial is maintainerless.)
+> 
+The problem appears to be reproducible on Jose's hardware within 2-3 days.
+If you see other tests to be performed...
 
-But the thing is that when you add resources to a platofrm device it
-is platform_device_add() that marks resources as busy and therefore it
-is not driver's task to delete them. If you want driver to request
-resources you better pass them through a private data structure
-attached to a device.
-
-The attached resources are normally used by arch setup codes that
-posess the knowledge about whether a device is present on a box and
-what IO port or memory region is used. The device is usualy there and
-its resources fixed and not available to anyone else even if there is
-no driver to actually control the device.
-
->
-> >       However you are right that we should not free resources until
-> > device is marked for deletion and driver's ->remove() method completes
-> > but I would not rely on surrounding code for keeping an extra reference
-> > and would just take one explicitely in platform_device_del().
->
-> You mean that you wouldn't trust the rest of the platform driver core,
-> which lives in the same source file, to do the right thing? That's
-> being too defensive IMHO, and I don't think we usually do that. Greg?
->
-
-platform_device_del() is public so all bets are off...
-
--- 
-Dmitry
+Regards,
+Frederik
