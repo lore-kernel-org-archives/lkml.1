@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932985AbXBTTmM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030369AbXBTTqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932985AbXBTTmM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 14:42:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933001AbXBTTmM
+	id S1030369AbXBTTqj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 14:46:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030372AbXBTTqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 14:42:12 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45637 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932985AbXBTTmL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 14:42:11 -0500
-Date: Tue, 20 Feb 2007 11:42:09 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Rik van Riel <riel@redhat.com>
-cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH] free swap space when (re)activating page
-In-Reply-To: <45DB4C87.6050809@redhat.com>
-Message-ID: <Pine.LNX.4.64.0702201138360.16314@schroedinger.engr.sgi.com>
-References: <45D63445.5070005@redhat.com> <Pine.LNX.4.64.0702192048150.9934@schroedinger.engr.sgi.com>
- <45DAF794.2000209@redhat.com> <Pine.LNX.4.64.0702200833460.13913@schroedinger.engr.sgi.com>
- <45DB25E1.7030504@redhat.com> <Pine.LNX.4.64.0702201015590.14497@schroedinger.engr.sgi.com>
- <45DB4C87.6050809@redhat.com>
+	Tue, 20 Feb 2007 14:46:39 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34250 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030369AbXBTTqi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 14:46:38 -0500
+Message-ID: <45DB4C87.6050809@redhat.com>
+Date: Tue, 20 Feb 2007 14:31:19 -0500
+From: Rik van Riel <riel@redhat.com>
+User-Agent: Thunderbird 1.5.0.7 (X11/20061004)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Christoph Lameter <clameter@sgi.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH] free swap space when (re)activating page
+References: <45D63445.5070005@redhat.com> <Pine.LNX.4.64.0702192048150.9934@schroedinger.engr.sgi.com> <45DAF794.2000209@redhat.com> <Pine.LNX.4.64.0702200833460.13913@schroedinger.engr.sgi.com> <45DB25E1.7030504@redhat.com> <Pine.LNX.4.64.0702201015590.14497@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0702201015590.14497@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Feb 2007, Rik van Riel wrote:
-
-> > Maybe the hunk does apply in a different location than I thought.
+Christoph Lameter wrote:
+> On Tue, 20 Feb 2007, Rik van Riel wrote:
 > 
-> I suspect that's the case ...
+>> Nono, I try to remove the swap space occupied by pages that
+>> go back onto the active list.  Regardless of whether they
+>> were already there, or whether they started out on the
+>> inactive list.
+> 
+> Ok then do it for all pages that go back not just for those leftover from 
+> the moving of pages to the inactive list (why would you move those???)
 
-No that is not the case:
+I do.  The only pages that are exempt are the pages that move
+from the active list to the inactive list, because those will
+probably be evicted soon enough.
 
-@@ -875,6 +878,11 @@ force_reclaim_mapped:
- 		pagevec_strip(&pvec);
- 		spin_lock_irq(&zone->lru_lock);
- 	}
-+	if (vm_swap_full()) {
-+		spin_unlock_irq(&zone->lru_lock);
-+		pagevec_swap_free(&pvec);
-+		spin_lock_irq(&zone->lru_lock);
-+	}
- 
- 	pgmoved = 0;
- 	while (!list_empty(&l_active)) {
+> Maybe the hunk does apply in a different location than I thought.
 
-So you do the swap free on the pages leftover from moving to the inactive 
-list and not to the pages that will be moved to the active list. It does 
-not do what you wanted to be done.
+I suspect that's the case ...
 
-You need to
+> If you 
+> do that in the loop over the pages on active list then it would make 
+> sense. But in that case you need another piece of it doing the same to the 
+> pages that are released at the end of shrink_active_list().
 
-1. Do the pagevec_swap_free in the loop over the active pages
+... because I think this is what my patch does :)
 
-2. At end of the loop over the active pages do something like the above.
-
+-- 
+All Rights Reversed
