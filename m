@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932812AbXBTC4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965604AbXBTDNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932812AbXBTC4e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 21:56:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932815AbXBTC4e
+	id S965604AbXBTDNn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 22:13:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965627AbXBTDNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 21:56:34 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:37787 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932812AbXBTC4d (ORCPT
+	Mon, 19 Feb 2007 22:13:43 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:33227 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965604AbXBTDNm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 21:56:33 -0500
-Message-ID: <45DA6354.3000305@zytor.com>
-Date: Mon, 19 Feb 2007 18:56:20 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Mon, 19 Feb 2007 22:13:42 -0500
+X-Greylist: delayed 1556 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Feb 2007 22:13:42 EST
+Message-ID: <45DA6150.7060704@vandrovec.name>
+Date: Mon, 19 Feb 2007 18:47:44 -0800
+From: Petr Vandrovec <petr@vandrovec.name>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20061219 Iceape/1.0.7 (Debian-1.0.7-3)
 MIME-Version: 1.0
-To: Rodolfo Giometti <giometti@enneenne.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
-References: <20070216185230.GO8882@enneenne.com>
-In-Reply-To: <20070216185230.GO8882@enneenne.com>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: NCPFS and brittle connections
+References: <459D1794.2060009@drzeus.cx> <459D38DA.4030803@vc.cvut.cz> <459D55E3.4000905@drzeus.cx> <459E01B2.50309@vc.cvut.cz> <45B77AE4.2010605@drzeus.cx> <45B79C35.2090302@vc.cvut.cz> <45B7D750.1040501@drzeus.cx> <45B868D5.9070409@vc.cvut.cz> <45B8845E.8070008@drzeus.cx> <45C57695.7000707@vc.cvut.cz> <45C61540.7000008@drzeus.cx> <45C6A99C.5030607@vc.cvut.cz> <45D97DF0.9070306@drzeus.cx>
+In-Reply-To: <45D97DF0.9070306@drzeus.cx>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 20 Feb 2007 02:47:45.0675 (UTC) FILETIME=[7FF39DB0:01C75499]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rodolfo Giometti wrote:
+Pierre Ossman wrote:
+> Sorry this took so long but I got occupied with other things and this
+> had to move down the pile a bit.
 > 
-> Please read the following consideratios before sending to /dev/null!
-> :)
-> 
-> RFC considerations
-> ------------------
-> 
-> While implementing a PPS API as RFC 2783 defines and using an embedded
-> CPU GPIO-Pin as physical link to the signal, I encountered a deeper
-> problem:
-> 
->    At startup it needs a file descriptor as argument for the function
->    time_pps_create().
-> 
-> This implies that the source has a /dev/... entry. This assumption is
-> ok for the serial and parallel port, where you can do something
-> usefull beside(!) the gathering of timestamps as it is the central
-> task for a PPS-API. But this assumption does not work for a single
-> purpose GPIO line. In this case even basic file-related functionality
-> (like read() and write()) makes no sense at all and should not be a
-> precondition for the use of a PPS-API.
-> 
+> New patch which uses dedicated buffers for the currently active packet.
+> Also adds a new state RQ_ABANDONED which basically means "the caller no
+> longer cares about this request so the pointers are no longer valid". It
+> is used to determine if the global receive buffer should be copied to
+> the provided one upon completion.
 
-It's not a precondition for a file descriptor, either.  There are plenty 
-of ioctl-only device drivers in existence.
+Hello,
+   it would be nice if these two copies (request->txbuf, and 
+rxbuf->reply) could be eliminated, but I see no easy way how to do that...
 
-Furthermore, a file descriptor doesn't imply a device entry.  Consider 
-pipe(2), for example.
+> commit 166fb223f9507431fb97820549e3e41980987445
+> Author: Pierre Ossman <ossman@cendio.se>
+> Date:   Mon Feb 19 11:34:43 2007 +0100
+> 
+>     ncpfs: make sure server connection survives a kill
+>     
+>     Use internal buffers instead of the ones supplied by the caller
+>     so that a caller can be interrupted without having to abort the
+>     entire ncp connection.
+>     
+>     Signed-off-by: Pierre Ossman <ossman@cendio.se>
 
-As far as the kernel is concerned, a file handle is a nice, uniform 
-system for providing communication between the kernel and user space. 
-It doesn't matter if one can read() or write() on it; it's perfectly 
-normal to support only a subset of the normal operations.
+Acked-by: Petr Vandrovec <petr@vandrovec.name>
+(modulo one thing below)
 
-	-hpa
+> diff --git a/include/linux/ncp_fs_sb.h b/include/linux/ncp_fs_sb.h
+> index a503052..d5e7ffc 100644
+> --- a/include/linux/ncp_fs_sb.h
+> +++ b/include/linux/ncp_fs_sb.h
+> @@ -50,6 +50,8 @@ struct ncp_server {
+>  	int packet_size;
+>  	unsigned char *packet;	/* Here we prepare requests and
+>  				   receive replies */
+> +	unsigned char *txbuf;	/* Storage for current requres */
+
+Looks like a typo?  requres => request ?
+
+> +	unsigned char *rxbuf;	/* Storage for reply to current request */
+>  
+>  	int lock;		/* To prevent mismatch in protocols. */
+>  	struct mutex mutex;
+
+								Petr
