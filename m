@@ -1,73 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030487AbXBTWRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030496AbXBTWR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030487AbXBTWRo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 17:17:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030496AbXBTWRo
+	id S1030496AbXBTWR6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 17:17:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030497AbXBTWR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 17:17:44 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34377 "EHLO ogre.sisk.pl"
+	Tue, 20 Feb 2007 17:17:58 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58574 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030487AbXBTWRm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 17:17:42 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.20-mm2
-Date: Tue, 20 Feb 2007 23:12:29 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-References: <20070217215146.30e7ffa3.akpm@linux-foundation.org> <200702200220.22721.rjw@sisk.pl> <20070219223151.b3fbe18e.akpm@linux-foundation.org>
-In-Reply-To: <20070219223151.b3fbe18e.akpm@linux-foundation.org>
+	id S1030496AbXBTWR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 17:17:57 -0500
+X-Originating-IP: [172.16.81.92]
+From: "Chris Snook" <csnook@redhat.com>
+To: "Chris Snook" <csnook@redhat.com>, linux-kernel@vger.kernel.org
+Cc: akpm@osdl.org, dhowells@redhat.com, jeffpc@josefsipek.net,
+       csnook@redhat.com
+In-Reply-To: <20070220.waF.48959600@egw.corp.redhat.com>
+Subject: [PATCH 2/2] use use =?UTF-8?Q?SEEK=5FMAX=20to=20validate=20user=20lseek?=
+ =?UTF-8?Q?=20arguments?=
+Date: Tue, 20 Feb 2007 17:05:33 -0500
+Message-ID: <20070220.399.99798900@egw.corp.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200702202312.30067.rjw@sisk.pl>
+X-Mailer: AngleMail for eGroupWare (http://www.egroupware.org) v 1.2.106
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 20 February 2007 07:31, Andrew Morton wrote:
-> On Tue, 20 Feb 2007 02:20:21 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > On Sunday, 18 February 2007 20:43, Andrew Morton wrote:
-> > > On Sun, 18 Feb 2007 13:44:54 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > 
-> > > > On Sunday, 18 February 2007 06:51, Andrew Morton wrote:
-> > > > > 
-> > > > > Temporarily at
-> > > > > 
-> > > > >   http://userweb.kernel.org/~akpm/2.6.20-mm2/
-> > > > > 
-> > > > > Will appear later at
-> > > > > 
-> > > > >  ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm2/
-> > > > 
-> > > > Two problems:
-> > > > 
-> > > > 1) A showstopper with the root partition on RAID1:
-> > > > 
-> > > > md: raid1 personality registered for level 1
-> > > > [--snip--]
-> > > > md: multipath personality registered for level -4
-> > > > register_blkdev: failed to get major for mdp
-> > > > [--snip--]
-> > > > VFS: Cannot open root device "md1" or unknown-block(0,0)
-> > > 
-> > > Someone else reported that against mainline.  Can you please debug it a bit?
-> > 
-> > For now I can only say 2.6.20 + origin.patch breaks.
-> > 
-> > However, it's a SUSE 10.1 system with gcc 4.1.0 and this may be the reason.
-> > I'll check that tomorrow.
-> 
-> Yes, Rolf says this goes away when you stop using gcc-4.1.0.
-> 
-> I'm hoping that churning the code around like below makes things work
-> right.
+From: Chris Snook <csnook@redhat.com>
 
-Yes, that helps.
+Add SEEK_MAX and use it to validate lseek arguments from userspace.
 
-Thanks,
-Rafael
+Signed-off-by: Chris Snook <csnook@redhat.com>
+--
+diff -urp b/fs/read_write.c c/fs/read_write.c
+--- b/fs/read_write.c	2007-02-20 16:48:39.000000000 -0500
++++ c/fs/read_write.c	2007-02-20 16:55:46.000000000 -0500
+@@ -139,7 +139,7 @@ asmlinkage off_t sys_lseek(unsigned int
+ 		goto bad;
+
+ 	retval = -EINVAL;
+-	if (origin <= 2) {
++	if (origin <= SEEK_MAX) {
+ 		loff_t res = vfs_llseek(file, offset, origin);
+ 		retval = res;
+ 		if (res != (loff_t)retval)
+@@ -166,7 +166,7 @@ asmlinkage long sys_llseek(unsigned int
+ 		goto bad;
+
+ 	retval = -EINVAL;
+-	if (origin > 2)
++	if (origin > SEEK_MAX)
+ 		goto out_putf;
+
+ 	offset = vfs_llseek(file, ((loff_t) offset_high << 32) | offset_low,
+diff -urp b/include/linux/fs.h c/include/linux/fs.h
+--- b/include/linux/fs.h	2007-02-20 14:49:46.000000000 -0500
++++ c/include/linux/fs.h	2007-02-20 16:54:30.000000000 -0500
+@@ -30,6 +30,7 @@
+ #define SEEK_SET	0	/* seek relative to beginning of file */
+ #define SEEK_CUR	1	/* seek relative to current file position */
+ #define SEEK_END	2	/* seek relative to end of file */
++#define SEEK_MAX	SEEK_END
+
+ /* And dynamically-tunable limits and defaults: */
+ struct files_stat_struct {
+
