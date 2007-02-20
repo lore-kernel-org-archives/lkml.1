@@ -1,37 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030447AbXBTVcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030419AbXBTVeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030447AbXBTVcr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 16:32:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030449AbXBTVcr
+	id S1030419AbXBTVeZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 16:34:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030434AbXBTVeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 16:32:47 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:43243 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030447AbXBTVcr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 16:32:47 -0500
-Message-ID: <45DB688F.1070209@redhat.com>
-Date: Tue, 20 Feb 2007 16:30:55 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Tue, 20 Feb 2007 16:34:25 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45825 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030419AbXBTVeY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 16:34:24 -0500
+Date: Tue, 20 Feb 2007 13:34:23 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Max Krasnyansky <maxk@qualcomm.com>
+cc: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Gautham shenoy <ego@in.ibm.com>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: slab: start_cpu_timer/cache_reap CONFIG_HOTPLUG_CPU problems
+In-Reply-To: <45DB62B3.8060905@qualcomm.com>
+Message-ID: <Pine.LNX.4.64.0702201333360.17198@schroedinger.engr.sgi.com>
+References: <20070129011301.GA844@tv-sign.ru>
+ <Pine.LNX.4.64.0701290852390.28200@schroedinger.engr.sgi.com>
+ <20070129171923.GA138@tv-sign.ru> <Pine.LNX.4.64.0701290922390.28330@schroedinger.engr.sgi.com>
+ <20070129182742.GA158@tv-sign.ru> <45DB404C.4070305@qualcomm.com>
+ <Pine.LNX.4.64.0702201041340.14643@schroedinger.engr.sgi.com>
+ <45DB62B3.8060905@qualcomm.com>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       torvalds@osdl.org, stable@kernel.org
-Subject: Re: Linux 2.6.18.7
-References: <20070220065946.GA11688@kroah.com>
-In-Reply-To: <20070220065946.GA11688@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> We (the -stable team) are announcing the release of the 2.6.18.7 kernel.
-> It contains one NFS fix that if you run a NFS server, you might want to
-> apply.
+On Tue, 20 Feb 2007, Max Krasnyansky wrote:
 
-Well that's nice.  There's at least one other unfixed CVE
-in 2.6.18.6 -- why didn't you fix that?  (The patch has been
-queued for two months now.)
+> I agree that running the reaper on the wrong CPU is not the best way to go
+> about it.
+> But it seems like disabling it is even worse, unless I missing something. ie
+> wasting
+> memory.
 
+Disabling during shutdown is no problem because the per cpu caches are 
+going to be drained anyways by the cpu down code.
