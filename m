@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932785AbXBUHTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030553AbXBUHYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932785AbXBUHTc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 02:19:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932798AbXBUHTc
+	id S1030553AbXBUHYm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 02:24:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030561AbXBUHYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 02:19:32 -0500
-Received: from sj-iport-4.cisco.com ([171.68.10.86]:21679 "EHLO
-	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932785AbXBUHTb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 02:19:31 -0500
-X-IronPort-AV: i="4.14,200,1170662400"; 
-   d="scan'208"; a="41170965:sNHT57983337"
-To: Steve Wise <swise@opengridcomputing.com>
-Cc: Adrian Bunk <bunk@stusta.de>, Roland Dreier <rolandd@cisco.com>,
-       linux-kernel@vger.kernel.org, mshefty@ichips.intel.com,
-       halr@voltaire.com, openib-general@openib.org
-Subject: Re: [2.6 patch] drivers/infiniband/hw/cxgb3/: possible cleanups
-X-Message-Flag: Warning: May contain useful information
-References: <20070220000211.GZ13958@stusta.de>
-	<1171982587.2101.0.camel@stevo-desktop>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 20 Feb 2007 23:19:28 -0800
-In-Reply-To: <1171982587.2101.0.camel@stevo-desktop> (Steve Wise's message of "Tue, 20 Feb 2007 08:43:06 -0600")
-Message-ID: <ada3b50dlkv.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Wed, 21 Feb 2007 02:24:42 -0500
+Received: from mail.sf-mail.de ([62.27.20.61]:46751 "EHLO mail.sf-mail.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030553AbXBUHYm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 02:24:42 -0500
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: akpm@linux-foundation.org
+Subject: [PATCH 0/2] Remove outdated information from IPX
+Date: Tue, 20 Feb 2007 19:57:12 +0100
+User-Agent: KMail/1.9.6
+Cc: trivial@kernel.org, linux-kernel@vger.kernel.org, acme@conectiva.com.br,
+       netdev@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 21 Feb 2007 07:19:28.0385 (UTC) FILETIME=[9F897F10:01C75588]
-Authentication-Results: sj-dkim-6; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim6002 verified; ); 
+Message-Id: <200702201957.13531.eike-kernel@sf-tec.de>
+Content-Type: multipart/signed;
+  boundary="nextPart4654498.saB67gjDrM";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > You could just remove the code instead of #if 0...
+--nextPart4654498.saB67gjDrM
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Steve, can you decide what the right thing to do with these changes is
-and send me the result (or just tell me to apply Adrian's patch
-as-is)?
+Who cares about stuff describing what happened in early 2.5 days? Even wors=
+e=20
+is to reference Kconfig options removed back then. Go, rest in pieces.
 
-Thanks,
-  Roland
+Eike
+
+--nextPart4654498.saB67gjDrM
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQBF20SJXKSJPmm5/E4RAuoCAJ9j9oL8OWO/oU1OXgK1xNTEcGdcYQCeM3EE
+N2shXQhgFwPpleT3W04J0uQ=
+=zgcX
+-----END PGP SIGNATURE-----
+
+--nextPart4654498.saB67gjDrM--
