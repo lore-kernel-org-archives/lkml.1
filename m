@@ -1,88 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161048AbXBTWqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161003AbXBTWrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161048AbXBTWqx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 17:46:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161043AbXBTWqx
+	id S1161003AbXBTWrq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 17:47:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161044AbXBTWrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 17:46:53 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:39730 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161041AbXBTWqv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 17:46:51 -0500
-X-Sasl-enc: 3w+Nyk30+uhqkBXV4B0CbNVFCWxDrb2L0vQs6uwvtsnk 1172011677
-Message-ID: <45DB7AA2.4010804@imap.cc>
-Date: Tue, 20 Feb 2007 23:48:02 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
+	Tue, 20 Feb 2007 17:47:46 -0500
+Received: from mx2.suse.de ([195.135.220.15]:54039 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161003AbXBTWrp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 17:47:45 -0500
+Date: Tue, 20 Feb 2007 14:46:14 -0800
+From: Greg KH <greg@kroah.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       torvalds@osdl.org, stable@kernel.org
+Subject: Re: Linux 2.6.18.7
+Message-ID: <20070220224614.GA4390@kroah.com>
+References: <20070220065946.GA11688@kroah.com> <45DB688F.1070209@redhat.com>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-mm2: possible recursive locking detected (reiserfs-related)
-References: <20070217215146.30e7ffa3.akpm@linux-foundation.org> <200702202223.54046.rjw@sisk.pl>
-In-Reply-To: <200702202223.54046.rjw@sisk.pl>
-X-Enigmail-Version: 0.94.1.2
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig014AC67E3EF4E11EC663BF46"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45DB688F.1070209@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig014AC67E3EF4E11EC663BF46
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, Feb 20, 2007 at 04:30:55PM -0500, Chuck Ebbert wrote:
+> Greg KH wrote:
+> > We (the -stable team) are announcing the release of the 2.6.18.7 kernel.
+> > It contains one NFS fix that if you run a NFS server, you might want to
+> > apply.
+> 
+> Well that's nice.  There's at least one other unfixed CVE
+> in 2.6.18.6 -- why didn't you fix that?  (The patch has been
+> queued for two months now.)
 
-Am 20.02.2007 22:23 schrieb Rafael J. Wysocki:
-> Looks like reiserfs has some locking problems:
->=20
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> [ INFO: possible recursive locking detected ]
-> 2.6.20-mm2 #6
-> ---------------------------------------------
-> beagled/4786 is trying to acquire lock:
->  (&inode->i_mutex){--..}, at: [<ffffffff80479df9>] mutex_lock+0x19/0x20=
+I'm working on pushing the 2.6.18-stable queue out soon, sorry, been
+backed up with other things recently.
 
->=20
-> but task is already holding lock:
->  (&inode->i_mutex){--..}, at: [<ffffffff80479df9>] mutex_lock+0x19/0x20=
+I pushed this one out so quickly, as it was able to be triggered
+remotely, unlike the current patches in the 2.6.18-stable queue.
 
->=20
-> other info that might help us debug this:
-> 3 locks held by beagled/4786:
->  #0:  (&inode->i_mutex){--..}, at: [<ffffffff80479df9>] mutex_lock+0x19=
-/0x20
->  #1:  (&REISERFS_I(inode)->xattr_sem){----}, at: [<ffffffff80304c99>] r=
-eiserfs_setxattr+0x79/0x150
->  #2:  (&REISERFS_SB(s)->xattr_dir_sem){----}, at: [<ffffffff80304cc0>] =
-reiserfs_setxattr+0xa0/0x150
+thanks,
 
-This looks like the same I have been seeing in every release
-since 2.6.18. I reported it a couple of times, and Srinivasa Ds
-tried a few fixes on me during 2.6.19-rc4, but we never got to
-the bottom of it.
-
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig014AC67E3EF4E11EC663BF46
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFF23qiMdB4Whm86/kRAn6YAJ9RtV41xX4V5ONFQVwNT6vrYoYKEwCeOeZC
-T88Ch6N/r053H0p1jZdXJws=
-=HG/h
------END PGP SIGNATURE-----
-
---------------enig014AC67E3EF4E11EC663BF46--
+greg k-h
