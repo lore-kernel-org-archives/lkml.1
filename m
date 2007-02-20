@@ -1,75 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161050AbXBTXHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161051AbXBTXIN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161050AbXBTXHG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 18:07:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161051AbXBTXHG
+	id S1161051AbXBTXIN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 18:08:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161065AbXBTXIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 18:07:06 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:39708 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161050AbXBTXHE (ORCPT
+	Tue, 20 Feb 2007 18:08:13 -0500
+Received: from watts.utsl.gen.nz ([202.78.240.73]:55564 "EHLO
+	magnus.utsl.gen.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161051AbXBTXIM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 18:07:04 -0500
-X-Originating-Ip: 74.102.209.62
-Date: Tue, 20 Feb 2007 18:01:32 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Tilman Schmidt <tilman@imap.cc>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kbuild: Add the code maturity levels DEPRECATED and
- OBSOLETE.
-In-Reply-To: <20070220225622.GA8347@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0702201757530.11185@localhost.localdomain>
-References: <Pine.LNX.4.64.0702181203360.5131@CPE00045a9c397f-CM001225dbafb6>
- <200702181935.07454.bzolnier@gmail.com> <45DB218E.1080106@imap.cc>
- <Pine.LNX.4.64.0702201746050.11016@localhost.localdomain>
- <20070220225622.GA8347@uranus.ravnborg.org>
+	Tue, 20 Feb 2007 18:08:12 -0500
+Message-ID: <45DB7F55.20008@vilain.net>
+Date: Wed, 21 Feb 2007 12:08:05 +1300
+From: Sam Vilain <sam@vilain.net>
+User-Agent: Thunderbird 1.5.0.2 (X11/20060521)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (cached,
-	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, TW_VN 0.08)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+To: Paul Menage <menage@google.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, akpm@osdl.org, pj@sgi.com,
+       sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
+       vatsa@in.ibm.com, containers@lists.osdl.org, winget@google.com,
+       rohitseth@google.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7] containers (V7): Generic Process Containers
+References: <20070212081521.808338000@menage.corp.google.com>	 <45D0EC68.9090009@vilain.net>	 <6599ad830702121515p10bc1b58kf1d29367b9b18016@mail.gmail.com>	 <m1wt2c4ttj.fsf@ebiederm.dsl.xmission.com>	 <6599ad830702200955l10f3c71aucff1d4b815e1a1e7@mail.gmail.com>	 <m1bqjo4ogj.fsf@ebiederm.dsl.xmission.com> <6599ad830702201447t711cdf00u3704a0dac8780f91@mail.gmail.com>
+In-Reply-To: <6599ad830702201447t711cdf00u3704a0dac8780f91@mail.gmail.com>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Feb 2007, Sam Ravnborg wrote:
+Paul Menage wrote:
+>> No. A reverse mapping is not needed and is not interesting.
+>>     
+> ... to you.
+>   
 
-> On Tue, Feb 20, 2007 at 05:47:43PM -0500, Robert P. J. Day wrote:
+You're missing the point of Eric's next sentence.  If you can achieve
+everything you need to achieve and get all the information you are after
+without it, then it is uninteresting.
 
-> > in a nutshell, my idea of deprecated is: perhaps still supported,
-> > still being used, but there is a better alternative available right
-> > now and you should consider switching at your convenience.
-> >
-> > obsolete means dead/unsupported/use at own risk.  might still work but
-> > no guarantees and could be removed at any time.
+>> As long as I can walk all processes and ask what namespace are
+>> you in I don't care.
+>>     
 >
-> This is also my understanding. In MIB's the terms are sued more-or-less
-> as defined by Robert.
->
-> 	Sam (non-native)
+> How do you currently do that?
+>   
 
-see:  http://www.w3.org/TR/WD-html40-970917/convent.html, particularly
-how deprecated is defined "outdated by newer constructs," meaning that
-there is a better alternative available *now* and not just on the way.
+Take a look at /proc/PID/mounts for example.
 
-i can always change the wording in the patch, but if we get any more
-pedantic, we're going to be counting how many angels you can get on
-a split hair.
+>> All that is necessary to have a group of processes do something
+>> in an unnamed fashion is to hang a pointer off of the task_struct.
+>> That's easy.
+>>     
+> Right, adding a pointer to task_struct is easy. Configuring how/when
+> to not directly inherit it from the parent, or to change it for a
+> running task, or configuring state associated with the thing that the
+> pointer is pointing to, naming that group, and determining which group
+> a given process is assocaited with, is something that's effectively
+> repeated boiler plate for each different subsystem, and which can be
+> accomplished more generically via an abstraction like my containers
+> patch.
+>   
 
-rday
+So make helpers.  Macros.  Anything, just don't introduce model
+limitations like the container structure, because we've already got the
+structure; the nsproxy.
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Sam.
