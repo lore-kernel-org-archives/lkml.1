@@ -1,117 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964936AbXBTOf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964954AbXBTOiL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964936AbXBTOf3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 09:35:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964943AbXBTOf2
+	id S964954AbXBTOiL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 09:38:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964955AbXBTOiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 09:35:28 -0500
-Received: from madara.hpl.hp.com ([192.6.19.124]:51476 "EHLO madara.hpl.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964951AbXBTOf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 09:35:27 -0500
-Date: Tue, 20 Feb 2007 06:34:54 -0800
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] perfmon ia64: fix file/vma lifetime
-Message-ID: <20070220143454.GD30911@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <20070220141856.GB31343@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 20 Feb 2007 09:38:11 -0500
+Received: from redstar.dorchain.net ([212.88.133.153]:43129 "EHLO
+	Redstar.dorchain.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964954AbXBTOiK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 09:38:10 -0500
+X-Greylist: delayed 1123 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Feb 2007 09:38:09 EST
+Date: Tue, 20 Feb 2007 15:12:04 +0100
+From: Joerg Dorchain <joerg@dorchain.net>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Adrian Bunk <bunk@stusta.de>, kkeil@suse.de,
+       isdn4linux@listserv.isdn4linux.de, Hansjoerg Lipp <hjlipp@web.de>,
+       Kai Germaschewski <kai.germaschewski@unh.edu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Kbuild problem
+Message-ID: <20070220141204.GI3250@Redstar.dorchain.net>
+References: <45D74B46.3090602@imap.cc> <Pine.LNX.4.44.0702180017170.1150-100000@localhost.localdomain> <20070218104028.GU13958@stusta.de> <45DAFE0B.1070305@imap.cc>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="TBFeK8oU8Jij/i72"
 Content-Disposition: inline
-In-Reply-To: <20070220141856.GB31343@wotan.suse.de>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+In-Reply-To: <45DAFE0B.1070305@imap.cc>
+X-message-flag: Formating hard disk. please wait...   10%...  20%...
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-nick,
 
-On Tue, Feb 20, 2007 at 03:18:56PM +0100, Nick Piggin wrote:
-> From: Nick Piggin <npiggin@suse.de>
-> 
-> Perfmon associates vmalloc()ed memory with a file descriptor, and installs
-> a vma mapping that memory. Unfortunately, the vm_file field is not filled in,
-> so processes with mappings to that memory do not prevent the file from being
-> closed and the memory freed. This results in use-after-free bugs and multiple
-> freeing of pages, etc.
-> 
-> I saw this bug on an Altix on SLES9. Haven't reproduced upstream but it looks
-> like the same issue is there.
-> 
+--TBFeK8oU8Jij/i72
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I think this is possible for the old perfmon v2.0 codebase that is currently in
-mainline for IA-64. I have corrected this with the multi-arch v2.3 code base 
-available as a  kernel patch for the moment.
+On Tue, Feb 20, 2007 at 02:56:27PM +0100, Tilman Schmidt wrote:
+> > One disadvantage of this approach is that in a kernel with=20
+> > CONFIG_GIGASET_BASE=3Dy, you can't later compile and load the usb_gigas=
+et=20
+> > or ser_gigaset modules without rebooting since they require a change to=
+=20
+> > the kernel image.
+>=20
+> You've got a point there. So linking asyncdata.o into the modules that
+> need it, as it is currently done, would perhaps be better after all?
 
-Thanks.
+=46rom the architectural point of view, what odds against making it a
+module of its own? Dependancies are resolved by modprobe, so users should
+be fine.
+There are other library-like parts in the kernel where an object is
+built statically when at least one needing driver is static, a module
+when all nedding drivers are modules, or not at all but appears are a
+config option when no in-kernel driver needs it.
 
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
-> 
-> Index: linux-2.6/arch/ia64/kernel/perfmon.c
-> ===================================================================
-> --- linux-2.6.orig/arch/ia64/kernel/perfmon.c
-> +++ linux-2.6/arch/ia64/kernel/perfmon.c
-> @@ -2261,7 +2261,7 @@ pfm_remap_buffer(struct vm_area_struct *
->   * allocate a sampling buffer and remaps it into the user address space of the task
->   */
->  static int
-> -pfm_smpl_buffer_alloc(struct task_struct *task, pfm_context_t *ctx, unsigned long rsize, void **user_vaddr)
-> +pfm_smpl_buffer_alloc(struct task_struct *task, struct file *filp, pfm_context_t *ctx, unsigned long rsize, void **user_vaddr)
->  {
->  	struct mm_struct *mm = task->mm;
->  	struct vm_area_struct *vma = NULL;
-> @@ -2312,6 +2312,7 @@ pfm_smpl_buffer_alloc(struct task_struct
->  	 * partially initialize the vma for the sampling buffer
->  	 */
->  	vma->vm_mm	     = mm;
-> +	vma->vm_file	     = filp;
->  	vma->vm_flags	     = VM_READ| VM_MAYREAD |VM_RESERVED;
->  	vma->vm_page_prot    = PAGE_READONLY; /* XXX may need to change */
->  
-> @@ -2350,6 +2351,8 @@ pfm_smpl_buffer_alloc(struct task_struct
->  		goto error;
->  	}
->  
-> +	get_file(filp);
-> +
->  	/*
->  	 * now insert the vma in the vm list for the process, must be
->  	 * done with mmap lock held
-> @@ -2427,7 +2430,7 @@ pfarg_is_sane(struct task_struct *task, 
->  }
->  
->  static int
-> -pfm_setup_buffer_fmt(struct task_struct *task, pfm_context_t *ctx, unsigned int ctx_flags,
-> +pfm_setup_buffer_fmt(struct task_struct *task, struct file *filp, pfm_context_t *ctx, unsigned int ctx_flags,
->  		     unsigned int cpu, pfarg_context_t *arg)
->  {
->  	pfm_buffer_fmt_t *fmt = NULL;
-> @@ -2468,7 +2471,7 @@ pfm_setup_buffer_fmt(struct task_struct 
->  		/*
->  		 * buffer is always remapped into the caller's address space
->  		 */
-> -		ret = pfm_smpl_buffer_alloc(current, ctx, size, &uaddr);
-> +		ret = pfm_smpl_buffer_alloc(current, filp, ctx, size, &uaddr);
->  		if (ret) goto error;
->  
->  		/* keep track of user address of buffer */
-> @@ -2679,7 +2682,7 @@ pfm_context_create(pfm_context_t *ctx, v
->  	 * does the user want to sample?
->  	 */
->  	if (pfm_uuid_cmp(req->ctx_smpl_buf_id, pfm_null_uuid)) {
-> -		ret = pfm_setup_buffer_fmt(current, ctx, ctx_flags, 0, req);
-> +		ret = pfm_setup_buffer_fmt(current, filp, ctx, ctx_flags, 0, req);
->  		if (ret) goto buffer_error;
->  	}
->  
+>=20
+> The alternative would be to always link asyncdata.o into the gigaset
+> module whether it's needed or not. "size asyncdata.o" says:
+>    text    data     bss     dec     hex filename
+>    4200       0       0    4200    1068 asyncdata.o
+> which appears tolerable.
 
--- 
+Ugly. But I've seen worse.
 
--Stephane
+Bye,
+
+Joerg
+
+--TBFeK8oU8Jij/i72
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFF2wG0jY4+4PdzvOARAgZOAJ9ypJoLSDyVNV+Olve6bOK+horqpgCfep1c
+N2gmduQk9WNwRLf8Y86ezqk=
+=T14C
+-----END PGP SIGNATURE-----
+
+--TBFeK8oU8Jij/i72--
