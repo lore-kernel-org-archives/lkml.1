@@ -1,74 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161057AbXBTXKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161052AbXBTXLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161057AbXBTXKw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 18:10:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161065AbXBTXKw
+	id S1161052AbXBTXLW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 18:11:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161068AbXBTXLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 18:10:52 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:43598 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161057AbXBTXKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 18:10:51 -0500
+	Tue, 20 Feb 2007 18:11:22 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:43227 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161052AbXBTXLV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 18:11:21 -0500
+X-Sasl-enc: hMlr071kV/BRr1oY5CeUQ0BuqlKSrFV86C/AxNFpWjOw 1172013145
+Message-ID: <45DB805C.5010808@imap.cc>
+Date: Wed, 21 Feb 2007 00:12:28 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-X-Fcc: ~/Mail/linus
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
-       Michael Kerrisk <mtk-manpages@gmx.net>
-Subject: Re: [PATCH] fix handling of SIGCHILD from reaped child
-In-Reply-To: Oleg Nesterov's message of  Tuesday, 20 February 2007 20:20:49 +0300 <20070220172049.GA67@tv-sign.ru>
-X-Shopping-List: (1) Chic competent expectation inquisitions
-   (2) Exotic Ritz Cracker Crumbs
-   (3) Neoclassical redeemer dividers
-Message-Id: <20070220231007.29FB81800E4@magilla.sf.frob.com>
-Date: Tue, 20 Feb 2007 15:10:07 -0800 (PST)
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] kbuild: Add the code maturity levels DEPRECATED and OBSOLETE.
+References: <Pine.LNX.4.64.0702181203360.5131@CPE00045a9c397f-CM001225dbafb6> <200702181935.07454.bzolnier@gmail.com> <45DB218E.1080106@imap.cc> <200702201942.50186.bzolnier@gmail.com> <Pine.LNX.4.64.0702201750030.11016@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0702201750030.11016@localhost.localdomain>
+X-Enigmail-Version: 0.94.1.2
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig384BCF3B7FCD8799124D9406"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm usually the stickler for anal POSIX compliance, but this is one thing
-that I did notice a while ago, realized Linux had never done it, and
-decided I didn't care.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig384BCF3B7FCD8799124D9406
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-This is one of those parts of the standard that was originally written in a
-single-threaded process frame of mind, and was never amended or clarified
-later when multi-threaded semantics got well-specified in the standard.
+Am 20.02.2007 23:52 schrieb Robert P. J. Day:
+> "deprecated" means that there *is* a complete replacement available
+> *right now* and you should consider switching to it.
+>=20
+> if you can't offer someone a completely functional, better alternative
+> to what they're using now, then you can't say that what they're using
+> now is deprecated.
 
-It's clear what the requirement is trying to achieve.  It lets you have a
-SIGCHLD signal handler that calls wait, and be sure its call never blocks,
-as long as you block SIGCHLD while making any other wait calls.  But Linux
-has never done this even for single-threaded processes, so existing
-application code already has to cope with the race.  (Anyway, this
-guarantee is not all that helpful if you have more than one child and so
-might be running the handler once after SIGCHLD was generated more than
-once.  You can't just use WNOHANG in your handler because you aren't
-actually guaranteed that the zombie is ready already when you get the SIGCHLD.)
+So, to take a specific example (incidentally the one I am
+personally interested in):
 
-This guarantee is not of any use when there might be other threads with
-SIGCHLD unblocked or other threads that call wait* functions (calls that
-draw from the same pool of PIDs anyway).  There can always be another
-thread that just dequeued the SIGCHLD but hasn't gotten into its handler
-yet, so clearing the pending SIGCHLD doesn't really cover it.
+isdn4linux (CONFIG_ISDN_I4L), currently marked as "obsolete"
+(which is undoubtedly incorrect), would not even qualify as
+"deprecated" as long as its successor, the CAPI 2.0 subsystem
+(CONFIG_ISDN_CAPI) doesn't support all the hardware currently
+supported by old i4l.
 
-Unhelpful as it is the multithreaded context, I think it's clear that the
-standard's wording means "when SIGCHLD is blocked by the thread calling
-wait", but in fact as to being a guarantee it's only meaningful when
-SIGCHLD is blocked by all threads.  The mention of blocking the signal is
-only there to remind you that well-defined semantics about a "pending"
-signal only ever apply when the signal is blocked.  If any thread has it
-unblocked, then "pending" is an ephemeral condition not necessarily
-observable at all--as soon as you could say it's pending, some such thread
-might be handling it.
-
-The "if there is another child available" test is rather ugly to do
-correctly now.  It would be less so if the children list moved into
-signal_struct and was just shared directly.  The most "correct" it can get
-is still not all that useful in a multithreaded context.  So I'm pretty
-ambivalent about bothering with this.
-
+Or did I misunderstand something there?
 
 Thanks,
-Roland
+Tilman
 
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enig384BCF3B7FCD8799124D9406
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFF24BcMdB4Whm86/kRAiIOAJ9sv3o8SHv4NXrkst+k0vXUAf1s6QCfRFjl
+Z2w6ZQxPN7KgZBDLdP6IzEg=
+=bjVB
+-----END PGP SIGNATURE-----
+
+--------------enig384BCF3B7FCD8799124D9406--
