@@ -1,74 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932956AbXBTOsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932962AbXBTOui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932956AbXBTOsZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 09:48:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932953AbXBTOsZ
+	id S932962AbXBTOui (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 09:50:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964958AbXBTOui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 09:48:25 -0500
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:36339 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932461AbXBTOsY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 09:48:24 -0500
-Date: Tue, 20 Feb 2007 09:48:23 -0500
-To: takada <takada@mbf.nifty.com>
-Cc: rdreier@cisco.com, pcnet32@verizon.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: MediaGX/GeodeGX1 requires X86_OOSTORE.
-Message-ID: <20070220144823.GN7585@csclub.uwaterloo.ca>
-References: <ada3b5253p0.fsf@cisco.com> <20070220.085639.260788422.takada@mbf.nifty.com> <20070220000231.GM7585@csclub.uwaterloo.ca> <20070220.203413.260790539.takada@mbf.nifty.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070220.203413.260790539.takada@mbf.nifty.com>
-User-Agent: Mutt/1.5.9i
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Tue, 20 Feb 2007 09:50:38 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43337 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932962AbXBTOuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 09:50:37 -0500
+Message-ID: <45DB0AAE.3020800@redhat.com>
+Date: Tue, 20 Feb 2007 09:50:22 -0500
+From: Prarit Bhargava <prarit@redhat.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+MIME-Version: 1.0
+To: Zwane Mwaikambo <zwane@infradead.org>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH]: Change sysenter_setup to __cpuinit & improve __INIT,
+ __INITDATA
+References: <20070219205012.13934.82952.sendpatchset@prarit.boston.redhat.com> <Pine.LNX.4.64.0702191409470.32172@montezuma.fsmlabs.com>
+In-Reply-To: <Pine.LNX.4.64.0702191409470.32172@montezuma.fsmlabs.com>
+Content-Type: multipart/mixed;
+ boundary="------------060903090406060402080206"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 20, 2007 at 08:34:13PM +0900, takada wrote:
-> I posted with 2.6.20 + enabled X86_OOSTORE.
-> The clflush sze line is in /proc/cpuinfo. but clfush is not in flags line.
-> 
-> BTW, can we use WBINVD instruction? I tested compile only.
-> Do you know a method to change dynamically without #ifdef when it works
-> with MediaGX/GeodeGX.
-> 
-> diff -Narup a/include/asm-i386/io.h b/include/asm-i386/io.h
-> --- a/include/asm-i386/io.h	2007-02-20 16:23:25.000000000 +0900
-> +++ b/include/asm-i386/io.h	2007-02-20 17:07:14.000000000 +0900
-> @@ -232,7 +232,19 @@ static inline void memcpy_toio(volatile 
->   *	2. Accidentally out of order processors (PPro errata #51)
->   */
+This is a multi-part message in MIME format.
+--------------060903090406060402080206
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+
+
+Zwane Mwaikambo wrote:
+> Shouldn't this be __CPUINT/__CPUINITDATA? That way you could also get rid  of things like in x86_64 head.S;
+>
+> #ifndef CONFIG_HOTPLUG_CPU
+>         __INITDATA
+> #endif
 >   
-> -#if defined(CONFIG_X86_OOSTORE) || defined(CONFIG_X86_PPRO_FENCE)
-> +#ifdef CONFIG_MGEODEGX1
-> +
-> +static inline void dma_flush_cache(void)
-> +{
-> +	__asm__ __volatile__ ("wbinvd": : :"memory");
-> +}
-> +
-> +#define dma_cache_inv(_start,_size)		dma_flush_cache()
-> +#define dma_cache_wback(_start,_size)		dma_flush_cache()
-> +#define dma_cache_wback_inv(_start,_size)	dma_flush_cache()
-> +#define flush_write_buffers()
-> +
-> +#elif defined(CONFIG_X86_OOSTORE) || defined(CONFIG_X86_PPRO_FENCE)
->  
->  static inline void flush_write_buffers(void)
->  {
-> -
+Zwane -- good point.  New patch.
 
-Well it is starting to look like it isn't a caching issue, but more
-likely an issue of which order writes are performed in.  I think the MAC
-might be seeing the ownership bit change before the rest of the
-descriptor, which shouldn't happen.  With X86_OOSTORE, wmb() is called
-between setting the fields in the descriptor and setting the ownership
-bit to the MAC.  I still have to investigate a bit more to find out for
-sure, but that could certainly explain why X86_OOSTORE makes the problem
-become much less frequent.  It doesn't completely elliminate it though.
-Of course maybe there are two different problems with the same symptoms.
+P.
 
---
-Len Sorensen
+
+
+
+--------------060903090406060402080206
+Content-Type: text/plain;
+ name="init-v2.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="init-v2.patch"
+
+Change sysenter_setup to __cpuinit.
+Add __CPUINIT & __CPUINITDATA.
+
+Resolve MODPOST warnings similar to:
+
+WARNING: vmlinux - Section mismatch: reference to .init.text:sysenter_setup from
+ .text between 'identify_cpu' (at offset 0xc040a380) and 'detect_ht'
+
+and
+
+WARNING: vmlinux - Section mismatch: reference to .init.data:vsyscall_int80_end
+from .text between 'sysenter_setup' (at offset 0xc041a269) and 'enable_sep_cpu'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:vsyscall_int80_start from .text between 'sysenter_setup' (at offset
+0xc041a26e) and 'enable_sep_cpu'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:vsyscall_sysenter_end from .text between 'sysenter_setup' (at offset
+0xc041a275) and 'enable_sep_cpu'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:vsyscall_sysenter_start from .text between 'sysenter_setup' (at
+offset 0xc041a27a) and 'enable_sep_cpu'
+
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+
+diff --git a/arch/i386/kernel/sysenter.c b/arch/i386/kernel/sysenter.c
+index 13ca54a..168f814 100644
+--- a/arch/i386/kernel/sysenter.c
++++ b/arch/i386/kernel/sysenter.c
+@@ -72,7 +72,7 @@ extern const char vsyscall_int80_start, vsyscall_int80_end;
+ extern const char vsyscall_sysenter_start, vsyscall_sysenter_end;
+ static struct page *syscall_pages[1];
+ 
+-int __init sysenter_setup(void)
++int __cpuinit sysenter_setup(void)
+ {
+ 	void *syscall_page = (void *)get_zeroed_page(GFP_ATOMIC);
+ 	syscall_pages[0] = virt_to_page(syscall_page);
+diff --git a/arch/x86_64/kernel/head.S b/arch/x86_64/kernel/head.S
+index 598a4d0..d3e3db3 100644
+--- a/arch/x86_64/kernel/head.S
++++ b/arch/x86_64/kernel/head.S
+@@ -324,9 +324,7 @@ ENTRY(wakeup_level4_pgt)
+ 	.quad	phys_level3_kernel_pgt | 0x007
+ #endif
+ 
+-#ifndef CONFIG_HOTPLUG_CPU
+-	__INITDATA
+-#endif
++	__CPUINITDATA
+ 	/*
+ 	 * This default setting generates an ident mapping at address 0x100000
+ 	 * and a mapping for the kernel that precisely maps virtual address
+diff --git a/include/linux/init.h b/include/linux/init.h
+index e290a01..6592357 100644
+--- a/include/linux/init.h
++++ b/include/linux/init.h
+@@ -56,6 +56,14 @@
+ #define __FINIT		.previous
+ #define __INITDATA	.section	".init.data","aw"
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++#define __CPUINIT	.section	".text","ax"
++#define __CPUINITDATA	.section	".data","ax"
++#else
++#define __CPUINIT	__INIT
++#define __CPUINITDATA	__INITDATA
++#endif
++
+ #ifndef __ASSEMBLY__
+ /*
+  * Used for initialization calls..
+
+--------------060903090406060402080206--
