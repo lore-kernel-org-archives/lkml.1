@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965792AbXBTAqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965788AbXBTAra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965792AbXBTAqt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 19:46:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965788AbXBTAqt
+	id S965788AbXBTAra (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 19:47:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965795AbXBTAra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 19:46:49 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:48017 "EHLO smtps.tip.net.au"
+	Mon, 19 Feb 2007 19:47:30 -0500
+Received: from lucidpixels.com ([75.144.35.66]:45645 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965792AbXBTAqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 19:46:48 -0500
-Date: Tue, 20 Feb 2007 11:47:13 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] drivers/char/hvc_console.c: cleanups
-Message-Id: <20070220114713.c86ad072.sfr@canb.auug.org.au>
-In-Reply-To: <20070220000207.GX13958@stusta.de>
-References: <20070220000207.GX13958@stusta.de>
-X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__20_Feb_2007_11_47_13_+1100_jkXk6uuXk1TDLt85"
+	id S965788AbXBTAr3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 19:47:29 -0500
+Date: Mon, 19 Feb 2007 19:47:23 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: e1000-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org, linux.nics@intel.com, taroon-list@redhat.com
+Subject: RHEL3 2.4.21-37a6smp 10GBps Intel 10GBps NIC: ixgb_clean_tx_irq:
+ Detected Tx Unit Hang - Machine locks up.
+Message-ID: <Pine.LNX.4.64.0702191940320.21239@p34.internal.lan>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__20_Feb_2007_11_47_13_+1100_jkXk6uuXk1TDLt85
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Quick question,
 
-On Tue, 20 Feb 2007 01:02:07 +0100 Adrian Bunk <bunk@stusta.de> wrote:
->
-> This patch contains the following cleanups:
-> - make needlessly global code static
-> - remove the unused EXPORT_SYMBOL's
->
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+I am using the latest ixgb driver (1.0.126) as stated both on Intel's 
+website and here: http://sourceforge.net/forum/forum.php?forum_id=645203
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+After a number of hours, sometimes days, I will get this error on the 
+console and the box locks up:
 
---Signature=_Tue__20_Feb_2007_11_47_13_+1100_jkXk6uuXk1TDLt85
-Content-Type: application/pgp-signature
+ixgb: eth2: ixgb_clean_tx_irq: Detected Tx Unit Hang
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Intel told us that the 126 version of this driver was supposed to fix this 
+problem.  Is there anyone from Intel on this list or someone who has dealt 
+with this issue and has a potential fix?
 
-iD8DBQFF2kUWFdBgD/zoJvwRAsKXAKCKwfdBMHNhVpu2hPXluzE+Qxkr+gCeOUGQ
-FhrMCnfKuFnv3sBU6zarsOY=
-=85Ck
------END PGP SIGNATURE-----
+The Intel Board is 10GBe PCI-X card in a HP DL385.
 
---Signature=_Tue__20_Feb_2007_11_47_13_+1100_jkXk6uuXk1TDLt85--
+Can anyone offer some assistance with this issue?
+
+Please CC as I am not on lkml or taroon mailing lists, thanks.
+
+Justin.
+
+
