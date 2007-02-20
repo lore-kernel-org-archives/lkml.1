@@ -1,109 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964958AbXBTOzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964969AbXBTO4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964958AbXBTOzv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 09:55:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964969AbXBTOzv
+	id S964969AbXBTO4g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 09:56:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964970AbXBTO4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 09:55:51 -0500
-Received: from thunk.org ([69.25.196.29]:35646 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964958AbXBTOzu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 09:55:50 -0500
-Date: Tue, 20 Feb 2007 09:55:03 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Artem Bityutskiy <dedekind@infradead.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Frank Haverkamp <haver@vnet.ibm.com>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH 05/44 take 2] [UBI] internal common header
-Message-ID: <20070220145503.GC3170@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Artem Bityutskiy <dedekind@infradead.org>,
-	Christoph Hellwig <hch@infradead.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Frank Haverkamp <haver@vnet.ibm.com>,
-	Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	David Woodhouse <dwmw2@infradead.org>
-References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain> <20070217165449.5845.18238.sendpatchset@localhost.localdomain> <20070219105445.GA16930@infradead.org> <1171976753.4039.27.camel@sauron>
+	Tue, 20 Feb 2007 09:56:36 -0500
+Received: from mcr-smtp-001.bulldogdsl.com ([212.158.248.7]:3870 "EHLO
+	mcr-smtp-001.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S964969AbXBTO4f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 09:56:35 -0500
+X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
+From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+To: Udo van den Heuvel <udovdh@xs4all.nl>
+Subject: Re: PCI riser cards and PCI irq routing, etc
+Date: Tue, 20 Feb 2007 14:56:30 +0000
+User-Agent: KMail/1.9.5
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+References: <45D85DA1.7090502@xs4all.nl> <m3odnpq3yr.fsf@maximus.localdomain> <45DA7643.4020305@xs4all.nl>
+In-Reply-To: <45DA7643.4020305@xs4all.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1171976753.4039.27.camel@sauron>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Message-Id: <200702201456.30794.s0348365@sms.ed.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 20, 2007 at 03:05:53PM +0200, Artem Bityutskiy wrote:
-> On Mon, 2007-02-19 at 10:54 +0000, Christoph Hellwig wrote:
-> > On Sat, Feb 17, 2007 at 06:54:49PM +0200, Artem Bityutskiy wrote:
-> > > +#ifndef __UBI_UBI_H__
-> > > +#define __UBI_UBI_H__
-> > > +
-> > > +#include <linux/mtd/ubi.h>
-> > > +
-> > > +/* Version of this UBI implementation */
-> > > +#define UBI_VERSION 1
-> > We shouldn't have versions for inkernel interfaces.
-> 
-> What do you mean? It is internal version just for future help: if we
-> develop incompatible UBI2 the old UBI will reject the new images.
+On Tuesday 20 February 2007 04:17, Udo van den Heuvel wrote:
+> Krzysztof Halasa wrote:
+> > Udo van den Heuvel <udovdh@xs4all.nl> writes:
+> >> At the bottom I added a dmesg output of the kernel after boot.
+> >> I more or less know that irq 20 for the DVB-S card (saa7146 (1)) is
+> >> 'working'. I know that irq 16 for saa7146 (0) (DVB-T) is not working for
+> >> i2c although the card does work perfectly for DVB-T reception (picture,
+> >> low CPU load, etc) with only reception as the bottleneck.
+> >
+> > BTW: Can you check which device # and IRQ does the card get if plugged
+> > directly into the PCI slot on board (without the riser)?
+>
+> DN is 20 I believe (from the tranquilPC doc).
+> irq I'd have to check.
+>
+> > Is it a VIA ITX board? I think I have VIA's riser card somewhere,
+> > could check what it does.
+>
+> Yes, VIA Epia EN12000.
+> Interesting to check the riser card.
 
-In that case it's not an *implementation* version number, but rather
-an on-disk *format* version number.  There's a difference.  It's also
-often not used much, since another way of dealing with the problem is
-to mark major each on-disk version with a different magic number.
-(Many new filesystems these also will use an 8-byte magic string, such
-as "UBI-FS1\n" so that it's a bit users who look at an image using a
-hex editor to see what the heck it is, and also since with a longer
-magic string there is less likelihood of an accidental collision given
-that we don't have a central registry of magic numbers.)
+Just be aware that there are two types of PCI riser -- risers that work in any 
+board, and Via Epia-specific risers. The latter requires a BIOS update on 
+some Epias and presumably has some advantages, possible the ones you're 
+looking for.
 
-BTW, it's kind of silly to use an enum here:
+-- 
+Cheers,
+Alistair.
 
-/*
- * Magic numbers of the UBI headers.
- *
- * @UBI_EC_HDR_MAGIC: erase counter header magic number (ASCII "UBI#")
- * @UBI_VID_HDR_MAGIC: volume identifier header magic number (ASCII "UBI!")
- */
-enum {
-	UBI_EC_HDR_MAGIC  = 0x55424923,
-	UBI_VID_HDR_MAGIC = 0x55424921
-};
-
-Why isn't this being done via #define?  It's not like this is any kind
-of an enumerated type, especially since it's being installed into a
-32bit type, and not even an enum type.
-
-Also while taking another look at your patches, note that that your
-mix of C99 types and your UBI magic types is a bad idea:
-
-struct ubi_ec_hdr {
-	ubi32_t magic;
-	uint8_t version;
-	uint8_t padding1[3];
-	ubi64_t ec; /* Warning: the current limit is 31-bit anyway! */
-	ubi32_t vid_hdr_offset;
-	...
-
-It appears that the reason why you are doing this is because you think
-you need the (packed) attribute.  Not needed; Linux assumes all over
-the place 16, 32, and 64 types are packed.  If Linux is ever compiled
-on an architecture where this isn't true, the compiler will probably
-need to be fixed so these assumptions are true, since all manner of
-things will break.
-
-It would be much better to use __be32 and __be64, so you get better
-type checking, and you will catch bugs caused by forgetting to use
-be32_to_cpu, et. al.
-
-BTW, it might also be a good idea to run UBI through sparse to catch bugs.
-
-							- Ted
+Final year Computer Science undergraduate.
+1F2 55 South Clerk Street, Edinburgh, UK.
