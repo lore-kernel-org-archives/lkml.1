@@ -1,129 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161075AbXBTXPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161071AbXBTXTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161075AbXBTXPx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 18:15:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161074AbXBTXPx
+	id S1161071AbXBTXTV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 18:19:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161076AbXBTXTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 18:15:53 -0500
-Received: from tomts16.bellnexxia.net ([209.226.175.4]:49273 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161070AbXBTXPw (ORCPT
+	Tue, 20 Feb 2007 18:19:21 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53312 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1161071AbXBTXTU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 18:15:52 -0500
-Date: Tue, 20 Feb 2007 18:15:49 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [-mm patch] marker exports must be EXPORT_SYMBOL_GPL
-Message-ID: <20070220231549.GA15844@Krystal>
-References: <20070215051408.a7fb7d81.akpm@linux-foundation.org> <20070220000209.GY13958@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070220000209.GY13958@stusta.de>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 18:14:40 up 18 days, 13:22,  3 users,  load average: 2.18, 2.25, 1.91
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 20 Feb 2007 18:19:20 -0500
+Date: Tue, 20 Feb 2007 15:19:19 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Max Krasnyansky <maxk@qualcomm.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: SLAB cache reaper on isolated cpus
+In-Reply-To: <45DB7AB1.5010304@qualcomm.com>
+Message-ID: <Pine.LNX.4.64.0702201514470.17866@schroedinger.engr.sgi.com>
+References: <20070129011301.GA844@tv-sign.ru>
+ <Pine.LNX.4.64.0701290852390.28200@schroedinger.engr.sgi.com>
+ <20070129171923.GA138@tv-sign.ru> <Pine.LNX.4.64.0701290922390.28330@schroedinger.engr.sgi.com>
+ <20070129182742.GA158@tv-sign.ru> <45DB404C.4070305@qualcomm.com>
+ <Pine.LNX.4.64.0702201041340.14643@schroedinger.engr.sgi.com>
+ <20070220200550.GA85@tv-sign.ru> <45DB669B.2010307@qualcomm.com>
+ <Pine.LNX.4.64.0702201334361.17198@schroedinger.engr.sgi.com>
+ <45DB6FC7.60502@qualcomm.com> <Pine.LNX.4.64.0702201402420.17433@schroedinger.engr.sgi.com>
+ <45DB7AB1.5010304@qualcomm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Adrian Bunk (bunk@stusta.de) wrote:
-> On Thu, Feb 15, 2007 at 05:14:08AM -0800, Andrew Morton wrote:
-> >...
-> > - Added the Linux Kernel Markers code.  No idea how to use it and it
-> >   seems we're not to be told.
-> >...
-> > Changes since 2.6.20-rc6-mm3:
-> >...
-> > +linux-kernel-markers-kconfig-menus.patch
-> > +linux-kernel-markers-architecture-independant-code.patch
-> > +linux-kernel-markers-powerpc-optimization.patch
-> > +linux-kernel-markers-i386-optimization.patch
-> > +linux-kernel-markers-non-optimized-architectures.patch
-> > 
-> >  Linux Kenrel Markers
-> >...
-> 
-> 
-> This is definitely functionality illegal modules have no business to 
-> use.
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+On Tue, 20 Feb 2007, Max Krasnyansky wrote:
 
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Suppose I need to isolate a CPU. We already support at the scheduler and 
+> irq levels (irq affinity). But I want to go a bit further and avoid 
+> doing kernel work on isolated cpus as much as possible. For example I 
+> would not want to schedule work queues and stuff on them. Currently 
+> there are just a few users of the schedule_delayed_work_on(). cpufreq 
+> (don't care for isolation purposes), oprofile (same here) and slab. For 
+> the slab it'd be nice to run the reaper on some other CPU. But you're 
+> saying that locking depends on CPU pinning. Is there any other option 
+> besides disabling cache reap ? Is there a way for example to constraint 
+> the slabs on CPU X to not exceed N megs ?
 
-> 
-> ---
-> 
->  arch/i386/kernel/marker.c |    2 +-
->  kernel/module.c           |   10 +++++-----
->  2 files changed, 6 insertions(+), 6 deletions(-)
-> 
-> --- linux-2.6.20-mm1/kernel/module.c.old	2007-02-15 16:02:09.000000000 +0100
-> +++ linux-2.6.20-mm1/kernel/module.c	2007-02-15 16:03:08.000000000 +0100
-> @@ -304,7 +304,7 @@
->  void __mark_empty_function(const char *fmt, ...)
->  {
->  }
-> -EXPORT_SYMBOL(__mark_empty_function);
-> +EXPORT_SYMBOL_GPL(__mark_empty_function);
->  
->  #ifdef MARK_POLYMORPHIC
->  static int marker_set_ins_enable(void *address, char enable)
-> @@ -461,7 +461,7 @@
->  	mutex_unlock(&module_mutex);
->  	return found;
->  }
-> -EXPORT_SYMBOL(marker_set_probe);
-> +EXPORT_SYMBOL_GPL(marker_set_probe);
->  
->  int marker_remove_probe(marker_probe_func *probe)
->  {
-> @@ -481,7 +481,7 @@
->  	mutex_unlock(&module_mutex);
->  	return found;
->  }
-> -EXPORT_SYMBOL(marker_remove_probe);
-> +EXPORT_SYMBOL_GPL(marker_remove_probe);
->  
->  int marker_list_probe(marker_probe_func *probe)
->  {
-> @@ -505,7 +505,7 @@
->  	mutex_unlock(&module_mutex);
->  	return found;
->  }
-> -EXPORT_SYMBOL(marker_list_probe);
-> +EXPORT_SYMBOL_GPL(marker_list_probe);
->  #endif
->  
->  #ifdef CONFIG_SMP
-> @@ -2510,7 +2510,7 @@
->  	}
->  	mutex_unlock(&module_mutex);
->  }
-> -EXPORT_SYMBOL(list_modules);
-> +EXPORT_SYMBOL_GPL(list_modules);
->  
->  /* Given an address, look for it in the module exception tables. */
->  const struct exception_table_entry *search_module_extables(unsigned long addr)
-> --- linux-2.6.20-mm1/arch/i386/kernel/marker.c.old	2007-02-15 16:03:22.000000000 +0100
-> +++ linux-2.6.20-mm1/arch/i386/kernel/marker.c	2007-02-15 16:03:34.000000000 +0100
-> @@ -90,4 +90,4 @@
->  	flush_icache_range(address, size);
->  	return 0;
->  }
-> -EXPORT_SYMBOL(arch_marker_set_ins_enable);
-> +EXPORT_SYMBOL_GPL(arch_marker_set_ins_enable);
-> 
-> 
-> 
-> 
-> 
+There is no way to constrain the amount of slab work. In order to make the 
+above work we would have to disable the per cpu caches for a certain cpu. 
+Then there would be no need to run the cache reaper at all.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Candidate, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+To some extend such functionality already exists. F.e. kmalloc_node() 
+already bypasses the per cpu caches (most of the time).  kmalloc_node will 
+have to take a spinlock on a shared cacheline on each invocation. kmalloc 
+does only touch per cpu data during regular operations. Thus kmalloc() is much 
+faster than kmalloc_node() and the cachelines for kmalloc() can be kept in 
+the per cpu cache.
+
+If we could disable all per cpu caches for certain cpus then you could 
+make this work. All slab OS interference would be off the processor.
