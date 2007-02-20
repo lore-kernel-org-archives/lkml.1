@@ -1,36 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750940AbXBTAU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750990AbXBTAVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750940AbXBTAU5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 19:20:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750945AbXBTAUb
+	id S1750990AbXBTAVa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 19:21:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbXBTAUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 19:20:31 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:36059 "EHLO
+	Mon, 19 Feb 2007 19:20:24 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:36054 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750940AbXBTAHI (ORCPT
+	with ESMTP id S1750954AbXBTAHG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 19:07:08 -0500
-Date: Tue, 20 Feb 2007 01:07:06 +0100
+	Mon, 19 Feb 2007 19:07:06 -0500
+Date: Tue, 20 Feb 2007 01:07:03 +0100
 From: Adrian Bunk <bunk@stusta.de>
 To: Andrew Morton <akpm@osdl.org>
-Cc: spyro@f2s.com, rmk@arm.linux.org.uk, James.Bottomley@SteelEye.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [RFC: 2.6 patch] remove the broken SCSI_ACORNSCSI_3 driver
-Message-ID: <20070220000706.GO13958@stusta.de>
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [RFC: 2.6 patch] remove the broken SUN_AURORA driver
+Message-ID: <20070220000703.GN13958@stusta.de>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="bCsyhTFzCvuiizWE"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---bCsyhTFzCvuiizWE
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-The SCSI_ACORNSCSI_3 driver:
-- has been marked as BROKEN for more than one year and
+The SUN_AURORA driver:
+- has been marked as BROKEN for more than two years and
 - is still marked as BROKEN.
 
 Drivers that had been marked as BROKEN for such a long time seem to be
@@ -44,493 +38,2940 @@ Signed-off-by: Adrian Bunk <bunk@stusta.de>
 ---
 
 This patch was already sent on:
-- 21 Jan 2007
-- 6 Jan 2007
+- 20 Jan 2007
+- 4 Jan 2007
 
-Due to it's size, the compressed patch is attached.
+ Documentation/magic-number.txt |    1 
+ drivers/sbus/char/Kconfig      |    7 
+ drivers/sbus/char/Makefile     |    1 
+ drivers/sbus/char/aurora.c     | 2364 ---------------------------------
+ drivers/sbus/char/aurora.h     |  276 ---
+ drivers/sbus/char/cd180.h      |  240 ---
+ 6 files changed, 2889 deletions(-)
 
- drivers/scsi/arm/Kconfig        |   29 
- drivers/scsi/arm/Makefile       |    3 
- drivers/scsi/arm/acornscsi-io.S |  145 -
- drivers/scsi/arm/acornscsi.c    | 3130 --------------------------------
- drivers/scsi/arm/acornscsi.h    |  358 ---
- 5 files changed, 3665 deletions(-)
+--- linux-2.6.20-rc2-mm1/drivers/sbus/char/Kconfig.old	2007-01-04 18:09:26.000000000 +0100
++++ linux-2.6.20-rc2-mm1/drivers/sbus/char/Kconfig	2007-01-04 18:09:37.000000000 +0100
+@@ -46,13 +46,6 @@
+ 	  based on the Phillips SAA9051, can handle NTSC and PAL/SECAM and
+ 	  SVIDEO signals.
+ 
+-config SUN_AURORA
+-	tristate "Aurora Multiboard 1600se (EXPERIMENTAL)"
+-	depends on EXPERIMENTAL && BROKEN
+-	help
+-	  The Aurora Multiboard is a multi-port high-speed serial controller.
+-	  If you have one of these, say Y.
+-
+ config TADPOLE_TS102_UCTRL
+ 	tristate "Tadpole TS102 Microcontroller support (EXPERIMENTAL)"
+ 	depends on EXPERIMENTAL && SPARC32
+--- linux-2.6.20-rc2-mm1/drivers/sbus/char/Makefile.old	2007-01-04 18:09:46.000000000 +0100
++++ linux-2.6.20-rc2-mm1/drivers/sbus/char/Makefile	2007-01-04 18:09:49.000000000 +0100
+@@ -19,7 +19,6 @@
+ obj-$(CONFIG_SUN_MOSTEK_RTC)		+= rtc.o
+ obj-$(CONFIG_SUN_BPP)			+= bpp.o
+ obj-$(CONFIG_SUN_VIDEOPIX)		+= vfc.o
+-obj-$(CONFIG_SUN_AURORA)		+= aurora.o
+ obj-$(CONFIG_TADPOLE_TS102_UCTRL)	+= uctrl.o
+ obj-$(CONFIG_SUN_JSFLASH)		+= jsflash.o
+ obj-$(CONFIG_BBC_I2C)			+= bbc.o
+--- linux-2.6.20-rc2-mm1/Documentation/magic-number.txt.old	2007-01-04 18:10:07.000000000 +0100
++++ linux-2.6.20-rc2-mm1/Documentation/magic-number.txt	2007-01-04 18:10:13.000000000 +0100
+@@ -65,7 +65,6 @@
+ MKISS_DRIVER_MAGIC    0x04bf      mkiss_channel     drivers/net/mkiss.h
+ RISCOM8_MAGIC         0x0907      riscom_port       drivers/char/riscom8.h
+ SPECIALIX_MAGIC       0x0907      specialix_port    drivers/char/specialix_io8.h
+-AURORA_MAGIC          0x0A18      Aurora_port       drivers/sbus/char/aurora.h
+ HDLC_MAGIC            0x239e      n_hdlc            drivers/char/n_hdlc.c
+ APM_BIOS_MAGIC        0x4101      apm_user          arch/i386/kernel/apm.c
+ CYCLADES_MAGIC        0x4359      cyclades_port     include/linux/cyclades.h
+--- linux-2.6.20-rc2-mm1/drivers/sbus/char/aurora.h	2006-11-29 22:57:37.000000000 +0100
++++ /dev/null	2006-09-19 00:45:31.000000000 +0200
+@@ -1,276 +0,0 @@
+-/*	$Id: aurora.h,v 1.6 2001/06/05 12:23:38 davem Exp $
+- *	linux/drivers/sbus/char/aurora.h -- Aurora multiport driver
+- *
+- *	Copyright (c) 1999 by Oliver Aldulea (oli@bv.ro)
+- *
+- *	This code is based on the RISCom/8 multiport serial driver written
+- *	by Dmitry Gorodchanin (pgmdsg@ibi.com), based on the Linux serial
+- *	driver, written by Linus Torvalds, Theodore T'so and others.
+- *	The Aurora multiport programming info was obtained mainly from the
+- *	Cirrus Logic CD180 documentation (available on the web), and by
+- *	doing heavy tests on the board. Many thanks to Eddie C. Dost for the
+- *	help on the sbus interface.
+- *
+- *	This program is free software; you can redistribute it and/or modify
+- *	it under the terms of the GNU General Public License as published by
+- *	the Free Software Foundation; either version 2 of the License, or
+- *	(at your option) any later version.
+- *
+- *	This program is distributed in the hope that it will be useful,
+- *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- *	GNU General Public License for more details.
+- *
+- *	You should have received a copy of the GNU General Public License
+- *	along with this program; if not, write to the Free Software
+- *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+- *
+- *	Revision 1.0
+- *
+- *	This is the first public release.
+- *
+- *	This version needs a lot of feedback. This is the version that works
+- *	with _my_ board. My board is model 1600se, revision '@(#)1600se.fth
+- *	1.2 3/28/95 1'. The driver might work with your board, but I do not
+- *	guarantee it. If you have _any_ type of board, I need to know if the
+- *	driver works or not, I need to know exactly your board parameters
+- *	(get them with 'cd /proc/openprom/iommu/sbus/sio16/; ls *; cat *')
+- *	Also, I need your board revision code, which is written on the board.
+- *	Send me the output of my driver too (it outputs through klogd).
+- *
+- *	If the driver does not work, you can try enabling the debug options
+- *	to see what's wrong or what should be done.
+- *
+- *	I'm sorry about the alignment of the code. It was written in a
+- *	128x48 environment.
+- *
+- *	I must say that I do not like Aurora Technologies' policy. I asked
+- *	them to help me do this driver faster, but they ended by something
+- *	like "don't call us, we'll call you", and I never heard anything
+- *	from them. They told me "knowing the way the board works, I don't
+- *	doubt you and others on the net will make the driver."
+- *	The truth about this board is that it has nothing intelligent on it.
+- *	If you want to say to somebody what kind of board you have, say that
+- *	it uses Cirrus Logic processors (CD180). The power of the board is
+- *	in those two chips. The rest of the board is the interface to the
+- *	sbus and to the peripherals. Still, they did something smart: they
+- *	reversed DTR and RTS to make on-board automatic hardware flow
+- *	control usable.
+- *	Thanks to Aurora Technologies for wasting my time, nerves and money.
+- */
+-
+-#ifndef __LINUX_AURORA_H
+-#define __LINUX_AURORA_H
+-
+-#include <linux/serial.h>
+-#include <linux/serialP.h>
+-
+-#ifdef __KERNEL__
+-
+-/* This is the number of boards to support. I've only tested this driver with
+- * one board, so it might not work.
+- */
+-#define AURORA_NBOARD 1
+-
+-/* Useful ? Yes. But you can safely comment the warnings if they annoy you
+- * (let me say that again: the warnings in the code, not this define). 
+- */
+-#define AURORA_PARANOIA_CHECK
+-
+-/* Well, after many lost nights, I found that the IRQ for this board is
+- * selected from four built-in values by writing some bits in the
+- * configuration register. This causes a little problem to occur: which
+- * IRQ to select ? Which one is the best for the user ? Well, I finally
+- * decided for the following algorithm: if the "bintr" value is not acceptable
+- * (not within type_1_irq[], then test the "intr" value, if that fails too,
+- * try each value from type_1_irq until succeded. Hope it's ok.
+- * You can safely reorder the irq's.
+- */
+-#define TYPE_1_IRQS 4
+-unsigned char type_1_irq[TYPE_1_IRQS] = {
+-	3, 5, 9, 13
+-};
+-/* I know something about another method of interrupt setting, but not enough.
+- * Also, this is for another type of board, so I first have to learn how to
+- * detect it.
+-#define TYPE_2_IRQS 3
+-unsigned char type_2_irq[TYPE_2_IRQS] = {
+-	0, 0, 0 ** could anyone find these for me ? (see AURORA_ALLIRQ below) **
+-	};
+-unsigned char type_2_mask[TYPE_2_IRQS] = {
+-	32, 64, 128
+-	};
+-*/
+-
+-/* The following section should only be modified by those who know what
+- * they're doing (or don't, but want to help with some feedback). Modifying
+- * anything raises a _big_ probability for your system to hang, but the
+- * sacrifice worths. (I sacrificed my ext2fs many, many times...)
+- */
+-
+-/* This one tries to dump to console the name of almost every function called,
+- * and many other debugging info.
+- */
+-#undef AURORA_DEBUG
+-
+-/* These are the most dangerous and useful defines. They do printk() during
+- * the interrupt processing routine(s), so if you manage to get "flooded" by
+- * irq's, start thinking about the "Power off/on" button...
+- */
+-#undef AURORA_INTNORM	/* This one enables the "normal" messages, but some
+-			 * of them cause flood, so I preffered putting
+-			 * them under a define */
+-#undef AURORA_INT_DEBUG /* This one is really bad. */
+-
+-/* Here's something helpful: after n irq's, the board will be disabled. This
+- * prevents irq flooding during debug (no need to think about power
+- * off/on anymore...)
+- */
+-#define AURORA_FLOODPRO	10
+-
+-/* This one helps finding which irq the board calls, in case of a strange/
+- * unsupported board. AURORA_INT_DEBUG should be enabled, because I don't
+- * think /proc/interrupts or any command will be available in case of an irq
+- * flood... "allirq" is the list of all free irq's.
+- */
+-/*
+-#define AURORA_ALLIRQ 6
+-int allirq[AURORA_ALLIRQ]={
+-	2,3,5,7,9,13
+-	};
+-*/
+-
+-/* These must not be modified. These values are assumed during the code for
+- * performance optimisations.
+- */
+-#define AURORA_NCD180 2 /* two chips per board */
+-#define AURORA_NPORT 8  /* 8 ports per chip */
+-
+-/* several utilities */
+-#define AURORA_BOARD(line)	(((line) >> 4) & 0x01)
+-#define AURORA_CD180(line)	(((line) >> 3) & 0x01)
+-#define AURORA_PORT(line)	((line) & 15)
+-
+-#define AURORA_TNPORTS (AURORA_NBOARD*AURORA_NCD180*AURORA_NPORT)
+-
+-/* Ticks per sec. Used for setting receiver timeout and break length */
+-#define AURORA_TPS		4000
+-
+-#define AURORA_MAGIC	0x0A18
+-
+-/* Yeah, after heavy testing I decided it must be 6.
+- * Sure, You can change it if needed.
+- */
+-#define AURORA_RXFIFO		6	/* Max. receiver FIFO size (1-8) */
+-
+-#define AURORA_RXTH		7
+-
+-struct aurora_reg1 {
+-	__volatile__ unsigned char r;
+-};
+-
+-struct aurora_reg128 {
+-	__volatile__ unsigned char r[128];
+-};
+-	
+-struct aurora_reg4 {
+-	__volatile__ unsigned char r[4];
+-};
+-
+-struct Aurora_board {
+-	unsigned long		flags;
+-	struct aurora_reg1	* r0;	/* This is the board configuration
+-					 * register (write-only). */
+-	struct aurora_reg128	* r[2];	/* These are the registers for the
+-					 * two chips. */
+-	struct aurora_reg4	* r3;	/* These are used for hardware-based
+-					 * acknowledge. Software-based ack is
+-					 * not supported by CD180. */
+-	unsigned int		oscfreq; /* The on-board oscillator
+-					  * frequency, in Hz. */
+-	unsigned char		irq;
+-#ifdef MODULE
+-	signed char		count;	/* counts the use of the board */
+-#endif
+-	/* Values for the dtr_rts swapped mode. */
+-	unsigned char		DTR;
+-	unsigned char		RTS;
+-	unsigned char		MSVDTR;
+-	unsigned char		MSVRTS;
+-	/* Values for hardware acknowledge. */
+-	unsigned char		ACK_MINT, ACK_TINT, ACK_RINT;
+-};
+-
+-/* Board configuration register */
+-#define AURORA_CFG_ENABLE_IO	8
+-#define AURORA_CFG_ENABLE_IRQ	4
+-
+-/* Board flags */
+-#define AURORA_BOARD_PRESENT		0x00000001
+-#define AURORA_BOARD_ACTIVE		0x00000002
+-#define AURORA_BOARD_TYPE_2		0x00000004	/* don't know how to
+-							 * detect this yet */
+-#define AURORA_BOARD_DTR_FLOW_OK	0x00000008
+-
+-/* The story goes like this: Cirrus programmed the CD-180 chip to do automatic
+- * hardware flow control, and do it using CTS and DTR. CTS is ok, but, if you
+- * have a modem and the chip drops DTR, then the modem will drop the carrier
+- * (ain't that cute...). Luckily, the guys at Aurora decided to swap DTR and
+- * RTS, which makes the flow control usable. I hope that all the boards made
+- * by Aurora have these two signals swapped. If your's doesn't but you have a
+- * breakout box, you can try to reverse them yourself, then set the following
+- * flag.
+- */
+-#undef AURORA_FORCE_DTR_FLOW
+-
+-/* In fact, a few more words have to be said about hardware flow control.
+- * This driver handles "output" flow control through the on-board facility
+- * CTS Auto Enable. For the "input" flow control there are two cases when
+- * the flow should be controlled. The first case is when the kernel is so
+- * busy that it cannot process IRQ's in time; this flow control can only be
+- * activated by the on-board chip, and if the board has RTS and DTR swapped,
+- * this facility is usable. The second case is when the application is so
+- * busy that it cannot receive bytes from the kernel, and this flow must be
+- * activated by software. This second case is not yet implemented in this
+- * driver. Unfortunately, I estimate that the second case is the one that
+- * occurs the most.
+- */
+-
+-
+-struct Aurora_port {
+-	int			magic;
+-	int			baud_base;
+-	int			flags;
+-	struct tty_struct 	* tty;
+-	int			count;
+-	int			blocked_open;
+-	long			event;
+-	int			timeout;
+-	int			close_delay;
+-	unsigned char 		* xmit_buf;
+-	int			custom_divisor;
+-	int			xmit_head;
+-	int			xmit_tail;
+-	int			xmit_cnt;
+-	wait_queue_head_t	open_wait;
+-	wait_queue_head_t	close_wait;
+-	struct tq_struct	tqueue;
+-	struct tq_struct	tqueue_hangup;
+-	short			wakeup_chars;
+-	short			break_length;
+-	unsigned short		closing_wait;
+-	unsigned char		mark_mask;
+-	unsigned char		SRER;
+-	unsigned char		MSVR;
+-	unsigned char		COR2;
+-#ifdef AURORA_REPORT_OVERRUN
+-	unsigned long		overrun;
+-#endif	
+-#ifdef AURORA_REPORT_FIFO
+-	unsigned long		hits[10];
+-#endif
+-};
+-
+-#endif
+-#endif /*__LINUX_AURORA_H*/
+-
+--- linux-2.6.20-rc2-mm1/drivers/sbus/char/cd180.h	2006-11-29 22:57:37.000000000 +0100
++++ /dev/null	2006-09-19 00:45:31.000000000 +0200
+@@ -1,240 +0,0 @@
+-
+-/* Definitions for Cirrus Logic CL-CD180 8-port async mux chip */
+-#define CD180_NCH       8       /* Total number of channels                */
+-#define CD180_TPC       16      /* Ticks per character                     */
+-#define CD180_NFIFO	8	/* TX FIFO size                            */
+-
+-/* Global registers */
+-#define CD180_GFRCR	0x6b	/* Global Firmware Revision Code Register  */
+-#define CD180_SRCR	0x66	/* Service Request Configuration Register  */
+-#define CD180_PPRH	0x70	/* Prescaler Period Register High	   */
+-#define CD180_PPRL	0x71	/* Prescaler Period Register Low	   */
+-#define CD180_MSMR	0x61	/* Modem Service Match Register		   */
+-#define CD180_TSMR	0x62	/* Transmit Service Match Register	   */
+-#define CD180_RSMR	0x63	/* Receive Service Match Register	   */
+-#define CD180_GSVR	0x40	/* Global Service Vector Register	   */
+-#define CD180_SRSR	0x65	/* Service Request Status Register	   */
+-#define CD180_GSCR	0x41	/* Global Service Channel Register	   */
+-#define CD180_CAR	0x64	/* Channel Access Register		   */
+-
+-/* Indexed registers */
+-#define CD180_RDCR	0x07	/* Receive Data Count Register		   */
+-#define CD180_RDR	0x78	/* Receiver Data Register		   */
+-#define CD180_RCSR	0x7a	/* Receiver Character Status Register	   */
+-#define CD180_TDR	0x7b	/* Transmit Data Register		   */
+-#define CD180_EOSRR	0x7f	/* End of Service Request Register	   */
+-
+-/* Channel Registers */
+-#define CD180_SRER      0x02    /* Service Request Enable Register         */
+-#define CD180_CCR       0x01    /* Channel Command Register                */
+-#define CD180_COR1      0x03    /* Channel Option Register 1               */
+-#define CD180_COR2      0x04    /* Channel Option Register 2               */
+-#define CD180_COR3      0x05    /* Channel Option Register 3               */
+-#define CD180_CCSR      0x06    /* Channel Control Status Register         */
+-#define CD180_RTPR      0x18    /* Receive Timeout Period Register         */
+-#define CD180_RBPRH     0x31    /* Receive Bit Rate Period Register High  */
+-#define CD180_RBPRL     0x32    /* Receive Bit Rate Period Register Low   */
+-#define CD180_TBPRH     0x39    /* Transmit Bit Rate Period Register High */
+-#define CD180_TBPRL     0x3a    /* Transmit Bit Rate Period Register Low  */
+-#define CD180_SCHR1     0x09    /* Special Character Register 1            */
+-#define CD180_SCHR2     0x0a    /* Special Character Register 2            */
+-#define CD180_SCHR3     0x0b    /* Special Character Register 3            */
+-#define CD180_SCHR4     0x0c    /* Special Character Register 4            */
+-#define CD180_MCR       0x12    /* Modem Change Register                   */
+-#define CD180_MCOR1     0x10    /* Modem Change Option 1 Register          */
+-#define CD180_MCOR2     0x11    /* Modem Change Option 2 Register          */
+-#define CD180_MSVR      0x28    /* Modem Signal Value Register             */
+-#define CD180_MSVRTS    0x29    /* Modem Signal Value RTS                  */
+-#define CD180_MSVDTR    0x2a    /* Modem Signal Value DTR                  */
+-
+-/* Global Interrupt Vector Register (R/W) */
+-
+-#define GSVR_ITMASK     0x07     /* Interrupt type mask                     */
+-#define  GSVR_IT_MDM     0x01    /* Modem Signal Change Interrupt           */
+-#define  GSVR_IT_TX      0x02    /* Transmit Data Interrupt                 */
+-#define  GSVR_IT_RGD     0x03    /* Receive Good Data Interrupt             */
+-#define  GSVR_IT_REXC    0x07    /* Receive Exception Interrupt             */
+-
+-
+-/* Global Interrupt Channel Register (R/W) */
+- 
+-#define GSCR_CHAN       0x1c    /* Channel Number Mask                     */
+-#define GSCR_CHAN_OFF   2       /* Channel Number Offset                   */
+-
+-
+-/* Channel Address Register (R/W) */
+-
+-#define CAR_CHAN        0x07    /* Channel Number Mask                     */
+-
+-
+-/* Receive Character Status Register (R/O) */
+-
+-#define RCSR_TOUT       0x80    /* Rx Timeout                              */
+-#define RCSR_SCDET      0x70    /* Special Character Detected Mask         */
+-#define  RCSR_NO_SC      0x00   /* No Special Characters Detected          */
+-#define  RCSR_SC_1       0x10   /* Special Char 1 (or 1 & 3) Detected      */
+-#define  RCSR_SC_2       0x20   /* Special Char 2 (or 2 & 4) Detected      */
+-#define  RCSR_SC_3       0x30   /* Special Char 3 Detected                 */
+-#define  RCSR_SC_4       0x40   /* Special Char 4 Detected                 */
+-#define RCSR_BREAK      0x08    /* Break has been detected                 */
+-#define RCSR_PE         0x04    /* Parity Error                            */
+-#define RCSR_FE         0x02    /* Frame Error                             */
+-#define RCSR_OE         0x01    /* Overrun Error                           */
+-
+-
+-/* Channel Command Register (R/W) (commands in groups can be OR-ed) */
+-
+-#define CCR_HARDRESET   0x81    /* Reset the chip                          */
+-
+-#define CCR_SOFTRESET   0x80    /* Soft Channel Reset                      */
+-
+-#define CCR_CORCHG1     0x42    /* Channel Option Register 1 Changed       */
+-#define CCR_CORCHG2     0x44    /* Channel Option Register 2 Changed       */
+-#define CCR_CORCHG3     0x48    /* Channel Option Register 3 Changed       */
+-
+-#define CCR_SSCH1       0x21    /* Send Special Character 1                */
+-
+-#define CCR_SSCH2       0x22    /* Send Special Character 2                */
+-
+-#define CCR_SSCH3       0x23    /* Send Special Character 3                */
+-
+-#define CCR_SSCH4       0x24    /* Send Special Character 4                */
+-
+-#define CCR_TXEN        0x18    /* Enable Transmitter                      */
+-#define CCR_RXEN        0x12    /* Enable Receiver                         */
+-
+-#define CCR_TXDIS       0x14    /* Disable Transmitter                     */
+-#define CCR_RXDIS       0x11    /* Disable Receiver                        */
+-
+-
+-/* Service Request Enable Register (R/W) */
+-
+-#define SRER_DSR         0x80    /* Enable interrupt on DSR change          */
+-#define SRER_CD          0x40    /* Enable interrupt on CD change           */
+-#define SRER_CTS         0x20    /* Enable interrupt on CTS change          */
+-#define SRER_RXD         0x10    /* Enable interrupt on Receive Data        */
+-#define SRER_RXSC        0x08    /* Enable interrupt on Receive Spec. Char  */
+-#define SRER_TXRDY       0x04    /* Enable interrupt on TX FIFO empty       */
+-#define SRER_TXEMPTY     0x02    /* Enable interrupt on TX completely empty */
+-#define SRER_RET         0x01    /* Enable interrupt on RX Exc. Timeout     */
+-
+-
+-/* Channel Option Register 1 (R/W) */
+-
+-#define COR1_ODDP       0x80    /* Odd Parity                              */
+-#define COR1_PARMODE    0x60    /* Parity Mode mask                        */
+-#define  COR1_NOPAR      0x00   /* No Parity                               */
+-#define  COR1_FORCEPAR   0x20   /* Force Parity                            */
+-#define  COR1_NORMPAR    0x40   /* Normal Parity                           */
+-#define COR1_IGNORE     0x10    /* Ignore Parity on RX                     */
+-#define COR1_STOPBITS   0x0c    /* Number of Stop Bits                     */
+-#define  COR1_1SB        0x00   /* 1 Stop Bit                              */
+-#define  COR1_15SB       0x04   /* 1.5 Stop Bits                           */
+-#define  COR1_2SB        0x08   /* 2 Stop Bits                             */
+-#define COR1_CHARLEN    0x03    /* Character Length                        */
+-#define  COR1_5BITS      0x00   /* 5 bits                                  */
+-#define  COR1_6BITS      0x01   /* 6 bits                                  */
+-#define  COR1_7BITS      0x02   /* 7 bits                                  */
+-#define  COR1_8BITS      0x03   /* 8 bits                                  */
+-
+-
+-/* Channel Option Register 2 (R/W) */
+-
+-#define COR2_IXM        0x80    /* Implied XON mode                        */
+-#define COR2_TXIBE      0x40    /* Enable In-Band (XON/XOFF) Flow Control  */
+-#define COR2_ETC        0x20    /* Embedded Tx Commands Enable             */
+-#define COR2_LLM        0x10    /* Local Loopback Mode                     */
+-#define COR2_RLM        0x08    /* Remote Loopback Mode                    */
+-#define COR2_RTSAO      0x04    /* RTS Automatic Output Enable             */
+-#define COR2_CTSAE      0x02    /* CTS Automatic Enable                    */
+-#define COR2_DSRAE      0x01    /* DSR Automatic Enable                    */
+-
+-
+-/* Channel Option Register 3 (R/W) */
+-
+-#define COR3_XONCH      0x80    /* XON is a pair of characters (1 & 3)     */
+-#define COR3_XOFFCH     0x40    /* XOFF is a pair of characters (2 & 4)    */
+-#define COR3_FCT        0x20    /* Flow-Control Transparency Mode          */
+-#define COR3_SCDE       0x10    /* Special Character Detection Enable      */
+-#define COR3_RXTH       0x0f    /* RX FIFO Threshold value (1-8)           */
+-
+-
+-/* Channel Control Status Register (R/O) */
+-
+-#define CCSR_RXEN       0x80    /* Receiver Enabled                        */
+-#define CCSR_RXFLOFF    0x40    /* Receive Flow Off (XOFF was sent)        */
+-#define CCSR_RXFLON     0x20    /* Receive Flow On (XON was sent)          */
+-#define CCSR_TXEN       0x08    /* Transmitter Enabled                     */
+-#define CCSR_TXFLOFF    0x04    /* Transmit Flow Off (got XOFF)            */
+-#define CCSR_TXFLON     0x02    /* Transmit Flow On (got XON)              */
+-
+-
+-/* Modem Change Option Register 1 (R/W) */
+-
+-#define MCOR1_DSRZD     0x80    /* Detect 0->1 transition of DSR           */
+-#define MCOR1_CDZD      0x40    /* Detect 0->1 transition of CD            */
+-#define MCOR1_CTSZD     0x20    /* Detect 0->1 transition of CTS           */
+-#define MCOR1_DTRTH     0x0f    /* Auto DTR flow control Threshold (1-8)   */
+-#define  MCOR1_NODTRFC   0x0     /* Automatic DTR flow control disabled     */
+-
+-
+-/* Modem Change Option Register 2 (R/W) */
+-
+-#define MCOR2_DSROD     0x80    /* Detect 1->0 transition of DSR           */
+-#define MCOR2_CDOD      0x40    /* Detect 1->0 transition of CD            */
+-#define MCOR2_CTSOD     0x20    /* Detect 1->0 transition of CTS           */
+-
+-
+-/* Modem Change Register (R/W) */
+-
+-#define MCR_DSRCHG      0x80    /* DSR Changed                             */
+-#define MCR_CDCHG       0x40    /* CD Changed                              */
+-#define MCR_CTSCHG      0x20    /* CTS Changed                             */
+-
+-
+-/* Modem Signal Value Register (R/W) */
+-
+-#define MSVR_DSR        0x80    /* Current state of DSR input              */
+-#define MSVR_CD         0x40    /* Current state of CD input               */
+-#define MSVR_CTS        0x20    /* Current state of CTS input              */
+-#define MSVR_DTR        0x02    /* Current state of DTR output             */
+-#define MSVR_RTS        0x01    /* Current state of RTS output             */
+-
+-
+-/* Service Request Status Register */
+-
+-#define SRSR_CMASK	0xC0	/* Current Service Context Mask            */
+-#define  SRSR_CNONE	0x00	/* Not in a service context		   */
+-#define  SRSR_CRX	0x40	/* Rx Context				   */
+-#define  SRSR_CTX	0x80	/* Tx Context				   */
+-#define  SRSR_CMDM	0xC0	/* Modem Context			   */
+-#define SRSR_ANYINT	0x6F	/* Any interrupt flag			   */
+-#define SRSR_RINT	0x10	/* Receive Interrupt			   */
+-#define SRSR_TINT	0x04	/* Transmit Interrupt			   */
+-#define SRSR_MINT	0x01	/* Modem Interrupt			   */
+-#define SRSR_REXT	0x20	/* Receive External Interrupt		   */
+-#define SRSR_TEXT	0x08	/* Transmit External Interrupt		   */
+-#define SRSR_MEXT	0x02	/* Modem External Interrupt		   */
+-
+-
+-/* Service Request Configuration Register */
+-
+-#define SRCR_PKGTYPE    0x80
+-#define SRCR_REGACKEN   0x40
+-#define SRCR_DAISYEN    0x20
+-#define SRCR_GLOBPRI    0x10
+-#define SRCR_UNFAIR     0x08
+-#define SRCR_AUTOPRI    0x02
+-#define SRCR_PRISEL     0x01
+-
+-/* Values for register-based Interrupt ACKs */
+-#define CD180_ACK_MINT	0x75	/* goes to MSMR				   */
+-#define CD180_ACK_TINT	0x76	/* goes to TSMR				   */
+-#define CD180_ACK_RINT	0x77	/* goes to RSMR				   */
+-
+-/* Escape characters */
+-
+-#define CD180_C_ESC     0x00    /* Escape character                        */
+-#define CD180_C_SBRK    0x81    /* Start sending BREAK                     */
+-#define CD180_C_DELAY   0x82    /* Delay output                            */
+-#define CD180_C_EBRK    0x83    /* Stop sending BREAK                      */
+--- linux-2.6.20-rc2-mm1/drivers/sbus/char/aurora.c	2006-11-29 22:57:37.000000000 +0100
++++ /dev/null	2006-09-19 00:45:31.000000000 +0200
+@@ -1,2364 +0,0 @@
+-/*	$Id: aurora.c,v 1.19 2002/01/08 16:00:16 davem Exp $
+- *	linux/drivers/sbus/char/aurora.c -- Aurora multiport driver
+- *
+- *	Copyright (c) 1999 by Oliver Aldulea (oli at bv dot ro)
+- *
+- *	This code is based on the RISCom/8 multiport serial driver written
+- *	by Dmitry Gorodchanin (pgmdsg@ibi.com), based on the Linux serial
+- *	driver, written by Linus Torvalds, Theodore T'so and others.
+- *	The Aurora multiport programming info was obtained mainly from the
+- *	Cirrus Logic CD180 documentation (available on the web), and by
+- *	doing heavy tests on the board. Many thanks to Eddie C. Dost for the
+- *	help on the sbus interface.
+- *
+- *	This program is free software; you can redistribute it and/or modify
+- *	it under the terms of the GNU General Public License as published by
+- *	the Free Software Foundation; either version 2 of the License, or
+- *	(at your option) any later version.
+- *
+- *	This program is distributed in the hope that it will be useful,
+- *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- *	GNU General Public License for more details.
+- *
+- *	You should have received a copy of the GNU General Public License
+- *	along with this program; if not, write to the Free Software
+- *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+- *
+- *	Revision 1.0
+- *
+- *	This is the first public release.
+- *
+- *	Most of the information you need is in the aurora.h file. Please
+- *	read that file before reading this one.
+- *
+- *	Several parts of the code do not have comments yet.
+- * 
+- * n.b.  The board can support 115.2 bit rates, but only on a few
+- * ports. The total badwidth of one chip (ports 0-7 or 8-15) is equal
+- * to OSC_FREQ div 16. In case of my board, each chip can take 6
+- * channels of 115.2 kbaud.  This information is not well-tested.
+- * 
+- * Fixed to use tty_get_baud_rate().
+- *   Theodore Ts'o <tytso@mit.edu>, 2001-Oct-12
+- */
+-
+-#include <linux/module.h>
+-
+-#include <linux/errno.h>
+-#include <linux/sched.h>
+-#ifdef AURORA_INT_DEBUG
+-#include <linux/timer.h>
+-#endif
+-#include <linux/interrupt.h>
+-#include <linux/tty.h>
+-#include <linux/tty_flip.h>
+-#include <linux/major.h>
+-#include <linux/string.h>
+-#include <linux/fcntl.h>
+-#include <linux/mm.h>
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/delay.h>
+-#include <linux/bitops.h>
+-
+-#include <asm/io.h>
+-#include <asm/irq.h>
+-#include <asm/oplib.h>
+-#include <asm/system.h>
+-#include <asm/kdebug.h>
+-#include <asm/sbus.h>
+-#include <asm/uaccess.h>
+-
+-#include "aurora.h"
+-#include "cd180.h"
+-
+-unsigned char irqs[4] = {
+-	0, 0, 0, 0
+-};
+-
+-#ifdef AURORA_INT_DEBUG
+-int irqhit=0;
+-#endif
+-
+-static struct tty_driver *aurora_driver;
+-static struct Aurora_board aurora_board[AURORA_NBOARD] = {
+-	{0,},
+-};
+-
+-static struct Aurora_port aurora_port[AURORA_TNPORTS] =  {
+-	{ 0, },
+-};
+-
+-/* no longer used. static struct Aurora_board * IRQ_to_board[16] = { NULL, } ;*/
+-static unsigned char * tmp_buf = NULL;
+-
+-DECLARE_TASK_QUEUE(tq_aurora);
+-
+-static inline int aurora_paranoia_check(struct Aurora_port const * port,
+-				    char *name, const char *routine)
+-{
+-#ifdef AURORA_PARANOIA_CHECK
+-	static const char *badmagic =
+-		KERN_DEBUG "aurora: Warning: bad aurora port magic number for device %s in %s\n";
+-	static const char *badinfo =
+-		KERN_DEBUG "aurora: Warning: null aurora port for device %s in %s\n";
+-
+-	if (!port) {
+-		printk(badinfo, name, routine);
+-		return 1;
+-	}
+-	if (port->magic != AURORA_MAGIC) {
+-		printk(badmagic, name, routine);
+-		return 1;
+-	}
+-#endif
+-	return 0;
+-}
+-
+-/*
+- * 
+- *  Service functions for aurora driver.
+- * 
+- */
+-
+-/* Get board number from pointer */
+-static inline int board_No (struct Aurora_board const * bp)
+-{
+-	return bp - aurora_board;
+-}
+-
+-/* Get port number from pointer */
+-static inline int port_No (struct Aurora_port const * port)
+-{
+-	return AURORA_PORT(port - aurora_port); 
+-}
+-
+-/* Get pointer to board from pointer to port */
+-static inline struct Aurora_board * port_Board(struct Aurora_port const * port)
+-{
+-	return &aurora_board[AURORA_BOARD(port - aurora_port)];
+-}
+-
+-/* Wait for Channel Command Register ready */
+-static inline void aurora_wait_CCR(struct aurora_reg128 * r)
+-{
+-	unsigned long delay;
+-
+-#ifdef AURORA_DEBUG
+-printk("aurora_wait_CCR\n");
+-#endif
+-	/* FIXME: need something more descriptive than 100000 :) */
+-	for (delay = 100000; delay; delay--) 
+-		if (!sbus_readb(&r->r[CD180_CCR]))
+-			return;
+-	printk(KERN_DEBUG "aurora: Timeout waiting for CCR.\n");
+-}
+-
+-/*
+- *  aurora probe functions.
+- */
+-
+-/* Must be called with enabled interrupts */
+-static inline void aurora_long_delay(unsigned long delay)
+-{
+-	unsigned long i;
+-
+-#ifdef AURORA_DEBUG
+-	printk("aurora_long_delay: start\n");
+-#endif
+-	for (i = jiffies + delay; time_before(jiffies, i); ) ;
+-#ifdef AURORA_DEBUG
+-	printk("aurora_long_delay: end\n");
+-#endif
+-}
+-
+-/* Reset and setup CD180 chip */
+-static int aurora_init_CD180(struct Aurora_board * bp, int chip)
+-{
+-	unsigned long flags;
+-	int id;
+-	
+-#ifdef AURORA_DEBUG
+-	printk("aurora_init_CD180: start %d:%d\n",
+-	       board_No(bp), chip);
+-#endif
+-	save_flags(flags); cli();
+-	sbus_writeb(0, &bp->r[chip]->r[CD180_CAR]);
+-	sbus_writeb(0, &bp->r[chip]->r[CD180_GSVR]);
+-
+-	/* Wait for CCR ready        */
+-	aurora_wait_CCR(bp->r[chip]);
+-
+-	/* Reset CD180 chip          */
+-	sbus_writeb(CCR_HARDRESET, &bp->r[chip]->r[CD180_CCR]);
+-	udelay(1);
+-	sti();
+-	id=1000;
+-	while((--id) &&
+-	      (sbus_readb(&bp->r[chip]->r[CD180_GSVR])!=0xff))udelay(100);
+-	if(!id) {
+-		printk(KERN_ERR "aurora%d: Chip %d failed init.\n",
+-		       board_No(bp), chip);
+-		restore_flags(flags);
+-		return(-1);
+-	}
+-	cli();
+-	sbus_writeb((board_No(bp)<<5)|((chip+1)<<3),
+-		    &bp->r[chip]->r[CD180_GSVR]); /* Set ID for this chip      */
+-	sbus_writeb(0x80|bp->ACK_MINT,
+-		    &bp->r[chip]->r[CD180_MSMR]); /* Prio for modem intr       */
+-	sbus_writeb(0x80|bp->ACK_TINT,
+-		    &bp->r[chip]->r[CD180_TSMR]); /* Prio for transmitter intr */
+-	sbus_writeb(0x80|bp->ACK_RINT,
+-		    &bp->r[chip]->r[CD180_RSMR]); /* Prio for receiver intr    */
+-	/* Setting up prescaler. We need 4 tick per 1 ms */
+-	sbus_writeb((bp->oscfreq/(1000000/AURORA_TPS)) >> 8,
+-		    &bp->r[chip]->r[CD180_PPRH]);
+-	sbus_writeb((bp->oscfreq/(1000000/AURORA_TPS)) & 0xff,
+-		    &bp->r[chip]->r[CD180_PPRL]);
+-
+-	sbus_writeb(SRCR_AUTOPRI|SRCR_GLOBPRI,
+-		    &bp->r[chip]->r[CD180_SRCR]);
+-
+-	id = sbus_readb(&bp->r[chip]->r[CD180_GFRCR]);
+-	printk(KERN_INFO "aurora%d: Chip %d id %02x: ",
+-	       board_No(bp), chip,id);
+-	if(sbus_readb(&bp->r[chip]->r[CD180_SRCR]) & 128) {
+-		switch (id) {
+-			case 0x82:printk("CL-CD1864 rev A\n");break;
+-			case 0x83:printk("CL-CD1865 rev A\n");break;
+-			case 0x84:printk("CL-CD1865 rev B\n");break;
+-			case 0x85:printk("CL-CD1865 rev C\n");break;
+-			default:printk("Unknown.\n");
+-		};
+-	} else {
+-		switch (id) {
+-			case 0x81:printk("CL-CD180 rev B\n");break;
+-			case 0x82:printk("CL-CD180 rev C\n");break;
+-			default:printk("Unknown.\n");
+-		};
+-	}
+-	restore_flags(flags);
+-#ifdef AURORA_DEBUG
+-	printk("aurora_init_CD180: end\n");
+-#endif
+-	return 0;
+-}
+-
+-static int valid_irq(unsigned char irq)
+-{
+-int i;
+-for(i=0;i<TYPE_1_IRQS;i++)
+-	if (type_1_irq[i]==irq) return 1;
+-return 0;
+-}
+-
+-static irqreturn_t aurora_interrupt(int irq, void * dev_id);
+-
+-/* Main probing routine, also sets irq. */
+-static int aurora_probe(void)
+-{
+-	struct sbus_bus *sbus;
+-	struct sbus_dev *sdev;
+-	int grrr;
+-	char buf[30];
+-	int bn = 0;
+-	struct Aurora_board *bp;
+-
+-	for_each_sbus(sbus) {
+-		for_each_sbusdev(sdev, sbus) {
+-/*			printk("Try: %x %s\n",sdev,sdev->prom_name);*/
+-			if (!strcmp(sdev->prom_name, "sio16")) {
+-#ifdef AURORA_DEBUG
+-				printk(KERN_INFO "aurora: sio16 at %p\n",sdev);
+-#endif
+-				if((sdev->reg_addrs[0].reg_size!=1) &&
+-				   (sdev->reg_addrs[1].reg_size!=128) &&
+-				   (sdev->reg_addrs[2].reg_size!=128) &&
+-				   (sdev->reg_addrs[3].reg_size!=4)) {
+-				   	printk(KERN_ERR "aurora%d: registers' sizes "
+-					       "do not match.\n", bn);
+-				   	break;
+-				}
+-				bp = &aurora_board[bn];
+-				bp->r0 = (struct aurora_reg1 *)
+-					sbus_ioremap(&sdev->resource[0], 0,
+-						     sdev->reg_addrs[0].reg_size,
+-						     "sio16");
+-				if (bp->r0 == NULL) {
+-					printk(KERN_ERR "aurora%d: can't map "
+-					       "reg_addrs[0]\n", bn);
+-					break;
+-				}
+-#ifdef AURORA_DEBUG
+-				printk("Map reg 0: %p\n", bp->r0);
+-#endif
+-				bp->r[0] = (struct aurora_reg128 *)
+-					sbus_ioremap(&sdev->resource[1], 0,
+-						     sdev->reg_addrs[1].reg_size,
+-						     "sio16");
+-				if (bp->r[0] == NULL) {
+-					printk(KERN_ERR "aurora%d: can't map "
+-					       "reg_addrs[1]\n", bn);
+-					break;
+-				}
+-#ifdef AURORA_DEBUG
+-				printk("Map reg 1: %p\n", bp->r[0]);
+-#endif
+-				bp->r[1] = (struct aurora_reg128 *)
+-					sbus_ioremap(&sdev->resource[2], 0,
+-						     sdev->reg_addrs[2].reg_size,
+-						     "sio16");
+-				if (bp->r[1] == NULL) {
+-					printk(KERN_ERR "aurora%d: can't map "
+-					       "reg_addrs[2]\n", bn);
+-					break;
+-				}
+-#ifdef AURORA_DEBUG
+-				printk("Map reg 2: %p\n", bp->r[1]);
+-#endif
+-				bp->r3 = (struct aurora_reg4 *)
+-					sbus_ioremap(&sdev->resource[3], 0,
+-						     sdev->reg_addrs[3].reg_size,
+-						     "sio16");
+-				if (bp->r3 == NULL) {
+-					printk(KERN_ERR "aurora%d: can't map "
+-					       "reg_addrs[3]\n", bn);
+-					break;
+-				}
+-#ifdef AURORA_DEBUG
+-				printk("Map reg 3: %p\n", bp->r3);
+-#endif
+-				/* Variables setup */
+-				bp->flags = 0;
+-#ifdef AURORA_DEBUG
+-				grrr=prom_getint(sdev->prom_node,"intr");
+-				printk("intr pri %d\n", grrr);
+-#endif
+-				if ((bp->irq=irqs[bn]) && valid_irq(bp->irq) &&
+-				    !request_irq(bp->irq|0x30, aurora_interrupt, IRQF_SHARED, "sio16", bp)) {
+-					free_irq(bp->irq|0x30, bp);
+-				} else
+-				if ((bp->irq=prom_getint(sdev->prom_node, "bintr")) && valid_irq(bp->irq) &&
+-				    !request_irq(bp->irq|0x30, aurora_interrupt, IRQF_SHARED, "sio16", bp)) {
+-					free_irq(bp->irq|0x30, bp);
+-				} else
+-				if ((bp->irq=prom_getint(sdev->prom_node, "intr")) && valid_irq(bp->irq) &&
+-				    !request_irq(bp->irq|0x30, aurora_interrupt, IRQF_SHARED, "sio16", bp)) {
+-					free_irq(bp->irq|0x30, bp);
+-				} else
+-				for(grrr=0;grrr<TYPE_1_IRQS;grrr++) {
+-					if ((bp->irq=type_1_irq[grrr])&&!request_irq(bp->irq|0x30, aurora_interrupt, IRQF_SHARED, "sio16", bp)) {
+-						free_irq(bp->irq|0x30, bp);
+-						break;
+-					} else {
+-					printk(KERN_ERR "aurora%d: Could not get an irq for this board !!!\n",bn);
+-					bp->flags=0xff;
+-					}
+-				}
+-				if(bp->flags==0xff)break;
+-				printk(KERN_INFO "aurora%d: irq %d\n",bn,bp->irq&0x0f);
+-				buf[0]=0;
+-				grrr=prom_getproperty(sdev->prom_node,"dtr_rts",buf,sizeof(buf));
+-				if(!strcmp(buf,"swapped")){
+-					printk(KERN_INFO "aurora%d: Swapped DTR and RTS\n",bn);
+-					bp->DTR=MSVR_RTS;
+-					bp->RTS=MSVR_DTR;
+-					bp->MSVDTR=CD180_MSVRTS;
+-					bp->MSVRTS=CD180_MSVDTR;
+-					bp->flags|=AURORA_BOARD_DTR_FLOW_OK;
+-					}else{
+-					#ifdef AURORA_FORCE_DTR_FLOW
+-					printk(KERN_INFO "aurora%d: Forcing swapped DTR-RTS\n",bn);
+-					bp->DTR=MSVR_RTS;
+-					bp->RTS=MSVR_DTR;
+-					bp->MSVDTR=CD180_MSVRTS;
+-					bp->MSVRTS=CD180_MSVDTR;
+-					bp->flags|=AURORA_BOARD_DTR_FLOW_OK;
+-					#else
+-					printk(KERN_INFO "aurora%d: Normal DTR and RTS\n",bn);
+-					bp->DTR=MSVR_DTR;
+-					bp->RTS=MSVR_RTS;
+-					bp->MSVDTR=CD180_MSVDTR;
+-					bp->MSVRTS=CD180_MSVRTS;
+-					#endif
+-				}
+-				bp->oscfreq=prom_getint(sdev->prom_node,"clk")*100;
+-				printk(KERN_INFO "aurora%d: Oscillator: %d Hz\n",bn,bp->oscfreq);
+-				grrr=prom_getproperty(sdev->prom_node,"chip",buf,sizeof(buf));
+-				printk(KERN_INFO "aurora%d: Chips: %s\n",bn,buf);
+-				grrr=prom_getproperty(sdev->prom_node,"manu",buf,sizeof(buf));
+-				printk(KERN_INFO "aurora%d: Manufacturer: %s\n",bn,buf);
+-				grrr=prom_getproperty(sdev->prom_node,"model",buf,sizeof(buf));
+-				printk(KERN_INFO "aurora%d: Model: %s\n",bn,buf);
+-				grrr=prom_getproperty(sdev->prom_node,"rev",buf,sizeof(buf));
+-				printk(KERN_INFO "aurora%d: Revision: %s\n",bn,buf);
+-				grrr=prom_getproperty(sdev->prom_node,"mode",buf,sizeof(buf));
+-				printk(KERN_INFO "aurora%d: Mode: %s\n",bn,buf);
+-				#ifdef MODULE
+-				bp->count=0;
+-				#endif
+-				bp->flags = AURORA_BOARD_PRESENT;
+-				/* hardware ack */
+-				bp->ACK_MINT=1;
+-				bp->ACK_TINT=2;
+-				bp->ACK_RINT=3;
+-				bn++;
+-			}
+-		}
+-	}
+-	return bn;
+-}
+-
+-static void aurora_release_io_range(struct Aurora_board *bp)
+-{
+-	sbus_iounmap((unsigned long)bp->r0, 1);
+-	sbus_iounmap((unsigned long)bp->r[0], 128);
+-	sbus_iounmap((unsigned long)bp->r[1], 128);
+-	sbus_iounmap((unsigned long)bp->r3, 4);
+-}
+-
+-static inline void aurora_mark_event(struct Aurora_port * port, int event)
+-{
+-#ifdef AURORA_DEBUG
+-	printk("aurora_mark_event: start\n");
+-#endif
+-	set_bit(event, &port->event);
+-	queue_task(&port->tqueue, &tq_aurora);
+-	mark_bh(AURORA_BH);
+-#ifdef AURORA_DEBUG
+-	printk("aurora_mark_event: end\n");
+-#endif
+-}
+-
+-static __inline__ struct Aurora_port * aurora_get_port(struct Aurora_board const * bp,
+-						       int chip,
+-						       unsigned char const *what)
+-{
+-	unsigned char channel;
+-	struct Aurora_port * port;
+-
+-	channel = ((chip << 3) |
+-		   ((sbus_readb(&bp->r[chip]->r[CD180_GSCR]) & GSCR_CHAN) >> GSCR_CHAN_OFF));
+-	port = &aurora_port[board_No(bp) * AURORA_NPORT * AURORA_NCD180 + channel];
+-	if (port->flags & ASYNC_INITIALIZED)
+-		return port;
+-
+-	printk(KERN_DEBUG "aurora%d: %s interrupt from invalid port %d\n",
+-	       board_No(bp), what, channel);
+-	return NULL;
+-}
+-
+-static void aurora_receive_exc(struct Aurora_board const * bp, int chip)
+-{
+-	struct Aurora_port *port;
+-	struct tty_struct *tty;
+-	unsigned char status;
+-	unsigned char ch;
+-	
+-	if (!(port = aurora_get_port(bp, chip, "Receive_x")))
+-		return;
+-
+-	tty = port->tty;
+-	if (tty->flip.count >= TTY_FLIPBUF_SIZE)  {
+-#ifdef AURORA_INTNORM
+-		printk("aurora%d: port %d: Working around flip buffer overflow.\n",
+-		       board_No(bp), port_No(port));
+-#endif
+-		return;
+-	}
+-	
+-#ifdef AURORA_REPORT_OVERRUN	
+-	status = sbus_readb(&bp->r[chip]->r[CD180_RCSR]);
+-	if (status & RCSR_OE)  {
+-		port->overrun++;
+-#if 1
+-		printk("aurora%d: port %d: Overrun. Total %ld overruns.\n",
+-		       board_No(bp), port_No(port), port->overrun);
+-#endif		
+-	}
+-	status &= port->mark_mask;
+-#else	
+-	status = sbus_readb(&bp->r[chip]->r[CD180_RCSR]) & port->mark_mask;
+-#endif	
+-	ch = sbus_readb(&bp->r[chip]->r[CD180_RDR]);
+-	if (!status)
+-		return;
+-
+-	if (status & RCSR_TOUT)  {
+-/*		printk("aurora%d: port %d: Receiver timeout. Hardware problems ?\n",
+-		       board_No(bp), port_No(port));*/
+-		return;
+-		
+-	} else if (status & RCSR_BREAK)  {
+-		printk(KERN_DEBUG "aurora%d: port %d: Handling break...\n",
+-		       board_No(bp), port_No(port));
+-		*tty->flip.flag_buf_ptr++ = TTY_BREAK;
+-		if (port->flags & ASYNC_SAK)
+-			do_SAK(tty);
+-		
+-	} else if (status & RCSR_PE) 
+-		*tty->flip.flag_buf_ptr++ = TTY_PARITY;
+-	
+-	else if (status & RCSR_FE) 
+-		*tty->flip.flag_buf_ptr++ = TTY_FRAME;
+-	
+-        else if (status & RCSR_OE)
+-		*tty->flip.flag_buf_ptr++ = TTY_OVERRUN;
+-	
+-	else
+-		*tty->flip.flag_buf_ptr++ = 0;
+-	
+-	*tty->flip.char_buf_ptr++ = ch;
+-	tty->flip.count++;
+-	queue_task(&tty->flip.tqueue, &tq_timer);
+-}
+-
+-static void aurora_receive(struct Aurora_board const * bp, int chip)
+-{
+-	struct Aurora_port *port;
+-	struct tty_struct *tty;
+-	unsigned char count,cnt;
+-
+-	if (!(port = aurora_get_port(bp, chip, "Receive")))
+-		return;
+-	
+-	tty = port->tty;
+-	
+-	count = sbus_readb(&bp->r[chip]->r[CD180_RDCR]);
+-
+-#ifdef AURORA_REPORT_FIFO
+-	port->hits[count > 8 ? 9 : count]++;
+-#endif
+-
+-	while (count--)  {
+-		if (tty->flip.count >= TTY_FLIPBUF_SIZE)  {
+-#ifdef AURORA_INTNORM
+-			printk("aurora%d: port %d: Working around flip buffer overflow.\n",
+-			       board_No(bp), port_No(port));
+-#endif
+-			break;
+-		}
+-		cnt = sbus_readb(&bp->r[chip]->r[CD180_RDR]);
+-		*tty->flip.char_buf_ptr++ = cnt;
+-		*tty->flip.flag_buf_ptr++ = 0;
+-		tty->flip.count++;
+-	}
+-	queue_task(&tty->flip.tqueue, &tq_timer);
+-}
+-
+-static void aurora_transmit(struct Aurora_board const * bp, int chip)
+-{
+-	struct Aurora_port *port;
+-	struct tty_struct *tty;
+-	unsigned char count;
+-	
+-	if (!(port = aurora_get_port(bp, chip, "Transmit")))
+-		return;
+-		
+-	tty = port->tty;
+-	
+-	if (port->SRER & SRER_TXEMPTY)  {
+-		/* FIFO drained */
+-		sbus_writeb(port_No(port) & 7,
+-			    &bp->r[chip]->r[CD180_CAR]);
+-		udelay(1);
+-		port->SRER &= ~SRER_TXEMPTY;
+-		sbus_writeb(port->SRER, &bp->r[chip]->r[CD180_SRER]);
+-		return;
+-	}
+-	
+-	if ((port->xmit_cnt <= 0 && !port->break_length)
+-	    || tty->stopped || tty->hw_stopped)  {
+-		sbus_writeb(port_No(port) & 7,
+-			    &bp->r[chip]->r[CD180_CAR]);
+-		udelay(1);
+-		port->SRER &= ~SRER_TXRDY;
+-		sbus_writeb(port->SRER,
+-			    &bp->r[chip]->r[CD180_SRER]);
+-		return;
+-	}
+-	
+-	if (port->break_length)  {
+-		if (port->break_length > 0)  {
+-			if (port->COR2 & COR2_ETC)  {
+-				sbus_writeb(CD180_C_ESC,
+-					    &bp->r[chip]->r[CD180_TDR]);
+-				sbus_writeb(CD180_C_SBRK,
+-					    &bp->r[chip]->r[CD180_TDR]);
+-				port->COR2 &= ~COR2_ETC;
+-			}
+-			count = min(port->break_length, 0xff);
+-			sbus_writeb(CD180_C_ESC,
+-				    &bp->r[chip]->r[CD180_TDR]);
+-			sbus_writeb(CD180_C_DELAY,
+-				    &bp->r[chip]->r[CD180_TDR]);
+-			sbus_writeb(count,
+-				    &bp->r[chip]->r[CD180_TDR]);
+-			if (!(port->break_length -= count))
+-				port->break_length--;
+-		} else  {
+-			sbus_writeb(CD180_C_ESC,
+-				    &bp->r[chip]->r[CD180_TDR]);
+-			sbus_writeb(CD180_C_EBRK,
+-				    &bp->r[chip]->r[CD180_TDR]);
+-			sbus_writeb(port->COR2,
+-				    &bp->r[chip]->r[CD180_COR2]);
+-			aurora_wait_CCR(bp->r[chip]);
+-			sbus_writeb(CCR_CORCHG2,
+-				    &bp->r[chip]->r[CD180_CCR]);
+-			port->break_length = 0;
+-		}
+-		return;
+-	}
+-	
+-	count = CD180_NFIFO;
+-	do {
+-		u8 byte = port->xmit_buf[port->xmit_tail++];
+-
+-		sbus_writeb(byte, &bp->r[chip]->r[CD180_TDR]);
+-		port->xmit_tail = port->xmit_tail & (SERIAL_XMIT_SIZE-1);
+-		if (--port->xmit_cnt <= 0)
+-			break;
+-	} while (--count > 0);
+-	
+-	if (port->xmit_cnt <= 0)  {
+-		sbus_writeb(port_No(port) & 7,
+-			    &bp->r[chip]->r[CD180_CAR]);
+-		udelay(1);
+-		port->SRER &= ~SRER_TXRDY;
+-		sbus_writeb(port->SRER,
+-			    &bp->r[chip]->r[CD180_SRER]);
+-	}
+-	if (port->xmit_cnt <= port->wakeup_chars)
+-		aurora_mark_event(port, RS_EVENT_WRITE_WAKEUP);
+-}
+-
+-static void aurora_check_modem(struct Aurora_board const * bp, int chip)
+-{
+-	struct Aurora_port *port;
+-	struct tty_struct *tty;
+-	unsigned char mcr;
+-	
+-	if (!(port = aurora_get_port(bp, chip, "Modem")))
+-		return;
+-		
+-	tty = port->tty;
+-	
+-	mcr = sbus_readb(&bp->r[chip]->r[CD180_MCR]);
+-	if (mcr & MCR_CDCHG)  {
+-		if (sbus_readb(&bp->r[chip]->r[CD180_MSVR]) & MSVR_CD) 
+-			wake_up_interruptible(&port->open_wait);
+-		else
+-			schedule_task(&port->tqueue_hangup);
+-	}
+-	
+-/* We don't have such things yet. My aurora board has DTR and RTS swapped, but that doesn't count in this driver. Let's hope
+- * Aurora didn't made any boards with CTS or DSR broken...
+- */
+-/* #ifdef AURORA_BRAIN_DAMAGED_CTS
+-	if (mcr & MCR_CTSCHG)  {
+-		if (aurora_in(bp, CD180_MSVR) & MSVR_CTS)  {
+-			tty->hw_stopped = 0;
+-			port->SRER |= SRER_TXRDY;
+-			if (port->xmit_cnt <= port->wakeup_chars)
+-				aurora_mark_event(port, RS_EVENT_WRITE_WAKEUP);
+-		} else  {
+-			tty->hw_stopped = 1;
+-			port->SRER &= ~SRER_TXRDY;
+-		}
+-		sbus_writeb(port->SRER, &bp->r[chip]->r[CD180_SRER]);
+-	}
+-	if (mcr & MCR_DSRCHG)  {
+-		if (aurora_in(bp, CD180_MSVR) & MSVR_DSR)  {
+-			tty->hw_stopped = 0;
+-			port->SRER |= SRER_TXRDY;
+-			if (port->xmit_cnt <= port->wakeup_chars)
+-				aurora_mark_event(port, RS_EVENT_WRITE_WAKEUP);
+-		} else  {
+-			tty->hw_stopped = 1;
+-			port->SRER &= ~SRER_TXRDY;
+-		}
+-		sbus_writeb(port->SRER, &bp->r[chip]->r[CD180_SRER]);
+-	}
+-#endif AURORA_BRAIN_DAMAGED_CTS */
+-	
+-	/* Clear change bits */
+-	sbus_writeb(0, &bp->r[chip]->r[CD180_MCR]);
+-}
+-
+-/* The main interrupt processing routine */
+-static irqreturn_t aurora_interrupt(int irq, void * dev_id)
+-{
+-	unsigned char status;
+-	unsigned char ack,chip/*,chip_id*/;
+-	struct Aurora_board * bp = (struct Aurora_board *) dev_id;
+-	unsigned long loop = 0;
+-
+-#ifdef AURORA_INT_DEBUG
+-	printk("IRQ%d %d\n",irq,++irqhit);
+-#ifdef AURORA_FLOODPRO
+-	if (irqhit>=AURORA_FLOODPRO)
+-		sbus_writeb(8, &bp->r0->r);
+-#endif
+-#endif
+-	
+-/* old	bp = IRQ_to_board[irq&0x0f];*/
+-	
+-	if (!bp || !(bp->flags & AURORA_BOARD_ACTIVE))
+-		return IRQ_NONE;
+-
+-/*	The while() below takes care of this.
+-	status = sbus_readb(&bp->r[0]->r[CD180_SRSR]);
+-#ifdef AURORA_INT_DEBUG
+-	printk("mumu: %02x\n", status);
+-#endif
+-	if (!(status&SRSR_ANYINT))
+-		return IRQ_NONE; * Nobody has anything to say, so exit *
+-*/
+-	while ((loop++ < 48) &&
+-	       (status = sbus_readb(&bp->r[0]->r[CD180_SRSR]) & SRSR_ANYINT)){
+-#ifdef AURORA_INT_DEBUG
+-		printk("SRSR: %02x\n", status);
+-#endif
+-		if (status & SRSR_REXT) {
+-			ack = sbus_readb(&bp->r3->r[bp->ACK_RINT]);
+-#ifdef AURORA_INT_DEBUG
+-			printk("R-ACK %02x\n", ack);
+-#endif
+-			if ((ack >> 5) == board_No(bp)) {
+-				if ((chip=((ack>>3)&3)-1) < AURORA_NCD180) {
+-					if ((ack&GSVR_ITMASK)==GSVR_IT_RGD) {
+-						aurora_receive(bp,chip);
+-						sbus_writeb(0,
+-							 &bp->r[chip]->r[CD180_EOSRR]);
+-					} else if ((ack & GSVR_ITMASK) == GSVR_IT_REXC) {
+-						aurora_receive_exc(bp,chip);
+-						sbus_writeb(0,
+-							 &bp->r[chip]->r[CD180_EOSRR]);
+-					}
+-				}
+-			}
+-		} else if (status & SRSR_TEXT) {
+-			ack = sbus_readb(&bp->r3->r[bp->ACK_TINT]);
+-#ifdef AURORA_INT_DEBUG
+-			printk("T-ACK %02x\n", ack);
+-#endif
+-			if ((ack >> 5) == board_No(bp)) {
+-				if ((chip=((ack>>3)&3)-1) < AURORA_NCD180) {
+-					if ((ack&GSVR_ITMASK)==GSVR_IT_TX) {
+-						aurora_transmit(bp,chip);
+-						sbus_writeb(0,
+-							 &bp->r[chip]->r[CD180_EOSRR]);
+-					}
+-				}
+-			}
+-		} else if (status & SRSR_MEXT) {
+-			ack = sbus_readb(&bp->r3->r[bp->ACK_MINT]);
+-#ifdef AURORA_INT_DEBUG
+-			printk("M-ACK %02x\n", ack);
+-#endif
+-			if ((ack >> 5) == board_No(bp)) {
+-				if ((chip = ((ack>>3)&3)-1) < AURORA_NCD180) {
+-					if ((ack&GSVR_ITMASK)==GSVR_IT_MDM) {
+-						aurora_check_modem(bp,chip);
+-						sbus_writeb(0,
+-							 &bp->r[chip]->r[CD180_EOSRR]);
+-					}
+-				}
+-			}
+-		}
+-	}
+-/* I guess this faster code can be used with CD1865, using AUROPRI and GLOBPRI. */
+-#if 0
+-	while ((loop++ < 48)&&(status=bp->r[0]->r[CD180_SRSR]&SRSR_ANYINT)){
+-#ifdef AURORA_INT_DEBUG
+-		printk("SRSR: %02x\n",status);
+-#endif
+-		ack = sbus_readb(&bp->r3->r[0]);
+-#ifdef AURORA_INT_DEBUG
+-		printk("ACK: %02x\n",ack);
+-#endif
+-		if ((ack>>5)==board_No(bp)) {
+-			if ((chip=((ack>>3)&3)-1) < AURORA_NCD180) {
+-				ack&=GSVR_ITMASK;
+-				if (ack==GSVR_IT_RGD) {
+-					aurora_receive(bp,chip);
+-					sbus_writeb(0,
+-						    &bp->r[chip]->r[CD180_EOSRR]);
+-				} else if (ack==GSVR_IT_REXC) {
+-					aurora_receive_exc(bp,chip);
+-					sbus_writeb(0,
+-						    &bp->r[chip]->r[CD180_EOSRR]);
+-				} else if (ack==GSVR_IT_TX) {
+-					aurora_transmit(bp,chip);
+-					sbus_writeb(0,
+-						    &bp->r[chip]->r[CD180_EOSRR]);
+-				} else if (ack==GSVR_IT_MDM) {
+-					aurora_check_modem(bp,chip);
+-					sbus_writeb(0,
+-						    &bp->r[chip]->r[CD180_EOSRR]);
+-				}
+-			}
+-		}
+-	}
+-#endif
+-
+-/* This is the old handling routine, used in riscom8 for only one CD180. I keep it here for reference. */
+-#if 0
+-	for(chip=0;chip<AURORA_NCD180;chip++){
+-		chip_id=(board_No(bp)<<5)|((chip+1)<<3);
+-		loop=0;
+-		while ((loop++ < 1) &&
+-		       ((status = sbus_readb(&bp->r[chip]->r[CD180_SRSR])) &
+-			(SRSR_TEXT | SRSR_MEXT | SRSR_REXT))) {
+-
+-			if (status & SRSR_REXT) {
+-				ack = sbus_readb(&bp->r3->r[bp->ACK_RINT]);
+-				if (ack == (chip_id | GSVR_IT_RGD)) {
+-#ifdef AURORA_INTMSG
+-					printk("RX ACK\n");
+-#endif
+-					aurora_receive(bp,chip);
+-				} else if (ack == (chip_id | GSVR_IT_REXC)) {
+-#ifdef AURORA_INTMSG
+-					printk("RXC ACK\n");
+-#endif
+-					aurora_receive_exc(bp,chip);
+-				} else {
+-#ifdef AURORA_INTNORM
+-					printk("aurora%d-%d: Bad receive ack 0x%02x.\n",
+-					       board_No(bp), chip, ack);
+-#endif
+-				}
+-			} else if (status & SRSR_TEXT) {
+-				ack = sbus_readb(&bp->r3->r[bp->ACK_TINT]);
+-				if (ack == (chip_id | GSVR_IT_TX)){
+-#ifdef AURORA_INTMSG
+-					printk("TX ACK\n");
+-#endif
+-					aurora_transmit(bp,chip);
+-				} else {
+-#ifdef AURORA_INTNORM
+-					printk("aurora%d-%d: Bad transmit ack 0x%02x.\n",
+-					       board_No(bp), chip, ack);
+-#endif
+-				}
+-			} else  if (status & SRSR_MEXT)  {
+-				ack = sbus_readb(&bp->r3->r[bp->ACK_MINT]);
+-				if (ack == (chip_id | GSVR_IT_MDM)){
+-#ifdef AURORA_INTMSG
+-					printk("MDM ACK\n");
+-#endif
+-					aurora_check_modem(bp,chip);
+-				} else {
+-#ifdef AURORA_INTNORM
+-					printk("aurora%d-%d: Bad modem ack 0x%02x.\n",
+-					       board_No(bp), chip, ack);
+-#endif
+-				}
+-			}
+-			sbus_writeb(0, &bp->r[chip]->r[CD180_EOSRR]);
+-		}
+-	}
+-#endif
+-
+-	return IRQ_HANDLED;
+-}
+-
+-#ifdef AURORA_INT_DEBUG
+-static void aurora_timer (unsigned long ignored);
+-
+-static DEFINE_TIMER(aurora_poll_timer, aurora_timer, 0, 0);
+-
+-static void
+-aurora_timer (unsigned long ignored)
+-{
+-	unsigned long flags;
+-	int i;
+-
+-	save_flags(flags); cli();
+-
+-	printk("SRSR: %02x,%02x - ",
+-	       sbus_readb(&aurora_board[0].r[0]->r[CD180_SRSR]),
+-	       sbus_readb(&aurora_board[0].r[1]->r[CD180_SRSR]));
+-	for (i = 0; i < 4; i++) {
+-		udelay(1);
+-		printk("%02x ",
+-		       sbus_readb(&aurora_board[0].r3->r[i]));
+-	}
+-	printk("\n");
+-
+-	aurora_poll_timer.expires = jiffies + 300;
+-	add_timer (&aurora_poll_timer);
+-
+-	restore_flags(flags);
+-}
+-#endif
+-
+-/*
+- *  Routines for open & close processing.
+- */
+-
+-/* Called with disabled interrupts */
+-static int aurora_setup_board(struct Aurora_board * bp)
+-{
+-	int error;
+-	
+-#ifdef AURORA_ALLIRQ
+-	int i;
+-	for (i = 0; i < AURORA_ALLIRQ; i++) {
+-		error = request_irq(allirq[i]|0x30, aurora_interrupt, IRQF_SHARED,
+-				    "sio16", bp);
+-		if (error)
+-			printk(KERN_ERR "IRQ%d request error %d\n",
+-			       allirq[i], error);
+-	}
+-#else
+-	error = request_irq(bp->irq|0x30, aurora_interrupt, IRQF_SHARED,
+-			    "sio16", bp);
+-	if (error) {
+-		printk(KERN_ERR "IRQ request error %d\n", error);
+-		return error;
+-	}
+-#endif
+-	/* Board reset */
+-	sbus_writeb(0, &bp->r0->r);
+-	udelay(1);
+-	if (bp->flags & AURORA_BOARD_TYPE_2) {
+-		/* unknown yet */
+-	} else {
+-		sbus_writeb((AURORA_CFG_ENABLE_IO | AURORA_CFG_ENABLE_IRQ |
+-			     (((bp->irq)&0x0f)>>2)),
+-			    &bp->r0->r);
+-	}
+-	udelay(10000);
+-
+-	if (aurora_init_CD180(bp,0))error=1;error=0;
+-	if (aurora_init_CD180(bp,1))error++;
+-	if (error == AURORA_NCD180) {
+-		printk(KERN_ERR "Both chips failed initialisation.\n");
+-		return -EIO;
+-	}
+-
+-#ifdef AURORA_INT_DEBUG
+-	aurora_poll_timer.expires= jiffies + 1;
+-	add_timer(&aurora_poll_timer);
+-#endif
+-#ifdef AURORA_DEBUG
+-	printk("aurora_setup_board: end\n");
+-#endif
+-	return 0;
+-}
+-
+-/* Called with disabled interrupts */
+-static void aurora_shutdown_board(struct Aurora_board *bp)
+-{
+-	int i;
+-
+-#ifdef AURORA_DEBUG
+-	printk("aurora_shutdown_board: start\n");
+-#endif
+-
+-#ifdef AURORA_INT_DEBUG
+-	del_timer(&aurora_poll_timer);
+-#endif
+-
+-#ifdef AURORA_ALLIRQ
+-	for(i=0;i<AURORA_ALLIRQ;i++){
+-		free_irq(allirq[i]|0x30, bp);
+-/*		IRQ_to_board[allirq[i]&0xf] = NULL;*/
+-	}
+-#else
+-	free_irq(bp->irq|0x30, bp);
+-/*	IRQ_to_board[bp->irq&0xf] = NULL;*/
+-#endif	
+-	/* Drop all DTR's */
+-	for(i=0;i<16;i++){
+-		sbus_writeb(i & 7, &bp->r[i>>3]->r[CD180_CAR]);
+-		udelay(1);
+-		sbus_writeb(0, &bp->r[i>>3]->r[CD180_MSVR]);
+-		udelay(1);
+-	}
+-	/* Board shutdown */
+-	sbus_writeb(0, &bp->r0->r);
+-
+-#ifdef AURORA_DEBUG
+-	printk("aurora_shutdown_board: end\n");
+-#endif
+-}
+-
+-/* Setting up port characteristics. 
+- * Must be called with disabled interrupts
+- */
+-static void aurora_change_speed(struct Aurora_board *bp, struct Aurora_port *port)
+-{
+-	struct tty_struct *tty;
+-	unsigned long baud;
+-	long tmp;
+-	unsigned char cor1 = 0, cor3 = 0;
+-	unsigned char mcor1 = 0, mcor2 = 0,chip;
+-	
+-#ifdef AURORA_DEBUG
+-	printk("aurora_change_speed: start\n");
+-#endif
+-	if (!(tty = port->tty) || !tty->termios)
+-		return;
+-		
+-	chip = AURORA_CD180(port_No(port));
+-
+-	port->SRER  = 0;
+-	port->COR2 = 0;
+-	port->MSVR = MSVR_RTS|MSVR_DTR;
+-	
+-	baud = tty_get_baud_rate(tty);
+-	
+-	/* Select port on the board */
+-	sbus_writeb(port_No(port) & 7,
+-		    &bp->r[chip]->r[CD180_CAR]);
+-	udelay(1);
+-	
+-	if (!baud)  {
+-		/* Drop DTR & exit */
+-		port->MSVR &= ~(bp->DTR|bp->RTS);
+-		sbus_writeb(port->MSVR,
+-			    &bp->r[chip]->r[CD180_MSVR]);
+-		return;
+-	} else  {
+-		/* Set DTR on */
+-		port->MSVR |= bp->DTR;
+-		sbus_writeb(port->MSVR,
+-			    &bp->r[chip]->r[CD180_MSVR]);
+-	}
+-	
+-	/* Now we must calculate some speed dependent things. */
+-	
+-	/* Set baud rate for port. */
+-	tmp = (((bp->oscfreq + baud/2) / baud +
+-		CD180_TPC/2) / CD180_TPC);
+-
+-/*	tmp = (bp->oscfreq/7)/baud;
+-	if((tmp%10)>4)tmp=tmp/10+1;else tmp=tmp/10;*/
+-/*	printk("Prescaler period: %d\n",tmp);*/
+-
+-	sbus_writeb((tmp >> 8) & 0xff,
+-		    &bp->r[chip]->r[CD180_RBPRH]);
+-	sbus_writeb((tmp >> 8) & 0xff,
+-		    &bp->r[chip]->r[CD180_TBPRH]);
+-	sbus_writeb(tmp & 0xff, &bp->r[chip]->r[CD180_RBPRL]);
+-	sbus_writeb(tmp & 0xff, &bp->r[chip]->r[CD180_TBPRL]);
+-	
+-	baud = (baud + 5) / 10;   /* Estimated CPS */
+-	
+-	/* Two timer ticks seems enough to wakeup something like SLIP driver */
+-	tmp = ((baud + HZ/2) / HZ) * 2 - CD180_NFIFO;		
+-	port->wakeup_chars = (tmp < 0) ? 0 : ((tmp >= SERIAL_XMIT_SIZE) ?
+-					      SERIAL_XMIT_SIZE - 1 : tmp);
+-	
+-	/* Receiver timeout will be transmission time for 1.5 chars */
+-	tmp = (AURORA_TPS + AURORA_TPS/2 + baud/2) / baud;
+-	tmp = (tmp > 0xff) ? 0xff : tmp;
+-	sbus_writeb(tmp, &bp->r[chip]->r[CD180_RTPR]);
+-	
+-	switch (C_CSIZE(tty))  {
+-	 case CS5:
+-		cor1 |= COR1_5BITS;
+-		break;
+-	 case CS6:
+-		cor1 |= COR1_6BITS;
+-		break;
+-	 case CS7:
+-		cor1 |= COR1_7BITS;
+-		break;
+-	 case CS8:
+-		cor1 |= COR1_8BITS;
+-		break;
+-	}
+-	
+-	if (C_CSTOPB(tty)) 
+-		cor1 |= COR1_2SB;
+-	
+-	cor1 |= COR1_IGNORE;
+-	if (C_PARENB(tty))  {
+-		cor1 |= COR1_NORMPAR;
+-		if (C_PARODD(tty)) 
+-			cor1 |= COR1_ODDP;
+-		if (I_INPCK(tty)) 
+-			cor1 &= ~COR1_IGNORE;
+-	}
+-	/* Set marking of some errors */
+-	port->mark_mask = RCSR_OE | RCSR_TOUT;
+-	if (I_INPCK(tty)) 
+-		port->mark_mask |= RCSR_FE | RCSR_PE;
+-	if (I_BRKINT(tty) || I_PARMRK(tty)) 
+-		port->mark_mask |= RCSR_BREAK;
+-	if (I_IGNPAR(tty)) 
+-		port->mark_mask &= ~(RCSR_FE | RCSR_PE);
+-	if (I_IGNBRK(tty))  {
+-		port->mark_mask &= ~RCSR_BREAK;
+-		if (I_IGNPAR(tty)) 
+-			/* Real raw mode. Ignore all */
+-			port->mark_mask &= ~RCSR_OE;
+-	}
+-	/* Enable Hardware Flow Control */
+-	if (C_CRTSCTS(tty))  {
+-/*#ifdef AURORA_BRAIN_DAMAGED_CTS
+-		port->SRER |= SRER_DSR | SRER_CTS;
+-		mcor1 |= MCOR1_DSRZD | MCOR1_CTSZD;
+-		mcor2 |= MCOR2_DSROD | MCOR2_CTSOD;
+-		tty->hw_stopped = !(aurora_in(bp, CD180_MSVR) & (MSVR_CTS|MSVR_DSR));
+-#else*/
+-		port->COR2 |= COR2_CTSAE;
+-/*#endif*/
+-		if (bp->flags&AURORA_BOARD_DTR_FLOW_OK) {
+-			mcor1 |= AURORA_RXTH;
+-		}
+-	}
+-	/* Enable Software Flow Control. FIXME: I'm not sure about this */
+-	/* Some people reported that it works, but I still doubt */
+-	if (I_IXON(tty))  {
+-		port->COR2 |= COR2_TXIBE;
+-		cor3 |= (COR3_FCT | COR3_SCDE);
+-		if (I_IXANY(tty))
+-			port->COR2 |= COR2_IXM;
+-		sbus_writeb(START_CHAR(tty),
+-			    &bp->r[chip]->r[CD180_SCHR1]);
+-		sbus_writeb(STOP_CHAR(tty),
+-			    &bp->r[chip]->r[CD180_SCHR2]);
+-		sbus_writeb(START_CHAR(tty),
+-			    &bp->r[chip]->r[CD180_SCHR3]);
+-		sbus_writeb(STOP_CHAR(tty),
+-			    &bp->r[chip]->r[CD180_SCHR4]);
+-	}
+-	if (!C_CLOCAL(tty))  {
+-		/* Enable CD check */
+-		port->SRER |= SRER_CD;
+-		mcor1 |= MCOR1_CDZD;
+-		mcor2 |= MCOR2_CDOD;
+-	}
+-	
+-	if (C_CREAD(tty)) 
+-		/* Enable receiver */
+-		port->SRER |= SRER_RXD;
+-	
+-	/* Set input FIFO size (1-8 bytes) */
+-	cor3 |= AURORA_RXFIFO; 
+-	/* Setting up CD180 channel registers */
+-	sbus_writeb(cor1, &bp->r[chip]->r[CD180_COR1]);
+-	sbus_writeb(port->COR2, &bp->r[chip]->r[CD180_COR2]);
+-	sbus_writeb(cor3, &bp->r[chip]->r[CD180_COR3]);
+-	/* Make CD180 know about registers change */
+-	aurora_wait_CCR(bp->r[chip]);
+-	sbus_writeb(CCR_CORCHG1 | CCR_CORCHG2 | CCR_CORCHG3,
+-		    &bp->r[chip]->r[CD180_CCR]);
+-	/* Setting up modem option registers */
+-	sbus_writeb(mcor1, &bp->r[chip]->r[CD180_MCOR1]);
+-	sbus_writeb(mcor2, &bp->r[chip]->r[CD180_MCOR2]);
+-	/* Enable CD180 transmitter & receiver */
+-	aurora_wait_CCR(bp->r[chip]);
+-	sbus_writeb(CCR_TXEN | CCR_RXEN, &bp->r[chip]->r[CD180_CCR]);
+-	/* Enable interrupts */
+-	sbus_writeb(port->SRER, &bp->r[chip]->r[CD180_SRER]);
+-	/* And finally set RTS on */
+-	sbus_writeb(port->MSVR, &bp->r[chip]->r[CD180_MSVR]);
+-#ifdef AURORA_DEBUG
+-	printk("aurora_change_speed: end\n");
+-#endif
+-}
+-
+-/* Must be called with interrupts enabled */
+-static int aurora_setup_port(struct Aurora_board *bp, struct Aurora_port *port)
+-{
+-	unsigned long flags;
+-	
+-#ifdef AURORA_DEBUG
+-	printk("aurora_setup_port: start %d\n",port_No(port));
+-#endif
+-	if (port->flags & ASYNC_INITIALIZED)
+-		return 0;
+-		
+-	if (!port->xmit_buf) {
+-		/* We may sleep in get_zeroed_page() */
+-		unsigned long tmp;
+-		
+-		if (!(tmp = get_zeroed_page(GFP_KERNEL)))
+-			return -ENOMEM;
+-		    
+-		if (port->xmit_buf) {
+-			free_page(tmp);
+-			return -ERESTARTSYS;
+-		}
+-		port->xmit_buf = (unsigned char *) tmp;
+-	}
+-		
+-	save_flags(flags); cli();
+-		
+-	if (port->tty) 
+-		clear_bit(TTY_IO_ERROR, &port->tty->flags);
+-		
+-#ifdef MODULE
+-	if ((port->count == 1) && ((++bp->count) == 1))
+-			bp->flags |= AURORA_BOARD_ACTIVE;
+-#endif
+-
+-	port->xmit_cnt = port->xmit_head = port->xmit_tail = 0;
+-	aurora_change_speed(bp, port);
+-	port->flags |= ASYNC_INITIALIZED;
+-		
+-	restore_flags(flags);
+-#ifdef AURORA_DEBUG
+-	printk("aurora_setup_port: end\n");
+-#endif
+-	return 0;
+-}
+-
+-/* Must be called with interrupts disabled */
+-static void aurora_shutdown_port(struct Aurora_board *bp, struct Aurora_port *port)
+-{
+-	struct tty_struct *tty;
+-	unsigned char chip;
+-
+-#ifdef AURORA_DEBUG
+-	printk("aurora_shutdown_port: start\n");
+-#endif
+-	if (!(port->flags & ASYNC_INITIALIZED)) 
+-		return;
+-	
+-	chip = AURORA_CD180(port_No(port));
+-	
+-#ifdef AURORA_REPORT_OVERRUN
+-	printk("aurora%d: port %d: Total %ld overruns were detected.\n",
+-	       board_No(bp), port_No(port), port->overrun);
+-#endif	
+-#ifdef AURORA_REPORT_FIFO
+-	{
+-		int i;
+-		
+-		printk("aurora%d: port %d: FIFO hits [ ",
+-		       board_No(bp), port_No(port));
+-		for (i = 0; i < 10; i++)  {
+-			printk("%ld ", port->hits[i]);
+-		}
+-		printk("].\n");
+-	}
+-#endif	
+-	if (port->xmit_buf)  {
+-		free_page((unsigned long) port->xmit_buf);
+-		port->xmit_buf = NULL;
+-	}
+-
+-	if (!(tty = port->tty) || C_HUPCL(tty))  {
+-		/* Drop DTR */
+-		port->MSVR &= ~(bp->DTR|bp->RTS);
+-		sbus_writeb(port->MSVR,
+-			    &bp->r[chip]->r[CD180_MSVR]);
+-	}
+-	
+-        /* Select port */
+-	sbus_writeb(port_No(port) & 7,
+-		    &bp->r[chip]->r[CD180_CAR]);
+-	udelay(1);
+-
+-	/* Reset port */
+-	aurora_wait_CCR(bp->r[chip]);
+-	sbus_writeb(CCR_SOFTRESET, &bp->r[chip]->r[CD180_CCR]);
+-
+-	/* Disable all interrupts from this port */
+-	port->SRER = 0;
+-	sbus_writeb(port->SRER, &bp->r[chip]->r[CD180_SRER]);
+-	
+-	if (tty)  
+-		set_bit(TTY_IO_ERROR, &tty->flags);
+-	port->flags &= ~ASYNC_INITIALIZED;
+-
+-#ifdef MODULE
+-	if (--bp->count < 0)  {
+-		printk(KERN_DEBUG "aurora%d: aurora_shutdown_port: "
+-		       "bad board count: %d\n",
+-		       board_No(bp), bp->count);
+-		bp->count = 0;
+-	}
+-	
+-	if (!bp->count)
+-		bp->flags &= ~AURORA_BOARD_ACTIVE;
+-#endif
+-
+-#ifdef AURORA_DEBUG
+-	printk("aurora_shutdown_port: end\n");
+-#endif
+-}
+-
+-	
+-static int block_til_ready(struct tty_struct *tty, struct file * filp,
+-			   struct Aurora_port *port)
+-{
+-	DECLARE_WAITQUEUE(wait, current);
+-	struct Aurora_board *bp = port_Board(port);
+-	int    retval;
+-	int    do_clocal = 0;
+-	int    CD;
+-	unsigned char chip;
+-	
+-#ifdef AURORA_DEBUG
+-	printk("block_til_ready: start\n");
+-#endif
+-	chip = AURORA_CD180(port_No(port));
+-
+-	/* If the device is in the middle of being closed, then block
+-	 * until it's done, and then try again.
+-	 */
+-	if (tty_hung_up_p(filp) || port->flags & ASYNC_CLOSING) {
+-		interruptible_sleep_on(&port->close_wait);
+-		if (port->flags & ASYNC_HUP_NOTIFY)
+-			return -EAGAIN;
+-		else
+-			return -ERESTARTSYS;
+-	}
+-
+-	/* If non-blocking mode is set, or the port is not enabled,
+-	 * then make the check up front and then exit.
+-	 */
+-	if ((filp->f_flags & O_NONBLOCK) ||
+-	    (tty->flags & (1 << TTY_IO_ERROR))) {
+-		port->flags |= ASYNC_NORMAL_ACTIVE;
+-		return 0;
+-	}
+-
+-	if (C_CLOCAL(tty))  
+-		do_clocal = 1;
+-
+-	/* Block waiting for the carrier detect and the line to become
+-	 * free (i.e., not in use by the callout).  While we are in
+-	 * this loop, info->count is dropped by one, so that
+-	 * rs_close() knows when to free things.  We restore it upon
+-	 * exit, either normal or abnormal.
+-	 */
+-	retval = 0;
+-	add_wait_queue(&port->open_wait, &wait);
+-	cli();
+-	if (!tty_hung_up_p(filp))
+-		port->count--;
+-	sti();
+-	port->blocked_open++;
+-	while (1) {
+-		cli();
+-		sbus_writeb(port_No(port) & 7,
+-			    &bp->r[chip]->r[CD180_CAR]);
+-		udelay(1);
+-		CD = sbus_readb(&bp->r[chip]->r[CD180_MSVR]) & MSVR_CD;
+-		port->MSVR=bp->RTS;
+-
+-		/* auto drops DTR */
+-		sbus_writeb(port->MSVR, &bp->r[chip]->r[CD180_MSVR]);
+-		sti();
+-		set_current_state(TASK_INTERRUPTIBLE);
+-		if (tty_hung_up_p(filp) ||
+-		    !(port->flags & ASYNC_INITIALIZED)) {
+-			if (port->flags & ASYNC_HUP_NOTIFY)
+-				retval = -EAGAIN;
+-			else
+-				retval = -ERESTARTSYS;	
+-			break;
+-		}
+-		if (!(port->flags & ASYNC_CLOSING) &&
+-		    (do_clocal || CD))
+-			break;
+-		if (signal_pending(current)) {
+-			retval = -ERESTARTSYS;
+-			break;
+-		}
+-		schedule();
+-	}
+-	current->state = TASK_RUNNING;
+-	remove_wait_queue(&port->open_wait, &wait);
+-	if (!tty_hung_up_p(filp))
+-		port->count++;
+-	port->blocked_open--;
+-	if (retval)
+-		return retval;
+-	
+-	port->flags |= ASYNC_NORMAL_ACTIVE;
+-#ifdef AURORA_DEBUG
+-	printk("block_til_ready: end\n");
+-#endif
+-	return 0;
+-}	
+-
+-static int aurora_open(struct tty_struct * tty, struct file * filp)
+-{
+-	int board;
+-	int error;
+-	struct Aurora_port * port;
+-	struct Aurora_board * bp;
+-	unsigned long flags;
+-	
+-#ifdef AURORA_DEBUG
+-	printk("aurora_open: start\n");
+-#endif
+-	
+-	board = AURORA_BOARD(tty->index);
+-	if (board > AURORA_NBOARD ||
+-	    !(aurora_board[board].flags & AURORA_BOARD_PRESENT)) {
+-#ifdef AURORA_DEBUG
+-		printk("aurora_open: error board %d present %d\n",
+-		       board, aurora_board[board].flags & AURORA_BOARD_PRESENT);
+-#endif
+-		return -ENODEV;
+-	}
+-	
+-	bp = &aurora_board[board];
+-	port = aurora_port + board * AURORA_NPORT * AURORA_NCD180 + AURORA_PORT(tty->index);
+-	if ((aurora_paranoia_check(port, tty->name, "aurora_open")) {
+-#ifdef AURORA_DEBUG
+-		printk("aurora_open: error paranoia check\n");
+-#endif
+-		return -ENODEV;
+-	}
+-	
+-	port->count++;
+-	tty->driver_data = port;
+-	port->tty = tty;
+-	
+-	if ((error = aurora_setup_port(bp, port))) {
+-#ifdef AURORA_DEBUG
+-		printk("aurora_open: error aurora_setup_port ret %d\n",error);
+-#endif
+-		return error;
+-	}
+-
+-	if ((error = block_til_ready(tty, filp, port))) {
+-#ifdef AURORA_DEBUG
+-		printk("aurora_open: error block_til_ready ret %d\n",error);
+-#endif
+-		return error;
+-	}
+-	
+-#ifdef AURORA_DEBUG
+-	printk("aurora_open: end\n");
+-#endif
+-	return 0;
+-}
+-
+-static void aurora_close(struct tty_struct * tty, struct file * filp)
+-{
+-	struct Aurora_port *port = (struct Aurora_port *) tty->driver_data;
+-	struct Aurora_board *bp;
+-	unsigned long flags;
+-	unsigned long timeout;
+-	unsigned char chip;
+-	
+-#ifdef AURORA_DEBUG
+-	printk("aurora_close: start\n");
+-#endif
+-	
+-	if (!port || (aurora_paranoia_check(port, tty->name, "close"))
+-		return;
+-	
+-	chip = AURORA_CD180(port_No(port));
+-
+-	save_flags(flags); cli();
+-	if (tty_hung_up_p(filp))  {
+-		restore_flags(flags);
+-		return;
+-	}
+-	
+-	bp = port_Board(port);
+-	if ((tty->count == 1) && (port->count != 1))  {
+-		printk(KERN_DEBUG "aurora%d: aurora_close: bad port count; "
+-		       "tty->count is 1, port count is %d\n",
+-		       board_No(bp), port->count);
+-		port->count = 1;
+-	}
+-	if (--port->count < 0)  {
+-		printk(KERN_DEBUG "aurora%d: aurora_close: bad port "
+-		       "count for tty%d: %d\n",
+-		       board_No(bp), port_No(port), port->count);
+-		port->count = 0;
+-	}
+-	if (port->count)  {
+-		restore_flags(flags);
+-		return;
+-	}
+-	port->flags |= ASYNC_CLOSING;
+-
+-	/* Now we wait for the transmit buffer to clear; and we notify 
+-	 * the line discipline to only process XON/XOFF characters.
+-	 */
+-	tty->closing = 1;
+-	if (port->closing_wait != ASYNC_CLOSING_WAIT_NONE){
+-#ifdef AURORA_DEBUG
+-		printk("aurora_close: waiting to flush...\n");
+-#endif
+-		tty_wait_until_sent(tty, port->closing_wait);
+-	}
+-
+-	/* At this point we stop accepting input.  To do this, we
+-	 * disable the receive line status interrupts, and tell the
+-	 * interrupt driver to stop checking the data ready bit in the
+-	 * line status register.
+-	 */
+-	port->SRER &= ~SRER_RXD;
+-	if (port->flags & ASYNC_INITIALIZED) {
+-		port->SRER &= ~SRER_TXRDY;
+-		port->SRER |= SRER_TXEMPTY;
+-		sbus_writeb(port_No(port) & 7,
+-			    &bp->r[chip]->r[CD180_CAR]);
+-		udelay(1);
+-		sbus_writeb(port->SRER, &bp->r[chip]->r[CD180_SRER]);
+-		/*
+-		 * Before we drop DTR, make sure the UART transmitter
+-		 * has completely drained; this is especially
+-		 * important if there is a transmit FIFO!
+-		 */
+-		timeout = jiffies+HZ;
+-		while(port->SRER & SRER_TXEMPTY)  {
+-			msleep_interruptible(jiffies_to_msecs(port->timeout));
+-			if (time_after(jiffies, timeout))
+-				break;
+-		}
+-	}
+-#ifdef AURORA_DEBUG
+-	printk("aurora_close: shutdown_port\n");
+-#endif
+-	aurora_shutdown_port(bp, port);
+-	if (tty->driver->flush_buffer)
+-		tty->driver->flush_buffer(tty);
+-	tty_ldisc_flush(tty);
+-	tty->closing = 0;
+-	port->event = 0;
+-	port->tty = 0;
+-	if (port->blocked_open) {
+-		if (port->close_delay) {
+-			msleep_interruptible(jiffies_to_msecs(port->close_delay));
+-		}
+-		wake_up_interruptible(&port->open_wait);
+-	}
+-	port->flags &= ~(ASYNC_NORMAL_ACTIVE|ASYNC_CLOSING);
+-	wake_up_interruptible(&port->close_wait);
+-	restore_flags(flags);
+-#ifdef AURORA_DEBUG
+-	printk("aurora_close: end\n");
+-#endif
+-}
+-
+-static int aurora_write(struct tty_struct * tty, 
+-			const unsigned char *buf, int count)
+-{
+-	struct Aurora_port *port = (struct Aurora_port *) tty->driver_data;
+-	struct Aurora_board *bp;
+-	int c, total = 0;
+-	unsigned long flags;
+-	unsigned char chip;
+-
+-#ifdef AURORA_DEBUG
+-	printk("aurora_write: start %d\n",count);
+-#endif
+-	if ((aurora_paranoia_check(port, tty->name, "aurora_write"))
+-		return 0;
+-		
+-	chip = AURORA_CD180(port_No(port));
+-	
+-	bp = port_Board(port);
+-
+-	if (!tty || !port->xmit_buf || !tmp_buf)
+-		return 0;
+-
+-	save_flags(flags);
+-	while (1) {
+-		cli();
+-		c = min(count, min(SERIAL_XMIT_SIZE - port->xmit_cnt - 1,
+-				   SERIAL_XMIT_SIZE - port->xmit_head));
+-		if (c <= 0) {
+-			restore_flags(flags);
+-			break;
+-		}
+-		memcpy(port->xmit_buf + port->xmit_head, buf, c);
+-		port->xmit_head = (port->xmit_head + c) & (SERIAL_XMIT_SIZE-1);
+-		port->xmit_cnt += c;
+-		restore_flags(flags);
+-
+-		buf += c;
+-		count -= c;
+-		total += c;
+-	}
+-
+-	cli();
+-	if (port->xmit_cnt && !tty->stopped && !tty->hw_stopped &&
+-	    !(port->SRER & SRER_TXRDY)) {
+-		port->SRER |= SRER_TXRDY;
+-		sbus_writeb(port_No(port) & 7,
+-			    &bp->r[chip]->r[CD180_CAR]);
+-		udelay(1);
+-		sbus_writeb(port->SRER, &bp->r[chip]->r[CD180_SRER]);
+-	}
+-	restore_flags(flags);
+-#ifdef AURORA_DEBUG
+-	printk("aurora_write: end %d\n",total);
+-#endif
+-	return total;
+-}
+-
+-static void aurora_put_char(struct tty_struct * tty, unsigned char ch)
+-{
+-	struct Aurora_port *port = (struct Aurora_port *) tty->driver_data;
+-	unsigned long flags;
+-
+-#ifdef AURORA_DEBUG
+-	printk("aurora_put_char: start %c\n",ch);
+-#endif
+-	if ((aurora_paranoia_check(port, tty->name, "aurora_put_char"))
+-		return;
+-
+-	if (!tty || !port->xmit_buf)
+-		return;
+-
+-	save_flags(flags); cli();
+-	
+-	if (port->xmit_cnt >= SERIAL_XMIT_SIZE - 1) {
+-		restore_flags(flags);
+-		return;
+-	}
+-
+-	port->xmit_buf[port->xmit_head++] = ch;
+-	port->xmit_head &= SERIAL_XMIT_SIZE - 1;
+-	port->xmit_cnt++;
+-	restore_flags(flags);
+-#ifdef AURORA_DEBUG
+-	printk("aurora_put_char: end\n");
+-#endif
+-}
+-
+-static void aurora_flush_chars(struct tty_struct * tty)
+-{
+-	struct Aurora_port *port = (struct Aurora_port *) tty->driver_data;
+-	unsigned long flags;
+-	unsigned char chip;
+-
+-/*#ifdef AURORA_DEBUG
+-	printk("aurora_flush_chars: start\n");
+-#endif*/
+-	if ((aurora_paranoia_check(port, tty->name, "aurora_flush_chars"))
+-		return;
+-		
+-	chip = AURORA_CD180(port_No(port));
+-	
+-	if (port->xmit_cnt <= 0 || tty->stopped || tty->hw_stopped ||
+-	    !port->xmit_buf)
+-		return;
+-
+-	save_flags(flags); cli();
+-	port->SRER |= SRER_TXRDY;
+-	sbus_writeb(port_No(port) & 7,
+-		    &port_Board(port)->r[chip]->r[CD180_CAR]);
+-	udelay(1);
+-	sbus_writeb(port->SRER,
+-		    &port_Board(port)->r[chip]->r[CD180_SRER]);
+-	restore_flags(flags);
+-/*#ifdef AURORA_DEBUG
+-	printk("aurora_flush_chars: end\n");
+-#endif*/
+-}
+-
+-static int aurora_write_room(struct tty_struct * tty)
+-{
+-	struct Aurora_port *port = (struct Aurora_port *) tty->driver_data;
+-	int	ret;
+-
+-#ifdef AURORA_DEBUG
+-	printk("aurora_write_room: start\n");
+-#endif
+-	if ((aurora_paranoia_check(port, tty->name, "aurora_write_room"))
+-		return 0;
+-
+-	ret = SERIAL_XMIT_SIZE - port->xmit_cnt - 1;
+-	if (ret < 0)
+-		ret = 0;
+-#ifdef AURORA_DEBUG
+-	printk("aurora_write_room: end\n");
+-#endif
+-	return ret;
+-}
+-
+-static int aurora_chars_in_buffer(struct tty_struct *tty)
+-{
+-	struct Aurora_port *port = (struct Aurora_port *) tty->driver_data;
+-				
+-	if ((aurora_paranoia_check(port, tty->name, "aurora_chars_in_buffer"))
+-		return 0;
+-	
+-	return port->xmit_cnt;
+-}
+-
+-static void aurora_flush_buffer(struct tty_struct *tty)
+-{
+-	struct Aurora_port *port = (struct Aurora_port *) tty->driver_data;
+-	unsigned long flags;
+-
+-#ifdef AURORA_DEBUG
+-	printk("aurora_flush_buffer: start\n");
+-#endif
+-	if ((aurora_paranoia_check(port, tty->name, "aurora_flush_buffer"))
+-		return;
+-
+-	save_flags(flags); cli();
+-	port->xmit_cnt = port->xmit_head = port->xmit_tail = 0;
+-	restore_flags(flags);
+-	
+-	tty_wakeup(tty);
+-#ifdef AURORA_DEBUG
+-	printk("aurora_flush_buffer: end\n");
+-#endif
+-}
+-
+-static int aurora_tiocmget(struct tty_struct *tty, struct file *file)
+-{
+-	struct Aurora_port *port = (struct Aurora_port *) tty->driver_data;
+-	struct Aurora_board * bp;
+-	unsigned char status,chip;
+-	unsigned int result;
+-	unsigned long flags;
+-
+-#ifdef AURORA_DEBUG
+-	printk("aurora_get_modem_info: start\n");
+-#endif
+-	if ((aurora_paranoia_check(port, tty->name, __FUNCTION__))
+-		return -ENODEV;
+-
+-	chip = AURORA_CD180(port_No(port));
+-
+-	bp = port_Board(port);
+-
+-	save_flags(flags); cli();
+-
+-	sbus_writeb(port_No(port) & 7, &bp->r[chip]->r[CD180_CAR]);
+-	udelay(1);
+-
+-	status = sbus_readb(&bp->r[chip]->r[CD180_MSVR]);
+-	result = 0/*bp->r[chip]->r[AURORA_RI] & (1u << port_No(port)) ? 0 : TIOCM_RNG*/;
+-
+-	restore_flags(flags);
+-
+-	result |= ((status & bp->RTS) ? TIOCM_RTS : 0)
+-		| ((status & bp->DTR) ? TIOCM_DTR : 0)
+-		| ((status & MSVR_CD)  ? TIOCM_CAR : 0)
+-		| ((status & MSVR_DSR) ? TIOCM_DSR : 0)
+-		| ((status & MSVR_CTS) ? TIOCM_CTS : 0);
+-
+-#ifdef AURORA_DEBUG
+-	printk("aurora_get_modem_info: end\n");
+-#endif
+-	return result;
+-}
+-
+-static int aurora_tiocmset(struct tty_struct *tty, struct file *file,
+-			   unsigned int set, unsigned int clear)
+-{
+-	struct Aurora_port *port = (struct Aurora_port *) tty->driver_data;
+-	unsigned int arg;
+-	unsigned long flags;
+-	struct Aurora_board *bp = port_Board(port);
+-	unsigned char chip;
+-
+-#ifdef AURORA_DEBUG
+-	printk("aurora_set_modem_info: start\n");
+-#endif
+-	if ((aurora_paranoia_check(port, tty->name, __FUNCTION__))
+-		return -ENODEV;
+-
+-	chip = AURORA_CD180(port_No(port));
+-
+-	save_flags(flags); cli();
+-	if (set & TIOCM_RTS)
+-		port->MSVR |= bp->RTS;
+-	if (set & TIOCM_DTR)
+-		port->MSVR |= bp->DTR;
+-	if (clear & TIOCM_RTS)
+-		port->MSVR &= ~bp->RTS;
+-	if (clear & TIOCM_DTR)
+-		port->MSVR &= ~bp->DTR;
+-
+-	sbus_writeb(port_No(port) & 7, &bp->r[chip]->r[CD180_CAR]);
+-	udelay(1);
+-
+-	sbus_writeb(port->MSVR, &bp->r[chip]->r[CD180_MSVR]);
+-
+-	restore_flags(flags);
+-#ifdef AURORA_DEBUG
+-	printk("aurora_set_modem_info: end\n");
+-#endif
+-	return 0;
+-}
+-
+-static void aurora_send_break(struct Aurora_port * port, unsigned long length)
+-{
+-	struct Aurora_board *bp = port_Board(port);
+-	unsigned long flags;
+-	unsigned char chip;
+-	
+-#ifdef AURORA_DEBUG
+-	printk("aurora_send_break: start\n");
+-#endif
+-	chip = AURORA_CD180(port_No(port));
+-	
+-	save_flags(flags); cli();
+-
+-	port->break_length = AURORA_TPS / HZ * length;
+-	port->COR2 |= COR2_ETC;
+-	port->SRER  |= SRER_TXRDY;
+-	sbus_writeb(port_No(port) & 7, &bp->r[chip]->r[CD180_CAR]);
+-	udelay(1);
+-
+-	sbus_writeb(port->COR2, &bp->r[chip]->r[CD180_COR2]);
+-	sbus_writeb(port->SRER, &bp->r[chip]->r[CD180_SRER]);
+-	aurora_wait_CCR(bp->r[chip]);
+-
+-	sbus_writeb(CCR_CORCHG2, &bp->r[chip]->r[CD180_CCR]);
+-	aurora_wait_CCR(bp->r[chip]);
+-
+-	restore_flags(flags);
+-#ifdef AURORA_DEBUG
+-	printk("aurora_send_break: end\n");
+-#endif
+-}
+-
+-static int aurora_set_serial_info(struct Aurora_port * port,
+-				  struct serial_struct * newinfo)
+-{
+-	struct serial_struct tmp;
+-	struct Aurora_board *bp = port_Board(port);
+-	int change_speed;
+-	unsigned long flags;
+-
+-#ifdef AURORA_DEBUG
+-	printk("aurora_set_serial_info: start\n");
+-#endif
+-	if (copy_from_user(&tmp, newinfo, sizeof(tmp)))
+-		return -EFAULT;
+-#if 0	
+-	if ((tmp.irq != bp->irq) ||
+-	    (tmp.port != bp->base) ||
+-	    (tmp.type != PORT_CIRRUS) ||
+-	    (tmp.baud_base != (bp->oscfreq + CD180_TPC/2) / CD180_TPC) ||
+-	    (tmp.custom_divisor != 0) ||
+-	    (tmp.xmit_fifo_size != CD180_NFIFO) ||
+-	    (tmp.flags & ~AURORA_LEGAL_FLAGS))
+-		return -EINVAL;
+-#endif	
+-	
+-	change_speed = ((port->flags & ASYNC_SPD_MASK) !=
+-			(tmp.flags & ASYNC_SPD_MASK));
+-	
+-	if (!capable(CAP_SYS_ADMIN)) {
+-		if ((tmp.close_delay != port->close_delay) ||
+-		    (tmp.closing_wait != port->closing_wait) ||
+-		    ((tmp.flags & ~ASYNC_USR_MASK) !=
+-		     (port->flags & ~ASYNC_USR_MASK)))  
+-			return -EPERM;
+-		port->flags = ((port->flags & ~ASYNC_USR_MASK) |
+-			       (tmp.flags & ASYNC_USR_MASK));
+-	} else  {
+-		port->flags = ((port->flags & ~ASYNC_FLAGS) |
+-			       (tmp.flags & ASYNC_FLAGS));
+-		port->close_delay = tmp.close_delay;
+-		port->closing_wait = tmp.closing_wait;
+-	}
+-	if (change_speed)  {
+-		save_flags(flags); cli();
+-		aurora_change_speed(bp, port);
+-		restore_flags(flags);
+-	}
+-#ifdef AURORA_DEBUG
+-	printk("aurora_set_serial_info: end\n");
+-#endif
+-	return 0;
+-}
+-
+-extern int aurora_get_serial_info(struct Aurora_port * port,
+-				  struct serial_struct * retinfo)
+-{
+-	struct serial_struct tmp;
+-	struct Aurora_board *bp = port_Board(port);
+-	
+-#ifdef AURORA_DEBUG
+-	printk("aurora_get_serial_info: start\n");
+-#endif
+-	if (!access_ok(VERIFY_WRITE, (void *) retinfo, sizeof(tmp)))
+-		return -EFAULT;
+-	
+-	memset(&tmp, 0, sizeof(tmp));
+-	tmp.type = PORT_CIRRUS;
+-	tmp.line = port - aurora_port;
+-	tmp.port = 0;
+-	tmp.irq  = bp->irq;
+-	tmp.flags = port->flags;
+-	tmp.baud_base = (bp->oscfreq + CD180_TPC/2) / CD180_TPC;
+-	tmp.close_delay = port->close_delay * HZ/100;
+-	tmp.closing_wait = port->closing_wait * HZ/100;
+-	tmp.xmit_fifo_size = CD180_NFIFO;
+-	copy_to_user(retinfo, &tmp, sizeof(tmp));
+-#ifdef AURORA_DEBUG
+-printk("aurora_get_serial_info: end\n");
+-#endif
+-	return 0;
+-}
+-
+-static int aurora_ioctl(struct tty_struct * tty, struct file * filp, 
+-		    unsigned int cmd, unsigned long arg)
+-		    
+-{
+-	struct Aurora_port *port = (struct Aurora_port *) tty->driver_data;
+-	int retval;
+-
+-#ifdef AURORA_DEBUG
+-	printk("aurora_ioctl: start\n");
+-#endif
+-	if ((aurora_paranoia_check(port, tty->name, "aurora_ioctl"))
+-		return -ENODEV;
+-	
+-	switch (cmd) {
+-	case TCSBRK:	/* SVID version: non-zero arg --> no break */
+-		retval = tty_check_change(tty);
+-		if (retval)
+-			return retval;
+-		tty_wait_until_sent(tty, 0);
+-		if (!arg)
+-			aurora_send_break(port, HZ/4);	/* 1/4 second */
+-		return 0;
+-	case TCSBRKP:	/* support for POSIX tcsendbreak() */
+-		retval = tty_check_change(tty);
+-		if (retval)
+-			return retval;
+-		tty_wait_until_sent(tty, 0);
+-		aurora_send_break(port, arg ? arg*(HZ/10) : HZ/4);
+-		return 0;
+-	case TIOCGSOFTCAR:
+-		return put_user(C_CLOCAL(tty) ? 1 : 0, (unsigned long *)arg);
+-	case TIOCSSOFTCAR:
+-		if (get_user(arg,(unsigned long *)arg))
+-			return -EFAULT;
+-		tty->termios->c_cflag =
+-			((tty->termios->c_cflag & ~CLOCAL) |
+-			 (arg ? CLOCAL : 0));
+-		return 0;
+-	case TIOCGSERIAL:	
+-		return aurora_get_serial_info(port, (struct serial_struct *) arg);
+-	case TIOCSSERIAL:	
+-		return aurora_set_serial_info(port, (struct serial_struct *) arg);
+-	default:
+-		return -ENOIOCTLCMD;
+-	};
+-#ifdef AURORA_DEBUG
+-	printk("aurora_ioctl: end\n");
+-#endif
+-	return 0;
+-}
+-
+-static void aurora_throttle(struct tty_struct * tty)
+-{
+-	struct Aurora_port *port = (struct Aurora_port *) tty->driver_data;
+-	struct Aurora_board *bp;
+-	unsigned long flags;
+-	unsigned char chip;
+-
+-#ifdef AURORA_DEBUG
+-	printk("aurora_throttle: start\n");
+-#endif
+-	if ((aurora_paranoia_check(port, tty->name, "aurora_throttle"))
+-		return;
+-	
+-	bp = port_Board(port);
+-	chip = AURORA_CD180(port_No(port));
+-	
+-	save_flags(flags); cli();
+-	port->MSVR &= ~bp->RTS;
+-	sbus_writeb(port_No(port) & 7, &bp->r[chip]->r[CD180_CAR]);
+-	udelay(1);
+-	if (I_IXOFF(tty))  {
+-		aurora_wait_CCR(bp->r[chip]);
+-		sbus_writeb(CCR_SSCH2, &bp->r[chip]->r[CD180_CCR]);
+-		aurora_wait_CCR(bp->r[chip]);
+-	}
+-	sbus_writeb(port->MSVR, &bp->r[chip]->r[CD180_MSVR]);
+-	restore_flags(flags);
+-#ifdef AURORA_DEBUG
+-	printk("aurora_throttle: end\n");
+-#endif
+-}
+-
+-static void aurora_unthrottle(struct tty_struct * tty)
+-{
+-	struct Aurora_port *port = (struct Aurora_port *) tty->driver_data;
+-	struct Aurora_board *bp;
+-	unsigned long flags;
+-	unsigned char chip;
+-
+-#ifdef AURORA_DEBUG
+-	printk("aurora_unthrottle: start\n");
+-#endif
+-	if ((aurora_paranoia_check(port, tty->name, "aurora_unthrottle"))
+-		return;
+-	
+-	bp = port_Board(port);
+-	
+-	chip = AURORA_CD180(port_No(port));
+-	
+-	save_flags(flags); cli();
+-	port->MSVR |= bp->RTS;
+-	sbus_writeb(port_No(port) & 7,
+-		    &bp->r[chip]->r[CD180_CAR]);
+-	udelay(1);
+-	if (I_IXOFF(tty))  {
+-		aurora_wait_CCR(bp->r[chip]);
+-		sbus_writeb(CCR_SSCH1,
+-			    &bp->r[chip]->r[CD180_CCR]);
+-		aurora_wait_CCR(bp->r[chip]);
+-	}
+-	sbus_writeb(port->MSVR, &bp->r[chip]->r[CD180_MSVR]);
+-	restore_flags(flags);
+-#ifdef AURORA_DEBUG
+-	printk("aurora_unthrottle: end\n");
+-#endif
+-}
+-
+-static void aurora_stop(struct tty_struct * tty)
+-{
+-	struct Aurora_port *port = (struct Aurora_port *) tty->driver_data;
+-	struct Aurora_board *bp;
+-	unsigned long flags;
+-	unsigned char chip;
+-
+-#ifdef AURORA_DEBUG
+-	printk("aurora_stop: start\n");
+-#endif
+-	if ((aurora_paranoia_check(port, tty->name, "aurora_stop"))
+-		return;
+-	
+-	bp = port_Board(port);
+-	
+-	chip = AURORA_CD180(port_No(port));
+-	
+-	save_flags(flags); cli();
+-	port->SRER &= ~SRER_TXRDY;
+-	sbus_writeb(port_No(port) & 7,
+-		    &bp->r[chip]->r[CD180_CAR]);
+-	udelay(1);
+-	sbus_writeb(port->SRER,
+-		    &bp->r[chip]->r[CD180_SRER]);
+-	restore_flags(flags);
+-#ifdef AURORA_DEBUG
+-	printk("aurora_stop: end\n");
+-#endif
+-}
+-
+-static void aurora_start(struct tty_struct * tty)
+-{
+-	struct Aurora_port *port = (struct Aurora_port *) tty->driver_data;
+-	struct Aurora_board *bp;
+-	unsigned long flags;
+-	unsigned char chip;
+-
+-#ifdef AURORA_DEBUG
+-	printk("aurora_start: start\n");
+-#endif
+-	if ((aurora_paranoia_check(port, tty->name, "aurora_start"))
+-		return;
+-	
+-	bp = port_Board(port);
+-	
+-	chip = AURORA_CD180(port_No(port));
+-	
+-	save_flags(flags); cli();
+-	if (port->xmit_cnt && port->xmit_buf && !(port->SRER & SRER_TXRDY))  {
+-		port->SRER |= SRER_TXRDY;
+-		sbus_writeb(port_No(port) & 7,
+-			    &bp->r[chip]->r[CD180_CAR]);
+-		udelay(1);
+-		sbus_writeb(port->SRER,
+-			    &bp->r[chip]->r[CD180_SRER]);
+-	}
+-	restore_flags(flags);
+-#ifdef AURORA_DEBUG
+-	printk("aurora_start: end\n");
+-#endif
+-}
+-
+-/*
+- * This routine is called from the scheduler tqueue when the interrupt
+- * routine has signalled that a hangup has occurred.  The path of
+- * hangup processing is:
+- *
+- * 	serial interrupt routine -> (scheduler tqueue) ->
+- * 	do_aurora_hangup() -> tty->hangup() -> aurora_hangup()
+- * 
+- */
+-static void do_aurora_hangup(void *private_)
+-{
+-	struct Aurora_port	*port = (struct Aurora_port *) private_;
+-	struct tty_struct	*tty;
+-
+-#ifdef AURORA_DEBUG
+-	printk("do_aurora_hangup: start\n");
+-#endif
+-	tty = port->tty;
+-	if (tty != NULL) {
+-		tty_hangup(tty);	/* FIXME: module removal race - AKPM */
+-#ifdef AURORA_DEBUG
+-		printk("do_aurora_hangup: end\n");
+-#endif
+-	}
+-}
+-
+-static void aurora_hangup(struct tty_struct * tty)
+-{
+-	struct Aurora_port *port = (struct Aurora_port *) tty->driver_data;
+-	struct Aurora_board *bp;
+-				
+-#ifdef AURORA_DEBUG
+-	printk("aurora_hangup: start\n");
+-#endif
+-	if ((aurora_paranoia_check(port, tty->name, "aurora_hangup"))
+-		return;
+-	
+-	bp = port_Board(port);
+-	
+-	aurora_shutdown_port(bp, port);
+-	port->event = 0;
+-	port->count = 0;
+-	port->flags &= ~ASYNC_NORMAL_ACTIVE;
+-	port->tty = 0;
+-	wake_up_interruptible(&port->open_wait);
+-#ifdef AURORA_DEBUG
+-	printk("aurora_hangup: end\n");
+-#endif
+-}
+-
+-static void aurora_set_termios(struct tty_struct * tty, struct termios * old_termios)
+-{
+-	struct Aurora_port *port = (struct Aurora_port *) tty->driver_data;
+-	unsigned long flags;
+-
+-#ifdef AURORA_DEBUG
+-	printk("aurora_set_termios: start\n");
+-#endif
+-	if ((aurora_paranoia_check(port, tty->name, "aurora_set_termios"))
+-		return;
+-	
+-	if (tty->termios->c_cflag == old_termios->c_cflag &&
+-	    tty->termios->c_iflag == old_termios->c_iflag)
+-		return;
+-
+-	save_flags(flags); cli();
+-	aurora_change_speed(port_Board(port), port);
+-	restore_flags(flags);
+-
+-	if ((old_termios->c_cflag & CRTSCTS) &&
+-	    !(tty->termios->c_cflag & CRTSCTS)) {
+-		tty->hw_stopped = 0;
+-		aurora_start(tty);
+-	}
+-#ifdef AURORA_DEBUG
+-	printk("aurora_set_termios: end\n");
+-#endif
+-}
+-
+-static void do_aurora_bh(void)
+-{
+-	 run_task_queue(&tq_aurora);
+-}
+-
+-static void do_softint(void *private_)
+-{
+-	struct Aurora_port	*port = (struct Aurora_port *) private_;
+-	struct tty_struct	*tty;
+-
+-#ifdef AURORA_DEBUG
+-	printk("do_softint: start\n");
+-#endif
+-	tty = port->tty;
+-	if (tty == NULL)
+-		return;
+-
+-	if (test_and_clear_bit(RS_EVENT_WRITE_WAKEUP, &port->event)) {
+-		tty_wakeup(tty);
+-	}
+-#ifdef AURORA_DEBUG
+-	printk("do_softint: end\n");
+-#endif
+-}
+-
+-static const struct tty_operations aurora_ops = {
+-	.open  = aurora_open,
+-	.close = aurora_close,
+-	.write = aurora_write,
+-	.put_char = aurora_put_char,
+-	.flush_chars = aurora_flush_chars,
+-	.write_room = aurora_write_room,
+-	.chars_in_buffer = aurora_chars_in_buffer,
+-	.flush_buffer = aurora_flush_buffer,
+-	.ioctl = aurora_ioctl,
+-	.throttle = aurora_throttle,
+-	.unthrottle = aurora_unthrottle,
+-	.set_termios = aurora_set_termios,
+-	.stop = aurora_stop,
+-	.start = aurora_start,
+-	.hangup = aurora_hangup,
+-	.tiocmget = aurora_tiocmget,
+-	.tiocmset = aurora_tiocmset,
+-};
+-
+-static int aurora_init_drivers(void)
+-{
+-	int error;
+-	int i;
+-
+-#ifdef AURORA_DEBUG
+-	printk("aurora_init_drivers: start\n");
+-#endif
+-	tmp_buf = (unsigned char *) get_zeroed_page(GFP_KERNEL);
+-	if (tmp_buf == NULL) {
+-		printk(KERN_ERR "aurora: Couldn't get free page.\n");
+-		return 1;
+-	}
+-	init_bh(AURORA_BH, do_aurora_bh);
+-	aurora_driver = alloc_tty_driver(AURORA_INPORTS);
+-	if (!aurora_driver) {
+-		printk(KERN_ERR "aurora: Couldn't allocate tty driver.\n");
+-		free_page((unsigned long) tmp_buf);
+-		return 1;
+-	}
+-	aurora_driver->owner = THIS_MODULE;
+-	aurora_driver->name = "ttyA";
+-	aurora_driver->major = AURORA_MAJOR;
+-	aurora_driver->type = TTY_DRIVER_TYPE_SERIAL;
+-	aurora_driver->subtype = SERIAL_TYPE_NORMAL;
+-	aurora_driver->init_termios = tty_std_termios;
+-	aurora_driver->init_termios.c_cflag =
+-		B9600 | CS8 | CREAD | HUPCL | CLOCAL;
+-	aurora_driver->flags = TTY_DRIVER_REAL_RAW;
+-	tty_set_operations(aurora_driver, &aurora_ops);
+-	error = tty_register_driver(aurora_driver);
+-	if (error) {
+-		put_tty_driver(aurora_driver);
+-		free_page((unsigned long) tmp_buf);
+-		printk(KERN_ERR "aurora: Couldn't register aurora driver, error = %d\n",
+-		       error);
+-		return 1;
+-	}
+-	
+-	memset(aurora_port, 0, sizeof(aurora_port));
+-	for (i = 0; i < AURORA_TNPORTS; i++)  {
+-		aurora_port[i].magic = AURORA_MAGIC;
+-		aurora_port[i].tqueue.routine = do_softint;
+-		aurora_port[i].tqueue.data = &aurora_port[i];
+-		aurora_port[i].tqueue_hangup.routine = do_aurora_hangup;
+-		aurora_port[i].tqueue_hangup.data = &aurora_port[i];
+-		aurora_port[i].close_delay = 50 * HZ/100;
+-		aurora_port[i].closing_wait = 3000 * HZ/100;
+-		init_waitqueue_head(&aurora_port[i].open_wait);
+-		init_waitqueue_head(&aurora_port[i].close_wait);
+-	}
+-#ifdef AURORA_DEBUG
+-	printk("aurora_init_drivers: end\n");
+-#endif
+-	return 0;
+-}
+-
+-static void aurora_release_drivers(void)
+-{
+-#ifdef AURORA_DEBUG
+-	printk("aurora_release_drivers: start\n");
+-#endif
+-	free_page((unsigned long)tmp_buf);
+-	tty_unregister_driver(aurora_driver);
+-	put_tty_driver(aurora_driver);
+-#ifdef AURORA_DEBUG
+-	printk("aurora_release_drivers: end\n");
+-#endif
+-}
+-
+-/*
+- * Called at boot time.
+- *
+- * You can specify IO base for up to RC_NBOARD cards,
+- * using line "riscom8=0xiobase1,0xiobase2,.." at LILO prompt.
+- * Note that there will be no probing at default
+- * addresses in this case.
+- *
+- */
+-void __init aurora_setup(char *str, int *ints)
+-{
+-	int i;
+-
+-	for(i=0;(i<ints[0])&&(i<4);i++) {
+-		if (ints[i+1]) irqs[i]=ints[i+1];
+-		}
+-}
+-
+-static int __init aurora_real_init(void)
+-{
+-	int found;
+-	int i;
+-
+-	printk(KERN_INFO "aurora: Driver starting.\n");
+-	if(aurora_init_drivers())
+-		return -EIO;
+-	found = aurora_probe();
+-	if(!found) {
+-		aurora_release_drivers();
+-		printk(KERN_INFO "aurora: No Aurora Multiport boards detected.\n");
+-		return -EIO;
+-	} else {
+-		printk(KERN_INFO "aurora: %d boards found.\n", found);
+-	}
+-	for (i = 0; i < found; i++) {
+-		int ret = aurora_setup_board(&aurora_board[i]);
+-
+-		if (ret) {
+-#ifdef AURORA_DEBUG
+-			printk(KERN_ERR "aurora_init: error aurora_setup_board ret %d\n",
+-			       ret);
+-#endif
+-			return ret;
+-		}
+-	}
+-	return 0;
+-}
+-
+-int irq  = 0;
+-int irq1 = 0;
+-int irq2 = 0;
+-int irq3 = 0;
+-module_param(irq , int, 0);
+-module_param(irq1, int, 0);
+-module_param(irq2, int, 0);
+-module_param(irq3, int, 0);
+-
+-static int __init aurora_init(void) 
+-{
+-	if (irq ) irqs[0]=irq ;
+-	if (irq1) irqs[1]=irq1;
+-	if (irq2) irqs[2]=irq2;
+-	if (irq3) irqs[3]=irq3;
+-	return aurora_real_init();
+-}
+-	
+-static void __exit aurora_cleanup(void)
+-{
+-	int i;
+-	
+-#ifdef AURORA_DEBUG
+-printk("cleanup_module: aurora_release_drivers\n");
+-#endif
+-
+-	aurora_release_drivers();
+-	for (i = 0; i < AURORA_NBOARD; i++)
+-		if (aurora_board[i].flags & AURORA_BOARD_PRESENT) {
+-			aurora_shutdown_board(&aurora_board[i]);
+-			aurora_release_io_range(&aurora_board[i]);
+-		}
+-}
+-
+-module_init(aurora_init);
+-module_exit(aurora_cleanup);
+-MODULE_LICENSE("GPL");
 
---bCsyhTFzCvuiizWE
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename="patch-remove-SCSI_ACORNSCSI_3.gz"
-Content-Transfer-Encoding: base64
-
-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
-rAEA
-
---bCsyhTFzCvuiizWE--
