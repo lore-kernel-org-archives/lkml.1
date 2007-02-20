@@ -1,87 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965581AbXBTALI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750957AbXBTAIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965581AbXBTALI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 19:11:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbXBTAIO
+	id S1750957AbXBTAIK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 19:08:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965605AbXBTAIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 19:08:14 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:36142 "EHLO
+	Mon, 19 Feb 2007 19:08:09 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:36151 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965600AbXBTAIB (ORCPT
+	with ESMTP id S965584AbXBTAIH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 19:08:01 -0500
-Date: Tue, 20 Feb 2007 01:08:00 +0100
+	Mon, 19 Feb 2007 19:08:07 -0500
+Date: Tue, 20 Feb 2007 01:08:06 +0100
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, Ben Dooks <ben-linux@fluff.org>
-Cc: linux-kernel@vger.kernel.org, adaplas@pol.net
-Subject: [-mm patch] drivers/video/sm501fb.c: make 4 functions static
-Message-ID: <20070220000800.GH13958@stusta.de>
-References: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6.21 patch] fix the SYSCTL=n compilation
+Message-ID: <20070220000806.GJ13958@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 17, 2007 at 09:51:46PM -0800, Andrew Morton wrote:
->...
-> Changes since 2.6.20-mm1:
->...
-> +fb-sm501-framebuffer-driver-5.patch
->...
->  fbdev updates
->...
+This patch fixes the following compile error with CONFIG_SYSCTL=n:
+
+<--  snip  -->
+
+...
+  CC      kernel/sysctl.o
+/home/bunk/linux/kernel-2.6/linux-2.6.20-mm2/kernel/sysctl.c:1411: error: conflicting types for 'register_sysctl_table'
+/home/bunk/linux/kernel-2.6/linux-2.6.20-mm2/include/linux/sysctl.h:1042: error: previous declaration of 'register_sysctl_table' was here
+make[2]: *** [kernel/sysctl.o] Error 1
+
+<--  snip  -->
 
 
-This patch makes four needlessly global functions static.
+Caused by commit 0b4d414714f0d2f922d39424b0c5c82ad900a381.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
-
- drivers/video/sm501fb.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
-
---- linux-2.6.20-mm2/drivers/video/sm501fb.c.old	2007-02-19 12:15:43.000000000 +0100
-+++ linux-2.6.20-mm2/drivers/video/sm501fb.c	2007-02-19 12:16:48.000000000 +0100
-@@ -136,8 +136,8 @@
- #define SM501_MEMF_CRT			(4)
- #define SM501_MEMF_ACCEL		(8)
+--- linux-2.6.20-mm2/kernel/sysctl.c.old	2007-02-19 17:52:28.000000000 +0100
++++ linux-2.6.20-mm2/kernel/sysctl.c	2007-02-19 17:53:22.000000000 +0100
+@@ -1406,8 +1406,7 @@
+ }
  
--int sm501_alloc_mem(struct sm501fb_info *inf, struct sm501_mem *mem,
--		    unsigned int why, size_t size)
-+static int sm501_alloc_mem(struct sm501fb_info *inf, struct sm501_mem *mem,
-+			   unsigned int why, size_t size)
+ #else /* !CONFIG_SYSCTL */
+-struct ctl_table_header * register_sysctl_table(ctl_table * table,
+-						int insert_at_head)
++struct ctl_table_header *register_sysctl_table(ctl_table * table)
  {
- 	unsigned int ptr = 0;
- 
-@@ -926,7 +926,7 @@
-  * set or change the hardware cursor parameters
- */
- 
--int sm501fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
-+static int sm501fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
- {
- 	struct sm501fb_par  *par = info->par;
- 	struct sm501fb_info *fbi = par->info;
-@@ -1225,7 +1225,7 @@
-  * initialise hw cursor parameters
- */
- 
--int sm501_init_cursor(struct fb_info *fbi, unsigned int reg_base)
-+static int sm501_init_cursor(struct fb_info *fbi, unsigned int reg_base)
- {
- 	struct sm501fb_par *par = fbi->par;
- 	struct sm501fb_info *info = par->info;
-@@ -1768,7 +1768,7 @@
- 	},
- };
- 
--int __devinit sm501fb_init(void)
-+static int __devinit sm501fb_init(void)
- {
- 	return platform_driver_register(&sm501fb_driver);
+ 	return NULL;
  }
 
