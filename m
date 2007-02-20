@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965648AbXBTDsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965656AbXBTDuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965648AbXBTDsL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 22:48:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965652AbXBTDsK
+	id S965656AbXBTDuS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 22:50:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965652AbXBTDuR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 22:48:10 -0500
-Received: from firewall.rowland.harvard.edu ([140.247.233.35]:33627 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S965648AbXBTDsJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 22:48:09 -0500
-Date: Mon, 19 Feb 2007 22:48:08 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Douglas Gilbert <dougg@torque.net>
-cc: Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>,
-       <linux-kernel@vger.kernel.org>, <jens.axboe@oracle.com>,
-       <James.Bottomley@steeleye.com>
-Subject: Re: [PATCH] Block layer: separate out queue-oriented ioctls
-In-Reply-To: <45DA23C7.6090800@torque.net>
-Message-ID: <Pine.LNX.4.44L0.0702192238110.4237-100000@netrider.rowland.org>
+	Mon, 19 Feb 2007 22:50:17 -0500
+Received: from hera.kernel.org ([140.211.167.34]:52937 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965656AbXBTDuP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 22:50:15 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Subject: Re: 2.6.20: fails to turn laptop power off (ACPI?)
+Date: Mon, 19 Feb 2007 22:52:06 -0500
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <200702200012.l1K0CAmv017140@turbo.physics.adelaide.edu.au>
+In-Reply-To: <200702200012.l1K0CAmv017140@turbo.physics.adelaide.edu.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702192252.06483.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Feb 2007, Douglas Gilbert wrote:
+On Monday 19 February 2007 19:12, Jonathan Woithe wrote:
+> As of 2.6.20 the kernel has not been able to turn the power off on my laptop
+> during shutdown.  Up to and including 2.6.19, pressing the power button
+> triggered a shutdown via the ACPI system.  Under 2.6.20 (with the same
+> kernel features enabled as far as I am aware) the system shutdown still
+> occurs, but when the time comes for power to be cut all that happens is that
+> the screen backlight turns off and the machine appears to hang indefinitely.
 
-> Alan,
-> The SG_GET_RESERVED_SIZE ioctl is also defined in
-> the block layer, see block/scsi_ioctl.c .
+Any better with CONFIG_USB_SUSPEND=n ?
+http://bugzilla.kernel.org/show_bug.cgi?id=7828
 
-Ah, I didn't know that.  (Or more likely, I used to know and have since 
-forgotten.)  Thanks for pointing it out.
+-Len
 
-> I suspect it is just a kludge to fool cdrecord that it
-> is talking to a sg device. [One of many kludges in the
-> block SG_IO ioctl implementation to that end.]
-> So perhaps the block layer versions of SG_SET_RESERVED_SIZE
-> and SG_GET_RESERVED_SIZE need to be similarly capped.
-
-Yes.  In fact one of them already is, but the other should be too.
-
-> Actually I think that I would default SG_GET_RESERVED_SIZE to
-> request_queue->max_sectors * 512 in the block layer
-> implementation (as there is no "reserve buffer" associated
-> with a block device).
-
-Okay.
-
-Come to think of it, the reserved_size value used when a new sg device is
-created should also be capped at max_sectors * 512.  Agreed?  I can't see
-any reason for ever having a larger buffer -- it would be impossible to
-make use of the extra space.
-
-Alan Stern
 
