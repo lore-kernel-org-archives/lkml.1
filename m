@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030399AbXBTVLP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030386AbXBTVTB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030399AbXBTVLP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 16:11:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030404AbXBTVLP
+	id S1030386AbXBTVTB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 16:19:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030428AbXBTVTB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 16:11:15 -0500
-Received: from an-out-0708.google.com ([209.85.132.246]:17274 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030399AbXBTVLN (ORCPT
+	Tue, 20 Feb 2007 16:19:01 -0500
+Received: from smtp106.sbc.mail.re2.yahoo.com ([68.142.229.99]:39743 "HELO
+	smtp106.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1030386AbXBTVTA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 16:11:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=g7pU0fUNXl/NfEFQHOP79UV6uaHDSNLjuqb6fYHFpJYPn9tdJkFP5IA4xMuXaDYKVeHApUGmY+gUCDf8+lI1wT1ydwc7MkiwYDUzc/gKYsgCr5x4PGnbmeXHg8ihaHKTsvXhU9medeRWjtePSOhDu1TI2/DuVWtIJOkcEQ+EeaQ=
-Message-ID: <b637ec0b0702201311o5063c4a1j9f8a1bbebc26c9c9@mail.gmail.com>
-Date: Tue, 20 Feb 2007 16:11:12 -0500
-From: "Fabio Comolli" <fabio.comolli@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Linux 2.6.20-git - PATA UDMA/100 configured as UDMA/33
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Jeff Garzik" <jeff@garzik.org>
+	Tue, 20 Feb 2007 16:19:00 -0500
+X-YMail-OSG: ABTwn.8VM1lHJYULDUhL1Bd44Jg5uab_x2ci8M4z55jjXZTn2EfELYnVow2LbXxOGsMAGDVg2wXbpoWYN6p00OMRTBGfJCSBk0b2v0sIWfPWoRlKv4fi2pFo7_rj8tQB0AK.kByji_DT4v8Ki5.F6PYIosEiW0RNgA--
+Date: Tue, 20 Feb 2007 15:18:49 -0600
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>, greg@kroah.com
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: securityfs_create_dir strange comment
+Message-ID: <20070220211849.GA3416@vino.hallyn.com>
+References: <Pine.LNX.4.61.0702181642060.28890@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0702181642060.28890@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-I see a regression in latest -git (2.6.20-g91aa6931). My PATA hard
-disk is not correctly configured:
+Quoting Jan Engelhardt (jengelh@linux01.gwdg.de):
+> Hello list,
+> 
+> 
+> in security/inode.c, the comment for securityfs_create_dir() reads:
+> 
+> 	If securityfs is not enabled in the kernel, the value -ENODEV 
+> 	will be returned.  It is not wise to check for this value, but 
+> 	rather, check for NULL or !NULL instead as to eliminate the need 
+> 	for #ifdef in the calling code.
+> 
+> What is the actual callee that can return NULL - and what should 
+> module_init() of a module return when securityfs_create_dir() returns 
+> NULL?
 
----------------------------------------------------------------------------
-libata version 2.10 loaded.
-ata_piix 0000:00:1f.1: version 2.00ac7
-ata1: PATA max UDMA/100 cmd 0x000101f0 ctl 0x000103f6 bmdma 0x000118c0 irq 14
-ata2: PATA max UDMA/100 cmd 0x00010170 ctl 0x00010376 bmdma 0x000118c8 irq 15
-scsi0 : ata_piix
-ata1.00: ATA-6: TOSHIBA MK8025GAS, KA024A, max UDMA/100
-ata1.00: 156301488 sectors, multi 16: LBA
-ata1.01: ATAPI, max MWDMA2
-ata1.00: configured for UDMA/33
-ata1.01: configured for MWDMA2
-scsi1 : ata_piix
-ata2: port disabled. ignoring.
-scsi 0:0:0:0: Direct-Access     ATA      TOSHIBA MK8025GA KA02 PQ: 0 ANSI: 5
------------------------------------------------------------------------------
+Hmm, this came from GregKH.  It does seem based on the code that
+checking for -ENODEV is necessary, so I don't understand the comment.
 
-Linux-2.6.20 correctly configures the drive as UDMA/100.
-
-Please let me know if you need more details.
-Regards,
-Fabio
+thanks,
+-serge
