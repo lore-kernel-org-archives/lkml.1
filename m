@@ -1,157 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030455AbXBTVzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030471AbXBTV6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030455AbXBTVzZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 16:55:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030471AbXBTVzY
+	id S1030471AbXBTV6t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 16:58:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030474AbXBTV6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 16:55:24 -0500
-Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:1613 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030455AbXBTVzY (ORCPT
+	Tue, 20 Feb 2007 16:58:49 -0500
+Received: from watts.utsl.gen.nz ([202.78.240.73]:39852 "EHLO
+	magnus.utsl.gen.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030471AbXBTV6s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 16:55:24 -0500
-Date: Tue, 20 Feb 2007 22:55:06 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Cc: "Greg Kroah-Hartman" <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] platform: reorder platform_device_del
-Message-Id: <20070220225506.ab3c66aa.khali@linux-fr.org>
-In-Reply-To: <d120d5000702190640y58b0d75akb1579b7c611879eb@mail.gmail.com>
-References: <20070218213020.5618eb98.khali@linux-fr.org>
-	<200702190105.31051.dtor@insightbb.com>
-	<20070219102335.8d56dddd.khali@linux-fr.org>
-	<d120d5000702190640y58b0d75akb1579b7c611879eb@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 20 Feb 2007 16:58:48 -0500
+Message-ID: <45DB6F07.8080409@vilain.net>
+Date: Wed, 21 Feb 2007 10:58:31 +1300
+From: Sam Vilain <sam@vilain.net>
+User-Agent: Thunderbird 1.5.0.2 (X11/20060521)
+MIME-Version: 1.0
+To: Paul Menage <menage@google.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, akpm@osdl.org, pj@sgi.com,
+       sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
+       vatsa@in.ibm.com, containers@lists.osdl.org, winget@google.com,
+       rohitseth@google.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7] containers (V7): Generic Process Containers
+References: <20070212081521.808338000@menage.corp.google.com>	 <45D0EC68.9090009@vilain.net>	 <6599ad830702121515p10bc1b58kf1d29367b9b18016@mail.gmail.com>	 <m1wt2c4ttj.fsf@ebiederm.dsl.xmission.com> <6599ad830702200955l10f3c71aucff1d4b815e1a1e7@mail.gmail.com>
+In-Reply-To: <6599ad830702200955l10f3c71aucff1d4b815e1a1e7@mail.gmail.com>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dmitry,
+Paul Menage wrote:
+>> Using the container name is bad and it led to this stupid argument.
+>>
+>> The fundamental unit of what we have merged into the kernel is the
+>> namespace.  The aggregate of all namespaces and everything is the
+>> container.
+>>     
+> What are you defining here as "everything"? If you mean "all things
+> that could be applied to a segregated group of processes such as a
+> virtual server",
 
-On Mon, 19 Feb 2007 09:40:09 -0500, Dmitry Torokhov wrote:
-> But the thing is that when you add resources to a platofrm device it
-> is platform_device_add() that marks resources as busy and therefore it
+The term "segregated group of processes" is too vague.  Segregated for
+what?  What is the kernel supposed to do with this information?
 
-No, devices declare the resources, but do not mark them as busy.
-Otherwise any further attempt to request them would fail, which isn't
-the case.
+> I guess what it comes down to, is why is an aggregation of namespaces
+> suitable for the name "container", when an aggregation of namespaces
+> and other resource controllers isn't?
+>   
 
-> is not driver's task to delete them. If you want driver to request
-> resources you better pass them through a private data structure
-> attached to a device.
+This argument goes away if you just rename these resource groups to
+resource namespaces.
 
-The driver isn't deleting the resources, it is marking them as no longer
-busy.
+> What do you think might be a better name for the generic process
+> groups that I'm pushing? As I said, I'm happy to do a simple
+> search/replace on my code to give a different name if that turned out
+> to be the gating factor to getting it merged. But I'd be inclined to
+> leave that decision up to Andrew/Linus.
+>   
 
-We can't seem to agree on this point. Can someone else who is familiar
-with the new resource model please shed some light?
+Did you like the names I came up with in my original reply?
 
-> The attached resources are normally used by arch setup codes that
-> posess the knowledge about whether a device is present on a box and
-> what IO port or memory region is used. The device is usualy there and
-> its resources fixed and not available to anyone else even if there is
-> no driver to actually control the device.
+ - CPUset namespace for CPU partitioning
+ - Resource namespaces:
+   - cpusched namespace for CPU
+   - ulimit namespace for memory
+   - quota namespace for disk space
+   - io namespace for disk activity
+   - etc
 
-That we agree on.
+>> For the case of namespaces I don't see how your code makes things
+>> better.  I do not see a real problem that you are solving.
+>>     
+> I'm trying to solve the problem that lots of different folks
+> (including us) are trying to do things that aggregate multiple process
+> into some kind of constrained group, and are all trying to use
+> different and incompatible ways of grouping/tracking those processes.
+>   
 
-> > >       However you are right that we should not free resources until
-> > > device is marked for deletion and driver's ->remove() method completes
-> > > but I would not rely on surrounding code for keeping an extra reference
-> > > and would just take one explicitely in platform_device_del().
-> >
-> > You mean that you wouldn't trust the rest of the platform driver core,
-> > which lives in the same source file, to do the right thing? That's
-> > being too defensive IMHO, and I don't think we usually do that. Greg?
-> >
-> 
-> platform_device_del() is public so all bets are off...
+Maybe what's missing is a set of helper macros/functions that assist
+with writing new namespaces.  Perhaps you can give some more examples
+and we can consider these on a case by case basis.
 
-Good point, I had missed that fact. However, I've now checked all the
-callers and found that they all call platform_device_put() right after
-platform_device_del(), so we're safe. And they have to, otherwise their
-code is broken. It's always in an error path, as this appears to the
-only legitimate use for platform_device_del(). So I really don't see
-the benefit of taking an additional reference in platform_device_del
-"just in case". If it ever makes a difference, it means the caller code
-is badly broken anyway, so why bother?
-
-platform_device_put has the following comment: "This function must
-_only_ be externally called in error cases.  All other usage is a bug."
-As I understand it, we could/should add this to platform_device_del
-too, to discourage the bogus use cases you fear could happen. Hence an
-updated patch:
-
-* * * * *
-
-In platform_device_del(), we currently delete the device resources
-first, then we delete the device itself. This causes a (minor) bug to
-occur when one unregisters a platform device before unregistering its
-platform driver, and the driver is requesting (in .probe()) and
-releasing (in .remove()) a resource of the device. The device
-resources are already gone by the time the driver gets the chance to
-release the resources it had been requesting, causing an error like:
-Trying to free nonexistent resource <0000000000000295-0000000000000296>
-
-If the platform driver is unregistered first, the problem doesn't
-occur, as the driver will have the opportunity to release the
-resources it had requested before the device resources themselves are
-released. It's a bit odd that unregistering the driver first or the
-device first doesn't lead to the same result.
-
-So I believe that we should delete the device first in
-platform_device_del(). I've searched the git history and found that it
-used to be the case before 2.6.8, but was changed here:
-
-http://www.kernel.org/git/?p=linux/kernel/git/torvalds/old-2.6-bkcvs.git;a=commitdiff;h=96ef7b3689936ee1e64b711511342026a8ce459c
-
-> 2004/07/14 16:09:44-07:00 dtor_core
-> [PATCH] Driver core: Fix OOPS in device_platform_unregister
-> 
-> Driver core: platform_device_unregister should release resources first
->              and only then call device_unregister, otherwise if there
->              are no more references to the device it will be freed and
->              the fucntion will try to access freed memory.
-
-However we now have an explicit call to put_device() at the end of
-platform_device_unregister() so I guess the original problem no longer
-exists and it is safe to revert that change.
-
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
----
- drivers/base/platform.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
---- linux-2.6.21-pre.orig/drivers/base/platform.c	2007-02-20 11:05:25.000000000 +0100
-+++ linux-2.6.21-pre/drivers/base/platform.c	2007-02-20 22:44:35.000000000 +0100
-@@ -292,20 +292,22 @@ EXPORT_SYMBOL_GPL(platform_device_add);
-  *	@pdev:	platform device we're removing
-  *
-  *	Note that this function will also release all memory- and port-based
-- *	resources owned by the device (@dev->resource).
-+ *	resources owned by the device (@dev->resource).  This function
-+ *	must _only_ be externally called in error cases.  All other usage
-+ *	is a bug.
-  */
- void platform_device_del(struct platform_device *pdev)
- {
- 	int i;
- 
- 	if (pdev) {
-+		device_del(&pdev->dev);
-+
- 		for (i = 0; i < pdev->num_resources; i++) {
- 			struct resource *r = &pdev->resource[i];
- 			if (r->flags & (IORESOURCE_MEM|IORESOURCE_IO))
- 				release_resource(r);
- 		}
--
--		device_del(&pdev->dev);
- 	}
- }
- EXPORT_SYMBOL_GPL(platform_device_del);
-
-
--- 
-Jean Delvare
+Sam.
