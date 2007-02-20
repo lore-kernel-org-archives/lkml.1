@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030506AbXBTWXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030505AbXBTWYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030506AbXBTWXZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 17:23:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030505AbXBTWXZ
+	id S1030505AbXBTWYA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 17:24:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030507AbXBTWYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 17:23:25 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:48271 "EHLO mail.dvmed.net"
+	Tue, 20 Feb 2007 17:24:00 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:48282 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030506AbXBTWXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 17:23:24 -0500
-Message-ID: <45DB74D9.206@garzik.org>
-Date: Tue, 20 Feb 2007 17:23:21 -0500
+	id S1030505AbXBTWX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 17:23:58 -0500
+Message-ID: <45DB74FC.2070102@garzik.org>
+Date: Tue, 20 Feb 2007 17:23:56 -0500
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
@@ -35,7 +35,7 @@ Lukas Hejtmanek wrote:
 > messages, IDE performance is decreased. libata.noacpi=1 option works ok but
 > the performance is still slightly degraded (about 10%).
 
-Does performance come back if you also use acpi=off ?
+Also, please add hardware info (full dmesg, full lspci) to the bug.
 
 	Jeff
 
