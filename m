@@ -1,61 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030494AbXBTWRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030487AbXBTWRo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030494AbXBTWRX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 17:17:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030214AbXBTWRW
+	id S1030487AbXBTWRo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 17:17:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030496AbXBTWRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 17:17:22 -0500
-Received: from outpost.ds9a.nl ([213.244.168.210]:39938 "EHLO outpost.ds9a.nl"
+	Tue, 20 Feb 2007 17:17:44 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:34377 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030193AbXBTWRV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 17:17:21 -0500
-Date: Tue, 20 Feb 2007 23:17:20 +0100
-From: bert hubert <bert.hubert@netherlabs.nl>
-To: Rick Jones <rick.jones2@hp.com>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Josef Sipek <jsipek@fsl.cs.sunysb.edu>,
-       Andi Kleen <andi@firstfloor.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: all syscalls initially taking 4usec on a P4? Re: nonblocking  UDPv4 recvfrom() taking 4usec @ 3GHz?
-Message-ID: <20070220221719.GA16263@outpost.ds9a.nl>
-Mail-Followup-To: bert hubert <bert.hubert@netherlabs.nl>,
-	Rick Jones <rick.jones2@hp.com>,
-	Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-	Josef Sipek <jsipek@fsl.cs.sunysb.edu>,
-	Andi Kleen <andi@firstfloor.org>, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20070219231447.GA4400@outpost.ds9a.nl> <p73d545drx6.fsf@bingen.suse.de> <20070220162714.GA3245@outpost.ds9a.nl> <20070220164124.GA24930@2ka.mipt.ru> <20070220184242.GA30077@filer.fsl.cs.sunysb.edu> <20070220184859.GA1949@2ka.mipt.ru> <20070220193319.GA8800@outpost.ds9a.nl> <45DB6FD8.4050106@hp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1030487AbXBTWRm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 17:17:42 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.20-mm2
+Date: Tue, 20 Feb 2007 23:12:29 +0100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+References: <20070217215146.30e7ffa3.akpm@linux-foundation.org> <200702200220.22721.rjw@sisk.pl> <20070219223151.b3fbe18e.akpm@linux-foundation.org>
+In-Reply-To: <20070219223151.b3fbe18e.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45DB6FD8.4050106@hp.com>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200702202312.30067.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 20, 2007 at 02:02:00PM -0800, Rick Jones wrote:
+On Tuesday, 20 February 2007 07:31, Andrew Morton wrote:
+> On Tue, 20 Feb 2007 02:20:21 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > On Sunday, 18 February 2007 20:43, Andrew Morton wrote:
+> > > On Sun, 18 Feb 2007 13:44:54 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > 
+> > > > On Sunday, 18 February 2007 06:51, Andrew Morton wrote:
+> > > > > 
+> > > > > Temporarily at
+> > > > > 
+> > > > >   http://userweb.kernel.org/~akpm/2.6.20-mm2/
+> > > > > 
+> > > > > Will appear later at
+> > > > > 
+> > > > >  ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm2/
+> > > > 
+> > > > Two problems:
+> > > > 
+> > > > 1) A showstopper with the root partition on RAID1:
+> > > > 
+> > > > md: raid1 personality registered for level 1
+> > > > [--snip--]
+> > > > md: multipath personality registered for level -4
+> > > > register_blkdev: failed to get major for mdp
+> > > > [--snip--]
+> > > > VFS: Cannot open root device "md1" or unknown-block(0,0)
+> > > 
+> > > Someone else reported that against mainline.  Can you please debug it a bit?
+> > 
+> > For now I can only say 2.6.20 + origin.patch breaks.
+> > 
+> > However, it's a SUSE 10.1 system with gcc 4.1.0 and this may be the reason.
+> > I'll check that tomorrow.
+> 
+> Yes, Rolf says this goes away when you stop using gcc-4.1.0.
+> 
+> I'm hoping that churning the code around like below makes things work
+> right.
 
-> The slope appears to be flattening-out the farther out to the right it 
-> goes.  Perhaps that is the length of time it takes to take all the 
-> requisite cache misses.
+Yes, that helps.
 
-The rate of flattening out appears to correlate with the number of processes
-running, even though the system is otherwise >99.5% idle during my
-measurements.
-
-With only 'gdm' running, things flatten out slowly, iow, it takes longer
-delays to see recvfrom slow down. With only 1 process running (init=bash),
-the graph is nearly flat.
-
->From this, it is probable that even an idle GNOME desktop (Ubunty Edgy Eft)
-is under fierce cache pressure, enough to blow away my meagre 1MB in a
-matter of milliseconds.
-
-I'm trying to figure out which processes have the most impact, I had already
-killed anything non-essential. But that still leaves 140 pids.
-
-	Bert
-
--- 
-http://www.PowerDNS.com      Open source, database driven DNS Software 
-http://netherlabs.nl              Open and Closed source services
+Thanks,
+Rafael
