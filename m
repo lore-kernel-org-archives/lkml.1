@@ -1,46 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964944AbXBTOfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964936AbXBTOf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964944AbXBTOfL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 09:35:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964936AbXBTOfK
+	id S964936AbXBTOf3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 09:35:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964943AbXBTOf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 09:35:10 -0500
-Received: from wx-out-0506.google.com ([66.249.82.226]:41454 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964951AbXBTOfJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 09:35:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=bN730LQet38bMGl14m6rrnpPsYZh7udUYKMwv4rqLljr0mATit99BjCarimVE4WA4440D5VJImuCR+93iMFC28cvrRHi+FdofwbHfthWW7/OLVAxHerCWJBwdwKQvNuRCTa1Ms29IBMWhcJqdNUDl6cO4yst0FX3y15L7i8y+v8=
-Message-ID: <45DB0717.90507@gmail.com>
-Date: Tue, 20 Feb 2007 23:35:03 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: Pablo Sebastian Greco <lkml@fliagreco.com.ar>
-CC: Marcus Haebler <haebler@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: SATA problems
-References: <459A674B.3060304@fliagreco.com.ar> <459B9F91.9070908@gmail.com>	 <459BC703.9000207@fliagreco.com.ar> <459C8A5E.5010206@gmail.com>	 <459CFE7B.6090306@fliagreco.com.ar>	 <459DC2EE.1090307@fliagreco.com.ar> <45A1AB3F.1080408@gmail.com>	 <45B649BF.5030705@fliagreco.com.ar> <45B6BC6D.8070301@gmail.com> <d72aa1340702170449n1aa61777l6c9c7e525102db00@mail.gmail.com> <45D731A8.90604@fliagreco.com.ar>
-In-Reply-To: <45D731A8.90604@fliagreco.com.ar>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Feb 2007 09:35:28 -0500
+Received: from madara.hpl.hp.com ([192.6.19.124]:51476 "EHLO madara.hpl.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964951AbXBTOf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 09:35:27 -0500
+Date: Tue, 20 Feb 2007 06:34:54 -0800
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] perfmon ia64: fix file/vma lifetime
+Message-ID: <20070220143454.GD30911@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20070220141856.GB31343@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070220141856.GB31343@wotan.suse.de>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Pablo, the bug you saw was bad interaction between blacklisted NCQ
-device and dynamic queue depth adjustment.  Patches are submitted to fix
-the problem.  Just drop the blacklist patch.  Your drives should work
-fine in NCQ mode.  My gut feeling is that your problem is power related
-from the beginning.
+nick,
 
-* Marcus, you're on via's ahci controller, right?  The problem you saw
-was bad interaction between blacklisted NCQ _controller_ and dynamic
-queue depth adjustment.  Patches submitted.
+On Tue, Feb 20, 2007 at 03:18:56PM +0100, Nick Piggin wrote:
+> From: Nick Piggin <npiggin@suse.de>
+> 
+> Perfmon associates vmalloc()ed memory with a file descriptor, and installs
+> a vma mapping that memory. Unfortunately, the vm_file field is not filled in,
+> so processes with mappings to that memory do not prevent the file from being
+> closed and the memory freed. This results in use-after-free bugs and multiple
+> freeing of pages, etc.
+> 
+> I saw this bug on an Altix on SLES9. Haven't reproduced upstream but it looks
+> like the same issue is there.
+> 
+
+I think this is possible for the old perfmon v2.0 codebase that is currently in
+mainline for IA-64. I have corrected this with the multi-arch v2.3 code base 
+available as a  kernel patch for the moment.
 
 Thanks.
 
+> Signed-off-by: Nick Piggin <npiggin@suse.de>
+> 
+> Index: linux-2.6/arch/ia64/kernel/perfmon.c
+> ===================================================================
+> --- linux-2.6.orig/arch/ia64/kernel/perfmon.c
+> +++ linux-2.6/arch/ia64/kernel/perfmon.c
+> @@ -2261,7 +2261,7 @@ pfm_remap_buffer(struct vm_area_struct *
+>   * allocate a sampling buffer and remaps it into the user address space of the task
+>   */
+>  static int
+> -pfm_smpl_buffer_alloc(struct task_struct *task, pfm_context_t *ctx, unsigned long rsize, void **user_vaddr)
+> +pfm_smpl_buffer_alloc(struct task_struct *task, struct file *filp, pfm_context_t *ctx, unsigned long rsize, void **user_vaddr)
+>  {
+>  	struct mm_struct *mm = task->mm;
+>  	struct vm_area_struct *vma = NULL;
+> @@ -2312,6 +2312,7 @@ pfm_smpl_buffer_alloc(struct task_struct
+>  	 * partially initialize the vma for the sampling buffer
+>  	 */
+>  	vma->vm_mm	     = mm;
+> +	vma->vm_file	     = filp;
+>  	vma->vm_flags	     = VM_READ| VM_MAYREAD |VM_RESERVED;
+>  	vma->vm_page_prot    = PAGE_READONLY; /* XXX may need to change */
+>  
+> @@ -2350,6 +2351,8 @@ pfm_smpl_buffer_alloc(struct task_struct
+>  		goto error;
+>  	}
+>  
+> +	get_file(filp);
+> +
+>  	/*
+>  	 * now insert the vma in the vm list for the process, must be
+>  	 * done with mmap lock held
+> @@ -2427,7 +2430,7 @@ pfarg_is_sane(struct task_struct *task, 
+>  }
+>  
+>  static int
+> -pfm_setup_buffer_fmt(struct task_struct *task, pfm_context_t *ctx, unsigned int ctx_flags,
+> +pfm_setup_buffer_fmt(struct task_struct *task, struct file *filp, pfm_context_t *ctx, unsigned int ctx_flags,
+>  		     unsigned int cpu, pfarg_context_t *arg)
+>  {
+>  	pfm_buffer_fmt_t *fmt = NULL;
+> @@ -2468,7 +2471,7 @@ pfm_setup_buffer_fmt(struct task_struct 
+>  		/*
+>  		 * buffer is always remapped into the caller's address space
+>  		 */
+> -		ret = pfm_smpl_buffer_alloc(current, ctx, size, &uaddr);
+> +		ret = pfm_smpl_buffer_alloc(current, filp, ctx, size, &uaddr);
+>  		if (ret) goto error;
+>  
+>  		/* keep track of user address of buffer */
+> @@ -2679,7 +2682,7 @@ pfm_context_create(pfm_context_t *ctx, v
+>  	 * does the user want to sample?
+>  	 */
+>  	if (pfm_uuid_cmp(req->ctx_smpl_buf_id, pfm_null_uuid)) {
+> -		ret = pfm_setup_buffer_fmt(current, ctx, ctx_flags, 0, req);
+> +		ret = pfm_setup_buffer_fmt(current, filp, ctx, ctx_flags, 0, req);
+>  		if (ret) goto buffer_error;
+>  	}
+>  
+
 -- 
-tejun
+
+-Stephane
