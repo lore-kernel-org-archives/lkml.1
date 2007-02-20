@@ -1,52 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030519AbXBTWhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030501AbXBTWjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030519AbXBTWhj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 17:37:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030521AbXBTWhi
+	id S1030501AbXBTWjS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 17:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030509AbXBTWjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 17:37:38 -0500
-Received: from wr-out-0506.google.com ([64.233.184.230]:42971 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030519AbXBTWhh (ORCPT
+	Tue, 20 Feb 2007 17:39:18 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:42316 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030501AbXBTWjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 17:37:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UY1HG16E/qKrIClfzB1c1xLJEY9ML8yzZXdhreP86+WaIvkiwepo4FA01u9T+mpwWo8FLFHk0Rh3vVKF7u23bxU3DNLNIAXC1H7PmZ0v1o5KbYt7VPckMQfkpmbjERU9BwnyzHxrC0AjlP/YC02vgP4rFS94ny7GxSAZkE4/k8s=
-Message-ID: <6bffcb0e0702201437o66db38d5j3066eb3c9951a270@mail.gmail.com>
-Date: Tue, 20 Feb 2007 23:37:36 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: tglx@linutronix.de
-Subject: Re: 2.6.20-git15 BUG: soft lockup detected on CPU#0! - timers?
-Cc: LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <1172008584.25076.0.camel@localhost.localdomain>
+	Tue, 20 Feb 2007 17:39:17 -0500
+Date: Tue, 20 Feb 2007 16:39:13 -0600
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       kou.ishizaki@toshiba.co.jp, arnd@arndb.de,
+       Jens Osterkamp <jens@de.ibm.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 7/12] spidernet: move medium variable into card struct
+Message-ID: <20070220223913.GG28895@austin.ibm.com>
+References: <20070220221314.GU923@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <6bffcb0e0702201054rb839bb2m11ef8d33bacffdb8@mail.gmail.com>
-	 <1172008584.25076.0.camel@localhost.localdomain>
+In-Reply-To: <20070220221314.GU923@austin.ibm.com>
+User-Agent: Mutt/1.5.11
+From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20/02/07, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Tue, 2007-02-20 at 19:54 +0100, Michal Piotrowski wrote:
-> >
-> > Might it be 6ba9b346e1e0eca65ec589d32de3a9fe32dc5de6 commit?
->
-> I doubt that it is, but can you revert it ?
 
-I'm using the latest kernel without this patch since 3 hours.
+From: Jens Osterkamp <jens@de.ibm.com>
 
-So far so good.
+This moves the medium variable into the spidernet card structure.
+It renames the GMII_ variables to BCM54XX specific ones.
 
-Regards,
-Michal
+Signed-off-by: Jens Osterkamp <jens@de.ibm.com>
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+----
+ drivers/net/spider_net.c |   14 +++++++-------
+ drivers/net/spider_net.h |    2 ++
+ 2 files changed, 9 insertions(+), 7 deletions(-)
+
+Index: linux-2.6.20-git16/drivers/net/spider_net.c
+===================================================================
+--- linux-2.6.20-git16.orig/drivers/net/spider_net.c	2007-02-20 15:02:40.000000000 -0600
++++ linux-2.6.20-git16/drivers/net/spider_net.c	2007-02-20 15:02:42.000000000 -0600
+@@ -1909,26 +1909,26 @@ static void spider_net_link_phy(unsigned
+ 
+ 		pr_info("%s: link is down trying to bring it up\n", card->netdev->name);
+ 
+-		switch (phy->medium) {
+-		case GMII_COPPER:
++		switch (card->medium) {
++		case BCM54XX_COPPER:
+ 			/* enable fiber with autonegotiation first */
+ 			if (phy->def->ops->enable_fiber)
+ 				phy->def->ops->enable_fiber(phy, 1);
+-			phy->medium = GMII_FIBER;
++			card->medium = BCM54XX_FIBER;
+ 			break;
+ 
+-		case GMII_FIBER:
++		case BCM54XX_FIBER:
+ 			/* fiber didn't come up, try to disable fiber autoneg */
+ 			if (phy->def->ops->enable_fiber)
+ 				phy->def->ops->enable_fiber(phy, 0);
+-			phy->medium = GMII_UNKNOWN;
++			card->medium = BCM54XX_UNKNOWN;
+ 			break;
+ 
+-		case GMII_UNKNOWN:
++		case BCM54XX_UNKNOWN:
+ 			/* copper, fiber with and without failed,
+ 			 * retry from beginning */
+ 			spider_net_setup_aneg(card);
+-			phy->medium = GMII_COPPER;
++			card->medium = BCM54XX_COPPER;
+ 			break;
+ 		}
+ 
+Index: linux-2.6.20-git16/drivers/net/spider_net.h
+===================================================================
+--- linux-2.6.20-git16.orig/drivers/net/spider_net.h	2007-02-20 15:02:38.000000000 -0600
++++ linux-2.6.20-git16/drivers/net/spider_net.h	2007-02-20 15:02:42.000000000 -0600
+@@ -444,6 +444,8 @@ struct spider_net_card {
+ 	struct pci_dev *pdev;
+ 	struct mii_phy phy;
+ 
++	int medium;
++
+ 	void __iomem *regs;
+ 
+ 	struct spider_net_descr_chain tx_chain;
