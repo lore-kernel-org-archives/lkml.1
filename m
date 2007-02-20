@@ -1,36 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965825AbXBTAvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965833AbXBTAyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965825AbXBTAvU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 19:51:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965829AbXBTAvT
+	id S965833AbXBTAyS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 19:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965834AbXBTAyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 19:51:19 -0500
-Received: from mail.screens.ru ([213.234.233.54]:47267 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965826AbXBTAvS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 19:51:18 -0500
-Date: Tue, 20 Feb 2007 03:50:48 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ego@in.ibm.com, akpm@osdl.org, paulmck@us.ibm.com, mingo@elte.hu,
-       vatsa@in.ibm.com, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-Subject: Re: freezer problems
-Message-ID: <20070220005048.GA16016@tv-sign.ru>
-References: <20070214144031.GA15257@in.ibm.com> <200702200036.01515.rjw@sisk.pl> <20070220001209.GA15991@tv-sign.ru> <200702200132.12847.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 19 Feb 2007 19:54:18 -0500
+Received: from mu-out-0910.google.com ([209.85.134.184]:13874 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965833AbXBTAyR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 19:54:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JFhrSff3KtEyohC2Vysy66QxrAOu3eQQmNGBF3PxO1XuS28ViuCuJJJPPQa3WlSaCnrFWIhjbRpgg9u6NaNqxvq+SKC5Vx8Adf7p7W07GrULiT7qglIYcJZG8JO+2py07FnlTPfy5PxSt6kjQ8ma0wJ388kiv42Q2KmEPzKdnVk=
+Message-ID: <a4e6962a0702191654p75df1550he8acce8a0abd29de@mail.gmail.com>
+Date: Mon, 19 Feb 2007 18:54:15 -0600
+From: "Eric Van Hensbergen" <ericvh@gmail.com>
+To: "Adrian Bunk" <bunk@stusta.de>
+Subject: Re: [-mm patch] fs/9p/vfs_addr.c: make 2 functions static
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, rminnich@lanl.gov,
+       lucho@ionkov.net, linux-kernel@vger.kernel.org,
+       v9fs-developer@lists.sourceforge.net
+In-Reply-To: <20070220000734.GX13958@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200702200132.12847.rjw@sisk.pl>
-User-Agent: Mutt/1.5.11
+References: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
+	 <20070220000734.GX13958@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/20, Rafael J. Wysocki wrote:
+On 2/19/07, Adrian Bunk <bunk@stusta.de> wrote:
+> On Sat, Feb 17, 2007 at 09:51:46PM -0800, Andrew Morton wrote:
+> >...
+> > Changes since 2.6.20-mm1:
+> >...
+> >  git-v9fs.patch
+> >...
+> >  git trees
+> >...
 >
-> BTW, what do you think of the updated patch I sent two messages ago?
+> This patch makes two needlessly global functions static.
+>
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-Ah, sorry, I just forgot... I think it is nice.
-
-Oleg.
-
+Acked-by: Eric Van Hensbergen <ericvh@gmail.com>
