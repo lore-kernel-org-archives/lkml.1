@@ -1,63 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030408AbXBTUMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030405AbXBTU04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030408AbXBTUMY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 15:12:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030410AbXBTUMX
+	id S1030405AbXBTU04 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 15:26:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030416AbXBTU04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 15:12:23 -0500
-Received: from mail-dub.bigfish.com ([213.199.154.10]:27291 "EHLO
-	outbound3-dub-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030408AbXBTUMW (ORCPT
+	Tue, 20 Feb 2007 15:26:56 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41417 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030405AbXBTU0z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 15:12:22 -0500
-X-BigFish: VP
-X-Server-Uuid: 89466532-923C-4A88-82C1-66ACAA0041DF
-Date: Tue, 20 Feb 2007 21:10:42 +0100
-From: "Joerg Roedel" <joerg.roedel@amd.com>
-To: "Andi Kleen" <ak@suse.de>
-cc: discuss@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [discuss] [PATCH 1/3] x86_64: additions to the i386
- alternative extensions to support x86_64 architecture
-Message-ID: <20070220201042.GD5440@amd.com>
-References: <20070219190132.GA6083@amd.com>
- <20070219190709.GC6083@amd.com> <200702192229.22217.ak@suse.de>
+	Tue, 20 Feb 2007 15:26:55 -0500
+Date: Tue, 20 Feb 2007 12:26:54 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Rik van Riel <riel@redhat.com>
+cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] free swap space when (re)activating page
+In-Reply-To: <45DB51E3.8090909@redhat.com>
+Message-ID: <Pine.LNX.4.64.0702201226140.16722@schroedinger.engr.sgi.com>
+References: <45D63445.5070005@redhat.com> <Pine.LNX.4.64.0702192048150.9934@schroedinger.engr.sgi.com>
+ <45DAF794.2000209@redhat.com> <Pine.LNX.4.64.0702200833460.13913@schroedinger.engr.sgi.com>
+ <45DB25E1.7030504@redhat.com> <Pine.LNX.4.64.0702201015590.14497@schroedinger.engr.sgi.com>
+ <45DB4C87.6050809@redhat.com> <45DB51E3.8090909@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <200702192229.22217.ak@suse.de>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 20 Feb 2007 20:11:01.0358 (UTC)
- FILETIME=[3DE2D8E0:01C7552B]
-X-WSS-ID: 69C58A522EG1056063-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 19, 2007 at 10:29:22PM +0100, Andi Kleen wrote:
-> On Monday 19 February 2007 20:07, Joerg Roedel wrote:
-> > From: Joerg Roedel <joerg.roedel@amd.com>
-> > 
-> > This patch adds the necessary changes to extend the i386 alternative
-> > instruction framework extension on the x86_64 architecture.
-> 
-> Looks complicated and somewhat fragile.
+On Tue, 20 Feb 2007, Rik van Riel wrote:
 
-The tests on i386 and x86_64 just work fine :-)
+> The attached patch should be correct.
 
-> I think I would prefer it if you changed the pad field to a "bit not set"
-> cpuid field. Then at least 2 alternatives + a nothing alternative could
-> be described too.
+Oh. It vanished again when I replied to your mail.
+ 
+> Btw, why do we not call pagevec_strip on the pages on l_active?
+> I assume we want to reclaim their buffer heads, too...
 
-I'm not sure I fully understand what you mean. Do you mean to add a
-further alternative instruction to the struct for supporting 2 alternative
-instructions?
-
-Joerg
-
--- 
-Joerg Roedel
-Operating System Research Center
-AMD Saxony LLC & Co. KG
-
-
+Yes we want to reduce buffer heads if we are over the limit.
