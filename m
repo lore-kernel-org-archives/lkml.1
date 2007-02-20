@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161086AbXBTXYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161081AbXBTXZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161086AbXBTXYa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 18:24:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161082AbXBTXYZ
+	id S1161081AbXBTXZY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 18:25:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161088AbXBTXZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 18:24:25 -0500
-Received: from mail.tmr.com ([64.65.253.246]:48522 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161081AbXBTXYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 18:24:04 -0500
-Message-ID: <45DB82BC.60805@tmr.com>
-Date: Tue, 20 Feb 2007 18:22:36 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Tue, 20 Feb 2007 18:25:24 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:40224 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161082AbXBTXZV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 18:25:21 -0500
+X-Originating-Ip: 74.102.209.62
+Date: Tue, 20 Feb 2007 18:23:22 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Tilman Schmidt <tilman@imap.cc>
+cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] kbuild: Add the code maturity levels DEPRECATED and
+ OBSOLETE.
+In-Reply-To: <45DB805C.5010808@imap.cc>
+Message-ID: <Pine.LNX.4.64.0702201820400.11849@localhost.localdomain>
+References: <Pine.LNX.4.64.0702181203360.5131@CPE00045a9c397f-CM001225dbafb6>
+ <200702181935.07454.bzolnier@gmail.com> <45DB218E.1080106@imap.cc>
+ <200702201942.50186.bzolnier@gmail.com> <Pine.LNX.4.64.0702201750030.11016@localhost.localdomain>
+ <45DB805C.5010808@imap.cc>
 MIME-Version: 1.0
-To: NeilBrown <neilb@suse.de>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH 000 of 6] md: Assorted fixes and features for md for 2.6.21
-References: <20070220172544.15678.patches@notabene>
-In-Reply-To: <20070220172544.15678.patches@notabene>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-NeilBrown wrote:
-> Following 6 patches are against 2.6.20 and are suitable for 2.6.21.
-> They are not against -mm because the new plugging makes raid5 not work
-> and so not testable, and there are a few fairly minor intersections between
-> these patches and those patches.
-> There is also a very minor conflict with the hardware-xor patches - one line
-> of context is different.
->
-> Patch 1 should probably go in -stable - the bug could cause data
-> corruption in a fairly uncommon raid10 configuration, so that one and
-> this intro are Cc:ed to stable@kernel.org.
->
-> Thanks,
-> NeilBrown
->
->
->  [PATCH 001 of 6] md: Fix raid10 recovery problem.
->  [PATCH 002 of 6] md: RAID6: clean up CPUID and FPU enter/exit code
->  [PATCH 003 of 6] md: Move warning about creating a raid array on partitions of the one device.
->  [PATCH 004 of 6] md: Clean out unplug and other queue function on md shutdown
->  [PATCH 005 of 6] md: Restart a (raid5) reshape that has been aborted due to a read/write error.
->  [PATCH 006 of 6] md: Add support for reshape of a raid6
+On Wed, 21 Feb 2007, Tilman Schmidt wrote:
 
-Every month or so there are a bunch of patches like this, which do 
-various enhancements to the kernel. And these are usually based against 
-the release kernel, and all is fine. But every once in a while there is 
-a patch which is more urgent, in this case the RAID10 one, which is 
-really desirable to get into every kernel running on a machine. Are 
-patches marked as needed for -stable also fast tracked to -git inclusion?
+> Am 20.02.2007 23:52 schrieb Robert P. J. Day:
+> > "deprecated" means that there *is* a complete replacement available
+> > *right now* and you should consider switching to it.
+> >
+> > if you can't offer someone a completely functional, better alternative
+> > to what they're using now, then you can't say that what they're using
+> > now is deprecated.
+>
+> So, to take a specific example (incidentally the one I am
+> personally interested in):
+>
+> isdn4linux (CONFIG_ISDN_I4L), currently marked as "obsolete"
+> (which is undoubtedly incorrect), would not even qualify as
+> "deprecated" as long as its successor, the CAPI 2.0 subsystem
+> (CONFIG_ISDN_CAPI) doesn't support all the hardware currently
+> supported by old i4l.
+>
+> Or did I misunderstand something there?
 
-If this isn't in -git14 I'm going to rebuild with it before testing 
-Neil's NFS stuff. The NFS server test data is on RAID10 ;-)
+IMHO, unless you have a fully-functional replacement ready to go, you
+can't call something "deprecated" much less "obsolete".  so, yes,
+calling isdn4linux "obsolete" is hideously premature.
 
+rday
 -- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
