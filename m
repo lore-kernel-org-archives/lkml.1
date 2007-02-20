@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030238AbXBTQlJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030253AbXBTQlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030238AbXBTQlJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 11:41:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030248AbXBTQlI
+	id S1030253AbXBTQlg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 11:41:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030256AbXBTQlg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 11:41:08 -0500
-Received: from [81.2.110.250] ([81.2.110.250]:35962 "EHLO lxorguk.ukuu.org.uk"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030238AbXBTQlH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 11:41:07 -0500
-Date: Tue, 20 Feb 2007 17:44:25 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: jgarzik@pobox.com, akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] pata_cs5520: suspend/resume
-Message-ID: <20070220174425.43b8975d@localhost.localdomain>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Tue, 20 Feb 2007 11:41:36 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:36374 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030253AbXBTQle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 11:41:34 -0500
+Date: Tue, 20 Feb 2007 19:41:25 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: bert hubert <bert.hubert@netherlabs.nl>
+Cc: Andi Kleen <andi@firstfloor.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: all syscalls initially taking 4usec on a P4? Re: nonblocking UDPv4 recvfrom() taking 4usec @ 3GHz?
+Message-ID: <20070220164124.GA24930@2ka.mipt.ru>
+References: <20070219231447.GA4400@outpost.ds9a.nl> <p73d545drx6.fsf@bingen.suse.de> <20070220162714.GA3245@outpost.ds9a.nl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <20070220162714.GA3245@outpost.ds9a.nl>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Tue, 20 Feb 2007 19:41:28 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The CS5520 isn't just an ATA controller and we must not
-pci_disable_device it as it turns into pci_disable_computer.
+On Tue, Feb 20, 2007 at 05:27:14PM +0100, bert hubert (bert.hubert@netherlabs.nl) wrote:
+> I've done so, with some interesting results. Source on
+> http://ds9a.nl/tmp/recvtimings.c - be careful to adjust the '3000' divider
+> to your CPU frequency if you care about absolute numbers!
+> 
+> These are two groups, each consisting of 10 consecutive nonblocking UDP
+> recvfroms, with 10 packets preloaded. Reported is the number of microseconds
+> per recvfrom call which yielded a packet:
+> 
+> $ ./recvtimings
+> 4.142333
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+It can be recvfrom only problem - syscall overhead on my p4 (core duo,
+debian testing) is bout 300 usec - to test I ran 
+read('dev/zero', &data, 0)
+in a loop.
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.20-mm2/drivers/ata/pata_cs5520.c linux-2.6.20-mm2/drivers/ata/pata_cs5520.c
---- linux.vanilla-2.6.20-mm2/drivers/ata/pata_cs5520.c	2007-02-20 13:37:58.000000000 +0000
-+++ linux-2.6.20-mm2/drivers/ata/pata_cs5520.c	2007-02-20 13:52:42.000000000 +0000
-@@ -325,6 +325,30 @@
- 		pci_write_config_byte(pdev, 0x60, pcicfg | 0x40);
- 	return ata_pci_device_resume(pdev);
- }
-+
-+/**
-+ *	cs5520_pci_device_suspend	-	device suspend
-+ *	@pdev: PCI device
-+ *
-+ *	We have to cut and waste bits from the standard method because
-+ *	the 5520 is a bit odd and not just a pure ATA device. As a result
-+ *	we must not disable it. The needed code is short and this avoids
-+ *	chip specific mess in the core code.
-+ */
-+
-+static int cs5520_pci_device_suspend(struct pci_dev *pdev, pm_message_t mesg)
-+{
-+	struct ata_host *host = dev_get_drvdata(&pdev->dev);
-+	int rc = 0;
-+
-+	rc = ata_host_suspend(host, mesg);
-+	if (rc)
-+		return rc;
-+
-+	pci_save_state(pdev);
-+	return 0;
-+}
-+ 
- /* For now keep DMA off. We can set it for all but A rev CS5510 once the
-    core ATA code can handle it */
- 
-@@ -340,7 +364,7 @@
- 	.id_table	= pata_cs5520,
- 	.probe 		= cs5520_init_one,
- 	.remove		= cs5520_remove_one,
--	.suspend	= ata_pci_device_suspend,
-+	.suspend	= cs5520_pci_device_suspend,
- 	.resume		= cs5520_reinit_one,
- };
- 
+Could you try to hack recvfrom() for your socket to always copy some
+empty buffer and check the results without waiting for packet?
+
+If you are not hurry I can test it myself tomorrow.
+
+-- 
+	Evgeniy Polyakov
