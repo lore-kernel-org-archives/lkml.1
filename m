@@ -1,75 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030312AbXBTRLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030297AbXBTRN5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030312AbXBTRLy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 12:11:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030301AbXBTRLy
+	id S1030297AbXBTRN5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 12:13:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030311AbXBTRN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 12:11:54 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:36762 "EHLO 2ka.mipt.ru"
+	Tue, 20 Feb 2007 12:13:57 -0500
+Received: from lixom.net ([66.141.50.11]:44981 "EHLO mail.lixom.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030312AbXBTRLx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 12:11:53 -0500
-Date: Tue, 20 Feb 2007 20:11:20 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: bert hubert <bert.hubert@netherlabs.nl>
-Cc: Andi Kleen <andi@firstfloor.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: all syscalls initially taking 4usec on a P4? Re: nonblocking UDPv4 recvfrom() taking 4usec @ 3GHz?
-Message-ID: <20070220171120.GD24930@2ka.mipt.ru>
-References: <20070219231447.GA4400@outpost.ds9a.nl> <p73d545drx6.fsf@bingen.suse.de> <20070220162714.GA3245@outpost.ds9a.nl> <20070220164124.GA24930@2ka.mipt.ru> <20070220170232.GA4730@outpost.ds9a.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+	id S1030297AbXBTRN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 12:13:56 -0500
+Date: Tue, 20 Feb 2007 11:23:45 -0600
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] nfs: init req_lock in nfs_alloc_inode
+Message-ID: <20070220172345.GA19249@lixom.net>
+References: <20070216170532.GA4895@lixom.net> <1171984200.6271.15.camel@heimdal.trondhjem.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070220170232.GA4730@outpost.ds9a.nl>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Tue, 20 Feb 2007 20:11:46 +0300 (MSK)
+In-Reply-To: <1171984200.6271.15.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: olof@lixom.net (Olof Johansson)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 20, 2007 at 06:02:32PM +0100, bert hubert (bert.hubert@netherlabs.nl) wrote:
-> On Tue, Feb 20, 2007 at 07:41:25PM +0300, Evgeniy Polyakov wrote:
+On Tue, Feb 20, 2007 at 10:10:00AM -0500, Trond Myklebust wrote:
+> > Trond, is your MAINTAINERS entry up to date? Seems like you mostly post
+> > from @netapp.com these days.
 > 
-> > It can be recvfrom only problem - syscall overhead on my p4 (core duo,
-> > debian testing) is bout 300 usec - to test I ran read('dev/zero', &data,
-> > 0) in a loop.
+> I tend to be easier to get hold of via the fys.uio.no address, since
+> that isn't hidden behind a VPN. I use the netapp.com address when
+> posting patches etc since that is sort of required by the developers
+> certificate of origin.
+
+Ok, no problem. Just figured I'd ask.
+
+> > Index: linux-2.6/fs/nfs/inode.c
+> > ===================================================================
+> > --- linux-2.6.orig/fs/nfs/inode.c
+> > +++ linux-2.6/fs/nfs/inode.c
+> > @@ -1123,6 +1123,7 @@ struct inode *nfs_alloc_inode(struct sup
+> >  	nfsi->flags = 0UL;
+> >  	nfsi->cache_validity = 0UL;
+> >  	nfsi->cache_change_attribute = jiffies;
+> > +	nfsi->req_lock = SPIN_LOCK_UNLOCKED;
+> >  #ifdef CONFIG_NFS_V3_ACL
+> >  	nfsi->acl_access = ERR_PTR(-EAGAIN);
+> >  	nfsi->acl_default = ERR_PTR(-EAGAIN);
 > 
-> nsec I assume?
+> As Andrew implied, this spin lock should already be initialised by the
+> slab allocator in the "init_once" callback. Is this a vanilla kernel, or
+> do you have any extra patches applied?
 
-Yes, sure - mistyped - it is about 300 nanoseconds (280-290 or so).
+Plain 2.6.20 on an old dual g5 with g5_defconfig + NFS_ROOT +
+serial port enabled. To see the error instead of lockup I enable
+CONFIG_DEBUG_SPINLOCK.
 
-> The usec numbers for read(fd, &c, 0) where fd is /dev/zero:
-> 1.557667, 0.627667, 0.447333, 0.440000, 0.440000, 0.440000, 0.442333,
-> 0.440000, 0.440000, 0.442333, 0.442333, 0.440000, 0.440000, 0.442333,
-> 0.442667, 0.440000, 0.440000, 0.440000, 0.442333, 0.442667,
-> 
-> In usecs. Notice the same declining figure, but not as pronounced. With a
-> sleep(1) in between, we get:
-> 1.692667, 1.800000, 0.782667, 1.282667, 0.665000, 0.980000, 0.925000,
-> 0.887667, 0.662667, 0.862667, 1.077333, 1.442333, 0.660000, 1.890000,
-> 0.672333, 0.795000, 0.647667, 0.692333, 0.750000, 0.865000,
-> 
-> This doesn't look all that unhealthy.
-> 
-> > Could you try to hack recvfrom() for your socket to always copy some
-> > empty buffer and check the results without waiting for packet?
-> 
-> That might be out of my reach before tomorrow :-)
+In my original reproduction, I had to boot with nfs root, and try to mount
+my sata drive (/dev/sda3). This is with a static /dev, no udev. Seems like it
+happens when trying to mount any block device that's located on NFS.
 
-I would try it today - but it is a bit late in Moscow already - and
-there are some things to complete yet. So, tomorrow I will create a patch
-and run it, but I seriously doubt that there is _that_ high per-recvfrom 
-latency.
+Since this is what nfs_sync_mapping_wait does:
 
-> > If you are not hurry I can test it myself tomorrow.
-> 
-> Thanks. My major problem is that in my measurements, I quite often see the
-> 'worst case' 4usec result. It would not be a problem if it happens only
-> once, of course.
+long nfs_sync_mapping_wait(struct address_space *mapping, struct
+		 	   writeback_control *wbc, int how) {
+        struct inode *inode = mapping->host;
+        struct nfs_inode *nfsi = NFS_I(inode);
+[...]
+        spin_lock(&nfsi->req_lock);
+[...]
 
-Depending on how frequent is 'quite often' - if it ever changes the
-distribution picture, then there is some problem.
+I added this and it pops when mounting:
 
-> 	Bert
+@@ -421,6 +421,10 @@ int nfs_getattr(struct vfsmount *mnt, st
+        int need_atime = NFS_I(inode)->cache_validity & NFS_INO_INVALID_ATIME;
+        int err;
+ 
++       if (inode->i_mapping->host != inode) {
++               printk("inode %p host %p\n", inode, inode->i_mapping->host);
++               printk("inode_nfs %p host_nfs %p\n", NFS_I(inode), NFS_I(inode->i_mapping->host));
++       }
+        /* Flush out writes to the server in order to update c/mtime */
+        nfs_sync_mapping_range(inode->i_mapping, 0, 0, FLUSH_NOCOMMIT);
+ 
 
--- 
-	Evgeniy Polyakov
+I don't claim to know VFS internals, but doesn't it make sense that the
+device node is backed against the actual device, not an NFS inode? And
+if so, NFS can't expect to do nfs_sync_mapping_range() on it, or at
+least not dereference ->host and use it as an NFS inode, right?
+
+What I'm not sure I understand is why it disappears in the first place
+when I add the spin lock init -- I never even see the i_mapping->host
+pointer being allocated as an nfs inode. Maybe I just messed that one
+up somehow.
+
+
+-Olof
