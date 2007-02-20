@@ -1,44 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030383AbXBTU4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030391AbXBTU5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030383AbXBTU4u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 15:56:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030386AbXBTU4t
+	id S1030391AbXBTU5m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 15:57:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030394AbXBTU5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 15:56:49 -0500
-Received: from mail.tmr.com ([64.65.253.246]:48006 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030383AbXBTU4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 15:56:49 -0500
-Message-ID: <45DB5D80.3050008@tmr.com>
-Date: Tue, 20 Feb 2007 15:43:44 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Tue, 20 Feb 2007 15:57:42 -0500
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:51684 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030391AbXBTU5l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 15:57:41 -0500
+Date: Tue, 20 Feb 2007 12:57:40 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Rik van Riel <riel@redhat.com>
+cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] free swap space when (re)activating page
+In-Reply-To: <45DB51E3.8090909@redhat.com>
+Message-ID: <Pine.LNX.4.64.0702201257190.16830@schroedinger.engr.sgi.com>
+References: <45D63445.5070005@redhat.com> <Pine.LNX.4.64.0702192048150.9934@schroedinger.engr.sgi.com>
+ <45DAF794.2000209@redhat.com> <Pine.LNX.4.64.0702200833460.13913@schroedinger.engr.sgi.com>
+ <45DB25E1.7030504@redhat.com> <Pine.LNX.4.64.0702201015590.14497@schroedinger.engr.sgi.com>
+ <45DB4C87.6050809@redhat.com> <45DB51E3.8090909@redhat.com>
 MIME-Version: 1.0
-To: Juan Piernas Canovas <piernas@ditec.um.es>
-CC: =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@lazybastard.org>,
-       Sorin Faibish <sfaibish@emc.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [ANNOUNCE] DualFS: File System with Meta-data and Data Separation
-References: <Pine.LNX.4.61.0702142251460.19368@yvahk01.tjqt.qr> <Pine.LNX.4.61.0702151910370.19998@ditec.inf.um.es> <20070215200922.GB24643@lazybastard.org> <Pine.LNX.4.61.0702152353060.19998@ditec.inf.um.es> <20070216091321.GA28092@lazybastard.org> <45D642A4.5010009@tmr.com> <20070217151108.GA301@lazybastard.org> <45D7450F.6090309@tmr.com> <20070217183646.GE301@lazybastard.org> <op.tnwuonh3rwwil4@muki-1mj5c5mxes> <20070218055936.GF301@lazybastard.org> <Pine.LNX.4.61.0702190625270.8828@ditec.inf.um.es>
-In-Reply-To: <Pine.LNX.4.61.0702190625270.8828@ditec.inf.um.es>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Juan Piernas Canovas wrote:
->
-> The point of all the above is that you must improve the common case, 
-> and manage the worst case correctly. 
-That statement made it to my quote file. Of course "correctly" hopefully 
-means getting to the desired behavior without a performance hit so bad 
-it becomes a "jackpot case" and is correct in result but too slow to be 
-useful.
+On Tue, 20 Feb 2007, Rik van Riel wrote:
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+ > Btw, why do we not call pagevec_strip on the pages on l_active?
+> I assume we want to reclaim their buffer heads, too...
+
+But those buffer heads may be used soon. So its better to leave them 
+alone.
 
