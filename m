@@ -1,164 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965641AbXBTDTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965645AbXBTDbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965641AbXBTDTy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 22:19:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965642AbXBTDTy
+	id S965645AbXBTDbY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 22:31:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965646AbXBTDbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 22:19:54 -0500
-Received: from ozlabs.org ([203.10.76.45]:50848 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965641AbXBTDTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 22:19:52 -0500
-To: Andrew Morton <akpm@osdl.org>
-CC: <linux-kernel@vger.kernel.org>, <rmk@arm.linux.org.uk>,
-       <linuxppc-dev@ozlabs.org>
-From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 2/2] Use resource_size_t for serial port IO addresses
-In-Reply-To: <20070220031717.GI17818@localhost.localdomain>
-Message-Id: <20070220031951.5D53BDDD0E@ozlabs.org>
-Date: Tue, 20 Feb 2007 14:19:51 +1100 (EST)
+	Mon, 19 Feb 2007 22:31:24 -0500
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:35180 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S965645AbXBTDbX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 22:31:23 -0500
+Date: Tue, 20 Feb 2007 14:31:58 +1100
+From: Timothy Shimmin <tes@sgi.com>
+To: Linda Walsh <xfs@tlinx.org>, xfs@oss.sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: lock checking feedback (bug?) 2.6.20(xfs)/i386 during boot
+Message-ID: <12954EC2E224B896D61E6A34@timothy-shimmins-power-mac-g5.local>
+In-Reply-To: <45D8C765.7080306@tlinx.org>
+References: <45D8C765.7080306@tlinx.org>
+X-Mailer: Mulberry/4.0.6 (Mac OS X)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At present, various parts of the serial code use unsigned long to
-define resource addresses.  This is a problem, because some 32-bit
-platforms have physical addresses larger than 32-bits, and have mmio
-serial uarts located above the 4GB point.
+Thanks for the report, Linda.
+This and other lockdep reports are on our todo/bug list
+and I've added this one.
+(Nathan looked at some of these lock related changes I believe and we still have
+ a pending patch of his to go thru)
 
-This patch changes the type of mapbase in both struct uart_port and
-struct plat_serial8250_port to resource_size_t, which can be
-configured to be 64 bits on such platforms.  The mapbase in
-serial_struct can't safely be changed, because that structure is user
-visible.
+--Tim
 
-Signed-off-by: David Gibson <dwg@au1.ibm.com>
----
+--On 18 February 2007 1:38:45 PM -0800 Linda Walsh <xfs@tlinx.org> wrote:
 
- drivers/serial/8250.c        |    5 +++--
- drivers/serial/8250_early.c  |   16 +++++++++-------
- drivers/serial/serial_core.c |    9 +++++----
- include/linux/serial_8250.h  |    2 +-
- include/linux/serial_core.h  |    2 +-
- 5 files changed, 19 insertions(+), 15 deletions(-)
+> Turned on lock testing/proving/deadlock detection.  Not chasing any particular
+> problem, but looking for things "oddities".
+>
+> Turned on options (under kernel hacking):
+>    Locking API boot-time self-tests
+>    RT Mutex debugging, deadlock detection
+>    Lock debugging: prove locking correctness
+>
+> Multiple reboots show it to be a constant.
+> I had tried the new "Asynchronous SCSI scanning" -- thought that might have been
+> related, but turning it off makes no difference.
+>
+> I'm guessing this "error" has been present before this, but the lock
+> proving algorithms are bringing it to light?  So I don't know how serious
+> this is (if it is anything), but at the least, it doesn't look too clean...
+>
+>
+> Maybe that
+> ....
+> SCSI device sda: write cache: enabled, read cache: enabled, supports DPO and FUA
+>  sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 >
+> sd 0:0:0:0: Attached scsi disk sda
+> UDF-fs: No VRS found
+> XFS mounting filesystem sda3
+> Ending clean XFS mount for filesystem: sda3
+> VFS: Mounted root (xfs filesystem) readonly.
+> Freeing unused kernel memory: 316k freed
+>
+> =============================================
+> [ INFO: possible recursive locking detected ]
+> 2.6.20 #3
+> ---------------------------------------------
+> rm/682 is trying to acquire lock:
+>  (&(&ip->i_lock)->mr_lock){----}, at: [<b024068d>] xfs_ilock+0x7d/0xb0
+>
+> but task is already holding lock:
+>  (&(&ip->i_lock)->mr_lock){----}, at: [<b024068d>] xfs_ilock+0x7d/0xb0
+>
+> other info that might help us debug this:
+> 3 locks held by rm/682:
+>  #0:  (&inode->i_mutex/1){--..}, at: [<b016f946>] do_unlinkat+0x96/0x170
+>  #1:  (&inode->i_mutex){--..}, at: [<b016db9a>] vfs_unlink+0x5a/0xd0
+>  #2:  (&(&ip->i_lock)->mr_lock){----}, at: [<b024068d>] xfs_ilock+0x7d/0xb0
+>
+> stack backtrace:
+>  [<b013aaf1>] __lock_acquire+0xaf1/0xdf0
+>  [<b013ae47>] lock_acquire+0x57/0x70
+>  [<b024068d>] xfs_ilock+0x7d/0xb0
+>  [<b0135d7f>] down_write+0x2f/0x50
+>  [<b024068d>] xfs_ilock+0x7d/0xb0
+>  [<b024068d>] xfs_ilock+0x7d/0xb0
+>  [<b025ff2d>] xfs_lock_dir_and_entry+0xfd/0x100
+>  [<b0263c68>] xfs_remove+0x198/0x4e0
+>  [<b025fff6>] xfs_access+0x26/0x50
+>  [<b025fff6>] xfs_access+0x26/0x50
+>  [<b016db9a>] vfs_unlink+0x5a/0xd0
+>  [<b026d8f3>] xfs_vn_unlink+0x23/0x60
+>  [<b0417f72>] __mutex_lock_slowpath+0x152/0x2a0
+>  [<b01398bb>] mark_held_locks+0x6b/0x90
+>  [<b0417f72>] __mutex_lock_slowpath+0x152/0x2a0
+>  [<b0417f72>] __mutex_lock_slowpath+0x152/0x2a0
+>  [<b0139a67>] trace_hardirqs_on+0xc7/0x170
+>  [<b0417f65>] __mutex_lock_slowpath+0x145/0x2a0
+>  [<b016db9a>] vfs_unlink+0x5a/0xd0
+>  [<b016d077>] permission+0x137/0x140
+>  [<b016dbd0>] vfs_unlink+0x90/0xd0
+>  [<b016f983>] do_unlinkat+0xd3/0x170
+>  [<b0113807>] do_page_fault+0x327/0x630
+>  [<b0102fda>] sysenter_past_esp+0x5f/0x99
+>  =======================
+> XFS mounting filesystem sda1
+> Ending clean XFS mount for filesystem: sda1
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Index: working-2.6/include/linux/serial_core.h
-===================================================================
---- working-2.6.orig/include/linux/serial_core.h	2007-02-19 11:07:42.000000000 +1100
-+++ working-2.6/include/linux/serial_core.h	2007-02-19 11:07:43.000000000 +1100
-@@ -273,7 +273,7 @@ struct uart_port {
- 	const struct uart_ops	*ops;
- 	unsigned int		custom_divisor;
- 	unsigned int		line;			/* port index */
--	unsigned long		mapbase;		/* for ioremap */
-+	resource_size_t		mapbase;		/* for ioremap */
- 	struct device		*dev;			/* parent device */
- 	unsigned char		hub6;			/* this should be in the 8250 driver */
- 	unsigned char		unused[3];
-Index: working-2.6/drivers/serial/serial_core.c
-===================================================================
---- working-2.6.orig/drivers/serial/serial_core.c	2007-02-19 11:07:42.000000000 +1100
-+++ working-2.6/drivers/serial/serial_core.c	2007-02-19 11:07:43.000000000 +1100
-@@ -633,7 +633,7 @@ static int uart_get_info(struct uart_sta
- 	tmp.hub6	    = port->hub6;
- 	tmp.io_type         = port->iotype;
- 	tmp.iomem_reg_shift = port->regshift;
--	tmp.iomem_base      = (void *)port->mapbase;
-+	tmp.iomem_base      = (void *)(unsigned long)port->mapbase;
- 
- 	if (copy_to_user(retinfo, &tmp, sizeof(*retinfo)))
- 		return -EFAULT;
-@@ -1673,10 +1673,11 @@ static int uart_line_info(char *buf, str
- 		return 0;
- 
- 	mmio = port->iotype >= UPIO_MEM;
--	ret = sprintf(buf, "%d: uart:%s %s%08lX irq:%d",
-+	ret = sprintf(buf, "%d: uart:%s %s%08llX irq:%d",
- 			port->line, uart_type(port),
- 			mmio ? "mmio:0x" : "port:",
--			mmio ? port->mapbase : (unsigned long) port->iobase,
-+			mmio ? (unsigned long long)port->mapbase
-+		             : (unsigned long long) port->iobase,
- 			port->irq);
- 
- 	if (port->type == PORT_UNKNOWN) {
-@@ -2069,7 +2070,7 @@ uart_report_port(struct uart_driver *drv
- 	case UPIO_AU:
- 	case UPIO_TSI:
- 		snprintf(address, sizeof(address),
--			 "MMIO 0x%lx", port->mapbase);
-+			 "MMIO 0x%llx", (unsigned long long)port->mapbase);
- 		break;
- 	default:
- 		strlcpy(address, "*unknown*", sizeof(address));
-Index: working-2.6/drivers/serial/8250_early.c
-===================================================================
---- working-2.6.orig/drivers/serial/8250_early.c	2007-02-19 11:07:40.000000000 +1100
-+++ working-2.6/drivers/serial/8250_early.c	2007-02-19 11:07:43.000000000 +1100
-@@ -145,8 +145,9 @@ static int __init parse_options(struct e
- 		port->mapbase = simple_strtoul(options + 5, &options, 0);
- 		port->membase = ioremap(port->mapbase, mapsize);
- 		if (!port->membase) {
--			printk(KERN_ERR "%s: Couldn't ioremap 0x%lx\n",
--				__FUNCTION__, port->mapbase);
-+			printk(KERN_ERR "%s: Couldn't ioremap 0x%llx\n",
-+				__FUNCTION__,
-+			       (unsigned long long)port->mapbase);
- 			return -ENOMEM;
- 		}
- 		mmio = 1;
-@@ -168,9 +169,10 @@ static int __init parse_options(struct e
- 			device->baud);
- 	}
- 
--	printk(KERN_INFO "Early serial console at %s 0x%lx (options '%s')\n",
-+	printk(KERN_INFO "Early serial console at %s 0x%llx (options '%s')\n",
- 		mmio ? "MMIO" : "I/O port",
--		mmio ? port->mapbase : (unsigned long) port->iobase,
-+		mmio ? (unsigned long long) port->mapbase
-+	             : (unsigned long long) port->iobase,
- 		device->options);
- 	return 0;
- }
-@@ -236,10 +238,10 @@ static int __init early_uart_console_swi
- 	mmio = (port->iotype == UPIO_MEM);
- 	line = serial8250_start_console(port, device->options);
- 	if (line < 0)
--		printk("No ttyS device at %s 0x%lx for console\n",
-+		printk("No ttyS device at %s 0x%llx for console\n",
- 			mmio ? "MMIO" : "I/O port",
--			mmio ? port->mapbase :
--			    (unsigned long) port->iobase);
-+			mmio ? (unsigned long long) port->mapbase
-+		             : (unsigned long long) port->iobase);
- 
- 	unregister_console(&early_uart_console);
- 	if (mmio)
-Index: working-2.6/include/linux/serial_8250.h
-===================================================================
---- working-2.6.orig/include/linux/serial_8250.h	2007-02-19 11:07:40.000000000 +1100
-+++ working-2.6/include/linux/serial_8250.h	2007-02-19 11:07:43.000000000 +1100
-@@ -20,7 +20,7 @@
- struct plat_serial8250_port {
- 	unsigned long	iobase;		/* io base address */
- 	void __iomem	*membase;	/* ioremap cookie or NULL */
--	unsigned long	mapbase;	/* resource base */
-+	resource_size_t	mapbase;	/* resource base */
- 	unsigned int	irq;		/* interrupt number */
- 	unsigned int	uartclk;	/* UART clock rate */
- 	unsigned char	regshift;	/* register shift */
-Index: working-2.6/drivers/serial/8250.c
-===================================================================
---- working-2.6.orig/drivers/serial/8250.c	2007-02-19 11:07:40.000000000 +1100
-+++ working-2.6/drivers/serial/8250.c	2007-02-19 11:07:43.000000000 +1100
-@@ -2550,8 +2550,9 @@ static int __devinit serial8250_probe(st
- 		ret = serial8250_register_port(&port);
- 		if (ret < 0) {
- 			dev_err(&dev->dev, "unable to register port at index %d "
--				"(IO%lx MEM%lx IRQ%d): %d\n", i,
--				p->iobase, p->mapbase, p->irq, ret);
-+				"(IO%lx MEM%llx IRQ%d): %d\n", i,
-+				p->iobase, (unsigned long long)p->mapbase,
-+				p->irq, ret);
- 		}
- 	}
- 	return 0;
+
+
+
