@@ -1,44 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964810AbXBTHHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964802AbXBTHOG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964810AbXBTHHW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 02:07:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964811AbXBTHHW
+	id S964802AbXBTHOG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 02:14:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964805AbXBTHOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 02:07:22 -0500
-Received: from mx2.suse.de ([195.135.220.15]:60048 "EHLO mx2.suse.de"
+	Tue, 20 Feb 2007 02:14:05 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:60260 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964810AbXBTHHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 02:07:19 -0500
-Date: Mon, 19 Feb 2007 23:05:56 -0800
+	id S964802AbXBTHOE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 02:14:04 -0500
+Date: Mon, 19 Feb 2007 23:12:36 -0800
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@osdl.org>, torvalds@osdl.org, stable@kernel.org
-Subject: Re: Linux 2.6.19.4
-Message-ID: <20070220070556.GE11688@kroah.com>
-References: <20070220070055.GB11688@kroah.com>
+Subject: Re: Linux 2.6.20.1
+Message-ID: <20070220071236.GF11688@kroah.com>
+References: <20070220070147.GC11688@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070220070055.GB11688@kroah.com>
+In-Reply-To: <20070220070147.GC11688@kroah.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 diff --git a/Makefile b/Makefile
-index 976d24a..fa3a8f2 100644
+index 7e2750f..d26f3f5 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1,7 +1,7 @@
  VERSION = 2
  PATCHLEVEL = 6
- SUBLEVEL = 19
--EXTRAVERSION = .3
-+EXTRAVERSION = .4
- NAME=Avast! A bilge rat!
+ SUBLEVEL = 20
+-EXTRAVERSION =
++EXTRAVERSION = .1
+ NAME = Homicidal Dwarf Hamster
  
  # *DOCUMENTATION*
 diff --git a/fs/nfsd/nfs2acl.c b/fs/nfsd/nfs2acl.c
-index e3eca08..230895e 100644
+index edde5dc..b617428 100644
 --- a/fs/nfsd/nfs2acl.c
 +++ b/fs/nfsd/nfs2acl.c
 @@ -287,13 +287,20 @@ static int nfsaclsvc_release_getacl(struct svc_rqst *rqstp, __be32 *p,
