@@ -1,85 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030388AbXBTVC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030398AbXBTVGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030388AbXBTVC6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 16:02:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030419AbXBTVC6
+	id S1030398AbXBTVGg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 16:06:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030394AbXBTVGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 16:02:58 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:48955 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030388AbXBTVC5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 16:02:57 -0500
-Date: Tue, 20 Feb 2007 13:02:26 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: bert hubert <bert.hubert@netherlabs.nl>
-Cc: Benjamin LaHaise <bcrl@kvack.org>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Josef Sipek <jsipek@fsl.cs.sunysb.edu>,
-       Andi Kleen <andi@firstfloor.org>, netdev@vger.kernel.org,
+	Tue, 20 Feb 2007 16:06:36 -0500
+Received: from ithilien.qualcomm.com ([129.46.51.59]:35955 "EHLO
+	ithilien.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030399AbXBTVGf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 16:06:35 -0500
+X-Greylist: delayed 8772 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Feb 2007 16:06:35 EST
+Message-ID: <45DB62B3.8060905@qualcomm.com>
+Date: Tue, 20 Feb 2007 13:05:55 -0800
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
+MIME-Version: 1.0
+To: Christoph Lameter <clameter@sgi.com>
+CC: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Gautham shenoy <ego@in.ibm.com>, Andrew Morton <akpm@osdl.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: all syscalls initially taking 4usec on a P4? Re: nonblocking
- UDPv4 recvfrom() taking 4usec @ 3GHz?
-Message-ID: <20070220130226.7fb80d20@freekitty>
-In-Reply-To: <20070220204505.GB8800@outpost.ds9a.nl>
-References: <20070219231447.GA4400@outpost.ds9a.nl>
-	<p73d545drx6.fsf@bingen.suse.de>
-	<20070220162714.GA3245@outpost.ds9a.nl>
-	<20070220164124.GA24930@2ka.mipt.ru>
-	<20070220184242.GA30077@filer.fsl.cs.sunysb.edu>
-	<20070220184859.GA1949@2ka.mipt.ru>
-	<20070220193319.GA8800@outpost.ds9a.nl>
-	<20070220194040.GA18976@kvack.org>
-	<20070220204505.GB8800@outpost.ds9a.nl>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: Re: slab: start_cpu_timer/cache_reap CONFIG_HOTPLUG_CPU problems
+References: <20070129011301.GA844@tv-sign.ru> <Pine.LNX.4.64.0701290852390.28200@schroedinger.engr.sgi.com> <20070129171923.GA138@tv-sign.ru> <Pine.LNX.4.64.0701290922390.28330@schroedinger.engr.sgi.com> <20070129182742.GA158@tv-sign.ru> <45DB404C.4070305@qualcomm.com> <Pine.LNX.4.64.0702201041340.14643@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0702201041340.14643@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Feb 2007 21:45:05 +0100
-bert hubert <bert.hubert@netherlabs.nl> wrote:
+Christoph Lameter wrote:
+> On Tue, 20 Feb 2007, Max Krasnyansky wrote:
+> 
+>>>> Well seems that we have a set of unresolved issues with workqueues and cpu
+>>>> hotplug.
+>> How about storing 'cpu' explicitly in the work queue instead of relying on the
+>> smp_processor_id() and friends ? That way there is no ambiguity when
+>> threads/timers get
+>> moved around.
+> 
+> The slab functionality is designed to work on the processor with the 
+> queue. These tricks will only cause more trouble in the future. The 
+> cache_reaper needs to be either disabled or run on the right processor. It 
+> should never run on the wrong processor.
+> The cache_reaper() is of no importance to hotplug. You just need to make 
+> sure that it is not in the way (disable it and if its running wait 
+> until the cache_reaper has finished).
 
-> On Tue, Feb 20, 2007 at 02:40:40PM -0500, Benjamin LaHaise wrote:
-> 
-> > Make sure your system is idle.  Userspace bloat means that *lots* of idle 
-> > activity occurs in between timer ticks on recent distributions -- all those 
-> 
-> You hit the nail on the head. I had previously measured with X shut down,
-> but the effect didn't disappear.
-> 
-> With init=/bin/bash, recvfrom suddenly takes from 900nsec to 1.3usec, with
-> only slight correlation between inter-call delay and cycles spent.
-> 
-> I'm investigating this further as it appears this has a real life effect on
-> my P4 - a drastic one!
-> 
-> processor       : 0
-> vendor_id       : GenuineIntel
-> cpu family      : 15
-> model           : 4
-> model name      : Intel(R) Pentium(R) 4 CPU 3.00GHz
-> stepping        : 1
-> cpu MHz         : 3000.131
-> cache size      : 1024 KB
-> fdiv_bug        : no
-> hlt_bug         : no
-> f00f_bug        : no
-> coma_bug        : no
-> fpu             : yes
-> fpu_exception   : yes
-> cpuid level     : 5
-> wp              : yes
-> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
-> cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx
-> constant_tsc pni monitor ds_cpl cid xtpr
-> bogomips        : 6003.91
-> clflush size    : 64
-> 
-> Thanks for your help!
-> 
+I agree that running the reaper on the wrong CPU is not the best way to go about it.
+But it seems like disabling it is even worse, unless I missing something. ie wasting
+memory.
 
-What happens with preempt if your process is high priority or SCHED_FIFO/SCHED_RR?
+btw What kind of troubles were you talking about ? Performance or robustness ?
+As I said performance wise it does not make sense to run reaper on the wrong CPU but
+it does seems to work just fine from the correctness (locking, etc) perspective. Again
+it's totally possible that I'm missing something here :).
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+Thanks
+Max
