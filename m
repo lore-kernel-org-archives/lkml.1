@@ -1,69 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030187AbXBTQPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965347AbXBTQPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030187AbXBTQPj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 11:15:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965350AbXBTQPj
+	id S965347AbXBTQPz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 11:15:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965356AbXBTQPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 11:15:39 -0500
-Received: from kirby.webscope.com ([204.141.84.54]:48349 "EHLO
-	kirby.webscope.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965347AbXBTQPi (ORCPT
+	Tue, 20 Feb 2007 11:15:55 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2447 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965347AbXBTQPx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 11:15:38 -0500
-Message-ID: <45DB1E18.8070009@linuxtv.org>
-Date: Tue, 20 Feb 2007 11:13:12 -0500
-From: Michael Krufky <mkrufky@linuxtv.org>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Andrew Morton <akpm@linux-foundation.org>, v4l-dvb-maintainer@linuxtv.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [v4l-dvb-maintainer] [-mm patch] make dvb_usb_gl861_debug static
-References: <20070215051408.a7fb7d81.akpm@linux-foundation.org> <20070220000729.GV13958@stusta.de>
-In-Reply-To: <20070220000729.GV13958@stusta.de>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Feb 2007 11:15:53 -0500
+Date: Tue, 20 Feb 2007 16:15:41 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Linux Kernel List <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Pete Zaitcev <zaitcev@redhat.com>
+Subject: [PATCH] Fix USB Mon breakage
+Message-ID: <20070220161541.GA20977@flint.arm.linux.org.uk>
+Mail-Followup-To: Linux Kernel List <linux-kernel@vger.kernel.org>,
+	Greg KH <greg@kroah.com>, Pete Zaitcev <zaitcev@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Thu, Feb 15, 2007 at 05:14:08AM -0800, Andrew Morton wrote:
->> ...
->> Changes since 2.6.20-rc6-mm3:
->> ...
->>  git-dvb.patch
->> ...
->>  git trees.
->> ...
-> 
-> This patch makes the needlessly global dvb_usb_gl861_debug static.
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Never call __exit code from __init code - it causes errors such as:
 
-Acked-by: Michael Krufky <mkrufky@linuxtv.org>
+arm-linux-ld: `mon_bin_exit' referenced in section `.init.text' of drivers/built-in.o: defined in discarded section `.exit.text' of drivers/built-in.o
+arm-linux-ld: `mon_text_exit' referenced in section `.init.text' of drivers/built-in.o: defined in discarded section `.exit.text' of drivers/built-in.o
 
-> 
-> ---
-> --- linux-2.6.20-mm1/drivers/media/dvb/dvb-usb/gl861.c.old	2007-02-17 17:49:03.000000000 +0100
-> +++ linux-2.6.20-mm1/drivers/media/dvb/dvb-usb/gl861.c	2007-02-17 17:49:20.000000000 +0100
-> @@ -12,7 +12,7 @@
->  #include "qt1010.h"
->  
->  /* debug */
-> -int dvb_usb_gl861_debug;
-> +static int dvb_usb_gl861_debug;
->  module_param_named(debug,dvb_usb_gl861_debug, int, 0644);
->  MODULE_PARM_DESC(debug, "set debugging level (1=rc (or-able))." DVB_USB_DEBUG_STATUS);
->  
-> 
-> 
-> _______________________________________________
-> v4l-dvb-maintainer mailing list
-> v4l-dvb-maintainer@linuxtv.org
-> http://www.linuxtv.org/cgi-bin/mailman/listinfo/v4l-dvb-maintainer
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+ drivers/usb/mon/mon_bin.c  |    2 +-
+ drivers/usb/mon/mon_text.c |    2 +-
+ drivers/usb/mon/usb_mon.h  |    4 ++--
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/usb/mon/mon_bin.c b/drivers/usb/mon/mon_bin.c
+index c01dfe6..b2bedd9 100644
+--- a/drivers/usb/mon/mon_bin.c
++++ b/drivers/usb/mon/mon_bin.c
+@@ -1165,7 +1165,7 @@ err_dev:
+ 	return rc;
+ }
+ 
+-void __exit mon_bin_exit(void)
++void mon_bin_exit(void)
+ {
+ 	cdev_del(&mon_bin_cdev);
+ 	unregister_chrdev_region(mon_bin_dev0, MON_BIN_MAX_MINOR);
+diff --git a/drivers/usb/mon/mon_text.c b/drivers/usb/mon/mon_text.c
+index d38a127..494ee3b 100644
+--- a/drivers/usb/mon/mon_text.c
++++ b/drivers/usb/mon/mon_text.c
+@@ -520,7 +520,7 @@ int __init mon_text_init(void)
+ 	return 0;
+ }
+ 
+-void __exit mon_text_exit(void)
++void mon_text_exit(void)
+ {
+ 	debugfs_remove(mon_dir);
+ }
+diff --git a/drivers/usb/mon/usb_mon.h b/drivers/usb/mon/usb_mon.h
+index 4f949ce..efdfd89 100644
+--- a/drivers/usb/mon/usb_mon.h
++++ b/drivers/usb/mon/usb_mon.h
+@@ -57,9 +57,9 @@ void mon_text_del(struct mon_bus *mbus);
+ // void mon_bin_add(struct mon_bus *);
+ 
+ int __init mon_text_init(void);
+-void __exit mon_text_exit(void);
++void mon_text_exit(void);
+ int __init mon_bin_init(void);
+-void __exit mon_bin_exit(void);
++void mon_bin_exit(void);
+ 
+ /*
+  * DMA interface.
 
 
 -- 
-Michael Krufky
-
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
