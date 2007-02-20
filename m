@@ -1,74 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965035AbXBTP0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965013AbXBTP1N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965035AbXBTP0K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 10:26:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965038AbXBTP0J
+	id S965013AbXBTP1N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 10:27:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965036AbXBTP1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 10:26:09 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60603 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965035AbXBTP0I (ORCPT
+	Tue, 20 Feb 2007 10:27:12 -0500
+Received: from smtp.nokia.com ([131.228.20.173]:51102 "EHLO
+	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965013AbXBTP1L convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 10:26:08 -0500
-Date: Wed, 21 Feb 2007 00:25:26 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
-       roland@redhat.com
-Subject: Re: [PATCH] fix handling of SIGCHILD from reaped child
-Message-Id: <20070221002526.c6b7edb0.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070220142257.GA155@tv-sign.ru>
-References: <20070220183220.41b3f1ca.kamezawa.hiroyu@jp.fujitsu.com>
-	<20070220142257.GA155@tv-sign.ru>
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+	Tue, 20 Feb 2007 10:27:11 -0500
+Subject: Re: [PATCH 05/44 take 2] [UBI] internal common header
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Theodore Tso <tytso@mit.edu>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <20070220145503.GC3170@thunk.org>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
+	 <20070217165449.5845.18238.sendpatchset@localhost.localdomain>
+	 <20070219105445.GA16930@infradead.org> <1171976753.4039.27.camel@sauron>
+	 <20070220145503.GC3170@thunk.org>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 20 Feb 2007 17:25:58 +0200
+Message-Id: <1171985158.4039.46.camel@sauron>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 20 Feb 2007 15:25:58.0436 (UTC) FILETIME=[6BC00E40:01C75503]
+X-eXpurgate-Category: 1/0
+X-eXpurgate-ID: 149371::070220172229-04337BB0-6C9EB8FC/0-0/0-1
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Feb 2007 17:22:57 +0300
-Oleg Nesterov <oleg@tv-sign.ru> wrote:
+On Tue, 2007-02-20 at 09:55 -0500, Theodore Tso wrote:
+> BTW, it might also be a good idea to run UBI through sparse to catch bugs.
 
->
-> I'd suggest to make a separate function, but not complicate collect_signal().
->
-okay. I'll try again if people admit me to go ahead. 
+Ran it before, will do before the next submission iteration.
 
-> > --- linux-2.6.20-devel.orig/kernel/exit.c
-> > +++ linux-2.6.20-devel/kernel/exit.c
-> > @@ -1252,8 +1252,12 @@ static int wait_task_zombie(struct task_
-> >  		}
-> >  		write_unlock_irq(&tasklist_lock);
-> >  	}
-> > -	if (p != NULL)
-> > +	if (p != NULL) {
-> >  		release_task(p);
-> > +		/* if we received sigchild from "p" and p is released,
-> > +		   we remove sigchild from it. */
-> 
-> current may be ptracer, not a parent. Should be ok, clear_stale_sigchild(pid)
-> can't have a false positive (until we have namespace for pid_t), but the comment
-> is misleading a bit.
-> 
-I'll rewrite and make this clearer.
-
-> > +		clear_stale_sigchild(current, retval);
-> 
-> But we are not checking that SIGCHLD is blocked?
-> 
-I'm sorry if I don't read SUSv3 correctly. SUSv3 doesn't define how we should
-do if SIGCHLD is not blocked.(so I don't check not-blocked case.)
-
-IMHO, user's sig-child-handler is tend to call wait()/waitpid() and expects
-successful return. So removing stale signal here may be good.
-
-If this breaks assumptions of applications on Linux, I'll not go eagerly.
-
-Thanks,
--Kame
-
-
-
-
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
