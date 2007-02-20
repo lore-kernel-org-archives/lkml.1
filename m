@@ -1,93 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964931AbXBTOXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964921AbXBTOZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964931AbXBTOXG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 09:23:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964936AbXBTOXG
+	id S964921AbXBTOZU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 09:25:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964923AbXBTOZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 09:23:06 -0500
-Received: from mail.screens.ru ([213.234.233.54]:45589 "EHLO mail.screens.ru"
+	Tue, 20 Feb 2007 09:25:20 -0500
+Received: from mail.screens.ru ([213.234.233.54]:57863 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964931AbXBTOXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 09:23:05 -0500
-Date: Tue, 20 Feb 2007 17:22:57 +0300
+	id S964921AbXBTOZT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 09:25:19 -0500
+Date: Tue, 20 Feb 2007 17:25:12 +0300
 From: Oleg Nesterov <oleg@tv-sign.ru>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       akpm@linux-foundation.org, Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH] fix handling of SIGCHILD from reaped child
-Message-ID: <20070220142257.GA155@tv-sign.ru>
-References: <20070220183220.41b3f1ca.kamezawa.hiroyu@jp.fujitsu.com>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] net/bridge/br_if.c: don't use _WORK_NAR
+Message-ID: <20070220142512.GB155@tv-sign.ru>
+References: <20070218214359.GA4226@tv-sign.ru> <20070219110021.GA2190@ff.dom.local> <20070219120353.GC91@tv-sign.ru> <20070219132703.GC2190@ff.dom.local> <20070219150445.GC75@tv-sign.ru> <20070220132538.GG981@ff.dom.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070220183220.41b3f1ca.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070220132538.GG981@ff.dom.local>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/20, KAMEZAWA Hiroyuki wrote:
+On 02/20, Jarek Poplawski wrote:
 >
-> SUSv3 says
-> ==
-> if SIGCHLD is blocked, if wait() or waitpid() return because the status of a
-> child process is available, any pending SIGCHLD signal shall be cleared unless
-> the status of another child process is available.
-> ==
+> On Mon, Feb 19, 2007 at 06:04:45PM +0300, Oleg Nesterov wrote:
+> > On 02/19, Jarek Poplawski wrote:
+> > >
+> > > It looks like it's to be checked before kfree.
+> > 
+> > Here,
+> > 	br_add_if:
+> ...
+> 
+> I meant "it's to be checked",
 
-Ingo, Roland, should we implement this?
+Jarek, I was too quick and misread your message, sorry!
 
-I must admit, I don't understand the text above, "blocked" is per-thread, but
-wait() is process wide (any sub-thread can reap a dead child).
+>                               if it's used by a program.
+> The name: work_release seems to tell the work function
+> could signal, when it doesn't need a structure no more.
+> But br_if.c doesn't seem to use this infomation now,
+> so there should be no difference after changing to
+> "without _NAR". This change will limit some potential
+> changes in the future, but if it's not used by anybody
+> than the simpler api is a gain.
 
-> -static int collect_signal(int sig, struct sigpending *list, siginfo_t *info)
-> +static int collect_signal(int sig, struct sigpending *list, siginfo_t *info, pid_t checkpid)
->  {
-> -	list_for_each_entry(q, &list->list, list) {
-> -		if (q->info.si_signo == sig) {
-> -			if (first) {
-> -				still_pending = 1;
-> -				break;
-> +	if (unlikely(checkpid)) {
-> +		list_for_each_entry(q, &list->list, list) {
-> +			if (q->info.si_signo == sig) {
-> +			    if (q->info.si_pid == checkpid)
-> +					first = q;
-> +				else
-> +					still_pending = 1;
-> +			}
-> +		}
-> +	} else {
-> +		list_for_each_entry(q, &list->list, list) {
-> +			if (q->info.si_signo == sig) {
-> +				if (first) {
-> +					still_pending = 1;
-> +					break;
-> +				}
-> +				first = q;
->  			}
-> -			first = q;
-
-I'd suggest to make a separate function, but not complicate collect_signal().
-
-> --- linux-2.6.20-devel.orig/kernel/exit.c
-> +++ linux-2.6.20-devel/kernel/exit.c
-> @@ -1252,8 +1252,12 @@ static int wait_task_zombie(struct task_
->  		}
->  		write_unlock_irq(&tasklist_lock);
->  	}
-> -	if (p != NULL)
-> +	if (p != NULL) {
->  		release_task(p);
-> +		/* if we received sigchild from "p" and p is released,
-> +		   we remove sigchild from it. */
-
-current may be ptracer, not a parent. Should be ok, clear_stale_sigchild(pid)
-can't have a false positive (until we have namespace for pid_t), but the comment
-is misleading a bit.
-
-> +		clear_stale_sigchild(current, retval);
-
-But we are not checking that SIGCHLD is blocked?
+Agreed.
 
 Oleg.
 
