@@ -1,43 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964794AbXBTGh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964789AbXBTGm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964794AbXBTGh6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 01:37:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964791AbXBTGhr
+	id S964789AbXBTGm4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 01:42:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964790AbXBTGm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 01:37:47 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:21818 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964790AbXBTGhg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 01:37:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=LP9r8ZbazCH3mJXuaaUY96CYD/ub9eY8SW4hCnK5FtbVaX5a9xMsXHcqG1MzW4UZnfn9YGTxFr0rtwDl/BlwyVGjkovwrqdsrwflqIKRKOu0DmsILK9O4AHYgIbN0n8cZxSGEZ0ppH/YEeUyDtAYXpuxs3IfjUlPgF0jR7agJpU=
-Message-ID: <84144f020702192237k78a5045bl51e0871fb3cac253@mail.gmail.com>
-Date: Tue, 20 Feb 2007 08:37:34 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Adrian Bunk" <bunk@stusta.de>
-Subject: Re: [-mm patch] UNION_FS must depend on SLAB
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, jsipek@cs.sunysb.edu,
-       linux-kernel@vger.kernel.org, unionfs@filesystems.org
-In-Reply-To: <20070220000810.GK13958@stusta.de>
+	Tue, 20 Feb 2007 01:42:56 -0500
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:33975 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964789AbXBTGmz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 01:42:55 -0500
+Message-ID: <45DA9878.2040108@drzeus.cx>
+Date: Tue, 20 Feb 2007 07:43:04 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070131)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Racy NLS behaviour in FAT (and possible other fs)
+References: <45D9C80A.2030905@drzeus.cx> <87tzxim6ic.fsf@duaron.myhome.or.jp>	<45D9D848.4010608@drzeus.cx> <87ps86m4to.fsf@duaron.myhome.or.jp>
+In-Reply-To: <87ps86m4to.fsf@duaron.myhome.or.jp>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
-	 <20070220000810.GK13958@stusta.de>
-X-Google-Sender-Auth: 5e3eb703466ff66f
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/20/07, Adrian Bunk <bunk@stusta.de> wrote:
->   CC      fs/unionfs/copyup.o
-> /home/bunk/linux/kernel-2.6/linux-2.6.20-mm2/fs/unionfs/copyup.c: In function 'create_parents_named':
-> /home/bunk/linux/kernel-2.6/linux-2.6.20-mm2/fs/unionfs/copyup.c:620: error: 'malloc_sizes' undeclared (first use in this function)
-> /home/bunk/linux/kernel-2.6/linux-2.6.20-mm2/fs/unionfs/copyup.c:620: error: (Each undeclared identifier is reported only once
-> /home/bunk/linux/kernel-2.6/linux-2.6.20-mm2/fs/unionfs/copyup.c:620: error: for each function it appears in.)
-> make[3]: *** [fs/unionfs/copyup.o] Error 1
+OGAWA Hirofumi wrote:
+> Yes. But sorry, I don't have any plan and time to fix it now.
+>   
 
-Hmm, why is unionfs playing around with malloc_sizes in the first place? Jeff?
+I know the feeling. :)
+
+I just wanted to know where things stand as I have little insight into
+vfat development.
+
+> If you are using "iocharset=utf8" now, "codepage=cp???,iocharset=xxx,utf8"
+> might help a bit.
+>   
+
+These tests was with the "utf8" option.
+
+Rgds
+
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
+
