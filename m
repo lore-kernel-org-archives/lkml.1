@@ -1,117 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932934AbXBTNIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932943AbXBTNJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932934AbXBTNIE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 08:08:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932943AbXBTNIE
+	id S932943AbXBTNJt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 08:09:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932945AbXBTNJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 08:08:04 -0500
-Received: from tim.rpsys.net ([194.106.48.114]:40523 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932934AbXBTNIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 08:08:02 -0500
-Subject: [GIT PULL] Backlight updates
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 20 Feb 2007 13:06:39 +0000
-Message-Id: <1171976799.5884.29.camel@localhost.localdomain>
+	Tue, 20 Feb 2007 08:09:49 -0500
+Received: from smtp.nokia.com ([131.228.20.172]:26212 "EHLO
+	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932943AbXBTNJs convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 08:09:48 -0500
+Subject: Re: [PATCH 06/44 take 2] [UBI] startup code
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20070219105927.GB16930@infradead.org>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
+	 <20070217165454.5845.30875.sendpatchset@localhost.localdomain>
+	 <20070219105927.GB16930@infradead.org>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 20 Feb 2007 15:00:56 +0200
+Message-Id: <1171976456.4039.21.camel@sauron>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 20 Feb 2007 13:00:56.0364 (UTC) FILETIME=[28E93EC0:01C754EF]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Mon, 2007-02-19 at 10:59 +0000, Christoph Hellwig wrote:
+> On Sat, Feb 17, 2007 at 06:54:54PM +0200, Artem Bityutskiy wrote:
+> > +/* UBI headers must take 64 bytes. The below is a hacky way to ensure this */
+> > +static int __ubi_check_ec_hdr_size[(UBI_EC_HDR_SIZE == 64) - 1]
+> > +    __attribute__ ((__unused__));
+> > +static int __ubi_check_ec_hdr_size[(UBI_VID_HDR_SIZE == 64) - 1]
+> > +    __attribute__ ((__unused__));
+> 
+> please use BUILD_BUG_ON instead.
 
-Could you please pull from:
-git://git.o-hand.com/linux-rpurdie-backlight for-linus
+Will be done, thanks.
 
-which:
+> > +
+> > +static int ubi_attach_mtd_dev(const char *mtd_dev, int vid_hdr_offset,
+> > +			      int data_offset);
+> > +static void ubi_destroy_dev(int ubi_num);
+> 
+> Can you reorder the code to avoid all these forward declarations please?
 
- * Adds myself as backlight maintainer (I've been involved with it 
-   since its creation, just never officially)
- * Resolves the locking nightmare backlight usage was turning into
- * Fixes several bugs
- * Adds a new backlight driver
- * Cleans up code in a number of areas and removes duplication
- * Fixes some Kconfig issues
+Could you please submit a CodingStyle patch that would contain a
+requirement to use the "higher-level functions at the bottom,
+lower-layer at top"? Because I just use the opposite.
 
-Its been in the last two -mm releases apart from the last Kconfig fix.
-The late merge is due to waiting for ACPI to merge drivers containing
-backlight code first. The combined ACPI/misc changes are 
-Acked-by: Len Brown <len.brown@intel.com> although its hard to apply
-that to a specific commit.
+> > +	/* Attach MTD devices */
+> > +	for (i = 0; i < mtd_devs; i++) {
+> > +		struct mtd_dev_param *p = &mtd_dev_param[i];
+> > +
+> > +		cond_resched();
+> > +		err = -EINVAL;
+> 
+> This looks very odd.
 
-Thanks,
+What exactly?
 
-Richard
+> > +module_param_call(mtd, ubi_mtd_param_parse, NULL, NULL, 000);
+> > +MODULE_PARM_DESC(mtd, "MTD devices to attach. Parameter format: "
+> > +		      "mtd=<name|num>[,<vid_hdr_offs>,<data_offs>]. "
+> > +		      "Multiple \"mtd\" parameters may be specified.\n"
+> > +		      "MTD devices may be specified by their number or name. "
+> > +		      "Optional \"vid_hdr_offs\" and \"data_offs\" parameters "
+> > +		      "specify UBI VID header position and data starting "
+> > +		      "position to be used by UBI.\n"
+> > +		      "Example: mtd=content,1984,2048 mtd=4 - attach MTD device"
+> > +		      "with name content using VID header offset 1984 and data "
+> > +		      "start 2048, and MTD device number 4 using default "
+> > +		      "offsets");
+> 
+> This is a very odd paramater interface.  We really don't want drivers to use
+> module_param_call directly.  You probably want various module_param_array calls
+> instead.
 
- MAINTAINERS                                 |    5
- arch/powerpc/kernel/traps.c                 |    6 -
- arch/powerpc/platforms/powermac/backlight.c |   27 +---
- drivers/acpi/asus_acpi.c                    |    7 -
- drivers/acpi/ibm_acpi.c                     |    8 -
- drivers/acpi/toshiba_acpi.c                 |    7 -
- drivers/acpi/video.c                        |   36 ++----
- drivers/macintosh/via-pmu-backlight.c       |   33 ++----
- drivers/misc/asus-laptop.c                  |   31 +----
- drivers/misc/msi-laptop.c                   |   10 -
- drivers/misc/sony-laptop.c                  |   16 +-
- drivers/usb/misc/appledisplay.c             |   18 +--
- drivers/video/Kconfig                       |   71 ++++++------
- drivers/video/Makefile                      |    2
- drivers/video/aty/aty128fb.c                |  102 +++---------------
- drivers/video/aty/atyfb_base.c              |  100 +++---------------
- drivers/video/aty/radeon_backlight.c        |   59 ++--------
- drivers/video/aty/radeon_base.c             |    3
- drivers/video/backlight/Kconfig             |   23 +---
- drivers/video/backlight/Makefile            |    1
- drivers/video/backlight/backlight.c         |  123 +++++++++++-----------
- drivers/video/backlight/corgi_bl.c          |   54 ++++-----
- drivers/video/backlight/hp680_bl.c          |   50 +++++----
- drivers/video/backlight/lcd.c               |   83 +++++++--------
- drivers/video/backlight/locomolcd.c         |   13 +-
- drivers/video/backlight/progear_bl.c        |  153 ++++++++++++++++++++++++++++
- drivers/video/chipsfb.c                     |   26 ----
- drivers/video/console/fbcon.c               |    7 +
- drivers/video/fbsysfs.c                     |   14 +-
- drivers/video/nvidia/nv_backlight.c         |   92 ++--------------
- drivers/video/nvidia/nv_proto.h             |    2
- drivers/video/nvidia/nvidia.c               |    5
- drivers/video/riva/fbdev.c                  |  100 +++---------------
- include/linux/backlight.h                   |   50 +++++++--
- include/linux/fb.h                          |   13 +-
- include/linux/lcd.h                         |   45 ++++++--
- 36 files changed, 629 insertions(+), 766 deletions(-)
+Why not? We tried to avoid this but found out that this is the most
+decent interface. Specific advises are welcome.
 
-Dmitry Torokhov (2):
-      backlight: Fix error handling
-      backlight: Remove excessive (un)likelys
+Thank you,
+Artem.
 
-James Simmons (1):
-      backlight: Improve backlight selection for fbdev drivers
-
-Marcin Juszkiewicz (1):
-      backlight: Add Frontpath ProGear HX1050+ driver
-
-Richard Purdie (16):
-      backlight: Add maintainer entry
-      backlight: Remove unneeded owner field
-      backlight: Minor code cleanups for corgi_bl.c
-      backlight: Minor code cleanups for hp680_bl.c
-      backlight: Fix external uses of backlight internal semaphore
-      backlight: Convert semaphore -> mutex
-      backlight: Remove uneeded nvidia set_power calls
-      backlight: Fix Kconfig entries
-      backlight/fbcon: Add FB_EVENT_CONBLANK
-      backlight: Remove uneeded update_status call from chipsfb.c
-      backlight: Remove unneeded backlight update_status calls
-      backlight: Rework backlight/fb interaction simplifying, lots
-      backlight: Clean up pmac_backlight handling
-      backlight: Separate backlight properties from backlight ops pointers
-      backlight: simplify corgi_bl locking
-      backlight: Remove bogus SYSFS dependency
-
-
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
