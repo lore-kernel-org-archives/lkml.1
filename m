@@ -1,74 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030320AbXBTRR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030334AbXBTRS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030320AbXBTRR7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 12:17:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030318AbXBTRR7
+	id S1030334AbXBTRS0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 12:18:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030313AbXBTRS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 12:17:59 -0500
-Received: from mga02.intel.com ([134.134.136.20]:20224 "EHLO mga02.intel.com"
+	Tue, 20 Feb 2007 12:18:26 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:60228 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030320AbXBTRR6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 12:17:58 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,197,1170662400"; 
-   d="scan'208"; a="199238969:sNHT24829245"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 2/2] aio: propogate post-EIOCBQUEUED errors to completion event
-Date: Tue, 20 Feb 2007 20:17:51 +0300
-Message-ID: <B41635854730A14CA71C92B36EC22AAC871D9D@mssmsx411>
-In-Reply-To: <20070220170335.GR6133@think.oraclecorp.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2/2] aio: propogate post-EIOCBQUEUED errors to completion event
-Thread-Index: AcdVEZVsmYpe/bSPRNiTFsq500HwRQAAE19w
-From: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>
-To: "Chris Mason" <chris.mason@oracle.com>
-Cc: "Zach Brown" <zach.brown@oracle.com>, <linux-aio@kvack.org>,
-       <linux-kernel@vger.kernel.org>, "Benjamin LaHaise" <bcrl@kvack.org>,
-       "Suparna bhattacharya" <suparna@in.ibm.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-X-OriginalArrivalTime: 20 Feb 2007 17:17:55.0697 (UTC) FILETIME=[0F8CBE10:01C75513]
+	id S1030321AbXBTRSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 12:18:18 -0500
+Date: Tue, 20 Feb 2007 20:18:10 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: bert hubert <bert.hubert@netherlabs.nl>
+Cc: Andi Kleen <andi@firstfloor.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: all syscalls initially taking 4usec on a P4? Re: nonblocking UDPv4 recvfrom() taking 4usec @ 3GHz?
+Message-ID: <20070220171809.GA26961@2ka.mipt.ru>
+References: <20070219231447.GA4400@outpost.ds9a.nl> <p73d545drx6.fsf@bingen.suse.de> <20070220162714.GA3245@outpost.ds9a.nl> <20070220164124.GA24930@2ka.mipt.ru> <20070220170232.GA4730@outpost.ds9a.nl> <20070220171120.GD24930@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <20070220171120.GD24930@2ka.mipt.ru>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Tue, 20 Feb 2007 20:18:16 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-aio-stress command lines used for test
-1) mem=1G in kernel boot param if you have more
-2) mk2fs for test_file
-3) dd if=/dev/zero of=<test_file> bs=1M count=1200
-4) aiostress -s 1200m -o 2 -i 1 -r 16k <test_file>
+On Tue, Feb 20, 2007 at 08:11:20PM +0300, Evgeniy Polyakov (johnpol@2ka.mipt.ru) wrote:
+> I would try it today - but it is a bit late in Moscow already - and
+> there are some things to complete yet. So, tomorrow I will create a patch
+> and run it, but I seriously doubt that there is _that_ high per-recvfrom 
+> latency.
 
-Leonid
------Original Message-----
-From: Chris Mason [mailto:chris.mason@oracle.com] 
-Sent: Tuesday, February 20, 2007 8:04 PM
-To: Ananiev, Leonid I
-Cc: Zach Brown; linux-aio@kvack.org; linux-kernel@vger.kernel.org;
-Benjamin LaHaise; Suparna bhattacharya; Andrew Morton
-Subject: Re: [PATCH 2/2] aio: propogate post-EIOCBQUEUED errors to
-completion event
+As of now - syscall which just copies 50 bytes from /dev/zero eats about
+400-450 nanosecods per run (core duo 3.7 ghz).
 
-On Tue, Feb 20, 2007 at 07:57:49PM +0300, Ananiev, Leonid I wrote:
-> Zach> This addresses an oops reported by Leonid Ananiev
-> <leonid.i.ananiev@intel.com>
-> Zach> as archived at http://lkml.org/lkml/2007/2/8/337.
-> ....
-> Zach> This was tested by running O_DIRECT aio-stress concurrently with
-> buffered reads
-> 
-> The oops was with aio-stress only running in the loop
-> WITHOUT buffered or mmaped IO which are patched and discussed now.
-> Actually 47% aio is finished with EIO after patch.
-
-I looked through the thread and couldn't find the aio-stress command
-line used for the whole test.  Could you please post it here?
-
-If aio+dio is being used to extend the file, you'll get pages in the
-page cache, which is hopefully why you're able to trigger the EIOs.
-
--chris
+-- 
+	Evgeniy Polyakov
