@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965612AbXBTALL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965616AbXBTALx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965612AbXBTALL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 19:11:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965607AbXBTALI
+	id S965616AbXBTALx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 19:11:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965600AbXBTALU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 19:11:08 -0500
-Received: from paragon.brong.net ([66.232.154.163]:58776 "EHLO
-	paragon.brong.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964813AbXBTALA (ORCPT
+	Mon, 19 Feb 2007 19:11:20 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:36154 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750959AbXBTAIL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 19:11:00 -0500
-Date: Tue, 20 Feb 2007 11:10:50 +1100
-From: Bron Gondwana <brong@fastmail.fm>
-To: Juan Piernas Canovas <piernas@ditec.um.es>
-Cc: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-       Sorin Faibish <sfaibish@emc.com>, Bill Davidsen <davidsen@tmr.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [ANNOUNCE] DualFS: File System with Meta-data and Data Separation
-Message-ID: <20070220001050.GA30206@brong.net>
-References: <20070215200922.GB24643@lazybastard.org> <Pine.LNX.4.61.0702152353060.19998@ditec.inf.um.es> <20070216091321.GA28092@lazybastard.org> <45D642A4.5010009@tmr.com> <20070217151108.GA301@lazybastard.org> <45D7450F.6090309@tmr.com> <20070217183646.GE301@lazybastard.org> <op.tnwuonh3rwwil4@muki-1mj5c5mxes> <20070218055936.GF301@lazybastard.org> <Pine.LNX.4.61.0702190625270.8828@ditec.inf.um.es>
+	Mon, 19 Feb 2007 19:08:11 -0500
+Date: Tue, 20 Feb 2007 01:08:10 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>, jsipek@cs.sunysb.edu
+Cc: linux-kernel@vger.kernel.org, unionfs@filesystems.org
+Subject: [-mm patch] UNION_FS must depend on SLAB
+Message-ID: <20070220000810.GK13958@stusta.de>
+References: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0702190625270.8828@ditec.inf.um.es>
-Organization: brong.net
+In-Reply-To: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 20, 2007 at 12:57:50AM +0100, Juan Piernas Canovas wrote:
-> Now, let us assume that the data device takes 90% of the disk space, and 
-> the meta-data device the other 10%. When the data device gets full, the 
-> meta-data blocks will be using the half of the meta-data device, and the 
-> other half (5% of the entire disk) will be free. Frankly, 5% is not too 
-> much.
+On Sat, Feb 17, 2007 at 09:51:46PM -0800, Andrew Morton wrote:
+>...
+> Changes since 2.6.20-mm1:
+>...
+>  git-unionfs.patch
+>...
+>  git trees
+>...
 
-I'd like to very strongly second this.  We have a target maximum of 80%
-usage on all partitions, with emailed warnings at 85% and paged warnings
-at 90%.  I consider any partition over 90% to be dangerously over-full.
-Given that disks space is approximately US$1/Gb in RAID6 SATA these
-days, it doesn't cost much to make sure there's some free.
 
-What matters a lot more is the speed at which you can get data on and
-off these huge devices, because drive speed isn't keeping up with
-capacity.  It takes about a week to fill one of the external storage
-monsters we're buying these days, and that's streaming writes.  Makes
-restoring from backup a scary proposition given the downtime it will
-take.
+<--  snip  -->
 
-But back on topic - I'd be very willing to pay a 5% disk space penalty
-for the sort of performance that DualFS is promising, but I'd need a
-2.6 series kernel with the O(1) scheduler or performance would go down
-the toilet in the other direction.
+...
+  CC      fs/unionfs/copyup.o
+/home/bunk/linux/kernel-2.6/linux-2.6.20-mm2/fs/unionfs/copyup.c: In function 'create_parents_named':
+/home/bunk/linux/kernel-2.6/linux-2.6.20-mm2/fs/unionfs/copyup.c:620: error: 'malloc_sizes' undeclared (first use in this function)
+/home/bunk/linux/kernel-2.6/linux-2.6.20-mm2/fs/unionfs/copyup.c:620: error: (Each undeclared identifier is reported only once
+/home/bunk/linux/kernel-2.6/linux-2.6.20-mm2/fs/unionfs/copyup.c:620: error: for each function it appears in.)
+make[3]: *** [fs/unionfs/copyup.o] Error 1
 
-Bron.
+<--  snip  -->
 
-P.S. do you have any figures for high MMAP load?  We run big Cyrus, and
-     it has a serious MMAP fetish.
+
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+
+---
+--- linux-2.6.20-mm2/fs/Kconfig.old	2007-02-19 18:19:19.000000000 +0100
++++ linux-2.6.20-mm2/fs/Kconfig	2007-02-19 18:20:28.000000000 +0100
+@@ -1052,7 +1052,7 @@
+ 
+ config UNION_FS
+ 	tristate "Union file system (EXPERIMENTAL)"
+-	depends on EXPERIMENTAL
++	depends on SLAB && EXPERIMENTAL
+ 	help
+ 	  Unionfs is a stackable unification file system, which appears to
+ 	  merge the contents of several directories (branches), while keeping
+
