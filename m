@@ -1,91 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965554AbXBTAJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965609AbXBTALJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965554AbXBTAJl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 19:09:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965600AbXBTAIu
+	id S965609AbXBTALJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 19:11:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbXBTAIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 19:08:50 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:36172 "EHLO
+	Mon, 19 Feb 2007 19:08:15 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:36137 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750992AbXBTAIa (ORCPT
+	with ESMTP id S965583AbXBTAHz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 19:08:30 -0500
-Date: Tue, 20 Feb 2007 01:08:29 +0100
+	Mon, 19 Feb 2007 19:07:55 -0500
+Date: Tue, 20 Feb 2007 01:07:54 +0100
 From: Adrian Bunk <bunk@stusta.de>
-To: rpurdie@rpsys.net
+To: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: BACKLIGHT_CLASS_DEVICE=y, SYSFS=n compile error
-Message-ID: <20070220000829.GO13958@stusta.de>
+Subject: [-mm patch] mm/{,tiny-}shmem.c cleanups
+Message-ID: <20070220000754.GG13958@stusta.de>
+References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CONFIG_BACKLIGHT_CLASS_DEVICE=y, CONFIG_SYSFS=n results int he 
-following compile error:
+On Thu, Feb 15, 2007 at 05:14:08AM -0800, Andrew Morton wrote:
+>...
+> Changes since 2.6.20-rc6-mm3:
+>...
+> +shm-make-sysv-ipc-shared-memory-use-stacked-files.patch
+>...
+>  Misc
+>...
 
-<--  snip  -->
 
-...
-  LD      .tmp_vmlinux1
-drivers/built-in.o: In function `nvidia_bl_exit':
-(.text+0x27d01): undefined reference to `backlight_device_unregister'
-drivers/built-in.o: In function `nvidia_bl_init':
-(.text+0x27e3c): undefined reference to `backlight_device_register'
-drivers/built-in.o: In function `radeonfb_bl_exit':
-(.text+0x3b64e): undefined reference to `backlight_device_unregister'
-drivers/built-in.o: In function `radeonfb_bl_init':
-(.text+0x3b6d1): undefined reference to `backlight_device_register'
-drivers/built-in.o: In function `acpi_video_bus_put_devices':
-video.c:(.text+0x9a798): undefined reference to `backlight_device_unregister'
-drivers/built-in.o: In function `brightness_exit':
-ibm_acpi.c:(.text+0xa393f): undefined reference to `backlight_device_unregister'
-drivers/built-in.o: In function `brightness_init':
-ibm_acpi.c:(.text+0xa569c): undefined reference to `backlight_device_register'
-drivers/built-in.o: In function `sony_acpi_add':
-sony-laptop.c:(.text+0x183c4e): undefined reference to `backlight_device_register'
-sony-laptop.c:(.text+0x183da1): undefined reference to `backlight_device_unregister'
-drivers/built-in.o: In function `sony_acpi_remove':
-sony-laptop.c:(.text+0x183de5): undefined reference to `backlight_device_unregister'
-drivers/built-in.o: In function `appledisplay_disconnect':
-appledisplay.c:(.text+0x6a4d18): undefined reference to `backlight_device_unregister'
-drivers/built-in.o: In function `appledisplay_probe':
-appledisplay.c:(.text+0x6a4f17): undefined reference to `backlight_device_register'
-appledisplay.c:(.text+0x6a4f88): undefined reference to `backlight_device_unregister'
-drivers/built-in.o: In function `rivafb_probe':
-fbdev.c:(.init.text+0x4e23): undefined reference to `backlight_device_register'
-drivers/built-in.o: In function `atyfb_pci_probe':
-atyfb_base.c:(.init.text+0x6eb2): undefined reference to `backlight_device_register'
-drivers/built-in.o: In function `aty128_probe':
-aty128fb.c:(.init.text+0x7f57): undefined reference to `backlight_device_register'
-drivers/built-in.o: In function `toshiba_acpi_init':
-toshiba_acpi.c:(.init.text+0x1b315): undefined reference to `backlight_device_register'
-drivers/built-in.o: In function `msi_init':
-msi-laptop.c:(.init.text+0x34c67): undefined reference to `backlight_device_register'
-msi-laptop.c:(.init.text+0x34ce1): undefined reference to `backlight_device_unregister'
-drivers/built-in.o: In function `rivafb_remove':
-fbdev.c:(.exit.text+0x18d): undefined reference to `backlight_device_unregister'
-drivers/built-in.o: In function `atyfb_remove':
-atyfb_base.c:(.exit.text+0x2e0): undefined reference to `backlight_device_unregister'
-drivers/built-in.o: In function `aty128_remove':
-aty128fb.c:(.exit.text+0x3eb): undefined reference to `backlight_device_unregister'
-drivers/built-in.o: In function `asus_acpi_exit':
-asus_acpi.c:(.exit.text+0x109b): undefined reference to `backlight_device_unregister'
-drivers/built-in.o:toshiba_acpi.c:(.exit.text+0x10cc): more undefined 
-references to `backlight_device_unregister' follow
-make[1]: *** [.tmp_vmlinux1] Error 1
+shmem_{nopage,mmap} are no longer used in ipc/shm.c
 
-<--  snip  -->
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-cu
-Adrian
+---
 
--- 
+ include/linux/mm.h |    5 -----
+ mm/shmem.c         |    5 +++--
+ mm/tiny-shmem.c    |    2 ++
+ 3 files changed, 5 insertions(+), 7 deletions(-)
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+--- linux-2.6.20-mm2/include/linux/mm.h.old	2007-02-18 23:32:54.000000000 +0100
++++ linux-2.6.20-mm2/include/linux/mm.h	2007-02-18 23:34:02.000000000 +0100
+@@ -662,15 +662,11 @@
+ extern void show_free_areas(void);
+ 
+ #ifdef CONFIG_SHMEM
+-struct page *shmem_nopage(struct vm_area_struct *vma,
+-			unsigned long address, int *type);
+ int shmem_set_policy(struct vm_area_struct *vma, struct mempolicy *new);
+ struct mempolicy *shmem_get_policy(struct vm_area_struct *vma,
+ 					unsigned long addr);
+ int shmem_lock(struct file *file, int lock, struct user_struct *user);
+ #else
+-#define shmem_nopage filemap_nopage
+-
+ static inline int shmem_lock(struct file *file, int lock,
+ 			     struct user_struct *user)
+ {
+@@ -690,7 +686,6 @@
+ }
+ #endif
+ struct file *shmem_file_setup(char *name, loff_t size, unsigned long flags);
+-extern int shmem_mmap(struct file *file, struct vm_area_struct *vma);
+ 
+ int shmem_zero_setup(struct vm_area_struct *);
+ 
+--- linux-2.6.20-mm2/mm/shmem.c.old	2007-02-18 23:33:38.000000000 +0100
++++ linux-2.6.20-mm2/mm/shmem.c	2007-02-18 23:34:14.000000000 +0100
+@@ -1227,7 +1227,8 @@
+ 	return error;
+ }
+ 
+-struct page *shmem_nopage(struct vm_area_struct *vma, unsigned long address, int *type)
++static struct page *shmem_nopage(struct vm_area_struct *vma,
++				 unsigned long address, int *type)
+ {
+ 	struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
+ 	struct page *page = NULL;
+@@ -1334,7 +1335,7 @@
+ 	return retval;
+ }
+ 
+-int shmem_mmap(struct file *file, struct vm_area_struct *vma)
++static int shmem_mmap(struct file *file, struct vm_area_struct *vma)
+ {
+ 	file_accessed(file);
+ 	vma->vm_ops = &shmem_vm_ops;
+--- linux-2.6.20-mm2/mm/tiny-shmem.c.old	2007-02-18 23:34:21.000000000 +0100
++++ linux-2.6.20-mm2/mm/tiny-shmem.c	2007-02-18 23:34:57.000000000 +0100
+@@ -126,6 +126,7 @@
+ 	return 0;
+ }
+ 
++#if 0
+ int shmem_mmap(struct file *file, struct vm_area_struct *vma)
+ {
+ 	file_accessed(file);
+@@ -135,6 +136,7 @@
+ 	return 0;
+ #endif
+ }
++#endif  /*  0  */
+ 
+ #ifndef CONFIG_MMU
+ unsigned long shmem_get_unmapped_area(struct file *file,
 
