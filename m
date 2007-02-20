@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965343AbXBTQNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030187AbXBTQPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965343AbXBTQNf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 11:13:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030189AbXBTQNf
+	id S1030187AbXBTQPj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 11:15:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965350AbXBTQPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 11:13:35 -0500
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2521 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965350AbXBTQNa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 11:13:30 -0500
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Add "is_power_of_2" checking to log2.h.
-Date: Tue, 20 Feb 2007 17:14:41 +0100
-User-Agent: KMail/1.9.5
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Paul Mackerras <paulus@samba.org>,
-       dhowells@redhat.com
-References: <Pine.LNX.4.64.0701300543420.17991@CPE00045a9c397f-CM001225dbafb6> <200702201629.40758.m.kozlowski@tuxland.pl> <014B4DC2-53BB-423E-B261-569299CAB2D9@kernel.crashing.org>
-In-Reply-To: <014B4DC2-53BB-423E-B261-569299CAB2D9@kernel.crashing.org>
+	Tue, 20 Feb 2007 11:15:39 -0500
+Received: from kirby.webscope.com ([204.141.84.54]:48349 "EHLO
+	kirby.webscope.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965347AbXBTQPi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 11:15:38 -0500
+Message-ID: <45DB1E18.8070009@linuxtv.org>
+Date: Tue, 20 Feb 2007 11:13:12 -0500
+From: Michael Krufky <mkrufky@linuxtv.org>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Adrian Bunk <bunk@stusta.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, v4l-dvb-maintainer@linuxtv.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [v4l-dvb-maintainer] [-mm patch] make dvb_usb_gl861_debug static
+References: <20070215051408.a7fb7d81.akpm@linux-foundation.org> <20070220000729.GV13958@stusta.de>
+In-Reply-To: <20070220000729.GV13958@stusta.de>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702201714.41300.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-> > Please fix the parentheses thing in both arch/powerpc/mm/ 
-> > pgtable_32.c and
-> > arch/ppc/mm/pgtable.c.
-> >
-> >> +#define is_power_of_4(x)	is_power_of_2(x) && (ffs(x) & 1))
+Adrian Bunk wrote:
+> On Thu, Feb 15, 2007 at 05:14:08AM -0800, Andrew Morton wrote:
+>> ...
+>> Changes since 2.6.20-rc6-mm3:
+>> ...
+>>  git-dvb.patch
+>> ...
+>>  git trees.
+>> ...
 > 
-> These should be fixed and pushed upstream by now.
+> This patch makes the needlessly global dvb_usb_gl861_debug static.
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-Great. Thanks.
+Acked-by: Michael Krufky <mkrufky@linuxtv.org>
 
-Regards,
+> 
+> ---
+> --- linux-2.6.20-mm1/drivers/media/dvb/dvb-usb/gl861.c.old	2007-02-17 17:49:03.000000000 +0100
+> +++ linux-2.6.20-mm1/drivers/media/dvb/dvb-usb/gl861.c	2007-02-17 17:49:20.000000000 +0100
+> @@ -12,7 +12,7 @@
+>  #include "qt1010.h"
+>  
+>  /* debug */
+> -int dvb_usb_gl861_debug;
+> +static int dvb_usb_gl861_debug;
+>  module_param_named(debug,dvb_usb_gl861_debug, int, 0644);
+>  MODULE_PARM_DESC(debug, "set debugging level (1=rc (or-able))." DVB_USB_DEBUG_STATUS);
+>  
+> 
+> 
+> _______________________________________________
+> v4l-dvb-maintainer mailing list
+> v4l-dvb-maintainer@linuxtv.org
+> http://www.linuxtv.org/cgi-bin/mailman/listinfo/v4l-dvb-maintainer
 
-	Mariusz Kozlowski
+
+-- 
+Michael Krufky
+
