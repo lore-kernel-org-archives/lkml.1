@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030524AbXBTWhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030519AbXBTWhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030524AbXBTWhq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 17:37:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030531AbXBTWhq
+	id S1030519AbXBTWhj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 17:37:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030521AbXBTWhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 17:37:46 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:47826 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030521AbXBTWho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 17:37:44 -0500
-Date: Tue, 20 Feb 2007 16:37:42 -0600
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       kou.ishizaki@toshiba.co.jp, arnd@arndb.de,
-       Jens Osterkamp <jens@de.ibm.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 6/12] spidernet: remove txram full logging
-Message-ID: <20070220223742.GF28895@austin.ibm.com>
-References: <20070220221314.GU923@austin.ibm.com>
+	Tue, 20 Feb 2007 17:37:38 -0500
+Received: from wr-out-0506.google.com ([64.233.184.230]:42971 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030519AbXBTWhh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 17:37:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=UY1HG16E/qKrIClfzB1c1xLJEY9ML8yzZXdhreP86+WaIvkiwepo4FA01u9T+mpwWo8FLFHk0Rh3vVKF7u23bxU3DNLNIAXC1H7PmZ0v1o5KbYt7VPckMQfkpmbjERU9BwnyzHxrC0AjlP/YC02vgP4rFS94ny7GxSAZkE4/k8s=
+Message-ID: <6bffcb0e0702201437o66db38d5j3066eb3c9951a270@mail.gmail.com>
+Date: Tue, 20 Feb 2007 23:37:36 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: tglx@linutronix.de
+Subject: Re: 2.6.20-git15 BUG: soft lockup detected on CPU#0! - timers?
+Cc: LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <1172008584.25076.0.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070220221314.GU923@austin.ibm.com>
-User-Agent: Mutt/1.5.11
-From: linas@austin.ibm.com (Linas Vepstas)
+References: <6bffcb0e0702201054rb839bb2m11ef8d33bacffdb8@mail.gmail.com>
+	 <1172008584.25076.0.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 20/02/07, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Tue, 2007-02-20 at 19:54 +0100, Michal Piotrowski wrote:
+> >
+> > Might it be 6ba9b346e1e0eca65ec589d32de3a9fe32dc5de6 commit?
+>
+> I doubt that it is, but can you revert it ?
 
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+I'm using the latest kernel without this patch since 3 hours.
 
-This patches removes logging for SPIDER_NET_GTMFLLINT interrupts.
-Since the interrupts are not irregular, and they happen frequently
-when using 100Mbps network switches.
+So far so good.
 
-Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+Regards,
+Michal
 
-----
- drivers/net/spider_net.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.20-git16/drivers/net/spider_net.c
-===================================================================
---- linux-2.6.20-git16.orig/drivers/net/spider_net.c	2007-02-20 15:02:38.000000000 -0600
-+++ linux-2.6.20-git16/drivers/net/spider_net.c	2007-02-20 15:02:40.000000000 -0600
-@@ -1422,8 +1422,8 @@ spider_net_handle_error_irq(struct spide
- 				switch (i)
- 	{
- 	case SPIDER_NET_GTMFLLINT:
--		if (netif_msg_intr(card) && net_ratelimit())
--			pr_err("Spider TX RAM full\n");
-+		/* TX RAM full may happen on a usual case.
-+		 * Logging is not needed. */
- 		show_error = 0;
- 		break;
- 	case SPIDER_NET_GRFDFLLINT: /* fallthrough */
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
