@@ -1,60 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965655AbXBTATN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965640AbXBTATz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965655AbXBTATN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 19:19:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965589AbXBTASi
+	id S965640AbXBTATz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 19:19:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750889AbXBTAGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 19:18:38 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:60557 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965595AbXBTAS0 (ORCPT
+	Mon, 19 Feb 2007 19:06:42 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:36017 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750934AbXBTAGi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 19:18:26 -0500
-Date: Mon, 19 Feb 2007 19:16:20 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: dirty balancing deadlock
-Message-ID: <20070220001620.GK6133@think.oraclecorp.com>
-References: <20070218125307.4103c04a.akpm@linux-foundation.org> <E1HIurG-0005Bw-00@dorka.pomaz.szeredi.hu> <20070218145929.547c21c7.akpm@linux-foundation.org> <E1HIvMB-0005Fd-00@dorka.pomaz.szeredi.hu> <20070218155916.0d3c73a9.akpm@linux-foundation.org> <E1HIwLJ-0005N4-00@dorka.pomaz.szeredi.hu> <20070219004537.GB9289@think.oraclecorp.com> <E1HIwnX-0005Sr-00@dorka.pomaz.szeredi.hu> <20070219010102.GC9289@think.oraclecorp.com> <E1HIx6d-0005V4-00@dorka.pomaz.szeredi.hu>
+	Mon, 19 Feb 2007 19:06:38 -0500
+Date: Tue, 20 Feb 2007 01:06:37 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dwmw2@infradead.org, jffs-dev@axis.com, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] remove fs/jffs2/ioctl.c
+Message-ID: <20070220000637.GE13958@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1HIx6d-0005V4-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 19, 2007 at 02:14:15AM +0100, Miklos Szeredi wrote:
-> > > > In general, writepage is supposed to do work without blocking on
-> > > > expensive locks that will get pdflush and dirty reclaim stuck in this
-> > > > fashion.  You'll probably have to take the same approach reiserfs does
-> > > > in data=journal mode, which is leaving the page dirty if fuse_get_req_wp
-> > > > is going to block without making progress.
-> > > 
-> > > Pdflush, and dirty reclaim set wbc->nonblocking to true.
-> > > balance_dirty_pages and fsync don't.  The problem here is that
-> > > Andrew's patch is wrong to let balance_dirty_pages() try to write back
-> > > pages from a different queue.
-> > 
-> > async or sync, writepage is supposed to either make progress or bail.
-> > loopback aside, if the fuse call is blocking long term, you're going to
-> > run into problems.
-> 
-> Hmm, like what?
+fs/jffs2/ioctl.c is already for so long in the "might be used later" 
+state that I doubt it will ever be actually used...
 
-Something a little different from what you're seeing.  Basically if the
-PF_MEMALLOC paths end up waiting on a filesystem transaction, and that
-transaction is waiting for more ram, the system will eventually grind to
-a halt.  data=journal is the easiest way to hit it, since writepage
-always logs at least 4k.
+And if it will ever be used, reverting this patch will be trivial.
 
-WB_SYNC_NONE and wbc->nonblocking aren't a great test, in reiser I
-resorted to testing PF_MEMALLOC.
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
--chris
+---
+
+This patch was already sent on:
+- 26 Nov 2006
+
+ fs/jffs2/Makefile   |    2 +-
+ fs/jffs2/dir.c      |    1 -
+ fs/jffs2/file.c     |    1 -
+ fs/jffs2/ioctl.c    |   23 -----------------------
+ fs/jffs2/os-linux.h |    3 ---
+ 5 files changed, 1 insertion(+), 29 deletions(-)
+
+--- linux-2.6.14-rc5-mm1-full/fs/jffs2/os-linux.h.old	2005-11-01 20:28:24.000000000 +0100
++++ linux-2.6.14-rc5-mm1-full/fs/jffs2/os-linux.h	2005-11-01 20:28:31.000000000 +0100
+@@ -147,9 +147,6 @@
+ int jffs2_fsync(struct file *, struct dentry *, int);
+ int jffs2_do_readpage_unlock (struct inode *inode, struct page *pg);
+ 
+-/* ioctl.c */
+-int jffs2_ioctl(struct inode *, struct file *, unsigned int, unsigned long);
+-
+ /* symlink.c */
+ extern struct inode_operations jffs2_symlink_inode_operations;
+ 
+--- linux-2.6.14-rc5-mm1-full/fs/jffs2/dir.c.old	2005-11-01 20:28:39.000000000 +0100
++++ linux-2.6.14-rc5-mm1-full/fs/jffs2/dir.c	2005-11-01 20:28:43.000000000 +0100
+@@ -41,7 +41,6 @@
+ {
+ 	.read =		generic_read_dir,
+ 	.readdir =	jffs2_readdir,
+-	.ioctl =	jffs2_ioctl,
+ 	.fsync =	jffs2_fsync
+ };
+ 
+--- linux-2.6.14-rc5-mm1-full/fs/jffs2/Makefile.old	2005-11-01 20:31:23.000000000 +0100
++++ linux-2.6.14-rc5-mm1-full/fs/jffs2/Makefile	2005-11-01 20:31:41.000000000 +0100
+@@ -6,7 +6,7 @@
+ 
+ obj-$(CONFIG_JFFS2_FS) += jffs2.o
+ 
+-jffs2-y	:= compr.o dir.o file.o ioctl.o nodelist.o malloc.o
++jffs2-y	:= compr.o dir.o file.o nodelist.o malloc.o
+ jffs2-y	+= read.o nodemgmt.o readinode.o write.o scan.o gc.o
+ jffs2-y	+= symlink.o build.o erase.o background.o fs.o writev.o
+ jffs2-y	+= super.o
+--- linux-2.6.15-rc5-mm2-full/fs/jffs2/ioctl.c	2005-12-11 15:01:46.000000000 +0100
++++ /dev/null	2005-11-08 19:07:57.000000000 +0100
+@@ -1,23 +0,0 @@
+-/*
+- * JFFS2 -- Journalling Flash File System, Version 2.
+- *
+- * Copyright (C) 2001-2003 Red Hat, Inc.
+- *
+- * Created by David Woodhouse <dwmw2@infradead.org>
+- *
+- * For licensing information, see the file 'LICENCE' in this directory.
+- *
+- * $Id: ioctl.c,v 1.10 2005/11/07 11:14:40 gleixner Exp $
+- *
+- */
+-
+-#include <linux/fs.h>
+-
+-int jffs2_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
+-		unsigned long arg)
+-{
+-	/* Later, this will provide for lsattr.jffs2 and chattr.jffs2, which
+-	   will include compression support etc. */
+-	return -ENOTTY;
+-}
+-
+--- linux-2.6.19-rc6-mm1/fs/jffs2/file.c.old	2006-11-26 05:55:29.000000000 +0100
++++ linux-2.6.19-rc6-mm1/fs/jffs2/file.c	2006-11-26 05:53:06.000000000 +0100
+@@ -46,7 +46,6 @@
+  	.aio_read =	generic_file_aio_read,
+  	.write =	do_sync_write,
+  	.aio_write =	generic_file_aio_write,
+-	.ioctl =	jffs2_ioctl,
+ 	.mmap =		generic_file_readonly_mmap,
+ 	.fsync =	jffs2_fsync,
+ 	.sendfile =	generic_file_sendfile
 
