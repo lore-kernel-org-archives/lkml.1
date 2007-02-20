@@ -1,47 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964915AbXBTOTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964931AbXBTOXG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964915AbXBTOTi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 09:19:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964924AbXBTOTi
+	id S964931AbXBTOXG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 09:23:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964936AbXBTOXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 09:19:38 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:32850 "EHLO mx1.redhat.com"
+	Tue, 20 Feb 2007 09:23:06 -0500
+Received: from mail.screens.ru ([213.234.233.54]:45589 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964915AbXBTOTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 09:19:20 -0500
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 1/2] FRV: Missing error defs
-To: torvalds@osdl.org, akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
-Date: Tue, 20 Feb 2007 14:18:43 +0000
-Message-ID: <20070220141843.1405.56344.stgit@warthog.cambridge.redhat.com>
-User-Agent: StGIT/0.12
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	id S964931AbXBTOXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 09:23:05 -0500
+Date: Tue, 20 Feb 2007 17:22:57 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       akpm@linux-foundation.org, Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH] fix handling of SIGCHILD from reaped child
+Message-ID: <20070220142257.GA155@tv-sign.ru>
+References: <20070220183220.41b3f1ca.kamezawa.hiroyu@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070220183220.41b3f1ca.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Howells <dhowells@redhat.com>
+On 02/20, KAMEZAWA Hiroyuki wrote:
+>
+> SUSv3 says
+> ==
+> if SIGCHLD is blocked, if wait() or waitpid() return because the status of a
+> child process is available, any pending SIGCHLD signal shall be cleared unless
+> the status of another child process is available.
+> ==
 
-linux/irq.h uses EINVAL but does not #include linux/errno.h.  This results in
-the compiler spitting out errors on some files.
+Ingo, Roland, should we implement this?
 
-Signed-Off-By: David Howells <dhowells@redhat.com>
----
+I must admit, I don't understand the text above, "blocked" is per-thread, but
+wait() is process wide (any sub-thread can reap a dead child).
 
- include/linux/irq.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> -static int collect_signal(int sig, struct sigpending *list, siginfo_t *info)
+> +static int collect_signal(int sig, struct sigpending *list, siginfo_t *info, pid_t checkpid)
+>  {
+> -	list_for_each_entry(q, &list->list, list) {
+> -		if (q->info.si_signo == sig) {
+> -			if (first) {
+> -				still_pending = 1;
+> -				break;
+> +	if (unlikely(checkpid)) {
+> +		list_for_each_entry(q, &list->list, list) {
+> +			if (q->info.si_signo == sig) {
+> +			    if (q->info.si_pid == checkpid)
+> +					first = q;
+> +				else
+> +					still_pending = 1;
+> +			}
+> +		}
+> +	} else {
+> +		list_for_each_entry(q, &list->list, list) {
+> +			if (q->info.si_signo == sig) {
+> +				if (first) {
+> +					still_pending = 1;
+> +					break;
+> +				}
+> +				first = q;
+>  			}
+> -			first = q;
 
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index aa5b3e6..a0818be 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -18,6 +18,7 @@
- #include <linux/spinlock.h>
- #include <linux/cpumask.h>
- #include <linux/irqreturn.h>
-+#include <linux/errno.h>
- 
- #include <asm/irq.h>
- #include <asm/ptrace.h>
+I'd suggest to make a separate function, but not complicate collect_signal().
+
+> --- linux-2.6.20-devel.orig/kernel/exit.c
+> +++ linux-2.6.20-devel/kernel/exit.c
+> @@ -1252,8 +1252,12 @@ static int wait_task_zombie(struct task_
+>  		}
+>  		write_unlock_irq(&tasklist_lock);
+>  	}
+> -	if (p != NULL)
+> +	if (p != NULL) {
+>  		release_task(p);
+> +		/* if we received sigchild from "p" and p is released,
+> +		   we remove sigchild from it. */
+
+current may be ptracer, not a parent. Should be ok, clear_stale_sigchild(pid)
+can't have a false positive (until we have namespace for pid_t), but the comment
+is misleading a bit.
+
+> +		clear_stale_sigchild(current, retval);
+
+But we are not checking that SIGCHLD is blocked?
+
+Oleg.
+
