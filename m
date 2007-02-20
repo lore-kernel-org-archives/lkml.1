@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932978AbXBTR44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932993AbXBTSBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932978AbXBTR44 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 12:56:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932979AbXBTR44
+	id S932993AbXBTSBi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 13:01:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932995AbXBTSBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 12:56:56 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:28682 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932978AbXBTR44 (ORCPT
+	Tue, 20 Feb 2007 13:01:38 -0500
+Received: from mail0.lsil.com ([147.145.40.20]:41529 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932992AbXBTSBh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 12:56:56 -0500
-Date: Tue, 20 Feb 2007 12:54:57 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>
-Cc: Zach Brown <zach.brown@oracle.com>, linux-aio@kvack.org,
-       linux-kernel@vger.kernel.org, Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna bhattacharya <suparna@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/2] aio: propogate post-EIOCBQUEUED errors to completion event
-Message-ID: <20070220175457.GS6133@think.oraclecorp.com>
-References: <20070220170335.GR6133@think.oraclecorp.com> <B41635854730A14CA71C92B36EC22AAC871D9D@mssmsx411>
+	Tue, 20 Feb 2007 13:01:37 -0500
+x-mimeole: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <B41635854730A14CA71C92B36EC22AAC871D9D@mssmsx411>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: LSI Logic 40919o fibre channel: scsi works ip not
+Date: Tue, 20 Feb 2007 11:01:17 -0700
+Message-ID: <664A4EBB07F29743873A87CF62C26D705AD03A@NAMAIL4.ad.lsil.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: LSI Logic 40919o fibre channel: scsi works ip not
+Thread-Index: AcdSs+Q68ZWJOr81Tr2umL5M/gJM2wCZMKiQ
+From: "Moore, Eric" <Eric.Moore@lsi.com>
+To: "Dan Aloni" <da-x@monatomic.org>,
+       "Mario Giammarco" <mgiammarco-ml@4warding.com>
+Cc: <linux-scsi@vger.kernel.org>,
+       "Linux Kernel List" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 20 Feb 2007 18:01:18.0652 (UTC) FILETIME=[1F0827C0:01C75519]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 20, 2007 at 08:17:51PM +0300, Ananiev, Leonid I wrote:
-> aio-stress command lines used for test
-> 1) mem=1G in kernel boot param if you have more
-> 2) mk2fs for test_file
-> 3) dd if=/dev/zero of=<test_file> bs=1M count=1200
-> 4) aiostress -s 1200m -o 2 -i 1 -r 16k <test_file>
+On Saturday, February 17, 2007 9:04 AM,  Mario Giammarco wrote: 
+
+> Now regarding the whole thing surrounding mptlan, I don't think
+> that LSI officially supports that feature any more or willing to fix
+> any bugs for it in their firmware or driver. Is that right?
+> 
+> If so, we might as well remove that driver from the kernel.
 > 
 
-Sorry, this aio-stress command line doesn't do O_DIRECT.  Do you have
-this bundled into a test script that I can try?
+No, don't be thinking about removing that driver. LSI Logic still
+supports this driver.  I had forwarded Mario's original email to Stephen
+Shirron last week. He should of been contacted by now, if not, please
+let me know.
 
--chris
+
+Eric Moore
+LSI Logic
