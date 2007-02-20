@@ -1,64 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932425AbXBTLbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932896AbXBTLfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932425AbXBTLbn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 06:31:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932886AbXBTLbn
+	id S932896AbXBTLfV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 06:35:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964821AbXBTLfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 06:31:43 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:47217 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932425AbXBTLbm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 06:31:42 -0500
-Date: Tue, 20 Feb 2007 06:30:12 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: dirty balancing deadlock
-Message-ID: <20070220113012.GN6133@think.oraclecorp.com>
-References: <E1HIqlm-0004iZ-00@dorka.pomaz.szeredi.hu> <20070218125307.4103c04a.akpm@linux-foundation.org> <E1HIurG-0005Bw-00@dorka.pomaz.szeredi.hu> <20070218145929.547c21c7.akpm@linux-foundation.org> <E1HIvMB-0005Fd-00@dorka.pomaz.szeredi.hu> <20070218155916.0d3c73a9.akpm@linux-foundation.org> <E1HJC3P-0006tz-00@dorka.pomaz.szeredi.hu> <20070220001351.GJ6133@think.oraclecorp.com> <E1HJQeV-0008Kq-00@dorka.pomaz.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1HJQeV-0008Kq-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Tue, 20 Feb 2007 06:35:21 -0500
+Received: from pxy2nd.nifty.com ([202.248.175.14]:23247 "HELO pxy2nd.nifty.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932900AbXBTLfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 06:35:18 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=pxy2nd-default; d=mbf.nifty.com;
+  b=2OhqchC9nyfSPbdKp9U+bhs53AuKUPeqjQ8YDOhVNvduBBn2W4eBGM4Hsq1YD3Nl6CoJdVOHRPZf9sraY881ug==  ;
+Date: Tue, 20 Feb 2007 20:34:13 +0900 (JST)
+Message-Id: <20070220.203413.260790539.takada@mbf.nifty.com>
+To: lsorense@csclub.uwaterloo.ca
+Cc: rdreier@cisco.com, pcnet32@verizon.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: MediaGX/GeodeGX1 requires X86_OOSTORE.
+From: takada <takada@mbf.nifty.com>
+In-Reply-To: <20070220000231.GM7585@csclub.uwaterloo.ca>
+References: <ada3b5253p0.fsf@cisco.com>
+	<20070220.085639.260788422.takada@mbf.nifty.com>
+	<20070220000231.GM7585@csclub.uwaterloo.ca>
+X-Mailer: Mew version 5.1 on Emacs 22.0.92 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 20, 2007 at 09:47:11AM +0100, Miklos Szeredi wrote:
-> > > How about this?
-> > > 
-> > > Solves the FUSE deadlock, but not the throttle_vm_writeout() one.
-> > > I'll try to tackle that one as well.
-> > > 
-> > > If the per-bdi dirty counter goes below 16, balance_dirty_pages()
-> > > returns.
-> > > 
-> > > Does the constant need to tunable?  If it's too large, then the global
-> > > threshold is more easily exceeded.  If it's too small, then in a tight
-> > > situation progress will be slower.
-> > 
-> > Ok, what is supposed to happen here is that filesystems are supposed to
-> > be throttled from making more dirty pages when the system is over the
-> > threshold.  Even if filesystem A doesn't have much to contribute, and
-> > filesystem B is the cause of 99% of the dirty pages, the goal of the
-> > threshold is to prevent more dirty data from happening, and filesystem A
-> > should block.
-> 
-> Which is the cause of the current deadlock.  But if we allow
-> filesystem A to go into the red just a little, the deadlock is
-> avoided, because it can continue to make progress with cleaning the
-> dirtyness produced by B.
-> 
-> The maximum that filesystems can go over the limit will be
-> 
->   (16 + epsilon) * number-of-queues
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Subject: Re: MediaGX/GeodeGX1 requires X86_OOSTORE.
+Date: Mon, 19 Feb 2007 19:02:31 -0500
 
-Right, even for thousands of mounted filesystems ~16 pages per FS
-effectively pinned is not horrible.
+> On Tue, Feb 20, 2007 at 08:56:39AM +0900, takada wrote:
+> > /proc/cpuinfo with MediaGXm :
 
--chris
+  :
+
+> > flags		: fpu tsc msr cx8 cmov mmx cxmmx
+> > bogomips	: 401.00
+> > clflush size	: 32
+> 
+> Hmm with 2.6.18 I am seeing:
+
+I posted with 2.6.20 + enabled X86_OOSTORE.
+The clflush sze line is in /proc/cpuinfo. but clfush is not in flags line.
+
+BTW, can we use WBINVD instruction? I tested compile only.
+Do you know a method to change dynamically without #ifdef when it works
+with MediaGX/GeodeGX.
+
+diff -Narup a/include/asm-i386/io.h b/include/asm-i386/io.h
+--- a/include/asm-i386/io.h	2007-02-20 16:23:25.000000000 +0900
++++ b/include/asm-i386/io.h	2007-02-20 17:07:14.000000000 +0900
+@@ -232,7 +232,19 @@ static inline void memcpy_toio(volatile 
+  *	2. Accidentally out of order processors (PPro errata #51)
+  */
+  
+-#if defined(CONFIG_X86_OOSTORE) || defined(CONFIG_X86_PPRO_FENCE)
++#ifdef CONFIG_MGEODEGX1
++
++static inline void dma_flush_cache(void)
++{
++	__asm__ __volatile__ ("wbinvd": : :"memory");
++}
++
++#define dma_cache_inv(_start,_size)		dma_flush_cache()
++#define dma_cache_wback(_start,_size)		dma_flush_cache()
++#define dma_cache_wback_inv(_start,_size)	dma_flush_cache()
++#define flush_write_buffers()
++
++#elif defined(CONFIG_X86_OOSTORE) || defined(CONFIG_X86_PPRO_FENCE)
+ 
+ static inline void flush_write_buffers(void)
+ {
