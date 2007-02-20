@@ -1,90 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965088AbXBTPo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965163AbXBTPrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965088AbXBTPo1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 10:44:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965091AbXBTPo1
+	id S965163AbXBTPrP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 10:47:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965169AbXBTPrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 10:44:27 -0500
-Received: from smtp-vbr6.xs4all.nl ([194.109.24.26]:4594 "EHLO
-	smtp-vbr6.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965088AbXBTPo0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 10:44:26 -0500
-Message-ID: <45DB174F.30708@xs4all.nl>
-Date: Tue, 20 Feb 2007 16:44:15 +0100
-From: Udo van den Heuvel <udovdh@xs4all.nl>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Alistair John Strachan <s0348365@sms.ed.ac.uk>,
-       Krzysztof Halasa <khc@pm.waw.pl>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Subject: Re: PCI riser cards and PCI irq routing, etc
-References: <45D85DA1.7090502@xs4all.nl> <m3odnpq3yr.fsf@maximus.localdomain> <45DA7643.4020305@xs4all.nl> <200702201456.30794.s0348365@sms.ed.ac.uk>
-In-Reply-To: <200702201456.30794.s0348365@sms.ed.ac.uk>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: id=8300CC02
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 20 Feb 2007 10:47:15 -0500
+Received: from cdm-75-109-122-87.asbnva.dh.suddenlink.net ([75.109.122.87]:33820
+	"EHLO turing-police.cc.vt.edu" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S965163AbXBTPrO (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 10:47:14 -0500
+X-Greylist: delayed 1938 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Feb 2007 10:47:14 EST
+Message-Id: <200702201514.l1KFEVIE023344@turing-police.cc.vt.edu>
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Bernd Petrovitsch <bernd@firmix.at>
+Cc: v j <vj.linux@gmail.com>, davids@webmaster.com, trent.waddington@gmail.com,
+       "Michael K. Edwards" <medwards.linux@gmail.com>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       Neil Brown <neilb@suse.de>
+Subject: Re: GPL vs non-GPL device drivers
+In-Reply-To: Your message of "Tue, 20 Feb 2007 12:00:51 +0100."
+             <1171969251.12262.16.camel@tara.firmix.at>
+From: Valdis.Kletnieks@vt.edu
+References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com> <MDEHLPKNGKAHNMBLJOLKIEFNBLAC.davids@webmaster.com> <9b3a62ab0702192119l1bf9a284la93c9d1f01638ca4@mail.gmail.com>
+            <1171969251.12262.16.camel@tara.firmix.at>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1171984471_20062P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Tue, 20 Feb 2007 10:14:31 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alistair John Strachan wrote:
-> On Tuesday 20 February 2007 04:17, Udo van den Heuvel wrote:
->> Krzysztof Halasa wrote:
->>> Is it a VIA ITX board? I think I have VIA's riser card somewhere,
->>> could check what it does.
->> Yes, VIA Epia EN12000.
->> Interesting to check the riser card.
-> 
-> Just be aware that there are two types of PCI riser -- risers that work in any 
-> board, and Via Epia-specific risers. The latter requires a BIOS update on 
-> some Epias and presumably has some advantages, possible the ones you're 
-> looking for.
+--==_Exmh_1171984471_20062P
+Content-Type: text/plain; charset=us-ascii
 
-This card is sold by TranquilPC for their T2e case which holds Mini-ITX
-boards. My EN12000 has the latest BIOS I could find on the VIA site:
-http://www.via.com.tw/en/products/mainboards/downloads.jsp?motherboard_id=399#BIOS
+On Tue, 20 Feb 2007 12:00:51 +0100, Bernd Petrovitsch said:
+> Flame bait alert:
+> I heard a talk from an Austrian lawyer an according to his believes (and
+> I don't know if he is the only one or if there lots of) one must see
+> from the "users" view if the GPL spreads over or not (and the usual
+> technical terms like "linking" are basically irrelevant).
+> E.g.:
+> - You are distributing an application which links against a GPL-library.
+> If you provide a link and the user/customer has to get and install that
+> library, your application can have any license you wish.
+> - If you distribute an application and it installs automatically a
+> library (e.g. from the CD where your application is installed), your
+> applications license must "fit" wit the library license.
 
+So tell me - if RedHat distributes a non-GPL program that uses a GPL
+library that is included as part of the distribution, but *not* one that's
+usually installed, which rules apply?
 
-I just tested with Device Number 12 and DN 18 (the only free locations
-to try besides the DN 19 default, if I am correct on this).
-
-DN 12 gave me this:
-
-00:0c.0 Multimedia controller: Philips Semiconductors SAA7146 (rev 01)
-        Subsystem: TERRATEC Electronic GmbH Unknown device 1157
-        Flags: medium devsel, IRQ 255
-        Memory at fdfff000 (32-bit, non-prefetchable) [size=512]
+Even better - does this mean that I can *intentionally* bypass the licensing by
+including a installer script that removed a problematic library, and then
+forces the user to re-install it?
 
 
-No irq! The other card remained at DN20 and irq 20.
-So no visible i2c at all (!) for the DVB-T card.
 
-DN 18 gave me:
+--==_Exmh_1171984471_20062P
+Content-Type: application/pgp-signature
 
-00:12.0 Multimedia controller: Philips Semiconductors SAA7146 (rev 01)
-        Subsystem: TERRATEC Electronic GmbH Unknown device 1157
-        Flags: bus master, medium devsel, latency 32, IRQ 20
-        Memory at fdffc000 (32-bit, non-prefetchable) [size=512]
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-00:14.0 Multimedia controller: Philips Semiconductors SAA7146 (rev 01)
-        Subsystem: TERRATEC Electronic GmbH Unknown device 1155
-        Flags: bus master, medium devsel, latency 32, IRQ 21
-        Memory at fdffb000 (32-bit, non-prefetchable) [size=512]
+iD8DBQFF2xBXcC3lWbTT17ARArqxAJ9ADzLf9hfkRWFoIvROxauTNNCTygCgrd9T
+8baoA6KZAbA88spMdDBpVNg=
+=QJAP
+-----END PGP SIGNATURE-----
 
-The DVB-T card had the same problems as with DN19 in irq mode. Visible
-i2c bus but not usable i2c.
-
-Any ideas about how to proceed?
-What to test?
-
-
-BTW:
-
-Another case I am considering has this drawing for the riser:
-http://www.morex.com.tw/drawing/MAR122-J%20Drawing.pdf
-DN ranges from 20 to 31. Would this improve the situation?
-
-Kind regards,
-Udo
+--==_Exmh_1171984471_20062P--
