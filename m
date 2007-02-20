@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030452AbXBTVph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030459AbXBTVrH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030452AbXBTVph (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 16:45:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030455AbXBTVph
+	id S1030459AbXBTVrH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 16:47:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030460AbXBTVrG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 16:45:37 -0500
-Received: from an-out-0708.google.com ([209.85.132.251]:37842 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030452AbXBTVpg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 16:45:36 -0500
-Message-ID: <5640c7e00702201345n409d5c4btf978610541f866c2@mail.gmail.com>
-Date: Wed, 21 Feb 2007 10:45:35 +1300
-From: "Ian McDonald" <ian.mcdonald@jandi.co.nz>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: [PATCH] pci: allow multiple calls to pcim_pin_device()
-Cc: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>, gregkh@suse.de,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Jeff Garzik" <jeff@garzik.org>
-In-Reply-To: <20070220082839.GN1625@htj.dyndns.org>
+	Tue, 20 Feb 2007 16:47:06 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:47959 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030459AbXBTVrF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 16:47:05 -0500
+Message-ID: <45DB6C51.1080202@garzik.org>
+Date: Tue, 20 Feb 2007 16:46:57 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       linux-ide@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: 2.6.20-mm2
+References: <20070217215146.30e7ffa3.akpm@linux-foundation.org> <6bffcb0e0702190345p33f4832epec92656fff087f57@mail.gmail.com> <200702200104.57200.rjw@sisk.pl> <200702202216.03744.rjw@sisk.pl>
+In-Reply-To: <200702202216.03744.rjw@sisk.pl>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <5640c7e00702181153q44678861q9963e7e2de00be8@mail.gmail.com>
-	 <200702182158.13429.bzolnier@gmail.com>
-	 <5640c7e00702182000p26f1ca8n15c1edcd8b3134a1@mail.gmail.com>
-	 <200702191247.03274.bzolnier@gmail.com>
-	 <20070220082839.GN1625@htj.dyndns.org>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/20/07, Tejun Heo <htejun@gmail.com> wrote:
-> Sanity check in pcim_pin_device() was too restrictive in that it
-> didn't allow multiple calls to the function, which is against the
-> devres philosohpy of fire-and-forget.  Track pinned status separately
-> and allow pinning multiple times.
->
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> ---
-> It was an actual bug in pcim_pin_device() implementation.  Thanks for
-> spotting this.  :-)
->
-> Ian McDonald, please verify your warning goes away with this patch.
+Rafael J. Wysocki wrote:
+> FWIW, with CONFIG_PREEMPT unset (CONFIG_PREEMPT_VOLUNTARY is set instead), I'm
+> unable to reproduce this problem on the box on which it is readily reproducible with
+> CONFIG_PREEMPT set.
 
-Yes it does. Thanks for sorting.
->
-> Greg, please forward this patch upstream once Ian acks it.
->
-Acked-by: Ian McDonald <ian.mcdonald@jandi.co.nz>
--- 
-Web: http://wand.net.nz/~iam4
-Blog: http://iansblog.jandi.co.nz
-WAND Network Research Group
+I'm not surprised...  I routinely tell people to turn it off, when 
+debugging a problem.
+
+	Jeff
+
+
+
