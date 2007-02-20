@@ -1,37 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030462AbXBTVrI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030448AbXBTVvF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030462AbXBTVrI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 16:47:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030460AbXBTVrI
+	id S1030448AbXBTVvF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 16:51:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030469AbXBTVvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 16:47:08 -0500
-Received: from tirith.ics.muni.cz ([147.251.4.36]:43293 "EHLO
-	tirith.ics.muni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030462AbXBTVrF (ORCPT
+	Tue, 20 Feb 2007 16:51:04 -0500
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:53668 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030448AbXBTVvD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 16:47:05 -0500
-Date: Tue, 20 Feb 2007 22:47:17 +0100
-From: Lukas Hejtmanek <xhejtman@mail.muni.cz>
-To: jgarzik@pobox.com, linux-kernel@vger.kernel.org
-Subject: Re: [git patches] libata ACPI support
-Message-ID: <20070220214716.GA3690@mail.muni.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+	Tue, 20 Feb 2007 16:51:03 -0500
+Date: Tue, 20 Feb 2007 16:51:03 -0500
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Udo van den Heuvel <udovdh@xs4all.nl>, linux-kernel@vger.kernel.org
+Subject: Re: PCI riser cards and PCI irq routing, etc
+Message-ID: <20070220215103.GB22464@csclub.uwaterloo.ca>
+References: <45D85DA1.7090502@xs4all.nl> <20070218155445.GV7584@csclub.uwaterloo.ca> <45D87BA2.9020001@xs4all.nl> <20070218193901.GN7582@csclub.uwaterloo.ca> <45D9BDBF.8040405@xs4all.nl> <m3odnpq3yr.fsf@maximus.localdomain> <45DA7643.4020305@xs4all.nl> <m33b505zez.fsf@maximus.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Muni-Spam-TestIP: 81.31.45.161
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (tirith.ics.muni.cz [147.251.4.35]); Tue, 20 Feb 2007 22:47:01 +0100 (CET)
+In-Reply-To: <m33b505zez.fsf@maximus.localdomain>
+User-Agent: Mutt/1.5.9i
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tue, Feb 20, 2007 at 09:47:48PM +0100, Krzysztof Halasa wrote:
+> Udo van den Heuvel <udovdh@xs4all.nl> writes:
+> 
+> > Yes, VIA Epia EN12000.
+> > Interesting to check the riser card.
+> 
+> Unfortunately it turns out it's single slot only.
 
-introducing SATA ACPI does not work for me (I've filled the bug
-report: http://bugzilla.kernel.org/show_bug.cgi?id=8046) beside those error
-messages, IDE performance is decreased. libata.noacpi=1 option works ok but
-the performance is still slightly degraded (about 10%).
+Via has a dual pci-ext card.  See EXT-PCI at
+http://www.via.com.tw/en/products/mainboards/accessories.jsp
 
--- 
-Luká¹ Hejtmánek
+--
+Len Sorensen
