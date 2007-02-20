@@ -1,43 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965783AbXBTApl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965792AbXBTAqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965783AbXBTApl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 19:45:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965780AbXBTApl
+	id S965792AbXBTAqt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 19:46:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965788AbXBTAqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 19:45:41 -0500
-Received: from holomorphy.com ([66.93.40.71]:56933 "EHLO holomorphy.com"
+	Mon, 19 Feb 2007 19:46:49 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:48017 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965783AbXBTApk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 19:45:40 -0500
-Date: Mon, 19 Feb 2007 16:42:18 -0800
-From: William Lee Irwin III <wli@holomorphy.com>
+	id S965792AbXBTAqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 19:46:48 -0500
+Date: Tue, 20 Feb 2007 11:47:13 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Adrian Bunk <bunk@stusta.de>
-Cc: ak@suse.de, discuss@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: x86_64: up to 255 or 256 CPUs?
-Message-ID: <20070220004218.GO21484@holomorphy.com>
-References: <20070220000647.GI13958@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070220000647.GI13958@stusta.de>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] drivers/char/hvc_console.c: cleanups
+Message-Id: <20070220114713.c86ad072.sfr@canb.auug.org.au>
+In-Reply-To: <20070220000207.GX13958@stusta.de>
+References: <20070220000207.GX13958@stusta.de>
+X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__20_Feb_2007_11_47_13_+1100_jkXk6uuXk1TDLt85"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 20, 2007 at 01:06:47AM +0100, Adrian Bunk wrote:
-> Quoting arch/x86_64/Kconfig:
-> <--  snip  -->
-> ...
-> config NR_CPUS
->         int "Maximum number of CPUs (2-256)"
->         range 2 255
-> ...
-> <--  snip  -->
-> cu
-> Adrian
+--Signature=_Tue__20_Feb_2007_11_47_13_+1100_jkXk6uuXk1TDLt85
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-The broadcast APIC ID clashes with the 256th cpu.
+On Tue, 20 Feb 2007 01:02:07 +0100 Adrian Bunk <bunk@stusta.de> wrote:
+>
+> This patch contains the following cleanups:
+> - make needlessly global code static
+> - remove the unused EXPORT_SYMBOL's
+>
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--- wli
+--Signature=_Tue__20_Feb_2007_11_47_13_+1100_jkXk6uuXk1TDLt85
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFF2kUWFdBgD/zoJvwRAsKXAKCKwfdBMHNhVpu2hPXluzE+Qxkr+gCeOUGQ
+FhrMCnfKuFnv3sBU6zarsOY=
+=85Ck
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__20_Feb_2007_11_47_13_+1100_jkXk6uuXk1TDLt85--
