@@ -1,43 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965055AbXBTPjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965075AbXBTPjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965055AbXBTPjT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 10:39:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965075AbXBTPjT
+	id S965075AbXBTPjc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 10:39:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965077AbXBTPjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 10:39:19 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45128 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965055AbXBTPjS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 10:39:18 -0500
-Date: Tue, 20 Feb 2007 16:42:50 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-Subject: Re: pata_amd dropping to PIO on resume
-Message-ID: <20070220164250.24fad51c@localhost.localdomain>
-In-Reply-To: <45DB137F.1060301@garzik.org>
-References: <fa.q7ZuddHInqn2dVlS+EWjXjPvFC8@ifi.uio.no>
-	<45D63BCE.2080700@shaw.ca>
-	<45D6436C.4060209@garzik.org>
-	<20070219220812.11c3baba@localhost.localdomain>
-	<45DB137F.1060301@garzik.org>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Tue, 20 Feb 2007 10:39:32 -0500
+Received: from ns.firmix.at ([62.141.48.66]:45379 "EHLO ns.firmix.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965075AbXBTPjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 10:39:31 -0500
+Subject: Re: GPL vs non-GPL device drivers
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: Valdis.Kletnieks@vt.edu
+Cc: v j <vj.linux@gmail.com>, davids@webmaster.com, trent.waddington@gmail.com,
+       "Michael K. Edwards" <medwards.linux@gmail.com>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       Neil Brown <neilb@suse.de>
+In-Reply-To: <200702201514.l1KFEVIE023344@turing-police.cc.vt.edu>
+References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>
+	 <MDEHLPKNGKAHNMBLJOLKIEFNBLAC.davids@webmaster.com>
+	 <9b3a62ab0702192119l1bf9a284la93c9d1f01638ca4@mail.gmail.com>
+	 <1171969251.12262.16.camel@tara.firmix.at>
+	 <200702201514.l1KFEVIE023344@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Organization: Firmix software GmbH
+Date: Tue, 20 Feb 2007 16:39:17 +0100
+Message-Id: <1171985957.23390.19.camel@tara.firmix.at>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
 Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -2.417 () AWL,BAYES_00,FORGED_RCVD_HELO
+X-Firmix-Spam-Status: No, hits=-2.417 required=5
+X-Spam-Score: -2.417 () AWL,BAYES_00,FORGED_RCVD_HELO
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> places where the bit must be twiddled.  Its easier to leave the bit in 
-> the BIOS-initialized state, and ignore the hardware bit's existence in 
-> software, if we know the behavior in the controller is hardwired.  Less 
-> room for software bugs that way, IMO.
+On Tue, 2007-02-20 at 10:14 -0500, Valdis.Kletnieks@vt.edu wrote:
+> On Tue, 20 Feb 2007 12:00:51 +0100, Bernd Petrovitsch said:
+> > Flame bait alert:
+> > I heard a talk from an Austrian lawyer an according to his believes (and
+> > I don't know if he is the only one or if there lots of) one must see
+> > from the "users" view if the GPL spreads over or not (and the usual
+> > technical terms like "linking" are basically irrelevant).
+> > E.g.:
+> > - You are distributing an application which links against a GPL-library.
+> > If you provide a link and the user/customer has to get and install that
+> > library, your application can have any license you wish.
+> > - If you distribute an application and it installs automatically a
+> > library (e.g. from the CD where your application is installed), your
+> > applications license must "fit" wit the library license.
+> 
+> So tell me - if RedHat distributes a non-GPL program that uses a GPL
+> library that is included as part of the distribution, but *not* one that's
+> usually installed, which rules apply?
 
-The AMD docs don't categorically answer that question either way that I
-can see. The bit appears to make no difference but.. 
+I'm well aware that there are (probably lots of) contradictions with
+this "idea".
+IANAL and we must ask that lawyer actually for this. And he will
+probasbly do not understand the question since he very probably doesn't
+know all the usual software distribution methods.
 
-Alan
+> Even better - does this mean that I can *intentionally* bypass the licensing by
+> including a installer script that removed a problematic library, and then
+> forces the user to re-install it?
+
+A good question which belongs in the same category as above.
+
+	Bernd
+-- 
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
+
