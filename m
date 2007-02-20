@@ -1,42 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932869AbXBTKpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932861AbXBTKyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932869AbXBTKpZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 05:45:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932870AbXBTKpZ
+	id S932861AbXBTKyV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 05:54:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932863AbXBTKyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 05:45:25 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56031 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932869AbXBTKpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 05:45:24 -0500
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070219221125.GA5070@tv-sign.ru> 
-References: <20070219221125.GA5070@tv-sign.ru>  <20070218214359.GA4226@tv-sign.ru> <8462.1171884453@redhat.com> <20070219115955.GB91@tv-sign.ru> 
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jarek Poplawski <jarkao2@o2.pl>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
-Subject: Re: PATCH? net/bridge/br_if.c: fix use after free in port_carrier_check() 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Tue, 20 Feb 2007 10:44:56 +0000
-Message-ID: <18581.1171968296@redhat.com>
+	Tue, 20 Feb 2007 05:54:21 -0500
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:46980 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932861AbXBTKyU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 05:54:20 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=NQ7RZ07fA5ynj7KpMnCKWL3wenyFVD4IsHXmMtRD2u1+8I7JB+UZl8xkj6xR4qD4pKpHiazsVrNmFojoqpzNdwofRPBFzpZsZrwOm5srKch3ZvzplADZMEcQVONVnkVhsnZF+pJDwSoJ5WaoKwJR0o0eH+zTZViWEYOaz464DOU=  ;
+X-YMail-OSG: 3Yj0RR4VM1kDLNwbvLD.chYHc_P.RG0bIZwjM4xfRsIZNLuJ4f5fg2Ym4RoJzurcc9u33Ycr8XfOoGgesnRfepHjIuYlU8PlZU4jtg5Zhu.rldMsPBF0Yu2XPNl7NCSgq_9osNYNSj7zfHY-
+Message-ID: <45DAD351.4090902@yahoo.com.au>
+Date: Tue, 20 Feb 2007 21:54:09 +1100
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: v j <vj.linux@gmail.com>
+CC: davids@webmaster.com, trent.waddington@gmail.com,
+       "Michael K. Edwards" <medwards.linux@gmail.com>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       Neil Brown <neilb@suse.de>
+Subject: Re: GPL vs non-GPL device drivers
+References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>	 <MDEHLPKNGKAHNMBLJOLKIEFNBLAC.davids@webmaster.com> <9b3a62ab0702192119l1bf9a284la93c9d1f01638ca4@mail.gmail.com>
+In-Reply-To: <9b3a62ab0702192119l1bf9a284la93c9d1f01638ca4@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+v j wrote:
 
-Oleg Nesterov <oleg@tv-sign.ru> wrote:
+> Now the popularity of Linux is exploding in the embedded space. Nobody
+> talks of VxWorks and OSE anymore. It is all Linux. Perhaps it would be
+> a worthwhile experiment to study this surge in popularity. I am not an
+> expert, but perhaps the reason is "it works so goddamn well and has a
+> wealth of third party FREE software". Sure its a bit of work to make
+> it work on our platform and we don't have to Enea or Windriver to
+> write our gripes to. But it definitely is worth it.
 
->  static void release_nbp(struct kobject *kobj)
->  {
->  	struct net_bridge_port *p
->  		= container_of(kobj, struct net_bridge_port, kobj);
-> +
-> +	dev_put(p->dev);
+And do you think it works well because of all those companies that
+don't contribute anything back? For that matter, do they do a single
+thing to help anyone or anything to do with Linux except themselves?
 
-Does this need to be done with the mutex held?  And does anything actually pay
-attention to the refcount on dev?  I assume not...
 
-Should you clear p->dev->br_port before calling dev_put()?
+> Now it would also be worthwhile to contemplate what EXPORT_SYMBOL_GPL
+> does to this popularity. I don't know. I am just giving you my
+> opinion. The moment companies learn of something like this, alarm
+> bells start to go off. This is not rational. I personally have nothing
+> against open-sourcing all software. *But*, this is not how companies
+> think.
 
-Looks reasonable.  I like it.
+Opinions or motivations, or the people working for companies don't really
+have any relevance at all. What matters is their actions.
 
-Acked-By: David Howells <dhowells@redhat.com>
+You would think that those people who think their IP is so priceless that
+it can't be opened would respect the rights of others. Sadly that doesn't
+appear to be the case.
+
+
+> Let's think about why Linux became so popular and strive towards
+> keeping it that way instead of resorting to innovative ways of just
+> confusing a lot of people.
+
+Linux has become popular _in spite_ of parasites, rather than because of
+them. The main reason for its popularity is its quality. And a big reason
+for its quality is the GPL.
+
+-- 
+Send instant messages to your online friends http://au.messenger.yahoo.com 
