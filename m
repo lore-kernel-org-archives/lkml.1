@@ -1,67 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932677AbXBTF2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932800AbXBTGLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932677AbXBTF2z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 00:28:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932844AbXBTF2z
+	id S932800AbXBTGLW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 01:11:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932801AbXBTGLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 00:28:55 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:22470 "EHLO
-	pd4mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932677AbXBTF2y (ORCPT
+	Tue, 20 Feb 2007 01:11:22 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:60918 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932800AbXBTGLV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 00:28:54 -0500
-Date: Mon, 19 Feb 2007 23:28:54 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: 2.6.20 kernel hang with USB drive and vfat doing ftruncate
-In-reply-to: <fa.qFxa41A3LU3cQ19L+5DTEFMtCEY@ifi.uio.no>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-usb-users@lists.sourceforge.net
-Message-id: <45DA8716.7090009@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.bxsB54F+7+006rE+o/VWUj5keQk@ifi.uio.no>
- <fa.zK5W70l1vhk1YNxuwxFwZ8t1uIs@ifi.uio.no>
- <fa.qFxa41A3LU3cQ19L+5DTEFMtCEY@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Tue, 20 Feb 2007 01:11:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mzRX7kOw8rJEner6jJG9YwtrktZmDSFvcNd7NJX5OqqcisGJuBjdFf5PO4hgu8/mHqT3NghHi5bjvAmT9NqoSN4BWp1jlos37mcJv6GydEhJlL5LCEMdEXwJjPK2k1RLqoTFQvtWwPt15ByNw/8Tk3k1fnBU6axQet5LBJTD7/c=
+Message-ID: <45a44e480702192211i78b8f4b1lecb3dfc284fb9eea@mail.gmail.com>
+Date: Tue, 20 Feb 2007 01:11:19 -0500
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+To: "Paul Mundt" <lethal@linux-sh.org>,
+       "Jaya Kumar" <jayakumar.lkml@gmail.com>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, jsimmons@infradead.org,
+       Geert.Uytterhoeven@sonycom.com
+Subject: Re: [PATCH 2.6.20 1/1] fbdev,mm: hecuba/E-Ink fbdev driver
+In-Reply-To: <20070220043848.GA4092@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070217104215.GB25512@localhost> <1171715652.5186.7.camel@lappy>
+	 <45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com>
+	 <20070217135922.GA15373@linux-sh.org>
+	 <45a44e480702180331t7e76c396j1a9861f689d4186b@mail.gmail.com>
+	 <20070218235741.GA22298@linux-sh.org>
+	 <45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
+	 <20070220043848.GA4092@linux-sh.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kumar Gala wrote:
-> [  497.499249] usb-storage   D 00000000     0   671      5           
-> 773   670 (L-TLB)
-> [  497.506930] Call Trace:
-> [  497.509372] [C3F35A60] [C00083AC] __switch_to+0x28/0x40
-> [  497.514608] [C3F35A80] [C01F4B78] schedule+0x324/0x6bc
-> [  497.519756] [C3F35AC0] [C01F5D6C] schedule_timeout+0x6c/0xd0
-> [  497.525426] [C3F35B00] [C01F5C9C] io_schedule_timeout+0x30/0x54
-> [  497.531356] [C3F35B20] [C0050DE4] congestion_wait+0x64/0x8c
-> [  497.536941] [C3F35B70] [C004A9F0] throttle_vm_writeout+0x1c/0x84
-> [  497.542958] [C3F35B90] [C004F33C] shrink_zone+0xbb0/0xfe4
-> [  497.548367] [C3F35D40] [C004F8F4] try_to_free_pages+0x184/0x2cc
-> [  497.554298] [C3F35DB0] [C0049AA8] __alloc_pages+0x110/0x2c0
-> [  497.559878] [C3F35E00] [C0060F84] cache_alloc_refill+0x394/0x694
-> [  497.565900] [C3F35E30] [C00614A0] __kmalloc+0xc4/0xcc
-> [  497.570961] [C3F35E40] [C01544D0] usb_alloc_urb+0x1c/0x5c
-> [  497.576371] [C3F35E50] [C015520C] usb_sg_init+0x1a0/0x2f8
-> [  497.581779] [C3F35EA0] [C0167318] usb_stor_bulk_transfer_sg+0x8c/0x138
-> [  497.588317] [C3F35ED0] [C0167960] usb_stor_Bulk_transport+0x140/0x310
-> [  497.594767] [C3F35F00] [C0167DCC] usb_stor_invoke_transport+0x2c/0x344
-> [  497.601303] [C3F35F50] [C0166B2C] 
-> usb_stor_transparent_scsi_command+0x10/0x20
-> [  497.608449] [C3F35F60] [C0168498] usb_stor_control_thread+0x1f8/0x290
-> [  497.614900] [C3F35FC0] [C0033E48] kthread+0xf4/0x130
-> [  497.619876] [C3F35FF0] [C001093C] kernel_thread+0x44/0x60
+On 2/19/07, Paul Mundt <lethal@linux-sh.org> wrote:
+> On Mon, Feb 19, 2007 at 11:13:04PM -0500, Jaya Kumar wrote:
+> >
+> > Ok. Here's what I'm thinking for abstracting this:
+> >
+> > fbdev drivers would setup fb_mmap with their own_mmap as usual. In
+> > own_mmap, they would do what they normally do and setup a vm_ops. They
+> > are free to have their own nopage handler but would set the
+> > page_mkwrite handler to be fbdev_deferred_io_mkwrite().
+>
+> The vast majority of drivers do not implement ->fb_mmap(), and with
+> proper abstraction, this should be something that's possible as a direct
+> alternative to drivers/video/fbmem.c:fb_mmap() for the people that want
+> it. Of course it's just as easy to do something like the sbuslib.c route
+> and then have drivers set their ->fb_mmap() from that too.
+>
 
-This seems like a problem, the usb-storage thread is trying to allocate 
-some memory which is ending up waiting for VM writeout, which obviously 
-won't proceed since this thread is the one that needs to do this.. It 
-looks like the allocation in usb_stor_bulk_transfer_sglist is done with 
-GFP_NOIO, so I wonder why we're getting into this state?
+I was thinking about having that fb_mmap replacement too. But then I
+got worried because that generic implementation of nopage/etc would
+need to handle whether the driver's fb memory was vmalloced, kmalloced
+or a mixture if some do that. So I figured let's aim low and just pull
+in the core part that does the setup and page tracking stuff. I hope
+that's okay.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+> That works for me, though I'd prefer for struct page_list to be done with
+> a scatterlist, then it's trivial to setup from the workqueue context
+> without having to shuffle things around.
+>
 
+Ok. Will check out when implementing.
+
+Thanks,
+jaya
