@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161079AbXBTXqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161091AbXBTXtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161079AbXBTXqj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 18:46:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161091AbXBTXqj
+	id S1161091AbXBTXtU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 18:49:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161102AbXBTXtU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 18:46:39 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:36699 "EHLO tmailer.gwdg.de"
+	Tue, 20 Feb 2007 18:49:20 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:48963 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161079AbXBTXqi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 18:46:38 -0500
-Date: Wed, 21 Feb 2007 00:45:40 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Greg KH <greg@kroah.com>
-cc: "Serge E. Hallyn" <serge@hallyn.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: securityfs_create_dir strange comment
-In-Reply-To: <20070220222652.GB21696@kroah.com>
-Message-ID: <Pine.LNX.4.61.0702210042140.7132@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0702181642060.28890@yvahk01.tjqt.qr>
- <20070220211849.GA3416@vino.hallyn.com> <20070220222652.GB21696@kroah.com>
+	id S1161091AbXBTXtT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 18:49:19 -0500
+Message-ID: <45DB88FD.5020509@garzik.org>
+Date: Tue, 20 Feb 2007 18:49:17 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: Lukas Hejtmanek <xhejtman@mail.muni.cz>
+CC: linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: [git patches] libata ACPI support
+References: <20070220214716.GA3690@mail.muni.cz> <45DB74D9.206@garzik.org> <20070220232633.GA3598@mail.muni.cz>
+In-Reply-To: <20070220232633.GA3598@mail.muni.cz>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Lukas Hejtmanek wrote:
+> On Tue, Feb 20, 2007 at 05:23:21PM -0500, Jeff Garzik wrote:
+>>> introducing SATA ACPI does not work for me (I've filled the bug
+>>> report: http://bugzilla.kernel.org/show_bug.cgi?id=8046) beside those error
+>>> messages, IDE performance is decreased. libata.noacpi=1 option works ok but
+>>> the performance is still slightly degraded (about 10%).
+>> Does performance come back if you also use acpi=off ?
+> 
+> It does not.
+> 
+> With 2.6.20-git15, hdparm -t /dev/sda says 28MB/s, 
+> with 2.6.20, hdparm -t /dev/sda says 32MB/s.
 
-On Feb 20 2007 14:26, Greg KH wrote:
->On Tue, Feb 20, 2007 at 03:18:49PM -0600, Serge E. Hallyn wrote:
->> Quoting Jan Engelhardt (jengelh@linux01.gwdg.de):
->> > Hello list,
->> > 
->> > 
->> > in security/inode.c, the comment for securityfs_create_dir() reads:
->> > 
->> > 	If securityfs is not enabled in the kernel, the value -ENODEV 
->> > 	will be returned.  It is not wise to check for this value, but 
->> > 	rather, check for NULL or !NULL instead as to eliminate the need 
->> > 	for #ifdef in the calling code.
->> > 
->> > What is the actual callee that can return NULL - and what should 
->> > module_init() of a module return when securityfs_create_dir() returns 
->> > NULL?
->> 
->> Hmm, this came from GregKH.  It does seem based on the code that
->> checking for -ENODEV is necessary, so I don't understand the comment.
->
->If securityfs_create_dir() returns NULL, then something bad happened and
->your code needs to properly recover from it.
->
->Other than that, I don't understand the issue here.
+Can you narrow down the -gitX release further?  i.e. does 2.6.20-git13 
+perform at full speed?  -git13 includes several libata changes, but does 
+not include the ACPI additions.
 
-Consider:
+Since this is an ACPI execution error in the bug, that would tend to 
+point to bad BIOS tables.  But since there is a performance drop that 
+does not disappear with acpi=off, there might also be another factor, 
+unrelated to ACPI, at play here.
 
-static __init int mymodule_init(void)
-{
-    struct dentry *de;
-    de = securityfs_create_dir("foobar", NULL);
-
-    /* case 1 */
-    if(IS_ERR(de))
-        return PTR_ERR(de);
-
-    /* case 2 */
-    if(de == NULL)
-        return WHAT_HERE; /* -EIO? */
-}
-
-There are two error cases. One: when the function gives us an error code.
-Two: When it returns NULL, without an error code. This looks bogus to me.
-What error is it, when there is no error? - And what should I return to
-modprobe in that case?
+	Jeff
 
 
-Jan
--- 
-ft: http://freshmeat.net/p/chaostables/
+
