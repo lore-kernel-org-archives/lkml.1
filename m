@@ -1,52 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030357AbXBTStO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030362AbXBTSyP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030357AbXBTStO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 13:49:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030352AbXBTStO
+	id S1030362AbXBTSyP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 13:54:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030365AbXBTSyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 13:49:14 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:36275 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030355AbXBTStM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 13:49:12 -0500
-Date: Tue, 20 Feb 2007 21:48:59 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-Cc: bert hubert <bert.hubert@netherlabs.nl>, Andi Kleen <andi@firstfloor.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: all syscalls initially taking 4usec on a P4? Re: nonblocking UDPv4 recvfrom() taking 4usec @ 3GHz?
-Message-ID: <20070220184859.GA1949@2ka.mipt.ru>
-References: <20070219231447.GA4400@outpost.ds9a.nl> <p73d545drx6.fsf@bingen.suse.de> <20070220162714.GA3245@outpost.ds9a.nl> <20070220164124.GA24930@2ka.mipt.ru> <20070220184242.GA30077@filer.fsl.cs.sunysb.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+	Tue, 20 Feb 2007 13:54:15 -0500
+Received: from an-out-0708.google.com ([209.85.132.249]:63299 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030362AbXBTSyO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 13:54:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ZSMqCfus7/qeHbIqDfSx75zVw3oxMnuze7JyCcii0a+nMBcYOcul+mUzyp9fvv3W/vFpeW1YimZSW6ywVSa7RDp3iZzev4X+jLWO9zJqDoxx1VrBlogryZ+sTlgoHFxaPO1e1aXAjV/CPsJhsq/iWOLJgYdX+VLa6dUKVWdwn1c=
+Message-ID: <6bffcb0e0702201054rb839bb2m11ef8d33bacffdb8@mail.gmail.com>
+Date: Tue, 20 Feb 2007 19:54:12 +0100
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: 2.6.20-git15 BUG: soft lockup detected on CPU#0! - timers?
+Cc: LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070220184242.GA30077@filer.fsl.cs.sunysb.edu>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Tue, 20 Feb 2007 21:49:06 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 20, 2007 at 01:42:42PM -0500, Josef Sipek (jsipek@fsl.cs.sunysb.edu) wrote:
-> A better thing would be to use getuid - it turns into just a return with a
-> memory dereference). I ran it on my 3.06GHz P4 (HT, but only UP kernel),
-> PREEMPT, HZ=1000...
-> 
-> 3.290196 0.470588 0.402614 0.396078 0.393464 0.396078 0.386928 0.386928 0.386928 0.386928
-> 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928
-> 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928
-> 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928
+Hi,
 
-I got following.
+I have a problem with timers.
 
-delta for syscall: 9112 cycles = 2.977778 us
-delta for syscall: 1224 cycles = 0.400000 us
-delta for syscall: 1071 cycles = 0.350000 us
-delta for syscall: 1054 cycles = 0.344444 us
-delta for syscall: 1054 cycles = 0.344444 us
+NOHZ: local_softirq_pending 20
+NOHZ: local_softirq_pending 20
+BUG: soft lockup detected on CPU#0!
+ [<c01050f9>] show_trace_log_lvl+0x1a/0x2f
+ [<c01057e0>] show_trace+0x12/0x14
+ [<c0105892>] dump_stack+0x16/0x18
+ [<c0151214>] softlockup_tick+0xa7/0xb9
+ [<c012a18f>] run_local_timers+0x12/0x14
+ [<c012a54b>] update_process_times+0x3e/0x63
+ [<c0139e34>] tick_sched_timer+0x66/0xaa
+ [<c01366d2>] hrtimer_interrupt+0x113/0x19d
+ [<c0114c45>] smp_apic_timer_interrupt+0x77/0x89
+ [<c0104beb>] apic_timer_interrupt+0x33/0x38
+ [<c026b945>] scsi_dispatch_cmd+0x1a8/0x1e5
+ [<c026ff86>] scsi_request_fn+0x224/0x2ec
+ [<c01e1779>] __generic_unplug_device+0x20/0x23
+ [<c01e1b49>] generic_unplug_device+0x18/0x26
+ [<c01e2c48>] blk_backing_dev_unplug+0x76/0x7e
+ [<c018e289>] sync_buffer+0x2e/0x37
+ [<c0311041>] __wait_on_bit+0x36/0x5d
+ [<c03110c3>] out_of_line_wait_on_bit+0x5b/0x63
+ [<c018e1f9>] __wait_on_buffer+0x27/0x2b
+ [<c018ec74>] sync_dirty_buffer+0xa0/0xd6
+ [<c01bc5c1>] journal_commit_transaction+0xca4/0x11d3
+  [<c01bff86>] kjournald+0xab/0x1e8
+  [<c0133639>] kthread+0xb5/0xe0
+ [<c0104d8f>] kernel_thread_helper+0x7/0x10
+ =======================
+Clocksource tsc unstable (delta = 18743203260 ns)
+Time: acpi_pm clocksource has been installed.
 
-Likely first overhead related to cache population or gamma-ray radiation.
-If it happens only one (it does in my test), then everything is ok I
-think. Bert, how frequently you get that long recvfrom()?
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.20-git15/git-dmesg
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.20-git15/git-config
+
+Might it be 6ba9b346e1e0eca65ec589d32de3a9fe32dc5de6 commit?
+
+Regards,
+Michal
 
 -- 
-	Evgeniy Polyakov
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
