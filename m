@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965017AbXBTIIF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965193AbXBTITe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965017AbXBTIIF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 03:08:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964983AbXBTIIF
+	id S965193AbXBTITe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 03:19:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965203AbXBTITe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 03:08:05 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:34794 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965017AbXBTIIE (ORCPT
+	Tue, 20 Feb 2007 03:19:34 -0500
+Received: from qb-out-0506.google.com ([72.14.204.225]:58071 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965193AbXBTITd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 03:08:04 -0500
-Date: Tue, 20 Feb 2007 09:07:56 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-cc: Paul Mundt <lethal@linux-sh.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Frame Buffer Device Development 
-	<linux-fbdev-devel@lists.sourceforge.net>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH 2.6.20 1/1] fbdev,mm: hecuba/E-Ink fbdev driver
-In-Reply-To: <45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
-Message-ID: <Pine.LNX.4.62.0702200906070.2082@pademelon.sonytel.be>
-References: <20070217104215.GB25512@localhost> <1171715652.5186.7.camel@lappy>
- <45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com>
- <20070217135922.GA15373@linux-sh.org> <45a44e480702180331t7e76c396j1a9861f689d4186b@mail.gmail.com>
- <20070218235741.GA22298@linux-sh.org> <45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
+	Tue, 20 Feb 2007 03:19:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=M2ZmbbH5W5/B+oDjsrLnReCWcyIBDiUC27U0x0c3qZlw8+W5y9m2/C9OhNXd+5qBCa2sJTkxKgcx3kqe+Pkw0Ne2kWNBMQRV7NyqHs10V28k3uBwYueA1LX2YinMrop5KQbn2UHZhP6GZiUNtmONgKqvBE4mJiL1frKPhqZ6yB8=
+Message-ID: <38b2ab8a0702200019q22bbc1b6ma0ab2771e152c288@mail.gmail.com>
+Date: Tue, 20 Feb 2007 09:19:31 +0100
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "Avi Kivity" <avi@argo.co.il>
+Subject: Re: memparse(), simple_strtoul() prototypes...
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <45D9AE8D.4060300@argo.co.il>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <38b2ab8a0702180804l26d99a01y558bce2ee964d973@mail.gmail.com>
+	 <45D8EFB8.4050805@zytor.com>
+	 <38b2ab8a0702190503n32caeab3j2c2139c71cb5a9c5@mail.gmail.com>
+	 <45D9AE8D.4060300@argo.co.il>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Feb 2007, Jaya Kumar wrote:
-> On 2/18/07, Paul Mundt <lethal@linux-sh.org> wrote:
-> > Given that, this would have to be something that's dealt with at the
-> > subsystem level rather than in individual drivers, hence the desire to
-> > see something like this more generically visible.
-> > 
-> 
-> Hi Peter, Paul, fbdev folk,
-> 
-> Ok. Here's what I'm thinking for abstracting this:
-> 
-> fbdev drivers would setup fb_mmap with their own_mmap as usual. In
-> own_mmap, they would do what they normally do and setup a vm_ops. They
-> are free to have their own nopage handler but would set the
-> page_mkwrite handler to be fbdev_deferred_io_mkwrite().
-> fbdev_deferred_io_mkwrite would build up the list of touched pages and
-> pass it to a delayed workqueue which would then mkclean on each page
-> and then pass a copy of that page list down to a driver's callback
-> function. The fbdev driver's callback function can then do the actual
-> IO to the framebuffer or coalesce DMA based on the provided page list.
-> 
-> I would like to add something like the following to struct fb_info:
-> 
-> #ifdef CONFIG_FB_DEFERRED_IO
-> struct fb_deferred_io *defio;
-> #endif
+On 2/19/07, Avi Kivity <avi@argo.co.il> wrote:
+> Francis Moreau wrote:
+> >> > unsigned long simple_strtoul(const char *cp, char **endp,unsigned
+> >> int base)
+> >
+> > hm, I don't get your point. I understand why we cast 'cp' into a (char
+> > *) but that's not my point. My point is why aren't all function
+> > parameters are not const ?
+> >
+>
+> 'cp' can be passed as const, because simple_strtoul() does not modify
+> it. 'endp' cannot be passed as const, because simple_strtoul() cannot
+> know whether the caller would want to modify the string or not.
+>
+> Whichever way it is written, it is broken.  If changed to 'const', it
+> would preclude the caller from modifying the string if one has a
+> non-const string.  As written, it can silently convert a const string to
+> a non-const string.  However, as written it is (a) standard conforming,
+> and (b) more useful.
+>
 
-Don't you need a way to specify the maximum deferral time? E.g. a field in
-fb_info.
+ok I think I finally got it and I agree that both ways are broken.
 
-> to store the mutex (to protect the page list), the touched page list,
-> and the driver's callback function.
-> 
-> I hope this sounds sufficiently generic to meet everyone's (the two of
-> us? :) needs.
+Maybe changing simple_strtoul() prototype as follow would be better ?
 
-Looks fine!
+int simple_strtoul(const char *cp,  unsigned long *value, unsigned base)
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+the function would return the number of parsed char, and 'value' would
+be the result.
+-- 
+Francis
