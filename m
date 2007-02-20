@@ -1,44 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964821AbXBTLnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964825AbXBTLtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964821AbXBTLnr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 06:43:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932902AbXBTLnr
+	id S964825AbXBTLtm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 06:49:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964831AbXBTLtm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 06:43:47 -0500
-Received: from www.osadl.org ([213.239.205.134]:57796 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932901AbXBTLnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 06:43:46 -0500
-Subject: Re: irqdesc porting help
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Maximus <john.maximus@gmail.com>
-Cc: Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
-       arjan@infradead.org
-In-Reply-To: <3634de740702192303xea41f14i9f613fac2725b0ca@mail.gmail.com>
-References: <3634de740702142231k938a4c5ic824c2eefc95c1b0@mail.gmail.com>
-	 <20070215103347.GA18690@linux-sh.org>
-	 <3634de740702192303xea41f14i9f613fac2725b0ca@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 20 Feb 2007 12:48:46 +0100
-Message-Id: <1171972126.30834.235.camel@localhost.localdomain>
+	Tue, 20 Feb 2007 06:49:42 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55446 "EHLO
+	localhost.localdomain" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964825AbXBTLtm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 06:49:42 -0500
+Date: Tue, 20 Feb 2007 12:53:29 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Mockern@yandex.ru
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: how to limit flip buffer size in tty driver?
+Message-ID: <20070220125329.55fb7210@localhost.localdomain>
+In-Reply-To: <45DAB02A.000001.11699@soapbox.yandex.ru>
+References: <45DAB02A.000001.11699@soapbox.yandex.ru>
+X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-20 at 12:33 +0530, Maximus wrote:
-> Hi,
->   Sorry for the late response, attached is the code im trying to port
-> to linux - 2.6.20.
+On Tue, 20 Feb 2007 11:24:10 +0300 (MSK)
+"Mockern" <Mockern@yandex.ru> wrote:
 
-Why does this need to use a kernel thread in the first place ? Usually
-chained handlers demultiplex the primary interrupt and invoke the
-demultiplexed interrupts.
+> Hello,
+> 
+> how to limit flip buffer size in tty driver?
 
-There are tons of working examples in arch/arm/mach-xxxx
+You don't.
 
-	tglx
+See Documentation/tty.txt and throttle/unthrottle
 
-
+Alan
