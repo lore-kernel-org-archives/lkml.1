@@ -1,83 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964964AbXBTO6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964960AbXBTO7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964964AbXBTO6M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 09:58:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964971AbXBTO6L
+	id S964960AbXBTO7p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 09:59:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964971AbXBTO7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 09:58:11 -0500
-Received: from embla.aitel.hist.no ([158.38.50.22]:42597 "HELO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S964964AbXBTO6L (ORCPT
+	Tue, 20 Feb 2007 09:59:45 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:37068 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964960AbXBTO7o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 09:58:11 -0500
-Message-ID: <45DB0BCD.6020507@aitel.hist.no>
-Date: Tue, 20 Feb 2007 15:55:09 +0100
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Tue, 20 Feb 2007 09:59:44 -0500
+Date: Tue, 20 Feb 2007 15:59:43 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Kai Germaschewski <kai.germaschewski@unh.edu>,
+       Hansjoerg Lipp <hjlipp@web.de>, kkeil@suse.de,
+       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org
+Subject: Re: Kbuild problem
+Message-ID: <20070220145943.GU13958@stusta.de>
+References: <45D74B46.3090602@imap.cc> <Pine.LNX.4.44.0702180017170.1150-100000@localhost.localdomain> <20070218104028.GU13958@stusta.de> <45DAFE0B.1070305@imap.cc>
 MIME-Version: 1.0
-To: v j <vj.linux@gmail.com>
-CC: Scott Preece <sepreece@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: GPL vs non-GPL device drivers
-References: <9b3a62ab0702142115m4ea7d2c0m6869eb64ef3ee14e@mail.gmail.com>	 <9b3a62ab0702142116n4069e16cl1bc8f546f41d935@mail.gmail.com>	 <20070215061149.GE15654@redhat.com>	 <9b3a62ab0702142227j19386132s870a0e745cfbb8d1@mail.gmail.com>	 <20070215165339.GB5285@thunk.org>	 <9b3a62ab0702151020k5bd0e4c9w763e1b01288ccc4f@mail.gmail.com>	 <7b69d1470702151705h297c3b38g138eb0138b900aea@mail.gmail.com> <9b3a62ab0702151800r3fdb6d64offc6e1de5837b4fd@mail.gmail.com>
-In-Reply-To: <9b3a62ab0702151800r3fdb6d64offc6e1de5837b4fd@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45DAFE0B.1070305@imap.cc>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-v j wrote:
->
-> Assuming these need not be GPL, I have a problem with
-> EXPORT_SYMBOL_GPL and the general trend in the direction of making
-> proprietary drivers harder on companies. Our drivers use basic
-> interfaces in the kernel like open, read, write, ioctl, semaphores,
-> interrupts, timers etc. This is functionality we would expect from any
-> operating system. We used devfs before and had no problems there. Greg
-> KH has gone and made the basic sysfs interface, which any generic
-> driver could use as EXPORT_SYMBOL_GPL. I don't really care, I just
-> don't use sysfs. The point is that old functionality is being ripped
-> off and new ones introduced, and their interfaces are not open
-> anymore. Hence there will be a point where non-GPLed drivers simply
-> cannot be loaded.
->
-> So why beat about the bush? Just make it illegal to load proprietary
-> drivers, or remove EXPORT_SYMBOL_GPL.
-Those wo introduce EXPORT_SYMBOL_GPL are not in a position where
-they can make it illegal to load proprietary modules. They may want to,
-but they can't.  The kernel has very many copyright holders, each
-decides for his own part only.
+On Tue, Feb 20, 2007 at 02:56:27PM +0100, Tilman Schmidt wrote:
+> Adrian Bunk schrieb:
+> > On Sun, Feb 18, 2007 at 12:22:10AM -0500, Kai Germaschewski wrote:
+> >> On Sat, 17 Feb 2007, Tilman Schmidt wrote:
+> >> 
+> >> > asyncdata.o is only needed for M105 and M101, not for the base
+> >> > driver. How do I express in Kbuild that asyncdata.o is to be added
+> >> > to gigaset-y only if CONFIG_GIGASET_M105 and CONFIG_GIGASET_M101
+> >> > are not both 'n'?
+> >> 
+> >> The way this is typically done is via Kconfig. Add a config option 
+> >> ASYNCDATA (actually something more descriptive/specific would be better), 
+> >> add a "select ASYNCDATA" to the config options for m101 and m105, and then 
+> >> you can use CONFIG_ASYNCDATA to decide whether to add asyncdata.o in the 
+> >> Makefile.
+> > 
+> > One disadvantage of this approach is that in a kernel with 
+> > CONFIG_GIGASET_BASE=y, you can't later compile and load the usb_gigaset 
+> > or ser_gigaset modules without rebooting since they require a change to 
+> > the kernel image.
+> 
+> You've got a point there. So linking asyncdata.o into the modules that
+> need it, as it is currently done, would perhaps be better after all?
+> The original problem (asyncdata.o linked in twice, causing duplicate
+> symbol definitions) could be fixed with this (admittedly somewhat
+> awkward) change to the Makefile (build tested):
+> 
+> --- linux-2.6.20-mm1-work/drivers/isdn/gigaset/Makefile 2007-02-20 13:39:44.000000000 +0100
+> +++ u/drivers/isdn/gigaset/Makefile     2007-02-20 13:38:58.000000000 +0100
+> @@ -1,7 +1,10 @@
+>  gigaset-y := common.o interface.o proc.o ev-layer.o i4l.o
+>  usb_gigaset-y := usb-gigaset.o asyncdata.o
+>  bas_gigaset-y := bas-gigaset.o isocdata.o
+> -ser_gigaset-y := ser-gigaset.o asyncdata.o
+> +ser_gigaset-y := ser-gigaset.o
+> +ifneq ($(CONFIG_GIGASET_M101)$(CONFIG_GIGASET_M105),yy)
+> +ser_gigaset-y += asyncdata.o
+> +endif
 
-Someone who didn't write the module interface or posix interface can't
-stop you there.  Anti-proprietary folks then go and make new
-useful subsystems, and make sure those are accessed with
-EXPORT_SYMBOL_GPL only.  Then they phase out the old
-interfaces as the new ones are clearly better, and the vast majority
-with GPL drivers have no problem with this.
-As long as there are developers with this attitude, expect
-EXPORT_SYMBOL_GPL to crop up in new places over time.
+What happens with CONFIG_GIGASET_M101=y, CONFIG_GIGASET_M105=m ?
 
-Yes - this makes it harder (although not impossible) to distribute
-closed-source drivers.  Which is exactly what these people want.
-When they are powerless to forbid such drivers, they settle for making
-them harder and harder to use instead.  They want this trend
-to continue.
+>  obj-$(CONFIG_GIGASET_M105) += usb_gigaset.o gigaset.o
+>  obj-$(CONFIG_GIGASET_BASE) += bas_gigaset.o gigaset.o
+> 
+> The alternative would be to always link asyncdata.o into the gigaset
+> module whether it's needed or not. "size asyncdata.o" says:
+>    text    data     bss     dec     hex filename
+>    4200       0       0    4200    1068 asyncdata.o
+> which appears tolerable.
+> 
+> Opinions?
 
-There is an obvious way around it - you (and other people
-with an interest in closed-source drivers) can write & contribute your
-own "sysfs" and whatever else you might need.  Make it better
-than the existing sysfs so it actually gets into the kernel,
-replacing the existing stuff. And of
-course there will be no EXPORT_SYMBOL_GPL in it - since
-that is what you want to avoid. 
+I'm usually someone who likes to avoid including unneeded code in the 
+kernel, but in this case I'd say KISS - and build it always into the 
+gigaset module.
 
-The price for this then, is to outcompete the proponents of
-GPL-only symbols.  If you offer more and better source (under the GPL)
-then you can turn the trend and keep linux the way you want it.
-If you don't - those that do contribute will get to shape linux
-the way they like. Whoever makes linux gets to decide.
+> Tilman Schmidt
 
-Another way is to stay with linux 2.4.  You won't get any
-new stuff that way, but no new GPL surprises either.
+cu
+Adrian
 
-Helge Hafting
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
