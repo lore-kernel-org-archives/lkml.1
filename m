@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965059AbXBTPd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965052AbXBTPhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965059AbXBTPd7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 10:33:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965078AbXBTPd7
+	id S965052AbXBTPhn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 10:37:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965082AbXBTPhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 10:33:59 -0500
-Received: from an-out-0708.google.com ([209.85.132.248]:6609 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965059AbXBTPd5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 10:33:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kpbQuSQ//nisi5Eqy1+Le68VvNtshKHoPWOkMRT80V5/223I8E4Ym+uv9FVnGKYeBew760X35cNvgQcFc3QqBq+6Ycs/ZZpW6o7amR3GJxow/b0KG+cWuF3diVsD/lpdczW7Q1qXre7+h6mRoYhcsNFoZRPWlUaeXhZSMlsSpmA=
-Message-ID: <68676e00702200733l6e7f13a5o201bc70fed98528b@mail.gmail.com>
-Date: Tue, 20 Feb 2007 16:33:56 +0100
-From: "Luca Tettamanti" <kronos.it@gmail.com>
-To: "Matthew Garrett" <mjg59@srcf.ucam.org>
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Cc: "Jean Delvare" <khali@linux-fr.org>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Chuck Ebbert" <cebbert@redhat.com>, lm-sensors@lm-sensors.org
-In-Reply-To: <20070220151813.GA6581@srcf.ucam.org>
+	Tue, 20 Feb 2007 10:37:43 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:43869 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965052AbXBTPhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 10:37:42 -0500
+Message-ID: <45DB15C2.7020206@garzik.org>
+Date: Tue, 20 Feb 2007 10:37:38 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Mark Lord <lkml@rtr.ca>
+CC: Tejun Heo <htejun@gmail.com>, auxsvr@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: ata command timeout
+References: <200702192119.50954.auxsvr@gmail.com> <45DA7416.4040101@gmail.com> <45DB114B.4020903@rtr.ca>
+In-Reply-To: <45DB114B.4020903@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <45D5EA88.7090300@redhat.com> <45D6DDCE.5050803@assembler.cz>
-	 <45D7461A.2040808@redhat.com>
-	 <20070218183805.5a4fd813.khali@linux-fr.org>
-	 <20070220151813.GA6581@srcf.ucam.org>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/20/07, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> On Sun, Feb 18, 2007 at 06:38:05PM +0100, Jean Delvare wrote:
->
-> > ACPI is broken here, not k8temp, so let's fix ACPI instead. ACPI
-> > doesn't conflict with only k8temp, but with virtually all hardware
-> > monitoring drivers, all I2C/SMBus drivers, and probably other types of
-> > drivers too. We just can't restrict or blacklist all these drivers
-> > because ACPI misbehaves.
->
-> No, the simple fact of the matter is that if you're running on an ACPI
-> platform you need to change some of your assumptions. ACPI owns the
-> hardware. The OS doesn't. To an extent this has always been true on
-> laptops and servers /anyway/ - the BIOS is free to have a wide variety
-> of SMM insanity that invalidates basic assumptions like "If I hold this
-> lock, nothing can interrupt me between this write and this read". That's
-> simply not true.
->
-> So this isn't about fixing ACPI. It's about trying to find a mechanism
-> that allows ACPI and raw hardware drivers to coexist, which is made
-> somewhat harder by it not being a situation that the platform designers
-> have considered in the slightest.
+Mark Lord wrote:
+> I don't believe that.  Command timeouts never happen on healthy systems,
+> unless we have a driver bug.  Okay, so I can imagine a pathological case
+> of a full queue (NCQ) with all 32 commands taking longer than usual due
+> to ECC retries in the firmware..
 
-Motherboard vendors usually provide tools for $(TheOtherOS) that can
-read from all thermal  / fan / voltage / whatever sensors, so I guess
-it's possible to make the ACPI driver and the "raw" one play nice with
-each other[1].
+It's not quite so black and white.  There have definitely been interrupt 
+delivery problems that cause command timeouts.  Also, Intel PIIX BMDMA 
+(all standard PCI IDE, I think?) is defined to /not/ send an interrupt, 
+when a DMA error occurs.  The driver is instructed to time out the 
+transaction, and start recovery by deducing the state of things from the 
+DMA status bits.
 
-Luca
-[1] Unless their solution is "poke at the hardware and hope that ACPI
-doesn't blow up", that is.
+Nonetheless, I mostly agree with your statement.  The two most common 
+causes of timeouts that I see are interrupt delivery problems, and 
+driver bugs.
+
+	Jeff
+
+
