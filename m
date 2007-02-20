@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965018AbXBTPSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965043AbXBTPWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965018AbXBTPSj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 10:18:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965038AbXBTPSj
+	id S965043AbXBTPWq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 10:22:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965044AbXBTPWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 10:18:39 -0500
-Received: from rtr.ca ([64.26.128.89]:1955 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965018AbXBTPSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 10:18:38 -0500
-Message-ID: <45DB114B.4020903@rtr.ca>
-Date: Tue, 20 Feb 2007 10:18:35 -0500
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-Cc: auxsvr@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: ata command timeout
-References: <200702192119.50954.auxsvr@gmail.com> <45DA7416.4040101@gmail.com>
-In-Reply-To: <45DA7416.4040101@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Feb 2007 10:22:46 -0500
+Received: from smtp.nokia.com ([131.228.20.173]:50155 "EHLO
+	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965043AbXBTPWp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 10:22:45 -0500
+Subject: Re: [PATCH 05/44 take 2] [UBI] internal common header
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Theodore Tso <tytso@mit.edu>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <20070220145503.GC3170@thunk.org>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
+	 <20070217165449.5845.18238.sendpatchset@localhost.localdomain>
+	 <20070219105445.GA16930@infradead.org> <1171976753.4039.27.camel@sauron>
+	 <20070220145503.GC3170@thunk.org>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 20 Feb 2007 17:21:48 +0200
+Message-Id: <1171984908.4039.42.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 20 Feb 2007 15:21:48.0395 (UTC) FILETIME=[D6B6D3B0:01C75502]
+X-eXpurgate-Category: 1/0
+X-eXpurgate-ID: 149371::070220171840-7CE73BB0-7490B04A/0-0/0-1
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> auxsvr@gmail.com wrote:
-..
->>                                                ata1: command timeout
->> Feb 19 20:39:31 linux kernel: ata1: no sense translation for status: 0x40
->> Feb 19 20:39:31 linux kernel: ata1: translated ATA stat/err 0x40/00 to SCSI 
->> SK/ASC/ASCQ 0xb/00/00
->> Feb 19 20:39:31 linux kernel: ata1: status=0x40 { DriveReady }
->> Feb 19 20:39:31 linux kernel: sd 0:0:0:0: SCSI error: return code = 0x08000002
->> Feb 19 20:39:31 linux kernel: sda: Current: sense key: Aborted Command
->> Feb 19 20:39:31 linux kernel:     Additional sense: No additional sense 
->> information
->> Feb 19 20:39:31 linux kernel: end_request: I/O error, dev sda, sector 89553479
->>
->> without any other ill-effects that I know of(I did smart tests on the drive; 
->> all passed successfully).
->> I have read that hddtemp may be the cause of this (I am running version 0.3) 
->> so is there any reason
->> to worry and prepare for a HDD replacement?
+On Tue, 2007-02-20 at 09:55 -0500, Theodore Tso wrote:
+> > What do you mean? It is internal version just for future help: if we
+> > develop incompatible UBI2 the old UBI will reject the new images.
 > 
-> Not really.  If the problem occurs very infrequently, you don't need to
-> worry about it too much.  Command timeouts do occur on otherwise healthy
-> systems from time to time.
+> In that case it's not an *implementation* version number, but rather
+> an on-disk *format* version number. 
 
-I don't believe that.  Command timeouts never happen on healthy systems,
-unless we have a driver bug.  Okay, so I can imagine a pathological case
-of a full queue (NCQ) with all 32 commands taking longer than usual due
-to ECC retries in the firmware..
+True, will refine the comment.
 
-But in real life, on a desktop, timeouts never happen as a normal event.
+>  There's a difference.  It's also
+> often not used much, since another way of dealing with the problem is
+> to mark major each on-disk version with a different magic number.
 
-I wonder what's *really* wrong here?
+The advantage of version is that UBI can distinguish between garbage and
+incompatible image. If I meet wrong magic - what is it - rubbish,
+corrupted header? Should I run recovery procedure? Having version is
+just cleaner.
 
-Cheers
+> Why isn't this being done via #define?  It's not like this is any kind
+> of an enumerated type, especially since it's being installed into a
+> 32bit type, and not even an enum type.
+
+Will be fixed, thanks.
+
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
