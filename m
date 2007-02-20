@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965788AbXBTAra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965796AbXBTAsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965788AbXBTAra (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 19:47:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965795AbXBTAra
+	id S965796AbXBTAsK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 19:48:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965797AbXBTAsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 19:47:30 -0500
-Received: from lucidpixels.com ([75.144.35.66]:45645 "EHLO lucidpixels.com"
+	Mon, 19 Feb 2007 19:48:10 -0500
+Received: from ns2.suse.de ([195.135.220.15]:46456 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965788AbXBTAr3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 19:47:29 -0500
-Date: Mon, 19 Feb 2007 19:47:23 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: e1000-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org, linux.nics@intel.com, taroon-list@redhat.com
-Subject: RHEL3 2.4.21-37a6smp 10GBps Intel 10GBps NIC: ixgb_clean_tx_irq:
- Detected Tx Unit Hang - Machine locks up.
-Message-ID: <Pine.LNX.4.64.0702191940320.21239@p34.internal.lan>
+	id S965796AbXBTAsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 19:48:08 -0500
+Date: Mon, 19 Feb 2007 16:46:34 -0800
+From: Greg KH <greg@kroah.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: Linux 2.6.16.41
+Message-ID: <20070220004634.GA9922@kroah.com>
+References: <20070218011406.GT13958@stusta.de> <20070219234846.GA5201@kroah.com> <20070220000110.GV13958@stusta.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070220000110.GV13958@stusta.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quick question,
+On Tue, Feb 20, 2007 at 01:01:10AM +0100, Adrian Bunk wrote:
+> On Mon, Feb 19, 2007 at 03:48:46PM -0800, Greg KH wrote:
+> > On Sun, Feb 18, 2007 at 02:14:07AM +0100, Adrian Bunk wrote:
+> > > Herbert Xu (1):
+> > >       [NETFILTER]: Clear GSO bits for TCP reset packet
+> > 
+> > This patch causes the file it patched to not build at all.  Are you sure
+> > it was correct to add this?
+> 
+> It compiled for me in my test builds.
+> 
+> Please send the .config and the error message.
 
-I am using the latest ixgb driver (1.0.126) as stated both on Intel's 
-website and here: http://sourceforge.net/forum/forum.php?forum_id=645203
+Ugh, this was my fault.  It was a distro kernel error as they had
+modified their tree in ways I wasn't expecting.
 
-After a number of hours, sometimes days, I will get this error on the 
-console and the box locks up:
+Nevermind, the mainline kernel builds just fine, sorry for the
+disturbance.
 
-ixgb: eth2: ixgb_clean_tx_irq: Detected Tx Unit Hang
+thanks,
 
-Intel told us that the 126 version of this driver was supposed to fix this 
-problem.  Is there anyone from Intel on this list or someone who has dealt 
-with this issue and has a potential fix?
-
-The Intel Board is 10GBe PCI-X card in a HP DL385.
-
-Can anyone offer some assistance with this issue?
-
-Please CC as I am not on lkml or taroon mailing lists, thanks.
-
-Justin.
-
-
+greg k-h
