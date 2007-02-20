@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965225AbXBTQLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965332AbXBTQNF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965225AbXBTQLS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 11:11:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965332AbXBTQLS
+	id S965332AbXBTQNF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 11:13:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965345AbXBTQNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 11:11:18 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:19861 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965225AbXBTQLR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 11:11:17 -0500
-Date: Tue, 20 Feb 2007 11:08:54 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Benjamin LaHaise <bcrl@kvack.org>,
-       "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>,
-       Zach Brown <zach.brown@oracle.com>, linux-aio@kvack.org,
-       linux-kernel@vger.kernel.org, Suparna bhattacharya <suparna@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] aio: propogate post-EIOCBQUEUED errors to completion event
-Message-ID: <20070220160854.GO6133@think.oraclecorp.com>
-References: <20070219203527.20419.68418.sendpatchset@tetsuo.zabbo.net> <B41635854730A14CA71C92B36EC22AAC83B044@mssmsx411> <20070219215048.GI6133@think.oraclecorp.com> <20070220002109.GG31205@kvack.org> <1171987310.6271.23.camel@heimdal.trondhjem.org>
+	Tue, 20 Feb 2007 11:13:05 -0500
+Received: from thunk.org ([69.25.196.29]:50664 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965332AbXBTQND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 11:13:03 -0500
+Date: Tue, 20 Feb 2007 11:12:53 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Artem Bityutskiy <dedekind@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 05/44 take 2] [UBI] internal common header
+Message-ID: <20070220161252.GE3170@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Artem Bityutskiy <dedekind@infradead.org>,
+	Christoph Hellwig <hch@infradead.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Frank Haverkamp <haver@vnet.ibm.com>,
+	Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+	Thomas Gleixner <tglx@linutronix.de>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain> <20070217165449.5845.18238.sendpatchset@localhost.localdomain> <20070219105445.GA16930@infradead.org> <1171976753.4039.27.camel@sauron> <20070220145503.GC3170@thunk.org> <1171984555.3518.5.camel@hades.cambridge.redhat.com> <20070220152259.GD3170@thunk.org> <1171985598.3518.8.camel@hades.cambridge.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1171987310.6271.23.camel@heimdal.trondhjem.org>
+In-Reply-To: <1171985598.3518.8.camel@hades.cambridge.redhat.com>
 User-Agent: Mutt/1.5.12-2006-07-14
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 20, 2007 at 11:01:50AM -0500, Trond Myklebust wrote:
-> On Mon, 2007-02-19 at 19:21 -0500, Benjamin LaHaise wrote:
-> > On Mon, Feb 19, 2007 at 04:50:48PM -0500, Chris Mason wrote:
-> > > aio is not responsible for this particular synchronization.  Those fixes
-> > > (if we make them) should come from other places.  The patch is important
-> > > to get aio error handling right.
-> > > 
-> > > I would argue that one common cause of the EIO is userland
-> > > error (mmap concurrent with O_DIRECT), and EIO is the correct answer.
-> > 
-> > I disagree.  That means that using the pagecache to synchronize things like 
-> > the proposed online defragmentation will occasionally make O_DIRECT users 
-> > fail.  O_DIRECT doesn't prevent the sysadmin from copying files or other 
-> > page cache uses, which implies that generating an error in these cases is 
-> > horrifically broken.  If only root could do it, I wouldn't complain, but 
-> > this would seem to imply that user vs root holes still exist.
+On Tue, Feb 20, 2007 at 03:33:18PM +0000, David Woodhouse wrote:
+> On Tue, 2007-02-20 at 10:22 -0500, Theodore Tso wrote:
+> > But __be32 will catch the same errors these days because the be/le
+> > types use __bitwise now, right?  So use of the __be32/__be64 types should
+> > be preferred since it also will work with sparse, I would think.
 > 
-> We don't try to resolve "conflicting" writes between ordinary mmap() and
-> write(), so why should we be doing it for mmap and O_DIRECT?
-> 
-> mmap() is designed to violate the ordinary mutex locks for write(), so
-> if a conflict arises, whether it be with O_DIRECT or ordinary writes
-> then it is a case of "last writer wins".
+> Does __bitwise work in gcc? I thought it was only for sparse?
 
-There are some strange O_DIRECT corner cases in here such that the 'last
-writer' may actually be a 'last reader' and winning can mean have a copy
-of the page in page cache older than the copy on disk.
+Sorry, you're right and I'm wrong.  I thought it was a gcc attribute
+as well, but it looks like it isn't.  
 
-One option is to have invalidate_inode_pages2_range continue if it can't
-toss a page but still return something that O_DIRECT ignores (living
-with the race), but it looks like I can make a launder_page op that does
-the right thing.  I'll give it a shot.
-
--chris
+						- Ted
 
