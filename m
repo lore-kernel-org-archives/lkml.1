@@ -1,95 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030346AbXBTSna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030340AbXBTSqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030346AbXBTSna (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 13:43:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030340AbXBTSna
+	id S1030340AbXBTSqA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 13:46:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030344AbXBTSqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 13:43:30 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:41632 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030301AbXBTSn3 (ORCPT
+	Tue, 20 Feb 2007 13:46:00 -0500
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:39746 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030340AbXBTSp7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 13:43:29 -0500
-Date: Tue, 20 Feb 2007 13:42:42 -0500
-From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: bert hubert <bert.hubert@netherlabs.nl>, Andi Kleen <andi@firstfloor.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: all syscalls initially taking 4usec on a P4? Re: nonblocking UDPv4 recvfrom() taking 4usec @ 3GHz?
-Message-ID: <20070220184242.GA30077@filer.fsl.cs.sunysb.edu>
-References: <20070219231447.GA4400@outpost.ds9a.nl> <p73d545drx6.fsf@bingen.suse.de> <20070220162714.GA3245@outpost.ds9a.nl> <20070220164124.GA24930@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070220164124.GA24930@2ka.mipt.ru>
-User-Agent: Mutt/1.4.1i
+	Tue, 20 Feb 2007 13:45:59 -0500
+Date: Tue, 20 Feb 2007 10:45:55 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Max Krasnyansky <maxk@qualcomm.com>
+cc: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Gautham shenoy <ego@in.ibm.com>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: slab: start_cpu_timer/cache_reap CONFIG_HOTPLUG_CPU problems
+In-Reply-To: <45DB404C.4070305@qualcomm.com>
+Message-ID: <Pine.LNX.4.64.0702201041340.14643@schroedinger.engr.sgi.com>
+References: <20070129011301.GA844@tv-sign.ru>
+ <Pine.LNX.4.64.0701290852390.28200@schroedinger.engr.sgi.com>
+ <20070129171923.GA138@tv-sign.ru> <Pine.LNX.4.64.0701290922390.28330@schroedinger.engr.sgi.com>
+ <20070129182742.GA158@tv-sign.ru> <45DB404C.4070305@qualcomm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 20, 2007 at 07:41:25PM +0300, Evgeniy Polyakov wrote:
-> On Tue, Feb 20, 2007 at 05:27:14PM +0100, bert hubert (bert.hubert@netherlabs.nl) wrote:
-> > I've done so, with some interesting results. Source on
-> > http://ds9a.nl/tmp/recvtimings.c - be careful to adjust the '3000' divider
-> > to your CPU frequency if you care about absolute numbers!
-> > 
-> > These are two groups, each consisting of 10 consecutive nonblocking UDP
-> > recvfroms, with 10 packets preloaded. Reported is the number of microseconds
-> > per recvfrom call which yielded a packet:
-> > 
-> > $ ./recvtimings
-> > 4.142333
+On Tue, 20 Feb 2007, Max Krasnyansky wrote:
+
+> > > Well seems that we have a set of unresolved issues with workqueues and cpu
+> > > hotplug.
 > 
-> It can be recvfrom only problem - syscall overhead on my p4 (core duo,
-> debian testing) is bout 300 usec - to test I ran 
-> read('dev/zero', &data, 0)
-> in a loop.
- 
-A better thing would be to use getuid - it turns into just a return with a
-memory dereference). I ran it on my 3.06GHz P4 (HT, but only UP kernel),
-PREEMPT, HZ=1000...
+> How about storing 'cpu' explicitly in the work queue instead of relying on the
+> smp_processor_id() and friends ? That way there is no ambiguity when
+> threads/timers get
+> moved around.
 
-3.290196 0.470588 0.402614 0.396078 0.393464 0.396078 0.386928 0.386928 0.386928 0.386928
-0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928
-0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928
-0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928 0.386928
+The slab functionality is designed to work on the processor with the 
+queue. These tricks will only cause more trouble in the future. The 
+cache_reaper needs to be either disabled or run on the right processor. It 
+should never run on the wrong processor.
 
-I used the rdtsc instruction to measure the time for the getuid syscall (see
-bellow for source to the test app).
- 
----8<-------------
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
+The cache_reaper() is of no importance to hotplug. You just need to make 
+sure that it is not in the way (disable it and if its running wait 
+until the cache_reaper has finished).
 
-/* CPU speed in MHz */
-#define CPUFREQ 3060
-
-#define rdtscll(val) \
-      __asm__ __volatile__("rdtsc" : "=A" (val))
-
-int main()
-{
-	unsigned long long start, end;
-	int i;
-
-	for(i=0;i<10000;i++) {
-		rdtscll(start);
-		getuid();
-		rdtscll(end);
-
-		printf("delta for syscall: %llu cycles = %f us\n", end-start, (end-start)/(float)CPUFREQ);
-	}
-
-	return 0;
-}
----8<-------------
-
-Josef "Jeff" Sipek.
-
--- 
-Research, n.:
-  Consider Columbus:
-    He didn't know where he was going.
-    When he got there he didn't know where he was.
-    When he got back he didn't know where he had been.
-    And he did it all on someone else's money.
