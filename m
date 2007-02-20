@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965019AbXBTPK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964986AbXBTPMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965019AbXBTPK6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 10:10:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965021AbXBTPK6
+	id S964986AbXBTPMn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 10:12:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965021AbXBTPMn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 10:10:58 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50108 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964989AbXBTPK5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 10:10:57 -0500
-Message-ID: <45DB0EEA.2010205@redhat.com>
-Date: Tue, 20 Feb 2007 10:08:26 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Rudolf Marek <r.marek@assembler.cz>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
-       lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-References: <45D5EA88.7090300@redhat.com> <45D6DDCE.5050803@assembler.cz> <45D7461A.2040808@redhat.com> <45D8D6AE.3000204@assembler.cz>
-In-Reply-To: <45D8D6AE.3000204@assembler.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Feb 2007 10:12:43 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:45551 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964986AbXBTPMm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 10:12:42 -0500
+Date: Tue, 20 Feb 2007 20:42:20 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@osdl.org, paulmck@us.ibm.com,
+       mingo@elte.hu, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, rjw@sisk.pl
+Subject: Re: [RFC PATCH(Experimental) 2/4] Revert changes to workqueue.c
+Message-ID: <20070220151220.GB4960@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070214144031.GA15257@in.ibm.com> <20070214144229.GA19789@in.ibm.com> <20070214144305.GB19789@in.ibm.com> <20070214200904.GB301@tv-sign.ru> <20070216052626.GB8373@in.ibm.com> <20070216153321.GB83@tv-sign.ru> <20070216164730.GD21457@in.ibm.com> <20070216235939.GB244@tv-sign.ru> <20070217022940.GB25924@in.ibm.com> <20070217215928.GA563@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070217215928.GA563@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rudolf Marek wrote:
-> Hello all,
-> 
-> I got the DSDT from chuck and it seems there is nothing interesting - no
-> declaration of PCI_config for the registers. If someone wants to check it I can
-> send him the DSDT.
-> 
-> _TMP looks like this:
-> 
->  Store (\_SB.PCI0.LPC0.EC0.RTMP, Local0)
->                     Store ("Current temp is: ", Debug)
-> 
->                     Store (Local0, Debug)
-> 
->                     Store (Local0, \_SB.CM25)
-> 
->                     Return (Add (0x0AAC, Multiply (Local0, 0x0A)))
-> 
-> This looks quite OK LPC0.EC0 is embedded controller IO RAM at 0x62. Nothing
-> special. I guess some SMM interrupt is reading the the PCI regs and sends it to EC.
+On Sun, Feb 18, 2007 at 12:59:28AM +0300, Oleg Nesterov wrote:
+> Before you begin. You are doing CPU_DOWN_PREPARE after freeze_processes().
+> Not good. This makes impossible to do flush_workueue() at CPU_DOWN_PREPARE
+> stage, we have callers.
 
-I blacklisted the k8temp driver (and the out-of-tree k8_edac driver
-in Fedora) and the temps were still volatile, so that's not causing
-it. Since then I've upgraded the system BIOS from F.06 to F.27 and
-the problems _may_ have gone away. My own custom 2.6.19 kernel has
-never been a problem, so I'm thinking it's one of these drivers
-loaded by Fedora that I never even compile:
+We have few solutions to deal with this:
 
-	i2c_core
-	i2c_ec
-	i2c_piix4
-	asus_acpi (on a Compaq???)
-	sbs
+a. Mark such workqueues not freezable for hotplug
+b. If above is not possible, don't call flush_workqueue in DOWN_PREPARE
+c. If above is not possible, send DOWN_PREPARE before freeze_processes()
 
+I would prefer a solution in the above order listed.
 
+Which caller are you referring to here? Maybe we can decide on the
+option after we see the users of flush_workqueue() in DOWN_PREPARE.
+
+> I'm afraid it won't be so easy to solve all locking/racing problems. Will
+> wait for the patch :)
+
+I dont see problems for workqueue.c even if we follow option c. Do you
+see any?
+
+-- 
+Regards,
+vatsa
