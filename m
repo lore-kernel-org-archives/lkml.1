@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030316AbXBTRR4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030320AbXBTRR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030316AbXBTRR4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 12:17:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030318AbXBTRR4
+	id S1030320AbXBTRR7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 12:17:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030318AbXBTRR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 12:17:56 -0500
-Received: from mail.screens.ru ([213.234.233.54]:53402 "EHLO mail.screens.ru"
+	Tue, 20 Feb 2007 12:17:59 -0500
+Received: from mga02.intel.com ([134.134.136.20]:20224 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030316AbXBTRRz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 12:17:55 -0500
-Date: Tue, 20 Feb 2007 20:20:49 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
-       roland@redhat.com, Michael Kerrisk <mtk-manpages@gmx.net>
-Subject: Re: [PATCH] fix handling of SIGCHILD from reaped child
-Message-ID: <20070220172049.GA67@tv-sign.ru>
-References: <20070220183220.41b3f1ca.kamezawa.hiroyu@jp.fujitsu.com> <20070220142257.GA155@tv-sign.ru> <20070221002526.c6b7edb0.kamezawa.hiroyu@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070221002526.c6b7edb0.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.11
+	id S1030320AbXBTRR6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 12:17:58 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,197,1170662400"; 
+   d="scan'208"; a="199238969:sNHT24829245"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 2/2] aio: propogate post-EIOCBQUEUED errors to completion event
+Date: Tue, 20 Feb 2007 20:17:51 +0300
+Message-ID: <B41635854730A14CA71C92B36EC22AAC871D9D@mssmsx411>
+In-Reply-To: <20070220170335.GR6133@think.oraclecorp.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2/2] aio: propogate post-EIOCBQUEUED errors to completion event
+Thread-Index: AcdVEZVsmYpe/bSPRNiTFsq500HwRQAAE19w
+From: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>
+To: "Chris Mason" <chris.mason@oracle.com>
+Cc: "Zach Brown" <zach.brown@oracle.com>, <linux-aio@kvack.org>,
+       <linux-kernel@vger.kernel.org>, "Benjamin LaHaise" <bcrl@kvack.org>,
+       "Suparna bhattacharya" <suparna@in.ibm.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+X-OriginalArrivalTime: 20 Feb 2007 17:17:55.0697 (UTC) FILETIME=[0F8CBE10:01C75513]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/21, KAMEZAWA Hiroyuki wrote:
->
-> On Tue, 20 Feb 2007 17:22:57 +0300
-> Oleg Nesterov <oleg@tv-sign.ru> wrote:
+aio-stress command lines used for test
+1) mem=1G in kernel boot param if you have more
+2) mk2fs for test_file
+3) dd if=/dev/zero of=<test_file> bs=1M count=1200
+4) aiostress -s 1200m -o 2 -i 1 -r 16k <test_file>
+
+Leonid
+-----Original Message-----
+From: Chris Mason [mailto:chris.mason@oracle.com] 
+Sent: Tuesday, February 20, 2007 8:04 PM
+To: Ananiev, Leonid I
+Cc: Zach Brown; linux-aio@kvack.org; linux-kernel@vger.kernel.org;
+Benjamin LaHaise; Suparna bhattacharya; Andrew Morton
+Subject: Re: [PATCH 2/2] aio: propogate post-EIOCBQUEUED errors to
+completion event
+
+On Tue, Feb 20, 2007 at 07:57:49PM +0300, Ananiev, Leonid I wrote:
+> Zach> This addresses an oops reported by Leonid Ananiev
+> <leonid.i.ananiev@intel.com>
+> Zach> as archived at http://lkml.org/lkml/2007/2/8/337.
+> ....
+> Zach> This was tested by running O_DIRECT aio-stress concurrently with
+> buffered reads
 > 
-> >
-> > I'd suggest to make a separate function, but not complicate collect_signal().
-> >
-> okay. I'll try again if people admit me to go ahead.
+> The oops was with aio-stress only running in the loop
+> WITHOUT buffered or mmaped IO which are patched and discussed now.
+> Actually 47% aio is finished with EIO after patch.
 
-Yes, it would be nice to know what maintainers think. This is a user visible
-change, even if good.
+I looked through the thread and couldn't find the aio-stress command
+line used for the whole test.  Could you please post it here?
 
-> > > +		clear_stale_sigchild(current, retval);
-> > 
-> > But we are not checking that SIGCHLD is blocked?
-> > 
-> I'm sorry if I don't read SUSv3 correctly. SUSv3 doesn't define how we should
-> do if SIGCHLD is not blocked.(so I don't check not-blocked case.)
+If aio+dio is being used to extend the file, you'll get pages in the
+page cache, which is hopefully why you're able to trigger the EIOs.
 
-Probably it is me who misunderstands SUSv3. Could you point me the reference
-to authoritative document? My understanding: if blocked AND wait() succeeds.
-
-> IMHO, user's sig-child-handler is tend to call wait()/waitpid() and expects
-> successful return. So removing stale signal here may be good.
-
-Yes. But sig-child-handler should do
-
-	while (wait() >= 0)
-		....
-
-anyway, because SIGCHLD is not a realtime signal.
-
-> If this breaks assumptions of applications on Linux, I'll not go eagerly.
-
-I just don't know... (Michael Kerrisk cc'ed).
-
-Oleg.
-
+-chris
