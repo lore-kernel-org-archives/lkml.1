@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964883AbXBTOAF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964895AbXBTOAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964883AbXBTOAF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 09:00:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964893AbXBTOAF
+	id S964895AbXBTOAZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 09:00:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964896AbXBTOAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 09:00:05 -0500
-Received: from embla.aitel.hist.no ([158.38.50.22]:42459 "HELO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S964883AbXBTOAE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 09:00:04 -0500
-Message-ID: <45DAFE2D.3060606@aitel.hist.no>
-Date: Tue, 20 Feb 2007 14:57:01 +0100
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Jan Engelhardt <jengelh@linux01.gwdg.de>, Dax Kelson <dax@gurulabs.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jean Delvare <khali@linux-fr.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Linus' laptop and Num lock status
-References: <1171479361.3706.48.camel@mentorng.gurulabs.com>	<Pine.LNX.4.64.0702141104210.3604@woody.linux-foundation.org>	<20070214202144.1ddb930f.khali@linux-fr.org>	<Pine.LNX.4.64.0702141130340.20368@woody.linux-foundation.org>	<1171488840.3706.78.camel@mentorng.gurulabs.com>	<Pine.LNX.4.61.0702142257490.19368@yvahk01.tjqt.qr> <m34ppojncf.fsf@maximus.localdomain>
-In-Reply-To: <m34ppojncf.fsf@maximus.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Feb 2007 09:00:25 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2056 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S964895AbXBTOAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 09:00:22 -0500
+Date: Tue, 20 Feb 2007 13:50:46 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ralf Baechle <ralf@linux-mips.org>, Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Optimize generic get_unaligned / put_unaligned implementations.
+Message-ID: <20070220135046.GE3945@ucw.cz>
+References: <20060306.203218.69025300.nemoto@toshiba-tops.co.jp> <20060306170552.0aab29c5.akpm@osdl.org> <20070214214226.GA17899@linux-mips.org> <20070214203903.8d013170.akpm@linux-foundation.org> <20070215143441.GA18155@linux-mips.org> <20070215135358.020781dd.akpm@linux-foundation.org> <20070215221839.GA14103@linux-mips.org> <20070215153823.239fd616.akpm@linux-foundation.org> <20070216004317.GA18987@linux-mips.org> <20070215172720.3e9ce464.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070215172720.3e9ce464.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Jan Engelhardt <jengelh@linux01.gwdg.de> writes:
->
->   
->>> I checked, and looking at offset 0x497 seems to work fine on a couple of
->>> systems with USB keyboards.
->>>       
->> Probably just because legacy mode was enabled. Plus I wonder what 0x497 will
->> return when there is actually more than one USB keyboard connected at boot.
->>     
->
-> I bet all would share LED states. If you can use multiple keyboards
-> in legacy mode at all, of course.
->   
-I have used multiple keyboards, for a 2-user machine.
+Hi!
 
-The bios interact with only one of the keyboards, and track LED state on 
-that.
-Other keyboard(s) become useful once the linux comes up with
-its event interface. You then have one set of LEDS per keyboard.
+> > > hm.  So if I have
+> > > 
+> > > 	struct bar {
+> > > 		unsigned long b;
+> > > 	} __attribute__((packed));
+> > > 
+> > > 	struct foo {
+> > > 		unsigned long u;
+> > > 		struct bar b;
+> > > 	};
+> > > 
+> > > then the compiler can see that foo.b.b is well-aligned, regardless of the
+> > > packedness.
+> > > 
+> > > Plus some crazy people compile the kernel with icc (or at least they used
+> > > to).  What happens there?
+> > 
+> > A quick grep for __attribute__((packed)) and __packed find around 900 hits,
+> > I'd probably find more if I'd look for syntactical variations.  Some hits
+> > are in arch/{i386,x86_64,ia64}.  At a glance it seems hard to configure a
+> > useful x86 kernel that doesn't involve any packed attribute.  I take that
+> > as statistical proof that icc either has doesn't really work for building
+> > the kernel or groks packing.  Any compiler not implementing gcc extensions
+> > is lost at building the kernel but that's old news.
+> > 
+> 
+> No, icc surely supports attribute(packed).  My point is that we shouldn't
+> rely upon the gcc info file for this, because other compilers can (or
+> could) be used to build the kernel.
 
-Helge Hafting
+Well, icc should be gcc compatible. If it is not, it is icc bug.
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
