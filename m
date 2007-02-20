@@ -1,77 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030477AbXBTWC5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030489AbXBTWGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030477AbXBTWC5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 17:02:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030479AbXBTWC5
+	id S1030489AbXBTWGu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 17:06:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030486AbXBTWGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 17:02:57 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53593 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030477AbXBTWC4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 17:02:56 -0500
-X-Originating-IP: [172.16.81.92]
-From: "Chris Snook" <csnook@redhat.com>
-To: "Chris Snook" <csnook@redhat.com>, linux-kernel@vger.kernel.org
-Cc: akpm@osdl.org, dhowells@redhat.com, jeffpc@josefsipek.net,
-       csnook@redhat.com
-In-Reply-To: <20070220.waF.48959600@egw.corp.redhat.com>
-Subject: [PATCH 1/2] use symbolic constants in generic lseek code
-Date: Tue, 20 Feb 2007 17:01:51 -0500
-Message-ID: <20070220.j9k.46008500@egw.corp.redhat.com>
+	Tue, 20 Feb 2007 17:06:50 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:37616 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030484AbXBTWGt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 17:06:49 -0500
+Date: Tue, 20 Feb 2007 23:06:47 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org
+Subject: Re: 2.6.19-rc6-mm1: drivers/net/chelsio/: unused code
+Message-ID: <20070220220647.GZ13958@stusta.de>
+References: <20061123021703.8550e37e.akpm@osdl.org> <20061124001731.GO3557@stusta.de> <20061127102455.362fe88f@dxpl.pdx.osdl.net> <20061129073609.GA11084@stusta.de> <20061128234719.9b3a224d.akpm@osdl.org> <20070220000214.GB13958@stusta.de> <20070220133132.63f3e75e@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Mailer: AngleMail for eGroupWare (http://www.egroupware.org) v 1.2.106
+In-Reply-To: <20070220133132.63f3e75e@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Snook <csnook@redhat.com>
+On Tue, Feb 20, 2007 at 01:31:32PM -0800, Stephen Hemminger wrote:
+> On Tue, 20 Feb 2007 01:02:14 +0100
+> Adrian Bunk <bunk@stusta.de> wrote:
+> 
+> > On Tue, Nov 28, 2006 at 11:47:19PM -0800, Andrew Morton wrote:
+> > > On Wed, 29 Nov 2006 08:36:09 +0100
+> > > Adrian Bunk <bunk@stusta.de> wrote:
+> > > 
+> > > > On Mon, Nov 27, 2006 at 10:24:55AM -0800, Stephen Hemminger wrote:
+> > > > > On Fri, 24 Nov 2006 01:17:31 +0100
+> > > > > Adrian Bunk <bunk@stusta.de> wrote:
+> > > > > 
+> > > > > > On Thu, Nov 23, 2006 at 02:17:03AM -0800, Andrew Morton wrote:
+> > > > > > >...
+> > > > > > > Changes since 2.6.19-rc5-mm2:
+> > > > > > >...
+> > > > > > > +chelsio-22-driver.patch
+> > > > > > >...
+> > > > > > >  netdev updates
+> > > > > > 
+> > > > > > It is suspicious that the following newly added code is completely unused:
+> > > > > >   drivers/net/chelsio/ixf1010.o
+> > > > > >     t1_ixf1010_ops
+> > > > > >   drivers/net/chelsio/mac.o
+> > > > > >     t1_chelsio_mac_ops
+> > > > > >   drivers/net/chelsio/vsc8244.o
+> > > > > >     t1_vsc8244_ops
+> > > > > > 
+> > > > > > cu
+> > > > > > Adrian
+> > > > > > 
+> > > > > 
+> > > > > All that is gone in later version. I reposted new patches
+> > > > > after -mm2 was done.
+> > > > 
+> > > > It seems these patches didn't make it into 2.6.19-rc6-mm2 ?
+> > > 
+> > > I dropped that patch and picked up Francois's tree instead.
+> > 
+> > These structs are still both present and unused as of 2.6.20-mm1.
+> 
+> Please use your eyes, not your tool. Those functions are called in 2.6.20
 
-Convert magic numbers to SEEK_* values from fs.h
 
-Signed-off-by: Chris Snook <csnook@redhat.com>
---
---- a/fs/read_write.c	2007-02-20 14:49:45.000000000 -0500
-+++ b/fs/read_write.c	2007-02-20 16:48:39.000000000 -0500
-@@ -37,10 +37,10 @@ loff_t generic_file_llseek(struct file *
+My eyes tell me:
 
- 	mutex_lock(&inode->i_mutex);
- 	switch (origin) {
--		case 2:
-+		case SEEK_END:
- 			offset += inode->i_size;
- 			break;
--		case 1:
-+		case SEEK_CUR:
- 			offset += file->f_pos;
- 	}
- 	retval = -EINVAL;
-@@ -63,10 +63,10 @@ loff_t remote_llseek(struct file *file,
 
- 	lock_kernel();
- 	switch (origin) {
--		case 2:
-+		case SEEK_END:
- 			offset += i_size_read(file->f_path.dentry->d_inode);
- 			break;
--		case 1:
-+		case SEEK_CUR:
- 			offset += file->f_pos;
- 	}
- 	retval = -EINVAL;
-@@ -94,10 +94,10 @@ loff_t default_llseek(struct file *file,
+> static struct cmac *ixf1010_mac_create(adapter_t *adapter, int index)
+> {
+> ...
+> 	mac->ops = &ixf1010_ops;
 
- 	lock_kernel();
- 	switch (origin) {
--		case 2:
-+		case SEEK_END:
- 			offset += i_size_read(file->f_path.dentry->d_inode);
- 			break;
--		case 1:
-+		case SEEK_CUR:
- 			offset += file->f_pos;
- 	}
- 	retval = -EINVAL;
+
+ixf1010_ops != t1_ixf1010_ops
+
+
+> static struct cmac *mac_create(adapter_t *adapter, int index)
+> {
+> ...
+> 
+> 	mac->ops = &chelsio_mac_ops;
+
+
+chelsio_mac_ops != t1_chelsio_mac_ops
+
+
+> mac_create gets called by 
+> 
+> int __devinit t1_init_sw_modules(adapter_t *adapter,
+> 				 const struct board_info *bi)
+> {
+> 
+> 	for_each_port(adapter, i) {
+> 		u8 hw_addr[6];
+> 		struct cmac *mac;
+> 		int phy_addr = bi->mdio_phybaseaddr + i;
+> 
+> 		adapter->port[i].phy = bi->gphy->create(adapter, phy_addr,
+> 							bi->mdio_ops);
+
+
+No, since t1_chelsio_mac_ops isn't used anywhere and mac_create() isn't 
+referenced except from t1_chelsio_mac_ops.
+
+
+cu
+Adrian
+
+BTW: It's not my tool, the script behind "make namespacecheck" was
+     written by Keith Owens.
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
