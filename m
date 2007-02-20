@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965604AbXBTDNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965627AbXBTDRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965604AbXBTDNn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 22:13:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965627AbXBTDNn
+	id S965627AbXBTDRW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 22:17:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965637AbXBTDRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 22:13:43 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:33227 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965604AbXBTDNm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 22:13:42 -0500
-X-Greylist: delayed 1556 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 Feb 2007 22:13:42 EST
-Message-ID: <45DA6150.7060704@vandrovec.name>
-Date: Mon, 19 Feb 2007 18:47:44 -0800
-From: Petr Vandrovec <petr@vandrovec.name>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20061219 Iceape/1.0.7 (Debian-1.0.7-3)
+	Mon, 19 Feb 2007 22:17:21 -0500
+Received: from ozlabs.org ([203.10.76.45]:50279 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965627AbXBTDRV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 22:17:21 -0500
+Date: Tue, 20 Feb 2007 14:17:17 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Russell King <rmk@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Use resource_size_t for serial MMIO addresses
+Message-ID: <20070220031717.GI17818@localhost.localdomain>
+Mail-Followup-To: David Gibson <david@gibson.dropbear.id.au>,
+	Andrew Morton <akpm@osdl.org>, Russell King <rmk@arm.linux.org.uk>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: NCPFS and brittle connections
-References: <459D1794.2060009@drzeus.cx> <459D38DA.4030803@vc.cvut.cz> <459D55E3.4000905@drzeus.cx> <459E01B2.50309@vc.cvut.cz> <45B77AE4.2010605@drzeus.cx> <45B79C35.2090302@vc.cvut.cz> <45B7D750.1040501@drzeus.cx> <45B868D5.9070409@vc.cvut.cz> <45B8845E.8070008@drzeus.cx> <45C57695.7000707@vc.cvut.cz> <45C61540.7000008@drzeus.cx> <45C6A99C.5030607@vc.cvut.cz> <45D97DF0.9070306@drzeus.cx>
-In-Reply-To: <45D97DF0.9070306@drzeus.cx>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Feb 2007 02:47:45.0675 (UTC) FILETIME=[7FF39DB0:01C75499]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman wrote:
-> Sorry this took so long but I got occupied with other things and this
-> had to move down the pile a bit.
-> 
-> New patch which uses dedicated buffers for the currently active packet.
-> Also adds a new state RQ_ABANDONED which basically means "the caller no
-> longer cares about this request so the pointers are no longer valid". It
-> is used to determine if the global receive buffer should be copied to
-> the provided one upon completion.
+Andrew, please apply to -mm.  I think these should be good to merge
+for 2.6.22.
 
-Hello,
-   it would be nice if these two copies (request->txbuf, and 
-rxbuf->reply) could be eliminated, but I see no easy way how to do that...
+At present, MMIO addresses for serial port (the ->mapbase field in
+uart_port and other structures) are unsigned longs.  This causes
+problems on some 32-bit platforms which have a >32-bit physical
+address bus, for example the embedded PowerPC 440GP chip, which has a
+36-bit physical address bus, and on-chip serial ports located at an
+MMIO address above 4GB.
 
-> commit 166fb223f9507431fb97820549e3e41980987445
-> Author: Pierre Ossman <ossman@cendio.se>
-> Date:   Mon Feb 19 11:34:43 2007 +0100
-> 
->     ncpfs: make sure server connection survives a kill
->     
->     Use internal buffers instead of the ones supplied by the caller
->     so that a caller can be interrupted without having to abort the
->     entire ncp connection.
->     
->     Signed-off-by: Pierre Ossman <ossman@cendio.se>
+The second patch in this series changes mapbase to a resource_size_t
+(which can be 64-bit on the problematic platforms) in struct uart_port
+and struct plat_serial8250_port.  It does *not* change the type in
+serial_struct, because that structure is exposed to userspace.  It is
+therefore unsafe to use setserial to change the address parameters on
+a port using a mapbase above 4GB.
 
-Acked-by: Petr Vandrovec <petr@vandrovec.name>
-(modulo one thing below)
+The first patch in the series contains the damage of the setserial
+problem.  It allows serial ports to be marked with a new
+UPF_FIXED_PORT flag, which causes any attempts to change the port's
+type (PIO/MMIO etc.), address or irq with setserial to be ignored.
+While using setserial to alter the port address is useful for legacy
+ISA ports, it is generally a bad idea for ports such as on-chip or
+other hardwired ports where the arch code has good information (from
+firmware or hardware probing) on the port's type and address.
 
-> diff --git a/include/linux/ncp_fs_sb.h b/include/linux/ncp_fs_sb.h
-> index a503052..d5e7ffc 100644
-> --- a/include/linux/ncp_fs_sb.h
-> +++ b/include/linux/ncp_fs_sb.h
-> @@ -50,6 +50,8 @@ struct ncp_server {
->  	int packet_size;
->  	unsigned char *packet;	/* Here we prepare requests and
->  				   receive replies */
-> +	unsigned char *txbuf;	/* Storage for current requres */
-
-Looks like a typo?  requres => request ?
-
-> +	unsigned char *rxbuf;	/* Storage for reply to current request */
->  
->  	int lock;		/* To prevent mismatch in protocols. */
->  	struct mutex mutex;
-
-								Petr
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
