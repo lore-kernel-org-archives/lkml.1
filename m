@@ -1,40 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965050AbXBTP2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965054AbXBTPdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965050AbXBTP2d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 10:28:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965066AbXBTP2d
+	id S965054AbXBTPdY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 10:33:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965052AbXBTPdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 10:28:33 -0500
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2772 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965052AbXBTP2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 10:28:32 -0500
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: [PATCH] Add "is_power_of_2" checking to log2.h.
-Date: Tue, 20 Feb 2007 16:29:40 +0100
-User-Agent: KMail/1.9.5
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Paul Mackerras <paulus@samba.org>,
-       dhowells@redhat.com, galak@kernel.crashing.org
-References: <Pine.LNX.4.64.0701300543420.17991@CPE00045a9c397f-CM001225dbafb6>
-In-Reply-To: <Pine.LNX.4.64.0701300543420.17991@CPE00045a9c397f-CM001225dbafb6>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 20 Feb 2007 10:33:24 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:44970 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965054AbXBTPdX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 10:33:23 -0500
+Subject: Re: [PATCH 05/44 take 2] [UBI] internal common header
+From: David Woodhouse <dwmw2@infradead.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Artem Bityutskiy <dedekind@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20070220152259.GD3170@thunk.org>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
+	 <20070217165449.5845.18238.sendpatchset@localhost.localdomain>
+	 <20070219105445.GA16930@infradead.org> <1171976753.4039.27.camel@sauron>
+	 <20070220145503.GC3170@thunk.org>
+	 <1171984555.3518.5.camel@hades.cambridge.redhat.com>
+	 <20070220152259.GD3170@thunk.org>
+Content-Type: text/plain
+Date: Tue, 20 Feb 2007 15:33:18 +0000
+Message-Id: <1171985598.3518.8.camel@hades.cambridge.redhat.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-2.fc6.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702201629.40758.m.kozlowski@tuxland.pl>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, 
+On Tue, 2007-02-20 at 10:22 -0500, Theodore Tso wrote:
+> But __be32 will catch the same errors these days because the be/le
+> types use __bitwise now, right?  So use of the __be32/__be64 types should
+> be preferred since it also will work with sparse, I would think.
 
-Please fix the parentheses thing in both arch/powerpc/mm/pgtable_32.c and 
-arch/ppc/mm/pgtable.c.
+Does __bitwise work in gcc? I thought it was only for sparse?
 
-> +#define is_power_of_4(x)	is_power_of_2(x) && (ffs(x) & 1))
+-- 
+dwmw2
 
-Regards,
-
-	Mariusz Kozlowski
