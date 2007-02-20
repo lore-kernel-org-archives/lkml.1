@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750937AbXBTAGh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750936AbXBTAGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750937AbXBTAGh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 19:06:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750934AbXBTAGg
+	id S1750936AbXBTAGk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 19:06:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750939AbXBTAGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 19:06:36 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:36011 "EHLO
+	Mon, 19 Feb 2007 19:06:40 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:36013 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750889AbXBTAGf (ORCPT
+	with ESMTP id S1750936AbXBTAGh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 19:06:35 -0500
-Date: Tue, 20 Feb 2007 01:06:34 +0100
+	Mon, 19 Feb 2007 19:06:37 -0500
+Date: Tue, 20 Feb 2007 01:06:36 +0100
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: wli@holomorphy.com, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] proper prototype for hugetlb_get_unmapped_area()
-Message-ID: <20070220000634.GC13958@stusta.de>
+To: dsd@gentoo.org, kune@deine-taler.de
+Cc: linville@tuxdriver.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [RFC: 2.6 patch] zd1211rw: possible cleanups
+Message-ID: <20070220000636.GD13958@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,45 +24,269 @@ User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a proper prototype for hugetlb_get_unmapped_area() in 
-include/linux/hugetlb.h.
+This patch contains the following possible cleanups:
+- make needlessly global functions static
+- #if 0 the following unused global functions:
+  - zd_chip.c: zd_ioread16()
+  - zd_chip.c: zd_ioread32()
+  - zd_chip.c: zd_iowrite16()
+  - zd_chip.c: zd_ioread32v()
+  - zd_chip.c: zd_read_mac_addr()
+  - zd_chip.c: zd_set_beacon_interval()
+  - zd_util.c: zd_hexdump()
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
-This patch was already sent on:
-- 25 Nov 2006
+ drivers/net/wireless/zd1211rw/zd_chip.c |   27 +++++++++++++++++++-----
+ drivers/net/wireless/zd1211rw/zd_chip.h |   26 +++++------------------
+ drivers/net/wireless/zd1211rw/zd_mac.h  |    6 -----
+ drivers/net/wireless/zd1211rw/zd_util.c |    5 +---
+ drivers/net/wireless/zd1211rw/zd_util.h |    6 -----
+ 5 files changed, 30 insertions(+), 40 deletions(-)
 
- fs/hugetlbfs/inode.c    |    5 +----
- include/linux/hugetlb.h |    7 +++++++
- 2 files changed, 8 insertions(+), 4 deletions(-)
-
---- linux-2.6.19-rc6-mm1/include/linux/hugetlb.h.old	2006-11-25 00:37:47.000000000 +0100
-+++ linux-2.6.19-rc6-mm1/include/linux/hugetlb.h	2006-11-25 00:44:41.000000000 +0100
-@@ -183,4 +184,10 @@
+--- linux-2.6.19-rc6-mm1/drivers/net/wireless/zd1211rw/zd_chip.h.old	2006-11-26 00:18:00.000000000 +0100
++++ linux-2.6.19-rc6-mm1/drivers/net/wireless/zd1211rw/zd_chip.h	2006-11-26 00:26:41.000000000 +0100
+@@ -709,15 +709,6 @@
+ 	return zd_usb_ioread16(&chip->usb, value, addr);
+ }
  
- #endif /* !CONFIG_HUGETLBFS */
+-int zd_ioread32v_locked(struct zd_chip *chip, u32 *values,
+-	                const zd_addr_t *addresses, unsigned int count);
+-
+-static inline int zd_ioread32_locked(struct zd_chip *chip, u32 *value,
+-	                             const zd_addr_t addr)
+-{
+-	return zd_ioread32v_locked(chip, value, (const zd_addr_t *)&addr, 1);
+-}
+-
+ static inline int zd_iowrite16_locked(struct zd_chip *chip, u16 value,
+ 	                              zd_addr_t addr)
+ {
+@@ -747,9 +738,6 @@
+ 	return _zd_iowrite32v_locked(chip, &ioreq, 1);
+ }
  
-+#ifdef HAVE_ARCH_HUGETLB_UNMAPPED_AREA
-+unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
-+					unsigned long len, unsigned long pgoff,
-+					unsigned long flags);
-+#endif /* HAVE_ARCH_HUGETLB_UNMAPPED_AREA */
-+
- #endif /* _LINUX_HUGETLB_H */
---- linux-2.6.19-rc6-mm1/fs/hugetlbfs/inode.c.old	2006-11-25 00:38:14.000000000 +0100
-+++ linux-2.6.19-rc6-mm1/fs/hugetlbfs/inode.c	2006-11-25 00:41:12.000000000 +0100
-@@ -98,10 +98,7 @@
-  * Called under down_write(mmap_sem).
+-int zd_iowrite32a_locked(struct zd_chip *chip,
+-	                 const struct zd_ioreq32 *ioreqs, unsigned int count);
+-
+ static inline int zd_rfwrite_locked(struct zd_chip *chip, u32 value, u8 bits)
+ {
+ 	ZD_ASSERT(mutex_is_locked(&chip->mutex));
+@@ -766,12 +754,7 @@
+ /* Locking functions for reading and writing registers.
+  * The different parameters are intentional.
   */
+-int zd_ioread16(struct zd_chip *chip, zd_addr_t addr, u16 *value);
+-int zd_iowrite16(struct zd_chip *chip, zd_addr_t addr, u16 value);
+-int zd_ioread32(struct zd_chip *chip, zd_addr_t addr, u32 *value);
+ int zd_iowrite32(struct zd_chip *chip, zd_addr_t addr, u32 value);
+-int zd_ioread32v(struct zd_chip *chip, const zd_addr_t *addresses,
+-	          u32 *values, unsigned int count);
+ int zd_iowrite32a(struct zd_chip *chip, const struct zd_ioreq32 *ioreqs,
+ 	           unsigned int count);
  
--#ifdef HAVE_ARCH_HUGETLB_UNMAPPED_AREA
--unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
--		unsigned long len, unsigned long pgoff, unsigned long flags);
+@@ -783,7 +766,6 @@
+ u8  zd_chip_get_channel(struct zd_chip *chip);
+ int zd_read_regdomain(struct zd_chip *chip, u8 *regdomain);
+ void zd_get_e2p_mac_addr(struct zd_chip *chip, u8 *mac_addr);
+-int zd_read_mac_addr(struct zd_chip *chip, u8 *mac_addr);
+ int zd_write_mac_addr(struct zd_chip *chip, const u8 *mac_addr);
+ int zd_chip_switch_radio_on(struct zd_chip *chip);
+ int zd_chip_switch_radio_off(struct zd_chip *chip);
+@@ -794,20 +776,24 @@
+ int zd_chip_enable_hwint(struct zd_chip *chip);
+ int zd_chip_disable_hwint(struct zd_chip *chip);
+ 
++#if 0
+ static inline int zd_get_encryption_type(struct zd_chip *chip, u32 *type)
+ {
+ 	return zd_ioread32(chip, CR_ENCRYPTION_TYPE, type);
+ }
++#endif  /*  0  */
+ 
+ static inline int zd_set_encryption_type(struct zd_chip *chip, u32 type)
+ {
+ 	return zd_iowrite32(chip, CR_ENCRYPTION_TYPE, type);
+ }
+ 
++#if 0
+ static inline int zd_chip_get_basic_rates(struct zd_chip *chip, u16 *cr_rates)
+ {
+ 	return zd_ioread16(chip, CR_BASIC_RATE_TBL, cr_rates);
+ }
++#endif  /*  0  */
+ 
+ int zd_chip_set_basic_rates(struct zd_chip *chip, u16 cr_rates);
+ 
+@@ -827,12 +813,12 @@
+ 
+ int zd_chip_control_leds(struct zd_chip *chip, enum led_status status);
+ 
+-int zd_set_beacon_interval(struct zd_chip *chip, u32 interval);
+-
++#if 0
+ static inline int zd_get_beacon_interval(struct zd_chip *chip, u32 *interval)
+ {
+ 	return zd_ioread32(chip, CR_BCN_INTERVAL, interval);
+ }
++#endif  /*  0  */
+ 
+ struct rx_status;
+ 
+--- linux-2.6.19-rc6-mm1/drivers/net/wireless/zd1211rw/zd_chip.c.old	2006-11-26 00:18:10.000000000 +0100
++++ linux-2.6.19-rc6-mm1/drivers/net/wireless/zd1211rw/zd_chip.c	2006-11-26 00:37:13.000000000 +0100
+@@ -87,8 +87,8 @@
+ /* Read a variable number of 32-bit values. Parameter count is not allowed to
+  * exceed USB_MAX_IOREAD32_COUNT.
+  */
+-int zd_ioread32v_locked(struct zd_chip *chip, u32 *values, const zd_addr_t *addr,
+-		 unsigned int count)
++static int zd_ioread32v_locked(struct zd_chip *chip, u32 *values,
++                               const zd_addr_t *addr, unsigned int count)
+ {
+ 	int r;
+ 	int i;
+@@ -135,6 +135,12 @@
+ 	return r;
+ }
+ 
++static int zd_ioread32_locked(struct zd_chip *chip, u32 *value,
++			      const zd_addr_t addr)
++{
++	return zd_ioread32v_locked(chip, value, (const zd_addr_t *)&addr, 1);
++}
++
+ int _zd_iowrite32v_locked(struct zd_chip *chip, const struct zd_ioreq32 *ioreqs,
+ 	           unsigned int count)
+ {
+@@ -215,8 +221,9 @@
+  * that in several USB requests. A split can be forced by inserting an IO
+  * request with an zero address field.
+  */
+-int zd_iowrite32a_locked(struct zd_chip *chip,
+-	          const struct zd_ioreq32 *ioreqs, unsigned int count)
++static int zd_iowrite32a_locked(struct zd_chip *chip,
++				const struct zd_ioreq32 *ioreqs,
++				unsigned int count)
+ {
+ 	int r;
+ 	unsigned int i, j, t, max;
+@@ -245,6 +252,8 @@
+ 	return 0;
+ }
+ 
++#if 0
++
+ int zd_ioread16(struct zd_chip *chip, zd_addr_t addr, u16 *value)
+ {
+ 	int r;
+@@ -275,6 +284,8 @@
+ 	return r;
+ }
+ 
++#endif  /*  0  */
++
+ int zd_iowrite32(struct zd_chip *chip, zd_addr_t addr, u32 value)
+ {
+ 	int r;
+@@ -285,8 +296,9 @@
+ 	return r;
+ }
+ 
++#if 0
+ int zd_ioread32v(struct zd_chip *chip, const zd_addr_t *addresses,
+-	          u32 *values, unsigned int count)
++		 u32 *values, unsigned int count)
+ {
+ 	int r;
+ 
+@@ -295,6 +307,7 @@
+ 	mutex_unlock(&chip->mutex);
+ 	return r;
+ }
++#endif  /*  0  */
+ 
+ int zd_iowrite32a(struct zd_chip *chip, const struct zd_ioreq32 *ioreqs,
+ 	          unsigned int count)
+@@ -399,6 +412,7 @@
+ 	return _read_mac_addr(chip, mac_addr, (const zd_addr_t *)addr);
+ }
+ 
++#if 0
+ int zd_read_mac_addr(struct zd_chip *chip, u8 *mac_addr)
+ {
+ 	int r;
+@@ -409,6 +423,7 @@
+ 	mutex_unlock(&chip->mutex);
+ 	return r;
+ }
++#endif  /*  0  */
+ 
+ int zd_write_mac_addr(struct zd_chip *chip, const u8 *mac_addr)
+ {
+@@ -950,6 +965,7 @@
+ 	return set_aw_pt_bi(chip, &s);
+ }
+ 
++#if 0
+ int zd_set_beacon_interval(struct zd_chip *chip, u32 interval)
+ {
+ 	int r;
+@@ -959,6 +975,7 @@
+ 	mutex_unlock(&chip->mutex);
+ 	return r;
+ }
++#endif  /*  0  */
+ 
+ static int hw_init(struct zd_chip *chip)
+ {
+--- linux-2.6.19-rc6-mm1/drivers/net/wireless/zd1211rw/zd_mac.h.old	2006-11-26 00:27:17.000000000 +0100
++++ linux-2.6.19-rc6-mm1/drivers/net/wireless/zd1211rw/zd_mac.h	2006-11-26 00:27:27.000000000 +0100
+@@ -189,10 +189,4 @@
+ 
+ struct iw_statistics *zd_mac_get_wireless_stats(struct net_device *ndev);
+ 
+-#ifdef DEBUG
+-void zd_dump_rx_status(const struct rx_status *status);
 -#else
-+#ifndef HAVE_ARCH_HUGETLB_UNMAPPED_AREA
- static unsigned long
- hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
- 		unsigned long len, unsigned long pgoff, unsigned long flags)
+-#define zd_dump_rx_status(status)
+-#endif /* DEBUG */
+-
+ #endif /* _ZD_MAC_H */
+--- linux-2.6.19-rc6-mm1/drivers/net/wireless/zd1211rw/zd_util.h.old	2006-11-26 00:28:23.000000000 +0100
++++ linux-2.6.19-rc6-mm1/drivers/net/wireless/zd1211rw/zd_util.h	2006-11-26 00:28:31.000000000 +0100
+@@ -20,10 +20,4 @@
+ 
+ void *zd_tail(const void *buffer, size_t buffer_size, size_t tail_size);
+ 
+-#ifdef DEBUG
+-void zd_hexdump(const void *bytes, size_t size);
+-#else
+-#define zd_hexdump(bytes, size)
+-#endif /* DEBUG */
+-
+ #endif /* _ZD_UTIL_H */
+--- linux-2.6.19-rc6-mm1/drivers/net/wireless/zd1211rw/zd_util.c.old	2006-11-26 00:28:38.000000000 +0100
++++ linux-2.6.19-rc6-mm1/drivers/net/wireless/zd1211rw/zd_util.c	2006-11-26 00:28:57.000000000 +0100
+@@ -20,7 +20,7 @@
+ #include "zd_def.h"
+ #include "zd_util.h"
+ 
+-#ifdef DEBUG
++#if 0
+ static char hex(u8 v)
+ {
+ 	v &= 0xf;
+@@ -72,7 +72,7 @@
+ 		i += 8;
+ 	} while (i < size);
+ }
+-#endif /* DEBUG */
++#endif /*  0  */
+ 
+ void *zd_tail(const void *buffer, size_t buffer_size, size_t tail_size)
+ {
+
 
