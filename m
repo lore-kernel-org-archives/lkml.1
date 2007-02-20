@@ -1,82 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932908AbXBTMjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932913AbXBTMul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932908AbXBTMjq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 07:39:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932913AbXBTMjo
+	id S932913AbXBTMul (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 07:50:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932924AbXBTMul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 07:39:44 -0500
-Received: from tim.rpsys.net ([194.106.48.114]:58026 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932908AbXBTMjn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 07:39:43 -0500
-Subject: Re: BACKLIGHT_CLASS_DEVICE=y, SYSFS=n compile error
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Adrian Bunk <bunk@stusta.de>
+	Tue, 20 Feb 2007 07:50:41 -0500
+Received: from webmail16.mail.yandex.net ([213.180.200.38]:52263 "EHLO
+	webmail16.mail.yandex.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932913AbXBTMuk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 07:50:40 -0500
+Date: Tue, 20 Feb 2007 15:50:27 +0300 (MSK)
+From: "Mockern" <Mockern@yandex.ru>
+Message-Id: <45DAEE93.000001.01672@webmail16.yandex.ru>
+MIME-Version: 1.0
+X-Mailer: Yamail [ http://yandex.ru ]
+To: alan@lxorguk.ukuu.org.uk
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070220000829.GO13958@stusta.de>
-References: <20070220000829.GO13958@stusta.de>
-Content-Type: text/plain
-Date: Tue, 20 Feb 2007 12:38:40 +0000
-Message-Id: <1171975120.5884.13.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Subject: Re: how to limit flip buffer size in tty driver?
+X-MsgDayCount: 2
+X-BornDate: 1134853200
+In-Reply-To: <20070220125329.55fb7210@localhost.localdomain>
+Reply-To: Mockern@yandex.ru
+References: <45DAB02A.000001.11699@soapbox.yandex.ru> <20070220125329.55fb7210@localhost.localdomain>
+X-Source-Ip: 84.185.221.181
+Content-Type: text/plain;
+  charset="KOI8-R"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-20 at 01:08 +0100, Adrian Bunk wrote:
-> CONFIG_BACKLIGHT_CLASS_DEVICE=y, CONFIG_SYSFS=n results int he 
-> following compile error:
-> ...
->   LD      .tmp_vmlinux1
-> drivers/built-in.o: In function `nvidia_bl_exit':
-> (.text+0x27d01): undefined reference to `backlight_device_unregister'
-> drivers/built-in.o: In function `nvidia_bl_init':
-> (.text+0x27e3c): undefined reference to `backlight_device_register'
+Thank you Alan for your respond,
 
-I've added the patch below to the git backlight tree to resolve this.
+Could you help me with a problem which I have with my tty driver, please?
 
-Cheers,
+It does not work with Linux cat operation (but there are no problems to write, read with select from user space application!). 
 
-Richard
+regards,
 
-
-backlight: Remove bogus SYSFS dependency
-
-Remove a bogus SYSFS dependency from the backlight class
-
-Signed-off-by: Richard Purdie <rpurdie@rpsys.net>
-
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index cd2ef0a..f8bc43c 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -4,9 +4,7 @@
- 
- menu "Graphics support"
- 
--if SYSFS
--	source "drivers/video/backlight/Kconfig"
--endif
-+source "drivers/video/backlight/Kconfig"
- 
- config FB
- 	tristate "Support for frame buffer devices"
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index 6801edf..1b79a6f 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -12,7 +12,7 @@ fb-objs                           := $(fb-y)
- 
- obj-$(CONFIG_VT)		  += console/
- obj-$(CONFIG_LOGO)		  += logo/
--obj-$(CONFIG_SYSFS)		  += backlight/
-+obj-y				  += backlight/
- 
- obj-$(CONFIG_FB_CFB_FILLRECT)  += cfbfillrect.o
- obj-$(CONFIG_FB_CFB_COPYAREA)  += cfbcopyarea.o
+Andy  
 
 
 
+>On Tue, 20 Feb 2007 11:24:10 +0300 (MSK)
+>"Mockern" <Mockern@yandex.ru> wrote:
+>
+>> Hello,
+>> 
+>> how to limit flip buffer size in tty driver?
+>
+>You don't.
+>
+>See Documentation/tty.txt and throttle/unthrottle
+>
+>Alan
 
 
+-- 
+Сегодня удачный день, чтобы завести почту на Яндексе http://mail.yandex.ru
