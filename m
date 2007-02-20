@@ -1,59 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932931AbXBTOp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932956AbXBTOsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932931AbXBTOp2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 09:45:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932947AbXBTOp2
+	id S932956AbXBTOsZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 09:48:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932953AbXBTOsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 09:45:28 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:42380 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932931AbXBTOp2 (ORCPT
+	Tue, 20 Feb 2007 09:48:25 -0500
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:36339 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932461AbXBTOsY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 09:45:28 -0500
-Date: Tue, 20 Feb 2007 15:45:21 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: "Adrian `trivial' Bunk" <bunk@stusta.de>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [PATCH] tty_register_driver: Remove incorrect and superfluous cast
-Message-ID: <Pine.LNX.4.62.0702201542510.10709@pademelon.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 20 Feb 2007 09:48:24 -0500
+Date: Tue, 20 Feb 2007 09:48:23 -0500
+To: takada <takada@mbf.nifty.com>
+Cc: rdreier@cisco.com, pcnet32@verizon.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: MediaGX/GeodeGX1 requires X86_OOSTORE.
+Message-ID: <20070220144823.GN7585@csclub.uwaterloo.ca>
+References: <ada3b5253p0.fsf@cisco.com> <20070220.085639.260788422.takada@mbf.nifty.com> <20070220000231.GM7585@csclub.uwaterloo.ca> <20070220.203413.260790539.takada@mbf.nifty.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070220.203413.260790539.takada@mbf.nifty.com>
+User-Agent: Mutt/1.5.9i
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tty_register_driver: Remove incorrect and superfluous cast (expected and passed
-types are both const char *)
+On Tue, Feb 20, 2007 at 08:34:13PM +0900, takada wrote:
+> I posted with 2.6.20 + enabled X86_OOSTORE.
+> The clflush sze line is in /proc/cpuinfo. but clfush is not in flags line.
+> 
+> BTW, can we use WBINVD instruction? I tested compile only.
+> Do you know a method to change dynamically without #ifdef when it works
+> with MediaGX/GeodeGX.
+> 
+> diff -Narup a/include/asm-i386/io.h b/include/asm-i386/io.h
+> --- a/include/asm-i386/io.h	2007-02-20 16:23:25.000000000 +0900
+> +++ b/include/asm-i386/io.h	2007-02-20 17:07:14.000000000 +0900
+> @@ -232,7 +232,19 @@ static inline void memcpy_toio(volatile 
+>   *	2. Accidentally out of order processors (PPro errata #51)
+>   */
+>   
+> -#if defined(CONFIG_X86_OOSTORE) || defined(CONFIG_X86_PPRO_FENCE)
+> +#ifdef CONFIG_MGEODEGX1
+> +
+> +static inline void dma_flush_cache(void)
+> +{
+> +	__asm__ __volatile__ ("wbinvd": : :"memory");
+> +}
+> +
+> +#define dma_cache_inv(_start,_size)		dma_flush_cache()
+> +#define dma_cache_wback(_start,_size)		dma_flush_cache()
+> +#define dma_cache_wback_inv(_start,_size)	dma_flush_cache()
+> +#define flush_write_buffers()
+> +
+> +#elif defined(CONFIG_X86_OOSTORE) || defined(CONFIG_X86_PPRO_FENCE)
+>  
+>  static inline void flush_write_buffers(void)
+>  {
+> -
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-
---- ps3-linux-2.6.20.orig/drivers/char/tty_io.c
-+++ ps3-linux-2.6.20/drivers/char/tty_io.c
-@@ -3713,15 +3713,14 @@ int tty_register_driver(struct tty_drive
- 
- 	if (!driver->major) {
- 		error = alloc_chrdev_region(&dev, driver->minor_start, driver->num,
--						(char*)driver->name);
-+						driver->name);
- 		if (!error) {
- 			driver->major = MAJOR(dev);
- 			driver->minor_start = MINOR(dev);
- 		}
- 	} else {
- 		dev = MKDEV(driver->major, driver->minor_start);
--		error = register_chrdev_region(dev, driver->num,
--						(char*)driver->name);
-+		error = register_chrdev_region(dev, driver->num, driver->name);
- 	}
- 	if (error < 0) {
- 		kfree(p);
-
-Gr{oetje,eeting}s,
-
-						Geert
+Well it is starting to look like it isn't a caching issue, but more
+likely an issue of which order writes are performed in.  I think the MAC
+might be seeing the ownership bit change before the rest of the
+descriptor, which shouldn't happen.  With X86_OOSTORE, wmb() is called
+between setting the fields in the descriptor and setting the ownership
+bit to the MAC.  I still have to investigate a bit more to find out for
+sure, but that could certainly explain why X86_OOSTORE makes the problem
+become much less frequent.  It doesn't completely elliminate it though.
+Of course maybe there are two different problems with the same symptoms.
 
 --
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+Len Sorensen
