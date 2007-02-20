@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965026AbXBTPPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965031AbXBTPQG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965026AbXBTPPe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 10:15:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965028AbXBTPPe
+	id S965031AbXBTPQG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 10:16:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964979AbXBTPQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 10:15:34 -0500
-Received: from wr-out-0506.google.com ([64.233.184.230]:41615 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965026AbXBTPPb (ORCPT
+	Tue, 20 Feb 2007 10:16:06 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:40533 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965031AbXBTPQE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 10:15:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ai1bkiyerJm1OZgvdbKJ2bCNhO6LBfg4oOZdTVJ93deksQB+EIAzIsCpn3Wr+3pBGiCZDty9v1v8CYDNL9MIEKCft+R2dJ7wSuqcbUN5TNqA/c9qfnnNPP8DDzRvNkLPSOTG5xirn+q2rjbtXFyUodXg0auPYcI7V1GSDmvcPss=
-Message-ID: <d120d5000702200715u130ee6b2i4a415aea24aa695d@mail.gmail.com>
-Date: Tue, 20 Feb 2007 10:15:26 -0500
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: Network: convert network devices to use struct device instead of class_device
-Cc: "Stephen Hemminger" <shemminger@linux-foundation.org>,
-       "Jeff Garzik" <jeff@garzik.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, "Kay Sievers" <kay.sievers@vrfy.org>
-In-Reply-To: <20070209005601.GE30794@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 20 Feb 2007 10:16:04 -0500
+Subject: Re: [PATCH 05/44 take 2] [UBI] internal common header
+From: David Woodhouse <dwmw2@infradead.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Artem Bityutskiy <dedekind@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20070220145503.GC3170@thunk.org>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
+	 <20070217165449.5845.18238.sendpatchset@localhost.localdomain>
+	 <20070219105445.GA16930@infradead.org> <1171976753.4039.27.camel@sauron>
+	 <20070220145503.GC3170@thunk.org>
+Content-Type: text/plain
+Date: Tue, 20 Feb 2007 15:15:55 +0000
+Message-Id: <1171984555.3518.5.camel@hades.cambridge.redhat.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-2.fc6.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200702080400.l1840lFd002314@hera.kernel.org>
-	 <45CB1AE6.9020707@garzik.org> <20070208074130.29df585f@oldman>
-	 <d120d5000702080929r7016de12k292add26a0a72291@mail.gmail.com>
-	 <20070209005601.GE30794@kroah.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/8/07, Greg KH <greg@kroah.com> wrote:
->
-> And it should also alow for proper power management functionality, using
-> the changes that Linus put into the driver core about 8 months ago.
->
-> Don't worry, I have input patches queued up next for you Dmitry :)
->
+On Tue, 2007-02-20 at 09:55 -0500, Theodore Tso wrote:
+> It appears that the reason why you are doing this is because you think
+> you need the (packed) attribute.  Not needed; Linux assumes all over
+> the place 16, 32, and 64 types are packed.  If Linux is ever compiled
+> on an architecture where this isn't true, the compiler will probably
+> need to be fixed so these assumptions are true, since all manner of
+> things will break.
 
-Greg,
+No, the packedness is irrelevant -- the reason is just to catch all the
+places where you might otherwise forget to use byte-swapping accesses.
 
-Could you please forward me these patches for input core - I am going
-to rearrange some code and don't want too many clashes so I'd like to
-apply yours to my private three and work from there...
+> It would be much better to use __be32 and __be64, so you get better
+> type checking, and you will catch bugs caused by forgetting to use
+> be32_to_cpu, et. al. 
 
-Thanks!
+The technique Artem uses is derived from what I do in JFFS2. It predates
+the use of sparse to catch such errors, and works in gcc for _everyone_
+without having to do anything special (like run sparse).
 
 -- 
-Dmitry
+dwmw2
+
