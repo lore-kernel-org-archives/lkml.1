@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932836AbXBTFTx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932677AbXBTF2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932836AbXBTFTx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 00:19:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932852AbXBTFTx
+	id S932677AbXBTF2z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 00:28:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932844AbXBTF2z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 00:19:53 -0500
-Received: from nz-out-0506.google.com ([64.233.162.234]:16812 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932836AbXBTFTw (ORCPT
+	Tue, 20 Feb 2007 00:28:55 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:22470 "EHLO
+	pd4mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932677AbXBTF2y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 00:19:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tg3cOHHJTIL9W4j1rK4NLjfeRnCfgSAqDHgxiATgybEoQFOTg+e7Fwap2XLHXGsuoe1hfoFkQT0enYOhogtAiJh4a7nbAh5q7P9iIeB0oEGfl4qC7f6Tw48yTnop2SGdJG2uZkPW6i0IsCYnwegvwY3lcLb14y++tV9mdEvSoyc=
-Message-ID: <9b3a62ab0702192119l1bf9a284la93c9d1f01638ca4@mail.gmail.com>
-Date: Mon, 19 Feb 2007 21:19:49 -0800
-From: "v j" <vj.linux@gmail.com>
-To: davids@webmaster.com
-Subject: Re: GPL vs non-GPL device drivers
-Cc: trent.waddington@gmail.com,
-       "Michael K. Edwards" <medwards.linux@gmail.com>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKIEFNBLAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>
-	 <MDEHLPKNGKAHNMBLJOLKIEFNBLAC.davids@webmaster.com>
+	Tue, 20 Feb 2007 00:28:54 -0500
+Date: Mon, 19 Feb 2007 23:28:54 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: 2.6.20 kernel hang with USB drive and vfat doing ftruncate
+In-reply-to: <fa.qFxa41A3LU3cQ19L+5DTEFMtCEY@ifi.uio.no>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-usb-users@lists.sourceforge.net
+Message-id: <45DA8716.7090009@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.bxsB54F+7+006rE+o/VWUj5keQk@ifi.uio.no>
+ <fa.zK5W70l1vhk1YNxuwxFwZ8t1uIs@ifi.uio.no>
+ <fa.qFxa41A3LU3cQ19L+5DTEFMtCEY@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> You are trying to cram this in a simple yes or no box, and it just doesn't
-> fit. There are questions nobody knows the answers to (such as what rights
-> you need to distribute a derivative work or whether compiling code makes a
-> translation).
+Kumar Gala wrote:
+> [  497.499249] usb-storage   D 00000000     0   671      5           
+> 773   670 (L-TLB)
+> [  497.506930] Call Trace:
+> [  497.509372] [C3F35A60] [C00083AC] __switch_to+0x28/0x40
+> [  497.514608] [C3F35A80] [C01F4B78] schedule+0x324/0x6bc
+> [  497.519756] [C3F35AC0] [C01F5D6C] schedule_timeout+0x6c/0xd0
+> [  497.525426] [C3F35B00] [C01F5C9C] io_schedule_timeout+0x30/0x54
+> [  497.531356] [C3F35B20] [C0050DE4] congestion_wait+0x64/0x8c
+> [  497.536941] [C3F35B70] [C004A9F0] throttle_vm_writeout+0x1c/0x84
+> [  497.542958] [C3F35B90] [C004F33C] shrink_zone+0xbb0/0xfe4
+> [  497.548367] [C3F35D40] [C004F8F4] try_to_free_pages+0x184/0x2cc
+> [  497.554298] [C3F35DB0] [C0049AA8] __alloc_pages+0x110/0x2c0
+> [  497.559878] [C3F35E00] [C0060F84] cache_alloc_refill+0x394/0x694
+> [  497.565900] [C3F35E30] [C00614A0] __kmalloc+0xc4/0xcc
+> [  497.570961] [C3F35E40] [C01544D0] usb_alloc_urb+0x1c/0x5c
+> [  497.576371] [C3F35E50] [C015520C] usb_sg_init+0x1a0/0x2f8
+> [  497.581779] [C3F35EA0] [C0167318] usb_stor_bulk_transfer_sg+0x8c/0x138
+> [  497.588317] [C3F35ED0] [C0167960] usb_stor_Bulk_transport+0x140/0x310
+> [  497.594767] [C3F35F00] [C0167DCC] usb_stor_invoke_transport+0x2c/0x344
+> [  497.601303] [C3F35F50] [C0166B2C] 
+> usb_stor_transparent_scsi_command+0x10/0x20
+> [  497.608449] [C3F35F60] [C0168498] usb_stor_control_thread+0x1f8/0x290
+> [  497.614900] [C3F35FC0] [C0033E48] kthread+0xf4/0x130
+> [  497.619876] [C3F35FF0] [C001093C] kernel_thread+0x44/0x60
 
-Thanks, all for the discussion. I certainly learnt a lot. I definitely
-expected to be flamed and roasted for posting my original message, and
-was not disappointed :)
+This seems like a problem, the usb-storage thread is trying to allocate 
+some memory which is ending up waiting for VM writeout, which obviously 
+won't proceed since this thread is the one that needs to do this.. It 
+looks like the allocation in usb_stor_bulk_transfer_sglist is done with 
+GFP_NOIO, so I wonder why we're getting into this state?
 
-I do not possess all the knowledge ("legal" and technical) that people
-who have contributed to this discussion possess. However I will still
-comment from a user's perspective, which was my original point.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-Many companies in the embedded field still mistakenly feel (or felt
-until a while ago) that Linux was not right for them. That they would
-have to open source their code, that they would not get adequate
-support, and that Linux was too big and heavy to perform well in an
-embedded platform. People like me who were Linux Desktop junkies were
-actually trying to convince companies of the opposite.
-
-Now the popularity of Linux is exploding in the embedded space. Nobody
-talks of VxWorks and OSE anymore. It is all Linux. Perhaps it would be
-a worthwhile experiment to study this surge in popularity. I am not an
-expert, but perhaps the reason is "it works so goddamn well and has a
-wealth of third party FREE software". Sure its a bit of work to make
-it work on our platform and we don't have to Enea or Windriver to
-write our gripes to. But it definitely is worth it.
-
-Now it would also be worthwhile to contemplate what EXPORT_SYMBOL_GPL
-does to this popularity. I don't know. I am just giving you my
-opinion. The moment companies learn of something like this, alarm
-bells start to go off. This is not rational. I personally have nothing
-against open-sourcing all software. *But*, this is not how companies
-think.
-
-Let's think about why Linux became so popular and strive towards
-keeping it that way instead of resorting to innovative ways of just
-confusing a lot of people.
-
-Having said this, I am committed to contribute back to the Linux
-community in any way I can, not withstanding my present employer. Keep
-up the good work guys!
-
-> DS
-
-vj.
