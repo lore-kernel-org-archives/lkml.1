@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932995AbXBTTko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932985AbXBTTmM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932995AbXBTTko (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 14:40:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932987AbXBTTko
+	id S932985AbXBTTmM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 14:42:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933001AbXBTTmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 14:40:44 -0500
-Received: from kanga.kvack.org ([66.96.29.28]:48863 "EHLO kanga.kvack.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932975AbXBTTkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 14:40:43 -0500
-Date: Tue, 20 Feb 2007 14:40:40 -0500
-From: Benjamin LaHaise <bcrl@kvack.org>
-To: bert hubert <bert.hubert@netherlabs.nl>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Josef Sipek <jsipek@fsl.cs.sunysb.edu>,
-       Andi Kleen <andi@firstfloor.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: all syscalls initially taking 4usec on a P4? Re: nonblocking UDPv4 recvfrom() taking 4usec @ 3GHz?
-Message-ID: <20070220194040.GA18976@kvack.org>
-References: <20070219231447.GA4400@outpost.ds9a.nl> <p73d545drx6.fsf@bingen.suse.de> <20070220162714.GA3245@outpost.ds9a.nl> <20070220164124.GA24930@2ka.mipt.ru> <20070220184242.GA30077@filer.fsl.cs.sunysb.edu> <20070220184859.GA1949@2ka.mipt.ru> <20070220193319.GA8800@outpost.ds9a.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070220193319.GA8800@outpost.ds9a.nl>
-User-Agent: Mutt/1.4.1i
+	Tue, 20 Feb 2007 14:42:12 -0500
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45637 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932985AbXBTTmL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 14:42:11 -0500
+Date: Tue, 20 Feb 2007 11:42:09 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Rik van Riel <riel@redhat.com>
+cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH] free swap space when (re)activating page
+In-Reply-To: <45DB4C87.6050809@redhat.com>
+Message-ID: <Pine.LNX.4.64.0702201138360.16314@schroedinger.engr.sgi.com>
+References: <45D63445.5070005@redhat.com> <Pine.LNX.4.64.0702192048150.9934@schroedinger.engr.sgi.com>
+ <45DAF794.2000209@redhat.com> <Pine.LNX.4.64.0702200833460.13913@schroedinger.engr.sgi.com>
+ <45DB25E1.7030504@redhat.com> <Pine.LNX.4.64.0702201015590.14497@schroedinger.engr.sgi.com>
+ <45DB4C87.6050809@redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 20, 2007 at 08:33:20PM +0100, bert hubert wrote:
-> I'm investigating this further for other system calls. It might be that my
-> measurements are off, but it appears even a slight delay between calls
-> incurs a large penalty.
+On Tue, 20 Feb 2007, Rik van Riel wrote:
 
-Make sure your system is idle.  Userspace bloat means that *lots* of idle 
-activity occurs in between timer ticks on recent distributions -- all those 
-widgets polling the hardware to see if something changed or needs updating 
-do a lot of damage to the caches.  Try comparing a run under init=/bin/bash 
-with one while logged in to a desktop environment to see just how painful it 
-is.
+> > Maybe the hunk does apply in a different location than I thought.
+> 
+> I suspect that's the case ...
 
-		-ben
--- 
-"Time is of no importance, Mr. President, only life is important."
-Don't Email: <dont@kvack.org>.
+No that is not the case:
+
+@@ -875,6 +878,11 @@ force_reclaim_mapped:
+ 		pagevec_strip(&pvec);
+ 		spin_lock_irq(&zone->lru_lock);
+ 	}
++	if (vm_swap_full()) {
++		spin_unlock_irq(&zone->lru_lock);
++		pagevec_swap_free(&pvec);
++		spin_lock_irq(&zone->lru_lock);
++	}
+ 
+ 	pgmoved = 0;
+ 	while (!list_empty(&l_active)) {
+
+So you do the swap free on the pages leftover from moving to the inactive 
+list and not to the pages that will be moved to the active list. It does 
+not do what you wanted to be done.
+
+You need to
+
+1. Do the pagevec_swap_free in the loop over the active pages
+
+2. At end of the loop over the active pages do something like the above.
+
