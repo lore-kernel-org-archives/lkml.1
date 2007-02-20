@@ -1,101 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161038AbXBTWq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161048AbXBTWqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161038AbXBTWq1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 17:46:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161041AbXBTWq0
+	id S1161048AbXBTWqx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 17:46:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161043AbXBTWqx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 17:46:26 -0500
-Received: from an-out-0708.google.com ([209.85.132.251]:8323 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161038AbXBTWqZ (ORCPT
+	Tue, 20 Feb 2007 17:46:53 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:39730 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161041AbXBTWqv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 17:46:25 -0500
-Message-ID: <5640c7e00702201446sf0f2110wfcc97134e834fee1@mail.gmail.com>
-Date: Wed, 21 Feb 2007 11:46:23 +1300
-From: "Ian McDonald" <ian.mcdonald@jandi.co.nz>
-To: "bert hubert" <bert.hubert@netherlabs.nl>,
-       "Rick Jones" <rick.jones2@hp.com>,
-       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
-       "Josef Sipek" <jsipek@fsl.cs.sunysb.edu>,
-       "Andi Kleen" <andi@firstfloor.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: all syscalls initially taking 4usec on a P4? Re: nonblocking UDPv4 recvfrom() taking 4usec @ 3GHz?
-In-Reply-To: <20070220221719.GA16263@outpost.ds9a.nl>
+	Tue, 20 Feb 2007 17:46:51 -0500
+X-Sasl-enc: 3w+Nyk30+uhqkBXV4B0CbNVFCWxDrb2L0vQs6uwvtsnk 1172011677
+Message-ID: <45DB7AA2.4010804@imap.cc>
+Date: Tue, 20 Feb 2007 23:48:02 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070219231447.GA4400@outpost.ds9a.nl>
-	 <p73d545drx6.fsf@bingen.suse.de>
-	 <20070220162714.GA3245@outpost.ds9a.nl>
-	 <20070220164124.GA24930@2ka.mipt.ru>
-	 <20070220184242.GA30077@filer.fsl.cs.sunysb.edu>
-	 <20070220184859.GA1949@2ka.mipt.ru>
-	 <20070220193319.GA8800@outpost.ds9a.nl> <45DB6FD8.4050106@hp.com>
-	 <20070220221719.GA16263@outpost.ds9a.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20-mm2: possible recursive locking detected (reiserfs-related)
+References: <20070217215146.30e7ffa3.akpm@linux-foundation.org> <200702202223.54046.rjw@sisk.pl>
+In-Reply-To: <200702202223.54046.rjw@sisk.pl>
+X-Enigmail-Version: 0.94.1.2
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig014AC67E3EF4E11EC663BF46"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/21/07, bert hubert <bert.hubert@netherlabs.nl> wrote:
-> I'm trying to figure out which processes have the most impact, I had already
-> killed anything non-essential. But that still leaves 140 pids.
->
->         Bert
->
-That sounds way too many pids. I run a script to shut down processes
-when I do testing as it makes a HUGE difference to my timing of things
-which can be quite critical.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig014AC67E3EF4E11EC663BF46
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Here's my list of 46 and that includes me sshing into a box and
-checking for processes:
-UnID        PID  PPID CMD
-root         1     0 init [2]
-root         2     1 [ksoftirqd/0]
-root         3     1 [watchdog/0]
-root         4     1 [events/0]
-root         5     1 [khelper]
-root         6     1 [kthread]
-root        40     6 [kblockd/0]
-root        41     6 [kacpid]
-root       110     6 [cqueue/0]
-root       111     6 [ata/0]
-root       112     6 [ata_aux]
-root       113     6 [kseriod]
-root       135     6 [rt-test-0]
-root       137     6 [rt-test-1]
-root       139     6 [rt-test-2]
-root       141     6 [rt-test-3]
-root       143     6 [rt-test-4]
-root       145     6 [rt-test-5]
-root       147     6 [rt-test-6]
-root       149     6 [rt-test-7]
-root       151     6 [pdflush]
-root       152     6 [pdflush]
-root       153     6 [kswapd0]
-root       154     6 [aio/0]
-root       838     6 [kedac]
-root       843     6 [kjournald]
-root      1720     6 [ksuspend_usbd]
-root      1721     6 [khubd]
-root      1741     6 [kpsmoused]
-root      2544     1 /sbin/syslogd
-root      2554     1 /sbin/klogd -x
-root      2851     1 /usr/sbin/inetd
-root      2863     1 /usr/sbin/sshd
-ntp       2954     1 /usr/sbin/ntpd -p /var/run/ntpd.pid -u 111:111 -g
-root      3061     1 /bin/login --
-root      3062     1 /sbin/getty 38400 tty2
-root      3063     1 /sbin/getty 38400 tty3
-root      3064     1 /sbin/getty 38400 tty4
-root      3065     1 /sbin/getty 38400 tty5
-root      3066     1 /sbin/getty 38400 tty6
-ian       3083  3061 -bash
-root     21518  2863 sshd: ian [priv]
-ian      21520 21518 sshd: ian@pts/1
-ian      21521 21520 -bash
-ian      21747 21521 ps -ef
+Am 20.02.2007 22:23 schrieb Rafael J. Wysocki:
+> Looks like reiserfs has some locking problems:
+>=20
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> [ INFO: possible recursive locking detected ]
+> 2.6.20-mm2 #6
+> ---------------------------------------------
+> beagled/4786 is trying to acquire lock:
+>  (&inode->i_mutex){--..}, at: [<ffffffff80479df9>] mutex_lock+0x19/0x20=
 
--- 
-Web: http://wand.net.nz/~iam4
-Blog: http://iansblog.jandi.co.nz
-WAND Network Research Group
+>=20
+> but task is already holding lock:
+>  (&inode->i_mutex){--..}, at: [<ffffffff80479df9>] mutex_lock+0x19/0x20=
+
+>=20
+> other info that might help us debug this:
+> 3 locks held by beagled/4786:
+>  #0:  (&inode->i_mutex){--..}, at: [<ffffffff80479df9>] mutex_lock+0x19=
+/0x20
+>  #1:  (&REISERFS_I(inode)->xattr_sem){----}, at: [<ffffffff80304c99>] r=
+eiserfs_setxattr+0x79/0x150
+>  #2:  (&REISERFS_SB(s)->xattr_dir_sem){----}, at: [<ffffffff80304cc0>] =
+reiserfs_setxattr+0xa0/0x150
+
+This looks like the same I have been seeing in every release
+since 2.6.18. I reported it a couple of times, and Srinivasa Ds
+tried a few fixes on me during 2.6.19-rc4, but we never got to
+the bottom of it.
+
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enig014AC67E3EF4E11EC663BF46
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFF23qiMdB4Whm86/kRAn6YAJ9RtV41xX4V5ONFQVwNT6vrYoYKEwCeOeZC
+T88Ch6N/r053H0p1jZdXJws=
+=HG/h
+-----END PGP SIGNATURE-----
+
+--------------enig014AC67E3EF4E11EC663BF46--
