@@ -1,42 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030232AbXBTQcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030235AbXBTQhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030232AbXBTQcS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 11:32:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030234AbXBTQcR
+	id S1030235AbXBTQhy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 11:37:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030218AbXBTQhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 11:32:17 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50086 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030232AbXBTQcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 11:32:16 -0500
-Date: Tue, 20 Feb 2007 11:32:09 -0500
-From: Prarit Bhargava <prarit@redhat.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-mm@kvack.org
-Cc: Prarit Bhargava <prarit@redhat.com>
-Message-Id: <20070220163209.23777.90564.sendpatchset@prarit.boston.redhat.com>
-Subject: [PATCH]: remove __initdata from initkmem_list3
+	Tue, 20 Feb 2007 11:37:54 -0500
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55915 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030241AbXBTQhw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 11:37:52 -0500
+Date: Tue, 20 Feb 2007 08:37:52 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Rik van Riel <riel@redhat.com>
+cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH] free swap space when (re)activating page
+In-Reply-To: <45DAF794.2000209@redhat.com>
+Message-ID: <Pine.LNX.4.64.0702200833460.13913@schroedinger.engr.sgi.com>
+References: <45D63445.5070005@redhat.com> <Pine.LNX.4.64.0702192048150.9934@schroedinger.engr.sgi.com>
+ <45DAF794.2000209@redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove __initdata from initkmem_list3
+On Tue, 20 Feb 2007, Rik van Riel wrote:
 
-Resolves MODPOST warning similar to:
+> > It was the portion that modifies shrink_active_list. Why operate
+> > on the pagevec there? The pagevec only contains the leftovers to be released
+> > from scanning over the temporary inactive list.
+> 
+> Why?  Because the pages that were not referenced will be
+> going onto the inactive list and are now a candidate for
+> swapping out.  I don't see why we would want to reclaim
+> the swap space for pages that area about to be swapped
+> out again.
 
-WARNING: vmlinux - Section mismatch: reference to .init.data:initkmem_list3 from .text between 'set_up_list3s' (at offset 0xc046a3ed) and 's_start'
-
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-
-diff --git a/mm/slab.c b/mm/slab.c
-index 70784b8..d97f252 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -305,7 +305,7 @@ struct kmem_list3 {
-  * Need this for bootstrapping a per node allocator.
-  */
- #define NUM_INIT_LISTS (2 * MAX_NUMNODES + 1)
--struct kmem_list3 __initdata initkmem_list3[NUM_INIT_LISTS];
-+struct kmem_list3 initkmem_list3[NUM_INIT_LISTS];
- #define	CACHE_CACHE 0
- #define	SIZE_AC 1
- #define	SIZE_L3 (1 + MAX_NUMNODES)
+Sounds sane. Then drop that piece. Again, you were only operating on the 
+pages left over in the pagevec after the move of the pages to the 
+inactive list. If you really wanted to do something there then the 
+processing should have covered all pages that go to the inactive list.
