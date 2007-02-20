@@ -1,43 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964949AbXBTIDM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965017AbXBTIIF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964949AbXBTIDM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 03:03:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964952AbXBTIDM
+	id S965017AbXBTIIF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 03:08:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964983AbXBTIIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 03:03:12 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:35260 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964949AbXBTIDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 03:03:11 -0500
-Date: Tue, 20 Feb 2007 09:02:53 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Veronique & Vincent <vinctre@videotron.ca>
-cc: marcel@holtmann.org, vincent.fortier1@ec.gc.ca,
-       linux-kernel@vger.kernel.org
-Subject: Re: Fwd: RE: Boot time Bluetooth BUG: warning: (value > m) at
- hid-core.c:793
-In-Reply-To: <200702192111.47017.vinctre@videotron.ca>
-Message-ID: <Pine.LNX.4.64.0702200854520.25686@twin.jikos.cz>
-References: <200702192111.47017.vinctre@videotron.ca>
+	Tue, 20 Feb 2007 03:08:05 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:34794 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S965017AbXBTIIE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 03:08:04 -0500
+Date: Tue, 20 Feb 2007 09:07:56 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+cc: Paul Mundt <lethal@linux-sh.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Frame Buffer Device Development 
+	<linux-fbdev-devel@lists.sourceforge.net>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, James Simmons <jsimmons@infradead.org>
+Subject: Re: [PATCH 2.6.20 1/1] fbdev,mm: hecuba/E-Ink fbdev driver
+In-Reply-To: <45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
+Message-ID: <Pine.LNX.4.62.0702200906070.2082@pademelon.sonytel.be>
+References: <20070217104215.GB25512@localhost> <1171715652.5186.7.camel@lappy>
+ <45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com>
+ <20070217135922.GA15373@linux-sh.org> <45a44e480702180331t7e76c396j1a9861f689d4186b@mail.gmail.com>
+ <20070218235741.GA22298@linux-sh.org> <45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Feb 2007, Veronique & Vincent wrote:
+On Mon, 19 Feb 2007, Jaya Kumar wrote:
+> On 2/18/07, Paul Mundt <lethal@linux-sh.org> wrote:
+> > Given that, this would have to be something that's dealt with at the
+> > subsystem level rather than in individual drivers, hence the desire to
+> > see something like this more generically visible.
+> > 
+> 
+> Hi Peter, Paul, fbdev folk,
+> 
+> Ok. Here's what I'm thinking for abstracting this:
+> 
+> fbdev drivers would setup fb_mmap with their own_mmap as usual. In
+> own_mmap, they would do what they normally do and setup a vm_ops. They
+> are free to have their own nopage handler but would set the
+> page_mkwrite handler to be fbdev_deferred_io_mkwrite().
+> fbdev_deferred_io_mkwrite would build up the list of touched pages and
+> pass it to a delayed workqueue which would then mkclean on each page
+> and then pass a copy of that page list down to a driver's callback
+> function. The fbdev driver's callback function can then do the actual
+> IO to the framebuffer or coalesce DMA based on the provided page list.
+> 
+> I would like to add something like the following to struct fb_info:
+> 
+> #ifdef CONFIG_FB_DEFERRED_IO
+> struct fb_deferred_io *defio;
+> #endif
 
-> Hi again Marcel and Jiri,
-> I've set up the hid-core.c to DEBUG mode... and it literally got pretty verbose...
+Don't you need a way to specify the maximum deferral time? E.g. a field in
+fb_info.
 
-Vincent,
+> to store the mutex (to protect the page list), the touched page list,
+> and the driver's callback function.
+> 
+> I hope this sounds sufficiently generic to meet everyone's (the two of
+> us? :) needs.
 
-thanks for the output. Is this really the full output? The important part 
-- report descriptor dump - seems to be missing in the output (it should 
-read something like "hid-core.c: report descriptor (size XY, read YZ) = 
-... some hexadecimal numbers". This should be output by the time the HID 
-device is connected.
+Looks fine!
 
-This output is generated in usb_hid_configure() function in hid-core.c
+Gr{oetje,eeting}s,
 
--- 
-Jiri Kosina
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
