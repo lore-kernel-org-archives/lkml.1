@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030457AbXBTVgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030452AbXBTVph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030457AbXBTVgU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 16:36:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030460AbXBTVgU
+	id S1030452AbXBTVph (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 16:45:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030455AbXBTVph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 16:36:20 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:54370 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030457AbXBTVgT (ORCPT
+	Tue, 20 Feb 2007 16:45:37 -0500
+Received: from an-out-0708.google.com ([209.85.132.251]:37842 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030452AbXBTVpg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 16:36:19 -0500
-Date: Tue, 20 Feb 2007 13:35:42 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Max Krasnyansky <maxk@qualcomm.com>
-cc: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Gautham shenoy <ego@in.ibm.com>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: slab: start_cpu_timer/cache_reap CONFIG_HOTPLUG_CPU problems
-In-Reply-To: <45DB669B.2010307@qualcomm.com>
-Message-ID: <Pine.LNX.4.64.0702201334361.17198@schroedinger.engr.sgi.com>
-References: <20070129011301.GA844@tv-sign.ru>
- <Pine.LNX.4.64.0701290852390.28200@schroedinger.engr.sgi.com>
- <20070129171923.GA138@tv-sign.ru> <Pine.LNX.4.64.0701290922390.28330@schroedinger.engr.sgi.com>
- <20070129182742.GA158@tv-sign.ru> <45DB404C.4070305@qualcomm.com>
- <Pine.LNX.4.64.0702201041340.14643@schroedinger.engr.sgi.com>
- <20070220200550.GA85@tv-sign.ru> <45DB669B.2010307@qualcomm.com>
+	Tue, 20 Feb 2007 16:45:36 -0500
+Message-ID: <5640c7e00702201345n409d5c4btf978610541f866c2@mail.gmail.com>
+Date: Wed, 21 Feb 2007 10:45:35 +1300
+From: "Ian McDonald" <ian.mcdonald@jandi.co.nz>
+To: "Tejun Heo" <htejun@gmail.com>
+Subject: Re: [PATCH] pci: allow multiple calls to pcim_pin_device()
+Cc: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>, gregkh@suse.de,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Jeff Garzik" <jeff@garzik.org>
+In-Reply-To: <20070220082839.GN1625@htj.dyndns.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <5640c7e00702181153q44678861q9963e7e2de00be8@mail.gmail.com>
+	 <200702182158.13429.bzolnier@gmail.com>
+	 <5640c7e00702182000p26f1ca8n15c1edcd8b3134a1@mail.gmail.com>
+	 <200702191247.03274.bzolnier@gmail.com>
+	 <20070220082839.GN1625@htj.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Feb 2007, Max Krasnyansky wrote:
+On 2/20/07, Tejun Heo <htejun@gmail.com> wrote:
+> Sanity check in pcim_pin_device() was too restrictive in that it
+> didn't allow multiple calls to the function, which is against the
+> devres philosohpy of fire-and-forget.  Track pinned status separately
+> and allow pinning multiple times.
+>
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> ---
+> It was an actual bug in pcim_pin_device() implementation.  Thanks for
+> spotting this.  :-)
+>
+> Ian McDonald, please verify your warning goes away with this patch.
 
-> I guess I kind of hijacked the thread. The second part of my first email was
-> dropped. Basically I was saying that I'm working on CPU isolation extensions.
-> Where an isolated CPU is not supposed to do much kernel work. In which case
-> you'd want to run slab cache reaper on some other CPU on behalf of the
-> isolated
-> one. Hence the proposal to explicitly pass cpu_id to the reaper. I guess now
-> that you guys fixed the hotplug case it does not help in that scenario.
-
-A cpu must have a per cpu cache in order to do slab allocations. The 
-locking in the slab allocator depends on it.
-
-If the isolated cpus have no need for slab allocations then you will also 
-not need to run the slab_reaper().
-
+Yes it does. Thanks for sorting.
+>
+> Greg, please forward this patch upstream once Ian acks it.
+>
+Acked-by: Ian McDonald <ian.mcdonald@jandi.co.nz>
+-- 
+Web: http://wand.net.nz/~iam4
+Blog: http://iansblog.jandi.co.nz
+WAND Network Research Group
