@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965248AbXBTWOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030494AbXBTWRX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965248AbXBTWOo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 17:14:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965261AbXBTWOn
+	id S1030494AbXBTWRX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 17:17:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030214AbXBTWRW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 17:14:43 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56769 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965248AbXBTWOn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 17:14:43 -0500
-Date: Tue, 20 Feb 2007 14:14:38 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Max Krasnyansky <maxk@qualcomm.com>
-cc: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Gautham shenoy <ego@in.ibm.com>, Andrew Morton <akpm@osdl.org>,
+	Tue, 20 Feb 2007 17:17:22 -0500
+Received: from outpost.ds9a.nl ([213.244.168.210]:39938 "EHLO outpost.ds9a.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030193AbXBTWRV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 17:17:21 -0500
+Date: Tue, 20 Feb 2007 23:17:20 +0100
+From: bert hubert <bert.hubert@netherlabs.nl>
+To: Rick Jones <rick.jones2@hp.com>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Josef Sipek <jsipek@fsl.cs.sunysb.edu>,
+       Andi Kleen <andi@firstfloor.org>, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: slab: start_cpu_timer/cache_reap CONFIG_HOTPLUG_CPU problems
-In-Reply-To: <45DB6FC7.60502@qualcomm.com>
-Message-ID: <Pine.LNX.4.64.0702201402420.17433@schroedinger.engr.sgi.com>
-References: <20070129011301.GA844@tv-sign.ru>
- <Pine.LNX.4.64.0701290852390.28200@schroedinger.engr.sgi.com>
- <20070129171923.GA138@tv-sign.ru> <Pine.LNX.4.64.0701290922390.28330@schroedinger.engr.sgi.com>
- <20070129182742.GA158@tv-sign.ru> <45DB404C.4070305@qualcomm.com>
- <Pine.LNX.4.64.0702201041340.14643@schroedinger.engr.sgi.com>
- <20070220200550.GA85@tv-sign.ru> <45DB669B.2010307@qualcomm.com>
- <Pine.LNX.4.64.0702201334361.17198@schroedinger.engr.sgi.com>
- <45DB6FC7.60502@qualcomm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: all syscalls initially taking 4usec on a P4? Re: nonblocking  UDPv4 recvfrom() taking 4usec @ 3GHz?
+Message-ID: <20070220221719.GA16263@outpost.ds9a.nl>
+Mail-Followup-To: bert hubert <bert.hubert@netherlabs.nl>,
+	Rick Jones <rick.jones2@hp.com>,
+	Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+	Josef Sipek <jsipek@fsl.cs.sunysb.edu>,
+	Andi Kleen <andi@firstfloor.org>, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20070219231447.GA4400@outpost.ds9a.nl> <p73d545drx6.fsf@bingen.suse.de> <20070220162714.GA3245@outpost.ds9a.nl> <20070220164124.GA24930@2ka.mipt.ru> <20070220184242.GA30077@filer.fsl.cs.sunysb.edu> <20070220184859.GA1949@2ka.mipt.ru> <20070220193319.GA8800@outpost.ds9a.nl> <45DB6FD8.4050106@hp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45DB6FD8.4050106@hp.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Feb 2007, Max Krasnyansky wrote:
+On Tue, Feb 20, 2007 at 02:02:00PM -0800, Rick Jones wrote:
 
-> Ok. Sounds like disabling cache_reaper is a better option for now. Like you
-> said
-> it's unlikely that slabs will grow much if that cpu is not heavily used by the
-> kernel.
+> The slope appears to be flattening-out the farther out to the right it 
+> goes.  Perhaps that is the length of time it takes to take all the 
+> requisite cache misses.
 
-Running for prolonged times without cache_reaper is no good.
+The rate of flattening out appears to correlate with the number of processes
+running, even though the system is otherwise >99.5% idle during my
+measurements.
 
-What we are talking about here is to disable the cache_reaper during cpu 
-shutdown. The slab cpu shutdown will clean the per cpu caches anyways so 
-we really do not need the slab_reaper running during cpu shutdown.
+With only 'gdm' running, things flatten out slowly, iow, it takes longer
+delays to see recvfrom slow down. With only 1 process running (init=bash),
+the graph is nearly flat.
+
+>From this, it is probable that even an idle GNOME desktop (Ubunty Edgy Eft)
+is under fierce cache pressure, enough to blow away my meagre 1MB in a
+matter of milliseconds.
+
+I'm trying to figure out which processes have the most impact, I had already
+killed anything non-essential. But that still leaves 140 pids.
+
+	Bert
+
+-- 
+http://www.PowerDNS.com      Open source, database driven DNS Software 
+http://netherlabs.nl              Open and Closed source services
