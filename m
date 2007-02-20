@@ -1,105 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965108AbXBTEhO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932838AbXBTElK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965108AbXBTEhO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 23:37:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932836AbXBTEhO
+	id S932838AbXBTElK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 23:41:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932834AbXBTElK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 23:37:14 -0500
-Received: from customer-domains.icp-qv1-irony7.iinet.net.au ([203.59.1.128]:36476
-	"EHLO customer-domains.icp-qv1-irony7.iinet.net.au"
+	Mon, 19 Feb 2007 23:41:10 -0500
+Received: from smtp.ocgnet.org ([64.20.243.3]:40064 "EHLO smtp.ocgnet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932834AbXBTEhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 23:37:12 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAH4J2kV8qGxQdGdsb2JhbACibQEBAQ
-X-IronPort-AV: i="4.14,193,1170604800"; 
-   d="scan'208"; a="503139220:sNHT17039476"
-From: "Marc Marais" <marcm@liquid-nexus.net>
-To: Tejun Heo <htejun@gmail.com>, auxsvr@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: ata command timeout
-Date: Tue, 20 Feb 2007 12:37:08 +0800
-Message-Id: <20070220043029.M46338@liquid-nexus.net>
-In-Reply-To: <45DA7416.4040101@gmail.com>
-References: <200702192119.50954.auxsvr@gmail.com> <45DA7416.4040101@gmail.com>
-X-Mailer: Open WebMail 2.51 20050627
-X-OriginatingIP: 159.99.34.18 (marc)
+	id S932839AbXBTElJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 23:41:09 -0500
+Date: Tue, 20 Feb 2007 13:38:48 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, jsimmons@infradead.org,
+       Geert.Uytterhoeven@sonycom.com
+Subject: Re: [PATCH 2.6.20 1/1] fbdev,mm: hecuba/E-Ink fbdev driver
+Message-ID: <20070220043848.GA4092@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Jaya Kumar <jayakumar.lkml@gmail.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	linux-fbdev-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	jsimmons@infradead.org, Geert.Uytterhoeven@sonycom.com
+References: <20070217104215.GB25512@localhost> <1171715652.5186.7.camel@lappy> <45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com> <20070217135922.GA15373@linux-sh.org> <45a44e480702180331t7e76c396j1a9861f689d4186b@mail.gmail.com> <20070218235741.GA22298@linux-sh.org> <45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Feb 2007 13:07:50 +0900, Tejun Heo wrote
-> auxsvr@gmail.com wrote:
-> > Hello,
-> > 
-> > I have been running 2.6.18 for two months and the last couple of days these 
-> > error messages have appeared in my logs 
-> > (sata_promise kernel module, sda:SATA sdb:PATA disks):
-> > 
-> >                                                ata1: command timeout
-> > Feb 17 22:23:14 linux kernel: ata1: no sense translation for status: 0x40
-> > Feb 17 22:23:14 linux kernel: ata1: translated ATA stat/err 0x40/00 to SCSI 
-> > SK/ASC/ASCQ 0xb/00/00
-> > Feb 17 22:23:14 linux kernel: ata1: status=0x40 { DriveReady }
-> > Feb 17 22:23:14 linux kernel: sd 0:0:0:0: SCSI error: return code = 0x08000002
-> > Feb 17 22:23:14 linux kernel: sda: Current: sense key: Aborted Command
-> > Feb 17 22:23:14 linux kernel:     Additional sense: No additional sense 
-> > information
-> > Feb 17 22:23:14 linux kernel: end_request: I/O error, dev sda, sector 
-> > 145179585
-> > Feb 17 22:23:14 linux kernel: Buffer I/O error on device sda2, logical block 
-> > 2787300
-> > Feb 17 22:23:14 linux kernel: lost page write due to I/O error on sda2
-> > 
-> > and 
-> > 
-> >                                                ata1: command timeout
-> > Feb 19 20:39:31 linux kernel: ata1: no sense translation for status: 0x40
-> > Feb 19 20:39:31 linux kernel: ata1: translated ATA stat/err 0x40/00 to SCSI 
-> > SK/ASC/ASCQ 0xb/00/00
-> > Feb 19 20:39:31 linux kernel: ata1: status=0x40 { DriveReady }
-> > Feb 19 20:39:31 linux kernel: sd 0:0:0:0: SCSI error: return code = 0x08000002
-> > Feb 19 20:39:31 linux kernel: sda: Current: sense key: Aborted Command
-> > Feb 19 20:39:31 linux kernel:     Additional sense: No additional sense 
-> > information
-> > Feb 19 20:39:31 linux kernel: end_request: I/O error, dev sda, sector 89553479
-> > 
-> > without any other ill-effects that I know of(I did smart tests on the drive; 
-> > all passed successfully).
-> > I have read that hddtemp may be the cause of this (I am running version 0.3) 
-> > so is there any reason
-> > to worry and prepare for a HDD replacement?
+On Mon, Feb 19, 2007 at 11:13:04PM -0500, Jaya Kumar wrote:
+> On 2/18/07, Paul Mundt <lethal@linux-sh.org> wrote:
+> >Given that, this would have to be something that's dealt with at the
+> >subsystem level rather than in individual drivers, hence the desire to
+> >see something like this more generically visible.
+> >
 > 
-> Not really.  If the problem occurs very infrequently, you don't need 
-> to worry about it too much.  Command timeouts do occur on otherwise healthy
-> systems from time to time.
+> Hi Peter, Paul, fbdev folk,
 > 
-> -- 
-> tejun
-> -
+> Ok. Here's what I'm thinking for abstracting this:
+> 
+> fbdev drivers would setup fb_mmap with their own_mmap as usual. In
+> own_mmap, they would do what they normally do and setup a vm_ops. They
+> are free to have their own nopage handler but would set the
+> page_mkwrite handler to be fbdev_deferred_io_mkwrite().
 
-I'm experiencing the exact same problem with my setup also with sata_promise.
-I have posted to the linux-ide list but it wasn't really acknowledged as a
-problem in the driver. Are these command timeouts? The log entry doesn't seem
-to say that - just an error with 'DriveReady' and command aborted. I would
-think some kind of retry should be performed (and if it is then logged too).
+The vast majority of drivers do not implement ->fb_mmap(), and with
+proper abstraction, this should be something that's possible as a direct
+alternative to drivers/video/fbmem.c:fb_mmap() for the people that want
+it. Of course it's just as easy to do something like the sbuslib.c route
+and then have drivers set their ->fb_mmap() from that too.
 
-The errors may be benign but the problem is when using software raid (md
-driver) that this error may cause a degraded array and worse a damaged array
-should a read error like this occur when an array is already degraded.
-
-The question is what happens after the error is reported, is the operation
-retried? In my situation the md layer receives the error and recovers by
-taking the data from another drive in the array. 
-
-The fact that you are also experiencing this means it might be an issue that
-needs further investigation in my opinion.
-
-
-
-Regards,
-Marc
-
---
+> fbdev_deferred_io_mkwrite would build up the list of touched pages and
+> pass it to a delayed workqueue which would then mkclean on each page
+> and then pass a copy of that page list down to a driver's callback
+> function. The fbdev driver's callback function can then do the actual
+> IO to the framebuffer or coalesce DMA based on the provided page list.
+> 
+That works for me, though I'd prefer for struct page_list to be done with
+a scatterlist, then it's trivial to setup from the workqueue context
+without having to shuffle things around.
