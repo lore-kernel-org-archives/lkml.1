@@ -1,52 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030308AbXBTRG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030305AbXBTRH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030308AbXBTRG2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 12:06:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030307AbXBTRG2
+	id S1030305AbXBTRH0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 12:07:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030299AbXBTRH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 12:06:28 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:56132 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030308AbXBTRG0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 12:06:26 -0500
-Date: Tue, 20 Feb 2007 12:03:35 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>
-Cc: Zach Brown <zach.brown@oracle.com>, linux-aio@kvack.org,
-       linux-kernel@vger.kernel.org, Benjamin LaHaise <bcrl@kvack.org>,
-       Suparna bhattacharya <suparna@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/2] aio: propogate post-EIOCBQUEUED errors to completion event
-Message-ID: <20070220170335.GR6133@think.oraclecorp.com>
-References: <20070219213835.4032.87439.sendpatchset@tetsuo.zabbo.net> <B41635854730A14CA71C92B36EC22AAC871D92@mssmsx411>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <B41635854730A14CA71C92B36EC22AAC871D92@mssmsx411>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Tue, 20 Feb 2007 12:07:26 -0500
+Received: from [81.2.110.250] ([81.2.110.250]:37059 "EHLO lxorguk.ukuu.org.uk"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030309AbXBTRHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 12:07:24 -0500
+Date: Tue, 20 Feb 2007 18:08:57 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: jgarzik@pobox.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] net: remove a collection of unneeded #undef REALLY_SLOW_IO
+ stuff
+Message-ID: <20070220180857.2ec18fb8@localhost.localdomain>
+X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 20, 2007 at 07:57:49PM +0300, Ananiev, Leonid I wrote:
-> Zach> This addresses an oops reported by Leonid Ananiev
-> <leonid.i.ananiev@intel.com>
-> Zach> as archived at http://lkml.org/lkml/2007/2/8/337.
-> ....
-> Zach> This was tested by running O_DIRECT aio-stress concurrently with
-> buffered reads
-> 
-> The oops was with aio-stress only running in the loop
-> WITHOUT buffered or mmaped IO which are patched and discussed now.
-> Actually 47% aio is finished with EIO after patch.
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-I looked through the thread and couldn't find the aio-stress command
-line used for the whole test.  Could you please post it here?
-
-If aio+dio is being used to extend the file, you'll get pages in the
-page cache, which is hopefully why you're able to trigger the EIOs.
-
--chris
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.20-mm2/drivers/net/de600.c linux-2.6.20-mm2/drivers/net/de600.c
+--- linux.vanilla-2.6.20-mm2/drivers/net/de600.c	2007-02-20 12:32:34.000000000 +0000
++++ linux-2.6.20-mm2/drivers/net/de600.c	2007-02-20 14:00:46.000000000 +0000
+@@ -38,12 +38,6 @@
+ /* Add more time here if your adapter won't work OK: */
+ #define DE600_SLOW_DOWN	udelay(delay_time)
+ 
+- /*
+- * If you still have trouble reading/writing to the adapter,
+- * modify the following "#define": (see <asm/io.h> for more info)
+-#define REALLY_SLOW_IO
+- */
+-
+ /* use 0 for production, 1 for verification, >2 for debug */
+ #ifdef DE600_DEBUG
+ #define PRINTK(x) if (de600_debug >= 2) printk x
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.20-mm2/drivers/net/ni52.c linux-2.6.20-mm2/drivers/net/ni52.c
+--- linux.vanilla-2.6.20-mm2/drivers/net/ni52.c	2007-02-20 12:32:34.000000000 +0000
++++ linux-2.6.20-mm2/drivers/net/ni52.c	2007-02-20 14:00:46.000000000 +0000
+@@ -104,8 +104,6 @@
+ static int rfdadd;	/* rfdadd=1 may be better for 8K MEM cards */
+ static int fifo=0x8;	/* don't change */
+ 
+-/* #define REALLY_SLOW_IO */
+-
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/string.h>
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.20-mm2/drivers/net/skfp/cfm.c linux-2.6.20-mm2/drivers/net/skfp/cfm.c
+--- linux.vanilla-2.6.20-mm2/drivers/net/skfp/cfm.c	2007-01-31 14:04:44.000000000 +0000
++++ linux-2.6.20-mm2/drivers/net/skfp/cfm.c	2007-02-20 14:00:46.000000000 +0000
+@@ -73,7 +73,7 @@
+ /*
+  * map from state to downstream port type
+  */
+-static const u_char cf_to_ptype[] = {
++static const unsigned char cf_to_ptype[] = {
+ 	TNONE,TNONE,TNONE,TNONE,TNONE,
+ 	TNONE,TB,TB,TS,
+ 	TA,TB,TS,TB
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.20-mm2/drivers/net/sun3_82586.c linux-2.6.20-mm2/drivers/net/sun3_82586.c
+--- linux.vanilla-2.6.20-mm2/drivers/net/sun3_82586.c	2007-01-31 14:04:44.000000000 +0000
++++ linux-2.6.20-mm2/drivers/net/sun3_82586.c	2007-02-20 14:00:46.000000000 +0000
+@@ -28,8 +28,6 @@
+ static int rfdadd = 0; /* rfdadd=1 may be better for 8K MEM cards */
+ static int fifo=0x8;	/* don't change */
+ 
+-/* #define REALLY_SLOW_IO */
+-
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/string.h>
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.20-mm2/drivers/net/wan/cosa.c linux-2.6.20-mm2/drivers/net/wan/cosa.c
+--- linux.vanilla-2.6.20-mm2/drivers/net/wan/cosa.c	2007-02-20 13:38:03.000000000 +0000
++++ linux-2.6.20-mm2/drivers/net/wan/cosa.c	2007-02-20 14:00:46.000000000 +0000
+@@ -94,7 +94,6 @@
+ #include <linux/device.h>
+ 
+ #undef COSA_SLOW_IO	/* for testing purposes only */
+-#undef REALLY_SLOW_IO
+ 
+ #include <asm/io.h>
+ #include <asm/dma.h>
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.20-mm2/drivers/net/wireless/wl3501_cs.c linux-2.6.20-mm2/drivers/net/wireless/wl3501_cs.c
+--- linux.vanilla-2.6.20-mm2/drivers/net/wireless/wl3501_cs.c	2007-02-20 12:32:35.000000000 +0000
++++ linux-2.6.20-mm2/drivers/net/wireless/wl3501_cs.c	2007-02-20 14:01:02.000000000 +0000
+@@ -26,7 +26,6 @@
+  * Tested with Planet AP in 2.5.73-bk, 216 Kbytes/s in Infrastructure mode
+  * with a SMP machine (dual pentium 100), using pktgen, 432 pps (pkt_size = 60)
+  */
+-#undef REALLY_SLOW_IO	/* most systems can safely undef this */
+ 
+ #include <linux/delay.h>
+ #include <linux/types.h>
