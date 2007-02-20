@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932714AbXBTJBE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932741AbXBTJEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932714AbXBTJBE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 04:01:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932717AbXBTJBE
+	id S932741AbXBTJEc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 04:04:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932732AbXBTJEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 04:01:04 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:7023 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932714AbXBTJBD (ORCPT
+	Tue, 20 Feb 2007 04:04:31 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50658
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S932717AbXBTJEa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 04:01:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cpwWCPCF0OlejcsoSrOc/agq7tPHfjfs5A0e4OwtyG/W/YPybX/ZIr5XLyZYgHxaSZN62jAi+Cj/X9aA0CIPLi/nMHv5xa7Iat8OeWXFVsFtcexeCB9aldVUcl5DhrP1FF1syPHctnuCe4adfFVR86aXC9RJTbp7eki5swV+pJk=
-Message-ID: <3d57814d0702200101j4885c81ex81e8b6638eea407f@mail.gmail.com>
-Date: Tue, 20 Feb 2007 19:01:01 +1000
-From: "Trent Waddington" <trent.waddington@gmail.com>
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Subject: Re: GPL vs non-GPL device drivers
-Cc: davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>
-In-Reply-To: <3d57814d0702192348m2257a660r3304eba0beca9ed6@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 20 Feb 2007 04:04:30 -0500
+Date: Tue, 20 Feb 2007 01:04:27 -0800 (PST)
+Message-Id: <20070220.010427.07640976.davem@davemloft.net>
+To: bunk@stusta.de
+Cc: akpm@osdl.org, sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC: 2.6 patch] remove the broken SUN_AURORA driver
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070220000703.GN13958@stusta.de>
+References: <20070220000703.GN13958@stusta.de>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3d57814d0702171726l403c7812n19f2a226cba02e5d@mail.gmail.com>
-	 <f2b55d220702191448g6077c6aav43ff99edbaf77bdb@mail.gmail.com>
-	 <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>
-	 <f2b55d220702191518o349c04br2e42fabecba8ea44@mail.gmail.com>
-	 <3d57814d0702191526r5f594374t50a0203d2dc6d36e@mail.gmail.com>
-	 <f2b55d220702191628v67c5b7ccvec0547ca7869ae46@mail.gmail.com>
-	 <3d57814d0702191636q3a9f96a2xc029ea92a27a3748@mail.gmail.com>
-	 <f2b55d220702191650m734b8f9btb81659608b72ea4e@mail.gmail.com>
-	 <f2b55d220702191658h1e39bec1i633c15ff17b5684c@mail.gmail.com>
-	 <3d57814d0702192348m2257a660r3304eba0beca9ed6@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/20/07, Trent Waddington <trent.waddington@gmail.com> wrote:
-> I don't think anyone wants to read that.
+From: Adrian Bunk <bunk@stusta.de>
+Date: Tue, 20 Feb 2007 01:07:03 +0100
 
-I guess that was a stupid thing to say.  Ok, fine people, Michael is
-ok with me posting this, so enjoy:
+> The SUN_AURORA driver:
+> - has been marked as BROKEN for more than two years and
+> - is still marked as BROKEN.
+> 
+> Drivers that had been marked as BROKEN for such a long time seem to be
+> unlikely to be revived in the forseeable future.
+> 
+> But if anyone wants to ever revive this driver, the code is still
+> present in the older kernel releases.
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-http://rtfm.insomnia.org/~qg/chat-with-michael-k-edwards.html
-
-There ya go.
-
-Trent
+Applied, thanks Adrian.
