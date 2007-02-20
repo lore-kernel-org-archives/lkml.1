@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030341AbXBTSUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750948AbXBTS1L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030341AbXBTSUK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 13:20:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030346AbXBTSUK
+	id S1750948AbXBTS1L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 13:27:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751005AbXBTS1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 13:20:10 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36991 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030341AbXBTSUI (ORCPT
+	Tue, 20 Feb 2007 13:27:10 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:43643 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750948AbXBTS1J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 13:20:08 -0500
-Date: Tue, 20 Feb 2007 10:20:06 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Rik van Riel <riel@redhat.com>
-cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH] free swap space when (re)activating page
-In-Reply-To: <45DB25E1.7030504@redhat.com>
-Message-ID: <Pine.LNX.4.64.0702201015590.14497@schroedinger.engr.sgi.com>
-References: <45D63445.5070005@redhat.com> <Pine.LNX.4.64.0702192048150.9934@schroedinger.engr.sgi.com>
- <45DAF794.2000209@redhat.com> <Pine.LNX.4.64.0702200833460.13913@schroedinger.engr.sgi.com>
- <45DB25E1.7030504@redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 20 Feb 2007 13:27:09 -0500
+In-Reply-To: <B41635854730A14CA71C92B36EC22AAC871DA3@mssmsx411>
+References: <B41635854730A14CA71C92B36EC22AAC871DA3@mssmsx411>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <930023BF-0955-4C3A-989F-9ECC3D7ECCC9@oracle.com>
+Cc: <linux-aio@kvack.org>, <linux-kernel@vger.kernel.org>,
+       "Benjamin LaHaise" <bcrl@kvack.org>,
+       "Suparna bhattacharya" <suparna@in.ibm.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Content-Transfer-Encoding: 7bit
+From: Zach Brown <zach.brown@oracle.com>
+Subject: Re: [PATCH 2/2] aio: propogate post-EIOCBQUEUED errors to completion event
+Date: Tue, 20 Feb 2007 10:26:44 -0800
+To: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>
+X-Mailer: Apple Mail (2.752.3)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Feb 2007, Rik van Riel wrote:
 
-> Nono, I try to remove the swap space occupied by pages that
-> go back onto the active list.  Regardless of whether they
-> were already there, or whether they started out on the
-> inactive list.
+On Feb 20, 2007, at 9:33 AM, Ananiev, Leonid I wrote:
 
-Ok then do it for all pages that go back not just for those leftover from 
-the moving of pages to the inactive list (why would you move those???)
+> There is change in the patch which is uncommented in preface.
+> Now aio_ring_insert_entry() is not called if req->ki_users>=1.
+> Before was called.
+> Could you comment it?
 
-> Stripping the swap space of the pages that are going to
-> the inactive list makes less sense IMHO, because those
-> pages are candidates for swapping out - meaning those
-> should keep the space.
+It is described in the patch description, though perhaps not  
+explicitly enough:
 
-Just trying to figure out what your patch does there and it does not make 
-much sense to me so far.
+"To get this working we change the aio_complete() path so that the ring
+insertion is performed as the final iocb reference is dropped."
 
-Maybe the hunk does apply in a different location than I thought. If you 
-do that in the loop over the pages on active list then it would make 
-sense. But in that case you need another piece of it doing the same to the 
-pages that are released at the end of shrink_active_list().
+This stops an aio_complete() from generating a completion event  
+before the submission path has had a chance to generate an error.   
+This could happen if O_DIRECT bios completed very quickly before the  
+submission path had a chance to return up and call  
+ivalidate_inode_pages2_range().
+
+- z
+
+
