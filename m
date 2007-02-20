@@ -1,372 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964785AbXBTGgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964786AbXBTGhO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964785AbXBTGgq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 01:36:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932856AbXBTGgJ
+	id S964786AbXBTGhO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 01:37:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964789AbXBTGhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 01:36:09 -0500
-Received: from ns.suse.de ([195.135.220.2]:56191 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932845AbXBTGgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 01:36:03 -0500
-From: NeilBrown <neilb@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 20 Feb 2007 17:35:16 +1100
-Message-Id: <1070220063516.16208@suse.de>
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 006 of 6] md: Add support for reshape of a raid6
-References: <20070220172544.15678.patches@notabene>
+	Tue, 20 Feb 2007 01:37:12 -0500
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:38385 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964786AbXBTGhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 01:37:05 -0500
+Message-ID: <45DA9719.8050001@drzeus.cx>
+Date: Tue, 20 Feb 2007 07:37:13 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070131)
+MIME-Version: 1.0
+To: Petr Vandrovec <petr@vandrovec.name>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: NCPFS and brittle connections
+References: <459D1794.2060009@drzeus.cx> <459D38DA.4030803@vc.cvut.cz> <459D55E3.4000905@drzeus.cx> <459E01B2.50309@vc.cvut.cz> <45B77AE4.2010605@drzeus.cx> <45B79C35.2090302@vc.cvut.cz> <45B7D750.1040501@drzeus.cx> <45B868D5.9070409@vc.cvut.cz> <45B8845E.8070008@drzeus.cx> <45C57695.7000707@vc.cvut.cz> <45C61540.7000008@drzeus.cx> <45C6A99C.5030607@vc.cvut.cz> <45D97DF0.9070306@drzeus.cx> <45DA6150.7060704@vandrovec.name>
+In-Reply-To: <45DA6150.7060704@vandrovec.name>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Petr Vandrovec wrote:
+>
+> Hello,
+>   it would be nice if these two copies (request->txbuf, and
+> rxbuf->reply) could be eliminated, but I see no easy way how to do
+> that...
+>
 
-i.e. one or more drives can be added and the array will re-stripe
-while on-line.
-Most of the interesting work was already done for raid5.
-This just extends it to raid6.
+At least we have the basic functionality now. One can start looking at
+optimising it after that.
 
-mdadm newer than 2.6 is needed for complete safety, however any
-version of mdadm which support raid5 reshape will do a good enough job
-in almost all cases (an 'echo repair > /sys/block/mdX/md/sync_action'
-is recommended after a reshape that was aborted and had to be
-restarted with an such a version of mdadm).
+>
+> Acked-by: Petr Vandrovec <petr@vandrovec.name>
 
-Signed-off-by: Neil Brown <neilb@suse.de>
+I'll send it on to Linus then.
 
-### Diffstat output
- ./drivers/md/raid5.c |  157 ++++++++++++++++++++++++++++++++++++++++-----------
- 1 file changed, 124 insertions(+), 33 deletions(-)
+>
+> Looks like a typo?  requres => request ?
+>
 
-diff .prev/drivers/md/raid5.c ./drivers/md/raid5.c
---- .prev/drivers/md/raid5.c	2007-02-20 17:14:35.000000000 +1100
-+++ ./drivers/md/raid5.c	2007-02-20 17:14:48.000000000 +1100
-@@ -1050,7 +1050,7 @@ static void compute_parity5(struct strip
- static void compute_parity6(struct stripe_head *sh, int method)
- {
- 	raid6_conf_t *conf = sh->raid_conf;
--	int i, pd_idx = sh->pd_idx, qd_idx, d0_idx, disks = conf->raid_disks, count;
-+	int i, pd_idx = sh->pd_idx, qd_idx, d0_idx, disks = sh->disks, count;
- 	struct bio *chosen;
- 	/**** FIX THIS: This could be very bad if disks is close to 256 ****/
- 	void *ptrs[disks];
-@@ -1131,8 +1131,7 @@ static void compute_parity6(struct strip
- /* Compute one missing block */
- static void compute_block_1(struct stripe_head *sh, int dd_idx, int nozero)
- {
--	raid6_conf_t *conf = sh->raid_conf;
--	int i, count, disks = conf->raid_disks;
-+	int i, count, disks = sh->disks;
- 	void *ptr[MAX_XOR_BLOCKS], *p;
- 	int pd_idx = sh->pd_idx;
- 	int qd_idx = raid6_next_disk(pd_idx, disks);
-@@ -1170,8 +1169,7 @@ static void compute_block_1(struct strip
- /* Compute two missing blocks */
- static void compute_block_2(struct stripe_head *sh, int dd_idx1, int dd_idx2)
- {
--	raid6_conf_t *conf = sh->raid_conf;
--	int i, count, disks = conf->raid_disks;
-+	int i, count, disks = sh->disks;
- 	int pd_idx = sh->pd_idx;
- 	int qd_idx = raid6_next_disk(pd_idx, disks);
- 	int d0_idx = raid6_next_disk(qd_idx, disks);
-@@ -1887,11 +1885,11 @@ static void handle_stripe5(struct stripe
- static void handle_stripe6(struct stripe_head *sh, struct page *tmp_page)
- {
- 	raid6_conf_t *conf = sh->raid_conf;
--	int disks = conf->raid_disks;
-+	int disks = sh->disks;
- 	struct bio *return_bi= NULL;
- 	struct bio *bi;
- 	int i;
--	int syncing;
-+	int syncing, expanding, expanded;
- 	int locked=0, uptodate=0, to_read=0, to_write=0, failed=0, written=0;
- 	int non_overwrite = 0;
- 	int failed_num[2] = {0, 0};
-@@ -1909,6 +1907,8 @@ static void handle_stripe6(struct stripe
- 	clear_bit(STRIPE_DELAYED, &sh->state);
- 
- 	syncing = test_bit(STRIPE_SYNCING, &sh->state);
-+	expanding = test_bit(STRIPE_EXPAND_SOURCE, &sh->state);
-+	expanded = test_bit(STRIPE_EXPAND_READY, &sh->state);
- 	/* Now to look around and see what can be done */
- 
- 	rcu_read_lock();
-@@ -2114,13 +2114,15 @@ static void handle_stripe6(struct stripe
- 	 * parity, or to satisfy requests
- 	 * or to load a block that is being partially written.
- 	 */
--	if (to_read || non_overwrite || (to_write && failed) || (syncing && (uptodate < disks))) {
-+	if (to_read || non_overwrite || (to_write && failed) ||
-+	    (syncing && (uptodate < disks)) || expanding) {
- 		for (i=disks; i--;) {
- 			dev = &sh->dev[i];
- 			if (!test_bit(R5_LOCKED, &dev->flags) && !test_bit(R5_UPTODATE, &dev->flags) &&
- 			    (dev->toread ||
- 			     (dev->towrite && !test_bit(R5_OVERWRITE, &dev->flags)) ||
- 			     syncing ||
-+			     expanding ||
- 			     (failed >= 1 && (sh->dev[failed_num[0]].toread || to_write)) ||
- 			     (failed >= 2 && (sh->dev[failed_num[1]].toread || to_write))
- 				    )
-@@ -2355,6 +2357,79 @@ static void handle_stripe6(struct stripe
- 				}
- 			}
- 		}
-+
-+	if (expanded && test_bit(STRIPE_EXPANDING, &sh->state)) {
-+		/* Need to write out all blocks after computing P&Q */
-+		sh->disks = conf->raid_disks;
-+		sh->pd_idx = stripe_to_pdidx(sh->sector, conf,
-+					     conf->raid_disks);
-+		compute_parity6(sh, RECONSTRUCT_WRITE);
-+		for (i = conf->raid_disks ; i-- ;  ) {
-+			set_bit(R5_LOCKED, &sh->dev[i].flags);
-+			locked++;
-+			set_bit(R5_Wantwrite, &sh->dev[i].flags);
-+		}
-+		clear_bit(STRIPE_EXPANDING, &sh->state);
-+	} else if (expanded) {
-+		clear_bit(STRIPE_EXPAND_READY, &sh->state);
-+		atomic_dec(&conf->reshape_stripes);
-+		wake_up(&conf->wait_for_overlap);
-+		md_done_sync(conf->mddev, STRIPE_SECTORS, 1);
-+	}
-+
-+	if (expanding && locked == 0) {
-+		/* We have read all the blocks in this stripe and now we need to
-+		 * copy some of them into a target stripe for expand.
-+		 */
-+		clear_bit(STRIPE_EXPAND_SOURCE, &sh->state);
-+		for (i = 0; i < sh->disks ; i++)
-+			if (i != pd_idx && i != qd_idx) {
-+				int dd_idx2, pd_idx2, j;
-+				struct stripe_head *sh2;
-+
-+				sector_t bn = compute_blocknr(sh, i);
-+				sector_t s = raid5_compute_sector(
-+					bn, conf->raid_disks,
-+					conf->raid_disks - conf->max_degraded,
-+					&dd_idx2, &pd_idx2, conf);
-+				sh2 = get_active_stripe(conf, s,
-+							conf->raid_disks,
-+						       pd_idx2, 1);
-+				if (sh2 == NULL)
-+					/* so for only the early blocks of
-+					 * this stripe have been requests.
-+					 * When later blocks get requests, we
-+					 * will try again
-+					 */
-+					continue;
-+				if (!test_bit(STRIPE_EXPANDING, &sh2->state) ||
-+				    test_bit(R5_Expanded,
-+					     &sh2->dev[dd_idx2].flags)) {
-+					/* must have already done this block */
-+					release_stripe(sh2);
-+					continue;
-+				}
-+				memcpy(page_address(sh2->dev[dd_idx2].page),
-+				       page_address(sh->dev[i].page),
-+				       STRIPE_SIZE);
-+				set_bit(R5_Expanded, &sh2->dev[dd_idx2].flags);
-+				set_bit(R5_UPTODATE, &sh2->dev[dd_idx2].flags);
-+				for (j = 0 ; j < conf->raid_disks ; j++)
-+					if (j != sh2->pd_idx &&
-+					    j != raid6_next_disk(sh2->pd_idx,
-+							   sh2->disks) &&
-+					    !test_bit(R5_Expanded,
-+						      &sh2->dev[j].flags))
-+						break;
-+				if (j == conf->raid_disks) {
-+					set_bit(STRIPE_EXPAND_READY,
-+						&sh2->state);
-+					set_bit(STRIPE_HANDLE, &sh2->state);
-+				}
-+				release_stripe(sh2);
-+			}
-+	}
-+
- 	spin_unlock(&sh->lock);
- 
- 	while ((bi=return_bi)) {
-@@ -2395,7 +2470,7 @@ static void handle_stripe6(struct stripe
- 		rcu_read_unlock();
- 
- 		if (rdev) {
--			if (syncing)
-+			if (syncing || expanding || expanded)
- 				md_sync_acct(rdev->bdev, STRIPE_SECTORS);
- 
- 			bi->bi_bdev = rdev->bdev;
-@@ -2915,8 +2990,9 @@ static sector_t reshape_request(mddev_t 
- 	struct stripe_head *sh;
- 	int pd_idx;
- 	sector_t first_sector, last_sector;
--	int raid_disks;
--	int data_disks;
-+	int raid_disks = conf->previous_raid_disks;
-+	int data_disks = raid_disks - conf->max_degraded;
-+	int new_data_disks = conf->raid_disks - conf->max_degraded;
- 	int i;
- 	int dd_idx;
- 	sector_t writepos, safepos, gap;
-@@ -2925,7 +3001,7 @@ static sector_t reshape_request(mddev_t 
- 	    conf->expand_progress != 0) {
- 		/* restarting in the middle, skip the initial sectors */
- 		sector_nr = conf->expand_progress;
--		sector_div(sector_nr, conf->raid_disks-1);
-+		sector_div(sector_nr, new_data_disks);
- 		*skipped = 1;
- 		return sector_nr;
- 	}
-@@ -2939,14 +3015,14 @@ static sector_t reshape_request(mddev_t 
- 	 * to after where expand_lo old_maps to
- 	 */
- 	writepos = conf->expand_progress +
--		conf->chunk_size/512*(conf->raid_disks-1);
--	sector_div(writepos, conf->raid_disks-1);
-+		conf->chunk_size/512*(new_data_disks);
-+	sector_div(writepos, new_data_disks);
- 	safepos = conf->expand_lo;
--	sector_div(safepos, conf->previous_raid_disks-1);
-+	sector_div(safepos, data_disks);
- 	gap = conf->expand_progress - conf->expand_lo;
- 
- 	if (writepos >= safepos ||
--	    gap > (conf->raid_disks-1)*3000*2 /*3Meg*/) {
-+	    gap > (new_data_disks)*3000*2 /*3Meg*/) {
- 		/* Cannot proceed until we've updated the superblock... */
- 		wait_event(conf->wait_for_overlap,
- 			   atomic_read(&conf->reshape_stripes)==0);
-@@ -2976,6 +3052,9 @@ static sector_t reshape_request(mddev_t 
- 			sector_t s;
- 			if (j == sh->pd_idx)
- 				continue;
-+			if (conf->level == 6 &&
-+			    j == raid6_next_disk(sh->pd_idx, sh->disks))
-+				continue;
- 			s = compute_blocknr(sh, j);
- 			if (s < (mddev->array_size<<1)) {
- 				skipped = 1;
-@@ -2999,21 +3078,20 @@ static sector_t reshape_request(mddev_t 
- 	 * The source stripes are determined by mapping the first and last
- 	 * block on the destination stripes.
- 	 */
--	raid_disks = conf->previous_raid_disks;
--	data_disks = raid_disks - 1;
- 	first_sector =
--		raid5_compute_sector(sector_nr*(conf->raid_disks-1),
-+		raid5_compute_sector(sector_nr*(new_data_disks),
- 				     raid_disks, data_disks,
- 				     &dd_idx, &pd_idx, conf);
- 	last_sector =
- 		raid5_compute_sector((sector_nr+conf->chunk_size/512)
--				     *(conf->raid_disks-1) -1,
-+				     *(new_data_disks) -1,
- 				     raid_disks, data_disks,
- 				     &dd_idx, &pd_idx, conf);
- 	if (last_sector >= (mddev->size<<1))
- 		last_sector = (mddev->size<<1)-1;
- 	while (first_sector <= last_sector) {
--		pd_idx = stripe_to_pdidx(first_sector, conf, conf->previous_raid_disks);
-+		pd_idx = stripe_to_pdidx(first_sector, conf,
-+					 conf->previous_raid_disks);
- 		sh = get_active_stripe(conf, first_sector,
- 				       conf->previous_raid_disks, pd_idx, 0);
- 		set_bit(STRIPE_EXPAND_SOURCE, &sh->state);
-@@ -3348,35 +3426,44 @@ static int run(mddev_t *mddev)
- 		 */
- 		sector_t here_new, here_old;
- 		int old_disks;
-+		int max_degraded = (mddev->level == 5 ? 1 : 2);
- 
- 		if (mddev->new_level != mddev->level ||
- 		    mddev->new_layout != mddev->layout ||
- 		    mddev->new_chunk != mddev->chunk_size) {
--			printk(KERN_ERR "raid5: %s: unsupported reshape required - aborting.\n",
-+			printk(KERN_ERR "raid5: %s: unsupported reshape "
-+			       "required - aborting.\n",
- 			       mdname(mddev));
- 			return -EINVAL;
- 		}
- 		if (mddev->delta_disks <= 0) {
--			printk(KERN_ERR "raid5: %s: unsupported reshape (reduce disks) required - aborting.\n",
-+			printk(KERN_ERR "raid5: %s: unsupported reshape "
-+			       "(reduce disks) required - aborting.\n",
- 			       mdname(mddev));
- 			return -EINVAL;
- 		}
- 		old_disks = mddev->raid_disks - mddev->delta_disks;
- 		/* reshape_position must be on a new-stripe boundary, and one
--		 * further up in new geometry must map after here in old geometry.
-+		 * further up in new geometry must map after here in old
-+		 * geometry.
- 		 */
- 		here_new = mddev->reshape_position;
--		if (sector_div(here_new, (mddev->chunk_size>>9)*(mddev->raid_disks-1))) {
--			printk(KERN_ERR "raid5: reshape_position not on a stripe boundary\n");
-+		if (sector_div(here_new, (mddev->chunk_size>>9)*
-+			       (mddev->raid_disks - max_degraded))) {
-+			printk(KERN_ERR "raid5: reshape_position not "
-+			       "on a stripe boundary\n");
- 			return -EINVAL;
- 		}
- 		/* here_new is the stripe we will write to */
- 		here_old = mddev->reshape_position;
--		sector_div(here_old, (mddev->chunk_size>>9)*(old_disks-1));
--		/* here_old is the first stripe that we might need to read from */
-+		sector_div(here_old, (mddev->chunk_size>>9)*
-+			   (old_disks-max_degraded));
-+		/* here_old is the first stripe that we might need to read
-+		 * from */
- 		if (here_new >= here_old) {
- 			/* Reading from the same stripe as writing to - bad */
--			printk(KERN_ERR "raid5: reshape_position too early for auto-recovery - aborting.\n");
-+			printk(KERN_ERR "raid5: reshape_position too early for "
-+			       "auto-recovery - aborting.\n");
- 			return -EINVAL;
- 		}
- 		printk(KERN_INFO "raid5: reshape will continue\n");
-@@ -3829,8 +3916,7 @@ static int raid5_start_reshape(mddev_t *
- 	int added_devices = 0;
- 	unsigned long flags;
- 
--	if (mddev->degraded ||
--	    test_bit(MD_RECOVERY_RUNNING, &mddev->recovery))
-+	if (test_bit(MD_RECOVERY_RUNNING, &mddev->recovery))
- 		return -EBUSY;
- 
- 	ITERATE_RDEV(mddev, rdev, rtmp)
-@@ -3838,7 +3924,7 @@ static int raid5_start_reshape(mddev_t *
- 		    !test_bit(Faulty, &rdev->flags))
- 			spares++;
- 
--	if (spares < mddev->delta_disks-1)
-+	if (spares - mddev->degraded < mddev->delta_disks - conf->max_degraded)
- 		/* Not enough devices even to make a degraded array
- 		 * of that size
- 		 */
-@@ -3901,7 +3987,8 @@ static void end_reshape(raid5_conf_t *co
- 	struct block_device *bdev;
- 
- 	if (!test_bit(MD_RECOVERY_INTR, &conf->mddev->recovery)) {
--		conf->mddev->array_size = conf->mddev->size * (conf->raid_disks-1);
-+		conf->mddev->array_size = conf->mddev->size *
-+			(conf->raid_disks - conf->max_degraded);
- 		set_capacity(conf->mddev->gendisk, conf->mddev->array_size << 1);
- 		conf->mddev->changed = 1;
- 
-@@ -3974,6 +4061,10 @@ static struct mdk_personality raid6_pers
- 	.spare_active	= raid5_spare_active,
- 	.sync_request	= sync_request,
- 	.resize		= raid5_resize,
-+#ifdef CONFIG_MD_RAID5_RESHAPE
-+	.check_reshape	= raid5_check_reshape,
-+	.start_reshape  = raid5_start_reshape,
-+#endif
- 	.quiesce	= raid5_quiesce,
- };
- static struct mdk_personality raid5_personality =
+Ooops. I'll fix that. :)
+
+Rgds
+
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
+
