@@ -1,123 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750729AbXBTJHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750995AbXBTJUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750729AbXBTJHE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 04:07:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbXBTJHE
+	id S1750995AbXBTJUe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 04:20:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbXBTJUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 04:07:04 -0500
-Received: from wr-out-0506.google.com ([64.233.184.235]:15902 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750729AbXBTJHA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 04:07:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XmRo1IDAEHkJx32XzsNBJ64EyijJqgRH8f6YCQt2LLg+JdS32PTfd42SiPrs7S3ESaUJ+Ax+oXwuUhqBMfQawQ9L3O/6gC/aqt106YSS0VRqTsXEjOl16fdh38k2D/NcLDN5XnMG5FlE64QqHS6eMdoHV32sH/4Fjh9ySI113xA=
-Message-ID: <4df04b840702200106q670ff944k118d218fed17b884@mail.gmail.com>
-Date: Tue, 20 Feb 2007 17:06:58 +0800
-From: "yunfeng zhang" <zyf.zeroos@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.20-rc5 1/1] MM: enhance Linux swap subsystem
-Cc: "Hugh Dickins" <hugh@veritas.com>, "Rik van Riel" <riel@redhat.com>,
-       linux-mm@kvack.org
-In-Reply-To: <4df04b840702122152o64b2d59cy53afcd43bb24cb7a@mail.gmail.com>
+	Tue, 20 Feb 2007 04:20:34 -0500
+Received: from mail.atmel.fr ([81.80.104.162]:64592 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750966AbXBTJUd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 04:20:33 -0500
+Message-ID: <45DABD2F.8000805@rfo.atmel.com>
+Date: Tue, 20 Feb 2007 10:19:43 +0100
+From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: linux-kernel@vger.kernel.org, Dmitry Torokhov <dtor@insightbb.com>
+CC: David Brownell <david-b@pacbell.net>,
+       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>,
+       Andrew Victor <andrew@sanpeople.com>, tony@atomide.com,
+       imre.deak@solidboot.com
+Subject: [PATCH] input/spi: add ads7843 support to ads7846 touchscreen driver
+References: <20061222192536.A206A1F0CDB@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <200702161108.51014.david-b@pacbell.net>	
+	 <45D99C81.7080401@rfo.atmel.com> <200702191046.43909.david-b@pacbell.net>
+In-Reply-To: <200702191046.43909.david-b@pacbell.net>
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4df04b840701212309l2a283357jbdaa88794e5208a7@mail.gmail.com>
-	 <200701222300.41960.a1426z@gawab.com>
-	 <4df04b840701222021w5e1aaab2if2ba7fc38d06d64b@mail.gmail.com>
-	 <4df04b840701222108o6992933bied5fff8a525413@mail.gmail.com>
-	 <Pine.LNX.4.64.0701242015090.1770@blonde.wat.veritas.com>
-	 <4df04b840701301852i41687edfl1462c4ca3344431c@mail.gmail.com>
-	 <Pine.LNX.4.64.0701312022340.26857@blonde.wat.veritas.com>
-	 <4df04b840702122152o64b2d59cy53afcd43bb24cb7a@mail.gmail.com>
+X-ESAFE-STATUS: Mail clean
+X-ESAFE-DETAILS: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Following arithmetic is based on SwapSpace bitmap management which is discussed
-in the postscript section of my patch. Two purposes are implemented, one is
-allocating a group of fake continual swap entries, another is re-allocating
-swap entries in stage 3 for such as series length is too short.
+Add support for the ads7843 touchscreen controller to the ads7846
+driver code.
+
+The ads7843 support has now become almost trivial since the last
+rework.
+
+Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com> 
+---
+Index: linux-2.6.20-at91/drivers/input/touchscreen/ads7846.c
+===================================================================
+--- linux-2.6.20-at91.orig/drivers/input/touchscreen/ads7846.c
++++ linux-2.6.20-at91/drivers/input/touchscreen/ads7846.c
+@@ -39,7 +39,8 @@
+ /*
+  * This code has been heavily tested on a Nokia 770, and lightly
+  * tested on other ads7846 devices (OSK/Mistral, Lubbock).
+- * Support for ads7843 and ads7845 has only been stubbed in.
++ * Support for ads7843 tested on Atmel at91sam926x-EK.
++ * Support for ads7845 has only been stubbed in.
+  *
+  * IRQ handling needs a workaround because of a shortcoming in handling
+  * edge triggered IRQs on some platforms like the OMAP1/2. These
+@@ -246,18 +247,16 @@ static int ads7846_read12_ser(struct dev
+ 
+ 	/* REVISIT:  take a few more samples, and compare ... */
+ 
+-	/* maybe off internal vREF */
+-	if (use_internal) {
+-		req->ref_off = REF_OFF;
+-		req->xfer[4].tx_buf = &req->ref_off;
+-		req->xfer[4].len = 1;
+-		spi_message_add_tail(&req->xfer[4], &req->msg);
+-
+-		req->xfer[5].rx_buf = &req->scratch;
+-		req->xfer[5].len = 2;
+-		CS_CHANGE(req->xfer[5]);
+-		spi_message_add_tail(&req->xfer[5], &req->msg);
+-	}
++	/* converter in low power mode & enable PENIRQ */
++	req->ref_off = PWRDOWN;
++	req->xfer[4].tx_buf = &req->ref_off;
++	req->xfer[4].len = 1;
++	spi_message_add_tail(&req->xfer[4], &req->msg);
++
++	req->xfer[5].rx_buf = &req->scratch;
++	req->xfer[5].len = 2;
++	CS_CHANGE(req->xfer[5]);
++	spi_message_add_tail(&req->xfer[5], &req->msg);
+ 
+ 	ts->irq_disabled = 1;
+ 	disable_irq(spi->irq);
+@@ -536,6 +535,10 @@ static void ads7846_rx(void *ads)
+ 	} else
+ 		Rt = 0;
+ 
++	if (ts->model == 7843)
++		Rt = ts->pressure_max / 2;
++
++
+ 	/* Sample found inconsistent by debouncing or pressure is beyond
+ 	 * the maximum. Don't report it to user space, repeat at least
+ 	 * once more the measurement
 
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-// 2 hardware cache line. You can also concentrate it to a hareware cache line.
-char bits_per_short[256] = {
-	8, 7, 7, 6, 7, 6, 6, 5,
-	7, 6, 6, 5, 6, 5, 5, 4,
-	7, 6, 6, 5, 6, 5, 5, 4,
-	6, 5, 5, 4, 5, 4, 4, 3,
-	7, 6, 6, 5, 6, 5, 5, 4,
-	6, 5, 5, 4, 5, 4, 4, 3,
-	6, 5, 5, 4, 5, 4, 4, 3,
-	5, 4, 4, 3, 4, 3, 3, 2,
-	7, 6, 6, 5, 6, 5, 5, 4,
-	6, 5, 5, 4, 5, 4, 4, 3,
-	6, 5, 5, 4, 5, 4, 4, 3,
-	5, 4, 4, 3, 4, 3, 3, 2,
-	6, 5, 5, 4, 5, 4, 4, 3,
-	5, 4, 4, 3, 4, 3, 3, 2,
-	5, 4, 4, 3, 4, 3, 3, 2,
-	4, 3, 3, 2, 3, 2, 2, 1,
-	7, 6, 6, 5, 6, 5, 5, 4,
-	6, 5, 5, 4, 5, 4, 4, 3,
-	6, 5, 5, 4, 5, 4, 4, 3,
-	5, 4, 4, 3, 4, 3, 3, 2,
-	6, 5, 5, 4, 5, 4, 4, 3,
-	5, 4, 4, 3, 4, 3, 3, 2,
-	5, 4, 4, 3, 4, 3, 3, 2,
-	4, 3, 3, 2, 3, 2, 2, 1,
-	6, 5, 5, 4, 5, 4, 4, 3,
-	5, 4, 4, 3, 4, 3, 3, 2,
-	5, 4, 4, 3, 4, 3, 3, 2,
-	4, 3, 3, 2, 3, 2, 2, 1,
-	5, 4, 4, 3, 4, 3, 3, 2,
-	4, 3, 3, 2, 3, 2, 2, 1,
-	4, 3, 3, 2, 3, 2, 2, 1,
-	3, 2, 2, 1, 2, 1, 1, 0
-};
-unsigned char swap_bitmap[32];
-// Allocate a group of fake continual swap entries.
-int alloc(int size)
-{
-	int i, found = 0, result_offset;
-	unsigned char a = 0, b = 0;
-	for (i = 0; i < 32; i++) {
-		b = bits_per_short[swap_bitmap[i]];
-		if (a + b >= size) {
-			found = 1;
-			break;
-		}
-		a = b;
-	}
-	result_offset = i == 0 ? 0 : i - 1;
-	result_offset = found ? result_offset : -1;
-	return result_offset;
-}
-// Re-allocate in stage 3 if necessary.
-int re_alloc(int position)
-{
-	int offset = position / 8;
-	int a = offset == 0 ? 0 : offset - 1;
-	int b = offset == 31 ? 31 : offset + 1;
-	int i, empty_bits = 0;
-	for (i = a; i <= b; i++) {
-		empty_bits += bits_per_short[swap_bitmap[i]];
-	}
-	return empty_bits;
-}
-int main(int argc, char **argv)
-{
-	int i;
-	for (i = 0; i < 32; i++) {
-		swap_bitmap[i] = (unsigned char) (rand() % 0xff);
-	}
-	i = 9;
-	int temp = alloc(i);
-	temp = re_alloc(i);
-}
+
