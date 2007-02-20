@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932913AbXBTMul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932924AbXBTM4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932913AbXBTMul (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 07:50:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932924AbXBTMul
+	id S932924AbXBTM4g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 07:56:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932925AbXBTM4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 07:50:41 -0500
-Received: from webmail16.mail.yandex.net ([213.180.200.38]:52263 "EHLO
-	webmail16.mail.yandex.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932913AbXBTMuk (ORCPT
+	Tue, 20 Feb 2007 07:56:36 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55218 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932924AbXBTM4f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 07:50:40 -0500
-Date: Tue, 20 Feb 2007 15:50:27 +0300 (MSK)
-From: "Mockern" <Mockern@yandex.ru>
-Message-Id: <45DAEE93.000001.01672@webmail16.yandex.ru>
-MIME-Version: 1.0
-X-Mailer: Yamail [ http://yandex.ru ]
-To: alan@lxorguk.ukuu.org.uk
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: how to limit flip buffer size in tty driver?
-X-MsgDayCount: 2
-X-BornDate: 1134853200
-In-Reply-To: <20070220125329.55fb7210@localhost.localdomain>
-Reply-To: Mockern@yandex.ru
-References: <45DAB02A.000001.11699@soapbox.yandex.ru> <20070220125329.55fb7210@localhost.localdomain>
-X-Source-Ip: 84.185.221.181
-Content-Type: text/plain;
-  charset="KOI8-R"
-Content-Transfer-Encoding: 8bit
+	Tue, 20 Feb 2007 07:56:35 -0500
+Date: Tue, 20 Feb 2007 06:56:26 -0600
+From: Robin Holt <holt@sgi.com>
+To: David Howells <dhowells@redhat.com>
+Cc: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
+       Andrew Morton <akpm@osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Robin Holt <holt@sgi.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <soshima@redhat.com>,
+       "Hideo AOKI@redhat" <haoki@redhat.com>
+Subject: Re: [PATCH 3/4] coredump: ELF-FDPIC: enable to omit anonymous shared memory
+Message-ID: <20070220125626.GC27551@lnx-holt.americas.sgi.com>
+References: <45DAC32B.4030603@hitachi.com> <45D5B483.3020502@hitachi.com> <45D5B2E3.3030607@hitachi.com> <20368.1171638335@redhat.com> <18826.1171969097@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18826.1171969097@redhat.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you Alan for your respond,
+On Tue, Feb 20, 2007 at 10:58:17AM +0000, David Howells wrote:
+> Kawai, Hidehiro <hidehiro.kawai.ez@hitachi.com> wrote:
+> Actually, I don't think the locking is that hard or that complex.
+> 
+> 	int do_coredump(long signr, int exit_code, struct pt_regs * regs)
+> 	{
+> 		<setup vars>
+> 
+> 		down_read(&coredump_settings_sem);
+> 
+> 		...
+> 
+> 	fail:
+> 		up_read(&coredump_settings_sem);
+> 		return retval;
+> 	}
+> 
+> And:
+> 
+> 	static ssize_t proc_coredump_omit_anon_shared_write(struct file *file,
+> 						    const char __user *buf,
+> 						    size_t count,
+> 						    loff_t *ppos)
+> 	{
+> 		<setup vars>
+> 
+> 		down_write(&coredump_settings_sem);
 
-Could you help me with a problem which I have with my tty driver, please?
+If the dump has started, do we want to change this to a trylock and skip
+changing the value if it is already locked?
 
-It does not work with Linux cat operation (but there are no problems to write, read with select from user space application!). 
-
-regards,
-
-Andy  
-
-
-
->On Tue, 20 Feb 2007 11:24:10 +0300 (MSK)
->"Mockern" <Mockern@yandex.ru> wrote:
->
->> Hello,
->> 
->> how to limit flip buffer size in tty driver?
->
->You don't.
->
->See Documentation/tty.txt and throttle/unthrottle
->
->Alan
-
-
--- 
-Сегодня удачный день, чтобы завести почту на Яндексе http://mail.yandex.ru
+Thanks,
+Robin
