@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965856AbXBTBGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932770AbXBTB0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965856AbXBTBGQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 20:06:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933020AbXBTBGP
+	id S932770AbXBTB0S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 20:26:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932773AbXBTB0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 20:06:15 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:56367 "EHLO
-	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932844AbXBTBFs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 20:05:48 -0500
-Date: Mon, 19 Feb 2007 19:03:08 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: [PATCH 4/5] sata_nv: Use notifier for completion checks
-To: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@osdl.org>
-Message-id: <45DA48CC.3090704@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Mon, 19 Feb 2007 20:26:08 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:56334 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932770AbXBTB0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 Feb 2007 20:26:06 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.20-mm2
+Date: Tue, 20 Feb 2007 02:20:21 +0100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+References: <20070217215146.30e7ffa3.akpm@linux-foundation.org> <200702181344.54959.rjw@sisk.pl> <20070218114326.35d7645b.akpm@linux-foundation.org>
+In-Reply-To: <20070218114326.35d7645b.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702200220.22721.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The hardware provides us a notifier register that indicates what command
-tags have completed. Use this to determine which CPBs to check, rather
-than blindly checking all active CPBs. This should provide a minor
-performance win, since if the controller has touched some of these
-incomplete CPBs, accessing them will likely result in a cache miss.
+On Sunday, 18 February 2007 20:43, Andrew Morton wrote:
+> On Sun, 18 Feb 2007 13:44:54 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > On Sunday, 18 February 2007 06:51, Andrew Morton wrote:
+> > > 
+> > > Temporarily at
+> > > 
+> > >   http://userweb.kernel.org/~akpm/2.6.20-mm2/
+> > > 
+> > > Will appear later at
+> > > 
+> > >  ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm2/
+> > 
+> > Two problems:
+> > 
+> > 1) A showstopper with the root partition on RAID1:
+> > 
+> > md: raid1 personality registered for level 1
+> > [--snip--]
+> > md: multipath personality registered for level -4
+> > register_blkdev: failed to get major for mdp
+> > [--snip--]
+> > VFS: Cannot open root device "md1" or unknown-block(0,0)
+> 
+> Someone else reported that against mainline.  Can you please debug it a bit?
 
-Signed-off-by: Robert Hancock <hancockr@shaw.ca>
+For now I can only say 2.6.20 + origin.patch breaks.
 
---- linux-2.6.20-git6edit/drivers/ata/sata_nv.c	2007-02-15 22:36:02.000000000 -0600
-+++ linux-2.6.20-git6edit/drivers/ata/sata_nv.c.delayandfixes	2007-02-19 17:00:14.000000000 -0600
-@@ -853,22 +854,14 @@ static irqreturn_t nv_adma_interrupt(int
- 
- 			if (status & (NV_ADMA_STAT_DONE |
- 				      NV_ADMA_STAT_CPBERR)) {
-+				u32 check_commands = notifier | notifier_error;
-+				int pos, error = 0;
- 				/** Check CPBs for completed commands */
--
--				if (ata_tag_valid(ap->active_tag)) {
--					/* Non-NCQ command */
--					nv_adma_check_cpb(ap, ap->active_tag,
--						notifier_error & (1 << ap->active_tag));
--				} else {
--					int pos, error = 0;
--					u32 active = ap->sactive;
--
--					while ((pos = ffs(active)) && !error) {
--						pos--;
--						error = nv_adma_check_cpb(ap, pos,
--							notifier_error & (1 << pos) );
--						active &= ~(1 << pos );
--					}
-+				while ((pos = ffs(check_commands)) && !error) {
-+					pos--;
-+					error = nv_adma_check_cpb(ap, pos,
-+						notifier_error & (1 << pos) );
-+					check_commands &= ~(1 << pos );
- 				}
- 			}
- 		}
-
+However, it's a SUSE 10.1 system with gcc 4.1.0 and this may be the reason.
+I'll check that tomorrow.
