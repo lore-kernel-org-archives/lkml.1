@@ -1,115 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965609AbXBTALJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965581AbXBTALI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965609AbXBTALJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 19:11:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbXBTAIP
+	id S965581AbXBTALI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 19:11:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbXBTAIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 19:08:15 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:36137 "EHLO
+	Mon, 19 Feb 2007 19:08:14 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:36142 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965583AbXBTAHz (ORCPT
+	with ESMTP id S965600AbXBTAIB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 19:07:55 -0500
-Date: Tue, 20 Feb 2007 01:07:54 +0100
+	Mon, 19 Feb 2007 19:08:01 -0500
+Date: Tue, 20 Feb 2007 01:08:00 +0100
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [-mm patch] mm/{,tiny-}shmem.c cleanups
-Message-ID: <20070220000754.GG13958@stusta.de>
-References: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>, Ben Dooks <ben-linux@fluff.org>
+Cc: linux-kernel@vger.kernel.org, adaplas@pol.net
+Subject: [-mm patch] drivers/video/sm501fb.c: make 4 functions static
+Message-ID: <20070220000800.GH13958@stusta.de>
+References: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070215051408.a7fb7d81.akpm@linux-foundation.org>
+In-Reply-To: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 15, 2007 at 05:14:08AM -0800, Andrew Morton wrote:
+On Sat, Feb 17, 2007 at 09:51:46PM -0800, Andrew Morton wrote:
 >...
-> Changes since 2.6.20-rc6-mm3:
+> Changes since 2.6.20-mm1:
 >...
-> +shm-make-sysv-ipc-shared-memory-use-stacked-files.patch
+> +fb-sm501-framebuffer-driver-5.patch
 >...
->  Misc
+>  fbdev updates
 >...
 
 
-shmem_{nopage,mmap} are no longer used in ipc/shm.c
+This patch makes four needlessly global functions static.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
- include/linux/mm.h |    5 -----
- mm/shmem.c         |    5 +++--
- mm/tiny-shmem.c    |    2 ++
- 3 files changed, 5 insertions(+), 7 deletions(-)
+ drivers/video/sm501fb.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
---- linux-2.6.20-mm2/include/linux/mm.h.old	2007-02-18 23:32:54.000000000 +0100
-+++ linux-2.6.20-mm2/include/linux/mm.h	2007-02-18 23:34:02.000000000 +0100
-@@ -662,15 +662,11 @@
- extern void show_free_areas(void);
+--- linux-2.6.20-mm2/drivers/video/sm501fb.c.old	2007-02-19 12:15:43.000000000 +0100
++++ linux-2.6.20-mm2/drivers/video/sm501fb.c	2007-02-19 12:16:48.000000000 +0100
+@@ -136,8 +136,8 @@
+ #define SM501_MEMF_CRT			(4)
+ #define SM501_MEMF_ACCEL		(8)
  
- #ifdef CONFIG_SHMEM
--struct page *shmem_nopage(struct vm_area_struct *vma,
--			unsigned long address, int *type);
- int shmem_set_policy(struct vm_area_struct *vma, struct mempolicy *new);
- struct mempolicy *shmem_get_policy(struct vm_area_struct *vma,
- 					unsigned long addr);
- int shmem_lock(struct file *file, int lock, struct user_struct *user);
- #else
--#define shmem_nopage filemap_nopage
--
- static inline int shmem_lock(struct file *file, int lock,
- 			     struct user_struct *user)
+-int sm501_alloc_mem(struct sm501fb_info *inf, struct sm501_mem *mem,
+-		    unsigned int why, size_t size)
++static int sm501_alloc_mem(struct sm501fb_info *inf, struct sm501_mem *mem,
++			   unsigned int why, size_t size)
  {
-@@ -690,7 +686,6 @@
- }
- #endif
- struct file *shmem_file_setup(char *name, loff_t size, unsigned long flags);
--extern int shmem_mmap(struct file *file, struct vm_area_struct *vma);
+ 	unsigned int ptr = 0;
  
- int shmem_zero_setup(struct vm_area_struct *);
+@@ -926,7 +926,7 @@
+  * set or change the hardware cursor parameters
+ */
  
---- linux-2.6.20-mm2/mm/shmem.c.old	2007-02-18 23:33:38.000000000 +0100
-+++ linux-2.6.20-mm2/mm/shmem.c	2007-02-18 23:34:14.000000000 +0100
-@@ -1227,7 +1227,8 @@
- 	return error;
- }
- 
--struct page *shmem_nopage(struct vm_area_struct *vma, unsigned long address, int *type)
-+static struct page *shmem_nopage(struct vm_area_struct *vma,
-+				 unsigned long address, int *type)
+-int sm501fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
++static int sm501fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
  {
- 	struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
- 	struct page *page = NULL;
-@@ -1334,7 +1335,7 @@
- 	return retval;
- }
+ 	struct sm501fb_par  *par = info->par;
+ 	struct sm501fb_info *fbi = par->info;
+@@ -1225,7 +1225,7 @@
+  * initialise hw cursor parameters
+ */
  
--int shmem_mmap(struct file *file, struct vm_area_struct *vma)
-+static int shmem_mmap(struct file *file, struct vm_area_struct *vma)
+-int sm501_init_cursor(struct fb_info *fbi, unsigned int reg_base)
++static int sm501_init_cursor(struct fb_info *fbi, unsigned int reg_base)
  {
- 	file_accessed(file);
- 	vma->vm_ops = &shmem_vm_ops;
---- linux-2.6.20-mm2/mm/tiny-shmem.c.old	2007-02-18 23:34:21.000000000 +0100
-+++ linux-2.6.20-mm2/mm/tiny-shmem.c	2007-02-18 23:34:57.000000000 +0100
-@@ -126,6 +126,7 @@
- 	return 0;
- }
+ 	struct sm501fb_par *par = fbi->par;
+ 	struct sm501fb_info *info = par->info;
+@@ -1768,7 +1768,7 @@
+ 	},
+ };
  
-+#if 0
- int shmem_mmap(struct file *file, struct vm_area_struct *vma)
+-int __devinit sm501fb_init(void)
++static int __devinit sm501fb_init(void)
  {
- 	file_accessed(file);
-@@ -135,6 +136,7 @@
- 	return 0;
- #endif
+ 	return platform_driver_register(&sm501fb_driver);
  }
-+#endif  /*  0  */
- 
- #ifndef CONFIG_MMU
- unsigned long shmem_get_unmapped_area(struct file *file,
 
