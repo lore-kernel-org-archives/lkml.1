@@ -1,334 +1,651 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030279AbXBTQ6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030276AbXBTQ6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030279AbXBTQ6R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 11:58:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030287AbXBTQ6R
+	id S1030276AbXBTQ6h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 11:58:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030288AbXBTQ6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 11:58:17 -0500
-Received: from mga09.intel.com ([134.134.136.24]:23762 "EHLO mga09.intel.com"
+	Tue, 20 Feb 2007 11:58:36 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:52755 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030280AbXBTQ6L convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 11:58:11 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,197,1170662400"; 
-   d="scan'208"; a="48764533:sNHT169894728"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1030276AbXBTQ62 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 11:58:28 -0500
+Date: Tue, 20 Feb 2007 10:58:24 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Mimi Zohar <zohar@us.ibm.com>, Kylene Jo Hall <kjhall@us.ibm.com>,
+       David Safford <safford@watson.ibm.com>
+Subject: [PATCH] slim: move file revocation into file_table.c and mprotect.c
+Message-ID: <20070220165824.GA31315@sergelap.austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 2/2] aio: propogate post-EIOCBQUEUED errors to completion event
-Date: Tue, 20 Feb 2007 19:57:49 +0300
-Message-ID: <B41635854730A14CA71C92B36EC22AAC871D92@mssmsx411>
-In-Reply-To: <20070219213835.4032.87439.sendpatchset@tetsuo.zabbo.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2/2] aio: propogate post-EIOCBQUEUED errors to completion event
-Thread-Index: AcdUblIBxDuLmWvSRQOVMIVRQ5shdQAoJYwA
-From: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>
-To: "Zach Brown" <zach.brown@oracle.com>, <linux-aio@kvack.org>,
-       <linux-kernel@vger.kernel.org>
-Cc: "Benjamin LaHaise" <bcrl@kvack.org>,
-       "Suparna bhattacharya" <suparna@in.ibm.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-X-OriginalArrivalTime: 20 Feb 2007 16:57:54.0681 (UTC) FILETIME=[43B03E90:01C75510]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zach> This addresses an oops reported by Leonid Ananiev
-<leonid.i.ananiev@intel.com>
-Zach> as archived at http://lkml.org/lkml/2007/2/8/337.
-....
-Zach> This was tested by running O_DIRECT aio-stress concurrently with
-buffered reads
+Here is a attempt at resolving some of the complaints against the
+slim security module.  The file revocation is perceived as too intrusive
+to live in a security module itself, so it is moved into file_table.c.
 
-The oops was with aio-stress only running in the loop
-WITHOUT buffered or mmaped IO which are patched and discussed now.
-Actually 47% aio is finished with EIO after patch.
+This patch retains the explicit file->f_mode tweaking to revoke
+FMODE_WRITE.  That can be removed by using an approach like Pekka's
+revokefs, using files in the revokefs filesystem with ->read() passed
+through to the original file, but ->write() intercepted.
 
-Leonnid
+Comments greatly appreciated.
 
------Original Message-----
-From: Zach Brown [mailto:zach.brown@oracle.com] 
-Sent: Tuesday, February 20, 2007 12:39 AM
-To: linux-aio@kvack.org; linux-kernel@vger.kernel.org
-Cc: Benjamin LaHaise; Suparna bhattacharya; Andrew Morton; Ananiev,
-Leonid I
-Subject: [PATCH 2/2] aio: propogate post-EIOCBQUEUED errors to
-completion event
+thanks,
+-serge
 
-aio: propogate post-EIOCBQUEUED errors to completion event
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: [PATCH] slim: move file revocation into file_table.c and mprotect.c
 
-This addresses an oops reported by Leonid Ananiev
-<leonid.i.ananiev@intel.com>
-as archived at http://lkml.org/lkml/2007/2/8/337.
+Move the file revocation code out of slim.  This first verison is
+very limited:
 
-O_DIRECT kicks off bios and returns -EIOCBQUEUED to indicate its
-intention to
-call aio_complete() once the bios complete.   As we return from
-submission we
-must preserve the -EIOCBQUEUED return code so that fs/aio.c knows to let
-the
-bio completion call aio_complete().  This stops us from returning errors
-after
-O_DIRECT submission.
+	1. if any aio is pending, we deny the action rather than
+	   demote
+	2. if there are any threads, then deny the action
 
-But we have a few places that are very interested in generating errors
-after
-bio submission.
+We should be able to switch to only denying the action if there
+are write aio's, and perhaps even to the target file.
 
-The most critical of these is invalidating the page cache after a write.
-This
-avoids exposing stale data to buffered operations that are performed
-after the
-O_DIRECT write succeeds.  We must do this after submission because the
-user
-buffer might have been an mmap()ed buffer of the region being written
-to.  The
-get_user_pages() in the O_DIRECT completion path could have faulted in
-stale
-data.
+Supporting threads will take more work:
 
-So this patch introduces a helper, aio_propogate_error(), which queues
-post-submission errors in the iocb so that they are given to the user
-completion event when aio_complete() is finally called.
+	1. we need to be able to pull the other threads sharing
+	   the mm_struct off the runqueue
+	   (if any of the threads are currently running on a cpu,
+	   we must return -EAGAIN)
+	2. we need to check whether any of the threads are sleeping
+	   in a write syscall
+	3. need to check for pending aio in all the threads
+	4. then do revocation for all the threads
 
-To get this working we change the aio_complete() path so that the ring
-insertion is performed as the final iocb reference is dropped.  This
-gives the
-submission path time to queue its pending error before it drops its
-reference.
-This increases the space in the iocb as it has to record the two result
-codes
-from aio_complete() and the pending error from the submission path.
+Changelog:
+	Feb 1: Incorporate bugfix comments from Mimi
+	Feb 1: Fix sleep under spinlock problem - drop cur_tsec->lock
+		around call to fd_revoke_write_iter.
 
-This was tested by running O_DIRECT aio-stress concurrently with
-buffered reads
-while triggering EIO in invalidate_inode_pages2_range() with the help of
-a
-debugfs bool hack.  Previously the kernel would oops as fs/aio.c and bio
-completion both called aio_complete().  With this patch aio-stress sees
--EIO.
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+(cherry picked from f45727a9ba555802b6f85c198e5c77c3c210b1fc commit)
 
-Signed-off-by: Zach Brown <zach.brown@oracle.com>
 ---
 
- fs/aio.c            |   49 +++++++++++++++++++++---------------------
- include/linux/aio.h |   30 +++++++++++++++++++++++++
- mm/filemap.c        |    4 +--
- 3 files changed, 57 insertions(+), 26 deletions(-)
+ fs/file_table.c          |   77 ++++++++++++
+ include/linux/fs.h       |    2 
+ include/linux/mm.h       |    2 
+ include/linux/sched.h    |   11 ++
+ mm/mprotect.c            |   49 +++++++
+ security/slim/slm_main.c |  308 +++++++++++-----------------------------------
+ 6 files changed, 212 insertions(+), 237 deletions(-)
 
---- a/fs/aio.c	Mon Feb 19 13:12:20 2007 -0800
-+++ b/fs/aio.c	Mon Feb 19 13:16:00 2007 -0800
-@@ -193,8 +193,7 @@ static int aio_setup_ring(struct kioctx 
- 	kunmap_atomic((void *)((unsigned long)__event & PAGE_MASK), km);
-\
- } while(0)
- 
--static void aio_ring_insert_entry(struct kioctx *ctx, struct kiocb
-*iocb,
--				  long res, long res2)
-+static void aio_ring_insert_entry(struct kioctx *ctx, struct kiocb
-*iocb)
- {
- 	struct aio_ring_info	*info;
- 	struct aio_ring		*ring;
-@@ -213,12 +212,12 @@ static void aio_ring_insert_entry(struct
- 
- 	event->obj = (u64)(unsigned long)iocb->ki_obj.user;
- 	event->data = iocb->ki_user_data;
--	event->res = res;
--	event->res2 = res2;
--
--	dprintk("aio_complete: %p[%lu]: %p: %p %Lx %lx %lx\n",
-+	event->res = iocb->ki_pending_err ? iocb->ki_pending_err :
-iocb->ki_res;
-+	event->res2 = iocb->ki_res2;
-+
-+	dprintk("aio_complete: %p[%lu]: %p: %p %Lx %d %lx %lx\n",
- 		ctx, tail, iocb, iocb->ki_obj.user, iocb->ki_user_data,
--		res, res2);
-+		iocb->ki_pending_err, iocb->ki_res, iocb->ki_res2);
- 
- 	/* after flagging the request as done, we
- 	 * must never even look at it again
-@@ -459,6 +458,7 @@ static struct kiocb fastcall *__aio_get_
- 	req->ki_cancel = NULL;
- 	req->ki_retry = NULL;
- 	req->ki_dtor = NULL;
-+	req->ki_pending_err = 0;
- 	req->private = NULL;
- 	req->ki_iovec = NULL;
- 	INIT_LIST_HEAD(&req->ki_run_list);
-@@ -548,10 +548,14 @@ static int __aio_put_req(struct kioctx *
- 
- 	assert_spin_locked(&ctx->ctx_lock);
- 
--	req->ki_users --;
-+	req->ki_users--;
- 	BUG_ON(req->ki_users < 0);
- 	if (likely(req->ki_users))
- 		return 0;
-+
-+	if (kiocbIsInserted(req))
-+		aio_ring_insert_entry(ctx, req);
-+
- 	list_del(&req->ki_list);		/* remove from
-active_reqs */
- 	req->ki_cancel = NULL;
- 	req->ki_retry = NULL;
-@@ -983,27 +987,24 @@ int fastcall aio_complete(struct kiocb *
- 		return 1;
+35132187f8ff3475b31f4789ecbaa2416ec29e82
+diff --git a/fs/file_table.c b/fs/file_table.c
+index 6e6632c..72d9416 100644
+--- a/fs/file_table.c
++++ b/fs/file_table.c
+@@ -265,6 +265,83 @@ void file_kill(struct file *file)
  	}
- 
--	/* add a completion event to the ring buffer.
--	 * must be done holding ctx->ctx_lock to prevent
--	 * other code from messing with the tail
--	 * pointer since we might be called from irq
--	 * context.
--	 */
-+	/*
-+	 * We queue up the completion codes into the iocb.  They are
-combined
-+	 * with a potential error from the submission path and inserted
-into
-+	 * the ring once the last reference to the iocb is dropped.
-Cancelled
-+	 * iocbs don't insert events on completion because userland was
-given
-+	 * an event directly as part of the cancelation interface.
-+ 	 */
- 	spin_lock_irqsave(&ctx->ctx_lock, flags);
- 
- 	if (iocb->ki_run_list.prev && !list_empty(&iocb->ki_run_list))
- 		list_del_init(&iocb->ki_run_list);
- 
--	/*
--	 * cancelled requests don't get events, userland was given one
--	 * when the event got cancelled.
--	 */
--	if (kiocbIsCancelled(iocb))
--		goto put_rq;
--
--	aio_ring_insert_entry(ctx, iocb, res, res2);
--
--put_rq:
-+	if (!kiocbIsCancelled(iocb)) {
-+		iocb->ki_res = res;
-+		iocb->ki_res2 = res2;
-+		kiocbSetInserted(iocb);
-+	}
-+
- 	/* everything turned out well, dispose of the aiocb. */
- 	ret = __aio_put_req(ctx, iocb);
- 
-diff -r 8a740eb579d4 include/linux/aio.h
---- a/include/linux/aio.h	Mon Feb 19 13:12:20 2007 -0800
-+++ b/include/linux/aio.h	Mon Feb 19 13:16:00 2007 -0800
-@@ -34,6 +34,7 @@ struct kioctx;
- /* #define KIF_LOCKED		0 */
- #define KIF_KICKED		1
- #define KIF_CANCELLED		2
-+#define KIF_INSERTED		4
- 
- #define kiocbTryLock(iocb)	test_and_set_bit(KIF_LOCKED,
-&(iocb)->ki_flags)
- #define kiocbTryKick(iocb)	test_and_set_bit(KIF_KICKED,
-&(iocb)->ki_flags)
-@@ -41,6 +42,7 @@ struct kioctx;
- #define kiocbSetLocked(iocb)	set_bit(KIF_LOCKED, &(iocb)->ki_flags)
- #define kiocbSetKicked(iocb)	set_bit(KIF_KICKED, &(iocb)->ki_flags)
- #define kiocbSetCancelled(iocb)	set_bit(KIF_CANCELLED,
-&(iocb)->ki_flags)
-+#define kiocbSetInserted(iocb)	set_bit(KIF_INSERTED, &(iocb)->ki_flags)
- 
- #define kiocbClearLocked(iocb)	clear_bit(KIF_LOCKED, &(iocb)->ki_flags)
- #define kiocbClearKicked(iocb)	clear_bit(KIF_KICKED, &(iocb)->ki_flags)
-@@ -49,6 +51,7 @@ struct kioctx;
- #define kiocbIsLocked(iocb)	test_bit(KIF_LOCKED, &(iocb)->ki_flags)
- #define kiocbIsKicked(iocb)	test_bit(KIF_KICKED, &(iocb)->ki_flags)
- #define kiocbIsCancelled(iocb)	test_bit(KIF_CANCELLED,
-&(iocb)->ki_flags)
-+#define kiocbIsInserted(iocb)	test_bit(KIF_INSERTED,
-&(iocb)->ki_flags)
- 
- /* is there a better place to document function pointer methods? */
- /**
-@@ -119,6 +122,10 @@ struct kiocb {
- 
- 	struct list_head	ki_list;	/* the aio core uses
-this
- 						 * for cancellation */
-+	/* we store and combine return codes from submission and
-completion */ 
-+	int			ki_pending_err;
-+	long			ki_res;
-+	long			ki_res2;
- };
- 
- #define is_sync_kiocb(iocb)	((iocb)->ki_key == KIOCB_SYNC_KEY)
-@@ -246,6 +253,29 @@ static inline struct kiocb *list_kiocb(s
- 	return list_entry(h, struct kiocb, ki_list);
  }
  
 +/*
-+ * This function is used to make sure that an error is communicated to
-+ * userspace on iocb completion without stopping -EIOCBQUEUED from
-bubbling up
-+ * to fs/aio.c from the place where it originated.
++ * Called with both task_lock and files_lock held.
 + *
-+ * If we have an existing -EIOCBQUEUED it must be returned all the way
-to
-+ * fs/aio.c so that it doesn't double-complete the iocb along with
-whoever
-+ * returned -EIOCBQUEUED..  In that case we put the new error in the
-iocb.  It
-+ * will be returned to userspace *intead of* the first result code
-given to
-+ * aio_complete().  Use this only for errors which must overwrite
-whatever the
-+ * return code might have been.  The first non-zero new_err given to
-this
-+ * function for a given iocb will be returned to userspace.
++ * if f_mode tweaking is not acceptable, we'll have to switch
++ * to making use of Pekka's revokefs.
 + */
-+static inline int aio_propogate_error(struct kiocb *iocb, int
-existing_err,
-+				      int new_err)
++static void __fd_revoke_write_locked(struct file *file)
 +{
-+	if (existing_err != -EIOCBQUEUED)
-+		return new_err;
-+	if (!iocb->ki_pending_err)
-+		iocb->ki_pending_err = new_err;
-+	return -EIOCBQUEUED;
++	file->f_mode &= ~FMODE_WRITE;
++	put_write_access(file->f_dentry->d_inode);
 +}
 +
- /* for sysctl: */
- extern unsigned long aio_nr;
- extern unsigned long aio_max_nr;
-diff -r 8a740eb579d4 mm/filemap.c
---- a/mm/filemap.c	Mon Feb 19 13:12:20 2007 -0800
-+++ b/mm/filemap.c	Mon Feb 19 13:16:00 2007 -0800
-@@ -2031,7 +2031,7 @@ generic_file_direct_write(struct kiocb *
- 	    ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
- 		int err = generic_osync_inode(inode, mapping,
-OSYNC_METADATA);
- 		if (err < 0)
--			written = err;
-+			written = aio_propogate_error(iocb, written,
-err);
- 	}
- 	return written;
++extern void mm_revoke_mmap_write(int(*need_revoke)(struct inode *, void *),
++							void *l);
++
++/*
++ * Currently, bail if there is >1 thread
++ * Later, the idea is to
++ *   for each thread
++ *     if on a cpu, bail and return -EAGAIN
++ *     else pull off runqueue
++ *     if in  write syscall, bail and return -EAGAIN
++ *   for each thread
++ *     revoke files if need_revoke()
++ *   for each thread
++ *     put back on runqueue
++ */
++int fd_revoke_write_iter(int(*need_revoke)(struct inode *, void *),
++		void *l)
++{
++	struct files_struct *files = current->files;
++	struct fdtable *fdt;
++	unsigned long fd = 0;
++	struct file *file;
++	int num_revoked = 0;
++	int ret = 0;
++
++	if (!files)
++		return 0;
++
++	if (!thread_group_empty(current))
++		return -EAGAIN;
++
++	if (has_pending_aio_writes(current->active_mm))
++		return -EPERM;
++
++	/* here's where we would pull all threads off the runqueue */
++
++	/*
++	 * here's wehre we'd check for any thread sleeping during a
++	 * write syscall
++	 */
++
++	spin_lock(&files->file_lock);
++	fdt = files_fdtable(files);
++	while ((fd = find_next_bit(fdt->open_fds->fds_bits,
++				   fdt->max_fds, fd)) < fdt->max_fds) {
++		struct inode *inode;
++
++		file = fdt->fd[fd++];
++		if (!file)
++			continue;
++		if (!(file->f_mode & FMODE_WRITE))
++			continue;
++		if (!(inode = file->f_dentry->d_inode))
++			continue;
++		if (!need_revoke(inode, l))
++			continue;
++		__fd_revoke_write_locked(file);
++		num_revoked++;
++	}
++	spin_unlock(&files->file_lock);
++	mm_revoke_mmap_write(need_revoke, l);
++
++	return ret;
++}
++
+ int fs_may_remount_ro(struct super_block *sb)
+ {
+ 	struct list_head *p;
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index a0f97c6..c438388 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1597,6 +1597,8 @@ extern const struct file_operations read
+ extern const struct file_operations write_fifo_fops;
+ extern const struct file_operations rdwr_fifo_fops;
+ 
++extern int fd_revoke_write_iter(int(*need_revoke)(struct inode *, void *),
++		void *l);
+ extern int fs_may_remount_ro(struct super_block *);
+ 
+ #ifdef CONFIG_BLOCK
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index aa8a1ac..eb8f327 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -141,6 +141,8 @@ extern unsigned int kobjsize(const void 
+ #define VM_EXEC		0x00000004
+ #define VM_SHARED	0x00000008
+ 
++extern void mm_revoke_mmap_write(int(*need_revoke)(struct inode *, void *),
++							void *l);
+ extern int do_mprotect(unsigned long start, size_t len, unsigned long prot);
+ 
+ /* mprotect() hardcodes VM_MAYREAD >> 4 == VM_READ, and so for r/w/x bits. */
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index f7d49bc..5896fb3 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -381,6 +381,17 @@ struct mm_struct {
+ 	struct kioctx		*ioctx_list;
+ };
+ 
++static inline int has_pending_aio_writes(struct mm_struct *mm)
++{
++	int ret = 0;
++	
++	read_lock(&mm->ioctx_list_lock);
++	if (mm->ioctx_list != NULL)
++		ret = 1;
++	read_unlock(&mm->ioctx_list_lock);
++	return 0;
++}
++
+ struct sighand_struct {
+ 	atomic_t		count;
+ 	struct k_sigaction	action[_NSIG];
+diff --git a/mm/mprotect.c b/mm/mprotect.c
+index 07f04fa..d1d182f 100644
+--- a/mm/mprotect.c
++++ b/mm/mprotect.c
+@@ -312,6 +312,55 @@ out:
+ 	return error;
  }
-@@ -2396,7 +2396,7 @@ generic_file_direct_IO(int rw, struct ki
- 			int err = invalidate_inode_pages2_range(mapping,
- 					offset >> PAGE_CACHE_SHIFT,
-end);
- 			if (err)
--				retval = err;
-+				retval = aio_propogate_error(iocb,
-retval, err);
- 		}
+ 
++static inline void do_revoke_mmap_write(struct vm_area_struct *mpnt)
++{
++	unsigned long start = mpnt->vm_start;
++	unsigned long end = mpnt->vm_end;
++	size_t len = end - start;
++
++	if (do_mprotect(start, len, PROT_READ) < 0)
++		printk(KERN_WARNING "%s: do_mprotect failed", __FUNCTION__);
++}
++
++/*
++ * Revoke write permission to underlying mmap file (MAP_SHARED)
++ */
++void mm_revoke_mmap_write(int(*need_revoke)(struct inode *, void *),
++							void *l)
++{
++	struct vm_area_struct *mpnt;
++
++	flush_cache_mm(current->mm);
++
++	down_write(&current->mm->mmap_sem);
++	for (mpnt = current->mm->mmap; mpnt; mpnt = mpnt->vm_next) {
++		struct file *file = mpnt->vm_file;
++		struct dentry *dentry;
++		struct inode *inode;
++
++		if (!file)
++			continue;
++
++		if (!(dentry = file->f_dentry))
++			continue;
++
++		if (!(inode = dentry->d_inode))
++			continue;
++
++		if (!(mpnt->vm_flags & (VM_WRITE | VM_MAYWRITE)))
++			continue;   
++
++    		if (!(mpnt->vm_flags & VM_SHARED))
++			continue;   
++
++		if (!need_revoke(inode, l))
++			continue;
++
++		do_revoke_mmap_write(mpnt);
++	}
++	up_write(&current->mm->mmap_sem);
++}
++
+ asmlinkage long
+ sys_mprotect(unsigned long start, size_t len, unsigned long prot)
+ {
+diff --git a/security/slim/slm_main.c b/security/slim/slm_main.c
+index 3d60651..8a08022 100644
+--- a/security/slim/slm_main.c
++++ b/security/slim/slm_main.c
+@@ -107,123 +107,17 @@ static int is_isec_defined(struct slm_is
+ 	return 0;
+ }
+ 
+-/*
+- * Called with current->files->file_lock. There is not a great lock to grab
+- * for demotion of this type.  The only place f_mode is changed after install
+- * is in mark_files_ro in the filesystem code.  That function is also changing
+- * taking away write rights so even if we race the outcome is the same.
+- */
+-static inline int mark_has_file_wperm(struct file *file,
+-					struct slm_file_xattr *cur_level)
++static int need_revoke(struct inode *inode, void *l)
+ {
+-	struct inode *inode;
++	struct slm_file_xattr *curl;
+ 	struct slm_isec_data *isec;
+-	int rc = 0;
+ 
+-	inode = file->f_dentry->d_inode;
+-	if (!S_ISREG(inode->i_mode) || !(file->f_mode & FMODE_WRITE))
++	if (!S_ISREG(inode->i_mode))
+ 		return 0;
+-
++	curl = (struct slm_file_xattr *) l;
+ 	isec = inode->i_security;
+-	spin_lock(&isec->lock);
+-	if (is_lower_integrity(cur_level, &isec->level)) {
+-		rc = 1;
+-		if (file->f_dentry->d_name.name)
+-			dprintk(SLM_BASE, "pid %d - has write perm "
+-				"for %s\n", current->pid,
+-				file->f_dentry->d_name.name);
+-	}
+-	spin_unlock(&isec->lock);
+-	return rc;
+-}
+-
+-/*
+- * Determine if a file is opened with write permissions.
+- */
+-static int has_file_wperm(struct slm_file_xattr *cur_level)
+-{
+-	struct files_struct *files = current->files;
+-	unsigned long fd = 0;
+-	struct fdtable *fdt;
+-	struct file *file;
+-	int rc = 0;
+-
+-	if (is_kernel_thread(current))
+-		return 0;
+-
+-	if (!files || !cur_level)
+-		return 0;
+-
+-	spin_lock(&files->file_lock);
+-	fdt = files_fdtable(files);
+-
+-	while ((fd = find_next_bit(fdt->open_fds->fds_bits,
+-				   fdt->max_fds, fd)) < fdt->max_fds) {
+-		file = fdt->fd[fd++];
+-		if (file)
+-			rc = mark_has_file_wperm(file, cur_level);
+-	}
+-
+-	spin_unlock(&files->file_lock);
+-	return rc;
+-}
+ 
+-static inline void do_revoke_mmap_wperm(struct vm_area_struct *mpnt,
+-					struct slm_isec_data *isec,
+-					struct slm_file_xattr *cur_level)
+-{
+-	unsigned long start = mpnt->vm_start;
+-	unsigned long end = mpnt->vm_end;
+-	size_t len = end - start;
+- 	struct dentry *dentry = mpnt->vm_file->f_dentry;
+-
+-	if ((mpnt->vm_flags & (VM_WRITE | VM_MAYWRITE))
+-	    && (mpnt->vm_flags & VM_SHARED)
+-	    && (cur_level->iac_level < isec->level.iac_level)) {
+-		dprintk(SLM_BASE,
+-			"%s: pid %d - revoking write"
+-			" perm for %s\n", __FUNCTION__,
+-			current->pid, dentry->d_name.name);
+-		if (do_mprotect(start, len, PROT_READ) < 0)
+-			dprintk(SLM_BASE, "do_mprotect failed");
+- 	}
+-}
+-
+-/*
+- * Revoke write permission to underlying mmap file (MAP_SHARED)
+- */
+-static void revoke_mmap_wperm(struct slm_file_xattr *cur_level)
+-{
+-	struct vm_area_struct *mpnt;
+-	struct file *file;
+-	struct dentry *dentry;
+-	struct slm_isec_data *isec;
+-
+-	flush_cache_mm(current->mm);
+-
+-	down_write(&current->mm->mmap_sem);
+-	for (mpnt = current->mm->mmap; mpnt; mpnt = mpnt->vm_next) {
+-		file = mpnt->vm_file;
+-		if (!file)
+-			continue;
+-
+-		dentry = file->f_dentry;
+-		if (!dentry || !dentry->d_inode)
+-			continue;
+-
+-		isec = dentry->d_inode->i_security;
+-		do_revoke_mmap_wperm(mpnt, isec, cur_level);
+-	}
+-	up_write(&current->mm->mmap_sem);
+-}
+-
+-/*
+- * revoke write permission for shared memory for demoted threads
+- */
+-static void revoke_permissions(struct slm_file_xattr *cur_level)
+-{
+-	if (!is_kernel_thread(current))
+-		revoke_mmap_wperm(cur_level);
++	return is_lower_integrity(curl, &isec->level);
+ }
+ 
+ #define EXEMPT_STR "EXEMPT"
+@@ -517,47 +411,30 @@ static int enforce_integrity_read(struct
+ {
+ 	struct slm_tsec_data *cur_tsec = current->security;
+ 	int rc = 0;
++	int count = 0;
++
++	if (is_kernel_thread(current))
++		return rc;
+ 
++again:
+ 	spin_lock(&cur_tsec->lock);
+ 	if (!is_iac_less_than_or_exempt(level, cur_tsec->iac_r)) {
+-		rc = has_file_wperm(level);
+-		if (current->mm && atomic_read(&current->mm->mm_users) != 1)
+-			rc = 1;
+-		if (rc) {
+-			dprintk(SLM_BASE, "ppid %d(%s p=%d-%s) "
+-				" pid %d(%s p=%d-%s) can't revoke, not demoting\n",
+-				parent_tsk->pid, parent_tsk->comm,
+-				parent_tsec->iac_r,
+-				(parent_tsec->iac_wx != parent_tsec->iac_r)
+-				? "GUARD" : slm_iac_str[parent_tsec-> iac_r],
+-				current->pid, current->comm,
+-				cur_tsec->iac_r, (cur_tsec->iac_wx != cur_tsec->iac_r)
+-				? "GUARD" : slm_iac_str[cur_tsec->iac_r]);
+-			spin_unlock(&cur_tsec->lock);
+-		} else {
+-			/* Reading lower integrity, demote process */
+-			dprintk(SLM_BASE, "ppid %d(%s p=%d-%s) "
+-				" pid %d(%s p=%d-%s) demoting integrity to"
+-				" iac=%d-%s(%s)\n",
+-				parent_tsk->pid, parent_tsk->comm,
+-				parent_tsec->iac_r,
+-				(parent_tsec->iac_wx != parent_tsec->iac_r)
+-				? "GUARD" : slm_iac_str[parent_tsec-> iac_r],
+-				current->pid, current->comm,
+-				cur_tsec->iac_r, (cur_tsec->iac_wx != cur_tsec->iac_r)
+-				? "GUARD" : slm_iac_str[cur_tsec->iac_r],
+-				level->iac_level, slm_iac_str[level->iac_level], name);
+-
+-			/* Even in the case of a integrity guard process. */
++		spin_unlock(&cur_tsec->lock);
++		rc = fd_revoke_write_iter(need_revoke, (void *)level);
++		spin_lock(&cur_tsec->lock);
++		if (rc == 0) {
+ 			cur_tsec->iac_r = level->iac_level;
+ 			cur_tsec->iac_wx = level->iac_level;
++		} else if (rc == -EAGAIN && count < 5) {
++			count++;
+ 			spin_unlock(&cur_tsec->lock);
+-			revoke_permissions(level);
+-		}
+-		return rc ? -EACCES : 0;
++			schedule();
++			goto again;
++		} else
++			rc = -EPERM;
  	}
- 	return retval;
+ 	spin_unlock(&cur_tsec->lock);
+-	return 0;
++	return rc;
+ }
+ 
+ static int do_task_may_read(struct slm_file_xattr *level,
+@@ -1065,46 +942,40 @@ static int slm_inode_alloc_security(stru
+  */
+ static int slm_socket_create(int family, int type, int protocol, int kern)
+ {
+-	struct task_struct *parent_tsk;
+-	struct slm_tsec_data *cur_tsec = current->security, *parent_tsec;
++	struct slm_tsec_data *cur_tsec = current->security;
+ 	struct slm_file_xattr level;
++	int count = 0;
+ 	int rc = 0;
+ 
++	if (is_kernel_thread(current))
++		return rc;
++
+ 	/* demoting all but UNIX and NETLINK sockets */
+-	if ((family != AF_UNIX) && (family != AF_NETLINK)) {
+-		spin_lock(&cur_tsec->lock);
+-		if (cur_tsec->iac_r > SLM_IAC_UNTRUSTED) {
+-			parent_tsk = current->parent;
+-			parent_tsec = parent_tsk->security;
+-			memset(&level, 0, sizeof(struct slm_file_xattr));
+-			level.iac_level = SLM_IAC_UNTRUSTED;
+-			rc = has_file_wperm(&level);
+-			if (current->mm && atomic_read(&current->mm->mm_users) != 1)
+-				rc = 1;
+-			if (rc) {
+-				dprintk(SLM_BASE,
+-					"%s: ppid %d pid %d can't revoke, refusing socket\n",
+-					__FUNCTION__, parent_tsk->pid, current->pid);
+-				spin_unlock(&cur_tsec->lock);
+-				return -EPERM;
+-			} else {
+-				dprintk(SLM_INTEGRITY,
+-					"%s: ppid %d pid %d demoting "
+-					"family %d type %d protocol %d kern %d"
+-					" to untrusted.\n", __FUNCTION__,
+-					parent_tsk->pid, current->pid, family,
+-					type, protocol, kern);
+-				cur_tsec->iac_r = SLM_IAC_UNTRUSTED;
+-				cur_tsec->iac_wx = SLM_IAC_UNTRUSTED;
+-				spin_unlock(&cur_tsec->lock);
++	if (family == AF_UNIX || family == AF_NETLINK)
++		return rc;
+ 
+-				revoke_permissions(&level);
+-				return 0;
+-			}
+-		}
++again:
++	spin_lock(&cur_tsec->lock);
++	if (cur_tsec->iac_r > SLM_IAC_UNTRUSTED) {
++		memset(&level, 0, sizeof(struct slm_file_xattr));
++		level.iac_level = SLM_IAC_UNTRUSTED;
+ 		spin_unlock(&cur_tsec->lock);
++		rc = fd_revoke_write_iter(need_revoke, (void *)&level);
++		spin_lock(&cur_tsec->lock);
++		if (rc == 0) {
++			cur_tsec->iac_r = SLM_IAC_UNTRUSTED;
++			cur_tsec->iac_wx = SLM_IAC_UNTRUSTED;
++		} else if (rc == -EAGAIN && count < 5) {
++			count++;
++			spin_unlock(&cur_tsec->lock);
++			schedule();
++			goto again;
++		} else
++			rc = -EPERM;
+ 	}
+-	return 0;
++	spin_unlock(&cur_tsec->lock);
++
++	return rc;
+ }
+ 
+ /*
+@@ -1260,74 +1131,37 @@ static int enforce_integrity_execute(str
+ 				      struct slm_file_xattr *level,
+ 				      struct slm_tsec_data *cur_tsec)
+ {
+-	struct task_struct *parent_tsk = current->parent;
+-	struct slm_tsec_data *parent_tsec = parent_tsk->security;
+ 	int rc = 0;
++	int count = 0;
+ 
++	if (is_kernel_thread(current))
++		return rc;
++
++again:
+ 	spin_lock(&cur_tsec->lock);
+ 	if (is_iac_less_than_or_exempt(level, cur_tsec->iac_wx)) {
+-		dprintk(SLM_INTEGRITY,
+-			"%s: ppid %d(%s %d-%s) pid %d(%s %d-%s)"
+-			" %s executing\n",
+-			__FUNCTION__, parent_tsk->pid,
+-			parent_tsk->comm,
+-			(!parent_tsec) ? 0 : parent_tsec->iac_wx,
+-			(parent_tsec->iac_wx != parent_tsec->iac_r)
+-			? "GUARD" : slm_iac_str[parent_tsec->
+-						iac_wx],
+-			current->pid, current->comm,
+-			cur_tsec->iac_wx,
+-			(cur_tsec->iac_wx != cur_tsec->iac_r)
+-			? "GUARD" : slm_iac_str[cur_tsec->iac_wx],
+-			bprm->filename);
+-
+ 		/* Being a guard process is not inherited */
+ 		cur_tsec->iac_r = cur_tsec->iac_wx;
+-	} else {
+-		rc = has_file_wperm(level);
+-		if (current->mm && atomic_read(&current->mm->mm_users) != 1)
+-			rc = 1;
+-		if (rc) {
+-			dprintk(SLM_BASE,
+-				"%s: ppid %d(%s %d-%s) pid %d(%s %d-%s)"
+-				" %s can't revoke, deny execution\n",
+-				__FUNCTION__, parent_tsk->pid,
+-				parent_tsk->comm, parent_tsec->iac_wx,
+-				(parent_tsec->iac_wx != parent_tsec->iac_r)
+-				? "GUARD" : slm_iac_str[parent_tsec->
+-						iac_wx],
+-				current->pid, current->comm,
+-				cur_tsec->iac_wx,
+-				(cur_tsec->iac_wx != cur_tsec->iac_r)
+-				? "GUARD" : slm_iac_str[cur_tsec->iac_wx],
+-				bprm->filename);
+-			spin_unlock(&cur_tsec->lock);
+-		} else {
+-			dprintk(SLM_BASE,
+-				"%s: ppid %d(%s %d-%s) pid %d(%s %d-%s)"
+-				" %s executing, demoting integrity to "
+-				" iac=%d-%s\n",
+-				__FUNCTION__, parent_tsk->pid,
+-				parent_tsk->comm, parent_tsec->iac_wx,
+-				(parent_tsec->iac_wx != parent_tsec->iac_r)
+-				? "GUARD" : slm_iac_str[parent_tsec->
+-						iac_wx],
+-				current->pid, current->comm,
+-				cur_tsec->iac_wx,
+-				(cur_tsec->iac_wx != cur_tsec->iac_r)
+-				? "GUARD" : slm_iac_str[cur_tsec->iac_wx],
+-				bprm->filename, level->iac_level,
+-				slm_iac_str[level->iac_level]);
+-
+-			cur_tsec->iac_r = level->iac_level;
+-			cur_tsec->iac_wx = level->iac_level;
+-			spin_unlock(&cur_tsec->lock);
+-			revoke_permissions(level);
+-		}
+-		return rc ? -EACCES : 0;
++		goto out;
+ 	}
++
+ 	spin_unlock(&cur_tsec->lock);
+-	return 0;
++	rc = fd_revoke_write_iter(need_revoke, (void *)level);
++	spin_lock(&cur_tsec->lock);
++	if (rc == 0) {
++		cur_tsec->iac_r = level->iac_level;
++		cur_tsec->iac_wx = level->iac_level;
++	} else if (rc == -EAGAIN && count < 5) {
++		count++;
++		spin_unlock(&cur_tsec->lock);
++		schedule();
++		goto again;
++	} else
++		rc = -EPERM;
++
++out:
++	spin_unlock(&cur_tsec->lock);
++	return rc;
+ }
+ 
+ static void enforce_guard_integrity_execute(struct linux_binprm *bprm,
+-- 
+1.1.6
+
+----- End forwarded message -----
