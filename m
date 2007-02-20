@@ -1,97 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030499AbXBTWT5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030491AbXBTWWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030499AbXBTWT5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 17:19:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030501AbXBTWTy
+	id S1030491AbXBTWWw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 17:22:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030500AbXBTWWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 17:19:54 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:58248 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030499AbXBTWTw (ORCPT
+	Tue, 20 Feb 2007 17:22:51 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:34660 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030491AbXBTWWu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 17:19:52 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=rualR6ZOVmeiKkLyGDVEp8mXKFuRY1X/A72sQql2P4Rc7jhy6vfLGmA9g9Ul2mcRv
-	I4zbWI9gzvHOVLqAM5gRQ==
-Message-ID: <6599ad830702201419n2fe02661y58f09f7dc8d23d88@mail.gmail.com>
-Date: Tue, 20 Feb 2007 14:19:39 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Sam Vilain" <sam@vilain.net>
-Subject: Re: [PATCH 0/7] containers (V7): Generic Process Containers
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, akpm@osdl.org, pj@sgi.com,
-       sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
-       vatsa@in.ibm.com, containers@lists.osdl.org, winget@google.com,
-       rohitseth@google.com, ckrm-tech@lists.sourceforge.net,
+	Tue, 20 Feb 2007 17:22:50 -0500
+Subject: Re: all syscalls initially taking 4usec on a P4? Re: nonblocking 
+	UDPv4 recvfrom() taking 4usec @ 3GHz?
+From: Arjan van de Ven <arjan@infradead.org>
+To: bert hubert <bert.hubert@netherlabs.nl>
+Cc: Rick Jones <rick.jones2@hp.com>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Josef Sipek <jsipek@fsl.cs.sunysb.edu>,
+       Andi Kleen <andi@firstfloor.org>, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <45DB6F07.8080409@vilain.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20070220221719.GA16263@outpost.ds9a.nl>
+References: <20070219231447.GA4400@outpost.ds9a.nl>
+	 <p73d545drx6.fsf@bingen.suse.de> <20070220162714.GA3245@outpost.ds9a.nl>
+	 <20070220164124.GA24930@2ka.mipt.ru>
+	 <20070220184242.GA30077@filer.fsl.cs.sunysb.edu>
+	 <20070220184859.GA1949@2ka.mipt.ru> <20070220193319.GA8800@outpost.ds9a.nl>
+	 <45DB6FD8.4050106@hp.com>  <20070220221719.GA16263@outpost.ds9a.nl>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Tue, 20 Feb 2007 23:22:27 +0100
+Message-Id: <1172010148.3531.158.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070212081521.808338000@menage.corp.google.com>
-	 <45D0EC68.9090009@vilain.net>
-	 <6599ad830702121515p10bc1b58kf1d29367b9b18016@mail.gmail.com>
-	 <m1wt2c4ttj.fsf@ebiederm.dsl.xmission.com>
-	 <6599ad830702200955l10f3c71aucff1d4b815e1a1e7@mail.gmail.com>
-	 <45DB6F07.8080409@vilain.net>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/20/07, Sam Vilain <sam@vilain.net> wrote:
->
-> The term "segregated group of processes" is too vague.  Segregated for
-> what?  What is the kernel supposed to do with this information?
 
-The generic part of the kernel just keeps track of the fact that
-they're segregated (and their children, etc).
+> I'm trying to figure out which processes have the most impact, I had already
+> killed anything non-essential. But that still leaves 140 pids.
 
-It's the clients of this subsystem (virtual servers, resource
-controllers) that can decide to give different per-process behaviour
-based on the membership of various groups.
+btw if you have systemtap on your system you can see who is doing evil
+with
 
-> Did you like the names I came up with in my original reply?
->
->  - CPUset namespace for CPU partitioning
->  - Resource namespaces:
->    - cpusched namespace for CPU
->    - ulimit namespace for memory
->    - quota namespace for disk space
->    - io namespace for disk activity
->    - etc
+http://www.fenrus.org/cstop.stp
 
-This is a strange abuse of the term "namespace".
-http://en.wikipedia.org/wiki/Namespace_%28computer_science%29
+also.. running "vmstat 3" and looking at the "cs" column is interesting;
+it shouldn't be above 50 or so in idle (well not above 10 but our
+userland stinks too much for that)
 
-For the virtual server work that you're doing, namespace is a good term:
 
-pids name processes, hence a pid namespace lets you have multiple
-distinct mappings from pids to processes
-filenames name files, so a filename (or mount) namespace lets you have
-multiple distinct mappings from filenames to files.
-
-For resource QoS control, it doesn't really make sense to talk about
-namespaces. We're not virtualizing resources to rename them for
-different virtual servers, we're limiting the quality of access to the
-resources.
-
-But the semantics of the term "namespace" notwithstanding, you're
-equating a virtual server namespace (pid, ipc, uts, mounts, etc) with
-a resource controller (memory, I/O, etc) in terms of their place in a
-hierarchy, which is something I agree with. All of these subsystems
-can be considered to be units that can be associated with groups of
-processes; the ultimate grouping of processes is something that we're
-both ultimately referring to as a container.
-
->
-> Maybe what's missing is a set of helper macros/functions that assist
-> with writing new namespaces.
-
-That's pretty much what my containers patch does - provides a generic
-way to associate state (what you're referring to as a namespace) with
-groups of processes and a consistent user-space API for manipulating
-them.
-
-Paul
