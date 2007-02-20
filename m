@@ -1,114 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965640AbXBTATz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965654AbXBTAT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965640AbXBTATz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 19:19:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750889AbXBTAGm
+	id S965654AbXBTAT4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 19:19:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750969AbXBTAHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 19:06:42 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:36017 "EHLO
+	Mon, 19 Feb 2007 19:07:09 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:36042 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750934AbXBTAGi (ORCPT
+	with ESMTP id S1750915AbXBTAGz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 19:06:38 -0500
-Date: Tue, 20 Feb 2007 01:06:37 +0100
+	Mon, 19 Feb 2007 19:06:55 -0500
+Date: Tue, 20 Feb 2007 01:06:54 +0100
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dwmw2@infradead.org, jffs-dev@axis.com, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] remove fs/jffs2/ioctl.c
-Message-ID: <20070220000637.GE13958@stusta.de>
+To: David Brownell <david-b@pacbell.net>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Geoff Levand <geoffrey.levand@am.sony.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Tony Olech <tony.olech@elandigitalsystems.com>,
+       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: Re: 2.6.20-rc4-mm1: different values for OHCI_QUIRK_ZFMICRO
+Message-ID: <20070220000654.GK13958@stusta.de>
+References: <20070111222627.66bb75ab.akpm@osdl.org> <20070114091016.GS7469@stusta.de> <200701140636.11657.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <200701140636.11657.david-b@pacbell.net>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fs/jffs2/ioctl.c is already for so long in the "might be used later" 
-state that I doubt it will ever be actually used...
+On Sun, Jan 14, 2007 at 06:36:10AM -0800, David Brownell wrote:
+> On Sunday 14 January 2007 1:10 am, Adrian Bunk wrote:
+> > <--  snip  -->
+> 
+> Waiting for Tony to submit bugfixes to his driver...
 
-And if it will ever be used, reverting this patch will be trivial.
+Still unfixed as of 2.6.20-mm1.
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> > ...
+> >   CC      drivers/usb/misc/ftdi-elan.o
+> > /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/usb/misc/ftdi-elan.c:2307:1: warning: "OHCI_QUIRK_ZFMICRO" redefined
+> > In file included from /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/usb/misc/ftdi-elan.c:76:
+> > /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/usb/misc/../host/ohci.h:399:1: warning: this is the location of the previous definition
+> > ...
+> > $ grep -r ^#define * | grep OHCI_QUIRK_ZFMICRO  
+> > drivers/usb/host/ohci.h:#define OHCI_QUIRK_ZFMICRO      0x20                   /* Compaq ZFMicro chipset*/
+> > drivers/usb/host/u132-hcd.c:#define OHCI_QUIRK_ZFMICRO 0x10
+> > drivers/usb/misc/ftdi-elan.c:#define OHCI_QUIRK_ZFMICRO 0x10
+> > $ 
+> > 
+> > <--  snip  -->
 
----
+cu
+Adrian
 
-This patch was already sent on:
-- 26 Nov 2006
+-- 
 
- fs/jffs2/Makefile   |    2 +-
- fs/jffs2/dir.c      |    1 -
- fs/jffs2/file.c     |    1 -
- fs/jffs2/ioctl.c    |   23 -----------------------
- fs/jffs2/os-linux.h |    3 ---
- 5 files changed, 1 insertion(+), 29 deletions(-)
-
---- linux-2.6.14-rc5-mm1-full/fs/jffs2/os-linux.h.old	2005-11-01 20:28:24.000000000 +0100
-+++ linux-2.6.14-rc5-mm1-full/fs/jffs2/os-linux.h	2005-11-01 20:28:31.000000000 +0100
-@@ -147,9 +147,6 @@
- int jffs2_fsync(struct file *, struct dentry *, int);
- int jffs2_do_readpage_unlock (struct inode *inode, struct page *pg);
- 
--/* ioctl.c */
--int jffs2_ioctl(struct inode *, struct file *, unsigned int, unsigned long);
--
- /* symlink.c */
- extern struct inode_operations jffs2_symlink_inode_operations;
- 
---- linux-2.6.14-rc5-mm1-full/fs/jffs2/dir.c.old	2005-11-01 20:28:39.000000000 +0100
-+++ linux-2.6.14-rc5-mm1-full/fs/jffs2/dir.c	2005-11-01 20:28:43.000000000 +0100
-@@ -41,7 +41,6 @@
- {
- 	.read =		generic_read_dir,
- 	.readdir =	jffs2_readdir,
--	.ioctl =	jffs2_ioctl,
- 	.fsync =	jffs2_fsync
- };
- 
---- linux-2.6.14-rc5-mm1-full/fs/jffs2/Makefile.old	2005-11-01 20:31:23.000000000 +0100
-+++ linux-2.6.14-rc5-mm1-full/fs/jffs2/Makefile	2005-11-01 20:31:41.000000000 +0100
-@@ -6,7 +6,7 @@
- 
- obj-$(CONFIG_JFFS2_FS) += jffs2.o
- 
--jffs2-y	:= compr.o dir.o file.o ioctl.o nodelist.o malloc.o
-+jffs2-y	:= compr.o dir.o file.o nodelist.o malloc.o
- jffs2-y	+= read.o nodemgmt.o readinode.o write.o scan.o gc.o
- jffs2-y	+= symlink.o build.o erase.o background.o fs.o writev.o
- jffs2-y	+= super.o
---- linux-2.6.15-rc5-mm2-full/fs/jffs2/ioctl.c	2005-12-11 15:01:46.000000000 +0100
-+++ /dev/null	2005-11-08 19:07:57.000000000 +0100
-@@ -1,23 +0,0 @@
--/*
-- * JFFS2 -- Journalling Flash File System, Version 2.
-- *
-- * Copyright (C) 2001-2003 Red Hat, Inc.
-- *
-- * Created by David Woodhouse <dwmw2@infradead.org>
-- *
-- * For licensing information, see the file 'LICENCE' in this directory.
-- *
-- * $Id: ioctl.c,v 1.10 2005/11/07 11:14:40 gleixner Exp $
-- *
-- */
--
--#include <linux/fs.h>
--
--int jffs2_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
--		unsigned long arg)
--{
--	/* Later, this will provide for lsattr.jffs2 and chattr.jffs2, which
--	   will include compression support etc. */
--	return -ENOTTY;
--}
--
---- linux-2.6.19-rc6-mm1/fs/jffs2/file.c.old	2006-11-26 05:55:29.000000000 +0100
-+++ linux-2.6.19-rc6-mm1/fs/jffs2/file.c	2006-11-26 05:53:06.000000000 +0100
-@@ -46,7 +46,6 @@
-  	.aio_read =	generic_file_aio_read,
-  	.write =	do_sync_write,
-  	.aio_write =	generic_file_aio_write,
--	.ioctl =	jffs2_ioctl,
- 	.mmap =		generic_file_readonly_mmap,
- 	.fsync =	jffs2_fsync,
- 	.sendfile =	generic_file_sendfile
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
