@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030395AbXBTUKQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030408AbXBTUMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030395AbXBTUKQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 15:10:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030398AbXBTUKQ
+	id S1030408AbXBTUMY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 15:12:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030410AbXBTUMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 15:10:16 -0500
-Received: from mail.screens.ru ([213.234.233.54]:41705 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030395AbXBTUKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 15:10:14 -0500
-Date: Tue, 20 Feb 2007 23:09:36 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@osdl.org, paulmck@us.ibm.com,
-       mingo@elte.hu, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl
-Subject: Re: [RFC PATCH(Experimental) 2/4] Revert changes to workqueue.c
-Message-ID: <20070220200936.GB85@tv-sign.ru>
-References: <20070214144229.GA19789@in.ibm.com> <20070214144305.GB19789@in.ibm.com> <20070214200904.GB301@tv-sign.ru> <20070216052626.GB8373@in.ibm.com> <20070216153321.GB83@tv-sign.ru> <20070216164730.GD21457@in.ibm.com> <20070216235939.GB244@tv-sign.ru> <20070217022940.GB25924@in.ibm.com> <20070217215928.GA563@tv-sign.ru> <20070220151220.GB4960@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 20 Feb 2007 15:12:23 -0500
+Received: from mail-dub.bigfish.com ([213.199.154.10]:27291 "EHLO
+	outbound3-dub-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030408AbXBTUMW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 15:12:22 -0500
+X-BigFish: VP
+X-Server-Uuid: 89466532-923C-4A88-82C1-66ACAA0041DF
+Date: Tue, 20 Feb 2007 21:10:42 +0100
+From: "Joerg Roedel" <joerg.roedel@amd.com>
+To: "Andi Kleen" <ak@suse.de>
+cc: discuss@x86-64.org, linux-kernel@vger.kernel.org
+Subject: Re: [discuss] [PATCH 1/3] x86_64: additions to the i386
+ alternative extensions to support x86_64 architecture
+Message-ID: <20070220201042.GD5440@amd.com>
+References: <20070219190132.GA6083@amd.com>
+ <20070219190709.GC6083@amd.com> <200702192229.22217.ak@suse.de>
+MIME-Version: 1.0
+In-Reply-To: <200702192229.22217.ak@suse.de>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 20 Feb 2007 20:11:01.0358 (UTC)
+ FILETIME=[3DE2D8E0:01C7552B]
+X-WSS-ID: 69C58A522EG1056063-01-01
+Content-Type: text/plain;
+ charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070220151220.GB4960@in.ibm.com>
-User-Agent: Mutt/1.5.11
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/20, Srivatsa Vaddagiri wrote:
->
-> On Sun, Feb 18, 2007 at 12:59:28AM +0300, Oleg Nesterov wrote:
-> > Before you begin. You are doing CPU_DOWN_PREPARE after freeze_processes().
-> > Not good. This makes impossible to do flush_workueue() at CPU_DOWN_PREPARE
-> > stage, we have callers.
+On Mon, Feb 19, 2007 at 10:29:22PM +0100, Andi Kleen wrote:
+> On Monday 19 February 2007 20:07, Joerg Roedel wrote:
+> > From: Joerg Roedel <joerg.roedel@amd.com>
+> > 
+> > This patch adds the necessary changes to extend the i386 alternative
+> > instruction framework extension on the x86_64 architecture.
 > 
-> We have few solutions to deal with this:
-> 
-> a. Mark such workqueues not freezable for hotplug
-> b. If above is not possible, don't call flush_workqueue in DOWN_PREPARE
-> c. If above is not possible, send DOWN_PREPARE before freeze_processes()
-> 
-> I would prefer a solution in the above order listed.
-> 
-> Which caller are you referring to here? Maybe we can decide on the
-> option after we see the users of flush_workqueue() in DOWN_PREPARE.
+> Looks complicated and somewhat fragile.
 
-mm/slab.c:cpuup_callback()
+The tests on i386 and x86_64 just work fine :-)
 
-> > I'm afraid it won't be so easy to solve all locking/racing problems. Will
-> > wait for the patch :)
-> 
-> I dont see problems for workqueue.c even if we follow option c. Do you
-> see any?
+> I think I would prefer it if you changed the pad field to a "bit not set"
+> cpuid field. Then at least 2 alternatives + a nothing alternative could
+> be described too.
 
-I don't right now... Oh, I already forgot everything :) I'll try to recall
-when I see the patch.
+I'm not sure I fully understand what you mean. Do you mean to add a
+further alternative instruction to the struct for supporting 2 alternative
+instructions?
 
-Oleg.
+Joerg
+
+-- 
+Joerg Roedel
+Operating System Research Center
+AMD Saxony LLC & Co. KG
+
 
