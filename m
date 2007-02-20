@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965638AbXBTAQI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965596AbXBTAQH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965638AbXBTAQI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 19:16:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965640AbXBTAPa
+	id S965596AbXBTAQH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 19:16:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965638AbXBTAPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 19:15:30 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:36105 "EHLO
+	Mon, 19 Feb 2007 19:15:33 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:36099 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965596AbXBTAHj (ORCPT
+	with ESMTP id S965593AbXBTAHf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 19:07:39 -0500
-Date: Tue, 20 Feb 2007 01:07:38 +0100
+	Mon, 19 Feb 2007 19:07:35 -0500
+Date: Tue, 20 Feb 2007 01:07:34 +0100
 From: Adrian Bunk <bunk@stusta.de>
-To: Christoph Hellwig <hch@lst.de>, jack@suse.cz
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make remove_inode_dquot_ref() static
-Message-ID: <20070220000738.GY13958@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>, ericvh@gmail.com,
+       rminnich@lanl.gov, lucho@ionkov.net
+Cc: linux-kernel@vger.kernel.org, v9fs-developer@lists.sourceforge.net
+Subject: [-mm patch] fs/9p/vfs_addr.c: make 2 functions static
+Message-ID: <20070220000734.GX13958@stusta.de>
+References: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-remove_inode_dquot_ref() can now become static.
+On Sat, Feb 17, 2007 at 09:51:46PM -0800, Andrew Morton wrote:
+>...
+> Changes since 2.6.20-mm1:
+>...
+>  git-v9fs.patch
+>...
+>  git trees
+>...
+
+This patch makes two needlessly global functions static.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
- fs/dquot.c               |    3 ++-
- include/linux/quotaops.h |    3 ---
- 2 files changed, 2 insertions(+), 4 deletions(-)
+ fs/9p/vfs_addr.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- linux-2.6.20-mm2/include/linux/quotaops.h.old	2007-02-18 22:27:48.000000000 +0100
-+++ linux-2.6.20-mm2/include/linux/quotaops.h	2007-02-18 22:27:54.000000000 +0100
-@@ -37,9 +37,6 @@
- extern int dquot_commit_info(struct super_block *sb, int type);
- extern int dquot_mark_dquot_dirty(struct dquot *dquot);
+--- linux-2.6.20-mm2/fs/9p/vfs_addr.c.old	2007-02-18 22:17:06.000000000 +0100
++++ linux-2.6.20-mm2/fs/9p/vfs_addr.c	2007-02-18 22:25:45.000000000 +0100
+@@ -114,8 +114,8 @@
+  *
+  */
  
--int remove_inode_dquot_ref(struct inode *inode, int type,
--			   struct list_head *tofree_head);
--
- extern int vfs_quota_on(struct super_block *sb, int type, int format_id, char *path);
- extern int vfs_quota_on_mount(struct super_block *sb, char *qf_name,
- 		int format_id, int type);
---- linux-2.6.20-mm2/fs/dquot.c.old	2007-02-18 22:28:03.000000000 +0100
-+++ linux-2.6.20-mm2/fs/dquot.c	2007-02-18 22:28:16.000000000 +0100
-@@ -721,7 +721,8 @@
- 
- /* Remove references to dquots from inode - add dquot to list for freeing if needed */
- /* We can't race with anybody because we hold dqptr_sem for writing... */
--int remove_inode_dquot_ref(struct inode *inode, int type, struct list_head *tofree_head)
-+static int remove_inode_dquot_ref(struct inode *inode, int type,
-+				  struct list_head *tofree_head)
+-int v9fs_prepare_write(struct file *file, struct page *page,
+-		       unsigned from, unsigned to)
++static int v9fs_prepare_write(struct file *file, struct page *page,
++			      unsigned from, unsigned to)
  {
- 	struct dquot *dquot = inode->i_dquot[type];
+ 	if(!PageUptodate(page)) {
+ 		if (to - from != PAGE_CACHE_SIZE) {
+@@ -143,8 +143,8 @@
+  * TODO: Perhaps I should just do the write here?
+  */
  
+-int v9fs_commit_write(struct file *file, struct page *page,
+-		       unsigned offset, unsigned to)
++static int v9fs_commit_write(struct file *file, struct page *page,
++			     unsigned offset, unsigned to)
+ {
+         struct inode *inode = page->mapping->host;
+         loff_t pos = ((loff_t)page->index << PAGE_CACHE_SHIFT) + to;
 
