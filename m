@@ -1,409 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964885AbXBTOIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964896AbXBTOS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964885AbXBTOIR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 09:08:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964896AbXBTOIQ
+	id S964896AbXBTOS7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 09:18:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964915AbXBTOS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 09:08:16 -0500
-Received: from mga09.intel.com ([134.134.136.24]:3030 "EHLO mga09.intel.com"
+	Tue, 20 Feb 2007 09:18:59 -0500
+Received: from ns1.suse.de ([195.135.220.2]:58600 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964885AbXBTOIP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 09:08:15 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,196,1170662400"; 
-   d="scan'208"; a="48708324:sNHT35928567"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] aio: propogate post-EIOCBQUEUED errors to completion event
-Date: Tue, 20 Feb 2007 17:08:09 +0300
-Message-ID: <B41635854730A14CA71C92B36EC22AAC871D10@mssmsx411>
-In-Reply-To: <20070219203527.20419.68418.sendpatchset@tetsuo.zabbo.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] aio: propogate post-EIOCBQUEUED errors to completion event
-Thread-Index: AcdUZYCFA0n9RY/IS+ebfWHYFket6AAjdTxw
-From: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>
-To: "Zach Brown" <zach.brown@oracle.com>, <linux-aio@kvack.org>,
-       <linux-kernel@vger.kernel.org>
-Cc: "Benjamin LaHaise" <bcrl@kvack.org>,
-       "Suparna bhattacharya" <suparna@in.ibm.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-X-OriginalArrivalTime: 20 Feb 2007 14:08:14.0364 (UTC) FILETIME=[8FBF25C0:01C754F8]
+	id S964896AbXBTOS6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 09:18:58 -0500
+Date: Tue, 20 Feb 2007 15:18:56 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Stephane Eranian <eranian@hpl.hp.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch] perfmon ia64: fix file/vma lifetime
+Message-ID: <20070220141856.GB31343@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have applied the Brown's patch
-and run aio-stress O_DIRECT random write 100 times
-There is 4% throughput degradation.
+Patch is against 2.6.20.
 
-47 of 100 aio-stress runs reported an EIO.
-1 aio-stress error output example:
+Nick
+--
+From: Nick Piggin <npiggin@suse.de>
 
-adding stage random write
-starting with random write
-file size 1200MB, record size 16KB, depth 64, ios per iteration 1
-max io_submit 1, buffer alignment set to 4KB
-threads 1 files 1 contexts 1 context offset 2MB verification on
-adding file /mnt/stp/test/testfile thread 0
-io err 18446744073709551611 (Input/output error) op 1, size 16384
-io err 18446744073709551611 (Input/output error) op 1, size 16384
-io err 18446744073709551611 (Input/output error) op 1, size 16384
-latency min 0.01 avg 0.16 max 6923.40
-         76784 < 100 13 < 250 2 < 500 0 < 1000 0 < 5000 1 < 10000
-completion latency min 0.21 avg 153.07 max 1103.15
-         34330 < 100 26669 < 250 13653 < 500 2082 < 1000 2 < 5000 0 <
-10000
-random write on /mnt/stp/test/testfile (6.06 MB/s) 1200.00 MB in 198.03s
-3 errors on oper, last 4294967291
-thread 0 random write totals (6.06 MB/s) 1200.00 MB in 198.04s
-3 errors on oper, last 4294967291
+Perfmon associates vmalloc()ed memory with a file descriptor, and installs
+a vma mapping that memory. Unfortunately, the vm_file field is not filled in,
+so processes with mappings to that memory do not prevent the file from being
+closed and the memory freed. This results in use-after-free bugs and multiple
+freeing of pages, etc.
 
-Leonid
------Original Message-----
-From: Zach Brown [mailto:zach.brown@oracle.com] 
-Sent: Monday, February 19, 2007 11:35 PM
-To: linux-aio@kvack.org; linux-kernel@vger.kernel.org
-Cc: Benjamin LaHaise; Suparna bhattacharya; Andrew Morton; Ananiev,
-Leonid I
-Subject: [PATCH] aio: propogate post-EIOCBQUEUED errors to completion
-event
+I saw this bug on an Altix on SLES9. Haven't reproduced upstream but it looks
+like the same issue is there.
 
-aio: propogate post-EIOCBQUEUED errors to completion event
+Signed-off-by: Nick Piggin <npiggin@suse.de>
 
-This addresses an oops reported by Leonid Ananiev
-<leonid.i.ananiev@intel.com>
-as archived at http://lkml.org/lkml/2007/2/8/337.
-
-O_DIRECT kicks off bios and returns -EIOCBQUEUED to indicate its
-intention to
-call aio_complete() once the bios complete.   As we return from
-submission we
-must preserve the -EIOCBQUEUED return code so that fs/aio.c knows to let
-the
-bio completion call aio_complete().  This stops us from returning errors
-after
-O_DIRECT submission.
-
-But we have a few places that are very interested in generating errors
-after
-bio submission.
-
-The most critical of these is invalidating the page cache after a write.
-This
-avoids exposing stale data to buffered operations that are performed
-after the
-O_DIRECT write succeeds.  We must do this after submission because the
-user
-buffer might have been an mmap()ed buffer of the region being written
-to.  The
-get_user_pages() in the O_DIRECT completion path could have faulted in
-stale
-data.
-
-So this patch introduces a helper, aio_propogate_error(), which queues
-post-submission errors in the iocb so that they are given to the user
-completion event when aio_complete() is finally called.
-
-To get this working we change the aio_complete() path so that the ring
-insertion is performed as the final iocb reference is dropped.  This
-gives the
-submission path time to queue its pending error before it drops its
-reference.
-This increases the space in the iocb as it has to record the two result
-codes
-from aio_complete() and the pending error from the submission path.
-
-This was tested by running O_DIRECT aio-stress concurrently with
-buffered reads
-while triggering EIO in invalidate_inode_pages2_range() with the help of
-a
-debugfs bool hack.  Previously the kernel would oops as fs/aio.c and bio
-completion both called aio_complete().  With this patch aio-stress sees
--EIO.
-
-Signed-off-by: Zach Brown <zach.brown@oracle.com>
----
-
- fs/aio.c            |  109 ++++++++++++++++++++++--------------------
- include/linux/aio.h |   30 +++++++++++
- mm/filemap.c        |    4 -
- 3 files changed, 91 insertions(+), 52 deletions(-)
-
---- a/fs/aio.c	Mon Feb 19 11:52:27 2007 -0800
-+++ b/fs/aio.c	Mon Feb 19 12:32:52 2007 -0800
-@@ -192,6 +192,46 @@ static int aio_setup_ring(struct kioctx 
- 	(void)__event;				\
- 	kunmap_atomic((void *)((unsigned long)__event & PAGE_MASK), km);
-\
- } while(0)
-+
-+static void aio_ring_insert_entry(struct kioctx *ctx, struct kiocb
-*iocb)
-+{
-+	struct aio_ring_info	*info;
-+	struct aio_ring		*ring;
-+	struct io_event		*event;
-+	unsigned long		tail;	
-+
-+	assert_spin_locked(&ctx->ctx_lock);
-+	
-+	info = &ctx->ring_info;
-+	ring = kmap_atomic(info->ring_pages[0], KM_IRQ1);
-+
-+	tail = info->tail;
-+	event = aio_ring_event(info, tail, KM_IRQ0);
-+	if (++tail >= info->nr)
-+		tail = 0;
-+
-+	event->obj = (u64)(unsigned long)iocb->ki_obj.user;
-+	event->data = iocb->ki_user_data;
-+	event->res = iocb->ki_pending_err ? iocb->ki_pending_err :
-iocb->ki_res;
-+	event->res2 = iocb->ki_res2;
-+
-+	dprintk("aio_complete: %p[%lu]: %p: %p %Lx %d %lx %lx\n",
-+		ctx, tail, iocb, iocb->ki_obj.user, iocb->ki_user_data,
-+		iocb->ki_pending_err, iocb->ki_res, iocb->ki_res2);
-+
-+	/* after flagging the request as done, we
-+	 * must never even look at it again
-+	 */
-+	smp_wmb();	/* make event visible before updating tail */
-+
-+	info->tail = tail;
-+	ring->tail = tail;
-+
-+	put_aio_ring_event(event, KM_IRQ0);
-+	kunmap_atomic(ring, KM_IRQ1);
-+
-+	pr_debug("added to ring %p at [%lu]\n", iocb, tail);
-+}
- 
- /* ioctx_alloc
-  *	Allocates and initializes an ioctx.  Returns an ERR_PTR if it
-failed.
-@@ -418,6 +458,7 @@ static struct kiocb fastcall *__aio_get_
- 	req->ki_cancel = NULL;
- 	req->ki_retry = NULL;
- 	req->ki_dtor = NULL;
-+	req->ki_pending_err = 0;
- 	req->private = NULL;
- 	req->ki_iovec = NULL;
- 	INIT_LIST_HEAD(&req->ki_run_list);
-@@ -507,10 +548,14 @@ static int __aio_put_req(struct kioctx *
- 
- 	assert_spin_locked(&ctx->ctx_lock);
- 
--	req->ki_users --;
-+	req->ki_users--;
- 	BUG_ON(req->ki_users < 0);
- 	if (likely(req->ki_users))
- 		return 0;
-+
-+	if (kiocbIsInserted(req))
-+		aio_ring_insert_entry(ctx, req);
-+
- 	list_del(&req->ki_list);		/* remove from
-active_reqs */
- 	req->ki_cancel = NULL;
- 	req->ki_retry = NULL;
-@@ -924,12 +969,8 @@ int fastcall aio_complete(struct kiocb *
- int fastcall aio_complete(struct kiocb *iocb, long res, long res2)
+Index: linux-2.6/arch/ia64/kernel/perfmon.c
+===================================================================
+--- linux-2.6.orig/arch/ia64/kernel/perfmon.c
++++ linux-2.6/arch/ia64/kernel/perfmon.c
+@@ -2261,7 +2261,7 @@ pfm_remap_buffer(struct vm_area_struct *
+  * allocate a sampling buffer and remaps it into the user address space of the task
+  */
+ static int
+-pfm_smpl_buffer_alloc(struct task_struct *task, pfm_context_t *ctx, unsigned long rsize, void **user_vaddr)
++pfm_smpl_buffer_alloc(struct task_struct *task, struct file *filp, pfm_context_t *ctx, unsigned long rsize, void **user_vaddr)
  {
- 	struct kioctx	*ctx = iocb->ki_ctx;
--	struct aio_ring_info	*info;
--	struct aio_ring	*ring;
--	struct io_event	*event;
-+	int		ret;
- 	unsigned long	flags;
--	unsigned long	tail;
--	int		ret;
- 
- 	/*
- 	 * Special case handling for sync iocbs:
-@@ -946,56 +987,24 @@ int fastcall aio_complete(struct kiocb *
- 		return 1;
- 	}
- 
--	info = &ctx->ring_info;
--
--	/* add a completion event to the ring buffer.
--	 * must be done holding ctx->ctx_lock to prevent
--	 * other code from messing with the tail
--	 * pointer since we might be called from irq
--	 * context.
-+	/*
-+	 * We queue up the completion codes into the iocb.  They are
-combined
-+	 * with a potential error from the submission path and inserted
-into
-+	 * the ring once the last reference to the iocb is dropped.
-Cancelled
-+	 * iocbs don't insert events on completion because userland was
-given
-+	 * an event directly as part of the cancelation interface.
+ 	struct mm_struct *mm = task->mm;
+ 	struct vm_area_struct *vma = NULL;
+@@ -2312,6 +2312,7 @@ pfm_smpl_buffer_alloc(struct task_struct
+ 	 * partially initialize the vma for the sampling buffer
  	 */
- 	spin_lock_irqsave(&ctx->ctx_lock, flags);
+ 	vma->vm_mm	     = mm;
++	vma->vm_file	     = filp;
+ 	vma->vm_flags	     = VM_READ| VM_MAYREAD |VM_RESERVED;
+ 	vma->vm_page_prot    = PAGE_READONLY; /* XXX may need to change */
  
- 	if (iocb->ki_run_list.prev && !list_empty(&iocb->ki_run_list))
- 		list_del_init(&iocb->ki_run_list);
+@@ -2350,6 +2351,8 @@ pfm_smpl_buffer_alloc(struct task_struct
+ 		goto error;
+ 	}
  
--	/*
--	 * cancelled requests don't get events, userland was given one
--	 * when the event got cancelled.
--	 */
--	if (kiocbIsCancelled(iocb))
--		goto put_rq;
--
--	ring = kmap_atomic(info->ring_pages[0], KM_IRQ1);
--
--	tail = info->tail;
--	event = aio_ring_event(info, tail, KM_IRQ0);
--	if (++tail >= info->nr)
--		tail = 0;
--
--	event->obj = (u64)(unsigned long)iocb->ki_obj.user;
--	event->data = iocb->ki_user_data;
--	event->res = res;
--	event->res2 = res2;
--
--	dprintk("aio_complete: %p[%lu]: %p: %p %Lx %lx %lx\n",
--		ctx, tail, iocb, iocb->ki_obj.user, iocb->ki_user_data,
--		res, res2);
--
--	/* after flagging the request as done, we
--	 * must never even look at it again
--	 */
--	smp_wmb();	/* make event visible before updating tail */
--
--	info->tail = tail;
--	ring->tail = tail;
--
--	put_aio_ring_event(event, KM_IRQ0);
--	kunmap_atomic(ring, KM_IRQ1);
--
--	pr_debug("added to ring %p at [%lu]\n", iocb, tail);
--put_rq:
--	/* everything turned out well, dispose of the aiocb. */
-+	if (!kiocbIsCancelled(iocb)) {
-+		iocb->ki_res = res;
-+		iocb->ki_res2 = res2;
-+		kiocbSetInserted(iocb);
-+	}
++	get_file(filp);
 +
- 	ret = __aio_put_req(ctx, iocb);
- 
- 	if (waitqueue_active(&ctx->wait))
-diff -r 8c8c075ae1c3 include/linux/aio.h
---- a/include/linux/aio.h	Mon Feb 19 11:52:27 2007 -0800
-+++ b/include/linux/aio.h	Mon Feb 19 12:32:36 2007 -0800
-@@ -34,6 +34,7 @@ struct kioctx;
- /* #define KIF_LOCKED		0 */
- #define KIF_KICKED		1
- #define KIF_CANCELLED		2
-+#define KIF_INSERTED		4
- 
- #define kiocbTryLock(iocb)	test_and_set_bit(KIF_LOCKED,
-&(iocb)->ki_flags)
- #define kiocbTryKick(iocb)	test_and_set_bit(KIF_KICKED,
-&(iocb)->ki_flags)
-@@ -41,6 +42,7 @@ struct kioctx;
- #define kiocbSetLocked(iocb)	set_bit(KIF_LOCKED, &(iocb)->ki_flags)
- #define kiocbSetKicked(iocb)	set_bit(KIF_KICKED, &(iocb)->ki_flags)
- #define kiocbSetCancelled(iocb)	set_bit(KIF_CANCELLED,
-&(iocb)->ki_flags)
-+#define kiocbSetInserted(iocb)	set_bit(KIF_INSERTED, &(iocb)->ki_flags)
- 
- #define kiocbClearLocked(iocb)	clear_bit(KIF_LOCKED, &(iocb)->ki_flags)
- #define kiocbClearKicked(iocb)	clear_bit(KIF_KICKED, &(iocb)->ki_flags)
-@@ -49,6 +51,7 @@ struct kioctx;
- #define kiocbIsLocked(iocb)	test_bit(KIF_LOCKED, &(iocb)->ki_flags)
- #define kiocbIsKicked(iocb)	test_bit(KIF_KICKED, &(iocb)->ki_flags)
- #define kiocbIsCancelled(iocb)	test_bit(KIF_CANCELLED,
-&(iocb)->ki_flags)
-+#define kiocbIsInserted(iocb)	test_bit(KIF_INSERTED,
-&(iocb)->ki_flags)
- 
- /* is there a better place to document function pointer methods? */
- /**
-@@ -119,6 +122,10 @@ struct kiocb {
- 
- 	struct list_head	ki_list;	/* the aio core uses
-this
- 						 * for cancellation */
-+	/* we store and combine return codes from submission and
-completion */ 
-+	int			ki_pending_err;
-+	long			ki_res;
-+	long			ki_res2;
- };
- 
- #define is_sync_kiocb(iocb)	((iocb)->ki_key == KIOCB_SYNC_KEY)
-@@ -246,6 +253,29 @@ static inline struct kiocb *list_kiocb(s
- 	return list_entry(h, struct kiocb, ki_list);
+ 	/*
+ 	 * now insert the vma in the vm list for the process, must be
+ 	 * done with mmap lock held
+@@ -2427,7 +2430,7 @@ pfarg_is_sane(struct task_struct *task, 
  }
  
-+/*
-+ * This function is used to make sure that an error is communicated to
-+ * userspace on iocb completion without stopping -EIOCBQUEUED from
-bubbling up
-+ * to fs/aio.c from the place where it originated.
-+ *
-+ * If we have an existing -EIOCBQUEUED it must be returned all the way
-to
-+ * fs/aio.c so that it doesn't double-complete the iocb along with
-whoever
-+ * returned -EIOCBQUEUED..  In that case we put the new error in the
-iocb.  It
-+ * will be returned to userspace *intead of* the first result code
-given to
-+ * aio_complete().  Use this only for errors which must overwrite
-whatever the
-+ * return code might have been.  The first non-zero new_err given to
-this
-+ * function for a given iocb will be returned to userspace.
-+ */
-+static inline int aio_propogate_error(struct kiocb *iocb, int
-existing_err,
-+				      int new_err)
-+{
-+	if (existing_err != -EIOCBQUEUED)
-+		return new_err;
-+	if (!iocb->ki_pending_err)
-+		iocb->ki_pending_err = new_err;
-+	return -EIOCBQUEUED;
-+}
-+
- /* for sysctl: */
- extern unsigned long aio_nr;
- extern unsigned long aio_max_nr;
-diff -r 8c8c075ae1c3 mm/filemap.c
---- a/mm/filemap.c	Mon Feb 19 11:52:27 2007 -0800
-+++ b/mm/filemap.c	Mon Feb 19 12:32:36 2007 -0800
-@@ -2031,7 +2031,7 @@ generic_file_direct_write(struct kiocb *
- 	    ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
- 		int err = generic_osync_inode(inode, mapping,
-OSYNC_METADATA);
- 		if (err < 0)
--			written = err;
-+			written = aio_propogate_error(iocb, written,
-err);
+ static int
+-pfm_setup_buffer_fmt(struct task_struct *task, pfm_context_t *ctx, unsigned int ctx_flags,
++pfm_setup_buffer_fmt(struct task_struct *task, struct file *filp, pfm_context_t *ctx, unsigned int ctx_flags,
+ 		     unsigned int cpu, pfarg_context_t *arg)
+ {
+ 	pfm_buffer_fmt_t *fmt = NULL;
+@@ -2468,7 +2471,7 @@ pfm_setup_buffer_fmt(struct task_struct 
+ 		/*
+ 		 * buffer is always remapped into the caller's address space
+ 		 */
+-		ret = pfm_smpl_buffer_alloc(current, ctx, size, &uaddr);
++		ret = pfm_smpl_buffer_alloc(current, filp, ctx, size, &uaddr);
+ 		if (ret) goto error;
+ 
+ 		/* keep track of user address of buffer */
+@@ -2679,7 +2682,7 @@ pfm_context_create(pfm_context_t *ctx, v
+ 	 * does the user want to sample?
+ 	 */
+ 	if (pfm_uuid_cmp(req->ctx_smpl_buf_id, pfm_null_uuid)) {
+-		ret = pfm_setup_buffer_fmt(current, ctx, ctx_flags, 0, req);
++		ret = pfm_setup_buffer_fmt(current, filp, ctx, ctx_flags, 0, req);
+ 		if (ret) goto buffer_error;
  	}
- 	return written;
- }
-@@ -2396,7 +2396,7 @@ generic_file_direct_IO(int rw, struct ki
- 			int err = invalidate_inode_pages2_range(mapping,
- 					offset >> PAGE_CACHE_SHIFT,
-end);
- 			if (err)
--				retval = err;
-+				retval = aio_propogate_error(iocb,
-retval, err);
- 		}
- 	}
- 	return retval;
+ 
