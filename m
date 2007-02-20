@@ -1,42 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965176AbXBTPwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965185AbXBTPzr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965176AbXBTPwd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 10:52:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965179AbXBTPwc
+	id S965185AbXBTPzr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 10:55:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965186AbXBTPzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 10:52:32 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:44059 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965176AbXBTPwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 10:52:31 -0500
-Message-ID: <45DB193D.3070402@garzik.org>
-Date: Tue, 20 Feb 2007 10:52:29 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Tue, 20 Feb 2007 10:55:47 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:48764 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965185AbXBTPzq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 10:55:46 -0500
+Date: Tue, 20 Feb 2007 10:55:45 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Douglas Gilbert <dougg@torque.net>
+cc: Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>,
+       <linux-kernel@vger.kernel.org>, <jens.axboe@oracle.com>,
+       <James.Bottomley@steeleye.com>
+Subject: Re: [PATCH] Block layer: separate out queue-oriented ioctls
+In-Reply-To: <45DA7D77.9020709@torque.net>
+Message-ID: <Pine.LNX.4.44L0.0702201052360.4992-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] sata_nv: add back some verbosity into ADMA error_handler
-References: <45CFB624.9020201@shaw.ca>
-In-Reply-To: <45CFB624.9020201@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Some debug output in the ADMA error_handler function was removed recently,
-> but it may be useful in certain cases, like NCQ commands timing out. Add it
-> back in, but make it a bit more intelligent so that it only prints if
-> command(s) are active and only prints the CPBs for those commands.
-> That way it won't spew at inappropriate times like suspend/resume.
+On Mon, 19 Feb 2007, Douglas Gilbert wrote:
+
+> > Come to think of it, the reserved_size value used when a new sg device is
+> > created should also be capped at max_sectors * 512.  Agreed?  I can't see
+> > any reason for ever having a larger buffer -- it would be impossible to
+> > make use of the extra space.
 > 
-> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
+> Alan,
+> That depends whether or not max_sectors can be changed
+> (via sysfs) subsequent to a sg device being created.
+> And I think it can.
+> 
+> # ls -l /sys/block/sdc/queue/
+> total 0
+> drwxr-xr-x 2 root root    0 Feb 19 18:29 iosched
+> -r--r--r-- 1 root root 4096 Feb 19 23:41 max_hw_sectors_kb
+> -rw-r--r-- 1 root root 4096 Feb 19 23:41 max_sectors_kb
+> -rw-r--r-- 1 root root 4096 Feb 19 23:41 nr_requests
+> -rw-r--r-- 1 root root 4096 Feb 19 23:41 read_ahead_kb
+> -rw-r--r-- 1 root root 4096 Feb 19 23:41 scheduler
 
-applied
+Yes, it definitely can be changed.
 
+> # cat max_hw_sectors_kb > max_sectors_kb
+> 
+> ... is the real maximum if the LLD that set max_hw_sectors_kb
+> is to be believed (actually it is often a finger in
+> the wind).
+
+That's why my patch computes the minimum value every time the 
+GET_RESERVED_SIZE ioctl runs -- in case max_sectors has changed.
+
+If the user decides to increase max_sectors, then the reserved_size can be 
+increased immediately afterward.  This shouldn't cause any problems.
+
+I will submit a revised patch shortly, on the linux-scsi list.
+
+Alan Stern
 
