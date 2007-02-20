@@ -1,94 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932943AbXBTNJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932946AbXBTNLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932943AbXBTNJt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 08:09:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932945AbXBTNJt
+	id S932946AbXBTNLa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 08:11:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932945AbXBTNLa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 08:09:49 -0500
-Received: from smtp.nokia.com ([131.228.20.172]:26212 "EHLO
-	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932943AbXBTNJs convert rfc822-to-8bit (ORCPT
+	Tue, 20 Feb 2007 08:11:30 -0500
+Received: from smtp.nokia.com ([131.228.20.171]:17192 "EHLO
+	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932946AbXBTNL3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 08:09:48 -0500
-Subject: Re: [PATCH 06/44 take 2] [UBI] startup code
+	Tue, 20 Feb 2007 08:11:29 -0500
+Subject: Re: [PATCH 03/44 take 2] [UBI] user-space API header
 From: Artem Bityutskiy <dedekind@infradead.org>
 Reply-To: dedekind@infradead.org
-To: Christoph Hellwig <hch@infradead.org>
+To: Arnd Bergmann <arnd@arndb.de>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
        Frank Haverkamp <haver@vnet.ibm.com>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
        Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20070219105927.GB16930@infradead.org>
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <200702172227.28708.arnd@arndb.de>
 References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
-	 <20070217165454.5845.30875.sendpatchset@localhost.localdomain>
-	 <20070219105927.GB16930@infradead.org>
+	 <20070217165439.5845.66537.sendpatchset@localhost.localdomain>
+	 <200702172227.28708.arnd@arndb.de>
 Content-Type: text/plain; charset=utf-8
-Date: Tue, 20 Feb 2007 15:00:56 +0200
-Message-Id: <1171976456.4039.21.camel@sauron>
+Date: Tue, 20 Feb 2007 15:07:13 +0200
+Message-Id: <1171976833.4039.30.camel@sauron>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
 Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 20 Feb 2007 13:00:56.0364 (UTC) FILETIME=[28E93EC0:01C754EF]
+X-OriginalArrivalTime: 20 Feb 2007 13:07:13.0714 (UTC) FILETIME=[09D44920:01C754F0]
+X-eXpurgate-Category: 1/0
+X-eXpurgate-ID: 149371::070220150505-1BCD9BB0-0D024612/0-0/0-1
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-02-19 at 10:59 +0000, Christoph Hellwig wrote:
-> On Sat, Feb 17, 2007 at 06:54:54PM +0200, Artem Bityutskiy wrote:
-> > +/* UBI headers must take 64 bytes. The below is a hacky way to ensure this */
-> > +static int __ubi_check_ec_hdr_size[(UBI_EC_HDR_SIZE == 64) - 1]
-> > +    __attribute__ ((__unused__));
-> > +static int __ubi_check_ec_hdr_size[(UBI_VID_HDR_SIZE == 64) - 1]
-> > +    __attribute__ ((__unused__));
+On Sat, 2007-02-17 at 22:27 +0100, Arnd Bergmann wrote:
+> On Saturday 17 February 2007 17:54, Artem Bityutskiy wrote:
+> > +struct ubi_mkvol_req {
+> > +       int32_t vol_id;
+> > +       int32_t alignment;
+> > +       int64_t bytes;
+> > +       int8_t vol_type;
+> > +       int8_t padding[9];
+> > +       int16_t name_len;
+> > +       __user const char *name;
+> > +} __attribute__ ((packed));
 > 
-> please use BUILD_BUG_ON instead.
+> This structure is not suitable for an ioctl call, because it has
+> incompatible layout between 32 and 64 bit processes. The easiest
+> fix for this would be to change the 'name' field to an array
+> instead of a pointer.
 
-Will be done, thanks.
+Will be fixed thanks. Just out of curiosity, could you please provide an
+example when this may be a problem.
 
-> > +
-> > +static int ubi_attach_mtd_dev(const char *mtd_dev, int vid_hdr_offset,
-> > +			      int data_offset);
-> > +static void ubi_destroy_dev(int ubi_num);
-> 
-> Can you reorder the code to avoid all these forward declarations please?
-
-Could you please submit a CodingStyle patch that would contain a
-requirement to use the "higher-level functions at the bottom,
-lower-layer at top"? Because I just use the opposite.
-
-> > +	/* Attach MTD devices */
-> > +	for (i = 0; i < mtd_devs; i++) {
-> > +		struct mtd_dev_param *p = &mtd_dev_param[i];
-> > +
-> > +		cond_resched();
-> > +		err = -EINVAL;
-> 
-> This looks very odd.
-
-What exactly?
-
-> > +module_param_call(mtd, ubi_mtd_param_parse, NULL, NULL, 000);
-> > +MODULE_PARM_DESC(mtd, "MTD devices to attach. Parameter format: "
-> > +		      "mtd=<name|num>[,<vid_hdr_offs>,<data_offs>]. "
-> > +		      "Multiple \"mtd\" parameters may be specified.\n"
-> > +		      "MTD devices may be specified by their number or name. "
-> > +		      "Optional \"vid_hdr_offs\" and \"data_offs\" parameters "
-> > +		      "specify UBI VID header position and data starting "
-> > +		      "position to be used by UBI.\n"
-> > +		      "Example: mtd=content,1984,2048 mtd=4 - attach MTD device"
-> > +		      "with name content using VID header offset 1984 and data "
-> > +		      "start 2048, and MTD device number 4 using default "
-> > +		      "offsets");
-> 
-> This is a very odd paramater interface.  We really don't want drivers to use
-> module_param_call directly.  You probably want various module_param_array calls
-> instead.
-
-Why not? We tried to avoid this but found out that this is the most
-decent interface. Specific advises are welcome.
-
-Thank you,
 Artem.
 
 -- 
