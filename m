@@ -1,75 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030380AbXBTTvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030377AbXBTTvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030380AbXBTTvj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 14:51:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030381AbXBTTvj
+	id S1030377AbXBTTvo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 14:51:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030382AbXBTTvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 14:51:39 -0500
-Received: from smtp.bulldogdsl.com ([212.158.248.8]:1667 "EHLO
-	mcr-smtp-002.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030380AbXBTTvi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 14:51:38 -0500
-X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
-From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-To: Udo van den Heuvel <udovdh@xs4all.nl>
-Subject: Re: PCI riser cards and PCI irq routing, etc
-Date: Tue, 20 Feb 2007 19:51:32 +0000
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Krzysztof Halasa <khc@pm.waw.pl>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-References: <45D85DA1.7090502@xs4all.nl> <200702201456.30794.s0348365@sms.ed.ac.uk> <45DB174F.30708@xs4all.nl>
-In-Reply-To: <45DB174F.30708@xs4all.nl>
+	Tue, 20 Feb 2007 14:51:44 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35817 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030377AbXBTTvm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 14:51:42 -0500
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 2/4] NOMMU: Add support for direct mapping through mtdconcat
+	if possible
+To: torvalds@osdl.org, akpm@osdl.org, dwmw2@infradead.org
+Cc: linux-kernel@vger.kernel.org, uclinux-dev@uclinux.org,
+       linux-mtd@lists.infradead.org, dhowells@redhat.com
+Date: Tue, 20 Feb 2007 19:50:55 +0000
+Message-ID: <20070220195055.26186.50532.stgit@warthog.cambridge.redhat.com>
+In-Reply-To: <20070220195049.26186.69393.stgit@warthog.cambridge.redhat.com>
+References: <20070220195049.26186.69393.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.12
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702201951.32521.s0348365@sms.ed.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 20 February 2007 15:44, you wrote:
-> Alistair John Strachan wrote:
-> > On Tuesday 20 February 2007 04:17, Udo van den Heuvel wrote:
-> >> Krzysztof Halasa wrote:
-> >>> Is it a VIA ITX board? I think I have VIA's riser card somewhere,
-> >>> could check what it does.
-> >>
-> >> Yes, VIA Epia EN12000.
-> >> Interesting to check the riser card.
-> >
-> > Just be aware that there are two types of PCI riser -- risers that work
-> > in any board, and Via Epia-specific risers. The latter requires a BIOS
-> > update on some Epias and presumably has some advantages, possible the
-> > ones you're looking for.
->
-> This card is sold by TranquilPC for their T2e case which holds Mini-ITX
-> boards. My EN12000 has the latest BIOS I could find on the VIA site:
-> http://www.via.com.tw/en/products/mainboards/downloads.jsp?motherboard_id=3
->99#BIOS
+From: David Howells <dhowells@redhat.com>
 
-The riser I have here is called "ext-pci rev b" and is marked "Via Tech Inc". 
-My understanding is that this is not an "active riser" and requires explicit 
-BIOS support.
+Add support for direct mapping through mtdconcat, if possible, by attaching the
+samebacking_dev_info structure to the master.
 
-A quick googling for the device revealed this:
+It has some restrictions:
 
-http://forums.viaarena.com/messageview.aspx?catid=32&threadid=41622&highlight_key=y&keyword1=riser
+ (1) It won't permit direct mapping of concatenated devices that have differing
+     BDIs.
 
-A poster here seems to suggest the following:
+ (2) It doesn't support maps that span the 'gap' between devices, although it
+     possibly could if the devices spanned across return compatible
+     (ie. contiguous) addresses from their get_unmapped_area() ops.
 
-"As far as I know the only dual riser card that is supported by the EPIA BIOS 
-is the one from VIA (that faces out). That one has some logic on it to get 
-both slots working. The upper slot uses device 19 and INT_A, allocated 
-through the EPIA BIOS."
+Signed-off-by: Gavin Lambert <gavinl@compacsort.com>
+Signed-Off-By: David Howells <dhowells@redhat.com>
+---
 
-This may perhaps describe the issue you are having, and from the PDF you 
-linked I do not believe you have a riser that is the same as mine.
+ drivers/mtd/mtdconcat.c |   47 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 47 insertions(+), 0 deletions(-)
 
--- 
-Cheers,
-Alistair.
-
-Final year Computer Science undergraduate.
-1F2 55 South Clerk Street, Edinburgh, UK.
+diff --git a/drivers/mtd/mtdconcat.c b/drivers/mtd/mtdconcat.c
+index 880580c..730689b 100644
+--- a/drivers/mtd/mtdconcat.c
++++ b/drivers/mtd/mtdconcat.c
+@@ -15,6 +15,7 @@
+ #include <linux/slab.h>
+ #include <linux/sched.h>
+ #include <linux/types.h>
++#include <linux/backing-dev.h>
+ 
+ #include <linux/mtd/mtd.h>
+ #include <linux/mtd/concat.h>
+@@ -686,6 +687,40 @@ static int concat_block_markbad(struct mtd_info *mtd, loff_t ofs)
+ }
+ 
+ /*
++ * try to support NOMMU mmaps on concatenated devices
++ * - we don't support subdev spanning as we can't guarantee it'll work
++ */
++static unsigned long concat_get_unmapped_area(struct mtd_info *mtd,
++					      unsigned long len,
++					      unsigned long offset,
++					      unsigned long flags)
++{
++	struct mtd_concat *concat = CONCAT(mtd);
++	int i;
++
++	for (i = 0; i < concat->num_subdev; i++) {
++		struct mtd_info *subdev = concat->subdev[i];
++
++		if (offset >= subdev->size) {
++			offset -= subdev->size;
++			continue;
++		}
++
++		/* we've found the subdev over which the mapping will reside */
++		if (offset + len > subdev->size)
++			return (unsigned long) -EINVAL;
++
++		if (subdev->get_unmapped_area)
++			return subdev->get_unmapped_area(subdev, len, offset,
++							 flags);
++
++		break;
++	}
++
++	return (unsigned long) -ENOSYS;
++}
++
++/*
+  * This function constructs a virtual MTD device by concatenating
+  * num_devs MTD devices. A pointer to the new device object is
+  * stored to *new_dev upon success. This function does _not_
+@@ -740,6 +775,8 @@ struct mtd_info *mtd_concat_create(struct mtd_info *subdev[],	/* subdevices to c
+ 
+ 	concat->mtd.ecc_stats.badblocks = subdev[0]->ecc_stats.badblocks;
+ 
++	concat->mtd.backing_dev_info = subdev[0]->backing_dev_info;
++
+ 	concat->subdev[0] = subdev[0];
+ 
+ 	for (i = 1; i < num_devs; i++) {
+@@ -766,6 +803,15 @@ struct mtd_info *mtd_concat_create(struct mtd_info *subdev[],	/* subdevices to c
+ 				concat->mtd.flags |=
+ 				    subdev[i]->flags & MTD_WRITEABLE;
+ 		}
++
++		/* only permit direct mapping if the BDIs are all the same
++		 * - copy-mapping is still permitted
++		 */
++		if (concat->mtd.backing_dev_info !=
++		    subdev[i]->backing_dev_info)
++			concat->mtd.backing_dev_info =
++				&default_backing_dev_info;
++
+ 		concat->mtd.size += subdev[i]->size;
+ 		concat->mtd.ecc_stats.badblocks +=
+ 			subdev[i]->ecc_stats.badblocks;
+@@ -796,6 +842,7 @@ struct mtd_info *mtd_concat_create(struct mtd_info *subdev[],	/* subdevices to c
+ 	concat->mtd.unlock = concat_unlock;
+ 	concat->mtd.suspend = concat_suspend;
+ 	concat->mtd.resume = concat_resume;
++	concat->mtd.get_unmapped_area = concat_get_unmapped_area;
+ 
+ 	/*
+ 	 * Combine the erase block size info of the subdevices:
