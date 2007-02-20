@@ -1,43 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161065AbXBTXPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161075AbXBTXPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161065AbXBTXPF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 18:15:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161068AbXBTXPE
+	id S1161075AbXBTXPx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 18:15:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161074AbXBTXPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 18:15:04 -0500
-Received: from tirith.ics.muni.cz ([147.251.4.36]:52082 "EHLO
-	tirith.ics.muni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161065AbXBTXPD (ORCPT
+	Tue, 20 Feb 2007 18:15:53 -0500
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:49273 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161070AbXBTXPw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 18:15:03 -0500
-Date: Wed, 21 Feb 2007 00:15:10 +0100
-From: Lukas Hejtmanek <xhejtman@mail.muni.cz>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [git patches] libata ACPI support
-Message-ID: <20070220231510.GC3690@mail.muni.cz>
-References: <20070220214716.GA3690@mail.muni.cz> <45DB74FC.2070102@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+	Tue, 20 Feb 2007 18:15:52 -0500
+Date: Tue, 20 Feb 2007 18:15:49 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] marker exports must be EXPORT_SYMBOL_GPL
+Message-ID: <20070220231549.GA15844@Krystal>
+References: <20070215051408.a7fb7d81.akpm@linux-foundation.org> <20070220000209.GY13958@stusta.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <45DB74FC.2070102@garzik.org>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+In-Reply-To: <20070220000209.GY13958@stusta.de>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.4.34-grsec (i686)
+X-Uptime: 18:14:40 up 18 days, 13:22,  3 users,  load average: 2.18, 2.25, 1.91
 User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Muni-Spam-TestIP: 81.31.45.161
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (tirith.ics.muni.cz [147.251.4.35]); Wed, 21 Feb 2007 00:14:53 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 20, 2007 at 05:23:56PM -0500, Jeff Garzik wrote:
-> >introducing SATA ACPI does not work for me (I've filled the bug
-> >report: http://bugzilla.kernel.org/show_bug.cgi?id=8046) beside those error
-> >messages, IDE performance is decreased. libata.noacpi=1 option works ok but
-> >the performance is still slightly degraded (about 10%).
+* Adrian Bunk (bunk@stusta.de) wrote:
+> On Thu, Feb 15, 2007 at 05:14:08AM -0800, Andrew Morton wrote:
+> >...
+> > - Added the Linux Kernel Markers code.  No idea how to use it and it
+> >   seems we're not to be told.
+> >...
+> > Changes since 2.6.20-rc6-mm3:
+> >...
+> > +linux-kernel-markers-kconfig-menus.patch
+> > +linux-kernel-markers-architecture-independant-code.patch
+> > +linux-kernel-markers-powerpc-optimization.patch
+> > +linux-kernel-markers-i386-optimization.patch
+> > +linux-kernel-markers-non-optimized-architectures.patch
+> > 
+> >  Linux Kenrel Markers
+> >...
 > 
-> Also, please add hardware info (full dmesg, full lspci) to the bug.
+> 
+> This is definitely functionality illegal modules have no business to 
+> use.
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-done.
+Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+
+> 
+> ---
+> 
+>  arch/i386/kernel/marker.c |    2 +-
+>  kernel/module.c           |   10 +++++-----
+>  2 files changed, 6 insertions(+), 6 deletions(-)
+> 
+> --- linux-2.6.20-mm1/kernel/module.c.old	2007-02-15 16:02:09.000000000 +0100
+> +++ linux-2.6.20-mm1/kernel/module.c	2007-02-15 16:03:08.000000000 +0100
+> @@ -304,7 +304,7 @@
+>  void __mark_empty_function(const char *fmt, ...)
+>  {
+>  }
+> -EXPORT_SYMBOL(__mark_empty_function);
+> +EXPORT_SYMBOL_GPL(__mark_empty_function);
+>  
+>  #ifdef MARK_POLYMORPHIC
+>  static int marker_set_ins_enable(void *address, char enable)
+> @@ -461,7 +461,7 @@
+>  	mutex_unlock(&module_mutex);
+>  	return found;
+>  }
+> -EXPORT_SYMBOL(marker_set_probe);
+> +EXPORT_SYMBOL_GPL(marker_set_probe);
+>  
+>  int marker_remove_probe(marker_probe_func *probe)
+>  {
+> @@ -481,7 +481,7 @@
+>  	mutex_unlock(&module_mutex);
+>  	return found;
+>  }
+> -EXPORT_SYMBOL(marker_remove_probe);
+> +EXPORT_SYMBOL_GPL(marker_remove_probe);
+>  
+>  int marker_list_probe(marker_probe_func *probe)
+>  {
+> @@ -505,7 +505,7 @@
+>  	mutex_unlock(&module_mutex);
+>  	return found;
+>  }
+> -EXPORT_SYMBOL(marker_list_probe);
+> +EXPORT_SYMBOL_GPL(marker_list_probe);
+>  #endif
+>  
+>  #ifdef CONFIG_SMP
+> @@ -2510,7 +2510,7 @@
+>  	}
+>  	mutex_unlock(&module_mutex);
+>  }
+> -EXPORT_SYMBOL(list_modules);
+> +EXPORT_SYMBOL_GPL(list_modules);
+>  
+>  /* Given an address, look for it in the module exception tables. */
+>  const struct exception_table_entry *search_module_extables(unsigned long addr)
+> --- linux-2.6.20-mm1/arch/i386/kernel/marker.c.old	2007-02-15 16:03:22.000000000 +0100
+> +++ linux-2.6.20-mm1/arch/i386/kernel/marker.c	2007-02-15 16:03:34.000000000 +0100
+> @@ -90,4 +90,4 @@
+>  	flush_icache_range(address, size);
+>  	return 0;
+>  }
+> -EXPORT_SYMBOL(arch_marker_set_ins_enable);
+> +EXPORT_SYMBOL_GPL(arch_marker_set_ins_enable);
+> 
+> 
+> 
+> 
+> 
 
 -- 
-Luká¹ Hejtmánek
+Mathieu Desnoyers
+Computer Engineering Ph.D. Candidate, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
