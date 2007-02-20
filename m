@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965345AbXBTQNK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965343AbXBTQNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965345AbXBTQNK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 11:13:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965347AbXBTQNK
+	id S965343AbXBTQNf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 11:13:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030189AbXBTQNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 11:13:10 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:42635 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965345AbXBTQNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 11:13:08 -0500
-Date: Tue, 20 Feb 2007 11:13:07 -0500
-From: Prarit Bhargava <prarit@redhat.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net
-Cc: Prarit Bhargava <prarit@redhat.com>
-Message-Id: <20070220161306.23688.53776.sendpatchset@prarit.boston.redhat.com>
-Subject: [PATCH]: change rivafb_remove to __devexit
+	Tue, 20 Feb 2007 11:13:35 -0500
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2521 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965350AbXBTQNa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 11:13:30 -0500
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Add "is_power_of_2" checking to log2.h.
+Date: Tue, 20 Feb 2007 17:14:41 +0100
+User-Agent: KMail/1.9.5
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Paul Mackerras <paulus@samba.org>,
+       dhowells@redhat.com
+References: <Pine.LNX.4.64.0701300543420.17991@CPE00045a9c397f-CM001225dbafb6> <200702201629.40758.m.kozlowski@tuxland.pl> <014B4DC2-53BB-423E-B261-569299CAB2D9@kernel.crashing.org>
+In-Reply-To: <014B4DC2-53BB-423E-B261-569299CAB2D9@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702201714.41300.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resubmitting with wider audience (akpm & lkml).
+Hello,
 
-Change rivafb_remove to __deviexit to fix MODPOST warnings:
+> > Please fix the parentheses thing in both arch/powerpc/mm/ 
+> > pgtable_32.c and
+> > arch/ppc/mm/pgtable.c.
+> >
+> >> +#define is_power_of_4(x)	is_power_of_2(x) && (ffs(x) & 1))
+> 
+> These should be fixed and pushed upstream by now.
 
-WARNING: drivers/video/riva/rivafb.o - Section mismatch: reference to
-.exit.text:rivafb_remove from .data.rel.local after 'rivafb_driver' (at offset 0x28)
+Great. Thanks.
 
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+Regards,
 
---- linux-2.6.19.ia64.orig/drivers/video/riva/fbdev.c	2007-02-07 09:56:37.000000000 -0500
-+++ linux-2.6.19.ia64/drivers/video/riva/fbdev.c	2007-02-08 11:39:35.000000000 -0500
-@@ -2154,7 +2154,7 @@ err_ret:
- 	return ret;
- }
- 
--static void __exit rivafb_remove(struct pci_dev *pd)
-+static void __devexit rivafb_remove(struct pci_dev *pd)
- {
- 	struct fb_info *info = pci_get_drvdata(pd);
- 	struct riva_par *par = info->par;
-@@ -2232,7 +2232,7 @@ static struct pci_driver rivafb_driver =
- 	.name		= "rivafb",
- 	.id_table	= rivafb_pci_tbl,
- 	.probe		= rivafb_probe,
--	.remove		= __exit_p(rivafb_remove),
-+	.remove		= __devexit_p(rivafb_remove),
- };
- 
- 
+	Mariusz Kozlowski
