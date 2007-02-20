@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965049AbXBTP2I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965036AbXBTP2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965049AbXBTP2I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 10:28:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965039AbXBTP2I
+	id S965036AbXBTP2S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 10:28:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965039AbXBTP2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 10:28:08 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:43752 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965049AbXBTP2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 10:28:06 -0500
-Message-ID: <45DB137F.1060301@garzik.org>
-Date: Tue, 20 Feb 2007 10:27:59 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Alan <alan@lxorguk.ukuu.org.uk>
-CC: Robert Hancock <hancockr@shaw.ca>,
-       Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-Subject: Re: pata_amd dropping to PIO on resume
-References: <fa.q7ZuddHInqn2dVlS+EWjXjPvFC8@ifi.uio.no>	<45D63BCE.2080700@shaw.ca>	<45D6436C.4060209@garzik.org> <20070219220812.11c3baba@localhost.localdomain>
-In-Reply-To: <20070219220812.11c3baba@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+	Tue, 20 Feb 2007 10:28:18 -0500
+Received: from smtp.nokia.com ([131.228.20.172]:62800 "EHLO
+	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965036AbXBTP2R convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 10:28:17 -0500
+Subject: Re: [PATCH 05/44 take 2] [UBI] internal common header
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Frank Haverkamp <haver@vnet.ibm.com>,
+       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1171984555.3518.5.camel@hades.cambridge.redhat.com>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain>
+	 <20070217165449.5845.18238.sendpatchset@localhost.localdomain>
+	 <20070219105445.GA16930@infradead.org> <1171976753.4039.27.camel@sauron>
+	 <20070220145503.GC3170@thunk.org>
+	 <1171984555.3518.5.camel@hades.cambridge.redhat.com>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 20 Feb 2007 17:24:15 +0200
+Message-Id: <1171985055.4039.44.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 20 Feb 2007 15:24:15.0988 (UTC) FILETIME=[2EAFBB40:01C75503]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan wrote:
->> Deleting the ata_pci_clear_simplex() call, then adding 
->> ATA_FLAG_IGN_SIMPLEX to the ata_port_info info[] array, is also worth 
->> trying.
+On Tue, 2007-02-20 at 15:15 +0000, David Woodhouse wrote:
+> On Tue, 2007-02-20 at 09:55 -0500, Theodore Tso wrote:
+> > It appears that the reason why you are doing this is because you think
+> > you need the (packed) attribute.  Not needed; Linux assumes all over
+> > the place 16, 32, and 64 types are packed.  If Linux is ever compiled
+> > on an architecture where this isn't true, the compiler will probably
+> > need to be fixed so these assumptions are true, since all manner of
+> > things will break.
 > 
-> I think I know what is going on here. Firstly the simplex bits
-> need re-clearing on a resume. On my todo list now I'm back
+> No, the packedness is irrelevant -- the reason is just to catch all the
+> places where you might otherwise forget to use byte-swapping accesses.
 
-If the bit does not actually alter /hardware/ operation, then
-ATA_FLAG_IGN_SIMPLEX use is preferred over having to remember various 
-places where the bit must be twiddled.  Its easier to leave the bit in 
-the BIOS-initialized state, and ignore the hardware bit's existence in 
-software, if we know the behavior in the controller is hardwired.  Less 
-room for software bugs that way, IMO.
+Bear in mind we share this header with user-space, so it is safer to use
+packed as well as C99 types.
 
-	Jeff
-
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
