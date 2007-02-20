@@ -1,91 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030432AbXBTVVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030404AbXBTVXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030432AbXBTVVj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 16:21:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030428AbXBTVVj
+	id S1030404AbXBTVXY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 16:23:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030419AbXBTVXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 16:21:39 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34133 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030425AbXBTVVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 16:21:38 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.20-mm2
-Date: Tue, 20 Feb 2007 22:16:02 +0100
-User-Agent: KMail/1.9.5
-Cc: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, "Neil Brown" <neilb@suse.de>,
-       "Jeff Garzik" <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       "Jens Axboe" <jens.axboe@oracle.com>
-References: <20070217215146.30e7ffa3.akpm@linux-foundation.org> <6bffcb0e0702190345p33f4832epec92656fff087f57@mail.gmail.com> <200702200104.57200.rjw@sisk.pl>
-In-Reply-To: <200702200104.57200.rjw@sisk.pl>
+	Tue, 20 Feb 2007 16:23:23 -0500
+Received: from numenor.qualcomm.com ([129.46.51.58]:47581 "EHLO
+	numenor.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030404AbXBTVXX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 16:23:23 -0500
+Message-ID: <45DB669B.2010307@qualcomm.com>
+Date: Tue, 20 Feb 2007 13:22:35 -0800
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Gautham shenoy <ego@in.ibm.com>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: slab: start_cpu_timer/cache_reap CONFIG_HOTPLUG_CPU problems
+References: <20070129011301.GA844@tv-sign.ru> <Pine.LNX.4.64.0701290852390.28200@schroedinger.engr.sgi.com> <20070129171923.GA138@tv-sign.ru> <Pine.LNX.4.64.0701290922390.28330@schroedinger.engr.sgi.com> <20070129182742.GA158@tv-sign.ru> <45DB404C.4070305@qualcomm.com> <Pine.LNX.4.64.0702201041340.14643@schroedinger.engr.sgi.com> <20070220200550.GA85@tv-sign.ru>
+In-Reply-To: <20070220200550.GA85@tv-sign.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702202216.03744.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 20 February 2007 01:04, Rafael J. Wysocki wrote:
-> On Monday, 19 February 2007 12:45, Michal Piotrowski wrote:
-> > On 19/02/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > On Monday, 19 February 2007 01:00, Andrew Morton wrote:
-> > > > On Mon, 19 Feb 2007 00:25:48 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > >
-> > > > > > netconsole is good.
-> > > > >
-> > > > > I know. :-)
-> > > > >
-> > > > > In the meantime, I've got something worse on another x86_64 box:
-> > > > >
-> > > > > Asus Laptop ACPI Extras version 0.30
-> > > > >   L5D model detected, supported
-> > > > > audit(1171831698.918:2): audit_pid=4281 old=0 by auid=4294967295
-> > > > > general protection fault: 0000 [2] PREEMPT
-> > > > > last sysfs file: /class/net/eth2/carrier
-> > > > > CPU 0
-> > > > > Modules linked in: af_packet ipv6 snd_pcm_oss snd_mixer_oss snd_seq snd_seq_device asus_acpi backlight button battery ac dm_mod pcmr
-> > > > > Pid: 178, comm: pdflush Not tainted 2.6.20-mm2 #1
-> > > > > RIP: 0010:[<ffffffff8034bce4>]  [<ffffffff8034bce4>] __make_request+0x134/0x370
-> > > > > RSP: 0000:ffff81005ed659a0  EFLAGS: 00010297
-> > > > > RAX: 00000000ffffffff RBX: 6b6b6b6b6b6b6b6b RCX: 000000000203396a
-> > > > > RDX: 0000000100000000 RSI: ffff810037b4dbb0 RDI: ffff81004683d8c0
-> > > > > RBP: ffff81005ed659f0 R08: ffff81004683d070 R09: ffff81003d333cc0
-> > > > > R10: 0000000000000000 R11: 0000000000000000 R12: ffff810037b4dbb0
-> > > > > R13: ffff81005daba3f0 R14: ffff810037daca90 R15: ffff81005daba3d0
-> > > > > FS:  00002ad4a29e6d00(0000) GS:ffffffff805db000(0000) knlGS:0000000000000000
-> > > > > CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> > > > > CR2: 00002b6a345aa000 CR3: 0000000056585000 CR4: 00000000000006e0
-> > > > > Process pdflush (pid: 178, threadinfo ffff81005ed64000, task ffff810037b060c0)
-> > > > > Stack:  ffff810002852540 0000000000000001 ffff810037b4dbb0 ffffffff8026be21
-> > > > >  ffff81005ed65a40 0000000000000008 ffff810037b4dbb0 0000000000000800
-> > > > >  0000000000000008 ffff8100021d94e0 ffff81005ed65a40 ffffffff80348e7c
-> > > > > Call Trace:
-> > > > >  [<ffffffff8026be21>] mempool_alloc_slab+0x11/0x20
-> > > > >  [<ffffffff80348e7c>] generic_make_request+0x1ec/0x230
-> > > >
-> > > > yeah. everyone except me is hitting that.
-> > >
-> > > FWIW, I don't see it on an SMP machine.
-> > >
-> > 
-> > I can reproduce this on my SMT P4.
-> > 
-> > CONFIG_SMP=y
-> > CONFIG_X86_PC=y
-> > CONFIG_MPENTIUM4=y
-> > CONFIG_NR_CPUS=2
-> > CONFIG_SCHED_SMT=y
+Oleg Nesterov wrote:
+> On 02/20, Christoph Lameter wrote:
+>> On Tue, 20 Feb 2007, Max Krasnyansky wrote:
+>>
+>>>>> Well seems that we have a set of unresolved issues with workqueues and cpu
+>>>>> hotplug.
+>>> How about storing 'cpu' explicitly in the work queue instead of relying on the
+>>> smp_processor_id() and friends ? That way there is no ambiguity when
+>>> threads/timers get
+>>> moved around.
+>> The slab functionality is designed to work on the processor with the 
+>> queue. These tricks will only cause more trouble in the future. The 
+>> cache_reaper needs to be either disabled or run on the right processor. It 
+>> should never run on the wrong processor.
 > 
-> It may be related to preemption.  The box I'm not seeing it on runs a
-> non-preemptible kernel (CONFIG_PREEMPT_VOLUNTARY is set).
+> I personally agree. Besides, cache_reaper is not alone. Note the comment
+> in debug_smp_processor_id() about cpu-bound processes. The slab does correct
+> thing right now, stops the timer on CPU_DEAD. Other problems imho should be
+> solved by fixing cpu-hotplug. Gautham and Srivatsa are working on that.
 
-FWIW, with CONFIG_PREEMPT unset (CONFIG_PREEMPT_VOLUNTARY is set instead), I'm
-unable to reproduce this problem on the box on which it is readily reproducible with
-CONFIG_PREEMPT set.
+I guess I kind of hijacked the thread. The second part of my first email was
+dropped. Basically I was saying that I'm working on CPU isolation extensions.
+Where an isolated CPU is not supposed to do much kernel work. In which case
+you'd want to run slab cache reaper on some other CPU on behalf of the isolated
+one. Hence the proposal to explicitly pass cpu_id to the reaper. I guess now
+that you guys fixed the hotplug case it does not help in that scenario.
 
-Greetings,
-Rafael
+Max
