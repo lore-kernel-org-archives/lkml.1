@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932709AbXBTHsF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964875AbXBTHvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932709AbXBTHsF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 02:48:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932825AbXBTHsF
+	id S964875AbXBTHvl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 02:51:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964866AbXBTHvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 02:48:05 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:12687 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932709AbXBTHsC (ORCPT
+	Tue, 20 Feb 2007 02:51:41 -0500
+Received: from wip-ec-wd.wipro.com ([203.91.193.32]:32818 "EHLO
+	wip-ec-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964875AbXBTHvk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 02:48:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=L0KyOFKnxVNC3CaVVXdFD93R6T4z/JOjyqBJddwLbzMUSf/pq9GEpc/U0GS4ivIJyMgiVMlvz7xjlHJBzb0JDfeKYu16ZR53JnPTXo3pH93+1b8CagBULM6WktvOluGoGxYbIxNG/PZpXc85xBVEA3rQcUIb25jfYQTYvIbTvLI=
-Message-ID: <3d57814d0702192348m2257a660r3304eba0beca9ed6@mail.gmail.com>
-Date: Tue, 20 Feb 2007 17:48:00 +1000
-From: "Trent Waddington" <trent.waddington@gmail.com>
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Subject: Re: GPL vs non-GPL device drivers
-Cc: davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>
-In-Reply-To: <f2b55d220702191658h1e39bec1i633c15ff17b5684c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 20 Feb 2007 02:51:40 -0500
+Subject: [KJ][PATCH] is_power_of_2 in fat
+From: Vignesh Babu BM <vignesh.babu@wipro.com>
+To: Kernel Janitors List <kernel-janitors@lists.osdl.org>
+Cc: hirofumi@mail.parknet.co.jp, linux-kernel@vger.kernel.org
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3d57814d0702171726l403c7812n19f2a226cba02e5d@mail.gmail.com>
-	 <3d57814d0702191426m2fc3c1c6had125a2db165befe@mail.gmail.com>
-	 <f2b55d220702191448g6077c6aav43ff99edbaf77bdb@mail.gmail.com>
-	 <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>
-	 <f2b55d220702191518o349c04br2e42fabecba8ea44@mail.gmail.com>
-	 <3d57814d0702191526r5f594374t50a0203d2dc6d36e@mail.gmail.com>
-	 <f2b55d220702191628v67c5b7ccvec0547ca7869ae46@mail.gmail.com>
-	 <3d57814d0702191636q3a9f96a2xc029ea92a27a3748@mail.gmail.com>
-	 <f2b55d220702191650m734b8f9btb81659608b72ea4e@mail.gmail.com>
-	 <f2b55d220702191658h1e39bec1i633c15ff17b5684c@mail.gmail.com>
+Date: Tue, 20 Feb 2007 13:19:54 +0530
+Message-Id: <1171957794.6127.65.camel@wriver-t81fb058.linuxcoe>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+X-OriginalArrivalTime: 20 Feb 2007 07:51:38.0925 (UTC) FILETIME=[F3D0C5D0:01C754C3]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just in case anyone cares, after speaking with Michael for a few hours
-I've found he's not nearly as abrasive as this mailing list banter
-might suggest.  He makes some good arguments once you stop him from
-spouting conspiracy stuff and, although I don't agree with all of
-them, I think he has some good points.  He suggested posting a
-transcript of our chat but, frankly, I don't think anyone wants to
-read that.
+Replacing (n & (n-1)) in the context of power of 2 checks
+with is_power_of_2
 
-Trent
+Signed-off-by: vignesh babu <vignesh.babu@wipro.com>
+--- 
+diff --git a/fs/fat/inode.c b/fs/fat/inode.c
+index a9e4688..8437190 100644
+--- a/fs/fat/inode.c
++++ b/fs/fat/inode.c
+@@ -25,6 +25,7 @@
+ #include <linux/parser.h>
+ #include <linux/uio.h>
+ #include <linux/writeback.h>
++#include <linux/log2.h>
+ #include <asm/unaligned.h>
+ 
+ #ifndef CONFIG_FAT_DEFAULT_IOCHARSET
+@@ -1216,8 +1217,7 @@ int fat_fill_super(struct super_block *sb, void *data, int silent,
+ 	}
+ 	logical_sector_size =
+ 		le16_to_cpu(get_unaligned((__le16 *)&b->sector_size));
+-	if (!logical_sector_size
+-	    || (logical_sector_size & (logical_sector_size - 1))
++	if (!is_power_of_2(logical_sector_size)
+ 	    || (logical_sector_size < 512)
+ 	    || (PAGE_CACHE_SIZE < logical_sector_size)) {
+ 		if (!silent)
+@@ -1227,8 +1227,7 @@ int fat_fill_super(struct super_block *sb, void *data, int silent,
+ 		goto out_invalid;
+ 	}
+ 	sbi->sec_per_clus = b->sec_per_clus;
+-	if (!sbi->sec_per_clus
+-	    || (sbi->sec_per_clus & (sbi->sec_per_clus - 1))) {
++	if (!is_power_of_2(sbi->sec_per_clus)) {
+ 		if (!silent)
+ 			printk(KERN_ERR "FAT: bogus sectors per cluster %u\n",
+ 			       sbi->sec_per_clus);
+
+-- 
+Regards,  
+Vignesh Babu BM  
+_____________________________________________________________  
+"Why is it that every time I'm with you, makes me believe in magic?"
