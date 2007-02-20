@@ -1,114 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964878AbXBTN6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964883AbXBTOAF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964878AbXBTN6U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 08:58:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964883AbXBTN6T
+	id S964883AbXBTOAF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 09:00:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964893AbXBTOAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 08:58:19 -0500
-Received: from posthamster.phnxsoft.com ([195.227.45.4]:3088 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964878AbXBTN6T (ORCPT
+	Tue, 20 Feb 2007 09:00:05 -0500
+Received: from embla.aitel.hist.no ([158.38.50.22]:42459 "HELO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S964883AbXBTOAE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 08:58:19 -0500
-Message-ID: <45DAFE0B.1070305@imap.cc>
-Date: Tue, 20 Feb 2007 14:56:27 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
+	Tue, 20 Feb 2007 09:00:04 -0500
+Message-ID: <45DAFE2D.3060606@aitel.hist.no>
+Date: Tue, 20 Feb 2007 14:57:01 +0100
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Kai Germaschewski <kai.germaschewski@unh.edu>,
-       Hansjoerg Lipp <hjlipp@web.de>, kkeil@suse.de,
-       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org
-Subject: Re: Kbuild problem
-References: <45D74B46.3090602@imap.cc> <Pine.LNX.4.44.0702180017170.1150-100000@localhost.localdomain> <20070218104028.GU13958@stusta.de>
-In-Reply-To: <20070218104028.GU13958@stusta.de>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigBBFDD3706E5F7D3DE1B996C0"
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: Jan Engelhardt <jengelh@linux01.gwdg.de>, Dax Kelson <dax@gurulabs.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jean Delvare <khali@linux-fr.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Linus' laptop and Num lock status
+References: <1171479361.3706.48.camel@mentorng.gurulabs.com>	<Pine.LNX.4.64.0702141104210.3604@woody.linux-foundation.org>	<20070214202144.1ddb930f.khali@linux-fr.org>	<Pine.LNX.4.64.0702141130340.20368@woody.linux-foundation.org>	<1171488840.3706.78.camel@mentorng.gurulabs.com>	<Pine.LNX.4.61.0702142257490.19368@yvahk01.tjqt.qr> <m34ppojncf.fsf@maximus.localdomain>
+In-Reply-To: <m34ppojncf.fsf@maximus.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigBBFDD3706E5F7D3DE1B996C0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Krzysztof Halasa wrote:
+> Jan Engelhardt <jengelh@linux01.gwdg.de> writes:
+>
+>   
+>>> I checked, and looking at offset 0x497 seems to work fine on a couple of
+>>> systems with USB keyboards.
+>>>       
+>> Probably just because legacy mode was enabled. Plus I wonder what 0x497 will
+>> return when there is actually more than one USB keyboard connected at boot.
+>>     
+>
+> I bet all would share LED states. If you can use multiple keyboards
+> in legacy mode at all, of course.
+>   
+I have used multiple keyboards, for a 2-user machine.
 
-Adrian Bunk schrieb:
-> On Sun, Feb 18, 2007 at 12:22:10AM -0500, Kai Germaschewski wrote:
->> On Sat, 17 Feb 2007, Tilman Schmidt wrote:
->>=20
->> > asyncdata.o is only needed for M105 and M101, not for the base
->> > driver. How do I express in Kbuild that asyncdata.o is to be added
->> > to gigaset-y only if CONFIG_GIGASET_M105 and CONFIG_GIGASET_M101
->> > are not both 'n'?
->>=20
->> The way this is typically done is via Kconfig. Add a config option=20
->> ASYNCDATA (actually something more descriptive/specific would be bette=
-r),=20
->> add a "select ASYNCDATA" to the config options for m101 and m105, and =
-then=20
->> you can use CONFIG_ASYNCDATA to decide whether to add asyncdata.o in t=
-he=20
->> Makefile.
->=20
-> One disadvantage of this approach is that in a kernel with=20
-> CONFIG_GIGASET_BASE=3Dy, you can't later compile and load the usb_gigas=
-et=20
-> or ser_gigaset modules without rebooting since they require a change to=
-=20
-> the kernel image.
+The bios interact with only one of the keyboards, and track LED state on 
+that.
+Other keyboard(s) become useful once the linux comes up with
+its event interface. You then have one set of LEDS per keyboard.
 
-You've got a point there. So linking asyncdata.o into the modules that
-need it, as it is currently done, would perhaps be better after all?
-The original problem (asyncdata.o linked in twice, causing duplicate
-symbol definitions) could be fixed with this (admittedly somewhat
-awkward) change to the Makefile (build tested):
-
---- linux-2.6.20-mm1-work/drivers/isdn/gigaset/Makefile 2007-02-20 13:39:=
-44.000000000 +0100
-+++ u/drivers/isdn/gigaset/Makefile     2007-02-20 13:38:58.000000000 +01=
-00
-@@ -1,7 +1,10 @@
- gigaset-y :=3D common.o interface.o proc.o ev-layer.o i4l.o
- usb_gigaset-y :=3D usb-gigaset.o asyncdata.o
- bas_gigaset-y :=3D bas-gigaset.o isocdata.o
--ser_gigaset-y :=3D ser-gigaset.o asyncdata.o
-+ser_gigaset-y :=3D ser-gigaset.o
-+ifneq ($(CONFIG_GIGASET_M101)$(CONFIG_GIGASET_M105),yy)
-+ser_gigaset-y +=3D asyncdata.o
-+endif
-
- obj-$(CONFIG_GIGASET_M105) +=3D usb_gigaset.o gigaset.o
- obj-$(CONFIG_GIGASET_BASE) +=3D bas_gigaset.o gigaset.o
-
-The alternative would be to always link asyncdata.o into the gigaset
-module whether it's needed or not. "size asyncdata.o" says:
-   text    data     bss     dec     hex filename
-   4200       0       0    4200    1068 asyncdata.o
-which appears tolerable.
-
-Opinions?
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enigBBFDD3706E5F7D3DE1B996C0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFF2v4LMdB4Whm86/kRAvNZAJoDwRaH51JxqooSgnCzHcX7/b52XwCfXdhG
-kgo0+rVhBIwZmLkcwgta9+Y=
-=bZxC
------END PGP SIGNATURE-----
-
---------------enigBBFDD3706E5F7D3DE1B996C0--
+Helge Hafting
