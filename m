@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965639AbXBTAPQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965629AbXBTAPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965639AbXBTAPQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 Feb 2007 19:15:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750947AbXBTAHn
+	id S965629AbXBTAPT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 Feb 2007 19:15:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965597AbXBTAHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 Feb 2007 19:07:43 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:36069 "EHLO
+	Mon, 19 Feb 2007 19:07:39 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:36024 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750939AbXBTAHS (ORCPT
+	with ESMTP id S1750933AbXBTAGn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 Feb 2007 19:07:18 -0500
-Date: Tue, 20 Feb 2007 01:07:16 +0100
+	Mon, 19 Feb 2007 19:06:43 -0500
+Date: Tue, 20 Feb 2007 01:06:41 +0100
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
+To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk,
        linux-kernel@vger.kernel.org
-Subject: [RFC: 2.6 patch] drivers/media/video/bt8xx/: possible cleanups
-Message-ID: <20070220000716.GQ13958@stusta.de>
+Subject: [2.6 patch] the overdue removal of X86_SPEEDSTEP_CENTRINO_ACPI
+Message-ID: <20070220000641.GG13958@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,197 +24,443 @@ User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the following possible cleanups:
-- remove the following unused global functions:
-  - bttv-if.c: bttv_get_cardinfo()
-  - bttv-if.c: bttv_get_id()
-  - bttv-if.c: bttv_get_gpio_queue()
-  - bttv-if.c: bttv_i2c_call()
-- remove the following unused EXPORT_SYMBOL's:
-  - bttv-gpio.c: bttv_sub_bus_type
-  - bttv-gpio.c: bttv_gpio_inout
-  - bttv-gpio.c: bttv_gpio_read
-  - bttv-gpio.c: bttv_gpio_write
-  - bttv-gpio.c: bttv_gpio_bits
+This patch contains the overdue removal of X86_SPEEDSTEP_CENTRINO_ACPI.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
-This patch was already sent on:
-- 24 Jan 2007
+ Documentation/feature-removal-schedule.txt        |   22 -
+ arch/i386/kernel/cpu/cpufreq/Kconfig              |   19 
+ arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c |  280 --------------
+ arch/x86_64/kernel/cpufreq/Kconfig                |    7 
+ 4 files changed, 21 insertions(+), 307 deletions(-)
 
- drivers/media/video/bt8xx/bttv-gpio.c |    5 --
- drivers/media/video/bt8xx/bttv-if.c   |   50 --------------------------
- drivers/media/video/bt8xx/bttv.h      |   24 ------------
- 3 files changed, 79 deletions(-)
-
---- linux-2.6.17-rc1-mm3-full/drivers/media/video/bt8xx/bttv-gpio.c.old	2006-04-23 01:18:08.000000000 +0200
-+++ linux-2.6.17-rc1-mm3-full/drivers/media/video/bt8xx/bttv-gpio.c	2006-04-23 01:19:52.000000000 +0200
-@@ -71,7 +71,6 @@
- 	.probe  = bttv_sub_probe,
- 	.remove = bttv_sub_remove,
- };
--EXPORT_SYMBOL(bttv_sub_bus_type);
+--- linux-2.6.19-rc6-mm2/arch/i386/kernel/cpu/cpufreq/Kconfig.old	2006-12-01 07:23:38.000000000 +0100
++++ linux-2.6.19-rc6-mm2/arch/i386/kernel/cpu/cpufreq/Kconfig	2006-12-01 07:24:02.000000000 +0100
+@@ -109,7 +109,7 @@
+ config X86_SPEEDSTEP_CENTRINO
+ 	tristate "Intel Enhanced SpeedStep"
+ 	select CPU_FREQ_TABLE
+-	select X86_SPEEDSTEP_CENTRINO_TABLE if (!X86_SPEEDSTEP_CENTRINO_ACPI)
++	select X86_SPEEDSTEP_CENTRINO_TABLE
+ 	help
+ 	  This adds the CPUFreq driver for Enhanced SpeedStep enabled
+ 	  mobile CPUs.  This means Intel Pentium M (Centrino) CPUs. However,
+@@ -121,21 +121,6 @@
  
- static void release_sub_device(struct device *dev)
- {
-@@ -166,7 +167,6 @@
- 	btwrite(data,BT848_GPIO_OUT_EN);
- 	spin_unlock_irqrestore(&btv->gpio_lock,flags);
- }
--EXPORT_SYMBOL(bttv_gpio_inout);
+ 	  If in doubt, say N.
  
- u32 bttv_gpio_read(struct bttv_core *core)
- {
-@@ -176,7 +176,6 @@
- 	value = btread(BT848_GPIO_DATA);
- 	return value;
- }
--EXPORT_SYMBOL(bttv_gpio_read);
- 
- void bttv_gpio_write(struct bttv_core *core, u32 value)
- {
-@@ -184,7 +183,6 @@
- 
- 	btwrite(value,BT848_GPIO_DATA);
- }
--EXPORT_SYMBOL(bttv_gpio_write);
- 
- void bttv_gpio_bits(struct bttv_core *core, u32 mask, u32 bits)
- {
-@@ -199,7 +197,6 @@
- 	btwrite(data,BT848_GPIO_DATA);
- 	spin_unlock_irqrestore(&btv->gpio_lock,flags);
- }
--EXPORT_SYMBOL(bttv_gpio_bits);
- 
- /*
-  * Local variables:
---- linux-2.6.17-rc1-mm3-full/drivers/media/video/bt8xx/bttv.h.old	2006-04-23 01:21:30.000000000 +0200
-+++ linux-2.6.17-rc1-mm3-full/drivers/media/video/bt8xx/bttv.h	2006-04-23 01:23:19.000000000 +0200
-@@ -287,17 +287,8 @@
- /* this obsolete -- please use the sysfs-based
-    interface below for new code */
- 
--/* returns card type + card ID (for bt878-based ones)
--   for possible values see lines below beginning with #define BTTV_BOARD_UNKNOWN
--   returns negative value if error occurred
--*/
--extern int bttv_get_cardinfo(unsigned int card, int *type,
--			     unsigned int *cardid);
- extern struct pci_dev* bttv_get_pcidev(unsigned int card);
- 
--/* obsolete, use bttv_get_cardinfo instead */
--extern int bttv_get_id(unsigned int card);
+-config X86_SPEEDSTEP_CENTRINO_ACPI
+-	bool "Use ACPI tables to decode valid frequency/voltage (deprecated)"
+-	depends on X86_SPEEDSTEP_CENTRINO && ACPI_PROCESSOR
+-	depends on !(X86_SPEEDSTEP_CENTRINO = y && ACPI_PROCESSOR = m)
+-	default y
+-	help
+-	  This is deprecated and this functionality is now merged into
+-	  acpi_cpufreq (X86_ACPI_CPUFREQ). Use that driver instead of
+-	  speedstep_centrino.
+-	  Use primarily the information provided in the BIOS ACPI tables
+-	  to determine valid CPU frequency and voltage pairings. It is
+-	  required for the driver to work on non-Banias CPUs.
 -
- /* sets GPOE register (BT848_GPIO_OUT_EN) to new value:
-    data | (current_GPOE_value & ~mask)
-    returns negative value if error occurred
-@@ -317,21 +308,6 @@
- extern int bttv_write_gpio(unsigned int card,
- 			   unsigned long mask, unsigned long data);
- 
--/* returns pointer to task queue which can be used as parameter to
--   interruptible_sleep_on
--   in interrupt handler if BT848_INT_GPINT bit is set - this queue is activated
--   (wake_up_interruptible) and following call to the function bttv_read_gpio
--   should return new value of GPDATA,
--   returns NULL value if error occurred or queue is not available
--   WARNING: because there is no buffer for GPIO data, one MUST
--   process data ASAP
--*/
--extern wait_queue_head_t* bttv_get_gpio_queue(unsigned int card);
+-	  If in doubt, say Y.
 -
--/* call i2c clients
--*/
--extern void bttv_i2c_call(unsigned int card, unsigned int cmd, void *arg);
+ config X86_SPEEDSTEP_CENTRINO_TABLE
+ 	bool "Built-in tables for Banias CPUs"
+ 	depends on X86_SPEEDSTEP_CENTRINO
+@@ -222,7 +207,7 @@
+ config X86_ACPI_CPUFREQ_PROC_INTF
+ 	bool "/proc/acpi/processor/../performance interface (deprecated)"
+ 	depends on PROC_FS
+-	depends on X86_ACPI_CPUFREQ || X86_SPEEDSTEP_CENTRINO_ACPI || X86_POWERNOW_K7_ACPI || X86_POWERNOW_K8_ACPI
++	depends on X86_ACPI_CPUFREQ || X86_POWERNOW_K7_ACPI || X86_POWERNOW_K8_ACPI
+ 	help
+ 	  This enables the deprecated /proc/acpi/processor/../performance
+ 	  interface. While it is helpful for debugging, the generic,
+--- linux-2.6.19-rc6-mm2/arch/x86_64/kernel/cpufreq/Kconfig.old	2006-12-01 07:24:11.000000000 +0100
++++ linux-2.6.19-rc6-mm2/arch/x86_64/kernel/cpufreq/Kconfig	2006-12-01 07:24:21.000000000 +0100
+@@ -42,11 +42,6 @@
+ 
+ 	  If in doubt, say N.
+ 
+-config X86_SPEEDSTEP_CENTRINO_ACPI
+-	bool
+-	depends on X86_SPEEDSTEP_CENTRINO
+-	default y
 -
+ config X86_ACPI_CPUFREQ
+ 	tristate "ACPI Processor P-States driver"
+ 	select CPU_FREQ_TABLE
+@@ -65,7 +60,7 @@
+ config X86_ACPI_CPUFREQ_PROC_INTF
+         bool "/proc/acpi/processor/../performance interface (deprecated)"
+ 	depends on PROC_FS
+-	depends on X86_ACPI_CPUFREQ || X86_SPEEDSTEP_CENTRINO_ACPI || X86_POWERNOW_K8_ACPI
++	depends on X86_ACPI_CPUFREQ || X86_POWERNOW_K8_ACPI
+ 	help
+ 	  This enables the deprecated /proc/acpi/processor/../performance
+ 	  interface. While it is helpful for debugging, the generic,
+--- linux-2.6.20-mm1/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c.old	2007-02-17 23:29:53.000000000 +0100
++++ linux-2.6.20-mm1/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c	2007-02-17 23:30:44.000000000 +0100
+@@ -21,12 +21,6 @@
+ #include <linux/delay.h>
+ #include <linux/compiler.h>
+ 
+-#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
+-#include <linux/acpi.h>
+-#include <linux/dmi.h>
+-#include <acpi/processor.h>
+-#endif
+-
+ #include <asm/msr.h>
+ #include <asm/processor.h>
+ #include <asm/cpufeature.h>
+@@ -257,9 +251,7 @@
+ 		/* Matched a non-match */
+ 		dprintk("no table support for CPU model \"%s\"\n",
+ 		       cpu->x86_model_id);
+-#ifndef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
+-		dprintk("try compiling with CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI enabled\n");
+-#endif
++		dprintk("try using the acpi-cpufreq driver\n");
+ 		return -ENOENT;
+ 	}
+ 
+@@ -346,213 +338,6 @@
+ }
  
  
- /* ---------------------------------------------------------- */
---- linux-2.6.17-rc1-mm3-full/drivers/media/video/bt8xx/bttv-if.c.old	2006-04-23 01:20:25.000000000 +0200
-+++ linux-2.6.17-rc1-mm3-full/drivers/media/video/bt8xx/bttv-if.c	2006-04-23 01:23:39.000000000 +0200
-@@ -33,32 +33,16 @@
- 
- #include "bttvp.h"
- 
--EXPORT_SYMBOL(bttv_get_cardinfo);
- EXPORT_SYMBOL(bttv_get_pcidev);
--EXPORT_SYMBOL(bttv_get_id);
- EXPORT_SYMBOL(bttv_gpio_enable);
- EXPORT_SYMBOL(bttv_read_gpio);
- EXPORT_SYMBOL(bttv_write_gpio);
--EXPORT_SYMBOL(bttv_get_gpio_queue);
--EXPORT_SYMBOL(bttv_i2c_call);
- 
- /* ----------------------------------------------------------------------- */
- /* Exported functions - for other modules which want to access the         */
- /*                      gpio ports (IR for example)                        */
- /*                      see bttv.h for comments                            */
- 
--int bttv_get_cardinfo(unsigned int card, int *type, unsigned *cardid)
+-#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
+-
+-static struct acpi_processor_performance *acpi_perf_data[NR_CPUS];
+-
+-/*
+- * centrino_cpu_early_init_acpi - Do the preregistering with ACPI P-States
+- * library
+- *
+- * Before doing the actual init, we need to do _PSD related setup whenever
+- * supported by the BIOS. These are handled by this early_init routine.
+- */
+-static int centrino_cpu_early_init_acpi(void)
 -{
--	printk("The bttv_* interface is obsolete and will go away,\n"
--	       "please use the new, sysfs based interface instead.\n");
--	if (card >= bttv_num) {
--		return -1;
+-	unsigned int	i, j;
+-	struct acpi_processor_performance	*data;
+-
+-	for_each_possible_cpu(i) {
+-		data = kzalloc(sizeof(struct acpi_processor_performance), 
+-				GFP_KERNEL);
+-		if (!data) {
+-			for_each_possible_cpu(j) {
+-				kfree(acpi_perf_data[j]);
+-				acpi_perf_data[j] = NULL;
+-			}
+-			return (-ENOMEM);
+-		}
+-		acpi_perf_data[i] = data;
 -	}
--	*type   = bttvs[card].c.type;
--	*cardid = bttvs[card].cardid;
+-
+-	acpi_processor_preregister_performance(acpi_perf_data);
 -	return 0;
 -}
 -
- struct pci_dev* bttv_get_pcidev(unsigned int card)
- {
- 	if (card >= bttv_num)
-@@ -66,17 +50,6 @@
- 	return bttvs[card].c.pci;
- }
- 
--int bttv_get_id(unsigned int card)
+-
+-#ifdef CONFIG_SMP
+-/*
+- * Some BIOSes do SW_ANY coordination internally, either set it up in hw
+- * or do it in BIOS firmware and won't inform about it to OS. If not
+- * detected, this has a side effect of making CPU run at a different speed
+- * than OS intended it to run at. Detect it and handle it cleanly.
+- */
+-static int bios_with_sw_any_bug;
+-static int sw_any_bug_found(struct dmi_system_id *d)
 -{
--	printk("The bttv_* interface is obsolete and will go away,\n"
--	       "please use the new, sysfs based interface instead.\n");
--	if (card >= bttv_num) {
--		return -1;
--	}
--	return bttvs[card].c.type;
+-	bios_with_sw_any_bug = 1;
+-	return 0;
 -}
 -
+-static struct dmi_system_id sw_any_bug_dmi_table[] = {
+-	{
+-		.callback = sw_any_bug_found,
+-		.ident = "Supermicro Server X6DLP",
+-		.matches = {
+-			DMI_MATCH(DMI_SYS_VENDOR, "Supermicro"),
+-			DMI_MATCH(DMI_BIOS_VERSION, "080010"),
+-			DMI_MATCH(DMI_PRODUCT_NAME, "X6DLP"),
+-		},
+-	},
+-	{ }
+-};
+-#endif
 -
- int bttv_gpio_enable(unsigned int card, unsigned long mask, unsigned long data)
+-/*
+- * centrino_cpu_init_acpi - register with ACPI P-States library
+- *
+- * Register with the ACPI P-States library (part of drivers/acpi/processor.c)
+- * in order to determine correct frequency and voltage pairings by reading
+- * the _PSS of the ACPI DSDT or SSDT tables.
+- */
+-static int centrino_cpu_init_acpi(struct cpufreq_policy *policy)
+-{
+-	unsigned long			cur_freq;
+-	int				result = 0, i;
+-	unsigned int			cpu = policy->cpu;
+-	struct acpi_processor_performance	*p;
+-
+-	p = acpi_perf_data[cpu];
+-
+-	/* register with ACPI core */
+-	if (acpi_processor_register_performance(p, cpu)) {
+-		dprintk(PFX "obtaining ACPI data failed\n");
+-		return -EIO;
+-	}
+-
+-	policy->shared_type = p->shared_type;
+-	/*
+-	 * Will let policy->cpus know about dependency only when software 
+-	 * coordination is required.
+-	 */
+-	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL ||
+-	    policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
+-		policy->cpus = p->shared_cpu_map;
+-	}
+-
+-#ifdef CONFIG_SMP
+-	dmi_check_system(sw_any_bug_dmi_table);
+-	if (bios_with_sw_any_bug && cpus_weight(policy->cpus) == 1) {
+-		policy->shared_type = CPUFREQ_SHARED_TYPE_ALL;
+-		policy->cpus = cpu_core_map[cpu];
+-	}
+-#endif
+-
+-	/* verify the acpi_data */
+-	if (p->state_count <= 1) {
+-		dprintk("No P-States\n");
+-		result = -ENODEV;
+-		goto err_unreg;
+-	}
+-
+-	if ((p->control_register.space_id != ACPI_ADR_SPACE_FIXED_HARDWARE) ||
+-	    (p->status_register.space_id != ACPI_ADR_SPACE_FIXED_HARDWARE)) {
+-		dprintk("Invalid control/status registers (%x - %x)\n",
+-			p->control_register.space_id, p->status_register.space_id);
+-		result = -EIO;
+-		goto err_unreg;
+-	}
+-
+-	for (i=0; i<p->state_count; i++) {
+-		if ((p->states[i].control & INTEL_MSR_RANGE) !=
+-		    (p->states[i].status & INTEL_MSR_RANGE)) {
+-			dprintk("Different MSR bits in control (%llu) and status (%llu)\n",
+-				p->states[i].control, p->states[i].status);
+-			result = -EINVAL;
+-			goto err_unreg;
+-		}
+-
+-		if (!p->states[i].core_frequency) {
+-			dprintk("Zero core frequency for state %u\n", i);
+-			result = -EINVAL;
+-			goto err_unreg;
+-		}
+-
+-		if (p->states[i].core_frequency > p->states[0].core_frequency) {
+-			dprintk("P%u has larger frequency (%llu) than P0 (%llu), skipping\n", i,
+-				p->states[i].core_frequency, p->states[0].core_frequency);
+-			p->states[i].core_frequency = 0;
+-			continue;
+-		}
+-	}
+-
+-	centrino_model[cpu] = kzalloc(sizeof(struct cpu_model), GFP_KERNEL);
+-	if (!centrino_model[cpu]) {
+-		result = -ENOMEM;
+-		goto err_unreg;
+-	}
+-
+-	centrino_model[cpu]->model_name=NULL;
+-	centrino_model[cpu]->max_freq = p->states[0].core_frequency * 1000;
+-	centrino_model[cpu]->op_points =  kmalloc(sizeof(struct cpufreq_frequency_table) *
+-					     (p->state_count + 1), GFP_KERNEL);
+-        if (!centrino_model[cpu]->op_points) {
+-                result = -ENOMEM;
+-                goto err_kfree;
+-        }
+-
+-        for (i=0; i<p->state_count; i++) {
+-		centrino_model[cpu]->op_points[i].index = p->states[i].control & INTEL_MSR_RANGE;
+-		centrino_model[cpu]->op_points[i].frequency = p->states[i].core_frequency * 1000;
+-		dprintk("adding state %i with frequency %u and control value %04x\n", 
+-			i, centrino_model[cpu]->op_points[i].frequency, centrino_model[cpu]->op_points[i].index);
+-	}
+-	centrino_model[cpu]->op_points[p->state_count].frequency = CPUFREQ_TABLE_END;
+-
+-	cur_freq = get_cur_freq(cpu);
+-
+-	for (i=0; i<p->state_count; i++) {
+-		if (!p->states[i].core_frequency) {
+-			dprintk("skipping state %u\n", i);
+-			centrino_model[cpu]->op_points[i].frequency = CPUFREQ_ENTRY_INVALID;
+-			continue;
+-		}
+-		
+-		if (extract_clock(centrino_model[cpu]->op_points[i].index, cpu, 0) !=
+-		    (centrino_model[cpu]->op_points[i].frequency)) {
+-			dprintk("Invalid encoded frequency (%u vs. %u)\n",
+-				extract_clock(centrino_model[cpu]->op_points[i].index, cpu, 0),
+-				centrino_model[cpu]->op_points[i].frequency);
+-			result = -EINVAL;
+-			goto err_kfree_all;
+-		}
+-
+-		if (cur_freq == centrino_model[cpu]->op_points[i].frequency)
+-			p->state = i;
+-	}
+-
+-	/* notify BIOS that we exist */
+-	acpi_processor_notify_smm(THIS_MODULE);
+-	printk("speedstep-centrino with X86_SPEEDSTEP_CENTRINO_ACPI "
+-	       "config is deprecated.\n "
+-	       "Use X86_ACPI_CPUFREQ (acpi-cpufreq) instead.\n" );
+-
+-	return 0;
+-
+- err_kfree_all:
+-	kfree(centrino_model[cpu]->op_points);
+- err_kfree:
+-	kfree(centrino_model[cpu]);
+- err_unreg:
+-	acpi_processor_unregister_performance(p, cpu);
+-	dprintk(PFX "invalid ACPI data\n");
+-	return (result);
+-}
+-#else
+-static inline int centrino_cpu_init_acpi(struct cpufreq_policy *policy) { return -ENODEV; }
+-static inline int centrino_cpu_early_init_acpi(void) { return 0; }
+-#endif
+-
+ static int centrino_cpu_init(struct cpufreq_policy *policy)
  {
- 	struct bttv *btv;
-@@ -130,28 +103,6 @@
+ 	struct cpuinfo_x86 *cpu = &cpu_data[policy->cpu];
+@@ -568,27 +353,25 @@
+ 	if (cpu_has(cpu, X86_FEATURE_CONSTANT_TSC))
+ 		centrino_driver.flags |= CPUFREQ_CONST_LOOPS;
+ 
+-	if (centrino_cpu_init_acpi(policy)) {
+-		if (policy->cpu != 0)
+-			return -ENODEV;
++	if (policy->cpu != 0)
++		return -ENODEV;
+ 
+-		for (i = 0; i < N_IDS; i++)
+-			if (centrino_verify_cpu_id(cpu, &cpu_ids[i]))
+-				break;
+-
+-		if (i != N_IDS)
+-			centrino_cpu[policy->cpu] = &cpu_ids[i];
+-
+-		if (!centrino_cpu[policy->cpu]) {
+-			dprintk("found unsupported CPU with "
+-			"Enhanced SpeedStep: send /proc/cpuinfo to "
+-			MAINTAINER "\n");
+-			return -ENODEV;
+-		}
++	for (i = 0; i < N_IDS; i++)
++		if (centrino_verify_cpu_id(cpu, &cpu_ids[i]))
++			break;
+ 
+-		if (centrino_cpu_init_table(policy)) {
+-			return -ENODEV;
+-		}
++	if (i != N_IDS)
++		centrino_cpu[policy->cpu] = &cpu_ids[i];
++
++	if (!centrino_cpu[policy->cpu]) {
++		dprintk("found unsupported CPU with "
++		"Enhanced SpeedStep: send /proc/cpuinfo to "
++		MAINTAINER "\n");
++		return -ENODEV;
++	}
++
++	if (centrino_cpu_init_table(policy)) {
++		return -ENODEV;
+ 	}
+ 
+ 	/* Check to see if Enhanced SpeedStep is enabled, and try to
+@@ -634,20 +417,6 @@
+ 
+ 	cpufreq_frequency_table_put_attr(cpu);
+ 
+-#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
+-	if (!centrino_model[cpu]->model_name) {
+-		static struct acpi_processor_performance *p;
+-
+-		if (acpi_perf_data[cpu]) {
+-			p = acpi_perf_data[cpu];
+-			dprintk("unregistering and freeing ACPI data\n");
+-			acpi_processor_unregister_performance(p, cpu);
+-			kfree(centrino_model[cpu]->op_points);
+-			kfree(centrino_model[cpu]);
+-		}
+-	}
+-#endif
+-
+ 	centrino_model[cpu] = NULL;
+ 
  	return 0;
+@@ -841,25 +610,12 @@
+ 	if (!cpu_has(cpu, X86_FEATURE_EST))
+ 		return -ENODEV;
+ 
+-	centrino_cpu_early_init_acpi();
+-
+ 	return cpufreq_register_driver(&centrino_driver);
  }
  
--wait_queue_head_t* bttv_get_gpio_queue(unsigned int card)
--{
--	struct bttv *btv;
+ static void __exit centrino_exit(void)
+ {
+-#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
+-	unsigned int j;
+-#endif
+-	
+ 	cpufreq_unregister_driver(&centrino_driver);
 -
--	if (card >= bttv_num) {
--		return NULL;
+-#ifdef CONFIG_X86_SPEEDSTEP_CENTRINO_ACPI
+-	for_each_possible_cpu(j) {
+-		kfree(acpi_perf_data[j]);
+-		acpi_perf_data[j] = NULL;
 -	}
+-#endif
+ }
+ 
+ MODULE_AUTHOR ("Jeremy Fitzhardinge <jeremy@goop.org>");
+--- linux-2.6.20-mm1/Documentation/feature-removal-schedule.txt.old	2007-02-17 23:33:09.000000000 +0100
++++ linux-2.6.20-mm1/Documentation/feature-removal-schedule.txt	2007-02-17 23:33:46.000000000 +0100
+@@ -214,28 +214,6 @@
+ 
+ ---------------------------
+ 
+-What:	ACPI hooks (X86_SPEEDSTEP_CENTRINO_ACPI) in speedstep-centrino driver
+-When:	December 2006
+-Why:	Speedstep-centrino driver with ACPI hooks and acpi-cpufreq driver are
+-	functionally very much similar. They talk to ACPI in same way. Only
+-	difference between them is the way they do frequency transitions.
+-	One uses MSRs and the other one uses IO ports. Functionaliy of
+-	speedstep_centrino with ACPI hooks is now merged into acpi-cpufreq.
+-	That means one common driver will support all Intel Enhanced Speedstep
+-	capable CPUs. That means less confusion over name of
+-	speedstep-centrino driver (with that driver supposed to be used on
+-	non-centrino platforms). That means less duplication of code and
+-	less maintenance effort and no possibility of these two drivers
+-	going out of sync.
+-	Current users of speedstep_centrino with ACPI hooks are requested to
+-	switch over to acpi-cpufreq driver. speedstep-centrino will continue
+-	to work using older non-ACPI static table based scheme even after this
+-	date.
 -
--	btv = &bttvs[card];
--	if (bttvs[card].shutdown) {
--		return NULL;
--	}
--	return &btv->gpioq;
--}
+-Who:	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 -
--void bttv_i2c_call(unsigned int card, unsigned int cmd, void *arg)
--{
--	if (card >= bttv_num)
--		return;
--	bttv_call_i2c_clients(&bttvs[card], cmd, arg);
--}
+----------------------------
 -
- /*
-  * Local variables:
-  * c-basic-offset: 8
-
-
-
+ What:	/sys/firmware/acpi/namespace
+ When:	2.6.21
+ Why:	The ACPI namespace is effectively the symbol list for
