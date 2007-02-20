@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751027AbXBTTOa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751033AbXBTTRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751027AbXBTTOa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 14:14:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbXBTTOa
+	id S1751033AbXBTTRt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 14:17:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751034AbXBTTRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 14:14:30 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:48553 "EHLO mx1.redhat.com"
+	Tue, 20 Feb 2007 14:17:49 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:50100 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751015AbXBTTO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 14:14:29 -0500
-Date: Tue, 20 Feb 2007 14:11:42 -0500
-From: Dave Jones <davej@redhat.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Rudolf Marek <r.marek@assembler.cz>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
-       lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Message-ID: <20070220191142.GE16614@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Chuck Ebbert <cebbert@redhat.com>,
-	Rudolf Marek <r.marek@assembler.cz>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-acpi@vger.kernel.org, lm-sensors@lm-sensors.org
-References: <45D5EA88.7090300@redhat.com> <45D6DDCE.5050803@assembler.cz> <45D7461A.2040808@redhat.com> <45D8D6AE.3000204@assembler.cz> <45DB0EEA.2010205@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45DB0EEA.2010205@redhat.com>
-User-Agent: Mutt/1.4.2.2i
+	id S1751031AbXBTTRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 14:17:48 -0500
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] FRV: Add some missng lazy MMU hooks for NOMMU mode
+To: torvalds@osdl.org, akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
+Date: Tue, 20 Feb 2007 19:17:37 +0000
+Message-ID: <20070220191737.19376.95782.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.12
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 20, 2007 at 10:08:26AM -0500, Chuck Ebbert wrote:
+From: David Howells <dhowells@redhat.com>
+
+Add some missing lazy MMU hooks for NOMMU mode.
+
+Signed-Off-By: David Howells <dhowells@redhat.com>
+---
+
+ include/asm-frv/pgtable.h |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
+
+diff --git a/include/asm-frv/pgtable.h b/include/asm-frv/pgtable.h
+index ba1b37d..8a05aa1 100644
+--- a/include/asm-frv/pgtable.h
++++ b/include/asm-frv/pgtable.h
+@@ -70,7 +70,11 @@ static inline int pte_file(pte_t pte) { return 0; }
  
- > 	i2c_core
- > 	i2c_ec
- > 	i2c_piix4
- > 	asus_acpi (on a Compaq???)
- > 	sbs
-
-Something is pulling in asus_acpi as a dependancy. I've never
-figured out what the cause is.  For a long time I was thinking
-that we had an explicit modprobe for it in an initscript, but
-grepping for it in /etc turns up zip.
-
-		Dave
-
--- 
-http://www.codemonkey.org.uk
+ #define swapper_pg_dir		((pgd_t *) NULL)
+ 
+-#define pgtable_cache_init()	do {} while(0)
++#define pgtable_cache_init()		do {} while (0)
++#define arch_enter_lazy_mmu_mode()	do {} while (0)
++#define arch_leave_lazy_mmu_mode()	do {} while (0)
++#define arch_enter_lazy_cpu_mode()	do {} while (0)
++#define arch_leave_lazy_cpu_mode()	do {} while (0)
+ 
+ #else /* !CONFIG_MMU */
+ /*****************************************************************************/
