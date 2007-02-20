@@ -1,84 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932870AbXBTK6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932420AbXBTLBK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932870AbXBTK6m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 05:58:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932876AbXBTK6l
+	id S932420AbXBTLBK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 06:01:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932425AbXBTLBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 05:58:41 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:59036 "EHLO mx1.redhat.com"
+	Tue, 20 Feb 2007 06:01:10 -0500
+Received: from ns.firmix.at ([62.141.48.66]:45270 "EHLO ns.firmix.at"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932870AbXBTK6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 05:58:40 -0500
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <45DAC32B.4030603@hitachi.com> 
-References: <45DAC32B.4030603@hitachi.com>  <45D5B483.3020502@hitachi.com> <45D5B2E3.3030607@hitachi.com> <20368.1171638335@redhat.com> 
-To: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
-Cc: Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Robin Holt <holt@sgi.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <soshima@redhat.com>,
-       "Hideo AOKI@redhat" <haoki@redhat.com>
-Subject: Re: [PATCH 3/4] coredump: ELF-FDPIC: enable to omit anonymous shared memory 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Tue, 20 Feb 2007 10:58:17 +0000
-Message-ID: <18826.1171969097@redhat.com>
+	id S932420AbXBTLBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 06:01:08 -0500
+Subject: Re: GPL vs non-GPL device drivers
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: v j <vj.linux@gmail.com>
+Cc: davids@webmaster.com, trent.waddington@gmail.com,
+       "Michael K. Edwards" <medwards.linux@gmail.com>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       Neil Brown <neilb@suse.de>
+In-Reply-To: <9b3a62ab0702192119l1bf9a284la93c9d1f01638ca4@mail.gmail.com>
+References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>
+	 <MDEHLPKNGKAHNMBLJOLKIEFNBLAC.davids@webmaster.com>
+	 <9b3a62ab0702192119l1bf9a284la93c9d1f01638ca4@mail.gmail.com>
+Content-Type: text/plain
+Organization: Firmix software GmbH
+Date: Tue, 20 Feb 2007 12:00:51 +0100
+Message-Id: <1171969251.12262.16.camel@tara.firmix.at>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -2.417 () AWL,BAYES_00,FORGED_RCVD_HELO
+X-Firmix-Spam-Status: No, hits=-2.417 required=5
+X-Spam-Score: -2.417 () AWL,BAYES_00,FORGED_RCVD_HELO
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kawai, Hidehiro <hidehiro.kawai.ez@hitachi.com> wrote:
+On Mon, 2007-02-19 at 21:19 -0800, v j wrote:
+[...]
+> Now it would also be worthwhile to contemplate what EXPORT_SYMBOL_GPL
+> does to this popularity. I don't know. I am just giving you my
 
-> Core dumping is separated two phases, one is the phase of writing
-> headers, the other is the phase of writing memory segments.  If the
-> coredump_omit_anon_shared setting is changed between these two phases,
-> a corrupted core file will be generated because the offsets written
-> in headers don't match their bodies.  So we need to use the same
-> setting in both phases.
+The big problem with such discussions (as this) are: It is a law
+decision which license applies in which situation. And preprocessor can
+solve this (so EXPORT_SYMBOL_GPL may mean that or may only express the
+wish of one/several/many/a lot of people).
 
-Hmmm...  Okay.
+Flame bait alert:
+I heard a talk from an Austrian lawyer an according to his believes (and
+I don't know if he is the only one or if there lots of) one must see
+from the "users" view if the GPL spreads over or not (and the usual
+technical terms like "linking" are basically irrelevant).
+E.g.:
+- You are distributing an application which links against a GPL-library.
+If you provide a link and the user/customer has to get and install that
+library, your application can have any license you wish.
+- If you distribute an application and it installs automatically a
+library (e.g. from the CD where your application is installed), your
+applications license must "fit" wit the library license.
 
-> I think that locking makes codes complex and generates overhead.
-> So I wouldn't like to use lock as far as possible.  I think passing
-> the flag as an extra argument is the simplest implementation to
-> avoid the core file corruption.
+Guess now what this implies for (typical) embedded systems with one
+piece of GPL code in it where you download complete firmware images -
+and he explicitly confirmed that.
 
-Actually, I don't think the locking is that hard or that complex.
+So this whole thing is not really defined yet and one (read: we) must
+also educate such free-software-illiterate people on how it is intended
+to work.
 
-	int do_coredump(long signr, int exit_code, struct pt_regs * regs)
-	{
-		<setup vars>
+	Bernd
+-- 
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
 
-		down_read(&coredump_settings_sem);
-
-		...
-
-	fail:
-		up_read(&coredump_settings_sem);
-		return retval;
-	}
-
-And:
-
-	static ssize_t proc_coredump_omit_anon_shared_write(struct file *file,
-						    const char __user *buf,
-						    size_t count,
-						    loff_t *ppos)
-	{
-		<setup vars>
-
-		down_write(&coredump_settings_sem);
-
-		...
-
-	out_no_task:
-		up_write(&coredump_settings_sem);
-		return ret;
-	}
-
-The same could be applied to all controls that change the coredumping
-variables, in particular the sysctl for core_pattern could be wrapped so as to
-remove one of the reliances on lock_kernel() and the lock_kernel pair could be
-removed from do_coredump().
-
-David
