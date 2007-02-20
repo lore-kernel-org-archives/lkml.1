@@ -1,59 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030493AbXBTWTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030201AbXBTWTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030493AbXBTWTj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 17:19:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030499AbXBTWTj
+	id S1030201AbXBTWTx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 17:19:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030497AbXBTWTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 17:19:39 -0500
-Received: from palrel12.hp.com ([156.153.255.237]:55195 "EHLO palrel12.hp.com"
+	Tue, 20 Feb 2007 17:19:52 -0500
+Received: from mail.screens.ru ([213.234.233.54]:59791 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030493AbXBTWTi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 17:19:38 -0500
-X-Greylist: delayed 1054 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 Feb 2007 17:19:38 EST
-Message-ID: <45DB6FD8.4050106@hp.com>
-Date: Tue, 20 Feb 2007 14:02:00 -0800
-From: Rick Jones <rick.jones2@hp.com>
-User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: bert hubert <bert.hubert@netherlabs.nl>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Josef Sipek <jsipek@fsl.cs.sunysb.edu>,
-       Andi Kleen <andi@firstfloor.org>, netdev@vger.kernel.org,
+	id S1030201AbXBTWTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 17:19:51 -0500
+Date: Wed, 21 Feb 2007 01:19:41 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jarek Poplawski <jarkao2@o2.pl>, "David S. Miller" <davem@davemloft.net>,
+       David Howells <dhowells@redhat.com>, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: all syscalls initially taking 4usec on a P4? Re: nonblocking
- UDPv4 recvfrom() taking 4usec @ 3GHz?
-References: <20070219231447.GA4400@outpost.ds9a.nl>	<p73d545drx6.fsf@bingen.suse.de>	<20070220162714.GA3245@outpost.ds9a.nl>	<20070220164124.GA24930@2ka.mipt.ru>	<20070220184242.GA30077@filer.fsl.cs.sunysb.edu>	<20070220184859.GA1949@2ka.mipt.ru> <20070220193319.GA8800@outpost.ds9a.nl>
-In-Reply-To: <20070220193319.GA8800@outpost.ds9a.nl>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH] net/bridge/br_if.c: fix possible use-after-free in port_carrier_check()
+Message-ID: <20070220221941.GA707@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I measure a huge slope, however. Starting at 1usec for back-to-back system
-> calls, it rises to 2usec after interleaving calls with a count to 20
-> million.
-> 
-> 4usec is hit after 110 million.
-> 
-> The graph, with semi-scientific error-bars is on
-> http://ds9a.nl/tmp/recvfrom-usec-vs-wait.png
-> 
-> The code to generate it is on:
-> http://ds9a.nl/tmp/recvtimings.c
-> 
-> I'm investigating this further for other system calls. It might be that my
-> measurements are off, but it appears even a slight delay between calls
-> incurs a large penalty.
+If del_nbp()->cancel_delayed_work(carrier_check) fails, port_carrier_check()
+may run later and access an already freed container (struct net_bridge_port).
 
-The slope appears to be flattening-out the farther out to the right it 
-goes.  Perhaps that is the length of time it takes to take all the 
-requisite cache misses.
+With this patch, carrier_check owns a reference to "struct net_bridge_port",
+not net_device, so it is always safe to acces the container.
 
-Some judicious use of HW perf counters might be in order via say papi or 
-pfmon.  Otherwise, you could try a test where you don't delay, but do 
-try to blow-out the cache(s) between recvfrom() calls.  If the delay 
-there starts to match the delay as you go out to the right on the graph 
-it would suggest that it is indeed cache effects.
+port_carrier_check() uses p->dev->br_port == NULL as indication that net_bridge_port
+is under destruction. Otherwise it assumes that p->dev->br_port == p.
 
-rick jones
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+Acked-By: David Howells <dhowells@redhat.com>
+
+--- WQ/net/bridge/br_if.c~5_bridge_uaf	2007-02-18 23:06:15.000000000 +0300
++++ WQ/net/bridge/br_if.c	2007-02-20 00:59:54.000000000 +0300
+@@ -83,14 +83,14 @@ static void port_carrier_check(struct wo
+ 	struct net_device *dev;
+ 	struct net_bridge *br;
+ 
+-	dev = container_of(work, struct net_bridge_port,
+-			   carrier_check.work)->dev;
++	p = container_of(work, struct net_bridge_port, carrier_check.work);
+ 
+ 	rtnl_lock();
+-	p = dev->br_port;
+-	if (!p)
+-		goto done;
+ 	br = p->br;
++	dev = p->dev;
++
++	if (!dev->br_port)
++		goto done;
+ 
+ 	if (netif_carrier_ok(dev))
+ 		p->path_cost = port_cost(dev);
+@@ -107,14 +107,16 @@ static void port_carrier_check(struct wo
+ 		spin_unlock_bh(&br->lock);
+ 	}
+ done:
+-	dev_put(dev);
+ 	rtnl_unlock();
++	kobject_put(&p->kobj);
+ }
+ 
+ static void release_nbp(struct kobject *kobj)
+ {
+ 	struct net_bridge_port *p
+ 		= container_of(kobj, struct net_bridge_port, kobj);
++
++	dev_put(p->dev);
+ 	kfree(p);
+ }
+ 
+@@ -127,12 +129,6 @@ static struct kobj_type brport_ktype = {
+ 
+ static void destroy_nbp(struct net_bridge_port *p)
+ {
+-	struct net_device *dev = p->dev;
+-
+-	p->br = NULL;
+-	p->dev = NULL;
+-	dev_put(dev);
+-
+ 	kobject_put(&p->kobj);
+ }
+ 
+@@ -162,7 +158,7 @@ static void del_nbp(struct net_bridge_po
+ 	dev_set_promiscuity(dev, -1);
+ 
+ 	if (cancel_delayed_work(&p->carrier_check))
+-		dev_put(dev);
++		kobject_put(&p->kobj);
+ 
+ 	spin_lock_bh(&br->lock);
+ 	br_stp_disable_port(p);
+@@ -446,7 +442,7 @@ int br_add_if(struct net_bridge *br, str
+ 	br_stp_recalculate_bridge_id(br);
+ 	br_features_recompute(br);
+ 	if (schedule_delayed_work(&p->carrier_check, BR_PORT_DEBOUNCE))
+-		dev_hold(dev);
++		kobject_get(&p->kobj);
+ 
+ 	spin_unlock_bh(&br->lock);
+ 
+
