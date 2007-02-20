@@ -1,107 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030517AbXBTWgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030523AbXBTWgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030517AbXBTWgT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 17:36:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030519AbXBTWgT
+	id S1030523AbXBTWgX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 17:36:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030521AbXBTWgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 17:36:19 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:43332 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030517AbXBTWgR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 17:36:17 -0500
-Date: Tue, 20 Feb 2007 16:36:14 -0600
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       kou.ishizaki@toshiba.co.jp, arnd@arndb.de,
-       Jens Osterkamp <jens@de.ibm.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 5/12] spidernet: spidernet: add support for Celleb
-Message-ID: <20070220223614.GE28895@austin.ibm.com>
-References: <20070220221314.GU923@austin.ibm.com>
+	Tue, 20 Feb 2007 17:36:23 -0500
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:18496 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030523AbXBTWgU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 17:36:20 -0500
+In-Reply-To: <1171992306.22669.5.camel@sinatra.austin.ibm.com>
+To: John Rose <johnrose@austin.ibm.com>
+Cc: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
+       Me Notes <johnrose@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       External List <linuxppc-dev@ozlabs.org>,
+       Paul Mackerras <paulus@samba.org>, Paul Mackerras <pmac@au1.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070220221314.GU923@austin.ibm.com>
-User-Agent: Mutt/1.5.11
-From: linas@austin.ibm.com (Linas Vepstas)
+Subject: Re: [PATCH 2.6.21-rc1] ibmebus: Support dynamic addition	and	removal of
+ adapters
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+From: Joachim Fenkes <FENKES@de.ibm.com>
+Message-ID: <OF11FDFA50.7BF76A97-ON85257288.006AC46B-85257288.007C2AD7@de.ibm.com>
+Date: Tue, 20 Feb 2007 17:36:16 -0500
+X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
+ 20/02/2007 23:36:17,
+	Serialize complete at 20/02/2007 23:36:17
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+John Rose <johnrose@austin.ibm.com> wrote on 20.02.2007 12:25:06:
 
-From: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+> > If the probe operation succeeds, the respective device will show up 
+> > beneath
+> > /sys/bus/ibmebus/devices.
+> 
+> This approach is not particularly synchronous.  Take the case of an add
+> failure: how long would an application wait before deciding that the new
+> device is not going to appear?
+>
+> It might be preferable to have the write to the probe function fail. 
+> For example, if we can't find the device node, return -EINVAL or
+> something.
 
-This patch adds or changes some HW specific settings for spider_net on
-Celleb.
+Can be done, sure. Just a matter of putting some more sophisticated error
+handling into my code. Patch follows in a bit.
+ 
+> > This is already taken care of by of_device_register().
+> 
+> If we are scrapping the use of of_device for ibmebus devices, can we
+> still create a devspec file for OF correlation purposes?
 
-Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+We don't. My recent patch only changes the fake root device.
+Ibmebus-based devices will still be of_devices, of course.
 
-----
- drivers/net/Kconfig      |    2 +-
- drivers/net/spider_net.c |    8 +++++++-
- drivers/net/spider_net.h |    6 ++++--
- 3 files changed, 12 insertions(+), 4 deletions(-)
+Regards,
+  Joachim
 
-Index: linux-2.6.20-git16/drivers/net/Kconfig
-===================================================================
---- linux-2.6.20-git16.orig/drivers/net/Kconfig	2007-02-20 14:23:59.000000000 -0600
-+++ linux-2.6.20-git16/drivers/net/Kconfig	2007-02-20 15:02:38.000000000 -0600
-@@ -2245,7 +2245,7 @@ config BNX2
- 
- config SPIDER_NET
- 	tristate "Spider Gigabit Ethernet driver"
--	depends on PCI && PPC_IBM_CELL_BLADE
-+	depends on PCI && (PPC_IBM_CELL_BLADE || PPC_CELLEB)
- 	select FW_LOADER
- 	help
- 	  This driver supports the Gigabit Ethernet chips present on the
-Index: linux-2.6.20-git16/drivers/net/spider_net.h
-===================================================================
---- linux-2.6.20-git16.orig/drivers/net/spider_net.h	2007-02-20 15:02:32.000000000 -0600
-+++ linux-2.6.20-git16/drivers/net/spider_net.h	2007-02-20 15:02:38.000000000 -0600
-@@ -1,7 +1,8 @@
- /*
-- * Network device driver for Cell Processor-Based Blade
-+ * Network device driver for Cell Processor-Based Blade and Celleb platform
-  *
-  * (C) Copyright IBM Corp. 2005
-+ * (C) Copyright 2006 TOSHIBA CORPORATION
-  *
-  * Authors : Utz Bacher <utz.bacher@de.ibm.com>
-  *           Jens Osterkamp <Jens.Osterkamp@de.ibm.com>
-@@ -184,7 +185,8 @@ extern char spider_net_driver_name[];
- 
- /* pause frames: automatic, no upper retransmission count */
- /* outside loopback mode: ETOMOD signal dont matter, not connected */
--#define SPIDER_NET_OPMODE_VALUE		0x00000063
-+/* ETOMOD signal is brought to PHY reset. bit 2 must be 1 in Celleb */
-+#define SPIDER_NET_OPMODE_VALUE		0x00000067
- /*#define SPIDER_NET_OPMODE_VALUE		0x001b0062*/
- #define SPIDER_NET_LENLMT_VALUE		0x00000908
- 
-Index: linux-2.6.20-git16/drivers/net/spider_net.c
-===================================================================
---- linux-2.6.20-git16.orig/drivers/net/spider_net.c	2007-02-20 15:02:36.000000000 -0600
-+++ linux-2.6.20-git16/drivers/net/spider_net.c	2007-02-20 15:02:38.000000000 -0600
-@@ -1,7 +1,8 @@
- /*
-- * Network device driver for Cell Processor-Based Blade
-+ * Network device driver for Cell Processor-Based Blade and Celleb platform
-  *
-  * (C) Copyright IBM Corp. 2005
-+ * (C) Copyright 2006 TOSHIBA CORPORATION
-  *
-  * Authors : Utz Bacher <utz.bacher@de.ibm.com>
-  *           Jens Osterkamp <Jens.Osterkamp@de.ibm.com>
-@@ -1605,6 +1606,11 @@ spider_net_init_card(struct spider_net_c
- 
- 	spider_net_write_reg(card, SPIDER_NET_CKRCTRL,
- 			     SPIDER_NET_CKRCTRL_RUN_VALUE);
-+
-+	/* trigger ETOMOD signal */
-+	spider_net_write_reg(card, SPIDER_NET_GMACOPEMD,
-+		spider_net_read_reg(card, SPIDER_NET_GMACOPEMD) | 0x4);
-+
- }
- 
- /**
+---
+Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer
+IBM Deutschland Entwicklung GmbH  --  Dept. 3627 (I/O Firmware Dev. 2)
+Schoenaicher Strasse 220  --  71032 Boeblingen  --  Germany
+eMail: fenkes@de.ibm.com  --  Phone: +49 7031 16 1239 
+
+Sitz der Gesellschaft: Böblingen  --  Geschftsfhrung: Herbert Kircher
+Vorsitzender des Aufsichtsrats: Johann Weihen
+Registergericht: Amtsgericht Stuttgart, HRB 243294
