@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964892AbXBTNni@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964804AbXBTNol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964892AbXBTNni (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 08:43:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964885AbXBTNni
+	id S964804AbXBTNol (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 08:44:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964808AbXBTNol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 08:43:38 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:59417 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964879AbXBTNnh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 08:43:37 -0500
-Subject: Re: Accessing file-offset info for fds in /proc?
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Hank Leininger <hlein@korelogic.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <20070220073130.GV5752@timmy.spinoli.org>
-References: <20070220073130.GV5752@timmy.spinoli.org>
-Content-Type: text/plain
-Date: Tue, 20 Feb 2007 07:43:33 -0600
-Message-Id: <1171979013.28491.16.camel@kleikamp.austin.ibm.com>
+	Tue, 20 Feb 2007 08:44:41 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:9860 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964804AbXBTNok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 08:44:40 -0500
+Date: Tue, 20 Feb 2007 16:50:44 +0300
+From: Alexey Dobriyan <adobriyan@openvz.org>
+To: Dave Jones <davej@redhat.com>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] {rd,wr}msr_on_cpu SMP=n optimization
+Message-ID: <20070220135044.GA11164@localhost.sw.ru>
+References: <20070215051408.a7fb7d81.akpm@linux-foundation.org> <20070220000713.GP13958@stusta.de> <20070220001434.GG16332@redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070220001434.GG16332@redhat.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-20 at 02:31 -0500, Hank Leininger wrote:
-> Is there anything provided by the kernel that would let you see the
-> current offset of an existing filehandle?
-> 
-> Sometimes when processing a very large file (grepping a log, bzip2'ing
-> or gpg'ing a file, or whatever), I'd really like to know how far along
-> it is, because I'm impatient.  lsof has an -o flag to show offsets for
-> file descriptors it lists, but it appears that's not supported under
-> Linux.  It looks like all of the information lsof and fuser print about 
-> files in use, etc can be gotten from /proc/*/fd/* (and /proc/*/maps, but
-> I'm not really concerned with mmap'ed files, just positions on fds).
-> Sometimes I'll resort to strace -s4096'ing the process to see what chunk
-> of text it's currently reading, and try to guess from that.  Silly.
-> 
-> Has anybody ever developed a patch to implement this?  I realize this
-> could create a variety of information-leakage problems; the information
-> probably would need to be restricted, such as by the same rules as
-> dumpable.  Are there any horribly painful reasons why this couldn't be
-> done?
+On Mon, Feb 19, 2007 at 07:14:34PM -0500, Dave Jones wrote:
+> On Tue, Feb 20, 2007 at 01:07:13AM +0100, Adrian Bunk wrote:
+>  > On Thu, Feb 15, 2007 at 05:14:08AM -0800, Andrew Morton wrote:
+>  > >...
+>  > > Changes since 2.6.20-rc6-mm3:
+>  > >...
+>  > > +rdmsr_on_cpu-wrmsr_on_cpu.patch
+>  > >...
+>  > >  x86 updates
+>  > >...
+>  >
+>  > Let's save a few bytes in the CONFIG_SMP=n case.
+>  >
+>  > Signed-off-by: Adrian Bunk <bunk@stusta.de>
+>  >
+>  > ---
+>  >
+>  > BTW: currently -ENOUSERS
+>
+> There was a follow-on patch that converted p4-clockmod to use it for one.
 
-It shouldn't be too painful.  The code to populate /proc/*/fd/ has the
-file struct.  It just doesn't have a place pass the offset to user-space
-since it's basically creating a symlink.  In proc_fd_link(), it has the
-file struct.  The offset is file->f_pos.
+And patch for powernow-k8 in preparations.
 
-One could create something like /proc/*/fd_offsets, whose read method
-could list the file descriptor, path, and offset for each open file.
+>  > +#ifdef CONFIG_SMP
+>  >  void rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
+>  >  void wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
+>  > +#else  /*  CONFIG_SMP  */
+>  > +static inline void rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
+>  > +{
+>  > +	rdmsr(msr_no, *l, *h);
+>  > +}
+>  > +static inline void wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
+>  > +{
+>  > +	wrmsr(msr_no, l, h);
+>  > +}
+>  > +#endif  /*  CONFIG_SMP  */
+>
+> BUG_ON(cpu!=smp_processor_id()) maybe?
 
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
+This make sense. Fell free to add it.
 
