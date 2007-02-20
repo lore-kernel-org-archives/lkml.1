@@ -1,110 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030201AbXBTWTx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030499AbXBTWT5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030201AbXBTWTx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 17:19:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030497AbXBTWTw
+	id S1030499AbXBTWT5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 17:19:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030501AbXBTWTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 20 Feb 2007 17:19:54 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:58248 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030499AbXBTWTw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 20 Feb 2007 17:19:52 -0500
-Received: from mail.screens.ru ([213.234.233.54]:59791 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030201AbXBTWTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 17:19:51 -0500
-Date: Wed, 21 Feb 2007 01:19:41 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jarek Poplawski <jarkao2@o2.pl>, "David S. Miller" <davem@davemloft.net>,
-       David Howells <dhowells@redhat.com>, netdev@vger.kernel.org,
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=rualR6ZOVmeiKkLyGDVEp8mXKFuRY1X/A72sQql2P4Rc7jhy6vfLGmA9g9Ul2mcRv
+	I4zbWI9gzvHOVLqAM5gRQ==
+Message-ID: <6599ad830702201419n2fe02661y58f09f7dc8d23d88@mail.gmail.com>
+Date: Tue, 20 Feb 2007 14:19:39 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Sam Vilain" <sam@vilain.net>
+Subject: Re: [PATCH 0/7] containers (V7): Generic Process Containers
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, akpm@osdl.org, pj@sgi.com,
+       sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
+       vatsa@in.ibm.com, containers@lists.osdl.org, winget@google.com,
+       rohitseth@google.com, ckrm-tech@lists.sourceforge.net,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] net/bridge/br_if.c: fix possible use-after-free in port_carrier_check()
-Message-ID: <20070220221941.GA707@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <45DB6F07.8080409@vilain.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+References: <20070212081521.808338000@menage.corp.google.com>
+	 <45D0EC68.9090009@vilain.net>
+	 <6599ad830702121515p10bc1b58kf1d29367b9b18016@mail.gmail.com>
+	 <m1wt2c4ttj.fsf@ebiederm.dsl.xmission.com>
+	 <6599ad830702200955l10f3c71aucff1d4b815e1a1e7@mail.gmail.com>
+	 <45DB6F07.8080409@vilain.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If del_nbp()->cancel_delayed_work(carrier_check) fails, port_carrier_check()
-may run later and access an already freed container (struct net_bridge_port).
+On 2/20/07, Sam Vilain <sam@vilain.net> wrote:
+>
+> The term "segregated group of processes" is too vague.  Segregated for
+> what?  What is the kernel supposed to do with this information?
 
-With this patch, carrier_check owns a reference to "struct net_bridge_port",
-not net_device, so it is always safe to acces the container.
+The generic part of the kernel just keeps track of the fact that
+they're segregated (and their children, etc).
 
-port_carrier_check() uses p->dev->br_port == NULL as indication that net_bridge_port
-is under destruction. Otherwise it assumes that p->dev->br_port == p.
+It's the clients of this subsystem (virtual servers, resource
+controllers) that can decide to give different per-process behaviour
+based on the membership of various groups.
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-Acked-By: David Howells <dhowells@redhat.com>
+> Did you like the names I came up with in my original reply?
+>
+>  - CPUset namespace for CPU partitioning
+>  - Resource namespaces:
+>    - cpusched namespace for CPU
+>    - ulimit namespace for memory
+>    - quota namespace for disk space
+>    - io namespace for disk activity
+>    - etc
 
---- WQ/net/bridge/br_if.c~5_bridge_uaf	2007-02-18 23:06:15.000000000 +0300
-+++ WQ/net/bridge/br_if.c	2007-02-20 00:59:54.000000000 +0300
-@@ -83,14 +83,14 @@ static void port_carrier_check(struct wo
- 	struct net_device *dev;
- 	struct net_bridge *br;
- 
--	dev = container_of(work, struct net_bridge_port,
--			   carrier_check.work)->dev;
-+	p = container_of(work, struct net_bridge_port, carrier_check.work);
- 
- 	rtnl_lock();
--	p = dev->br_port;
--	if (!p)
--		goto done;
- 	br = p->br;
-+	dev = p->dev;
-+
-+	if (!dev->br_port)
-+		goto done;
- 
- 	if (netif_carrier_ok(dev))
- 		p->path_cost = port_cost(dev);
-@@ -107,14 +107,16 @@ static void port_carrier_check(struct wo
- 		spin_unlock_bh(&br->lock);
- 	}
- done:
--	dev_put(dev);
- 	rtnl_unlock();
-+	kobject_put(&p->kobj);
- }
- 
- static void release_nbp(struct kobject *kobj)
- {
- 	struct net_bridge_port *p
- 		= container_of(kobj, struct net_bridge_port, kobj);
-+
-+	dev_put(p->dev);
- 	kfree(p);
- }
- 
-@@ -127,12 +129,6 @@ static struct kobj_type brport_ktype = {
- 
- static void destroy_nbp(struct net_bridge_port *p)
- {
--	struct net_device *dev = p->dev;
--
--	p->br = NULL;
--	p->dev = NULL;
--	dev_put(dev);
--
- 	kobject_put(&p->kobj);
- }
- 
-@@ -162,7 +158,7 @@ static void del_nbp(struct net_bridge_po
- 	dev_set_promiscuity(dev, -1);
- 
- 	if (cancel_delayed_work(&p->carrier_check))
--		dev_put(dev);
-+		kobject_put(&p->kobj);
- 
- 	spin_lock_bh(&br->lock);
- 	br_stp_disable_port(p);
-@@ -446,7 +442,7 @@ int br_add_if(struct net_bridge *br, str
- 	br_stp_recalculate_bridge_id(br);
- 	br_features_recompute(br);
- 	if (schedule_delayed_work(&p->carrier_check, BR_PORT_DEBOUNCE))
--		dev_hold(dev);
-+		kobject_get(&p->kobj);
- 
- 	spin_unlock_bh(&br->lock);
- 
+This is a strange abuse of the term "namespace".
+http://en.wikipedia.org/wiki/Namespace_%28computer_science%29
 
+For the virtual server work that you're doing, namespace is a good term:
+
+pids name processes, hence a pid namespace lets you have multiple
+distinct mappings from pids to processes
+filenames name files, so a filename (or mount) namespace lets you have
+multiple distinct mappings from filenames to files.
+
+For resource QoS control, it doesn't really make sense to talk about
+namespaces. We're not virtualizing resources to rename them for
+different virtual servers, we're limiting the quality of access to the
+resources.
+
+But the semantics of the term "namespace" notwithstanding, you're
+equating a virtual server namespace (pid, ipc, uts, mounts, etc) with
+a resource controller (memory, I/O, etc) in terms of their place in a
+hierarchy, which is something I agree with. All of these subsystems
+can be considered to be units that can be associated with groups of
+processes; the ultimate grouping of processes is something that we're
+both ultimately referring to as a container.
+
+>
+> Maybe what's missing is a set of helper macros/functions that assist
+> with writing new namespaces.
+
+That's pretty much what my containers patch does - provides a generic
+way to associate state (what you're referring to as a namespace) with
+groups of processes and a consistent user-space API for manipulating
+them.
+
+Paul
