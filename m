@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964919AbXBTOeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964944AbXBTOfL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964919AbXBTOeQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 09:34:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964936AbXBTOeQ
+	id S964944AbXBTOfL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 09:35:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964936AbXBTOfK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 09:34:16 -0500
-Received: from mail.screens.ru ([213.234.233.54]:49734 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964919AbXBTOeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 09:34:15 -0500
-Date: Tue, 20 Feb 2007 17:34:12 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jarek Poplawski <jarkao2@o2.pl>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
-Subject: Re: PATCH? net/bridge/br_if.c: fix use after free in port_carrier_check()
-Message-ID: <20070220143412.GC155@tv-sign.ru>
-References: <20070219221125.GA5070@tv-sign.ru> <20070218214359.GA4226@tv-sign.ru> <8462.1171884453@redhat.com> <20070219115955.GB91@tv-sign.ru> <18581.1171968296@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18581.1171968296@redhat.com>
-User-Agent: Mutt/1.5.11
+	Tue, 20 Feb 2007 09:35:10 -0500
+Received: from wx-out-0506.google.com ([66.249.82.226]:41454 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964951AbXBTOfJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 09:35:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=bN730LQet38bMGl14m6rrnpPsYZh7udUYKMwv4rqLljr0mATit99BjCarimVE4WA4440D5VJImuCR+93iMFC28cvrRHi+FdofwbHfthWW7/OLVAxHerCWJBwdwKQvNuRCTa1Ms29IBMWhcJqdNUDl6cO4yst0FX3y15L7i8y+v8=
+Message-ID: <45DB0717.90507@gmail.com>
+Date: Tue, 20 Feb 2007 23:35:03 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Pablo Sebastian Greco <lkml@fliagreco.com.ar>
+CC: Marcus Haebler <haebler@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: SATA problems
+References: <459A674B.3060304@fliagreco.com.ar> <459B9F91.9070908@gmail.com>	 <459BC703.9000207@fliagreco.com.ar> <459C8A5E.5010206@gmail.com>	 <459CFE7B.6090306@fliagreco.com.ar>	 <459DC2EE.1090307@fliagreco.com.ar> <45A1AB3F.1080408@gmail.com>	 <45B649BF.5030705@fliagreco.com.ar> <45B6BC6D.8070301@gmail.com> <d72aa1340702170449n1aa61777l6c9c7e525102db00@mail.gmail.com> <45D731A8.90604@fliagreco.com.ar>
+In-Reply-To: <45D731A8.90604@fliagreco.com.ar>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/20, David Howells wrote:
-> 
-> Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> 
-> >  static void release_nbp(struct kobject *kobj)
-> >  {
-> >  	struct net_bridge_port *p
-> >  		= container_of(kobj, struct net_bridge_port, kobj);
-> > +
-> > +	dev_put(p->dev);
-> 
-> Does this need to be done with the mutex held?
+* Pablo, the bug you saw was bad interaction between blacklisted NCQ
+device and dynamic queue depth adjustment.  Patches are submitted to fix
+the problem.  Just drop the blacklist patch.  Your drives should work
+fine in NCQ mode.  My gut feeling is that your problem is power related
+from the beginning.
 
-I think no. At least the current code does dev_put() without mutex held.
+* Marcus, you're on via's ahci controller, right?  The problem you saw
+was bad interaction between blacklisted NCQ _controller_ and dynamic
+queue depth adjustment.  Patches submitted.
 
->                                                     And does anything actually pay
-> attention to the refcount on dev?  I assume not...
+Thanks.
 
-I guess net/core/dev.c:netdev_wait_allrefs(), but not sure.
-
-> Should you clear p->dev->br_port before calling dev_put()?
-
-Looks like it is protected by RCU... Anyway the current code does the same.
-
-> Looks reasonable.  I like it.
-> 
-> Acked-By: David Howells <dhowells@redhat.com>
-
-Thanks! I'll re-send with a proper changelog later today.
-
-Oleg.
-
+-- 
+tejun
