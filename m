@@ -1,112 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030288AbXBTRAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030295AbXBTRCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030288AbXBTRAu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 12:00:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030292AbXBTRAu
+	id S1030295AbXBTRCa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 12:02:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030293AbXBTRCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 12:00:50 -0500
-Received: from [81.2.110.250] ([81.2.110.250]:54280 "EHLO lxorguk.ukuu.org.uk"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030291AbXBTRAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 12:00:48 -0500
-Date: Tue, 20 Feb 2007 18:01:59 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: jgarzik@pobox.com, akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH]: Add id_to_dma_mode function for printing DMA modes
-Message-ID: <20070220180159.632d33bc@localhost.localdomain>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Tue, 20 Feb 2007 12:02:30 -0500
+Received: from mummy.ncsc.mil ([144.51.88.129]:36443 "EHLO jazzhorn.ncsc.mil"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030295AbXBTRC2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 12:02:28 -0500
+Subject: Re: [RFC] [PATCH -mm] file caps: make on-disk capabilities
+	future-proof
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Chris Wright <chrisw@sous-sol.org>,
+       KaiGai Kohei <kaigai@kaigai.gr.jp>
+In-Reply-To: <20070219170133.GB28412@sergelap.austin.ibm.com>
+References: <20070219170133.GB28412@sergelap.austin.ibm.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Tue, 20 Feb 2007 11:55:08 -0500
+Message-Id: <1171990508.14363.136.camel@moss-spartans.epoch.ncsc.mil>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Also export dev_disable as this is needed by drivers doing slave decode
-filtering, which will follow shortly
+On Mon, 2007-02-19 at 11:01 -0600, Serge E. Hallyn wrote:
+> From: Serge E. Hallyn <serue@us.ibm.com>
+> Subject: [PATCH -mm] file caps: make on-disk capabilities future-proof
+> 
+> Stephen Smalley has pointed out that the current file capabilities
+> will eventually pose a problem.
+> 
+> As the capability set changes and distributions start tagging
+> binaries with capabilities, we would like for running an older
+> kernel to not necessarily make those binaries unusable.  To
+> that end,
+> 
+> 	1. If capabilities are specified which we don't know
+> 	   about, just ignore them, do not return -EPERM as we
+> 	   were doing before.
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+I didn't advocate that change - it is a separate issue from allowing the
+capability bitmaps to grow in size in a backward compatible manner.  In
+the one case, you have a binary that needs a capability that is unknown
+to the kernel, so running it could lead to unexpected failure.  In the
+other case, you simply have a binary labeled by newer userspace with a
+newer on-disk representation that supports larger bitmaps, but the
+binary might only have capabilities set that are known to the kernel.
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.20-mm2/drivers/ata/libata-core.c linux-2.6.20-mm2/drivers/ata/libata-core.c
---- linux.vanilla-2.6.20-mm2/drivers/ata/libata-core.c	2007-02-20 13:37:58.000000000 +0000
-+++ linux-2.6.20-mm2/drivers/ata/libata-core.c	2007-02-20 14:28:14.000000000 +0000
-@@ -824,6 +824,48 @@
- }
- 
- /**
-+ *	ata_id_to_dma_mode	-	Identify DMA mode from id block
-+ *	@dev: device to identify
-+ *	@mode: mode to assume if we cannot tell
-+ *
-+ *	Set up the timing values for the device based upon the identify
-+ *	reported values for the DMA mode. This function is used by drivers
-+ *	which rely upon firmware configured modes, but wish to report the
-+ *	mode correctly when possible.
-+ *
-+ *	In addition we emit similarly formatted messages to the default
-+ *	ata_dev_set_mode handler, in order to provide consistency of
-+ *	presentation.
-+ */
-+
-+void ata_id_to_dma_mode(struct ata_device *dev, u8 unknown)
-+{
-+	unsigned int mask;
-+	u8 mode;
-+
-+	/* Pack the DMA modes */
-+	mask = ((dev->id[63] >> 8) << ATA_SHIFT_MWDMA) & ATA_MASK_MWDMA;
-+	if (dev->id[53] & 0x04)
-+		mask |= ((dev->id[88] >> 8) << ATA_SHIFT_UDMA) & ATA_MASK_UDMA;
-+
-+	/* Select the mode in use */
-+	mode = ata_xfer_mask2mode(mask);
-+
-+	if (mode != 0) {
-+		ata_dev_printk(dev, KERN_INFO, "configured for %s\n",
-+		       ata_mode_string(mask));
-+	} else {
-+		/* SWDMA perhaps ? */
-+		mode = unknown;
-+		ata_dev_printk(dev, KERN_INFO, "configured for DMA\n");
-+	}
-+
-+	/* Configure the device reporting */
-+	dev->xfer_mode = mode;
-+	dev->xfer_shift = ata_xfer_mode2shift(mode);
-+}
-+
-+/**
-  *	ata_noop_dev_select - Select device 0/1 on ATA bus
-  *	@ap: ATA channel to manipulate
-  *	@device: ATA device (numbered from zero) to select
-@@ -6290,6 +6399,7 @@
- EXPORT_SYMBOL_GPL(ata_host_resume);
- EXPORT_SYMBOL_GPL(ata_id_string);
- EXPORT_SYMBOL_GPL(ata_id_c_string);
-+EXPORT_SYMBOL_GPL(ata_id_to_dma_mode);
- EXPORT_SYMBOL_GPL(ata_device_blacklisted);
- EXPORT_SYMBOL_GPL(ata_scsi_simulate);
- 
-@@ -6256,6 +6364,7 @@
- EXPORT_SYMBOL_GPL(ata_bmdma_error_handler);
- EXPORT_SYMBOL_GPL(ata_bmdma_post_internal_cmd);
- EXPORT_SYMBOL_GPL(ata_port_probe);
-+EXPORT_SYMBOL_GPL(ata_dev_disable);
- EXPORT_SYMBOL_GPL(sata_set_spd);
- EXPORT_SYMBOL_GPL(sata_phy_debounce);
- EXPORT_SYMBOL_GPL(sata_phy_resume);
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.20-mm2/include/linux/libata.h linux-2.6.20-mm2/include/linux/libata.h
---- linux.vanilla-2.6.20-mm2/include/linux/libata.h	2007-02-20 13:38:11.000000000 +0000
-+++ linux-2.6.20-mm2/include/linux/libata.h	2007-02-20 14:03:24.000000000 +0000
-@@ -786,10 +787,12 @@
- extern void ata_sg_init(struct ata_queued_cmd *qc, struct scatterlist *sg,
- 		 unsigned int n_elem);
- extern unsigned int ata_dev_classify(const struct ata_taskfile *tf);
-+extern void ata_dev_disable(struct ata_device *adev);
- extern void ata_id_string(const u16 *id, unsigned char *s,
- 			  unsigned int ofs, unsigned int len);
- extern void ata_id_c_string(const u16 *id, unsigned char *s,
- 			    unsigned int ofs, unsigned int len);
-+extern void ata_id_to_dma_mode(struct ata_device *dev, u8 unknown);
- extern unsigned long ata_device_blacklisted(const struct ata_device *dev);
- extern void ata_bmdma_setup (struct ata_queued_cmd *qc);
- extern void ata_bmdma_start (struct ata_queued_cmd *qc);
+> 	2. Specify a size with the on-disk capability implementation.
+> 	   In this implementation the size is the number of __u32's
+> 	   used for each of (eff,perm,inh).  For now, sz is 1.
+> 	   When we move to 64-bit capabilities, it becomes 2.
+
+You could alternatively split them into separate xattrs, e.g.
+security.cap.eff, security.cap.perm, security.cap.inh, and determine the
+bitmap size from the xattr length rather than a separate field.
+
+> diff --git a/security/commoncap.c b/security/commoncap.c
+> index be86acb..dc8bf4f 100644
+> --- a/security/commoncap.c
+> +++ b/security/commoncap.c
+
+> @@ -148,50 +145,65 @@ static int set_file_caps(struct linux_bi
+>  {
+>  	struct dentry *dentry;
+>  	ssize_t rc;
+> -	struct vfs_cap_data_disk dcaps;
+> +	struct vfs_cap_data_disk *dcaps;
+>  	struct vfs_cap_data caps;
+>  	struct inode *inode;
+> -	int err;
+>  
+>  	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID)
+>  		return 0;
+>  
+>  	dentry = dget(bprm->file->f_dentry);
+>  	inode = dentry->d_inode;
+> -	if (!inode->i_op || !inode->i_op->getxattr) {
+> -		dput(dentry);
+> -		return 0;
+> +	rc = 0;
+> +	if (!inode->i_op || !inode->i_op->getxattr)
+> +		goto out;
+> +
+> +	rc = inode->i_op->getxattr(dentry, XATTR_NAME_CAPS, NULL, 0);
+> +	if (rc == -ENODATA) {
+> +		rc = 0;
+> +		goto out;
+> +	}
+
+I'd allocate an initial buffer with an expected size and try first to
+avoid always having to make the two ->getxattr calls in the common case.
+
+> +	if (rc < 0)
+> +		goto out;
+> +	if (rc < sizeof(struct vfs_cap_data_disk)) {
+
+You could make this a bit stricter, as you know that it will have at
+least three additional u32 values beyond the header.
+
+> +		rc = -EINVAL;
+> +		goto out;
+> +	}
+> +
+> +	dcaps = kmalloc(rc, GFP_KERNEL);
+> +	if (!dcaps) {
+> +		rc = -ENOMEM;
+> +		goto out;
+> +	}
+> +	rc = inode->i_op->getxattr(dentry, XATTR_NAME_CAPS, dcaps,
+> +						XATTR_CAPS_SZ);
+
+I'm confused - you just asked for the actual length of the xattr and
+allocated a buffer for it, and then don't use the length in this second
+call to ->getxattr.  And since you said you were organizing it as
+eff[0..sz-1],perm[0..sz-1],inh[0..sz-1], you do need to read the entire
+thing to get all three values even if you only use the lower 32 bits of
+each.  Or if you change the organization to avoid the need to read the
+entire thing, you don't need the first getxattr call at all, and you
+need to change how cap_from_disk extracts the values.
+
+-- 
+Stephen Smalley
+National Security Agency
+
