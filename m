@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030505AbXBTWYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030502AbXBTW2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030505AbXBTWYA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 17:24:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030507AbXBTWYA
+	id S1030502AbXBTW2Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 17:28:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030508AbXBTW2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 17:24:00 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:48282 "EHLO mail.dvmed.net"
+	Tue, 20 Feb 2007 17:28:25 -0500
+Received: from mx2.suse.de ([195.135.220.15]:53069 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030505AbXBTWX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 17:23:58 -0500
-Message-ID: <45DB74FC.2070102@garzik.org>
-Date: Tue, 20 Feb 2007 17:23:56 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	id S1030502AbXBTW2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 17:28:24 -0500
+Date: Tue, 20 Feb 2007 14:26:52 -0800
+From: Greg KH <greg@kroah.com>
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: securityfs_create_dir strange comment
+Message-ID: <20070220222652.GB21696@kroah.com>
+References: <Pine.LNX.4.61.0702181642060.28890@yvahk01.tjqt.qr> <20070220211849.GA3416@vino.hallyn.com>
 MIME-Version: 1.0
-To: Lukas Hejtmanek <xhejtman@mail.muni.cz>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [git patches] libata ACPI support
-References: <20070220214716.GA3690@mail.muni.cz>
-In-Reply-To: <20070220214716.GA3690@mail.muni.cz>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070220211849.GA3416@vino.hallyn.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lukas Hejtmanek wrote:
-> Hello,
+On Tue, Feb 20, 2007 at 03:18:49PM -0600, Serge E. Hallyn wrote:
+> Quoting Jan Engelhardt (jengelh@linux01.gwdg.de):
+> > Hello list,
+> > 
+> > 
+> > in security/inode.c, the comment for securityfs_create_dir() reads:
+> > 
+> > 	If securityfs is not enabled in the kernel, the value -ENODEV 
+> > 	will be returned.  It is not wise to check for this value, but 
+> > 	rather, check for NULL or !NULL instead as to eliminate the need 
+> > 	for #ifdef in the calling code.
+> > 
+> > What is the actual callee that can return NULL - and what should 
+> > module_init() of a module return when securityfs_create_dir() returns 
+> > NULL?
 > 
-> introducing SATA ACPI does not work for me (I've filled the bug
-> report: http://bugzilla.kernel.org/show_bug.cgi?id=8046) beside those error
-> messages, IDE performance is decreased. libata.noacpi=1 option works ok but
-> the performance is still slightly degraded (about 10%).
+> Hmm, this came from GregKH.  It does seem based on the code that
+> checking for -ENODEV is necessary, so I don't understand the comment.
 
-Also, please add hardware info (full dmesg, full lspci) to the bug.
+If securityfs_create_dir() returns NULL, then something bad happened and
+your code needs to properly recover from it.
 
-	Jeff
+Other than that, I don't understand the issue here.
 
+confused,
 
-
+greg k-h
