@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945902AbXBUXAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750740AbXBUXB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945902AbXBUXAc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 18:00:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945903AbXBUXAb
+	id S1750740AbXBUXB7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 18:01:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750754AbXBUXB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 18:00:31 -0500
-Received: from max.feld.cvut.cz ([147.32.192.36]:60491 "EHLO max.feld.cvut.cz"
+	Wed, 21 Feb 2007 18:01:58 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52683 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945902AbXBUXAa convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 18:00:30 -0500
-From: CIJOML <cijoml@volny.cz>
-To: Marcel Holtmann <marcel@holtmann.org>
-Subject: Re: Phis in /proc/bus/input/devices same for all devices?
-Date: Thu, 22 Feb 2007 00:00:21 +0100
-User-Agent: KMail/1.9.5
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org
-References: <200702212313.30359.cijoml@volny.cz> <d120d5000702211448s7d3569cdl1fdcb71d13c3c3ff@mail.gmail.com> <1172098430.7403.54.camel@violet>
-In-Reply-To: <1172098430.7403.54.camel@violet>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
+	id S1750740AbXBUXB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 18:01:57 -0500
+Date: Wed, 21 Feb 2007 23:57:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Michael K. Edwards" <medwards.linux@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070221225711.GB32031@elte.hu>
+References: <20070221211355.GA7302@elte.hu> <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702220000.21965.cijoml@volny.cz>
+In-Reply-To: <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -3.8
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-3.8 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marcel how can you differ what is src and what is dst, when device can connect 
-first time from hub to keyboard and later keyboard to hub?
 
-Michal
+* Michael K. Edwards <medwards.linux@gmail.com> wrote:
 
-Dne støeda 21 únor 2007 23:53 Marcel Holtmann napsal(a):
-> Hi Dmitry,
->
-> > > > > can anybody reply to this and share his/her opinion?
-> > > >
-> > > > Input core already exports uniq to udev and also via sysfs.
-> > >
-> > > so do you think it would be better to create phys as a string of the
-> > > source and destination address like "<src>-<dst>" for Bluetooth. And
-> > > then keep the uniq empty like all USB devices without serial number do?
-> >
-> > I'd keep uniq as is and do what you proposed with phys. This way you
-> > can either use uniq to identify your device while moving it from one
-> > receiver to another (if you have several) or do exact match on phys to
-> > get receiver/device pair.
-> >
-> > Does this make sense?
->
-> actually it doesn't help to keep uniq around since the Bluetooth HID
-> always reconnects to the same source/host address. Making it reconnect
-> results in a virtual cable unplug. So I think that I am going to modify
-> the phys to include source and destination address. In the end it is
-> only a string.
->
-> Regards
->
-> Marcel
+> 3) Reworked threadlet scheduling to allow tens of thousands of blocked 
+> threadlets to be dispatched efficiently in a controlled, throttled, 
+> non-cache-and-MMU-thrashing manner, immediately following the softirq 
+> that unblocks the I/O they're waiting on; and
+
+threadlets, when they dont block, are just regular user-space function 
+calls - so no need to schedule or throttle them. [*]
+
+threadlets, when they block, are regular kernel threads, so the regular 
+O(1) scheduler takes care of them. If MMU trashing is of any concern 
+then syslets should be used to implement the most performance-critical 
+events: under Linux a kernel thread that does not exit out to user-space 
+does not do any TLB switching at all. (even if there are multiple 
+processes active and their syslets intermix)
+
+throttling of outstanding async contexts is most easily done by 
+user-space - you can see an example in threadlet-test.c, but there's 
+also fio/engines/syslet-rw.c. v2 had a kernel-space throttling mechanism 
+as well, i'll probably reintroduce that in later versions.
+
+	Ingo
+
+[*] although certain more advanced scheduling tactics like the detection 
+    of frequently executed threadlet functions and their pushing out to 
+    separate contexts is possible too - but this is an optional add-on 
+    and for later.
+
