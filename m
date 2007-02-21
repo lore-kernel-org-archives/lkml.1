@@ -1,92 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751360AbXBUWCl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751123AbXBUWHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751360AbXBUWCl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 17:02:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbXBUWCl
+	id S1751123AbXBUWHY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 17:07:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbXBUWHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 17:02:41 -0500
-Received: from proxima.lp0.eu ([85.158.45.36]:49949 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751360AbXBUWCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 17:02:40 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=thunder.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:Subject:X-Enigmail-Version:OpenPGP:Content-Type:Sender:Reply-To;
-	b=aYMcf+gogNiv5xzSeUZ/c0EQBrHaIY9qd00NxaaMZhSAHbU4E35WqcvfoPSPqk53OepZ5Ce+DhF+/JdyUCk18oDIB2nTKLAS8ufmgTXh5BSvxC/NuhZHFTGf1CzPRaIZ;
-Message-ID: <45DCC156.7010308@simon.arlott.org.uk>
-Date: Wed, 21 Feb 2007 22:01:58 +0000
-From: Simon Arlott <simon@arlott.org>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
+	Wed, 21 Feb 2007 17:07:24 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:41635 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751123AbXBUWHX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 17:07:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pb+d4c2wxeRPOftpiQHLqIqfGztlId7Xgu2AAkx4qkwDRGL/exnI0yc0sg3lxZgnI4arxYkj+6ugah0oeHOU3ahsHcmGeIWvfOODbIfHF0MvkQSagklmcTJAMuJLGhqg0cXDhuwYolshvsYcCkKSKWZdfcgcPwtVoHlWZwKdU6g=
+Message-ID: <4727185d0702211407n66478752laaa182418479db9c@mail.gmail.com>
+Date: Wed, 21 Feb 2007 23:07:21 +0100
+From: "Vincent Legoll" <vincent.legoll@gmail.com>
+To: "Patrick Ale" <patrick.ale@gmail.com>
+Subject: Re: libsata doesn't like bus without master
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <8d158e1f0702211301n3d30f590t14b1501e418da7e0@mail.gmail.com>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] MAINTAINERS: Add myself for cxacru (in drivers/usb/atm/)
-X-Enigmail-Version: 0.94.1.2
-OpenPGP: id=89C93563
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature";
- boundary="------------enig6B9FDEE2F98BCB0AF15AA535"
-Reply-To: Simon Arlott <f1a1f4524ebd07f21e1hjzxo0007rhck@thunder.lp0.eu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4727185d0702211241v63549a77ye1023e9ff802c24a@mail.gmail.com>
+	 <4727185d0702211247r796a2f4fte8b9511aa6864452@mail.gmail.com>
+	 <8d158e1f0702211301n3d30f590t14b1501e418da7e0@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig6B9FDEE2F98BCB0AF15AA535
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On 2/21/07, Patrick Ale <patrick.ale@gmail.com> wrote:
+> But serious, The second "abnormal" error "ATA: abnormal status 0x8 on
+> port 0xF88597DF", I got feedback from, by Tejun. He confirmed that, as
+> I thought, this was a cosmectic error messages for "No devices found".
 
-I've acquired a second device for testing and plan to make some changes
-in the near future to export all the device stats to sysfs (based on my
-proposed patch to add them to the proc file ~2007-01-30).
+I get 0x7F, but already knew it was harmless, I think Tejun enlightened
+me about that some time ago...
 
-Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
----
- MAINTAINERS |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+> The first one got some debate as if it was legal to have a slave
+> without a master and all and the last thing I saw written on this
+> email that we (that is, the linux developers and the maintainers, I
+> dont code anything other than 'Hello world' and even that might
+> segfault) should support it and if we dont yet, fix it.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index b0fd71b..2970154 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -934,6 +934,11 @@ M:	mhw@wittsend.com
- W:	http://www.wittsend.com/computone.html
- S:	Maintained
-=20
-+CONEXANT ACCESSRUNNER USB DRIVER
-+P:	Simon Arlott
-+M:	cxacru@fire.lp0.eu
-+S:	Maintained
-+
- COSA/SRP SYNC SERIAL DRIVER
- P:	Jan "Yenya" Kasprzak
- M:	kas@fi.muni.cz
---=20
-1.4.3.1
+Yep, I read that, at the same time as your other messages from
+linux-ide, and a reply I got from Alan asking for the bug report, so
+I reported what I got.
 
+> Question for you tho, since I have two laptops with the same chipset
+> and more ore less same configuration (Siemens LifeBook E series with
+> the same DVD writer and an HP laptop), do you use native SATA mode? or
+> Legacy/Compatible mode?
 
---=20
-Simon Arlott
+Don't thik I saw that as configurable in that BIOS.
+[checking...]
+No there is no such settings...
 
+> In the latter case it might explain why you see one master connected
+> to one bus and a slave to the other. If you use legacy SATA mode you
+> should just see drive 0 and drive 1.
 
---------------enig6B9FDEE2F98BCB0AF15AA535
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Maybe, or it is just the fact that is a strange laptop from a little .ch
+vendor...
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
+> At least, that's how it works here :)
 
-iQIVAwUBRdzBVqRtx1WjQ8ihAQo/MxAAsEO/2uto6oLwvf+y/sbDKDOmS2sDExkA
-Ev55v/NRD+/Vq78X1lidvaDAq79d2QHZdKHsS99p3hksmKGfVCSmbvpg88ox602Z
-WccHxhXJpr/2l/pMLVsSaJ2XdQPDsFBL5Nv8aMHOGcIl4tCxMVsvk2zsrDHx59UV
-Zj+3v25P95REC4BCXCMxTWMim6+iHHTvRQOPlPExfImJ/gRX++KYQ6mpSPdZpLPu
-Bhs3H8ULIoEcQi5SWog6s3H8AGT/cQhee+DInrM53xMtdqgX/dyzIXIPG/10481R
-aWFO1iom9zc5eZuBYaXTKuH7dsxx9OKfw8a1QoyrcLwkD5AzHVj3fPGEBRWDw/Dj
-rYs4lggSvVZo8jy98z14w3be35klUR2okHH/NK7HFlbzLTF9lQSeW5EYEL05eGYw
-6dYi1DBc1HnioD+8lModUNWGIrSiIw7pbo1iJIil8JFXipWPER8lFpRflHhfVv9W
-pq6kx+zVihCQxEFeEoj7EbwrHSow1sKw4vaezuescqvdZMdB9yuZxeVpOny1FgHE
-CWvVTK6tCMcacaqdWZkO4b6xRgXvMtO+QpPpe3s5jvOQiNu/kw9Ui9efGVvOcRzj
-ev/c6ypZ/H3Sba1+q4OZrnHl2inAoHGdBPv51MCwCWMoKKFq6XNjKfoFBjVzNtOQ
-TaVQZdi3Gg4=
-=ozlV
------END PGP SIGNATURE-----
+I wish I could make it work here too ;-)
 
---------------enig6B9FDEE2F98BCB0AF15AA535--
+-- 
+Vincent Legoll
