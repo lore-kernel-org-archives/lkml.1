@@ -1,120 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751194AbXBUIh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751197AbXBUIoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751194AbXBUIh6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 03:37:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbXBUIh6
+	id S1751197AbXBUIoY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 03:44:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbXBUIoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 03:37:58 -0500
-Received: from py-out-1112.google.com ([64.233.166.179]:26304 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751189AbXBUIh5 (ORCPT
+	Wed, 21 Feb 2007 03:44:23 -0500
+Received: from mga09.intel.com ([134.134.136.24]:16717 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751197AbXBUIoX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 03:37:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=hAbl2CApYKkAcjA4otQH0kVqRUsLiqjcWzEEMONuey1UTcakL64/GImVJSWj7M1latzIj6HuZu/yRGNWvCWEraxjHdQtYPPuc7fRH3H0Rk9NAYwDZC+3QW7QsrfNAlC4dv/AQKYV30rQYb8yByBXpsBCLyYXWraCExIQbUJ1Rlc=
-Message-ID: <45DC04DF.8040002@gmail.com>
-Date: Wed, 21 Feb 2007 17:37:51 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Wed, 21 Feb 2007 03:44:23 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,200,1170662400"; 
+   d="scan'208"; a="49028511:sNHT24541839"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       edmudama@gmail.com, Nicolas.Mailhot@LaPoste.net,
-       Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Mark Lord <mlord@pobox.com>, Ric Wheeler <ric@emc.com>,
-       Dongjun Shin <d.j.shin@samsung.com>, Hannes Reinecke <hare@suse.de>
-Subject: Re: libata FUA revisited
-References: <fa.S80SRyQbD/hm4SxliPUKU88BaCo@ifi.uio.no> <fa.Q/csgyCHkAsD84yi+bN78H1WNNM@ifi.uio.no> <45D104F3.7040602@shaw.ca> <45D1D72D.9020509@gmail.com> <45D252CD.5010303@shaw.ca> <45D25CF2.5030508@gmail.com> <20070215180023.GA4438@kernel.dk> <45D9FE7B.60909@shaw.ca>
-In-Reply-To: <45D9FE7B.60909@shaw.ca>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 2/2] aio: propogate post-EIOCBQUEUED errors to completion event
+Date: Wed, 21 Feb 2007 11:44:04 +0300
+Message-ID: <B41635854730A14CA71C92B36EC22AAC872061@mssmsx411>
+In-Reply-To: <b040c32a0702210035w38dda81du55bc12259324a4b5@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2/2] aio: propogate post-EIOCBQUEUED errors to completion event
+Thread-Index: AcdVk0pZY0o1J0pvT8aKa2+50y/wxQAAKkYQ
+From: "Ananiev, Leonid I" <leonid.i.ananiev@intel.com>
+To: "Ken Chen" <kenchen@google.com>
+Cc: "Chris Mason" <chris.mason@oracle.com>,
+       "Zach Brown" <zach.brown@oracle.com>, <linux-aio@kvack.org>,
+       <linux-kernel@vger.kernel.org>, "Benjamin LaHaise" <bcrl@kvack.org>,
+       "Suparna bhattacharya" <suparna@in.ibm.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+X-OriginalArrivalTime: 21 Feb 2007 08:44:07.0242 (UTC) FILETIME=[72C592A0:01C75594]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[cc'ing Ric, Hannes and Dongjun, Hello.  Feel free to drag other people in.]
+> where it returns zero 
+I've wrote in the mail http://lkml.org/lkml/2007/2/8/337
+invalidate_inode_pages2_range() reports BUG:
+warning at mm/truncate.c:398  occurs becouse of
+invalidate_complete_page2()    returns 0; it returns 0 because of
+try_to_release_page()          returns 0; it returns 0 because of
+ext3_releasepage()             returns 0; it returns 0 because of
+journal_try_to_free_buffers()  returns 0; it returns 0 because of
+try_to_free_buffers()          returns 0; it returns 0 because of
+drop_buffers()                 returns 0; it returns 0 because of
+buffer_busy(bh)                returns 1; it returns 0 because of
+buffer_head count is 1 (bh->b_count==1) as additional printk reports.
 
-Robert Hancock wrote:
-> Jens Axboe wrote:
->> But we can't really change that, since you need the cache flushed before
->> issuing the FUA write. I've been advocating for an ordered bit for
->> years, so that we could just do:
->>
->> 3. w/FUA+ORDERED
->>
->> normal operation -> barrier issued -> write barrier FUA+ORDERED
->>  -> normal operation resumes
->>
->> So we don't have to serialize everything both at the block and device
->> level. I would have made FUA imply this already, but apparently it's not
->> what MS wanted FUA for, so... The current implementations take the FUA
->> bit (or WRITE FUA) as a hint to boost it to head of queue, so you are
->> almost certainly going to jump ahead of already queued writes. Which we
->> of course really do not.
+Leonid
+-----Original Message-----
+From: Ken Chen [mailto:kenchen@google.com] 
+Sent: Wednesday, February 21, 2007 11:36 AM
+To: Ananiev, Leonid I
+Cc: Chris Mason; Zach Brown; linux-aio@kvack.org;
+linux-kernel@vger.kernel.org; Benjamin LaHaise; Suparna bhattacharya;
+Andrew Morton
+Subject: Re: [PATCH 2/2] aio: propogate post-EIOCBQUEUED errors to
+completion event
 
-Yeah, I think if we have tagged write command and flush tagged (or
-barrier tagged) things can be pretty efficient.  Again, I'm much more
-comfortable with separate opcodes for those rather than bits changing
-the behavior.
+On 2/20/07, Ananiev, Leonid <leonid.i.ananiev@intel.com> wrote:
+> 1) mem=1G in kernel boot param if you have more
+> 2) unmount; mk2fs; mount
+> 3) dd if=/dev/zero of=<test_file> bs=1M count=1200
+> 4) aiostress -s 1200m -O -o 2 -i 1 -r 16k <test_file>
+> 5) if i++<50 goto 2).
 
-Another idea Dongjun talked about while drinking in LSF was ranged
-flush.  Not as flexible/efficient as the previous option but much less
-intrusive and should help quite a bit, I think.
+Would you please instrument the call chain of
+invalidate_complete_page2() and tell us exactly where it returns zero
+value in your failure case?
 
-> I think that FUA was designed for a different use case than what Linux
-> is using barriers for currently. The advantage with FUA is when you have
-> "before barrier", "after barrier" and "don't care" sets, where only the
-> specific things you care about ordering are in the before/after barrier
-> sets. Then you can do this:
-> 
-> Issue all before barrier requests with FUA bit set
-> Wait for all those to complete
-> Issue all after barrier requests with FUA bit set
-> Wait for all those to complete
-> 
-> Meanwhile a bunch of "don't care" requests could be going through on the
-> device in the background. If we could do this, then I think there would
-> be an advantage. Right now, it just saves a command to the drive when
-> we're flushing on the post-barrier writes.
-> 
-> This would only be efficient with NCQ FUA, because regular FUA forces
-> the requests to complete serially, whereas in this case we don't really
-> care what order the individual requests finish, we just care about the
-> ordering of the pre vs. post barrier requests.
-
-Yeap, that makes sense too but that possibly requires intrusive changes
-in fs layer and limited NCQ queue depth might become a bottleneck too.
-
->> I'm not too nervous about the FUA write commands, I hope we can safely
->> assume that if you set the FUA supported bit in the id AND the write fua
->> command doesn't get aborted, that FUA must work. Anything else would
->> just be an immensely stupid implementation. NCQ+FUA is more tricky, I
->> agree that it being just a command bit does make it more likely that it
->> could be ignored. And that is indeed a danger. Given state of NCQ in
->> early firmware drives, I would not at all be surprised if the drive
->> vendors screwed that up too.
-
-Yeap, I bet someone did.  :-)
-
->> But, since we don't have the ordered bit for NCQ/FUA anyway, we do need
->> to drain the drive queue before issuing the WRITE/FUA. And at that point
->> we may as well not use the NCQ command, just go for the regular non-NCQ
->> FUA write. I think that should be safe.
-
-Yeap.
-
-> Aside from the issue above, as I mentioned elsewhere, lots of NCQ drives
-> don't support non-NCQ FUA writes..
-
-To me, using the NCQ FUA bit on such drives doesn't seem to be a good
-idea.  Maybe I'm just too chicken but it's not like we can gain a lot
-from doing FUA at this point.  Are there a lot of drives which support
-NCQ but not FUA opcodes?
-
-Thanks.
-
--- 
-tejun
+   invalidate_complete_page2
+      try_to_release_page
+         ext3_releasepage
+            journal_try_to_free_buffers
+               ???
