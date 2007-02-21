@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422743AbXBUSMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422750AbXBUSM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422743AbXBUSMr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 13:12:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422748AbXBUSMr
+	id S1422750AbXBUSM4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 13:12:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422751AbXBUSM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 13:12:47 -0500
-Received: from il.qumranet.com ([82.166.9.18]:54563 "EHLO il.qumranet.com"
+	Wed, 21 Feb 2007 13:12:56 -0500
+Received: from pat.uio.no ([129.240.10.15]:41478 "EHLO pat.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422743AbXBUSMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 13:12:46 -0500
-Message-ID: <45DC8B6E.5050205@qumranet.com>
-Date: Wed, 21 Feb 2007 20:11:58 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: kvm-devel <kvm-devel@lists.sourceforge.net>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 0/6] KVM userspace interface updates for 2.6.21
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1422750AbXBUSMy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 13:12:54 -0500
+Subject: Re: [PATCH] update ctime and mtime for mmaped write
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, staubach@redhat.com, hugh@veritas.com,
+       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <E1HJvdA-0003Nj-00@dorka.pomaz.szeredi.hu>
+References: <E1HJvdA-0003Nj-00@dorka.pomaz.szeredi.hu>
+Content-Type: text/plain
+Date: Wed, 21 Feb 2007 13:12:42 -0500
+Message-Id: <1172081562.9108.1.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.91 
 Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, none)
+X-UiO-Scanned: F37B93CA4CF87844BFD77ECD3558E5894253D049
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 243 total 2345 max/h 1293 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patchset moves the kvm userspace interface from having a 
-single fd, to having three types of file descriptors:
+On Wed, 2007-02-21 at 18:51 +0100, Miklos Szeredi wrote:
+> From: Miklos Szeredi <mszeredi@suse.cz>
+> 
+> This patch makes writing to shared memory mappings update st_ctime and
+> st_mtime as defined by SUSv3:
+> 
+>    The st_ctime and st_mtime fields of a file that is mapped with
+>    MAP_SHARED and PROT_WRITE shall be marked for update at some point
+>    in the interval between a write reference to the mapped region and
+>    the next call to msync() with MS_ASYNC or MS_SYNC for that portion
+>    of the file by any process. If there is no such call and if the
+>    underlying file is modified as a result of a write reference, then
+>    these fields shall be marked for update at some time after the
+>    write reference.
+> 
+> A new address_space flag is introduced: AS_CMTIME.  This is set each
+> time a page is dirtied through a userspace memory mapping.  This
+> includes write accesses via get_user_pages().
+> 
+> Note, the flag is set unconditionally, even if the page is already
+> dirty.  This is important, because the page might have been dirtied
+> earlier by a non-mmap write.
+> 
+> This flag is checked in msync() and __fput(), and if set, the file
+> times are updated and the flag is cleared
 
-- one fd returned by open("/dev/kvm") is used for generic access to the 
-kvm driver, for example to get the API version and to create virtual 
-machines
-- when you create a virtual machine, you get back an fd that can be used 
-to control vm-wide aspects, like guest memory configuratio
-- when you create a virtual cpu, you get an fd that can be used to 
-control the vcpu, for example getting and setting registers, and if 
-you're really serious, running the guest
+Why not also check inside vfs_getattr?
 
-The motivation for this change is twofold:
-- prevent having a 'struct inode' and 'struct file' with different file 
-operation callbacks
-- prevent cacheline bouncing of the 'struct file' when we support guest 
-smp (by giving each vcpu its own file structure)
-
-A side effect is that the code becomes somewhat cleaner, due to the vcpu 
-number not being passed around and validated.
-
-The change was discussed on kvm-devel some time ago.  Thanks to Arnd 
-Bergmann for useful suggestions and to the epoll code for inspiration.
-
--- 
-error compiling committee.c: too many arguments to function
+Cheers
+  Trond
 
