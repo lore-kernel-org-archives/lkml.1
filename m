@@ -1,51 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422652AbXBUQSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422659AbXBUQWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422652AbXBUQSv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 11:18:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422648AbXBUQSv
+	id S1422659AbXBUQWb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 11:22:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422658AbXBUQWb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 11:18:51 -0500
-Received: from smtp-out-46.synserver.de ([217.119.50.46]:1044 "HELO
-	smtp-out-46.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1422654AbXBUQSu (ORCPT
+	Wed, 21 Feb 2007 11:22:31 -0500
+Received: from smtp-103-wednesday.noc.nerim.net ([62.4.17.103]:4185 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1422640AbXBUQWa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 11:18:50 -0500
-X-SynServer-TrustedSrc: 1
-X-SynServer-ViaOpenRelay-IP: 212.202.34.50
-X-SynServer-RBL-IP: 212.202.34.50
-X-SynServer-RBL-ReportedBy: dynablock.njabl.org
-X-SynServer-RBL-ReportedByCount: *
-X-SynServer-RBL-Weights: 100
-X-SynServer-RBL-WeightSum: 100
-X-SynServer-RBL-WeightStr: **********
-X-SynServer-AuthUser: markus@trippelsdorf.de
-X-SynServer-RemoteDnsName: port-212-202-34-50.dynamic.qsc.de
-Date: Wed, 21 Feb 2007 17:18:23 +0100
-From: Markus Trippelsdorf <markus@trippelsdorf.de>
-To: "Jean-Luc Coulon (f5ibh)" <jean-luc.coulon@wanadoo.fr>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-git and 2.6.21-rc1, failed to boot on sata_via
-Message-ID: <20070221161823.GA5011@gentoox2.trippelsdorf.de>
-References: <1172066520l.8209l.0l@tangerine>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1172066520l.8209l.0l@tangerine>
+	Wed, 21 Feb 2007 11:22:30 -0500
+X-Greylist: delayed 4494 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Feb 2007 11:22:30 EST
+Date: Wed, 21 Feb 2007 17:22:07 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Rudolf Marek <r.marek@assembler.cz>, linux-acpi@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+Message-Id: <20070221172207.d469b17d.khali@linux-fr.org>
+In-Reply-To: <45DC6D3B.80500@redhat.com>
+References: <45D5EA88.7090300@redhat.com>
+	<45D6DDCE.5050803@assembler.cz>
+	<45D7461A.2040808@redhat.com>
+	<45D8D6AE.3000204@assembler.cz>
+	<45DB0EEA.2010205@redhat.com>
+	<20070221155444.99386b98.khali@linux-fr.org>
+	<45DC6D3B.80500@redhat.com>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 21, 2007 at 03:01:54PM +0100, Jean-Luc Coulon (f5ibh) wrote:
->
-> At boot time, I've the following messages:
+On Wed, 21 Feb 2007 11:03:07 -0500, Chuck Ebbert wrote:
+> Jean Delvare wrote:
+> > Can you try to load the i2c-dev driver, then run the following commands
+> > and report the results:
+> > $ i2cdetect -l
+> > For each bus listed:
+> > $ i2cdetect N
 > 
-> ACPI: PCI Interrupt 0000:00:0f.0[B] GSI 20(level, low) -> IRQ 20
-> sata_via 0000:00:0f.0: failed on iomap PCI BAR 0
-> sata_via 0000:00:0f.0: out of memory
-> ACPI: PCI interrupt for device 0000:00:0f.0 is disabled
-> sata_via: probe of 0000:00:0f.0 failed with error -12
+> FWIW it's really an ATIIXP chipset, but supposedly PIIX4 compatible:
+> 
+> # i2cdetect -l
+> i2c-0   smbus           SMBus PIIX4 adapter at 8400             Non-I2C SMBus adapter
 
-I had the same problem, but the issue is already fixed. See:
-http://www.mail-archive.com/linux-ide@vger.kernel.org/msg03945.html
+No i2c_ec. Maybe your distribution is loading it by default for
+everyone then.
+
+Either way, it means you can forget right away about sbs, if i2c_ec
+didn't register a device, sbs cannot be used.
+
+> # i2cdetect 0
+> WARNING! This program can confuse your I2C bus, cause data loss and worse!
+> I will probe file /dev/i2c-0.
+> I will probe address range 0x03-0x77.
+> Continue? [Y/n] y
+>      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+> 00:          XX XX XX XX XX XX XX XX XX XX XX XX XX
+> 10: XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX
+> 20: XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX
+> 30: XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX
+> 40: XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX
+> 50: 50 51 XX XX XX XX XX XX XX XX XX XX XX XX XX XX
+> 60: XX XX XX XX XX XX XX XX XX 69 XX XX XX XX XX XX
+> 70: XX XX XX XX XX XX XX XX
+
+Only a couple EEPROMs and a clock chip on your SMBus, it's very
+unlikely that ACPI accesses this at all. So I'd be surprised that
+i2c-piix4 is causing any trouble.
+
+This leaves asus_acpi as the only candidate? Better unload _all_ the
+drivers you consider as suspects, and see if it changes anything. I
+guess not.
 
 -- 
-Markus
+Jean Delvare
