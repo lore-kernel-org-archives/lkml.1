@@ -1,77 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750918AbXBUXkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750878AbXBUXkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750918AbXBUXkl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 18:40:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbXBUXkl
+	id S1750878AbXBUXkz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 18:40:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750926AbXBUXky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 18:40:41 -0500
-Received: from nz-out-0506.google.com ([64.233.162.238]:9586 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750935AbXBUXkk (ORCPT
+	Wed, 21 Feb 2007 18:40:54 -0500
+Received: from py-out-1112.google.com ([64.233.166.177]:39611 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750878AbXBUXkw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 18:40:40 -0500
+	Wed, 21 Feb 2007 18:40:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=tAvFXWCt+KZR9yHbLCN7j6xAV0E0+j611DhrII+dMwEFY3fsfzY80nV6Hr8pkC8KV16yFCa00rd6w+OYe3Pm11IFgaPLw4zlTxu7dcigIk9ZG/klSW3MMdA4Da8ZzoFPU+1BCUHhio8r3md+LzoYSCZREDLTLeI56a/AAHJB2BI=
-Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
+        b=DYBXsVT51rcSlMeET3uUD/KnL1xk0CKgYqBTRop0lbwCn24vVHdHnI0SSAAZm3Rh5uZcdXDucD+GjNrUY5LsC/WR/Dsy8Dc8BKS//YAqiY/dhSDAhB6rnoZPWkEI180/zsbBxRv+6ffQIpo7tNzkzFw9Byru9lfulDhJ2vkGBsk=
+Subject: Re: [Linux-fbdev-devel] [PATCH 2.6.20 1/1] fbdev, mm: hecuba/E-Ink
+	fbdev driver
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
-Cc: James Simmons <jsimmons@infradead.org>, Luca Tettamanti <kronos@people.it>,
-       linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>,
-       Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <cb7bb73a0702061508x767882dcia1b13f85d898b6e7@mail.gmail.com>
-References: <ephv35$4i3$1@sea.gmane.org>
-	 <20070128160831.fb51347f.akpm@osdl.org>
-	 <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
-	 <20070128162907.370f5476.akpm@osdl.org>
-	 <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
-	 <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
-	 <20070130203301.GA15067@dreamland.darkstar.lan>
-	 <20070204201713.GA12867@dreamland.darkstar.lan>
-	 <Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
-	 <cb7bb73a0702061508x767882dcia1b13f85d898b6e7@mail.gmail.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Paul Mundt <lethal@linux-sh.org>, Jaya Kumar <jayakumar.lkml@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Geert.Uytterhoeven@sonycom.com,
+       jsimmons@infradead.org
+In-Reply-To: <45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
+References: <20070217104215.GB25512@localhost>
+	 <1171715652.5186.7.camel@lappy>
+	 <45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com>
+	 <20070217135922.GA15373@linux-sh.org>
+	 <45a44e480702180331t7e76c396j1a9861f689d4186b@mail.gmail.com>
+	 <20070218235741.GA22298@linux-sh.org>
+	 <45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
 Content-Type: text/plain
-Date: Thu, 22 Feb 2007 07:43:26 +0800
-Message-Id: <1172101406.4217.16.camel@daplas>
+Date: Thu, 22 Feb 2007 07:43:33 +0800
+Message-Id: <1172101413.4217.18.camel@daplas>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-07 at 00:08 +0100, Giuseppe Bilotta wrote: 
-> On 2/6/07, James Simmons <jsimmons@infradead.org> wrote:
+On Mon, 2007-02-19 at 23:13 -0500, Jaya Kumar wrote: 
+> On 2/18/07, Paul Mundt <lethal@linux-sh.org> wrote:
+> > Given that, this would have to be something that's dealt with at the
+> > subsystem level rather than in individual drivers, hence the desire to
+> > see something like this more generically visible.
 > >
-> > If you can find post the manufacturer and model number we can place it on
-> > the backlist in fbmon. Also we should figure out what is wrong and fix it.
 > 
-> It's the UltraSharp UXGA display that used to come with Dell Inspiron
-> 8200, 15" with a resolution of 1600x1200. I've been looking all around
-> for more info on it, but the only things I could find were posts that
-> remarked the problems Windows nVidia drivers have with some of these
-> (no image when running at 1600x1200), and other posts about banded
-> gradients with Windows drivers on Radeon video cards (but I get banded
-> gradients also win my nVidia card, on Linux, regardless of which
-> driver I use, binary, nv or nouveau).
+> Hi Peter, Paul, fbdev folk,
 > 
-> As mentioned in another post in this thread, I can't get any info out
-> of the i2c busses, because even when I have them available (i.e. after
-> loading nvidiafb) I get XXXX all around (on all three of them).
-> Suggestions on how to get the information welcome.
+> Ok. Here's what I'm thinking for abstracting this:
+> 
+> fbdev drivers would setup fb_mmap with their own_mmap as usual. In
+> own_mmap, they would do what they normally do and setup a vm_ops. They
+> are free to have their own nopage handler but would set the
+> page_mkwrite handler to be fbdev_deferred_io_mkwrite().
+> fbdev_deferred_io_mkwrite would build up the list of touched pages and
+> pass it to a delayed workqueue which would then mkclean on each page
 
-Is this the same monitor you posted here?
+Yes, this functionality is sorely needed by more than a few driver
+writers.
 
-http://marc.theaimsgroup.com/?l=linux-kernel&m=112807065616218&w=2
+> and then pass a copy of that page list down to a driver's callback
+> function. The fbdev driver's callback function can then do the actual
+> IO to the framebuffer or coalesce DMA based on the provided page list.
+> I would like to add something like the following to struct fb_info:
+> 
+> #ifdef CONFIG_FB_DEFERRED_IO
+> struct fb_deferred_io *defio;
+> #endif
+> 
+> to store the mutex (to protect the page list), the touched page list,
+> and the driver's callback function.
+> 
+> I hope this sounds sufficiently generic to meet everyone's (the two of
+> us? :) needs.
 
-If yes, we already have the manufacturer and model code. The main
-problem is that the EDID of this display has no sync range (H: 75-75kHz
-and V: 60-60Hz).  Extending Hsync from 30-75kHz as a fix to the EDID
-block shouldn't be too hard.
-
-I already have a patch for this which I forgot to send to you
-before :-).  If you can confirm that this is still the same hardware,
-I'll send you a test patch
+There's definitely more than two :-).  For the past several years,
+various people have been asking for this functionality.  So yes,
+implementing this in a generic manner will be a big help.
 
 Tony
 
