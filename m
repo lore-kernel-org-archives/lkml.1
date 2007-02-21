@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422643AbXBUQPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422651AbXBUQR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422643AbXBUQPK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 11:15:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161327AbXBUQPJ
+	id S1422651AbXBUQR7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 11:17:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422649AbXBUQR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 11:15:09 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:55252 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161331AbXBUQPH (ORCPT
+	Wed, 21 Feb 2007 11:17:59 -0500
+Received: from smtp-103-wednesday.nerim.net ([62.4.16.103]:4739 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1422647AbXBUQR5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 11:15:07 -0500
-Message-ID: <45DC6FD6.4040005@zytor.com>
-Date: Wed, 21 Feb 2007 08:14:14 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Rodolfo Giometti <giometti@enneenne.com>
-CC: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com
-Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
-References: <20070216185230.GO8882@enneenne.com> <45DA6354.3000305@zytor.com> <20070221120426.GJ4641@enneenne.com>
-In-Reply-To: <20070221120426.GJ4641@enneenne.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 21 Feb 2007 11:17:57 -0500
+Date: Wed, 21 Feb 2007 17:17:37 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Dave Jones <davej@redhat.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>, linux-acpi@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+Message-Id: <20070221171737.b6592104.khali@linux-fr.org>
+In-Reply-To: <20070220191142.GE16614@redhat.com>
+References: <45D5EA88.7090300@redhat.com>
+	<45D6DDCE.5050803@assembler.cz>
+	<45D7461A.2040808@redhat.com>
+	<45D8D6AE.3000204@assembler.cz>
+	<45DB0EEA.2010205@redhat.com>
+	<20070220191142.GE16614@redhat.com>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rodolfo Giometti wrote:
+On Tue, 20 Feb 2007 14:11:42 -0500, Dave Jones wrote:
+> On Tue, Feb 20, 2007 at 10:08:26AM -0500, Chuck Ebbert wrote:
+>  
+>  > 	i2c_core
+>  > 	i2c_ec
+>  > 	i2c_piix4
+>  > 	asus_acpi (on a Compaq???)
+>  > 	sbs
 > 
-> The problem is that sometimes you cannot have a filedescriptor at
-> all. Think about a PPS source connected with a CPU's GPIO pin. You
-> have no filedes to use and defining one just for a PPS source or for a
-> class of PPS sources, I think, is a non sense.
-> 
+> Something is pulling in asus_acpi as a dependancy. I've never
+> figured out what the cause is.  For a long time I was thinking
+> that we had an explicit modprobe for it in an initscript, but
+> grepping for it in /etc turns up zip.
 
-If you have a kernel driver at all, then it makes perfect sense.  If you 
-don't have a kernel driver at all, then it's irrelevant to the 
-linux-kernel discussion.
+How could it be, given that asus_acpi doesn't export any symbol?
 
-> RFC simply doesn't consider the fact that you can have a PPS source
-> __without__ a filedes connected with, and a single filedes is
-> considered __always__ connected with a single PPS source.
-
-That's the Unix way.
-
-	-hpa
-
+-- 
+Jean Delvare
