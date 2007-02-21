@@ -1,150 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030570AbXBUHZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030554AbXBUH0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030570AbXBUHZQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 02:25:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030561AbXBUHYp
+	id S1030554AbXBUH0L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 02:26:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030561AbXBUH0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 02:24:45 -0500
-Received: from mail.sf-mail.de ([62.27.20.61]:38240 "EHLO mail.sf-mail.de"
+	Wed, 21 Feb 2007 02:26:11 -0500
+Received: from tag.witbe.net ([81.88.96.48]:36699 "EHLO tag.witbe.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030554AbXBUHYm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 02:24:42 -0500
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: akpm@linux-foundation.org
-Subject: [PATCH 2/2][IPX] Remove ancient changelog
-Date: Tue, 20 Feb 2007 19:59:34 +0100
-User-Agent: KMail/1.9.6
-Cc: trivial@kernel.org, linux-kernel@vger.kernel.org, acme@conectiva.com.br,
-       netdev@vger.kernel.org
-References: <200702201957.13531.eike-kernel@sf-tec.de>
-In-Reply-To: <200702201957.13531.eike-kernel@sf-tec.de>
+	id S1030554AbXBUH0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 02:26:09 -0500
+Reply-To: <rol@as2917.net>
+From: "Paul Rolland" <rol@as2917.net>
+To: "'Marcus Haebler'" <haebler@gmail.com>, "'Tejun Heo'" <htejun@gmail.com>
+Cc: "'Pablo Sebastian Greco'" <lkml@fliagreco.com.ar>,
+       <linux-kernel@vger.kernel.org>
+Subject: RE: SATA problems
+Date: Wed, 21 Feb 2007 08:25:52 +0100
+Organization: AS2917.net
+Message-ID: <012f01c75589$87d740e0$4b00a8c0@donald>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200702201959.35176.eike-kernel@sf-tec.de>
 Content-Type: text/plain;
-  charset="iso-8859-15"
+	charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+In-Reply-To: <d72aa1340702202224i209fb131pb0f9c2c9cc547e6d@mail.gmail.com>
+Thread-Index: AcdVgQgyNDE1C0zHRYWksEaNxmgOswACDYrQ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[IPX] Remove ancient changelog
+Hi Marcus,
 
-Signed-off-by: Rolf Eike Beer <eike-kernel@sf-tec.de>
+Could you give more details ? I'm stucked with a boot problem on a 
+Asus P5W that also includes a Jmicron behind a Sata port on ICH8, and
+the kernel boot goes timeout when probing it... I've been trying various
+kernels,
+including some patches from Tejun (Thanks !), but no luck to date...
 
----
-commit 6b8afc66b9d6893d3fa292b75769b58539836ff3
-tree 9078513bb6727e61aee238da153d9b3358a1d817
-parent 0566e9a5f19ca9fe1982e2b4a89aff131cc6525b
-author Rolf Eike Beer <eike-kernel@sf-tec.de> Tue, 20 Feb 2007 19:45:03 +0100
-committer Rolf Eike Beer <eike-kernel@sf-tec.de> Tue, 20 Feb 2007 19:45:03 +0100
+Mind sharing your .config so that I can check if I missed something obvious ?
 
- net/ipx/ChangeLog |  101 -----------------------------------------------------
- 1 files changed, 0 insertions(+), 101 deletions(-)
+Regards,
+Paul
 
-diff --git a/net/ipx/ChangeLog b/net/ipx/ChangeLog
-deleted file mode 100644
-index 3b29763..0000000
---- a/net/ipx/ChangeLog
-+++ /dev/null
-@@ -1,101 +0,0 @@
-- Revision 0.21:	Uses the new generic socket option code.
--
-- Revision 0.22:	Gcc clean ups and drop out device registration. Use the
-- 		new multi-protocol edition of hard_header
--
-- Revision 0.23: IPX /proc by Mark Evans. Adding a route will
-- 		will overwrite any existing route to the same network.
--
-- Revision 0.24:	Supports new /proc with no 4K limit
--
-- Revision 0.25:	Add ephemeral sockets, passive local network
-- 		identification, support for local net 0 and
-- 		multiple datalinks <Greg Page>
--
-- Revision 0.26: Device drop kills IPX routes via it. (needed for module)
--
-- Revision 0.27: Autobind <Mark Evans>
--
-- Revision 0.28: Small fix for multiple local networks <Thomas Winder>
--
-- Revision 0.29: Assorted major errors removed <Mark Evans>
-- 		Small correction to promisc mode error fix <Alan Cox>
-- 		Asynchronous I/O support. Changed to use notifiers
-- 		and the newer packet_type stuff. Assorted major
-- 		fixes <Alejandro Liu>
--
-- Revision 0.30:	Moved to net/ipx/...	<Alan Cox>
-- 		Don't set address length on recvfrom that errors.
-- 		Incorrect verify_area.
--
-- Revision 0.31:	New sk_buffs. This still needs a lot of 
-- 		testing. <Alan Cox>
--
-- Revision 0.32: Using sock_alloc_send_skb, firewall hooks. <Alan Cox>
-- 		Supports sendmsg/recvmsg
--
-- Revision 0.33:	Internal network support, routing changes, uses a
-- 		protocol private area for ipx data.
--
-- Revision 0.34:	Module support. <Jim Freeman>
--
-- Revision 0.35: Checksum support. <Neil Turton>, hooked in by <Alan Cox>
-- 		Handles WIN95 discovery packets <Volker Lendecke>
--
-- Revision 0.36:	Internal bump up for 2.1
--
-- Revision 0.37:	Began adding POSIXisms.
--
-- Revision 0.38: Asynchronous socket stuff made current.
--
-- Revision 0.39: SPX interfaces
--
-- Revision 0.40: Tiny SIOCGSTAMP fix (chris@cybernet.co.nz)
--
-- Revision 0.41: 802.2TR removed (p.norton@computer.org)
-- 		Fixed connecting to primary net,
-- 		Automatic binding on send & receive,
-- 		Martijn van Oosterhout <kleptogimp@geocities.com>
--
-- Revision 042:  Multithreading - use spinlocks and refcounting to
-- 		protect some structures: ipx_interface sock list, list
-- 		of ipx interfaces, etc. 
-- 		Bugfixes - do refcounting on net_devices, check function
-- 		results, etc. Thanks to davem and freitag for
-- 		suggestions and guidance.
-- 		Arnaldo Carvalho de Melo <acme@conectiva.com.br>,
-- 		November, 2000
--
-- Revision 043:	Shared SKBs, don't mangle packets, some cleanups
-- 		Arnaldo Carvalho de Melo <acme@conectiva.com.br>,
-- 		December, 2000
--
-- Revision 044:	Call ipxitf_hold on NETDEV_UP - acme
--
-- Revision 045:	fix PPROP routing bug - acme
--
-- Revision 046:	Further fixes to PPROP, ipxitf_create_internal was
-- 		doing an unneeded MOD_INC_USE_COUNT, implement
-- 		sysctl for ipx_pprop_broacasting, fix the ipx sysctl
-- 		handling, making it dynamic, some cleanups, thanks to
-- 		Petr Vandrovec for review and good suggestions. (acme)
--
-- Revision 047:	Cleanups, CodingStyle changes, move the ncp connection
-- 		hack out of line - acme
--
-- Revision 048:	Use sk->protinfo to store the pointer to IPX private
-- 		area, remove af_ipx from sk->protinfo and move ipx_opt
-- 		to include/net/ipx.h, use IPX_SK like DecNET, etc - acme
--
-- Revision 049:	SPX support dropped, see comment in ipx_create - acme
--
-- Revision 050:	Use seq_file for proc stuff, moving it to ipx_proc.c - acme
--
--Other fixes:
-- 
-- Protect the module by a MOD_INC_USE_COUNT/MOD_DEC_USE_COUNT pair. Also, now
-- usage count is managed this way:
-- -Count one if the auto_interface mode is on
-- -Count one per configured interface
-- 
-- Jacques Gelinas (jacques@solucorp.qc.ca)
+Paul Rolland, rol(at)as2917.net
+ex-AS2917 Network administrator and Peering Coordinator
+
+--
+
+Please no HTML, I'm not a browser - Pas d'HTML, je ne suis pas un navigateur 
+"Some people dream of success... while others wake up and work hard at it" 
+
+"I worry about my child and the Internet all the time, even though she's too 
+young to have logged on yet. Here's what I worry about. I worry that 10 or 15 
+years from now, she will come to me and say 'Daddy, where were you when they 
+took freedom of the press away from the Internet?'"
+--Mike Godwin, Electronic Frontier Foundation 
+  
+
+> -----Original Message-----
+> From: linux-kernel-owner@vger.kernel.org 
+> [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of 
+> Marcus Haebler
+> Sent: Wednesday, February 21, 2007 7:24 AM
+> To: Tejun Heo
+> Cc: Pablo Sebastian Greco; linux-kernel@vger.kernel.org
+> Subject: Re: SATA problems
+> 
+> Tejun,
+> 
+> I checked out the kernel 2.6.19 to 2.6.20 Changelog. Seems like you
+> fixed a problem with the JMB363. The Asus P5B-Deluxe I am using has a
+> JMB363 - besides an Intel ICH8R - with the SATA ports set to AHCI as
+> well. Looks like that might have been the source of the problem in
+> 2.6.19.
+> 
+> Thanks,
+> 
+> Marcus
+> 
+> On 2/21/07, Marcus Haebler <haebler@gmail.com> wrote:
+> > Tejun,
+> >
+> > thanks. In preparation of your patch I installed a vanilla 2.6.20.1
+> > kernel on my FC6
+> > system. Amazingly the problem went away with the vanilla(!) 
+> kernel and NCQ
+> > is enabled at boot time (queue_depth is 31). I guess I should have
+> > tried that kernel
+> > earlier.
+> >
+> > The patches you sent earlier apply w/o problems against the 2.6.20.1
+> > vanilla kernel
+> > which is expected. I will test drive those patches tomorrow.
+> >
+> > BTW thanks for saving me the 'cat' on the 3 patches. ;)
+> >
+> > Thanks,
+> >
+> > Marcus
+> -
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
