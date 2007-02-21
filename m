@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751047AbXBUBlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751098AbXBUBmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751047AbXBUBlq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 20:41:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbXBUBkF
+	id S1751098AbXBUBmr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 20:42:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbXBUBmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 20:40:05 -0500
-Received: from mx2.suse.de ([195.135.220.15]:34682 "EHLO mx2.suse.de"
+	Tue, 20 Feb 2007 20:42:40 -0500
+Received: from mx2.suse.de ([195.135.220.15]:34721 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751047AbXBUBjq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 20:39:46 -0500
-Date: Tue, 20 Feb 2007 17:38:24 -0800
+	id S1751061AbXBUBkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 20:40:01 -0500
+Date: Tue, 20 Feb 2007 17:38:39 -0800
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -19,13 +19,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [patch 16/21] usbaudio - Fix Oops with unconventional sample rates
-Message-ID: <20070221013824.GQ30227@kroah.com>
+       Dan Williams <dcbw@redhat.com>
+Subject: [patch 18/21] prism54: correct assignment of DOT1XENABLE in WE-19 codepaths
+Message-ID: <20070221013839.GS30227@kroah.com>
 References: <20070221012758.925122216@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usbaudio-fix-oops-with-unconventional-sample-rates.patch"
+Content-Disposition: inline; filename="prism54-correct-assignment-of-dot1xenable-in-we-19-codepaths.patch"
 In-Reply-To: <20070221013619.GA30227@kroah.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,89 +35,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
+Correct assignment of DOT1XENABLE in WE-19 codepaths.
+RX_UNENCRYPTED_EAPOL = 1 really means setting DOT1XENABLE _off_, and
+vice versa.  The original WE-19 patch erroneously reversed that.  This
+patch fixes association with unencrypted and WEP networks when using
+wpa_supplicant.
 
-[PATCH] usbaudio - Fix Oops with unconventional sample rates
+It also adds two missing break statements that, left out, could result
+in incorrect card configuration.
 
-The patch fixes the memory corruption by the support of unconventional
-sample rates.  Also, it avoids the too restrictive constraints if
-any of usb descriptions contain continuous rates.
+Applies to (I think) 2.6.19 and later.
 
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Dan Williams <dcbw@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/usb/usbaudio.c |   43 +++++++++++++++++++++++++------------------
- 1 file changed, 25 insertions(+), 18 deletions(-)
+ drivers/net/wireless/prism54/isl_ioctl.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
---- linux-2.6.19.4.orig/sound/usb/usbaudio.c
-+++ linux-2.6.19.4/sound/usb/usbaudio.c
-@@ -186,6 +186,7 @@ struct snd_usb_substream {
- 	u64 formats;			/* format bitmasks (all or'ed) */
- 	unsigned int num_formats;		/* number of supported audio formats (list) */
- 	struct list_head fmt_list;	/* format list */
-+	struct snd_pcm_hw_constraint_list rate_list;	/* limited rates */
- 	spinlock_t lock;
+--- linux-2.6.19.4.orig/drivers/net/wireless/prism54/isl_ioctl.c
++++ linux-2.6.19.4/drivers/net/wireless/prism54/isl_ioctl.c
+@@ -1395,11 +1395,16 @@ static int prism54_set_auth(struct net_d
+ 		break;
  
- 	struct snd_urb_ops ops;		/* callbacks (must be filled at init) */
-@@ -1810,28 +1811,33 @@ static int check_hw_params_convention(st
- static int snd_usb_pcm_check_knot(struct snd_pcm_runtime *runtime,
- 				  struct snd_usb_substream *subs)
- {
--	struct list_head *p;
--	struct snd_pcm_hw_constraint_list constraints_rates;
-+	struct audioformat *fp;
-+	int count = 0, needs_knot = 0;
- 	int err;
+ 	case IW_AUTH_RX_UNENCRYPTED_EAPOL:
+-		dot1x = param->value ? 1 : 0;
++		/* dot1x should be the opposite of RX_UNENCRYPTED_EAPOL;
++		 * turn off dot1x when  allowing recepit of unencrypted eapol
++		 * frames, turn on dot1x when we disallow receipt
++		 */
++		dot1x = param->value ? 0x00 : 0x01;
+ 		break;
  
--	list_for_each(p, &subs->fmt_list) {
--		struct audioformat *fp;
--		fp = list_entry(p, struct audioformat, list);
--
--		if (!fp->needs_knot)
--			continue;
--
--		constraints_rates.count = fp->nr_rates;
--		constraints_rates.list = fp->rate_table;
--		constraints_rates.mask = 0;
--
--		err = snd_pcm_hw_constraint_list(runtime, 0,
--			SNDRV_PCM_HW_PARAM_RATE,
--			&constraints_rates);
-+	list_for_each_entry(fp, &subs->fmt_list, list) {
-+		if (fp->rates & SNDRV_PCM_RATE_CONTINUOUS)
-+			return 0;
-+		count += fp->nr_rates;
-+		if (fp->needs_knot)
-+			needs_knot = 1;
-+	}
-+	if (!needs_knot)
-+		return 0;
+ 	case IW_AUTH_PRIVACY_INVOKED:
+ 		privinvoked = param->value ? 1 : 0;
++		break;
  
--		if (err < 0)
--			return err;
-+	subs->rate_list.count = count;
-+	subs->rate_list.list = kmalloc(sizeof(int) * count, GFP_KERNEL);
-+	subs->rate_list.mask = 0;
-+	count = 0;
-+	list_for_each_entry(fp, &subs->fmt_list, list) {
-+		int i;
-+		for (i = 0; i < fp->nr_rates; i++)
-+			subs->rate_list.list[count++] = fp->rate_table[i];
- 	}
-+	err = snd_pcm_hw_constraint_list(runtime, 0, SNDRV_PCM_HW_PARAM_RATE,
-+					 &subs->rate_list);
-+	if (err < 0)
-+		return err;
- 
- 	return 0;
- }
-@@ -2231,6 +2237,7 @@ static void free_substream(struct snd_us
- 		kfree(fp->rate_table);
- 		kfree(fp);
- 	}
-+	kfree(subs->rate_list.list);
- }
- 
- 
+ 	case IW_AUTH_DROP_UNENCRYPTED:
+ 		exunencrypt = param->value ? 1 : 0;
+@@ -1589,6 +1594,7 @@ static int prism54_set_encodeext(struct 
+ 			}
+ 			key.type = DOT11_PRIV_TKIP;
+ 			key.length = KEY_SIZE_TKIP;
++			break;
+ 		default:
+ 			return -EINVAL;
+ 		}
 
 --
