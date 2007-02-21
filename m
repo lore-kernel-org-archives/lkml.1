@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423035AbXBUXTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423256AbXBUXVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423035AbXBUXTn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 18:19:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423248AbXBUXTn
+	id S1423256AbXBUXVA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 18:21:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423257AbXBUXVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 18:19:43 -0500
-Received: from an-out-0708.google.com ([209.85.132.249]:5817 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423035AbXBUXTm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 18:19:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LLRVATNHH601DEe6OioVSE7T6ON68YIqGt1CUfta7fV94A1NpXGNlodaryj52w0uJapa+usw08fbD/xlpE7CPXa1sAr1hxgLW4/dgDoOAZYiaEaccYbQ2065PF696LpYyubTCRSq4ZdBez/Q+81VLGAprSOcw4uCyrtBNJ2ArZY=
-Message-ID: <68676e00702211519k68104e31ia2ae38a14eb27c1f@mail.gmail.com>
-Date: Thu, 22 Feb 2007 00:19:41 +0100
-From: "Luca Tettamanti" <kronos.it@gmail.com>
-To: tglx@linutronix.de
-Subject: Re: NO_HZ: timer interrupt stuck [Re: Linux 2.6.21-rc1]
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1172099859.25076.132.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 21 Feb 2007 18:21:00 -0500
+Received: from ozlabs.org ([203.10.76.45]:39471 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423256AbXBUXU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 18:20:59 -0500
+Subject: Re: [patch 05/24] Xen-paravirt_ops: Add pagetable accessors to
+	pack and unpack pagetable entries
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andi Kleen <ak@suse.de>
+Cc: virtualization@lists.osdl.org, Chris Wright <chrisw@sous-sol.org>,
+       xen-devel@lists.xensource.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <200702212315.12883.ak@suse.de>
+References: <20070221205254.169835700@goop.org>
+	 <20070221205322.869165491@goop.org>  <200702212315.12883.ak@suse.de>
+Content-Type: text/plain
+Date: Thu, 22 Feb 2007 10:20:02 +1100
+Message-Id: <1172100002.13378.42.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070221230409.GA1158@dreamland.darkstar.lan>
-	 <1172099859.25076.132.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/22/07, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Thu, 2007-02-22 at 00:04 +0100, Luca Tettamanti wrote:
-> > Hi Thomas,
-> > I'm testing NO_HZ on my machines. On the laptop I see that the timer
-> > interrupt counter is incremented (though slower than HZ). This machine
-> > is running UP kernel.
-> >
-> > On my desktop I see this:
-> >
-> >            CPU0       CPU1
-> >   0:        114          0   IO-APIC-edge      timer
-> >   1:       1624      10771   IO-APIC-edge      i8042
-> >   6:          3          0   IO-APIC-edge      floppy
-> >   7:          0          0   IO-APIC-edge      parport0
-> >   9:          0          0   IO-APIC-fasteoi   acpi
-> >  12:      40111     184047   IO-APIC-edge      i8042
-> >  16:      75624     998858   IO-APIC-fasteoi   radeon@pci:0000:01:00.0, uhci_hcd:usb1
-> >  17:          0          0   IO-APIC-fasteoi   uhci_hcd:usb4
-> >  18:        711       5487   IO-APIC-fasteoi   ide1, libata, ehci_hcd:usb7, uhci_hcd:usb3
-> >  19:        617       2254   IO-APIC-fasteoi   libata, uhci_hcd:usb2
-> >  20:          0          0   IO-APIC-fasteoi   ehci_hcd:usb6, uhci_hcd:usb5
-> >  21:    2483869          0   IO-APIC-fasteoi   eth0
-> >  22:          2          0   IO-APIC-fasteoi   ohci1394
-> > 218:      28872     360643   PCI-MSI-edge      HDA Intel
-> > 219:      32932     138196   PCI-MSI-edge      libata
-> > NMI:          0          0
-> > LOC:    2761191    2827539
-> > ERR:          0
-> > MIS:          0
-> >
-> > Interrupt 0 is stuck at 114 (the number is consistent across reboots). I
-> > don't experience any problem, time is running fine. Still it's strange
-> > that the timer is doing nothing; maybe something other than the PIT is
-> > used for time keeping?
->
-> Yes, we switch away from PIT and use the local APIC timer. (LOC)
+On Wed, 2007-02-21 at 23:15 +0100, Andi Kleen wrote:
+> On Wednesday 21 February 2007 21:52, Jeremy Fitzhardinge wrote:
+> > Add a set of accessors to pack, unpack and modify page table entries
+> > (at all levels).  This allows a paravirt implementation to control the
+> > contents of pgd/pmd/pte entries.  For example, Xen uses this to
+> > convert the (pseudo-)physical address into a machine address when
+> > populating a pagetable entry, and converting back to pphys address
+> > when an entry is read.
+> 
+> Do you have some lmbench numbers before/after this change? 
+> iirc at least fork and exit do a lot of pte accesses in various forms.
+> If it's measurable it might be needed to patch those for the native case.
 
-Ok, thanks for the clarification.
+Yes, __mkpte must be patched to avoid performance embarrassment.
 
-Luca
+Jeremy, did you want me to do this, or are you happy to?
+Rusty.
+PS. I really must revise my "paravirt-ops counter" patch which tallies
+how much each op is getting called.
+
+
