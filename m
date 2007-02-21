@@ -1,57 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422729AbXBURkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422726AbXBURoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422729AbXBURkz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 12:40:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422731AbXBURky
+	id S1422726AbXBURoy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 12:44:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422730AbXBURox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 12:40:54 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:7326 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422729AbXBURky (ORCPT
+	Wed, 21 Feb 2007 12:44:53 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:36438 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422726AbXBURox (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 12:40:54 -0500
-Subject: Re: Linux 2.6.21-rc1
-From: Daniel Walker <dwalker@mvista.com>
-To: tglx@linutronix.de
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mingo@elte.hu
-In-Reply-To: <1172079671.25076.80.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-	 <1172075053.8577.38.camel@imap.mvista.com>
-	 <1172077664.25076.75.camel@localhost.localdomain>
-	 <1172078340.8577.43.camel@imap.mvista.com>
-	 <1172079671.25076.80.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 21 Feb 2007 09:38:43 -0800
-Message-Id: <1172079523.8577.48.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Feb 2007 12:44:53 -0500
+Date: Wed, 21 Feb 2007 17:44:51 +0000 (GMT)
+From: James Simmons <jsimmons@infradead.org>
+To: Greg KH <greg@kroah.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] cleanup up symlinks
+Message-ID: <Pine.LNX.4.64.0702211740300.24543@pentafluge.infradead.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-21 at 18:41 +0100, Thomas Gleixner wrote:
-> On Wed, 2007-02-21 at 09:19 -0800, Daniel Walker wrote:
-> > > At this point the PIT / HPET _is_ active and incrementing jiffies. The
-> > > switch to local apic timers happens afterwards. 
-> > 
-> > Could be the switch over then which confuses the NMI . 
-> 
-> Why? The switch just stops the PIT/HPET. It does not fiddle with IO_APIC
-> and friends at all.
 
-I'm not an expert on the io-apic, but the check_timer() function seemed
-to assume IRQ0 was happening regularly ..
+When a device fails to register the class symlinks where not cleaned up. 
+This left a symlink in the /sys/class/"device"/ directory that pointed to 
+no where. This caused the sysfs_follow_link Oops I reported earlier. This 
+patch cleanups up the symlink. Please apply. Thank you.
 
-> > ftp://source.mvista.com/pub/dwalker/tglx/
-> 
-> Nothing obvious. Bisect time :(
+Signed-Off: James Simmons <jsimmons@infradead.org>
 
-Well, I'm pretty sure it's HRT, cause in prior versions this only
-happened when HRT is enabled. Then you guys went to the lapic all the
-time, and now this is happening all the time ..
-
-You can't reproduce this?
-
-Daniel
-
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index d04fd33..cf2a398 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -637,12 +637,41 @@ int device_add(struct device *dev)
+ 					     BUS_NOTIFY_DEL_DEVICE, dev);
+ 	device_remove_groups(dev);
+  GroupError:
+- 	device_remove_attrs(dev);
++	device_remove_attrs(dev);
+  AttrsError:
+ 	if (dev->devt_attr) {
+ 		device_remove_file(dev, dev->devt_attr);
+ 		kfree(dev->devt_attr);
+ 	}
++
++	if (dev->class) {
++		sysfs_remove_link(&dev->kobj, "subsystem");
++		/* If this is not a "fake" compatible device, remove the
++		 * symlink from the class to the device. */
++		if (dev->kobj.parent != &dev->class->subsys.kset.kobj)
++			sysfs_remove_link(&dev->class->subsys.kset.kobj,
++					  dev->bus_id);
++#ifdef CONFIG_SYSFS_DEPRECATED
++		if (parent) {
++			char *class_name = make_class_name(dev->class->name,
++							   &dev->kobj);
++			if (class_name)
++				sysfs_remove_link(&dev->parent->kobj,
++						  class_name);
++			kfree(class_name);
++			sysfs_remove_link(&dev->kobj, "device");
++		}
++#endif
++
++		down(&dev->class->sem);
++		/* notify any interfaces that the device is now gone */
++		list_for_each_entry(class_intf, &dev->class->interfaces, node)
++			if (class_intf->remove_dev)
++				class_intf->remove_dev(dev, class_intf);
++		/* remove the device from the class list */
++		list_del_init(&dev->node);
++		up(&dev->class->sem);
++	}
+  ueventattrError:
+ 	device_remove_file(dev, &dev->uevent_attr);
+  attrError:
