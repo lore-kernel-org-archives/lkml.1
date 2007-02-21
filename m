@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751300AbXBUPAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751307AbXBUPAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751300AbXBUPAM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 10:00:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbXBUPAL
+	id S1751307AbXBUPAp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 10:00:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbXBUPAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 10:00:11 -0500
-Received: from smtp-103-wednesday.nerim.net ([62.4.16.103]:2347 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751300AbXBUPAF (ORCPT
+	Wed, 21 Feb 2007 10:00:45 -0500
+Received: from smtp-vbr11.xs4all.nl ([194.109.24.31]:2637 "EHLO
+	smtp-vbr11.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751306AbXBUPAa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 10:00:05 -0500
-Date: Wed, 21 Feb 2007 15:59:46 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: "Luca Tettamanti" <kronos.it@gmail.com>
-Cc: "Matthew Garrett" <mjg59@srcf.ucam.org>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Chuck Ebbert" <cebbert@redhat.com>, lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Message-Id: <20070221155946.ff622cf9.khali@linux-fr.org>
-In-Reply-To: <68676e00702200733l6e7f13a5o201bc70fed98528b@mail.gmail.com>
-References: <45D5EA88.7090300@redhat.com>
-	<45D6DDCE.5050803@assembler.cz>
-	<45D7461A.2040808@redhat.com>
-	<20070218183805.5a4fd813.khali@linux-fr.org>
-	<20070220151813.GA6581@srcf.ucam.org>
-	<68676e00702200733l6e7f13a5o201bc70fed98528b@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 21 Feb 2007 10:00:30 -0500
+Message-ID: <45DC5E67.8060101@xs4all.nl>
+Date: Wed, 21 Feb 2007 15:59:51 +0100
+From: Udo van den Heuvel <udovdh@xs4all.nl>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Krzysztof Halasa <khc@pm.waw.pl>,
+       Alistair John Strachan <s0348365@sms.ed.ac.uk>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Subject: Re: PCI riser cards and PCI irq routing, etc
+References: <45D85DA1.7090502@xs4all.nl> <m3odnpq3yr.fsf@maximus.localdomain>	<45DA7643.4020305@xs4all.nl>	<200702201456.30794.s0348365@sms.ed.ac.uk> <45DB174F.30708@xs4all.nl>	<45DC0FCC.7010705@xs4all.nl> <m3wt2bem13.fsf@maximus.localdomain>
+In-Reply-To: <m3wt2bem13.fsf@maximus.localdomain>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: id=8300CC02
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Luca,
-
-On Tue, 20 Feb 2007 16:33:56 +0100, Luca Tettamanti wrote:
-> Motherboard vendors usually provide tools for $(TheOtherOS) that can
-> read from all thermal  / fan / voltage / whatever sensors, so I guess
-> it's possible to make the ACPI driver and the "raw" one play nice with
-> each other[1].
+Krzysztof Halasa wrote:
+> Udo van den Heuvel <udovdh@xs4all.nl> writes:
 > 
-> Luca
-> [1] Unless their solution is "poke at the hardware and hope that ACPI
-> doesn't blow up", that is.
+>> So if my non-VIA riser card can use DN 19 and also INT_A things should work?
+> 
+> That INT_A may be INT_A from their (motherboard) point of view, but
+> the riser card doesn't know about that, it only knows INTs as seen
+> at its PCI edge connector (so this INT_A here is meaningless).
+> 
+> Device numbers aren't rotated but rather derived from address lines
+> (address/data). AD0-31 lines are the same across the whole PCI bus.
+> That means device numbers are independent of POV.
+> 
+>> (assuming that VIA Epia EN BIOS 1.07 is enough to use this card)
+> 
+> My VIA EPIA-M 600 is probably older than your one, so I'd assume
+> it should work as well.
+> When you configure 0x13 and 0x14, both devices get IRQs - that means
+> the BIOS can see both of them.
 
-Without the sources it's hard to tell. And all these applications are
-vendor-specific, so if they indeed have ways to avoid conflicting
-accesses between ACPI and the rest of the system, these ways are likely
-to be vendor-specific as well, and not documented.
+But the IRQ for the DVB-T card doesn't work.
+I would need to test the DVB-T card alone to be sure it has working IRQ.
+If so, what would be the conclusion?
 
-Either way, this means we need the support from hardware vendors to
-solve this concurrent access problem, and unfortunately I doubt this
-happens anytime soon :(
+>> The DN is the only variable so INT lines are hardwired on the riser card?
+> 
+> Yep. You just need a bit of soldering.
 
--- 
-Jean Delvare
+What IRQ rerouting would I need to try? 1 of 3 choices?
+Or one best bet?
+
+Udo
