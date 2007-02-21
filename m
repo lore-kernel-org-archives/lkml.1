@@ -1,94 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751351AbXBUXmJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750935AbXBUXrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751351AbXBUXmJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 18:42:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbXBUXmJ
+	id S1750935AbXBUXrz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 18:47:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbXBUXry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 18:42:09 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:57836 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751351AbXBUXmG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 18:42:06 -0500
-Date: Wed, 21 Feb 2007 15:41:59 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Petr =?ISO-8859-1?Q?Tesa=5F=5F=EDk?= <ptesarik@suse.cz>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] free pages in remove_arg_zero()
-Message-Id: <20070221154159.d316d526.akpm@linux-foundation.org>
-In-Reply-To: <1171978145.22720.21.camel@golias.tesarici.cz>
-References: <1171978145.22720.21.camel@golias.tesarici.cz>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 21 Feb 2007 18:47:54 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:34883 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750935AbXBUXry (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 18:47:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OawHRq/43HQWSOKqodMhbAdfK5PuBybeLdKC1yZj6lHrDcmNyZhBsg0u5naFj3EM3QyDne/seMTxMy3cL6bSTgv5rGTJQDYYqxifriC7jGuMusRWTHuvuRZajqD1lKbZsfFvQ3l6TPYEr4fMNwslY83q5UqR0X0d2NZ4JSocnX8=
+Message-ID: <45a44e480702211547h255c86dax82680c8f20df6d07@mail.gmail.com>
+Date: Wed, 21 Feb 2007 18:47:52 -0500
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [Linux-fbdev-devel] [PATCH 2.6.20 1/1] fbdev, mm: hecuba/E-Ink fbdev driver
+Cc: "James Simmons" <jsimmons@infradead.org>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Linux Kernel Development" <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, "Paul Mundt" <lethal@linux-sh.org>,
+       "Geert Uytterhoeven" <geert@linux-m68k.org>
+In-Reply-To: <1172101416.4217.19.camel@daplas>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070217104215.GB25512@localhost> <1171715652.5186.7.camel@lappy>
+	 <45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com>
+	 <20070217135922.GA15373@linux-sh.org>
+	 <45a44e480702180331t7e76c396j1a9861f689d4186b@mail.gmail.com>
+	 <20070218235741.GA22298@linux-sh.org>
+	 <45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
+	 <Pine.LNX.4.62.0702200906070.2082@pademelon.sonytel.be>
+	 <45a44e480702210855t344441c1xf8e081c82ece4e63@mail.gmail.com>
+	 <1172101416.4217.19.camel@daplas>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Feb 2007 14:29:04 +0100
-Petr Tesa____k <ptesarik@suse.cz> wrote:
+On 2/21/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> On Wed, 2007-02-21 at 11:55 -0500, Jaya Kumar wrote:
+> >
+> > You are right. I will need that. I could put that into struct
+> > fb_deferred_io. So drivers would setup like:
+> >
+>
+> Is it also possible to let the drivers do the 'deferred_io'
+> themselves?  Say, a driver that would flush the dirty pages on
+> every VBLANK interrupt.
 
-> I've found a bug when executing scripts:
+Yes, I think so. The deferred_io callback that the driver would get
+would be to provide them with the dirty pages list. Then, they could
+use that to handle the on-vblank work.
 
-You've found more than that.
+> > When the driver calls register_framebuffer and unregister_framebuffer,
+> > I can then do the init and destruction of the other members of that
+> > struct. Does this sound okay?
+>
+> It would be better if separate registering functions are created for
+> this functionality (ie deferred_io_register/unregister).
+>
 
-> When a script is loaded, load_script() replaces argv[0] with the
-> name of the interpreter and the filename passed to the exec syscall.
-> However, there is no guarantee that the length of the interpreter
-> name plus the length of the filename is greater than the length of
-> the original argv[0]. If the difference happens to cross a page boundary,
-> setup_arg_pages() will call install_arg_page() with an address outside
-> the VMA.
-> 
-> Therefore, remove_arg_zero() must free all pages which would be unused
-> after the argument is removed.
-> 
-> Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
-> 
-> --- linux-sles9.orig/fs/exec.c
-> +++ linux-sles9/fs/exec.c
-> @@ -1000,6 +1000,8 @@ void remove_arg_zero(struct linux_binprm
->  				continue;
->  			offset = 0;
->  			kunmap_atomic(kaddr, KM_USER0);
-> +			__free_page(page);
-> +			bprm->page[bprm->p/PAGE_SIZE - 1] = NULL;
->  inside:
->  			page = bprm->page[bprm->p/PAGE_SIZE];
->  			kaddr = kmap_atomic(page, KM_USER0);
+Ok. Will do it that way.
 
-I am not surprised that remove_arg_zero() is buggy.  Let us look at the
-stupid thing:
-
-void remove_arg_zero(struct linux_binprm *bprm)
-{
-	if (bprm->argc) {
-		unsigned long offset;
-		char * kaddr;
-		struct page *page;
-
-		offset = bprm->p % PAGE_SIZE;
-		goto inside;
-
-		while (bprm->p++, *(kaddr+offset++)) {
-			if (offset != PAGE_SIZE)
-				continue;
-			offset = 0;
-			kunmap_atomic(kaddr, KM_USER0);
-inside:
-			page = bprm->page[bprm->p/PAGE_SIZE];
-			kaddr = kmap_atomic(page, KM_USER0);
-		}
-		kunmap_atomic(kaddr, KM_USER0);
-		bprm->argc--;
-	}
-}
-
-I mean.... what the hell?
-
-As you appear to have managed to work out what the sorry thing is trying to
-do, would you have time to simply rip it out and completely rewrite it,
-including a nice comment telling the world what this function's function is?
-
-Because what we have there is beyond repairing.
-
-Thanks.
+Thanks,
+jaya
