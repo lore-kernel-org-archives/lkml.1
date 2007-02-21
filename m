@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751222AbXBUL4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751221AbXBUL5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751222AbXBUL4t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 06:56:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbXBUL4s
+	id S1751221AbXBUL5V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 06:57:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbXBUL5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 06:56:48 -0500
-Received: from ns2.suse.de ([195.135.220.15]:59622 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751222AbXBUL4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 06:56:48 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: patch to use more symbolic constants in asm
-Date: Wed, 21 Feb 2007 12:56:43 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
-References: <1172056242.3531.181.camel@laptopd505.fenrus.org>
-In-Reply-To: <1172056242.3531.181.camel@laptopd505.fenrus.org>
+	Wed, 21 Feb 2007 06:57:21 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:38596 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751221AbXBUL5U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 06:57:20 -0500
+Date: Wed, 21 Feb 2007 12:57:19 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] i386 asm-offsets.c: workaround for a -Wmissing-prototypes warning
+Message-ID: <20070221115719.GE13958@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702211256.43565.ak@suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 February 2007 12:10, Arjan van de Ven wrote:
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Subject: Use symbolic constants in inline assembly
-> 
-> This patch replaces several of the %0/%1 uses in x86-64 inline assembly
-> with symbolic names (this is a new gcc 3.x feature, but that's ok now).
-> This tends to, imo, make the inline assembly a lot more readable, and
-> for sure it's less error prone in terms of finding which %<number>
-> corresponds with which variable.
+This patch works around a warning with -Wmissing-prototypes in 
+arch/i386/kernel/asm-offsets.c
 
-At least for two arguments i don't really see the value, but ok.
+The warning isn't gcc's fault - asm-offsets.c is simply a special file.
 
-> objdump -d of the vmlinux before and after the patch is the same; also
-> boot tested.
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-You should do i386 too then; one reason I didn't touch bitops 
-for example was to keep the code more similar.
+---
+--- linux-2.6.20-mm2/arch/i386/kernel/asm-offsets.c.old	2007-02-20 23:28:45.000000000 +0100
++++ linux-2.6.20-mm2/arch/i386/kernel/asm-offsets.c	2007-02-20 23:29:42.000000000 +0100
+@@ -29,6 +29,9 @@
+ #define OFFSET(sym, str, mem) \
+ 	DEFINE(sym, offsetof(struct str, mem));
+ 
++/* workaround for a warning with -Wmissing-prototypes */
++void foo(void);
++
+ void foo(void)
+ {
+ 	OFFSET(SIGCONTEXT_eax, sigcontext, eax);
 
-
->  static inline void set_cr4(unsigned long cr4)
->  {
-> -	asm volatile("mov %0,%%cr4" :: "r" (cr4) : "memory");
-> +	asm volatile("mov %[cr4],%%cr4" :: [cr4] "r" (cr4) : "memory");
-
-I'm not sure that's really an improvement for example.
-
--Andi
