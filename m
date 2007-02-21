@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161211AbXBUKCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161205AbXBUKDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161211AbXBUKCq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 05:02:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161179AbXBUKCo
+	id S1161205AbXBUKDS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 05:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161220AbXBUKDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 05:02:44 -0500
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:62564 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161211AbXBUKCE (ORCPT
+	Wed, 21 Feb 2007 05:03:17 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:65523 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161217AbXBUKDI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 05:02:04 -0500
-Date: Wed, 21 Feb 2007 11:02:05 +0100
+	Wed, 21 Feb 2007 05:03:08 -0500
+Date: Wed, 21 Feb 2007 11:03:08 +0100
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: holzheu@de.ibm.com
-Subject: [S390] New get_cpu_id() inline assembly
-Message-ID: <20070221100205.GG13419@skybase>
+Cc: heiko.carstens@de.ibm.com
+Subject: [S390] bss section clearing.
+Message-ID: <20070221100308.GJ13419@skybase>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
@@ -24,60 +24,32 @@ User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Holzheu <holzheu@de.ibm.com>
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-[S390] New get_cpu_id() inline assembly
+[S390] bss section clearing.
 
-Replace two stidp inline assemblies with one global implementation.
+Clear only memory from __bss_start to __bss_stop when clearing the bss
+section. Not until _end, which currently happens to be the same.
 
-Signed-off-by: Michael Holzheu <holzheu@de.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- arch/s390/kernel/early.c     |    2 +-
- arch/s390/kernel/setup.c     |    2 +-
- include/asm-s390/processor.h |    5 +++++
- 3 files changed, 7 insertions(+), 2 deletions(-)
+ arch/s390/kernel/early.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
 diff -urpN linux-2.6/arch/s390/kernel/early.c linux-2.6-patched/arch/s390/kernel/early.c
---- linux-2.6/arch/s390/kernel/early.c	2007-02-21 10:47:06.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/early.c	2007-02-21 10:47:29.000000000 +0100
-@@ -129,7 +129,7 @@ static noinline __init void detect_machi
+--- linux-2.6/arch/s390/kernel/early.c	2007-02-21 10:47:32.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/early.c	2007-02-21 10:47:33.000000000 +0100
+@@ -110,7 +110,7 @@ static inline void create_kernel_nss(voi
+  */
+ static noinline __init void clear_bss_section(void)
  {
- 	struct cpuinfo_S390 *cpuinfo = &S390_lowcore.cpu_data;
+-	memset(__bss_start, 0, _end - __bss_start);
++	memset(__bss_start, 0, __bss_stop - __bss_start);
+ }
  
--	asm volatile("stidp %0" : "=m" (S390_lowcore.cpu_data.cpu_id));
-+	get_cpu_id(&S390_lowcore.cpu_data.cpu_id);
- 
- 	/* Running under z/VM ? */
- 	if (cpuinfo->cpu_id.version == 0xff)
-diff -urpN linux-2.6/arch/s390/kernel/setup.c linux-2.6-patched/arch/s390/kernel/setup.c
---- linux-2.6/arch/s390/kernel/setup.c	2007-02-21 10:47:06.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/setup.c	2007-02-21 10:47:29.000000000 +0100
-@@ -106,7 +106,7 @@ void __devinit cpu_init (void)
-         /*
-          * Store processor id in lowcore (used e.g. in timer_interrupt)
-          */
--	asm volatile("stidp %0": "=m" (S390_lowcore.cpu_data.cpu_id));
-+	get_cpu_id(&S390_lowcore.cpu_data.cpu_id);
-         S390_lowcore.cpu_data.cpu_addr = addr;
- 
-         /*
-diff -urpN linux-2.6/include/asm-s390/processor.h linux-2.6-patched/include/asm-s390/processor.h
---- linux-2.6/include/asm-s390/processor.h	2007-02-21 10:47:14.000000000 +0100
-+++ linux-2.6-patched/include/asm-s390/processor.h	2007-02-21 10:47:29.000000000 +0100
-@@ -36,6 +36,11 @@ typedef struct
-         unsigned int unused  : 16;
- } __attribute__ ((packed)) cpuid_t;
- 
-+static inline void get_cpu_id(cpuid_t *ptr)
-+{
-+	asm volatile("stidp 0(%1)" : "=m" (*ptr) : "a" (ptr));
-+}
-+
- struct cpuinfo_S390
- {
-         cpuid_t  cpu_id;
+ /*
 -- 
 blue skies,              IBM Deutschland Entwicklung GmbH
    Martin                Vorsitzender des Aufsichtsrats: Johann Weihen
