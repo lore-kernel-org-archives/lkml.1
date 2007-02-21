@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161037AbXBUPYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750774AbXBUP23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161037AbXBUPYw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 10:24:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161279AbXBUPYw
+	id S1750774AbXBUP23 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 10:28:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbXBUP23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 10:24:52 -0500
-Received: from fnoeppeil48.netpark.at ([217.175.205.176]:2805 "EHLO
-	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161037AbXBUPYw (ORCPT
+	Wed, 21 Feb 2007 10:28:29 -0500
+Received: from heineken.digium.com ([216.207.245.2]:60432 "EHLO
+	heineken.digium.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750774AbXBUP22 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 10:24:52 -0500
-Date: Wed, 21 Feb 2007 16:24:48 +0100
-From: Manuel Lauss <mano@roarinelk.homelinux.net>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Cc: Komuro <komurojun-mbn@nifty.com>, linux-kernel@vger.kernel.org
-Subject: Re: [BUG]  PATA_PCMCIA does not work
-Message-ID: <20070221152448.GA10679@roarinelk.homelinux.net>
-References: <20061217212752.d93816b4.komurojun-mbn@nifty.com> <20061217040222.GD17561@ftp.linux.org.uk> <20070211101537.e40fa309.komurojun-mbn@nifty.com> <20070211114013.65b2be2c.komurojun-mbn@nifty.com> <20070218110914.888de729.komurojun-mbn@nifty.com> <20070221153729.5eab83b6@lxorguk.ukuu.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070221153729.5eab83b6@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.11
+	Wed, 21 Feb 2007 10:28:28 -0500
+In-Reply-To: <45DBBFE8.5080901@shaw.ca>
+References: <fa.1OWRIIUBXsZOXflsGLA+7d4YCc0@ifi.uio.no> <fa.A0XBTh7eCfsh11d3AhMO71/4xQU@ifi.uio.no> <fa.fCm35VohC2wt9vlkg94Ru7me4ic@ifi.uio.no> <fa.qDqCne4pXntL0PolSS2j8t4py3g@ifi.uio.no> <fa.8TboLRab6f7zzIWFr/JPM6q04Zo@ifi.uio.no> <fa.PMqnzxUBiShkWV4h9SiztNIwYc0@ifi.uio.no> <45DBBFE8.5080901@shaw.ca>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <0c69abe94bbc69f652831a64ad77d0cb@digium.com>
+Content-Transfer-Encoding: 7bit
+Cc: Tejun Heo <htejun@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>
+From: Matthew Fredrickson <creslin@digium.com>
+Subject: Re: High CPU usage with sata_nv
+Date: Wed, 21 Feb 2007 09:28:17 -0600
+To: Robert Hancock <hancockr@shaw.ca>
+X-Mailer: Apple Mail (2.624)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 21, 2007 at 03:37:29PM +0000, Alan wrote:
-> Does this fix the oops ?
-> 
-> Alan
-> 
-> 
-> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.20-mm2/drivers/ata/pata_pcmcia.c linux-2.6.20-mm2/drivers/ata/pata_pcmcia.c
-> --- linux.vanilla-2.6.20-mm2/drivers/ata/pata_pcmcia.c	2007-02-20 13:37:58.000000000 +0000
-> +++ linux-2.6.20-mm2/drivers/ata/pata_pcmcia.c	2007-02-21 14:06:58.792707976 +0000
-> @@ -308,7 +342,6 @@
->  		if (info->ndev) {
->  			struct ata_host *host = dev_get_drvdata(dev);
->  			ata_host_detach(host);
-> -			dev_set_drvdata(dev, NULL);
->  		}
->  		info->ndev = 0;
->  		pdev->priv = NULL;
 
-This bug is also present in 2.6.21-rc1, and this patch
-indeed fixes it.
+On Feb 20, 2007, at 9:43 PM, Robert Hancock wrote:
 
-Thanks,
+> Matthew Fredrickson wrote:
+>> I have noticed something that might be related as well.  I am working 
+>> on a device driver that would have periodic data errors due to 
+>> exceptionally long interrupt handling latency.  I have come to the 
+>> point that I suspect that it's the sata_nv driver, and now that we 
+>> can't do the hdparm -u1 option for sata, it seems to be a bigger 
+>> problem.
+>
+> What kernel are you using? There were some complaints about latency 
+> problems (the ATA status register read taking a ridiculous amount of 
+> time to complete) on sata_nv previously, but 2.6.20 should eliminate 
+> that problem at least on nForce4 chipsets..
+>
 
--- 
- ml.
+It's a 2.6.18 kernel.  What we're seeing (by means of the interrupt pin 
+on another card) is extremely large interrupt latency (measured from 
+the time the interrupt pin goes low to the first couple lines of code 
+in the IRQ handler to clear it) occasionally, in the order of 500-700 
+microseconds.  I figured it was some other driver on the system 
+disabling irqs for a long period of time, but it's difficult to trace 
+what might be doing that.
+
+Matthew Fredrickson
+
