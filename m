@@ -1,32 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751083AbXBUBkB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751076AbXBUBlD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751083AbXBUBkB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 20:40:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbXBUBjf
+	id S1751076AbXBUBlD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 20:41:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932317AbXBUBk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 20:39:35 -0500
-Received: from ns2.suse.de ([195.135.220.15]:34568 "EHLO mx2.suse.de"
+	Tue, 20 Feb 2007 20:40:59 -0500
+Received: from mx2.suse.de ([195.135.220.15]:34758 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751031AbXBUBjD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 20:39:03 -0500
-Date: Tue, 20 Feb 2007 17:37:41 -0800
+	id S1751076AbXBUBkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 20:40:22 -0500
+Date: Tue, 20 Feb 2007 17:39:00 -0800
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Alan <alan@lxorguk.ukuu.org.uk>
+       Andrew Morton <akpm@osdl.org>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, linux-ide@vger.kernel.org,
-       bzolnier@gmail.com, Tejun Heo <htejun@gmail.com>
-Subject: [patch 10/21] ide: fix drive side 80c cable check
-Message-ID: <20070221013741.GK30227@kroah.com>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       nfs@lists.sourceforge.net, Neil Brown <neilb@suse.de>
+Subject: [patch 21/21] knfsd: Fix a race in closing NFSd connections.
+Message-ID: <20070221013900.GV30227@kroah.com>
 References: <20070221012758.925122216@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ide-fix-drive-side-80c-cable-check.patch"
+Content-Disposition: inline; filename="knfsd-fix-a-race-in-closing-nfsd-connections.patch"
 In-Reply-To: <20070221013619.GA30227@kroah.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,30 +35,203 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
+If you lose this race, it can iput a socket inode twice and you
+get a BUG in fs/inode.c
 
-eighty_ninty_three() had word 93 validitity check but not the 80c bit
-test itself (bit 12).  This increases the chance of incorrect wire
-detection especially because host side cable detection is often
-unreliable and we sometimes soley depend on drive side cable
-detection.  Fix it.
+When I added the option for user-space to close a socket,
+I added some cruft to svc_delete_socket so that I could call
+that function when closing a socket per user-space request.
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
-Acked-by: Alan <alan@lxorguk.ukuu.org.uk>
+This was the wrong thing to do.  I should have just set SK_CLOSE
+and let normal mechanisms do the work.
+
+Not only wrong, but buggy.  The locking is all wrong and it openned
+up a race where-by a socket could be closed twice.
+
+So this patch:
+  Introduces svc_close_socket which sets SK_CLOSE then either leave
+  the close up to a thread, or calls svc_delete_socket if it can
+  get SK_BUSY.
+
+  Adds a bias to sk_busy which is removed when SK_DEAD is set,
+  This avoid races around shutting down the socket.
+
+  Changes several 'spin_lock' to 'spin_lock_bh' where the _bh 
+  was missing.
+
+Bugzilla-url: http://bugzilla.kernel.org/show_bug.cgi?id=7916
+
+Signed-off-by: Neil Brown <neilb@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- drivers/ide/ide-iops.c |    2 ++
- 1 file changed, 2 insertions(+)
 
---- linux-2.6.19.4.orig/drivers/ide/ide-iops.c
-+++ linux-2.6.19.4/drivers/ide/ide-iops.c
-@@ -607,6 +607,8 @@ u8 eighty_ninty_three (ide_drive_t *driv
- 	if(!(drive->id->hw_config & 0x4000))
+---
+ include/linux/sunrpc/svcsock.h |    2 -
+ net/sunrpc/svc.c               |    4 +--
+ net/sunrpc/svcsock.c           |   52 +++++++++++++++++++++++++++++------------
+ 3 files changed, 41 insertions(+), 17 deletions(-)
+
+--- linux-2.6.19.4.orig/include/linux/sunrpc/svcsock.h
++++ linux-2.6.19.4/include/linux/sunrpc/svcsock.h
+@@ -63,7 +63,7 @@ struct svc_sock {
+  * Function prototypes.
+  */
+ int		svc_makesock(struct svc_serv *, int, unsigned short);
+-void		svc_delete_socket(struct svc_sock *);
++void		svc_close_socket(struct svc_sock *);
+ int		svc_recv(struct svc_rqst *, long);
+ int		svc_send(struct svc_rqst *);
+ void		svc_drop(struct svc_rqst *);
+--- linux-2.6.19.4.orig/net/sunrpc/svc.c
++++ linux-2.6.19.4/net/sunrpc/svc.c
+@@ -387,7 +387,7 @@ svc_destroy(struct svc_serv *serv)
+ 		svsk = list_entry(serv->sv_tempsocks.next,
+ 				  struct svc_sock,
+ 				  sk_list);
+-		svc_delete_socket(svsk);
++		svc_close_socket(svsk);
+ 	}
+ 	if (serv->sv_shutdown)
+ 		serv->sv_shutdown(serv);
+@@ -396,7 +396,7 @@ svc_destroy(struct svc_serv *serv)
+ 		svsk = list_entry(serv->sv_permsocks.next,
+ 				  struct svc_sock,
+ 				  sk_list);
+-		svc_delete_socket(svsk);
++		svc_close_socket(svsk);
+ 	}
+ 	
+ 	cache_clean_deferred(serv);
+--- linux-2.6.19.4.orig/net/sunrpc/svcsock.c
++++ linux-2.6.19.4/net/sunrpc/svcsock.c
+@@ -61,6 +61,12 @@
+  *		after a clear, the socket must be read/accepted
+  *		 if this succeeds, it must be set again.
+  *	SK_CLOSE can set at any time. It is never cleared.
++ *      sk_inuse contains a bias of '1' until SK_DEAD is set.
++ *             so when sk_inuse hits zero, we know the socket is dead
++ *             and no-one is using it.
++ *      SK_DEAD can only be set while SK_BUSY is held which ensures
++ *             no other thread will be using the socket or will try to
++ *	       set SK_DEAD.
+  *
+  */
+ 
+@@ -69,6 +75,7 @@
+ 
+ static struct svc_sock *svc_setup_socket(struct svc_serv *, struct socket *,
+ 					 int *errp, int pmap_reg);
++static void		svc_delete_socket(struct svc_sock *svsk);
+ static void		svc_udp_data_ready(struct sock *, int);
+ static int		svc_udp_recvfrom(struct svc_rqst *);
+ static int		svc_udp_sendto(struct svc_rqst *);
+@@ -299,8 +306,9 @@ void svc_reserve(struct svc_rqst *rqstp,
+ static inline void
+ svc_sock_put(struct svc_sock *svsk)
+ {
+-	if (atomic_dec_and_test(&svsk->sk_inuse) &&
+-			test_bit(SK_DEAD, &svsk->sk_flags)) {
++	if (atomic_dec_and_test(&svsk->sk_inuse)) {
++		BUG_ON(! test_bit(SK_DEAD, &svsk->sk_flags));
++
+ 		dprintk("svc: releasing dead socket\n");
+ 		if (svsk->sk_sock->file)
+ 			sockfd_put(svsk->sk_sock);
+@@ -490,7 +498,7 @@ svc_sock_names(char *buf, struct svc_ser
+ 
+ 	if (!serv)
  		return 0;
- #endif /* CONFIG_IDEDMA_IVB */
-+	if (!(drive->id->hw_config & 0x2000))
+-	spin_lock(&serv->sv_lock);
++	spin_lock_bh(&serv->sv_lock);
+ 	list_for_each_entry(svsk, &serv->sv_permsocks, sk_list) {
+ 		int onelen = one_sock_name(buf+len, svsk);
+ 		if (toclose && strcmp(toclose, buf+len) == 0)
+@@ -498,12 +506,12 @@ svc_sock_names(char *buf, struct svc_ser
+ 		else
+ 			len += onelen;
+ 	}
+-	spin_unlock(&serv->sv_lock);
++	spin_unlock_bh(&serv->sv_lock);
+ 	if (closesk)
+ 		/* Should unregister with portmap, but you cannot
+ 		 * unregister just one protocol...
+ 		 */
+-		svc_delete_socket(closesk);
++		svc_close_socket(closesk);
+ 	else if (toclose)
+ 		return -ENOENT;
+ 	return len;
+@@ -653,6 +661,11 @@ svc_udp_recvfrom(struct svc_rqst *rqstp)
+ 		return svc_deferred_recv(rqstp);
+ 	}
+ 
++	if (test_bit(SK_CLOSE, &svsk->sk_flags)) {
++		svc_delete_socket(svsk);
 +		return 0;
- 	return 1;
++	}
++
+ 	clear_bit(SK_DATA, &svsk->sk_flags);
+ 	while ((skb = skb_recv_datagram(svsk->sk_sk, 0, 1, &err)) == NULL) {
+ 		if (err == -EAGAIN) {
+@@ -1142,7 +1155,8 @@ svc_tcp_sendto(struct svc_rqst *rqstp)
+ 		       rqstp->rq_sock->sk_server->sv_name,
+ 		       (sent<0)?"got error":"sent only",
+ 		       sent, xbufp->len);
+-		svc_delete_socket(rqstp->rq_sock);
++		set_bit(SK_CLOSE, &rqstp->rq_sock->sk_flags);
++		svc_sock_enqueue(rqstp->rq_sock);
+ 		sent = -EAGAIN;
+ 	}
+ 	return sent;
+@@ -1461,7 +1475,7 @@ svc_setup_socket(struct svc_serv *serv, 
+ 	svsk->sk_odata = inet->sk_data_ready;
+ 	svsk->sk_owspace = inet->sk_write_space;
+ 	svsk->sk_server = serv;
+-	atomic_set(&svsk->sk_inuse, 0);
++	atomic_set(&svsk->sk_inuse, 1);
+ 	svsk->sk_lastrecv = get_seconds();
+ 	spin_lock_init(&svsk->sk_defer_lock);
+ 	INIT_LIST_HEAD(&svsk->sk_deferred);
+@@ -1582,7 +1596,7 @@ bummer:
+ /*
+  * Remove a dead socket
+  */
+-void
++static void
+ svc_delete_socket(struct svc_sock *svsk)
+ {
+ 	struct svc_serv	*serv;
+@@ -1608,16 +1622,26 @@ svc_delete_socket(struct svc_sock *svsk)
+ 	 * while still attached to a queue, the queue itself
+ 	 * is about to be destroyed (in svc_destroy).
+ 	 */
+-	if (!test_and_set_bit(SK_DEAD, &svsk->sk_flags))
++	if (!test_and_set_bit(SK_DEAD, &svsk->sk_flags)) {
++		BUG_ON(atomic_read(&svsk->sk_inuse)<2);
++		atomic_dec(&svsk->sk_inuse);
+ 		if (test_bit(SK_TEMP, &svsk->sk_flags))
+ 			serv->sv_tmpcnt--;
++	}
+ 
+-	/* This atomic_inc should be needed - svc_delete_socket
+-	 * should have the semantic of dropping a reference.
+-	 * But it doesn't yet....
+-	 */
+-	atomic_inc(&svsk->sk_inuse);
+ 	spin_unlock_bh(&serv->sv_lock);
++}
++
++void svc_close_socket(struct svc_sock *svsk)
++{
++	set_bit(SK_CLOSE, &svsk->sk_flags);
++	if (test_and_set_bit(SK_BUSY, &svsk->sk_flags))
++		/* someone else will have to effect the close */
++		return;
++
++	atomic_inc(&svsk->sk_inuse);
++	svc_delete_socket(svsk);
++	clear_bit(SK_BUSY, &svsk->sk_flags);
+ 	svc_sock_put(svsk);
  }
  
 
