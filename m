@@ -1,108 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030554AbXBUH0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161078AbXBUHhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030554AbXBUH0L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 02:26:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030561AbXBUH0L
+	id S1161078AbXBUHhs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 02:37:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161066AbXBUHhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 02:26:11 -0500
-Received: from tag.witbe.net ([81.88.96.48]:36699 "EHLO tag.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030554AbXBUH0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 02:26:09 -0500
-Reply-To: <rol@as2917.net>
-From: "Paul Rolland" <rol@as2917.net>
-To: "'Marcus Haebler'" <haebler@gmail.com>, "'Tejun Heo'" <htejun@gmail.com>
-Cc: "'Pablo Sebastian Greco'" <lkml@fliagreco.com.ar>,
-       <linux-kernel@vger.kernel.org>
-Subject: RE: SATA problems
-Date: Wed, 21 Feb 2007 08:25:52 +0100
-Organization: AS2917.net
-Message-ID: <012f01c75589$87d740e0$4b00a8c0@donald>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
+	Wed, 21 Feb 2007 02:37:47 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:17515 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161022AbXBUHhq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 02:37:46 -0500
+Date: Tue, 20 Feb 2007 23:32:47 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Hemminger <shemminger@osdl.org>
+Cc: Pavel Machek <pavel@ucw.cz>, James Ketrenos <jketreno@linux.intel.com>,
+       netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ipw3945-devel@lists.sourceforge.net
+Subject: Re: iwlwifi warnings
+Message-Id: <20070220233247.5d5f76b7.randy.dunlap@oracle.com>
+In-Reply-To: <45DBE559.8080903@osdl.org>
+References: <45CCE3CA.4050904@linux.intel.com>
+	<20070213181313.GA5350@ucw.cz>
+	<45D254C6.7050401@linux.intel.com>
+	<20070219224432.GD21199@elf.ucw.cz>
+	<45DBE559.8080903@osdl.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-In-Reply-To: <d72aa1340702202224i209fb131pb0f9c2c9cc547e6d@mail.gmail.com>
-Thread-Index: AcdVgQgyNDE1C0zHRYWksEaNxmgOswACDYrQ
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Marcus,
+On Tue, 20 Feb 2007 22:23:21 -0800 Stephen Hemminger wrote:
 
-Could you give more details ? I'm stucked with a boot problem on a 
-Asus P5W that also includes a Jmicron behind a Sata port on ICH8, and
-the kernel boot goes timeout when probing it... I've been trying various
-kernels,
-including some patches from Tejun (Thanks !), but no luck to date...
-
-Mind sharing your .config so that I can check if I missed something obvious ?
-
-Regards,
-Paul
-
-Paul Rolland, rol(at)as2917.net
-ex-AS2917 Network administrator and Peering Coordinator
-
---
-
-Please no HTML, I'm not a browser - Pas d'HTML, je ne suis pas un navigateur 
-"Some people dream of success... while others wake up and work hard at it" 
-
-"I worry about my child and the Internet all the time, even though she's too 
-young to have logged on yet. Here's what I worry about. I worry that 10 or 15 
-years from now, she will come to me and say 'Daddy, where were you when they 
-took freedom of the press away from the Internet?'"
---Mike Godwin, Electronic Frontier Foundation 
-  
-
-> -----Original Message-----
-> From: linux-kernel-owner@vger.kernel.org 
-> [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of 
-> Marcus Haebler
-> Sent: Wednesday, February 21, 2007 7:24 AM
-> To: Tejun Heo
-> Cc: Pablo Sebastian Greco; linux-kernel@vger.kernel.org
-> Subject: Re: SATA problems
+> BUilding with sparse shows lots of warnings.
 > 
-> Tejun,
 > 
-> I checked out the kernel 2.6.19 to 2.6.20 Changelog. Seems like you
-> fixed a problem with the JMB363. The Asus P5B-Deluxe I am using has a
-> JMB363 - besides an Intel ICH8R - with the SATA ports set to AHCI as
-> well. Looks like that might have been the source of the problem in
-> 2.6.19.
-> 
-> Thanks,
-> 
-> Marcus
-> 
-> On 2/21/07, Marcus Haebler <haebler@gmail.com> wrote:
-> > Tejun,
-> >
-> > thanks. In preparation of your patch I installed a vanilla 2.6.20.1
-> > kernel on my FC6
-> > system. Amazingly the problem went away with the vanilla(!) 
-> kernel and NCQ
-> > is enabled at boot time (queue_depth is 31). I guess I should have
-> > tried that kernel
-> > earlier.
-> >
-> > The patches you sent earlier apply w/o problems against the 2.6.20.1
-> > vanilla kernel
-> > which is expected. I will test drive those patches tomorrow.
-> >
-> > BTW thanks for saving me the 'cat' on the 3 patches. ;)
-> >
-> > Thanks,
-> >
-> > Marcus
-> -
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> $ make C=1
+> Checking kernel compatibility in:
+>     /lib/modules/2.6.20.1/source
+>  * Kernel supports required features for 'tip' version.
+> Building compatibility version in 'compatible/' directory:
+> Copying compatible/ from origin/...done
+> make -C /lib/modules/2.6.20.1/build M=/home/shemminger/src/iwlwifi-0.0.8 
+> modules
 
+[snip]
+
+Good point(s).  Please try to use Documentation/SubmitChecklist,
+as indicated in Andrew's -mm announcements (and copied in my sig below).
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
