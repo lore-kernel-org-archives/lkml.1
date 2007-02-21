@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422738AbXBUSMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422743AbXBUSMr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422738AbXBUSMR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 13:12:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422750AbXBUSMR
+	id S1422743AbXBUSMr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 13:12:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422748AbXBUSMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 13:12:17 -0500
-Received: from smtp-vbr2.xs4all.nl ([194.109.24.22]:3452 "EHLO
-	smtp-vbr2.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422738AbXBUSMR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 13:12:17 -0500
-Message-ID: <45DC8B3A.2080301@xs4all.nl>
-Date: Wed, 21 Feb 2007 19:11:06 +0100
-From: Udo van den Heuvel <udovdh@xs4all.nl>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Wed, 21 Feb 2007 13:12:47 -0500
+Received: from il.qumranet.com ([82.166.9.18]:54563 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422743AbXBUSMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 13:12:46 -0500
+Message-ID: <45DC8B6E.5050205@qumranet.com>
+Date: Wed, 21 Feb 2007 20:11:58 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Krzysztof Halasa <khc@pm.waw.pl>,
-       Alistair John Strachan <s0348365@sms.ed.ac.uk>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Subject: Re: PCI riser cards and PCI irq routing, etc
-References: <45D85DA1.7090502@xs4all.nl> <m3odnpq3yr.fsf@maximus.localdomain>	<45DA7643.4020305@xs4all.nl>	<200702201456.30794.s0348365@sms.ed.ac.uk> <45DB174F.30708@xs4all.nl>	<45DC0FCC.7010705@xs4all.nl> <m3wt2bem13.fsf@maximus.localdomain> <45DC5E67.8060101@xs4all.nl>
-In-Reply-To: <45DC5E67.8060101@xs4all.nl>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: id=8300CC02
-Content-Type: text/plain; charset=ISO-8859-1
+To: kvm-devel <kvm-devel@lists.sourceforge.net>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH 0/6] KVM userspace interface updates for 2.6.21
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-BTW:
+The following patchset moves the kvm userspace interface from having a 
+single fd, to having three types of file descriptors:
 
-Is the situation, with default DN setting of 19 as displayed below,
-`normal` w.r.t. interrupts?
-I mean: Both the DVB card with DN19 and the Unichrome Pro video adapter
-have the same irq although they are on different busses.
+- one fd returned by open("/dev/kvm") is used for generic access to the 
+kvm driver, for example to get the API version and to create virtual 
+machines
+- when you create a virtual machine, you get back an fd that can be used 
+to control vm-wide aspects, like guest memory configuratio
+- when you create a virtual cpu, you get an fd that can be used to 
+control the vcpu, for example getting and setting registers, and if 
+you're really serious, running the guest
 
-(...)
-00:13.0 Multimedia controller: Philips Semiconductors SAA7146 (rev 01)
-        Subsystem: TERRATEC Electronic GmbH Unknown device 1157
-        Flags: bus master, medium devsel, latency 32, IRQ 16
-        Memory at fdffc000 (32-bit, non-prefetchable) [size=512]
+The motivation for this change is twofold:
+- prevent having a 'struct inode' and 'struct file' with different file 
+operation callbacks
+- prevent cacheline bouncing of the 'struct file' when we support guest 
+smp (by giving each vcpu its own file structure)
 
-00:14.0 Multimedia controller: Philips Semiconductors SAA7146 (rev 01)
-        Subsystem: TERRATEC Electronic GmbH Unknown device 1155
-        Flags: bus master, medium devsel, latency 32, IRQ 20
-        Memory at fdffb000 (32-bit, non-prefetchable) [size=512]
+A side effect is that the code becomes somewhat cleaner, due to the vcpu 
+number not being passed around and validated.
 
-01:00.0 VGA compatible controller: VIA Technologies, Inc. UniChrome Pro
-IGP (rev
- 01) (prog-if 00 [VGA])
-        Subsystem: VIA Technologies, Inc. UniChrome Pro IGP
-        Flags: bus master, 66MHz, medium devsel, latency 32, IRQ 16
-        Memory at f4000000 (32-bit, prefetchable) [size=64M]
-        Memory at fb000000 (32-bit, non-prefetchable) [size=16M]
-        [virtual] Expansion ROM at fc000000 [disabled] [size=64K]
-        Capabilities: [60] Power Management version 2
-        Capabilities: [70] AGP version 3.0
+The change was discussed on kvm-devel some time ago.  Thanks to Arnd 
+Bergmann for useful suggestions and to the epoll code for inspiration.
 
-How can I find out what INT_A/B/C/D line is mapped to what irq?
+-- 
+error compiling committee.c: too many arguments to function
+
