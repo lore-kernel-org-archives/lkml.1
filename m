@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965194AbXBUDmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965076AbXBUDn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965194AbXBUDmu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 22:42:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965113AbXBUDmu
+	id S965076AbXBUDn5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 22:43:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030223AbXBUDn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 22:42:50 -0500
-Received: from ithilien.qualcomm.com ([129.46.51.59]:34220 "EHLO
-	ithilien.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965324AbXBUDmt (ORCPT
+	Tue, 20 Feb 2007 22:43:57 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:62631 "EHLO
+	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965076AbXBUDn4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 22:42:49 -0500
-Message-ID: <45DBBF62.4020207@qualcomm.com>
-Date: Tue, 20 Feb 2007 19:41:22 -0800
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: SLAB cache reaper on isolated cpus
-References: <20070129011301.GA844@tv-sign.ru> <Pine.LNX.4.64.0701290852390.28200@schroedinger.engr.sgi.com> <20070129171923.GA138@tv-sign.ru> <Pine.LNX.4.64.0701290922390.28330@schroedinger.engr.sgi.com> <20070129182742.GA158@tv-sign.ru> <45DB404C.4070305@qualcomm.com> <Pine.LNX.4.64.0702201041340.14643@schroedinger.engr.sgi.com> <20070220200550.GA85@tv-sign.ru> <45DB669B.2010307@qualcomm.com> <Pine.LNX.4.64.0702201334361.17198@schroedinger.engr.sgi.com> <45DB6FC7.60502@qualcomm.com> <Pine.LNX.4.64.0702201402420.17433@schroedinger.engr.sgi.com> <45DB7AB1.5010304@qualcomm.com> <Pine.LNX.4.64.0702201514470.17866@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0702201514470.17866@schroedinger.engr.sgi.com>
-X-Enigmail-Version: 0.94.1.1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 20 Feb 2007 22:43:56 -0500
+Date: Tue, 20 Feb 2007 21:43:36 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: High CPU usage with sata_nv
+In-reply-to: <fa.PMqnzxUBiShkWV4h9SiztNIwYc0@ifi.uio.no>
+To: Matthew Fredrickson <creslin@digium.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Tejun Heo <htejun@gmail.com>
+Message-id: <45DBBFE8.5080901@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.1OWRIIUBXsZOXflsGLA+7d4YCc0@ifi.uio.no>
+ <fa.A0XBTh7eCfsh11d3AhMO71/4xQU@ifi.uio.no>
+ <fa.fCm35VohC2wt9vlkg94Ru7me4ic@ifi.uio.no>
+ <fa.qDqCne4pXntL0PolSS2j8t4py3g@ifi.uio.no>
+ <fa.8TboLRab6f7zzIWFr/JPM6q04Zo@ifi.uio.no>
+ <fa.PMqnzxUBiShkWV4h9SiztNIwYc0@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Tue, 20 Feb 2007, Max Krasnyansky wrote:
-> 
->> Suppose I need to isolate a CPU. We already support at the scheduler and 
->> irq levels (irq affinity). But I want to go a bit further and avoid 
->> doing kernel work on isolated cpus as much as possible. For example I 
->> would not want to schedule work queues and stuff on them. Currently 
->> there are just a few users of the schedule_delayed_work_on(). cpufreq 
->> (don't care for isolation purposes), oprofile (same here) and slab. For 
->> the slab it'd be nice to run the reaper on some other CPU. But you're 
->> saying that locking depends on CPU pinning. Is there any other option 
->> besides disabling cache reap ? Is there a way for example to constraint 
->> the slabs on CPU X to not exceed N megs ?
-> 
-> There is no way to constrain the amount of slab work. In order to make the 
-> above work we would have to disable the per cpu caches for a certain cpu. 
-> Then there would be no need to run the cache reaper at all.
-> 
-> To some extend such functionality already exists. F.e. kmalloc_node() 
-> already bypasses the per cpu caches (most of the time).  kmalloc_node will 
-> have to take a spinlock on a shared cacheline on each invocation. kmalloc 
-> does only touch per cpu data during regular operations. Thus kmalloc() is much 
-> faster than kmalloc_node() and the cachelines for kmalloc() can be kept in 
-> the per cpu cache.
-> 
-> If we could disable all per cpu caches for certain cpus then you could 
-> make this work. All slab OS interference would be off the processor.
+Matthew Fredrickson wrote:
+> I have noticed something that might be related as well.  I am working on 
+> a device driver that would have periodic data errors due to 
+> exceptionally long interrupt handling latency.  I have come to the point 
+> that I suspect that it's the sata_nv driver, and now that we can't do 
+> the hdparm -u1 option for sata, it seems to be a bigger problem.
 
-Hmm. That's an idea. I'll play with it later today or tomorrow.
+What kernel are you using? There were some complaints about latency 
+problems (the ATA status register read taking a ridiculous amount of 
+time to complete) on sata_nv previously, but 2.6.20 should eliminate 
+that problem at least on nForce4 chipsets..
 
-Thanks
-Max
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
