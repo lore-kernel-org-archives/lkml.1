@@ -1,169 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161201AbXBUKEH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161206AbXBUKHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161201AbXBUKEH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 05:04:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161220AbXBUKDd
+	id S1161206AbXBUKHq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 05:07:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161214AbXBUKHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 05:03:33 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:13217 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161222AbXBUKD0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 05:03:26 -0500
-Date: Wed, 21 Feb 2007 11:03:26 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: heiko.carstens@de.ibm.com
-Subject: [S390] nss: Free unused memory in kernel image.
-Message-ID: <20070221100326.GK13419@skybase>
+	Wed, 21 Feb 2007 05:07:45 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:45821 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161206AbXBUKHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 05:07:44 -0500
+To: linux-kernel@vger.kernel.org
+CC: ecryptfs-devel@lists.sourceforge.net, devel@openvz.org
+Subject: [PATCH] ecryptfs lower_file largefile issue
+From: Dmitriy Monakhov <dmonakhov@sw.ru>
+Date: Wed, 21 Feb 2007 13:07:22 +0300
+Message-ID: <871wkju8md.fsf@sw.ru>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: multipart/mixed; boundary="=-=-="
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+--=-=-=
 
-[S390] nss: Free unused memory in kernel image.
+Where is largefile issue in ecryptfs.
+Even if we want open file on ia32 with explicit O_LARGEFILE, lower_file will
+be opened without O_LARGEFILE flag  this result in various errors in dmesg
+and data corruption.
+Testcase:
+  #### write 'a' chars beyond 2Gb
+  # strace ./writer_test root/file
+  open("root/file", O_WRONLY|O_CREAT|O_LARGEFILE, 0666) = 3
+  lseek(3, 2147483640, SEEK_SET)          = 2147483640
+  write(3, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"..., 10240) = 10240
+  ##check content
+  # hexdump root/file4 
+  0000000 0000 0000 0000 0000 0000 0000 0000 0000
+  *
+  7ffffff0 0000 0000 0000 0000 6161 6161 6161 6161
+  80000000 6161 6161 6161 6161 6161 6161 6161 6161
+  *
+  800027f0 6161 6161 6161 6161                    
+  800027f8
+  
+  #umount root 
+  # mount -tecryptfs pr/dir/ root/  -ocipher=aes
+  ## check content after remount
+  # hexdump root/file4 
+  0000000 0000 0000 0000 0000 0000 0000 0000 0000
+  *
+  7ffffff0 0000 0000 0000 0000 6161 6161 6161 6161
+  80000000 6161 6161 6161 6161 6161 6161 6161 6161
+  *
+  800027f0 6161 6161 6161 6161 0000 0000 0000 0000
+  80002800 0000 0000 0000 0000 0000 0000 0000 0000
+  *
+  80003000 ee3d e793 c410 3bd4 c642 5774 ad71 7932
+  80003010 17a6 443c 4621 9e4a cf15 babd 19d0 f5e7
+  *
+  80004000 ce32 49ed 217c f87d 5539 3e96 517c 961c
+  80004010 17a6 443c 4621 9e4a cf15 babd 19d0 f5e7
+  *
+  80005000  
+  ### Wow content was changed, kernel complain with folowing messages:
+  Error opening lower file for lower_dentry [0xf73a111c], lower_mnt [0xf7d8b1c0], and flags [0x0]
+  Error opening lower_file to read header region
+  Error attempting to read the [user.ecryptfs] xattr from the lower file; return value = [4294967201]
+  Valid metadata not found in header region or xattr region; treating file as unencrypted
+  
+Lets explicitly add O_LARGEFILE to opened lower file flags as it done in unionfs
+and nfsd. Also remove unnecessery #define from ecryptfs_initialize_file().
+Signed-off-by: Dmitriy Monakhov <dmonakhov@openvz.org>
 
-With CONFIG_SHARED_KERNEL the kernel text segment that might be in a
-read only memory sections starts at 1MB. Memory between 0x12000 and
-0x100000 is unused then. Free this, so we have appr. an extra MB
-of memory available.
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+--=-=-=
+Content-Disposition: inline; filename=diff-mm-ecryptfs-largefile-fix
 
- arch/s390/kernel/head31.S   |   15 ++-------------
- arch/s390/kernel/head64.S   |   16 ++--------------
- arch/s390/kernel/ipl.c      |    7 +++++++
- arch/s390/kernel/setup.c    |    7 ++++++-
- drivers/s390/cio/cio.c      |    2 +-
- include/asm-s390/sections.h |    2 +-
- 6 files changed, 19 insertions(+), 30 deletions(-)
-
-diff -urpN linux-2.6/arch/s390/kernel/head31.S linux-2.6-patched/arch/s390/kernel/head31.S
---- linux-2.6/arch/s390/kernel/head31.S	2007-02-21 10:47:06.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/head31.S	2007-02-21 10:47:34.000000000 +0100
-@@ -148,20 +148,9 @@ startup_continue:
- .Lstartup_init:
- 	    .long startup_init
- 
--	.globl ipl_schib
--ipl_schib:
--	.rept 13
--	.long 0
--	.endr
--
--	.globl ipl_flags
--ipl_flags:
--	.long 0
--	.globl ipl_devno
--ipl_devno:
--	.word 0
--
- 	.org	0x12000
-+	.globl	_ehead
-+_ehead:
- #ifdef CONFIG_SHARED_KERNEL
- 	.org	0x100000
- #endif
-diff -urpN linux-2.6/arch/s390/kernel/head64.S linux-2.6-patched/arch/s390/kernel/head64.S
---- linux-2.6/arch/s390/kernel/head64.S	2007-02-21 10:47:06.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/head64.S	2007-02-21 10:47:34.000000000 +0100
-@@ -154,21 +154,9 @@ startup_continue:
- .Lparmaddr:
- 	.quad	PARMAREA
- 
--	.globl	ipl_schib
--ipl_schib:
--	.rept 13
--	.long 0
--	.endr
--
--	.globl	ipl_flags
--ipl_flags:
--	.long	0
--	.globl	ipl_devno
--ipl_devno:
--	.word 0
--
- 	.org	0x12000
--
-+	.globl	_ehead
-+_ehead:
- #ifdef CONFIG_SHARED_KERNEL
- 	.org	0x100000
- #endif
-diff -urpN linux-2.6/arch/s390/kernel/ipl.c linux-2.6-patched/arch/s390/kernel/ipl.c
---- linux-2.6/arch/s390/kernel/ipl.c	2007-02-21 10:47:33.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/ipl.c	2007-02-21 10:47:34.000000000 +0100
-@@ -43,6 +43,13 @@ enum ipl_type {
- #define IPL_FCP_STR	 "fcp"
- #define IPL_NSS_STR	 "nss"
- 
-+/*
-+ * Must be in data section since the bss section
-+ * is not cleared when these are accessed.
-+ */
-+u16 ipl_devno __attribute__((__section__(".data"))) = 0;
-+u32 ipl_flags __attribute__((__section__(".data"))) = 0;
-+
- static char *ipl_type_str(enum ipl_type type)
+diff --git a/fs/ecryptfs/file.c b/fs/ecryptfs/file.c
+index bd969ad..7a7d25d 100644
+--- a/fs/ecryptfs/file.c
++++ b/fs/ecryptfs/file.c
+@@ -205,6 +205,7 @@ int ecryptfs_open_lower_file(struct file **lower_file,
  {
- 	switch (type) {
-diff -urpN linux-2.6/arch/s390/kernel/setup.c linux-2.6-patched/arch/s390/kernel/setup.c
---- linux-2.6/arch/s390/kernel/setup.c	2007-02-21 10:47:32.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/setup.c	2007-02-21 10:47:34.000000000 +0100
-@@ -690,9 +690,14 @@ setup_memory(void)
- 	psw_set_key(PAGE_DEFAULT_KEY);
+ 	int rc = 0;
  
- 	free_bootmem_with_active_regions(0, max_pfn);
--	reserve_bootmem(0, PFN_PHYS(start_pfn));
- 
- 	/*
-+	 * Reserve memory used for lowcore/command line/kernel image.
-+	 */
-+	reserve_bootmem(0, (unsigned long)_ehead);
-+	reserve_bootmem((unsigned long)_stext,
-+			PFN_PHYS(start_pfn) - (unsigned long)_stext);
-+	/*
- 	 * Reserve the bootmem bitmap itself as well. We do this in two
- 	 * steps (first step was init_bootmem()) because this catches
- 	 * the (very unlikely) case of us accidentally initializing the
-diff -urpN linux-2.6/drivers/s390/cio/cio.c linux-2.6-patched/drivers/s390/cio/cio.c
---- linux-2.6/drivers/s390/cio/cio.c	2007-02-21 10:47:32.000000000 +0100
-+++ linux-2.6-patched/drivers/s390/cio/cio.c	2007-02-21 10:47:34.000000000 +0100
-@@ -1048,7 +1048,7 @@ void reipl_ccw_dev(struct ccw_dev_id *de
- 	do_reipl_asm(*((__u32*)&schid));
- }
- 
--extern struct schib ipl_schib;
-+static struct schib __initdata ipl_schib;
- 
- /*
-  * ipl_save_parameters gets called very early. It is not allowed to access
-diff -urpN linux-2.6/include/asm-s390/sections.h linux-2.6-patched/include/asm-s390/sections.h
---- linux-2.6/include/asm-s390/sections.h	2007-02-21 10:47:14.000000000 +0100
-+++ linux-2.6-patched/include/asm-s390/sections.h	2007-02-21 10:47:34.000000000 +0100
-@@ -3,6 +3,6 @@
- 
- #include <asm-generic/sections.h>
- 
--extern char _eshared[];
-+extern char _eshared[], _ehead[];
- 
- #endif
--- 
-blue skies,              IBM Deutschland Entwicklung GmbH
-   Martin                Vorsitzender des Aufsichtsrats: Johann Weihen
-                         Geschäftsführung: Herbert Kircher 
-Martin Schwidefsky       Sitz der Gesellschaft: Böblingen
-Linux on zSeries         Registergericht: Amtsgericht Stuttgart,
-   Development           HRB 243294
-   
-"Reality continues to ruin my life." - Calvin.
++	flags |= O_LARGEFILE;
+ 	dget(lower_dentry);
+ 	mntget(lower_mnt);
+ 	*lower_file = dentry_open(lower_dentry, lower_mnt, flags);
+diff --git a/fs/ecryptfs/inode.c b/fs/ecryptfs/inode.c
+index 27fd14a..a1fe8b4 100644
+--- a/fs/ecryptfs/inode.c
++++ b/fs/ecryptfs/inode.c
+@@ -200,9 +200,6 @@ static int ecryptfs_initialize_file(struct dentry *ecryptfs_dentry)
+ 	inode = ecryptfs_dentry->d_inode;
+ 	crypt_stat = &ecryptfs_inode_to_private(inode)->crypt_stat;
+ 	lower_flags = ((O_CREAT | O_TRUNC) & O_ACCMODE) | O_RDWR;
+-#if BITS_PER_LONG != 32
+-	lower_flags |= O_LARGEFILE;
+-#endif
+ 	lower_mnt = ecryptfs_dentry_to_lower_mnt(ecryptfs_dentry);
+ 	/* Corresponding fput() at end of this function */
+ 	if ((rc = ecryptfs_open_lower_file(&lower_file, lower_dentry, lower_mnt,
+
+--=-=-=--
 
