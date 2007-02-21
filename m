@@ -1,181 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423160AbXBUVVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423166AbXBUVWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423160AbXBUVVz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 16:21:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423142AbXBUVVn
+	id S1423166AbXBUVWx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 16:22:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423142AbXBUVWg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 16:21:43 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40420 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423157AbXBUVVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 16:21:13 -0500
-Date: Wed, 21 Feb 2007 22:15:57 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 12/13] syslets: x86: optimized copy_uatom()
-Message-ID: <20070221211557.GL7579@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070221211355.GA7302@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_20 autolearn=no SpamAssassin version=3.1.7
-	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.1372]
+	Wed, 21 Feb 2007 16:22:36 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:40888 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1423159AbXBUVWT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 16:22:19 -0500
+Date: Wed, 21 Feb 2007 16:22:17 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       <linux-usb-devel@lists.sourceforge.net>,
+       Pete Zaitcev <zaitcev@redhat.com>, Greg KH <gregkh@suse.de>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] 2.6.20 kernel hang with USB drive and vfat
+ doing ftruncate
+In-Reply-To: <20070221125736.e5ff4206.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.44L0.0702211621310.3435-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
+On Wed, 21 Feb 2007, Andrew Morton wrote:
 
-provide an optimized assembly version of the copy_uatom() method.
-This is about 3 times faster than the C version.
+> > > It seems like usb-storage and aio are completely off in the weeds.   
+> > > Ideas?
+> > 
+> > It seems usb-storage should remove some kmalloc and use mempool() for
+> > urb...  Is someone working on this? And idea?
+> 
+> I think Pete said that we're supposed to be using GFP_NOIO in there.
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- arch/i386/lib/getuser.S |  115 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 115 insertions(+)
+We _are_ using it.
 
-Index: linux/arch/i386/lib/getuser.S
-===================================================================
---- linux.orig/arch/i386/lib/getuser.S
-+++ linux/arch/i386/lib/getuser.S
-@@ -10,6 +10,121 @@
-  */
- #include <asm/thread_info.h>
- 
-+/*
-+ * copy_uatom() - copy a syslet_atom from user-space into kernel-space:
-+ */
-+
-+.text
-+.align 4
-+.globl copy_uatom
-+copy_uatom:
-+	#
-+	# regparm(2) call, %eax: atom, %edx: uatom
-+	#
-+	movl %eax, %ecx                 # %ecx is atom, %edx remains uatom
-+
-+	cmpl $__PAGE_OFFSET-40, %edx	# access_ok(uatom-sizeof(*uatom))
-+	jae bad_copy_uatom
-+
-+
-+1:	movl (%edx), %eax		# atom->flags = uatom->flags
-+	movl %eax, (%ecx)
-+
-+2:	movl 4(%edx), %eax		# atom->nr = uatom->nr
-+	movl %eax, 4(%ecx)
-+
-+3:	movl 8(%edx), %eax		# atom->ret_ptr = uatom->ret_ptr
-+	movl %eax, 8(%ecx)
-+
-+4:	movl 12(%edx), %eax		# atom->next = uatom->next
-+	movl %eax, 12(%ecx)
-+
-+
-+10:	movl 16(%edx), %eax		# atom->arg_ptr[0] = uatom->arg_ptr[0]
-+	testl %eax, %eax
-+	jz 20f				# NULL ptr - zero out remaining args
-+	cmpl $__PAGE_OFFSET, %eax	# access_ok(arg_ptr)
-+	jae bad_copy_uatom
-+100:	movl (%eax), %eax
-+	movl %eax, 16(%ecx)
-+
-+11:	movl 20(%edx), %eax		# atom->arg_ptr[1] = uatom->arg_ptr[1]
-+	testl %eax, %eax
-+	jz 21f				# NULL ptr - zero out remaining args
-+	cmpl $__PAGE_OFFSET, %eax	# access_ok(arg_ptr)
-+	jae bad_copy_uatom
-+110:	movl (%eax), %eax
-+	movl %eax, 20(%ecx)
-+
-+12:	movl 24(%edx), %eax		# atom->arg_ptr[2] = uatom->arg_ptr[2]
-+	testl %eax, %eax
-+	jz 22f				# NULL ptr - zero out remaining args
-+	cmpl $__PAGE_OFFSET, %eax	# access_ok(arg_ptr)
-+	jae bad_copy_uatom
-+120:	movl (%eax), %eax
-+	movl %eax, 24(%ecx)
-+
-+13:	movl 28(%edx), %eax		# atom->arg_ptr[3] = uatom->arg_ptr[3]
-+	testl %eax, %eax
-+	jz 23f				# NULL ptr - zero out remaining args
-+	cmpl $__PAGE_OFFSET, %eax	# access_ok(arg_ptr)
-+	jae bad_copy_uatom
-+130:	movl (%eax), %eax
-+	movl %eax, 28(%ecx)
-+
-+14:	movl 32(%edx), %eax		# atom->arg_ptr[4] = uatom->arg_ptr[4]
-+	testl %eax, %eax
-+	jz 24f				# NULL ptr - zero out remaining args
-+	cmpl $__PAGE_OFFSET, %eax	# access_ok(arg_ptr)
-+	jae bad_copy_uatom
-+140:	movl (%eax), %eax
-+	movl %eax, 32(%ecx)
-+
-+15:	movl 36(%edx), %eax		# atom->arg_ptr[5] = uatom->arg_ptr[5]
-+	testl %eax, %eax
-+	jz 25f				# NULL ptr - zero out remaining args
-+	cmpl $__PAGE_OFFSET, %eax	# access_ok(arg_ptr)
-+	jae bad_copy_uatom
-+150:	movl (%eax), %eax
-+	movl %eax, 36(%ecx)
-+
-+	xorl %eax, %eax			# return 0
-+	ret
-+
-+	#
-+	# Zero out arg values. Since ptr was NULL, %eax is zero:
-+	#
-+20:	movl %eax, 16(%ecx)		# atom->args[0] = 0
-+21:	movl %eax, 20(%ecx)		# atom->args[1] = 0
-+22:	movl %eax, 24(%ecx)		# atom->args[2] = 0
-+23:	movl %eax, 28(%ecx)		# atom->args[3] = 0
-+24:	movl %eax, 32(%ecx)		# atom->args[4] = 0
-+25:	movl %eax, 36(%ecx)		# atom->args[5] = 0
-+
-+	ret				# return 0
-+
-+bad_copy_uatom:
-+	movl $-14, %eax
-+	ret
-+
-+.section __ex_table,"a"
-+	.long 1b,   bad_copy_uatom
-+	.long 2b,   bad_copy_uatom
-+	.long 3b,   bad_copy_uatom
-+	.long 4b,   bad_copy_uatom
-+	.long 10b,  bad_copy_uatom
-+	.long 100b, bad_copy_uatom
-+	.long 11b,  bad_copy_uatom
-+	.long 110b, bad_copy_uatom
-+	.long 12b,  bad_copy_uatom
-+	.long 120b, bad_copy_uatom
-+	.long 13b,  bad_copy_uatom
-+	.long 130b, bad_copy_uatom
-+	.long 14b,  bad_copy_uatom
-+	.long 140b, bad_copy_uatom
-+	.long 15b,  bad_copy_uatom
-+	.long 150b, bad_copy_uatom
-+.previous
- 
- /*
-  * __get_user_X
+> Not that it'll help much: the VM calls throttle_vm_writeout() for GFP_NOIO
+> and GFP_NOFS allocations, which is a bug.  Because if the caller holds
+> locks which prevent filesystem or IO progress, we deadlock.
+> 
+> I'll fix the VM if someone else fixes USB ;)
+
+What else needs to be fixed?
+
+Alan Stern
+
