@@ -1,88 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751007AbXBUBdI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751037AbXBUBdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751007AbXBUBdI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 20:33:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751034AbXBUBdH
+	id S1751037AbXBUBdh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 20:33:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbXBUBdh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 20:33:07 -0500
-Received: from smtp-out2.blueyonder.co.uk ([195.188.213.5]:40718 "EHLO
-	smtp-out2.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751007AbXBUBdH (ORCPT
+	Tue, 20 Feb 2007 20:33:37 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:33052 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751037AbXBUBdg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 20:33:07 -0500
-Message-ID: <45DBA150.2060800@blueyonder.co.uk>
-Date: Wed, 21 Feb 2007 01:33:04 +0000
-From: Sid Boyce <g3vbv@blueyonder.co.uk>
-Reply-To: g3vbv@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
+	Tue, 20 Feb 2007 20:33:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=PyWNhUbd2z32UPnfNILTf7FL5hZ2olkU9VUpA1jJh/9OzCUhmCnq+z+Z7/CyyYEDKmVj+8eE7HFSo62PiTDxyd81QaZ55XScR4QfgVO6TxgRBn2ZTNr01ShnaMLw3h4JoVzVsLE6NlKlfJPaPJ4VuGYboKVXryCsHv69ou+AVrM=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: [PATCH] deprecated/obsolete patch
+Date: Wed, 21 Feb 2007 02:39:41 +0100
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0702201818580.11849@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0702201818580.11849@localhost.localdomain>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: IPV6 build failure 2.6.20-git1x
-References: <45DB9429.20309@blueyonder.co.uk> <17883.38426.615139.355511@notabene.brown>
-In-Reply-To: <17883.38426.615139.355511@notabene.brown>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702210239.41641.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Brown wrote:
-> On Wednesday February 21, g3vbv@blueyonder.co.uk wrote:
->   
->> x86_64 builds without errors on openSUSE 10.2.
->> x86 on openSUSE 10.3 Alpha1
->>  gcc version 4.1.2 20070115 (prerelease) (SUSE Linux)
->> CONFIG_IPV6=m
->> CONFIG_IPV6_PRIVACY=y
->> CONFIG_IPV6_ROUTER_PREF=y
->> CONFIG_IPV6_ROUTE_INFO=y
->> # CONFIG_IPV6_MIP6 is not set
->> CONFIG_IPV6_SIT=m
->> # CONFIG_IPV6_TUNNEL is not set
->> CONFIG_IPV6_MULTIPLE_TABLES=y
->> # CONFIG_IPV6_SUBTREES is not set
->> CONFIG_IP6_NF_MATCH_IPV6HEADER=m
->>
->>   LD      arch/i386/lib/built-in.o
->>   CC      arch/i386/lib/bitops.o
->>   AS      arch/i386/lib/checksum.o
->>   CC      arch/i386/lib/delay.o
->>   AS      arch/i386/lib/getuser.o
->>   CC      arch/i386/lib/memcpy.o
->>   CC      arch/i386/lib/mmx.o
->>   AS      arch/i386/lib/putuser.o
->>   AS      arch/i386/lib/semaphore.o
->>   CC      arch/i386/lib/strstr.o
->>   CC      arch/i386/lib/usercopy.o
->>   AR      arch/i386/lib/lib.a
->>   GEN     .version
->>   CHK     include/linux/compile.h
->>   UPD     include/linux/compile.h
->>   CC      init/version.o
->>   LD      init/built-in.o
->>   LD      .tmp_vmlinux1
->> net/built-in.o: In function `svc_udp_recvfrom':
->> svcsock.c:(.text+0x91f9c): undefined reference to `__ipv6_addr_type'
->> make: *** [.tmp_vmlinux1] Error 1
->> :/usr/src/linux-2.6.20-git15
->>     
->
-> Yes, known.  I really should get onto that....
->
-> Currently you cannot have IPV6=m and SUNRPC=y.  All other combinations
-> should work.
->
-> NeilBrown
->
->
->   
-Fixed thanks, on x86 SUNRPC was =y and on x86_64 was =m.
-Regards
-Sid.
 
--- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
+On Wednesday 21 February 2007 00:20, Robert P. J. Day wrote:
+> 
+>   here's a slightly revised wording, if that makes it clearer:
 
+I think that it does explain things better and I hope that some form
+of consensus can be finally reached.
 
+Thanks,
+Bart
