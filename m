@@ -1,36 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751223AbXBULzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751222AbXBUL4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751223AbXBULzx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 06:55:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbXBULzx
+	id S1751222AbXBUL4t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 06:56:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbXBUL4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 06:55:53 -0500
-Received: from wx-out-0506.google.com ([66.249.82.235]:48080 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751223AbXBULzw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 06:55:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=hwdHMbxKpb29yM4FE8YTaCNRBmjnGb4MwtpYRk01ldkUWv7n13J1YdA4Xm3cQaJEmVEXWhEHgrN3ZyJQ07k4qe5OcB3HjK4FSX0gfsb0+r9bKXZQVCbnWpfLVmizd8iZ7jsjQTfWFqbmmx9zmX+z0z79/RkHZ8JwfAJdPOQFOhI=
-Message-ID: <45DC3345.5000804@gmail.com>
-Date: Wed, 21 Feb 2007 20:55:49 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Wed, 21 Feb 2007 06:56:48 -0500
+Received: from ns2.suse.de ([195.135.220.15]:59622 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751222AbXBUL4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 06:56:48 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: patch to use more symbolic constants in asm
+Date: Wed, 21 Feb 2007 12:56:43 +0100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
+References: <1172056242.3531.181.camel@laptopd505.fenrus.org>
+In-Reply-To: <1172056242.3531.181.camel@laptopd505.fenrus.org>
 MIME-Version: 1.0
-To: Manuel Metz <mmetz@astro.uni-bonn.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: SATA ahci Bug in 2.6.19.x
-References: <7G2pJ-2iX-23@gated-at.bofh.it> <7G828-3zn-3@gated-at.bofh.it> <7HpWX-3D2-5@gated-at.bofh.it> <7Hrci-5ou-5@gated-at.bofh.it> <7HrP4-6t8-1@gated-at.bofh.it> <7Hvzs-3Tj-23@gated-at.bofh.it> <7IYJ1-281-27@gated-at.bofh.it> <45D2CEFC.4010900@astro.uni-bonn.de>
-In-Reply-To: <45D2CEFC.4010900@astro.uni-bonn.de>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702211256.43565.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Does it work if you give 'irqpoll' kernel parameter?
+On Wednesday 21 February 2007 12:10, Arjan van de Ven wrote:
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Subject: Use symbolic constants in inline assembly
+> 
+> This patch replaces several of the %0/%1 uses in x86-64 inline assembly
+> with symbolic names (this is a new gcc 3.x feature, but that's ok now).
+> This tends to, imo, make the inline assembly a lot more readable, and
+> for sure it's less error prone in terms of finding which %<number>
+> corresponds with which variable.
 
--- 
-tejun
+At least for two arguments i don't really see the value, but ok.
+
+> objdump -d of the vmlinux before and after the patch is the same; also
+> boot tested.
+
+You should do i386 too then; one reason I didn't touch bitops 
+for example was to keep the code more similar.
+
+
+>  static inline void set_cr4(unsigned long cr4)
+>  {
+> -	asm volatile("mov %0,%%cr4" :: "r" (cr4) : "memory");
+> +	asm volatile("mov %[cr4],%%cr4" :: [cr4] "r" (cr4) : "memory");
+
+I'm not sure that's really an improvement for example.
+
+-Andi
