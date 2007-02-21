@@ -1,65 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423148AbXBUVYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423169AbXBUV0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423148AbXBUVYI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 16:24:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423161AbXBUVX6
+	id S1423169AbXBUV0S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 16:26:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423161AbXBUV0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 16:23:58 -0500
-Received: from mx2.suse.de ([195.135.220.15]:34095 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423144AbXBUVVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 16:21:05 -0500
-Date: Wed, 21 Feb 2007 23:20:42 +0100
-From: Andi Kleen <ak@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Andi Kleen <ak@suse.de>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [patch 00/21] 2.6.19-stable review
-Message-ID: <20070221222042.GG12472@bingen.suse.de>
-References: <20070221013619.GA30227@kroah.com> <45DC9E1D.40805@redhat.com> <20070221114737.a09be761.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070221114737.a09be761.akpm@linux-foundation.org>
+	Wed, 21 Feb 2007 16:26:16 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:8407 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423152AbXBUVZl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 16:25:41 -0500
+Subject: Re: Linux 2.6.21-rc1
+From: Daniel Walker <dwalker@mvista.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: tglx@linutronix.de,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mingo@elte.hu
+In-Reply-To: <Pine.LNX.4.64.0702211302300.4043@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
+	 <1172075053.8577.38.camel@imap.mvista.com>
+	 <1172077664.25076.75.camel@localhost.localdomain>
+	 <1172078340.8577.43.camel@imap.mvista.com>
+	 <1172079671.25076.80.camel@localhost.localdomain>
+	 <1172079523.8577.48.camel@imap.mvista.com>
+	 <1172081931.25076.95.camel@localhost.localdomain>
+	 <1172082200.8577.56.camel@imap.mvista.com>
+	 <1172085792.25076.119.camel@localhost.localdomain>
+	 <1172088050.8577.71.camel@imap.mvista.com>
+	 <1172090603.25076.127.camel@localhost.localdomain>
+	 <1172090973.8577.77.camel@imap.mvista.com>
+	 <Pine.LNX.4.64.0702211302300.4043@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 21 Feb 2007 13:23:30 -0800
+Message-Id: <1172093010.8577.95.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 21, 2007 at 11:47:37AM -0800, Andrew Morton wrote:
-> On Wed, 21 Feb 2007 14:31:41 -0500
-> Chuck Ebbert <cebbert@redhat.com> wrote:
+On Wed, 2007-02-21 at 13:06 -0800, Linus Torvalds wrote:
 > 
-> > Greg KH wrote:
-> > > This is the start of the stable review cycle for the 2.6.19.5 release.
-> > > 
-> > > This will probably be the last release of the 2.6.19-stable series, so
-> > > if there are patches that you feel should be applied to that tree,
-> > > please let me know.
-> > > 
-> > > There are 21 patches in this series, all will be posted as a response to
-> > > this one.  If anyone has any issues with these being applied, please let
-> > > us know.  If anyone is a maintainer of the proper subsystem, and wants
-> > > to add a Signed-off-by: line to the patch, please respond with it.
-> > > 
+> On Wed, 21 Feb 2007, Daniel Walker wrote:
 > > 
-> > What is the status of:
-> > 
-> > http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm2/broken-out/x86_64-mm-simplfy-__assign_irq_vector.patch
-> > http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm2/broken-out/x86_64-mm-handle-irqs-pending-in-irr-during-irq-migration.patch
+> > Here's the final commit from the bisect which caused it . It says "No
+> > changes to existing functionality" ?
 > 
-> That's mainly an Andi decision.  Let's cc him.
+> Ok, it wouldn't be the first time some change that is supposed to change 
+> nothing does actually change something.
 
-I didn't think the problem was serious enough for a backport. Do we have
-user reports? 
+Yeah , maybe I screwed something up. First time I've done a git bisect.
 
-It's certainly not trivial obvious patches. 
+> That said, one thing to worry about when doing bisection: the kernel 
+> configuration.
+> 
+> If you always just do "make oldconfig" or something, the kernel config for 
+> the thing you test will depend on the _previous_ kernel you compiled, and 
+> that is not always what you want. I've once had a failing kernel, did 
+> bisection, and it turned out that since I had gone back in time to before 
+> the option that caused the failure even existed, I had (by mistake) then 
+> compiled some of the later kernels without that option enabled, and called 
+> them "good". 
 
-Eric, what is your opinion? 
+In this case I don't think anything was specifically turned on, beyond
+SMP. For instance HRT/dynamic tick was off.
 
--Andi
+I didn't run "make oldconfig", but just running "make" asked for options
+that just got added, which was nice.
+
+> The end result: "git bisect" didn't actually end up pointing to the right 
+> commit, just because I had effectively lied to it.
+> 
+> That said, considering that you did get a commit that doesn't look 
+> entirely unlikely (and that clearly changes things that are relevant), I 
+> suspect you did actually find the right one.
+
+I think if it's not that exact commit it's still one in that set. I
+mainly wanted to confirm that it was an hrt/dynamic tick issue , and not
+some left field patches..
+
+Daniel
+
