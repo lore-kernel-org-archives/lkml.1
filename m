@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422634AbXBUPsF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422638AbXBUPxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422634AbXBUPsF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 10:48:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161296AbXBUPsF
+	id S1422638AbXBUPxk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 10:53:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422637AbXBUPxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 10:48:05 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:34320 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161297AbXBUPsB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 10:48:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=G5YpfIQgs4x5SRLQ6+n2FdkRHvcSHUusxIP3BIkegmXkZj1KMmqVUaqgjOypRdcp70p5k484vT7mNdp1GGxUEaHXvJkWhVJVg2/C8YIUqIj4P0gRTWzgjy6+hYaOoiccr7YXVJXGXPVG6mjNcTsChwTFwQb8/hmgc10Lt1rLJQU=
-Message-ID: <84144f020702210747t50d7d92ei1a2f5da8bf117d40@mail.gmail.com>
-Date: Wed, 21 Feb 2007 17:47:59 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 08/29] mm: kmem_cache_objs_to_pages()
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org,
-       "Trond Myklebust" <trond.myklebust@fys.uio.no>,
-       "Thomas Graf" <tgraf@suug.ch>, "David Miller" <davem@davemloft.net>
-In-Reply-To: <20070221144842.299190000@taijtu.programming.kicks-ass.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Feb 2007 10:53:40 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:41927 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161309AbXBUPxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 10:53:38 -0500
+Date: Wed, 21 Feb 2007 21:23:05 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@osdl.org, paulmck@us.ibm.com,
+       mingo@elte.hu, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, rjw@sisk.pl
+Subject: Re: [RFC PATCH(Experimental) 2/4] Revert changes to workqueue.c
+Message-ID: <20070221155305.GB1596@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070216052626.GB8373@in.ibm.com> <20070216153321.GB83@tv-sign.ru> <20070216164730.GD21457@in.ibm.com> <20070216235939.GB244@tv-sign.ru> <20070217022940.GB25924@in.ibm.com> <20070217215928.GA563@tv-sign.ru> <20070220151220.GB4960@in.ibm.com> <20070220200936.GB85@tv-sign.ru> <20070221062947.GG20820@in.ibm.com> <20070221143010.GC134@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070221144304.512721000@taijtu.programming.kicks-ass.net>
-	 <20070221144842.299190000@taijtu.programming.kicks-ass.net>
-X-Google-Sender-Auth: dfbc172d11f0cbca
+In-Reply-To: <20070221143010.GC134@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+On Wed, Feb 21, 2007 at 05:30:10PM +0300, Oleg Nesterov wrote:
+> Agreed. Note that we don't need the new "del_work". It is always safe to
+> use cancel_work_sync() if we know that the workqueue is frozen, it won't
+> block. We can also do
+> 
+> 	if (!cancel_delayed_work())
+> 		cancel_work_sync();
+> 
+> but it is ok to do cancel_work_sync() unconditionally.
 
-On 2/21/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> Provide a method to calculate the number of pages needed to store a given
-> number of slab objects (upper bound when considering possible partial and
-> free slabs).
+Argh ..I should keep referring to recent sources. I didnt see
+cancel_work_sync() in my sources (2.6.20-rc4) and hence invented that 
+del_work()! Anyway thanx for pointing out.
 
-So how does this work? You ask the slab allocator how many pages you
-need for a given number of objects and then those pages are available
-to it via the page allocator? Can other users also dip into those
-reserves?
+This change will probably let us do CPU_DOWN_PREPARE after
+freeze_processes(). However I will keep my fingers crossed on whether it
+is really a good idea to send CPU_DOWN/UP_PREPARE after
+freeze_processes() until we get more review/testing results.
 
-I would prefer we simply have an API for telling the slab allocator to
-keep certain number of pages in a reserve for a cache rather than
-exposing internals such as object size to rest of the world.
-
-                                 Pekka
+-- 
+Regards,
+vatsa
