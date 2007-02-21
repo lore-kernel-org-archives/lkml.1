@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751371AbXBUXv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751364AbXBUXw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751371AbXBUXv1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 18:51:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbXBUXv1
+	id S1751364AbXBUXw2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 18:52:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbXBUXw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 18:51:27 -0500
-Received: from warden-p.diginsite.com ([208.29.163.248]:62662 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1751371AbXBUXv0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 18:51:26 -0500
-Date: Wed, 21 Feb 2007 15:34:11 -0800 (PST)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-cc: davids@webmaster.com, v j <vj.linux@gmail.com>, trent.waddington@gmail.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       Neil Brown <neilb@suse.de>
-Subject: Re: GPL vs non-GPL device drivers
-In-Reply-To: <f2b55d220702211408r7954d5dar2c59e1e679316811@mail.gmail.com>
-Message-ID: <Pine.LNX.4.63.0702211527080.15723@qynat.qvtvafvgr.pbz>
-References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com> 
- <MDEHLPKNGKAHNMBLJOLKIEFNBLAC.davids@webmaster.com>
- <f2b55d220702211408r7954d5dar2c59e1e679316811@mail.gmail.com>
+	Wed, 21 Feb 2007 18:52:28 -0500
+Received: from sycorax.lbl.gov ([128.3.11.121]:3846 "EHLO sycorax.lbl.gov"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751364AbXBUXw1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 18:52:27 -0500
+From: Alex Romosan <romosan@sycorax.lbl.gov>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: Yaroslav Halchenko <kernel@onerussian.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net,
+       James Simmons <jsimmons@infradead.org>
+Subject: Re: no backlight on radeon after recent kernel "upgrade"s
+References: <20070219044616.GC25659@washoe.onerussian.com>
+	<20070219000412.acad13de.akpm@linux-foundation.org>
+	<1171876788.6046.3.camel@localhost.localdomain>
+	<877iub9mu2.fsf@sycorax.lbl.gov>
+	<1172097718.5790.29.camel@localhost.localdomain>
+Date: Wed, 21 Feb 2007 15:51:42 -0800
+In-Reply-To: <1172097718.5790.29.camel@localhost.localdomain> (message from
+	Richard Purdie on Wed, 21 Feb 2007 22:41:57 +0000)
+Message-ID: <87fy8z6pdd.fsf@sycorax.lbl.gov>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Feb 2007, Michael K. Edwards wrote:
+Richard Purdie <rpurdie@rpsys.net> writes:
 
-> But wait, you say -- the Evil Linker modified, copied, and distributed
-> my POP server too!  That makes him subject to the terms of the GPL.
-> And you're right; but to understand what that means, you're going to
-> need to understand how a lawsuit for copyright infringement works.
-> The very, very, very concise version is:
+> If FB_RADEON_BACKLIGHT wasn't set for 2.6.20, can you try 2.6.21-rc1
+> with that option disabled?
 
-<argument snipped for brevity>
+i don't have my laptop with me but i am pretty sure
+FB_RADEON_BACKLIGHT wasn't set for 2.6.20 (i think it showed up as a
+new option when i did make oldconfig). i'll post the difference when i
+get home tonight and also try disabling it.
 
-I understand why you say that the Evil Linker's program isn't covered by the 
-GPL, but your argument makes it sound like the modified POP server doesn't need 
-to have it's source released. This I don't understand, it contains the origional 
-source code, so what right does Evil Linker have to distribute it (or a modified 
-version).
+--alex--
 
-you are comeing dangerously close to saying that the GPL is meaningless and 
-putting something under it is the same as putting it under public domain. There 
-is case law now that says that this isn't the case (although I agree that it's 
-not nearly as broad as it's proponents would like it to be)
-
-David Lang
+-- 
+| I believe the moment is at hand when, by a paranoiac and active |
+|  advance of the mind, it will be possible (simultaneously with  |
+|  automatism and other passive states) to systematize confusion  |
+|  and thus to help to discredit completely the world of reality. |
