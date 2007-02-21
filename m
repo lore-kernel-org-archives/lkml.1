@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751037AbXBUBdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751036AbXBUBiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751037AbXBUBdh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 20:33:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbXBUBdh
+	id S1751036AbXBUBiT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 20:38:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751031AbXBUBiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 20:33:37 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:33052 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751037AbXBUBdg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 20:33:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=PyWNhUbd2z32UPnfNILTf7FL5hZ2olkU9VUpA1jJh/9OzCUhmCnq+z+Z7/CyyYEDKmVj+8eE7HFSo62PiTDxyd81QaZ55XScR4QfgVO6TxgRBn2ZTNr01ShnaMLw3h4JoVzVsLE6NlKlfJPaPJ4VuGYboKVXryCsHv69ou+AVrM=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: [PATCH] deprecated/obsolete patch
-Date: Wed, 21 Feb 2007 02:39:41 +0100
-User-Agent: KMail/1.9.5
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.64.0702201818580.11849@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0702201818580.11849@localhost.localdomain>
+	Tue, 20 Feb 2007 20:38:19 -0500
+Received: from ns.suse.de ([195.135.220.2]:42193 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751036AbXBUBiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 20:38:18 -0500
+Date: Tue, 20 Feb 2007 17:36:19 -0800
+From: Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/21] 2.6.19-stable review
+Message-ID: <20070221013619.GA30227@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702210239.41641.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is the start of the stable review cycle for the 2.6.19.5 release.
 
-On Wednesday 21 February 2007 00:20, Robert P. J. Day wrote:
-> 
->   here's a slightly revised wording, if that makes it clearer:
+This will probably be the last release of the 2.6.19-stable series, so
+if there are patches that you feel should be applied to that tree,
+please let me know.
 
-I think that it does explain things better and I hope that some form
-of consensus can be finally reached.
+There are 21 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-Thanks,
-Bart
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
+
+Responses should be made by Friday February 23 00:00 UTC.  Anything
+received after that time might be too late.
+
+The whole patch set can be downloaded at:
+	kernel.org/pub/linux/kernel/v2.6/testing/patch-2.6.19.5-rc1.gz
+
+thanks,
+
+the -stable release team
