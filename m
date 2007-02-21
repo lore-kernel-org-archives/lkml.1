@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422683AbXBURAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422689AbXBURCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422683AbXBURAh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 12:00:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422690AbXBURAh
+	id S1422689AbXBURCk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 12:02:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422692AbXBURCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 12:00:37 -0500
-Received: from ftp.linux-mips.org ([194.74.144.162]:41981 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422683AbXBURAh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 12:00:37 -0500
-Date: Wed, 21 Feb 2007 17:00:32 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 2.6.21-rc1] serial: serial_txx9 driver update
-Message-ID: <20070221170032.GA3036@linux-mips.org>
-References: <20070222.003142.106263613.anemo@mba.ocn.ne.jp> <20070221164826.61d0b5ea@lxorguk.ukuu.org.uk>
+	Wed, 21 Feb 2007 12:02:40 -0500
+Received: from www.osadl.org ([213.239.205.134]:43620 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1422689AbXBURCj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 12:02:39 -0500
+Subject: Re: Linux 2.6.21-rc1
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mingo@elte.hu
+In-Reply-To: <1172075053.8577.38.camel@imap.mvista.com>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
+	 <1172075053.8577.38.camel@imap.mvista.com>
+Content-Type: text/plain
+Date: Wed, 21 Feb 2007 18:07:44 +0100
+Message-Id: <1172077664.25076.75.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070221164826.61d0b5ea@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 21, 2007 at 04:48:26PM +0000, Alan wrote:
-
-> Given this costs 1uS in a path that is not performance critical is it
-> worth putting the #ifdef/#endif in instead of having one set of code that
-> works for all ?
+On Wed, 2007-02-21 at 08:24 -0800, Daniel Walker wrote:
+> > The most interesting core change may be the dyntick/nohz one, where timer 
+> > ticks will only happen when needed. It's been brewing for a _loong_ time, 
+> > but it's in the standard kernel now as an option. 
 > 
-> > +	while (sio_in(up, TXX9_SIFCR) & TXX9_SIFCR_SWRST)
-> > +		;
+> On i386 I get the following,
 > 
-> Suppose it doesn't clear ? Should also use cpu_relax() in busy loops
-> so any processor variant with power management can do the right thing.
+> TCP cubic registered                                                            
+> NET: Registered protocol family 1                                               
+> NET: Registered protocol family 17                                              
+> Testing NMI watchdog ... CPU#0: NMI appears to be stuck (24->24)!               
+> CPU#1: NMI appears to be stuck (0->0)!                                          
+> CPU#2: NMI appears to be stuck (0->0)!                                          
+> CPU#3: NMI appears to be stuck (0->0)!              
+> 
+> when I add nmi_watchdog=1 to my boot args which worked on prior kernels.
+> On closer inspection it looks like arch/i386/kernel/io_apic.c :
+> check_timer() --> timer_irq_works() depends on IRQ0 incrementing jiffies
+> which is no longer the case AFAIK.
 
-Right now we don't have much that we could do in cpu_relax() on MIPS.
-The average CPU core makes extensive use of clock gating to the point
-where there are few powersaving knobs left in the core.  Of course I'm
-also ignoring things outside the CPU core and clockscaling for which
-cpu_relax() would simply be the wrong place.
+At this point the PIT / HPET _is_ active and incrementing jiffies. The
+switch to local apic timers happens afterwards. 
 
-Of course this driver in rare instances might run on an x86 CPU ...
+> I'm not sure exactly how that relates to the NMI, but the check_timer()
+> function disabled the NMI through the io-apic if it can't get the
+> "timer" working through the io-apic.
 
-  Ralf
+Boot log please.
+
+	tglx
+
+
