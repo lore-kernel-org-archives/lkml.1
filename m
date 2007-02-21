@@ -1,59 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161078AbXBUHhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161118AbXBUHkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161078AbXBUHhs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 02:37:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161066AbXBUHhr
+	id S1161118AbXBUHkn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 02:40:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161117AbXBUHkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 02:37:47 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:17515 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161022AbXBUHhq (ORCPT
+	Wed, 21 Feb 2007 02:40:43 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:7832 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161113AbXBUHkm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 02:37:46 -0500
-Date: Tue, 20 Feb 2007 23:32:47 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Hemminger <shemminger@osdl.org>
-Cc: Pavel Machek <pavel@ucw.cz>, James Ketrenos <jketreno@linux.intel.com>,
-       netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, ipw3945-devel@lists.sourceforge.net
-Subject: Re: iwlwifi warnings
-Message-Id: <20070220233247.5d5f76b7.randy.dunlap@oracle.com>
-In-Reply-To: <45DBE559.8080903@osdl.org>
-References: <45CCE3CA.4050904@linux.intel.com>
-	<20070213181313.GA5350@ucw.cz>
-	<45D254C6.7050401@linux.intel.com>
-	<20070219224432.GD21199@elf.ucw.cz>
-	<45DBE559.8080903@osdl.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 21 Feb 2007 02:40:42 -0500
+Message-ID: <45DBF74B.7070801@chelsio.com>
+Date: Tue, 20 Feb 2007 23:39:55 -0800
+From: Divy Le Ray <divy@chelsio.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: shemminger@osdl.org, benh@kernel.crashing.org, netdev@vger.kernel.org,
+       ebs@ebshome.net, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] split NAPI from network device.
+References: <20061213113537.6baf410f@dxpl.pdx.osdl.net>	<1166042552.11914.188.camel@localhost.localdomain>	<20061213154635.1f284bf6@dxpl.pdx.osdl.net> <20070220.213125.74747066.davem@davemloft.net>
+In-Reply-To: <20070220.213125.74747066.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+X-OriginalArrivalTime: 21 Feb 2007 07:39:59.0015 (UTC) FILETIME=[7D0CBB70:01C7558B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Feb 2007 22:23:21 -0800 Stephen Hemminger wrote:
+David Miller wrote:
+> From: Stephen Hemminger <shemminger@osdl.org>
+> Date: Wed, 13 Dec 2006 15:46:35 -0800
+>
+>   
+>> Split off NAPI part from network device, this patch is build tested
+>> only! It breaks kernel API for network devices, and only three examples
+>> are fixed (skge, sky2, and tg3).
+>>
+>> 1. Decomposition allows different NAPI <-> network device
+>>    Some hardware has N devices for one IRQ, others like MSI-X
+>>    want multiple receive's for one device.
+>>
+>> 2. Cleanup locking with netpoll
+>>
+>> 3. Change poll callback arguements and semantics
+>>
+>> 4. Make softnet_data static (only in dev.c)
+>>
+>> Old:
+>> 	dev->poll(dev, &budget)
+>> 	returns 1 or 0
+>> 	requeu if returns 1
+>>
+>> New:
+>> 	napi->poll(napi, quota)
+>> 	returns # of elements processed
+>> 	requeue based on status
+>>
+>> Signed-off-by: Stephen Hemminger <shemminger@osdl.org>
+>>     
+>
+> I rebuffed this patch against current 2.6.x GIT and fixed all of
+> the drivers.
+>
+>   
+Hi Dave,
 
-> BUilding with sparse shows lots of warnings.
-> 
-> 
-> $ make C=1
-> Checking kernel compatibility in:
->     /lib/modules/2.6.20.1/source
->  * Kernel supports required features for 'tip' version.
-> Building compatibility version in 'compatible/' directory:
-> Copying compatible/ from origin/...done
-> make -C /lib/modules/2.6.20.1/build M=/home/shemminger/src/iwlwifi-0.0.8 
-> modules
+I applied the patch to test the chelsio drivers.
+The compilation of the forcedeth driver fails if CONFIG_FORCEDETH_NAPI 
+is not set.
+/opt/sources/linux-2.6/drivers/net/forcedeth.c: In function `nv_nic_irq':
+/opt/sources/linux-2.6/drivers/net/forcedeth.c:2866: error: structure 
+has no member named `weight'
+/opt/sources/linux-2.6/drivers/net/forcedeth.c: In function 
+`nv_nic_irq_optimized':
+/opt/sources/linux-2.6/drivers/net/forcedeth.c:2983: error: structure 
+has no member named `weight'
+/opt/sources/linux-2.6/drivers/net/forcedeth.c: In function `nv_nic_irq_rx':
+/opt/sources/linux-2.6/drivers/net/forcedeth.c:3177: error: structure 
+has no member named `weight'
 
-[snip]
+The compilation of the cxgb driver also fails if CONFIG_CHELSIO_T1_NAPI 
+is not set, but it has nothing to do with your patch.
+I'm looking into it.
 
-Good point(s).  Please try to use Documentation/SubmitChecklist,
-as indicated in Andrew's -mm announcements (and copied in my sig below).
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Cheers,
+Divy
