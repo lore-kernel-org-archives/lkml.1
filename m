@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932401AbXBULZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932394AbXBULd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932401AbXBULZh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 06:25:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932403AbXBULZh
+	id S932394AbXBULd4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 06:33:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932417AbXBULd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 06:25:37 -0500
-Received: from ns.suse.de ([195.135.220.2]:41932 "EHLO mx1.suse.de"
+	Wed, 21 Feb 2007 06:33:56 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47649 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932401AbXBULZg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 06:25:36 -0500
-From: Neil Brown <neilb@suse.de>
-To: "Jesper Juhl" <jesper.juhl@gmail.com>
-Date: Wed, 21 Feb 2007 22:24:49 +1100
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17884.11265.145106.290158@notabene.brown>
-Cc: nfs@lists.sourceforge.net,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.13.4 - "lockd: weird return 1 for CANCEL call"
-In-Reply-To: message from Jesper Juhl on Wednesday February 21
-References: <9a8748490702210246j38a1ca4bi8de371ba6829ada9@mail.gmail.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+	id S932394AbXBULd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 06:33:56 -0500
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <45DC184C.3080600@hitachi.com> 
+References: <45DC184C.3080600@hitachi.com>  <45DAC32B.4030603@hitachi.com> <45D5B483.3020502@hitachi.com> <45D5B2E3.3030607@hitachi.com> <20368.1171638335@redhat.com> <18826.1171969097@redhat.com> 
+To: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
+Cc: Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, Robin Holt <holt@sgi.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <soshima@redhat.com>,
+       "Hideo AOKI@redhat" <haoki@redhat.com>
+Subject: Re: [PATCH 3/4] coredump: ELF-FDPIC: enable to omit anonymous shared memory 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Wed, 21 Feb 2007 11:33:31 +0000
+Message-ID: <8347.1172057611@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday February 21, jesper.juhl@gmail.com wrote:
-> Greetings,
-> 
-> I just got a unusual message from lockd on a webserver running a
-> custom compiled 2.6.13.4 (yes it is ancient, I know).
-> 
-> # uname -a
-> Linux webserv.somedomain.example 2.6.13.4 #1 SMP Wed Nov 16 10:03:05
-> CET 2005 i686 unknown
-> 
-> # dmesg | tail -n 3
-> do_vfs_lock: VFS is out of sync with lock manager!
-> lockd: weird return 1 for CANCEL call
-> lockd: weird return 1 for CANCEL call
-> 
-> The server seems to be running fine, so I'm not really worried, but I
-> thought maybe someone would like to know. :-)
+Kawai, Hidehiro <hidehiro.kawai.ez@hitachi.com> wrote:
 
-Thanks.
-Don't be worried.  They are both warning about perfectly acceptable
-(though uncommon) behaviour.  These warnings have since been removed.
+> Is coredump_setting_sem a global semaphore?  If so, it prevents concurrent
+> core dumping.
 
-A process was interrupted while trying to get a lock, so the NFS
-client didn't know if it actually had the lock or not.
-When the process exited, the tried to cancel the lock just to be on
-the safe side and was told that it didn't own any such lock.
+No, it doesn't.  Look again:
 
-NeilBrown
+	int do_coredump(long signr, int exit_code, struct pt_regs * regs)
+	{
+		<setup vars>
+
+ >>>>		down_read(&coredump_settings_sem);
+
+> Additionally, while some process is dumped, writing to
+> coredump_omit_anon_shared of unrelated process will be blocked.
+
+Yes, but that's probably reasonable.  How likely (a) is a process to coredump,
+and (b) is a coredump to occur simultaneously with someone altering their
+settings?
+
+David
