@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161302AbXBUQCF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161323AbXBUQFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161302AbXBUQCF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 11:02:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161299AbXBUQCF
+	id S1161323AbXBUQFv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 11:05:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161324AbXBUQFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 11:02:05 -0500
-Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:60847 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161302AbXBUQCD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 11:02:03 -0500
-Date: Wed, 21 Feb 2007 17:02:13 +0100
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: linux-kernel@vger.kernel.org
-Message-ID: <20070221160213.GK4641@enneenne.com>
+	Wed, 21 Feb 2007 11:05:51 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:38804 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161323AbXBUQFu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 11:05:50 -0500
+Message-ID: <45DC6D3B.80500@redhat.com>
+Date: Wed, 21 Feb 2007 11:03:07 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Advice on backlight support
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+To: Jean Delvare <khali@linux-fr.org>
+CC: Rudolf Marek <r.marek@assembler.cz>, linux-acpi@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+References: <45D5EA88.7090300@redhat.com>	<45D6DDCE.5050803@assembler.cz>	<45D7461A.2040808@redhat.com>	<45D8D6AE.3000204@assembler.cz>	<45DB0EEA.2010205@redhat.com> <20070221155444.99386b98.khali@linux-fr.org>
+In-Reply-To: <20070221155444.99386b98.khali@linux-fr.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Jean Delvare wrote:
+> Can you try to load the i2c-dev driver, then run the following commands
+> and report the results:
+> $ i2cdetect -l
+> For each bus listed:
+> $ i2cdetect N
 
-I'd like to add backlight support for input devices since my custom
-board has a backlighted mini keyboard.
+FWIW it's really an ATIIXP chipset, but supposedly PIIX4 compatible:
 
-It could be acceptable to move the code from drivers/video/backlight/
-to drivers/backlight/ renaming the "Backlight & LCD" name into
-"Backlight" and adding two new entries "LCD" and, maybe, "Input" (or
-something like that?).
-
-Thanks in advance,
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+# i2cdetect -l
+i2c-0   smbus           SMBus PIIX4 adapter at 8400             Non-I2C SMBus adapter
+# i2cdetect 0
+WARNING! This program can confuse your I2C bus, cause data loss and worse!
+I will probe file /dev/i2c-0.
+I will probe address range 0x03-0x77.
+Continue? [Y/n] y
+     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+00:          XX XX XX XX XX XX XX XX XX XX XX XX XX
+10: XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX
+20: XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX
+30: XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX
+40: XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX
+50: 50 51 XX XX XX XX XX XX XX XX XX XX XX XX XX XX
+60: XX XX XX XX XX XX XX XX XX 69 XX XX XX XX XX XX
+70: XX XX XX XX XX XX XX XX
