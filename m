@@ -1,132 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965382AbXBUB7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964814AbXBUCar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965382AbXBUB7S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 20:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965379AbXBUB7R
+	id S964814AbXBUCar (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 21:30:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965039AbXBUCar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 20:59:17 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:51076 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965352AbXBUB7K (ORCPT
+	Tue, 20 Feb 2007 21:30:47 -0500
+Received: from thing.hostingexpert.com ([67.15.235.34]:49078 "EHLO
+	thing.hostingexpert.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964814AbXBUCaq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 20:59:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=OflwPAJmc35BsCCAWpLjOongSQwan8/2E1eHMP2FFoTRbwA/7Y+awGsxSmN8dOiQ6gtCOI4mkxvt/6KzYus1iKUyBr31V/K3iQjiuHCP4VyMyC9/Zz9U2j0RkfZ8smgFwC+SofowSLcQ7pb/QHFB/KFAJLxrcXXU08eRyI9kiCM=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Suleiman Souhlal <ssouhlal@freebsd.org>
-Subject: Re: [PATCH 2/3] Don't change transfer speed while requests are in flight
-Date: Wed, 21 Feb 2007 03:05:16 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20070221012112.GB1777@freefall.freebsd.org>
-In-Reply-To: <20070221012112.GB1777@freefall.freebsd.org>
+	Tue, 20 Feb 2007 21:30:46 -0500
+Message-ID: <45DBAE91.8040804@linuxtv.org>
+Date: Tue, 20 Feb 2007 21:29:37 -0500
+From: Michael Krufky <mkrufky@linuxtv.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Greg KH <greg@kroah.com>
+CC: Chris Wright <chrisw@sous-sol.org>,
+       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
+       stable@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [stable] [patch 00/50] -stable review
+References: <20070106022753.334962000@sous-sol.org> <45C624D2.9030403@linuxtv.org> <20070205214332.GB18230@kroah.com> <45C7ACAB.6060408@linuxtv.org> <20070205223304.GA19793@kroah.com> <45CA3FBD.70407@linuxtv.org> <45CCCE51.8090103@linuxtv.org> <20070209195156.GA27018@kroah.com> <20070220231223.GA22746@kroah.com>
+In-Reply-To: <20070220231223.GA22746@kroah.com>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702210305.16793.bzolnier@gmail.com>
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - thing.hostingexpert.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - linuxtv.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wednesday 21 February 2007 02:21, Suleiman Souhlal wrote:
-> Use ide_wait_cmd() in ide_config_drive_speed() if the drive has been
-> initialized and we're not in an interrupt, to avoid changing the
-> xfer speed while requests are in flight.
-
-Many devices have problems with SETFEATURES_XFER if the WIN_SETFEATURES
-command is driven by IRQ so we must resort to the polling mode.
-This also implies that ide_config_drive_speed() generally does its
-job right and the problem lies in the higher layers.
-
-set_using_dma() should queue special driver specific request (same goes
-for some other options from /proc/ide/hdx/settings / ioctls).
-
-I have a patch re-writting /proc/ide/hdx/settings so that there are
-->get/->set methods for each setting.  This should help in designing
-special driver request but I need some more time to sync the patch
-with the recent IDE changes.  I will get back to you on this one.
-
-Thanks,
-Bart
-
-> An easy way to trigger the problem is to dd the disk while doing
-> while :; do hdparm -d 1 /dev/hdc> /dev/null; done
+Greg KH wrote:
+> Ok, I've now gotten all of these for .19 and .18.
 > 
-> While there, remove some commented-out code.
+> If I've missed anything, please let me know.
 > 
-> Signed-off-by:	Suleiman Souhlal <suleiman@google.com>
-> 
-> ---
->  drivers/ide/ide-iops.c |   35 ++++++++++++++++++++---------------
->  1 files changed, 20 insertions(+), 15 deletions(-)
-> 
-> diff --git a/drivers/ide/ide-iops.c b/drivers/ide/ide-iops.c
-> index c67b3b1..35ab3af 100644
-> --- a/drivers/ide/ide-iops.c
-> +++ b/drivers/ide/ide-iops.c
-> @@ -748,32 +748,36 @@ int ide_config_drive_speed (ide_drive_t 
->  	int	i, error	= 1;
->  	u8 stat;
->  
-> -//	while (HWGROUP(drive)->busy)
-> -//		msleep(50);
-> +	/*
-> +	 * Just use ide_wait_cmd() if the drive has been initialized and we
-> +	 * aren't in an interrupt handler, to avoid changing the xfer speed
-> +	 * while requests are in flight.
-> +	 *
-> +	 * If we are in an interrupt, it should be safe to issue
-> +	 * SETFEATURES manually, since there shouldn't be any requests in
-> +	 * flight.
-> +	 */
-> +	if (drive->queue != NULL && !in_interrupt()) {
-> +		error = ide_wait_cmd(drive, WIN_SETFEATURES, speed,
-> +		    SETFEATURES_XFER, 0, NULL);
-> +		if (error) {
-> +			stat = hwif->INB(IDE_STATUS_REG);
-> +			ide_dump_status(drive, "set_drive_speed_status", stat);
-> +			return (error);
-> +		}
-> +		goto done;
-> +	}
->  
->  #ifdef CONFIG_BLK_DEV_IDEDMA
->  	if (hwif->ide_dma_check)	 /* check if host supports DMA */
->  		hwif->dma_host_off(drive);
->  #endif
->  
-> -	/*
-> -	 * Don't use ide_wait_cmd here - it will
-> -	 * attempt to set_geometry and recalibrate,
-> -	 * but for some reason these don't work at
-> -	 * this point (lost interrupt).
-> -	 */
->          /*
->           * Select the drive, and issue the SETFEATURES command
->           */
->  	disable_irq_nosync(hwif->irq);
->  	
-> -	/*
-> -	 *	FIXME: we race against the running IRQ here if
-> -	 *	this is called from non IRQ context. If we use
-> -	 *	disable_irq() we hang on the error path. Work
-> -	 *	is needed.
-> -	 */
-> -	 
->  	udelay(1);
->  	SELECT_DRIVE(drive);
->  	SELECT_MASK(drive, 0);
-> @@ -835,6 +839,7 @@ #ifdef CONFIG_BLK_DEV_IDEDMA
->  		hwif->dma_off_quietly(drive);
->  #endif
->  
-> +done:
->  	switch(speed) {
->  		case XFER_UDMA_7:   drive->id->dma_ultra |= 0x8080; break;
->  		case XFER_UDMA_6:   drive->id->dma_ultra |= 0x4040; break;
-> 
-> 
+> thanks for your patience.
+
+Looks good... Thank you, Greg.
+
+Greg KH wrote:
+> This will probably be the last release of the 2.6.19-stable series, so
+> if there are patches that you feel should be applied to that tree,
+> please let me know.
+
+Normally, I would wait for a patch to appear in Linus' tree before I send it to -stable,
+however, this patch can not wait.  Since 2.6.18-stable and 2.6.19-stable have their last
+releases pending review, it is imperative that this final patch be added to the queue, if
+possible.
+
+This patch was recently submitted, and fixes many horrible, previously unexplained bugs of the
+past.
+
+Please queue this for the final 2.6.18 and 2.6.19 -stable releases, as well as for 2.6.20.1
+
+Thank you,
+
+Michael Krufky
+
+---
+
+dvbdev: fix illegal re-usage of fileoperations struct
+
+From: Marcel Siegert <mws@linuxtv.org>
+
+ Arjan van de Ven <arjan@infradead.org> reported an illegal re-usage of the fileoperations struct
+ if more than one dvb device(e.g. frontend) is present. this patch fixes this issue.
+ it allocates a new fileoperations struct each time a device is registered and copies the default
+ template fileops.
+
+Signed-off-by: Marcel Siegert <mws@linuxtv.org>
+Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+
+---
+ linux/drivers/media/dvb/dvb-core/dvbdev.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+--- linux/drivers/media/dvb/dvb-core/dvbdev.c.orig
++++ linux/drivers/media/dvb/dvb-core/dvbdev.c
+@@ -211,6 +211,8 @@
+ 			const struct dvb_device *template, void *priv, int type)
+ {
+ 	struct dvb_device *dvbdev;
++	struct file_operations *dvbdevfops;
++
+ 	int id;
+ 
+ 	if (mutex_lock_interruptible(&dvbdev_register_lock))
+@@ -230,12 +232,22 @@
+ 		return -ENOMEM;
+ 	}
+ 
++	dvbdevfops = kzalloc(sizeof(struct file_operations), GFP_KERNEL);
++
++	if (!dvbdevfops) {
++		kfree (dvbdev);
++		mutex_unlock(&dvbdev_register_lock);
++		return -ENOMEM;
++	}
++
+ 	memcpy(dvbdev, template, sizeof(struct dvb_device));
+ 	dvbdev->type = type;
+ 	dvbdev->id = id;
+ 	dvbdev->adapter = adap;
+ 	dvbdev->priv = priv;
++	dvbdev->fops = dvbdevfops;
+ 
++	memcpy(dvbdev->fops, template->fops, sizeof(struct file_operations));
+ 	dvbdev->fops->owner = adap->module;
+ 
+ 	list_add_tail (&dvbdev->list_head, &adap->device_list);
+@@ -263,6 +275,7 @@
+ 					dvbdev->type, dvbdev->id)));
+ 
+ 	list_del (&dvbdev->list_head);
++	kfree (dvbdev->fops);
+ 	kfree (dvbdev);
+ }
+ EXPORT_SYMBOL(dvb_unregister_device);
