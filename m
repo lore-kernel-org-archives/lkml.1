@@ -1,63 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422750AbXBUSM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422752AbXBUSNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422750AbXBUSM4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 13:12:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422751AbXBUSM4
+	id S1422752AbXBUSNi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 13:13:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422755AbXBUSNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 13:12:56 -0500
-Received: from pat.uio.no ([129.240.10.15]:41478 "EHLO pat.uio.no"
+	Wed, 21 Feb 2007 13:13:38 -0500
+Received: from il.qumranet.com ([82.166.9.18]:54568 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422750AbXBUSMy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 13:12:54 -0500
-Subject: Re: [PATCH] update ctime and mtime for mmaped write
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, staubach@redhat.com, hugh@veritas.com,
-       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <E1HJvdA-0003Nj-00@dorka.pomaz.szeredi.hu>
-References: <E1HJvdA-0003Nj-00@dorka.pomaz.szeredi.hu>
-Content-Type: text/plain
-Date: Wed, 21 Feb 2007 13:12:42 -0500
-Message-Id: <1172081562.9108.1.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.91 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, none)
-X-UiO-Scanned: F37B93CA4CF87844BFD77ECD3558E5894253D049
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 243 total 2345 max/h 1293 blacklist 0 greylist 0 ratelimit 0
+	id S1422754AbXBUSNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 13:13:37 -0500
+Subject: [PATCH 1/6] KVM: Add internal filesystem for generating inodes
+From: Avi Kivity <avi@qumranet.com>
+Date: Wed, 21 Feb 2007 18:13:35 -0000
+To: kvm-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, mingo@elte.hu
+References: <45DC8B6E.5050205@qumranet.com>
+In-Reply-To: <45DC8B6E.5050205@qumranet.com>
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <20070221181335.9651025016D@il.qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-21 at 18:51 +0100, Miklos Szeredi wrote:
-> From: Miklos Szeredi <mszeredi@suse.cz>
-> 
-> This patch makes writing to shared memory mappings update st_ctime and
-> st_mtime as defined by SUSv3:
-> 
->    The st_ctime and st_mtime fields of a file that is mapped with
->    MAP_SHARED and PROT_WRITE shall be marked for update at some point
->    in the interval between a write reference to the mapped region and
->    the next call to msync() with MS_ASYNC or MS_SYNC for that portion
->    of the file by any process. If there is no such call and if the
->    underlying file is modified as a result of a write reference, then
->    these fields shall be marked for update at some time after the
->    write reference.
-> 
-> A new address_space flag is introduced: AS_CMTIME.  This is set each
-> time a page is dirtied through a userspace memory mapping.  This
-> includes write accesses via get_user_pages().
-> 
-> Note, the flag is set unconditionally, even if the page is already
-> dirty.  This is important, because the page might have been dirtied
-> earlier by a non-mmap write.
-> 
-> This flag is checked in msync() and __fput(), and if set, the file
-> times are updated and the flag is cleared
+The kvmfs inodes will represent virtual machines and vcpus, as necessary,
+reducing cacheline bouncing due to inodes and filps being shared.
 
-Why not also check inside vfs_getattr?
+Signed-off-by: Avi Kivity <avi@qumranet.com>
+---
+ drivers/kvm/kvm_main.c |   33 ++++++++++++++++++++++++++++++++-
+ 1 files changed, 32 insertions(+), 1 deletions(-)
 
-Cheers
-  Trond
-
+diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
+index 0df0eeb..c01252e 100644
+--- a/drivers/kvm/kvm_main.c
++++ b/drivers/kvm/kvm_main.c
+@@ -36,6 +36,8 @@
+ #include <asm/desc.h>
+ #include <linux/sysdev.h>
+ #include <linux/cpu.h>
++#include <linux/fs.h>
++#include <linux/mount.h>
+ 
+ #include "x86_emulate.h"
+ #include "segment_descriptor.h"
+@@ -72,6 +74,9 @@ static struct kvm_stats_debugfs_item {
+ 
+ static struct dentry *debugfs_dir;
+ 
++#define KVMFS_MAGIC 0x19700426
++struct vfsmount *kvmfs_mnt;
++
+ #define MAX_IO_MSRS 256
+ 
+ #define CR0_RESEVED_BITS 0xffffffff1ffaffc0ULL
+@@ -2252,6 +2257,18 @@ static struct sys_device kvm_sysdev = {
+ 
+ hpa_t bad_page_address;
+ 
++static int kvmfs_get_sb(struct file_system_type *fs_type, int flags,
++			const char *dev_name, void *data, struct vfsmount *mnt)
++{
++	return get_sb_pseudo(fs_type, "kvm:", NULL, KVMFS_MAGIC, mnt);
++}
++
++static struct file_system_type kvm_fs_type = {
++	.name		= "kvmfs",
++	.get_sb		= kvmfs_get_sb,
++	.kill_sb	= kill_anon_super,
++};
++
+ int kvm_init_arch(struct kvm_arch_ops *ops, struct module *module)
+ {
+ 	int r;
+@@ -2328,8 +2345,16 @@ void kvm_exit_arch(void)
+ static __init int kvm_init(void)
+ {
+ 	static struct page *bad_page;
+-	int r = 0;
++	int r;
++
++	r = register_filesystem(&kvm_fs_type);
++	if (r)
++		goto out3;
+ 
++	kvmfs_mnt = kern_mount(&kvm_fs_type);
++	r = PTR_ERR(kvmfs_mnt);
++	if (IS_ERR(kvmfs_mnt))
++		goto out2;
+ 	kvm_init_debug();
+ 
+ 	kvm_init_msr_list();
+@@ -2346,6 +2371,10 @@ static __init int kvm_init(void)
+ 
+ out:
+ 	kvm_exit_debug();
++	mntput(kvmfs_mnt);
++out2:
++	unregister_filesystem(&kvm_fs_type);
++out3:
+ 	return r;
+ }
+ 
+@@ -2353,6 +2382,8 @@ static __exit void kvm_exit(void)
+ {
+ 	kvm_exit_debug();
+ 	__free_page(pfn_to_page(bad_page_address >> PAGE_SHIFT));
++	mntput(kvmfs_mnt);
++	unregister_filesystem(&kvm_fs_type);
+ }
+ 
+ module_init(kvm_init)
