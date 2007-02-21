@@ -1,59 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423255AbXBUWxM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423254AbXBUWyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423255AbXBUWxM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 17:53:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423254AbXBUWxM
+	id S1423254AbXBUWyX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 17:54:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423257AbXBUWyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 17:53:12 -0500
-Received: from coyote.holtmann.net ([217.160.111.169]:44066 "EHLO
-	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423255AbXBUWxK (ORCPT
+	Wed, 21 Feb 2007 17:54:23 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:14833 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423254AbXBUWyW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 17:53:10 -0500
-Subject: Re: Re: Phis in /proc/bus/input/devices same for all devices?
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: CIJOML <cijoml@volny.cz>, linux-kernel@vger.kernel.org
-In-Reply-To: <d120d5000702211448s7d3569cdl1fdcb71d13c3c3ff@mail.gmail.com>
-References: <200702212313.30359.cijoml@volny.cz>
-	 <d120d5000702211427y423acfdekb83343a4f90caab0@mail.gmail.com>
-	 <1172097890.7403.52.camel@violet>
-	 <d120d5000702211448s7d3569cdl1fdcb71d13c3c3ff@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 21 Feb 2007 23:53:50 +0100
-Message-Id: <1172098430.7403.54.camel@violet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.91 
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Feb 2007 17:54:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=jsQN2cyPt7yJx5qj1BRTKaNKuHigx6ssxS9E7HgRofXs4nRB8rAg6A/62auKJ+iXNvIXo1doVt+ct3ICyWklYDj3bLMQaExU2JH6OolI0LEj5bIxLSvCVrj2MxhJny1C44aCPESGrQ6QwjAIih1c6VLt3Ec+mVHyhIsjr8YsrtQ=
+Date: Wed, 21 Feb 2007 22:53:08 +0000
+From: Frederik Deweerdt <deweerdt@free.fr>
+To: Jose Goncalves <jose.goncalves@inov.pt>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: Serial related oops
+Message-ID: <20070221225308.GA4113@slug>
+References: <20070219134539.GA27370@flint.arm.linux.org.uk> <20070220142442.GF566@slug> <20070219143520.GB27370@flint.arm.linux.org.uk> <20070220144814.GJ566@slug> <20070219150508.GD27370@flint.arm.linux.org.uk> <45D9D073.7020701@inov.pt> <20070219164200.GF27370@flint.arm.linux.org.uk> <45D9E46C.4030408@inov.pt> <20070219212347.GA4258@flint.arm.linux.org.uk> <45DC537B.6020108@inov.pt>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45DC537B.6020108@inov.pt>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dmitry,
-
-> > > > can anybody reply to this and share his/her opinion?
-> > >
-> > > Input core already exports uniq to udev and also via sysfs.
-> >
-> > so do you think it would be better to create phys as a string of the
-> > source and destination address like "<src>-<dst>" for Bluetooth. And
-> > then keep the uniq empty like all USB devices without serial number do?
-> >
+On Wed, Feb 21, 2007 at 02:13:15PM +0000, Jose Goncalves wrote:
+> New devolpments.
+> I have upgraded to 2.6.16.41, applied a patch sent by Frederik that
+> removed the changed made in http://lkml.org/lkml/2005/6/23/266 and
+> activated some more kernel debug, i.e., CONFIG_KALLSYMS_ALL,
+> CONFIG_DEBUG_KERNEL, CONFIG_DETECT_SOFTLOCKUP, CONFIG_DEBUG_SLAB,
+> CONFIG_DEBUG_MUTEXES, CONFIG_FRAME_POINTER and CONFIG_FORCED_INLINING
+> (thanks to vda for pointing me to the right doc.).
+> At first it seemed to work fine, but after some days of continuous
+> running I've got another kernel Oops!
+> I attach the dmesg output and the assembly dump of serial8250_startup()
+> and serial8250_shutdown().
 > 
-> I'd keep uniq as is and do what you proposed with phys. This way you
-> can either use uniq to identify your device while moving it from one
-> receiver to another (if you have several) or do exact match on phys to
-> get receiver/device pair.
-> 
-> Does this make sense?
+As suspected by Russell, the badness seems to happen just at the
+end of the serial_inp on LSR, drivers/serial/8250.c:1650.
+The NULL deref happens at the beginning of the serial_inp(up, UART_RX)
+call, when trying to dereference *up.
 
-actually it doesn't help to keep uniq around since the Bluetooth HID
-always reconnects to the same source/host address. Making it reconnect
-results in a virtual cable unplug. So I think that I am going to modify
-the phys to include source and destination address. In the end it is
-only a string.
+c01bfa70 <serial_in>:
+c01bfa70:       55                      push   %ebp
+c01bfa71:       89 e5                   mov    %esp,%ebp
+c01bfa73:       53                      push   %ebx
+c01bfa74:       8b 5d 08                mov    0x8(%ebp),%ebx << %ebx = up (which is NULL)
+c01bfa77:       8b 55 0c                mov    0xc(%ebp),%edx
+c01bfa7a:       0f b6 4b 12             movzbl 0x12(%ebx),%ecx << %ecx = *(%ebx+12) Oops
+c01bfa7e:       0f b6 43 13             movzbl 0x13(%ebx),%eax
 
-Regards
+It seems that somehow, the pop %ebx at the end of
+the serial_inp(up, UART_LSR) function poped a NULL value instead of the
+expected pointer. Any suggestion on how this could happen?
+Jose, did you try to msleep(10) before the "And clear the interrupt
+registers again for luck." as suggested by Russell?
 
-Marcel
+You should also revert the change I suggested, it seems I missed the
+target by a few lines of code :).
+
+Regards,
+Frederik
+
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index 7aca22c..385cc51 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -1643,6 +1643,7 @@ static int serial8250_startup(struct uart_port *port)
+ 		(void) inb_p(icp);
+ 	}
+ 
++	msleep(10);
+ 	/*
+ 	 * And clear the interrupt registers again for luck.
+ 	 */
+
 
 
