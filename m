@@ -1,47 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751231AbXBUMIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751236AbXBUMJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751231AbXBUMIq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 07:08:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbXBUMIq
+	id S1751236AbXBUMJR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 07:09:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbXBUMJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 07:08:46 -0500
-Received: from mbox.ssc.unict.it ([151.97.230.9]:42868 "EHLO ssc.unict.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751231AbXBUMIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 07:08:46 -0500
-From: "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
-To: stable@kernel.org
-Cc: Andi Kleen <ak@suse.de>, Jeff Dike <jdike@addtoit.com>,
-       linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: x86_64: PTRACE_[GS]ET_THREAD_AREA should be accepted
-Date: Wed, 21 Feb 2007 13:07:41 +0100
-Message-Id: <11720596612428-git-send-email-blaisorblade@yahoo.it>
-X-Mailer: git-send-email 1.4.4.4.ga596b
+	Wed, 21 Feb 2007 07:09:17 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48753 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751233AbXBUMJQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 07:09:16 -0500
+Date: Wed, 21 Feb 2007 13:12:59 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Suleiman Souhlal <ssouhlal@FreeBSD.org>
+Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] Don't change transfer speed while requests are in
+ flight
+Message-ID: <20070221131259.3817762d@lxorguk.ukuu.org.uk>
+In-Reply-To: <20070221012112.GB1777@freefall.freebsd.org>
+References: <20070221012112.GB1777@freefall.freebsd.org>
+X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch backports from 2.6.19 a fix to a 2.6.18 regression.
+> +	 * If we are in an interrupt, it should be safe to issue
+> +	 * SETFEATURES manually, since there shouldn't be any requests in
+> +	 * flight.
 
-Like for PTRACE_OLDSETOPTIONS, we should fix PTRACE_[GS]ET_THREAD_AREA. This had
-been done already for 2.6.19, so this is for 2.6.18-stable only.
-This was tested with UML/32bit as API consumer, both before and after this
-patch.
-
-Cc: Andi Kleen <ak@suse.de>
-Signed-off-by: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
-Index: linux-2.6.18/arch/x86_64/ia32/ptrace32.c
-===================================================================
---- linux-2.6.18.orig/arch/x86_64/ia32/ptrace32.c
-+++ linux-2.6.18/arch/x86_64/ia32/ptrace32.c
-@@ -241,6 +241,8 @@ asmlinkage long sys32_ptrace(long reques
- 	case PTRACE_SYSCALL:
- 	case PTRACE_OLDSETOPTIONS:
- 	case PTRACE_SETOPTIONS:
-+	case PTRACE_SET_THREAD_AREA:
-+	case PTRACE_GET_THREAD_AREA:
- 		return sys_ptrace(request, pid, addr, data); 
- 
- 	default:
-
+There may be error recovery going on from a timeout on another processor.
+I don't see how your code protects against that (and the old code is
+broken too)
 
