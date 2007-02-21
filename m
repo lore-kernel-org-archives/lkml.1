@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751092AbXBUBjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751091AbXBUBjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751092AbXBUBjY (ORCPT <rfc822;w@1wt.eu>);
+	id S1751091AbXBUBjY (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 20 Feb 2007 20:39:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbXBUBiw
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbXBUBiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 20:38:52 -0500
-Received: from ns2.suse.de ([195.135.220.15]:34472 "EHLO mx2.suse.de"
+	Tue, 20 Feb 2007 20:38:55 -0500
+Received: from ns2.suse.de ([195.135.220.15]:34471 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751042AbXBUBiY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751031AbXBUBiY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 20 Feb 2007 20:38:24 -0500
-Date: Tue, 20 Feb 2007 17:36:49 -0800
+Date: Tue, 20 Feb 2007 17:36:56 -0800
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -19,14 +19,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Martin Samuelsson <sam@home.se>, Andrew Morton <akpm@osdl.org>,
        Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: [patch 03/21] V4L: fix ks0127 status flags
-Message-ID: <20070221013649.GD30227@kroah.com>
+Subject: [patch 04/21] V4L: tveeprom: autodetect LG TAPC G701D as tuner type 37
+Message-ID: <20070221013656.GE30227@kroah.com>
 References: <20070221012758.925122216@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="V4L-fix-ks0127-status-flags.patch"
+Content-Disposition: inline; filename="V4L-tveeprom-autodetect-LG-TAPC-G701D-as-tuner-type-37.patch"
 In-Reply-To: <20070221013619.GA30227@kroah.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,39 +34,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-Or status flags together in DECODER_GET_STATUS instead of and-zapping them.
+Autodetect LG TAPC G701D as tuner type 37, fixing
+mis-detected tuners in some Hauppauge tv tuner cards.
 
-(cherry picked from commit 55d5440d4587454628a850ce26703639885af678)
+Thanks to Adonis Papas, for pointing this out.
 
-Signed-off-by: Martin Samuelsson <sam@home.se>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+(cherry picked from commit 1323fbda1343f50f198bc8bd6d1d59c8b7fc45bf)
+
 Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/video/ks0127.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/media/video/tveeprom.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-2.6.19.4.orig/drivers/media/video/ks0127.c
-+++ linux-2.6.19.4/drivers/media/video/ks0127.c
-@@ -712,13 +712,13 @@ static int ks0127_command(struct i2c_cli
- 		*iarg = 0;
- 		status = ks0127_read(ks, KS_STAT);
- 		if (!(status & 0x20))		 /* NOVID not set */
--			*iarg = (*iarg & DECODER_STATUS_GOOD);
-+			*iarg = (*iarg | DECODER_STATUS_GOOD);
- 		if ((status & 0x01))		      /* CLOCK set */
--			*iarg = (*iarg & DECODER_STATUS_COLOR);
-+			*iarg = (*iarg | DECODER_STATUS_COLOR);
- 		if ((status & 0x08))		   /* PALDET set */
--			*iarg = (*iarg & DECODER_STATUS_PAL);
-+			*iarg = (*iarg | DECODER_STATUS_PAL);
- 		else
--			*iarg = (*iarg & DECODER_STATUS_NTSC);
-+			*iarg = (*iarg | DECODER_STATUS_NTSC);
- 		break;
- 
- 	//Catch any unknown command
+--- linux-2.6.19.4.orig/drivers/media/video/tveeprom.c
++++ linux-2.6.19.4/drivers/media/video/tveeprom.c
+@@ -184,7 +184,7 @@ hauppauge_tuner[] =
+ 	{ TUNER_ABSENT,        "Thompson DTT757"},
+ 	/* 80-89 */
+ 	{ TUNER_ABSENT,        "Philips FQ1216LME MK3"},
+-	{ TUNER_ABSENT,        "LG TAPC G701D"},
++	{ TUNER_LG_PAL_NEW_TAPC, "LG TAPC G701D"},
+ 	{ TUNER_LG_NTSC_NEW_TAPC, "LG TAPC H791F"},
+ 	{ TUNER_LG_PAL_NEW_TAPC, "TCL 2002MB 3"},
+ 	{ TUNER_LG_PAL_NEW_TAPC, "TCL 2002MI 3"},
 
 --
