@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423114AbXBUVNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423126AbXBUVQE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423114AbXBUVNG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 16:13:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423124AbXBUVNF
+	id S1423126AbXBUVQE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 16:16:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423128AbXBUVQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 16:13:05 -0500
-Received: from wr-out-0506.google.com ([64.233.184.224]:63449 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423114AbXBUVND (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 16:13:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=X8aM4Jo95jWkp6gD6uSdwkHDsjRaDK5uqDV3Rz3SvLN8uJsSAP9iJGVo++dPiWmgyWowRnVoYLG/RqilJsid3lVcs1y5E76X28BfiIaKxc5idKiXwoBlKVT/BBLTjlN9o/mY41i5PghNZiRJPpyhVo+nm0DQ5OvrfXxet4Yj1Rk=
-Message-ID: <8d158e1f0702211313m4bf85628t419627f7bf096281@mail.gmail.com>
-Date: Wed, 21 Feb 2007 22:13:01 +0100
-From: "Patrick Ale" <patrick.ale@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [SKY2] Does anyone have this driver working?
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 21 Feb 2007 16:16:04 -0500
+Received: from www.osadl.org ([213.239.205.134]:51609 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1423126AbXBUVQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 16:16:01 -0500
+Subject: Re: Linux 2.6.21-rc1
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Daniel Walker <dwalker@mvista.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mingo@elte.hu
+In-Reply-To: <Pine.LNX.4.64.0702211302300.4043@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
+	 <1172075053.8577.38.camel@imap.mvista.com>
+	 <1172077664.25076.75.camel@localhost.localdomain>
+	 <1172078340.8577.43.camel@imap.mvista.com>
+	 <1172079671.25076.80.camel@localhost.localdomain>
+	 <1172079523.8577.48.camel@imap.mvista.com>
+	 <1172081931.25076.95.camel@localhost.localdomain>
+	 <1172082200.8577.56.camel@imap.mvista.com>
+	 <1172085792.25076.119.camel@localhost.localdomain>
+	 <1172088050.8577.71.camel@imap.mvista.com>
+	 <1172090603.25076.127.camel@localhost.localdomain>
+	 <1172090973.8577.77.camel@imap.mvista.com>
+	 <Pine.LNX.4.64.0702211302300.4043@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 21 Feb 2007 22:21:08 +0100
+Message-Id: <1172092868.25076.130.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 2007-02-21 at 13:06 -0800, Linus Torvalds wrote:
+> That said, considering that you did get a commit that doesn't look 
+> entirely unlikely (and that clearly changes things that are relevant), I 
+> suspect you did actually find the right one.
 
-And now, for something completely different, no libata ;-)
+Yup, thats the one which switches off PIT after we have the local APIC
+timers up and running. Which turns out to cause the nmi_watchdog not
+working anymore.
 
-I was wondering if any of you ever got the sky2 driver working
-(gigabit network card found in most Siemens E laptops).
-
-Which kernel I am trying, 2.6.17-gentoo (the kernel on the install
-CD), 2.6.20, the latest gits, nothing works. It either tells me "Link
-not ready" when bringing the interface up or it just gives massive
-time outs.
-
-Then, after literaly 6 reboots, it might get a DHCPACK, work, till the
-next reboot, then same story all over again.
-
-Any clue towards module settings or patches are welcome,
-
-At the moment I am compiling Jeff's netdev upstream-linus.
+	tglx
 
 
-Patrick
