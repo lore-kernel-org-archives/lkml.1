@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423090AbXBUX3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423276AbXBUX3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423090AbXBUX3W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 18:29:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423269AbXBUX3W
+	id S1423276AbXBUX3w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 18:29:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423277AbXBUX3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 18:29:22 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50550 "EHLO mx2.mail.elte.hu"
+	Wed, 21 Feb 2007 18:29:52 -0500
+Received: from gw.goop.org ([64.81.55.164]:51515 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423090AbXBUX3V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 18:29:21 -0500
-Date: Thu, 22 Feb 2007 00:24:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070221232407.GA5895@elte.hu>
-References: <20070221211355.GA7302@elte.hu> <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -5.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1423276AbXBUX3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 18:29:51 -0500
+Message-ID: <45DCD5E1.5070201@goop.org>
+Date: Wed, 21 Feb 2007 15:29:37 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Zachary Amsden <zach@vmware.com>
+CC: Andi Kleen <ak@suse.de>, virtualization@lists.osdl.org,
+       Chris Wright <chrisw@sous-sol.org>, xen-devel@lists.xensource.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [Xen-devel] Re: [patch 17/24] Xen-paravirt_ops: avoid having
+ a bad	selector in %gs during context switch
+References: <20070221205254.169835700@goop.org>	<20070221205323.770169136@goop.org> <200702212310.02218.ak@suse.de> <45DCD4D0.2000101@vmware.com>
+In-Reply-To: <45DCD4D0.2000101@vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Zachary Amsden wrote:
+> I agree with that, but especially because this is not even the right
+> place to save and clear gs; when userspace uses an LDT based %gs, you
+> need to do this all the way back in mmu_context.h before you switch
+> the LDT out. 
 
-* Michael K. Edwards <medwards.linux@gmail.com> wrote:
+Yeah.  This patch was really just to shut my debug Xen build up.  
+There's no correctness issue one way or the other, so it doesn't really
+matter that it doesn't catch LDT-using processes.
 
-> 2) Facilities for manipulating pools of threadlets, so you can 
-> throttle their concurrency, reprioritize them, and cancel them in 
-> bulk, disposing safely of any dynamically allocated memory, 
-> synchronization primitives, and so forth that they may be holding;
+> And I noticed this martian hanging out in mmu_context.h:
+>
+> #define deactivate_mm(tsk, mm)                  \
+>        asm("movl %0,%%gs": :"r" (0));
 
-pthread_cancel() [if/once threadlets are integrated into pthreads] ought 
-to do that. A threadlet, if it gets moved to an async context, is a 
-full-blown thread.
+Yeah, I've always wondered what this is for.  Its a remnant of a
+remnant, I think.
 
-	Ingo
+    J
