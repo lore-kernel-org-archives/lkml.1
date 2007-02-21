@@ -1,31 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751091AbXBUBjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751087AbXBUBkB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751091AbXBUBjY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 20:39:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbXBUBiz
+	id S1751087AbXBUBkB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 20:40:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbXBUBji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 20:38:55 -0500
-Received: from ns2.suse.de ([195.135.220.15]:34471 "EHLO mx2.suse.de"
+	Tue, 20 Feb 2007 20:39:38 -0500
+Received: from ns.suse.de ([195.135.220.2]:42253 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751031AbXBUBiY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 20:38:24 -0500
-Date: Tue, 20 Feb 2007 17:36:56 -0800
+	id S1751047AbXBUBiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 20:38:54 -0500
+Date: Tue, 20 Feb 2007 17:37:27 -0800
 From: Greg KH <greg@kroah.com>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       torvalds@linux-foundation.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: [patch 04/21] V4L: tveeprom: autodetect LG TAPC G701D as tuner type 37
-Message-ID: <20070221013656.GE30227@kroah.com>
+       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, suparna@in.ibm.com, zach.brown@oracle.com,
+       jmoyer@redhat.com, bcrl@kvack.org, pbadari@us.ibm.com,
+       kenchen@google.com
+Subject: [patch 08/21] aio: fix buggy put_ioctx call in aio_complete - v2
+Message-ID: <20070221013727.GI30227@kroah.com>
 References: <20070221012758.925122216@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="V4L-tveeprom-autodetect-LG-TAPC-G701D-as-tuner-type-37.patch"
+Content-Disposition: inline; filename="aio-fix-buggy-put_ioctx-call-in-aio_complete-v2.patch"
 In-Reply-To: <20070221013619.GA30227@kroah.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -34,31 +36,149 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-Autodetect LG TAPC G701D as tuner type 37, fixing
-mis-detected tuners in some Hauppauge tv tuner cards.
 
-Thanks to Adonis Papas, for pointing this out.
+From: "Ken Chen" <kenchen@google.com>
 
-(cherry picked from commit 1323fbda1343f50f198bc8bd6d1d59c8b7fc45bf)
+An AIO bug was reported that sleeping function is being called in softirq
+context:
 
-Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+BUG: warning at kernel/mutex.c:132/__mutex_lock_common()
+Call Trace:
+     [<a000000100577b00>] __mutex_lock_slowpath+0x640/0x6c0
+     [<a000000100577ba0>] mutex_lock+0x20/0x40
+     [<a0000001000a25b0>] flush_workqueue+0xb0/0x1a0
+     [<a00000010018c0c0>] __put_ioctx+0xc0/0x240
+     [<a00000010018d470>] aio_complete+0x2f0/0x420
+     [<a00000010019cc80>] finished_one_bio+0x200/0x2a0
+     [<a00000010019d1c0>] dio_bio_complete+0x1c0/0x200
+     [<a00000010019d260>] dio_bio_end_aio+0x60/0x80
+     [<a00000010014acd0>] bio_endio+0x110/0x1c0
+     [<a0000001002770e0>] __end_that_request_first+0x180/0xba0
+     [<a000000100277b90>] end_that_request_chunk+0x30/0x60
+     [<a0000002073c0c70>] scsi_end_request+0x50/0x300 [scsi_mod]
+     [<a0000002073c1240>] scsi_io_completion+0x200/0x8a0 [scsi_mod]
+     [<a0000002074729b0>] sd_rw_intr+0x330/0x860 [sd_mod]
+     [<a0000002073b3ac0>] scsi_finish_command+0x100/0x1c0 [scsi_mod]
+     [<a0000002073c2910>] scsi_softirq_done+0x230/0x300 [scsi_mod]
+     [<a000000100277d20>] blk_done_softirq+0x160/0x1c0
+     [<a000000100083e00>] __do_softirq+0x200/0x240
+     [<a000000100083eb0>] do_softirq+0x70/0xc0
+
+See report: http://marc.theaimsgroup.com/?l=linux-kernel&m=116599593200888&w=2
+
+flush_workqueue() is not allowed to be called in the softirq context.
+However, aio_complete() called from I/O interrupt can potentially call
+put_ioctx with last ref count on ioctx and triggers bug.  It is simply
+incorrect to perform ioctx freeing from aio_complete.
+
+The bug is trigger-able from a race between io_destroy() and aio_complete().
+A possible scenario:
+
+cpu0                               cpu1
+io_destroy                         aio_complete
+  wait_for_all_aios {                __aio_put_req
+     ...                                 ctx->reqs_active--;
+     if (!ctx->reqs_active)
+        return;
+  }
+  ...
+  put_ioctx(ioctx)
+
+                                     put_ioctx(ctx);
+                                        __put_ioctx
+                                          bam! Bug trigger!
+
+The real problem is that the condition check of ctx->reqs_active in
+wait_for_all_aios() is incorrect that access to reqs_active is not
+being properly protected by spin lock.
+
+This patch adds that protective spin lock, and at the same time removes
+all duplicate ref counting for each kiocb as reqs_active is already used
+as a ref count for each active ioctx.  This also ensures that buggy call
+to flush_workqueue() in softirq context is eliminated.
+
+Signed-off-by: "Ken Chen" <kenchen@google.com>
+Cc: Zach Brown <zach.brown@oracle.com>
+Cc: Suparna Bhattacharya <suparna@in.ibm.com>
+Cc: Benjamin LaHaise <bcrl@kvack.org>
+Cc: Badari Pulavarty <pbadari@us.ibm.com>
+Acked-by: Jeff Moyer <jmoyer@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/video/tveeprom.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/aio.c |   20 +++++++++-----------
+ 1 file changed, 9 insertions(+), 11 deletions(-)
 
---- linux-2.6.19.4.orig/drivers/media/video/tveeprom.c
-+++ linux-2.6.19.4/drivers/media/video/tveeprom.c
-@@ -184,7 +184,7 @@ hauppauge_tuner[] =
- 	{ TUNER_ABSENT,        "Thompson DTT757"},
- 	/* 80-89 */
- 	{ TUNER_ABSENT,        "Philips FQ1216LME MK3"},
--	{ TUNER_ABSENT,        "LG TAPC G701D"},
-+	{ TUNER_LG_PAL_NEW_TAPC, "LG TAPC G701D"},
- 	{ TUNER_LG_NTSC_NEW_TAPC, "LG TAPC H791F"},
- 	{ TUNER_LG_PAL_NEW_TAPC, "TCL 2002MB 3"},
- 	{ TUNER_LG_PAL_NEW_TAPC, "TCL 2002MI 3"},
+--- linux-2.6.19.4.orig/fs/aio.c
++++ linux-2.6.19.4/fs/aio.c
+@@ -298,17 +298,23 @@ static void wait_for_all_aios(struct kio
+ 	struct task_struct *tsk = current;
+ 	DECLARE_WAITQUEUE(wait, tsk);
+ 
++	spin_lock_irq(&ctx->ctx_lock);
+ 	if (!ctx->reqs_active)
+-		return;
++		goto out;
+ 
+ 	add_wait_queue(&ctx->wait, &wait);
+ 	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
+ 	while (ctx->reqs_active) {
++		spin_unlock_irq(&ctx->ctx_lock);
+ 		schedule();
+ 		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
++		spin_lock_irq(&ctx->ctx_lock);
+ 	}
+ 	__set_task_state(tsk, TASK_RUNNING);
+ 	remove_wait_queue(&ctx->wait, &wait);
++
++out:
++	spin_unlock_irq(&ctx->ctx_lock);
+ }
+ 
+ /* wait_on_sync_kiocb:
+@@ -425,7 +431,6 @@ static struct kiocb fastcall *__aio_get_
+ 	ring = kmap_atomic(ctx->ring_info.ring_pages[0], KM_USER0);
+ 	if (ctx->reqs_active < aio_ring_avail(&ctx->ring_info, ring)) {
+ 		list_add(&req->ki_list, &ctx->active_reqs);
+-		get_ioctx(ctx);
+ 		ctx->reqs_active++;
+ 		okay = 1;
+ 	}
+@@ -538,8 +543,6 @@ int fastcall aio_put_req(struct kiocb *r
+ 	spin_lock_irq(&ctx->ctx_lock);
+ 	ret = __aio_put_req(ctx, req);
+ 	spin_unlock_irq(&ctx->ctx_lock);
+-	if (ret)
+-		put_ioctx(ctx);
+ 	return ret;
+ }
+ 
+@@ -795,8 +798,7 @@ static int __aio_run_iocbs(struct kioctx
+ 		 */
+ 		iocb->ki_users++;       /* grab extra reference */
+ 		aio_run_iocb(iocb);
+-		if (__aio_put_req(ctx, iocb))  /* drop extra ref */
+-			put_ioctx(ctx);
++		__aio_put_req(ctx, iocb);
+  	}
+ 	if (!list_empty(&ctx->run_list))
+ 		return 1;
+@@ -1014,14 +1016,10 @@ put_rq:
+ 	/* everything turned out well, dispose of the aiocb. */
+ 	ret = __aio_put_req(ctx, iocb);
+ 
+-	spin_unlock_irqrestore(&ctx->ctx_lock, flags);
+-
+ 	if (waitqueue_active(&ctx->wait))
+ 		wake_up(&ctx->wait);
+ 
+-	if (ret)
+-		put_ioctx(ctx);
+-
++	spin_unlock_irqrestore(&ctx->ctx_lock, flags);
+ 	return ret;
+ }
+ 
 
 --
