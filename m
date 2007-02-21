@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422646AbXBUQLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161325AbXBUQNp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422646AbXBUQLz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 11:11:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422647AbXBUQLz
+	id S1161325AbXBUQNp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 11:13:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161327AbXBUQNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 11:11:55 -0500
-Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:60989 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422646AbXBUQLy (ORCPT
+	Wed, 21 Feb 2007 11:13:45 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:25978 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161325AbXBUQNo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 11:11:54 -0500
-Date: Wed, 21 Feb 2007 17:12:10 +0100
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Paul Sokolovsky <pmiscml@gmail.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net,
-       Richard Purdie <rpurdie@rpsys.net>
-Message-ID: <20070221161210.GL4641@enneenne.com>
-References: <20070221145353.GA23916@enneenne.com> <1056908425.20070221180037@gmail.com>
+	Wed, 21 Feb 2007 11:13:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=U4zXe8VKorq8bN1ZgfwUtNBQNq9a/7mEWwTkd1ijbXCWM0KvRHW6/Zh3wyXFe5IGpJG8Z/Erc09F002nRtbPHHTAeTOP2zDAbeGO5TKIOUGdnKf11gy56T6uJ1hI19U0Qh/UKFMzXVP6ycaCdPlkIRyE3By3tPcsEFU3HmCk9lo=
+Message-ID: <a2ebde260702210813h14bc98b6s8c4c8c560c3647ff@mail.gmail.com>
+Date: Thu, 22 Feb 2007 00:13:43 +0800
+From: "Dong Feng" <middle.fengdong@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: The purpose and implementation of cond_resched()
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1056908425.20070221180037@gmail.com>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 1/1] PXAFB: Support for backlight control
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 21, 2007 at 06:00:37PM +0200, Paul Sokolovsky wrote:
-> 
->   On the other hand, there's already
-> drivers/video/backlight/backlight.c which provides generic BL support,
-> implemented using notifier callback for FB core. Moreover, there's
+I have a question about cond_resched().
 
-My patch _uses_ that support.
+What is the condition under which I should invoke cond_resched() irreplaceably?
 
-> corgi_bl.c driver which, contrary to its name is a generic driver for
-> embedded/PDA device backlight. It essentially subclassses pretty
-> abstract backlight.c, and provides good implementation for most BL
-> implementation. What you really need to do to use it, is to supply
-> single machine-dependent method, set_bl_intensity(). That method is
-> usually <10 lines.
+For example, I see the following code in ksoftirqd(),
 
-I see, but in this manner you need to make a complete file for each
-board, while with my patch you can just put few lines into machine's
-definition file (a struct and 2 functions).
+preempt_enable_no_resched();
+cond_resched();
+preempt_disable();
 
->   With this in mind, adhoc backlight handlers in pxafb and few other
-> drivers are artifacts of older times. And it's sad they are tried to
-> be resurrected instead of being removed.
+But I do not understand why I should not write the following code,
 
-IMHO, the actual backlight support is not so much, infact I'd like to
-generalize it to support also backlighted keyboards (or input
-devices). :)
+preempt_enable();
+preempt_disable();
 
-Ciao,
+Are the above two pieces of code equal in functionality?
 
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+On the other hand, I see cond_resched() check and set PREEMPT_ACTIVE.
+I currently do not understand why it should do this, since I think
+PREEMPT_ACTIVE is only used to be set in the return-from-interrupt
+code in order to prevent schedule() from removing task from run queue
+unpredictably. But for cond_resched(), which is a planned voluntary
+switch, why does it also deal with this flag?
