@@ -1,43 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161221AbXBUNab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161222AbXBUNcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161221AbXBUNab (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 08:30:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161231AbXBUNaa
+	id S1161222AbXBUNcv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 08:32:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161235AbXBUNcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 08:30:30 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:48845 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161221AbXBUNaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 08:30:30 -0500
-Date: Wed, 21 Feb 2007 16:37:42 +0300
-From: Alexey Dobriyan <adobriyan@openvz.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: Re: utrace regressions (was: -mm merge plans for 2.6.21)
-Message-ID: <20070221133742.GA11162@localhost.sw.ru>
-References: <20070213153521.GA6036@localhost.sw.ru> <20070218023531.626D11800E4@magilla.sf.frob.com>
+	Wed, 21 Feb 2007 08:32:51 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:41133 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161222AbXBUNcu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 08:32:50 -0500
+Subject: Re: [PATCH] EXPORT_SYMBOL() time functions
+From: Arjan van de Ven <arjan@infradead.org>
+To: Rolf Eike Beer <eike-kernel@sf-tec.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       john stultz <johnstul@us.ibm.com>, Roman Zippel <zippel@linux-m68k.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+In-Reply-To: <200702211412.23388.eike-kernel@sf-tec.de>
+References: <200702211412.23388.eike-kernel@sf-tec.de>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Wed, 21 Feb 2007 14:32:16 +0100
+Message-Id: <1172064736.3531.191.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070218023531.626D11800E4@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 17, 2007 at 06:35:31PM -0800, Roland McGrath wrote:
-> > Looking at mainline x86_64 ptrace code I think hole for u_debugreg[4]
-> > and [5] is also needed.
->
-> It's not.  The utrace_regset for the debugregs already has that behavior
-> for those two words, so mapping all 8 uarea words to the regset is fine.
+On Wed, 2007-02-21 at 14:12 +0100, Rolf Eike Beer wrote:
+> These functions were inlines before 8b9365d753d9870bb6451504c13570b81923228f.
+> Now EXPORT_SYMBOL() them to allow them to be used in modules again.
 
-Sorry, I don't get it. Choosing segment from x86_64_uarea is done before
-calling regset->set and regset->get as well as before zero-filling. No
-segment for u_debugreg[4] and [5] means -EIO before segment handlers
-will have a chance to be called.
 
-Do you want to consolidate these two?
+please do not add random exports without users; exports eat up kernel
+size and memory. At minimum specify which mainline modules use the
+exports..
 
-    {offsetof(struct user, u_debugreg[0]), offsetof(struct user, u_debugreg[4]), 3, 0},
-    {offsetof(struct user, u_debugreg[6]), offsetof(struct user, u_debugreg[8]), 3, 6 * sizeof(long)},
 
