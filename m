@@ -1,200 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161264AbXBUPGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161262AbXBUPGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161264AbXBUPGY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 10:06:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161256AbXBUPFm
+	id S1161262AbXBUPGt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 10:06:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161250AbXBUPFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 10:05:42 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:34541 "EHLO mx2.redhat.com"
+	Wed, 21 Feb 2007 10:05:40 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:34536 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751310AbXBUPFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751299AbXBUPFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 21 Feb 2007 10:05:35 -0500
-Message-Id: <20070221144843.599206000@taijtu.programming.kicks-ass.net>
+Message-Id: <20070221144843.989983000@taijtu.programming.kicks-ass.net>
 References: <20070221144304.512721000@taijtu.programming.kicks-ass.net>
 User-Agent: quilt/0.46-1
-Date: Wed, 21 Feb 2007 15:43:25 +0100
+Date: Wed, 21 Feb 2007 15:43:29 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Trond Myklebust <trond.myklebust@fys.uio.no>,
        Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>
-Subject: [PATCH 21/29] mm: prepare swap entry methods for use in page methods
-Content-Disposition: inline; filename=mm-swap_entry_methods.patch
+Subject: [PATCH 25/29] nfs: only use stable storage for swap
+Content-Disposition: inline; filename=nfs-wb_priority.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move around the swap entry methods in preparation for use from
-page methods.
-
-Also provide a function to obtain the swap_info_struct backing
-a swap cache page.
+unstable writes don't make sense for swap pages.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
 ---
- include/linux/mm.h      |    8 ++++++++
- include/linux/swap.h    |   48 ++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/swapops.h |   44 --------------------------------------------
- mm/swapfile.c           |    1 +
- 4 files changed, 57 insertions(+), 44 deletions(-)
+ fs/nfs/write.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-2.6-git/include/linux/mm.h
+Index: linux-2.6-git/fs/nfs/write.c
 ===================================================================
---- linux-2.6-git.orig/include/linux/mm.h	2007-02-21 12:15:00.000000000 +0100
-+++ linux-2.6-git/include/linux/mm.h	2007-02-21 12:15:01.000000000 +0100
-@@ -17,6 +17,7 @@
- #include <linux/debug_locks.h>
- #include <linux/backing-dev.h>
- #include <linux/mm_types.h>
-+#include <linux/swap.h>
- 
- struct mempolicy;
- struct anon_vma;
-@@ -586,6 +587,13 @@ static inline struct address_space *page
- 	return mapping;
- }
- 
-+static inline struct swap_info_struct *page_swap_info(struct page *page)
-+{
-+	swp_entry_t swap = { .val = page_private(page) };
-+	BUG_ON(!PageSwapCache(page));
-+	return get_swap_info_struct(swp_type(swap));
-+}
-+
- static inline int PageAnon(struct page *page)
+--- linux-2.6-git.orig/fs/nfs/write.c	2007-02-21 12:15:10.000000000 +0100
++++ linux-2.6-git/fs/nfs/write.c	2007-02-21 12:15:13.000000000 +0100
+@@ -197,7 +197,7 @@ static int nfs_writepage_setup(struct nf
+ static int wb_priority(struct writeback_control *wbc)
  {
- 	return ((unsigned long)page->mapping & PAGE_MAPPING_ANON) != 0;
-Index: linux-2.6-git/include/linux/swap.h
-===================================================================
---- linux-2.6-git.orig/include/linux/swap.h	2007-02-21 12:15:00.000000000 +0100
-+++ linux-2.6-git/include/linux/swap.h	2007-02-21 12:15:01.000000000 +0100
-@@ -79,6 +79,50 @@ typedef struct {
- } swp_entry_t;
- 
- /*
-+ * swapcache pages are stored in the swapper_space radix tree.  We want to
-+ * get good packing density in that tree, so the index should be dense in
-+ * the low-order bits.
-+ *
-+ * We arrange the `type' and `offset' fields so that `type' is at the five
-+ * high-order bits of the swp_entry_t and `offset' is right-aligned in the
-+ * remaining bits.
-+ *
-+ * swp_entry_t's are *never* stored anywhere in their arch-dependent format.
-+ */
-+#define SWP_TYPE_SHIFT(e)	(sizeof(e.val) * 8 - MAX_SWAPFILES_SHIFT)
-+#define SWP_OFFSET_MASK(e)	((1UL << SWP_TYPE_SHIFT(e)) - 1)
-+
-+/*
-+ * Store a type+offset into a swp_entry_t in an arch-independent format
-+ */
-+static inline swp_entry_t swp_entry(unsigned long type, pgoff_t offset)
-+{
-+	swp_entry_t ret;
-+
-+	ret.val = (type << SWP_TYPE_SHIFT(ret)) |
-+			(offset & SWP_OFFSET_MASK(ret));
-+	return ret;
-+}
-+
-+/*
-+ * Extract the `type' field from a swp_entry_t.  The swp_entry_t is in
-+ * arch-independent format
-+ */
-+static inline unsigned swp_type(swp_entry_t entry)
-+{
-+	return (entry.val >> SWP_TYPE_SHIFT(entry));
-+}
-+
-+/*
-+ * Extract the `offset' field from a swp_entry_t.  The swp_entry_t is in
-+ * arch-independent format
-+ */
-+static inline pgoff_t swp_offset(swp_entry_t entry)
-+{
-+	return entry.val & SWP_OFFSET_MASK(entry);
-+}
-+
-+/*
-  * current->reclaim_state points to one of these when a task is running
-  * memory reclaim
-  */
-@@ -326,6 +370,10 @@ static inline int valid_swaphandles(swp_
+ 	if (wbc->for_reclaim)
+-		return FLUSH_HIGHPRI;
++		return FLUSH_HIGHPRI|FLUSH_STABLE;
+ 	if (wbc->for_kupdate)
+ 		return FLUSH_LOWPRI;
  	return 0;
- }
- 
-+static inline struct swap_info_struct *get_swap_info_struct(unsigned type)
-+{
-+	return NULL;
-+}
- #define can_share_swap_page(p)			(page_mapcount(p) == 1)
- 
- static inline int move_to_swap_cache(struct page *page, swp_entry_t entry)
-Index: linux-2.6-git/include/linux/swapops.h
-===================================================================
---- linux-2.6-git.orig/include/linux/swapops.h	2007-02-21 12:15:00.000000000 +0100
-+++ linux-2.6-git/include/linux/swapops.h	2007-02-21 12:15:01.000000000 +0100
-@@ -1,48 +1,4 @@
- /*
-- * swapcache pages are stored in the swapper_space radix tree.  We want to
-- * get good packing density in that tree, so the index should be dense in
-- * the low-order bits.
-- *
-- * We arrange the `type' and `offset' fields so that `type' is at the five
-- * high-order bits of the swp_entry_t and `offset' is right-aligned in the
-- * remaining bits.
-- *
-- * swp_entry_t's are *never* stored anywhere in their arch-dependent format.
-- */
--#define SWP_TYPE_SHIFT(e)	(sizeof(e.val) * 8 - MAX_SWAPFILES_SHIFT)
--#define SWP_OFFSET_MASK(e)	((1UL << SWP_TYPE_SHIFT(e)) - 1)
--
--/*
-- * Store a type+offset into a swp_entry_t in an arch-independent format
-- */
--static inline swp_entry_t swp_entry(unsigned long type, pgoff_t offset)
--{
--	swp_entry_t ret;
--
--	ret.val = (type << SWP_TYPE_SHIFT(ret)) |
--			(offset & SWP_OFFSET_MASK(ret));
--	return ret;
--}
--
--/*
-- * Extract the `type' field from a swp_entry_t.  The swp_entry_t is in
-- * arch-independent format
-- */
--static inline unsigned swp_type(swp_entry_t entry)
--{
--	return (entry.val >> SWP_TYPE_SHIFT(entry));
--}
--
--/*
-- * Extract the `offset' field from a swp_entry_t.  The swp_entry_t is in
-- * arch-independent format
-- */
--static inline pgoff_t swp_offset(swp_entry_t entry)
--{
--	return entry.val & SWP_OFFSET_MASK(entry);
--}
--
--/*
-  * Convert the arch-dependent pte representation of a swp_entry_t into an
-  * arch-independent swp_entry_t.
-  */
-Index: linux-2.6-git/mm/swapfile.c
-===================================================================
---- linux-2.6-git.orig/mm/swapfile.c	2007-02-21 12:15:00.000000000 +0100
-+++ linux-2.6-git/mm/swapfile.c	2007-02-21 12:15:01.000000000 +0100
-@@ -1764,6 +1764,7 @@ get_swap_info_struct(unsigned type)
- {
- 	return &swap_info[type];
- }
-+EXPORT_SYMBOL_GPL(get_swap_info_struct);
- 
- /*
-  * swap_lock prevents swap_map being freed. Don't grab an extra
 
 -- 
 
