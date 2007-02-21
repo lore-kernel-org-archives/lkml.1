@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423070AbXBUUJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423075AbXBUUMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423070AbXBUUJV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 15:09:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423064AbXBUUJU
+	id S1423075AbXBUUMX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 15:12:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423065AbXBUUMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 15:09:20 -0500
-Received: from mail.screens.ru ([213.234.233.54]:57970 "EHLO mail.screens.ru"
+	Wed, 21 Feb 2007 15:12:22 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:41739 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423061AbXBUUJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 15:09:19 -0500
-Date: Wed, 21 Feb 2007 23:09:16 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Jarek Poplawski <jarkao2@o2.pl>, Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       David Howells <dhowells@redhat.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFT] bridge: eliminate port_check workqueue
-Message-ID: <20070221200916.GA145@tv-sign.ru>
-References: <20070220221941.GA707@tv-sign.ru> <20070220162434.72d3ad7b@freekitty> <20070221082345.GB1662@ff.dom.local> <20070221142342.GB134@tv-sign.ru> <20070221105555.4d1b40a6@freekitty>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070221105555.4d1b40a6@freekitty>
-User-Agent: Mutt/1.5.11
+	id S1423061AbXBUUMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 15:12:21 -0500
+Date: Wed, 21 Feb 2007 12:09:38 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Chuck Ebbert <cebbert@redhat.com>, Andi Kleen <ak@suse.de>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, alan@lxorguk.ukuu.org.uk,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [patch 00/21] 2.6.19-stable review
+In-Reply-To: <20070221114737.a09be761.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0702211208500.4043@woody.linux-foundation.org>
+References: <20070221013619.GA30227@kroah.com> <45DC9E1D.40805@redhat.com>
+ <20070221114737.a09be761.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/21, Stephen Hemminger wrote:
->
-> This is what I was suggesting by getting rid of the work queue completely.
 
-Can't comment this patch, but if we can get rid of the work_struct - good!
 
-> -static void port_carrier_check(struct work_struct *work)
-> +void br_port_carrier_check(struct net_bridge_port *p)
->  {
-> -	struct net_bridge_port *p;
-> -	struct net_device *dev;
-> -	struct net_bridge *br;
-> -
-> -	dev = container_of(work, struct net_bridge_port,
-> -			   carrier_check.work)->dev;
-> -	work_release(work);
+On Wed, 21 Feb 2007, Andrew Morton wrote:
+> > 
+> > http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm2/broken-out/x86_64-mm-simplfy-__assign_irq_vector.patch
+> > http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm2/broken-out/x86_64-mm-handle-irqs-pending-in-irr-during-irq-migration.patch
+> 
+> That's mainly an Andi decision.  Let's cc him.
 
-May I ask you to redo this patch on top of
+Would be good to have Eric also ack them as safe and obvious.
 
-	[PATCH 1/3] net/bridge/br_if.c: don't use _WORK_NAR
-	http://marc.theaimsgroup.com/?l=linux-kernel&m=117183517612775
+Btw, that latter one has corrupted sign-offs from Andi (it's in the middle 
+of the text, very confusing).
 
-?
-
-We are removing the _NAR stuff, it would be nice to do this in a separate
-patch.
-
-Thanks!
-
-Oleg.
-
+		Linus
