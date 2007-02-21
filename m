@@ -1,92 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751020AbXBUF46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751054AbXBUF5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751020AbXBUF46 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 00:56:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbXBUF46
+	id S1751054AbXBUF5J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 00:57:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbXBUF5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 00:56:58 -0500
-Received: from washoe.rutgers.edu ([165.230.95.67]:48925 "EHLO
-	smtp.onerussian.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751020AbXBUF45 (ORCPT
+	Wed, 21 Feb 2007 00:57:09 -0500
+Received: from wx-out-0506.google.com ([66.249.82.239]:26347 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751054AbXBUF5G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 00:56:57 -0500
-Date: Wed, 21 Feb 2007 00:56:48 -0500
-From: Yaroslav Halchenko <lists@onerussian.com>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net
-Message-ID: <20070221055648.GM25659@washoe.onerussian.com>
-Mail-Followup-To: Richard Purdie <rpurdie@rpsys.net>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org,
-	linux-fbdev-devel@lists.sourceforge.net
-References: <20070219044616.GC25659@washoe.onerussian.com> <20070219000412.acad13de.akpm@linux-foundation.org> <1171876788.6046.3.camel@localhost.localdomain>
+	Wed, 21 Feb 2007 00:57:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=UdRuhKEJ2I9Bruf80pHy1pF+L1mjDX2Sw4HRghw7an+cPd9KwLKhl0VIvP/rFAA+Dxm1uWkoDT85SV9pNjpj2J5gedGU2EdxlMGaaG/5zL9TKo6tb27SHwOhGP/1bYQtL9higSNAzae9ROb4nbIk5/bLT1uCTiJbMbzYg5A4/UU=
+Message-ID: <d72aa1340702202157l1932b393k36cb58ecfbe40178@mail.gmail.com>
+Date: Wed, 21 Feb 2007 00:57:06 -0500
+From: "Marcus Haebler" <haebler@gmail.com>
+To: "Tejun Heo" <htejun@gmail.com>
+Subject: Re: SATA problems
+Cc: "Pablo Sebastian Greco" <lkml@fliagreco.com.ar>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <45DBC2CE.6040408@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1171876788.6046.3.camel@localhost.localdomain>
-X-URL: http://www.onerussian.com
-X-Image-Url: http://www.onerussian.com/img/yoh.png
-X-PGP-Key: http://www.onerussian.com/gpg-yoh.asc
-X-fingerprint: 3BB6 E124 0643 A615 6F00  6854 8D11 4563 75C0 24C8
-User-Agent: mutt-ng/devel-r804 (Debian)
-X-SA-Exim-Connect-IP: 192.168.100.6
-X-SA-Exim-Rcpt-To: rpurdie@rpsys.net, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
-X-SA-Exim-Mail-From: yoh@washoe.rutgers.edu
-Subject: Re: no backlight on radeon after recent kernel "upgrade"s
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on smtp.onerussian.com)
+References: <459A674B.3060304@fliagreco.com.ar>
+	 <459DC2EE.1090307@fliagreco.com.ar> <45A1AB3F.1080408@gmail.com>
+	 <45B649BF.5030705@fliagreco.com.ar> <45B6BC6D.8070301@gmail.com>
+	 <d72aa1340702170449n1aa61777l6c9c7e525102db00@mail.gmail.com>
+	 <45D731A8.90604@fliagreco.com.ar> <45DB0717.90507@gmail.com>
+	 <d72aa1340702201655o78975cc7vd67c82eea92bd519@mail.gmail.com>
+	 <45DBC2CE.6040408@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am sorry on the delay
+Tejun,
 
-> > On Sun, 18 Feb 2007 23:46:16 -0500 Yaroslav Halchenko <kernel@onerussian.com> wrote:
-> > > Since the most recent successful for me kernel 2.6.19-rc6-mm1, I've
-> > > tried few times to build more recent snapshots and now finally
-> > > 2.6.20-mm2. In all those cases I have a sad outcome -- kernel boots but
-> > > >...<
-> > Is 2.6.20 broken?  I assume the latest 2.6.20-gitN snapshot are failing..
--mm's have been failing since some time after .19-rc6-mm1. I believe
-I've tried 2.6.19-mm? with the same luck
+thanks. In preparation of your patch I installed a vanilla 2.6.20.1
+kernel on my FC6
+system. Amazingly the problem went away with the vanilla(!) kernel and NCQ
+is enabled at boot time (queue_depth is 31). I guess I should have
+tried that kernel
+earlier.
 
-> It would be extremely useful to know which kernel versions you tested
-> and which ones failed. There are a number of backlight changes which are
-> just in 2.6.20-mm1 and -mm2 which it would be useful to rule out or
-> identify as the cause.
-I didn't mention 2.6.20-mm1 and got to see -mm2 so it is the one which
-Iv'e tried, but, once again, I experienced the same issue with 19-mm?
-kernels.
+The patches you sent earlier apply w/o problems against the 2.6.20.1
+vanilla kernel
+which is expected. I will test drive those patches tomorrow.
 
-I built 2.6.20-mm2 without backlight support
-$> grep BACKLIGH /boot/config-2.6.20-mm2 
-# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
-# CONFIG_FB_BACKLIGHT is not set
-# CONFIG_FB_RIVA_BACKLIGHT is not set
-# CONFIG_FB_RADEON_BACKLIGHT is not set
+BTW thanks for saving me the 'cat' on the 3 patches. ;)
 
-that "eliminated" the problem. Also I can see the screen with pure
-2.6.20 with backlight support (whatever it does since after
-loading lcd, backlight modules, my /sys/class/{lcd,backlight} are empty):
+Thanks,
 
-*$> grep BACKLIGH /boot/config-2.6.20 
-# CONFIG_FB_BACKLIGHT is not set
-CONFIG_BACKLIGHT_LCD_SUPPORT=y
-CONFIG_BACKLIGHT_CLASS_DEVICE=m
-CONFIG_BACKLIGHT_DEVICE=y
+Marcus
 
-
-> Also, do you normally see files under /sys/class/lcd?
-nope... after I load lcd module, no files under :-/ regardless either it
-is mm or not. But there are files under /sys/class/backlight/ for mm2
-compiled with backlight support (whenever the screen is dark as per my
-original email)
-
--- 
-                                  .-.
-=------------------------------   /v\  ----------------------------=
-Keep in touch                    // \\     (yoh@|www.)onerussian.com
-Yaroslav Halchenko              /(   )\               ICQ#: 60653192
-                   Linux User    ^^-^^    [175555]
-
-
+On 2/20/07, Tejun Heo <htejun@gmail.com> wrote:
+> Marcus Haebler wrote:
+> > thanks for the patches! I am on an Intel P965/ICH8R.
+>
+> I see.  That can happen too.  There was a race window where in-flight
+> r/w command which left SCSI midlayer but pending on libata gets executed
+> in the wrong mode.  If possible, please verify that it doesn't happen
+> with the patches applied.  I'm attaching combined patch against v2.6.20.
+>
+> Thanks.
+>
+> --
+> tejun
+>
+> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+> index 667acd2..348cc02 100644
+> --- a/drivers/ata/libata-core.c
+> +++ b/drivers/ata/libata-core.c
+> @@ -308,9 +308,7 @@ int ata_build_rw_tf(struct ata_taskfile *tf, struct ata_device *dev,
+>         tf->flags |= ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE;
+>         tf->flags |= tf_flags;
+>
+> -       if ((dev->flags & (ATA_DFLAG_PIO | ATA_DFLAG_NCQ_OFF |
+> -                          ATA_DFLAG_NCQ)) == ATA_DFLAG_NCQ &&
+> -           likely(tag != ATA_TAG_INTERNAL)) {
+> +       if (ata_ncq_enabled(dev) && likely(tag != ATA_TAG_INTERNAL)) {
+>                 /* yay, NCQ */
+>                 if (!lba_48_ok(block, n_block))
+>                         return -ERANGE;
+> diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+> index 73902d3..ebb9185 100644
+> --- a/drivers/ata/libata-scsi.c
+> +++ b/drivers/ata/libata-scsi.c
+> @@ -945,29 +945,32 @@ int ata_scsi_change_queue_depth(struct scsi_device *sdev, int queue_depth)
+>         struct ata_port *ap = ata_shost_to_port(sdev->host);
+>         struct ata_device *dev;
+>         unsigned long flags;
+> -       int max_depth;
+>
+> -       if (queue_depth < 1)
+> +       if (queue_depth < 1 || queue_depth == sdev->queue_depth)
+>                 return sdev->queue_depth;
+>
+>         dev = ata_scsi_find_dev(ap, sdev);
+>         if (!dev || !ata_dev_enabled(dev))
+>                 return sdev->queue_depth;
+>
+> -       max_depth = min(sdev->host->can_queue, ata_id_queue_depth(dev->id));
+> -       max_depth = min(ATA_MAX_QUEUE - 1, max_depth);
+> -       if (queue_depth > max_depth)
+> -               queue_depth = max_depth;
+> -
+> -       scsi_adjust_queue_depth(sdev, MSG_SIMPLE_TAG, queue_depth);
+> -
+> +       /* NCQ enabled? */
+>         spin_lock_irqsave(ap->lock, flags);
+> -       if (queue_depth > 1)
+> -               dev->flags &= ~ATA_DFLAG_NCQ_OFF;
+> -       else
+> +       dev->flags &= ~ATA_DFLAG_NCQ_OFF;
+> +       if (queue_depth == 1 || !ata_ncq_enabled(dev)) {
+>                 dev->flags |= ATA_DFLAG_NCQ_OFF;
+> +               queue_depth = 1;
+> +       }
+>         spin_unlock_irqrestore(ap->lock, flags);
+>
+> +       /* limit and apply queue depth */
+> +       queue_depth = min(queue_depth, sdev->host->can_queue);
+> +       queue_depth = min(queue_depth, ata_id_queue_depth(dev->id));
+> +       queue_depth = min(queue_depth, ATA_MAX_QUEUE - 1);
+> +
+> +       if (sdev->queue_depth == queue_depth)
+> +               return -EINVAL;
+> +
+> +       scsi_adjust_queue_depth(sdev, MSG_SIMPLE_TAG, queue_depth);
+>         return queue_depth;
+>  }
+>
+> @@ -1454,11 +1457,9 @@ static void ata_scsi_qc_complete(struct ata_queued_cmd *qc)
+>  static int ata_scmd_need_defer(struct ata_device *dev, int is_io)
+>  {
+>         struct ata_port *ap = dev->ap;
+> +       int is_ncq = is_io && ata_ncq_enabled(dev);
+>
+> -       if (!(dev->flags & ATA_DFLAG_NCQ))
+> -               return 0;
+> -
+> -       if (is_io) {
+> +       if (is_ncq) {
+>                 if (!ata_tag_valid(ap->active_tag))
+>                         return 0;
+>         } else {
+> diff --git a/include/linux/libata.h b/include/linux/libata.h
+> index 91bb8ce..4e4e365 100644
+> --- a/include/linux/libata.h
+> +++ b/include/linux/libata.h
+> @@ -1035,6 +1035,21 @@ static inline u8 ata_chk_status(struct ata_port *ap)
+>         return ap->ops->check_status(ap);
+>  }
+>
+> +/**
+> + *     ata_ncq_enabled - Test whether NCQ is enabled
+> + *     @dev: ATA device to test for
+> + *
+> + *     LOCKING:
+> + *     spin_lock_irqsave(host lock)
+> + *
+> + *     RETURNS:
+> + *     1 if NCQ is enabled for @dev, 0 otherwise.
+> + */
+> +static inline int ata_ncq_enabled(struct ata_device *dev)
+> +{
+> +       return (dev->flags & (ATA_DFLAG_PIO | ATA_DFLAG_NCQ_OFF |
+> +                             ATA_DFLAG_NCQ)) == ATA_DFLAG_NCQ;
+> +}
+>
+>  /**
+>   *     ata_pause - Flush writes and pause 400 nanoseconds.
+>
+>
