@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750774AbXBUP23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751299AbXBUP2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750774AbXBUP23 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 10:28:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbXBUP23
+	id S1751299AbXBUP2j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 10:28:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbXBUP2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 10:28:29 -0500
-Received: from heineken.digium.com ([216.207.245.2]:60432 "EHLO
-	heineken.digium.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774AbXBUP22 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 10:28:28 -0500
-In-Reply-To: <45DBBFE8.5080901@shaw.ca>
-References: <fa.1OWRIIUBXsZOXflsGLA+7d4YCc0@ifi.uio.no> <fa.A0XBTh7eCfsh11d3AhMO71/4xQU@ifi.uio.no> <fa.fCm35VohC2wt9vlkg94Ru7me4ic@ifi.uio.no> <fa.qDqCne4pXntL0PolSS2j8t4py3g@ifi.uio.no> <fa.8TboLRab6f7zzIWFr/JPM6q04Zo@ifi.uio.no> <fa.PMqnzxUBiShkWV4h9SiztNIwYc0@ifi.uio.no> <45DBBFE8.5080901@shaw.ca>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0c69abe94bbc69f652831a64ad77d0cb@digium.com>
+	Wed, 21 Feb 2007 10:28:39 -0500
+Received: from www.osadl.org ([213.239.205.134]:36094 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751299AbXBUP2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 10:28:37 -0500
+Subject: Re: 2.6.20-git15 BUG: soft lockup detected on CPU#0! - timers?
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <6bffcb0e0702201437o66db38d5j3066eb3c9951a270@mail.gmail.com>
+References: <6bffcb0e0702201054rb839bb2m11ef8d33bacffdb8@mail.gmail.com>
+	 <1172008584.25076.0.camel@localhost.localdomain>
+	 <6bffcb0e0702201437o66db38d5j3066eb3c9951a270@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 21 Feb 2007 16:33:43 +0100
+Message-Id: <1172072023.25076.64.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Cc: Tejun Heo <htejun@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>
-From: Matthew Fredrickson <creslin@digium.com>
-Subject: Re: High CPU usage with sata_nv
-Date: Wed, 21 Feb 2007 09:28:17 -0600
-To: Robert Hancock <hancockr@shaw.ca>
-X-Mailer: Apple Mail (2.624)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-02-20 at 23:37 +0100, Michal Piotrowski wrote:
+> On 20/02/07, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > On Tue, 2007-02-20 at 19:54 +0100, Michal Piotrowski wrote:
+> > >
+> > > Might it be 6ba9b346e1e0eca65ec589d32de3a9fe32dc5de6 commit?
+> >
+> > I doubt that it is, but can you revert it ?
+> 
+> I'm using the latest kernel without this patch since 3 hours.
+> 
+> So far so good.
 
-On Feb 20, 2007, at 9:43 PM, Robert Hancock wrote:
+But you still have those softirq pending messages, right ? I think those
+are pointing to the root cause of this. Still no idea how to get hold of
+them. All my systems refuse to produce that. Hrmpf.
 
-> Matthew Fredrickson wrote:
->> I have noticed something that might be related as well.  I am working 
->> on a device driver that would have periodic data errors due to 
->> exceptionally long interrupt handling latency.  I have come to the 
->> point that I suspect that it's the sata_nv driver, and now that we 
->> can't do the hdparm -u1 option for sata, it seems to be a bigger 
->> problem.
->
-> What kernel are you using? There were some complaints about latency 
-> problems (the ATA status register read taking a ridiculous amount of 
-> time to complete) on sata_nv previously, but 2.6.20 should eliminate 
-> that problem at least on nForce4 chipsets..
->
+	tglx
 
-It's a 2.6.18 kernel.  What we're seeing (by means of the interrupt pin 
-on another card) is extremely large interrupt latency (measured from 
-the time the interrupt pin goes low to the first couple lines of code 
-in the IRQ handler to clear it) occasionally, in the order of 500-700 
-microseconds.  I figured it was some other driver on the system 
-disabling irqs for a long period of time, but it's difficult to trace 
-what might be doing that.
-
-Matthew Fredrickson
 
