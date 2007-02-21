@@ -1,187 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751084AbXBUBnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751094AbXBUBoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751084AbXBUBnX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 20:43:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbXBUBkB
+	id S1751094AbXBUBoA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 20:44:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbXBUBnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 20:40:01 -0500
-Received: from ns2.suse.de ([195.135.220.15]:34698 "EHLO mx2.suse.de"
+	Tue, 20 Feb 2007 20:43:23 -0500
+Received: from hub.freebsd.org ([69.147.83.54]:25547 "EHLO hub.freebsd.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751060AbXBUBjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 20:39:54 -0500
-Date: Tue, 20 Feb 2007 17:38:32 -0800
-From: Greg KH <greg@kroah.com>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Andi Kleen <ak@suse.de>
-Subject: [patch 17/21] Use different constraint for gcc < 4.1 in bitops.
-Message-ID: <20070221013832.GR30227@kroah.com>
-References: <20070221012758.925122216@mini.kroah.org>
-MIME-Version: 1.0
+	id S1751090AbXBUBmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 20:42:54 -0500
+Date: Wed, 21 Feb 2007 01:21:12 +0000
+From: Suleiman Souhlal <ssouhlal@FreeBSD.org>
+To: bzolnier@gmail.com
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/3] Don't change transfer speed while requests are in flight
+Message-ID: <20070221012112.GB1777@freefall.freebsd.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="use-different-constraint-for-gcc-4.1-in-bitops.patch"
-In-Reply-To: <20070221013619.GA30227@kroah.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
+Use ide_wait_cmd() in ide_config_drive_speed() if the drive has been
+initialized and we're not in an interrupt, to avoid changing the
+xfer speed while requests are in flight.
 
-------------------
+An easy way to trigger the problem is to dd the disk while doing
+while :; do hdparm -d 1 /dev/hdc> /dev/null; done
 
-Use different constraint for gcc < 4.1 in bitops.h
+While there, remove some commented-out code.
 
-+m is really correct for a RMW instruction, but some older gccs
-error out. I finally gave in and ifdefed it.
-
-This fixes compilation errors with some compiler version.
-
-Signed-off-by: Andi Kleen <ak@suse.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by:	Suleiman Souhlal <suleiman@google.com>
 
 ---
- include/asm-x86_64/bitops.h |   34 ++++++++++++++++++++--------------
- 1 file changed, 20 insertions(+), 14 deletions(-)
+ drivers/ide/ide-iops.c |   35 ++++++++++++++++++++---------------
+ 1 files changed, 20 insertions(+), 15 deletions(-)
 
---- linux-2.6.19.4.orig/include/asm-x86_64/bitops.h
-+++ linux-2.6.19.4/include/asm-x86_64/bitops.h
-@@ -7,7 +7,13 @@
+diff --git a/drivers/ide/ide-iops.c b/drivers/ide/ide-iops.c
+index c67b3b1..35ab3af 100644
+--- a/drivers/ide/ide-iops.c
++++ b/drivers/ide/ide-iops.c
+@@ -748,32 +748,36 @@ int ide_config_drive_speed (ide_drive_t 
+ 	int	i, error	= 1;
+ 	u8 stat;
  
- #include <asm/alternative.h>
+-//	while (HWGROUP(drive)->busy)
+-//		msleep(50);
++	/*
++	 * Just use ide_wait_cmd() if the drive has been initialized and we
++	 * aren't in an interrupt handler, to avoid changing the xfer speed
++	 * while requests are in flight.
++	 *
++	 * If we are in an interrupt, it should be safe to issue
++	 * SETFEATURES manually, since there shouldn't be any requests in
++	 * flight.
++	 */
++	if (drive->queue != NULL && !in_interrupt()) {
++		error = ide_wait_cmd(drive, WIN_SETFEATURES, speed,
++		    SETFEATURES_XFER, 0, NULL);
++		if (error) {
++			stat = hwif->INB(IDE_STATUS_REG);
++			ide_dump_status(drive, "set_drive_speed_status", stat);
++			return (error);
++		}
++		goto done;
++	}
  
--#define ADDR (*(volatile long *) addr)
-+#if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 1)
-+/* Technically wrong, but this avoids compilation errors on some gcc
-+   versions. */
-+#define ADDR "=m" (*(volatile long *) addr)
-+#else
-+#define ADDR "+m" (*(volatile long *) addr)
-+#endif
+ #ifdef CONFIG_BLK_DEV_IDEDMA
+ 	if (hwif->ide_dma_check)	 /* check if host supports DMA */
+ 		hwif->dma_host_off(drive);
+ #endif
  
- /**
-  * set_bit - Atomically set a bit in memory
-@@ -23,7 +29,7 @@ static __inline__ void set_bit(int nr, v
- {
- 	__asm__ __volatile__( LOCK_PREFIX
- 		"btsl %1,%0"
--		:"+m" (ADDR)
-+		:ADDR
- 		:"dIr" (nr) : "memory");
- }
+-	/*
+-	 * Don't use ide_wait_cmd here - it will
+-	 * attempt to set_geometry and recalibrate,
+-	 * but for some reason these don't work at
+-	 * this point (lost interrupt).
+-	 */
+         /*
+          * Select the drive, and issue the SETFEATURES command
+          */
+ 	disable_irq_nosync(hwif->irq);
+ 	
+-	/*
+-	 *	FIXME: we race against the running IRQ here if
+-	 *	this is called from non IRQ context. If we use
+-	 *	disable_irq() we hang on the error path. Work
+-	 *	is needed.
+-	 */
+-	 
+ 	udelay(1);
+ 	SELECT_DRIVE(drive);
+ 	SELECT_MASK(drive, 0);
+@@ -835,6 +839,7 @@ #ifdef CONFIG_BLK_DEV_IDEDMA
+ 		hwif->dma_off_quietly(drive);
+ #endif
  
-@@ -40,7 +46,7 @@ static __inline__ void __set_bit(int nr,
- {
- 	__asm__ volatile(
- 		"btsl %1,%0"
--		:"+m" (ADDR)
-+		:ADDR
- 		:"dIr" (nr) : "memory");
- }
- 
-@@ -58,7 +64,7 @@ static __inline__ void clear_bit(int nr,
- {
- 	__asm__ __volatile__( LOCK_PREFIX
- 		"btrl %1,%0"
--		:"+m" (ADDR)
-+		:ADDR
- 		:"dIr" (nr));
- }
- 
-@@ -66,7 +72,7 @@ static __inline__ void __clear_bit(int n
- {
- 	__asm__ __volatile__(
- 		"btrl %1,%0"
--		:"+m" (ADDR)
-+		:ADDR
- 		:"dIr" (nr));
- }
- 
-@@ -86,7 +92,7 @@ static __inline__ void __change_bit(int 
- {
- 	__asm__ __volatile__(
- 		"btcl %1,%0"
--		:"+m" (ADDR)
-+		:ADDR
- 		:"dIr" (nr));
- }
- 
-@@ -103,7 +109,7 @@ static __inline__ void change_bit(int nr
- {
- 	__asm__ __volatile__( LOCK_PREFIX
- 		"btcl %1,%0"
--		:"+m" (ADDR)
-+		:ADDR
- 		:"dIr" (nr));
- }
- 
-@@ -121,7 +127,7 @@ static __inline__ int test_and_set_bit(i
- 
- 	__asm__ __volatile__( LOCK_PREFIX
- 		"btsl %2,%1\n\tsbbl %0,%0"
--		:"=r" (oldbit),"+m" (ADDR)
-+		:"=r" (oldbit),ADDR
- 		:"dIr" (nr) : "memory");
- 	return oldbit;
- }
-@@ -141,7 +147,7 @@ static __inline__ int __test_and_set_bit
- 
- 	__asm__(
- 		"btsl %2,%1\n\tsbbl %0,%0"
--		:"=r" (oldbit),"+m" (ADDR)
-+		:"=r" (oldbit),ADDR
- 		:"dIr" (nr));
- 	return oldbit;
- }
-@@ -160,7 +166,7 @@ static __inline__ int test_and_clear_bit
- 
- 	__asm__ __volatile__( LOCK_PREFIX
- 		"btrl %2,%1\n\tsbbl %0,%0"
--		:"=r" (oldbit),"+m" (ADDR)
-+		:"=r" (oldbit),ADDR
- 		:"dIr" (nr) : "memory");
- 	return oldbit;
- }
-@@ -180,7 +186,7 @@ static __inline__ int __test_and_clear_b
- 
- 	__asm__(
- 		"btrl %2,%1\n\tsbbl %0,%0"
--		:"=r" (oldbit),"+m" (ADDR)
-+		:"=r" (oldbit),ADDR
- 		:"dIr" (nr));
- 	return oldbit;
- }
-@@ -192,7 +198,7 @@ static __inline__ int __test_and_change_
- 
- 	__asm__ __volatile__(
- 		"btcl %2,%1\n\tsbbl %0,%0"
--		:"=r" (oldbit),"+m" (ADDR)
-+		:"=r" (oldbit),ADDR
- 		:"dIr" (nr) : "memory");
- 	return oldbit;
- }
-@@ -211,7 +217,7 @@ static __inline__ int test_and_change_bi
- 
- 	__asm__ __volatile__( LOCK_PREFIX
- 		"btcl %2,%1\n\tsbbl %0,%0"
--		:"=r" (oldbit),"+m" (ADDR)
-+		:"=r" (oldbit),ADDR
- 		:"dIr" (nr) : "memory");
- 	return oldbit;
- }
-@@ -237,7 +243,7 @@ static __inline__ int variable_test_bit(
- 	__asm__ __volatile__(
- 		"btl %2,%1\n\tsbbl %0,%0"
- 		:"=r" (oldbit)
--		:"m" (ADDR),"dIr" (nr));
-+		:"m" (*(volatile long *)addr),"dIr" (nr));
- 	return oldbit;
- }
- 
++done:
+ 	switch(speed) {
+ 		case XFER_UDMA_7:   drive->id->dma_ultra |= 0x8080; break;
+ 		case XFER_UDMA_6:   drive->id->dma_ultra |= 0x4040; break;
 
---
