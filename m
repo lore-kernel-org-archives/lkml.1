@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965373AbXBUPc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965381AbXBUPdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965373AbXBUPc4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 10:32:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965372AbXBUPc4
+	id S965381AbXBUPdS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 10:33:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965378AbXBUPdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 10:32:56 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55018 "EHLO mx1.redhat.com"
+	Wed, 21 Feb 2007 10:33:17 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:55138 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965365AbXBUPcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 10:32:54 -0500
-Message-Id: <20070221144843.497228000@taijtu.programming.kicks-ass.net>
+	id S964988AbXBUPdO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 10:33:14 -0500
+Message-Id: <20070221144842.299190000@taijtu.programming.kicks-ass.net>
 References: <20070221144304.512721000@taijtu.programming.kicks-ass.net>
 User-Agent: quilt/0.46-1
-Date: Wed, 21 Feb 2007 15:43:24 +0100
+Date: Wed, 21 Feb 2007 15:43:12 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Trond Myklebust <trond.myklebust@fys.uio.no>,
        Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>
-Subject: [PATCH 20/29] uml: rename arch/um remove_mapping()
-Content-Disposition: inline; filename=uml_remove_mapping.patch
+Subject: [PATCH 08/29] mm: kmem_cache_objs_to_pages()
+Content-Disposition: inline; filename=mm-kmem_cache_objs_to_pages.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When 'include/linux/mm.h' includes 'include/linux/swap.h', the global
-remove_mapping() definition clashes with the arch/um one.
-
-Rename the arch/um one.
+Provide a method to calculate the number of pages needed to store a given
+number of slab objects (upper bound when considering possible partial and
+free slabs).
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Acked-by: Jeff Dike <jdike@addtoit.com>
 ---
- arch/um/kernel/physmem.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ include/linux/slab.h |    1 +
+ mm/slab.c            |    6 ++++++
+ 2 files changed, 7 insertions(+)
 
-Index: linux-2.6-git/arch/um/kernel/physmem.c
+Index: linux-2.6-git/include/linux/slab.h
 ===================================================================
---- linux-2.6-git.orig/arch/um/kernel/physmem.c	2007-02-12 09:40:47.000000000 +0100
-+++ linux-2.6-git/arch/um/kernel/physmem.c	2007-02-12 11:17:47.000000000 +0100
-@@ -160,7 +160,7 @@ int physmem_subst_mapping(void *virt, in
+--- linux-2.6-git.orig/include/linux/slab.h	2007-01-09 11:28:32.000000000 +0100
++++ linux-2.6-git/include/linux/slab.h	2007-01-09 11:30:16.000000000 +0100
+@@ -43,6 +43,7 @@ typedef struct kmem_cache kmem_cache_t _
+  */
+ void __init kmem_cache_init(void);
+ extern int slab_is_available(void);
++extern unsigned int kmem_cache_objs_to_pages(struct kmem_cache *, int);
  
- static int physmem_fd = -1;
+ struct kmem_cache *kmem_cache_create(const char *, size_t, size_t,
+ 			unsigned long,
+Index: linux-2.6-git/mm/slab.c
+===================================================================
+--- linux-2.6-git.orig/mm/slab.c	2007-01-09 11:30:00.000000000 +0100
++++ linux-2.6-git/mm/slab.c	2007-01-09 11:30:16.000000000 +0100
+@@ -4482,3 +4482,9 @@ unsigned int ksize(const void *objp)
  
--static void remove_mapping(struct phys_desc *desc)
-+static void um_remove_mapping(struct phys_desc *desc)
- {
- 	void *virt = desc->virt;
- 	int err;
-@@ -184,7 +184,7 @@ int physmem_remove_mapping(void *virt)
- 	if(desc == NULL)
- 		return 0;
- 
--	remove_mapping(desc);
-+	um_remove_mapping(desc);
- 	return 1;
+ 	return obj_size(virt_to_cache(objp));
  }
- 
-@@ -205,7 +205,7 @@ void physmem_forget_descriptor(int fd)
- 		page = list_entry(ele, struct phys_desc, list);
- 		offset = page->offset;
- 		addr = page->virt;
--		remove_mapping(page);
-+		um_remove_mapping(page);
- 		err = os_seek_file(fd, offset);
- 		if(err)
- 			panic("physmem_forget_descriptor - failed to seek "
++
++unsigned int kmem_cache_objs_to_pages(struct kmem_cache *cachep, int nr)
++{
++	return ((nr + cachep->num - 1) / cachep->num) << cachep->gfporder;
++}
++EXPORT_SYMBOL_GPL(kmem_cache_objs_to_pages);
 
 -- 
 
