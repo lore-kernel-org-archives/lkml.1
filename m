@@ -1,201 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423088AbXBUUeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423101AbXBUUfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423088AbXBUUeL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 15:34:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423102AbXBUUdr
+	id S1423101AbXBUUfS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 15:35:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423102AbXBUUfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 15:33:47 -0500
-Received: from [198.99.130.12] ([198.99.130.12]:59702 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1423101AbXBUUdl (ORCPT
+	Wed, 21 Feb 2007 15:35:18 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:36945 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1423101AbXBUUfQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 15:33:41 -0500
-Message-Id: <200702212025.l1LKPJEA006774@ccure.user-mode-linux.org>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.0.4
-To: akpm@osdl.org
-cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net
-Subject: [PATCH 1/4] UML - delete unused code
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Wed, 21 Feb 2007 15:25:19 -0500
-From: Jeff Dike <jdike@addtoit.com>
+	Wed, 21 Feb 2007 15:35:16 -0500
+Date: Wed, 21 Feb 2007 15:35:13 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Roland McGrath <roland@redhat.com>
+cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Kwatch: kernel watchpoints using CPU debug registers
+In-Reply-To: <20070209233150.B9542180055@magilla.sf.frob.com>
+Message-ID: <Pine.LNX.4.44L0.0702211458250.3435-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Get rid of a bunch of unused stuff -
-	cpu_feature had no users
-	linux_prog is little-used, so its declaration is moved to the
-user for easy deletion when the whole file goes away
-	a long-unused debugging aid in helper.c is gone
+Going back to something you mentioned earlier...
 
-Signed-off-by: Jeff Dike <jdike@addtoit.com>
---
- arch/um/include/kern_util.h |    1 -
- arch/um/include/user_util.h |    1 -
- arch/um/kernel/tt/gdb.c     |    2 ++
- arch/um/os-Linux/helper.c   |   11 -----------
- arch/um/os-Linux/main.c     |    8 +-------
- arch/um/sys-i386/bugs.c     |   23 -----------------------
- arch/um/sys-x86_64/bugs.c   |   23 -----------------------
- 7 files changed, 3 insertions(+), 66 deletions(-)
+On Fri, 9 Feb 2007, Roland McGrath wrote:
 
-Index: linux-2.6.17/arch/um/include/user_util.h
-===================================================================
---- linux-2.6.17.orig/arch/um/include/user_util.h	2007-02-19 11:39:11.000000000 -0500
-+++ linux-2.6.17/arch/um/include/user_util.h	2007-02-19 12:52:22.000000000 -0500
-@@ -62,7 +62,6 @@ extern void kill_child_dead(int pid);
- extern int cont(int pid);
- extern void check_sigio(void);
- extern void arch_check_bugs(void);
--extern int cpu_feature(char *what, char *buf, int len);
- extern int arch_handle_signal(int sig, union uml_pt_regs *regs);
- extern int arch_fixup(unsigned long address, void *sc_ptr);
- extern void arch_init_thread(void);
-Index: linux-2.6.17/arch/um/sys-i386/bugs.c
-===================================================================
---- linux-2.6.17.orig/arch/um/sys-i386/bugs.c	2006-12-02 09:56:56.000000000 -0500
-+++ linux-2.6.17/arch/um/sys-i386/bugs.c	2007-02-19 12:52:22.000000000 -0500
-@@ -79,29 +79,6 @@ static int find_cpuinfo_line(int fd, cha
- 	return(0);
- }
- 
--int cpu_feature(char *what, char *buf, int len)
--{
--	int fd, ret = 0;
--
--	fd = os_open_file("/proc/cpuinfo", of_read(OPENFLAGS()), 0);
--	if(fd < 0){
--		printk("Couldn't open /proc/cpuinfo, err = %d\n", -fd);
--		return(0);
--	}
--
--	if(!find_cpuinfo_line(fd, what, buf, len)){
--		printk("Couldn't find '%s' line in /proc/cpuinfo\n", what);
--		goto out_close;
--	}
--
--	token(fd, buf, len, '\n');
--	ret = 1;
--
-- out_close:
--	os_close_file(fd);
--	return(ret);
--}
--
- static int check_cpu_flag(char *feature, int *have_it)
- {
- 	char buf[MAXTOKEN], c;
-Index: linux-2.6.17/arch/um/sys-x86_64/bugs.c
-===================================================================
---- linux-2.6.17.orig/arch/um/sys-x86_64/bugs.c	2006-06-17 21:49:35.000000000 -0400
-+++ linux-2.6.17/arch/um/sys-x86_64/bugs.c	2007-02-19 12:52:22.000000000 -0500
-@@ -88,29 +88,6 @@ static int find_cpuinfo_line(int fd, cha
- 	return(0);
- }
- 
--int cpu_feature(char *what, char *buf, int len)
--{
--	int fd, ret = 0;
--
--	fd = os_open_file("/proc/cpuinfo", of_read(OPENFLAGS()), 0);
--	if(fd < 0){
--		printk("Couldn't open /proc/cpuinfo, err = %d\n", -fd);
--		return(0);
--	}
--
--	if(!find_cpuinfo_line(fd, what, buf, len)){
--		printk("Couldn't find '%s' line in /proc/cpuinfo\n", what);
--		goto out_close;
--	}
--
--	token(fd, buf, len, '\n');
--	ret = 1;
--
-- out_close:
--	os_close_file(fd);
--	return(ret);
--}
--
- /* Overrides for Emacs so that we follow Linus's tabbing style.
-  * Emacs will notice this stuff at the end of the file and automatically
-  * adjust the settings for this buffer only.  This must remain at the end
-Index: linux-2.6.17/arch/um/include/kern_util.h
-===================================================================
---- linux-2.6.17.orig/arch/um/include/kern_util.h	2007-02-19 11:39:11.000000000 -0500
-+++ linux-2.6.17/arch/um/include/kern_util.h	2007-02-19 12:52:22.000000000 -0500
-@@ -23,7 +23,6 @@ struct kern_handlers {
- extern const struct kern_handlers handlinfo_kern;
- 
- extern int ncpus;
--extern char *linux_prog;
- extern char *gdb_init;
- extern int kmalloc_ok;
- extern int jail;
-Index: linux-2.6.17/arch/um/kernel/tt/gdb.c
-===================================================================
---- linux-2.6.17.orig/arch/um/kernel/tt/gdb.c	2006-06-17 21:49:35.000000000 -0400
-+++ linux-2.6.17/arch/um/kernel/tt/gdb.c	2007-02-19 12:52:22.000000000 -0500
-@@ -115,6 +115,8 @@ struct gdb_data {
- 	int err;
- };
- 
-+extern char *linux_prog;
-+
- static void config_gdb_cb(void *arg)
- {
- 	struct gdb_data *data = arg;
-Index: linux-2.6.17/arch/um/os-Linux/main.c
-===================================================================
---- linux-2.6.17.orig/arch/um/os-Linux/main.c	2007-02-19 11:39:08.000000000 -0500
-+++ linux-2.6.17/arch/um/os-Linux/main.c	2007-02-19 12:52:22.000000000 -0500
-@@ -25,12 +25,7 @@
- #include "os.h"
- #include "um_malloc.h"
- 
--/* Set in set_stklim, which is called from main and __wrap_malloc.
-- * __wrap_malloc only calls it if main hasn't started.
-- */
--unsigned long stacksizelim;
--
--/* Set in main */
-+/* Set in main, unchanged thereafter */
- char *linux_prog;
- 
- #define PGD_BOUND (4 * 1024 * 1024)
-@@ -52,7 +47,6 @@ static void set_stklim(void)
- 			exit(1);
- 		}
- 	}
--	stacksizelim = (lim.rlim_cur + PGD_BOUND - 1) & ~(PGD_BOUND - 1);
- }
- 
- static __init void do_uml_initcalls(void)
-Index: linux-2.6.17/arch/um/os-Linux/helper.c
-===================================================================
---- linux-2.6.17.orig/arch/um/os-Linux/helper.c	2007-02-19 11:39:05.000000000 -0500
-+++ linux-2.6.17/arch/um/os-Linux/helper.c	2007-02-19 12:52:22.000000000 -0500
-@@ -25,23 +25,12 @@ struct helper_data {
- 	char *buf;
- };
- 
--/* Debugging aid, changed only from gdb */
--int helper_pause = 0;
--
--static void helper_hup(int sig)
--{
--}
--
- static int helper_child(void *arg)
- {
- 	struct helper_data *data = arg;
- 	char **argv = data->argv;
- 	int errval;
- 
--	if (helper_pause){
--		signal(SIGHUP, helper_hup);
--		pause();
--	}
- 	if (data->pre_exec != NULL)
- 		(*data->pre_exec)(data->pre_data);
- 	errval = execvp_noalloc(data->buf, argv[0], argv);
+> I don't think I really object to the ABI change of clearing %dr6 after an
+> exception so that it does not accumulate multiple results.  But first I'll
+> have to convince myself that we never actually do want to accumulate
+> multiple results.  Hmm, I think we can, so maybe I do object.  If you set
+> two watchpoints inside a user buffer and then do a system call that touches
+> both those addresses (e.g. read), then you will go through do_debug (to
+> send_sigtrap) twice before returning to user mode.  When the syscall is
+> done, you'll have a pending SIGTRAP for the debugger to handle.  By looking
+> at your %dr6 the debugger can see that both watchpoints hit.  (gdb does not
+> handle this case, but it should.)  Am I wrong?
+
+Yes, you are wrong -- although perhaps you shouldn't be.
+
+The current version of do_debug() clears dr7 when a debug interrupt is 
+fielded.  As a result, if a system call touches two watchpoint addresses 
+in userspace only the first access will be noticed.
+
+This is probably a bug in do_debug().  It would be better to disable each
+individual userspace watchpoint as it is triggered (or even not to disable
+it at all).  dr7 would be restored when the SIGTRAP is delivered.  (But
+what if the user is blocking or ignoring SIGTRAP?)
+
+
+Moving on...
+
+I've worked out a plan for implementing combined user/kernel mode 
+breakpoints and watchpoints (call them "debugpoints" as a catch-all 
+term).  It should work transparently with ptrace and should accomodate 
+whatever scheme utrace decides to adopt.  There won't need to be a 
+separate kwatch facility on top of it; the new combined facility will 
+handle debugpoints in both userspace and kernelspace.
+
+The idea is that callers can register and unregister a struct debugpoint, 
+which contains fields for the type, length, address, and priority as well 
+as three callback pointers (for installed, uninstalled, and triggered).  
+The debug core will keep these structures sorted by priority and will 
+allocate the available debug registers based on the priorities of the 
+userspace and kernelspace requests.  Each CPU will have its own array of 
+pointers to these structures, indicating which debugpoints are currently 
+enabled.
+
+To work with ptrace, the new scheme will completely virtualize the debug
+registers.  So for example, a ptrace call might request a debugpoint in
+dr0, but it could end up that the physical register used is really dr2
+instead.  The various bits in dr6 and dr7 will be mapped in such a way
+that the entire procedure is transparent to the user.  Debugpoints 
+registered in kernelspace or by utrace won't care, of course.
+
+There are two things I am uncertain about: vm86 mode and kprobes.  I don't
+know anything about how either of them works.  Judging from the current
+code, nothing much should be needed -- debug traps in vm86 mode are
+handled by calling handle_vm86_trap(), and kprobes puts itself at the
+start of the notify_die() chain so it can handle single-step traps.  
+Eventually it will be necessary to check with someone who really 
+understands the issues.
+
+Alan Stern
 
