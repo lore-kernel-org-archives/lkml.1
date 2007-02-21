@@ -1,48 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423194AbXBUWUL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423195AbXBUWVC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423194AbXBUWUL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 17:20:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423195AbXBUWUL
+	id S1423195AbXBUWVC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 17:21:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423200AbXBUWVB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 17:20:11 -0500
-Received: from mx2.suse.de ([195.135.220.15]:37211 "EHLO mx2.suse.de"
+	Wed, 21 Feb 2007 17:21:01 -0500
+Received: from gw.goop.org ([64.81.55.164]:55446 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423194AbXBUWUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 17:20:09 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [patch 00/21] 2.6.19-stable review
-Date: Wed, 21 Feb 2007 23:19:38 +0100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Chuck Ebbert <cebbert@redhat.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-References: <20070221013619.GA30227@kroah.com> <20070221114737.a09be761.akpm@linux-foundation.org> <m1odnn1d7n.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1odnn1d7n.fsf@ebiederm.dsl.xmission.com>
+	id S1423195AbXBUWVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 17:21:00 -0500
+Message-ID: <45DCC5C8.4090905@goop.org>
+Date: Wed, 21 Feb 2007 14:20:56 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andi Kleen <ak@suse.de>
+CC: virtualization@lists.osdl.org, Chris Wright <chrisw@sous-sol.org>,
+       xen-devel@lists.xensource.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 05/24] Xen-paravirt_ops: Add pagetable accessors to pack
+ and unpack pagetable entries
+References: <20070221205254.169835700@goop.org> <20070221205322.869165491@goop.org> <200702212315.12883.ak@suse.de>
+In-Reply-To: <200702212315.12883.ak@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702212319.38886.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen wrote:
+> Do you have some lmbench numbers before/after this change? 
+> iirc at least fork and exit do a lot of pte accesses in various forms.
+> If it's measurable it might be needed to patch those for the native case.
+>   
 
-> commit 2fb12a9bca5ad9aa6dcd2c639b4a7656a8843ef8
-> Author: Eric W. Biederman <ebiederm@xmission.com>
-> Date:   Tue Feb 13 13:26:25 2007 +0100
-> 
->     [PATCH] x86-64: survive having no irq mapping for a vector
+I don't.  I think Rusty ran some numbers and found the pte accessors
+became the most commonly used paravirt ops.
 
-Putting that patch into stable would be a good idea, agreed.
+I'm working on revamping the pv_ops patching infrastructure at the
+moment, so we should be able to deal with these fairly efficiently.
 
--Andi
+    J
