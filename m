@@ -1,60 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422661AbXBUQ00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422663AbXBUQ0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422661AbXBUQ00 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 11:26:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422663AbXBUQ00
+	id S1422663AbXBUQ0k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 11:26:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422665AbXBUQ0k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 11:26:26 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:55355 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422661AbXBUQ0Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 11:26:24 -0500
-Subject: Re: Linux 2.6.21-rc1
-From: Daniel Walker <dwalker@mvista.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 21 Feb 2007 08:24:13 -0800
-Message-Id: <1172075053.8577.38.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+	Wed, 21 Feb 2007 11:26:40 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46278 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422664AbXBUQ0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 11:26:38 -0500
+Message-ID: <45DC727B.7000802@redhat.com>
+Date: Wed, 21 Feb 2007 11:25:31 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: bert hubert <bert.hubert@netherlabs.nl>, Rick Jones <rick.jones2@hp.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Josef Sipek <jsipek@fsl.cs.sunysb.edu>,
+       Andi Kleen <andi@firstfloor.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: all syscalls initially taking 4usec on a P4? Re: nonblocking
+ 	UDPv4 recvfrom() taking 4usec @ 3GHz?
+References: <20070219231447.GA4400@outpost.ds9a.nl>	 <p73d545drx6.fsf@bingen.suse.de> <20070220162714.GA3245@outpost.ds9a.nl>	 <20070220164124.GA24930@2ka.mipt.ru>	 <20070220184242.GA30077@filer.fsl.cs.sunysb.edu>	 <20070220184859.GA1949@2ka.mipt.ru> <20070220193319.GA8800@outpost.ds9a.nl>	 <45DB6FD8.4050106@hp.com>  <20070220221719.GA16263@outpost.ds9a.nl> <1172010148.3531.158.camel@laptopd505.fenrus.org>
+In-Reply-To: <1172010148.3531.158.camel@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-20 at 20:53 -0800, Linus Torvalds wrote:
-> Ok, the merge window for 2.6.21 has closed, and -rc1 is out there.
-> 
-> There's a lot of changes, as is usual for an -rc1 thing, but at least so 
-> far it would seem that 2.6.20 has been a good base, and I don't think we 
-> have anything *really* scary here.
-> 
-> The most interesting core change may be the dyntick/nohz one, where timer 
-> ticks will only happen when needed. It's been brewing for a _loong_ time, 
-> but it's in the standard kernel now as an option. 
+Arjan van de Ven wrote:
+> also.. running "vmstat 3" and looking at the "cs" column is interesting;
+> it shouldn't be above 50 or so in idle (well not above 10 but our
+> userland stinks too much for that)
 
-On i386 I get the following,
+I average 6 or so with my normal configuration.
 
-TCP cubic registered                                                            
-NET: Registered protocol family 1                                               
-NET: Registered protocol family 17                                              
-Testing NMI watchdog ... CPU#0: NMI appears to be stuck (24->24)!               
-CPU#1: NMI appears to be stuck (0->0)!                                          
-CPU#2: NMI appears to be stuck (0->0)!                                          
-CPU#3: NMI appears to be stuck (0->0)!              
 
-when I add nmi_watchdog=1 to my boot args which worked on prior kernels.
-On closer inspection it looks like arch/i386/kernel/io_apic.c :
-check_timer() --> timer_irq_works() depends on IRQ0 incrementing jiffies
-which is no longer the case AFAIK.
-
-I'm not sure exactly how that relates to the NMI, but the check_timer()
-function disabled the NMI through the io-apic if it can't get the
-"timer" working through the io-apic.
-
-Daniel
-
+Chuck "kill the daemons" Ebbert
