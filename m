@@ -1,77 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161283AbXBUPeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751328AbXBUPea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161283AbXBUPeH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 10:34:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965393AbXBUPds
+	id S1751328AbXBUPea (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 10:34:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161285AbXBUPeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 10:33:48 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55307 "EHLO mx1.redhat.com"
+	Wed, 21 Feb 2007 10:34:15 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:55446 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964982AbXBUPdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 10:33:43 -0500
-Message-Id: <20070221144304.512721000@taijtu.programming.kicks-ass.net>
+	id S1161280AbXBUPeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 10:34:09 -0500
+Message-Id: <20070221144841.823705000@taijtu.programming.kicks-ass.net>
+References: <20070221144304.512721000@taijtu.programming.kicks-ass.net>
 User-Agent: quilt/0.46-1
-Date: Wed, 21 Feb 2007 15:43:04 +0100
+Date: Wed, 21 Feb 2007 15:43:07 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Trond Myklebust <trond.myklebust@fys.uio.no>,
        Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>
-Subject: [PATCH 00/29] swap over networked storage -v11
+Subject: [PATCH 03/29] mm: allow PF_MEMALLOC from softirq context
+Content-Disposition: inline; filename=mm-PF_MEMALLOC-softirq.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(patches against 2.6.20-mm1)
+Allow PF_MEMALLOC to be set in softirq context. When running softirqs from
+a borrowed context save current->flags, ksoftirqd will have its own 
+task_struct.
 
-There is a fundamental deadlock associated with paging; when writing out a page
-to free memory requires free memory to complete. The usually solution is to
-keep a small amount of memory available at all times so we can overcome this
-problem. This however assumes the amount of memory needed for writeout is
-(constant and) smaller than the provided reserve.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/softirq.c |    3 +++
+ mm/internal.h    |   14 ++++++++------
+ 2 files changed, 11 insertions(+), 6 deletions(-)
 
-It is this latter assumption that breaks when doing writeout over network.
-Network can take up an unspecified amount of memory while waiting for a reply
-to our write request. This re-introduces the deadlock; we might never complete
-the writeout, for we might not have enough memory to receive the completion
-message.
+Index: linux-2.6-git/mm/internal.h
+===================================================================
+--- linux-2.6-git.orig/mm/internal.h	2006-12-14 10:02:52.000000000 +0100
++++ linux-2.6-git/mm/internal.h	2006-12-14 10:10:09.000000000 +0100
+@@ -75,9 +75,10 @@ static int inline gfp_to_alloc_flags(gfp
+ 		alloc_flags |= ALLOC_HARDER;
+ 
+ 	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
+-		if (!in_interrupt() &&
+-		    ((p->flags & PF_MEMALLOC) ||
+-		     unlikely(test_thread_flag(TIF_MEMDIE))))
++		if (!in_irq() && (p->flags & PF_MEMALLOC))
++			alloc_flags |= ALLOC_NO_WATERMARKS;
++		else if (!in_interrupt() &&
++				unlikely(test_thread_flag(TIF_MEMDIE)))
+ 			alloc_flags |= ALLOC_NO_WATERMARKS;
+ 	}
+ 
+@@ -117,9 +118,10 @@ static inline int gfp_to_rank(gfp_t gfp_
+ 	 */
+ 
+ 	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
+-		if (!in_interrupt() &&
+-		    ((current->flags & PF_MEMALLOC) ||
+-		     unlikely(test_thread_flag(TIF_MEMDIE))))
++		if (!in_irq() && (current->flags & PF_MEMALLOC))
++			return 0;
++		else if (!in_interrupt() &&
++				unlikely(test_thread_flag(TIF_MEMDIE)))
+ 			return 0;
+ 	}
+ 
+Index: linux-2.6-git/kernel/softirq.c
+===================================================================
+--- linux-2.6-git.orig/kernel/softirq.c	2006-12-14 10:02:18.000000000 +0100
++++ linux-2.6-git/kernel/softirq.c	2006-12-14 10:02:52.000000000 +0100
+@@ -209,6 +209,8 @@ asmlinkage void __do_softirq(void)
+ 	__u32 pending;
+ 	int max_restart = MAX_SOFTIRQ_RESTART;
+ 	int cpu;
++	unsigned long pflags = current->flags;
++	current->flags &= ~PF_MEMALLOC;
+ 
+ 	pending = local_softirq_pending();
+ 	account_system_vtime(current);
+@@ -247,6 +249,7 @@ restart:
+ 
+ 	account_system_vtime(current);
+ 	_local_bh_enable();
++	current->flags = pflags;
+ }
+ 
+ #ifndef __ARCH_HAS_DO_SOFTIRQ
 
-The proposed solution is simple, only allow traffic servicing the VM to make
-use of the reserves. Since the VM is always present to service, this limited
-amount of memory can sustain a full connection; after a packet has been
-processed its memory can be re-used for the next packet.
-
-This however implies you know what packets are for whom, which generally
-speaking you don't. Hence we need to receive all packets but discard them as
-soon as we encounter a non VM bound packet allocated from the reserves.
-
-Also knowing it is headed towards the VM needs a little help, hence we
-introduce the socket flag SOCK_VMIO to mark sockets with.
-
-Of course, since we are paging all this has to happen in kernel-space, since
-user-space might just not be there.
-
-Since packet processing might also require memory, this all also implies that
-those auxiliary allocations may use the reserves when an emergency packet is
-processed. This is accomplished by using PF_MEMALLOC.
-
-How much memory is to be reserved is also an issue, enough memory to saturate
-both the route cache and IP fragment reassembly, along with various constants.
-
-This patch-set comes in 5 parts:
-
-1) introduce the memory reserve and make the SLAB allocator play nice with it.
-   patches 01-09
-
-2) add some needed infrastructure to the network code
-   patches 10-12
-
-3) implement the idea outlined above
-   patches 13-19
-
-4) teach the swap machinery to use generic address_spaces
-   patches 20-23
-
-5) implement swap over NFS using all the new stuff
-   patches 24-29
 -- 
 
