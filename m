@@ -1,84 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422678AbXBUTTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422822AbXBUTTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422678AbXBUTTe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 14:19:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422824AbXBUTTd
+	id S1422822AbXBUTTh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 14:19:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422823AbXBUTTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 14:19:33 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:38934 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422678AbXBUTTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 14:19:33 -0500
-Date: Wed, 21 Feb 2007 11:19:07 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Faik Uygur <faik@pardus.org.tr>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jirislaby@gmail.com
-Subject: Re: Linux 2.6.21-rc1
-In-Reply-To: <200702211526.41493.faik@pardus.org.tr>
-Message-ID: <Pine.LNX.4.64.0702211118350.4043@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
- <200702211526.41493.faik@pardus.org.tr>
+	Wed, 21 Feb 2007 14:19:37 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:16308 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422822AbXBUTTg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 14:19:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=meAPDgdUmxt8vpKxSnCN3fT1yM+TPf+kf3Uh8xbwmBy5xPN+1r19WUh0Y1zekbw0bt1bZRbSuZtHXI4u9YRIjUjYx+e7cKiZ1HKbGn+ITJCXiUvIzLx8l9AgfwlJrgNKS+2eqxoEX4DaJXbj/Rtff/F9ndyATLlWCq72RCfdfY0=
+Message-ID: <84144f020702211119ub028ccahee15629f02491840@mail.gmail.com>
+Date: Wed, 21 Feb 2007 21:19:33 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: [PATCH 1/3] slab: introduce krealloc
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       jsipek@fsl.cs.sunysb.edu, unionfs@filesystems.org, bunk@stusta.de,
+       hooanon05@yahoo.co.jp
+In-Reply-To: <Pine.LNX.4.64.0702211041061.24941@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0702211003290.8172@sbz-30.cs.Helsinki.FI>
+	 <Pine.LNX.4.64.0702210951580.24344@schroedinger.engr.sgi.com>
+	 <45DC8DA1.6030100@cs.helsinki.fi>
+	 <Pine.LNX.4.64.0702211023300.24719@schroedinger.engr.sgi.com>
+	 <45DC916E.1020300@cs.helsinki.fi>
+	 <Pine.LNX.4.64.0702211041061.24941@schroedinger.engr.sgi.com>
+X-Google-Sender-Auth: ea656dc536d67fd2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 2/21/07, Christoph Lameter <clameter@sgi.com> wrote:
+> Why not? Its a realloc call and these are the classic semantics of
+> realloc. Otherwise realloc will always move the memory.
 
+Well, as a reference, the user-space equivalent is defined in SUSv3 as:
 
-On Wed, 21 Feb 2007, Faik Uygur wrote:
-> 
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   CHK     include/linux/compile.h
->   CC [M]  drivers/char/ip2/ip2main.o
-> In file included from drivers/char/ip2/ip2main.c:285:
-> drivers/char/ip2/i2lib.c: In function `iiSendPendingMail_t':
-> drivers/char/ip2/i2lib.c:83: sorry, unimplemented: inlining failed in call 
-> to 'iiSendPendingMail': function body not available
-> drivers/char/ip2/i2lib.c:157: sorry, unimplemented: called from here
-> make[3]: *** [drivers/char/ip2/ip2main.o] Error 1
-> make[2]: *** [drivers/char/ip2] Error 2
-> make[1]: *** [drivers/char] Error 2
-> make: *** [drivers] Error 2
+"The realloc() function shall change the size of the memory object
+pointed to by ptr to the size specified by size."
 
-Yeah, that thing was crud.
+I think it is reasonable to expect krealloc() to not waste too much
+space if I, say, reallocate a 128 byte buffer to 32 bytes.
 
-		Linus
+On 2/21/07, Christoph Lameter <clameter@sgi.com> wrote:
+> Check that both sizes fall into the same general cache. Do the following
+> at the beginning of the function
 
----
-commit 5fc7e655a50b0a19229a6b4a8a5e23bfedf700a4
-Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
-Date:   Wed Feb 21 11:18:26 2007 -0800
+Not available in the slob allocator AFAIK but yeah, I'll add this
+optimization to the slab version. Thanks Christoph.
 
-    Fix bogus 'inline' in drivers/char/ip2/i2lib.c
-    
-    Not only was the function way too big to be inlined in the first place,
-    it was used before it was even defined.
-    
-    Noted-by: Faik Uygur <faik@pardus.org.tr>
-    Cc: Jiri Slaby <jirislaby@gmail.com>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-diff --git a/drivers/char/ip2/i2lib.c b/drivers/char/ip2/i2lib.c
-index f86fa0c..e46120d 100644
---- a/drivers/char/ip2/i2lib.c
-+++ b/drivers/char/ip2/i2lib.c
-@@ -80,7 +80,7 @@ static int i2RetryFlushOutput(i2ChanStrPtr);
- // Not a documented part of the library routines (careful...) but the Diagnostic
- // i2diag.c finds them useful to help the throughput in certain limited
- // single-threaded operations.
--static inline void iiSendPendingMail(i2eBordStrPtr);
-+static void iiSendPendingMail(i2eBordStrPtr);
- static void serviceOutgoingFifo(i2eBordStrPtr);
- 
- // Functions defined in ip2.c as part of interrupt handling
-@@ -166,7 +166,7 @@ static void iiSendPendingMail_t(unsigned long data)
- // If any outgoing mail bits are set and there is outgoing mailbox is empty,
- // send the mail and clear the bits.
- //******************************************************************************
--static inline void
-+static void
- iiSendPendingMail(i2eBordStrPtr pB)
- {
- 	if (pB->i2eOutMailWaiting && (!pB->i2eWaitingForEmptyFifo) )
+                             Pekka
