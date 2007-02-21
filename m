@@ -1,94 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422682AbXBUQxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422680AbXBUQzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422682AbXBUQxa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 11:53:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422683AbXBUQxa
+	id S1422680AbXBUQzU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 11:55:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422681AbXBUQzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 11:53:30 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55132 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422682AbXBUQx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 11:53:29 -0500
-Message-ID: <45DC7859.7060300@redhat.com>
-Date: Wed, 21 Feb 2007 11:50:33 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Wed, 21 Feb 2007 11:55:20 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:5104 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422680AbXBUQzT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 11:55:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=iqS0aqWCtHsu+2anhzYLMCU/5gIofIQEFpK3fNpVGDYF6FIQURMaFHC3ja558s5NbRm4Uu4keax0fcBpSEls27OGUGftIlhzVF0vUvIwJolog3vQjnIBqj18oPo+gTHW8Yka/nOEurq8fCgPHhaArHTu45oEbJuNOErH/x7lOfo=
+Message-ID: <45a44e480702210855t344441c1xf8e081c82ece4e63@mail.gmail.com>
+Date: Wed, 21 Feb 2007 11:55:17 -0500
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+To: "Geert Uytterhoeven" <geert@linux-m68k.org>
+Subject: Re: [PATCH 2.6.20 1/1] fbdev,mm: hecuba/E-Ink fbdev driver
+Cc: "Paul Mundt" <lethal@linux-sh.org>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Linux Frame Buffer Device Development" 
+	<linux-fbdev-devel@lists.sourceforge.net>,
+       "Linux Kernel Development" <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, "James Simmons" <jsimmons@infradead.org>
+In-Reply-To: <Pine.LNX.4.62.0702200906070.2082@pademelon.sonytel.be>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/21] 2.6.19-stable review
-References: <20070221013619.GA30227@kroah.com>
-In-Reply-To: <20070221013619.GA30227@kroah.com>
-Content-Type: multipart/mixed;
- boundary="------------050402010604010301070306"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070217104215.GB25512@localhost> <1171715652.5186.7.camel@lappy>
+	 <45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com>
+	 <20070217135922.GA15373@linux-sh.org>
+	 <45a44e480702180331t7e76c396j1a9861f689d4186b@mail.gmail.com>
+	 <20070218235741.GA22298@linux-sh.org>
+	 <45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
+	 <Pine.LNX.4.62.0702200906070.2082@pademelon.sonytel.be>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050402010604010301070306
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On 2/20/07, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> Don't you need a way to specify the maximum deferral time? E.g. a field in
+> fb_info.
+>
 
-Greg KH wrote:
-> This is the start of the stable review cycle for the 2.6.19.5 release.
-> 
-> This will probably be the last release of the 2.6.19-stable series, so
-> if there are patches that you feel should be applied to that tree,
-> please let me know.
-> 
+You are right. I will need that. I could put that into struct
+fb_deferred_io. So drivers would setup like:
 
-The attached fixes an oops in the usbnet driver. The same patch is
-in 2.6.21-rc1, but that one has many whitespace changes. This is much
-smaller.
+static struct fb_deferred_io hecubafb_defio = {
+        .delay          = HZ,
+        .deferred_io    = hecubafb_dpy_update,
+};
 
+where that would be:
+struct fb_deferred_io {
+        unsigned long delay;    /* delay between mkwrite and deferred handler */
+        struct mutex lock;      /* mutex that protects the page list */
+        struct list_head pagelist;      /* list of touched pages */
+        struct delayed_work deferred_work;
+        void (*deferred_io)(struct fb_info *info, struct list_head
+*pagelist); /* callback */
+};
 
-From: David Brownell <david-b@pacbell.net>
-Signed-off-by: David Brownell <david-b@pacbell.net>
+and the driver would do:
+...
+info->fbdefio = hecubafb_defio;
+register_framebuffer...
 
+When the driver calls register_framebuffer and unregister_framebuffer,
+I can then do the init and destruction of the other members of that
+struct. Does this sound okay?
 
---------------050402010604010301070306
-Content-Type: text/plain;
- name="linux-2.6-usbnet_fix_failure_path_oops.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="linux-2.6-usbnet_fix_failure_path_oops.patch"
-
-Index: linux-2.6.20.noarch/drivers/usb/net/usbnet.c
-===================================================================
---- linux-2.6.20.noarch.orig/drivers/usb/net/usbnet.c	2007-02-04 13:44:54.000000000 -0500
-+++ linux-2.6.20.noarch/drivers/usb/net/usbnet.c	2007-02-18 18:57:05.000000000 -0500
-@@ -1182,6 +1182,9 @@
- 	// NOTE net->name still not usable ...
- 	if (info->bind) {
- 		status = info->bind (dev, udev);
-+		if (status < 0)
-+			goto out1;
-+
- 		// heuristic:  "usb%d" for links we know are two-host,
- 		// else "eth%d" when there's reasonable doubt.  userspace
- 		// can rename the link if it knows better.
-@@ -1208,12 +1211,12 @@
- 	if (status == 0 && dev->status)
- 		status = init_status (dev, udev);
- 	if (status < 0)
--		goto out1;
-+		goto out3;
- 
- 	if (!dev->rx_urb_size)
- 		dev->rx_urb_size = dev->hard_mtu;
- 	dev->maxpacket = usb_maxpacket (dev->udev, dev->out, 1);
--	
-+
- 	SET_NETDEV_DEV(net, &udev->dev);
- 	status = register_netdev (net);
- 	if (status)
-
---------------050402010604010301070306--
+Thanks,
+jaya
