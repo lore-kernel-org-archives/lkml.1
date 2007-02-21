@@ -1,79 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161359AbXBUUvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161358AbXBUUxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161359AbXBUUvp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 15:51:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161358AbXBUUvp
+	id S1161358AbXBUUxQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 15:53:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161175AbXBUUxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 15:51:45 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:63529 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161359AbXBUUvo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 15:51:44 -0500
-Subject: Re: Linux 2.6.21-rc1
-From: Daniel Walker <dwalker@mvista.com>
-To: tglx@linutronix.de
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mingo@elte.hu
-In-Reply-To: <1172090603.25076.127.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-	 <1172075053.8577.38.camel@imap.mvista.com>
-	 <1172077664.25076.75.camel@localhost.localdomain>
-	 <1172078340.8577.43.camel@imap.mvista.com>
-	 <1172079671.25076.80.camel@localhost.localdomain>
-	 <1172079523.8577.48.camel@imap.mvista.com>
-	 <1172081931.25076.95.camel@localhost.localdomain>
-	 <1172082200.8577.56.camel@imap.mvista.com>
-	 <1172085792.25076.119.camel@localhost.localdomain>
-	 <1172088050.8577.71.camel@imap.mvista.com>
-	 <1172090603.25076.127.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 21 Feb 2007 12:49:33 -0800
-Message-Id: <1172090973.8577.77.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+	Wed, 21 Feb 2007 15:53:16 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:40059 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161358AbXBUUxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 15:53:15 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: freezer problems
+Date: Wed, 21 Feb 2007 21:47:54 +0100
+User-Agent: KMail/1.9.5
+Cc: paulmck@linux.vnet.ibm.com, ego@in.ibm.com, akpm@osdl.org,
+       paulmck@us.ibm.com, mingo@elte.hu, vatsa@in.ibm.com,
+       dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+References: <20070214144031.GA15257@in.ibm.com> <200702211913.41883.rjw@sisk.pl> <20070221200314.GA91@tv-sign.ru>
+In-Reply-To: <20070221200314.GA91@tv-sign.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702212147.55756.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-21 at 21:43 +0100, Thomas Gleixner wrote:
-> On Wed, 2007-02-21 at 12:00 -0800, Daniel Walker wrote:
-> > There's a compile failure during my bisect.
-> > 
-> > distcc[3863] ERROR: compile /tmp//hrtimer.tmp.dwalker1.3795.i on dwalker3/120 failed
-> > kernel/hrtimer.c: In function 'hrtimer_cpu_notify':
-> > kernel/hrtimer.c:884: warning: implicit declaration of function 'clockevents_notify'
-> > kernel/hrtimer.c:884: error: 'CLOCK_EVT_NOTIFY_CPU_DEAD' undeclared (first use in this function)
-> > kernel/hrtimer.c:884: error: (Each undeclared identifier is reported only once 
-> > kernel/hrtimer.c:884: error: for each function it appears in.)
-> > drivers/ide/setup-pci.c: In function 'ide_scan_pcibus':
-> > drivers/ide/setup-pci.c:866: warning: ignoring return value of '__pci_register_driver', declared with attribute warn_unused_result
-> > make[1]: *** [kernel/hrtimer.o] Error 1
+On Wednesday, 21 February 2007 21:03, Oleg Nesterov wrote:
+> On 02/21, Rafael J. Wysocki wrote:
+> >
+> > On Wednesday, 21 February 2007 19:14, Paul E. McKenney wrote:
+> > > On Tue, Feb 20, 2007 at 07:29:01PM +0100, Rafael J. Wysocki wrote:
+> > > > On Tuesday, 20 February 2007 01:32, Rafael J. Wysocki wrote:
+> > > > > On Tuesday, 20 February 2007 01:12, Oleg Nesterov wrote:
+> > > > > Hm.  In the case discussed above we have a task that's right before calling
+> > > > > frozen_process(), so we can't thaw it, because it's not frozen.  It will be
+> > > > > frozen just in a while, but try_to_freeze_tasks() and thaw_tasks() have no
+> > > > > way to check this.
+> > > > > 
+> > > > > I think to close this race the refrigerator should check TIF_FREEZE and set
+> > > > > PF_FROZEN _and_ reset TIF_FREEZE under a lock
 > 
-> hrmpf. we made it bisectable at some point.
+> I personally think this is good. Not only this allows us to close the race,
+> I think we can do more.
+> 
+> >                                                      that would also have to be
+> > > > > taken by try_to_freeze_tasks() in the beginning of the error path.  This will
+> > > > > ensure that all tasks either freeze themselves before the error path in
+> > > > > try_to_freeze_tasks() is executed, or remain unfrozen.
+> 
+> How about take this lock in thaw_tasks() instead/too ?
 
-It was related some code under a hot plug ifdef ..
+Good point.  If we take it in thaw_tasks(), then the tasks that have
+TIF_FREEZE set, but haven't entered the refrigerator yet, won't be able to
+enter the refrigerator until thaw_tasks() releases the lock ...
+> 
+> Currently we need a separate loop in thaw_tasks() to handle PF_FREEZER_SKIP. This
+> means that PF_FREEZER_SKIP is not so generic: thaw_tasks() can't tolerate if such
+> a task was woken in between. What if we change thaw_process() to clear TIF_FREEZE ?
 
-Here's the final commit from the bisect which caused it . It says "No
-changes to existing functionality" ?
+... and then we can drop the PF_FREEZER_SKIP-handling loop and change
+thaw_process() to clear TIF_FREEZE.
 
-e9e2cdb412412326c4827fc78ba27f410d837e6e is first bad commit
-commit e9e2cdb412412326c4827fc78ba27f410d837e6e
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date:   Fri Feb 16 01:28:04 2007 -0800
+> Note also that we can use task_lock() instead of global refrigerator_lock. This
+> means that thaw_process() should take it too, probably this is slowdown, but I
+> think not too much because thaw_process() is going to write to p->flags anyway.
+> In this case thaw_process() works perfectly as cancel_freezing_and_thaw() and
+> can be used to fix exec/coredump in future.
 
-    [PATCH] clockevents: i386 drivers
+Hm, I think we can try doing this too.
 
-    Add clockevent drivers for i386: lapic (local) and PIT/HPET (global).  Update
-    the timer IRQ to call into the PIT/HPET driver's event handler and the
-    lapic-timer IRQ to call into the lapic clockevent driver.  The assignement of
-    timer functionality is delegated to the core framework code and replaces the
-    compile and runtime evalution in do_timer_interrupt_hook()
+I'll try to prepare a patch later today.
 
-    Use the clockevents broadcast support and implement the lapic_broadcast
-    function for ACPI.
-
-    No changes to existing functionality.
-
-
-
+Greetings,
+Rafael
