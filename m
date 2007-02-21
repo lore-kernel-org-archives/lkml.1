@@ -1,62 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161312AbXBUP6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161317AbXBUQAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161312AbXBUP6o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 10:58:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161316AbXBUP6o
+	id S1161317AbXBUQAh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 11:00:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422632AbXBUQAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 10:58:44 -0500
-Received: from mga03.intel.com ([143.182.124.21]:32000 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161312AbXBUP6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 10:58:43 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,202,1170662400"; 
-   d="scan'208"; a="185205291:sNHT3442966989"
-Message-ID: <45DC6C2C.7040509@intel.com>
-Date: Wed, 21 Feb 2007 07:58:36 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Mail/News 1.5.0.9 (X11/20061228)
+	Wed, 21 Feb 2007 11:00:37 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:9637 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161317AbXBUQAg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 11:00:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:reply-to:x-priority:message-id:to:cc:subject:in-reply-to:references:mime-version:content-type:content-transfer-encoding;
+        b=pBVNhrtCGNwXXVDBi7Ay866+Y+d2Xou1ub/1JbsDOpZ3V2y85tuEvcQzgIsENLq7Vb2oGFCa6p0pNNUHIUx6DlLkuTmODnykL4LAiRlpJOnODGwT8FfE4ErjVBUQChzBtwE48I3nuHSRYNPYhmeyV9suzIcPOUhHDkl1VLk/e1U=
+Date: Wed, 21 Feb 2007 18:00:37 +0200
+From: Paul Sokolovsky <pmiscml@gmail.com>
+Reply-To: Paul Sokolovsky <pmiscml@gmail.com>
+X-Priority: 3 (Normal)
+Message-ID: <1056908425.20070221180037@gmail.com>
+To: Rodolfo Giometti <giometti@enneenne.com>
+CC: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       <linux-fbdev-devel@lists.sourceforge.net>,
+       Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: [PATCH 1/1] PXAFB: Support for backlight control
+In-Reply-To: <20070221145353.GA23916@enneenne.com>
+References: <20070221145353.GA23916@enneenne.com>
 MIME-Version: 1.0
-To: tglx@linutronix.de
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: Linux 2.6.21-rc1
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <1172064762.25076.56.camel@localhost.localdomain>
-In-Reply-To: <1172064762.25076.56.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Feb 2007 15:58:37.0489 (UTC) FILETIME=[25D99210:01C755D1]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Tue, 2007-02-20 at 20:53 -0800, Linus Torvalds wrote:
->> But there's a ton of architecture updates (arm, mips, powerpc, x86, you 
->> name it), ACPI updates, and lots of driver work. And just a lot of 
->> cleanups.
->>
->> Have fun,
-> 
-> Yup. Fun starts in drivers/net/e1000
-> 
-> e1000 is not working anymore. ifup fails permanentely.
->  ADDRCONF(NETDEV_UP): eth0: link is not ready
-> nothing else
-> 
-> bisect identifies:
-> 
-> d2ed16356ff4fb9de23fbc5e5d582ce580390106 is first bad commit
- > commit d2ed16356ff4fb9de23fbc5e5d582ce580390106
+Hello Rodolfo,
 
-I think we need to drop this now. The report that says that this *fixes* 
-something might have been on regular interrupts only. I currently suspect that 
-it breaks all MSI interrupts, which would make sense if I look a the code. Very 
-bad indeed.
+Wednesday, February 21, 2007, 4:53:53 PM, you wrote:
 
-I'll try to come up with something else or send a patch that reverts it.
+> Backlight control support for the PXA fram buffer.
 
-Auke
+
+  Here're some comments: backlight support is already confusing
+matter, and your patch IMHO makes it even more confusing for PXAFB.
+
+  Before even start with details, let's first think what backlight has
+to do with framebuffer? The facts that the physical object implementing
+the former is usually put in close proximity to the latter, and they mostly
+should be powered on synchronously, probably don't yet mean that
+each and every FB driver should include good chunk of code to support
+doing BL in its own special way.
+
+  On the other hand, there's already
+drivers/video/backlight/backlight.c which provides generic BL support,
+implemented using notifier callback for FB core. Moreover, there's
+corgi_bl.c driver which, contrary to its name is a generic driver for
+embedded/PDA device backlight. It essentially subclassses pretty
+abstract backlight.c, and provides good implementation for most BL
+implementation. What you really need to do to use it, is to supply
+single machine-dependent method, set_bl_intensity(). That method is
+usually <10 lines.
+
+  With this in mind, adhoc backlight handlers in pxafb and few other
+drivers are artifacts of older times. And it's sad they are tried to
+be resurrected instead of being removed.
+
+
+> Signed-off-by: Rodolfo Giometti <giometti@enneenne.com>
+
+> ---
+
+> Each platform should define the backlight properties in its own setup
+> file in "linux/arch/arm/mach-pxa/" as follow:
+
+>    static int pxafb_bl_get_brightness(struct backlight_device *bl_dev)
+>    {
+>         return read_the_backlight_brightness();
+>    }
+
+>    static int pxafb_bl_update_status(struct backlight_device *bl_dev)
+>    {
+>            int perc, ret;
+
+>            if (bl_dev->props->power != FB_BLANK_UNBLANK ||
+>                bl_dev->props->fb_blank != FB_BLANK_UNBLANK)
+>                    perc = 0;
+>            else
+>                    perc = bl_dev->props->brightness;
+
+>         write_the_backlight_brightness(perc);
+
+>            return 0;
+>    }
+
+>    static struct backlight_properties wwpc1100_backlight_props = {
+>            .get_brightness         = pxafb_bl_get_brightness,
+>            .update_status          = pxafb_bl_update_status,
+>            .max_brightness         = 100,
+>    };
+>       
+> and then seting up the fb info as follow:
+
+>    wwpc1100_pxafb_info.modes = &special_modes;
+>    wwpc1100_pxafb_info.bl_props = &wwpc1100_backlight_props;
+>    set_pxa_fb_info(&wwpc1100_pxafb_info);
+
+
+
+-- 
+Best regards,
+ Paul                            mailto:pmiscml@gmail.com
 
