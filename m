@@ -1,106 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161357AbXBUUut@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161359AbXBUUvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161357AbXBUUut (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 15:50:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161359AbXBUUut
+	id S1161359AbXBUUvp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 15:51:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161358AbXBUUvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 15:50:49 -0500
-Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:45153 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161357AbXBUUur (ORCPT
+	Wed, 21 Feb 2007 15:51:45 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:63529 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161359AbXBUUvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 15:50:47 -0500
-Date: Wed, 21 Feb 2007 15:45:35 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Karim Yaghmour <karim.yaghmour@kryptiva.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@redhat.com>,
-       systemtap@sources.redhat.com, ltt-dev@shafik.org
-Subject: Re: [PATCH 05/05] Linux Kernel Markers, non optimized architectures
-Message-ID: <20070221204535.GA616@Krystal>
-References: <1171224207118-git-send-email-mathieu.desnoyers@polymtl.ca> <1171224209195-git-send-email-mathieu.desnoyers@polymtl.ca> <20070214231635.091c7169.akpm@linux-foundation.org> <20070215190919.GA31359@Krystal> <45D61361.6030200@kryptiva.com> <20070216233825.GB28087@Krystal> <45DCA6E1.7080903@kryptiva.com>
+	Wed, 21 Feb 2007 15:51:44 -0500
+Subject: Re: Linux 2.6.21-rc1
+From: Daniel Walker <dwalker@mvista.com>
+To: tglx@linutronix.de
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mingo@elte.hu
+In-Reply-To: <1172090603.25076.127.camel@localhost.localdomain>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
+	 <1172075053.8577.38.camel@imap.mvista.com>
+	 <1172077664.25076.75.camel@localhost.localdomain>
+	 <1172078340.8577.43.camel@imap.mvista.com>
+	 <1172079671.25076.80.camel@localhost.localdomain>
+	 <1172079523.8577.48.camel@imap.mvista.com>
+	 <1172081931.25076.95.camel@localhost.localdomain>
+	 <1172082200.8577.56.camel@imap.mvista.com>
+	 <1172085792.25076.119.camel@localhost.localdomain>
+	 <1172088050.8577.71.camel@imap.mvista.com>
+	 <1172090603.25076.127.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 21 Feb 2007 12:49:33 -0800
+Message-Id: <1172090973.8577.77.camel@imap.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <45DCA6E1.7080903@kryptiva.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 15:38:08 up 19 days, 10:46,  4 users,  load average: 2.46, 2.03, 1.99
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Karim Yaghmour (karim.yaghmour@kryptiva.com) wrote:
-> ----- KRYPTIVA PACKAGED MESSAGE -----
-> PACKAGING TYPE: SIGNED
+On Wed, 2007-02-21 at 21:43 +0100, Thomas Gleixner wrote:
+> On Wed, 2007-02-21 at 12:00 -0800, Daniel Walker wrote:
+> > There's a compile failure during my bisect.
+> > 
+> > distcc[3863] ERROR: compile /tmp//hrtimer.tmp.dwalker1.3795.i on dwalker3/120 failed
+> > kernel/hrtimer.c: In function 'hrtimer_cpu_notify':
+> > kernel/hrtimer.c:884: warning: implicit declaration of function 'clockevents_notify'
+> > kernel/hrtimer.c:884: error: 'CLOCK_EVT_NOTIFY_CPU_DEAD' undeclared (first use in this function)
+> > kernel/hrtimer.c:884: error: (Each undeclared identifier is reported only once 
+> > kernel/hrtimer.c:884: error: for each function it appears in.)
+> > drivers/ide/setup-pci.c: In function 'ide_scan_pcibus':
+> > drivers/ide/setup-pci.c:866: warning: ignoring return value of '__pci_register_driver', declared with attribute warn_unused_result
+> > make[1]: *** [kernel/hrtimer.o] Error 1
 > 
-> Hello Mathieu,
-> 
-> Mathieu Desnoyers wrote:
-> > Yes, that was indeed the first way I implemented it, as a "disable" 
-> option. One of the main thing we have to figure out before I modify this is 
-> if we want to have the generic version of markers available in a "forced" 
-> manner at the marker site with the GEN_MARK macro instead of the MARK macro 
-> (this is the actual implementation). It has proven to be useful to 
-> instrument lockdep.c irq
-> > enable/disable tracing functions. The reason why is because they are 
-> called just before the trap handler returns and I need it to do XMC on x86 
-> and x86_64. It would therefore cause a recursive trap.
-> >
-> > I think it makes sense to have this kind of support for 
-> hard-to-instrument sites within the marker infrastructure, but the cost is 
-> to have two marker flavors : MARK and GEN_MARK (but really GEN_MARK is only 
-> intended for a few sites).
-> 
-> I must admit that I'm unsure about the use of different marker macros.
-> How about bitwise flags that could be coded as part of the marker
-> at the marker site? Something like "MARKER_TYPE_FORCED". This would
-> still allow some form of toplevel control at the macro definition.
-> Otherwise there's some digging to be done on a per-marker
-> basis ...
-> 
+> hrmpf. we made it bisectable at some point.
 
-The problem with your proposal, I guess, is that people will have to
-add a supplementary parameter to the macro.
+It was related some code under a hot plug ifdef ..
 
-It is not uncommon to have two slightly versions of macros/functions in
-the kernel (preempt_enable()/preempt_enable_no_resched(), or macros
-starting with underscores). Normally, the underscore states that the
-macro does not do the proper locking itself (this is not our case).
-Therefore, I would suggest using a name that suggests against what the
-macro is protected. For instance, a marker pointing to the generic
-version is only needed to protect against the debug trap handler and
-should only be used on x86 and x86_64.
+Here's the final commit from the bisect which caused it . It says "No
+changes to existing functionality" ?
 
-So, something like MARK_NO_TRAP() would be appropriate : it would be an
-optimized version for every architecture except x86 and x86_64. The
-meaning of this macro is : "This is a marker that will never generate a
-trap because of its activation" (just as a precision : it doesn't say
-anything about the probe connected to the marker). It also acts as a
-strong suggestion about what *should not* be done within the probe.
+e9e2cdb412412326c4827fc78ba27f410d837e6e is first bad commit
+commit e9e2cdb412412326c4827fc78ba27f410d837e6e
+Author: Thomas Gleixner <tglx@linutronix.de>
+Date:   Fri Feb 16 01:28:04 2007 -0800
 
-Mathieu
+    [PATCH] clockevents: i386 drivers
 
-> Karim
-> ----- KRYPTIVA SIGNED MESSAGE -----
-> This email claims to have been packaged by Kryptiva.
-> To process this email and authenticate its origin, get
-> the free plugin from:
-> http://www.kryptiva.com/downloads
-> 
-> ----- KRYPTIVA SIGNATURE START -----
-> AvWVqAAAAAIAAAABAAAAAAAATiACAQAAAAC3AQAIAAAAAgAAAAECABTXxT4xHdR4/1uU1hL2
-> +TaPrqNB0wMAFNa8GHXZWJH5Dz+D76vfh6JhvWLvBAAUpuIZcCAkCC+ldyaBuoAWxK50HiQF
-> ABRI38gc/foDHQsS6X3W0VP4xTukBwYAFB0lithGcxNZYBHaLDONjp6eo/LoBwAU6OwGS0m1
-> IVdBt6tKzhaPW8MOfncRABgAAAAAAABOIEXcozcACATMAAAAAAAAABkTAAQAAAAAAAAAggQA
-> mHAJeFbYUzxSX+zkI0DtoVKcqqSp2Ztc9GtY7ZtuLBmeqg5pW0rIbkhutQiztTXlJQ0Ye9bV
-> yzEVWd/m7GhDAgRBmyg3kCOt7g7potr1l5J3X5K8TiqtWXbNo3k6AHRlGZyn0190iIBSvf85
-> nVh3hKiNPsw8DYs1NKb+KMON+4g=
-> ----- KRYPTIVA SIGNATURE END -----
+    Add clockevent drivers for i386: lapic (local) and PIT/HPET (global).  Update
+    the timer IRQ to call into the PIT/HPET driver's event handler and the
+    lapic-timer IRQ to call into the lapic clockevent driver.  The assignement of
+    timer functionality is delegated to the core framework code and replaces the
+    compile and runtime evalution in do_timer_interrupt_hook()
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Candidate, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+    Use the clockevents broadcast support and implement the lapic_broadcast
+    function for ACPI.
+
+    No changes to existing functionality.
+
+
+
