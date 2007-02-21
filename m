@@ -1,76 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422754AbXBUSNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422701AbXBUSON@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422754AbXBUSNs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 13:13:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422756AbXBUSNr
+	id S1422701AbXBUSON (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 13:14:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422756AbXBUSON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 13:13:47 -0500
-Received: from www.osadl.org ([213.239.205.134]:46392 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1422755AbXBUSNq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 13:13:46 -0500
-Subject: Re: Linux 2.6.21-rc1
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mingo@elte.hu
-In-Reply-To: <1172079523.8577.48.camel@imap.mvista.com>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-	 <1172075053.8577.38.camel@imap.mvista.com>
-	 <1172077664.25076.75.camel@localhost.localdomain>
-	 <1172078340.8577.43.camel@imap.mvista.com>
-	 <1172079671.25076.80.camel@localhost.localdomain>
-	 <1172079523.8577.48.camel@imap.mvista.com>
-Content-Type: text/plain
-Date: Wed, 21 Feb 2007 19:18:51 +0100
-Message-Id: <1172081931.25076.95.camel@localhost.localdomain>
+	Wed, 21 Feb 2007 13:14:13 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:52796 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422701AbXBUSOK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 13:14:10 -0500
+Date: Wed, 21 Feb 2007 10:14:04 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, ego@in.ibm.com, akpm@osdl.org,
+       paulmck@us.ibm.com, mingo@elte.hu, vatsa@in.ibm.com,
+       dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Subject: Re: freezer problems
+Message-ID: <20070221181404.GC7063@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070214144031.GA15257@in.ibm.com> <20070220001209.GA15991@tv-sign.ru> <200702200132.12847.rjw@sisk.pl> <200702201929.03776.rjw@sisk.pl>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702201929.03776.rjw@sisk.pl>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-21 at 09:38 -0800, Daniel Walker wrote:
-> > > 
-> > > Could be the switch over then which confuses the NMI . 
+On Tue, Feb 20, 2007 at 07:29:01PM +0100, Rafael J. Wysocki wrote:
+> On Tuesday, 20 February 2007 01:32, Rafael J. Wysocki wrote:
+> > On Tuesday, 20 February 2007 01:12, Oleg Nesterov wrote:
+> > Hm.  In the case discussed above we have a task that's right before calling
+> > frozen_process(), so we can't thaw it, because it's not frozen.  It will be
+> > frozen just in a while, but try_to_freeze_tasks() and thaw_tasks() have no
+> > way to check this.
 > > 
-> > Why? The switch just stops the PIT/HPET. It does not fiddle with IO_APIC
-> > and friends at all.
+> > I think to close this race the refrigerator should check TIF_FREEZE and set
+> > PF_FROZEN _and_ reset TIF_FREEZE under a lock that would also have to be
+> > taken by try_to_freeze_tasks() in the beginning of the error path.  This will
+> > ensure that all tasks either freeze themselves before the error path in
+> > try_to_freeze_tasks() is executed, or remain unfrozen.
+> > 
+> > I'll try to prepare a patch to illustrate this, but right now I'm too tired to
+> > do it. :-)
 > 
-> I'm not an expert on the io-apic, but the check_timer() function seemed
-> to assume IRQ0 was happening regularly ..
+> Something like this, perhaps:
+> 
+> ---
+>  include/linux/freezer.h |   10 +++-------
+>  kernel/power/process.c  |   18 ++++++++++++++++--
+>  2 files changed, 19 insertions(+), 9 deletions(-)
+> 
+> Index: linux-2.6.20-mm2/include/linux/freezer.h
+> ===================================================================
+> --- linux-2.6.20-mm2.orig/include/linux/freezer.h
+> +++ linux-2.6.20-mm2/include/linux/freezer.h
+> @@ -58,17 +58,13 @@ static inline void frozen_process(struct
+>  	clear_tsk_thread_flag(p, TIF_FREEZE);
+>  }
+> 
+> -extern void refrigerator(void);
+> +extern int refrigerator(void);
+>  extern int freeze_processes(void);
+>  extern void thaw_processes(void);
+> 
+>  static inline int try_to_freeze(void)
+>  {
+> -	if (freezing(current)) {
+> -		refrigerator();
+> -		return 1;
+> -	} else
+> -		return 0;
+> +	return refrigerator();
+>  }
+> 
+>  /*
+> @@ -104,7 +100,7 @@ static inline void freeze(struct task_st
+>  static inline int thaw_process(struct task_struct *p) { return 1; }
+>  static inline void frozen_process(struct task_struct *p) { BUG(); }
+> 
+> -static inline void refrigerator(void) {}
+> +static inline int refrigerator(void) { return 0; }
+>  static inline int freeze_processes(void) { BUG(); return 0; }
+>  static inline void thaw_processes(void) {}
+> 
+> Index: linux-2.6.20-mm2/kernel/power/process.c
+> ===================================================================
+> --- linux-2.6.20-mm2.orig/kernel/power/process.c
+> +++ linux-2.6.20-mm2/kernel/power/process.c
+> @@ -24,6 +24,8 @@
+>  #define FREEZER_KERNEL_THREADS 0
+>  #define FREEZER_USER_SPACE 1
+> 
+> +spinlock_t refrigerator_lock;
+> +
+>  static inline int freezeable(struct task_struct * p)
+>  {
+>  	if ((p == current) ||
+> @@ -34,15 +36,23 @@ static inline int freezeable(struct task
+>  }
+> 
+>  /* Refrigerator is place where frozen processes are stored :-). */
+> -void refrigerator(void)
+> +int refrigerator(void)
+>  {
+>  	/* Hmm, should we be allowed to suspend when there are realtime
+>  	   processes around? */
+>  	long save;
+> +
+> +	spin_lock(&refrigerator_lock);
 
-Again: 
+I hope we can do this without a global lock that is acquired on each
+try_to_freeze() call!
 
-check_timer() is called _BEFORE_ we even touch the local APIC timers. At
-this point PIT/HPET _IS_ firing IRQ0 with HZ frequency.
+> +	if (freezing(current)) {
 
-> Well, I'm pretty sure it's HRT, cause in prior versions this only
-> happened when HRT is enabled. Then you guys went to the lapic all the
-> time, and now this is happening all the time ..
+Would it be possible to acquire the lock here instead, then recheck here?
+Or use a per-thread lock?  (Yes, this would make the error checking path
+have to acquire a very large number of threads, but...
 
-The NMI is stuck:
+							Thanx, Paul
 
-                if (nmi_count(cpu) - prev_nmi_count[cpu] <= 5) {
-                        printk("CPU#%d: NMI appears to be stuck (%d->%d)!\n",
-                                cpu,
-                                prev_nmi_count[cpu],
-                                nmi_count(cpu));
-
-This has nothing to do with jiffies.
-
-There have been a bunch of changes in arch/i386/kernel/nmi.c as well. 
-
-> You can't reproduce this?
-
-Nope.
-
-Also all my machines emit something like:
-"ACPI: LAPIC_NMI (acpi_id[0x00] dfl dfl lint[0x1])"
-
-In your boot log nothing to see.
-
-	tglx
-
-
+> +		frozen_process(current);
+> +		spin_unlock(&refrigerator_lock);
+> +	} else {
+> +		spin_unlock(&refrigerator_lock);
+> +		return 0;
+> +	}
+>  	save = current->state;
+>  	pr_debug("%s entered refrigerator\n", current->comm);
+> 
+> -	frozen_process(current);
+>  	spin_lock_irq(&current->sighand->siglock);
+>  	recalc_sigpending(); /* We sent fake signal, clean it up */
+>  	spin_unlock_irq(&current->sighand->siglock);
+> @@ -53,6 +63,7 @@ void refrigerator(void)
+>  	}
+>  	pr_debug("%s left refrigerator\n", current->comm);
+>  	current->state = save;
+> +	return 1;
+>  }
+> 
+>  static inline void freeze_process(struct task_struct *p)
+> @@ -143,6 +154,7 @@ static unsigned int try_to_freeze_tasks(
+>  					"kernel threads",
+>  				TIMEOUT / HZ, todo);
+>  		read_lock(&tasklist_lock);
+> +		spin_lock(&refrigerator_lock);
+>  		do_each_thread(g, p) {
+>  			if (is_user_space(p) == !freeze_user_space)
+>  				continue;
+> @@ -152,6 +164,7 @@ static unsigned int try_to_freeze_tasks(
+> 
+>  			cancel_freezing(p);
+>  		} while_each_thread(g, p);
+> +		spin_unlock(&refrigerator_lock);
+>  		read_unlock(&tasklist_lock);
+>  	}
+> 
+> @@ -169,6 +182,7 @@ int freeze_processes(void)
+>  	unsigned int nr_unfrozen;
+> 
+>  	printk("Stopping tasks ... ");
+> +	spin_lock_init(&refrigerator_lock);
+>  	nr_unfrozen = try_to_freeze_tasks(FREEZER_USER_SPACE);
+>  	if (nr_unfrozen)
+>  		return nr_unfrozen;
