@@ -1,184 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161244AbXBUPHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161272AbXBUPHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161244AbXBUPHr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 10:07:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161254AbXBUPGy
+	id S1161272AbXBUPHq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 10:07:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161260AbXBUPHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 10:06:54 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:34567 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161249AbXBUPFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 10:05:39 -0500
-Message-Id: <20070221144843.894502000@taijtu.programming.kicks-ass.net>
-References: <20070221144304.512721000@taijtu.programming.kicks-ass.net>
-User-Agent: quilt/0.46-1
-Date: Wed, 21 Feb 2007 15:43:28 +0100
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>
-Subject: [PATCH 24/29] nfs: remove mempools
-Content-Disposition: inline; filename=nfs-no-mempool.patch
+	Wed, 21 Feb 2007 10:07:41 -0500
+Received: from smtp-103-wednesday.noc.nerim.net ([62.4.17.103]:2318 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161258AbXBUPHh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 10:07:37 -0500
+Date: Wed, 21 Feb 2007 16:07:17 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>, Rudolf Marek <r.marek@assembler.cz>,
+       linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+Message-Id: <20070221160717.d5808ac4.khali@linux-fr.org>
+In-Reply-To: <20070220151813.GA6581@srcf.ucam.org>
+References: <45D5EA88.7090300@redhat.com>
+	<45D6DDCE.5050803@assembler.cz>
+	<45D7461A.2040808@redhat.com>
+	<20070218183805.5a4fd813.khali@linux-fr.org>
+	<20070220151813.GA6581@srcf.ucam.org>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the introduction of the shared dirty page accounting in .19, NFS should
-not be able to surpise the VM with all dirty pages. Thus it should always be
-able to free some memory. Hence no more need for mempools.
+Hi Matthew,
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
----
- fs/nfs/read.c  |   15 +++------------
- fs/nfs/write.c |   27 +++++----------------------
- 2 files changed, 8 insertions(+), 34 deletions(-)
+On Tue, 20 Feb 2007 15:18:13 +0000, Matthew Garrett wrote:
+> On Sun, Feb 18, 2007 at 06:38:05PM +0100, Jean Delvare wrote:
+> 
+> > ACPI is broken here, not k8temp, so let's fix ACPI instead. ACPI
+> > doesn't conflict with only k8temp, but with virtually all hardware
+> > monitoring drivers, all I2C/SMBus drivers, and probably other types of
+> > drivers too. We just can't restrict or blacklist all these drivers
+> > because ACPI misbehaves.
+> 
+> No, the simple fact of the matter is that if you're running on an ACPI 
+> platform you need to change some of your assumptions. ACPI owns the 
+> hardware. The OS doesn't. To an extent this has always been true on 
 
-Index: linux-2.6-git/fs/nfs/read.c
-===================================================================
---- linux-2.6-git.orig/fs/nfs/read.c	2007-02-21 12:14:54.000000000 +0100
-+++ linux-2.6-git/fs/nfs/read.c	2007-02-21 12:15:10.000000000 +0100
-@@ -32,14 +32,11 @@ static const struct rpc_call_ops nfs_rea
- static const struct rpc_call_ops nfs_read_full_ops;
- 
- static struct kmem_cache *nfs_rdata_cachep;
--static mempool_t *nfs_rdata_mempool;
--
--#define MIN_POOL_READ	(32)
- 
- struct nfs_read_data *nfs_readdata_alloc(size_t len)
- {
- 	unsigned int pagecount = (len + PAGE_SIZE - 1) >> PAGE_SHIFT;
--	struct nfs_read_data *p = mempool_alloc(nfs_rdata_mempool, GFP_NOFS);
-+	struct nfs_read_data *p = kmem_cache_alloc(nfs_rdata_cachep, GFP_NOFS);
- 
- 	if (p) {
- 		memset(p, 0, sizeof(*p));
-@@ -50,7 +47,7 @@ struct nfs_read_data *nfs_readdata_alloc
- 		else {
- 			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOFS);
- 			if (!p->pagevec) {
--				mempool_free(p, nfs_rdata_mempool);
-+				kmem_cache_free(nfs_rdata_cachep, p);
- 				p = NULL;
- 			}
- 		}
-@@ -63,7 +60,7 @@ static void nfs_readdata_rcu_free(struct
- 	struct nfs_read_data *p = container_of(head, struct nfs_read_data, task.u.tk_rcu);
- 	if (p && (p->pagevec != &p->page_array[0]))
- 		kfree(p->pagevec);
--	mempool_free(p, nfs_rdata_mempool);
-+	kmem_cache_free(nfs_rdata_cachep, p);
- }
- 
- static void nfs_readdata_free(struct nfs_read_data *rdata)
-@@ -614,16 +611,10 @@ int __init nfs_init_readpagecache(void)
- 	if (nfs_rdata_cachep == NULL)
- 		return -ENOMEM;
- 
--	nfs_rdata_mempool = mempool_create_slab_pool(MIN_POOL_READ,
--						     nfs_rdata_cachep);
--	if (nfs_rdata_mempool == NULL)
--		return -ENOMEM;
--
- 	return 0;
- }
- 
- void nfs_destroy_readpagecache(void)
- {
--	mempool_destroy(nfs_rdata_mempool);
- 	kmem_cache_destroy(nfs_rdata_cachep);
- }
-Index: linux-2.6-git/fs/nfs/write.c
-===================================================================
---- linux-2.6-git.orig/fs/nfs/write.c	2007-02-21 12:14:54.000000000 +0100
-+++ linux-2.6-git/fs/nfs/write.c	2007-02-21 12:15:10.000000000 +0100
-@@ -29,9 +29,6 @@
- 
- #define NFSDBG_FACILITY		NFSDBG_PAGECACHE
- 
--#define MIN_POOL_WRITE		(32)
--#define MIN_POOL_COMMIT		(4)
--
- /*
-  * Local function declarations
-  */
-@@ -45,12 +42,10 @@ static const struct rpc_call_ops nfs_wri
- static const struct rpc_call_ops nfs_commit_ops;
- 
- static struct kmem_cache *nfs_wdata_cachep;
--static mempool_t *nfs_wdata_mempool;
--static mempool_t *nfs_commit_mempool;
- 
- struct nfs_write_data *nfs_commit_alloc(void)
- {
--	struct nfs_write_data *p = mempool_alloc(nfs_commit_mempool, GFP_NOFS);
-+	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
- 
- 	if (p) {
- 		memset(p, 0, sizeof(*p));
-@@ -64,7 +59,7 @@ void nfs_commit_rcu_free(struct rcu_head
- 	struct nfs_write_data *p = container_of(head, struct nfs_write_data, task.u.tk_rcu);
- 	if (p && (p->pagevec != &p->page_array[0]))
- 		kfree(p->pagevec);
--	mempool_free(p, nfs_commit_mempool);
-+	kmem_cache_free(nfs_wdata_cachep, p);
- }
- 
- void nfs_commit_free(struct nfs_write_data *wdata)
-@@ -75,7 +70,7 @@ void nfs_commit_free(struct nfs_write_da
- struct nfs_write_data *nfs_writedata_alloc(size_t len)
- {
- 	unsigned int pagecount = (len + PAGE_SIZE - 1) >> PAGE_SHIFT;
--	struct nfs_write_data *p = mempool_alloc(nfs_wdata_mempool, GFP_NOFS);
-+	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
- 
- 	if (p) {
- 		memset(p, 0, sizeof(*p));
-@@ -86,7 +81,7 @@ struct nfs_write_data *nfs_writedata_all
- 		else {
- 			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOFS);
- 			if (!p->pagevec) {
--				mempool_free(p, nfs_wdata_mempool);
-+				kmem_cache_free(nfs_wdata_cachep, p);
- 				p = NULL;
- 			}
- 		}
-@@ -99,7 +94,7 @@ static void nfs_writedata_rcu_free(struc
- 	struct nfs_write_data *p = container_of(head, struct nfs_write_data, task.u.tk_rcu);
- 	if (p && (p->pagevec != &p->page_array[0]))
- 		kfree(p->pagevec);
--	mempool_free(p, nfs_wdata_mempool);
-+	kmem_cache_free(nfs_wdata_cachep, p);
- }
- 
- static void nfs_writedata_free(struct nfs_write_data *wdata)
-@@ -1517,16 +1512,6 @@ int __init nfs_init_writepagecache(void)
- 	if (nfs_wdata_cachep == NULL)
- 		return -ENOMEM;
- 
--	nfs_wdata_mempool = mempool_create_slab_pool(MIN_POOL_WRITE,
--						     nfs_wdata_cachep);
--	if (nfs_wdata_mempool == NULL)
--		return -ENOMEM;
--
--	nfs_commit_mempool = mempool_create_slab_pool(MIN_POOL_COMMIT,
--						      nfs_wdata_cachep);
--	if (nfs_commit_mempool == NULL)
--		return -ENOMEM;
--
- 	/*
- 	 * NFS congestion size, scale with available memory.
- 	 *
-@@ -1552,8 +1537,6 @@ int __init nfs_init_writepagecache(void)
- 
- void nfs_destroy_writepagecache(void)
- {
--	mempool_destroy(nfs_commit_mempool);
--	mempool_destroy(nfs_wdata_mempool);
- 	kmem_cache_destroy(nfs_wdata_cachep);
- }
- 
+The Linux device driver model assumes that it owns the hardware. If
+this is not true, then should we prevent any non-ACPI driver from
+loading as soon as ACPI is enabled?
+
+> laptops and servers /anyway/ - the BIOS is free to have a wide variety 
+> of SMM insanity that invalidates basic assumptions like "If I hold this 
+> lock, nothing can interrupt me between this write and this read". That's 
+> simply not true.
+
+Yeah, this is correct, and just as unfortunate. It's amazingly sad that
+hardware vendors as a whole are still repeating the same design
+mistakes over and over again :(
+
+> So this isn't about fixing ACPI. It's about trying to find a mechanism 
+> that allows ACPI and raw hardware drivers to coexist, which is made 
+
+Exactly what I said, you're only rewording it to make it sound nicer ;)
+
+> somewhat harder by it not being a situation that the platform designers 
+> have considered in the slightest. The suggested low-level driver for 
+> io-port arbitration would certainly be a step forward in making this 
+> work better.
+
+I sure hope we can find a solution, by as your said yourself, nothing
+is going to prevent SMM and similar oddities from messing up the drivers
+assumptions.
 
 -- 
-
+Jean Delvare
