@@ -1,44 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161313AbXBUP5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161312AbXBUP6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161313AbXBUP5c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 10:57:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161312AbXBUP5c
+	id S1161312AbXBUP6o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 10:58:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161316AbXBUP6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 10:57:32 -0500
-Received: from mba.ocn.ne.jp ([210.190.142.172]:49535 "EHLO smtp.mba.ocn.ne.jp"
+	Wed, 21 Feb 2007 10:58:44 -0500
+Received: from mga03.intel.com ([143.182.124.21]:32000 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161316AbXBUP5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 10:57:31 -0500
-Date: Thu, 22 Feb 2007 00:57:28 +0900 (JST)
-Message-Id: <20070222.005728.126762028.anemo@mba.ocn.ne.jp>
-To: linux-kernel@vger.kernel.org
-Subject: Detecting section mismatches in vmlinux
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 3.3 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1161312AbXBUP6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 10:58:43 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,202,1170662400"; 
+   d="scan'208"; a="185205291:sNHT3442966989"
+Message-ID: <45DC6C2C.7040509@intel.com>
+Date: Wed, 21 Feb 2007 07:58:36 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Mail/News 1.5.0.9 (X11/20061228)
+MIME-Version: 1.0
+To: tglx@linutronix.de
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: Linux 2.6.21-rc1
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <1172064762.25076.56.camel@localhost.localdomain>
+In-Reply-To: <1172064762.25076.56.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 21 Feb 2007 15:58:37.0489 (UTC) FILETIME=[25D99210:01C755D1]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Until 2.6.16 or so, we had reference_init.pl and
-reference_discarded.pl to check section mismatches in vmlinux.
+Thomas Gleixner wrote:
+> On Tue, 2007-02-20 at 20:53 -0800, Linus Torvalds wrote:
+>> But there's a ton of architecture updates (arm, mips, powerpc, x86, you 
+>> name it), ACPI updates, and lots of driver work. And just a lot of 
+>> cleanups.
+>>
+>> Have fun,
+> 
+> Yup. Fun starts in drivers/net/e1000
+> 
+> e1000 is not working anymore. ifup fails permanentely.
+>  ADDRCONF(NETDEV_UP): eth0: link is not ready
+> nothing else
+> 
+> bisect identifies:
+> 
+> d2ed16356ff4fb9de23fbc5e5d582ce580390106 is first bad commit
+ > commit d2ed16356ff4fb9de23fbc5e5d582ce580390106
 
-Are there any alternatives of this in recent kernel?
+I think we need to drop this now. The report that says that this *fixes* 
+something might have been on regular interrupts only. I currently suspect that 
+it breaks all MSI interrupts, which would make sense if I look a the code. Very 
+bad indeed.
 
-Now "modpost vmlinux" is executed during normal build, but it seems
-the pass can not detect these mismatches.
+I'll try to come up with something else or send a patch that reverts it.
 
-For example:
+Auke
 
-$ ../build-i386/scripts/mod/modpost ../build-i386/mm/built-in.o
-WARNING: ../build-i386/mm/built-in.o - Section mismatch: reference to .init.data:initkmem_list3 from .text between 'set_up_list3s' (at offset 0x18382) and '__kmem_cache_destroy'
-
-set_up_list3s() in slab.c is not marked as __init and it references
-initkmem_list3[] which is marked as __initdata.  So it is not false
-positive.  But "modpost vmlinux" does not report it.
-
----
-Atsushi Nemoto
