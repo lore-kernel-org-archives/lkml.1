@@ -1,46 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423262AbXBUWys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423259AbXBUWyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423262AbXBUWys (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 17:54:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423260AbXBUWyr
+	id S1423259AbXBUWyx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 17:54:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423268AbXBUWyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 17:54:47 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:54451 "EHLO smtp.osdl.org"
+	Wed, 21 Feb 2007 17:54:53 -0500
+Received: from max.feld.cvut.cz ([147.32.192.36]:60423 "EHLO max.feld.cvut.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423258AbXBUWyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 17:54:46 -0500
-Date: Wed, 21 Feb 2007 14:54:19 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       <linux-usb-devel@lists.sourceforge.net>,
-       Pete Zaitcev <zaitcev@redhat.com>, Greg KH <gregkh@suse.de>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] 2.6.20 kernel hang with USB drive and vfat
- doing ftruncate
-Message-Id: <20070221145419.2f783dc3.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0702211644170.3435-100000@iolanthe.rowland.org>
-References: <20070221133112.aec2bdac.akpm@linux-foundation.org>
-	<Pine.LNX.4.44L0.0702211644170.3435-100000@iolanthe.rowland.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1423259AbXBUWys convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 17:54:48 -0500
+From: CIJOML <cijoml@volny.cz>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Subject: Re: Phis in /proc/bus/input/devices same for all devices?
+Date: Wed, 21 Feb 2007 23:54:38 +0100
+User-Agent: KMail/1.9.5
+Cc: "Marcel Holtmann" <marcel@holtmann.org>, linux-kernel@vger.kernel.org
+References: <200702212313.30359.cijoml@volny.cz> <1172097890.7403.52.camel@violet> <d120d5000702211448s7d3569cdl1fdcb71d13c3c3ff@mail.gmail.com>
+In-Reply-To: <d120d5000702211448s7d3569cdl1fdcb71d13c3c3ff@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200702212354.38618.cijoml@volny.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Feb 2007 16:50:23 -0500 (EST)
-Alan Stern <stern@rowland.harvard.edu> wrote:
+I need this for differing Option "XkbModel" in Xorg, so I can bind to each
+device it's model and has correct xev's scancodes based on model.
+So I prefer to have as Phis just only BDADDR, because for me this doesn't make 
+sense to have there device to which keyboard connect. Then I should have 1 
+section for each receiver, which is stupid.
 
-> > +	if ((gfp_mask & (__GFP_FS|__GFP_IO)) != (__GFP_FS|__GFP_IO)) {
-> 
-> Is that really the correct test?  I don't know enough about the memory 
-> management subsystem to say one way or the other.  What's special about 
-> having both flags set?
+Section "InputDevice"
+        Identifier  "Bluetooth Keyboard"
+        Driver      "kbd"
+        Option  "Name"  "Bluetooth HID Boot Protocol Device"
+        Option  "Phis"        "BDADDR"
+        Option      "XkbRules"  "xfree86"
+        Option      "XkbModel"  "dinovo"
+        Option      "XkbLayout" "us"
+EndSection
 
-yup.  We're saying "if the caller is unable to take either IO locks or FS
-locks, don't wait on FS or IO completion".
+and so on for every other BT keyboard I own.
 
-ie: don't wait on writeout progress unless we know that both the IO system
-and the FS are able to make progress.
+
+Michal
+
+Dne støeda 21 únor 2007 23:48 Dmitry Torokhov napsal(a):
+> On 2/21/07, Marcel Holtmann <marcel@holtmann.org> wrote:
+> > Hi Dmitry,
+> >
+> > > > can anybody reply to this and share his/her opinion?
+> > >
+> > > Input core already exports uniq to udev and also via sysfs.
+> >
+> > so do you think it would be better to create phys as a string of the
+> > source and destination address like "<src>-<dst>" for Bluetooth. And
+> > then keep the uniq empty like all USB devices without serial number do?
+>
+> I'd keep uniq as is and do what you proposed with phys. This way you
+> can either use uniq to identify your device while moving it from one
+> receiver to another (if you have several) or do exact match on phys to
+> get receiver/device pair.
+>
+> Does this make sense?
