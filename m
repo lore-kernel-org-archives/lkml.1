@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423219AbXBUWlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423229AbXBUWmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423219AbXBUWlt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 17:41:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423227AbXBUWlt
+	id S1423229AbXBUWmj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 17:42:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423228AbXBUWmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 17:41:49 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:33798 "EHLO mx1.redhat.com"
+	Wed, 21 Feb 2007 17:42:39 -0500
+Received: from tim.rpsys.net ([194.106.48.114]:55108 "EHLO tim.rpsys.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423220AbXBUWlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 17:41:47 -0500
-Message-ID: <45DCCA05.3030903@redhat.com>
-Date: Wed, 21 Feb 2007 17:39:01 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [patch 00/21] 2.6.19-stable review
-References: <20070221013619.GA30227@kroah.com> <45DC9E1D.40805@redhat.com> <20070221114737.a09be761.akpm@linux-foundation.org> <20070221222042.GG12472@bingen.suse.de>
-In-Reply-To: <20070221222042.GG12472@bingen.suse.de>
-Content-Type: text/plain; charset=us-ascii
+	id S1423227AbXBUWmi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 17:42:38 -0500
+Subject: Re: no backlight on radeon after recent kernel "upgrade"s
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Alex Romosan <romosan@sycorax.lbl.gov>
+Cc: Yaroslav Halchenko <kernel@onerussian.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net,
+       James Simmons <jsimmons@infradead.org>
+In-Reply-To: <877iub9mu2.fsf@sycorax.lbl.gov>
+References: <20070219044616.GC25659@washoe.onerussian.com>
+	 <20070219000412.acad13de.akpm@linux-foundation.org>
+	 <1171876788.6046.3.camel@localhost.localdomain>
+	 <877iub9mu2.fsf@sycorax.lbl.gov>
+Content-Type: text/plain
+Date: Wed, 21 Feb 2007 22:41:57 +0000
+Message-Id: <1172097718.5790.29.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->>> What is the status of:
->>>
->>> http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm2/broken-out/x86_64-mm-simplfy-__assign_irq_vector.patch
->>> http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm2/broken-out/x86_64-mm-handle-irqs-pending-in-irr-during-irq-migration.patch
->> That's mainly an Andi decision.  Let's cc him.
-> 
-> I didn't think the problem was serious enough for a backport. Do we have
-> user reports? 
+On Wed, 2007-02-21 at 14:18 -0800, Alex Romosan wrote:
+> Richard Purdie <rpurdie@rpsys.net> writes:
+> i have exactly the same problem with 2.6.21-rc1 on a thinkpad t40
+> with an ati radeon card. the machine boots up but the backlight never
+> comes on. 2.6.20 worked okay.
 
-Yes, lots:
+Can you have a look at the differences between the defconfigs for 2.6.20
+and 2.6.21-rc1?
 
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=225399
+If the backlight changes are at fault, I'm guessing James' Kconfig
+changes to the video Kconfig would be the culprit since
+FB_RADEON_BACKLIGHT only used to be selectable if PMAC_BACKLIGHT was
+enabled. On a thinkpad, the backlight is probably under ACPI control.
 
-> It's certainly not trivial obvious patches. 
+If FB_RADEON_BACKLIGHT wasn't set for 2.6.20, can you try 2.6.21-rc1
+with that option disabled?
+
+An ls /sys/class/backlight under 2.6.20 will tell us which driver it was
+using...
+
+Thanks,
+
+Richard
+
+
