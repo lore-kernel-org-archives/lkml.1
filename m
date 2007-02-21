@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932284AbXBUGYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751142AbXBUG35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932284AbXBUGYW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 01:24:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932166AbXBUGYW
+	id S1751142AbXBUG35 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 01:29:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbXBUG35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 01:24:22 -0500
-Received: from wx-out-0506.google.com ([66.249.82.226]:37094 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751147AbXBUGYV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 01:24:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RpGjE/ojzmLxhBRCF8Rf6YbBPNqqjWMds0a60RGIpiRaOEflHqdvhFbZ58RmnKBHG7dNMlYkJgPCiaa+lA742tYLrZQFoNdOthk1DbkZPZIGSUiWoYuwmW9D99INfFbnBVvCMplaH1PGmDzZcbz3UQZ6TOh10yDNSJ4RDmlAaM4=
-Message-ID: <d72aa1340702202224i209fb131pb0f9c2c9cc547e6d@mail.gmail.com>
-Date: Wed, 21 Feb 2007 01:24:20 -0500
-From: "Marcus Haebler" <haebler@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: SATA problems
-Cc: "Pablo Sebastian Greco" <lkml@fliagreco.com.ar>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <d72aa1340702202157l1932b393k36cb58ecfbe40178@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Feb 2007 01:29:57 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:40737 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751142AbXBUG34 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 01:29:56 -0500
+Date: Wed, 21 Feb 2007 11:59:47 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@osdl.org, paulmck@us.ibm.com,
+       mingo@elte.hu, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, rjw@sisk.pl
+Subject: Re: [RFC PATCH(Experimental) 2/4] Revert changes to workqueue.c
+Message-ID: <20070221062947.GG20820@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070214144305.GB19789@in.ibm.com> <20070214200904.GB301@tv-sign.ru> <20070216052626.GB8373@in.ibm.com> <20070216153321.GB83@tv-sign.ru> <20070216164730.GD21457@in.ibm.com> <20070216235939.GB244@tv-sign.ru> <20070217022940.GB25924@in.ibm.com> <20070217215928.GA563@tv-sign.ru> <20070220151220.GB4960@in.ibm.com> <20070220200936.GB85@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <459A674B.3060304@fliagreco.com.ar> <45A1AB3F.1080408@gmail.com>
-	 <45B649BF.5030705@fliagreco.com.ar> <45B6BC6D.8070301@gmail.com>
-	 <d72aa1340702170449n1aa61777l6c9c7e525102db00@mail.gmail.com>
-	 <45D731A8.90604@fliagreco.com.ar> <45DB0717.90507@gmail.com>
-	 <d72aa1340702201655o78975cc7vd67c82eea92bd519@mail.gmail.com>
-	 <45DBC2CE.6040408@gmail.com>
-	 <d72aa1340702202157l1932b393k36cb58ecfbe40178@mail.gmail.com>
+In-Reply-To: <20070220200936.GB85@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun,
+On Tue, Feb 20, 2007 at 11:09:36PM +0300, Oleg Nesterov wrote:
+> > Which caller are you referring to here? Maybe we can decide on the
+> > option after we see the users of flush_workqueue() in DOWN_PREPARE.
+> 
+> mm/slab.c:cpuup_callback()
 
-I checked out the kernel 2.6.19 to 2.6.20 Changelog. Seems like you
-fixed a problem with the JMB363. The Asus P5B-Deluxe I am using has a
-JMB363 - besides an Intel ICH8R - with the SATA ports set to AHCI as
-well. Looks like that might have been the source of the problem in
-2.6.19.
+The cancel_rearming_delayed_work, if used as it is in cpuup_callback,
+will require that we send DOWN_PREPARE before freeze_processes().
 
-Thanks,
+But ..I am wondering if we can avoid doing cancel_rearming_delayed_work
+(and thus flush_workqueue) in CPU_DOWN_PREPARE of slab.c. Basically,
 
-Marcus
+mm/slab.c:
 
-On 2/21/07, Marcus Haebler <haebler@gmail.com> wrote:
-> Tejun,
->
-> thanks. In preparation of your patch I installed a vanilla 2.6.20.1
-> kernel on my FC6
-> system. Amazingly the problem went away with the vanilla(!) kernel and NCQ
-> is enabled at boot time (queue_depth is 31). I guess I should have
-> tried that kernel
-> earlier.
->
-> The patches you sent earlier apply w/o problems against the 2.6.20.1
-> vanilla kernel
-> which is expected. I will test drive those patches tomorrow.
->
-> BTW thanks for saving me the 'cat' on the 3 patches. ;)
->
-> Thanks,
->
-> Marcus
+	CPU_DOWN_PREPARE:	/* All processes frozen now */
+		cancel_delayed_work(&per_cpu(reap_work, cpu).timer);
+		del_work(&per_cpu(reap_work, cpu).work);
+		break;
+
+
+At the point of CPU_DOWN_PREPARE, keventd should be frozen and hence
+del_work() is a matter of just deleting the work from cwq->worklist.
+
+
+-- 
+Regards,
+vatsa
