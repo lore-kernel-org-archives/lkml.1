@@ -1,268 +1,503 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161304AbXBUPhK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161292AbXBUPiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161304AbXBUPhK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 10:37:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161305AbXBUPhJ
+	id S1161292AbXBUPiV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 10:38:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbXBUPiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 10:37:09 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56535 "EHLO mx1.redhat.com"
+	Wed, 21 Feb 2007 10:38:18 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56887 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161302AbXBUPhD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 10:37:03 -0500
-Message-Id: <20070221144843.702331000@taijtu.programming.kicks-ass.net>
+	id S1161296AbXBUPhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 10:37:43 -0500
+Message-Id: <20070221144843.002458000@taijtu.programming.kicks-ass.net>
 References: <20070221144304.512721000@taijtu.programming.kicks-ass.net>
 User-Agent: quilt/0.46-1
-Date: Wed, 21 Feb 2007 15:43:26 +0100
+Date: Wed, 21 Feb 2007 15:43:19 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Trond Myklebust <trond.myklebust@fys.uio.no>,
        Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>
-Subject: [PATCH 22/29] mm: add support for non block device backed swap files
-Content-Disposition: inline; filename=mm-swapfile.patch
+Subject: [PATCH 15/29] netvm: hook skb allocation to reserves
+Content-Disposition: inline; filename=netvm-skbuff-reserve.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A new addres_space_operations method is added:
-  int swapfile(struct address_space *, int)
+Change the skb allocation api to indicate RX usage and use this to fall back to
+the reserve when needed. Skbs allocated from the reserve are tagged in
+skb->emergency.
 
-When during sys_swapon() this method is found and returns no error the 
-swapper_space.a_ops will proxy to sis->swap_file->f_mapping->a_ops.
+Teach all other skb ops about emergency skbs and the reserve accounting.
 
-The swapfile method will be used to communicate to the address_space that the
-VM relies on it, and the address_space should take adequate measures (like 
-reserving memory for mempools or the like).
+Use the (new) packet split API to allocate and track fragment pages from the
+emergency reserve. Do this using an atomic counter in page->index. This is
+needed because the fragments have a different sharing semantic than that
+indicated by skb_shinfo()->dataref. 
+
+(NOTE the extra atomic overhead is only for those pages allocated from the
+reserves - it does not affect the normal fast path.)
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Trond Myklebust <trond.myklebust@fys.uio.no>
 ---
- Documentation/filesystems/Locking |    9 ++++++++
- include/linux/fs.h                |    1 
- include/linux/swap.h              |    3 ++
- mm/Kconfig                        |    4 +++
- mm/page_io.c                      |   42 ++++++++++++++++++++++++++++++++++++++
- mm/swap_state.c                   |    4 +++
- mm/swapfile.c                     |   22 +++++++++++++++++++
- 7 files changed, 84 insertions(+), 1 deletion(-)
+ include/linux/skbuff.h |   22 ++++--
+ net/core/skbuff.c      |  170 ++++++++++++++++++++++++++++++++++++++++++-------
+ 2 files changed, 165 insertions(+), 27 deletions(-)
 
-Index: linux-2.6/include/linux/swap.h
+Index: linux-2.6-git/include/linux/skbuff.h
 ===================================================================
---- linux-2.6.orig/include/linux/swap.h
-+++ linux-2.6/include/linux/swap.h
-@@ -163,6 +163,7 @@ enum {
- 	SWP_USED	= (1 << 0),	/* is slot in swap_info[] used? */
- 	SWP_WRITEOK	= (1 << 1),	/* ok to write to this swap?	*/
- 	SWP_ACTIVE	= (SWP_USED | SWP_WRITEOK),
-+	SWP_FILE	= (1 << 2),	/* file swap area */
- 					/* add others here before... */
- 	SWP_SCANNING	= (1 << 8),	/* refcount in scan_swap_map */
- };
-@@ -265,6 +266,8 @@ extern int shmem_unuse(swp_entry_t entry
- /* linux/mm/page_io.c */
- extern int swap_readpage(struct file *, struct page *);
- extern int swap_writepage(struct page *page, struct writeback_control *wbc);
-+extern void swap_sync_page(struct page *page);
-+extern int swap_set_page_dirty(struct page *page);
- extern int end_swap_bio_read(struct bio *bio, unsigned int bytes_done, int err);
+--- linux-2.6-git.orig/include/linux/skbuff.h	2007-02-15 12:31:05.000000000 +0100
++++ linux-2.6-git/include/linux/skbuff.h	2007-02-15 12:31:05.000000000 +0100
+@@ -284,7 +284,8 @@ struct sk_buff {
+ 				nfctinfo:3;
+ 	__u8			pkt_type:3,
+ 				fclone:2,
+-				ipvs_property:1;
++				ipvs_property:1,
++				emergency:1;
+ 	__be16			protocol;
  
- /* linux/mm/swap_state.c */
-Index: linux-2.6/mm/page_io.c
-===================================================================
---- linux-2.6.orig/mm/page_io.c
-+++ linux-2.6/mm/page_io.c
-@@ -17,6 +17,7 @@
- #include <linux/bio.h>
- #include <linux/swapops.h>
- #include <linux/writeback.h>
-+#include <linux/buffer_head.h>
- #include <asm/pgtable.h>
+ 	void			(*destructor)(struct sk_buff *skb);
+@@ -329,10 +330,19 @@ struct sk_buff {
  
- static struct bio *get_swap_bio(gfp_t gfp_flags, pgoff_t index,
-@@ -110,6 +111,18 @@ int swap_writepage(struct page *page, st
- 		unlock_page(page);
- 		goto out;
- 	}
-+#ifdef CONFIG_SWAP_FILE
-+	{
-+		struct swap_info_struct *sis = page_swap_info(page);
-+		if (sis->flags & SWP_FILE) {
-+			ret = sis->swap_file->f_mapping->
-+				a_ops->writepage(page, wbc);
-+			if (!ret)
-+				count_vm_event(PSWPOUT);
-+			return ret;
-+		}
-+	}
-+#endif
- 	bio = get_swap_bio(GFP_NOIO, page_private(page), page,
- 				end_swap_bio_write);
- 	if (bio == NULL) {
-@@ -128,6 +141,23 @@ out:
- 	return ret;
- }
+ #include <asm/system.h>
  
-+#ifdef CONFIG_SWAP_FILE
-+int swap_set_page_dirty(struct page *page)
-+{
-+	struct swap_info_struct *sis = page_swap_info(page);
++#define SKB_ALLOC_FCLONE	0x01
++#define SKB_ALLOC_RX		0x02
 +
-+	if (sis->flags & SWP_FILE) {
-+		const struct address_space_operations * a_ops =
-+			sis->swap_file->f_mapping->a_ops;
-+		if (a_ops->set_page_dirty)
-+			return a_ops->set_page_dirty(page);
-+		return __set_page_dirty_buffers(page);
-+	}
-+
-+	return __set_page_dirty_nobuffers(page);
-+}
-+#endif
-+
- int swap_readpage(struct file *file, struct page *page)
- {
- 	struct bio *bio;
-@@ -135,6 +165,18 @@ int swap_readpage(struct file *file, str
- 
- 	BUG_ON(!PageLocked(page));
- 	ClearPageUptodate(page);
-+#ifdef CONFIG_SWAP_FILE
-+	{
-+		struct swap_info_struct *sis = page_swap_info(page);
-+		if (sis->flags & SWP_FILE) {
-+			ret = sis->swap_file->f_mapping->
-+				a_ops->readpage(sis->swap_file, page);
-+			if (!ret)
-+				count_vm_event(PSWPIN);
-+			return ret;
-+		}
-+	}
-+#endif
- 	bio = get_swap_bio(GFP_KERNEL, page_private(page), page,
- 				end_swap_bio_read);
- 	if (bio == NULL) {
-Index: linux-2.6/mm/swap_state.c
-===================================================================
---- linux-2.6.orig/mm/swap_state.c
-+++ linux-2.6/mm/swap_state.c
-@@ -26,7 +26,11 @@
-  */
- static const struct address_space_operations swap_aops = {
- 	.writepage	= swap_writepage,
-+#ifdef CONFIG_SWAP_FILE
-+	.set_page_dirty	= swap_set_page_dirty,
++#ifdef CONFIG_NETVM
++#define skb_emergency(skb)	unlikely((skb)->emergency)
 +#else
- 	.set_page_dirty	= __set_page_dirty_nobuffers,
++#define skb_emergency(skb)	false
 +#endif
- 	.migratepage	= migrate_page,
- };
++
+ extern void kfree_skb(struct sk_buff *skb);
+ extern void	       __kfree_skb(struct sk_buff *skb);
+ extern struct sk_buff *__alloc_skb(unsigned int size,
+-				   gfp_t priority, int fclone, int node);
++				   gfp_t priority, int flags, int node);
+ static inline struct sk_buff *alloc_skb(unsigned int size,
+ 					gfp_t priority)
+ {
+@@ -342,7 +352,7 @@ static inline struct sk_buff *alloc_skb(
+ static inline struct sk_buff *alloc_skb_fclone(unsigned int size,
+ 					       gfp_t priority)
+ {
+-	return __alloc_skb(size, priority, 1, -1);
++	return __alloc_skb(size, priority, SKB_ALLOC_FCLONE, -1);
+ }
  
-Index: linux-2.6/mm/swapfile.c
+ extern void	       kfree_skbmem(struct sk_buff *skb);
+@@ -1103,7 +1113,8 @@ static inline void __skb_queue_purge(str
+ static inline struct sk_buff *__dev_alloc_skb(unsigned int length,
+ 					      gfp_t gfp_mask)
+ {
+-	struct sk_buff *skb = alloc_skb(length + NET_SKB_PAD, gfp_mask);
++	struct sk_buff *skb =
++		__alloc_skb(length + NET_SKB_PAD, gfp_mask, SKB_ALLOC_RX, -1);
+ 	if (likely(skb))
+ 		skb_reserve(skb, NET_SKB_PAD);
+ 	return skb;
+@@ -1149,6 +1160,7 @@ static inline struct sk_buff *netdev_all
+ }
+ 
+ extern struct page *__netdev_alloc_page(struct net_device *dev, gfp_t gfp_mask);
++extern void __netdev_free_page(struct net_device *dev, struct page *page);
+ 
+ /**
+  *	netdev_alloc_page - allocate a page for ps-rx on a specific device
+@@ -1165,7 +1177,7 @@ static inline struct page *netdev_alloc_
+ 
+ static inline void netdev_free_page(struct net_device *dev, struct page *page)
+ {
+-	__free_page(page);
++	__netdev_free_page(dev, page);
+ }
+ 
+ /**
+Index: linux-2.6-git/net/core/skbuff.c
 ===================================================================
---- linux-2.6.orig/mm/swapfile.c
-+++ linux-2.6/mm/swapfile.c
-@@ -948,6 +948,13 @@ static void destroy_swap_extents(struct 
- 		list_del(&se->list);
- 		kfree(se);
+--- linux-2.6-git.orig/net/core/skbuff.c	2007-02-15 12:31:05.000000000 +0100
++++ linux-2.6-git/net/core/skbuff.c	2007-02-15 12:45:50.000000000 +0100
+@@ -142,28 +142,36 @@ EXPORT_SYMBOL(skb_truesize_bug);
+  *	%GFP_ATOMIC.
+  */
+ struct sk_buff *__alloc_skb(unsigned int size, gfp_t gfp_mask,
+-			    int fclone, int node)
++			    int flags, int node)
+ {
+ 	struct kmem_cache *cache;
+ 	struct skb_shared_info *shinfo;
+ 	struct sk_buff *skb;
+ 	u8 *data;
++	int emergency = 0;
+ 
+-	cache = fclone ? skbuff_fclone_cache : skbuff_head_cache;
++	size = SKB_DATA_ALIGN(size);
++	cache = (flags & SKB_ALLOC_FCLONE)
++		? skbuff_fclone_cache : skbuff_head_cache;
++#ifdef CONFIG_NETVM
++	if (flags & SKB_ALLOC_RX)
++		gfp_mask |= __GFP_NOMEMALLOC|__GFP_NOWARN;
++#endif
+ 
++retry_alloc:
+ 	/* Get the HEAD */
+ 	skb = kmem_cache_alloc_node(cache, gfp_mask & ~__GFP_DMA, node);
+ 	if (!skb)
+-		goto out;
++		goto noskb;
+ 
+ 	/* Get the DATA. Size must match skb_add_mtu(). */
+-	size = SKB_DATA_ALIGN(size);
+ 	data = kmalloc_node_track_caller(size + sizeof(struct skb_shared_info),
+ 			gfp_mask, node);
+ 	if (!data)
+ 		goto nodata;
+ 
+ 	memset(skb, 0, offsetof(struct sk_buff, truesize));
++	skb->emergency = emergency;
+ 	skb->truesize = size + sizeof(struct sk_buff);
+ 	atomic_set(&skb->users, 1);
+ 	skb->head = data;
+@@ -180,7 +188,7 @@ struct sk_buff *__alloc_skb(unsigned int
+ 	shinfo->ip6_frag_id = 0;
+ 	shinfo->frag_list = NULL;
+ 
+-	if (fclone) {
++	if (flags & SKB_ALLOC_FCLONE) {
+ 		struct sk_buff *child = skb + 1;
+ 		atomic_t *fclone_ref = (atomic_t *) (child + 1);
+ 
+@@ -188,12 +196,31 @@ struct sk_buff *__alloc_skb(unsigned int
+ 		atomic_set(fclone_ref, 1);
+ 
+ 		child->fclone = SKB_FCLONE_UNAVAILABLE;
++		child->emergency = skb->emergency;
  	}
-+#ifdef CONFIG_SWAP_FILE
-+	if (sis->flags & SWP_FILE) {
-+		sis->flags &= ~SWP_FILE;
-+		sis->swap_file->f_mapping->a_ops->
-+			swapfile(sis->swap_file->f_mapping, 0);
+ out:
+ 	return skb;
++
+ nodata:
+ 	kmem_cache_free(cache, skb);
+ 	skb = NULL;
++noskb:
++#ifdef CONFIG_NETVM
++	/* Attempt emergency allocation when RX skb. */
++	if (likely(!(flags & SKB_ALLOC_RX) || !sk_vmio_socks()))
++		goto out;
++
++	if (!emergency) {
++		if (rx_emergency_get(size)) {
++			gfp_mask &= ~(__GFP_NOMEMALLOC|__GFP_NOWARN);
++			gfp_mask |= __GFP_EMERGENCY;
++			emergency = 1;
++			goto retry_alloc;
++		}
++	} else
++		rx_emergency_put(size);
++#endif
++
+ 	goto out;
+ }
+ 
+@@ -216,7 +243,7 @@ struct sk_buff *__netdev_alloc_skb(struc
+ 	int node = dev->dev.parent ? dev_to_node(dev->dev.parent) : -1;
+ 	struct sk_buff *skb;
+ 
+-	skb = __alloc_skb(length + NET_SKB_PAD, gfp_mask, 0, node);
++ 	skb = __alloc_skb(length + NET_SKB_PAD, gfp_mask, SKB_ALLOC_RX, node);
+ 	if (likely(skb)) {
+ 		skb_reserve(skb, NET_SKB_PAD);
+ 		skb->dev = dev;
+@@ -229,10 +256,34 @@ struct page *__netdev_alloc_page(struct 
+ 	int node = dev->dev.parent ? dev_to_node(dev->dev.parent) : -1;
+ 	struct page *page;
+ 
++#ifdef CONFIG_NETVM
++	gfp_mask |= __GFP_NOMEMALLOC | __GFP_NOWARN;
++#endif
++
+ 	page = alloc_pages_node(node, gfp_mask, 0);
++
++#ifdef CONFIG_NETVM
++	if (!page && rx_emergency_get(PAGE_SIZE)) {
++		gfp_mask &= ~(__GFP_NOMEMALLOC | __GFP_NOWARN);
++		gfp_mask |= __GFP_EMERGENCY;
++		page = alloc_pages_node(node, gfp_mask, 0);
++		if (!page)
++			rx_emergency_put(PAGE_SIZE);
++	}
++#endif
++
+ 	return page;
+ }
+ 
++void __netdev_free_page(struct net_device *dev, struct page *page)
++{
++#ifdef CONFIG_NETVM
++	if (unlikely(page->index == 0))
++		rx_emergency_put(PAGE_SIZE);
++#endif
++	__free_page(page);
++}
++
+ void skb_add_rx_frag(struct sk_buff *skb, int i, struct page *page, int off,
+ 		int size)
+ {
+@@ -240,6 +291,33 @@ void skb_add_rx_frag(struct sk_buff *skb
+ 	skb->len += size;
+ 	skb->data_len += size;
+ 	skb->truesize += size;
++
++#ifdef CONFIG_NETVM
++	/*
++	 * Fix-up the emergency accounting; make sure all pages match
++	 * skb->emergency.
++	 *
++	 * This relies on the page rank (page->index) to be preserved between
++	 * the call to __netdev_alloc_page() and this call.
++	 */
++	if (skb_emergency(skb)) {
++		/*
++		 * If the page rank wasn't 0 (ALLOC_NO_WATERMARK) we can use
++		 * overcommit accounting, since we already have the memory.
++		 */
++		if (page->index != 0)
++			rx_emergency_get_overcommit(PAGE_SIZE);
++		atomic_set((atomic_t *)&page->index, 1);
++	} else if (unlikely(page->index == 0)) {
++		/*
++		 * Rare case; the skb wasn't allocated under pressure but
++		 * the page was. We need to return the page. This can offset
++		 * the accounting a little, but its a constant shift, it does
++		 * not accumulate.
++		 */
++		rx_emergency_put(PAGE_SIZE);
 +	}
 +#endif
  }
  
- /*
-@@ -1040,6 +1047,19 @@ static int setup_swap_extents(struct swa
- 		goto done;
+ static void skb_drop_list(struct sk_buff **listp)
+@@ -273,16 +351,25 @@ static void skb_release_data(struct sk_b
+ 	if (!skb->cloned ||
+ 	    !atomic_sub_return(skb->nohdr ? (1 << SKB_DATAREF_SHIFT) + 1 : 1,
+ 			       &skb_shinfo(skb)->dataref)) {
++		int size = skb->end - skb->head;
++
+ 		if (skb_shinfo(skb)->nr_frags) {
+ 			int i;
+-			for (i = 0; i < skb_shinfo(skb)->nr_frags; i++)
+-				put_page(skb_shinfo(skb)->frags[i].page);
++			for (i = 0; i < skb_shinfo(skb)->nr_frags; i++) {
++				struct page *page = skb_shinfo(skb)->frags[i].page;
++				put_page(page);
++				if (skb_emergency(skb) &&
++				    atomic_dec_and_test((atomic_t *)&page->index))
++					rx_emergency_put(PAGE_SIZE);
++			}
+ 		}
+ 
+ 		if (skb_shinfo(skb)->frag_list)
+ 			skb_drop_fraglist(skb);
+ 
+ 		kfree(skb->head);
++		if (skb_emergency(skb))
++			rx_emergency_put(size);
  	}
+ }
  
-+#ifdef CONFIG_SWAP_FILE
-+	if (sis->swap_file->f_mapping->a_ops->swapfile) {
-+		ret = sis->swap_file->f_mapping->a_ops->
-+			swapfile(sis->swap_file->f_mapping, 1);
-+		if (!ret) {
-+			sis->flags |= SWP_FILE;
-+			ret = add_swap_extent(sis, 0, sis->max, 0);
-+			*span = sis->pages;
-+		}
-+		goto done;
+@@ -403,6 +490,9 @@ struct sk_buff *skb_clone(struct sk_buff
+ 		n->fclone = SKB_FCLONE_CLONE;
+ 		atomic_inc(fclone_ref);
+ 	} else {
++		if (skb_emergency(skb))
++			gfp_mask |= __GFP_EMERGENCY;
++
+ 		n = kmem_cache_alloc(skbuff_head_cache, gfp_mask);
+ 		if (!n)
+ 			return NULL;
+@@ -437,6 +527,7 @@ struct sk_buff *skb_clone(struct sk_buff
+ #if defined(CONFIG_IP_VS) || defined(CONFIG_IP_VS_MODULE)
+ 	C(ipvs_property);
+ #endif
++	C(emergency);
+ 	C(protocol);
+ 	n->destructor = NULL;
+ 	C(mark);
+@@ -530,6 +621,8 @@ static void copy_skb_header(struct sk_bu
+ 	skb_shinfo(new)->gso_type = skb_shinfo(old)->gso_type;
+ }
+ 
++#define skb_alloc_rx(skb) (skb_emergency(skb) ? SKB_ALLOC_RX : 0)
++
+ /**
+  *	skb_copy	-	create private copy of an sk_buff
+  *	@skb: buffer to copy
+@@ -553,8 +646,8 @@ struct sk_buff *skb_copy(const struct sk
+ 	/*
+ 	 *	Allocate the copy buffer
+ 	 */
+-	struct sk_buff *n = alloc_skb(skb->end - skb->head + skb->data_len,
+-				      gfp_mask);
++	struct sk_buff *n = __alloc_skb(skb->end - skb->head + skb->data_len,
++					gfp_mask, skb_alloc_rx(skb), -1);
+ 	if (!n)
+ 		return NULL;
+ 
+@@ -591,7 +684,8 @@ struct sk_buff *pskb_copy(struct sk_buff
+ 	/*
+ 	 *	Allocate the copy buffer
+ 	 */
+-	struct sk_buff *n = alloc_skb(skb->end - skb->head, gfp_mask);
++	struct sk_buff *n = __alloc_skb(skb->end - skb->head, gfp_mask,
++					skb_alloc_rx(skb), -1);
+ 
+ 	if (!n)
+ 		goto out;
+@@ -613,8 +707,11 @@ struct sk_buff *pskb_copy(struct sk_buff
+ 		int i;
+ 
+ 		for (i = 0; i < skb_shinfo(skb)->nr_frags; i++) {
+-			skb_shinfo(n)->frags[i] = skb_shinfo(skb)->frags[i];
+-			get_page(skb_shinfo(n)->frags[i].page);
++			skb_frag_t *frag = &skb_shinfo(skb)->frags[i];
++			skb_shinfo(n)->frags[i] = *frag;
++			get_page(frag->page);
++			if (skb_emergency(n))
++				atomic_inc((atomic_t *)&frag->page->index);
+ 		}
+ 		skb_shinfo(n)->nr_frags = i;
+ 	}
+@@ -652,12 +749,19 @@ int pskb_expand_head(struct sk_buff *skb
+ 	u8 *data;
+ 	int size = nhead + (skb->end - skb->head) + ntail;
+ 	long off;
++	int emergency = 0;
+ 
+ 	if (skb_shared(skb))
+ 		BUG();
+ 
+ 	size = SKB_DATA_ALIGN(size);
+ 
++	if (skb_emergency(skb) && rx_emergency_get(size)) {
++		gfp_mask |= __GFP_EMERGENCY;
++		emergency = 1;
++	} else
++		gfp_mask |= __GFP_NOMEMALLOC;
++
+ 	data = kmalloc(size + sizeof(struct skb_shared_info), gfp_mask);
+ 	if (!data)
+ 		goto nodata;
+@@ -667,8 +771,12 @@ int pskb_expand_head(struct sk_buff *skb
+ 	memcpy(data + nhead, skb->head, skb->tail - skb->head);
+ 	memcpy(data + size, skb->end, sizeof(struct skb_shared_info));
+ 
+-	for (i = 0; i < skb_shinfo(skb)->nr_frags; i++)
+-		get_page(skb_shinfo(skb)->frags[i].page);
++	for (i = 0; i < skb_shinfo(skb)->nr_frags; i++) {
++		struct page *page = skb_shinfo(skb)->frags[i].page;
++		get_page(page);
++		if (emergency)
++			atomic_inc((atomic_t *)&page->index);
 +	}
-+#endif
-+
- 	blkbits = inode->i_blkbits;
- 	blocks_per_page = PAGE_SIZE >> blkbits;
  
-@@ -1603,7 +1623,7 @@ asmlinkage long sys_swapon(const char __
+ 	if (skb_shinfo(skb)->frag_list)
+ 		skb_clone_fraglist(skb);
+@@ -690,6 +798,8 @@ int pskb_expand_head(struct sk_buff *skb
+ 	return 0;
  
- 	mutex_lock(&swapon_mutex);
- 	spin_lock(&swap_lock);
--	p->flags = SWP_ACTIVE;
-+	p->flags |= SWP_WRITEOK;
- 	nr_swap_pages += nr_good_pages;
- 	total_swap_pages += nr_good_pages;
+ nodata:
++	if (unlikely(emergency))
++		rx_emergency_put(size);
+ 	return -ENOMEM;
+ }
  
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h
-+++ linux-2.6/include/linux/fs.h
-@@ -428,6 +428,7 @@ struct address_space_operations {
- 	int (*migratepage) (struct address_space *,
- 			struct page *, struct page *);
- 	int (*launder_page) (struct page *);
-+	int (*swapfile)(struct address_space *, int);
- };
+@@ -742,8 +852,8 @@ struct sk_buff *skb_copy_expand(const st
+ 	/*
+ 	 *	Allocate the copy buffer
+ 	 */
+-	struct sk_buff *n = alloc_skb(newheadroom + skb->len + newtailroom,
+-				      gfp_mask);
++	struct sk_buff *n = __alloc_skb(newheadroom + skb->len + newtailroom,
++					gfp_mask, skb_alloc_rx(skb), -1);
+ 	int head_copy_len, head_copy_off;
  
- struct backing_dev_info;
-Index: linux-2.6/Documentation/filesystems/Locking
-===================================================================
---- linux-2.6.orig/Documentation/filesystems/Locking
-+++ linux-2.6/Documentation/filesystems/Locking
-@@ -172,6 +172,7 @@ prototypes:
- 	int (*direct_IO)(int, struct kiocb *, const struct iovec *iov,
- 			loff_t offset, unsigned long nr_segs);
- 	int (*launder_page) (struct page *);
-+	int (*swapfile) (struct address_space *, int);
+ 	if (!n)
+@@ -849,8 +959,13 @@ int ___pskb_trim(struct sk_buff *skb, un
+ drop_pages:
+ 		skb_shinfo(skb)->nr_frags = i;
  
- locking rules:
- 	All except set_page_dirty may block
-@@ -190,6 +191,7 @@ invalidatepage:		no	yes
- releasepage:		no	yes
- direct_IO:		no
- launder_page:		no	yes
-+swapfile		no
+-		for (; i < nfrags; i++)
+-			put_page(skb_shinfo(skb)->frags[i].page);
++		for (; i < nfrags; i++) {
++			struct page *page = skb_shinfo(skb)->frags[i].page;
++			put_page(page);
++			if (skb_emergency(skb) &&
++			    atomic_dec_and_test((atomic_t *)&page->index))
++				rx_emergency_put(PAGE_SIZE);
++		}
  
- 	->prepare_write(), ->commit_write(), ->sync_page() and ->readpage()
- may be called from the request handler (/dev/loop).
-@@ -289,6 +291,13 @@ cleaned, or an error value if not. Note 
- getting mapped back in and redirtied, it needs to be kept locked
- across the entire operation.
+ 		if (skb_shinfo(skb)->frag_list)
+ 			skb_drop_fraglist(skb);
+@@ -1019,7 +1134,11 @@ pull_pages:
+ 	k = 0;
+ 	for (i = 0; i < skb_shinfo(skb)->nr_frags; i++) {
+ 		if (skb_shinfo(skb)->frags[i].size <= eat) {
+-			put_page(skb_shinfo(skb)->frags[i].page);
++			struct page *page = skb_shinfo(skb)->frags[i].page;
++			put_page(page);
++			if (skb_emergency(skb) &&
++			    atomic_dec_and_test((atomic_t *)&page->index))
++				rx_emergency_put(PAGE_SIZE);
+ 			eat -= skb_shinfo(skb)->frags[i].size;
+ 		} else {
+ 			skb_shinfo(skb)->frags[k] = skb_shinfo(skb)->frags[i];
+@@ -1593,6 +1712,7 @@ static inline void skb_split_no_header(s
+ 			skb_shinfo(skb1)->frags[k] = skb_shinfo(skb)->frags[i];
  
-+	->swapfile() will be called with a non zero argument on address spaces
-+backing non block device backed swapfiles. A return value of zero indicates
-+success. In which case this address space can be used for backing swapspace.
-+The swapspace operations will be proxied to the address space operations.
-+Swapoff will call this method with a zero argument to release the address
-+space.
-+
- 	Note: currently almost all instances of address_space methods are
- using BKL for internal serialization and that's one of the worst sources
- of contention. Normally they are calling library functions (in fs/buffer.c)
-Index: linux-2.6/mm/Kconfig
-===================================================================
---- linux-2.6.orig/mm/Kconfig
-+++ linux-2.6/mm/Kconfig
-@@ -165,6 +165,9 @@ config ZONE_DMA_FLAG
+ 			if (pos < len) {
++				struct page *page = skb_shinfo(skb)->frags[i].page;
+ 				/* Split frag.
+ 				 * We have two variants in this case:
+ 				 * 1. Move all the frag to the second
+@@ -1601,7 +1721,9 @@ static inline void skb_split_no_header(s
+ 				 *    where splitting is expensive.
+ 				 * 2. Split is accurately. We make this.
+ 				 */
+-				get_page(skb_shinfo(skb)->frags[i].page);
++				get_page(page);
++				if (skb_emergency(skb1))
++					atomic_inc((atomic_t *)&page->index);
+ 				skb_shinfo(skb1)->frags[0].page_offset += len - pos;
+ 				skb_shinfo(skb1)->frags[0].size -= len - pos;
+ 				skb_shinfo(skb)->frags[i].size	= len - pos;
+@@ -1927,7 +2049,8 @@ struct sk_buff *skb_segment(struct sk_bu
+ 		if (hsize > len || !sg)
+ 			hsize = len;
  
- config SLAB_FAIR
- 	def_bool n
-+
-+config SWAP_FILE
-+	def_bool n
- #
- # Adaptive file readahead
- #
+-		nskb = alloc_skb(hsize + doffset + headroom, GFP_ATOMIC);
++		nskb = __alloc_skb(hsize + doffset + headroom, GFP_ATOMIC,
++				   skb_alloc_rx(skb), -1);
+ 		if (unlikely(!nskb))
+ 			goto err;
+ 
+@@ -1970,6 +2093,8 @@ struct sk_buff *skb_segment(struct sk_bu
+ 
+ 			*frag = skb_shinfo(skb)->frags[i];
+ 			get_page(frag->page);
++			if (skb_emergency(nskb))
++				atomic_inc((atomic_t *)&frag->page->index);
+ 			size = frag->size;
+ 
+ 			if (pos < offset) {
+@@ -2030,6 +2155,7 @@ EXPORT_SYMBOL(__pskb_pull_tail);
+ EXPORT_SYMBOL(__alloc_skb);
+ EXPORT_SYMBOL(__netdev_alloc_skb);
+ EXPORT_SYMBOL(__netdev_alloc_page);
++EXPORT_SYMBOL(__netdev_free_page);
+ EXPORT_SYMBOL(skb_add_rx_frag);
+ EXPORT_SYMBOL(pskb_copy);
+ EXPORT_SYMBOL(pskb_expand_head);
 
 -- 
 
