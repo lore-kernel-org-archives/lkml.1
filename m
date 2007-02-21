@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751336AbXBUTxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751337AbXBUTyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751336AbXBUTxa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 14:53:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbXBUTxa
+	id S1751337AbXBUTyx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 14:54:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbXBUTyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 14:53:30 -0500
-Received: from dev.kryptiva.com ([69.70.52.243]:18671 "EHLO mail.kryptiva.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751336AbXBUTx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 14:53:29 -0500
-Message-ID: <45DCA6E1.7080903@kryptiva.com>
-Date: Wed, 21 Feb 2007 15:09:05 -0500
-From: Karim Yaghmour <karim.yaghmour@kryptiva.com>
-Reply-To: karim.yaghmour@kryptiva.com
-Organization: Kryptiva Inc.
-User-Agent: Thunderbird 1.5.0.8 (X11/20061107)
+	Wed, 21 Feb 2007 14:54:53 -0500
+Received: from khc.piap.pl ([195.187.100.11]:44465 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751337AbXBUTyw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 14:54:52 -0500
+To: Udo van den Heuvel <udovdh@xs4all.nl>
+Cc: linux-kernel@vger.kernel.org,
+       Alistair John Strachan <s0348365@sms.ed.ac.uk>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Subject: Re: PCI riser cards and PCI irq routing, etc
+References: <45D85DA1.7090502@xs4all.nl> <m3odnpq3yr.fsf@maximus.localdomain>
+	<45DA7643.4020305@xs4all.nl>
+	<200702201456.30794.s0348365@sms.ed.ac.uk> <45DB174F.30708@xs4all.nl>
+	<45DC0FCC.7010705@xs4all.nl> <m3wt2bem13.fsf@maximus.localdomain>
+	<45DC5E67.8060101@xs4all.nl> <45DC8B3A.2080301@xs4all.nl>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Wed, 21 Feb 2007 20:54:50 +0100
+In-Reply-To: <45DC8B3A.2080301@xs4all.nl> (Udo van den Heuvel's message of "Wed, 21 Feb 2007 19:11:06 +0100")
+Message-ID: <m3tzxfqoad.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@redhat.com>,
-       systemtap@sources.redhat.com, ltt-dev@shafik.org
-Subject: Re: [PATCH 05/05] Linux Kernel Markers, non optimized architectures
-References: <1171224207118-git-send-email-mathieu.desnoyers@polymtl.ca> <1171224209195-git-send-email-mathieu.desnoyers@polymtl.ca> <20070214231635.091c7169.akpm@linux-foundation.org> <20070215190919.GA31359@Krystal> <45D61361.6030200@kryptiva.com> <20070216233825.GB28087@Krystal>
-In-Reply-To: <20070216233825.GB28087@Krystal>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ KRYPTIVA PACKAGED MESSAGE -----
-PACKAGING TYPE: SIGNED
+Udo van den Heuvel <udovdh@xs4all.nl> writes:
 
-Hello Mathieu,
+> Is the situation, with default DN setting of 19 as displayed below,
+> `normal` w.r.t. interrupts?
+> I mean: Both the DVB card with DN19 and the Unichrome Pro video adapter
+> have the same irq although they are on different busses.
 
-Mathieu Desnoyers wrote:
- > Yes, that was indeed the first way I implemented it, as a "disable" option. One of the main thing we have to figure out before I modify this is if we want to have the generic version of markers available in a "forced" manner at the marker site with the GEN_MARK macro instead of the MARK macro (this is the actual implementation). It has proven to be useful to instrument lockdep.c irq
- > enable/disable tracing functions. The reason why is because they are called just before the trap handler returns and I need it to do XMC on x86 and x86_64. It would therefore cause a recursive trap.
- >
- > I think it makes sense to have this kind of support for hard-to-instrument sites within the marker infrastructure, but the cost is to have two marker flavors : MARK and GEN_MARK (but really GEN_MARK is only intended for a few sites).
+It's normal (and consistent with EPIA-M). The first UHCI USB (#0)
+could get it, too (but it may be connected differently with IO-APIC,
+I haven't checked).
 
-I must admit that I'm unsure about the use of different marker macros.
-How about bitwise flags that could be coded as part of the marker
-at the marker site? Something like "MARKER_TYPE_FORCED". This would
-still allow some form of toplevel control at the macro definition.
-Otherwise there's some digging to be done on a per-marker
-basis ...
+> How can I find out what INT_A/B/C/D line is mapped to what irq?
 
-Karim
------ KRYPTIVA SIGNED MESSAGE -----
-This email claims to have been packaged by Kryptiva.
-To process this email and authenticate its origin, get
-the free plugin from:
-http://www.kryptiva.com/downloads
+That "INT_A/B/C/D" stuff depends on the point of view. In the BIOS
+setup you can select some IRQs (which Linux could change anyway)
+but it's a chipset-centric view (not very useful here).
 
------ KRYPTIVA SIGNATURE START -----
-AvWVqAAAAAIAAAABAAAAAAAATiACAQAAAAC3AQAIAAAAAgAAAAECABTXxT4xHdR4/1uU1hL2
-+TaPrqNB0wMAFNa8GHXZWJH5Dz+D76vfh6JhvWLvBAAUpuIZcCAkCC+ldyaBuoAWxK50HiQF
-ABRI38gc/foDHQsS6X3W0VP4xTukBwYAFB0lithGcxNZYBHaLDONjp6eo/LoBwAU6OwGS0m1
-IVdBt6tKzhaPW8MOfncRABgAAAAAAABOIEXcozcACATMAAAAAAAAABkTAAQAAAAAAAAAggQA
-mHAJeFbYUzxSX+zkI0DtoVKcqqSp2Ztc9GtY7ZtuLBmeqg5pW0rIbkhutQiztTXlJQ0Ye9bV
-yzEVWd/m7GhDAgRBmyg3kCOt7g7potr1l5J3X5K8TiqtWXbNo3k6AHRlGZyn0190iIBSvf85
-nVh3hKiNPsw8DYs1NKb+KMON+4g=
------ KRYPTIVA SIGNATURE END -----
+Every PCI card have INT_A/B/C/D signals and they are (may be) remapped
+on the riser card and on the motherboard.
+-- 
+Krzysztof Halasa
