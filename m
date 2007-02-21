@@ -1,107 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161287AbXBUPet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161284AbXBUPfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161287AbXBUPet (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 10:34:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161280AbXBUPem
+	id S1161284AbXBUPfZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 10:35:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161289AbXBUPfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 10:34:42 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55615 "EHLO mx1.redhat.com"
+	Wed, 21 Feb 2007 10:35:23 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:55734 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965363AbXBUPei (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 10:34:38 -0500
-Message-Id: <20070221144843.829793000@taijtu.programming.kicks-ass.net>
+	id S1161290AbXBUPex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 10:34:53 -0500
+Message-Id: <20070221144842.691706000@taijtu.programming.kicks-ass.net>
 References: <20070221144304.512721000@taijtu.programming.kicks-ass.net>
 User-Agent: quilt/0.46-1
-Date: Wed, 21 Feb 2007 15:43:27 +0100
+Date: Wed, 21 Feb 2007 15:43:16 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Trond Myklebust <trond.myklebust@fys.uio.no>,
        Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>
-Subject: [PATCH 23/29] mm: methods for teaching filesystems about PG_swapcache pages
-Content-Disposition: inline; filename=mm-page_file_methods.patch
+Subject: [PATCH 12/29] net: remove alloc_skb_from_cache
+Content-Disposition: inline; filename=net-skbuff-cleanup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to teach filesystems to handle swap cache pages, two new page
-functions are introduced:
-
-  pgoff_t page_file_index(struct page *);
-  struct address_space *page_file_mapping(struct page *);
-
-page_file_index - gives the offset of this page in the file in PAGE_CACHE_SIZE
-blocks. Like page->index is for mapped pages, this function also gives the
-correct index for PG_swapcache pages.
-
-page_file_mapping - gives the mapping backing the actual page; that is for
-swap cache pages it will give swap_file->f_mapping.
-
-page_offset() is modified to use page_file_index(), so that it will give the
-expected result, even for PG_swapcache pages.
+Lets get rid of the unused alloc_skb_from_cache() thing.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Trond Myklebust <trond.myklebust@fys.uio.no>
 ---
- include/linux/mm.h      |   25 +++++++++++++++++++++++++
- include/linux/pagemap.h |    2 +-
- 2 files changed, 26 insertions(+), 1 deletion(-)
+ include/linux/skbuff.h |    3 --
+ net/core/dev.c         |    1 
+ net/core/skbuff.c      |   71 ++++++-------------------------------------------
+ 3 files changed, 11 insertions(+), 64 deletions(-)
 
-Index: linux-2.6-git/include/linux/mm.h
+Index: linux-2.6-git/include/linux/skbuff.h
 ===================================================================
---- linux-2.6-git.orig/include/linux/mm.h	2007-02-21 12:15:01.000000000 +0100
-+++ linux-2.6-git/include/linux/mm.h	2007-02-21 12:15:07.000000000 +0100
-@@ -594,6 +594,16 @@ static inline struct swap_info_struct *p
- 	return get_swap_info_struct(swp_type(swap));
+--- linux-2.6-git.orig/include/linux/skbuff.h	2007-02-14 08:31:13.000000000 +0100
++++ linux-2.6-git/include/linux/skbuff.h	2007-02-14 10:11:36.000000000 +0100
+@@ -345,9 +345,6 @@ static inline struct sk_buff *alloc_skb_
+ 	return __alloc_skb(size, priority, 1, -1);
  }
  
-+static inline
-+struct address_space *page_file_mapping(struct page *page)
-+{
-+#ifdef CONFIG_SWAP_FILE
-+	if (unlikely(PageSwapCache(page)))
-+		return page_swap_info(page)->swap_file->f_mapping;
-+#endif
-+	return page->mapping;
-+}
-+
- static inline int PageAnon(struct page *page)
- {
- 	return ((unsigned long)page->mapping & PAGE_MAPPING_ANON) != 0;
-@@ -611,6 +621,21 @@ static inline pgoff_t page_index(struct 
- }
- 
- /*
-+ * Return the file index of the page. Regular pagecache pages use ->index
-+ * whereas swapcache pages use swp_offset(->private)
-+ */
-+static inline pgoff_t page_file_index(struct page *page)
-+{
-+#ifdef CONFIG_SWAP_FILE
-+	if (unlikely(PageSwapCache(page))) {
-+		swp_entry_t swap = { .val = page_private(page) };
-+		return swp_offset(swap);
-+	}
-+#endif
-+	return page->index;
-+}
-+
-+/*
-  * The atomic page->_mapcount, like _count, starts from -1:
-  * so that transitions both from it and to it can be tracked,
-  * using atomic_inc_and_test and atomic_add_negative(-1).
-Index: linux-2.6-git/include/linux/pagemap.h
+-extern struct sk_buff *alloc_skb_from_cache(struct kmem_cache *cp,
+-					    unsigned int size,
+-					    gfp_t priority);
+ extern void	       kfree_skbmem(struct sk_buff *skb);
+ extern struct sk_buff *skb_clone(struct sk_buff *skb,
+ 				 gfp_t priority);
+Index: linux-2.6-git/net/core/skbuff.c
 ===================================================================
---- linux-2.6-git.orig/include/linux/pagemap.h	2007-02-21 12:14:54.000000000 +0100
-+++ linux-2.6-git/include/linux/pagemap.h	2007-02-21 12:15:07.000000000 +0100
-@@ -120,7 +120,7 @@ extern void __remove_from_page_cache(str
-  */
- static inline loff_t page_offset(struct page *page)
- {
--	return ((loff_t)page->index) << PAGE_CACHE_SHIFT;
-+	return ((loff_t)page_file_index(page)) << PAGE_CACHE_SHIFT;
+--- linux-2.6-git.orig/net/core/skbuff.c	2007-02-14 08:31:12.000000000 +0100
++++ linux-2.6-git/net/core/skbuff.c	2007-02-14 10:11:16.000000000 +0100
+@@ -198,61 +198,6 @@ nodata:
  }
  
- static inline pgoff_t linear_page_index(struct vm_area_struct *vma,
+ /**
+- *	alloc_skb_from_cache	-	allocate a network buffer
+- *	@cp: kmem_cache from which to allocate the data area
+- *           (object size must be big enough for @size bytes + skb overheads)
+- *	@size: size to allocate
+- *	@gfp_mask: allocation mask
+- *
+- *	Allocate a new &sk_buff. The returned buffer has no headroom and
+- *	tail room of size bytes. The object has a reference count of one.
+- *	The return is the buffer. On a failure the return is %NULL.
+- *
+- *	Buffers may only be allocated from interrupts using a @gfp_mask of
+- *	%GFP_ATOMIC.
+- */
+-struct sk_buff *alloc_skb_from_cache(struct kmem_cache *cp,
+-				     unsigned int size,
+-				     gfp_t gfp_mask)
+-{
+-	struct sk_buff *skb;
+-	u8 *data;
+-
+-	/* Get the HEAD */
+-	skb = kmem_cache_alloc(skbuff_head_cache,
+-			       gfp_mask & ~__GFP_DMA);
+-	if (!skb)
+-		goto out;
+-
+-	/* Get the DATA. */
+-	size = SKB_DATA_ALIGN(size);
+-	data = kmem_cache_alloc(cp, gfp_mask);
+-	if (!data)
+-		goto nodata;
+-
+-	memset(skb, 0, offsetof(struct sk_buff, truesize));
+-	skb->truesize = size + sizeof(struct sk_buff);
+-	atomic_set(&skb->users, 1);
+-	skb->head = data;
+-	skb->data = data;
+-	skb->tail = data;
+-	skb->end  = data + size;
+-
+-	atomic_set(&(skb_shinfo(skb)->dataref), 1);
+-	skb_shinfo(skb)->nr_frags  = 0;
+-	skb_shinfo(skb)->gso_size = 0;
+-	skb_shinfo(skb)->gso_segs = 0;
+-	skb_shinfo(skb)->gso_type = 0;
+-	skb_shinfo(skb)->frag_list = NULL;
+-out:
+-	return skb;
+-nodata:
+-	kmem_cache_free(skbuff_head_cache, skb);
+-	skb = NULL;
+-	goto out;
+-}
+-
+-/**
+  *	__netdev_alloc_skb - allocate an skbuff for rx on a specific device
+  *	@dev: network device to receive on
+  *	@length: length to allocate
 
 -- 
 
