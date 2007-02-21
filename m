@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423276AbXBUX3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423099AbXBUXfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423276AbXBUX3w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 18:29:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423277AbXBUX3w
+	id S1423099AbXBUXfW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 18:35:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945913AbXBUXfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 18:29:52 -0500
-Received: from gw.goop.org ([64.81.55.164]:51515 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423276AbXBUX3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 18:29:51 -0500
-Message-ID: <45DCD5E1.5070201@goop.org>
-Date: Wed, 21 Feb 2007 15:29:37 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Wed, 21 Feb 2007 18:35:21 -0500
+Received: from mailrly05.isp.novis.pt ([195.23.133.215]:49184 "EHLO
+	mailrly05.isp.novis.pt" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423099AbXBUXfV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 18:35:21 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Feb 2007 18:35:20 EST
+Message-ID: <45DCD61B.7000804@vgertech.com>
+Date: Wed, 21 Feb 2007 23:30:35 +0000
+From: Nuno Silva <nuno.silva@vgertech.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060812)
 MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Andi Kleen <ak@suse.de>, virtualization@lists.osdl.org,
-       Chris Wright <chrisw@sous-sol.org>, xen-devel@lists.xensource.com,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [Xen-devel] Re: [patch 17/24] Xen-paravirt_ops: avoid having
- a bad	selector in %gs during context switch
-References: <20070221205254.169835700@goop.org>	<20070221205323.770169136@goop.org> <200702212310.02218.ak@suse.de> <45DCD4D0.2000101@vmware.com>
-In-Reply-To: <45DCD4D0.2000101@vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Michael K. Edwards" <medwards.linux@gmail.com>
+CC: davids@webmaster.com, v j <vj.linux@gmail.com>, trent.waddington@gmail.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       Neil Brown <neilb@suse.de>
+Subject: Re: GPL vs non-GPL device drivers
+References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>	 <MDEHLPKNGKAHNMBLJOLKIEFNBLAC.davids@webmaster.com> <f2b55d220702211408r7954d5dar2c59e1e679316811@mail.gmail.com>
+In-Reply-To: <f2b55d220702211408r7954d5dar2c59e1e679316811@mail.gmail.com>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> I agree with that, but especially because this is not even the right
-> place to save and clear gs; when userspace uses an LDT based %gs, you
-> need to do this all the way back in mmu_context.h before you switch
-> the LDT out. 
+Michael K. Edwards wrote:
+> Actually, it's quite clear under US law what a derivative work is and
+> what rights you need to distribute it, and equally clear that
+> compiling code does not make a "translation" in a copyright sense.
+> Read Micro Star v. Formgen -- it's good law and it's funny and
+> readable.
 
-Yeah.  This patch was really just to shut my debug Xen build up.  
-There's no correctness issue one way or the other, so it doesn't really
-matter that it doesn't catch LDT-using processes.
+Hello.
 
-> And I noticed this martian hanging out in mmu_context.h:
->
-> #define deactivate_mm(tsk, mm)                  \
->        asm("movl %0,%%gs": :"r" (0));
+[Sorry for deleting the rest of the email but it was quite large]
 
-Yeah, I've always wondered what this is for.  Its a remnant of a
-remnant, I think.
+I can see that your argument is all about the defenition of a
+"derivative work".
 
-    J
+We all know that #include <anything.h> is mostly non copyrightable, so I
+mostly agree that some - very very simple - modules may not need to
+include the source when distributing the resulting module.ko. (need =
+from a legal standpoint... The intended spirit of the GPL is another story)
+
+In this context what do you think about porting Linux to another arch?
+Does the people porting the OS needs to distribute the source with the
+[compiled] kernel?
+
+(Yes, it's a trick question)
+
+IANAL too.
+
+Regards,
+Nuno Silva
+
