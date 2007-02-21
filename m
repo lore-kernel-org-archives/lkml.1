@@ -1,124 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423151AbXBUVfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423161AbXBUVgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423151AbXBUVfd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 16:35:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423141AbXBUVfd
+	id S1423161AbXBUVgo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 16:36:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423152AbXBUVgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 16:35:33 -0500
-Received: from palrel12.hp.com ([156.153.255.237]:54431 "EHLO palrel12.hp.com"
+	Wed, 21 Feb 2007 16:36:44 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:49993 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423151AbXBUVfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 16:35:32 -0500
-Date: Wed, 21 Feb 2007 15:12:51 -0600
-From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-To: jens.axboe@oracle.com, akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       gregkh@novell.com
-Subject: [Patch 2/2] cciss: add reboot notifier support to driver
-Message-ID: <20070221211251.GB2672@beardog.cca.cpqcorp.net>
-Reply-To: mike.miller@hp.com
+	id S1423141AbXBUVgm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 16:36:42 -0500
+Date: Wed, 21 Feb 2007 13:36:31 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: dirty balancing deadlock
+Message-Id: <20070221133631.a5cbf49f.akpm@linux-foundation.org>
+In-Reply-To: <E1HJC3P-0006tz-00@dorka.pomaz.szeredi.hu>
+References: <E1HIqlm-0004iZ-00@dorka.pomaz.szeredi.hu>
+	<20070218125307.4103c04a.akpm@linux-foundation.org>
+	<E1HIurG-0005Bw-00@dorka.pomaz.szeredi.hu>
+	<20070218145929.547c21c7.akpm@linux-foundation.org>
+	<E1HIvMB-0005Fd-00@dorka.pomaz.szeredi.hu>
+	<20070218155916.0d3c73a9.akpm@linux-foundation.org>
+	<E1HJC3P-0006tz-00@dorka.pomaz.szeredi.hu>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch 2/2
+On Mon, 19 Feb 2007 18:11:55 +0100
+Miklos Szeredi <miklos@szeredi.hu> wrote:
 
-This patch adds reboot_notifier support to cciss. Changes in firmware make this patch
-essential. Without this patch there may be valid data left in the controller's battery
-backed write cache (BBWC) on shutdown. We found out the hard way that the kernel does
-not call our cleanup routines on shutdown or reboot. It seems that only rmmod calls
-the cleanup.
-Please consider this for inclusion.
+> How about this?
 
-Signed-off-by: Mike Miller <mike.miller@hp.com
-------------------------------------------------------------------------------------------
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 916aab0..1995b8c 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -45,6 +45,7 @@ #include <linux/dma-mapping.h>
- #include <linux/blkdev.h>
- #include <linux/genhd.h>
- #include <linux/completion.h>
-+#include <linux/reboot.h>
- 
- #define CCISS_DRIVER_VERSION(maj,min,submin) ((maj<<16)|(min<<8)|(submin))
- #define DRIVER_NAME "HP CISS Driver (v 3.6.14)"
-@@ -132,6 +133,7 @@ #define MAX_CTLR	32
- #define MAX_CTLR_ORIG 	8
- 
- static ctlr_info_t *hba[MAX_CTLR];
-+static int notify_count=0;
- 
- static void do_cciss_request(request_queue_t *q);
- static irqreturn_t do_cciss_intr(int irq, void *dev_id);
-@@ -142,6 +144,8 @@ static int cciss_ioctl(struct inode *ino
- static int cciss_getgeo(struct block_device *bdev, struct hd_geometry *geo);
- 
- static int cciss_revalidate(struct gendisk *disk);
-+static int cciss_notify_reboot(struct notifier_block *this,
-+					unsigned long code, void *x);
- static int rebuild_lun_table(ctlr_info_t *h, struct gendisk *del_disk);
- static int deregister_disk(struct gendisk *disk, drive_info_struct *drv,
- 			   int clear_all);
-@@ -193,6 +197,36 @@ #endif
- 	.revalidate_disk = cciss_revalidate,
- };
- 
-+static struct notifier_block cciss_notifier = {
-+	.notifier_call  = cciss_notify_reboot,
-+};
-+
-+static int cciss_notify_reboot(struct notifier_block *this,
-+                            unsigned long code, void *x)
-+{
-+	int i, return_code;
-+	char flush_buf[4];
-+
-+	if ((code == SYS_DOWN) || (code == SYS_HALT) || 
-+					(code == SYS_POWER_OFF)) {
-+		printk(KERN_INFO "cciss: stopping all cciss devices.\n");
-+		/* double check that all controller entrys have been removed */
-+		for (i = 0; i < MAX_CTLR; i++) {
-+			if (hba[i] != NULL) {
-+				printk(KERN_WARNING "cciss: removing "
-+						"controller %d\n", i);
-+				/* flush data in battery backed cache to disks */
-+				memset(flush_buf, 0, 4);
-+				return_code = sendcmd(CCISS_CACHE_FLUSH, i, flush_buf, 4, 								0, 0, 0, NULL, TYPE_CMD);
-+				if(return_code != IO_OK) {
-+					printk(KERN_WARNING "Error Flushing cache on "
-+								" controller %d\n", i); 
-+				} 	
-+			}
-+		}
-+	}
-+	return NOTIFY_DONE;
-+}
- /*
-  * Enqueuing and dequeuing functions for cmdlists.
-  */
-@@ -3293,6 +3327,12 @@ #endif
- 	       ((hba[i]->nr_cmds + BITS_PER_LONG -
- 		 1) / BITS_PER_LONG) * sizeof(unsigned long));
- 
-+	if (notify_count == 0) {
-+		register_reboot_notifier(&cciss_notifier);
-+		notify_count=1;
-+	}
-+
-+
- #ifdef CCISS_DEBUG
- 	printk(KERN_DEBUG "Scanning for drives on controller cciss%d\n", i);
- #endif				/* CCISS_DEBUG */
-@@ -3500,6 +3540,7 @@ static void __exit cciss_cleanup(void)
- 	int i;
- 
- 	pci_unregister_driver(&cciss_pci_driver);
-+	unregister_reboot_notifier(&cciss_notifier);
- 	/* double check that all controller entrys have been removed */
- 	for (i = 0; i < MAX_CTLR; i++) {
- 		if (hba[i] != NULL) {
+I still don't understand this bug.
+
+> Solves the FUSE deadlock, but not the throttle_vm_writeout() one.
+> I'll try to tackle that one as well.
+> 
+> If the per-bdi dirty counter goes below 16, balance_dirty_pages()
+> returns.
+> 
+> Does the constant need to tunable?  If it's too large, then the global
+> threshold is more easily exceeded.  If it's too small, then in a tight
+> situation progress will be slower.
+> 
+> Thanks,
+> Miklos
+> 
+> Index: linux/mm/page-writeback.c
+> ===================================================================
+> --- linux.orig/mm/page-writeback.c	2007-02-19 17:32:41.000000000 +0100
+> +++ linux/mm/page-writeback.c	2007-02-19 18:05:28.000000000 +0100
+> @@ -198,6 +198,25 @@ static void balance_dirty_pages(struct a
+>  			dirty_thresh)
+>  				break;
+>  
+> +		/*
+> +		 * Acquit this producer if there's little or nothing
+> +		 * to write back to this particular queue
+> +		 *
+> +		 * Without this check a deadlock is possible in the
+> +		 * following case:
+> +		 *
+> +		 * - filesystem A writes data through filesystem B
+> +		 * - filesystem A has dirty pages over dirty_thresh
+> +		 * - writeback is started, this triggers a write in B
+> +		 * - balance_dirty_pages() is called synchronously
+> +		 * - the write to B blocks
+> +		 * - the writeback completes, but dirty is still over threshold
+> +		 * - the blocking write prevents futher writes from happening
+> +		 */
+> +		if (atomic_long_read(&bdi->nr_dirty) +
+> +		    atomic_long_read(&bdi->nr_writeback) < 16)
+> +			break;
+> +
+
+The problem seems to that little "- the write to B blocks".
+
+How come it blocks?  I mean, if we cannot retire writes to that filesystem
+then we're screwed anyway.
+
+Anyway, I think I'll think about this issue a little later on.  You might
+as well prepare full changelogs for your proposed changes, because we'll be
+needing them anyway.
+
