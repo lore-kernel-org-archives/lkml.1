@@ -1,80 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422692AbXBURCp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422697AbXBURDg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422692AbXBURCp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 12:02:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422693AbXBURCp
+	id S1422697AbXBURDg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 12:03:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422699AbXBURDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 12:02:45 -0500
-Received: from mba.ocn.ne.jp ([210.190.142.172]:60829 "EHLO smtp.mba.ocn.ne.jp"
+	Wed, 21 Feb 2007 12:03:35 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58825 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422692AbXBURCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 12:02:44 -0500
-Date: Thu, 22 Feb 2007 02:02:42 +0900 (JST)
-Message-Id: <20070222.020242.51866797.anemo@mba.ocn.ne.jp>
-To: alan@lxorguk.ukuu.org.uk
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       ralf@linux-mips.org
-Subject: Re: [PATCH 2.6.21-rc1] serial: serial_txx9 driver update
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20070221164826.61d0b5ea@lxorguk.ukuu.org.uk>
-References: <20070222.003142.106263613.anemo@mba.ocn.ne.jp>
-	<20070221164826.61d0b5ea@lxorguk.ukuu.org.uk>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 3.3 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1422697AbXBURDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 12:03:34 -0500
+Date: Wed, 21 Feb 2007 12:03:27 -0500 (EST)
+From: Chip Coldwell <coldwell@redhat.com>
+To: linux-kernel@vger.kernel.org
+cc: Andi Kleen <ak@suse.de>, Andy Currid <Acurrid@nvidia.com>,
+       Mark Langsdorf <mark.langsdorf@amd.com>,
+       Joe Moriarty <Joe.Moriarty@Sun.COM>, Russ Doty <rdoty@redhat.com>,
+       Lonni Friedman <lfriedman@nvidia.com>,
+       Thorsten Kellermann <Thorsten.Kellermann@Sun.COM>
+Subject: Re: data corruption with nvidia chipsets and IDE/SATA drives (k8
+ cpu errata needed?)
+In-Reply-To: <200701170829.54540.ak@suse.de>
+Message-ID: <Pine.LNX.4.64.0702211144430.10805@bogart.boston.redhat.com>
+References: <fa.E9jVXDLMKzMZNCbslzUxjMhsInE@ifi.uio.no> <45AD2D00.2040904@scientia.net>
+ <20070116203143.GA4213@tuatara.stupidest.org> <200701170829.54540.ak@suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Feb 2007 16:48:26 +0000, Alan <alan@lxorguk.ukuu.org.uk> wrote:
-> > +#ifdef CONFIG_CPU_TX49XX
-> > +	/* TX4925 BUG WORKAROUND.  Accessing SIOC register
-> > +	 * immediately after soft reset causes bus error. */
-> > +	iob();
-> > +	udelay(1);
-> > +#endif
+On Wed, 17 Jan 2007, Andi Kleen wrote:
+
+> On Wednesday 17 January 2007 07:31, Chris Wedgwood wrote:
+> > On Tue, Jan 16, 2007 at 08:52:32PM +0100, Christoph Anton Mitterer wrote:
+> > > I agree,... it seems drastic, but this is the only really secure
+> > > solution.
+> >
+> > I'd like to here from Andi how he feels about this?  It seems like a
+> > somewhat drastic solution in some ways given a lot of hardware doesn't
+> > seem to be affected (or maybe in those cases it's just really hard to
+> > hit, I don't know).
 > 
-> Given this costs 1uS in a path that is not performance critical is it
-> worth putting the #ifdef/#endif in instead of having one set of code that
-> works for all ?
+> AMD is looking at the issue. Only Nvidia chipsets seem to be affected,
+> although there were similar problems on VIA in the past too.
+> Unless a good workaround comes around soon I'll probably default
+> to iommu=soft on Nvidia.
 
-Thank you for review.  I'll drop the #ifdef.  Also I'll replace iob()
-with mmiowb() since it is MIPS specific.
+We (Sun, AMD, Nvidia and Red Hat) have been testing a patch that seems
+to solve the problem.  AMD and Nvidia analyzed an HDT trace that
+seemed to indicate that CPU updates of the GATT were still in cache
+when a subsequent table walk caused by a device load used a stale GATT
+PTE.  That analysis inspired this patch, submitted to this list as an
+RFC.  It is not obvious (to me, at least) why this problem has only
+shown up on Nvidia SATA controllers.
 
-> > +	while (sio_in(up, TXX9_SIFCR) & TXX9_SIFCR_SWRST)
-> > +		;
-> 
-> Suppose it doesn't clear ? Should also use cpu_relax() in busy loops
-> so any processor variant with power management can do the right thing.
+We are continuing to investigate.
 
-Then I'll put udelay() and a timeout counter for it.  If udelay() was
-in the busy loop, cpu_relax() is still recommended?
-
-Here is a patch on top of the previous one.  If this was OK I'll fold
-it into one patch.
-
---- a/drivers/serial/serial_txx9.c
-+++ b/drivers/serial/serial_txx9.c
-@@ -277,16 +277,15 @@ static void serial_txx9_enable_ms(struct
- static void serial_txx9_initialize(struct uart_port *port)
- {
- 	struct uart_txx9_port *up = (struct uart_txx9_port *)port;
-+	unsigned int tmout = 10000;
+diff --git a/arch/x86_64/kernel/pci-gart.c b/arch/x86_64/kernel/pci-gart.c
+index 030eb37..1dd461a 100644
+--- a/arch/x86_64/kernel/pci-gart.c
++++ b/arch/x86_64/kernel/pci-gart.c
+@@ -69,6 +69,8 @@ static u32 gart_unmapped_entry;
+ #define AGPEXTERN
+ #endif
  
- 	sio_out(up, TXX9_SIFCR, TXX9_SIFCR_SWRST);
--#ifdef CONFIG_CPU_TX49XX
- 	/* TX4925 BUG WORKAROUND.  Accessing SIOC register
- 	 * immediately after soft reset causes bus error. */
--	iob();
-+	mmiowb();
- 	udelay(1);
--#endif
--	while (sio_in(up, TXX9_SIFCR) & TXX9_SIFCR_SWRST)
--		;
-+	while ((sio_in(up, TXX9_SIFCR) & TXX9_SIFCR_SWRST) && --tmout)
-+		udelay(1);
- 	/* TX Int by FIFO Empty, RX Int by Receiving 1 char. */
- 	sio_set(up, TXX9_SIFCR,
- 		TXX9_SIFCR_TDIL_MAX | TXX9_SIFCR_RDIL_1);
++#define GATT_CLFLUSH(i) asm volatile ("clflush (%0)" :: "r" (iommu_gatt_base + (i)))
++
+ /* backdoor interface to AGP driver */
+ AGPEXTERN int agp_memory_reserved;
+ AGPEXTERN __u32 *agp_gatt_table;
+@@ -221,6 +223,7 @@ static dma_addr_t dma_map_area(struct device *dev, dma_addr_t phys_mem,
+ 	for (i = 0; i < npages; i++) {
+ 		iommu_gatt_base[iommu_page + i] = GPTE_ENCODE(phys_mem);
+ 		SET_LEAK(iommu_page + i);
++		GATT_CLFLUSH(iommu_page + i);
+ 		phys_mem += PAGE_SIZE;
+ 	}
+ 	return iommu_bus_base + iommu_page*PAGE_SIZE + (phys_mem & ~PAGE_MASK);
+@@ -348,6 +351,7 @@ static int __dma_map_cont(struct scatterlist *sg, int start, int stopat,
+ 		while (pages--) { 
+ 			iommu_gatt_base[iommu_page] = GPTE_ENCODE(addr); 
+ 			SET_LEAK(iommu_page);
++			GATT_CLFLUSH(iommu_page);
+ 			addr += PAGE_SIZE;
+ 			iommu_page++;
+ 		}
+
+
+Chip
+
+-- 
+Charles M. "Chip" Coldwell
+Senior Software Engineer
+Red Hat, Inc
+978-392-2426
+
