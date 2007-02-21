@@ -1,85 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751098AbXBUBmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751099AbXBUBnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751098AbXBUBmr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 20:42:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbXBUBmk
+	id S1751099AbXBUBnW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 20:43:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbXBUBmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 20:42:40 -0500
-Received: from mx2.suse.de ([195.135.220.15]:34721 "EHLO mx2.suse.de"
+	Tue, 20 Feb 2007 20:42:50 -0500
+Received: from hub.freebsd.org ([69.147.83.54]:25181 "EHLO hub.freebsd.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751061AbXBUBkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 20:40:01 -0500
-Date: Tue, 20 Feb 2007 17:38:39 -0800
-From: Greg KH <greg@kroah.com>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dan Williams <dcbw@redhat.com>
-Subject: [patch 18/21] prism54: correct assignment of DOT1XENABLE in WE-19 codepaths
-Message-ID: <20070221013839.GS30227@kroah.com>
-References: <20070221012758.925122216@mini.kroah.org>
-MIME-Version: 1.0
+	id S1751090AbXBUBmh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 20:42:37 -0500
+Date: Wed, 21 Feb 2007 01:19:22 +0000
+From: Suleiman Souhlal <ssouhlal@FreeBSD.org>
+To: bzolnier@gmail.com
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/3] Make the IDE DMA timeout modifiable
+Message-ID: <20070221011922.GA1777@freefall.freebsd.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="prism54-correct-assignment-of-dot1xenable-in-we-19-codepaths.patch"
-In-Reply-To: <20070221013619.GA30227@kroah.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
+It can be changed via /proc/ide/hd?/settings.
 
-------------------
-
-Correct assignment of DOT1XENABLE in WE-19 codepaths.
-RX_UNENCRYPTED_EAPOL = 1 really means setting DOT1XENABLE _off_, and
-vice versa.  The original WE-19 patch erroneously reversed that.  This
-patch fixes association with unencrypted and WEP networks when using
-wpa_supplicant.
-
-It also adds two missing break statements that, left out, could result
-in incorrect card configuration.
-
-Applies to (I think) 2.6.19 and later.
-
-Signed-off-by: Dan Williams <dcbw@redhat.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by:	Ed Falk <efalk@google.com>
 
 ---
- drivers/net/wireless/prism54/isl_ioctl.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ drivers/ide/ide-dma.c |    3 ++-
+ drivers/ide/ide.c     |    2 ++
+ include/linux/ide.h   |    3 +++
+ 3 files changed, 7 insertions(+), 1 deletions(-)
 
---- linux-2.6.19.4.orig/drivers/net/wireless/prism54/isl_ioctl.c
-+++ linux-2.6.19.4/drivers/net/wireless/prism54/isl_ioctl.c
-@@ -1395,11 +1395,16 @@ static int prism54_set_auth(struct net_d
- 		break;
+diff --git a/drivers/ide/ide-dma.c b/drivers/ide/ide-dma.c
+index 08e7cd0..a8da725 100644
+--- a/drivers/ide/ide-dma.c
++++ b/drivers/ide/ide-dma.c
+@@ -579,7 +579,8 @@ EXPORT_SYMBOL_GPL(ide_dma_setup);
+ static void ide_dma_exec_cmd(ide_drive_t *drive, u8 command)
+ {
+ 	/* issue cmd to drive */
+-	ide_execute_command(drive, command, &ide_dma_intr, 2*WAIT_CMD, dma_timer_expiry);
++	ide_execute_command(drive, command, &ide_dma_intr, drive->dma_timeout,
++	    dma_timer_expiry);
+ }
  
- 	case IW_AUTH_RX_UNENCRYPTED_EAPOL:
--		dot1x = param->value ? 1 : 0;
-+		/* dot1x should be the opposite of RX_UNENCRYPTED_EAPOL;
-+		 * turn off dot1x when  allowing recepit of unencrypted eapol
-+		 * frames, turn on dot1x when we disallow receipt
-+		 */
-+		dot1x = param->value ? 0x00 : 0x01;
- 		break;
+ void ide_dma_start(ide_drive_t *drive)
+diff --git a/drivers/ide/ide.c b/drivers/ide/ide.c
+index b3c0818..ca841f2 100644
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -245,6 +245,7 @@ static void init_hwif_data(ide_hwif_t *h
+ 		drive->name[1]			= 'd';
+ 		drive->name[2]			= 'a' + (index * MAX_DRIVES) + unit;
+ 		drive->max_failures		= IDE_DEFAULT_MAX_FAILURES;
++		drive->dma_timeout		= WAIT_DMA;
+ 		drive->using_dma		= 0;
+ 		drive->vdma			= 0;
+ 		INIT_LIST_HEAD(&drive->list);
+@@ -1197,6 +1198,7 @@ void ide_add_generic_settings (ide_drive
+ 	__ide_add_setting(drive,	"init_speed",		SETTING_RW,					-1,			-1,			TYPE_BYTE,	0,	70,				1,		1,		&drive->init_speed,		NULL,		0);
+ 	__ide_add_setting(drive,	"current_speed",	SETTING_RW,					-1,			-1,			TYPE_BYTE,	0,	70,				1,		1,		&drive->current_speed,		set_xfer_rate,	0);
+ 	__ide_add_setting(drive,	"number",		SETTING_RW,					-1,			-1,			TYPE_BYTE,	0,	3,				1,		1,		&drive->dn,			NULL,		0);
++	__ide_add_setting(drive,	"dma_timeout",		SETTING_RW,					-1,			-1,			TYPE_INT,	0,	2000000000,			1,		1,		&drive->dma_timeout,		NULL,		0);
+ }
  
- 	case IW_AUTH_PRIVACY_INVOKED:
- 		privinvoked = param->value ? 1 : 0;
-+		break;
+ /**
+diff --git a/include/linux/ide.h b/include/linux/ide.h
+index 79c0282..3861753 100644
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -183,6 +183,7 @@ #define WAIT_READY	(5*HZ)		/* 5sec - som
+ #define WAIT_PIDENTIFY	(10*HZ)	/* 10sec  - should be less than 3ms (?), if all ATAPI CD is closed at boot */
+ #define WAIT_WORSTCASE	(30*HZ)	/* 30sec  - worst case when spinning up */
+ #define WAIT_CMD	(10*HZ)	/* 10sec  - maximum wait for an IRQ to happen */
++#define WAIT_DMA	(20*HZ)	/* 20sec  - maximum wait for an IRQ to happen */
+ #define WAIT_MIN_SLEEP	(2*HZ/100)	/* 20msec - minimum sleep time */
  
- 	case IW_AUTH_DROP_UNENCRYPTED:
- 		exunencrypt = param->value ? 1 : 0;
-@@ -1589,6 +1594,7 @@ static int prism54_set_encodeext(struct 
- 			}
- 			key.type = DOT11_PRIV_TKIP;
- 			key.length = KEY_SIZE_TKIP;
-+			break;
- 		default:
- 			return -EINVAL;
- 		}
+ /*
+@@ -638,6 +639,8 @@ typedef struct ide_drive_s {
+ 	unsigned int	drive_data;	/* use by tuneproc/selectproc */
+ 	unsigned int	failures;	/* current failure count */
+ 	unsigned int	max_failures;	/* maximum allowed failure count */
++	int		dma_timeout;	/* number of jiffies to wait for a
++					  dma to complete */
+ 	u64		probed_capacity;/* initial reported media capacity (ide-cd only currently) */
+ 
+ 	u64		capacity64;	/* total number of sectors */
 
---
