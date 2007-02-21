@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422841AbXBUTnJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422844AbXBUTpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422841AbXBUTnJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 14:43:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422844AbXBUTnJ
+	id S1422844AbXBUTpy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 14:45:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422846AbXBUTpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 14:43:09 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47875 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1422841AbXBUTnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 14:43:08 -0500
-Date: Wed, 21 Feb 2007 20:42:57 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, akpm@osdl.org, paulmck@us.ibm.com,
-       mingo@elte.hu, vatsa@in.ibm.com, dipankar@in.ibm.com,
-       venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org,
-       oleg@tv-sign.ru
-Subject: Re: [RFC PATCH(Experimental) 0/4] Freezer based Cpu-hotplug
-Message-ID: <20070221194257.GD3732@elf.ucw.cz>
-References: <20070214144031.GA15257@in.ibm.com> <200702151431.10068.rjw@sisk.pl> <20070215142542.GA14931@in.ibm.com> <200702171224.46626.rjw@sisk.pl> <20070221145221.GB21660@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070221145221.GB21660@in.ibm.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Wed, 21 Feb 2007 14:45:54 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:40126 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422844AbXBUTpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 14:45:53 -0500
+Date: Wed, 21 Feb 2007 11:45:42 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, tglx@linutronix.de,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Jeff Garzik <jeff@garzik.org>, Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: Linux 2.6.21-rc1
+Message-Id: <20070221114542.60d94016.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0702211123020.4043@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
+	<1172064762.25076.56.camel@localhost.localdomain>
+	<45DC6C2C.7040509@intel.com>
+	<Pine.LNX.4.64.0702211123020.4043@woody.linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed, 21 Feb 2007 11:24:33 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> Rafael,
-> On Sat, Feb 17, 2007 at 12:24:45PM +0100, Rafael J. Wysocki wrote:
+> 
+> 
+> On Wed, 21 Feb 2007, Kok, Auke wrote:
 > > 
-> > Pavel, do you think we can remove the PF_NOFREEZE from bluetooth, BTW?
+> > I think we need to drop this now. The report that says that this *fixes*
+> > something might have been on regular interrupts only. I currently suspect that
+> > it breaks all MSI interrupts, which would make sense if I look a the code.
+> > Very bad indeed.
+> > 
+> > I'll try to come up with something else or send a patch that reverts it.
 > 
-> The create_workqueue by default marks the worker_threads to be
-> non_freezable. For cpu hotplug, all workqueues can be frozen 
-> except the "kthread" workqueue (which is single threaded, so won't 
-> be frozen anyway).
-> 
-> And a quick cscope scan shows that only the "xfslogd" and "xfsdatad"
-> are the only freezable workqueues. Any particular reason
-> for not marking rest of the non-single_threaded workqueues freezeable ??
+> I'm going to be off-line for a couple of days,
 
-As I said, go ahead.
+And I'll be offline for five or six days.
 
-bluetooth has absolutely no business running while we are writing
-suspend image to disk.
+> so I just reverted it.
 
-(First person suggesting
-suspend-to-file-on-nfs-filesystem-mounted-over-GPRS-line-connected-over-bluetooth
-will be punished by only getting bread and water till he implements
-it).
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+OK, but this change was needed because the new IRQ-debugging code reliably
+causes e1000 to explode.
+
+So perhaps until e1000 gets sorted out we should disable the debug code:
+
+--- a/lib/Kconfig.debug~a
++++ a/lib/Kconfig.debug
+@@ -79,7 +79,7 @@ config DEBUG_KERNEL
+ 
+ config DEBUG_SHIRQ
+ 	bool "Debug shared IRQ handlers"
+-	depends on DEBUG_KERNEL && GENERIC_HARDIRQS
++	depends on DEBUG_KERNEL && GENERIC_HARDIRQS && BROKEN
+ 	help
+ 	  Enable this to generate a spurious interrupt as soon as a shared
+ 	  interrupt handler is registered, and just before one is deregistered.
+_
+
