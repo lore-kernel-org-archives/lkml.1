@@ -1,70 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422641AbXBUPi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422645AbXBUPjE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422641AbXBUPi5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 10:38:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422640AbXBUPiy
+	id S1422645AbXBUPjE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 10:39:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbXBUPgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 10:38:54 -0500
-Received: from wr-out-0506.google.com ([64.233.184.232]:41201 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422632AbXBUPil (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 10:38:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=o3rWKvsg/pyC1fEfxQYIcoLA+gXfgFNah1vzEcy9y63wUuQ88Y2rtxrwPvEDzRx1iLyBErvRJAvaYS+Vy7fQNXCRRx9zQXa0LW9wXhN0K+tBbexQyvNhZdAFOGYvXLJ+hyIeef3IeYmq3/ltAv6RDmhqJXPbqSrvzzLHdSoT1nA=
-Message-ID: <6bffcb0e0702210738p687ca1bdt2c568d7ed5904fff@mail.gmail.com>
-Date: Wed, 21 Feb 2007 16:38:39 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: tglx@linutronix.de
-Subject: Re: 2.6.20-git15 BUG: soft lockup detected on CPU#0! - timers?
-Cc: LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <1172072023.25076.64.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6bffcb0e0702201054rb839bb2m11ef8d33bacffdb8@mail.gmail.com>
-	 <1172008584.25076.0.camel@localhost.localdomain>
-	 <6bffcb0e0702201437o66db38d5j3066eb3c9951a270@mail.gmail.com>
-	 <1172072023.25076.64.camel@localhost.localdomain>
+	Wed, 21 Feb 2007 10:36:11 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56118 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161296AbXBUPgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 10:36:03 -0500
+Message-Id: <20070221144842.896272000@taijtu.programming.kicks-ass.net>
+References: <20070221144304.512721000@taijtu.programming.kicks-ass.net>
+User-Agent: quilt/0.46-1
+Date: Wed, 21 Feb 2007 15:43:18 +0100
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>
+Subject: [PATCH 14/29] netvm: INET reserves.
+Content-Disposition: inline; filename=netvm-reserve-inet.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 21/02/07, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Tue, 2007-02-20 at 23:37 +0100, Michal Piotrowski wrote:
-> > On 20/02/07, Thomas Gleixner <tglx@linutronix.de> wrote:
-> > > On Tue, 2007-02-20 at 19:54 +0100, Michal Piotrowski wrote:
-> > > >
-> > > > Might it be 6ba9b346e1e0eca65ec589d32de3a9fe32dc5de6 commit?
-> > >
-> > > I doubt that it is, but can you revert it ?
-> >
-> > I'm using the latest kernel without this patch since 3 hours.
-> >
-> > So far so good.
->
-> But you still have those softirq pending messages, right ?
+Add reserves for INET.
 
-Yes
+The two big users seem to be the route cache and ip-fragment cache.
 
-(+ new NOHZ: local_softirq_pending 02)
-http://www.ussg.iu.edu/hypermail/linux/kernel/0702.2/1944.html
+Account the route cache to the auxillary reserve.
+Account the fragments to the skb reserve so that one can at least
+overflow the fragment cache (avoids fragment deadlocks).
 
-> I think those
-> are pointing to the root cause of this. Still no idea how to get hold of
-> them. All my systems refuse to produce that. Hrmpf.
->
->         tglx
->
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ net/ipv4/ip_fragment.c     |    1 +
+ net/ipv4/route.c           |   18 +++++++++++++++++-
+ net/ipv4/sysctl_net_ipv4.c |   13 ++++++++++++-
+ net/ipv6/reassembly.c      |    1 +
+ net/ipv6/route.c           |   18 +++++++++++++++++-
+ net/ipv6/sysctl_net_ipv6.c |   12 +++++++++++-
+ 6 files changed, 59 insertions(+), 4 deletions(-)
 
-Regards,
-Michal
+Index: linux-2.6-git/net/ipv4/sysctl_net_ipv4.c
+===================================================================
+--- linux-2.6-git.orig/net/ipv4/sysctl_net_ipv4.c	2007-02-20 15:12:56.000000000 +0100
++++ linux-2.6-git/net/ipv4/sysctl_net_ipv4.c	2007-02-20 16:41:28.000000000 +0100
+@@ -18,6 +18,7 @@
+ #include <net/route.h>
+ #include <net/tcp.h>
+ #include <net/cipso_ipv4.h>
++#include <net/sock.h>
+ 
+ /* From af_inet.c */
+ extern int sysctl_ip_nonlocal_bind;
+@@ -186,6 +187,16 @@ static int strategy_allowed_congestion_c
+ 
+ }
+ 
++static int proc_dointvec_fragment(ctl_table *table, int write, struct file *filp,
++		     void __user *buffer, size_t *lenp, loff_t *ppos)
++{
++	int ret;
++	int old_thresh = *(int *)table->data;
++	ret = proc_dointvec(table,write,filp,buffer,lenp,ppos);
++	skb_reserve_memory(*(int *)table->data - old_thresh);
++	return ret;
++}
++
+ ctl_table ipv4_table[] = {
+ 	{
+ 		.ctl_name	= NET_IPV4_TCP_TIMESTAMPS,
+@@ -291,7 +302,7 @@ ctl_table ipv4_table[] = {
+ 		.data		= &sysctl_ipfrag_high_thresh,
+ 		.maxlen		= sizeof(int),
+ 		.mode		= 0644,
+-		.proc_handler	= &proc_dointvec
++		.proc_handler	= &proc_dointvec_fragment
+ 	},
+ 	{
+ 		.ctl_name	= NET_IPV4_IPFRAG_LOW_THRESH,
+Index: linux-2.6-git/net/ipv6/sysctl_net_ipv6.c
+===================================================================
+--- linux-2.6-git.orig/net/ipv6/sysctl_net_ipv6.c	2007-02-20 15:12:56.000000000 +0100
++++ linux-2.6-git/net/ipv6/sysctl_net_ipv6.c	2007-02-20 16:41:28.000000000 +0100
+@@ -15,6 +15,16 @@
+ 
+ #ifdef CONFIG_SYSCTL
+ 
++static int proc_dointvec_fragment(ctl_table *table, int write, struct file *filp,
++		     void __user *buffer, size_t *lenp, loff_t *ppos)
++{
++	int ret;
++	int old_thresh = *(int *)table->data;
++	ret = proc_dointvec(table,write,filp,buffer,lenp,ppos);
++	skb_reserve_memory(*(int *)table->data - old_thresh);
++	return ret;
++}
++
+ static ctl_table ipv6_table[] = {
+ 	{
+ 		.ctl_name	= NET_IPV6_ROUTE,
+@@ -44,7 +54,7 @@ static ctl_table ipv6_table[] = {
+ 		.data		= &sysctl_ip6frag_high_thresh,
+ 		.maxlen		= sizeof(int),
+ 		.mode		= 0644,
+-		.proc_handler	= &proc_dointvec
++		.proc_handler	= &proc_dointvec_fragment
+ 	},
+ 	{
+ 		.ctl_name	= NET_IPV6_IP6FRAG_LOW_THRESH,
+Index: linux-2.6-git/net/ipv4/ip_fragment.c
+===================================================================
+--- linux-2.6-git.orig/net/ipv4/ip_fragment.c	2007-02-20 15:12:56.000000000 +0100
++++ linux-2.6-git/net/ipv4/ip_fragment.c	2007-02-20 16:41:28.000000000 +0100
+@@ -743,6 +743,7 @@ void ipfrag_init(void)
+ 	ipfrag_secret_timer.function = ipfrag_secret_rebuild;
+ 	ipfrag_secret_timer.expires = jiffies + sysctl_ipfrag_secret_interval;
+ 	add_timer(&ipfrag_secret_timer);
++	skb_reserve_memory(sysctl_ipfrag_high_thresh);
+ }
+ 
+ EXPORT_SYMBOL(ip_defrag);
+Index: linux-2.6-git/net/ipv6/reassembly.c
+===================================================================
+--- linux-2.6-git.orig/net/ipv6/reassembly.c	2007-02-20 15:12:56.000000000 +0100
++++ linux-2.6-git/net/ipv6/reassembly.c	2007-02-20 16:41:28.000000000 +0100
+@@ -772,4 +772,5 @@ void __init ipv6_frag_init(void)
+ 	ip6_frag_secret_timer.function = ip6_frag_secret_rebuild;
+ 	ip6_frag_secret_timer.expires = jiffies + sysctl_ip6frag_secret_interval;
+ 	add_timer(&ip6_frag_secret_timer);
++	skb_reserve_memory(sysctl_ip6frag_high_thresh);
+ }
+Index: linux-2.6-git/net/ipv4/route.c
+===================================================================
+--- linux-2.6-git.orig/net/ipv4/route.c	2007-02-20 15:12:56.000000000 +0100
++++ linux-2.6-git/net/ipv4/route.c	2007-02-20 16:41:28.000000000 +0100
+@@ -2884,6 +2884,20 @@ static int ipv4_sysctl_rtcache_flush_str
+ 	return 0;
+ }
+ 
++static int proc_dointvec_rt_size(ctl_table *table, int write, struct file *filp,
++		     void __user *buffer, size_t *lenp, loff_t *ppos)
++{
++	int ret;
++	int new_pages;
++	int old_pages = kmem_cache_objs_to_pages(ipv4_dst_ops.kmem_cachep,
++			*(int *)table->data);
++	ret = proc_dointvec(table,write,filp,buffer,lenp,ppos);
++	new_pages = kmem_cache_objs_to_pages(ipv4_dst_ops.kmem_cachep,
++			*(int *)table->data);
++	aux_reserve_memory(new_pages - old_pages);
++	return ret;
++}
++
+ ctl_table ipv4_route_table[] = {
+ 	{
+ 		.ctl_name 	= NET_IPV4_ROUTE_FLUSH,
+@@ -2926,7 +2940,7 @@ ctl_table ipv4_route_table[] = {
+ 		.data		= &ip_rt_max_size,
+ 		.maxlen		= sizeof(int),
+ 		.mode		= 0644,
+-		.proc_handler	= &proc_dointvec,
++		.proc_handler	= &proc_dointvec_rt_size,
+ 	},
+ 	{
+ 		/*  Deprecated. Use gc_min_interval_ms */
+@@ -3153,6 +3167,8 @@ int __init ip_rt_init(void)
+ 
+ 	ipv4_dst_ops.gc_thresh = (rt_hash_mask + 1);
+ 	ip_rt_max_size = (rt_hash_mask + 1) * 16;
++	aux_reserve_memory(kmem_cache_objs_to_pages(ipv4_dst_ops.kmem_cachep,
++				ip_rt_max_size));
+ 
+ 	devinet_init();
+ 	ip_fib_init();
+Index: linux-2.6-git/net/ipv6/route.c
+===================================================================
+--- linux-2.6-git.orig/net/ipv6/route.c	2007-02-20 15:12:56.000000000 +0100
++++ linux-2.6-git/net/ipv6/route.c	2007-02-20 17:46:13.000000000 +0100
+@@ -2370,6 +2370,20 @@ int ipv6_sysctl_rtcache_flush(ctl_table 
+ 		return -EINVAL;
+ }
+ 
++static int proc_dointvec_rt_size(ctl_table *table, int write, struct file *filp,
++		     void __user *buffer, size_t *lenp, loff_t *ppos)
++{
++	int ret;
++	int new_pages;
++	int old_pages = kmem_cache_objs_to_pages(ip6_dst_ops.kmem_cachep,
++			*(int *)table->data);
++	ret = proc_dointvec(table,write,filp,buffer,lenp,ppos);
++	new_pages = kmem_cache_objs_to_pages(ip6_dst_ops.kmem_cachep,
++			*(int *)table->data);
++	aux_reserve_memory(new_pages - old_pages);
++	return ret;
++}
++
+ ctl_table ipv6_route_table[] = {
+ 	{
+ 		.ctl_name	=	NET_IPV6_ROUTE_FLUSH,
+@@ -2393,7 +2407,7 @@ ctl_table ipv6_route_table[] = {
+ 		.data		=	&ip6_rt_max_size,
+ 		.maxlen		=	sizeof(int),
+ 		.mode		=	0644,
+-		.proc_handler	=	&proc_dointvec,
++         	.proc_handler	=	&proc_dointvec_rt_size,
+ 	},
+ 	{
+ 		.ctl_name	=	NET_IPV6_ROUTE_GC_MIN_INTERVAL,
+@@ -2478,6 +2492,8 @@ void __init ip6_route_init(void)
+ 
+ 	proc_net_fops_create("rt6_stats", S_IRUGO, &rt6_stats_seq_fops);
+ #endif
++	aux_reserve_memory(kmem_cache_objs_to_pages(ip6_dst_ops.kmem_cachep,
++				ip6_rt_max_size));
+ #ifdef CONFIG_XFRM
+ 	xfrm6_init();
+ #endif
 
 -- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+
