@@ -1,164 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965334AbXBUD4G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964843AbXBUEG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965334AbXBUD4G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 22:56:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965337AbXBUD4G
+	id S964843AbXBUEG5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 23:06:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965113AbXBUEG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 22:56:06 -0500
-Received: from nz-out-0506.google.com ([64.233.162.239]:38742 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965334AbXBUD4C (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 22:56:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
-        b=RwqgVvQVKde0qp1Bq8VQQi70dVuyt42DU9JfGZX/P/WqlFXIjnS9yukuj+3atH+r7D1MDvBHOg36z+M7dx9dhqWl88v7wc3qkGyuUdp+e29jl8vU6BWjXNzEWtMZ1S+rd4ywzvIyLlOoUNxq1RhjKsDvkNQZ9JaOlwkfNlz41fU=
-Message-ID: <45DBC2CE.6040408@gmail.com>
-Date: Wed, 21 Feb 2007 12:55:58 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Tue, 20 Feb 2007 23:06:57 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:39566 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964843AbXBUEG4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 23:06:56 -0500
+Date: Tue, 20 Feb 2007 20:05:26 -0800
+From: Greg KH <greg@kroah.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: securityfs_create_dir strange comment
+Message-ID: <20070221040526.GA8207@kroah.com>
+References: <Pine.LNX.4.61.0702181642060.28890@yvahk01.tjqt.qr> <20070220211849.GA3416@vino.hallyn.com> <20070220222652.GB21696@kroah.com> <Pine.LNX.4.61.0702210042140.7132@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-To: Marcus Haebler <haebler@gmail.com>
-CC: Pablo Sebastian Greco <lkml@fliagreco.com.ar>,
-       linux-kernel@vger.kernel.org
-Subject: Re: SATA problems
-References: <459A674B.3060304@fliagreco.com.ar> <459C8A5E.5010206@gmail.com>	 <459CFE7B.6090306@fliagreco.com.ar>	 <459DC2EE.1090307@fliagreco.com.ar> <45A1AB3F.1080408@gmail.com>	 <45B649BF.5030705@fliagreco.com.ar> <45B6BC6D.8070301@gmail.com>	 <d72aa1340702170449n1aa61777l6c9c7e525102db00@mail.gmail.com>	 <45D731A8.90604@fliagreco.com.ar> <45DB0717.90507@gmail.com> <d72aa1340702201655o78975cc7vd67c82eea92bd519@mail.gmail.com>
-In-Reply-To: <d72aa1340702201655o78975cc7vd67c82eea92bd519@mail.gmail.com>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: multipart/mixed;
- boundary="------------070507020408060200060006"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0702210042140.7132@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070507020408060200060006
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Wed, Feb 21, 2007 at 12:45:40AM +0100, Jan Engelhardt wrote:
+> 
+> On Feb 20 2007 14:26, Greg KH wrote:
+> >On Tue, Feb 20, 2007 at 03:18:49PM -0600, Serge E. Hallyn wrote:
+> >> Quoting Jan Engelhardt (jengelh@linux01.gwdg.de):
+> >> > Hello list,
+> >> > 
+> >> > 
+> >> > in security/inode.c, the comment for securityfs_create_dir() reads:
+> >> > 
+> >> > 	If securityfs is not enabled in the kernel, the value -ENODEV 
+> >> > 	will be returned.  It is not wise to check for this value, but 
+> >> > 	rather, check for NULL or !NULL instead as to eliminate the need 
+> >> > 	for #ifdef in the calling code.
+> >> > 
+> >> > What is the actual callee that can return NULL - and what should 
+> >> > module_init() of a module return when securityfs_create_dir() returns 
+> >> > NULL?
+> >> 
+> >> Hmm, this came from GregKH.  It does seem based on the code that
+> >> checking for -ENODEV is necessary, so I don't understand the comment.
+> >
+> >If securityfs_create_dir() returns NULL, then something bad happened and
+> >your code needs to properly recover from it.
+> >
+> >Other than that, I don't understand the issue here.
+> 
+> Consider:
+> 
+> static __init int mymodule_init(void)
+> {
+>     struct dentry *de;
+>     de = securityfs_create_dir("foobar", NULL);
+> 
+>     /* case 1 */
+>     if(IS_ERR(de))
+>         return PTR_ERR(de);
+> 
+>     /* case 2 */
+>     if(de == NULL)
+>         return WHAT_HERE; /* -EIO? */
+> }
+> 
+> There are two error cases. One: when the function gives us an error code.
+> Two: When it returns NULL, without an error code. This looks bogus to me.
+> What error is it, when there is no error? - And what should I return to
+> modprobe in that case?
 
-Marcus Haebler wrote:
-> thanks for the patches! I am on an Intel P965/ICH8R.
+Try this instead:
+	if (!de)
+		return -ENOMEM;
+	if ((IS_ERR(de)) && (PTR_ERR(de) != -ENODEV))
+		return PTR_ERR(de);
+	return 0;
 
-I see.  That can happen too.  There was a race window where in-flight
-r/w command which left SCSI midlayer but pending on libata gets executed
-in the wrong mode.  If possible, please verify that it doesn't happen
-with the patches applied.  I'm attaching combined patch against v2.6.20.
+That should cover everything properly, right?
 
-Thanks.
+thanks,
 
--- 
-tejun
-
---------------070507020408060200060006
-Content-Type: text/plain;
- name="patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="patch"
-
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index 667acd2..348cc02 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -308,9 +308,7 @@ int ata_build_rw_tf(struct ata_taskfile *tf, struct ata_device *dev,
- 	tf->flags |= ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE;
- 	tf->flags |= tf_flags;
- 
--	if ((dev->flags & (ATA_DFLAG_PIO | ATA_DFLAG_NCQ_OFF |
--			   ATA_DFLAG_NCQ)) == ATA_DFLAG_NCQ &&
--	    likely(tag != ATA_TAG_INTERNAL)) {
-+	if (ata_ncq_enabled(dev) && likely(tag != ATA_TAG_INTERNAL)) {
- 		/* yay, NCQ */
- 		if (!lba_48_ok(block, n_block))
- 			return -ERANGE;
-diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-index 73902d3..ebb9185 100644
---- a/drivers/ata/libata-scsi.c
-+++ b/drivers/ata/libata-scsi.c
-@@ -945,29 +945,32 @@ int ata_scsi_change_queue_depth(struct scsi_device *sdev, int queue_depth)
- 	struct ata_port *ap = ata_shost_to_port(sdev->host);
- 	struct ata_device *dev;
- 	unsigned long flags;
--	int max_depth;
- 
--	if (queue_depth < 1)
-+	if (queue_depth < 1 || queue_depth == sdev->queue_depth)
- 		return sdev->queue_depth;
- 
- 	dev = ata_scsi_find_dev(ap, sdev);
- 	if (!dev || !ata_dev_enabled(dev))
- 		return sdev->queue_depth;
- 
--	max_depth = min(sdev->host->can_queue, ata_id_queue_depth(dev->id));
--	max_depth = min(ATA_MAX_QUEUE - 1, max_depth);
--	if (queue_depth > max_depth)
--		queue_depth = max_depth;
--
--	scsi_adjust_queue_depth(sdev, MSG_SIMPLE_TAG, queue_depth);
--
-+	/* NCQ enabled? */
- 	spin_lock_irqsave(ap->lock, flags);
--	if (queue_depth > 1)
--		dev->flags &= ~ATA_DFLAG_NCQ_OFF;
--	else
-+	dev->flags &= ~ATA_DFLAG_NCQ_OFF;
-+	if (queue_depth == 1 || !ata_ncq_enabled(dev)) {
- 		dev->flags |= ATA_DFLAG_NCQ_OFF;
-+		queue_depth = 1;
-+	}
- 	spin_unlock_irqrestore(ap->lock, flags);
- 
-+	/* limit and apply queue depth */
-+	queue_depth = min(queue_depth, sdev->host->can_queue);
-+	queue_depth = min(queue_depth, ata_id_queue_depth(dev->id));
-+	queue_depth = min(queue_depth, ATA_MAX_QUEUE - 1);
-+
-+	if (sdev->queue_depth == queue_depth)
-+		return -EINVAL;
-+
-+	scsi_adjust_queue_depth(sdev, MSG_SIMPLE_TAG, queue_depth);
- 	return queue_depth;
- }
- 
-@@ -1454,11 +1457,9 @@ static void ata_scsi_qc_complete(struct ata_queued_cmd *qc)
- static int ata_scmd_need_defer(struct ata_device *dev, int is_io)
- {
- 	struct ata_port *ap = dev->ap;
-+	int is_ncq = is_io && ata_ncq_enabled(dev);
- 
--	if (!(dev->flags & ATA_DFLAG_NCQ))
--		return 0;
--
--	if (is_io) {
-+	if (is_ncq) {
- 		if (!ata_tag_valid(ap->active_tag))
- 			return 0;
- 	} else {
-diff --git a/include/linux/libata.h b/include/linux/libata.h
-index 91bb8ce..4e4e365 100644
---- a/include/linux/libata.h
-+++ b/include/linux/libata.h
-@@ -1035,6 +1035,21 @@ static inline u8 ata_chk_status(struct ata_port *ap)
- 	return ap->ops->check_status(ap);
- }
- 
-+/**
-+ *	ata_ncq_enabled - Test whether NCQ is enabled
-+ *	@dev: ATA device to test for
-+ *
-+ *	LOCKING:
-+ *	spin_lock_irqsave(host lock)
-+ *
-+ *	RETURNS:
-+ *	1 if NCQ is enabled for @dev, 0 otherwise.
-+ */
-+static inline int ata_ncq_enabled(struct ata_device *dev)
-+{
-+	return (dev->flags & (ATA_DFLAG_PIO | ATA_DFLAG_NCQ_OFF |
-+			      ATA_DFLAG_NCQ)) == ATA_DFLAG_NCQ;
-+}
- 
- /**
-  *	ata_pause - Flush writes and pause 400 nanoseconds.
-
---------------070507020408060200060006--
+greg k-h
