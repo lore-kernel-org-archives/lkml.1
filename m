@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751211AbXBULyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750989AbXBULyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751211AbXBULyo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 06:54:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750989AbXBULyo
+	id S1750989AbXBULyv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 06:54:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbXBULyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 06:54:44 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34775 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751216AbXBULyn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 06:54:43 -0500
-Date: Wed, 21 Feb 2007 05:54:36 -0600
-From: Robin Holt <holt@sgi.com>
-To: David Howells <dhowells@redhat.com>
-Cc: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
-       Andrew Morton <akpm@osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Robin Holt <holt@sgi.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <soshima@redhat.com>,
-       "Hideo AOKI@redhat" <haoki@redhat.com>
-Subject: Re: [PATCH 3/4] coredump: ELF-FDPIC: enable to omit anonymous shared memory
-Message-ID: <20070221115436.GA31332@lnx-holt.americas.sgi.com>
-References: <45DC184C.3080600@hitachi.com> <45DAC32B.4030603@hitachi.com> <45D5B483.3020502@hitachi.com> <45D5B2E3.3030607@hitachi.com> <20368.1171638335@redhat.com> <18826.1171969097@redhat.com> <8347.1172057611@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8347.1172057611@redhat.com>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 21 Feb 2007 06:54:51 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:58920 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750989AbXBULyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 06:54:50 -0500
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Greg KH <greg@kroah.com>
+Subject: Re: [patch 00/18] 2.6.18-stable review
+Date: Wed, 21 Feb 2007 13:55:04 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+References: <20070221014927.GA3684@kroah.com>
+In-Reply-To: <20070221014927.GA3684@kroah.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart6339575.HekPlZWhdR";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200702211355.05539.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 21, 2007 at 11:33:31AM +0000, David Howells wrote:
-> Kawai, Hidehiro <hidehiro.kawai.ez@hitachi.com> wrote:
-> 
-> > Is coredump_setting_sem a global semaphore?  If so, it prevents concurrent
-> > core dumping.
-> 
-> No, it doesn't.  Look again:
-> 
-> 	int do_coredump(long signr, int exit_code, struct pt_regs * regs)
-> 	{
-> 		<setup vars>
-> 
->  >>>>		down_read(&coredump_settings_sem);
-> 
-> > Additionally, while some process is dumped, writing to
-> > coredump_omit_anon_shared of unrelated process will be blocked.
-> 
-> Yes, but that's probably reasonable.  How likely (a) is a process to coredump,
-> and (b) is a coredump to occur simultaneously with someone altering their
-> settings?
+--nextPart6339575.HekPlZWhdR
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-And (c) altering the setting during a core dump going to produce an
-unusable core dump.  I don't think the locking is that difficult to add
-and it just makes sense.  I would venture a guess that it will take less
-time to actually do the locking than to continue arguing it is not needed
-when it clearly appears it is needed for even a small number of cases.
+21 =C5=9Eub 2007 =C3=87ar tarihinde, Greg KH =C5=9Funlar=C4=B1 yazm=C4=B1=
+=C5=9Ft=C4=B1:=20
+> Responses should be made by Friday February 23 00:00 UTC.  Anything
+> received after that time might be too late.
 
-Thanks,
-Robin
+We have still some CVEish patches in our package which maybe you want to=20
+consider adding into -stable.
+
+* http://cve.mitre.org/cgi-bin/cvename.cgi?name=3DCVE-2006-4814
+* http://cve.mitre.org/cgi-bin/cvename.cgi?name=3DCVE-2006-5749
+* http://cve.mitre.org/cgi-bin/cvename.cgi?name=3DCVE-2006-5753
+* http://cve.mitre.org/cgi-bin/cvename.cgi?name=3DCVE-2006-5823
+* http://cve.mitre.org/cgi-bin/cvename.cgi?name=3DCVE-2006-6053
+* http://cve.mitre.org/cgi-bin/cvename.cgi?name=3DCVE-2006-6054
+* http://cve.mitre.org/cgi-bin/cvename.cgi?name=3DCVE-2006-6333
+* http://cve.mitre.org/cgi-bin/cvename.cgi?name=3DCVE-2007-0006
+
+Cheers
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
+
+--nextPart6339575.HekPlZWhdR
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.1 (GNU/Linux)
+
+iD8DBQBF3DMZy7E6i0LKo6YRAsBNAJ9KGGtsKabc7dTPvPuJ4250AnFKxwCdEtHo
+kls4zEmD0Ti6iR1ke8qE2zw=
+=vKzn
+-----END PGP SIGNATURE-----
+
+--nextPart6339575.HekPlZWhdR--
