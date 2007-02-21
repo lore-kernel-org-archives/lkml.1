@@ -1,79 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423129AbXBUVGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423127AbXBUVGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423129AbXBUVGw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 16:06:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423130AbXBUVGw
+	id S1423127AbXBUVGQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 16:06:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423118AbXBUVGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 16:06:52 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:47563 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423129AbXBUVGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 16:06:50 -0500
-Date: Wed, 21 Feb 2007 13:06:17 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Daniel Walker <dwalker@mvista.com>
-cc: tglx@linutronix.de,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mingo@elte.hu
-Subject: Re: Linux 2.6.21-rc1
-In-Reply-To: <1172090973.8577.77.camel@imap.mvista.com>
-Message-ID: <Pine.LNX.4.64.0702211302300.4043@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> 
- <1172075053.8577.38.camel@imap.mvista.com>  <1172077664.25076.75.camel@localhost.localdomain>
-  <1172078340.8577.43.camel@imap.mvista.com>  <1172079671.25076.80.camel@localhost.localdomain>
-  <1172079523.8577.48.camel@imap.mvista.com>  <1172081931.25076.95.camel@localhost.localdomain>
-  <1172082200.8577.56.camel@imap.mvista.com>  <1172085792.25076.119.camel@localhost.localdomain>
-  <1172088050.8577.71.camel@imap.mvista.com>  <1172090603.25076.127.camel@localhost.localdomain>
- <1172090973.8577.77.camel@imap.mvista.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 21 Feb 2007 16:06:16 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:46101 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423124AbXBUVGM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 16:06:12 -0500
+Date: Wed, 21 Feb 2007 13:06:06 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, ego@in.ibm.com, akpm@osdl.org,
+       paulmck@us.ibm.com, mingo@elte.hu, vatsa@in.ibm.com,
+       dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Subject: Re: freezer problems
+Message-ID: <20070221210606.GH7063@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070214144031.GA15257@in.ibm.com> <200702201929.03776.rjw@sisk.pl> <20070221181404.GC7063@linux.vnet.ibm.com> <200702211913.41883.rjw@sisk.pl> <20070221200314.GA91@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070221200314.GA91@tv-sign.ru>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 21 Feb 2007, Daniel Walker wrote:
+On Wed, Feb 21, 2007 at 11:03:14PM +0300, Oleg Nesterov wrote:
+> On 02/21, Rafael J. Wysocki wrote:
+> >
+> > On Wednesday, 21 February 2007 19:14, Paul E. McKenney wrote:
+> > > On Tue, Feb 20, 2007 at 07:29:01PM +0100, Rafael J. Wysocki wrote:
+> > > > On Tuesday, 20 February 2007 01:32, Rafael J. Wysocki wrote:
+> > > > > On Tuesday, 20 February 2007 01:12, Oleg Nesterov wrote:
+> > > > > Hm.  In the case discussed above we have a task that's right before calling
+> > > > > frozen_process(), so we can't thaw it, because it's not frozen.  It will be
+> > > > > frozen just in a while, but try_to_freeze_tasks() and thaw_tasks() have no
+> > > > > way to check this.
+> > > > > 
+> > > > > I think to close this race the refrigerator should check TIF_FREEZE and set
+> > > > > PF_FROZEN _and_ reset TIF_FREEZE under a lock
 > 
-> Here's the final commit from the bisect which caused it . It says "No
-> changes to existing functionality" ?
-
-Ok, it wouldn't be the first time some change that is supposed to change 
-nothing does actually change something.
-
-That said, one thing to worry about when doing bisection: the kernel 
-configuration.
-
-If you always just do "make oldconfig" or something, the kernel config for 
-the thing you test will depend on the _previous_ kernel you compiled, and 
-that is not always what you want. I've once had a failing kernel, did 
-bisection, and it turned out that since I had gone back in time to before 
-the option that caused the failure even existed, I had (by mistake) then 
-compiled some of the later kernels without that option enabled, and called 
-them "good". 
-
-The end result: "git bisect" didn't actually end up pointing to the right 
-commit, just because I had effectively lied to it.
-
-That said, considering that you did get a commit that doesn't look 
-entirely unlikely (and that clearly changes things that are relevant), I 
-suspect you did actually find the right one.
-
-		Linus
----
-> commit e9e2cdb412412326c4827fc78ba27f410d837e6e
-> Author: Thomas Gleixner <tglx@linutronix.de>
-> Date:   Fri Feb 16 01:28:04 2007 -0800
+> I personally think this is good. Not only this allows us to close the race,
+> I think we can do more.
 > 
->     [PATCH] clockevents: i386 drivers
+> >                                                      that would also have to be
+> > > > > taken by try_to_freeze_tasks() in the beginning of the error path.  This will
+> > > > > ensure that all tasks either freeze themselves before the error path in
+> > > > > try_to_freeze_tasks() is executed, or remain unfrozen.
 > 
->     Add clockevent drivers for i386: lapic (local) and PIT/HPET (global).  Update
->     the timer IRQ to call into the PIT/HPET driver's event handler and the
->     lapic-timer IRQ to call into the lapic clockevent driver.  The assignement of
->     timer functionality is delegated to the core framework code and replaces the
->     compile and runtime evalution in do_timer_interrupt_hook()
+> How about take this lock in thaw_tasks() instead/too ?
 > 
->     Use the clockevents broadcast support and implement the lapic_broadcast
->     function for ACPI.
+> Currently we need a separate loop in thaw_tasks() to handle PF_FREEZER_SKIP. This
+> means that PF_FREEZER_SKIP is not so generic: thaw_tasks() can't tolerate if such
+> a task was woken in between. What if we change thaw_process() to clear TIF_FREEZE ?
 > 
->     No changes to existing functionality.
-> 
-> 
+> Note also that we can use task_lock() instead of global refrigerator_lock. This
+> means that thaw_process() should take it too, probably this is slowdown, but I
+> think not too much because thaw_process() is going to write to p->flags anyway.
+> In this case thaw_process() works perfectly as cancel_freezing_and_thaw() and
+> can be used to fix exec/coredump in future.
+
+This sounds much better than a a global lock to me!  ;-)
+
+							Thanx, Paul
