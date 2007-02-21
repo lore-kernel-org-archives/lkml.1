@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964835AbXBUBv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964934AbXBUBwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964835AbXBUBv4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 20:51:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964824AbXBUBvs
+	id S964934AbXBUBwg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 20:52:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964824AbXBUBv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 20:51:48 -0500
-Received: from cantor.suse.de ([195.135.220.2]:42857 "EHLO mx1.suse.de"
+	Tue, 20 Feb 2007 20:51:57 -0500
+Received: from mail.suse.de ([195.135.220.2]:42886 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964835AbXBUBv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 20:51:29 -0500
-Date: Tue, 20 Feb 2007 17:50:07 -0800
+	id S964841AbXBUBvw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 20:51:52 -0500
+Date: Tue, 20 Feb 2007 17:50:14 -0800
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -19,13 +19,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Roland Dreier <rolandd@cisco.com>, Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 05/18] IB/srp: Fix FMR mapping for 32-bit kernels and addresses above 4G
-Message-ID: <20070221015007.GF3684@kroah.com>
+       Dirk Eibach <eibach@gdsys.de>, Adrian Bunk <bunk@stusta.de>,
+       Dirk Stieler <stieler@gdsys.de>, Jean Delvare <khali@linux-fr.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 06/18] i2c: fix broken ds1337 initialization
+Message-ID: <20070221015014.GG3684@kroah.com>
 References: <20070221014413.282048309@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ib-srp-fix-fmr-mapping-for-32-bit-kernels-and-addresses-above-4g.patch"
+Content-Disposition: inline; filename="i2c-fix-broken-ds1337-initialization.patch"
 In-Reply-To: <20070221014927.GA3684@kroah.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -34,50 +36,58 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Roland Dreier <rdreier@cisco.com>
+From: Dirk Eibach <eibach@gdsys.de>
 
-struct srp_device.fmr_page_mask was unsigned long, which means that
-the top part of addresses above 4G was being chopped off on 32-bit
-architectures.  Of course nothing good happens when data from SRP
-targets is DMAed to the wrong place.
+On a custom board with ds1337 RTC I found that upgrade from 2.6.15 to
+2.6.18 broke RTC support.
 
-Fix this by changing fmr_page_mask to u64, to match the addresses
-actually used by IB devices.
+The main problem are changes to ds1337_init_client().
+When a ds1337 recognizes a problem (e.g. power or clock failure) bit 7
+in status register is set. This has to be reset by writing 0 to status
+register. But since there are only 16 byte written to the chip and the
+first byte is interpreted as an address, the status register (which is
+the 16th) is never written.
+The other problem is, that initializing all registers to zero is not
+valid for day, date and month register. Funny enough this is checked by
+ds1337_detect(), which depends on this values not being zero. So then
+treated by ds1337_init_client() the ds1337 is not detected anymore,
+whereas the failure bit in the status register is still set.
 
-Thanks to Brian Cain <Brian.Cain@ge.com> and David McMillen
-<davem@systemfabricworks.com> for help diagnosing the bug and testing
-the fix.
+Broken by commit f9e8957937ebf60d22732a5ca9130f48a7603f60 (2.6.16-rc1,
+2006-01-06). This fix is in Linus' tree since 2.6.20-rc1 (commit
+763d9c046a2e511ec090a8986d3f85edf7448e7e).
 
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
+Signed-off-by: Dirk Stieler <stieler@gdsys.de>
+Signed-off-by: Dirk Eibach <eibach@gdsys.de>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- drivers/infiniband/ulp/srp/ib_srp.c |    2 +-
- drivers/infiniband/ulp/srp/ib_srp.h |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/i2c/chips/ds1337.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
---- linux-2.6.18.7.orig/drivers/infiniband/ulp/srp/ib_srp.c
-+++ linux-2.6.18.7/drivers/infiniband/ulp/srp/ib_srp.c
-@@ -1851,7 +1851,7 @@ static void srp_add_one(struct ib_device
- 	 */
- 	srp_dev->fmr_page_shift = max(9, ffs(dev_attr->page_size_cap) - 1);
- 	srp_dev->fmr_page_size  = 1 << srp_dev->fmr_page_shift;
--	srp_dev->fmr_page_mask  = ~((unsigned long) srp_dev->fmr_page_size - 1);
-+	srp_dev->fmr_page_mask  = ~((u64) srp_dev->fmr_page_size - 1);
+--- linux-2.6.18.7.orig/drivers/i2c/chips/ds1337.c
++++ linux-2.6.18.7/drivers/i2c/chips/ds1337.c
+@@ -347,13 +347,19 @@ static void ds1337_init_client(struct i2
  
- 	INIT_LIST_HEAD(&srp_dev->dev_list);
+ 	if ((status & 0x80) || (control & 0x80)) {
+ 		/* RTC not running */
+-		u8 buf[16];
++		u8 buf[1+16];	/* First byte is interpreted as address */
+ 		struct i2c_msg msg[1];
  
---- linux-2.6.18.7.orig/drivers/infiniband/ulp/srp/ib_srp.h
-+++ linux-2.6.18.7/drivers/infiniband/ulp/srp/ib_srp.h
-@@ -87,7 +87,7 @@ struct srp_device {
- 	struct ib_fmr_pool     *fmr_pool;
- 	int			fmr_page_shift;
- 	int			fmr_page_size;
--	unsigned long		fmr_page_mask;
-+	u64			fmr_page_mask;
- };
+ 		dev_dbg(&client->dev, "%s: RTC not running!\n", __FUNCTION__);
  
- struct srp_host {
+ 		/* Initialize all, including STATUS and CONTROL to zero */
+ 		memset(buf, 0, sizeof(buf));
++
++		/* Write valid values in the date/time registers */
++		buf[1+DS1337_REG_DAY] = 1;
++		buf[1+DS1337_REG_DATE] = 1;
++		buf[1+DS1337_REG_MONTH] = 1;
++
+ 		msg[0].addr = client->addr;
+ 		msg[0].flags = 0;
+ 		msg[0].len = sizeof(buf);
 
 --
