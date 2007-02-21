@@ -1,60 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422808AbXBUSzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422814AbXBUS40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422808AbXBUSzk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 13:55:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422809AbXBUSzk
+	id S1422814AbXBUS40 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 13:56:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422812AbXBUS40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 13:55:40 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:41577 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1422808AbXBUSzh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 13:55:37 -0500
-Message-ID: <45DC95A8.1090907@vmware.com>
-Date: Wed, 21 Feb 2007 10:55:36 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Andi Kleen <ak@muc.de>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [patch 00/21] Xen-paravirt: Xen guest implementation for paravirt_ops
- interface
-References: <20070216022449.739760547@goop.org> <Pine.LNX.4.64.0702161244380.26718@schroedinger.engr.sgi.com> <45D61C74.2000601@vmware.com> <Pine.LNX.4.64.0702161312460.28871@schroedinger.engr.sgi.com> <45D626BB.20007@vmware.com> <Pine.LNX.4.64.0702161356380.29218@schroedinger.engr.sgi.com> <20070217135112.GA15102@muc.de> <Pine.LNX.4.64.0702211036060.24941@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0702211036060.24941@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 21 Feb 2007 13:56:26 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:37841 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422803AbXBUS4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 13:56:24 -0500
+Date: Wed, 21 Feb 2007 10:55:55 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Jarek Poplawski <jarkao2@o2.pl>, Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       David Howells <dhowells@redhat.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [RFT] bridge: eliminate port_check workqueue
+Message-ID: <20070221105555.4d1b40a6@freekitty>
+In-Reply-To: <20070221142342.GB134@tv-sign.ru>
+References: <20070220221941.GA707@tv-sign.ru>
+	<20070220162434.72d3ad7b@freekitty>
+	<20070221082345.GB1662@ff.dom.local>
+	<20070221142342.GB134@tv-sign.ru>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Sat, 17 Feb 2007, Andi Kleen wrote:
->
->   
->> That was always its intention. It's not a direct interface to a hypervisor,
->> but an somewhat abstracted interface to a "hypervisor driver" 
->>     
->
-> I thought that hypervisor driver was some binary blob that can be directly
-> accessed via paravirt_ops?
->   
+This is what I was suggesting by getting rid of the work queue completely.
 
-There are no more binary blobs being used by paravirt-ops hypervisors.  
-I prefer the term "open hypercode layer".
+---
+ net/bridge/br_if.c      |   34 ++++++++--------------------------
+ net/bridge/br_notify.c  |   25 +++++++++++--------------
+ net/bridge/br_private.h |    5 ++---
+ 3 files changed, 21 insertions(+), 43 deletions(-)
 
-
->> But you're right that there are currently still quite a lot of hooks
->> being added. I plan to be much more strict on that in the future.
->>     
->
-> And it seems that the hooks are not generic but bound to a particular 
-> hypervisor. Should the Xen specific stuff not be in the binary blob?
->   
-
-Xen doesn't use a hypercode layer, and there is no way to do what they 
-need to do without hooks in the kernel.
-
-Zach
+--- bridge.orig/net/bridge/br_if.c	2007-02-21 10:22:46.000000000 -0800
++++ bridge/net/bridge/br_if.c	2007-02-21 10:53:25.000000000 -0800
+@@ -77,26 +77,15 @@
+  * Called from work queue to allow for calling functions that
+  * might sleep (such as speed check), and to debounce.
+  */
+-static void port_carrier_check(struct work_struct *work)
++void br_port_carrier_check(struct net_bridge_port *p)
+ {
+-	struct net_bridge_port *p;
+-	struct net_device *dev;
+-	struct net_bridge *br;
+-
+-	dev = container_of(work, struct net_bridge_port,
+-			   carrier_check.work)->dev;
+-	work_release(work);
+-
+-	rtnl_lock();
+-	p = dev->br_port;
+-	if (!p)
+-		goto done;
+-	br = p->br;
++	struct net_device *dev = p->dev;
++	struct net_bridge *br = p->br;
+ 
+ 	if (netif_carrier_ok(dev))
+ 		p->path_cost = port_cost(dev);
+ 
+-	if (br->dev->flags & IFF_UP) {
++	if (netif_running(br->dev)) {
+ 		spin_lock_bh(&br->lock);
+ 		if (netif_carrier_ok(dev)) {
+ 			if (p->state == BR_STATE_DISABLED)
+@@ -107,9 +96,6 @@
+ 		}
+ 		spin_unlock_bh(&br->lock);
+ 	}
+-done:
+-	dev_put(dev);
+-	rtnl_unlock();
+ }
+ 
+ static void release_nbp(struct kobject *kobj)
+@@ -162,9 +148,6 @@
+ 
+ 	dev_set_promiscuity(dev, -1);
+ 
+-	if (cancel_delayed_work(&p->carrier_check))
+-		dev_put(dev);
+-
+ 	spin_lock_bh(&br->lock);
+ 	br_stp_disable_port(p);
+ 	spin_unlock_bh(&br->lock);
+@@ -282,7 +265,6 @@
+ 	p->port_no = index;
+ 	br_init_port(p);
+ 	p->state = BR_STATE_DISABLED;
+-	INIT_DELAYED_WORK_NAR(&p->carrier_check, port_carrier_check);
+ 	br_stp_port_timer_init(p);
+ 
+ 	kobject_init(&p->kobj);
+@@ -442,16 +424,16 @@
+ 	dev_set_promiscuity(dev, 1);
+ 
+ 	list_add_rcu(&p->list, &br->port_list);
+-
++
+ 	spin_lock_bh(&br->lock);
+ 	br_stp_recalculate_bridge_id(br);
+ 	br_features_recompute(br);
+-	if (schedule_delayed_work(&p->carrier_check, BR_PORT_DEBOUNCE))
+-		dev_hold(dev);
+-
+ 	spin_unlock_bh(&br->lock);
+ 
+ 	dev_set_mtu(br->dev, br_min_mtu(br));
++
++	br_port_carrier_check(p);
++
+ 	kobject_uevent(&p->kobj, KOBJ_ADD);
+ 
+ 	return 0;
+--- bridge.orig/net/bridge/br_notify.c	2007-02-21 10:26:26.000000000 -0800
++++ bridge/net/bridge/br_notify.c	2007-02-21 10:34:12.000000000 -0800
+@@ -42,51 +42,48 @@
+ 
+ 	br = p->br;
+ 
+-	spin_lock_bh(&br->lock);
+ 	switch (event) {
+ 	case NETDEV_CHANGEMTU:
+ 		dev_set_mtu(br->dev, br_min_mtu(br));
+ 		break;
+ 
+ 	case NETDEV_CHANGEADDR:
++		spin_lock_bh(&br->lock);
+ 		br_fdb_changeaddr(p, dev->dev_addr);
+ 		br_ifinfo_notify(RTM_NEWLINK, p);
+ 		br_stp_recalculate_bridge_id(br);
++		spin_unlock_bh(&br->lock);
+ 		break;
+ 
+ 	case NETDEV_CHANGE:
+-		if (br->dev->flags & IFF_UP)
+-			if (schedule_delayed_work(&p->carrier_check,
+-						BR_PORT_DEBOUNCE))
+-				dev_hold(dev);
++		br_port_carrier_check(p);
+ 		break;
+ 
+ 	case NETDEV_FEAT_CHANGE:
+-		if (br->dev->flags & IFF_UP)
++		spin_lock_bh(&br->lock);
++		if (netif_running(br->dev))
+ 			br_features_recompute(br);
+-
+-		/* could do recursive feature change notification
+-		 * but who would care??
+-		 */
++		spin_unlock_bh(&br->lock);
+ 		break;
+ 
+ 	case NETDEV_DOWN:
++		spin_lock_bh(&br->lock);
+ 		if (br->dev->flags & IFF_UP)
+ 			br_stp_disable_port(p);
++		spin_unlock_bh(&br->lock);
+ 		break;
+ 
+ 	case NETDEV_UP:
++		spin_lock_bh(&br->lock);
+ 		if (netif_carrier_ok(dev) && (br->dev->flags & IFF_UP))
+ 			br_stp_enable_port(p);
++		spin_unlock_bh(&br->lock);
+ 		break;
+ 
+ 	case NETDEV_UNREGISTER:
+-		spin_unlock_bh(&br->lock);
+ 		br_del_if(br, dev);
+-		goto done;
++		break;
+ 	}
+-	spin_unlock_bh(&br->lock);
+ 
+- done:
+ 	return NOTIFY_DONE;
+ }
+--- bridge.orig/net/bridge/br_private.h	2007-02-21 10:22:43.000000000 -0800
++++ bridge/net/bridge/br_private.h	2007-02-21 10:53:49.000000000 -0800
+@@ -16,7 +16,6 @@
+ #define _BR_PRIVATE_H
+ 
+ #include <linux/netdevice.h>
+-#include <linux/miscdevice.h>
+ #include <linux/if_bridge.h>
+ 
+ #define BR_HASH_BITS 8
+@@ -29,7 +28,7 @@
+ 
+ #define BR_PORT_DEBOUNCE (HZ/10)
+ 
+-#define BR_VERSION	"2.2"
++#define BR_VERSION	"2.3"
+ 
+ typedef struct bridge_id bridge_id;
+ typedef struct mac_addr mac_addr;
+@@ -82,7 +81,6 @@
+ 	struct timer_list		hold_timer;
+ 	struct timer_list		message_age_timer;
+ 	struct kobject			kobj;
+-	struct delayed_work		carrier_check;
+ 	struct rcu_head			rcu;
+ };
+ 
+@@ -173,6 +171,7 @@
+ 		      int clone);
+ 
+ /* br_if.c */
++extern void br_port_carrier_check(struct net_bridge_port *p);
+ extern int br_add_bridge(const char *name);
+ extern int br_del_bridge(const char *name);
+ extern void br_cleanup_bridges(void);
