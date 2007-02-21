@@ -1,57 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422819AbXBUTSJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422678AbXBUTTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422819AbXBUTSJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 14:18:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422822AbXBUTSJ
+	id S1422678AbXBUTTe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 14:19:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422824AbXBUTTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 14:18:09 -0500
-Received: from www.osadl.org ([213.239.205.134]:56239 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1422820AbXBUTSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 14:18:08 -0500
+	Wed, 21 Feb 2007 14:19:33 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:38934 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422678AbXBUTTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 14:19:33 -0500
+Date: Wed, 21 Feb 2007 11:19:07 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Faik Uygur <faik@pardus.org.tr>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       jirislaby@gmail.com
 Subject: Re: Linux 2.6.21-rc1
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mingo@elte.hu
-In-Reply-To: <1172082200.8577.56.camel@imap.mvista.com>
+In-Reply-To: <200702211526.41493.faik@pardus.org.tr>
+Message-ID: <Pine.LNX.4.64.0702211118350.4043@woody.linux-foundation.org>
 References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-	 <1172075053.8577.38.camel@imap.mvista.com>
-	 <1172077664.25076.75.camel@localhost.localdomain>
-	 <1172078340.8577.43.camel@imap.mvista.com>
-	 <1172079671.25076.80.camel@localhost.localdomain>
-	 <1172079523.8577.48.camel@imap.mvista.com>
-	 <1172081931.25076.95.camel@localhost.localdomain>
-	 <1172082200.8577.56.camel@imap.mvista.com>
-Content-Type: text/plain
-Date: Wed, 21 Feb 2007 20:23:12 +0100
-Message-Id: <1172085792.25076.119.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+ <200702211526.41493.faik@pardus.org.tr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-21 at 10:23 -0800, Daniel Walker wrote:
-> Right, but eventually there isn't a regular timer interrupt through the
-> io-apic. I don't think in the past IRQ0 stops without the system
-> crashing, so check_timer() could assume the timer (IRQ0) is _always_
-> regular.
+
+
+On Wed, 21 Feb 2007, Faik Uygur wrote:
 > 
-> do you know what the requirement are for routing the NMI through the
-> io-apic? 
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   CHK     include/linux/compile.h
+>   CC [M]  drivers/char/ip2/ip2main.o
+> In file included from drivers/char/ip2/ip2main.c:285:
+> drivers/char/ip2/i2lib.c: In function `iiSendPendingMail_t':
+> drivers/char/ip2/i2lib.c:83: sorry, unimplemented: inlining failed in call 
+> to 'iiSendPendingMail': function body not available
+> drivers/char/ip2/i2lib.c:157: sorry, unimplemented: called from here
+> make[3]: *** [drivers/char/ip2/ip2main.o] Error 1
+> make[2]: *** [drivers/char/ip2] Error 2
+> make[1]: *** [drivers/char] Error 2
+> make: *** [drivers] Error 2
 
-Sorry. I checked. switching PIT off really breaks nmi_watchdog=1, as
-this just mirrors IRQ#0 to the NMI. No IRQ#0 from PIT, no NMI
+Yeah, that thing was crud.
 
-We could keep PIT running with an empty interrupt handler when
-nmi_watchdog=1 is set, but this interferes nicely with broadcasting.
+		Linus
 
-Does nmi_watchdog=2 work ? We might switch to that, when a local APIC is
-available. 
+---
+commit 5fc7e655a50b0a19229a6b4a8a5e23bfedf700a4
+Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
+Date:   Wed Feb 21 11:18:26 2007 -0800
 
-	tglx
+    Fix bogus 'inline' in drivers/char/ip2/i2lib.c
+    
+    Not only was the function way too big to be inlined in the first place,
+    it was used before it was even defined.
+    
+    Noted-by: Faik Uygur <faik@pardus.org.tr>
+    Cc: Jiri Slaby <jirislaby@gmail.com>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
-
-
+diff --git a/drivers/char/ip2/i2lib.c b/drivers/char/ip2/i2lib.c
+index f86fa0c..e46120d 100644
+--- a/drivers/char/ip2/i2lib.c
++++ b/drivers/char/ip2/i2lib.c
+@@ -80,7 +80,7 @@ static int i2RetryFlushOutput(i2ChanStrPtr);
+ // Not a documented part of the library routines (careful...) but the Diagnostic
+ // i2diag.c finds them useful to help the throughput in certain limited
+ // single-threaded operations.
+-static inline void iiSendPendingMail(i2eBordStrPtr);
++static void iiSendPendingMail(i2eBordStrPtr);
+ static void serviceOutgoingFifo(i2eBordStrPtr);
+ 
+ // Functions defined in ip2.c as part of interrupt handling
+@@ -166,7 +166,7 @@ static void iiSendPendingMail_t(unsigned long data)
+ // If any outgoing mail bits are set and there is outgoing mailbox is empty,
+ // send the mail and clear the bits.
+ //******************************************************************************
+-static inline void
++static void
+ iiSendPendingMail(i2eBordStrPtr pB)
+ {
+ 	if (pB->i2eOutMailWaiting && (!pB->i2eWaitingForEmptyFifo) )
