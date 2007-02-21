@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161223AbXBUKDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161224AbXBUKED@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161223AbXBUKDb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 05:03:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161220AbXBUKDT
+	id S1161224AbXBUKED (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 05:04:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161206AbXBUKD4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 05:03:19 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:13194 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161209AbXBUKCr (ORCPT
+	Wed, 21 Feb 2007 05:03:56 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:1047 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161192AbXBUKDv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 05:02:47 -0500
-Date: Wed, 21 Feb 2007 11:02:47 +0100
+	Wed, 21 Feb 2007 05:03:51 -0500
+Date: Wed, 21 Feb 2007 11:03:51 +0100
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
 Cc: holzheu@de.ibm.com
-Subject: [S390] Remove BUG() statement
-Message-ID: <20070221100247.GI13419@skybase>
+Subject: [S390] Replace $(ARCH) macros in Makefile
+Message-ID: <20070221100351.GL13419@skybase>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
@@ -26,29 +26,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Michael Holzheu <holzheu@de.ibm.com>
 
-[S390] Remove BUG() statement
+[S390] Replace $(ARCH) macros in Makefile
 
-To avoid ugly warings for older gccs, we replace
-BUG() with "return NULL", which is just as well.
+Since $(ARCH) is always "s390" we can replace it with "s390".
 
 Signed-off-by: Michael Holzheu <holzheu@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- arch/s390/kernel/ipl.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+ arch/s390/Makefile |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff -urpN linux-2.6/arch/s390/kernel/ipl.c linux-2.6-patched/arch/s390/kernel/ipl.c
---- linux-2.6/arch/s390/kernel/ipl.c	2007-02-21 10:47:32.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/ipl.c	2007-02-21 10:47:32.000000000 +0100
-@@ -91,7 +91,7 @@ static char *shutdown_action_str(enum sh
- 	case SHUTDOWN_STOP:
- 		return SHUTDOWN_STOP_STR;
- 	default:
--		BUG();
-+		return NULL;
- 	}
- }
+diff -urpN linux-2.6/arch/s390/Makefile linux-2.6-patched/arch/s390/Makefile
+--- linux-2.6/arch/s390/Makefile	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6-patched/arch/s390/Makefile	2007-02-21 10:47:36.000000000 +0100
+@@ -82,18 +82,18 @@ AFLAGS		+= $(aflags-y)
+ OBJCOPYFLAGS	:= -O binary
+ LDFLAGS_vmlinux := -e start
+ 
+-head-y		:= arch/$(ARCH)/kernel/head.o arch/$(ARCH)/kernel/init_task.o
++head-y		:= arch/s390/kernel/head.o arch/s390/kernel/init_task.o
+ 
+-core-y		+= arch/$(ARCH)/mm/ arch/$(ARCH)/kernel/ arch/$(ARCH)/crypto/ \
+-		   arch/$(ARCH)/appldata/ arch/$(ARCH)/hypfs/
+-libs-y		+= arch/$(ARCH)/lib/
++core-y		+= arch/s390/mm/ arch/s390/kernel/ arch/s390/crypto/ \
++		   arch/s390/appldata/ arch/s390/hypfs/
++libs-y		+= arch/s390/lib/
+ drivers-y	+= drivers/s390/
+-drivers-$(CONFIG_MATHEMU) += arch/$(ARCH)/math-emu/
++drivers-$(CONFIG_MATHEMU) += arch/s390/math-emu/
+ 
+ # must be linked after kernel
+ drivers-$(CONFIG_OPROFILE)	+= arch/s390/oprofile/
+ 
+-boot		:= arch/$(ARCH)/boot
++boot		:= arch/s390/boot
+ 
+ all: image
  
 -- 
 blue skies,              IBM Deutschland Entwicklung GmbH
