@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161277AbXBUPW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161037AbXBUPYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161277AbXBUPW7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 10:22:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161279AbXBUPW7
+	id S1161037AbXBUPYw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 10:24:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161279AbXBUPYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 10:22:59 -0500
-Received: from mail5.sea5.speakeasy.net ([69.17.117.7]:49284 "EHLO
-	mail5.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161277AbXBUPW6 (ORCPT
+	Wed, 21 Feb 2007 10:24:52 -0500
+Received: from fnoeppeil48.netpark.at ([217.175.205.176]:2805 "EHLO
+	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161037AbXBUPYw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 10:22:58 -0500
-Date: Wed, 21 Feb 2007 10:22:54 -0500 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@d.namei
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
-       Stephen Smalley <sds@tycho.nsa.gov>
-Subject: Re: [PATCH 09/29] selinux: tag avc cache alloc as non-critical
-In-Reply-To: <20070221144842.396545000@taijtu.programming.kicks-ass.net>
-Message-ID: <Pine.LNX.4.64.0702211022340.9134@d.namei>
-References: <20070221144304.512721000@taijtu.programming.kicks-ass.net>
- <20070221144842.396545000@taijtu.programming.kicks-ass.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 21 Feb 2007 10:24:52 -0500
+Date: Wed, 21 Feb 2007 16:24:48 +0100
+From: Manuel Lauss <mano@roarinelk.homelinux.net>
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Cc: Komuro <komurojun-mbn@nifty.com>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG]  PATA_PCMCIA does not work
+Message-ID: <20070221152448.GA10679@roarinelk.homelinux.net>
+References: <20061217212752.d93816b4.komurojun-mbn@nifty.com> <20061217040222.GD17561@ftp.linux.org.uk> <20070211101537.e40fa309.komurojun-mbn@nifty.com> <20070211114013.65b2be2c.komurojun-mbn@nifty.com> <20070218110914.888de729.komurojun-mbn@nifty.com> <20070221153729.5eab83b6@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070221153729.5eab83b6@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Feb 2007, Peter Zijlstra wrote:
+On Wed, Feb 21, 2007 at 03:37:29PM +0000, Alan wrote:
+> Does this fix the oops ?
+> 
+> Alan
+> 
+> 
+> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.20-mm2/drivers/ata/pata_pcmcia.c linux-2.6.20-mm2/drivers/ata/pata_pcmcia.c
+> --- linux.vanilla-2.6.20-mm2/drivers/ata/pata_pcmcia.c	2007-02-20 13:37:58.000000000 +0000
+> +++ linux-2.6.20-mm2/drivers/ata/pata_pcmcia.c	2007-02-21 14:06:58.792707976 +0000
+> @@ -308,7 +342,6 @@
+>  		if (info->ndev) {
+>  			struct ata_host *host = dev_get_drvdata(dev);
+>  			ata_host_detach(host);
+> -			dev_set_drvdata(dev, NULL);
+>  		}
+>  		info->ndev = 0;
+>  		pdev->priv = NULL;
 
-> Failing to allocate a cache entry will only harm performance.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  security/selinux/avc.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+This bug is also present in 2.6.21-rc1, and this patch
+indeed fixes it.
 
-Acked-by: James Morris <jmorris@namei.org>
-
-> 
-> Index: linux-2.6-git/security/selinux/avc.c
-> ===================================================================
-> --- linux-2.6-git.orig/security/selinux/avc.c	2007-02-14 08:31:13.000000000 +0100
-> +++ linux-2.6-git/security/selinux/avc.c	2007-02-14 10:10:47.000000000 +0100
-> @@ -332,7 +332,7 @@ static struct avc_node *avc_alloc_node(v
->  {
->  	struct avc_node *node;
->  
-> -	node = kmem_cache_zalloc(avc_node_cachep, GFP_ATOMIC);
-> +	node = kmem_cache_zalloc(avc_node_cachep, GFP_ATOMIC|__GFP_NOMEMALLOC);
->  	if (!node)
->  		goto out;
->  
-> 
-> 
+Thanks,
 
 -- 
-James Morris
-<jmorris@namei.org>
+ ml.
