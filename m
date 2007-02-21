@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422734AbXBURkL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422729AbXBURkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422734AbXBURkL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 12:40:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422733AbXBURkL
+	id S1422729AbXBURkz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 12:40:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422731AbXBURky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 12:40:11 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:41948 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422722AbXBURkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 12:40:09 -0500
-Date: Wed, 21 Feb 2007 12:37:40 -0500
-From: Dave Jones <davej@redhat.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Message-ID: <20070221173740.GD19851@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Jean Delvare <khali@linux-fr.org>,
-	Chuck Ebbert <cebbert@redhat.com>, linux-acpi@vger.kernel.org,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	lm-sensors@lm-sensors.org
-References: <45D5EA88.7090300@redhat.com> <45D6DDCE.5050803@assembler.cz> <45D7461A.2040808@redhat.com> <45D8D6AE.3000204@assembler.cz> <45DB0EEA.2010205@redhat.com> <20070220191142.GE16614@redhat.com> <20070221171737.b6592104.khali@linux-fr.org>
+	Wed, 21 Feb 2007 12:40:54 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:7326 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422729AbXBURky (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 12:40:54 -0500
+Subject: Re: Linux 2.6.21-rc1
+From: Daniel Walker <dwalker@mvista.com>
+To: tglx@linutronix.de
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mingo@elte.hu
+In-Reply-To: <1172079671.25076.80.camel@localhost.localdomain>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
+	 <1172075053.8577.38.camel@imap.mvista.com>
+	 <1172077664.25076.75.camel@localhost.localdomain>
+	 <1172078340.8577.43.camel@imap.mvista.com>
+	 <1172079671.25076.80.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 21 Feb 2007 09:38:43 -0800
+Message-Id: <1172079523.8577.48.camel@imap.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070221171737.b6592104.khali@linux-fr.org>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 21, 2007 at 05:17:37PM +0100, Jean Delvare wrote:
- > On Tue, 20 Feb 2007 14:11:42 -0500, Dave Jones wrote:
- > > On Tue, Feb 20, 2007 at 10:08:26AM -0500, Chuck Ebbert wrote:
- > >  
- > >  > 	i2c_core
- > >  > 	i2c_ec
- > >  > 	i2c_piix4
- > >  > 	asus_acpi (on a Compaq???)
- > >  > 	sbs
- > > 
- > > Something is pulling in asus_acpi as a dependancy. I've never
- > > figured out what the cause is.  For a long time I was thinking
- > > that we had an explicit modprobe for it in an initscript, but
- > > grepping for it in /etc turns up zip.
- > 
- > How could it be, given that asus_acpi doesn't export any symbol?
- 
-If I knew I'd have fixed it by now.
+On Wed, 2007-02-21 at 18:41 +0100, Thomas Gleixner wrote:
+> On Wed, 2007-02-21 at 09:19 -0800, Daniel Walker wrote:
+> > > At this point the PIT / HPET _is_ active and incrementing jiffies. The
+> > > switch to local apic timers happens afterwards. 
+> > 
+> > Could be the switch over then which confuses the NMI . 
+> 
+> Why? The switch just stops the PIT/HPET. It does not fiddle with IO_APIC
+> and friends at all.
 
-		Dave
+I'm not an expert on the io-apic, but the check_timer() function seemed
+to assume IRQ0 was happening regularly ..
 
--- 
-http://www.codemonkey.org.uk
+> > ftp://source.mvista.com/pub/dwalker/tglx/
+> 
+> Nothing obvious. Bisect time :(
+
+Well, I'm pretty sure it's HRT, cause in prior versions this only
+happened when HRT is enabled. Then you guys went to the lapic all the
+time, and now this is happening all the time ..
+
+You can't reproduce this?
+
+Daniel
+
