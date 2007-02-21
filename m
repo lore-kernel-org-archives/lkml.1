@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965304AbXBUBye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964822AbXBUBzH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965304AbXBUBye (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 20:54:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965324AbXBUBxH
+	id S964822AbXBUBzH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 20:55:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965076AbXBUBwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 20:53:07 -0500
-Received: from mail.suse.de ([195.135.220.2]:42969 "EHLO mx1.suse.de"
+	Tue, 20 Feb 2007 20:52:37 -0500
+Received: from mx2.suse.de ([195.135.220.15]:35826 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965312AbXBUBxB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 20:53:01 -0500
-Date: Tue, 20 Feb 2007 17:51:37 -0800
+	id S964838AbXBUBwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 20:52:09 -0500
+Date: Tue, 20 Feb 2007 17:50:47 -0800
 From: Greg KH <greg@kroah.com>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Andrew Morton <akpm@osdl.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -20,15 +19,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jeff Dike <jdike@addtoit.com>, Andi Kleen <ak@suse.de>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       Paolo Blaisorblade Giarrusso <blaisorblade@yahoo.it>
-Subject: [patch 18/18] x86_64: fix 2.6.18 regression - PTRACE_OLDSETOPTIONS should be accepted
-Message-ID: <20070221015137.GS3684@kroah.com>
+       Hans Verkuil <hverkuil@xs4all.nl>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: [patch 11/18] v4l: cx2341x audio_properties is an u16, not u8
+Message-ID: <20070221015047.GL3684@kroah.com>
 References: <20070221014413.282048309@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86_64-fix-2.6.18-regression-ptrace_oldsetoptions-should-be-accepted.patch"
+Content-Disposition: inline; filename="v4l-cx2341x-audio_properties-is-an-u16-not-u8.patch"
 In-Reply-To: <20070221014927.GA3684@kroah.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,46 +35,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
+From: Hans Verkuil <hverkuil@xs4all.nl>
 
-Also PTRACE_OLDSETOPTIONS should be accepted, as done by kernel/ptrace.c and
-forced by binary compatibility. UML/32bit breaks because of this - since it is wise
-enough to use PTRACE_OLDSETOPTIONS to be binary compatible with 2.4 host
-kernels.
+This bug broke the MPEG audio mode controls.
 
-Until 2.6.17 (commit f0f2d6536e3515b5b1b7ae97dc8f176860c8c2ce) we had:
+(cherry picked from commit cb2c7b4927c8f376b7ba9557978d8c59ed472664)
 
-       default:
-                return sys_ptrace(request, pid, addr, data);
-
-Instead here we have:
-        case PTRACE_GET_THREAD_AREA:
-	case ...:
-                return sys_ptrace(request, pid, addr, data);
-
-        default:
-                return -EINVAL;
-
-This change was a style change - when a case is added, it must be explicitly
-tested this way. In this case, not enough testing was done.
-
-Cc: Andi Kleen <ak@suse.de>
-Signed-off-by: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
+Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86_64/ia32/ptrace32.c |    1 +
- 1 file changed, 1 insertion(+)
+ include/media/cx2341x.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-2.6.18.7.orig/arch/x86_64/ia32/ptrace32.c
-+++ linux-2.6.18.7/arch/x86_64/ia32/ptrace32.c
-@@ -239,6 +239,7 @@ asmlinkage long sys32_ptrace(long reques
- 	case PTRACE_SINGLESTEP:
- 	case PTRACE_DETACH:
- 	case PTRACE_SYSCALL:
-+	case PTRACE_OLDSETOPTIONS:
- 	case PTRACE_SETOPTIONS:
- 		return sys_ptrace(request, pid, addr, data); 
+--- linux-2.6.18.7.orig/include/media/cx2341x.h
++++ linux-2.6.18.7/include/media/cx2341x.h
+@@ -49,7 +49,7 @@ struct cx2341x_mpeg_params {
+ 	enum v4l2_mpeg_audio_mode_extension audio_mode_extension;
+ 	enum v4l2_mpeg_audio_emphasis audio_emphasis;
+ 	enum v4l2_mpeg_audio_crc audio_crc;
+-	u8 audio_properties;
++	u16 audio_properties;
  
+ 	/* video */
+ 	enum v4l2_mpeg_video_encoding video_encoding;
 
 --
