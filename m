@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422638AbXBUPxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161309AbXBUPxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422638AbXBUPxk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 10:53:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422637AbXBUPxk
+	id S1161309AbXBUPxu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 10:53:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161314AbXBUPxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 10:53:40 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:41927 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161309AbXBUPxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 10:53:38 -0500
-Date: Wed, 21 Feb 2007 21:23:05 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@osdl.org, paulmck@us.ibm.com,
-       mingo@elte.hu, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl
-Subject: Re: [RFC PATCH(Experimental) 2/4] Revert changes to workqueue.c
-Message-ID: <20070221155305.GB1596@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070216052626.GB8373@in.ibm.com> <20070216153321.GB83@tv-sign.ru> <20070216164730.GD21457@in.ibm.com> <20070216235939.GB244@tv-sign.ru> <20070217022940.GB25924@in.ibm.com> <20070217215928.GA563@tv-sign.ru> <20070220151220.GB4960@in.ibm.com> <20070220200936.GB85@tv-sign.ru> <20070221062947.GG20820@in.ibm.com> <20070221143010.GC134@tv-sign.ru>
+	Wed, 21 Feb 2007 10:53:50 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:40235 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161296AbXBUPxs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 10:53:48 -0500
+Subject: Re: [PATCH 03/29] mm: allow PF_MEMALLOC from softirq context
+From: Arjan van de Ven <arjan@infradead.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>
+In-Reply-To: <20070221144841.823705000@taijtu.programming.kicks-ass.net>
+References: <20070221144304.512721000@taijtu.programming.kicks-ass.net>
+	 <20070221144841.823705000@taijtu.programming.kicks-ass.net>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Wed, 21 Feb 2007 16:53:37 +0100
+Message-Id: <1172073217.3531.200.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070221143010.GC134@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 21, 2007 at 05:30:10PM +0300, Oleg Nesterov wrote:
-> Agreed. Note that we don't need the new "del_work". It is always safe to
-> use cancel_work_sync() if we know that the workqueue is frozen, it won't
-> block. We can also do
-> 
-> 	if (!cancel_delayed_work())
-> 		cancel_work_sync();
-> 
-> but it is ok to do cancel_work_sync() unconditionally.
 
-Argh ..I should keep referring to recent sources. I didnt see
-cancel_work_sync() in my sources (2.6.20-rc4) and hence invented that 
-del_work()! Anyway thanx for pointing out.
+> Index: linux-2.6-git/kernel/softirq.c
+> ===================================================================
+> --- linux-2.6-git.orig/kernel/softirq.c	2006-12-14 10:02:18.000000000 +0100
+> +++ linux-2.6-git/kernel/softirq.c	2006-12-14 10:02:52.000000000 +0100
+> @@ -209,6 +209,8 @@ asmlinkage void __do_softirq(void)
+>  	__u32 pending;
+>  	int max_restart = MAX_SOFTIRQ_RESTART;
+>  	int cpu;
+> +	unsigned long pflags = current->flags;
+> +	current->flags &= ~PF_MEMALLOC;
+>  
+>  	pending = local_softirq_pending();
+>  	account_system_vtime(current);
+> @@ -247,6 +249,7 @@ restart:
+>  
+>  	account_system_vtime(current);
+>  	_local_bh_enable();
+> +	current->flags = pflags;
 
-This change will probably let us do CPU_DOWN_PREPARE after
-freeze_processes(). However I will keep my fingers crossed on whether it
-is really a good idea to send CPU_DOWN/UP_PREPARE after
-freeze_processes() until we get more review/testing results.
+this wipes out all the flags in one go.... evil.
+What if something just selected this process for OOM killing? you nuke
+that flag here again. Would be nicer if only the PF_MEMALLOC bit got
+inherited in the restore path..
 
--- 
-Regards,
-vatsa
+
+
+
