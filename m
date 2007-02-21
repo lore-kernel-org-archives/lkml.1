@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161224AbXBUKED@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161201AbXBUKEH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161224AbXBUKED (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 05:04:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161206AbXBUKD4
+	id S1161201AbXBUKEH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 05:04:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161220AbXBUKDd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 05:03:56 -0500
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:1047 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161192AbXBUKDv (ORCPT
+	Wed, 21 Feb 2007 05:03:33 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:13217 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161222AbXBUKD0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 05:03:51 -0500
-Date: Wed, 21 Feb 2007 11:03:51 +0100
+	Wed, 21 Feb 2007 05:03:26 -0500
+Date: Wed, 21 Feb 2007 11:03:26 +0100
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: holzheu@de.ibm.com
-Subject: [S390] Replace $(ARCH) macros in Makefile
-Message-ID: <20070221100351.GL13419@skybase>
+Cc: heiko.carstens@de.ibm.com
+Subject: [S390] nss: Free unused memory in kernel image.
+Message-ID: <20070221100326.GK13419@skybase>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
@@ -24,47 +24,139 @@ User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Holzheu <holzheu@de.ibm.com>
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-[S390] Replace $(ARCH) macros in Makefile
+[S390] nss: Free unused memory in kernel image.
 
-Since $(ARCH) is always "s390" we can replace it with "s390".
+With CONFIG_SHARED_KERNEL the kernel text segment that might be in a
+read only memory sections starts at 1MB. Memory between 0x12000 and
+0x100000 is unused then. Free this, so we have appr. an extra MB
+of memory available.
 
-Signed-off-by: Michael Holzheu <holzheu@de.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- arch/s390/Makefile |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ arch/s390/kernel/head31.S   |   15 ++-------------
+ arch/s390/kernel/head64.S   |   16 ++--------------
+ arch/s390/kernel/ipl.c      |    7 +++++++
+ arch/s390/kernel/setup.c    |    7 ++++++-
+ drivers/s390/cio/cio.c      |    2 +-
+ include/asm-s390/sections.h |    2 +-
+ 6 files changed, 19 insertions(+), 30 deletions(-)
 
-diff -urpN linux-2.6/arch/s390/Makefile linux-2.6-patched/arch/s390/Makefile
---- linux-2.6/arch/s390/Makefile	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6-patched/arch/s390/Makefile	2007-02-21 10:47:36.000000000 +0100
-@@ -82,18 +82,18 @@ AFLAGS		+= $(aflags-y)
- OBJCOPYFLAGS	:= -O binary
- LDFLAGS_vmlinux := -e start
+diff -urpN linux-2.6/arch/s390/kernel/head31.S linux-2.6-patched/arch/s390/kernel/head31.S
+--- linux-2.6/arch/s390/kernel/head31.S	2007-02-21 10:47:06.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/head31.S	2007-02-21 10:47:34.000000000 +0100
+@@ -148,20 +148,9 @@ startup_continue:
+ .Lstartup_init:
+ 	    .long startup_init
  
--head-y		:= arch/$(ARCH)/kernel/head.o arch/$(ARCH)/kernel/init_task.o
-+head-y		:= arch/s390/kernel/head.o arch/s390/kernel/init_task.o
+-	.globl ipl_schib
+-ipl_schib:
+-	.rept 13
+-	.long 0
+-	.endr
+-
+-	.globl ipl_flags
+-ipl_flags:
+-	.long 0
+-	.globl ipl_devno
+-ipl_devno:
+-	.word 0
+-
+ 	.org	0x12000
++	.globl	_ehead
++_ehead:
+ #ifdef CONFIG_SHARED_KERNEL
+ 	.org	0x100000
+ #endif
+diff -urpN linux-2.6/arch/s390/kernel/head64.S linux-2.6-patched/arch/s390/kernel/head64.S
+--- linux-2.6/arch/s390/kernel/head64.S	2007-02-21 10:47:06.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/head64.S	2007-02-21 10:47:34.000000000 +0100
+@@ -154,21 +154,9 @@ startup_continue:
+ .Lparmaddr:
+ 	.quad	PARMAREA
  
--core-y		+= arch/$(ARCH)/mm/ arch/$(ARCH)/kernel/ arch/$(ARCH)/crypto/ \
--		   arch/$(ARCH)/appldata/ arch/$(ARCH)/hypfs/
--libs-y		+= arch/$(ARCH)/lib/
-+core-y		+= arch/s390/mm/ arch/s390/kernel/ arch/s390/crypto/ \
-+		   arch/s390/appldata/ arch/s390/hypfs/
-+libs-y		+= arch/s390/lib/
- drivers-y	+= drivers/s390/
--drivers-$(CONFIG_MATHEMU) += arch/$(ARCH)/math-emu/
-+drivers-$(CONFIG_MATHEMU) += arch/s390/math-emu/
+-	.globl	ipl_schib
+-ipl_schib:
+-	.rept 13
+-	.long 0
+-	.endr
+-
+-	.globl	ipl_flags
+-ipl_flags:
+-	.long	0
+-	.globl	ipl_devno
+-ipl_devno:
+-	.word 0
+-
+ 	.org	0x12000
+-
++	.globl	_ehead
++_ehead:
+ #ifdef CONFIG_SHARED_KERNEL
+ 	.org	0x100000
+ #endif
+diff -urpN linux-2.6/arch/s390/kernel/ipl.c linux-2.6-patched/arch/s390/kernel/ipl.c
+--- linux-2.6/arch/s390/kernel/ipl.c	2007-02-21 10:47:33.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/ipl.c	2007-02-21 10:47:34.000000000 +0100
+@@ -43,6 +43,13 @@ enum ipl_type {
+ #define IPL_FCP_STR	 "fcp"
+ #define IPL_NSS_STR	 "nss"
  
- # must be linked after kernel
- drivers-$(CONFIG_OPROFILE)	+= arch/s390/oprofile/
++/*
++ * Must be in data section since the bss section
++ * is not cleared when these are accessed.
++ */
++u16 ipl_devno __attribute__((__section__(".data"))) = 0;
++u32 ipl_flags __attribute__((__section__(".data"))) = 0;
++
+ static char *ipl_type_str(enum ipl_type type)
+ {
+ 	switch (type) {
+diff -urpN linux-2.6/arch/s390/kernel/setup.c linux-2.6-patched/arch/s390/kernel/setup.c
+--- linux-2.6/arch/s390/kernel/setup.c	2007-02-21 10:47:32.000000000 +0100
++++ linux-2.6-patched/arch/s390/kernel/setup.c	2007-02-21 10:47:34.000000000 +0100
+@@ -690,9 +690,14 @@ setup_memory(void)
+ 	psw_set_key(PAGE_DEFAULT_KEY);
  
--boot		:= arch/$(ARCH)/boot
-+boot		:= arch/s390/boot
+ 	free_bootmem_with_active_regions(0, max_pfn);
+-	reserve_bootmem(0, PFN_PHYS(start_pfn));
  
- all: image
+ 	/*
++	 * Reserve memory used for lowcore/command line/kernel image.
++	 */
++	reserve_bootmem(0, (unsigned long)_ehead);
++	reserve_bootmem((unsigned long)_stext,
++			PFN_PHYS(start_pfn) - (unsigned long)_stext);
++	/*
+ 	 * Reserve the bootmem bitmap itself as well. We do this in two
+ 	 * steps (first step was init_bootmem()) because this catches
+ 	 * the (very unlikely) case of us accidentally initializing the
+diff -urpN linux-2.6/drivers/s390/cio/cio.c linux-2.6-patched/drivers/s390/cio/cio.c
+--- linux-2.6/drivers/s390/cio/cio.c	2007-02-21 10:47:32.000000000 +0100
++++ linux-2.6-patched/drivers/s390/cio/cio.c	2007-02-21 10:47:34.000000000 +0100
+@@ -1048,7 +1048,7 @@ void reipl_ccw_dev(struct ccw_dev_id *de
+ 	do_reipl_asm(*((__u32*)&schid));
+ }
  
+-extern struct schib ipl_schib;
++static struct schib __initdata ipl_schib;
+ 
+ /*
+  * ipl_save_parameters gets called very early. It is not allowed to access
+diff -urpN linux-2.6/include/asm-s390/sections.h linux-2.6-patched/include/asm-s390/sections.h
+--- linux-2.6/include/asm-s390/sections.h	2007-02-21 10:47:14.000000000 +0100
++++ linux-2.6-patched/include/asm-s390/sections.h	2007-02-21 10:47:34.000000000 +0100
+@@ -3,6 +3,6 @@
+ 
+ #include <asm-generic/sections.h>
+ 
+-extern char _eshared[];
++extern char _eshared[], _ehead[];
+ 
+ #endif
 -- 
 blue skies,              IBM Deutschland Entwicklung GmbH
    Martin                Vorsitzender des Aufsichtsrats: Johann Weihen
