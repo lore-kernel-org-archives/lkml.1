@@ -1,111 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161317AbXBUQAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161302AbXBUQCF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161317AbXBUQAh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 11:00:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422632AbXBUQAh
+	id S1161302AbXBUQCF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 11:02:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161299AbXBUQCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 11:00:37 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:9637 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161317AbXBUQAg (ORCPT
+	Wed, 21 Feb 2007 11:02:05 -0500
+Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:60847 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161302AbXBUQCD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 11:00:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:reply-to:x-priority:message-id:to:cc:subject:in-reply-to:references:mime-version:content-type:content-transfer-encoding;
-        b=pBVNhrtCGNwXXVDBi7Ay866+Y+d2Xou1ub/1JbsDOpZ3V2y85tuEvcQzgIsENLq7Vb2oGFCa6p0pNNUHIUx6DlLkuTmODnykL4LAiRlpJOnODGwT8FfE4ErjVBUQChzBtwE48I3nuHSRYNPYhmeyV9suzIcPOUhHDkl1VLk/e1U=
-Date: Wed, 21 Feb 2007 18:00:37 +0200
-From: Paul Sokolovsky <pmiscml@gmail.com>
-Reply-To: Paul Sokolovsky <pmiscml@gmail.com>
-X-Priority: 3 (Normal)
-Message-ID: <1056908425.20070221180037@gmail.com>
-To: Rodolfo Giometti <giometti@enneenne.com>
-CC: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       <linux-fbdev-devel@lists.sourceforge.net>,
-       Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: [PATCH 1/1] PXAFB: Support for backlight control
-In-Reply-To: <20070221145353.GA23916@enneenne.com>
-References: <20070221145353.GA23916@enneenne.com>
+	Wed, 21 Feb 2007 11:02:03 -0500
+Date: Wed, 21 Feb 2007 17:02:13 +0100
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: linux-kernel@vger.kernel.org
+Message-ID: <20070221160213.GK4641@enneenne.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Advice on backlight support
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Rodolfo,
+Hello,
 
-Wednesday, February 21, 2007, 4:53:53 PM, you wrote:
+I'd like to add backlight support for input devices since my custom
+board has a backlighted mini keyboard.
 
-> Backlight control support for the PXA fram buffer.
+It could be acceptable to move the code from drivers/video/backlight/
+to drivers/backlight/ renaming the "Backlight & LCD" name into
+"Backlight" and adding two new entries "LCD" and, maybe, "Input" (or
+something like that?).
 
+Thanks in advance,
 
-  Here're some comments: backlight support is already confusing
-matter, and your patch IMHO makes it even more confusing for PXAFB.
-
-  Before even start with details, let's first think what backlight has
-to do with framebuffer? The facts that the physical object implementing
-the former is usually put in close proximity to the latter, and they mostly
-should be powered on synchronously, probably don't yet mean that
-each and every FB driver should include good chunk of code to support
-doing BL in its own special way.
-
-  On the other hand, there's already
-drivers/video/backlight/backlight.c which provides generic BL support,
-implemented using notifier callback for FB core. Moreover, there's
-corgi_bl.c driver which, contrary to its name is a generic driver for
-embedded/PDA device backlight. It essentially subclassses pretty
-abstract backlight.c, and provides good implementation for most BL
-implementation. What you really need to do to use it, is to supply
-single machine-dependent method, set_bl_intensity(). That method is
-usually <10 lines.
-
-  With this in mind, adhoc backlight handlers in pxafb and few other
-drivers are artifacts of older times. And it's sad they are tried to
-be resurrected instead of being removed.
-
-
-> Signed-off-by: Rodolfo Giometti <giometti@enneenne.com>
-
-> ---
-
-> Each platform should define the backlight properties in its own setup
-> file in "linux/arch/arm/mach-pxa/" as follow:
-
->    static int pxafb_bl_get_brightness(struct backlight_device *bl_dev)
->    {
->         return read_the_backlight_brightness();
->    }
-
->    static int pxafb_bl_update_status(struct backlight_device *bl_dev)
->    {
->            int perc, ret;
-
->            if (bl_dev->props->power != FB_BLANK_UNBLANK ||
->                bl_dev->props->fb_blank != FB_BLANK_UNBLANK)
->                    perc = 0;
->            else
->                    perc = bl_dev->props->brightness;
-
->         write_the_backlight_brightness(perc);
-
->            return 0;
->    }
-
->    static struct backlight_properties wwpc1100_backlight_props = {
->            .get_brightness         = pxafb_bl_get_brightness,
->            .update_status          = pxafb_bl_update_status,
->            .max_brightness         = 100,
->    };
->       
-> and then seting up the fb info as follow:
-
->    wwpc1100_pxafb_info.modes = &special_modes;
->    wwpc1100_pxafb_info.bl_props = &wwpc1100_backlight_props;
->    set_pxa_fb_info(&wwpc1100_pxafb_info);
-
-
+Rodolfo
 
 -- 
-Best regards,
- Paul                            mailto:pmiscml@gmail.com
 
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
