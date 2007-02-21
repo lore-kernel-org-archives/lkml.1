@@ -1,82 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423169AbXBUV0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423142AbXBUVbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423169AbXBUV0S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 16:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423161AbXBUV0Q
+	id S1423142AbXBUVbh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 16:31:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423141AbXBUVbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 16:26:16 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:8407 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423152AbXBUVZl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 16:25:41 -0500
-Subject: Re: Linux 2.6.21-rc1
-From: Daniel Walker <dwalker@mvista.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: tglx@linutronix.de,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mingo@elte.hu
-In-Reply-To: <Pine.LNX.4.64.0702211302300.4043@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-	 <1172075053.8577.38.camel@imap.mvista.com>
-	 <1172077664.25076.75.camel@localhost.localdomain>
-	 <1172078340.8577.43.camel@imap.mvista.com>
-	 <1172079671.25076.80.camel@localhost.localdomain>
-	 <1172079523.8577.48.camel@imap.mvista.com>
-	 <1172081931.25076.95.camel@localhost.localdomain>
-	 <1172082200.8577.56.camel@imap.mvista.com>
-	 <1172085792.25076.119.camel@localhost.localdomain>
-	 <1172088050.8577.71.camel@imap.mvista.com>
-	 <1172090603.25076.127.camel@localhost.localdomain>
-	 <1172090973.8577.77.camel@imap.mvista.com>
-	 <Pine.LNX.4.64.0702211302300.4043@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 21 Feb 2007 13:23:30 -0800
-Message-Id: <1172093010.8577.95.camel@imap.mvista.com>
+	Wed, 21 Feb 2007 16:31:37 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:49679 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423142AbXBUVbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 16:31:36 -0500
+Date: Wed, 21 Feb 2007 13:31:12 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       <linux-usb-devel@lists.sourceforge.net>,
+       Pete Zaitcev <zaitcev@redhat.com>, Greg KH <gregkh@suse.de>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] 2.6.20 kernel hang with USB drive and vfat
+ doing ftruncate
+Message-Id: <20070221133112.aec2bdac.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0702211621310.3435-100000@iolanthe.rowland.org>
+References: <20070221125736.e5ff4206.akpm@linux-foundation.org>
+	<Pine.LNX.4.44L0.0702211621310.3435-100000@iolanthe.rowland.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-21 at 13:06 -0800, Linus Torvalds wrote:
+On Wed, 21 Feb 2007 16:22:17 -0500 (EST)
+Alan Stern <stern@rowland.harvard.edu> wrote:
+
+> On Wed, 21 Feb 2007, Andrew Morton wrote:
 > 
-> On Wed, 21 Feb 2007, Daniel Walker wrote:
+> > > > It seems like usb-storage and aio are completely off in the weeds.   
+> > > > Ideas?
+> > > 
+> > > It seems usb-storage should remove some kmalloc and use mempool() for
+> > > urb...  Is someone working on this? And idea?
 > > 
-> > Here's the final commit from the bisect which caused it . It says "No
-> > changes to existing functionality" ?
+> > I think Pete said that we're supposed to be using GFP_NOIO in there.
 > 
-> Ok, it wouldn't be the first time some change that is supposed to change 
-> nothing does actually change something.
+> We _are_ using it.
 
-Yeah , maybe I screwed something up. First time I've done a git bisect.
+How admirably prompt.
 
-> That said, one thing to worry about when doing bisection: the kernel 
-> configuration.
+> > Not that it'll help much: the VM calls throttle_vm_writeout() for GFP_NOIO
+> > and GFP_NOFS allocations, which is a bug.  Because if the caller holds
+> > locks which prevent filesystem or IO progress, we deadlock.
+> > 
+> > I'll fix the VM if someone else fixes USB ;)
 > 
-> If you always just do "make oldconfig" or something, the kernel config for 
-> the thing you test will depend on the _previous_ kernel you compiled, and 
-> that is not always what you want. I've once had a failing kernel, did 
-> bisection, and it turned out that since I had gone back in time to before 
-> the option that caused the failure even existed, I had (by mistake) then 
-> compiled some of the later kernels without that option enabled, and called 
-> them "good". 
+> What else needs to be fixed?
 
-In this case I don't think anything was specifically turned on, beyond
-SMP. For instance HRT/dynamic tick was off.
+Would be nice if someone can confirm that this fixes it:
 
-I didn't run "make oldconfig", but just running "make" asked for options
-that just got added, which was nice.
 
-> The end result: "git bisect" didn't actually end up pointing to the right 
-> commit, just because I had effectively lied to it.
-> 
-> That said, considering that you did get a commit that doesn't look 
-> entirely unlikely (and that clearly changes things that are relevant), I 
-> suspect you did actually find the right one.
 
-I think if it's not that exact commit it's still one in that set. I
-mainly wanted to confirm that it was an hrt/dynamic tick issue , and not
-some left field patches..
+From: Andrew Morton <akpm@linux-foundation.org>
 
-Daniel
+throttle_vm_writeout() is designed to wait for the dirty levels to subside. 
+But if the caller holds IO or FS locks, we might be holding up that writeout.
+
+So change it to take a single nap to give other devices a chance to clean some
+memory, then return.
+
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: Pete Zaitcev <zaitcev@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/writeback.h |    2 +-
+ mm/page-writeback.c       |   13 +++++++++++--
+ mm/vmscan.c               |    2 +-
+ 3 files changed, 13 insertions(+), 4 deletions(-)
+
+diff -puN mm/vmscan.c~throttle_vm_writeout-dont-loop-on-gfp_nofs-and-gfp_noio-allocations mm/vmscan.c
+--- a/mm/vmscan.c~throttle_vm_writeout-dont-loop-on-gfp_nofs-and-gfp_noio-allocations
++++ a/mm/vmscan.c
+@@ -952,7 +952,7 @@ static unsigned long shrink_zone(int pri
+ 		}
+ 	}
+ 
+-	throttle_vm_writeout();
++	throttle_vm_writeout(sc->gfp_mask);
+ 
+ 	atomic_dec(&zone->reclaim_in_progress);
+ 	return nr_reclaimed;
+diff -puN mm/page-writeback.c~throttle_vm_writeout-dont-loop-on-gfp_nofs-and-gfp_noio-allocations mm/page-writeback.c
+--- a/mm/page-writeback.c~throttle_vm_writeout-dont-loop-on-gfp_nofs-and-gfp_noio-allocations
++++ a/mm/page-writeback.c
+@@ -296,11 +296,21 @@ void balance_dirty_pages_ratelimited_nr(
+ }
+ EXPORT_SYMBOL(balance_dirty_pages_ratelimited_nr);
+ 
+-void throttle_vm_writeout(void)
++void throttle_vm_writeout(gfp_t gfp_mask)
+ {
+ 	long background_thresh;
+ 	long dirty_thresh;
+ 
++	if ((gfp_mask & (__GFP_FS|__GFP_IO)) != (__GFP_FS|__GFP_IO)) {
++		/*
++		 * The caller might hold locks which can prevert IO completion
++		 * or progress in the filesystem.  So we cannot just sit here
++		 * waiting for IO to complete.
++		 */
++		congestion_wait(WRITE, HZ/10);
++		return;
++	}
++
+         for ( ; ; ) {
+ 		get_dirty_limits(&background_thresh, &dirty_thresh, NULL);
+ 
+@@ -317,7 +327,6 @@ void throttle_vm_writeout(void)
+         }
+ }
+ 
+-
+ /*
+  * writeback at least _min_pages, and keep writing until the amount of dirty
+  * memory is less than the background threshold, or until we're all clean.
+diff -puN include/linux/writeback.h~throttle_vm_writeout-dont-loop-on-gfp_nofs-and-gfp_noio-allocations include/linux/writeback.h
+--- a/include/linux/writeback.h~throttle_vm_writeout-dont-loop-on-gfp_nofs-and-gfp_noio-allocations
++++ a/include/linux/writeback.h
+@@ -84,7 +84,7 @@ static inline void wait_on_inode(struct 
+ int wakeup_pdflush(long nr_pages);
+ void laptop_io_completion(void);
+ void laptop_sync_completion(void);
+-void throttle_vm_writeout(void);
++void throttle_vm_writeout(gfp_t gfp_mask);
+ 
+ /* These are exported to sysctl. */
+ extern int dirty_background_ratio;
+_
 
