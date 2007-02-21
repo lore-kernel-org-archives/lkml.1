@@ -1,73 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161181AbXBULmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932435AbXBULoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161181AbXBULmW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 06:42:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932457AbXBULmV
+	id S932435AbXBULoM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 06:44:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932417AbXBULoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 06:42:21 -0500
-Received: from wx-out-0506.google.com ([66.249.82.230]:42595 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932444AbXBULmU (ORCPT
+	Wed, 21 Feb 2007 06:44:12 -0500
+Received: from nz-out-0506.google.com ([64.233.162.228]:60793 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932435AbXBULoL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 06:42:20 -0500
+	Wed, 21 Feb 2007 06:44:11 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=XWsyBncAhK/fu90YGoAP6ffIblv2G8sV5iUJpPXuqjJ2ssKp2I05dr6kufnvHoJ6T7HM45xQNdJg+pNr5Dx6lzvDjj/+NHv9/fLDzw9iXXOE4h0Duc0Ot237wNa/bl/bVi76geWweSF+F33ronDbx5hjQ7YDqf2Dd5Xivzd87KA=
-Message-ID: <45DC3018.7010704@gmail.com>
-Date: Wed, 21 Feb 2007 20:42:16 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gOKhjinGLmp/b5AOh6BKrVWrg49ye3vfkkUh/e15UInVpekWKsjNB/uj1xe6aHWz+V3W/I3Q5+H/2Sr8thFkQGXK3IeHagnTu8XbmNikIhKtcgn+IEpLqajkZrnIQfeLxpUOFtkdNJqbra2QbS6QuxPZCU+b0oAfh8Lu9BYvyCI=
+Message-ID: <9a8748490702210344r2f9ed9cbs892e2e5f2570d546@mail.gmail.com>
+Date: Wed, 21 Feb 2007 12:44:10 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Neil Brown" <neilb@suse.de>
+Subject: Re: 2.6.13.4 - "lockd: weird return 1 for CANCEL call"
+Cc: nfs@lists.sourceforge.net,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <17884.11265.145106.290158@notabene.brown>
 MIME-Version: 1.0
-To: Leopold Palomo-Avellaneda <lepalom@wol.es>
-CC: Jean Delvare <jdelvare@suse.de>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: Sata_via problems in a Vintage2-AE1: Resume
-References: <200702090010.06897.lepalom@wol.es> <200702131711.11781.lepalom@wol.es> <200702131719.47507.jdelvare@suse.de> <200702151223.19333.lepalom@wol.es>
-In-Reply-To: <200702151223.19333.lepalom@wol.es>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <9a8748490702210246j38a1ca4bi8de371ba6829ada9@mail.gmail.com>
+	 <17884.11265.145106.290158@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Leopold Palomo-Avellaneda wrote:
-> A Dimarts 13 Febrer 2007 17:19, Jean Delvare va escriure:
->> Le Mardi 13 Février 2007 17:11, Leopold Palomo-Avellaneda a écrit :
->>> A Dimarts 13 Febrer 2007 12:20, Jean Delvare va escriure:
->>> (...)
->>>
->>>>>> *If* the VT8251 needs the VIA IRQ quirk, then the attached patch
->>>>>> may help. Leopold, can you give it a try?
->>>>> Well, making your patch to the vanilla 2.6.20 the result is the same.
->>>>> The box doesn't boot. Always the same problem ....
->>>> If it's not a VIA IRQ problem, then there's nothing more I can do,
->>>> sorry. Someone else will have to look into the problem.
->>>>
->>>> Out of curiosity, with my patch applied, did you see any "VIA VLink IRQ
->>>> fixup" messages on the console?
->>> No :-(
->> OK, so maybe the VT8251 actually no longer needs the quirk. Thanks for
->> testing and reporting.
-> 
-> 
-> Hi people,
->  
-> arriving to this state. What do you recommend?
-> 
-> I have the box more or less working with irqpoll but with a lot of messages:
-> APIC error on CPU0: 08(08)
-> 
-> and the box doesn't boot without the irqpoll option. Do you think that the 
-> 2.6.21 have some kind of changes in this area?
-> 
-> Thank's for all for you patience and your messages.
+On 21/02/07, Neil Brown <neilb@suse.de> wrote:
+> On Wednesday February 21, jesper.juhl@gmail.com wrote:
+> > Greetings,
+> >
+> > I just got a unusual message from lockd on a webserver running a
+> > custom compiled 2.6.13.4 (yes it is ancient, I know).
+> >
+> > # uname -a
+> > Linux webserv.somedomain.example 2.6.13.4 #1 SMP Wed Nov 16 10:03:05
+> > CET 2005 i686 unknown
+> >
+> > # dmesg | tail -n 3
+> > do_vfs_lock: VFS is out of sync with lock manager!
+> > lockd: weird return 1 for CANCEL call
+> > lockd: weird return 1 for CANCEL call
+> >
+> > The server seems to be running fine, so I'm not really worried, but I
+> > thought maybe someone would like to know. :-)
+>
+> Thanks.
+> Don't be worried.  They are both warning about perfectly acceptable
+> (though uncommon) behaviour.  These warnings have since been removed.
+>
+I know the "VFS is out of sync with lock manager" warning has been
+removed (I pushed quite a bit to get that done myself ;) I was just
+providing context.  The one I had not seen before was the "weird
+return ..." one.
 
-I'm sorry but I'm clueless other than that it seems to be an irq routing
-problem.
-
-Any ideas, people?
+> A process was interrupted while trying to get a lock, so the NFS
+> client didn't know if it actually had the lock or not.
+> When the process exited, the tried to cancel the lock just to be on
+> the safe side and was told that it didn't own any such lock.
+>
+Thanks a lot for that very nice explanation.
 
 -- 
-tejun
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
