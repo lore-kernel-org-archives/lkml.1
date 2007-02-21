@@ -1,68 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932610AbXBUVu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932626AbXBUVw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932610AbXBUVu2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 16:50:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932626AbXBUVu2
+	id S932626AbXBUVw3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 16:52:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbXBUVw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 16:50:28 -0500
-Received: from dev.kryptiva.com ([69.70.52.243]:18700 "EHLO mail.kryptiva.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932610AbXBUVu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 16:50:26 -0500
-Message-ID: <45DCC24B.4040204@kryptiva.com>
-Date: Wed, 21 Feb 2007 17:06:03 -0500
-From: Karim Yaghmour <karim.yaghmour@kryptiva.com>
-Reply-To: karim.yaghmour@kryptiva.com
-Organization: Kryptiva Inc.
-User-Agent: Thunderbird 1.5.0.8 (X11/20061107)
+	Wed, 21 Feb 2007 16:52:29 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:43952 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751123AbXBUVw2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 16:52:28 -0500
+Date: Wed, 21 Feb 2007 21:52:16 +0000 (GMT)
+From: James Simmons <jsimmons@infradead.org>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Frame Buffer Device Development 
+	<linux-fbdev-devel@lists.sourceforge.net>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 2.6.20 1/1] fbdev,mm: hecuba/E-Ink fbdev driver
+In-Reply-To: <45a44e480702210855t344441c1xf8e081c82ece4e63@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0702212151190.20620@pentafluge.infradead.org>
+References: <20070217104215.GB25512@localhost> <1171715652.5186.7.camel@lappy>
+  <45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com> 
+ <20070217135922.GA15373@linux-sh.org>  <45a44e480702180331t7e76c396j1a9861f689d4186b@mail.gmail.com>
+  <20070218235741.GA22298@linux-sh.org>  <45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
+  <Pine.LNX.4.62.0702200906070.2082@pademelon.sonytel.be>
+ <45a44e480702210855t344441c1xf8e081c82ece4e63@mail.gmail.com>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@redhat.com>,
-       systemtap@sources.redhat.com, ltt-dev@shafik.org
-Subject: Re: [PATCH 05/05] Linux Kernel Markers, non optimized architectures
-References: <1171224207118-git-send-email-mathieu.desnoyers@polymtl.ca> <1171224209195-git-send-email-mathieu.desnoyers@polymtl.ca> <20070214231635.091c7169.akpm@linux-foundation.org> <20070215190919.GA31359@Krystal> <45D61361.6030200@kryptiva.com> <20070216233825.GB28087@Krystal> <45DCA6E1.7080903@kryptiva.com> <20070221204535.GA616@Krystal>
-In-Reply-To: <20070221204535.GA616@Krystal>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ KRYPTIVA PACKAGED MESSAGE -----
-PACKAGING TYPE: SIGNED
 
-Mathieu Desnoyers wrote:
- > The problem with your proposal, I guess, is that people will have to add a supplementary parameter to the macro.
- >
- > It is not uncommon to have two slightly versions of macros/functions in the kernel (preempt_enable()/preempt_enable_no_resched(), or macros starting with underscores). Normally, the underscore states that the macro does not do the proper locking itself (this is not our case). Therefore, I would suggest using a name that suggests against what the macro is protected. For instance, a marker
- > pointing to the generic version is only needed to protect against the debug trap handler and should only be used on x86 and x86_64.
+Could you make it work without the framebuffer. There are embedded LCD 
+displays that have internal memory that need data flushed to them.
 
-I can see your point, to a degree. The difference here is that the
-variants you mention are actually macros that do something, they
-aren't stubs for code. IOW, you actually know what's happening
-underneath a foo() vs. _foo() by its name only. Maybe this applies
-the same to markers, I don't know. But maybe we want to make it
-easy for those looking at markers that there's a master kill
-switch somewhere that all markers go through and through which
-they can all be disabled very simply (say by using a "#if 0").
-While different names *may* be doing that, a same name *does* that.
-But I don't feel too strongly either way, it's really up to those
-who maintaining the code to say.
+On Wed, 21 Feb 2007, Jaya Kumar wrote:
 
-Karim
-
------ KRYPTIVA SIGNED MESSAGE -----
-This email claims to have been packaged by Kryptiva.
-To process this email and authenticate its origin, get
-the free plugin from:
-http://www.kryptiva.com/downloads
-
------ KRYPTIVA SIGNATURE START -----
-AvWVqAAAAAIAAAABAAAAAAAATiACAQAAAAC3AQAIAAAAAgAAAAECABTXxT4xHdR4/1uU1hL2
-+TaPrqNB0wMAFNa8GHXZWJH5Dz+D76vfh6JhvWLvBAAUpuIZcCAkCC+ldyaBuoAWxK50HiQF
-ABRI38gc/foDHQsS6X3W0VP4xTukBwYAFB0lithGcxNZYBHaLDONjp6eo/LoBwAUpXC6F2jf
-nElq3fnZQpGW97Fk/2QRABgAAAAAAABOIEXcvqAADJ5wAAAAAAAAAB4TAAQAAAAAAAAAggP/
-RQ/W0H9H9bhrZyC67an//DbWC4D38PgLoeMG6Tjvx7jWTpEh79DeQ/+sbb9aYZvbwYwtaVaJ
-VuPEiRnPZX0mqnOFm+GDzE9jB6202lR0Nzczh1WCifbrrXI7CSEjOwI3ve0jcCoGxTEzZRYj
-LGxuubV8Hh5HU12zi3Mxgdz031Y=
------ KRYPTIVA SIGNATURE END -----
+> On 2/20/07, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > Don't you need a way to specify the maximum deferral time? E.g. a field in
+> > fb_info.
+> > 
+> 
+> You are right. I will need that. I could put that into struct
+> fb_deferred_io. So drivers would setup like:
+> 
+> static struct fb_deferred_io hecubafb_defio = {
+>        .delay          = HZ,
+>        .deferred_io    = hecubafb_dpy_update,
+> };
+> 
+> where that would be:
+> struct fb_deferred_io {
+>        unsigned long delay;    /* delay between mkwrite and deferred handler
+> */
+>        struct mutex lock;      /* mutex that protects the page list */
+>        struct list_head pagelist;      /* list of touched pages */
+>        struct delayed_work deferred_work;
+>        void (*deferred_io)(struct fb_info *info, struct list_head
+> *pagelist); /* callback */
+> };
+> 
+> and the driver would do:
+> ...
+> info->fbdefio = hecubafb_defio;
+> register_framebuffer...
+> 
+> When the driver calls register_framebuffer and unregister_framebuffer,
+> I can then do the init and destruction of the other members of that
+> struct. Does this sound okay?
+> 
+> Thanks,
+> jaya
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
