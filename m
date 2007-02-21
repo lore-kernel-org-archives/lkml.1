@@ -1,42 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751185AbXBUIWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751186AbXBUIZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751185AbXBUIWx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 03:22:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbXBUIWx
+	id S1751186AbXBUIZb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 03:25:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbXBUIZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 03:22:53 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:35187 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751185AbXBUIWw (ORCPT
+	Wed, 21 Feb 2007 03:25:31 -0500
+Received: from web52506.mail.yahoo.com ([206.190.48.189]:39149 "HELO
+	web52506.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751186AbXBUIZa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 03:22:52 -0500
-Date: Wed, 21 Feb 2007 10:22:50 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Muli Ben-Yehuda <muli@il.ibm.com>
-cc: akpm@linux-foundation.org, clameter@sgi.com, linux-kernel@vger.kernel.org,
-       jsipek@fsl.cs.sunysb.edu, unionfs@filesystems.org, bunk@stusta.de,
-       hooanon05@yahoo.co.jp
-Subject: Re: [PATCH 2/3] slab: export ksize to modules
-In-Reply-To: <20070221081443.GC2857@rhun.haifa.ibm.com>
-Message-ID: <Pine.LNX.4.64.0702211021200.9548@sbz-30.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0702211006210.8172@sbz-30.cs.Helsinki.FI>
- <20070221081443.GC2857@rhun.haifa.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Feb 2007 03:25:30 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=2lwWjskv8WjXOSafOtUmOBmArOkR5Cj35z9g/xHKgqLLQ1Gb0mBLj6EwnVIXkeXEWL+wi7g25iClwVMAU2dPVxzzIAo6zV12mpQM4ChT+Wab40muwmsNXNvWH+XvthEMpn0L52zOJi6n/opetXaxYEoiiAeePBm09R9B9egc34k=;
+X-YMail-OSG: JQ9tmf8VM1k1CkkmtECVXvA4bwMqmyLHvDRJe0_FlhMcoGCz_L06IhzHnVgh8lrlxeh0V8wuuKjWHpogLhNy2IRVIdT1fZO78A6M_39O45kmOxPSDtFkplKqvsGVRJM160j1rMS_8Mh1t0w-
+Date: Wed, 21 Feb 2007 00:25:29 -0800 (PST)
+From: Marc Perkel <mperkel@yahoo.com>
+Subject: Need a little help with Software Raid 1
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <653453.23273.qm@web52506.mail.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Muli,
+I have a partition that used to be part of a software
+raid 1 array. It is now loaded as /dev/sda3 but I'd
+like to mirror it to /dev/sdb3 without losing the data
+on the drive. I'm a little nervous about how to set it
+up as I don't want to wipe out the data.
 
-On Wed, Feb 21, 2007 at 10:06:52AM +0200, Pekka J Enberg wrote:
-> > This exports ksize in slab and slob allocators to modules.
+How do I do this? Using FC6 and up 2 date software.
 
-On Wed, 21 Feb 2007, Muli Ben-Yehuda wrote:
-> That's a pretty generic name... if it's going to be part of the module
-> API, it should be renamed to something a bit more obvious.
+Thanks in advance.
 
-Well, it is the established slab API so I am bit relucant to change it. 
-But if someone comes up with a better name, why not...
 
-				Pekka
+
+ 
+____________________________________________________________________________________
+Food fight? Enjoy some healthy debate 
+in the Yahoo! Answers Food & Drink Q&A.
+http://answers.yahoo.com/dir/?link=list&sid=396545367
