@@ -1,43 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965352AbXBUJYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965370AbXBUJ0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965352AbXBUJYx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 04:24:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965356AbXBUJYx
+	id S965370AbXBUJ0L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 04:26:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965365AbXBUJ0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 04:24:53 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:32860 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965352AbXBUJYw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 04:24:52 -0500
-Subject: Re: [PATCH 1/3] slab: introduce krealloc
-From: Arjan van de Ven <arjan@infradead.org>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: akpm@linux-foundation.org, clameter@sgi.com, linux-kernel@vger.kernel.org,
-       jsipek@fsl.cs.sunysb.edu, unionfs@filesystems.org, bunk@stusta.de,
-       hooanon05@yahoo.co.jp
-In-Reply-To: <Pine.LNX.4.64.0702211003290.8172@sbz-30.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0702211003290.8172@sbz-30.cs.Helsinki.FI>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Wed, 21 Feb 2007 10:24:35 +0100
-Message-Id: <1172049875.3531.169.camel@laptopd505.fenrus.org>
+	Wed, 21 Feb 2007 04:26:11 -0500
+Received: from poczta.o2.pl ([193.17.41.142]:44430 "EHLO poczta.o2.pl"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965356AbXBUJ0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 04:26:09 -0500
+Date: Wed, 21 Feb 2007 10:29:36 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
+       "David S\. Miller" <davem@davemloft.net>,
+       David Howells <dhowells@redhat.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] net/bridge/br_if.c: fix possible use-after-free in port_carrier_check()
+Message-ID: <20070221092936.GA2311@ff.dom.local>
+References: <20070220221941.GA707@tv-sign.ru> <20070220162434.72d3ad7b@freekitty> <20070221082345.GB1662@ff.dom.local>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070221082345.GB1662@ff.dom.local>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-21 at 10:06 +0200, Pekka J Enberg wrote:
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
-> 
-> Introduce krealloc() for reallocating memory while preserving contents.
+On Wed, Feb 21, 2007 at 09:23:45AM +0100, Jarek Poplawski wrote:
+...
+> I have known issues with RCU, but dare to disagree here.
+> It's done during call_rcu, so anything RCU friendly shouldn't
+> see this at the moment at all. It could be needed for those
+> with refcounting - than it should be checked, if there is
+> anything more than port_carrier_check.
 
+Sorry for this than-ing!
+(It's my next favorite issue after RCU.)
 
-please mark this one __must_check.. not storing realloc() return values
-is one of the more nasty types of bugs... but gcc can help us greatly
-here ;)
-
-
+Jarek P.
