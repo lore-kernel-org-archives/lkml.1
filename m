@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423041AbXBUUJN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423070AbXBUUJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423041AbXBUUJN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 15:09:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423061AbXBUUJN
+	id S1423070AbXBUUJV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 15:09:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423064AbXBUUJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 15:09:13 -0500
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:41203 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1423041AbXBUUJM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 15:09:12 -0500
-Date: Wed, 21 Feb 2007 15:09:04 -0500
-To: Mockern <Mockern@yandex.ru>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: cat problem in tiny_tty driver (the source included)
-Message-ID: <20070221200904.GG22464@csclub.uwaterloo.ca>
-References: <45DC5F34.000008.04893@tide.yandex.ru> <20070221151554.GA22466@csclub.uwaterloo.ca> <45DC9EA0.000007.11000@webmail18.yandex.ru>
+	Wed, 21 Feb 2007 15:09:20 -0500
+Received: from mail.screens.ru ([213.234.233.54]:57970 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423061AbXBUUJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 15:09:19 -0500
+Date: Wed, 21 Feb 2007 23:09:16 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Jarek Poplawski <jarkao2@o2.pl>, Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       David Howells <dhowells@redhat.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFT] bridge: eliminate port_check workqueue
+Message-ID: <20070221200916.GA145@tv-sign.ru>
+References: <20070220221941.GA707@tv-sign.ru> <20070220162434.72d3ad7b@freekitty> <20070221082345.GB1662@ff.dom.local> <20070221142342.GB134@tv-sign.ru> <20070221105555.4d1b40a6@freekitty>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45DC9EA0.000007.11000@webmail18.yandex.ru>
-User-Agent: Mutt/1.5.9i
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+In-Reply-To: <20070221105555.4d1b40a6@freekitty>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 21, 2007 at 10:33:52PM +0300, Mockern wrote:
-> Thank you very much for you help.
-> 
-> BTW, for cat < /dev/my_tty1 can see here something wrong?
-> as I understand tiny_timer function sends data to tty level
-> by calling tty_flip_buffer_push(tty).
-> 
-> Is this enough to support cat < /dev/my_tty1?
+On 02/21, Stephen Hemminger wrote:
+>
+> This is what I was suggesting by getting rid of the work queue completely.
 
-I don't really know the tty layer very much.  I just saw a very obvious
-bug in the code.
+Can't comment this patch, but if we can get rid of the work_struct - good!
 
-Does cat from the device give an error or does it just not do anything?
+> -static void port_carrier_check(struct work_struct *work)
+> +void br_port_carrier_check(struct net_bridge_port *p)
+>  {
+> -	struct net_bridge_port *p;
+> -	struct net_device *dev;
+> -	struct net_bridge *br;
+> -
+> -	dev = container_of(work, struct net_bridge_port,
+> -			   carrier_check.work)->dev;
+> -	work_release(work);
 
-What does strace say for that?
+May I ask you to redo this patch on top of
 
---
-Len Sorensen
+	[PATCH 1/3] net/bridge/br_if.c: don't use _WORK_NAR
+	http://marc.theaimsgroup.com/?l=linux-kernel&m=117183517612775
+
+?
+
+We are removing the _NAR stuff, it would be nice to do this in a separate
+patch.
+
+Thanks!
+
+Oleg.
+
