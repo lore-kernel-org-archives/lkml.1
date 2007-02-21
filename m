@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751077AbXBUBlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751047AbXBUBlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751077AbXBUBlp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 20:41:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbXBUBlD
+	id S1751047AbXBUBlq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 20:41:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbXBUBkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 20:41:03 -0500
-Received: from cantor.suse.de ([195.135.220.2]:42385 "EHLO mx1.suse.de"
+	Tue, 20 Feb 2007 20:40:05 -0500
+Received: from mx2.suse.de ([195.135.220.15]:34682 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751067AbXBUBkQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 20:40:16 -0500
-Date: Tue, 20 Feb 2007 17:38:53 -0800
+	id S1751047AbXBUBjq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 20:39:46 -0500
+Date: Tue, 20 Feb 2007 17:38:24 -0800
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -19,13 +19,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       David Howells <dhowells@redhat.com>, Chuck Ebbert <cebbert@redhat.com>
-Subject: [patch 20/21] Keys: Fix key serial number collision handling
-Message-ID: <20070221013853.GU30227@kroah.com>
+       Takashi Iwai <tiwai@suse.de>
+Subject: [patch 16/21] usbaudio - Fix Oops with unconventional sample rates
+Message-ID: <20070221013824.GQ30227@kroah.com>
 References: <20070221012758.925122216@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="keys-fix-key-serial-number-collision-handling.patch"
+Content-Disposition: inline; filename="usbaudio-fix-oops-with-unconventional-sample-rates.patch"
 In-Reply-To: <20070221013619.GA30227@kroah.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -34,96 +34,90 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: David Howells <dhowells@redhat.com>
 
-[PATCH] Keys: Fix key serial number collision handling
 
-Fix the key serial number collision avoidance code in key_alloc_serial().
+[PATCH] usbaudio - Fix Oops with unconventional sample rates
 
-This didn't use to be so much of a problem as the key serial numbers were
-allocated from a simple incremental counter, and it would have to go through
-two billion keys before it could possibly encounter a collision.  However, now
-that random numbers are used instead, collisions are much more likely.
+The patch fixes the memory corruption by the support of unconventional
+sample rates.  Also, it avoids the too restrictive constraints if
+any of usb descriptions contain continuous rates.
 
-This is fixed by finding a hole in the rbtree where the next unused serial
-number ought to be and using that by going almost back to the top of the
-insertion routine and redoing the insertion with the new serial number rather
-than trying to be clever and attempting to work out the insertion point
-pointer directly.
-
-This fixes kernel BZ #7727.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- security/keys/key.c |   33 ++++++++++++++-------------------
- 1 file changed, 14 insertions(+), 19 deletions(-)
+ sound/usb/usbaudio.c |   43 +++++++++++++++++++++++++------------------
+ 1 file changed, 25 insertions(+), 18 deletions(-)
 
---- linux-2.6.19.4.orig/security/keys/key.c
-+++ linux-2.6.19.4/security/keys/key.c
-@@ -188,6 +188,7 @@ static inline void key_alloc_serial(stru
+--- linux-2.6.19.4.orig/sound/usb/usbaudio.c
++++ linux-2.6.19.4/sound/usb/usbaudio.c
+@@ -186,6 +186,7 @@ struct snd_usb_substream {
+ 	u64 formats;			/* format bitmasks (all or'ed) */
+ 	unsigned int num_formats;		/* number of supported audio formats (list) */
+ 	struct list_head fmt_list;	/* format list */
++	struct snd_pcm_hw_constraint_list rate_list;	/* limited rates */
+ 	spinlock_t lock;
  
- 	spin_lock(&key_serial_lock);
+ 	struct snd_urb_ops ops;		/* callbacks (must be filled at init) */
+@@ -1810,28 +1811,33 @@ static int check_hw_params_convention(st
+ static int snd_usb_pcm_check_knot(struct snd_pcm_runtime *runtime,
+ 				  struct snd_usb_substream *subs)
+ {
+-	struct list_head *p;
+-	struct snd_pcm_hw_constraint_list constraints_rates;
++	struct audioformat *fp;
++	int count = 0, needs_knot = 0;
+ 	int err;
  
-+attempt_insertion:
- 	parent = NULL;
- 	p = &key_serial_tree.rb_node;
+-	list_for_each(p, &subs->fmt_list) {
+-		struct audioformat *fp;
+-		fp = list_entry(p, struct audioformat, list);
+-
+-		if (!fp->needs_knot)
+-			continue;
+-
+-		constraints_rates.count = fp->nr_rates;
+-		constraints_rates.list = fp->rate_table;
+-		constraints_rates.mask = 0;
+-
+-		err = snd_pcm_hw_constraint_list(runtime, 0,
+-			SNDRV_PCM_HW_PARAM_RATE,
+-			&constraints_rates);
++	list_for_each_entry(fp, &subs->fmt_list, list) {
++		if (fp->rates & SNDRV_PCM_RATE_CONTINUOUS)
++			return 0;
++		count += fp->nr_rates;
++		if (fp->needs_knot)
++			needs_knot = 1;
++	}
++	if (!needs_knot)
++		return 0;
  
-@@ -202,39 +203,33 @@ static inline void key_alloc_serial(stru
- 		else
- 			goto serial_exists;
+-		if (err < 0)
+-			return err;
++	subs->rate_list.count = count;
++	subs->rate_list.list = kmalloc(sizeof(int) * count, GFP_KERNEL);
++	subs->rate_list.mask = 0;
++	count = 0;
++	list_for_each_entry(fp, &subs->fmt_list, list) {
++		int i;
++		for (i = 0; i < fp->nr_rates; i++)
++			subs->rate_list.list[count++] = fp->rate_table[i];
  	}
--	goto insert_here;
-+
-+	/* we've found a suitable hole - arrange for this key to occupy it */
-+	rb_link_node(&key->serial_node, parent, p);
-+	rb_insert_color(&key->serial_node, &key_serial_tree);
-+
-+	spin_unlock(&key_serial_lock);
-+	return;
++	err = snd_pcm_hw_constraint_list(runtime, 0, SNDRV_PCM_HW_PARAM_RATE,
++					 &subs->rate_list);
++	if (err < 0)
++		return err;
  
- 	/* we found a key with the proposed serial number - walk the tree from
- 	 * that point looking for the next unused serial number */
- serial_exists:
- 	for (;;) {
- 		key->serial++;
--		if (key->serial < 2)
--			key->serial = 2;
--
--		if (!rb_parent(parent))
--			p = &key_serial_tree.rb_node;
--		else if (rb_parent(parent)->rb_left == parent)
--			p = &(rb_parent(parent)->rb_left);
--		else
--			p = &(rb_parent(parent)->rb_right);
-+		if (key->serial < 3) {
-+			key->serial = 3;
-+			goto attempt_insertion;
-+		}
- 
- 		parent = rb_next(parent);
- 		if (!parent)
--			break;
-+			goto attempt_insertion;
- 
- 		xkey = rb_entry(parent, struct key, serial_node);
- 		if (key->serial < xkey->serial)
--			goto insert_here;
-+			goto attempt_insertion;
+ 	return 0;
+ }
+@@ -2231,6 +2237,7 @@ static void free_substream(struct snd_us
+ 		kfree(fp->rate_table);
+ 		kfree(fp);
  	}
++	kfree(subs->rate_list.list);
+ }
  
--	/* we've found a suitable hole - arrange for this key to occupy it */
--insert_here:
--	rb_link_node(&key->serial_node, parent, p);
--	rb_insert_color(&key->serial_node, &key_serial_tree);
--
--	spin_unlock(&key_serial_lock);
--
- } /* end key_alloc_serial() */
  
- /*****************************************************************************/
 
 --
