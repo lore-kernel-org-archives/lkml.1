@@ -1,51 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161335AbXBUUrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161336AbXBUUsE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161335AbXBUUrl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 15:47:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161336AbXBUUrl
+	id S1161336AbXBUUsE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 15:48:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161337AbXBUUsE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 15:47:41 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49707 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161335AbXBUUrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 15:47:40 -0500
-Message-ID: <45DCAF37.4050301@redhat.com>
-Date: Wed, 21 Feb 2007 15:44:39 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Wed, 21 Feb 2007 15:48:04 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:5399 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161336AbXBUUsB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 15:48:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=uPzOFBwctaTv3ojVnRNdg5P56gzWOPorV7q1YdbOfCKSPkbD/4+wbW9J3L9Wc0bnglbMcyIcYPo3+FPJ8AbZrS8UJVw8o0cLWYhJoexGAxyHUwBQQapdZ0C8/MHMVAPqnQrBbqDsbyCfThPXfrKE4Vgr9GUNw2zRzufYlA3u/nc=
+Message-ID: <4727185d0702211247r796a2f4fte8b9511aa6864452@mail.gmail.com>
+Date: Wed, 21 Feb 2007 21:47:59 +0100
+From: "Vincent Legoll" <vincent.legoll@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: libsata doesn't like bus without master
+In-Reply-To: <4727185d0702211241v63549a77ye1023e9ff802c24a@mail.gmail.com>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [patch 00/21] 2.6.19-stable review
-References: <20070221013619.GA30227@kroah.com> <45DC9E1D.40805@redhat.com> <20070221203928.GC17830@kroah.com>
-In-Reply-To: <20070221203928.GC17830@kroah.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4727185d0702211241v63549a77ye1023e9ff802c24a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
->> What is the status of:
->>
->> http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm2/broken-out/x86_64-mm-simplfy-__assign_irq_vector.patch
->> http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm2/broken-out/x86_64-mm-handle-irqs-pending-in-irr-during-irq-migration.patch
->>
->> They fix a serious bug that causes machines to freeze up
->> or just run very slowly.
->>
->> I'd like to see these in -stable if possible.
-> 
-> -stable for 2.6.19 and/or .18?
-> 
+Argh I think I screwed the mail threading, I was refering to:
 
-The bug is new in .19 and is still in .20 and .21-rc.
+http://ussg.iu.edu/hypermail/linux/kernel/0702.1/1060.html
 
+From: Patrick Ale
+Date: Sun Feb 11 2007 - 05:28:21 EST
+
+Sorry
+
+-- 
+Vincent Legoll
