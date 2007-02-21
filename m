@@ -1,77 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161192AbXBUNNK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161220AbXBUNTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161192AbXBUNNK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 08:13:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161216AbXBUNNK
+	id S1161220AbXBUNTr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 08:19:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161221AbXBUNTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 08:13:10 -0500
-Received: from mail.sf-mail.de ([62.27.20.61]:60773 "EHLO mail.sf-mail.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161192AbXBUNNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 08:13:09 -0500
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] EXPORT_SYMBOL() time functions
-Date: Wed, 21 Feb 2007 14:13:38 +0100
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-References: <200702211412.23388.eike-kernel@sf-tec.de>
-In-Reply-To: <200702211412.23388.eike-kernel@sf-tec.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Feb 2007 08:19:47 -0500
+Received: from nlpi015.sbcis.sbc.com ([207.115.36.44]:58332 "EHLO
+	nlpi015.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161220AbXBUNTp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 08:19:45 -0500
+X-Greylist: delayed 345 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Feb 2007 08:19:45 EST
+X-ORBL: [67.67.197.253]
+Date: Wed, 21 Feb 2007 07:06:14 -0600
+From: Michael Halcrow <lkml@halcrow.us>
+To: Dmitriy Monakhov <dmonakhov@sw.ru>
+Cc: linux-kernel@vger.kernel.org, ecryptfs-devel@lists.sourceforge.net,
+       devel@openvz.org
+Subject: Re: [Ecryptfs-devel] [PATCH] ecryptfs lower_file largefile issue
+Message-ID: <20070221130614.GN10765@halcrow.us>
+Reply-To: Michael Halcrow <lkml@halcrow.us>
+References: <871wkju8md.fsf@sw.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702211413.38840.eike-kernel@sf-tec.de>
+In-Reply-To: <871wkju8md.fsf@sw.ru>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These functions were inlines before 8b9365d753d9870bb6451504c13570b81923228f.
-Now EXPORT_SYMBOL() them to allow them to be used in modules again.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: RIPEMD160
 
-Signed-off-by: Rolf Eike Beer <eike-kernel@sf-tec.de>
+On Wed, Feb 21, 2007 at 01:07:22PM +0300, Dmitriy Monakhov wrote:
+> Where is largefile issue in ecryptfs.
 
----
+Thanks for your thorough work on resolving such issues. We will
+integrate your patches and testcases into the next release as soon as
+we get a chance to review and test.
 
-Sent once again, this time without PGP signature so importing into git is easier.
+Mike
+.___________________________________________________________________.
+                         Michael A. Halcrow                          
+       Security Software Engineer, IBM Linux Technology Center       
+GnuPG Fingerprint: 419C 5B1E 948A FA73 A54C  20F5 DB40 8531 6DCA 8769
 
-commit 0a543599f4a9ea02b587bda26e0e11ae94774f61
-tree aa815eab413d2575925b0964a1fa01d41439b26b
-parent 6b8afc66b9d6893d3fa292b75769b58539836ff3
-author Rolf Eike Beer <eike-kernel@sf-tec.de> Wed, 21 Feb 2007 14:10:12 +0100
-committer Rolf Eike Beer <eike-kernel@sf-tec.de> Wed, 21 Feb 2007 14:10:12 +0100
+"To prohibit sharing software is to cut the bonds of society."       
+ - Richard Stallman
 
- kernel/time.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
 
-diff --git a/kernel/time.c b/kernel/time.c
-index c6c80ea..0b351b2 100644
---- a/kernel/time.c
-+++ b/kernel/time.c
-@@ -635,6 +635,7 @@ timeval_to_jiffies(const struct timeval *value)
- 		(((u64)usec * USEC_CONVERSION + USEC_ROUND) >>
- 		 (USEC_JIFFIE_SC - SEC_JIFFIE_SC))) >> SEC_JIFFIE_SC;
- }
-+EXPORT_SYMBOL(timeval_to_jiffies);
- 
- void jiffies_to_timeval(const unsigned long jiffies, struct timeval *value)
- {
-@@ -649,6 +650,7 @@ void jiffies_to_timeval(const unsigned long jiffies, struct timeval *value)
- 	tv_usec /= NSEC_PER_USEC;
- 	value->tv_usec = tv_usec;
- }
-+EXPORT_SYMBOL(jiffies_to_timeval);
- 
- /*
-  * Convert jiffies/jiffies_64 to clock_t and back.
-@@ -723,6 +725,7 @@ u64 nsec_to_clock_t(u64 x)
- #endif
- 	return x;
- }
-+EXPORT_SYMBOL(nsec_to_clock_t);
- 
- #if (BITS_PER_LONG < 64)
- u64 get_jiffies_64(void)
+iQEVAwUBRdxDsdtAhTFtyodpAQPT0wf/amu/FboyQXHXwnn7pUEdPqqkxXpbZGrR
+L8hknVilgVA8pvgK/RrUNuakrHRWZTBokbSbiUA/xgpHlUTHa6T3VE/JOe5pLzG+
+vDEo8+Ya+yjRAMJ/970oLz1T4sUXvalgJlYRaKKqKEsZmFIQwMKoK7lmc+Th+p2J
+R/ZfJ3olWmskPMlLHhN4j9EEVoAGQLUqiH+bBkx4AqLJNVq9S69fFBwGFVk4t+/y
+Z6KJNhJsjHnOj6ADjSlObXmB5JFIWsUl4P0fouELB4lxTYh1C42S0hy5Pl60Sq1o
+MrmXIvkAdm1klYwbhaF174zu2XDzDJICXq4475v3WWVxT65HYkanMQ==
+=3zMo
+-----END PGP SIGNATURE-----
