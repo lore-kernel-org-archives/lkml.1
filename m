@@ -1,40 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965372AbXBUPdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161283AbXBUPeH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965372AbXBUPdg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 10:33:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965393AbXBUPde
+	id S1161283AbXBUPeH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 10:34:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965393AbXBUPds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 10:33:34 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:12981 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965379AbXBUPdc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 10:33:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=JQRDJtK8oZode7EBVJyIwothtARvTBUk+0cfRRBl6A9dloJ4fz5jh/eWRGgI9cHkMxqOyekls4vp3WLVxP5KZZDZGm36giLE9i24mNBM/8AEGpWwxTe0LCWQrrL+s/GH+w3EoxFZHwfK02hW0CGX4PCPX/KN0tGDoH525lCykVI=
-Message-ID: <84144f020702210733s4576076cw7e9a2257d28b278b@mail.gmail.com>
-Date: Wed, 21 Feb 2007 17:33:31 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 02/29] mm: slab allocation fairness
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org,
-       "Trond Myklebust" <trond.myklebust@fys.uio.no>,
-       "Thomas Graf" <tgraf@suug.ch>, "David Miller" <davem@davemloft.net>
-In-Reply-To: <20070221144841.751839000@taijtu.programming.kicks-ass.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070221144304.512721000@taijtu.programming.kicks-ass.net>
-	 <20070221144841.751839000@taijtu.programming.kicks-ass.net>
-X-Google-Sender-Auth: e1786e23c6840d63
+	Wed, 21 Feb 2007 10:33:48 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:55307 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964982AbXBUPdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 10:33:43 -0500
+Message-Id: <20070221144304.512721000@taijtu.programming.kicks-ass.net>
+User-Agent: quilt/0.46-1
+Date: Wed, 21 Feb 2007 15:43:04 +0100
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>
+Subject: [PATCH 00/29] swap over networked storage -v11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/21/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> [AIM9 results go here]
+(patches against 2.6.20-mm1)
 
-Yes please. I would really like to know what we gain by making the
-slab even more complex.
+There is a fundamental deadlock associated with paging; when writing out a page
+to free memory requires free memory to complete. The usually solution is to
+keep a small amount of memory available at all times so we can overcome this
+problem. This however assumes the amount of memory needed for writeout is
+(constant and) smaller than the provided reserve.
+
+It is this latter assumption that breaks when doing writeout over network.
+Network can take up an unspecified amount of memory while waiting for a reply
+to our write request. This re-introduces the deadlock; we might never complete
+the writeout, for we might not have enough memory to receive the completion
+message.
+
+The proposed solution is simple, only allow traffic servicing the VM to make
+use of the reserves. Since the VM is always present to service, this limited
+amount of memory can sustain a full connection; after a packet has been
+processed its memory can be re-used for the next packet.
+
+This however implies you know what packets are for whom, which generally
+speaking you don't. Hence we need to receive all packets but discard them as
+soon as we encounter a non VM bound packet allocated from the reserves.
+
+Also knowing it is headed towards the VM needs a little help, hence we
+introduce the socket flag SOCK_VMIO to mark sockets with.
+
+Of course, since we are paging all this has to happen in kernel-space, since
+user-space might just not be there.
+
+Since packet processing might also require memory, this all also implies that
+those auxiliary allocations may use the reserves when an emergency packet is
+processed. This is accomplished by using PF_MEMALLOC.
+
+How much memory is to be reserved is also an issue, enough memory to saturate
+both the route cache and IP fragment reassembly, along with various constants.
+
+This patch-set comes in 5 parts:
+
+1) introduce the memory reserve and make the SLAB allocator play nice with it.
+   patches 01-09
+
+2) add some needed infrastructure to the network code
+   patches 10-12
+
+3) implement the idea outlined above
+   patches 13-19
+
+4) teach the swap machinery to use generic address_spaces
+   patches 20-23
+
+5) implement swap over NFS using all the new stuff
+   patches 24-29
+-- 
+
