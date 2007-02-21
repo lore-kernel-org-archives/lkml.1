@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932435AbXBULoM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751211AbXBULyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932435AbXBULoM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 06:44:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932417AbXBULoM
+	id S1751211AbXBULyo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 06:54:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750989AbXBULyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 06:44:12 -0500
-Received: from nz-out-0506.google.com ([64.233.162.228]:60793 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932435AbXBULoL (ORCPT
+	Wed, 21 Feb 2007 06:54:44 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34775 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751216AbXBULyn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 06:44:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gOKhjinGLmp/b5AOh6BKrVWrg49ye3vfkkUh/e15UInVpekWKsjNB/uj1xe6aHWz+V3W/I3Q5+H/2Sr8thFkQGXK3IeHagnTu8XbmNikIhKtcgn+IEpLqajkZrnIQfeLxpUOFtkdNJqbra2QbS6QuxPZCU+b0oAfh8Lu9BYvyCI=
-Message-ID: <9a8748490702210344r2f9ed9cbs892e2e5f2570d546@mail.gmail.com>
-Date: Wed, 21 Feb 2007 12:44:10 +0100
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Neil Brown" <neilb@suse.de>
-Subject: Re: 2.6.13.4 - "lockd: weird return 1 for CANCEL call"
-Cc: nfs@lists.sourceforge.net,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <17884.11265.145106.290158@notabene.brown>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Feb 2007 06:54:43 -0500
+Date: Wed, 21 Feb 2007 05:54:36 -0600
+From: Robin Holt <holt@sgi.com>
+To: David Howells <dhowells@redhat.com>
+Cc: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
+       Andrew Morton <akpm@osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Robin Holt <holt@sgi.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <soshima@redhat.com>,
+       "Hideo AOKI@redhat" <haoki@redhat.com>
+Subject: Re: [PATCH 3/4] coredump: ELF-FDPIC: enable to omit anonymous shared memory
+Message-ID: <20070221115436.GA31332@lnx-holt.americas.sgi.com>
+References: <45DC184C.3080600@hitachi.com> <45DAC32B.4030603@hitachi.com> <45D5B483.3020502@hitachi.com> <45D5B2E3.3030607@hitachi.com> <20368.1171638335@redhat.com> <18826.1171969097@redhat.com> <8347.1172057611@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <9a8748490702210246j38a1ca4bi8de371ba6829ada9@mail.gmail.com>
-	 <17884.11265.145106.290158@notabene.brown>
+In-Reply-To: <8347.1172057611@redhat.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 21/02/07, Neil Brown <neilb@suse.de> wrote:
-> On Wednesday February 21, jesper.juhl@gmail.com wrote:
-> > Greetings,
-> >
-> > I just got a unusual message from lockd on a webserver running a
-> > custom compiled 2.6.13.4 (yes it is ancient, I know).
-> >
-> > # uname -a
-> > Linux webserv.somedomain.example 2.6.13.4 #1 SMP Wed Nov 16 10:03:05
-> > CET 2005 i686 unknown
-> >
-> > # dmesg | tail -n 3
-> > do_vfs_lock: VFS is out of sync with lock manager!
-> > lockd: weird return 1 for CANCEL call
-> > lockd: weird return 1 for CANCEL call
-> >
-> > The server seems to be running fine, so I'm not really worried, but I
-> > thought maybe someone would like to know. :-)
->
-> Thanks.
-> Don't be worried.  They are both warning about perfectly acceptable
-> (though uncommon) behaviour.  These warnings have since been removed.
->
-I know the "VFS is out of sync with lock manager" warning has been
-removed (I pushed quite a bit to get that done myself ;) I was just
-providing context.  The one I had not seen before was the "weird
-return ..." one.
+On Wed, Feb 21, 2007 at 11:33:31AM +0000, David Howells wrote:
+> Kawai, Hidehiro <hidehiro.kawai.ez@hitachi.com> wrote:
+> 
+> > Is coredump_setting_sem a global semaphore?  If so, it prevents concurrent
+> > core dumping.
+> 
+> No, it doesn't.  Look again:
+> 
+> 	int do_coredump(long signr, int exit_code, struct pt_regs * regs)
+> 	{
+> 		<setup vars>
+> 
+>  >>>>		down_read(&coredump_settings_sem);
+> 
+> > Additionally, while some process is dumped, writing to
+> > coredump_omit_anon_shared of unrelated process will be blocked.
+> 
+> Yes, but that's probably reasonable.  How likely (a) is a process to coredump,
+> and (b) is a coredump to occur simultaneously with someone altering their
+> settings?
 
-> A process was interrupted while trying to get a lock, so the NFS
-> client didn't know if it actually had the lock or not.
-> When the process exited, the tried to cancel the lock just to be on
-> the safe side and was told that it didn't own any such lock.
->
-Thanks a lot for that very nice explanation.
+And (c) altering the setting during a core dump going to produce an
+unusable core dump.  I don't think the locking is that difficult to add
+and it just makes sense.  I would venture a guess that it will take less
+time to actually do the locking than to continue arguing it is not needed
+when it clearly appears it is needed for even a small number of cases.
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Thanks,
+Robin
