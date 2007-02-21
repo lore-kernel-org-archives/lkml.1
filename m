@@ -1,33 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751087AbXBUBkB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751078AbXBUBkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751087AbXBUBkB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 20:40:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbXBUBji
+	id S1751078AbXBUBkM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 20:40:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbXBUBkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 20:39:38 -0500
-Received: from ns.suse.de ([195.135.220.2]:42253 "EHLO mx1.suse.de"
+	Tue, 20 Feb 2007 20:40:11 -0500
+Received: from mx2.suse.de ([195.135.220.15]:34647 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751047AbXBUBiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 20:38:54 -0500
-Date: Tue, 20 Feb 2007 17:37:27 -0800
+	id S1751031AbXBUBjg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 20:39:36 -0500
+Date: Tue, 20 Feb 2007 17:38:11 -0800
 From: Greg KH <greg@kroah.com>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, suparna@in.ibm.com, zach.brown@oracle.com,
-       jmoyer@redhat.com, bcrl@kvack.org, pbadari@us.ibm.com,
-       kenchen@google.com
-Subject: [patch 08/21] aio: fix buggy put_ioctx call in aio_complete - v2
-Message-ID: <20070221013727.GI30227@kroah.com>
+       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Clemens Ladisch <clemens@ladisch.de>, Jaroslav Kysela <perex@suse.cz>,
+       Takashi Iwai <tiwai@suse.de>
+Subject: [patch 14/21] usb-audio: work around wrong frequency in CM6501 descriptors
+Message-ID: <20070221013811.GO30227@kroah.com>
 References: <20070221012758.925122216@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="aio-fix-buggy-put_ioctx-call-in-aio_complete-v2.patch"
+Content-Disposition: inline; filename="usb-audio-work-around-wrong-frequency-in-cm6501-descriptors.patch"
 In-Reply-To: <20070221013619.GA30227@kroah.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,148 +36,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: "Ken Chen" <kenchen@google.com>
+[PATCH] usb-audio: work around wrong frequency in CM6501 descriptors
 
-An AIO bug was reported that sleeping function is being called in softirq
-context:
+The C-Media CM6501 chip's descriptors say that altsetting 5 supports
+48 kHz, but it actually plays at 96 kHz.
 
-BUG: warning at kernel/mutex.c:132/__mutex_lock_common()
-Call Trace:
-     [<a000000100577b00>] __mutex_lock_slowpath+0x640/0x6c0
-     [<a000000100577ba0>] mutex_lock+0x20/0x40
-     [<a0000001000a25b0>] flush_workqueue+0xb0/0x1a0
-     [<a00000010018c0c0>] __put_ioctx+0xc0/0x240
-     [<a00000010018d470>] aio_complete+0x2f0/0x420
-     [<a00000010019cc80>] finished_one_bio+0x200/0x2a0
-     [<a00000010019d1c0>] dio_bio_complete+0x1c0/0x200
-     [<a00000010019d260>] dio_bio_end_aio+0x60/0x80
-     [<a00000010014acd0>] bio_endio+0x110/0x1c0
-     [<a0000001002770e0>] __end_that_request_first+0x180/0xba0
-     [<a000000100277b90>] end_that_request_chunk+0x30/0x60
-     [<a0000002073c0c70>] scsi_end_request+0x50/0x300 [scsi_mod]
-     [<a0000002073c1240>] scsi_io_completion+0x200/0x8a0 [scsi_mod]
-     [<a0000002074729b0>] sd_rw_intr+0x330/0x860 [sd_mod]
-     [<a0000002073b3ac0>] scsi_finish_command+0x100/0x1c0 [scsi_mod]
-     [<a0000002073c2910>] scsi_softirq_done+0x230/0x300 [scsi_mod]
-     [<a000000100277d20>] blk_done_softirq+0x160/0x1c0
-     [<a000000100083e00>] __do_softirq+0x200/0x240
-     [<a000000100083eb0>] do_softirq+0x70/0xc0
-
-See report: http://marc.theaimsgroup.com/?l=linux-kernel&m=116599593200888&w=2
-
-flush_workqueue() is not allowed to be called in the softirq context.
-However, aio_complete() called from I/O interrupt can potentially call
-put_ioctx with last ref count on ioctx and triggers bug.  It is simply
-incorrect to perform ioctx freeing from aio_complete.
-
-The bug is trigger-able from a race between io_destroy() and aio_complete().
-A possible scenario:
-
-cpu0                               cpu1
-io_destroy                         aio_complete
-  wait_for_all_aios {                __aio_put_req
-     ...                                 ctx->reqs_active--;
-     if (!ctx->reqs_active)
-        return;
-  }
-  ...
-  put_ioctx(ioctx)
-
-                                     put_ioctx(ctx);
-                                        __put_ioctx
-                                          bam! Bug trigger!
-
-The real problem is that the condition check of ctx->reqs_active in
-wait_for_all_aios() is incorrect that access to reqs_active is not
-being properly protected by spin lock.
-
-This patch adds that protective spin lock, and at the same time removes
-all duplicate ref counting for each kiocb as reqs_active is already used
-as a ref count for each active ioctx.  This also ensures that buggy call
-to flush_workqueue() in softirq context is eliminated.
-
-Signed-off-by: "Ken Chen" <kenchen@google.com>
-Cc: Zach Brown <zach.brown@oracle.com>
-Cc: Suparna Bhattacharya <suparna@in.ibm.com>
-Cc: Benjamin LaHaise <bcrl@kvack.org>
-Cc: Badari Pulavarty <pbadari@us.ibm.com>
-Acked-by: Jeff Moyer <jmoyer@redhat.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+Signed-off-by: Jaroslav Kysela <perex@suse.cz>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/aio.c |   20 +++++++++-----------
- 1 file changed, 9 insertions(+), 11 deletions(-)
+ sound/usb/usbaudio.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
---- linux-2.6.19.4.orig/fs/aio.c
-+++ linux-2.6.19.4/fs/aio.c
-@@ -298,17 +298,23 @@ static void wait_for_all_aios(struct kio
- 	struct task_struct *tsk = current;
- 	DECLARE_WAITQUEUE(wait, tsk);
- 
-+	spin_lock_irq(&ctx->ctx_lock);
- 	if (!ctx->reqs_active)
--		return;
-+		goto out;
- 
- 	add_wait_queue(&ctx->wait, &wait);
- 	set_task_state(tsk, TASK_UNINTERRUPTIBLE);
- 	while (ctx->reqs_active) {
-+		spin_unlock_irq(&ctx->ctx_lock);
- 		schedule();
- 		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-+		spin_lock_irq(&ctx->ctx_lock);
- 	}
- 	__set_task_state(tsk, TASK_RUNNING);
- 	remove_wait_queue(&ctx->wait, &wait);
-+
-+out:
-+	spin_unlock_irq(&ctx->ctx_lock);
- }
- 
- /* wait_on_sync_kiocb:
-@@ -425,7 +431,6 @@ static struct kiocb fastcall *__aio_get_
- 	ring = kmap_atomic(ctx->ring_info.ring_pages[0], KM_USER0);
- 	if (ctx->reqs_active < aio_ring_avail(&ctx->ring_info, ring)) {
- 		list_add(&req->ki_list, &ctx->active_reqs);
--		get_ioctx(ctx);
- 		ctx->reqs_active++;
- 		okay = 1;
- 	}
-@@ -538,8 +543,6 @@ int fastcall aio_put_req(struct kiocb *r
- 	spin_lock_irq(&ctx->ctx_lock);
- 	ret = __aio_put_req(ctx, req);
- 	spin_unlock_irq(&ctx->ctx_lock);
--	if (ret)
--		put_ioctx(ctx);
- 	return ret;
- }
- 
-@@ -795,8 +798,7 @@ static int __aio_run_iocbs(struct kioctx
- 		 */
- 		iocb->ki_users++;       /* grab extra reference */
- 		aio_run_iocb(iocb);
--		if (__aio_put_req(ctx, iocb))  /* drop extra ref */
--			put_ioctx(ctx);
-+		__aio_put_req(ctx, iocb);
-  	}
- 	if (!list_empty(&ctx->run_list))
- 		return 1;
-@@ -1014,14 +1016,10 @@ put_rq:
- 	/* everything turned out well, dispose of the aiocb. */
- 	ret = __aio_put_req(ctx, iocb);
- 
--	spin_unlock_irqrestore(&ctx->ctx_lock, flags);
--
- 	if (waitqueue_active(&ctx->wait))
- 		wake_up(&ctx->wait);
- 
--	if (ret)
--		put_ioctx(ctx);
--
-+	spin_unlock_irqrestore(&ctx->ctx_lock, flags);
- 	return ret;
- }
- 
+--- linux-2.6.19.4.orig/sound/usb/usbaudio.c
++++ linux-2.6.19.4/sound/usb/usbaudio.c
+@@ -2471,7 +2471,13 @@ static int parse_audio_format_rates(stru
+ 		fp->nr_rates = nr_rates;
+ 		fp->rate_min = fp->rate_max = combine_triple(&fmt[8]);
+ 		for (r = 0, idx = offset + 1; r < nr_rates; r++, idx += 3) {
+-			unsigned int rate = fp->rate_table[r] = combine_triple(&fmt[idx]);
++			unsigned int rate = combine_triple(&fmt[idx]);
++			/* C-Media CM6501 mislabels its 96 kHz altsetting */
++			if (rate == 48000 && nr_rates == 1 &&
++			    chip->usb_id == USB_ID(0x0d8c, 0x0201) &&
++			    fp->altsetting == 5 && fp->maxpacksize == 392)
++				rate = 96000;
++			fp->rate_table[r] = rate;
+ 			if (rate < fp->rate_min)
+ 				fp->rate_min = rate;
+ 			else if (rate > fp->rate_max)
 
 --
