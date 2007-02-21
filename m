@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422790AbXBUShu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422794AbXBUSkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422790AbXBUShu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 13:37:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422791AbXBUShu
+	id S1422794AbXBUSkh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 13:40:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422793AbXBUSkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 13:37:50 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40427 "EHLO
-	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1422790AbXBUSht (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 13:37:49 -0500
-Date: Wed, 21 Feb 2007 10:37:46 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Andi Kleen <ak@muc.de>
-cc: Zachary Amsden <zach@vmware.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [patch 00/21] Xen-paravirt: Xen guest implementation for
- paravirt_ops interface
-In-Reply-To: <20070217135112.GA15102@muc.de>
-Message-ID: <Pine.LNX.4.64.0702211036060.24941@schroedinger.engr.sgi.com>
-References: <20070216022449.739760547@goop.org>
- <Pine.LNX.4.64.0702161244380.26718@schroedinger.engr.sgi.com>
- <45D61C74.2000601@vmware.com> <Pine.LNX.4.64.0702161312460.28871@schroedinger.engr.sgi.com>
- <45D626BB.20007@vmware.com> <Pine.LNX.4.64.0702161356380.29218@schroedinger.engr.sgi.com>
- <20070217135112.GA15102@muc.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 21 Feb 2007 13:40:37 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:33233 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422794AbXBUSkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 13:40:36 -0500
+Date: Wed, 21 Feb 2007 13:40:23 -0500
+From: Dave Jones <davej@redhat.com>
+To: Andreas Schwab <schwab@suse.de>
+Cc: Zwane Mwaikambo <zwane@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21-rc1
+Message-ID: <20070221184023.GJ19851@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Andreas Schwab <schwab@suse.de>,
+	Zwane Mwaikambo <zwane@infradead.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <jeejojmkbq.fsf@sykes.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <jeejojmkbq.fsf@sykes.suse.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 Feb 2007, Andi Kleen wrote:
+On Wed, Feb 21, 2007 at 07:34:01PM +0100, Andreas Schwab wrote:
+ > I'm getting an undefined symbol with CONFIG_AGP=m:
+ > 
+ > WARNING: "compat_agp_ioctl" [drivers/char/agp/agpgart.ko] undefined!
 
-> That was always its intention. It's not a direct interface to a hypervisor,
-> but an somewhat abstracted interface to a "hypervisor driver" 
+Fix went to Linus an hour ago.
+It's been in -mm for a week, and agpgart.git for a day or so.
 
-I thought that hypervisor driver was some binary blob that can be directly
-accessed via paravirt_ops?
+		Dave
 
-> But you're right that there are currently still quite a lot of hooks
-> being added. I plan to be much more strict on that in the future.
-
-And it seems that the hooks are not generic but bound to a particular 
-hypervisor. Should the Xen specific stuff not be in the binary blob?
-
-
+-- 
+http://www.codemonkey.org.uk
