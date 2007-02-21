@@ -1,170 +1,358 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422701AbXBUSON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422756AbXBUSOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422701AbXBUSON (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 13:14:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422756AbXBUSON
+	id S1422756AbXBUSOj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 13:14:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422753AbXBUSOj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 13:14:13 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:52796 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422701AbXBUSOK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 13:14:10 -0500
-Date: Wed, 21 Feb 2007 10:14:04 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, ego@in.ibm.com, akpm@osdl.org,
-       paulmck@us.ibm.com, mingo@elte.hu, vatsa@in.ibm.com,
-       dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-Subject: Re: freezer problems
-Message-ID: <20070221181404.GC7063@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070214144031.GA15257@in.ibm.com> <20070220001209.GA15991@tv-sign.ru> <200702200132.12847.rjw@sisk.pl> <200702201929.03776.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200702201929.03776.rjw@sisk.pl>
-User-Agent: Mutt/1.4.1i
+	Wed, 21 Feb 2007 13:14:39 -0500
+Received: from il.qumranet.com ([82.166.9.18]:47663 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422758AbXBUSOh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 13:14:37 -0500
+Subject: [PATCH 2/6] KVM: Create an inode per virtual machine
+From: Avi Kivity <avi@qumranet.com>
+Date: Wed, 21 Feb 2007 18:14:35 -0000
+To: kvm-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, mingo@elte.hu
+References: <45DC8B6E.5050205@qumranet.com>
+In-Reply-To: <45DC8B6E.5050205@qumranet.com>
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <20070221181435.9E7B625016D@il.qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 20, 2007 at 07:29:01PM +0100, Rafael J. Wysocki wrote:
-> On Tuesday, 20 February 2007 01:32, Rafael J. Wysocki wrote:
-> > On Tuesday, 20 February 2007 01:12, Oleg Nesterov wrote:
-> > Hm.  In the case discussed above we have a task that's right before calling
-> > frozen_process(), so we can't thaw it, because it's not frozen.  It will be
-> > frozen just in a while, but try_to_freeze_tasks() and thaw_tasks() have no
-> > way to check this.
-> > 
-> > I think to close this race the refrigerator should check TIF_FREEZE and set
-> > PF_FROZEN _and_ reset TIF_FREEZE under a lock that would also have to be
-> > taken by try_to_freeze_tasks() in the beginning of the error path.  This will
-> > ensure that all tasks either freeze themselves before the error path in
-> > try_to_freeze_tasks() is executed, or remain unfrozen.
-> > 
-> > I'll try to prepare a patch to illustrate this, but right now I'm too tired to
-> > do it. :-)
-> 
-> Something like this, perhaps:
-> 
-> ---
->  include/linux/freezer.h |   10 +++-------
->  kernel/power/process.c  |   18 ++++++++++++++++--
->  2 files changed, 19 insertions(+), 9 deletions(-)
-> 
-> Index: linux-2.6.20-mm2/include/linux/freezer.h
-> ===================================================================
-> --- linux-2.6.20-mm2.orig/include/linux/freezer.h
-> +++ linux-2.6.20-mm2/include/linux/freezer.h
-> @@ -58,17 +58,13 @@ static inline void frozen_process(struct
->  	clear_tsk_thread_flag(p, TIF_FREEZE);
->  }
-> 
-> -extern void refrigerator(void);
-> +extern int refrigerator(void);
->  extern int freeze_processes(void);
->  extern void thaw_processes(void);
-> 
->  static inline int try_to_freeze(void)
->  {
-> -	if (freezing(current)) {
-> -		refrigerator();
-> -		return 1;
-> -	} else
-> -		return 0;
-> +	return refrigerator();
->  }
-> 
->  /*
-> @@ -104,7 +100,7 @@ static inline void freeze(struct task_st
->  static inline int thaw_process(struct task_struct *p) { return 1; }
->  static inline void frozen_process(struct task_struct *p) { BUG(); }
-> 
-> -static inline void refrigerator(void) {}
-> +static inline int refrigerator(void) { return 0; }
->  static inline int freeze_processes(void) { BUG(); return 0; }
->  static inline void thaw_processes(void) {}
-> 
-> Index: linux-2.6.20-mm2/kernel/power/process.c
-> ===================================================================
-> --- linux-2.6.20-mm2.orig/kernel/power/process.c
-> +++ linux-2.6.20-mm2/kernel/power/process.c
-> @@ -24,6 +24,8 @@
->  #define FREEZER_KERNEL_THREADS 0
->  #define FREEZER_USER_SPACE 1
-> 
-> +spinlock_t refrigerator_lock;
-> +
->  static inline int freezeable(struct task_struct * p)
->  {
->  	if ((p == current) ||
-> @@ -34,15 +36,23 @@ static inline int freezeable(struct task
->  }
-> 
->  /* Refrigerator is place where frozen processes are stored :-). */
-> -void refrigerator(void)
-> +int refrigerator(void)
->  {
->  	/* Hmm, should we be allowed to suspend when there are realtime
->  	   processes around? */
->  	long save;
-> +
-> +	spin_lock(&refrigerator_lock);
+This avoids having filp->f_op and the corresponding inode->i_fop different,
+which is a little unorthodox.
 
-I hope we can do this without a global lock that is acquired on each
-try_to_freeze() call!
+The ioctl list is split into two: global kvm ioctls and per-vm ioctls.  A new
+ioctl, KVM_CREATE_VM, is used to create VMs and return the VM fd.
 
-> +	if (freezing(current)) {
+Signed-off-by: Avi Kivity <avi@qumranet.com>
+---
+ drivers/kvm/kvm_main.c |  212 ++++++++++++++++++++++++++++++++++++++---------
+ include/linux/kvm.h    |   10 ++-
+ 2 files changed, 180 insertions(+), 42 deletions(-)
 
-Would it be possible to acquire the lock here instead, then recheck here?
-Or use a per-thread lock?  (Yes, this would make the error checking path
-have to acquire a very large number of threads, but...
-
-							Thanx, Paul
-
-> +		frozen_process(current);
-> +		spin_unlock(&refrigerator_lock);
-> +	} else {
-> +		spin_unlock(&refrigerator_lock);
-> +		return 0;
-> +	}
->  	save = current->state;
->  	pr_debug("%s entered refrigerator\n", current->comm);
-> 
-> -	frozen_process(current);
->  	spin_lock_irq(&current->sighand->siglock);
->  	recalc_sigpending(); /* We sent fake signal, clean it up */
->  	spin_unlock_irq(&current->sighand->siglock);
-> @@ -53,6 +63,7 @@ void refrigerator(void)
->  	}
->  	pr_debug("%s left refrigerator\n", current->comm);
->  	current->state = save;
-> +	return 1;
->  }
-> 
->  static inline void freeze_process(struct task_struct *p)
-> @@ -143,6 +154,7 @@ static unsigned int try_to_freeze_tasks(
->  					"kernel threads",
->  				TIMEOUT / HZ, todo);
->  		read_lock(&tasklist_lock);
-> +		spin_lock(&refrigerator_lock);
->  		do_each_thread(g, p) {
->  			if (is_user_space(p) == !freeze_user_space)
->  				continue;
-> @@ -152,6 +164,7 @@ static unsigned int try_to_freeze_tasks(
-> 
->  			cancel_freezing(p);
->  		} while_each_thread(g, p);
-> +		spin_unlock(&refrigerator_lock);
->  		read_unlock(&tasklist_lock);
->  	}
-> 
-> @@ -169,6 +182,7 @@ int freeze_processes(void)
->  	unsigned int nr_unfrozen;
-> 
->  	printk("Stopping tasks ... ");
-> +	spin_lock_init(&refrigerator_lock);
->  	nr_unfrozen = try_to_freeze_tasks(FREEZER_USER_SPACE);
->  	if (nr_unfrozen)
->  		return nr_unfrozen;
+diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
+index c01252e..aa07d9c 100644
+--- a/drivers/kvm/kvm_main.c
++++ b/drivers/kvm/kvm_main.c
+@@ -36,6 +36,7 @@
+ #include <asm/desc.h>
+ #include <linux/sysdev.h>
+ #include <linux/cpu.h>
++#include <linux/file.h>
+ #include <linux/fs.h>
+ #include <linux/mount.h>
+ 
+@@ -95,6 +96,55 @@ struct segment_descriptor_64 {
+ 
+ #endif
+ 
++static struct inode *kvmfs_inode(struct file_operations *fops)
++{
++	int error = -ENOMEM;
++	struct inode *inode = new_inode(kvmfs_mnt->mnt_sb);
++
++	if (!inode)
++		goto eexit_1;
++
++	inode->i_fop = fops;
++
++	/*
++	 * Mark the inode dirty from the very beginning,
++	 * that way it will never be moved to the dirty
++	 * list because mark_inode_dirty() will think
++	 * that it already _is_ on the dirty list.
++	 */
++	inode->i_state = I_DIRTY;
++	inode->i_mode = S_IRUSR | S_IWUSR;
++	inode->i_uid = current->fsuid;
++	inode->i_gid = current->fsgid;
++	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
++	return inode;
++
++eexit_1:
++	return ERR_PTR(error);
++}
++
++static struct file *kvmfs_file(struct inode *inode, void *private_data)
++{
++	struct file *file = get_empty_filp();
++
++	if (!file)
++		return ERR_PTR(-ENFILE);
++
++	file->f_path.mnt = mntget(kvmfs_mnt);
++	file->f_path.dentry = d_alloc_anon(inode);
++	if (!file->f_path.dentry)
++		return ERR_PTR(-ENOMEM);
++	file->f_mapping = inode->i_mapping;
++
++	file->f_pos = 0;
++	file->f_flags = O_RDWR;
++	file->f_op = inode->i_fop;
++	file->f_mode = FMODE_READ | FMODE_WRITE;
++	file->f_version = 0;
++	file->private_data = private_data;
++	return file;
++}
++
+ unsigned long segment_base(u16 selector)
+ {
+ 	struct descriptor_table gdt;
+@@ -222,13 +272,13 @@ static void vcpu_put(struct kvm_vcpu *vcpu)
+ 	mutex_unlock(&vcpu->mutex);
+ }
+ 
+-static int kvm_dev_open(struct inode *inode, struct file *filp)
++static struct kvm *kvm_create_vm(void)
+ {
+ 	struct kvm *kvm = kzalloc(sizeof(struct kvm), GFP_KERNEL);
+ 	int i;
+ 
+ 	if (!kvm)
+-		return -ENOMEM;
++		return ERR_PTR(-ENOMEM);
+ 
+ 	spin_lock_init(&kvm->lock);
+ 	INIT_LIST_HEAD(&kvm->active_mmu_pages);
+@@ -244,7 +294,11 @@ static int kvm_dev_open(struct inode *inode, struct file *filp)
+ 		list_add(&kvm->vm_list, &vm_list);
+ 		spin_unlock(&kvm_lock);
+ 	}
+-	filp->private_data = kvm;
++	return kvm;
++}
++
++static int kvm_dev_open(struct inode *inode, struct file *filp)
++{
+ 	return 0;
+ }
+ 
+@@ -300,14 +354,24 @@ static void kvm_free_vcpus(struct kvm *kvm)
+ 
+ static int kvm_dev_release(struct inode *inode, struct file *filp)
+ {
+-	struct kvm *kvm = filp->private_data;
++	return 0;
++}
+ 
++static void kvm_destroy_vm(struct kvm *kvm)
++{
+ 	spin_lock(&kvm_lock);
+ 	list_del(&kvm->vm_list);
+ 	spin_unlock(&kvm_lock);
+ 	kvm_free_vcpus(kvm);
+ 	kvm_free_physmem(kvm);
+ 	kfree(kvm);
++}
++
++static int kvm_vm_release(struct inode *inode, struct file *filp)
++{
++	struct kvm *kvm = filp->private_data;
++
++	kvm_destroy_vm(kvm);
+ 	return 0;
+ }
+ 
+@@ -1900,17 +1964,14 @@ static int kvm_dev_ioctl_debug_guest(struct kvm *kvm,
+ 	return r;
+ }
+ 
+-static long kvm_dev_ioctl(struct file *filp,
+-			  unsigned int ioctl, unsigned long arg)
++static long kvm_vm_ioctl(struct file *filp,
++			 unsigned int ioctl, unsigned long arg)
+ {
+ 	struct kvm *kvm = filp->private_data;
+ 	void __user *argp = (void __user *)arg;
+ 	int r = -EINVAL;
+ 
+ 	switch (ioctl) {
+-	case KVM_GET_API_VERSION:
+-		r = KVM_API_VERSION;
+-		break;
+ 	case KVM_CREATE_VCPU:
+ 		r = kvm_dev_ioctl_create_vcpu(kvm, arg);
+ 		if (r)
+@@ -2052,6 +2113,107 @@ static long kvm_dev_ioctl(struct file *filp,
+ 	case KVM_SET_MSRS:
+ 		r = msr_io(kvm, argp, do_set_msr, 0);
+ 		break;
++	default:
++		;
++	}
++out:
++	return r;
++}
++
++static struct page *kvm_vm_nopage(struct vm_area_struct *vma,
++				  unsigned long address,
++				  int *type)
++{
++	struct kvm *kvm = vma->vm_file->private_data;
++	unsigned long pgoff;
++	struct kvm_memory_slot *slot;
++	struct page *page;
++
++	*type = VM_FAULT_MINOR;
++	pgoff = ((address - vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
++	slot = gfn_to_memslot(kvm, pgoff);
++	if (!slot)
++		return NOPAGE_SIGBUS;
++	page = gfn_to_page(slot, pgoff);
++	if (!page)
++		return NOPAGE_SIGBUS;
++	get_page(page);
++	return page;
++}
++
++static struct vm_operations_struct kvm_vm_vm_ops = {
++	.nopage = kvm_vm_nopage,
++};
++
++static int kvm_vm_mmap(struct file *file, struct vm_area_struct *vma)
++{
++	vma->vm_ops = &kvm_vm_vm_ops;
++	return 0;
++}
++
++static struct file_operations kvm_vm_fops = {
++	.release        = kvm_vm_release,
++	.unlocked_ioctl = kvm_vm_ioctl,
++	.compat_ioctl   = kvm_vm_ioctl,
++	.mmap           = kvm_vm_mmap,
++};
++
++static int kvm_dev_ioctl_create_vm(void)
++{
++	int fd, r;
++	struct inode *inode;
++	struct file *file;
++	struct kvm *kvm;
++
++	inode = kvmfs_inode(&kvm_vm_fops);
++	if (IS_ERR(inode)) {
++		r = PTR_ERR(inode);
++		goto out1;
++	}
++
++	kvm = kvm_create_vm();
++	if (IS_ERR(kvm)) {
++		r = PTR_ERR(kvm);
++		goto out2;
++	}
++
++	file = kvmfs_file(inode, kvm);
++	if (IS_ERR(file)) {
++		r = PTR_ERR(file);
++		goto out3;
++	}
++
++	r = get_unused_fd();
++	if (r < 0)
++		goto out4;
++	fd = r;
++	fd_install(fd, file);
++
++	return fd;
++
++out4:
++	fput(file);
++out3:
++	kvm_destroy_vm(kvm);
++out2:
++	iput(inode);
++out1:
++	return r;
++}
++
++static long kvm_dev_ioctl(struct file *filp,
++			  unsigned int ioctl, unsigned long arg)
++{
++	void __user *argp = (void __user *)arg;
++	int r = -EINVAL;
++
++	switch (ioctl) {
++	case KVM_GET_API_VERSION:
++		r = KVM_API_VERSION;
++		break;
++	case KVM_CREATE_VM:
++		r = kvm_dev_ioctl_create_vm();
++		break;
+ 	case KVM_GET_MSR_INDEX_LIST: {
+ 		struct kvm_msr_list __user *user_msr_list = argp;
+ 		struct kvm_msr_list msr_list;
+@@ -2086,43 +2248,11 @@ out:
+ 	return r;
+ }
+ 
+-static struct page *kvm_dev_nopage(struct vm_area_struct *vma,
+-				   unsigned long address,
+-				   int *type)
+-{
+-	struct kvm *kvm = vma->vm_file->private_data;
+-	unsigned long pgoff;
+-	struct kvm_memory_slot *slot;
+-	struct page *page;
+-
+-	*type = VM_FAULT_MINOR;
+-	pgoff = ((address - vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
+-	slot = gfn_to_memslot(kvm, pgoff);
+-	if (!slot)
+-		return NOPAGE_SIGBUS;
+-	page = gfn_to_page(slot, pgoff);
+-	if (!page)
+-		return NOPAGE_SIGBUS;
+-	get_page(page);
+-	return page;
+-}
+-
+-static struct vm_operations_struct kvm_dev_vm_ops = {
+-	.nopage = kvm_dev_nopage,
+-};
+-
+-static int kvm_dev_mmap(struct file *file, struct vm_area_struct *vma)
+-{
+-	vma->vm_ops = &kvm_dev_vm_ops;
+-	return 0;
+-}
+-
+ static struct file_operations kvm_chardev_ops = {
+ 	.open		= kvm_dev_open,
+ 	.release        = kvm_dev_release,
+ 	.unlocked_ioctl = kvm_dev_ioctl,
+ 	.compat_ioctl   = kvm_dev_ioctl,
+-	.mmap           = kvm_dev_mmap,
+ };
+ 
+ static struct miscdevice kvm_dev = {
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index f360459..d6e6635 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -224,7 +224,16 @@ struct kvm_dirty_log {
+ 
+ #define KVMIO 0xAE
+ 
++/*
++ * ioctls for /dev/kvm fds:
++ */
+ #define KVM_GET_API_VERSION       _IO(KVMIO, 1)
++#define KVM_CREATE_VM             _IO(KVMIO, 2) /* returns a VM fd */
++#define KVM_GET_MSR_INDEX_LIST    _IOWR(KVMIO, 15, struct kvm_msr_list)
++
++/*
++ * ioctls for VM fds
++ */
+ #define KVM_RUN                   _IOWR(KVMIO, 2, struct kvm_run)
+ #define KVM_GET_REGS              _IOWR(KVMIO, 3, struct kvm_regs)
+ #define KVM_SET_REGS              _IOW(KVMIO, 4, struct kvm_regs)
+@@ -238,6 +247,5 @@ struct kvm_dirty_log {
+ #define KVM_GET_DIRTY_LOG         _IOW(KVMIO, 12, struct kvm_dirty_log)
+ #define KVM_GET_MSRS              _IOWR(KVMIO, 13, struct kvm_msrs)
+ #define KVM_SET_MSRS              _IOWR(KVMIO, 14, struct kvm_msrs)
+-#define KVM_GET_MSR_INDEX_LIST    _IOWR(KVMIO, 15, struct kvm_msr_list)
+ 
+ #endif
