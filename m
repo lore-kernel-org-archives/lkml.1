@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964781AbXBUBv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965085AbXBUBwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964781AbXBUBv4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 20:51:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964835AbXBUBvu
+	id S965085AbXBUBwc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 20:52:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965076AbXBUBwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 20:51:50 -0500
-Received: from mx1.suse.de ([195.135.220.2]:42843 "EHLO mx1.suse.de"
+	Tue, 20 Feb 2007 20:52:31 -0500
+Received: from mail.suse.de ([195.135.220.2]:42932 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964781AbXBUBv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 20:51:29 -0500
-Date: Tue, 20 Feb 2007 17:50:00 -0800
+	id S964934AbXBUBwY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 20:52:24 -0500
+Date: Tue, 20 Feb 2007 17:51:02 -0800
 From: Greg KH <greg@kroah.com>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jens.axboe@oracle.com,
-       dougg@torque.net, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -20,13 +19,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Tejun Heo <htejun@gmail.com>, Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 04/18] SCSI: add missing cdb clearing in scsi_execute()
-Message-ID: <20070221015000.GE3684@kroah.com>
+       Robert Hancock <hancockr@shaw.ca>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: [patch 13/18] V4L: cx88: Fix lockup on suspend
+Message-ID: <20070221015102.GN3684@kroah.com>
 References: <20070221014413.282048309@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="scsi-add-missing-cdb-clearing-in-scsi_execute.patch"
+Content-Disposition: inline; filename="V4L-cx88-Fix-lockup-on-suspend.patch"
 In-Reply-To: <20070221014927.GA3684@kroah.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,34 +35,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Tejun Heo <htejun@gmail.com>
+From: Robert Hancock <hancockr@shaw.ca>
 
-Clear-garbage-after-CDB patch missed scsi_execute() and it causes some
-ODDs (HL-DT-ST DVD-RAM GSA-H30N) choke during SCSI scan.  Note that
-this patch is only for -stable.  There is another more reliable fix
-for this problem proposed for devel tree.
+Suspending with the cx88xx module loaded causes the system to lock up
+because the cx88_audio_thread kthread was missing a try_to_freeze()
+call, which caused it to go into a tight loop and result in softlockup
+when suspending. Fix that.
 
-http://thread.gmane.org/gmane.linux.ide/14605/focus=14605
+(cherry picked from commit a96afb3e9428f2e7463344f12dbc85faf08e2e09)
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Cc: Douglas Gilbert <dougg@torque.net>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Robert Hancock <hancockr@shaw.ca>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/scsi_lib.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/media/video/cx88/cx88-tvaudio.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- linux-2.6.18.7.orig/drivers/scsi/scsi_lib.c
-+++ linux-2.6.18.7/drivers/scsi/scsi_lib.c
-@@ -191,6 +191,7 @@ int scsi_execute(struct scsi_device *sde
- 		goto out;
+--- linux-2.6.18.7.orig/drivers/media/video/cx88/cx88-tvaudio.c
++++ linux-2.6.18.7/drivers/media/video/cx88/cx88-tvaudio.c
+@@ -38,6 +38,7 @@
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+ #include <linux/errno.h>
++#include <linux/freezer.h>
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+ #include <linux/mm.h>
+@@ -979,6 +980,7 @@ int cx88_audio_thread(void *data)
+ 		msleep_interruptible(1000);
+ 		if (kthread_should_stop())
+ 			break;
++		try_to_freeze();
  
- 	req->cmd_len = COMMAND_SIZE(cmd[0]);
-+	memset(req->cmd, 0, BLK_MAX_CDB); /* ATAPI hates garbage after CDB */
- 	memcpy(req->cmd, cmd, req->cmd_len);
- 	req->sense = sense;
- 	req->sense_len = 0;
+ 		/* just monitor the audio status for now ... */
+ 		memset(&t, 0, sizeof(t));
 
 --
