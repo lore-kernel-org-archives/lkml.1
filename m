@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423261AbXBUX1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423090AbXBUX3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423261AbXBUX1x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 18:27:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423270AbXBUX1w
+	id S1423090AbXBUX3W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 18:29:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423269AbXBUX3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 18:27:52 -0500
-Received: from raven.upol.cz ([158.194.120.4]:55680 "EHLO raven.upol.cz"
+	Wed, 21 Feb 2007 18:29:22 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50550 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423261AbXBUX1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 18:27:51 -0500
-To: Andrew Morton <akpm@linux-foundation.org>, NeilBrown <neilb@suse.de>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 006 of 6] md: Add support for reshape of a raid6
-In-Reply-To: <20070221144806.e6eed85c.akpm@linux-foundation.org>
-References: <20070220172544.15678.patches@notabene> <1070220063516.16208@suse.de> <20070221144806.e6eed85c.akpm@linux-foundation.org>
-Date: Thu, 22 Feb 2007 00:36:22 +0100
-Message-Id: <E1HK10Y-0001MY-CB@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
+	id S1423090AbXBUX3V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 18:29:21 -0500
+Date: Thu, 22 Feb 2007 00:24:07 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Michael K. Edwards" <medwards.linux@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070221232407.GA5895@elte.hu>
+References: <20070221211355.GA7302@elte.hu> <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -5.3
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Andrew Morton
-> Newsgroups: gmane.linux.raid,gmane.linux.kernel
-> Subject: Re: [PATCH 006 of 6] md: Add support for reshape of a raid6
-> Date: Wed, 21 Feb 2007 14:48:06 -0800
 
-Hallo.
+* Michael K. Edwards <medwards.linux@gmail.com> wrote:
 
-> On Tue, 20 Feb 2007 17:35:16 +1100
-> NeilBrown <neilb@suse.de> wrote:
->
->> +		for (i = conf->raid_disks ; i-- ;  ) {
->
-> That statement should be dragged out, shot, stomped on then ceremonially
-> incinerated.
->
-> What's wrong with doing
->
-> 	for (i = 0; i < conf->raid_disks; i++) {
->
-> in a manner which can be understood without alcoholic fortification?
->
-> ho hum.
+> 2) Facilities for manipulating pools of threadlets, so you can 
+> throttle their concurrency, reprioritize them, and cancel them in 
+> bulk, disposing safely of any dynamically allocated memory, 
+> synchronization primitives, and so forth that they may be holding;
 
-In case someone likes to do job, GCC usually ought to do, i would
-suggest something like this instead:
+pthread_cancel() [if/once threadlets are integrated into pthreads] ought 
+to do that. A threadlet, if it gets moved to an async context, is a 
+full-blown thread.
 
-       if (expanded && test_bit(STRIPE_EXPANDING, &sh->state)) {
-               /* Need to write out all blocks after computing P&Q */
--               sh->disks = conf->raid_disks;
-+	       	i = conf->raid_disks;
-+		sh->disks = i;
--               sh->pd_idx = stripe_to_pdidx(sh->sector, conf,
--                                            conf->raid_disks);
-+               sh->pd_idx = stripe_to_pdidx(sh->sector, conf, i);
-
-               compute_parity6(sh, RECONSTRUCT_WRITE);
--               for (i = conf->raid_disks ; i-- ;  ) {
-+		do {
-                       set_bit(R5_LOCKED, &sh->dev[i].flags);
-                       locked++;
-                       set_bit(R5_Wantwrite, &sh->dev[i].flags);
--               }
-+		} while (--i);
-
-               clear_bit(STRIPE_EXPANDING, &sh->state);
-       } else if (expanded) {
-
-In any case this is subject of scripts/bloat-o-meter.
-____
+	Ingo
