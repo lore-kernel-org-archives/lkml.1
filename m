@@ -1,88 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423101AbXBUUfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161128AbXBUUiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423101AbXBUUfS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 15:35:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423102AbXBUUfS
+	id S1161128AbXBUUiT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 15:38:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161146AbXBUUiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 15:35:18 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:36945 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1423101AbXBUUfQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 15:35:16 -0500
-Date: Wed, 21 Feb 2007 15:35:13 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Roland McGrath <roland@redhat.com>
-cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Kwatch: kernel watchpoints using CPU debug registers
-In-Reply-To: <20070209233150.B9542180055@magilla.sf.frob.com>
-Message-ID: <Pine.LNX.4.44L0.0702211458250.3435-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 21 Feb 2007 15:38:19 -0500
+Received: from www.osadl.org ([213.239.205.134]:50444 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161128AbXBUUiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 15:38:18 -0500
+Subject: Re: Linux 2.6.21-rc1
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mingo@elte.hu
+In-Reply-To: <1172088050.8577.71.camel@imap.mvista.com>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
+	 <1172075053.8577.38.camel@imap.mvista.com>
+	 <1172077664.25076.75.camel@localhost.localdomain>
+	 <1172078340.8577.43.camel@imap.mvista.com>
+	 <1172079671.25076.80.camel@localhost.localdomain>
+	 <1172079523.8577.48.camel@imap.mvista.com>
+	 <1172081931.25076.95.camel@localhost.localdomain>
+	 <1172082200.8577.56.camel@imap.mvista.com>
+	 <1172085792.25076.119.camel@localhost.localdomain>
+	 <1172088050.8577.71.camel@imap.mvista.com>
+Content-Type: text/plain
+Date: Wed, 21 Feb 2007 21:43:23 +0100
+Message-Id: <1172090603.25076.127.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Going back to something you mentioned earlier...
+On Wed, 2007-02-21 at 12:00 -0800, Daniel Walker wrote:
+> There's a compile failure during my bisect.
+> 
+> distcc[3863] ERROR: compile /tmp//hrtimer.tmp.dwalker1.3795.i on dwalker3/120 failed
+> kernel/hrtimer.c: In function 'hrtimer_cpu_notify':
+> kernel/hrtimer.c:884: warning: implicit declaration of function 'clockevents_notify'
+> kernel/hrtimer.c:884: error: 'CLOCK_EVT_NOTIFY_CPU_DEAD' undeclared (first use in this function)
+> kernel/hrtimer.c:884: error: (Each undeclared identifier is reported only once 
+> kernel/hrtimer.c:884: error: for each function it appears in.)
+> drivers/ide/setup-pci.c: In function 'ide_scan_pcibus':
+> drivers/ide/setup-pci.c:866: warning: ignoring return value of '__pci_register_driver', declared with attribute warn_unused_result
+> make[1]: *** [kernel/hrtimer.o] Error 1
 
-On Fri, 9 Feb 2007, Roland McGrath wrote:
+hrmpf. we made it bisectable at some point.
 
-> I don't think I really object to the ABI change of clearing %dr6 after an
-> exception so that it does not accumulate multiple results.  But first I'll
-> have to convince myself that we never actually do want to accumulate
-> multiple results.  Hmm, I think we can, so maybe I do object.  If you set
-> two watchpoints inside a user buffer and then do a system call that touches
-> both those addresses (e.g. read), then you will go through do_debug (to
-> send_sigtrap) twice before returning to user mode.  When the syscall is
-> done, you'll have a pending SIGTRAP for the debugger to handle.  By looking
-> at your %dr6 the debugger can see that both watchpoints hit.  (gdb does not
-> handle this case, but it should.)  Am I wrong?
+	tglx
 
-Yes, you are wrong -- although perhaps you shouldn't be.
-
-The current version of do_debug() clears dr7 when a debug interrupt is 
-fielded.  As a result, if a system call touches two watchpoint addresses 
-in userspace only the first access will be noticed.
-
-This is probably a bug in do_debug().  It would be better to disable each
-individual userspace watchpoint as it is triggered (or even not to disable
-it at all).  dr7 would be restored when the SIGTRAP is delivered.  (But
-what if the user is blocking or ignoring SIGTRAP?)
-
-
-Moving on...
-
-I've worked out a plan for implementing combined user/kernel mode 
-breakpoints and watchpoints (call them "debugpoints" as a catch-all 
-term).  It should work transparently with ptrace and should accomodate 
-whatever scheme utrace decides to adopt.  There won't need to be a 
-separate kwatch facility on top of it; the new combined facility will 
-handle debugpoints in both userspace and kernelspace.
-
-The idea is that callers can register and unregister a struct debugpoint, 
-which contains fields for the type, length, address, and priority as well 
-as three callback pointers (for installed, uninstalled, and triggered).  
-The debug core will keep these structures sorted by priority and will 
-allocate the available debug registers based on the priorities of the 
-userspace and kernelspace requests.  Each CPU will have its own array of 
-pointers to these structures, indicating which debugpoints are currently 
-enabled.
-
-To work with ptrace, the new scheme will completely virtualize the debug
-registers.  So for example, a ptrace call might request a debugpoint in
-dr0, but it could end up that the physical register used is really dr2
-instead.  The various bits in dr6 and dr7 will be mapped in such a way
-that the entire procedure is transparent to the user.  Debugpoints 
-registered in kernelspace or by utrace won't care, of course.
-
-There are two things I am uncertain about: vm86 mode and kprobes.  I don't
-know anything about how either of them works.  Judging from the current
-code, nothing much should be needed -- debug traps in vm86 mode are
-handled by calling handle_vm86_trap(), and kprobes puts itself at the
-start of the notify_die() chain so it can handle single-step traps.  
-Eventually it will be necessary to check with someone who really 
-understands the issues.
-
-Alan Stern
 
