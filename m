@@ -1,58 +1,285 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161251AbXBUOHL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161253AbXBUOHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161251AbXBUOHL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 09:07:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161250AbXBUOHL
+	id S1161253AbXBUOHh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 09:07:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161252AbXBUOHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 09:07:11 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:20999 "EHLO
-	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161248AbXBUOHJ (ORCPT
+	Wed, 21 Feb 2007 09:07:37 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:53762 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161254AbXBUOHf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 09:07:09 -0500
-Date: Wed, 21 Feb 2007 08:06:07 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: libata FUA revisited
-In-reply-to: <45DC04DF.8040002@gmail.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       edmudama@gmail.com, Nicolas.Mailhot@LaPoste.net,
-       Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Mark Lord <mlord@pobox.com>, Ric Wheeler <ric@emc.com>,
-       Dongjun Shin <d.j.shin@samsung.com>, Hannes Reinecke <hare@suse.de>
-Message-id: <45DC51CF.7090202@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.S80SRyQbD/hm4SxliPUKU88BaCo@ifi.uio.no>
- <fa.Q/csgyCHkAsD84yi+bN78H1WNNM@ifi.uio.no> <45D104F3.7040602@shaw.ca>
- <45D1D72D.9020509@gmail.com> <45D252CD.5010303@shaw.ca>
- <45D25CF2.5030508@gmail.com> <20070215180023.GA4438@kernel.dk>
- <45D9FE7B.60909@shaw.ca> <45DC04DF.8040002@gmail.com>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Wed, 21 Feb 2007 09:07:35 -0500
+Date: Wed, 21 Feb 2007 19:43:18 +0530
+From: Suparna Bhattacharya <suparna@in.ibm.com>
+To: Zach Brown <zach.brown@oracle.com>
+Cc: linux-aio@kvack.org, linux-kernel@vger.kernel.org,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Leonid Ananiev <leonid.i.ananiev@intel.com>
+Subject: Re: [PATCH 2/2] aio: propogate post-EIOCBQUEUED errors to completion event
+Message-ID: <20070221141318.GA8199@in.ibm.com>
+Reply-To: suparna@in.ibm.com
+References: <20070219213830.4032.71308.sendpatchset@tetsuo.zabbo.net> <20070219213835.4032.87439.sendpatchset@tetsuo.zabbo.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070219213835.4032.87439.sendpatchset@tetsuo.zabbo.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
->> Aside from the issue above, as I mentioned elsewhere, lots of NCQ drives
->> don't support non-NCQ FUA writes..
+On Mon, Feb 19, 2007 at 01:38:35PM -0800, Zach Brown wrote:
+> aio: propogate post-EIOCBQUEUED errors to completion event
 > 
-> To me, using the NCQ FUA bit on such drives doesn't seem to be a good
-> idea.  Maybe I'm just too chicken but it's not like we can gain a lot
-> from doing FUA at this point.  Are there a lot of drives which support
-> NCQ but not FUA opcodes?
+> This addresses an oops reported by Leonid Ananiev <leonid.i.ananiev@intel.com>
+> as archived at http://lkml.org/lkml/2007/2/8/337.
+> 
+> O_DIRECT kicks off bios and returns -EIOCBQUEUED to indicate its intention to
+> call aio_complete() once the bios complete.   As we return from submission we
+> must preserve the -EIOCBQUEUED return code so that fs/aio.c knows to let the
+> bio completion call aio_complete().  This stops us from returning errors after
+> O_DIRECT submission.
+> 
+> But we have a few places that are very interested in generating errors after
+> bio submission.
+> 
+> The most critical of these is invalidating the page cache after a write.  This
+> avoids exposing stale data to buffered operations that are performed after the
+> O_DIRECT write succeeds.  We must do this after submission because the user
+> buffer might have been an mmap()ed buffer of the region being written to.  The
+> get_user_pages() in the O_DIRECT completion path could have faulted in stale
+> data.
+> 
+> So this patch introduces a helper, aio_propogate_error(), which queues
+> post-submission errors in the iocb so that they are given to the user
+> completion event when aio_complete() is finally called.
+> 
+> To get this working we change the aio_complete() path so that the ring
+> insertion is performed as the final iocb reference is dropped.  This gives the
+> submission path time to queue its pending error before it drops its reference.
+> This increases the space in the iocb as it has to record the two result codes
+> from aio_complete() and the pending error from the submission path.
 
-Well, it's hard to say whether "lots" have this issue, but the ones I 
-have in my machine, Seagate 7200.7 NCQ 160GB (ST3160827AS) and 7200.10 
-320GB (ST3320620AS), both support NCQ and don't support non-NCQ FUA, and 
-those (especially the latter) seem to be very popular models.
+This is an interesting trick, but I'd like to consider hard whether the added
+complexity is worth it. Could you list the various other cases you have in mind
+which would want to use it ?
 
-Likely Seagate didn't implement that command since they figured nobody 
-would use that if they had NCQ..
+For the invalidate_inode_pages2_range() case, I wonder if the right
+place to issue this is after the direct IO write has completed and before
+aio_complete() is issued (somewhat like the way we do bio_check_pages_dirty
+for DIO reads), rather than after submission when the IO may still not have
+hit the disk. This would also make the behaviour uniform for synchronous and
+async cases.
+
+BTW, am I right in interpreting that with your change aio_complete() may
+trigger an io_getevents() wakeup, before the corresponding event is placed
+on the ring buffer ?
+
+Regards
+Suparna
+
+> 
+> This was tested by running O_DIRECT aio-stress concurrently with buffered reads
+> while triggering EIO in invalidate_inode_pages2_range() with the help of a
+> debugfs bool hack.  Previously the kernel would oops as fs/aio.c and bio
+> completion both called aio_complete().  With this patch aio-stress sees -EIO.
+> 
+> Signed-off-by: Zach Brown <zach.brown@oracle.com>
+> ---
+> 
+>  fs/aio.c            |   49 +++++++++++++++++++++---------------------
+>  include/linux/aio.h |   30 +++++++++++++++++++++++++
+>  mm/filemap.c        |    4 +--
+>  3 files changed, 57 insertions(+), 26 deletions(-)
+> 
+> --- a/fs/aio.c	Mon Feb 19 13:12:20 2007 -0800
+> +++ b/fs/aio.c	Mon Feb 19 13:16:00 2007 -0800
+> @@ -193,8 +193,7 @@ static int aio_setup_ring(struct kioctx 
+>  	kunmap_atomic((void *)((unsigned long)__event & PAGE_MASK), km); \
+>  } while(0)
+> 
+> -static void aio_ring_insert_entry(struct kioctx *ctx, struct kiocb *iocb,
+> -				  long res, long res2)
+> +static void aio_ring_insert_entry(struct kioctx *ctx, struct kiocb *iocb)
+>  {
+>  	struct aio_ring_info	*info;
+>  	struct aio_ring		*ring;
+> @@ -213,12 +212,12 @@ static void aio_ring_insert_entry(struct
+> 
+>  	event->obj = (u64)(unsigned long)iocb->ki_obj.user;
+>  	event->data = iocb->ki_user_data;
+> -	event->res = res;
+> -	event->res2 = res2;
+> -
+> -	dprintk("aio_complete: %p[%lu]: %p: %p %Lx %lx %lx\n",
+> +	event->res = iocb->ki_pending_err ? iocb->ki_pending_err : iocb->ki_res;
+> +	event->res2 = iocb->ki_res2;
+> +
+> +	dprintk("aio_complete: %p[%lu]: %p: %p %Lx %d %lx %lx\n",
+>  		ctx, tail, iocb, iocb->ki_obj.user, iocb->ki_user_data,
+> -		res, res2);
+> +		iocb->ki_pending_err, iocb->ki_res, iocb->ki_res2);
+> 
+>  	/* after flagging the request as done, we
+>  	 * must never even look at it again
+> @@ -459,6 +458,7 @@ static struct kiocb fastcall *__aio_get_
+>  	req->ki_cancel = NULL;
+>  	req->ki_retry = NULL;
+>  	req->ki_dtor = NULL;
+> +	req->ki_pending_err = 0;
+>  	req->private = NULL;
+>  	req->ki_iovec = NULL;
+>  	INIT_LIST_HEAD(&req->ki_run_list);
+> @@ -548,10 +548,14 @@ static int __aio_put_req(struct kioctx *
+> 
+>  	assert_spin_locked(&ctx->ctx_lock);
+> 
+> -	req->ki_users --;
+> +	req->ki_users--;
+>  	BUG_ON(req->ki_users < 0);
+>  	if (likely(req->ki_users))
+>  		return 0;
+> +
+> +	if (kiocbIsInserted(req))
+> +		aio_ring_insert_entry(ctx, req);
+> +
+>  	list_del(&req->ki_list);		/* remove from active_reqs */
+>  	req->ki_cancel = NULL;
+>  	req->ki_retry = NULL;
+> @@ -983,27 +987,24 @@ int fastcall aio_complete(struct kiocb *
+>  		return 1;
+>  	}
+> 
+> -	/* add a completion event to the ring buffer.
+> -	 * must be done holding ctx->ctx_lock to prevent
+> -	 * other code from messing with the tail
+> -	 * pointer since we might be called from irq
+> -	 * context.
+> -	 */
+> +	/*
+> +	 * We queue up the completion codes into the iocb.  They are combined
+> +	 * with a potential error from the submission path and inserted into
+> +	 * the ring once the last reference to the iocb is dropped.  Cancelled
+> +	 * iocbs don't insert events on completion because userland was given
+> +	 * an event directly as part of the cancelation interface.
+> + 	 */
+>  	spin_lock_irqsave(&ctx->ctx_lock, flags);
+> 
+>  	if (iocb->ki_run_list.prev && !list_empty(&iocb->ki_run_list))
+>  		list_del_init(&iocb->ki_run_list);
+> 
+> -	/*
+> -	 * cancelled requests don't get events, userland was given one
+> -	 * when the event got cancelled.
+> -	 */
+> -	if (kiocbIsCancelled(iocb))
+> -		goto put_rq;
+> -
+> -	aio_ring_insert_entry(ctx, iocb, res, res2);
+> -
+> -put_rq:
+> +	if (!kiocbIsCancelled(iocb)) {
+> +		iocb->ki_res = res;
+> +		iocb->ki_res2 = res2;
+> +		kiocbSetInserted(iocb);
+> +	}
+> +
+>  	/* everything turned out well, dispose of the aiocb. */
+>  	ret = __aio_put_req(ctx, iocb);
+> 
+> diff -r 8a740eb579d4 include/linux/aio.h
+> --- a/include/linux/aio.h	Mon Feb 19 13:12:20 2007 -0800
+> +++ b/include/linux/aio.h	Mon Feb 19 13:16:00 2007 -0800
+> @@ -34,6 +34,7 @@ struct kioctx;
+>  /* #define KIF_LOCKED		0 */
+>  #define KIF_KICKED		1
+>  #define KIF_CANCELLED		2
+> +#define KIF_INSERTED		4
+> 
+>  #define kiocbTryLock(iocb)	test_and_set_bit(KIF_LOCKED, &(iocb)->ki_flags)
+>  #define kiocbTryKick(iocb)	test_and_set_bit(KIF_KICKED, &(iocb)->ki_flags)
+> @@ -41,6 +42,7 @@ struct kioctx;
+>  #define kiocbSetLocked(iocb)	set_bit(KIF_LOCKED, &(iocb)->ki_flags)
+>  #define kiocbSetKicked(iocb)	set_bit(KIF_KICKED, &(iocb)->ki_flags)
+>  #define kiocbSetCancelled(iocb)	set_bit(KIF_CANCELLED, &(iocb)->ki_flags)
+> +#define kiocbSetInserted(iocb)	set_bit(KIF_INSERTED, &(iocb)->ki_flags)
+> 
+>  #define kiocbClearLocked(iocb)	clear_bit(KIF_LOCKED, &(iocb)->ki_flags)
+>  #define kiocbClearKicked(iocb)	clear_bit(KIF_KICKED, &(iocb)->ki_flags)
+> @@ -49,6 +51,7 @@ struct kioctx;
+>  #define kiocbIsLocked(iocb)	test_bit(KIF_LOCKED, &(iocb)->ki_flags)
+>  #define kiocbIsKicked(iocb)	test_bit(KIF_KICKED, &(iocb)->ki_flags)
+>  #define kiocbIsCancelled(iocb)	test_bit(KIF_CANCELLED, &(iocb)->ki_flags)
+> +#define kiocbIsInserted(iocb)	test_bit(KIF_INSERTED, &(iocb)->ki_flags)
+> 
+>  /* is there a better place to document function pointer methods? */
+>  /**
+> @@ -119,6 +122,10 @@ struct kiocb {
+> 
+>  	struct list_head	ki_list;	/* the aio core uses this
+>  						 * for cancellation */
+> +	/* we store and combine return codes from submission and completion */ 
+> +	int			ki_pending_err;
+> +	long			ki_res;
+> +	long			ki_res2;
+>  };
+> 
+>  #define is_sync_kiocb(iocb)	((iocb)->ki_key == KIOCB_SYNC_KEY)
+> @@ -246,6 +253,29 @@ static inline struct kiocb *list_kiocb(s
+>  	return list_entry(h, struct kiocb, ki_list);
+>  }
+> 
+> +/*
+> + * This function is used to make sure that an error is communicated to
+> + * userspace on iocb completion without stopping -EIOCBQUEUED from bubbling up
+> + * to fs/aio.c from the place where it originated.
+> + *
+> + * If we have an existing -EIOCBQUEUED it must be returned all the way to
+> + * fs/aio.c so that it doesn't double-complete the iocb along with whoever
+> + * returned -EIOCBQUEUED..  In that case we put the new error in the iocb.  It
+> + * will be returned to userspace *intead of* the first result code given to
+> + * aio_complete().  Use this only for errors which must overwrite whatever the
+> + * return code might have been.  The first non-zero new_err given to this
+> + * function for a given iocb will be returned to userspace.
+> + */
+> +static inline int aio_propogate_error(struct kiocb *iocb, int existing_err,
+> +				      int new_err)
+> +{
+> +	if (existing_err != -EIOCBQUEUED)
+> +		return new_err;
+> +	if (!iocb->ki_pending_err)
+> +		iocb->ki_pending_err = new_err;
+> +	return -EIOCBQUEUED;
+> +}
+> +
+>  /* for sysctl: */
+>  extern unsigned long aio_nr;
+>  extern unsigned long aio_max_nr;
+> diff -r 8a740eb579d4 mm/filemap.c
+> --- a/mm/filemap.c	Mon Feb 19 13:12:20 2007 -0800
+> +++ b/mm/filemap.c	Mon Feb 19 13:16:00 2007 -0800
+> @@ -2031,7 +2031,7 @@ generic_file_direct_write(struct kiocb *
+>  	    ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
+>  		int err = generic_osync_inode(inode, mapping, OSYNC_METADATA);
+>  		if (err < 0)
+> -			written = err;
+> +			written = aio_propogate_error(iocb, written, err);
+>  	}
+>  	return written;
+>  }
+> @@ -2396,7 +2396,7 @@ generic_file_direct_IO(int rw, struct ki
+>  			int err = invalidate_inode_pages2_range(mapping,
+>  					offset >> PAGE_CACHE_SHIFT, end);
+>  			if (err)
+> -				retval = err;
+> +				retval = aio_propogate_error(iocb, retval, err);
+>  		}
+>  	}
+>  	return retval;
 
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Suparna Bhattacharya (suparna@in.ibm.com)
+Linux Technology Center
+IBM Software Lab, India
 
