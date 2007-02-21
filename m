@@ -1,89 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750745AbXBUAoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750858AbXBUAqF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750745AbXBUAoB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 19:44:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbXBUAoB
+	id S1750858AbXBUAqF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 19:46:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbXBUAqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 19:44:01 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48722 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750745AbXBUAoA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 19:44:00 -0500
-Date: Wed, 21 Feb 2007 09:42:25 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
-       roland@redhat.com, mtk-manpages@gmx.net
-Subject: Re: [PATCH] fix handling of SIGCHILD from reaped child
-Message-Id: <20070221094225.4071ac3f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070220172049.GA67@tv-sign.ru>
-References: <20070220183220.41b3f1ca.kamezawa.hiroyu@jp.fujitsu.com>
-	<20070220142257.GA155@tv-sign.ru>
-	<20070221002526.c6b7edb0.kamezawa.hiroyu@jp.fujitsu.com>
-	<20070220172049.GA67@tv-sign.ru>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 20 Feb 2007 19:46:05 -0500
+Received: from mx1.suse.de ([195.135.220.2]:38923 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750858AbXBUAqC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 19:46:02 -0500
+From: Neil Brown <neilb@suse.de>
+To: g3vbv@blueyonder.co.uk
+Date: Wed, 21 Feb 2007 11:45:14 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <17883.38426.615139.355511@notabene.brown>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: IPV6 build failure 2.6.20-git1x
+In-Reply-To: message from Sid Boyce on Wednesday February 21
+References: <45DB9429.20309@blueyonder.co.uk>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 Feb 2007 20:20:49 +0300
-Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> > > > +		clear_stale_sigchild(current, retval);
-> > > 
-> > > But we are not checking that SIGCHLD is blocked?
-> > > 
-> > I'm sorry if I don't read SUSv3 correctly. SUSv3 doesn't define how we should
-> > do if SIGCHLD is not blocked.(so I don't check not-blocked case.)
+On Wednesday February 21, g3vbv@blueyonder.co.uk wrote:
+> x86_64 builds without errors on openSUSE 10.2.
+> x86 on openSUSE 10.3 Alpha1
+>  gcc version 4.1.2 20070115 (prerelease) (SUSE Linux)
+> CONFIG_IPV6=m
+> CONFIG_IPV6_PRIVACY=y
+> CONFIG_IPV6_ROUTER_PREF=y
+> CONFIG_IPV6_ROUTE_INFO=y
+> # CONFIG_IPV6_MIP6 is not set
+> CONFIG_IPV6_SIT=m
+> # CONFIG_IPV6_TUNNEL is not set
+> CONFIG_IPV6_MULTIPLE_TABLES=y
+> # CONFIG_IPV6_SUBTREES is not set
+> CONFIG_IP6_NF_MATCH_IPV6HEADER=m
 > 
-> Probably it is me who misunderstands SUSv3. Could you point me the reference
-> to authoritative document? My understanding: if blocked AND wait() succeeds.
-> 
-I read this:
-http://www.opengroup.org/onlinepubs/009695399/
+>   LD      arch/i386/lib/built-in.o
+>   CC      arch/i386/lib/bitops.o
+>   AS      arch/i386/lib/checksum.o
+>   CC      arch/i386/lib/delay.o
+>   AS      arch/i386/lib/getuser.o
+>   CC      arch/i386/lib/memcpy.o
+>   CC      arch/i386/lib/mmx.o
+>   AS      arch/i386/lib/putuser.o
+>   AS      arch/i386/lib/semaphore.o
+>   CC      arch/i386/lib/strstr.o
+>   CC      arch/i386/lib/usercopy.o
+>   AR      arch/i386/lib/lib.a
+>   GEN     .version
+>   CHK     include/linux/compile.h
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> net/built-in.o: In function `svc_udp_recvfrom':
+> svcsock.c:(.text+0x91f9c): undefined reference to `__ipv6_addr_type'
+> make: *** [.tmp_vmlinux1] Error 1
+> :/usr/src/linux-2.6.20-git15
 
+Yes, known.  I really should get onto that....
 
-> > IMHO, user's sig-child-handler is tend to call wait()/waitpid() and expects
-> > successful return. So removing stale signal here may be good.
-> 
-> Yes. But sig-child-handler should do
-> 
-> 	while (wait() >= 0)
-> 		....
-> 
-> anyway, because SIGCHLD is not a realtime signal.
-> 
+Currently you cannot have IPV6=m and SUNRPC=y.  All other combinations
+should work.
 
-Ah...it looks I should explation why I found this more.
-
-A user (who is migrated from Solaris) met following situation.
-==(single threaded program.)
-
-pid1 = fork();
-if (!pid1) {
-	do_something_forever();
-}
-....set SIGCHLD handler here to catch pid1's error-exit....
-
-if (!pid2) {
-	do_something_in_shortterm();
-}
-Block SIGCHLD
-ret = waitpid(pid2, hoge, hoge); // wait for pid2
-UNBlock SIGCHLD
-==
-
-And SIGCHLD handler didn't use WNOHANG. 
-I asked him to fix his program. He agreed.(So, no problem now.)
-
-While our problem was fixed, it seems Linux doesn't meet spec.(SUSv3)
-So I posted. 
-But this is rare situation and this fix makes codes ugly....
-
-
-Thanks,
--Kame
-
+NeilBrown
