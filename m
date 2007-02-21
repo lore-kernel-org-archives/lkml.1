@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422800AbXBUSvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422799AbXBUSvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422800AbXBUSvK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 13:51:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422797AbXBUSvK
+	id S1422799AbXBUSvP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 13:51:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422797AbXBUSvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 21 Feb 2007 13:51:15 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:41990 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422799AbXBUSvK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 21 Feb 2007 13:51:10 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36660 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422800AbXBUSvG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 13:51:06 -0500
-Message-ID: <45DC9466.5020508@redhat.com>
-Date: Wed, 21 Feb 2007 13:50:14 -0500
-From: Peter Staubach <staubach@redhat.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061215)
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=Yv470Z0ASgq+CVs+UWXrNoxq+BrzRrmxzug19mR7qJn8XbMb6UmmnaJzvGWCgx+ZP3vgdUwkpGOgM7T+LIO/bXx0ev15IXJQQ5b12Ph2NFfua+bI5/t5Hsvr+7bXRzy8iqNqePfFyAQ7VBwNm+3LZNCWx6dGqNfEW8KxSmsuVko=
+Message-ID: <45DC949A.2040801@gmail.com>
+Date: Wed, 21 Feb 2007 19:51:06 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
 MIME-Version: 1.0
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-CC: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       hugh@veritas.com, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update ctime and mtime for mmaped write
-References: <E1HJvdA-0003Nj-00@dorka.pomaz.szeredi.hu>	 <1172081562.9108.1.camel@heimdal.trondhjem.org>	 <E1HJwCl-0003V6-00@dorka.pomaz.szeredi.hu> <1172083004.9108.6.camel@heimdal.trondhjem.org>
-In-Reply-To: <1172083004.9108.6.camel@heimdal.trondhjem.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Faik Uygur <faik@pardus.org.tr>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21-rc1
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <200702211526.41493.faik@pardus.org.tr> <45DC9259.5010300@gmail.com>
+In-Reply-To: <45DC9259.5010300@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust wrote:
-> On Wed, 2007-02-21 at 19:28 +0100, Miklos Szeredi wrote:
->   
->>>> This flag is checked in msync() and __fput(), and if set, the file
->>>> times are updated and the flag is cleared
->>>>         
->>> Why not also check inside vfs_getattr?
->>>       
->> This is the minimum, that the standard asks for.
+Jiri Slaby napsal(a):
+> Faik Uygur napsal(a):
+>> Hi,
+> 
+> Hi.
+> 
+>> 21 Şub 2007 Çar 06:53 tarihinde, Linus Torvalds şunları yazmıştı:
+>>> Ok, the merge window for 2.6.21 has closed, and -rc1 is out there.
 >>
->> Note, your porposal would touch the times in vfs_getattr(), which
->> means, that the modification times would depend on the time of the
->> last stat() call, which is not really right, though it would still be
->> conforming.
+>>   CHK     include/linux/version.h
+>>   CHK     include/linux/utsrelease.h
+>>   CHK     include/linux/compile.h
+>>   CC [M]  drivers/char/ip2/ip2main.o
+>> In file included from drivers/char/ip2/ip2main.c:285:
+>> drivers/char/ip2/i2lib.c: In function `iiSendPendingMail_t':
+>> drivers/char/ip2/i2lib.c:83: sorry, unimplemented: inlining failed in 
+>> call to 'iiSendPendingMail': function body not available
+>> drivers/char/ip2/i2lib.c:157: sorry, unimplemented: called from here
+>> make[3]: *** [drivers/char/ip2/ip2main.o] Error 1
+>> make[2]: *** [drivers/char/ip2] Error 2
+>> make[1]: *** [drivers/char] Error 2
+>> make: *** [drivers] Error 2
 >>
->> It is much saner, if the modification time is always the time of the
->> last write() or msync().
->>     
->
-> I disagree. The above doesn't allow a program like 'make' to discover
-> whether or not the file has changed by simply calling stat(). Instead,
-> you're forcing a call to msync()+stat().
+>> With cleanup changes in commit 
+>> 40565f1962c5be9b9e285e05af01ab7771534868 compilation fails.
+> 
+> What compiler?
 
-Right, but that's what the specification specifies.  The file times
-for mmap'd files are not maintained as tightly as they are for files
-which are being modified via write(2).
+Oh, I can reproduce with gcc 3.4. Going to fix it.
 
-Rightly or wrongly.
-
-       ps
+thanks,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
