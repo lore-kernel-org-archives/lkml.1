@@ -1,50 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030579AbXBUOXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030353AbXBUO0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030579AbXBUOXq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 09:23:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030576AbXBUOXn
+	id S1030353AbXBUO0Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 09:26:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030573AbXBUO0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 09:23:43 -0500
-Received: from mail.screens.ru ([213.234.233.54]:38630 "EHLO mail.screens.ru"
+	Wed, 21 Feb 2007 09:26:25 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34215 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030353AbXBUOXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 09:23:42 -0500
-Date: Wed, 21 Feb 2007 17:23:42 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       David Howells <dhowells@redhat.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net/bridge/br_if.c: fix possible use-after-free in port_carrier_check()
-Message-ID: <20070221142342.GB134@tv-sign.ru>
-References: <20070220221941.GA707@tv-sign.ru> <20070220162434.72d3ad7b@freekitty> <20070221082345.GB1662@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070221082345.GB1662@ff.dom.local>
-User-Agent: Mutt/1.5.11
+	id S1030353AbXBUO0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 09:26:24 -0500
+Date: Wed, 21 Feb 2007 09:26:17 -0500
+From: Prarit Bhargava <prarit@redhat.com>
+To: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
+       zaitcev@redhat.com
+Cc: Prarit Bhargava <prarit@redhat.com>
+Message-Id: <20070221142617.28095.82350.sendpatchset@prarit.boston.redhat.com>
+Subject: [PATCH]: Remove __exit from mon_bin_exit & mon_text_exit.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/21, Jarek Poplawski wrote:
->
-> > On Wed, 21 Feb 2007 01:19:41 +0300
-> > Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> > 
-> > > +	p = container_of(work, struct net_bridge_port, carrier_check.work);
-> > >  
-> > >  	rtnl_lock();
-> > > -	p = dev->br_port;
-> > > -	if (!p)
-> > > -		goto done;
-> > >  	br = p->br;
-> 
-> It doesn't matter very much but I think this would look
-> better after the first if check.
+Remove __exit from mon_bin_exit & mon_text_exit.  Both functions are used
+in error code paths in __init functions.
 
-OK. I can re-send if this patch is otherwise correct.
+Resolves MODPOST warnings similar to:
 
-Oleg.
+`mon_bin_exit' referenced in section `.init.text' of drivers/built-in.o: defined in discarded section `.exit.text' of drivers/built-in.o
+`mon_text_exit' referenced in section `.init.text' of drivers/built-in.o: defined in discarded section `.exit.text' of drivers/built-in.o
+make: *** [.tmp_vmlinux1] Error 1
 
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+
+diff --git a/drivers/usb/mon/mon_bin.c b/drivers/usb/mon/mon_bin.c
+index c01dfe6..b2bedd9 100644
+--- a/drivers/usb/mon/mon_bin.c
++++ b/drivers/usb/mon/mon_bin.c
+@@ -1165,7 +1165,7 @@ err_dev:
+ 	return rc;
+ }
+ 
+-void __exit mon_bin_exit(void)
++void mon_bin_exit(void)
+ {
+ 	cdev_del(&mon_bin_cdev);
+ 	unregister_chrdev_region(mon_bin_dev0, MON_BIN_MAX_MINOR);
+diff --git a/drivers/usb/mon/mon_text.c b/drivers/usb/mon/mon_text.c
+index d38a127..494ee3b 100644
+--- a/drivers/usb/mon/mon_text.c
++++ b/drivers/usb/mon/mon_text.c
+@@ -520,7 +520,7 @@ int __init mon_text_init(void)
+ 	return 0;
+ }
+ 
+-void __exit mon_text_exit(void)
++void mon_text_exit(void)
+ {
+ 	debugfs_remove(mon_dir);
+ }
+diff --git a/drivers/usb/mon/usb_mon.h b/drivers/usb/mon/usb_mon.h
+index 4f949ce..efdfd89 100644
+--- a/drivers/usb/mon/usb_mon.h
++++ b/drivers/usb/mon/usb_mon.h
+@@ -57,9 +57,9 @@ void mon_text_del(struct mon_bus *mbus);
+ // void mon_bin_add(struct mon_bus *);
+ 
+ int __init mon_text_init(void);
+-void __exit mon_text_exit(void);
++void mon_text_exit(void);
+ int __init mon_bin_init(void);
+-void __exit mon_bin_exit(void);
++void mon_bin_exit(void);
+ 
+ /*
+  * DMA interface.
