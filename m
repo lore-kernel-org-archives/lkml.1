@@ -1,76 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422680AbXBUQzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422688AbXBUQ67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422680AbXBUQzU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 11:55:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422681AbXBUQzU
+	id S1422688AbXBUQ67 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 11:58:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422689AbXBUQ67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 11:55:20 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:5104 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422680AbXBUQzT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 11:55:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iqS0aqWCtHsu+2anhzYLMCU/5gIofIQEFpK3fNpVGDYF6FIQURMaFHC3ja558s5NbRm4Uu4keax0fcBpSEls27OGUGftIlhzVF0vUvIwJolog3vQjnIBqj18oPo+gTHW8Yka/nOEurq8fCgPHhaArHTu45oEbJuNOErH/x7lOfo=
-Message-ID: <45a44e480702210855t344441c1xf8e081c82ece4e63@mail.gmail.com>
-Date: Wed, 21 Feb 2007 11:55:17 -0500
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-To: "Geert Uytterhoeven" <geert@linux-m68k.org>
-Subject: Re: [PATCH 2.6.20 1/1] fbdev,mm: hecuba/E-Ink fbdev driver
-Cc: "Paul Mundt" <lethal@linux-sh.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Linux Frame Buffer Device Development" 
-	<linux-fbdev-devel@lists.sourceforge.net>,
-       "Linux Kernel Development" <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, "James Simmons" <jsimmons@infradead.org>
-In-Reply-To: <Pine.LNX.4.62.0702200906070.2082@pademelon.sonytel.be>
+	Wed, 21 Feb 2007 11:58:59 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:52955 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422688AbXBUQ66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 11:58:58 -0500
+Date: Wed, 21 Feb 2007 10:58:56 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: containers@lists.osdl.org
+Subject: [PATCH] namespaces: update some function names
+Message-ID: <20070221165856.GA11364@sergelap.austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070217104215.GB25512@localhost> <1171715652.5186.7.camel@lappy>
-	 <45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com>
-	 <20070217135922.GA15373@linux-sh.org>
-	 <45a44e480702180331t7e76c396j1a9861f689d4186b@mail.gmail.com>
-	 <20070218235741.GA22298@linux-sh.org>
-	 <45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
-	 <Pine.LNX.4.62.0702200906070.2082@pademelon.sonytel.be>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/20/07, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> Don't you need a way to specify the maximum deferral time? E.g. a field in
-> fb_info.
->
+From: Serge E. Hallyn <serue@us.ibm.com>
+Subject: [PATCH] namespaces: update some function names
 
-You are right. I will need that. I could put that into struct
-fb_deferred_io. So drivers would setup like:
+The {get,exit}_task_namespaces do not grab references to the individual
+namespaces, only to the nsproxy.  Reflect that in the function names.
 
-static struct fb_deferred_io hecubafb_defio = {
-        .delay          = HZ,
-        .deferred_io    = hecubafb_dpy_update,
-};
+Not so important right now, but when pid_ns gets pulled out of nsproxy
+(eventually into struct pid_nr) the current naming is wrong.
 
-where that would be:
-struct fb_deferred_io {
-        unsigned long delay;    /* delay between mkwrite and deferred handler */
-        struct mutex lock;      /* mutex that protects the page list */
-        struct list_head pagelist;      /* list of touched pages */
-        struct delayed_work deferred_work;
-        void (*deferred_io)(struct fb_info *info, struct list_head
-*pagelist); /* callback */
-};
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
 
-and the driver would do:
-...
-info->fbdefio = hecubafb_defio;
-register_framebuffer...
+---
 
-When the driver calls register_framebuffer and unregister_framebuffer,
-I can then do the init and destruction of the other members of that
-struct. Does this sound okay?
+ include/linux/nsproxy.h |    4 ++--
+ kernel/exit.c           |    6 +++---
+ kernel/fork.c           |    2 +-
+ kernel/nsproxy.c        |    2 +-
+ 4 files changed, 7 insertions(+), 7 deletions(-)
 
-Thanks,
-jaya
+3a423064ce33e801d4e63f6b4198958cdaf68e19
+diff --git a/include/linux/nsproxy.h b/include/linux/nsproxy.h
+index 0b9f0dc..b9d9aae 100644
+--- a/include/linux/nsproxy.h
++++ b/include/linux/nsproxy.h
+@@ -33,7 +33,7 @@ extern struct nsproxy init_nsproxy;
+ 
+ struct nsproxy *dup_namespaces(struct nsproxy *orig);
+ int copy_namespaces(int flags, struct task_struct *tsk);
+-void get_task_namespaces(struct task_struct *tsk);
++void get_task_nsproxy(struct task_struct *tsk);
+ void free_nsproxy(struct nsproxy *ns);
+ 
+ static inline void put_nsproxy(struct nsproxy *ns)
+@@ -43,7 +43,7 @@ static inline void put_nsproxy(struct ns
+ 	}
+ }
+ 
+-static inline void exit_task_namespaces(struct task_struct *p)
++static inline void put_task_nsproxy(struct task_struct *p)
+ {
+ 	struct nsproxy *ns = p->nsproxy;
+ 	if (ns) {
+diff --git a/kernel/exit.c b/kernel/exit.c
+index bc71fdf..98f08cf 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -395,9 +395,9 @@ void daemonize(const char *name, ...)
+ 	current->fs = fs;
+ 	atomic_inc(&fs->count);
+ 
+-	exit_task_namespaces(current);
++	put_task_nsproxy(current);
+ 	current->nsproxy = init_task.nsproxy;
+-	get_task_namespaces(current);
++	get_task_nsproxy(current);
+ 
+  	exit_files(current);
+ 	current->files = init_task.files;
+@@ -937,7 +937,7 @@ fastcall NORET_TYPE void do_exit(long co
+ 
+ 	tsk->exit_code = code;
+ 	proc_exit_connector(tsk);
+-	exit_task_namespaces(tsk);
++	put_task_nsproxy(tsk);
+ 	exit_notify(tsk);
+ #ifdef CONFIG_NUMA
+ 	mpol_free(tsk->mempolicy);
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 80284eb..b8b76e5 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -1267,7 +1267,7 @@ static struct task_struct *copy_process(
+ 	return p;
+ 
+ bad_fork_cleanup_namespaces:
+-	exit_task_namespaces(p);
++	put_task_nsproxy(p);
+ bad_fork_cleanup_keys:
+ 	exit_keys(p);
+ bad_fork_cleanup_mm:
+diff --git a/kernel/nsproxy.c b/kernel/nsproxy.c
+index f5b9ee6..31fa63a 100644
+--- a/kernel/nsproxy.c
++++ b/kernel/nsproxy.c
+@@ -28,7 +28,7 @@ static inline void get_nsproxy(struct ns
+ 	atomic_inc(&ns->count);
+ }
+ 
+-void get_task_namespaces(struct task_struct *tsk)
++void get_task_nsproxy(struct task_struct *tsk)
+ {
+ 	struct nsproxy *ns = tsk->nsproxy;
+ 	if (ns) {
+-- 
+1.1.6
