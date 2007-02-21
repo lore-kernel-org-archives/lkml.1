@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423197AbXBUXJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945907AbXBUXMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423197AbXBUXJR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 18:09:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423199AbXBUXJR
+	id S1945907AbXBUXMe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 18:12:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945900AbXBUXMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 18:09:17 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46884 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423197AbXBUXJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 18:09:16 -0500
-Date: Thu, 22 Feb 2007 00:03:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070221230351.GC32031@elte.hu>
-References: <20070221211355.GA7302@elte.hu> <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
+	Wed, 21 Feb 2007 18:12:34 -0500
+Received: from www.osadl.org ([213.239.205.134]:56892 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1945907AbXBUXMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 18:12:34 -0500
+Subject: Re: NO_HZ: timer interrupt stuck [Re: Linux 2.6.21-rc1]
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Luca Tettamanti <kronos.it@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070221230409.GA1158@dreamland.darkstar.lan>
+References: <20070221230409.GA1158@dreamland.darkstar.lan>
+Content-Type: text/plain
+Date: Thu, 22 Feb 2007 00:17:39 +0100
+Message-Id: <1172099859.25076.132.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -5.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2007-02-22 at 00:04 +0100, Luca Tettamanti wrote:
+> Hi Thomas,
+> I'm testing NO_HZ on my machines. On the laptop I see that the timer
+> interrupt counter is incremented (though slower than HZ). This machine
+> is running UP kernel.
+> 
+> On my desktop I see this:
+> 
+>            CPU0       CPU1       
+>   0:        114          0   IO-APIC-edge      timer
+>   1:       1624      10771   IO-APIC-edge      i8042
+>   6:          3          0   IO-APIC-edge      floppy
+>   7:          0          0   IO-APIC-edge      parport0
+>   9:          0          0   IO-APIC-fasteoi   acpi
+>  12:      40111     184047   IO-APIC-edge      i8042
+>  16:      75624     998858   IO-APIC-fasteoi   radeon@pci:0000:01:00.0, uhci_hcd:usb1
+>  17:          0          0   IO-APIC-fasteoi   uhci_hcd:usb4
+>  18:        711       5487   IO-APIC-fasteoi   ide1, libata, ehci_hcd:usb7, uhci_hcd:usb3
+>  19:        617       2254   IO-APIC-fasteoi   libata, uhci_hcd:usb2
+>  20:          0          0   IO-APIC-fasteoi   ehci_hcd:usb6, uhci_hcd:usb5
+>  21:    2483869          0   IO-APIC-fasteoi   eth0
+>  22:          2          0   IO-APIC-fasteoi   ohci1394
+> 218:      28872     360643   PCI-MSI-edge      HDA Intel
+> 219:      32932     138196   PCI-MSI-edge      libata
+> NMI:          0          0 
+> LOC:    2761191    2827539 
+> ERR:          0
+> MIS:          0
+> 
+> Interrupt 0 is stuck at 114 (the number is consistent across reboots). I
+> don't experience any problem, time is running fine. Still it's strange
+> that the timer is doing nothing; maybe something other than the PIT is
+> used for time keeping?
 
-* Michael K. Edwards <medwards.linux@gmail.com> wrote:
+Yes, we switch away from PIT and use the local APIC timer. (LOC)
 
-> 1) Documentation of what you can and can't do safely from a threadlet, 
-> given that it runs in an unknown thread context;
+	tglx
 
-you can do just about anything from a threadlet, using bog standard 
-procedural programming. (Certain system-calls are excluded at the moment 
-out of caution - but i'll probably lift restrictions like sys_clone() 
-use because sys_clone() can be done safely from a threadlet.)
 
-The code must be thread-safe, because the kernel can move execution to a 
-new thread anytime and then it will execute in parallel with the main 
-thread. There's no other requirement.
-
-Wrt. performance, one good model is to run request-alike functionality 
-from a threadlet, to maximize parallelism.
-
-	ingo
