@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423149AbXBUVVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423160AbXBUVVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423149AbXBUVVx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 16:21:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423160AbXBUVVp
+	id S1423160AbXBUVVz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 16:21:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423142AbXBUVVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 16:21:45 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40419 "EHLO mx2.mail.elte.hu"
+	Wed, 21 Feb 2007 16:21:43 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40420 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423152AbXBUVVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1423157AbXBUVVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 21 Feb 2007 16:21:13 -0500
-Date: Wed, 21 Feb 2007 22:15:45 +0100
+Date: Wed, 21 Feb 2007 22:15:57 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -23,122 +23,159 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Davide Libenzi <davidel@xmailserver.org>,
        Jens Axboe <jens.axboe@oracle.com>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 09/13] syslets: x86, mark async unsafe syscalls
-Message-ID: <20070221211545.GI7579@elte.hu>
+Subject: [patch 12/13] syslets: x86: optimized copy_uatom()
+Message-ID: <20070221211557.GL7579@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20070221211355.GA7302@elte.hu>
 User-Agent: Mutt/1.4.2.2i
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -3.8
+X-ELTE-SpamScore: -2.3
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-3.8 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.1.7
+X-ELTE-SpamCheck-Details: score=-2.3 required=5.9 tests=ALL_TRUSTED,BAYES_20 autolearn=no SpamAssassin version=3.1.7
 	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0052]
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.1372]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ingo Molnar <mingo@elte.hu>
 
-mark clone() and fork() as not available for async execution.
-Both need an intact user context beneath them to work.
+provide an optimized assembly version of the copy_uatom() method.
+This is about 3 times faster than the C version.
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- arch/i386/kernel/ioport.c  |    6 ++++++
- arch/i386/kernel/ldt.c     |    3 +++
- arch/i386/kernel/process.c |    6 ++++++
- arch/i386/kernel/vm86.c    |    6 ++++++
- 4 files changed, 21 insertions(+)
+ arch/i386/lib/getuser.S |  115 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 115 insertions(+)
 
-Index: linux/arch/i386/kernel/ioport.c
+Index: linux/arch/i386/lib/getuser.S
 ===================================================================
---- linux.orig/arch/i386/kernel/ioport.c
-+++ linux/arch/i386/kernel/ioport.c
-@@ -62,6 +62,9 @@ asmlinkage long sys_ioperm(unsigned long
- 	struct tss_struct * tss;
- 	unsigned long *bitmap;
+--- linux.orig/arch/i386/lib/getuser.S
++++ linux/arch/i386/lib/getuser.S
+@@ -10,6 +10,121 @@
+  */
+ #include <asm/thread_info.h>
  
-+	if (async_syscall(current))
-+		return -ENOSYS;
++/*
++ * copy_uatom() - copy a syslet_atom from user-space into kernel-space:
++ */
 +
- 	if ((from + num <= from) || (from + num > IO_BITMAP_BITS))
- 		return -EINVAL;
- 	if (turn_on && !capable(CAP_SYS_RAWIO))
-@@ -139,6 +142,9 @@ asmlinkage long sys_iopl(unsigned long u
- 	unsigned int old = (regs->eflags >> 12) & 3;
- 	struct thread_struct *t = &current->thread;
- 
-+	if (async_syscall(current))
-+		return -ENOSYS;
++.text
++.align 4
++.globl copy_uatom
++copy_uatom:
++	#
++	# regparm(2) call, %eax: atom, %edx: uatom
++	#
++	movl %eax, %ecx                 # %ecx is atom, %edx remains uatom
 +
- 	if (level > 3)
- 		return -EINVAL;
- 	/* Trying to gain more privileges? */
-Index: linux/arch/i386/kernel/ldt.c
-===================================================================
---- linux.orig/arch/i386/kernel/ldt.c
-+++ linux/arch/i386/kernel/ldt.c
-@@ -233,6 +233,9 @@ asmlinkage int sys_modify_ldt(int func, 
- {
- 	int ret = -ENOSYS;
- 
-+	if (async_syscall(current))
-+		return -ENOSYS;
++	cmpl $__PAGE_OFFSET-40, %edx	# access_ok(uatom-sizeof(*uatom))
++	jae bad_copy_uatom
 +
- 	switch (func) {
- 	case 0:
- 		ret = read_ldt(ptr, bytecount);
-Index: linux/arch/i386/kernel/process.c
-===================================================================
---- linux.orig/arch/i386/kernel/process.c
-+++ linux/arch/i386/kernel/process.c
-@@ -731,6 +731,9 @@ struct task_struct fastcall * __switch_t
- 
- asmlinkage int sys_fork(struct pt_regs regs)
- {
-+	if (async_syscall(current))
-+		return -ENOSYS;
 +
- 	return do_fork(SIGCHLD, regs.esp, &regs, 0, NULL, NULL);
- }
- 
-@@ -740,6 +743,9 @@ asmlinkage int sys_clone(struct pt_regs 
- 	unsigned long newsp;
- 	int __user *parent_tidptr, *child_tidptr;
- 
-+	if (async_syscall(current))
-+		return -ENOSYS;
++1:	movl (%edx), %eax		# atom->flags = uatom->flags
++	movl %eax, (%ecx)
 +
- 	clone_flags = regs.ebx;
- 	newsp = regs.ecx;
- 	parent_tidptr = (int __user *)regs.edx;
-Index: linux/arch/i386/kernel/vm86.c
-===================================================================
---- linux.orig/arch/i386/kernel/vm86.c
-+++ linux/arch/i386/kernel/vm86.c
-@@ -208,6 +208,9 @@ asmlinkage int sys_vm86old(struct pt_reg
- 	struct task_struct *tsk;
- 	int tmp, ret = -EPERM;
- 
-+	if (async_syscall(current))
-+		return -ENOSYS;
++2:	movl 4(%edx), %eax		# atom->nr = uatom->nr
++	movl %eax, 4(%ecx)
 +
- 	tsk = current;
- 	if (tsk->thread.saved_esp0)
- 		goto out;
-@@ -238,6 +241,9 @@ asmlinkage int sys_vm86(struct pt_regs r
- 	int tmp, ret;
- 	struct vm86plus_struct __user *v86;
- 
-+	if (async_syscall(current))
-+		return -ENOSYS;
++3:	movl 8(%edx), %eax		# atom->ret_ptr = uatom->ret_ptr
++	movl %eax, 8(%ecx)
 +
- 	tsk = current;
- 	switch (regs.ebx) {
- 		case VM86_REQUEST_IRQ:
++4:	movl 12(%edx), %eax		# atom->next = uatom->next
++	movl %eax, 12(%ecx)
++
++
++10:	movl 16(%edx), %eax		# atom->arg_ptr[0] = uatom->arg_ptr[0]
++	testl %eax, %eax
++	jz 20f				# NULL ptr - zero out remaining args
++	cmpl $__PAGE_OFFSET, %eax	# access_ok(arg_ptr)
++	jae bad_copy_uatom
++100:	movl (%eax), %eax
++	movl %eax, 16(%ecx)
++
++11:	movl 20(%edx), %eax		# atom->arg_ptr[1] = uatom->arg_ptr[1]
++	testl %eax, %eax
++	jz 21f				# NULL ptr - zero out remaining args
++	cmpl $__PAGE_OFFSET, %eax	# access_ok(arg_ptr)
++	jae bad_copy_uatom
++110:	movl (%eax), %eax
++	movl %eax, 20(%ecx)
++
++12:	movl 24(%edx), %eax		# atom->arg_ptr[2] = uatom->arg_ptr[2]
++	testl %eax, %eax
++	jz 22f				# NULL ptr - zero out remaining args
++	cmpl $__PAGE_OFFSET, %eax	# access_ok(arg_ptr)
++	jae bad_copy_uatom
++120:	movl (%eax), %eax
++	movl %eax, 24(%ecx)
++
++13:	movl 28(%edx), %eax		# atom->arg_ptr[3] = uatom->arg_ptr[3]
++	testl %eax, %eax
++	jz 23f				# NULL ptr - zero out remaining args
++	cmpl $__PAGE_OFFSET, %eax	# access_ok(arg_ptr)
++	jae bad_copy_uatom
++130:	movl (%eax), %eax
++	movl %eax, 28(%ecx)
++
++14:	movl 32(%edx), %eax		# atom->arg_ptr[4] = uatom->arg_ptr[4]
++	testl %eax, %eax
++	jz 24f				# NULL ptr - zero out remaining args
++	cmpl $__PAGE_OFFSET, %eax	# access_ok(arg_ptr)
++	jae bad_copy_uatom
++140:	movl (%eax), %eax
++	movl %eax, 32(%ecx)
++
++15:	movl 36(%edx), %eax		# atom->arg_ptr[5] = uatom->arg_ptr[5]
++	testl %eax, %eax
++	jz 25f				# NULL ptr - zero out remaining args
++	cmpl $__PAGE_OFFSET, %eax	# access_ok(arg_ptr)
++	jae bad_copy_uatom
++150:	movl (%eax), %eax
++	movl %eax, 36(%ecx)
++
++	xorl %eax, %eax			# return 0
++	ret
++
++	#
++	# Zero out arg values. Since ptr was NULL, %eax is zero:
++	#
++20:	movl %eax, 16(%ecx)		# atom->args[0] = 0
++21:	movl %eax, 20(%ecx)		# atom->args[1] = 0
++22:	movl %eax, 24(%ecx)		# atom->args[2] = 0
++23:	movl %eax, 28(%ecx)		# atom->args[3] = 0
++24:	movl %eax, 32(%ecx)		# atom->args[4] = 0
++25:	movl %eax, 36(%ecx)		# atom->args[5] = 0
++
++	ret				# return 0
++
++bad_copy_uatom:
++	movl $-14, %eax
++	ret
++
++.section __ex_table,"a"
++	.long 1b,   bad_copy_uatom
++	.long 2b,   bad_copy_uatom
++	.long 3b,   bad_copy_uatom
++	.long 4b,   bad_copy_uatom
++	.long 10b,  bad_copy_uatom
++	.long 100b, bad_copy_uatom
++	.long 11b,  bad_copy_uatom
++	.long 110b, bad_copy_uatom
++	.long 12b,  bad_copy_uatom
++	.long 120b, bad_copy_uatom
++	.long 13b,  bad_copy_uatom
++	.long 130b, bad_copy_uatom
++	.long 14b,  bad_copy_uatom
++	.long 140b, bad_copy_uatom
++	.long 15b,  bad_copy_uatom
++	.long 150b, bad_copy_uatom
++.previous
+ 
+ /*
+  * __get_user_X
