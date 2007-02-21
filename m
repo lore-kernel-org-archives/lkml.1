@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751075AbXBUEtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751113AbXBUEtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751075AbXBUEtr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 Feb 2007 23:49:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbXBUEtr
+	id S1751113AbXBUEtw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 Feb 2007 23:49:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbXBUEtw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 Feb 2007 23:49:47 -0500
-Received: from ns2.suse.de ([195.135.220.15]:41418 "EHLO mx2.suse.de"
+	Tue, 20 Feb 2007 23:49:52 -0500
+Received: from ns.suse.de ([195.135.220.2]:49951 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751075AbXBUEtq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 Feb 2007 23:49:46 -0500
+	id S1751113AbXBUEtv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 Feb 2007 23:49:51 -0500
 From: Nick Piggin <npiggin@suse.de>
 To: Linux Memory Management <linux-mm@kvack.org>,
        Andrew Morton <akpm@osdl.org>
 Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <20070221023656.6306.246.sendpatchset@linux.site>
-Subject: [patch 0/6] fault vs truncate/invalidate race fix
-Date: Wed, 21 Feb 2007 05:49:38 +0100 (CET)
+Message-Id: <20070221023706.6306.55204.sendpatchset@linux.site>
+In-Reply-To: <20070221023656.6306.246.sendpatchset@linux.site>
+References: <20070221023656.6306.246.sendpatchset@linux.site>
+Subject: [patch 1/6] mm: debug check for the fault vs invalidate race
+Date: Wed, 21 Feb 2007 05:49:47 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following set of patches are based on current git.
+Add a bugcheck for Andrea's pagefault vs invalidate race. This is triggerable
+for both linear and nonlinear pages with a userspace test harness (using
+direct IO and truncate, respectively).
 
-These fix the fault vs invalidate and fault vs truncate_range race for
-filemap_nopage mappings, plus those and fault vs truncate race for nonlinear
-mappings.
+Signed-off-by: Nick Piggin <npiggin@suse.de>
 
-These patches fix silent data corruption that we've had several people hitting
-in SUSE kernels. Our kernels have similar patches to lock the page over page
-fault, and no problem.
+ mm/filemap.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-I've also got rid of the horrible populate API, and integrated nonlinear pages
-properly with the page fault path.
-
-Downside is that this adds one more vector through which the buffered write
-deadlock can occur. However this is just a very tiny one (pte being unmapped
-for reclaim), compared to all the other ways that deadlock can occur (unmap,
-reclaim, truncate, invalidate). I doubt it will be noticable. At any rate, it
-is better than data corruption.
-
-I hope these can get merged (at least into -mm) soon.
-
-Thanks,
-Nick
-
---
-SuSE Labs
-
+Index: linux-2.6/mm/filemap.c
+===================================================================
+--- linux-2.6.orig/mm/filemap.c
++++ linux-2.6/mm/filemap.c
+@@ -120,6 +120,8 @@ void __remove_from_page_cache(struct pag
+ 	page->mapping = NULL;
+ 	mapping->nrpages--;
+ 	__dec_zone_page_state(page, NR_FILE_PAGES);
++
++	BUG_ON(page_mapped(page));
+ }
+ 
+ void remove_from_page_cache(struct page *page)
