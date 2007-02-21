@@ -1,41 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422753AbXBUSSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422761AbXBUSTG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422753AbXBUSSi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 13:18:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422759AbXBUSSh
+	id S1422761AbXBUSTG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 13:19:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422763AbXBUSTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 13:18:37 -0500
-Received: from il.qumranet.com ([82.166.9.18]:47685 "EHLO il.qumranet.com"
+	Wed, 21 Feb 2007 13:19:06 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39488 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422753AbXBUSSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 13:18:37 -0500
-Subject: [PATCH 6/6] KVM: Bump API version
-From: Avi Kivity <avi@qumranet.com>
-Date: Wed, 21 Feb 2007 18:18:35 -0000
-To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, mingo@elte.hu
-References: <45DC8B6E.5050205@qumranet.com>
-In-Reply-To: <45DC8B6E.5050205@qumranet.com>
-Content-Type: text/plain; charset=UTF-8
-Message-Id: <20070221181835.C000425016D@il.qumranet.com>
+	id S1422759AbXBUSTE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 13:19:04 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: freezer problems
+Date: Wed, 21 Feb 2007 19:13:40 +0100
+User-Agent: KMail/1.9.5
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, ego@in.ibm.com, akpm@osdl.org,
+       paulmck@us.ibm.com, mingo@elte.hu, vatsa@in.ibm.com,
+       dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+References: <20070214144031.GA15257@in.ibm.com> <200702201929.03776.rjw@sisk.pl> <20070221181404.GC7063@linux.vnet.ibm.com>
+In-Reply-To: <20070221181404.GC7063@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702211913.41883.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
- include/linux/kvm.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Wednesday, 21 February 2007 19:14, Paul E. McKenney wrote:
+> On Tue, Feb 20, 2007 at 07:29:01PM +0100, Rafael J. Wysocki wrote:
+> > On Tuesday, 20 February 2007 01:32, Rafael J. Wysocki wrote:
+> > > On Tuesday, 20 February 2007 01:12, Oleg Nesterov wrote:
+> > > Hm.  In the case discussed above we have a task that's right before calling
+> > > frozen_process(), so we can't thaw it, because it's not frozen.  It will be
+> > > frozen just in a while, but try_to_freeze_tasks() and thaw_tasks() have no
+> > > way to check this.
+> > > 
+> > > I think to close this race the refrigerator should check TIF_FREEZE and set
+> > > PF_FROZEN _and_ reset TIF_FREEZE under a lock that would also have to be
+> > > taken by try_to_freeze_tasks() in the beginning of the error path.  This will
+> > > ensure that all tasks either freeze themselves before the error path in
+> > > try_to_freeze_tasks() is executed, or remain unfrozen.
+> > > 
+> > > I'll try to prepare a patch to illustrate this, but right now I'm too tired to
+> > > do it. :-)
+> > 
+> > Something like this, perhaps:
+> > 
+> > ---
+> >  include/linux/freezer.h |   10 +++-------
+> >  kernel/power/process.c  |   18 ++++++++++++++++--
+> >  2 files changed, 19 insertions(+), 9 deletions(-)
+> > 
+> > Index: linux-2.6.20-mm2/include/linux/freezer.h
+> > ===================================================================
+> > --- linux-2.6.20-mm2.orig/include/linux/freezer.h
+> > +++ linux-2.6.20-mm2/include/linux/freezer.h
+> > @@ -58,17 +58,13 @@ static inline void frozen_process(struct
+> >  	clear_tsk_thread_flag(p, TIF_FREEZE);
+> >  }
+> > 
+> > -extern void refrigerator(void);
+> > +extern int refrigerator(void);
+> >  extern int freeze_processes(void);
+> >  extern void thaw_processes(void);
+> > 
+> >  static inline int try_to_freeze(void)
+> >  {
+> > -	if (freezing(current)) {
+> > -		refrigerator();
+> > -		return 1;
+> > -	} else
+> > -		return 0;
+> > +	return refrigerator();
+> >  }
+> > 
+> >  /*
+> > @@ -104,7 +100,7 @@ static inline void freeze(struct task_st
+> >  static inline int thaw_process(struct task_struct *p) { return 1; }
+> >  static inline void frozen_process(struct task_struct *p) { BUG(); }
+> > 
+> > -static inline void refrigerator(void) {}
+> > +static inline int refrigerator(void) { return 0; }
+> >  static inline int freeze_processes(void) { BUG(); return 0; }
+> >  static inline void thaw_processes(void) {}
+> > 
+> > Index: linux-2.6.20-mm2/kernel/power/process.c
+> > ===================================================================
+> > --- linux-2.6.20-mm2.orig/kernel/power/process.c
+> > +++ linux-2.6.20-mm2/kernel/power/process.c
+> > @@ -24,6 +24,8 @@
+> >  #define FREEZER_KERNEL_THREADS 0
+> >  #define FREEZER_USER_SPACE 1
+> > 
+> > +spinlock_t refrigerator_lock;
+> > +
+> >  static inline int freezeable(struct task_struct * p)
+> >  {
+> >  	if ((p == current) ||
+> > @@ -34,15 +36,23 @@ static inline int freezeable(struct task
+> >  }
+> > 
+> >  /* Refrigerator is place where frozen processes are stored :-). */
+> > -void refrigerator(void)
+> > +int refrigerator(void)
+> >  {
+> >  	/* Hmm, should we be allowed to suspend when there are realtime
+> >  	   processes around? */
+> >  	long save;
+> > +
+> > +	spin_lock(&refrigerator_lock);
+> 
+> I hope we can do this without a global lock that is acquired on each
+> try_to_freeze() call!
 
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index 7c9a400..275354f 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -11,7 +11,7 @@
- #include <asm/types.h>
- #include <linux/ioctl.h>
+Yes.  Here's the current version (try_to_freeze() is unchanged, so the lock
+is only taken by the tasks that are going to freeze, or so they think):
+
+---
+ kernel/power/process.c |   15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.20-mm2/kernel/power/process.c
+===================================================================
+--- linux-2.6.20-mm2.orig/kernel/power/process.c
++++ linux-2.6.20-mm2/kernel/power/process.c
+@@ -24,6 +24,8 @@
+ #define FREEZER_KERNEL_THREADS 0
+ #define FREEZER_USER_SPACE 1
  
--#define KVM_API_VERSION 3
-+#define KVM_API_VERSION 4
++static spinlock_t refrigerator_lock;
++
+ static inline int freezeable(struct task_struct * p)
+ {
+ 	if ((p == current) ||
+@@ -39,10 +41,18 @@ void refrigerator(void)
+ 	/* Hmm, should we be allowed to suspend when there are realtime
+ 	   processes around? */
+ 	long save;
++
++	spin_lock(&refrigerator_lock);
++	if (freezing(current)) {
++		frozen_process(current);
++		spin_unlock(&refrigerator_lock);
++	} else {
++		spin_unlock(&refrigerator_lock);
++		return;
++	}
+ 	save = current->state;
+ 	pr_debug("%s entered refrigerator\n", current->comm);
  
- /*
-  * Architectural interrupt line count, and the size of the bitmap needed
+-	frozen_process(current);
+ 	spin_lock_irq(&current->sighand->siglock);
+ 	recalc_sigpending(); /* We sent fake signal, clean it up */
+ 	spin_unlock_irq(&current->sighand->siglock);
+@@ -143,6 +153,7 @@ static unsigned int try_to_freeze_tasks(
+ 					"kernel threads",
+ 				TIMEOUT / HZ, todo);
+ 		read_lock(&tasklist_lock);
++		spin_lock(&refrigerator_lock);
+ 		do_each_thread(g, p) {
+ 			if (is_user_space(p) == !freeze_user_space)
+ 				continue;
+@@ -152,6 +163,7 @@ static unsigned int try_to_freeze_tasks(
+ 
+ 			cancel_freezing(p);
+ 		} while_each_thread(g, p);
++		spin_unlock(&refrigerator_lock);
+ 		read_unlock(&tasklist_lock);
+ 	}
+ 
+@@ -169,6 +181,7 @@ int freeze_processes(void)
+ 	unsigned int nr_unfrozen;
+ 
+ 	printk("Stopping tasks ... ");
++	spin_lock_init(&refrigerator_lock);
+ 	nr_unfrozen = try_to_freeze_tasks(FREEZER_USER_SPACE);
+ 	if (nr_unfrozen)
+ 		return nr_unfrozen;
