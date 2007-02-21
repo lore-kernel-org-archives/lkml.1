@@ -1,117 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161284AbXBUPfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751311AbXBUPgJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161284AbXBUPfZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 10:35:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161289AbXBUPfX
+	id S1751311AbXBUPgJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 10:36:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161292AbXBUPfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 10:35:23 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55734 "EHLO mx1.redhat.com"
+	Wed, 21 Feb 2007 10:35:42 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:55888 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161290AbXBUPex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 10:34:53 -0500
-Message-Id: <20070221144842.691706000@taijtu.programming.kicks-ass.net>
+	id S1161280AbXBUPfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 10:35:20 -0500
+Message-Id: <20070221144844.179417000@taijtu.programming.kicks-ass.net>
 References: <20070221144304.512721000@taijtu.programming.kicks-ass.net>
 User-Agent: quilt/0.46-1
-Date: Wed, 21 Feb 2007 15:43:16 +0100
+Date: Wed, 21 Feb 2007 15:43:31 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Trond Myklebust <trond.myklebust@fys.uio.no>,
        Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>
-Subject: [PATCH 12/29] net: remove alloc_skb_from_cache
-Content-Disposition: inline; filename=net-skbuff-cleanup.patch
+Subject: [PATCH 27/29] nfs: disable data cache revalidation for swapfiles
+Content-Disposition: inline; filename=nfs-swapper.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lets get rid of the unused alloc_skb_from_cache() thing.
+Do as Trond suggested:
+  http://lkml.org/lkml/2006/8/25/348
+
+Disable NFS data cache revalidation on swap files since it doesn't really 
+make sense to have other clients change the file while you are using it.
+
+Thereby we can stop setting PG_private on swap pages, since there ought to
+be no further races with invalidate_inode_pages2() to deal with.
+
+And since we cannot set PG_private we cannot use page->private (which is
+already used by PG_swapcache pages anyway) to store the nfs_page. Thus
+augment the new nfs_page_find_request logic.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
 ---
- include/linux/skbuff.h |    3 --
- net/core/dev.c         |    1 
- net/core/skbuff.c      |   71 ++++++-------------------------------------------
- 3 files changed, 11 insertions(+), 64 deletions(-)
+ fs/nfs/inode.c |    6 ++++++
+ fs/nfs/write.c |   35 +++++++++++++++++++++++------------
+ 2 files changed, 29 insertions(+), 12 deletions(-)
 
-Index: linux-2.6-git/include/linux/skbuff.h
+Index: linux-2.6-git/fs/nfs/inode.c
 ===================================================================
---- linux-2.6-git.orig/include/linux/skbuff.h	2007-02-14 08:31:13.000000000 +0100
-+++ linux-2.6-git/include/linux/skbuff.h	2007-02-14 10:11:36.000000000 +0100
-@@ -345,9 +345,6 @@ static inline struct sk_buff *alloc_skb_
- 	return __alloc_skb(size, priority, 1, -1);
+--- linux-2.6-git.orig/fs/nfs/inode.c	2007-02-21 11:04:08.000000000 +0100
++++ linux-2.6-git/fs/nfs/inode.c	2007-02-21 11:52:21.000000000 +0100
+@@ -719,6 +719,12 @@ int nfs_revalidate_mapping_nolock(struct
+ 	struct nfs_inode *nfsi = NFS_I(inode);
+ 	int ret = 0;
+ 
++	/*
++	 * swapfiles are not supposed to be shared.
++	 */
++	if (IS_SWAPFILE(inode))
++		goto out;
++
+ 	if ((nfsi->cache_validity & NFS_INO_REVAL_PAGECACHE)
+ 			|| nfs_attribute_timeout(inode) || NFS_STALE(inode)) {
+ 		ret = __nfs_revalidate_inode(NFS_SERVER(inode), inode);
+Index: linux-2.6-git/fs/nfs/write.c
+===================================================================
+--- linux-2.6-git.orig/fs/nfs/write.c	2007-02-21 11:52:17.000000000 +0100
++++ linux-2.6-git/fs/nfs/write.c	2007-02-21 11:53:18.000000000 +0100
+@@ -107,7 +107,7 @@ void nfs_writedata_release(void *wdata)
+ 	nfs_writedata_free(wdata);
  }
  
--extern struct sk_buff *alloc_skb_from_cache(struct kmem_cache *cp,
--					    unsigned int size,
--					    gfp_t priority);
- extern void	       kfree_skbmem(struct sk_buff *skb);
- extern struct sk_buff *skb_clone(struct sk_buff *skb,
- 				 gfp_t priority);
-Index: linux-2.6-git/net/core/skbuff.c
-===================================================================
---- linux-2.6-git.orig/net/core/skbuff.c	2007-02-14 08:31:12.000000000 +0100
-+++ linux-2.6-git/net/core/skbuff.c	2007-02-14 10:11:16.000000000 +0100
-@@ -198,61 +198,6 @@ nodata:
- }
+-static struct nfs_page *nfs_page_find_request_locked(struct page *page)
++static struct nfs_page *nfs_page_find_request_locked(struct nfs_inode *nfsi, struct page *page)
+ {
+ 	struct nfs_page *req = NULL;
  
- /**
-- *	alloc_skb_from_cache	-	allocate a network buffer
-- *	@cp: kmem_cache from which to allocate the data area
-- *           (object size must be big enough for @size bytes + skb overheads)
-- *	@size: size to allocate
-- *	@gfp_mask: allocation mask
-- *
-- *	Allocate a new &sk_buff. The returned buffer has no headroom and
-- *	tail room of size bytes. The object has a reference count of one.
-- *	The return is the buffer. On a failure the return is %NULL.
-- *
-- *	Buffers may only be allocated from interrupts using a @gfp_mask of
-- *	%GFP_ATOMIC.
-- */
--struct sk_buff *alloc_skb_from_cache(struct kmem_cache *cp,
--				     unsigned int size,
--				     gfp_t gfp_mask)
--{
--	struct sk_buff *skb;
--	u8 *data;
--
--	/* Get the HEAD */
--	skb = kmem_cache_alloc(skbuff_head_cache,
--			       gfp_mask & ~__GFP_DMA);
--	if (!skb)
--		goto out;
--
--	/* Get the DATA. */
--	size = SKB_DATA_ALIGN(size);
--	data = kmem_cache_alloc(cp, gfp_mask);
--	if (!data)
--		goto nodata;
--
--	memset(skb, 0, offsetof(struct sk_buff, truesize));
--	skb->truesize = size + sizeof(struct sk_buff);
--	atomic_set(&skb->users, 1);
--	skb->head = data;
--	skb->data = data;
--	skb->tail = data;
--	skb->end  = data + size;
--
--	atomic_set(&(skb_shinfo(skb)->dataref), 1);
--	skb_shinfo(skb)->nr_frags  = 0;
--	skb_shinfo(skb)->gso_size = 0;
--	skb_shinfo(skb)->gso_segs = 0;
--	skb_shinfo(skb)->gso_type = 0;
--	skb_shinfo(skb)->frag_list = NULL;
--out:
--	return skb;
--nodata:
--	kmem_cache_free(skbuff_head_cache, skb);
--	skb = NULL;
--	goto out;
--}
--
--/**
-  *	__netdev_alloc_skb - allocate an skbuff for rx on a specific device
-  *	@dev: network device to receive on
-  *	@length: length to allocate
+@@ -115,6 +115,10 @@ static struct nfs_page *nfs_page_find_re
+ 		req = (struct nfs_page *)page_private(page);
+ 		if (req != NULL)
+ 			atomic_inc(&req->wb_count);
++	} else if (unlikely(PageSwapCache(page))) {
++		req = radix_tree_lookup(&nfsi->nfs_page_tree, page_file_index(page));
++		if (req != NULL)
++			atomic_inc(&req->wb_count);
+ 	}
+ 	return req;
+ }
+@@ -122,10 +126,11 @@ static struct nfs_page *nfs_page_find_re
+ static struct nfs_page *nfs_page_find_request(struct page *page)
+ {
+ 	struct nfs_page *req = NULL;
+-	spinlock_t *req_lock = &NFS_I(page_file_mapping(page)->host)->req_lock;
++	struct nfs_inode *nfsi = NFS_I(page_file_mapping(page)->host);
++	spinlock_t *req_lock = &nfsi->req_lock;
+ 
+ 	spin_lock(req_lock);
+-	req = nfs_page_find_request_locked(page);
++	req = nfs_page_find_request_locked(nfsi, page);
+ 	spin_unlock(req_lock);
+ 	return req;
+ }
+@@ -248,12 +253,13 @@ static void nfs_end_page_writeback(struc
+ static int nfs_page_mark_flush(struct page *page)
+ {
+ 	struct nfs_page *req;
+-	spinlock_t *req_lock = &NFS_I(page_file_mapping(page)->host)->req_lock;
++	struct nfs_inode *nfsi = NFS_I(page_file_mapping(page)->host);
++	spinlock_t *req_lock = &nfsi->req_lock;
+ 	int ret;
+ 
+ 	spin_lock(req_lock);
+ 	for(;;) {
+-		req = nfs_page_find_request_locked(page);
++		req = nfs_page_find_request_locked(nfsi, page);
+ 		if (req == NULL) {
+ 			spin_unlock(req_lock);
+ 			return 1;
+@@ -368,8 +374,14 @@ static int nfs_inode_add_request(struct 
+ 		if (nfs_have_delegation(inode, FMODE_WRITE))
+ 			nfsi->change_attr++;
+ 	}
+-	SetPagePrivate(req->wb_page);
+-	set_page_private(req->wb_page, (unsigned long)req);
++	/*
++	 * Swap-space should not get truncated. Hence no need to plug the race
++	 * with invalidate/truncate.
++	 */
++	if (likely(!PageSwapCache(req->wb_page))) {
++		SetPagePrivate(req->wb_page);
++		set_page_private(req->wb_page, (unsigned long)req);
++	}
+ 	nfsi->npages++;
+ 	atomic_inc(&req->wb_count);
+ 	return 0;
+@@ -386,8 +398,10 @@ static void nfs_inode_remove_request(str
+ 	BUG_ON (!NFS_WBACK_BUSY(req));
+ 
+ 	spin_lock(&nfsi->req_lock);
+-	set_page_private(req->wb_page, 0);
+-	ClearPagePrivate(req->wb_page);
++	if (likely(!PageSwapCache(req->wb_page))) {
++		set_page_private(req->wb_page, 0);
++		ClearPagePrivate(req->wb_page);
++	}
+ 	radix_tree_delete(&nfsi->nfs_page_tree, req->wb_index);
+ 	nfsi->npages--;
+ 	if (!nfsi->npages) {
+@@ -600,7 +614,7 @@ static struct nfs_page * nfs_update_requ
+ 		 * A request for the page we wish to update
+ 		 */
+ 		spin_lock(&nfsi->req_lock);
+-		req = nfs_page_find_request_locked(page);
++		req = nfs_page_find_request_locked(nfsi, page);
+ 		if (req) {
+ 			if (!nfs_lock_request_dontget(req)) {
+ 				int error;
+@@ -1472,8 +1486,6 @@ int nfs_wb_page_priority(struct inode *i
+ 		if (ret < 0)
+ 			goto out;
+ 	}
+-	if (!PagePrivate(page))
+-		return 0;
+ 	ret = nfs_sync_mapping_wait(page_file_mapping(page), &wbc, how);
+ 	if (ret >= 0)
+ 		return 0;
 
 -- 
 
