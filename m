@@ -1,119 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422688AbXBUQ67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422683AbXBURAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422688AbXBUQ67 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 11:58:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422689AbXBUQ67
+	id S1422683AbXBURAh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 12:00:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422690AbXBURAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 11:58:59 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:52955 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422688AbXBUQ66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 11:58:58 -0500
-Date: Wed, 21 Feb 2007 10:58:56 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: containers@lists.osdl.org
-Subject: [PATCH] namespaces: update some function names
-Message-ID: <20070221165856.GA11364@sergelap.austin.ibm.com>
-MIME-Version: 1.0
+	Wed, 21 Feb 2007 12:00:37 -0500
+Received: from ftp.linux-mips.org ([194.74.144.162]:41981 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422683AbXBURAh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 12:00:37 -0500
+Date: Wed, 21 Feb 2007 17:00:32 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 2.6.21-rc1] serial: serial_txx9 driver update
+Message-ID: <20070221170032.GA3036@linux-mips.org>
+References: <20070222.003142.106263613.anemo@mba.ocn.ne.jp> <20070221164826.61d0b5ea@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070221164826.61d0b5ea@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Serge E. Hallyn <serue@us.ibm.com>
-Subject: [PATCH] namespaces: update some function names
+On Wed, Feb 21, 2007 at 04:48:26PM +0000, Alan wrote:
 
-The {get,exit}_task_namespaces do not grab references to the individual
-namespaces, only to the nsproxy.  Reflect that in the function names.
+> Given this costs 1uS in a path that is not performance critical is it
+> worth putting the #ifdef/#endif in instead of having one set of code that
+> works for all ?
+> 
+> > +	while (sio_in(up, TXX9_SIFCR) & TXX9_SIFCR_SWRST)
+> > +		;
+> 
+> Suppose it doesn't clear ? Should also use cpu_relax() in busy loops
+> so any processor variant with power management can do the right thing.
 
-Not so important right now, but when pid_ns gets pulled out of nsproxy
-(eventually into struct pid_nr) the current naming is wrong.
+Right now we don't have much that we could do in cpu_relax() on MIPS.
+The average CPU core makes extensive use of clock gating to the point
+where there are few powersaving knobs left in the core.  Of course I'm
+also ignoring things outside the CPU core and clockscaling for which
+cpu_relax() would simply be the wrong place.
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Of course this driver in rare instances might run on an x86 CPU ...
 
----
-
- include/linux/nsproxy.h |    4 ++--
- kernel/exit.c           |    6 +++---
- kernel/fork.c           |    2 +-
- kernel/nsproxy.c        |    2 +-
- 4 files changed, 7 insertions(+), 7 deletions(-)
-
-3a423064ce33e801d4e63f6b4198958cdaf68e19
-diff --git a/include/linux/nsproxy.h b/include/linux/nsproxy.h
-index 0b9f0dc..b9d9aae 100644
---- a/include/linux/nsproxy.h
-+++ b/include/linux/nsproxy.h
-@@ -33,7 +33,7 @@ extern struct nsproxy init_nsproxy;
- 
- struct nsproxy *dup_namespaces(struct nsproxy *orig);
- int copy_namespaces(int flags, struct task_struct *tsk);
--void get_task_namespaces(struct task_struct *tsk);
-+void get_task_nsproxy(struct task_struct *tsk);
- void free_nsproxy(struct nsproxy *ns);
- 
- static inline void put_nsproxy(struct nsproxy *ns)
-@@ -43,7 +43,7 @@ static inline void put_nsproxy(struct ns
- 	}
- }
- 
--static inline void exit_task_namespaces(struct task_struct *p)
-+static inline void put_task_nsproxy(struct task_struct *p)
- {
- 	struct nsproxy *ns = p->nsproxy;
- 	if (ns) {
-diff --git a/kernel/exit.c b/kernel/exit.c
-index bc71fdf..98f08cf 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -395,9 +395,9 @@ void daemonize(const char *name, ...)
- 	current->fs = fs;
- 	atomic_inc(&fs->count);
- 
--	exit_task_namespaces(current);
-+	put_task_nsproxy(current);
- 	current->nsproxy = init_task.nsproxy;
--	get_task_namespaces(current);
-+	get_task_nsproxy(current);
- 
-  	exit_files(current);
- 	current->files = init_task.files;
-@@ -937,7 +937,7 @@ fastcall NORET_TYPE void do_exit(long co
- 
- 	tsk->exit_code = code;
- 	proc_exit_connector(tsk);
--	exit_task_namespaces(tsk);
-+	put_task_nsproxy(tsk);
- 	exit_notify(tsk);
- #ifdef CONFIG_NUMA
- 	mpol_free(tsk->mempolicy);
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 80284eb..b8b76e5 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1267,7 +1267,7 @@ static struct task_struct *copy_process(
- 	return p;
- 
- bad_fork_cleanup_namespaces:
--	exit_task_namespaces(p);
-+	put_task_nsproxy(p);
- bad_fork_cleanup_keys:
- 	exit_keys(p);
- bad_fork_cleanup_mm:
-diff --git a/kernel/nsproxy.c b/kernel/nsproxy.c
-index f5b9ee6..31fa63a 100644
---- a/kernel/nsproxy.c
-+++ b/kernel/nsproxy.c
-@@ -28,7 +28,7 @@ static inline void get_nsproxy(struct ns
- 	atomic_inc(&ns->count);
- }
- 
--void get_task_namespaces(struct task_struct *tsk)
-+void get_task_nsproxy(struct task_struct *tsk)
- {
- 	struct nsproxy *ns = tsk->nsproxy;
- 	if (ns) {
--- 
-1.1.6
+  Ralf
