@@ -1,74 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750757AbXBVKsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750785AbXBVKtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750757AbXBVKsh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 05:48:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbXBVKsh
+	id S1750785AbXBVKtR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 05:49:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbXBVKtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 05:48:37 -0500
-Received: from mail.screens.ru ([213.234.233.54]:32804 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750757AbXBVKsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 05:48:36 -0500
-Date: Thu, 22 Feb 2007 13:47:47 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: paulmck@linux.vnet.ibm.com, ego@in.ibm.com, akpm@osdl.org,
-       paulmck@us.ibm.com, mingo@elte.hu, vatsa@in.ibm.com,
-       dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-Subject: Re: freezer problems
-Message-ID: <20070222104747.GA505@tv-sign.ru>
-References: <20070214144031.GA15257@in.ibm.com> <20070221200314.GA91@tv-sign.ru> <20070221210606.GH7063@linux.vnet.ibm.com> <200702220010.54126.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 22 Feb 2007 05:49:16 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:58327 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750785AbXBVKtP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 05:49:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=k2WJmf1v4lktZ4zzvBm6Vzw0bBGAonNCVgxYQxle5sD/9Jhq5P7qOorvAphcYFxPkVJGooIR0L5VWTjZ7NNQTUzr1MhxUXRO4wqLe78WdwH2Lb/XwjorT2c4asmi9hMVuoCxNP+sKQV0CG1zaRy1etpXL6VNNDQRNHqU9FR8AzA=
+Message-ID: <84144f020702220249k37306252q627bf3ceb28e8b5d@mail.gmail.com>
+Date: Thu, 22 Feb 2007 12:49:11 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: SLUB: The unqueued Slab allocator
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <Pine.LNX.4.64.0702212250271.30485@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200702220010.54126.rjw@sisk.pl>
-User-Agent: Mutt/1.5.11
+References: <Pine.LNX.4.64.0702212250271.30485@schroedinger.engr.sgi.com>
+X-Google-Sender-Auth: e7a603a9940119bc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/22, Rafael J. Wysocki wrote:
->
-> Okay, below is what I have right now (compilation tested on x86_64):
-> 
-> This patch fixes the vfork problem by adding the PF_FREEZER_SKIP flag that
-> can be used by tasks to tell the freezer not to count them as freezeable and
-> making the vfork parents set this flag before they call wait_for_completion().
-> 
-> Secondly, it fixes the race which happens it a task with TIF_FREEZE set is
-> preempted right before calling frozen_process() in refrigerator() and stays
-> unforzen until after thaw_tasks() runs and checks its status.  For this purpose
-> task_lock() is used.
+Hi Christoph,
 
-Great! But please be kind to those of us who read the source control history
-trying to understand the code. Could you make 2 separate patches?
+On 2/22/07, Christoph Lameter <clameter@sgi.com> wrote:
+> This is a new slab allocator which was motivated by the complexity of the
+> existing code in mm/slab.c. It attempts to address a variety of concerns
+> with the existing implementation.
 
-> @@ -207,7 +209,7 @@ static void thaw_tasks(int thaw_user_spa
->  		if (is_user_space(p) == !thaw_user_space)
->  			continue;
->  
-> -		if (!thaw_process(p))
-> +		if (!thaw_process(p) && !freezer_should_skip(p))
->  			printk(KERN_WARNING " Strange, %s not stopped\n",
+So do you want to add a new allocator or replace slab?
 
-This is racy, the warning could be false. We wake up the task, testing
-its ->flags is not reliable.
+On 2/22/07, Christoph Lameter <clameter@sgi.com> wrote:
+> B. Storage overhead of object queues
 
-Damn. PF_FREEZER_SKIP task could be woken before, clear PF_FREEZER_SKIP,
-but not frozen.
+Does this make sense for non-NUMA too? If not, can we disable the
+queues for NUMA in current slab?
 
-We can change freezer_count() to clear PF_FREEZER_SKIP after try_to_freeze(),
-not before. Now thaw_process() can take PF_FREEZER_SKIP into account and
-return "true".
+On 2/22/07, Christoph Lameter <clameter@sgi.com> wrote:
+> C. SLAB metadata overhead
 
-But this means the task may be PF_FREEZER_SKIP | PF_FROZEN. What if we we
-call try_to_freeze_tasks() soon after thaw_tasks()? We may hit the task which
-leaves the refrigerator, but didn't clear PF_FREEZER_SKIP yet. This means
-that thaw_process() should clear PF_FREEZER_SKIP as well. This is messy :(
+Can be done for the current slab code too, no?
 
-Any other ideas? In any case we should imho avoid a separate loop for
-PF_FREEZER_SKIP tasks to just fix debug messages. In fact it can't help
-anyway.
-
-Oleg.
-
+                                                 Pekka
