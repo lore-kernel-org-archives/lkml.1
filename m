@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750742AbXBVKqy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750757AbXBVKsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750742AbXBVKqy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 05:46:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750757AbXBVKqy
+	id S1750757AbXBVKsh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 05:48:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbXBVKsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 05:46:54 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:55634 "EHLO twin.jikos.cz"
+	Thu, 22 Feb 2007 05:48:37 -0500
+Received: from mail.screens.ru ([213.234.233.54]:32804 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750742AbXBVKqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 05:46:53 -0500
-Date: Thu, 22 Feb 2007 11:46:34 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Veronique & Vincent <vinctre@videotron.ca>
-cc: Pete Zaitcev <zaitcev@redhat.com>, marcel@holtmann.org,
-       vincent.fortier1@ec.gc.ca, linux-kernel@vger.kernel.org
-Subject: Re: Boot time Bluetooth BUG: warning: (value > m) at hid-core.c:793
-In-Reply-To: <200702220538.39341.vinctre@videotron.ca>
-Message-ID: <Pine.LNX.4.64.0702221139500.10496@twin.jikos.cz>
-References: <200702192111.47017.vinctre@videotron.ca>
- <Pine.LNX.4.64.0702200854520.25686@twin.jikos.cz> <20070221185012.e4deeb68.zaitcev@redhat.com>
- <200702220538.39341.vinctre@videotron.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1750757AbXBVKsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 05:48:36 -0500
+Date: Thu, 22 Feb 2007 13:47:47 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: paulmck@linux.vnet.ibm.com, ego@in.ibm.com, akpm@osdl.org,
+       paulmck@us.ibm.com, mingo@elte.hu, vatsa@in.ibm.com,
+       dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Subject: Re: freezer problems
+Message-ID: <20070222104747.GA505@tv-sign.ru>
+References: <20070214144031.GA15257@in.ibm.com> <20070221200314.GA91@tv-sign.ru> <20070221210606.GH7063@linux.vnet.ibm.com> <200702220010.54126.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702220010.54126.rjw@sisk.pl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Feb 2007, Veronique & Vincent wrote:
+On 02/22, Rafael J. Wysocki wrote:
+>
+> Okay, below is what I have right now (compilation tested on x86_64):
+> 
+> This patch fixes the vfork problem by adding the PF_FREEZER_SKIP flag that
+> can be used by tasks to tell the freezer not to count them as freezeable and
+> making the vfork parents set this flag before they call wait_for_completion().
+> 
+> Secondly, it fixes the race which happens it a task with TIF_FREEZE set is
+> preempted right before calling frozen_process() in refrigerator() and stays
+> unforzen until after thaw_tasks() runs and checks its status.  For this purpose
+> task_lock() is used.
 
-> > > - report descriptor dump - seems to be missing in the output (it 
-> > >   should read something like "hid-core.c: report descriptor (size 
-> > >   XY, read YZ) = ... some hexadecimal numbers". This should be 
-> > >   output by the time the HID device is connected.
-> The full dmesg with define DEBUG was included in the original message.  Unless 
-> something else was needed?
+Great! But please be kind to those of us who read the source control history
+trying to understand the code. Could you make 2 separate patches?
 
-Unfortunately it was missing the report descriptor dump. The output should 
-look like
+> @@ -207,7 +209,7 @@ static void thaw_tasks(int thaw_user_spa
+>  		if (is_user_space(p) == !thaw_user_space)
+>  			continue;
+>  
+> -		if (!thaw_process(p))
+> +		if (!thaw_process(p) && !freezer_should_skip(p))
+>  			printk(KERN_WARNING " Strange, %s not stopped\n",
 
-drivers/usb/input/hid-core.c: report descriptor (size 59, read 59) = 05 01 
-09 06 a1 01 05 07 19 e0 29 e7 15 00 25 01 75 01 95 08 81 02 81 03 95 05 05 
-08 19 01 29 05 91 02 95 01 75 03 91 01 95 06 75 08 15 00 26 a4 00 05 07 19 
-00 2a a4 00 81 00 c0
+This is racy, the warning could be false. We wake up the task, testing
+its ->flags is not reliable.
 
-and it should appear as soon as you connect the device. If it didn't, I 
-suspect that the 
+Damn. PF_FREEZER_SKIP task could be woken before, clear PF_FREEZER_SKIP,
+but not frozen.
 
-	#define DEBUG_DATA
+We can change freezer_count() to clear PF_FREEZER_SKIP after try_to_freeze(),
+not before. Now thaw_process() can take PF_FREEZER_SKIP into account and
+return "true".
 
-was not set properly in drivers/usb/input/hid-core.c (only defining DEBUG 
-is not enough for report descriptor dump to appear).
+But this means the task may be PF_FREEZER_SKIP | PF_FROZEN. What if we we
+call try_to_freeze_tasks() soon after thaw_tasks()? We may hit the task which
+leaves the refrigerator, but didn't clear PF_FREEZER_SKIP yet. This means
+that thaw_process() should clear PF_FREEZER_SKIP as well. This is messy :(
 
-> I was actually getting that on a stock FC6 kernel.  The dmesg output 
-> comes from a recompiled vanilla 2.6.19.x with the exact same 
-> configuration BUT the modified define's in hid-core.c and a local 
-> version appended to the .config file.  So this BUG does not only affect 
-> FC6 users but also the vanilla kernel.
+Any other ideas? In any case we should imho avoid a separate loop for
+PF_FREEZER_SKIP tasks to just fix debug messages. In fact it can't help
+anyway.
 
-But so far all reports that have gathered for this bug at me seem to come 
-from FC6 ... does hid2hci by any chance in FC6 have any additional patches 
-that could be causing it, instead of being a kernel issue?
+Oleg.
 
-Thanks,
-
--- 
-Jiri Kosina
