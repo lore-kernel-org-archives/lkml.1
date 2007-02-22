@@ -1,87 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161006AbXBVOrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932146AbXBVOvG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161006AbXBVOrH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 09:47:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161106AbXBVOrG
+	id S932146AbXBVOvG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 09:51:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932124AbXBVOvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 09:47:06 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52379
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1161006AbXBVOrF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 09:47:05 -0500
-Date: Thu, 22 Feb 2007 06:47:04 -0800 (PST)
-Message-Id: <20070222.064704.71093028.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: johnpol@2ka.mipt.ru, arjan@infradead.org, drepper@redhat.com,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       hch@infradead.org, akpm@zip.com.au, alan@lxorguk.ukuu.org.uk,
-       zach.brown@oracle.com, suparna@in.ibm.com, davidel@xmailserver.org,
-       jens.axboe@oracle.com, tglx@linutronix.de
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070222143145.GA3246@elte.hu>
-References: <20070222123929.GA5208@2ka.mipt.ru>
-	<20070222.054127.104035694.davem@davemloft.net>
-	<20070222143145.GA3246@elte.hu>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 22 Feb 2007 09:51:06 -0500
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:43938 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932146AbXBVOvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 09:51:05 -0500
+Message-ID: <45DDADEB.3030309@drzeus.cx>
+Date: Thu, 22 Feb 2007 15:51:23 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Luca Tettamanti <kronos.it@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: NO_HZ: timer interrupt stuck [Re: Linux 2.6.21-rc1]
+References: <20070221230409.GA1158@dreamland.darkstar.lan>	 <1172099859.25076.132.camel@localhost.localdomain>	 <Pine.LNX.4.61.0702221334460.28624@yvahk01.tjqt.qr>	 <1172150712.3531.265.camel@laptopd505.fenrus.org>	 <45DDA43A.4030509@drzeus.cx> <1172154034.3531.270.camel@laptopd505.fenrus.org>
+In-Reply-To: <1172154034.3531.270.camel@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Thu, 22 Feb 2007 15:31:45 +0100
+Arjan van de Ven wrote:
+> On Thu, 2007-02-22 at 15:10 +0100, Pierre Ossman wrote:
+>   
+>>
+>> So with a local apic, and acpi_pm as clocksource, I shouldn't be getting timer
+>> interrupts? 
+>>     
+>
+> timer interrupts as in "irq0"?
+>
+>   
 
-> Firstly, i dont think you are fully applying the syslet/threadlet model. 
-> There is no reason why an 'idle' client would have to use up a full 
-> thread! It all depends on how you use syslets/threadlets, and how 
-> (frequently) you queue back requests from cachemiss threads back to the 
-> primary thread. It is only the simplest queueing model where there is 
-> one thread per request that is currently blocked. Syslets/threadlets do 
-> /not/ force request processing to be performed in the async context 
-> forever - the async thread could very much queue it back to the primary 
-> context. (That's in essence what Tux did.) So the same state-machine 
-> techniques can be applied on both the syslet and the threadlet model, 
-> but in much more natural (and thus lower overhead) points: /between/ 
-> system calls and not in the middle of them. There are a number of 
-> measures that can be used to keep the number of parallel threads down.
+Yes:
 
-Ok.
+  0:    9786349    XT-PIC-XT        timer
 
-> Secondly, even assuming lots of pending requests/async-threads and a 
-> naive queueing model, an open request will eat up resources on the 
-> server no matter what. So if your point is that "+4K of kernel stack 
-> pinned down per open, blocked request makes syslets and threadlets not a 
-> very good idea", then i'd like to disagree with that: while it wont be 
-> zero-cost (4K does cost you 400MB of RAM per 100,000 outstanding 
-> threads), it's often comparable to the other RAM costs that are already 
-> attached to an open connection.
+> you shouldn't if you use the hrtimers/tickless stuff...
+>   
 
-The 400MB is extra, and it's in no way commensurate with the cost
-of the TCP socket itself even including the application specific
-state being used for that connection.
+CONFIG_HIGH_RES_TIMERS=y
+CONFIG_NO_HZ=y
 
-Even if it would be _equal_, we would be doubling the memory
-requirements for such a scenerio.
+> can you get us a dmesg somewhere? maybe the kernel mentions why ;)
+>
+>   
 
-This is why I dislike the threadlet model, when used in that way.
+Sure. My dmesg is full of mmc debug crud right now, but I'll just reboot
+and I'll have a clean one for you.
 
-The pushback to the primary thread you speak of is just extra work in
-my mind, for networking.  Better to just begin operations and sit in
-the primary thread(s) waiting for events, and when they arrive push
-the operations further along using non-blocking writes, reads, and
-accept() calls.  There is no blocking context really needed for these
-kinds of things, so a mechanism that tries to provide one is a waste.
+Rgds
 
-As a side note although Evgeniy likes M:N threading model ideas, they
-are a mine field wrt. signal semantics.  Solaris guys took several
-years to get it right, just grep through the Solaris kernel patch
-readme files over the years to get an idea of how bad it can be.  I
-would therefore never advocate such an approach.
+-- 
+     -- Pierre Ossman
 
-The more I think about it, a reasonable solution might actually be to
-use threadlets for disk I/O and pure event based processing for
-networking.  It is two different handling paths and non-unified,
-but that might be the price for good performance :-)
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
+
