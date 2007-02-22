@@ -1,74 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932798AbXBVBA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751343AbXBVBBG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932798AbXBVBA5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 20:00:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932817AbXBVBA5
+	id S1751343AbXBVBBG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 20:01:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbXBVBBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 20:00:57 -0500
-Received: from web63201.mail.re1.yahoo.com ([69.147.97.11]:26265 "HELO
-	web63201.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932798AbXBVBA4 (ORCPT
+	Wed, 21 Feb 2007 20:01:06 -0500
+Received: from nz-out-0506.google.com ([64.233.162.231]:32403 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751343AbXBVBBD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 20:00:56 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Feb 2007 20:00:56 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=DWAEtW1MspBQ6m1GFqaTNDMXYfXo3rSj4zTYTjT6Z9U9nX54yeKiggdEWZeIWQtQBdy5cZ6A2+vD8qqoqjEWddojyXBWYWvOB/k2ohwIUnyKLpScNxFqmH3xb/NQMFCYD40UBelOCDBAtDnf3nZqQhfRjSTo20Akb9aApgWD7gc=  ;
-Message-ID: <20070222005414.4843.qmail@web63201.mail.re1.yahoo.com>
-X-YMail-OSG: aptcqNoVM1mTds8QrRUSh_2ReqskxTteqHpqv.X.9j91b0Lo7lSJWXmHsukG8dEodKI5sp2nV4zcueg0qBekDH231l_DxZp8vl.6q4Qsmazn2v5w5P6iMw--
-Date: Wed, 21 Feb 2007 16:54:14 -0800 (PST)
-From: Brandon Howard <brandon_waldgrave@yahoo.com>
-Subject: First desktop motherboard supported by LinuxBIOS: GIGABYTE M57SLI-S4
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Wed, 21 Feb 2007 20:01:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=J6cfYat6A8ahAdTpOP4QHEOGx4VBZunhcsyctpCUzXTbBo+Oigik15gh8nyccRnnXrmmsBOIfwX0gjZPAcDxFEc1JsstO1T0aBihWV+5PK6uNnXTWP4hv7ufmX2ZdNjXnk+ErUtKCmeIYcqLAmdxkMJ+EN5tuA7UmFnrb8+ujeQ=
+Subject: Re: [Linux-fbdev-devel] [PATCH]
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0702212105280.20620@pentafluge.infradead.org>
+References: <Pine.LNX.4.64.0702212105280.20620@pentafluge.infradead.org>
+Content-Type: text/plain
+Date: Thu, 22 Feb 2007 09:03:54 +0800
+Message-Id: <1172106234.4217.50.camel@daplas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 2007-02-21 at 21:23 +0000, James Simmons wrote:
+> This is the new display intreface. Its goal is to provide a standard 
+> interface to various types of displays. Currently we have auxdisplay, 
+> output acpi device and the now defunct lcd class in the backlight directory.
+> Please apply.
 
-The GIGABYTE M57SLI-S4 [1] is the first-ever desktop motherboard
-supported by a Free & Open Source BIOS, thanks to AMD engineer Yinghai
-Lu who released GPL-licensed code last month. This state-of-the-art
-motherboard is based on the NVIDIA nForce 570 SLI chipset and AMD's
-latest Socket AM2. It contains tons of advanced features such as:
+Is this an attempt to consolidate all display hardware and drivers?
 
-Support for AMD Athlon 64 X2, Athlon 64 FX and Athlon 64 processors
-2X PCI Express x16 slots
-3X PCI Express x1 slots
-2X PCI slots
-3X 1394a (FireWire) ports
-10X USB 2.0
-16GB maximum memory
-SATA RAID
-6X SATA 3Gb/s slots.
+> 
+[snip]
+> +struct class *display_class;
+> +EXPORT_SYMBOL(display_class);
+> +static int index;
+> +
+> +struct display_device *display_device_register(struct display_driver *driver,
+> +						struct device *dev, void *devdata)
+> +{
+> +	struct display_device *new_dev = NULL;
+> +	int ret = -EINVAL;
+> +
+> +	if (unlikely(!driver))
+> +		return ERR_PTR(ret);
+> +
+> +	new_dev = kzalloc(sizeof(struct display_device), GFP_KERNEL);
+> +	if (likely(new_dev) && unlikely(driver->probe(new_dev, devdata))) {
+> +		new_dev->dev = device_create(display_class, dev, 0,
+> +						"display%d", index);
+> +
+> +		if (!IS_ERR(new_dev->dev)) {
+> +			dev_set_drvdata(new_dev->dev, new_dev);
+> +			new_dev->driver = driver;
+> +			new_dev->parent = dev;
+> +			mutex_init(&new_dev->lock);
+> +			index++;
+> +		} else {
+> +			new_dev->dev = NULL;
+> +			kfree(new_dev);
 
-This motherboard can be obtained today from many retail and online
-stores [2] and the source code for the BIOS can be downloaded from the
-LinuxBIOS SVN server [3]. 
+Set new_dev to NULL on failure.
 
-This is a huge victory in the quest for a completely Free & Open
-Source general-purpose computer that enables users to have full
-control over their own hardware. The Free Software Foundation has made
-the campaign for a Free BIOS a top priority because it is a key
-component in the software stack of personal computers [4]. The need
-for a Free BIOS is even more pressing since DRM and Treacherous
-Computing have found their way into some proprietary BIOSes and EFI.
->From a practical perspective, LinuxBIOS removes the need for ugly
-hacks and workarounds in the kernel that compensate for buggy BIOSes –
-we can now fix the BIOS ourselves.
+> +		}
+> +	}
+> +	return new_dev;
+> +}
+> +EXPORT_SYMBOL(display_device_register);
+> +
+> +void display_device_unregister(struct display_device *ddev)
+> +{
+> +	if (!ddev)
+> +		return;
+> +	mutex_lock(&ddev->lock);
+> +	device_del(ddev->dev);
+> +	ddev->driver = NULL;
+> +	index--;
 
-I encourage everyone upgrading their desktop computers to consider
-getting this motherboard or another one that is supported by
-LinuxBIOS.
+display0
+display1
+index = 2
+unregister display0
+index = 1
+display_device_register() as device1
+device1 <-- BUG, already used.
 
--Brandon
+[snip]
+
+> +
+> +struct display_device;
+> +
+> +/* This structure defines all the properties of a Display. */
+> +struct display_driver {
+> +	int  (*set_contrast)(struct display_device *, unsigned int);
+> +	int  (*get_contrast)(struct display_device *);
+> +	void (*suspend)(struct display_device *, pm_message_t state);
+> +	void (*resume)(struct display_device *);
+> +	int  (*probe)(struct display_device *, void *);
+> +	int  (*remove)(struct display_device *);
+> +	int  max_contrast;
+
+If this is an attempt to consolidate, I don't see the 'brightness'
+hook of backlight and lcd.
+
+If this is not a consolidation, why don't we just extend the lcd class?
+
+Tony 
 
 
- 
-____________________________________________________________________________________
-Food fight? Enjoy some healthy debate 
-in the Yahoo! Answers Food & Drink Q&A.
-http://answers.yahoo.com/dir/?link=list&sid=396545367
