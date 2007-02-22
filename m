@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751963AbXBVVz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751956AbXBVV4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751963AbXBVVz2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 16:55:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbXBVVz1
+	id S1751956AbXBVV4Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 16:56:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbXBVV4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 16:55:27 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:52183 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751963AbXBVVz0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 16:55:26 -0500
-Message-ID: <45DE113D.1020606@zytor.com>
-Date: Thu, 22 Feb 2007 13:55:09 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Jiri Kosina <jikos@jikos.cz>
-CC: webmaster@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: gitweb on kernel.org buggy?
-References: <Pine.LNX.4.64.0702222219520.10496@twin.jikos.cz>
-In-Reply-To: <Pine.LNX.4.64.0702222219520.10496@twin.jikos.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Feb 2007 16:56:15 -0500
+Received: from palrel13.hp.com ([156.153.255.238]:58855 "EHLO palrel13.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751956AbXBVV4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 16:56:14 -0500
+Date: Thu, 22 Feb 2007 15:56:11 -0600
+From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+To: Christoph Hellwig <hch@infradead.org>, akpm@osdl.org,
+       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, gregkh@novell.com
+Subject: Re: [Patch 2/2] cciss: add shutdown support (replaces reboot notifier)
+Message-ID: <20070222215611.GB14162@beardog.cca.cpqcorp.net>
+References: <20070222213845.GA14162@beardog.cca.cpqcorp.net> <20070222214502.GA19670@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070222214502.GA19670@infradead.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina wrote:
-> Hi,
+On Thu, Feb 22, 2007 at 09:45:02PM +0000, Christoph Hellwig wrote:
+> On Thu, Feb 22, 2007 at 03:38:45PM -0600, Mike Miller (OS Dev) wrote:
+> > Patch 2/2
+> > 
+> > This adds support for struct pci_driver shutdown and negates the previous NAK'ed
+> > reboot_notifier patch. It's much easier, wish I had know about this before. Thanks to
+> > Christoph for pointing this out.
 > 
-> the gitweb running on git(2).kernel.org has looked buggy to me for quite a 
-> some time (a month or so) with respect to branches vs. shortlog.
+> Just sondering, where should we have put information about this so driver
+> writers/maintainers like you would have found it easily?
 > 
-> When you browse a repository with mutliple branches, and switch between 
-> branches, the shortlog shown is always the one from master, never from the 
-> branch you switched to, which seems wrong to me.
-> 
-> This definitely worked previously (and works on other installations of 
-> gitweb outside the kernel.org), so it might be worth fixing.
-> 
-> Thanks,
-> 
+Excellent question. I wish I had a good answer. It's pretty difficult to monitor
+everything going on, especially when I also have to consider HP's schedule and those
+of our partners. 
 
-gitweb on kernel.org is at least in part orphanned, since the "official" 
-gitweb maintainers don't seem to listen to us (kernel.org people) w.r.t. 
-some issues, mainly related to caching, we've had to fork gitweb and 
-maintain it ourselves -- however, since kernel.org is currently all 
-volunteer labor, we have limited amount of time in which to deal with 
-things.
-
-	-hpa
+-- mikem
