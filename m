@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751457AbXBVIMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751468AbXBVIPJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751457AbXBVIMU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 03:12:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbXBVIMU
+	id S1751468AbXBVIPJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 03:15:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbXBVIPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 03:12:20 -0500
-Received: from tag.witbe.net ([81.88.96.48]:36486 "EHLO tag.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751457AbXBVIMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 03:12:19 -0500
-Reply-To: <rol@as2917.net>
-From: "Paul Rolland" <rol@as2917.net>
-To: "'Patrick Ale'" <patrick.ale@gmail.com>,
-       "'Vincent Legoll'" <vincent.legoll@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: RE: libsata doesn't like bus without master
-Date: Thu, 22 Feb 2007 09:12:02 +0100
-Organization: AS2917.net
-Message-ID: <033401c75659$251d8c40$4b00a8c0@donald>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
+	Thu, 22 Feb 2007 03:15:09 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:58646 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468AbXBVIPI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 03:15:08 -0500
+Subject: Re: -freg-struct-return?
+From: Arjan van de Ven <arjan@infradead.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@muc.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <45DD4FA0.5030205@goop.org>
+References: <45DCF1C5.4030006@goop.org>
+	 <1172131463.3531.226.camel@laptopd505.fenrus.org>
+	 <45DD4FA0.5030205@goop.org>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Thu, 22 Feb 2007 09:15:03 +0100
+Message-Id: <1172132103.3531.228.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-In-Reply-To: <8d158e1f0702211301n3d30f590t14b1501e418da7e0@mail.gmail.com>
-Thread-Index: AcdV+4UBRCmwZ+D4SQ6//b86qt9bNQAXTvpA
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-> The first one got some debate as if it was legal to have a slave
-> without a master and all and the last thing I saw written on this
-> email that we (that is, the linux developers and the maintainers, I
-> dont code anything other than 'Hello world' and even that might
-> segfault) should support it and if we dont yet, fix it.
+> Do we have much assembler which cares about the struct return calling
+> convention?  If not, it should be a fairly easy test.
 
-<please no flame war>
-
-Just to add my $0.02 on this point : this could also be one of the problem
-I'm facing on my machine right now, but the point is that Windows supports
-it perfectly. At least that proves it can work, and it does work.
-
-</please no flame war>
-
-So, as far as I'm concerned, that sounds legal... Also, running old Linux IDE
-code is no problem with a bus that only has a slave...
-
-Regards,
-Paul
+is there an attribute to turn it off? because if so we should just make
+that part of "asmlinkage".... (not that I know much code using structs
+in asm)
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
 
