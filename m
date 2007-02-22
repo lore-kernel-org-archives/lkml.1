@@ -1,56 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423097AbXBVAHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751372AbXBVANO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423097AbXBVAHg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 19:07:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423268AbXBVAHg
+	id S1751372AbXBVANO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 19:13:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbXBVANO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 19:07:36 -0500
-Received: from smtp001.mail.ukl.yahoo.com ([217.12.11.32]:29615 "HELO
-	smtp001.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1423097AbXBVAHf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 19:07:35 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=hSRs7b9I40/w+cSKWJyju75McwmHUzdG0hNneS5NWlYfWV4Q/PQlUcjcMFwNi4RGczraxPAEgjmq6cWVNqKjEUwF1zYFshK8WOkkr7w0HsM3T6SI9kPocUTggL6/Y+HiR/KCm4vAvkXWUiLs5pgC2NlzLwNVkXzCXuobUlKH5rI=  ;
-X-YMail-OSG: RsJzpFUVM1kUgr7uIQw7cqI_cvVWtnTfqhu_p9DbFd_OTqB_uTVp7_ksVYvDway027LCROAVsGIY56O6jMiRnI.w.p3m775G9vAPVFEF1zvNDsYaozuItdfp2aawGFno1wz0ZcHXSB84
-From: Blaisorblade <blaisorblade@yahoo.it>
-To: user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [uml-devel] [PATCH 2/3] UML - x86_64 thread fixes
-Date: Thu, 22 Feb 2007 01:07:30 +0100
-User-Agent: KMail/1.9.5
-Cc: Jeff Dike <jdike@addtoit.com>, akpm@osdl.org, wstearns@pobox.com,
-       linux-kernel@vger.kernel.org
-References: <200702082157.l18LvVFB007602@ccure.user-mode-linux.org>
-In-Reply-To: <200702082157.l18LvVFB007602@ccure.user-mode-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 21 Feb 2007 19:13:14 -0500
+Received: from tim.rpsys.net ([194.106.48.114]:58724 "EHLO tim.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751372AbXBVANN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 19:13:13 -0500
+Subject: Re: no backlight on radeon after recent kernel "upgrade"s
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Alex Romosan <romosan@sycorax.lbl.gov>,
+       Yaroslav Halchenko <kernel@onerussian.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net,
+       James Simmons <jsimmons@infradead.org>
+In-Reply-To: <20070221231706.GA3336@khazad-dum.debian.net>
+References: <20070219044616.GC25659@washoe.onerussian.com>
+	 <20070219000412.acad13de.akpm@linux-foundation.org>
+	 <1171876788.6046.3.camel@localhost.localdomain>
+	 <877iub9mu2.fsf@sycorax.lbl.gov>
+	 <1172097718.5790.29.camel@localhost.localdomain>
+	 <20070221231706.GA3336@khazad-dum.debian.net>
+Content-Type: text/plain
+Date: Thu, 22 Feb 2007 00:12:39 +0000
+Message-Id: <1172103159.5790.45.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702220107.30766.blaisorblade@yahoo.it>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 08 February 2007 22:57, Jeff Dike wrote:
-> x86_64 needs some TLS fixes.  What was missing was remembering the
-> child thread id during clone and stuffing it into the child during
-> each context switch.
->
-> The %fs value is stored separately in the thread structure since the
-> host controls what effect it has on the actual register file.  The
-> host also needs to store it in its own thread struct, so we need the
-> value kept outside the register file.
-Is there any reason for avoiding this treatment to %gs, apart that TLS code 
-usually does not need it, even if the API allows for it to exist? I _do_ 
-believe this patch fixes bug which can be tested (not verified everything), 
-even if I wonder why you didn't look at the patch I sent to you time ago (I 
-hadn't finished it, in truth, but there was most stuff - it had problems I 
-couldn't debug at that time).
--- 
-Inform me of my mistakes, so I can add them to my list!
-Paolo Giarrusso, aka Blaisorblade
-http://www.user-mode-linux.org/~blaisorblade
-Chiacchiera con i tuoi amici in tempo reale! 
- http://it.yahoo.com/mail_it/foot/*http://it.messenger.yahoo.com 
+On Wed, 2007-02-21 at 21:17 -0200, Henrique de Moraes Holschuh wrote:
+> On Wed, 21 Feb 2007, Richard Purdie wrote:
+> > enabled. On a thinkpad, the backlight is probably under ACPI control.
+> 
+> BIOS+ACPI, actually.  Without ACPI video loaded, the firmware does
+> everything correctly.  With ACPI video, the firmware does it, then its
+> changes are clobbered over by ACPI video's.
+> 
+> If ibm-acpi is loaded, a backlight device "ibm" is added.  ibm-acpi's ibm
+> backlight device can change the display brightness.  It is *not* capable of
+> turning the backlight on or off, AFAIK.
+> 
+> BTW, some ThinkPads don't have a Radeon, but rather an Intel GM/GMX device.
+
+I have a thinkpad with Intel GM graphics ;-). I need it to work so I try
+not to experiment too much on it. I've just tried the ibm-acpi driver
+and it doesn't work well :-(.
+
+So far I've noticed:
+
+* 'cat brightness' != 'cat actual_brightness' upon bootup (doesn't have
+to be true if there is hardware brightness limiting or level changing in
+action but that wouldn't be the case here and this could be fixed
+easily).
+* 'echo 0 > brightness' lowered the intensity but by a level or two, not
+set it to level 0. A couple of more attempts and it did jump from 7 -> 1
+and so on, it seems erratic.
+
+actual_brightness always seems to be correct, as does brightness so it
+looks like its not updating the hardware correctly.
+
+Regards,
+
+Richard
+
+
+
+
+
+
+
