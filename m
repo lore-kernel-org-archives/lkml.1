@@ -1,74 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752018AbXBVWmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751997AbXBVWn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752018AbXBVWmk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 17:42:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbXBVWmk
+	id S1751997AbXBVWn3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 17:43:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbXBVWn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 17:42:40 -0500
-Received: from an-out-0708.google.com ([209.85.132.242]:50741 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752018AbXBVWmj (ORCPT
+	Thu, 22 Feb 2007 17:43:29 -0500
+Received: from mexforward.lss.emc.com ([128.222.32.20]:55107 "EHLO
+	mexforward.lss.emc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751997AbXBVWn1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 17:42:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HZHUC6QYOynXwedAsEvF1GQeTb75UMHogz+nhCAuQoxmCH1oVRc/U46rCQKyWJ/CNCmgCgCzeWDxIcHCR444j1k+IBhSSf/5LpTVKJdpTrynVvby+L2BOOSPl+Ujo8T7PQecgk4tqyM/wfiMdt0WUjSnRIHZcWEh9Z/L8KYOLWo=
-Message-ID: <f2b55d220702221442h3700a32epd183b974767f4f9d@mail.gmail.com>
-Date: Thu, 22 Feb 2007 14:42:38 -0800
-From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: GPL vs non-GPL device drivers
-Cc: "D. Hazelton" <dhazelton@enter.net>,
-       "David Lang" <david.lang@digitalinsight.com>, davids@webmaster.com,
-       "v j" <vj.linux@gmail.com>, trent.waddington@gmail.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>
-In-Reply-To: <20070222141434.3beb8a94@lxorguk.ukuu.org.uk>
+	Thu, 22 Feb 2007 17:43:27 -0500
+Message-ID: <45DE1A7C.1030500@emc.com>
+Date: Thu, 22 Feb 2007 17:34:36 -0500
+From: Ric Wheeler <ric@emc.com>
+Reply-To: ric@emc.com
+User-Agent: Thunderbird 1.5.0.8 (X11/20061025)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Tejun Heo <htejun@gmail.com>
+CC: Robert Hancock <hancockr@shaw.ca>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       edmudama@gmail.com, Nicolas.Mailhot@LaPoste.net,
+       Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Mark Lord <mlord@pobox.com>, Dongjun Shin <d.j.shin@samsung.com>,
+       Hannes Reinecke <hare@suse.de>
+Subject: Re: libata FUA revisited
+References: <fa.S80SRyQbD/hm4SxliPUKU88BaCo@ifi.uio.no> <fa.Q/csgyCHkAsD84yi+bN78H1WNNM@ifi.uio.no> <45D104F3.7040602@shaw.ca> <45D1D72D.9020509@gmail.com> <45D252CD.5010303@shaw.ca> <45D25CF2.5030508@gmail.com> <20070215180023.GA4438@kernel.dk> <45D9FE7B <45DC04DF.8040002@gmail.com>
+In-Reply-To: <45DC04DF.8040002@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>
-	 <Pine.LNX.4.63.0702211527080.15723@qynat.qvtvafvgr.pbz>
-	 <f2b55d220702211628v6c8b16e7ibdfeb293592b2093@mail.gmail.com>
-	 <200702212030.58317.dhazelton@enter.net>
-	 <f2b55d220702211805h6df0b342o7676e37c7aa43bdd@mail.gmail.com>
-	 <20070222141434.3beb8a94@lxorguk.ukuu.org.uk>
+X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.5.0.283055, Antispam-Data: 2007.2.22.140435
+X-PerlMx-Spam: Gauge=, SPAM=2%, Reasons='EMC_FROM_0+ -2, RDNS_NXDOMAIN 0, RDNS_SUSP_GENERIC 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0, __USER_AGENT 0'
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/22/07, Alan <alan@lxorguk.ukuu.org.uk> wrote:
-> > compiler people caught on to the economic opportunity.  Ever pay $5K
-> > for a CD full of GNU binaries for a commercial UNIX?  I did, after
->
-> No because I just downloaded them. Much easier and since they are GPL I
-> was allowed to do so, then rebuilt them all which took about 30 minutes
-> of brain time and a day of CPU time.
+Tejun Heo wrote:
+> [cc'ing Ric, Hannes and Dongjun, Hello.  Feel free to drag other people in.]
+> 
+> Robert Hancock wrote:
+>> Jens Axboe wrote:
+>>> But we can't really change that, since you need the cache flushed before
+>>> issuing the FUA write. I've been advocating for an ordered bit for
+>>> years, so that we could just do:
+>>>
+>>> 3. w/FUA+ORDERED
+>>>
+>>> normal operation -> barrier issued -> write barrier FUA+ORDERED
+>>>  -> normal operation resumes
+>>>
+>>> So we don't have to serialize everything both at the block and device
+>>> level. I would have made FUA imply this already, but apparently it's not
+>>> what MS wanted FUA for, so... The current implementations take the FUA
+>>> bit (or WRITE FUA) as a hint to boost it to head of queue, so you are
+>>> almost certainly going to jump ahead of already queued writes. Which we
+>>> of course really do not.
+> 
+> Yeah, I think if we have tagged write command and flush tagged (or
+> barrier tagged) things can be pretty efficient.  Again, I'm much more
+> comfortable with separate opcodes for those rather than bits changing
+> the behavior.
+> 
+> Another idea Dongjun talked about while drinking in LSF was ranged
+> flush.  Not as flexible/efficient as the previous option but much less
+> intrusive and should help quite a bit, I think.
+> 
+>> I think that FUA was designed for a different use case than what Linux
+>> is using barriers for currently. The advantage with FUA is when you have
+>> "before barrier", "after barrier" and "don't care" sets, where only the
+>> specific things you care about ordering are in the before/after barrier
+>> sets. Then you can do this:
+>>
+>> Issue all before barrier requests with FUA bit set
+>> Wait for all those to complete
+>> Issue all after barrier requests with FUA bit set
+>> Wait for all those to complete
 
-Oh yeah?  For IRIX in 1991?  Or for that matter, for Linux/ARM EABI
-today?  Tell me, how many of what sort of users do you support
-singlehandedly in an environment where you are a minority architecture
-and everyone else takes the GNU tools for granted?  God knows I've got
-better things to do with my time than roll the compiler-flag dice
-again and again trying to get a sketchy GCC port not to ICE or, worse,
-generate subtly broken code.  If it's so bloody easy, how do
-CodeSourcery and MontaVista and Red Hat stay in business?  Not with
-the quality of their code or their customer service, I'll tell you
-that -- although Mark Mitchell is probably the best release manager
-that any GNU project has ever had.
+A couple of issues with this would be in how to support our current 
+semantics of fsync().  Today, the flush behavior of the barrier/fsync 
+combination means that applications can have a hard promise of data on 
+platter for any file after a successful fsync command.
 
-> <Balmer impersonation deleted>
+If I understand correctly, to get a similar semantic from a pure FUA 
+implementation would require us to tag all file IO as FUA.
 
-Oh, please.  Steve Ballmer doesn't waste his time trying to explain to
-overpaid GNU/Linux Morlocks (among which I number myself) how the
-legal and economic underpinnings of their industry work and why they
-shouldn't RAPE THEMSELVES playing stupid EXPORT_SYMBOL_GPL games and
-cryptographically signing kernel modules.  But don't worry -- neither
-do I beyond a couple of weeks after something really dunderheaded sets
-me off, and in the meantime, you know where to find your keyboard's
-"stick my fingers in my ears and shout la-la-la-I-can't-hear-you" key.
- :-)
+I suspect that this would actually be less efficient since it would not 
+allow the drives to reorder IO's up to the point that we actually care 
+(fsync time).
 
-Cheers,
-- Michael
+The other big user of barriers is the internal transaction of journaled 
+file systems.  It would seem that we would need to tag each write from 
+the journal with a FUA IO as well.  Again, we might actually go more 
+slowly in some cases as you mention below.
+
+The limited queue depth of NCQ would seem to make it much harder to have 
+a win in this case...
+
+>>
+>> Meanwhile a bunch of "don't care" requests could be going through on the
+>> device in the background. If we could do this, then I think there would
+>> be an advantage. Right now, it just saves a command to the drive when
+>> we're flushing on the post-barrier writes.
+>>
+>> This would only be efficient with NCQ FUA, because regular FUA forces
+>> the requests to complete serially, whereas in this case we don't really
+>> care what order the individual requests finish, we just care about the
+>> ordering of the pre vs. post barrier requests.
+> 
+> Yeap, that makes sense too but that possibly requires intrusive changes
+> in fs layer and limited NCQ queue depth might become a bottleneck too.
+> 
+>>> I'm not too nervous about the FUA write commands, I hope we can safely
+>>> assume that if you set the FUA supported bit in the id AND the write fua
+>>> command doesn't get aborted, that FUA must work. Anything else would
+>>> just be an immensely stupid implementation. NCQ+FUA is more tricky, I
+>>> agree that it being just a command bit does make it more likely that it
+>>> could be ignored. And that is indeed a danger. Given state of NCQ in
+>>> early firmware drives, I would not at all be surprised if the drive
+>>> vendors screwed that up too.
+> 
+> Yeap, I bet someone did.  :-)
+> 
+>>> But, since we don't have the ordered bit for NCQ/FUA anyway, we do need
+>>> to drain the drive queue before issuing the WRITE/FUA. And at that point
+>>> we may as well not use the NCQ command, just go for the regular non-NCQ
+>>> FUA write. I think that should be safe.
+> 
+> Yeap.
+> 
+>> Aside from the issue above, as I mentioned elsewhere, lots of NCQ drives
+>> don't support non-NCQ FUA writes..
+> 
+> To me, using the NCQ FUA bit on such drives doesn't seem to be a good
+> idea.  Maybe I'm just too chicken but it's not like we can gain a lot
+> from doing FUA at this point.  Are there a lot of drives which support
+> NCQ but not FUA opcodes?
+> 
+> Thanks.
+> 
+
+Anything new (firmware included) is likely to be shaky on initial 
+deployment.  Caution is certainly the way to go on this ;-)
+
+ric
+
+
