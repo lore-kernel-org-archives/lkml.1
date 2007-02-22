@@ -1,91 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751980AbXBVWJN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751979AbXBVWRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751980AbXBVWJN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 17:09:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbXBVWJM
+	id S1751979AbXBVWRh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 17:17:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbXBVWRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 17:09:12 -0500
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:45538 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751967AbXBVWJL (ORCPT
+	Thu, 22 Feb 2007 17:17:36 -0500
+Received: from smtp104.sbc.mail.mud.yahoo.com ([68.142.198.203]:43892 "HELO
+	smtp104.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751979AbXBVWRg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 17:09:11 -0500
-To: staubach@redhat.com
-CC: miklos@szeredi.hu, trond.myklebust@fys.uio.no, akpm@linux-foundation.org,
-       hugh@veritas.com, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-reply-to: <45DE108C.6010101@redhat.com> (message from Peter Staubach on
-	Thu, 22 Feb 2007 16:52:12 -0500)
-Subject: Re: [PATCH] update ctime and mtime for mmaped write
-References: <E1HJvdA-0003Nj-00@dorka.pomaz.szeredi.hu>	 <20070221202615.a0a167f4.akpm@linux-foundation.org>	 <E1HK8hU-0005Mq-00@dorka.pomaz.szeredi.hu> <45DDD55F.4060106@redhat.com>	 <E1HKIN1-0006RX-00@dorka.pomaz.szeredi.hu> <45DDF9C1.4090003@redhat.com>	 <E1HKKrL-0006k6-00@dorka.pomaz.szeredi.hu> <1172178253.6382.12.camel@heimdal.trondhjem.org> <E1HKLUp-0006qY-00@dorka.pomaz.szeredi.hu> <45DE108C.6010101@redhat.com>
-Message-Id: <E1HKM6y-0006xN-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 22 Feb 2007 23:08:24 +0100
+	Thu, 22 Feb 2007 17:17:36 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=MidGEpJjrAMM4UYZZav8z+ElfzXp3l+ZbHjXGmw90zNhpOSp/N1l0DxDcr/+LKbu3PxxIQMgeRfMhktqiZJtp5STe9W0Q1vbxDo5JTwXbPiRmLHOmkQCF+2nDhtM4GjT5dchp/XUTmZLobVqnfHOBXUj1K99LpqXEnT0SOZAJtU=  ;
+X-YMail-OSG: Nyfw070VM1lJq0RpTCFLGRau3bdywMBvMwZ89JRKzBkcK2_6NKM3hbvHHOBJO8Zz0F0jhQpAthWnAIDvyZXydOZAtU2E6B9lV83OUu.H_jqENzQyQHTLGcdgiIVGELPmUr_pELETBKdtXhY-
+From: David Brownell <david-b@pacbell.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.20-mm2
+Date: Thu, 22 Feb 2007 14:17:31 -0800
+User-Agent: KMail/1.7.1
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <20070217215146.30e7ffa3.akpm@linux-foundation.org> <200702211957.00930.david-b@pacbell.net> <200702220933.37559.rjw@sisk.pl>
+In-Reply-To: <200702220933.37559.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702221417.32626.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Miklos Szeredi wrote:
-> >>>> This still does not address the situation where a file is 'permanently'
-> >>>> mmap'd, does it?
-> >>>>         
-> >>> So?  If application doesn't do msync, then the file times won't be
-> >>> updated.  That's allowed by the standard, and so portable applications
-> >>> will have to call msync.
-> >>>       
-> >> It is allowed, but it is clearly not useful behaviour. Nowhere is it set
-> >> in stone that we should be implementing just the minimum allowed.
-> >>     
-> >
-> > You're right.  In theory, at least.  But in practice I don't think
-> > this matters.  Show me an application that writes to a shared mapping
-> > then doesn't call either msync or munmap and doesn't even exit.
-> >
-> > If there were lot of these apps, then this bug would have been fixed
-> > lots of years earlier.  In fact there are _very_ few apps writing to
-> > shared mappings at all.
-> >
-> >   
+On Thursday 22 February 2007 12:33 am, Rafael J. Wysocki wrote:
+
+> Unfortunately, the userland shipped with OpenSUSE refuses to talk to the new
+> one (or I don't know how to make it do that).
+
+Did your "udev" create a /dev/rtc0?  If not, /sys/class/rtc-dev/rtc0/dev
+will give the right major/minor numbers.
+
+Given a /dev/rtc0, there are two simple solutions:
+
+  (a) ln -s /dev/rtc0 /dev/rtc
+  (b) upgrade your "hwclock" to one supporting "hwclock --file /dev/rtc0",
+      since that should also try rtc0 when rtc can't be opened.
+
+I found a udev incantation "git whatchanged drivers/rtc/rtc-dev.c",
+which can automate (a):
+
+       KERNEL=="rtc0", SYMLINK+="rtc"
+
+I'm not sure what the story is on hwclock updates, given the issue
+with "util-linux" maintainership.  I sent a patch on 7-Aug-2006 to
+Adrian Bunk, which appears to have been disregarded, then to Karel
+Zak (for the new fork?) on 17-Nov-2006 ... but if there's been an
+announcement about a new util-linux repository with that patch,
+I missed it.  The busybox patch I submitted 26-Jan-2007 hasn't
+yet been merged, but that's a lot more understandable.
+
+Basically it looks like userspace is almost a year behind the kernel
+support for this RTC framework.  The problematic part is that it
+seems that the "util-linux" maintainership issues are preventing
+that issue from getting resolved ... so for now, I usually use
+workaround (a).
+
+
+> > Shoot.  OK, I'll see if I can reproduce it myself.  Is this system
+> > using a generic CMOS RTC?  Or is HPET somehow involved?  (That old
+> > RTC driver has HPET voodoo as well as normal RTC stuff.)
 > 
-> Perhaps true, although I know of at least one customer of Red Hat who
-> does have an application (or more) than uses mmap'd files and is
-> suffering from this lack of appropriate semantics.  They are not
-> getting files backed up which need to be.
+> How can I check that?
 
-Yeah, but I bet, that just updating the times on msync and munmap will
-cure the problem.  Until you prove me wrong, this is a purely
-theoretical argument.
+If your boot messages say things about HPET, that's a start.  :)
+I don't really know HPET; it hasn't ever come up on any system
+that I've used.  ISTR that for various reasons BIOS would hide
+it on most systems, but that Linux has been working on un-hiding
+that hardware so it could be used.  I'll read up on it.  (As I
+implied, the source code comments leave a lot to be desired.)
 
-> > Applications should be encouraged to call msync(MS_ASYNC) because:
-> >
-> >   - it's very fast (basically a no-op) on recent linux kernels
-> >
-> >   - it's the only portable way to guarantee, that the data you written
-> >     will _ever_ hit the disk.
-> >
-> > There's really no downside to using msync(MS_ASYNC) in your
-> > application, so making an effort to support applications that don't do
-> > this is stupid, IMO.
-> 
-> It may be a no-op on recent Linux kernels, but I don't think that it
-> is a no-op on other systems.
-
-Exactly.  Which is the reason applications _have_ to call msync on
-these OSs if they want data to be synchronized with the file.
-
-There are two cases:
-
- 1) app don't cares about it's data being synchronized with the file
-
- 2) app does care
-
-In the first case there's no problem if the times aren't updated,
-since the app didn't care.
-
-In the second case the a portable application has to call msync, and
-on linux it doesn't even lose any performance from this, so it should
-be happy.
-
-You are trying to provide for an app that requires 1) on non-linux and
-2) on linux.  Does that make any sense?
-
-Miklos
+- Dave
