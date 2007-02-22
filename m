@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751915AbXBVVaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751911AbXBVVc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751915AbXBVVaW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 16:30:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbXBVVaV
+	id S1751911AbXBVVc6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 16:32:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbXBVVc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 16:30:21 -0500
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:57385 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751915AbXBVVaU (ORCPT
+	Thu, 22 Feb 2007 16:32:58 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:53141 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751911AbXBVVc5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 16:30:20 -0500
-To: trond.myklebust@fys.uio.no
-CC: miklos@szeredi.hu, staubach@redhat.com, akpm@linux-foundation.org,
-       hugh@veritas.com, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-reply-to: <1172178253.6382.12.camel@heimdal.trondhjem.org> (message from
-	Trond Myklebust on Thu, 22 Feb 2007 16:04:13 -0500)
-Subject: Re: [PATCH] update ctime and mtime for mmaped write
-References: <E1HJvdA-0003Nj-00@dorka.pomaz.szeredi.hu>
-	 <20070221202615.a0a167f4.akpm@linux-foundation.org>
-	 <E1HK8hU-0005Mq-00@dorka.pomaz.szeredi.hu> <45DDD55F.4060106@redhat.com>
-	 <E1HKIN1-0006RX-00@dorka.pomaz.szeredi.hu> <45DDF9C1.4090003@redhat.com>
-	 <E1HKKrL-0006k6-00@dorka.pomaz.szeredi.hu> <1172178253.6382.12.camel@heimdal.trondhjem.org>
-Message-Id: <E1HKLUp-0006qY-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 22 Feb 2007 22:28:59 +0100
+	Thu, 22 Feb 2007 16:32:57 -0500
+In-Reply-To: <20070222.064704.71093028.davem@davemloft.net>
+References: <20070222123929.GA5208@2ka.mipt.ru> <20070222.054127.104035694.davem@davemloft.net> <20070222143145.GA3246@elte.hu> <20070222.064704.71093028.davem@davemloft.net>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <E58A1635-E5E7-4E0F-A231-29239CA2B148@oracle.com>
+Cc: mingo@elte.hu, johnpol@2ka.mipt.ru, arjan@infradead.org,
+       drepper@redhat.com, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, hch@infradead.org, akpm@zip.com.au,
+       alan@lxorguk.ukuu.org.uk, suparna@in.ibm.com, davidel@xmailserver.org,
+       jens.axboe@oracle.com, tglx@linutronix.de
+Content-Transfer-Encoding: 7bit
+From: Zach Brown <zach.brown@oracle.com>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Date: Thu, 22 Feb 2007 13:30:39 -0800
+To: David Miller <davem@davemloft.net>
+X-Mailer: Apple Mail (2.752.3)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > This still does not address the situation where a file is 'permanently'
-> > > mmap'd, does it?
-> > 
-> > So?  If application doesn't do msync, then the file times won't be
-> > updated.  That's allowed by the standard, and so portable applications
-> > will have to call msync.
-> 
-> It is allowed, but it is clearly not useful behaviour. Nowhere is it set
-> in stone that we should be implementing just the minimum allowed.
+> The more I think about it, a reasonable solution might actually be to
+> use threadlets for disk I/O and pure event based processing for
+> networking.  It is two different handling paths and non-unified,
+> but that might be the price for good performance :-)
 
-You're right.  In theory, at least.  But in practice I don't think
-this matters.  Show me an application that writes to a shared mapping
-then doesn't call either msync or munmap and doesn't even exit.
+I generally agree, with some comments.
 
-If there were lot of these apps, then this bug would have been fixed
-lots of years earlier.  In fact there are _very_ few apps writing to
-shared mappings at all.
+If we come to the decision that there are some message rates that are  
+better suited to delivery into a user-read ring (10gige rx to kevent,  
+say) then it doesn't seem like it would be much of a stretch to add a  
+facility where syslet completion could be funneled into that channel  
+as well.
 
-Applications should be encouraged to call msync(MS_ASYNC) because:
+I also wonder if there isn't some opportunity to cut down the number  
+of syscalls / op in networking land.  Is it madness to think of a  
+call like recvmsgv() which could provide a vector of msghdrs?  It  
+might not make sense, but it might cut down on the per-op overhead  
+for loads that know they're going to be heavy enough to get a decent  
+amount of batching without fatally harming latency.  Maybe those  
+loads are rare..
 
-  - it's very fast (basically a no-op) on recent linux kernels
-
-  - it's the only portable way to guarantee, that the data you written
-    will _ever_ hit the disk.
-
-There's really no downside to using msync(MS_ASYNC) in your
-application, so making an effort to support applications that don't do
-this is stupid, IMO.
-
-Thanks,
-Miklos
+- z 
