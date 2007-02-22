@@ -1,85 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945945AbXBVCBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965219AbXBVCF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945945AbXBVCBx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 21:01:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945946AbXBVCBx
+	id S965219AbXBVCF6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 21:05:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965227AbXBVCF6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 21:01:53 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:36237 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945945AbXBVCBw (ORCPT
+	Wed, 21 Feb 2007 21:05:58 -0500
+Received: from an-out-0708.google.com ([209.85.132.244]:26920 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965219AbXBVCF5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 21:01:52 -0500
-Date: Wed, 21 Feb 2007 21:00:39 -0500
-From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Adrian Bunk <bunk@stusta.de>,
-       linux-kernel@vger.kernel.org, unionfs@filesystems.org
-Subject: Re: [-mm patch] UNION_FS must depend on SLAB
-Message-ID: <20070222020036.GE5867@filer.fsl.cs.sunysb.edu>
-References: <20070217215146.30e7ffa3.akpm@linux-foundation.org> <20070220000810.GK13958@stusta.de> <84144f020702192237k78a5045bl51e0871fb3cac253@mail.gmail.com> <20070220151356.GA19239@filer.fsl.cs.sunysb.edu> <20070221141944.af6001db.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 21 Feb 2007 21:05:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jPiLCfHQSzGeCfBRhk/DVsbFCUczVfTFc3neiDWanz2FVubkZoTCfECrPNzsTKxoqN0qV7MJe0P7KgGMjHIR51UBGlXH/6LUg/M3PFR1CmcFQiS1LIVKsgKyJ0u6+2zvwAOFVSJRT15OFAvsaXAyTle9sSI5SzpJP4KKGfRnDis=
+Message-ID: <f2b55d220702211805h6df0b342o7676e37c7aa43bdd@mail.gmail.com>
+Date: Wed, 21 Feb 2007 18:05:55 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "D. Hazelton" <dhazelton@enter.net>
+Subject: Re: GPL vs non-GPL device drivers
+Cc: "David Lang" <david.lang@digitalinsight.com>, davids@webmaster.com,
+       "v j" <vj.linux@gmail.com>, trent.waddington@gmail.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       "Neil Brown" <neilb@suse.de>
+In-Reply-To: <200702212030.58317.dhazelton@enter.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070221141944.af6001db.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>
+	 <Pine.LNX.4.63.0702211527080.15723@qynat.qvtvafvgr.pbz>
+	 <f2b55d220702211628v6c8b16e7ibdfeb293592b2093@mail.gmail.com>
+	 <200702212030.58317.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 21, 2007 at 02:19:44PM -0800, Andrew Morton wrote:
-> On Tue, 20 Feb 2007 10:13:56 -0500
-> Josef Sipek <jsipek@fsl.cs.sunysb.edu> wrote:
-> 
-> > On Tue, Feb 20, 2007 at 08:37:34AM +0200, Pekka Enberg wrote:
-> > > On 2/20/07, Adrian Bunk <bunk@stusta.de> wrote:
-> > > >  CC      fs/unionfs/copyup.o
-> > > >/home/bunk/linux/kernel-2.6/linux-2.6.20-mm2/fs/unionfs/copyup.c: In 
-> > > >function 'create_parents_named':
-> > > >/home/bunk/linux/kernel-2.6/linux-2.6.20-mm2/fs/unionfs/copyup.c:620: 
-> > > >error: 'malloc_sizes' undeclared (first use in this function)
-> > > >/home/bunk/linux/kernel-2.6/linux-2.6.20-mm2/fs/unionfs/copyup.c:620: 
-> > > >error: (Each undeclared identifier is reported only once
-> > > >/home/bunk/linux/kernel-2.6/linux-2.6.20-mm2/fs/unionfs/copyup.c:620: 
-> > > >error: for each function it appears in.)
-> > > >make[3]: *** [fs/unionfs/copyup.o] Error 1
-> > > 
-> > > Hmm, why is unionfs playing around with malloc_sizes in the first place? 
-> > > Jeff?
-> > 
-> > The code is in lookup.c:
-> > 
-> > if (oldsize) {
-> > 	int minsize = malloc_sizes[0].cs_size;
-> > 
-> > 	if (!newsize || ((oldsize < newsize) && (newsize > minsize))) {
-> > 		kfree(info->lower_paths);
-> > 		info->lower_paths = NULL;
-> > 	}
-> > }
-> > 
-> > That's the only user of malloc_sizes. It is supposed to be an optimization -
-> > we get the smallest sized piece of memory even if we don't need all of it.
-> > This way we don't reallocate & memcpy needlessly.
-> > 
-> 
-> urgh, no, please don't poke around in slab internals like that.
- 
-I agree that it is a hack.
- 
-> I can't say more until I've managed to understand your description, which
-> might take a while.
+On 2/21/07, D. Hazelton <dhazelton@enter.net> wrote:
+> On Wednesday 21 February 2007 19:28, Michael K. Edwards wrote:
+> > I think you just misread.  I said that the Evil Linker has cheerfully
+> > shipped the source code of the modified POP server.  He may not have
+> > given you the compiler he compiled it with, wihout which the source
+> > code is a nice piece of literature but of no engineering utility; but
+> > that's the situation the GPL is DESIGNED TO PRODUCE.
+>
+> Actually, if memory serves, when you license a work under the GPL, part of the
+> terms is that you have to provide the source and any scripts needed to
+> produce a functioning executable.
 
-It is intended for reallocation of a buffer. The code in lookup.c allocates
-some memory, and it may have to reallocate the buffer. The code tries to
-prevent some unneeded allocations by looking at what the smallest object the
-slabcache gives you is.
+Absolutely.  But not the toolchain, just the "scripts".  This is part
+historical, since after all GNU got started when Sun started to
+monetize its toolchain independently of its O/S, RMS got annoyed
+enough to kick off another cloning project, and more competent
+compiler people caught on to the economic opportunity.  Ever pay $5K
+for a CD full of GNU binaries for a commercial UNIX?  I did, after
+deciding that getting all their shit to compile was more Morlock-work
+than I was up to.  So like I say, it's part historical -- RMS didn't
+want to owe me a copy of Sun's toolchain along with that CD -- but
+it's no accident that it's still in there, because THAT'S HOW CYGNUS
+MADE MEGABUCKS.
 
-I hope this explains it better. There's some discussion about this in the
-threads by Pekka Enberg.
+> As a side note: The distinct wording of the GPL actually *invalidates* the
+> GNU/FSF claim that dynamically linking a work with, say, the readline
+> library,  means the work is a derivative of said library. The GPL states (in
+> clause 0) that the license only covers copying, modification and
+> distribution. Unless they are confusing "Linking" with "copying" or "creating
+> a derivative work" the claim is invalid - because, as it has been shown, a
+> mechanical process such as compilation or linking *cannot* create a
+> derivative work.
 
-Josef "Jeff" Sipek.
+Of course.  The FSF smokescreen around "derivative work" exists not
+only to frighten potential commercial users of GPL libraries but to
+squelch people like Eric A. Young (principal OpenSSL author) who have
+the presumption to retain their own copyrights.  Eric has a quite
+solid case (IMHO, IANAL) against the FSF and Eben Moglen personally
+under at least three different U. S. antitrust and racketeering laws,
+and it would be really entertaining to watch him take it up.
 
--- 
-Linux, n.:
-  Generous programmers from around the world all join forces to help
-  you shoot yourself in the foot for free. 
+> Related to that... Though a parser generated by Bison and a tokenizer
+> generated by Flex both contain large chunks of GPL'd code, their inclusion in
+> the source file that is to be compiled is mechanical - the true unique work
+> is in writing the file that is processed by the tool to produce the output.
+> Since the aggregation of the GPL'd code into the output source is done
+> mechanically - via mechanical translation (which is what compilation is as
+> well) - the result is *not* and under US copyright law *cannot* be a
+> derivative work. What this means is that the GNU/FSF "special" terms applied
+> to parsers generated by Bison and tokenizers generated by Flex is
+> unnecessary - they are granting you a right you already have.
+
+Half true.  It's not a derivative work exactly, but it could
+conceivably be held to infringe against the copyright in Flex/Bison,
+if you could prove that the amount of _creative_expression_ copied
+into the output exceeds a "de minimis" standard and doesn't constitute
+a "fair use".  Those nifty photomosaics would probably infringe
+against the photographers' copyright in the photos they're made up of,
+if they weren't licensed through the graphic industry's "stock photo
+archive" mechanism.  You could probably defend on "fair use" with
+respect to Flex/Bison and the vanilla GPL, since the fact that I can
+get some random program with a parser in it from you without needing
+my own copy of bison doesn't cost the FSF anything.  But it's a
+gamble, especially if that random program competes with something the
+FSF makes $$$ off of; and I'd want that extra bit of estoppel in my
+back pocket.
+
+The LGPL is a very different story.  It's not just GPL with extra
+estoppel, it's a booby trap.  It goes a lot farther to put over its
+own perverse definition of "derivative work", and it tries to compel
+you to provide all the "data and utility programs needed for
+reproducing the executable from it".  I don't use the LGPL for my own
+work, I wouldn't touch it with a ten-foot pole if it didn't have the
+"GPL upgrade" clause in it, and I advise my employers and consulting
+clients to go through the "GPL (v2 only!) upgrade" rigmarole with
+respect to anything they so much as recompile.  They don't all take
+that advice, but that's not my problem.
+
+> Anyway, it's been fun watching this thread. If I've made a mistake somewhere
+> in there, let me know - IANAL and I am just starting to really get into the
+> meat of Copyright and related laws in independant study.
+
+Ditto.  If you see a mistake in something I write, please please
+pretty please point it out, in public -- I am not a lawyer, absolutely
+everything I say could be wrong, and I don't really want these
+messages lying around without the context of every rebuttal anyone in
+the audience can think of.
+
+Cheers,
+- Michael
