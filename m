@@ -1,51 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933067AbXBVMjK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933062AbXBVMjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933067AbXBVMjK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 07:39:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933066AbXBVMjJ
+	id S933062AbXBVMjQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 07:39:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933068AbXBVMjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 07:39:09 -0500
-Received: from yue.linux-ipv6.org ([203.178.140.15]:57096 "EHLO
-	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933065AbXBVMjH (ORCPT
+	Thu, 22 Feb 2007 07:39:15 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:57460 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933062AbXBVMjN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 07:39:07 -0500
-Date: Thu, 22 Feb 2007 21:39:15 +0900 (JST)
-Message-Id: <20070222.213915.89824941.yoshfuji@linux-ipv6.org>
-To: divy@chelsio.com
-Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com, yoshfuji@linux-ipv6.org
-Subject: Re: [PATCH 2/7] cxgb3 - private ioctl cleanup
-From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
-	<yoshfuji@linux-ipv6.org>
-In-Reply-To: <45DD8DDA.8060303@chelsio.com>
-References: <20070222115925.10001.61276.stgit@localhost.localdomain>
-	<20070222.210618.134161490.yoshfuji@linux-ipv6.org>
-	<45DD8DDA.8060303@chelsio.com>
-Organization: USAGI/WIDE Project
-X-URL: http://www.yoshifuji.org/%7Ehideaki/
-X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
-X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
-X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
- $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
-X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
+	Thu, 22 Feb 2007 07:39:13 -0500
+Date: Thu, 22 Feb 2007 14:39:12 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: linux-mm@kvack.org
+cc: linux-kernel@vger.kernel.org, wli@holomorphy.com, clameter@sgi.com
+Subject: [RFC/PATCH] slab: free pages in a batch in drain_freelist
+Message-ID: <Pine.LNX.4.64.0702221437400.14523@sbz-30.cs.Helsinki.FI>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <45DD8DDA.8060303@chelsio.com> (at Thu, 22 Feb 2007 04:34:34 -0800), Divy Le Ray <divy@chelsio.com> says:
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
+As suggested by William, free the actual pages in a batch so that we
+don't keep pounding on l3->list_lock.
 
-> > 1. Please do do change the values.
-> > 2. Explain why you are going to kill these ioctls.
-> >   
-> Jeff and Arjan have required that most of these ioctls go.
-> Please read:
-> http://marc.theaimsgroup.com/?l=linux-netdev&m=117029584904193&w=2
+Cc: William Lee Irwin III <wli@holomorphy.com>
+Cc: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ mm/slab.c |   32 +++++++++++++++-----------------
+ 1 file changed, 15 insertions(+), 17 deletions(-)
 
-Even if you remove them, PLEASE DO NOT CHANGE THE VALUES,
-unless you have very, very good reason.
-
---yoshfuji
+Index: uml-2.6/mm/slab.c
+===================================================================
+--- uml-2.6.orig/mm/slab.c	2007-02-22 14:19:46.000000000 +0200
++++ uml-2.6/mm/slab.c	2007-02-22 14:28:01.000000000 +0200
+@@ -2437,38 +2437,36 @@
+  *
+  * Returns the actual number of slabs released.
+  */
+-static int drain_freelist(struct kmem_cache *cache,
+-			struct kmem_list3 *l3, int tofree)
++static int drain_freelist(struct kmem_cache *cache, struct kmem_list3 *l3,
++			  int tofree)
+ {
++	struct slab *slabp, *this, *next;
++	struct list_head to_free_list;
+ 	struct list_head *p;
+ 	int nr_freed;
+-	struct slab *slabp;
+ 
++	INIT_LIST_HEAD(&to_free_list);
+ 	nr_freed = 0;
+-	while (nr_freed < tofree && !list_empty(&l3->slabs_free)) {
+ 
+-		spin_lock_irq(&l3->list_lock);
++	spin_lock_irq(&l3->list_lock);
++	while (nr_freed < tofree && !list_empty(&l3->slabs_free)) {
+ 		p = l3->slabs_free.prev;
+-		if (p == &l3->slabs_free) {
+-			spin_unlock_irq(&l3->list_lock);
+-			goto out;
+-		}
++		if (p == &l3->slabs_free)
++			break;
+ 
+ 		slabp = list_entry(p, struct slab, list);
+ #if DEBUG
+ 		BUG_ON(slabp->inuse);
+ #endif
+-		list_del(&slabp->list);
+-		/*
+-		 * Safe to drop the lock. The slab is no longer linked
+-		 * to the cache.
+-		 */
++		list_move(&slabp->list, &to_free_list);
+ 		l3->free_objects -= cache->num;
+-		spin_unlock_irq(&l3->list_lock);
+-		slab_destroy(cache, slabp);
+ 		nr_freed++;
+ 	}
+-out:
++	spin_unlock_irq(&l3->list_lock);
++
++	list_for_each_entry_safe(this, next, &to_free_list, list)
++		slab_destroy(cache, this);
++
+ 	return nr_freed;
+ }
+ 
