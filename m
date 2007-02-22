@@ -1,123 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965137AbXBVEEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751497AbXBVEK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965137AbXBVEEs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 23:04:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965238AbXBVEEr
+	id S1751497AbXBVEK5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 23:10:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbXBVEK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 23:04:47 -0500
-Received: from sycorax.lbl.gov ([128.3.11.121]:2583 "EHLO sycorax.lbl.gov"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965137AbXBVEEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 23:04:47 -0500
-From: Alex Romosan <romosan@sycorax.lbl.gov>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Yaroslav Halchenko <kernel@onerussian.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net,
-       James Simmons <jsimmons@infradead.org>
-Subject: Re: no backlight on radeon after recent kernel "upgrade"s
-References: <20070219044616.GC25659@washoe.onerussian.com>
-	<20070219000412.acad13de.akpm@linux-foundation.org>
-	<1171876788.6046.3.camel@localhost.localdomain>
-	<877iub9mu2.fsf@sycorax.lbl.gov>
-	<1172097718.5790.29.camel@localhost.localdomain>
-Date: Wed, 21 Feb 2007 20:03:57 -0800
-In-Reply-To: <1172097718.5790.29.camel@localhost.localdomain> (message from
-	Richard Purdie on Wed, 21 Feb 2007 22:41:57 +0000)
-Message-ID: <877iuaalea.fsf@sycorax.lbl.gov>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 21 Feb 2007 23:10:57 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:4408 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751497AbXBVEK4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 23:10:56 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 21 Feb 2007 20:10:55 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 08/13] syslets: x86, add move_user_context() method
+In-Reply-To: <20070221232017.GE32031@elte.hu>
+Message-ID: <Pine.LNX.4.64.0702212005340.16904@alien.or.mcafeemobile.com>
+References: <20070221211537.GH7579@elte.hu> <Pine.LNX.4.64.0702211428400.16904@alien.or.mcafeemobile.com>
+ <20070221232017.GE32031@elte.hu>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Richard Purdie writes:
+On Thu, 22 Feb 2007, Ingo Molnar wrote:
 
-> Can you have a look at the differences between the defconfigs for
-> 2.6.20 and 2.6.21-rc1?
+> 
+> * Davide Libenzi <davidel@xmailserver.org> wrote:
+> 
+> > On Wed, 21 Feb 2007, Ingo Molnar wrote:
+> > 
+> > > From: Ingo Molnar <mingo@elte.hu>
+> > > 
+> > > add the move_user_context() method to move the user-space
+> > > context of one kernel thread to another kernel thread.
+> > > User-space might notice the changed TID, but execution,
+> > > stack and register contents (general purpose and FPU) are
+> > > still the same.
+> > 
+> > Also signal handling should/must be maintained, on top of TID. You 
+> > don't want the user to be presented with a different signal handling 
+> > after an sys_async_exec call.
+> 
+> right now CLONE_SIGNAL and CLONE_SIGHAND is used for new async threads, 
+> so they should inherit and share all the signal settings.
 
-this is probably the relevant part:
-
---- config-2.6.20	2007-02-04 12:09:28.000000000 -0800
-+++ config-2.6.21-rc1	2007-02-21 08:37:53.000000000 -0800
-@@ -1270,16 +1302,25 @@
- #
- # Graphics support
- #
--CONFIG_FIRMWARE_EDID=y
-+CONFIG_BACKLIGHT_LCD_SUPPORT=y
-+CONFIG_BACKLIGHT_CLASS_DEVICE=y
-+CONFIG_LCD_CLASS_DEVICE=y
-+# CONFIG_BACKLIGHT_PROGEAR is not set
- CONFIG_FB=y
-+CONFIG_FIRMWARE_EDID=y
- CONFIG_FB_DDC=y
- CONFIG_FB_CFB_FILLRECT=y
- CONFIG_FB_CFB_COPYAREA=y
- CONFIG_FB_CFB_IMAGEBLIT=y
-+# CONFIG_FB_SVGALIB is not set
- # CONFIG_FB_MACMODES is not set
--# CONFIG_FB_BACKLIGHT is not set
-+CONFIG_FB_BACKLIGHT=y
- CONFIG_FB_MODE_HELPERS=y
- CONFIG_FB_TILEBLITTING=y
-+
-+#
-+# Frambuffer hardware drivers
-+#
- # CONFIG_FB_CIRRUS is not set
- # CONFIG_FB_PM2 is not set
- # CONFIG_FB_CYBER2000 is not set
-@@ -1297,9 +1338,11 @@
- # CONFIG_FB_MATROX is not set
- CONFIG_FB_RADEON=y
- CONFIG_FB_RADEON_I2C=y
-+CONFIG_FB_RADEON_BACKLIGHT=y
- # CONFIG_FB_RADEON_DEBUG is not set
- # CONFIG_FB_ATY128 is not set
- # CONFIG_FB_ATY is not set
-+# CONFIG_FB_S3 is not set
- # CONFIG_FB_SAVAGE is not set
- # CONFIG_FB_SIS is not set
- # CONFIG_FB_NEOMAGIC is not set
-@@ -1333,11 +1376,6 @@
- # CONFIG_LOGO_LINUX_MONO is not set
- # CONFIG_LOGO_LINUX_VGA16 is not set
- CONFIG_LOGO_LINUX_CLUT224=y
--CONFIG_BACKLIGHT_LCD_SUPPORT=y
--CONFIG_BACKLIGHT_CLASS_DEVICE=y
--CONFIG_BACKLIGHT_DEVICE=y
--CONFIG_LCD_CLASS_DEVICE=m
--CONFIG_LCD_DEVICE=y
- 
- #
- # Sound
+Right. Sorry I missed the signal cloning flags (still has to go thru the 
+whole code).
 
 
-> If the backlight changes are at fault, I'm guessing James' Kconfig
-> changes to the video Kconfig would be the culprit since
-> FB_RADEON_BACKLIGHT only used to be selectable if PMAC_BACKLIGHT was
-> enabled. On a thinkpad, the backlight is probably under ACPI
-> control.
 
-there was no FB_RADEON_BACKLIGHT in 2.6.20 and CONFIG_FB_BACKLIGHT
-wasn't set.
+> > So NTSK loads a non up2date FPUo, instead of the FPUc that was the 
+> > "dirty" context to migrate (since TS_USEDFPU was set). I think you 
+> > need an early __unlazy_fpu() in that case, that would turn the above 
+> > into:
+> 
+> yes. My plan is to to avoid all these problems by having a 
+> special-purpose sched_yield_to(old_task, new_task) function.
+> 
+> this, besides being even faster than the default scheduler (because the 
+> runqueue balance does not change so no real scheduling decision has to 
+> be done - the true scheduling decisions happen later on at async-wakeup 
+> time), should also avoid all the FPU races: the FPU just gets flipped 
+> between old_task and new_task (and TS_USEDFPU needs to be moved as well, 
+> etc.). No intermediate task can come inbetween.
+> 
+> can you see a hole in this sched_yield_to() method as well?
 
-> If FB_RADEON_BACKLIGHT wasn't set for 2.6.20, can you try 2.6.21-rc1
-> with that option disabled?
+Not sure till I see the code, but in that case we really need a sync&copy. 
+This is really a fork-like for the FPU context IMO. The current "dirty" 
+FPU context should follow both OTSK and NTSK.
 
-i'll try recompiling without this option and let you know what happened.
 
-> An ls /sys/class/backlight under 2.6.20 will tell us which driver it
-> was using...
 
-ls /sys/class/backlight/
-0 ./  0 ../  0 ibm/
+- Davide
 
---alex--
 
--- 
-| I believe the moment is at hand when, by a paranoiac and active |
-|  advance of the mind, it will be possible (simultaneously with  |
-|  automatism and other passive states) to systematize confusion  |
-|  and thus to help to discredit completely the world of reality. |
