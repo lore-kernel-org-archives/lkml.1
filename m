@@ -1,55 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751953AbXBVVv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751962AbXBVVwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751953AbXBVVv0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 16:51:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbXBVVv0
+	id S1751962AbXBVVwi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 16:52:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbXBVVwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 16:51:26 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:40220 "EHLO smtp.osdl.org"
+	Thu, 22 Feb 2007 16:52:38 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:37507 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751959AbXBVVvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 16:51:25 -0500
-Date: Thu, 22 Feb 2007 13:51:09 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: michal.k.k.piotrowski@gmail.com, jens.axboe@oracle.com,
+	id S1751959AbXBVVwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 16:52:37 -0500
+Message-ID: <45DE108C.6010101@redhat.com>
+Date: Thu, 22 Feb 2007 16:52:12 -0500
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061215)
+MIME-Version: 1.0
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: trond.myklebust@fys.uio.no, akpm@linux-foundation.org, hugh@veritas.com,
+       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH -mm] mmc build fix
-Message-Id: <20070222135109.b7685c3d.akpm@linux-foundation.org>
-In-Reply-To: <45DE0548.5000307@drzeus.cx>
-References: <200702220619.l1M6JsG7006504@shell0.pdx.osdl.net>
-	<45DDC7F7.6080205@googlemail.com>
-	<45DE0548.5000307@drzeus.cx>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH] update ctime and mtime for mmaped write
+References: <E1HJvdA-0003Nj-00@dorka.pomaz.szeredi.hu>	 <20070221202615.a0a167f4.akpm@linux-foundation.org>	 <E1HK8hU-0005Mq-00@dorka.pomaz.szeredi.hu> <45DDD55F.4060106@redhat.com>	 <E1HKIN1-0006RX-00@dorka.pomaz.szeredi.hu> <45DDF9C1.4090003@redhat.com>	 <E1HKKrL-0006k6-00@dorka.pomaz.szeredi.hu> <1172178253.6382.12.camel@heimdal.trondhjem.org> <E1HKLUp-0006qY-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1HKLUp-0006qY-00@dorka.pomaz.szeredi.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 22 Feb 2007 22:04:08 +0100 Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
-> Michal Piotrowski wrote:
-> > Hi,
-> > 
-> > akpm@linux-foundation.org napisał(a):
-> >> The mm snapshot broken-out-2007-02-21-22-18.tar.gz has been uploaded to
-> >>
-> >>    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-02-21-22-18.tar.gz
-> >>
-> >> It contains the following patches against 2.6.21-rc1:
-> >>
-> > 
-> > Possible build fix for
-> > 
-> > drivers/built-in.o: In function `mmc_queue_thread':
-> > /mnt/md0/devel/linux-work5/drivers/mmc/card/queue.c:76: undefined reference to `blk_queue_plugged'
-> > make: *** [.tmp_vmlinux1] Error 1
-> > 
-> 
-> Huh? Is blk_queue_plugged() deprecated?
-> 
+Miklos Szeredi wrote:
+>>>> This still does not address the situation where a file is 'permanently'
+>>>> mmap'd, does it?
+>>>>         
+>>> So?  If application doesn't do msync, then the file times won't be
+>>> updated.  That's allowed by the standard, and so portable applications
+>>> will have to call msync.
+>>>       
+>> It is allowed, but it is clearly not useful behaviour. Nowhere is it set
+>> in stone that we should be implementing just the minimum allowed.
+>>     
+>
+> You're right.  In theory, at least.  But in practice I don't think
+> this matters.  Show me an application that writes to a shared mapping
+> then doesn't call either msync or munmap and doesn't even exit.
+>
+> If there were lot of these apps, then this bug would have been fixed
+> lots of years earlier.  In fact there are _very_ few apps writing to
+> shared mappings at all.
+>
+>   
 
-Jens's tree makes it disappear.
+Perhaps true, although I know of at least one customer of Red Hat who
+does have an application (or more) than uses mmap'd files and is
+suffering from this lack of appropriate semantics.  They are not
+getting files backed up which need to be.
 
-I'll worry about this next week when I get back into action.  It could be
-that the offending part of git-block.patch is gone by then.  
+> Applications should be encouraged to call msync(MS_ASYNC) because:
+>
+>   - it's very fast (basically a no-op) on recent linux kernels
+>
+>   - it's the only portable way to guarantee, that the data you written
+>     will _ever_ hit the disk.
+>
+> There's really no downside to using msync(MS_ASYNC) in your
+> application, so making an effort to support applications that don't do
+> this is stupid, IMO.
+
+It may be a no-op on recent Linux kernels, but I don't think that it
+is a no-op on other systems.
+
+I do not wish to defend applications which don't use msync or some
+such, but it seems that the appropriate semantics to support are
+more than just depending upon the application to "do the right thing".
+
+    Thanx...
+
+       ps
