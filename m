@@ -1,43 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932774AbXBVGmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751443AbXBVG4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932774AbXBVGmR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 01:42:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbXBVGmR
+	id S1751443AbXBVG4d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 01:56:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932997AbXBVG4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 01:42:17 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58845 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751430AbXBVGmQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 01:42:16 -0500
-Date: Wed, 21 Feb 2007 22:42:14 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Josef Sipek <jsipek@fsl.cs.sunysb.edu>, Adrian Bunk <bunk@stusta.de>,
-       linux-kernel@vger.kernel.org, unionfs@filesystems.org
-Subject: Re: [-mm patch] UNION_FS must depend on SLAB
-In-Reply-To: <45DD3574.9070801@cs.helsinki.fi>
-Message-ID: <Pine.LNX.4.64.0702212239270.30485@schroedinger.engr.sgi.com>
-References: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
- <20070220000810.GK13958@stusta.de> <84144f020702192237k78a5045bl51e0871fb3cac253@mail.gmail.com>
- <20070220151356.GA19239@filer.fsl.cs.sunysb.edu>
- <20070221141944.af6001db.akpm@linux-foundation.org>
- <20070222020036.GE5867@filer.fsl.cs.sunysb.edu> <20070221182657.57264123.akpm@linux-foundation.org>
- <45DD3574.9070801@cs.helsinki.fi>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 22 Feb 2007 01:56:33 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46980 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751431AbXBVG4c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 01:56:32 -0500
+Date: Thu, 22 Feb 2007 07:51:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Michael K. Edwards" <medwards.linux@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070222065125.GA862@elte.hu>
+References: <20070221211355.GA7302@elte.hu> <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com> <20070221225711.GB32031@elte.hu> <f2b55d220702211653x69718ef4o2dd62ed3156465b0@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f2b55d220702211653x69718ef4o2dd62ed3156465b0@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -3.8
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-3.8 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Feb 2007, Pekka Enberg wrote:
 
-> I think we can merge krealloc without unionfs. I'll whoop up a new patch as
-> per Christoph's suggestions. I think at least XFS already has its own realloc
-> and there might be some other open-coded users. It's not _changing_ the slab
-> as much as adding new functionality that makes sense fron a general point of
-> view.
+* Michael K. Edwards <medwards.linux@gmail.com> wrote:
 
-I really like the krealloc idea. Could we useful elsewhere to extend 
-objects and it is similar to the realloc() available in glibc.
+> [...] As for threadlets, making them kernel threads is not such a good 
+> design feature, O(1) scheduler or not.  You take the full hit of 
+> kernel task creation, on the spot, for every threadlet that blocks. 
+> [...]
 
+this is very much not how they work. Threadlets share the same basic 
+infrastructure with syslets and they do /not/ take a 'full hit of kernel 
+thread creation' when they block. Please read the announcements, past 
+discussions on lkml and the code about how it works.
+
+about your other point:
+
+> > threadlets, when they block, are regular kernel threads, so the 
+> > regular O(1) scheduler takes care of them. If MMU trashing is of any 
+> > concern then syslets should be used to implement the most 
+> > performance-critical events: under Linux a kernel thread that does 
+> > not exit out to user-space does not do any TLB switching at all. 
+> > (even if there are multiple processes active and their syslets 
+> > intermix)
+> 
+> As far as I am concerned syslets by themselves are a dead letter, 
+> because you can't do any of the things that potential application 
+> coders need to do with them. [...]
+
+syslets are not meant to be directly exposed to application coders. 
+Syslets (like many of my previous mails stated) are meant as building 
+blocks to higher-level AIO interfaces such as in glibc or libaio. Then 
+user-space can build its state-machine based on syslet-implemented 
+glibc/libaio. In that specific role they are a very fast and scalable 
+mechanism.
+
+	Ingo
