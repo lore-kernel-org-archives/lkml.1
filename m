@@ -1,177 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945996AbXBVMlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946007AbXBVMl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945996AbXBVMlT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 07:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945999AbXBVMlT
+	id S1946007AbXBVMl5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 07:41:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946010AbXBVMl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 07:41:19 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:52967 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945996AbXBVMlS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 07:41:18 -0500
-Date: Thu, 22 Feb 2007 14:41:16 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: akpm@linux-foundation.org
-cc: linux-kernel@vger.kernel.org, jsipek@fsl.cs.sunysb.edu
-Subject: [PATCH 2/2] unionfs: fix slab abuses with krealloc
-Message-ID: <Pine.LNX.4.64.0702221440230.14523@sbz-30.cs.Helsinki.FI>
+	Thu, 22 Feb 2007 07:41:57 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:55848 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946007AbXBVMl4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 07:41:56 -0500
+Date: Thu, 22 Feb 2007 15:39:30 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070222123929.GA5208@2ka.mipt.ru>
+References: <20070221211355.GA7302@elte.hu> <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com> <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com> <20070222074044.GA4158@elte.hu> <20070222113148.GA3781@2ka.mipt.ru> <1172145159.3531.253.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <1172145159.3531.253.camel@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 22 Feb 2007 15:41:06 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+On Thu, Feb 22, 2007 at 12:52:39PM +0100, Arjan van de Ven (arjan@infradead.org) wrote:
+> 
+> > It is not a TUX anymore - you had 1024 threads, and all of them will be
+> > consumed by tcp_sendmsg() for slow clients - rescheduling will kill a
+> > machine.
+> 
+> I think it's time to make a split in what "context switch" or
+> "reschedule" means...
+> 
+> there are two types of context switch:
+> 
+> 1) To a different process. This means teardown of the TLB, going to a
+> new MMU state, saving FPU state etc etc etc. This is obviously quite
+> expensive
+> 
+> 2) To a thread of the same process. No TLB flush no new MMU state,
+> effectively all it does is getting a new task struct on the kernel side,
+> and a new ESP/EIP pair on the userspace side. If there is FPU code
+> involved that gets saved as well.
+> 
+> Number 1 is very expensive and that is what is really worrying normally;
+> number 2 is a LOT lighter weight, and while Linux is a bit heavy there,
+> it can be made lighter... there's no fundamental reason for it to be
+> really expensive.
 
-This changes unionfs to use krealloc() for reallocating memory so that
-we don't need to play tricks with slab internals.
+It does not matter - even with threads cost of having thousands of
+threads is _too_ expensive. So, IMO, it is wrong to have to create 
+20k threads for the simple web server which only sends one index page to
+80k connections with 4k connections per seconds rate.
 
-Cc: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- fs/unionfs/copyup.c |   35 +++++++++++++----------------------
- fs/unionfs/lookup.c |   33 +++++++++++++--------------------
- 2 files changed, 26 insertions(+), 42 deletions(-)
+Just have that example in mind - more than 20k blocks in 80k connections 
+over gigabit lan, and it is likely optimistic result, when designing new 
+type of AIO.
 
-Index: 2.6/fs/unionfs/copyup.c
-===================================================================
---- 2.6.orig/fs/unionfs/copyup.c	2007-02-22 11:33:52.000000000 +0200
-+++ 2.6/fs/unionfs/copyup.c	2007-02-22 11:33:53.000000000 +0200
-@@ -603,23 +603,16 @@
- 	const char *childname;
- 	unsigned int childnamelen;
- 
--	int old_kmalloc_size;
--	int kmalloc_size;
--	int num_dentry;
-+	int nr_dentry;
- 	int count;
- 
- 	int old_bstart;
- 	int old_bend;
- 	struct dentry **path = NULL;
--	struct dentry **tmp_path;
- 	struct super_block *sb;
- 
- 	verify_locked(dentry);
- 
--	/* There is no sense allocating any less than the minimum. */
--	kmalloc_size = malloc_sizes[0].cs_size;
--	num_dentry = kmalloc_size / sizeof(struct dentry *);
--
- 	if ((err = is_robranch_super(dir->i_sb, bindex))) {
- 		hidden_dentry = ERR_PTR(err);
- 		goto out;
-@@ -629,7 +622,10 @@
- 	old_bend = dbend(dentry);
- 
- 	hidden_dentry = ERR_PTR(-ENOMEM);
--	path = kzalloc(kmalloc_size, GFP_KERNEL);
-+
-+	/* There is no sense allocating any less than the minimum. */
-+	nr_dentry = 1;
-+	path = kmalloc(nr_dentry * sizeof(struct dentry *), GFP_KERNEL);
- 	if (!path)
- 		goto out;
- 
-@@ -655,26 +651,21 @@
- 		/* find out the hidden_parent_dentry in the given branch */
- 		hidden_parent_dentry = unionfs_lower_dentry_idx(parent_dentry, bindex);
- 
--		/* store the child dentry */
--		path[count++] = child_dentry;
--
- 		/* grow path table */
--		if (count == num_dentry) {
--			old_kmalloc_size = kmalloc_size;
--			kmalloc_size *= 2;
--			num_dentry = kmalloc_size / sizeof(struct dentry *);
-+		if (count == nr_dentry) {
-+			void *p;
- 
--			tmp_path = kzalloc(kmalloc_size, GFP_KERNEL);
--			if (!tmp_path) {
-+			nr_dentry *= 2;
-+			p = krealloc(path, nr_dentry * sizeof(struct dentry *), GFP_KERNEL);
-+			if (!p) {
- 				hidden_dentry = ERR_PTR(-ENOMEM);
- 				goto out;
- 			}
--			memcpy(tmp_path, path, old_kmalloc_size);
--			kfree(path);
--			path = tmp_path;
--			tmp_path = NULL;
-+			path = p;
- 		}
- 
-+		/* store the child dentry */
-+		path[count++] = child_dentry;
- 	} while (!hidden_parent_dentry);
- 	count--;
- 
-Index: 2.6/fs/unionfs/lookup.c
-===================================================================
---- 2.6.orig/fs/unionfs/lookup.c	2007-02-22 11:33:52.000000000 +0200
-+++ 2.6/fs/unionfs/lookup.c	2007-02-22 11:33:53.000000000 +0200
-@@ -428,9 +428,8 @@
- /* allocate new dentry private data, free old one if necessary */
- int new_dentry_private_data(struct dentry *dentry)
- {
--	int newsize;
--	int oldsize = 0;
- 	struct unionfs_dentry_info *info = UNIONFS_D(dentry);
-+	int new_size, size;
- 
- 	spin_lock(&dentry->d_lock);
- 	if (!info) {
-@@ -445,8 +444,9 @@
- 		mutex_lock(&info->lock);
- 
- 		info->lower_paths = NULL;
-+		size = 0;
- 	} else
--		oldsize = sizeof(struct path) * info->bcount;
-+		size = sizeof(struct path) * info->bcount;
- 
- 	info->bstart = -1;
- 	info->bend = -1;
-@@ -454,28 +454,21 @@
- 	info->bcount = sbmax(dentry->d_sb);
- 	atomic_set(&info->generation,
- 		   atomic_read(&UNIONFS_SB(dentry->d_sb)->generation));
--	newsize = sizeof(struct path) * sbmax(dentry->d_sb);
-+
-+	new_size = sizeof(struct path) * sbmax(dentry->d_sb);
- 
- 	/* Don't reallocate when we already have enough space. */
--	/* It would be ideal if we could actually use the slab macros to
--	 * determine what our object sizes is, but those are not exported.
--	 */
--	if (oldsize) {
--		int minsize = malloc_sizes[0].cs_size;
--
--		if (!newsize || ((oldsize < newsize) && (newsize > minsize))) {
--			kfree(info->lower_paths);
--			info->lower_paths = NULL;
--		}
--	}
-+	if (new_size > size) {
-+		void *p;
- 
--	if (!info->lower_paths && newsize) {
--		info->lower_paths = kmalloc(newsize, GFP_ATOMIC);
--		if (!info->lower_paths)
-+		p = krealloc(info->lower_paths, new_size, GFP_ATOMIC);
-+		if (!p)
- 			goto out_free;
--	}
- 
--	memset(info->lower_paths, 0, (oldsize > newsize ? oldsize : newsize));
-+		info->lower_paths = p;
-+		size = new_size;
-+	}
-+	memset(info->lower_paths, 0, size);
- 
- 	spin_unlock(&dentry->d_lock);
- 	return 0;
+> -- 
+> if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+> Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+
+-- 
+	Evgeniy Polyakov
