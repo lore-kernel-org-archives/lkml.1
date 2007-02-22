@@ -1,64 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932775AbXBVAve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932784AbXBVAxN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932775AbXBVAve (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 19:51:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932780AbXBVAve
+	id S932784AbXBVAxN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 19:53:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbXBVAxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 19:51:34 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:36645 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932775AbXBVAvd (ORCPT
+	Wed, 21 Feb 2007 19:53:13 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:35367 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751376AbXBVAxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 19:51:33 -0500
-X-Sasl-enc: ha9BTOoo1mRszuFOIAB9Kj8vOSFU5fOtT+sbzEJoNvN/ 1172105572
-Date: Wed, 21 Feb 2007 22:51:22 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Alex Romosan <romosan@sycorax.lbl.gov>,
-       Yaroslav Halchenko <kernel@onerussian.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net,
-       James Simmons <jsimmons@infradead.org>
-Subject: Re: no backlight on radeon after recent kernel "upgrade"s
-Message-ID: <20070222005122.GA7928@khazad-dum.debian.net>
-References: <20070219044616.GC25659@washoe.onerussian.com> <20070219000412.acad13de.akpm@linux-foundation.org> <1171876788.6046.3.camel@localhost.localdomain> <877iub9mu2.fsf@sycorax.lbl.gov> <1172097718.5790.29.camel@localhost.localdomain> <20070221231706.GA3336@khazad-dum.debian.net> <1172103159.5790.45.camel@localhost.localdomain>
+	Wed, 21 Feb 2007 19:53:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZY+m8dwsi3T9fCUL536d7VWlDoOH0QsabBR32A52fdVCY6y+A3Fpj3UbXM+3ImDGT/DLctX5TtUhB9lFSD5Vm1kjWcSlPzvw6diV2zvU8i28XC8rP5QDteAKdMIywJVT8DsqHH+pnLUFNRavB/VnAvd2riM7512AXNqkW4SRNmQ=
+Message-ID: <f2b55d220702211653x69718ef4o2dd62ed3156465b0@mail.gmail.com>
+Date: Wed, 21 Feb 2007 16:53:08 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Cc: linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Andrew Morton" <akpm@zip.com.au>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Ulrich Drepper" <drepper@redhat.com>,
+       "Zach Brown" <zach.brown@oracle.com>,
+       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Suparna Bhattacharya" <suparna@in.ibm.com>,
+       "Davide Libenzi" <davidel@xmailserver.org>,
+       "Jens Axboe" <jens.axboe@oracle.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <20070221225711.GB32031@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1172103159.5790.45.camel@localhost.localdomain>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20070221211355.GA7302@elte.hu>
+	 <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
+	 <20070221225711.GB32031@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Feb 2007, Richard Purdie wrote:
-> I have a thinkpad with Intel GM graphics ;-). I need it to work so I try
-> not to experiment too much on it. I've just tried the ibm-acpi driver
-> and it doesn't work well :-(.
+On 2/21/07, Ingo Molnar <mingo@elte.hu> wrote:
+> threadlets, when they dont block, are just regular user-space function
+> calls - so no need to schedule or throttle them. [*]
 
-2.6.21-rc, or 2.6.20?  If it is in 2.6.21, could you give me a report of how
-it fares on 2.6.20?
+Right.  That's a great design feature.
 
-> * 'cat brightness' != 'cat actual_brightness' upon bootup (doesn't have
+> threadlets, when they block, are regular kernel threads, so the regular
+> O(1) scheduler takes care of them. If MMU trashing is of any concern
+> then syslets should be used to implement the most performance-critical
+> events: under Linux a kernel thread that does not exit out to user-space
+> does not do any TLB switching at all. (even if there are multiple
+> processes active and their syslets intermix)
 
-Hmm, I see this in 2.6.20 too.  And brightness is the one that is buggy.  I
-will look into it.
+As far as I am concerned syslets by themselves are a dead letter,
+because you can't do any of the things that potential application
+coders need to do with them.  As for threadlets, making them kernel
+threads is not such a good design feature, O(1) scheduler or not.  You
+take the full hit of kernel task creation, on the spot, for every
+threadlet that blocks.  You don't fence off the threadlet from any of
+the stuff that it ought to be fenced off from for thread-safety
+reasons, so you don't have much choice but to create a new TLS arena
+for it (which you need anyway for errno), so they have horrible MMU
+and memory overhead.  You can't dispatch them inexpensively, while the
+data delivered by a softirq is still hot in cache, to traverse 1-3
+lines of userspace code and make the next syscall.  So they're just
+not usable for any of the things that a real AIO application actually
+does.
 
-> * 'echo 0 > brightness' lowered the intensity but by a level or two, not
-> set it to level 0. A couple of more attempts and it did jump from 7 -> 1
-> and so on, it seems erratic.
+> throttling of outstanding async contexts is most easily done by
+> user-space - you can see an example in threadlet-test.c, but there's
+> also fio/engines/syslet-rw.c. v2 had a kernel-space throttling mechanism
+> as well, i'll probably reintroduce that in later versions.
 
-I know it used to work fine before 2.6.20.  Let me check...  works fine on a
-T43, 2.6.20 (Radeon X300).  I need more data to fix it :-)
+You're telling me that scheduling parallel I/O is the kernel's job but
+throttling it is userspace's job?
 
-> actual_brightness always seems to be correct, as does brightness so it
-> looks like its not updating the hardware correctly.
+> [*] although certain more advanced scheduling tactics like the detection
+>     of frequently executed threadlet functions and their pushing out to
+>     separate contexts is possible too - but this is an optional add-on
+>     and for later.
 
-Well, if you have the ACPI video module loaded, unload it.  Does it work
-now?
+You won't be able to do it later if you don't design for it now.
+Don't reinvent the square wheel -- there's a model to follow that was
+so successful that it has killed all alternate models in its sphere.
+Namely, IEEE 754.  But please try not to make pipeline flushes suck as
+much as they did on the i860.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Cheers,
+- Michael
