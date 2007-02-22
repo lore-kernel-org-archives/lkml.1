@@ -1,127 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965219AbXBVCF6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965227AbXBVCKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965219AbXBVCF6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 21:05:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965227AbXBVCF6
+	id S965227AbXBVCKo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 21:10:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965233AbXBVCKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 21:05:58 -0500
-Received: from an-out-0708.google.com ([209.85.132.244]:26920 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965219AbXBVCF5 (ORCPT
+	Wed, 21 Feb 2007 21:10:43 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:17796 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965227AbXBVCKm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 21:05:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jPiLCfHQSzGeCfBRhk/DVsbFCUczVfTFc3neiDWanz2FVubkZoTCfECrPNzsTKxoqN0qV7MJe0P7KgGMjHIR51UBGlXH/6LUg/M3PFR1CmcFQiS1LIVKsgKyJ0u6+2zvwAOFVSJRT15OFAvsaXAyTle9sSI5SzpJP4KKGfRnDis=
-Message-ID: <f2b55d220702211805h6df0b342o7676e37c7aa43bdd@mail.gmail.com>
-Date: Wed, 21 Feb 2007 18:05:55 -0800
-From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: "D. Hazelton" <dhazelton@enter.net>
-Subject: Re: GPL vs non-GPL device drivers
-Cc: "David Lang" <david.lang@digitalinsight.com>, davids@webmaster.com,
-       "v j" <vj.linux@gmail.com>, trent.waddington@gmail.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>
-In-Reply-To: <200702212030.58317.dhazelton@enter.net>
+	Wed, 21 Feb 2007 21:10:42 -0500
+Date: Wed, 21 Feb 2007 18:09:51 -0800
+From: Joel Becker <Joel.Becker@oracle.com>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Yaroslav Halchenko <lists@onerussian.com>,
+       Richard Purdie <rpurdie@rpsys.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [Linux-fbdev-devel] no backlight on radeon after recent kernel "upgrade"s
+Message-ID: <20070222020951.GR7920@ca-server1.us.oracle.com>
+Mail-Followup-To: James Simmons <jsimmons@infradead.org>,
+	Yaroslav Halchenko <lists@onerussian.com>,
+	Richard Purdie <rpurdie@rpsys.net>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-fbdev-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
+References: <20070219044616.GC25659@washoe.onerussian.com> <20070219000412.acad13de.akpm@linux-foundation.org> <1171876788.6046.3.camel@localhost.localdomain> <20070221055648.GM25659@washoe.onerussian.com> <Pine.LNX.4.64.0702220109450.17121@pentafluge.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>
-	 <Pine.LNX.4.63.0702211527080.15723@qynat.qvtvafvgr.pbz>
-	 <f2b55d220702211628v6c8b16e7ibdfeb293592b2093@mail.gmail.com>
-	 <200702212030.58317.dhazelton@enter.net>
+In-Reply-To: <Pine.LNX.4.64.0702220109450.17121@pentafluge.infradead.org>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever come to perfection.
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/21/07, D. Hazelton <dhazelton@enter.net> wrote:
-> On Wednesday 21 February 2007 19:28, Michael K. Edwards wrote:
-> > I think you just misread.  I said that the Evil Linker has cheerfully
-> > shipped the source code of the modified POP server.  He may not have
-> > given you the compiler he compiled it with, wihout which the source
-> > code is a nice piece of literature but of no engineering utility; but
-> > that's the situation the GPL is DESIGNED TO PRODUCE.
->
-> Actually, if memory serves, when you license a work under the GPL, part of the
-> terms is that you have to provide the source and any scripts needed to
-> produce a functioning executable.
+On Thu, Feb 22, 2007 at 01:11:18AM +0000, James Simmons wrote:
+> > *$> grep BACKLIGH /boot/config-2.6.20 
+> > # CONFIG_FB_BACKLIGHT is not set
+> > CONFIG_BACKLIGHT_LCD_SUPPORT=y
+> > CONFIG_BACKLIGHT_CLASS_DEVICE=m
+> > CONFIG_BACKLIGHT_DEVICE=y
+> 
+> You need to explictly enable the backlight for your fbdev driver. It 
+> doesn't do the selecting magically for you.
+> Jus do a make "favorite"config and go to the fbdev menu and select the 
+> backlight option for your fbdev driver.
 
-Absolutely.  But not the toolchain, just the "scripts".  This is part
-historical, since after all GNU got started when Sun started to
-monetize its toolchain independently of its O/S, RMS got annoyed
-enough to kick off another cloning project, and more competent
-compiler people caught on to the economic opportunity.  Ever pay $5K
-for a CD full of GNU binaries for a commercial UNIX?  I did, after
-deciding that getting all their shit to compile was more Morlock-work
-than I was up to.  So like I say, it's part historical -- RMS didn't
-want to owe me a copy of Sun's toolchain along with that CD -- but
-it's no accident that it's still in there, because THAT'S HOW CYGNUS
-MADE MEGABUCKS.
+	I would think that we'd always want to enable the backlight.
+How are people supposed to Just Know that the kernel defaults to a black
+LCD?
 
-> As a side note: The distinct wording of the GPL actually *invalidates* the
-> GNU/FSF claim that dynamically linking a work with, say, the readline
-> library,  means the work is a derivative of said library. The GPL states (in
-> clause 0) that the license only covers copying, modification and
-> distribution. Unless they are confusing "Linking" with "copying" or "creating
-> a derivative work" the claim is invalid - because, as it has been shown, a
-> mechanical process such as compilation or linking *cannot* create a
-> derivative work.
+Joel
 
-Of course.  The FSF smokescreen around "derivative work" exists not
-only to frighten potential commercial users of GPL libraries but to
-squelch people like Eric A. Young (principal OpenSSL author) who have
-the presumption to retain their own copyrights.  Eric has a quite
-solid case (IMHO, IANAL) against the FSF and Eben Moglen personally
-under at least three different U. S. antitrust and racketeering laws,
-and it would be really entertaining to watch him take it up.
 
-> Related to that... Though a parser generated by Bison and a tokenizer
-> generated by Flex both contain large chunks of GPL'd code, their inclusion in
-> the source file that is to be compiled is mechanical - the true unique work
-> is in writing the file that is processed by the tool to produce the output.
-> Since the aggregation of the GPL'd code into the output source is done
-> mechanically - via mechanical translation (which is what compilation is as
-> well) - the result is *not* and under US copyright law *cannot* be a
-> derivative work. What this means is that the GNU/FSF "special" terms applied
-> to parsers generated by Bison and tokenizers generated by Flex is
-> unnecessary - they are granting you a right you already have.
+-- 
 
-Half true.  It's not a derivative work exactly, but it could
-conceivably be held to infringe against the copyright in Flex/Bison,
-if you could prove that the amount of _creative_expression_ copied
-into the output exceeds a "de minimis" standard and doesn't constitute
-a "fair use".  Those nifty photomosaics would probably infringe
-against the photographers' copyright in the photos they're made up of,
-if they weren't licensed through the graphic industry's "stock photo
-archive" mechanism.  You could probably defend on "fair use" with
-respect to Flex/Bison and the vanilla GPL, since the fact that I can
-get some random program with a parser in it from you without needing
-my own copy of bison doesn't cost the FSF anything.  But it's a
-gamble, especially if that random program competes with something the
-FSF makes $$$ off of; and I'd want that extra bit of estoppel in my
-back pocket.
+Life's Little Instruction Book #407
 
-The LGPL is a very different story.  It's not just GPL with extra
-estoppel, it's a booby trap.  It goes a lot farther to put over its
-own perverse definition of "derivative work", and it tries to compel
-you to provide all the "data and utility programs needed for
-reproducing the executable from it".  I don't use the LGPL for my own
-work, I wouldn't touch it with a ten-foot pole if it didn't have the
-"GPL upgrade" clause in it, and I advise my employers and consulting
-clients to go through the "GPL (v2 only!) upgrade" rigmarole with
-respect to anything they so much as recompile.  They don't all take
-that advice, but that's not my problem.
+	"Every once in a while, take the scenic route."
 
-> Anyway, it's been fun watching this thread. If I've made a mistake somewhere
-> in there, let me know - IANAL and I am just starting to really get into the
-> meat of Copyright and related laws in independant study.
-
-Ditto.  If you see a mistake in something I write, please please
-pretty please point it out, in public -- I am not a lawyer, absolutely
-everything I say could be wrong, and I don't really want these
-messages lying around without the context of every rebuttal anyone in
-the audience can think of.
-
-Cheers,
-- Michael
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
