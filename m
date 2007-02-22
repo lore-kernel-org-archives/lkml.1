@@ -1,71 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751752AbXBVSVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751754AbXBVSXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751752AbXBVSVd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 13:21:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbXBVSVd
+	id S1751754AbXBVSXU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 13:23:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbXBVSXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 13:21:33 -0500
-Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:53663 "EHLO
-	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751748AbXBVSVb (ORCPT
+	Thu, 22 Feb 2007 13:23:20 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:41356 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751754AbXBVSXT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 13:21:31 -0500
-In-Reply-To: <F2C532BC-C83A-4DD5-BACE-49F8CC11236C@kernel.crashing.org>
-References: <20070221125736.e5ff4206.akpm@linux-foundation.org> <Pine.LNX.4.44L0.0702211621310.3435-100000@iolanthe.rowland.org> <20070221133112.aec2bdac.akpm@linux-foundation.org> <F2C532BC-C83A-4DD5-BACE-49F8CC11236C@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <0305C117-1099-49EA-B0F3-C0E31E18A19A@kernel.crashing.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       Pete Zaitcev <zaitcev@redhat.com>, Greg KH <gregkh@suse.de>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [linux-usb-devel] 2.6.20 kernel hang with USB drive and vfat doing ftruncate
-Date: Thu, 22 Feb 2007 12:20:06 -0600
-To: Andrew Morton <akpm@linux-foundation.org>
-X-Mailer: Apple Mail (2.752.2)
-X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - kernel.crashing.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Thu, 22 Feb 2007 13:23:19 -0500
+X-Sasl-enc: Yt5H+LlA8B996CMT2PKihHIp60QDd0gbOCkS/SL1tLLa 1172168511
+Date: Thu, 22 Feb 2007 16:19:35 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
+       linux-acpi@vger.kernel.org
+Subject: Re: ACPI: ibm-acpi: fix initial status of backlight device
+Message-ID: <20070222181935.GG25887@khazad-dum.debian.net>
+References: <1171876788.6046.3.camel@localhost.localdomain> <877iub9mu2.fsf@sycorax.lbl.gov> <1172097718.5790.29.camel@localhost.localdomain> <20070221231706.GA3336@khazad-dum.debian.net> <1172103159.5790.45.camel@localhost.localdomain> <20070222005122.GA7928@khazad-dum.debian.net> <20070222011017.GA8845@khazad-dum.debian.net> <20070222011643.GB8845@khazad-dum.debian.net> <1172138587.5837.37.camel@localhost.localdomain> <20070222144511.GC25887@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070222144511.GC25887@khazad-dum.debian.net>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>> Not that it'll help much: the VM calls throttle_vm_writeout()  
->>>> for GFP_NOIO
->>>> and GFP_NOFS allocations, which is a bug.  Because if the caller  
->>>> holds
->>>> locks which prevent filesystem or IO progress, we deadlock.
->>>>
->>>> I'll fix the VM if someone else fixes USB ;)
->>>
->>> What else needs to be fixed?
->>
->> Would be nice if someone can confirm that this fixes it:
->
-> Doesn't seem to help my problem in a quick test, will get more data  
-> in the morning.
-
-Well, I didn't realize the patch you sent via mm-commits and the one  
-here are actually different.  I noticed that mm-commits one has:
+Here's the final version.  I will request a pull from Len Brown to get it
+into acpi-test, from where it will eventually reach mainline at Len's
+discretion.
 
-+       if ((gfp_mask & (__GFP_FS|__GFP_IO)) != __GFP_FS|__GFP_IO) {
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
 
-vs
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 
-+       if ((gfp_mask & (__GFP_FS|__GFP_IO)) != (__GFP_FS|__GFP_IO)) {
+ACPI: ibm-acpi: fix initial status of backlight device
 
-The second seems to make more sense.  I tested with the first last  
-night which didn't help.
+The brightness class core does not update the initial status of the
+device's brightness at register time.  Do it by ourselves.
 
-With the proper patch in place things look good.  Is this a candidate  
-for 2.6.20-stable?
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Acked-by: Richard Purdie <rpurdie@rpsys.net>
+---
+ drivers/acpi/ibm_acpi.c |   10 +++++++++-
+ 1 files changed, 9 insertions(+), 1 deletions(-)
 
-- k
+diff --git a/drivers/acpi/ibm_acpi.c b/drivers/acpi/ibm_acpi.c
+index 4cc534e..7c1b418 100644
+--- a/drivers/acpi/ibm_acpi.c
++++ b/drivers/acpi/ibm_acpi.c
+@@ -1711,6 +1711,12 @@ static struct backlight_ops ibm_backlight_data = {
+ 
+ static int brightness_init(void)
+ {
++	int b;
++
++	b = brightness_get(NULL);
++	if (b < 0)
++		return b;
++
+ 	ibm_backlight_device = backlight_device_register("ibm", NULL, NULL,
+ 							 &ibm_backlight_data);
+ 	if (IS_ERR(ibm_backlight_device)) {
+@@ -1718,7 +1724,9 @@ static int brightness_init(void)
+ 		return PTR_ERR(ibm_backlight_device);
+ 	}
+ 
+-        ibm_backlight_device->props.max_brightness = 7;
++	ibm_backlight_device->props.max_brightness = 7;
++	ibm_backlight_device->props.brightness = b;
++	backlight_update_status(ibm_backlight_device);
+ 
+ 	return 0;
+ }
+-- 
+1.4.4.4
+
