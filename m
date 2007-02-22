@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751831AbXBVUNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751832AbXBVUPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751831AbXBVUNd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 15:13:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbXBVUNd
+	id S1751832AbXBVUPO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 15:15:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbXBVUPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 15:13:33 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:4768 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751831AbXBVUNc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 15:13:32 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 22 Feb 2007 12:13:27 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: David Miller <davem@davemloft.net>
-cc: Ingo Molnar <mingo@elte.hu>, johnpol@2ka.mipt.ru,
-       Arjan Van de Ven <arjan@infradead.org>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, hch@infradead.org,
-       akpm@zip.com.au, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       zach.brown@oracle.com, suparna@in.ibm.com, jens.axboe@oracle.com,
-       tglx@linutronix.de
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-In-Reply-To: <20070222.064704.71093028.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0702221210170.1356@alien.or.mcafeemobile.com>
-References: <20070222123929.GA5208@2ka.mipt.ru> <20070222.054127.104035694.davem@davemloft.net>
- <20070222143145.GA3246@elte.hu> <20070222.064704.71093028.davem@davemloft.net>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 22 Feb 2007 15:15:14 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:54189 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751808AbXBVUPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 15:15:12 -0500
+Message-ID: <45DDF9C1.4090003@redhat.com>
+Date: Thu, 22 Feb 2007 15:14:57 -0500
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061215)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: akpm@linux-foundation.org, hugh@veritas.com, linux-fsdevel@vger.kernel.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update ctime and mtime for mmaped write
+References: <E1HJvdA-0003Nj-00@dorka.pomaz.szeredi.hu> <20070221202615.a0a167f4.akpm@linux-foundation.org> <E1HK8hU-0005Mq-00@dorka.pomaz.szeredi.hu> <45DDD55F.4060106@redhat.com> <E1HKIN1-0006RX-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1HKIN1-0006RX-00@dorka.pomaz.szeredi.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Feb 2007, David Miller wrote:
+Miklos Szeredi wrote:
+>>>> Why is the flag checked in __fput()?
+>>>>     
+>>>>         
+>>> It's because of this bit in the standard:
+>>>
+>>>     If there is no such call and if the underlying file is modified
+>>>     as a result of a write reference, then these fields shall be
+>>>     marked for update at some time after the write reference.
+>>>
+>>> It could be done in munmap/mremap, but it seemed more difficult to
+>>> track down all the places where the vma is removed.  But yes, that may
+>>> be a nicer solution.
+>>>       
+>> It seems to me that, with this support, a file, which is mmap'd,
+>> modified, but never msync'd or munmap'd, will never get its mtime
+>> updated.  Or did I miss that?
+>>
+>> I also don't see how an mmap'd block device will get its mtime
+>> updated either.
+>>     
+>
+> __fput() will be called when there are no more references to 'file',
+> then it will update the time if the flag is set.  This applies to
+> regular files as well as devices.
+>
+>   
 
-> The more I think about it, a reasonable solution might actually be to
-> use threadlets for disk I/O and pure event based processing for
-> networking.  It is two different handling paths and non-unified,
-> but that might be the price for good performance :-)
+I suspect that you will find that, for a block device, the wrong inode
+gets updated.  That's where the bd_inode_update_time() portion of my
+proposed patch came from.
 
-Well, it takes 20 lines of userspace C code to bring *unification* to the 
-universe ;)
+> But I've moved the check from __fput to remove_vma() in the next
+> revision of the patch, which would give slightly nicer semantics, and
+> be equally conforming.
 
+This still does not address the situation where a file is 'permanently'
+mmap'd, does it?
 
-- Davide
+    Thanx...
 
-
+       ps
