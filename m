@@ -1,81 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751537AbXBVJ22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751533AbXBVJ26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751537AbXBVJ22 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 04:28:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbXBVJ21
+	id S1751533AbXBVJ26 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 04:28:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbXBVJ26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 04:28:27 -0500
-Received: from tim.rpsys.net ([194.106.48.114]:39471 "EHLO tim.rpsys.net"
+	Thu, 22 Feb 2007 04:28:58 -0500
+Received: from tyholt.uninett.no ([158.38.62.9]:58158 "EHLO tyholt.uninett.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751536AbXBVJ20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 04:28:26 -0500
-Subject: Re: [PATCH 1/1] PXAFB: Support for backlight control
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Paul Sokolovsky <pmiscml@gmail.com>
-In-Reply-To: <20070222082848.GM4641@enneenne.com>
-References: <20070221145353.GA23916@enneenne.com>
-	 <1172105946.5790.78.camel@localhost.localdomain>
-	 <20070222082848.GM4641@enneenne.com>
-Content-Type: text/plain
-Date: Thu, 22 Feb 2007 09:27:09 +0000
-Message-Id: <1172136430.5837.9.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	id S1751533AbXBVJ25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 04:28:57 -0500
+Message-ID: <45DD6252.60209@uninett.no>
+Date: Thu, 22 Feb 2007 10:28:50 +0100
+From: Jon K Hellan <jon.kare.hellan@uninett.no>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
+MIME-Version: 1.0
+To: "D. Hazelton" <dhazelton@enter.net>
+Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: GPL vs non-GPL device drivers
+References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com> <200702212030.58317.dhazelton@enter.net> <f2b55d220702211805h6df0b342o7676e37c7aa43bdd@mail.gmail.com> <200702212317.16262.dhazelton@enter.net>
+In-Reply-To: <200702212317.16262.dhazelton@enter.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-02-22 at 09:28 +0100, Rodolfo Giometti wrote:
-> On Thu, Feb 22, 2007 at 12:59:06AM +0000, Richard Purdie wrote:
-> > 
-> > Reading through the patch its:
-> > 
-> > 1) Not against any mainline kernel
-
-Sorry, I'd missed a patch entering mainline,
-
-> > 2) Not against a recent kernel
+D. Hazelton wrote:
+(as is the GPL - if you release code under
+> the GPL you no longer have a legal right to it. Note the following text that 
+> appears in the GPL:
 > 
-> I'm sorry, but the patch applay against the latest kernel. Please, try
-> it.
+> "  We protect your rights with two steps: (1) copyright the software, and
+> (2) offer you this license which gives you legal permission to copy,
+> distribute and/or modify the software."
+> --IE: Once you release the code under the GPL, it becomes the *copyrighted* 
+> *property* of the FSF and you are just another person that the GPL is applied 
+> to. 
 
-but this still applies as there were a number of backlight changes
-merged just before 2.6.21-rc1 and your driver will not work with
-2.6.21-rc1.
+"We" means "whoever is issuing" the license. I.e. you, if it's your 
+work, and you didn't reassign it to somebody else.
 
-> > As mentioned by others, there is no need to tie the backlight driver
-> > into the framebuffer any more. Have a look at
-> > drivers/video/backlight/corgi_bl.c for an example (its used by PXA
-> > devices).
-> z
-> That driver uses the backlight class support as my patch does into
-> pxafb.
-
-Yes, my point is that you shouldn't need to touch pxafb if you use the
-backlight class. I know pxafb has backlight hooks but they are probably
-going to get removed at some point as they should no longer be needed.
-
-> > I have said elsewhere I will take patches to make corgi_bl a more
-> > generic driver (or maybe create a simple generic backlight driver) along
-> > the lines of what Paul mentioned.
-> 
-> I see.
-> 
-> I suppose you are the backlight support mantainer, so what do you
-> suggest to do to "make corgi_bl a more generic driver"?
-
-What changes do you need to it to be able to use it as a generic driver?
-
-The main issue is that the structure definition is in one of the
-sharpsl.h files at the moment so most drivers can't get to it. Fix that
-and it should make a good generic driver.
-
-Ideally I'd prefer to leave the name alone since there is broken
-userspace on the Zaurus that uses that name but I can see why people
-want it renamed if its to be used as a generic driver...
-
-Richard
-
+Jon Kåre
