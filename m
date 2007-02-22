@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751996AbXBVWeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752013AbXBVWel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751996AbXBVWeQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 17:34:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbXBVWeQ
+	id S1752013AbXBVWel (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 17:34:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbXBVWek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 17:34:16 -0500
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:41339 "EHLO
-	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751996AbXBVWeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 17:34:15 -0500
-Date: Thu, 22 Feb 2007 23:31:22 +0100
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Tom Burns <tom.i.burns@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [r8169] Any success with RTL8110SC?
-Message-ID: <20070222223122.GA28191@electric-eye.fr.zoreil.com>
-References: <671c20540702221117p3f5c16b3h52173c94d17f7eda@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <671c20540702221117p3f5c16b3h52173c94d17f7eda@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
-X-Organisation: Land of Sunshine Inc.
+	Thu, 22 Feb 2007 17:34:40 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:42661 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbXBVWej (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 17:34:39 -0500
+Message-ID: <45DE19AD.1010404@zytor.com>
+Date: Thu, 22 Feb 2007 14:31:09 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@stusta.de>
+CC: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Arjan van de Ven <arjan@infradead.org>, Andi Kleen <ak@muc.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] x86: add -freg-struct-return to CFLAGS
+References: <45DCF1C5.4030006@goop.org> <1172131463.3531.226.camel@laptopd505.fenrus.org> <45DD4FA0.5030205@goop.org> <20070222083822.GB15068@elte.hu> <20070222183557.GC8603@stusta.de>
+In-Reply-To: <20070222183557.GC8603@stusta.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tom Burns <tom.i.burns@gmail.com> :
-[...]
-> 2.6.15-1 - it was trivial changes aside from 2.6.20.1 which required
-> changes to the task scheduling code, but I'm pretty certain I didn't
-> break anything.
+Adrian Bunk wrote:
+> On Thu, Feb 22, 2007 at 09:38:22AM +0100, Ingo Molnar wrote:
+>> ...
+>> --- linux.orig/arch/i386/Makefile
+>> +++ linux/arch/i386/Makefile
+>> @@ -31,7 +31,7 @@ LDFLAGS_vmlinux := --emit-relocs
+>>  endif
+>>  CHECKFLAGS	+= -D__i386__
+>>  
+>> -CFLAGS += -pipe -msoft-float -mregparm=3
+>> +CFLAGS += -pipe -msoft-float -mregparm=3 -freg-struct-return
+>>  
+>>  # prevent gcc from keeping the stack 16 byte aligned
+>>  CFLAGS += $(call cc-option,-mpreferred-stack-boundary=2)
+> 
+> Why is this i386 specific?
+> 
 
-I do not have the answar that you expect but some information could help:
-- which motherboard is it ?
-- can you send a dmesg for 2.6.20.1 as well as a lspci -vvx from your
-  computer ?
+Because virtually all other architectures have it as their ABI default, 
+anyway, and ABI selection should be per architecture.
 
-[...]
-> The r1000 driver seems to be able to send data on the wire for about a
-> minute, receive packets back about 5% of the time, and after a minute
-> stop working altogether, complaining that the "send buffer is full."
-
-If I read you correctly, this version of the driver is less broken than
-the others, right ?
-
-If you are brave, you can try the patch below against 2.6.20-rc1:
-http://www.fr.zoreil.com/people/francois/misc/20070221-2.6.21-rc1-r8169-test.patch
-
--- 
-Ueimor
+	-hpa
