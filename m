@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751767AbXBVSnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751766AbXBVSpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751767AbXBVSnK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 13:43:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbXBVSnK
+	id S1751766AbXBVSpp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 13:45:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbXBVSpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 13:43:10 -0500
-Received: from tag.witbe.net ([81.88.96.48]:49243 "EHLO tag.witbe.net"
+	Thu, 22 Feb 2007 13:45:45 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:50605 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751767AbXBVSnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 13:43:08 -0500
-Reply-To: <rol@as2917.net>
-From: "Paul Rolland" <rol@as2917.net>
-To: "'Adrian Bunk'" <bunk@stusta.de>, "'Patrick Ale'" <patrick.ale@gmail.com>
-Cc: "'linux-kernel'" <linux-kernel@vger.kernel.org>
-Subject: RE: [SKY2] Does anyone have this driver working?
-Date: Thu, 22 Feb 2007 19:43:03 +0100
-Organization: AS2917.net
-Message-ID: <049601c756b1$4c304360$4b00a8c0@donald>
+	id S1751766AbXBVSpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 13:45:44 -0500
+Date: Thu, 22 Feb 2007 19:44:47 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Michael Tokarev <mjt@tls.msk.ru>
+cc: dsaxena@plexity.net, linux-kernel@vger.kernel.org
+Subject: Re: Modprobe as script breaks initramfs kernel?
+In-Reply-To: <45DD7EED.7030107@tls.msk.ru>
+Message-ID: <Pine.LNX.4.61.0702221941290.7553@yvahk01.tjqt.qr>
+References: <20070222003309.GA22471@plexity.net> <45DD7EED.7030107@tls.msk.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-In-Reply-To: <20070222183231.GB8603@stusta.de>
-Thread-Index: AcdWr9qXpmr3VYYqSACoaJ+F+aqTPAAAUAug
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
- 
-> > I was wondering if any of you ever got the sky2 driver working
-> 
-> there are many people who are successfully using this card.
 
-I have :
-ACPI: PCI Interrupt 0000:04:00.0[A] -> GSI 19 (level, low) -> IRQ 19
-PCI: Setting latency timer of device 0000:04:00.0 to 64
-sky2 0000:04:00.0: v1.13 addr 0xff8fc000 irq 19 Yukon-EC (0xb6) rev 2
-sky2 eth0: addr 00:18:f3:e0:5d:d4
-ACPI: PCI Interrupt 0000:03:00.0[A] -> GSI 16 (level, low) -> IRQ 16
-PCI: Setting latency timer of device 0000:03:00.0 to 64
-sky2 0000:03:00.0: v1.13 addr 0xff7fc000 irq 16 Yukon-EC (0xb6) rev 2
-sky2 eth1: addr 00:18:f3:e0:36:fd
+On Feb 22 2007 14:30, Michael Tokarev wrote:
+>Deepak Saxena wrote:
+>> We attempted an experiment in cleaning up some modprobe messages during 
+>> initramfs bootup when the modules directory is missing by moving modprobe 
+>> to modprobe-bin and replacing modprobe with the following simple shell script:
+>> 
+>> #!/bin/sh
+>> # Clean up bootup when modules are not present
+>> 
+>> if [ -e "/lib/modules/'uname -r'/modules.dep" ] ; then
+>> 	/sbin/modprobe-bin $*
 
-and a wonderfully working eth0 interface...
-Kernel : 2.6.19+ up to 2.6.21-rc1
+The nitpick guide says: `uname -r` and "$@" instead of $*  ;-)
 
-Regards,
-Paul
+>> else
+>> 	exit 0
+>> fi
+>[]
+>> BUG: unable to handle kernel NULL pointer dereference at virtual address 00000014
+>[]
+>> Trace; c0107737 <sys_pipe+17/60>
+>> Trace; c01030d7 <syscall_call+7/b>
+>
+>This is the same issue I reported much earlier with /sbin/hotplug being a script
+>in initrfamfs.  The problem is because pipefs isn't initialized yet at the time
+>the script gets called, and causes a NULL-pointer deref.  Obviously you're using
+>pipe above.
 
+Btw, has this pipefs issue been adressed (by moving pipefs before initramfs
+stage), or something?
+
+
+Jan
+-- 
