@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752013AbXBVWel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752014AbXBVWiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752013AbXBVWel (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 17:34:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbXBVWek
+	id S1752014AbXBVWiy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 17:38:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbXBVWiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 17:34:40 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:42661 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752015AbXBVWej (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 17:34:39 -0500
-Message-ID: <45DE19AD.1010404@zytor.com>
-Date: Thu, 22 Feb 2007 14:31:09 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Arjan van de Ven <arjan@infradead.org>, Andi Kleen <ak@muc.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] x86: add -freg-struct-return to CFLAGS
-References: <45DCF1C5.4030006@goop.org> <1172131463.3531.226.camel@laptopd505.fenrus.org> <45DD4FA0.5030205@goop.org> <20070222083822.GB15068@elte.hu> <20070222183557.GC8603@stusta.de>
-In-Reply-To: <20070222183557.GC8603@stusta.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Feb 2007 17:38:54 -0500
+Received: from palrel11.hp.com ([156.153.255.246]:34026 "EHLO palrel11.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751999AbXBVWix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 17:38:53 -0500
+Date: Thu, 22 Feb 2007 16:38:50 -0600
+From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+To: Christoph Hellwig <hch@infradead.org>,
+       James Bottomley <James.Bottomley@SteelEye.com>, akpm@osdl.org,
+       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, gregkh@novell.com
+Subject: Re: [Patch 2/2] cciss: add shutdown support (replaces reboot notifier)
+Message-ID: <20070222223850.GD14162@beardog.cca.cpqcorp.net>
+References: <20070222213845.GA14162@beardog.cca.cpqcorp.net> <1172180978.3378.35.camel@mulgrave.il.steeleye.com> <20070222215501.GA21037@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070222215501.GA21037@infradead.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Thu, Feb 22, 2007 at 09:38:22AM +0100, Ingo Molnar wrote:
->> ...
->> --- linux.orig/arch/i386/Makefile
->> +++ linux/arch/i386/Makefile
->> @@ -31,7 +31,7 @@ LDFLAGS_vmlinux := --emit-relocs
->>  endif
->>  CHECKFLAGS	+= -D__i386__
->>  
->> -CFLAGS += -pipe -msoft-float -mregparm=3
->> +CFLAGS += -pipe -msoft-float -mregparm=3 -freg-struct-return
->>  
->>  # prevent gcc from keeping the stack 16 byte aligned
->>  CFLAGS += $(call cc-option,-mpreferred-stack-boundary=2)
+On Thu, Feb 22, 2007 at 09:55:01PM +0000, Christoph Hellwig wrote:
+> On Thu, Feb 22, 2007 at 03:49:38PM -0600, James Bottomley wrote:
+> > On Thu, 2007-02-22 at 15:38 -0600, Mike Miller (OS Dev) wrote:
+> > >         .remove = __devexit_p(cciss_remove_one),
+> > >         .id_table = cciss_pci_device_id,        /* id_table */
+> > > +       .shutdown = cciss_remove_one,
+> > 
+> > You need a __devexit_p() wrapper for this one too.
 > 
-> Why is this i386 specific?
-> 
+> No.  We want to call this even in the non-modular, non-hotplug
+> case.  So we should remove __devexit from cciss_remove_one.  Or
+> alternatively implement a separate cciss_shutdown that just does
+> the nessecary cache flushing, like most other drivers do.
 
-Because virtually all other architectures have it as their ABI default, 
-anyway, and ABI selection should be per architecture.
+So if I remove __devexit from cciss_init_one do I also remove the __devexit_p wrapper
+from the remove method?
 
-	-hpa
+-- mikem
