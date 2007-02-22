@@ -1,45 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945929AbXBVA5M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422655AbXBVBAE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945929AbXBVA5M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 19:57:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945927AbXBVA5M
+	id S1422655AbXBVBAE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 20:00:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422849AbXBVBAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 19:57:12 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36772 "EHLO mx1.redhat.com"
+	Wed, 21 Feb 2007 20:00:04 -0500
+Received: from tim.rpsys.net ([194.106.48.114]:46626 "EHLO tim.rpsys.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932798AbXBVA5L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 19:57:11 -0500
-Message-ID: <45DCEA47.5080100@redhat.com>
-Date: Wed, 21 Feb 2007 19:56:39 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: netfilter-devel@lists.netfilter.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Soft lockup on shutdown in nf_ct_iterate_cleanup()
-References: <45DB9C1F.1080605@redhat.com>
-In-Reply-To: <45DB9C1F.1080605@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1422655AbXBVBAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 20:00:01 -0500
+Subject: Re: [PATCH 1/1] PXAFB: Support for backlight control
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Paul Sokolovsky <pmiscml@gmail.com>
+In-Reply-To: <20070221145353.GA23916@enneenne.com>
+References: <20070221145353.GA23916@enneenne.com>
+Content-Type: text/plain
+Date: Thu, 22 Feb 2007 00:59:06 +0000
+Message-Id: <1172105946.5790.78.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
-> I was testing a 2.6.20 kernel and got a soft
-> lockup on shutdown:
+On Wed, 2007-02-21 at 15:53 +0100, Rodolfo Giometti wrote:
+> Backlight control support for the PXA fram buffer.
 > 
-> _raw_write_lock+0x5a
-> nf_ct_iterate_cleanup+0x3e
-> kill_l3proto+0x0
-> nf_conntrack_l3proto_unregister+0x85
-> nf_conntrack_l3proto_ipv4_fini+0x1e
-> sys_delete_module+0x18a
-> remove_vma+0x45
-> do_munmap+0x196
-> syscall_call+0x7
+> Signed-off-by: Rodolfo Giometti <giometti@enneenne.com>
+> 
+> ---
+> 
+> Each platform should define the backlight properties in its own setup
+> file in "linux/arch/arm/mach-pxa/" as follow:
+> 
+>    static int pxafb_bl_get_brightness(struct backlight_device *bl_dev)
+>    {
+>         return read_the_backlight_brightness();
+>    }
+> 
+>    static int pxafb_bl_update_status(struct backlight_device *bl_dev)
+>    {
+>            int perc, ret;
+> 
+>            if (bl_dev->props->power != FB_BLANK_UNBLANK ||
+>                bl_dev->props->fb_blank != FB_BLANK_UNBLANK)
+>                    perc = 0;
+>            else
+>                    perc = bl_dev->props->brightness;
+> 
+>         write_the_backlight_brightness(perc);
+> 
+>            return 0;
+>    }
+> 
+>    static struct backlight_properties wwpc1100_backlight_props = {
+>            .get_brightness         = pxafb_bl_get_brightness,
+>            .update_status          = pxafb_bl_update_status,
+>            .max_brightness         = 100,
+>    };
+>       
+> and then seting up the fb info as follow:
+> 
+>    wwpc1100_pxafb_info.modes = &special_modes;
+>    wwpc1100_pxafb_info.bl_props = &wwpc1100_backlight_props;
+>    set_pxa_fb_info(&wwpc1100_pxafb_info);
 
-Happened three times in a row, trying to remove
-netfilter modules.
+Reading through the patch its:
+
+1) Not against any mainline kernel
+2) Not against a recent kernel
+
+There were a number of backlight class changes just merged into mainline
+and you need to sync up any patch against them.
+
+As mentioned by others, there is no need to tie the backlight driver
+into the framebuffer any more. Have a look at
+drivers/video/backlight/corgi_bl.c for an example (its used by PXA
+devices).
+
+I have said elsewhere I will take patches to make corgi_bl a more
+generic driver (or maybe create a simple generic backlight driver) along
+the lines of what Paul mentioned.
+
+Regards,
+
+Richard
+
 
