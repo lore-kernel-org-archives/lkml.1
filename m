@@ -1,49 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751213AbXBVRRj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751276AbXBVRX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751213AbXBVRRj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 12:17:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbXBVRRj
+	id S1751276AbXBVRX6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 12:23:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbXBVRX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 12:17:39 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37632
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751213AbXBVRRi (ORCPT
+	Thu, 22 Feb 2007 12:23:58 -0500
+Received: from lmv.inov.pt ([146.193.64.2]:42799 "EHLO lmv.inov.pt"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751276AbXBVRX5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 12:17:38 -0500
-Date: Thu, 22 Feb 2007 09:17:35 -0800 (PST)
-Message-Id: <20070222.091735.30182079.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: johnpol@2ka.mipt.ru, arjan@infradead.org, drepper@redhat.com,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       hch@infradead.org, akpm@zip.com.au, alan@lxorguk.ukuu.org.uk,
-       zach.brown@oracle.com, suparna@in.ibm.com, davidel@xmailserver.org,
-       jens.axboe@oracle.com, tglx@linutronix.de
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070222151509.GA13670@elte.hu>
-References: <20070222143145.GA3246@elte.hu>
-	<20070222.064704.71093028.davem@davemloft.net>
-	<20070222151509.GA13670@elte.hu>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Feb 2007 12:23:57 -0500
+Message-ID: <20070222172103.lspdvgh80sg804k0@webmail.inov.pt>
+Date: Thu, 22 Feb 2007 17:21:03 +0000
+From: jose.goncalves@inov.pt
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Frederik Deweerdt <deweerdt@free.fr>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Serial related oops
+References: <20070219143520.GB27370@flint.arm.linux.org.uk>
+	<20070220144814.GJ566@slug> <20070219150508.GD27370@flint.arm.linux.org.uk>
+	<45D9D073.7020701@inov.pt> <20070219164200.GF27370@flint.arm.linux.org.uk>
+	<45D9E46C.4030408@inov.pt> <20070219212347.GA4258@flint.arm.linux.org.uk>
+	<45DC537B.6020108@inov.pt> <20070221230503.GA28156@flint.arm.linux.org.uk>
+	<45DDB096.2020807@inov.pt> <20070222170354.GB633@flint.arm.linux.org.uk>
+In-Reply-To: <20070222170354.GB633@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	format="flowed"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.0.4)
+X-INOV-EmailServer-Information: Please contact the Email service provider for more information
+X-INOV-EmailServer: Found to be clean
+X-INOV-EmailServer-From: jose.goncalves@inov.pt
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Thu, 22 Feb 2007 16:15:09 +0100
+Quoting Russell King <rmk+lkml@arm.linux.org.uk>:
 
-> furthermore, in a real webserver there's a whole lot of other stuff 
-> happening too: VFS blocking, mutex/lock blocking, memory pressure 
-> blocking, filesystem blocking, etc., etc. Threadlets/syslets cover them 
-> /all/ and never hold up the primary context: as long as there's more 
-> requests to process, they will be processed. Plus other important 
-> networked workloads, like fileservers are typically on fast LANs and 
-> those requests are very much a fire-and-forget matter most of the time.
+> On Thu, Feb 22, 2007 at 03:02:46PM +0000, Jose Goncalves wrote:
+>> It could be a silly question (tamper with me as I'm not familiar with
+>> such low level programming), but couldn't it be possible for a interrupt
+>> to hit in the middle of the serial_in() calls and mess with %ebx?
+>
+> I'm no expert on x86, but if an interrupt was messing with %ebx, you'd
+> have random crashes verywhere - userspace, kernel space in unpredicatable
+> ways.
+>
+>> What I find real hard to understand is why a hardware fault happens
+>> always in the same software instruction! I would expect a hardware fault
+>> to hit randomly...
+>
+> Well, compared with your previous report, your latest report is different.
+> Your first report had  both EIP and %ebx being zero (because they got
+> corrupted when returning from serial_in).  This time only %ebx was
+> corrupted.
+>
+> Consequently, this time we oopsed in the subsequent serial_in() rather
+> than trying to return to serial8250_startup() as last time.
 
-I expect clients of a fileserver to cause the server to block in
-places such as tcp_sendmsg() as much if not more so than a webserver
-:-)
+But there was also another difference. I CONFIGed the kernel to produce 
+more debug info. This should influence the Oops report...
 
-But yes, it should all be tested, for sure.
+>
+>> I left my application running this night, with a 2.6.16.41 kernel
+>> unpatched  on the serial driver (my last Oops report was with Frederik
+>> patch to remove the insertion made in 2.6.12) and it crashed again on
+>> exactly the same point!
+>
+>> From that I take it that you removed the test in serial8250_startup which
+> sets UART_BUG_TXEN, and the problem persisted.  That tends to suggest
+> that it's not the culpret.
+
+ From that I mean that with or without this code - 
+http://lkml.org/lkml/2007/2/19/124 - the problem persisted. The 
+difference is that, without it, the crashes happens more sparsly.
+
+José Gonçalves
+
+
