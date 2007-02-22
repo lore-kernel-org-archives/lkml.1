@@ -1,73 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933026AbXBVLZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933027AbXBVL1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933026AbXBVLZt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 06:25:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933027AbXBVLZt
+	id S933027AbXBVL1f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 06:27:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933034AbXBVL1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 06:25:49 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54251 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933026AbXBVLZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 06:25:48 -0500
-Date: Thu, 22 Feb 2007 12:20:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Suparna Bhattacharya <suparna@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070222112039.GA13611@elte.hu>
-References: <20070221211355.GA7302@elte.hu> <20070222100126.GA24643@in.ibm.com>
+	Thu, 22 Feb 2007 06:27:35 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:33131 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933027AbXBVL1e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 06:27:34 -0500
+Subject: Re: [patch] x86: add -freg-struct-return to CFLAGS
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andi Kleen <ak@muc.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20070222112328.GB10190@muc.de>
+References: <45DCF1C5.4030006@goop.org>
+	 <1172131463.3531.226.camel@laptopd505.fenrus.org>
+	 <45DD4FA0.5030205@goop.org> <20070222083822.GB15068@elte.hu>
+	 <20070222112328.GB10190@muc.de>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Thu, 22 Feb 2007 12:27:19 +0100
+Message-Id: <1172143639.3531.247.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070222100126.GA24643@in.ibm.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -5.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Suparna Bhattacharya <suparna@in.ibm.com> wrote:
+> I guess people maintaining external Makefiles without Kbuild 
+> are in for a nasty surprise again though.
 
-> > Threadlets share much of the scheduling infrastructure with syslets.
-> > 
-> > Syslets (small, kernel-side, scripted "syscall plugins") are still 
-> > supported - they are (much...) harder to program than threadlets but 
-> > they allow the highest performance. Core infrastructure libraries 
-> > like glibc/libaio are expected to use syslets. Jens Axboe's FIO tool 
-> > already includes support for v2 syslets, and the following patch 
-> > updates FIO to
-> 
-> Ah, glad to see that - I was wondering if it was worthwhile to try 
-> adding syslet support to aio-stress to be able to perform some 
-> comparisons. [...]
+that 1) shouldn't be needed at all for 2.6 and 2) is fragile as heck no
+matter, I don't think anyone still is doing that... I sure hope that if
+anyone still does it that they have no users at all, for the sake of the
+users :)
 
-i think it would definitely be worth it.
 
-> [...] Hopefully FIO should be able to generate a similar workload, but 
-> I haven't tried it yet so am not sure. Are you planning to upload some 
-> results (so I can compare it with patterns I am familiar with) ?
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
 
-i had no time yet to do careful benchmarks. Right now my impression from 
-quick testing is that libaio performance can be exceeded via syslets. So 
-it would be very interesting if you could try this too, independently of 
-me.
-
-	Ingo
