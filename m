@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750790AbXBVCtC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750882AbXBVCvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750790AbXBVCtC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 21:49:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750856AbXBVCtB
+	id S1750882AbXBVCvt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 21:51:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbXBVCvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 21:49:01 -0500
-Received: from mx2.suse.de ([195.135.220.15]:46368 "EHLO mx2.suse.de"
+	Wed, 21 Feb 2007 21:51:49 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:57621 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750790AbXBVCtB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 21:49:01 -0500
-From: Neil Brown <neilb@suse.de>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Date: Thu, 22 Feb 2007 13:48:00 +1100
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1750870AbXBVCvs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 21:51:48 -0500
+Date: Wed, 21 Feb 2007 18:50:12 -0800
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: <vinctre@videotron.ca>, marcel@holtmann.org, vincent.fortier1@ec.gc.ca,
+       linux-kernel@vger.kernel.org, zaitcev@redhat.com
+Subject: Re: Boot time Bluetooth BUG: warning: (value > m) at hid-core.c:793
+Message-Id: <20070221185012.e4deeb68.zaitcev@redhat.com>
+In-Reply-To: <Pine.LNX.4.64.0702200854520.25686@twin.jikos.cz>
+References: <200702192111.47017.vinctre@videotron.ca>
+	<Pine.LNX.4.64.0702200854520.25686@twin.jikos.cz>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <17885.1120.437885.35438@notabene.brown>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Block layer still stack abuser?
-In-Reply-To: message from Pierre Ossman on Friday February 16
-References: <45D59C3C.4090403@drzeus.cx>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday February 16, drzeus-list@drzeus.cx wrote:
-> I was wondering if the block layer has been changed into a more serialized
-> manner yet? I've been trying to google this, but so far no luck. I know there
-> was some talk about removing the stack based approach, but I can't find any
-> information about where this went.
-> 
-> If it is currently fixed, a pointer to from which version would be nice.
+On Tue, 20 Feb 2007 09:02:53 +0100 (CET), Jiri Kosina <jikos@jikos.cz> wrote:
+> On Mon, 19 Feb 2007, Veronique & Vincent wrote:
 
-Might this:
-   http://lkml.org/lkml/2007/2/10/22
+> > Hi again Marcel and Jiri,
+> > I've set up the hid-core.c to DEBUG mode... and it literally got pretty verbose...
 
-relate to your question?
-If you are talking about stacking block device (via dm or md), then a
-patch to fix this in in -mm but there are or were some potential
-issues in dm that seem to be holding it up.
+> thanks for the output. Is this really the full output? The important part 
+> - report descriptor dump - seems to be missing in the output (it should 
+> read something like "hid-core.c: report descriptor (size XY, read YZ) = 
+> ... some hexadecimal numbers". This should be output by the time the HID 
+> device is connected.
 
-NeilBrown
+Can I get something useful without a kernel recompile, with something
+like evtest? I have users on Fedora hitting this too. It very likely is
+a regression caused by the new unified HID.
+
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=227598
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=228755
+
+-- Pete
