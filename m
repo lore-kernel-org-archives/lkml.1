@@ -1,62 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932151AbXBVO4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161109AbXBVPDM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932151AbXBVO4S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 09:56:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932152AbXBVO4S
+	id S1161109AbXBVPDM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 10:03:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161131AbXBVPDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 09:56:18 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:44245 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932151AbXBVO4R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 09:56:17 -0500
-X-Sasl-enc: cqOjgq1AOo5cnmyOCgUk4XHMxJYajZEWVIrLFpRKGRkm 1172156263
-Date: Thu, 22 Feb 2007 12:56:13 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Alex Romosan <romosan@sycorax.lbl.gov>,
-       Yaroslav Halchenko <kernel@onerussian.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net,
-       James Simmons <jsimmons@infradead.org>
-Subject: Re: no backlight on radeon after recent kernel "upgrade"s
-Message-ID: <20070222145613.GD25887@khazad-dum.debian.net>
-References: <20070219044616.GC25659@washoe.onerussian.com> <20070219000412.acad13de.akpm@linux-foundation.org> <1171876788.6046.3.camel@localhost.localdomain> <877iub9mu2.fsf@sycorax.lbl.gov> <1172097718.5790.29.camel@localhost.localdomain> <20070221231706.GA3336@khazad-dum.debian.net> <1172103159.5790.45.camel@localhost.localdomain> <20070222005122.GA7928@khazad-dum.debian.net> <20070222011017.GA8845@khazad-dum.debian.net> <1172138450.5837.34.camel@localhost.localdomain>
+	Thu, 22 Feb 2007 10:03:11 -0500
+Received: from lmv.inov.pt ([146.193.64.2]:53067 "EHLO lmv.inov.pt"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161109AbXBVPDK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 10:03:10 -0500
+Message-ID: <45DDB096.2020807@inov.pt>
+Date: Thu, 22 Feb 2007 15:02:46 +0000
+From: Jose Goncalves <jose.goncalves@inov.pt>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070111)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1172138450.5837.34.camel@localhost.localdomain>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Frederik Deweerdt <deweerdt@free.fr>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Serial related oops
+References: <20070219134539.GA27370@flint.arm.linux.org.uk> <20070220142442.GF566@slug> <20070219143520.GB27370@flint.arm.linux.org.uk> <20070220144814.GJ566@slug> <20070219150508.GD27370@flint.arm.linux.org.uk> <45D9D073.7020701@inov.pt> <20070219164200.GF27370@flint.arm.linux.org.uk> <45D9E46C.4030408@inov.pt> <20070219212347.GA4258@flint.arm.linux.org.uk> <45DC537B.6020108@inov.pt> <20070221230503.GA28156@flint.arm.linux.org.uk>
+In-Reply-To: <20070221230503.GA28156@flint.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-INOV-EmailServer-Information: Please contact the Email service provider for more information
+X-INOV-EmailServer: Found to be clean
+X-INOV-EmailServer-From: jose.goncalves@inov.pt
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Feb 2007, Richard Purdie wrote:
-> > it to Len Brown for merging into 2.6.21, or NACK it if you'd rather do it in
-> > the backlight class core.
-> 
-> We can't change the backlight class code since some hardware can't read
-> from the device, only write to it. Initialisation in that case is a bit
-> different.
+Russell King wrote:
+> On Wed, Feb 21, 2007 at 02:13:15PM +0000, Jose Goncalves wrote:
+>   
+>> <1>[18840.304048] Unable to handle kernel NULL pointer dereference at virtual address 00000012
+>> <1>[18840.313046]  printing eip:
+>> <4>[18840.321687] c01bfa7a
+>> <1>[18840.321714] *pde = 00000000
+>> <0>[18840.331287] Oops: 0000 [#1]
+>> <4>[18840.340687] Modules linked in:
+>> <0>[18840.349749] CPU:    0
+>> <4>[18840.349767] EIP:    0060:[<c01bfa7a>]    Not tainted VLI
+>> <4>[18840.349782] EFLAGS: 00010202   (2.6.16.41-mtm5-debug1 #1) 
+>> <0>[18840.377277] EIP is at serial_in+0xa/0x4a
+>> <0>[18840.387221] eax: 00000060   ebx: 00000000   ecx: 00000000   edx: 00000000
+>> <0>[18840.397805] esi: 00000000   edi: 00000040   ebp: c728fe1c   esp: c728fe18
+>> <0>[18840.408579] ds: 007b   es: 007b   ss: 0068
+>> <0>[18840.419624] Process gp_position (pid: 11629, threadinfo=c728e000 task=c7443a90)
+>> <0>[18840.420509] Stack: <0>00000000 00000000 c01c0f88 00000000 00000000 c031fef0 00000005 00000202 
+>> <0>[18840.445655]        c7161a1c c031fef0 c124b510 c728fe60 c01bd97d c031fef0 c124b510 c124b510 
+>> <0>[18840.460540]        00000000 c773dbcc c728fe7c c01befe7 c124b510 00000000 ffffffed c773dbcc 
+>>     
+>
+> Okay, this one is even more plainly "not a coding error".
+>
+>   
+>> <0>[18840.566645]  [<c01c0f88>] serial8250_startup+0x28f/0x2a9
+>>     
+>
+> The code around this point (with the return point marked) is:
+>
+>   
+>> c01c0f78:	6a 05                	push   $0x5
+>> c01c0f7a:	53                   	push   %ebx
+>> c01c0f7b:	e8 f0 ea ff ff       	call   c01bfa70 <serial_in>
+>> c01c0f80:	6a 00                	push   $0x0
+>> c01c0f82:	53                   	push   %ebx
+>> c01c0f83:	e8 e8 ea ff ff       	call   c01bfa70 <serial_in>
+>> c01c0f88<<<	6a 02                	push   $0x2
+>> c01c0f8a:	53                   	push   %ebx
+>> c01c0f8b:	e8 e0 ea ff ff       	call   c01bfa70 <serial_in>
+>>     
+>
+> and corresponds with this C code:
+>
+>         (void) serial_inp(up, UART_LSR);
+>         (void) serial_inp(up, UART_RX);
+>         (void) serial_inp(up, UART_IIR);
+>
+> Now let's look at the words pushed on the stack around this code:
+>
+>   00000000
+>   00000000
+>   c01c0f88 <- return address for serial_in (serial8250_startup+0x28f/0x2a9)
+>   00000000 <- from push %ebx at c01c0f82
+>   00000000 <- from push $0x0 at c01c0f80
+>   c031fef0 <- from push %ebx at c01c0f7a
+>   00000005 <- from push %0x5 at c01c0f78
+>
+> Plainly, %ebx changed across the call to serial_in() at c01c0f7b.
+> First thing to notice is this violates the C code - "up" can not
+> change.
+>
+> Now let's look at serial_in:
+>
+> c01bfa70:       55                      push   %ebp
+> c01bfa71:       89 e5                   mov    %esp,%ebp
+> c01bfa73:       53                      push   %ebx
+> ...
+> c01bfab7:       5b                      pop    %ebx
+> c01bfab8:       5d                      pop    %ebp
+> c01bfab9:       c3                      ret
+>
+> This code tells the CPU to preserves %ebx and %ebp.  But we know %ebx
+> _wasn't_ preserved.  Ergo, your CPU is plainly not doing what the code
+> told it to do.
+>
+> Moreover, serial_in() has preserved %ebx in the past otherwise we'd
+> never got past all the other serial_in()s in serial8250_startup().
+>
+> So I think it's very demonstrably a hardware fault, and not software
+> related.
+>   
 
-Initializing stuff after registering is also racy as the device is not
-locked but we are going to clobber data in its properties struct.  I don't
-particularly care about that race, but...
+It could be a silly question (tamper with me as I'm not familiar with
+such low level programming), but couldn't it be possible for a interrupt
+to hit in the middle of the serial_in() calls and mess with %ebx?
 
-Anyway, you have the 2.6.21-rc patch now, to ACK or NACK.  I still think the
-class should be handling this.  If a device is write-only, it should have no
-_get ops handler, which means that the class can easily differentiate the
-two cases and do the right thing for both.  There's less code duplication
-that way.
+What I find real hard to understand is why a hardware fault happens
+always in the same software instruction! I would expect a hardware fault
+to hit randomly...
 
-Howerver, I *do* strongly wish for a way to combine various drivers into a
-single backlight device, where radeon/intelfb takes care of some stuff,
-ibm-acpi/asus-laptop/sony-laptop takes care of other stuff, etc.  Also, a
-standard naming for the builtin screen(s) would help, calling it "ibm",
-"asus", "sony" is not good IMHO.
+I left my application running this night, with a 2.6.16.41 kernel
+unpatched  on the serial driver (my last Oops report was with Frederik
+patch to remove the insertion made in 2.6.12) and it crashed again on
+exactly the same point!
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+> For all we know, it could be a one-off fault on the hardware you
+> happen to have - other identical units may not behave the same (can
+> you check?)
+>   
+
+Yes I have other units that I can test it. I'll do that to see if it's
+really a one-off fault on the hardware.
+If it continues to crash with other units I will then test with the
+msleep(10) before the "And clear the interrupt registers again for
+luck.", as you suggested earlier.
+
+> If it is a one off case, you are welcome to patch that test out in
+> your kernel build to remove the problem, and if it's an isolated case
+> I encourage you to do this.  This is one of the great advantages of
+> open source - if you hit such a problem rather than throwing the
+> hardware away you can work around such issues.
+>   
+
+I didn't understand what you mean by "you are welcome to patch that test
+out in your kernel build to remove the problem". Which test are you
+talking about?
+
+Regards,
+José Gonçalves
+
