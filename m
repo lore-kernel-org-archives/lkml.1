@@ -1,83 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751829AbXBVULp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751831AbXBVUNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751829AbXBVULp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 15:11:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbXBVULp
+	id S1751831AbXBVUNd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 15:13:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbXBVUNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 15:11:45 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53071 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751823AbXBVULo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 15:11:44 -0500
-Message-ID: <45DDF8F3.2020304@redhat.com>
-Date: Thu, 22 Feb 2007 15:11:31 -0500
-From: Peter Staubach <staubach@redhat.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061215)
+	Thu, 22 Feb 2007 15:13:33 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:4768 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751831AbXBVUNc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 15:13:32 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 22 Feb 2007 12:13:27 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: David Miller <davem@davemloft.net>
+cc: Ingo Molnar <mingo@elte.hu>, johnpol@2ka.mipt.ru,
+       Arjan Van de Ven <arjan@infradead.org>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, hch@infradead.org,
+       akpm@zip.com.au, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       zach.brown@oracle.com, suparna@in.ibm.com, jens.axboe@oracle.com,
+       tglx@linutronix.de
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+In-Reply-To: <20070222.064704.71093028.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0702221210170.1356@alien.or.mcafeemobile.com>
+References: <20070222123929.GA5208@2ka.mipt.ru> <20070222.054127.104035694.davem@davemloft.net>
+ <20070222143145.GA3246@elte.hu> <20070222.064704.71093028.davem@davemloft.net>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: akpm@linux-foundation.org, hugh@veritas.com, linux-fsdevel@vger.kernel.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update ctime and mtime for mmaped write
-References: <E1HJvdA-0003Nj-00@dorka.pomaz.szeredi.hu> <45DC8A47.5050900@redhat.com> <E1HJw7l-0003Tq-00@dorka.pomaz.szeredi.hu> <45DC9581.4070909@redhat.com> <E1HJwoe-0003el-00@dorka.pomaz.szeredi.hu> <45DDD498.9050202@redhat.com> <E1HKIUk-0006Sl-00@dorka.pomaz.szeredi.hu>
-In-Reply-To: <E1HKIUk-0006Sl-00@dorka.pomaz.szeredi.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi wrote:
->>>>>>> +int set_page_dirty_mapping(struct page *page);
->>>>>>>   
->>>>>>>       
->>>>>>>           
->>>>>>>               
->>>>>> This aspect of the design seems intrusive to me.  I didn't see a strong
->>>>>> reason to introduce new versions of many of the routines just to handle
->>>>>> these semantics.  What motivated this part of your design?  Why the new
->>>>>> _mapping versions of routines?
->>>>>>     
->>>>>>         
->>>>>>             
->>>>> Because there's no way to know inside the set_page_dirty() functions
->>>>> if the dirtying comes from a memory mapping or from a modification
->>>>> through a normal write().  And they have different semantics, for
->>>>> write() the modification times are updated immediately.
->>>>>       
->>>>>           
->>>> Perhaps I didn't understand what page_mapped() does, but it does seem to
->>>> have the right semantics as far as I could see.
->>>>     
->>>>         
->>> The problems will start, when you have a file that is both mapped and
->>> modified with write().  Then the dirying from the write() will set the
->>> flag, and that will have undesirable consequences.
->>>       
->> I don't think that I quite follow the logic.  The dirtying from write()
->> will set the flag, but then the mtime will get updated and the flag will
->> be cleared by the hook in file_update_time().  Right?
->>     
->
-> Take this example:
->
->     fd = open()
->     addr = mmap(.., fd)
->     write(fd, ...)
->     close(fd)
->     sleep(100)
->     msync(addr,...)
->     munmap(addr)
->
-> The file times will be updated in write(), but with your patch, the
-> bit in the mapping will also be set.
->
-> Then in msync() the file times will be updated again, which is wrong,
-> since the memory was _not_ modified through the mapping.
+On Thu, 22 Feb 2007, David Miller wrote:
 
-This is correct.  I have updated my proposed patch to include the clearing
-of AS_MCTIME in the routine which updates the mtime field.  I haven't
-reposted it yet until I complete testing of the new resulting system.  I
-anticipate doing this later today.
+> The more I think about it, a reasonable solution might actually be to
+> use threadlets for disk I/O and pure event based processing for
+> networking.  It is two different handling paths and non-unified,
+> but that might be the price for good performance :-)
 
-    Thanx..
+Well, it takes 20 lines of userspace C code to bring *unification* to the 
+universe ;)
 
-       ps
+
+- Davide
+
+
