@@ -1,76 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751962AbXBVVwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751961AbXBVVzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751962AbXBVVwi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 16:52:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbXBVVwi
+	id S1751961AbXBVVzJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 16:55:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbXBVVzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 16:52:38 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:37507 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751959AbXBVVwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 16:52:37 -0500
-Message-ID: <45DE108C.6010101@redhat.com>
-Date: Thu, 22 Feb 2007 16:52:12 -0500
-From: Peter Staubach <staubach@redhat.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061215)
-MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: trond.myklebust@fys.uio.no, akpm@linux-foundation.org, hugh@veritas.com,
-       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update ctime and mtime for mmaped write
-References: <E1HJvdA-0003Nj-00@dorka.pomaz.szeredi.hu>	 <20070221202615.a0a167f4.akpm@linux-foundation.org>	 <E1HK8hU-0005Mq-00@dorka.pomaz.szeredi.hu> <45DDD55F.4060106@redhat.com>	 <E1HKIN1-0006RX-00@dorka.pomaz.szeredi.hu> <45DDF9C1.4090003@redhat.com>	 <E1HKKrL-0006k6-00@dorka.pomaz.szeredi.hu> <1172178253.6382.12.camel@heimdal.trondhjem.org> <E1HKLUp-0006qY-00@dorka.pomaz.szeredi.hu>
-In-Reply-To: <E1HKLUp-0006qY-00@dorka.pomaz.szeredi.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Feb 2007 16:55:09 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:52807 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751963AbXBVVzH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 16:55:07 -0500
+Date: Thu, 22 Feb 2007 21:55:01 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>, akpm@osdl.org,
+       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, gregkh@novell.com, hch@infradead.org
+Subject: Re: [Patch 2/2] cciss: add shutdown support (replaces reboot notifier)
+Message-ID: <20070222215501.GA21037@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	James Bottomley <James.Bottomley@SteelEye.com>,
+	"Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>,
+	akpm@osdl.org, jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+	linux-scsi@vger.kernel.org, gregkh@novell.com
+References: <20070222213845.GA14162@beardog.cca.cpqcorp.net> <1172180978.3378.35.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1172180978.3378.35.camel@mulgrave.il.steeleye.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi wrote:
->>>> This still does not address the situation where a file is 'permanently'
->>>> mmap'd, does it?
->>>>         
->>> So?  If application doesn't do msync, then the file times won't be
->>> updated.  That's allowed by the standard, and so portable applications
->>> will have to call msync.
->>>       
->> It is allowed, but it is clearly not useful behaviour. Nowhere is it set
->> in stone that we should be implementing just the minimum allowed.
->>     
->
-> You're right.  In theory, at least.  But in practice I don't think
-> this matters.  Show me an application that writes to a shared mapping
-> then doesn't call either msync or munmap and doesn't even exit.
->
-> If there were lot of these apps, then this bug would have been fixed
-> lots of years earlier.  In fact there are _very_ few apps writing to
-> shared mappings at all.
->
->   
+On Thu, Feb 22, 2007 at 03:49:38PM -0600, James Bottomley wrote:
+> On Thu, 2007-02-22 at 15:38 -0600, Mike Miller (OS Dev) wrote:
+> >         .remove = __devexit_p(cciss_remove_one),
+> >         .id_table = cciss_pci_device_id,        /* id_table */
+> > +       .shutdown = cciss_remove_one,
+> 
+> You need a __devexit_p() wrapper for this one too.
 
-Perhaps true, although I know of at least one customer of Red Hat who
-does have an application (or more) than uses mmap'd files and is
-suffering from this lack of appropriate semantics.  They are not
-getting files backed up which need to be.
-
-> Applications should be encouraged to call msync(MS_ASYNC) because:
->
->   - it's very fast (basically a no-op) on recent linux kernels
->
->   - it's the only portable way to guarantee, that the data you written
->     will _ever_ hit the disk.
->
-> There's really no downside to using msync(MS_ASYNC) in your
-> application, so making an effort to support applications that don't do
-> this is stupid, IMO.
-
-It may be a no-op on recent Linux kernels, but I don't think that it
-is a no-op on other systems.
-
-I do not wish to defend applications which don't use msync or some
-such, but it seems that the appropriate semantics to support are
-more than just depending upon the application to "do the right thing".
-
-    Thanx...
-
-       ps
+No.  We want to call this even in the non-modular, non-hotplug
+case.  So we should remove __devexit from cciss_remove_one.  Or
+alternatively implement a separate cciss_shutdown that just does
+the nessecary cache flushing, like most other drivers do.
