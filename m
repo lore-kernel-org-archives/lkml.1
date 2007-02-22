@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751771AbXBVTIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751773AbXBVTJK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751771AbXBVTIq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 14:08:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbXBVTIq
+	id S1751773AbXBVTJK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 14:09:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbXBVTJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 14:08:46 -0500
-Received: from wr-out-0506.google.com ([64.233.184.232]:20834 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751771AbXBVTIp (ORCPT
+	Thu, 22 Feb 2007 14:09:10 -0500
+Received: from www17.your-server.de ([213.133.104.17]:1485 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751775AbXBVTJF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 14:08:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YeEmeaGnKx0Oi2SjlqvQUeH56TNAL4C7a8Ap426wrr5IHfr0BmXQikbpCNZkWEz2gvDDTDR7t/YGkNMe8VQYh+MRPDGvFapBWm8UiJAnPDQZKE5eLlAJz7mBiSCCyEVCfjUG8mC5D1KFI6jwgRaqYItOyQNCZ0Av4Mgn09sTNeo=
-Message-ID: <cb7bb73a0702221108r161441ebt61886ce67746f389@mail.gmail.com>
-Date: Thu, 22 Feb 2007 20:08:43 +0100
-From: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
-Cc: "James Simmons" <jsimmons@infradead.org>,
-       "Luca Tettamanti" <kronos@people.it>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       "Andrew Morton" <akpm@osdl.org>, "Dave Airlie" <airlied@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1172161290.4198.12.camel@daplas>
+	Thu, 22 Feb 2007 14:09:05 -0500
+Message-ID: <45DDEA1D.7060703@m3y3r.de>
+Date: Thu, 22 Feb 2007 20:08:13 +0100
+From: Thomas Meyer <thomas@m3y3r.de>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061222)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: linux-kernel@vger.kernel.org
+Subject: [ACPI] Several remarks for 9654640d0af8f2de40ff3807d3695109d3463f54
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <ephv35$4i3$1@sea.gmane.org>
-	 <Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
-	 <cb7bb73a0702061508x767882dcia1b13f85d898b6e7@mail.gmail.com>
-	 <1172101406.4217.16.camel@daplas>
-	 <cb7bb73a0702220001u6acbdd95ncdc9fad10d06b421@mail.gmail.com>
-	 <1172133646.4086.5.camel@daplas>
-	 <cb7bb73a0702220548s55380f7fk995726ffd349823b@mail.gmail.com>
-	 <1172153358.4306.17.camel@daplas>
-	 <cb7bb73a0702220755y3eb2e5b1r8e7908ae0c1720c9@mail.gmail.com>
-	 <1172161290.4198.12.camel@daplas>
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/22/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> On Thu, 2007-02-22 at 16:55 +0100, Giuseppe Bilotta wrote:
-> >
-> > However, I'm still getting the same snowy effects, which doesn't come
-> > as a surprise since the actual mode timings used are just the same ...
->
-> Yes, because the EDID has only 1 mode entry. But now you can use 'fbset
-> 1024x768-60' (or any mode smaller than 1600x1200-60) for example and it
-> should work.
+1.) My kde klaptopdaemon icon is gone. This icon displayed the remaining
+battery time. This is maybe a kde problem?
 
-No, it doesn't. I've tried all the methods from 640x480 to 1600x1200,
-and they /all/ come up snowy. This is starting to look queerer and
-queerer. I've also tried changing vf min and max as you suggested:
+2.) I get these new messages in the kernel log buffer:
+[...]
+ACPI: bus type pci registered
+PCI: Using MMCONFIG
+Setting up standard PCI resources
+ACPI Exception (evregion-0420): AE_NOT_FOUND, Returned by Handler for
+[EmbeddedControl] [20070126]
+ACPI Exception (dswexec-0462): AE_NOT_FOUND, While resolving operands
+for [OpcodeName unavailable] [20070126]
+ACPI Error (psparse-0537): Method parse/execution failed
+[\_SB_.PCI0.LPCB.EC__._REG] (Node c190db1c), AE_NOT_FOUND
+ACPI Exception (ec-0956): AE_NOT_FOUND, Could not use ECDT [20070126]
+ACPI: Interpreter enabled
+ACPI: (supports S0 S3 S4 S5)
+ACPI: Using IOAPIC for interrupt routing
+[...]
+ACPI Exception (evregion-0420): AE_NOT_FOUND, Returned by Handler for
+[EmbeddedControl] [20070126]
+ACPI Exception (dswexec-0462): AE_NOT_FOUND, While resolving operands
+for [OpcodeName unavailable] [20070126]
+ACPI Error (psparse-0537): Method parse/execution failed
+[\_SB_.PCI0.LPCB.EC__.SMB0.SBRW] (Node c190dbbc), AE_NOT_FOUND
+ACPI Error (psparse-0537): Method parse/execution failed
+[\_SB_.BAT0.UBSS] (Node c190da2c), AE_NOT_FOUND
+ACPI Error (psparse-0537): Method parse/execution failed
+[\_SB_.BAT0._STA] (Node c190da7c), AE_NOT_FOUND
+ACPI Exception (evregion-0420): AE_NOT_FOUND, Returned by Handler for
+[EmbeddedControl] [20070126]
+ACPI Error (psparse-0537): Method parse/execution failed
+[\_SB_.PCI0.LPCB.EC__._REG] (Node c190db1c), AE_NOT_FOUND
+ACPI Exception (evregion-0513): AE_NOT_FOUND, from region _REG,
+[EmbeddedControl] [20070126]
+ACPI: PCI Root Bridge [PCI0] (0000:00)
 
->  You might want to change  vfmin and vfmax to 59 and 61
+But i guess this is ok and seems to be an acpi problem on my computer,
+aren't they?
 
-and even the M and MR methods which you suggested in the other email.
-Since nvidiafb is being loaded from the command line because it's a
-blacklisted module otherwise, I've been using the mode_option option.
-However, neither the mode_option nor fbset seem to give me anything
-not snowy.
+mfg
+thomas
 
-Damn.
-
--- 
-Giuseppe "Oblomov" Bilotta
