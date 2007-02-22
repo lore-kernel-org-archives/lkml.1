@@ -1,158 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751923AbXBVVg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751927AbXBVViK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751923AbXBVVg7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 16:36:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbXBVVg7
+	id S1751927AbXBVViK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 16:38:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbXBVViK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 16:36:59 -0500
-Received: from keil-draco.com ([216.193.185.50]:50538 "EHLO mail"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751923AbXBVVg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 16:36:58 -0500
-From: "D. Hazelton" <dhazelton@enter.net>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: GPL vs non-GPL device drivers
-Date: Thu, 22 Feb 2007 16:36:37 -0500
-User-Agent: KMail/1.9.5
-Cc: "Michael K. Edwards" <medwards.linux@gmail.com>,
-       "David Lang" <david.lang@digitalinsight.com>, davids@webmaster.com,
-       "v j" <vj.linux@gmail.com>, trent.waddington@gmail.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>
-References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com> <200702212030.58317.dhazelton@enter.net> <20070222141047.425337a0@lxorguk.ukuu.org.uk>
-In-Reply-To: <20070222141047.425337a0@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 22 Feb 2007 16:38:10 -0500
+Received: from mx0.towertech.it ([213.215.222.73]:54463 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751931AbXBVViJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 16:38:09 -0500
+Date: Thu, 22 Feb 2007 22:37:58 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: David Brownell <david-b@pacbell.net>
+Cc: Greg KH <greg@kroah.com>, rtc-linux@googlegroups.com,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.osdl.org, Andrew Morton <akpm@linux-foundation.org>,
+       john stultz <johnstul@us.ibm.com>
+Subject: Re: [patch/rfc 0/6] rtc framework: remove class_device, use class
+ suspend()/resume()
+Message-ID: <20070222223758.55fce4b3@inspiron>
+In-Reply-To: <200702221244.32442.david-b@pacbell.net>
+References: <200702211945.15003.david-b@pacbell.net>
+	<20070222180941.GA15289@kroah.com>
+	<200702221244.32442.david-b@pacbell.net>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702221636.37306.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 22 February 2007 09:10, Alan wrote:
-> > As a side note: The distinct wording of the GPL actually *invalidates*
-> > the GNU/FSF claim that dynamically linking a work with, say, the readline
-> > library,  means the work is a derivative of said library. The GPL states
-> > (in
->
-> Not that I can see no, but you could take this to a list with lawyers not
-> programmers on and improve life for both parties
+On Thu, 22 Feb 2007 12:44:31 -0800
+David Brownell <david-b@pacbell.net> wrote:
 
-See Section/clause 0 of the GPL. 
+> > All of these looks good to me, feel free to add an:
+> > 	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > to them if you want.
+> 
+> Thanks ...
+> 
+>  
+> > thanks for doing the class_device removal work, I appreciate it.
+> 
+> Actually the class_device removal work was because that was the
+> only way to clean the RTC suspend()/remove() patch out of my
+> queue, where it's been sitting since not log after those class
+> suspend/resume methods started to circulate, early last summer.
+> 
+> It'll be good to have that finally gone!
 
-> > clause 0) that the license only covers copying, modification and
-> > distribution. Unless they are confusing "Linking" with "copying" or
-> > "creating a derivative work" the claim is invalid - because, as it has
-> > been shown, a mechanical process such as compilation or linking *cannot*
-> > create a derivative work.
->
-> If you take the microsoft windows source code and compile it yourself
-> believe me you will get sued if you ship the resulting binaries and you
-> will lose in court.
 
-But that's because it is *WINDOWS*, which, unless specifically granted to you, 
-does not include a transfer of the right to distribute in *ANY* form. Every 
-PC manufacturer that wants to distribute Windows on new machines they produce 
-*MUST* sign an agreement with M$. As I have never seen any of those 
-agreements I cannot state what the terms are and whether they are different 
-for each company holding such a license.
+ Hi David,
 
-And unless you've signed a licensing agreement over the source code to 
-Windows, you're more than likely to have another lawsuit on your hands for 
-possessing it. 
+  thanks for your work. The interface system was originally
+ in place because it seemed the right-thing-to-do. if it isn't,
+ better to remove it ;)
 
-<snip>
-> I would also note that the FSF makes no claim about dynamic v static
-> linking, merely about derivative works - which is the boundary the law is
-> interested in. Indeed the GPLv2 was written in the days where dynamic
-> linking was quite novel which is one reason the LGPL talks about
+-- 
 
-Granted.
+ Best regards,
 
-> "For example, if you distribute copies of the library, whether gratis
->  or for a fee, you must give the recipients all the rights that we gave
->  you.  You must make sure that they, too, receive or can get the source
->  code.  If you link a program with the library, you must provide
->  complete object files to the recipients so that they can relink them
->  with the library, after making changes to the library and recompiling
->  it.  And you must show them these terms so they know their rights."
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
 
-Eh? Complete *object* files so that after making changes and recompiling they 
-can relink it? Umm... I don't know about you, but that makes me laugh. What 
-is the purpose of providing "Complete Object Files" to everyone if they are 
-just going to recompile and relink the library?
+  http://www.towertech.it
 
-Yes, I know this quite likely refers to any object files (or other binaries) 
-that are part of the library but not part of the source. (and *are* required 
-for the library to be completely functional)
-
-> and says nothing about dynamic/static linking.
->
-> > Related to that... Though a parser generated by Bison and a tokenizer
-> > generated by Flex both contain large chunks of GPL'd code, their
-> > inclusion in the source file that is to be compiled is mechanical - the
-> > true unique work is in writing the file that is processed by the tool to
-> > produce the output.
->
-> Flex is more complex because the resulting binary contains both compiled
-> work of yours and a support library of FSF owned code (-lfl). 
-
-Copyright *doesn't* extend to compiled code. It cannot, because compiled code 
-is a machine generated translation. A machine generated translation isn't the 
-product of a creative process. And you can also provide all the routines 
-normally provided by the support library. This means that the support library 
-is *NOT* a necessary part of the system.
-
-> The non 
-> computing analogy here is the difference between using a paint program to
-> create a work, and using a paint program to create a work but also
-> including other artwork (eg clipart). 
-
-Yes, but in both cases the result is *CLEARLY* the result of a creative 
-process, and said clipart, unless it is in the form of an entirely machine 
-generated image, is a separate work (and one resulting from a creative 
-process) that you are using under license. (Unless said clipart was released 
-into the public domain)
-
-> The same is true of the GCC compiler 
-> as it merges your work with supporting library helper code modules which
-> are themselves creative works. 
-
-Again you are confusing a mechanical translation process with a creative 
-process. But it doesn't matter, in this case. The binary form of a program 
-*technically* falls under the copyright on the source code - a mechanical 
-process that translates a copyrighted work into another form *cannot* remove 
-the original copyright.
-
-But said modules have clearly defined and limited purposes.
-
-> Clearly you could replace those helper 
-> modules with your own work and the result would be different.
-
-Yes.  And you've noted that yes, they can be replaced. Which means that they 
-are also not a necessary part of the system. 
-
-Claiming that any library (that can be replaced), either dynamically or 
-statically linked to a program, is a requirement isn't smart. That also means 
-that claiming a program that uses those libraries is a derivative work is 
-bull.
-
-Further, if such a library or module has an interface that must be accessed in 
-one specific way, then said interface cannot be copyright. (As has been 
-pointed out to me several times in other threads on LKML)
-
-> A better example for your case might be indent where the program
-> processes your work mechanically and produces an output that doesn't
-> contain any other creative works, or most of intltools which merges
-> translations mechanically. (the merge code is sometimes a little creative
-> but thats in the sense of being a nuisance not in the legal sense of
-> creative work)
-
-True. But in those cases there isn't the gray area that exists surrounding 
-claims of a Flex generated scanner or a Bison generated parser being 
-derivative works of either program. 
-
-> Alan
-
-DRH
