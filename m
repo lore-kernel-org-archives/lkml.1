@@ -1,43 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751956AbXBVV4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751964AbXBVV50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751956AbXBVV4Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 16:56:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbXBVV4P
+	id S1751964AbXBVV50 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 16:57:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbXBVV5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 16:56:15 -0500
-Received: from palrel13.hp.com ([156.153.255.238]:58855 "EHLO palrel13.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751956AbXBVV4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 16:56:14 -0500
-Date: Thu, 22 Feb 2007 15:56:11 -0600
-From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-To: Christoph Hellwig <hch@infradead.org>, akpm@osdl.org,
-       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, gregkh@novell.com
-Subject: Re: [Patch 2/2] cciss: add shutdown support (replaces reboot notifier)
-Message-ID: <20070222215611.GB14162@beardog.cca.cpqcorp.net>
-References: <20070222213845.GA14162@beardog.cca.cpqcorp.net> <20070222214502.GA19670@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070222214502.GA19670@infradead.org>
-User-Agent: Mutt/1.5.9i
+	Thu, 22 Feb 2007 16:57:25 -0500
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:37463 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751964AbXBVV5Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 16:57:25 -0500
+Date: Thu, 22 Feb 2007 13:57:23 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, wli@holomorphy.com
+Subject: Re: [RFC/PATCH] slab: free pages in a batch in drain_freelist
+In-Reply-To: <Pine.LNX.4.64.0702221437400.14523@sbz-30.cs.Helsinki.FI>
+Message-ID: <Pine.LNX.4.64.0702221354380.21962@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0702221437400.14523@sbz-30.cs.Helsinki.FI>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 22, 2007 at 09:45:02PM +0000, Christoph Hellwig wrote:
-> On Thu, Feb 22, 2007 at 03:38:45PM -0600, Mike Miller (OS Dev) wrote:
-> > Patch 2/2
-> > 
-> > This adds support for struct pci_driver shutdown and negates the previous NAK'ed
-> > reboot_notifier patch. It's much easier, wish I had know about this before. Thanks to
-> > Christoph for pointing this out.
-> 
-> Just sondering, where should we have put information about this so driver
-> writers/maintainers like you would have found it easily?
-> 
-Excellent question. I wish I had a good answer. It's pretty difficult to monitor
-everything going on, especially when I also have to consider HP's schedule and those
-of our partners. 
+On Thu, 22 Feb 2007, Pekka J Enberg wrote:
 
--- mikem
+> As suggested by William, free the actual pages in a batch so that we
+> don't keep pounding on l3->list_lock.
+
+This means holding the l3->list_lock for a prolonged time period. The 
+existing code was done this way in order to make sure that the interrupt 
+holdoffs are minimal.
+
+There is no pounding. The cacheline with the list_lock is typically held 
+until the draining is complete. While we drain the freelist we need to be 
+able to respond to interrupts.
+
