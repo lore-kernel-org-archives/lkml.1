@@ -1,77 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932823AbXBVIBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945954AbXBVICu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932823AbXBVIBz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 03:01:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933003AbXBVIBy
+	id S1945954AbXBVICu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 03:02:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945951AbXBVICt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 03:01:54 -0500
-Received: from wx-out-0506.google.com ([66.249.82.234]:26939 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932823AbXBVIBx (ORCPT
+	Thu, 22 Feb 2007 03:02:49 -0500
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:44686 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945947AbXBVICs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 03:01:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PJEQR0xb+ge8dsYQcwmidgMTNssAUUa713eHomM65KZdGafqckUnyTnGfc+7NrU+aSnlZkN8KuwQLreUea/i+f68UL3l0n+rlfN4fsr9+94o9cVOiyQF/nf7zmXdT4YWaHYgkIg9/HD2PDqX68MuCb7Bgc+YzT1tWQzawMn7Z78=
-Message-ID: <cb7bb73a0702220001u6acbdd95ncdc9fad10d06b421@mail.gmail.com>
-Date: Thu, 22 Feb 2007 09:01:52 +0100
-From: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
-Cc: "James Simmons" <jsimmons@infradead.org>,
-       "Luca Tettamanti" <kronos@people.it>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       "Andrew Morton" <akpm@osdl.org>, "Dave Airlie" <airlied@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1172101406.4217.16.camel@daplas>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <ephv35$4i3$1@sea.gmane.org>
-	 <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
-	 <20070128162907.370f5476.akpm@osdl.org>
-	 <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
-	 <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
-	 <20070130203301.GA15067@dreamland.darkstar.lan>
-	 <20070204201713.GA12867@dreamland.darkstar.lan>
-	 <Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
-	 <cb7bb73a0702061508x767882dcia1b13f85d898b6e7@mail.gmail.com>
-	 <1172101406.4217.16.camel@daplas>
+	Thu, 22 Feb 2007 03:02:48 -0500
+To: akpm@linux-foundation.org
+CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-reply-to: <20070221235532.2361f827.akpm@linux-foundation.org> (message from
+	Andrew Morton on Wed, 21 Feb 2007 23:55:32 -0800)
+Subject: Re: dirty balancing deadlock
+References: <E1HIqlm-0004iZ-00@dorka.pomaz.szeredi.hu>
+	<20070218125307.4103c04a.akpm@linux-foundation.org>
+	<E1HIurG-0005Bw-00@dorka.pomaz.szeredi.hu>
+	<20070218145929.547c21c7.akpm@linux-foundation.org>
+	<E1HIvMB-0005Fd-00@dorka.pomaz.szeredi.hu>
+	<20070218155916.0d3c73a9.akpm@linux-foundation.org>
+	<E1HJC3P-0006tz-00@dorka.pomaz.szeredi.hu>
+	<20070221133631.a5cbf49f.akpm@linux-foundation.org>
+	<E1HK8aw-0005Lg-00@dorka.pomaz.szeredi.hu> <20070221235532.2361f827.akpm@linux-foundation.org>
+Message-Id: <E1HK8uG-0005OT-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 22 Feb 2007 09:02:24 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/22/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> On Wed, 2007-02-07 at 00:08 +0100, Giuseppe Bilotta wrote:
-> >
-> > As mentioned in another post in this thread, I can't get any info out
-> > of the i2c busses, because even when I have them available (i.e. after
-> > loading nvidiafb) I get XXXX all around (on all three of them).
-> > Suggestions on how to get the information welcome.
->
-> Is this the same monitor you posted here?
->
-> http://marc.theaimsgroup.com/?l=linux-kernel&m=112807065616218&w=2
->
-> If yes, we already have the manufacturer and model code. The main
-> problem is that the EDID of this display has no sync range (H: 75-75kHz
-> and V: 60-60Hz).  Extending Hsync from 30-75kHz as a fix to the EDID
-> block shouldn't be too hard.
+> > On Thu, 22 Feb 2007 08:42:26 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
+> > > > 
+> > > > Index: linux/mm/page-writeback.c
+> > > > ===================================================================
+> > > > --- linux.orig/mm/page-writeback.c	2007-02-19 17:32:41.000000000 +0100
+> > > > +++ linux/mm/page-writeback.c	2007-02-19 18:05:28.000000000 +0100
+> > > > @@ -198,6 +198,25 @@ static void balance_dirty_pages(struct a
+> > > >  			dirty_thresh)
+> > > >  				break;
+> > > >  
+> > > > +		/*
+> > > > +		 * Acquit this producer if there's little or nothing
+> > > > +		 * to write back to this particular queue
+> > > > +		 *
+> > > > +		 * Without this check a deadlock is possible in the
+> > > > +		 * following case:
+> > > > +		 *
+> > > > +		 * - filesystem A writes data through filesystem B
+> > > > +		 * - filesystem A has dirty pages over dirty_thresh
+> > > > +		 * - writeback is started, this triggers a write in B
+> > > > +		 * - balance_dirty_pages() is called synchronously
+> > > > +		 * - the write to B blocks
+> > > > +		 * - the writeback completes, but dirty is still over threshold
+> > > > +		 * - the blocking write prevents futher writes from happening
+> > > > +		 */
+> > > > +		if (atomic_long_read(&bdi->nr_dirty) +
+> > > > +		    atomic_long_read(&bdi->nr_writeback) < 16)
+> > > > +			break;
+> > > > +
+> > > 
+> > > The problem seems to that little "- the write to B blocks".
+> > > 
+> > > How come it blocks?  I mean, if we cannot retire writes to that filesystem
+> > > then we're screwed anyway.
+> > 
+> > Sorry about the sloppy description.  I mean, it's not the lowlevel
+> > write that will block, but rather the VFS one
+> > (generic_file_aio_write).  It will block (or rather loop forever with
+> > 0.1 second sleeps) in balance_dirty_pages().  That means, that for
+> > this inode, i_mutex is held and no other writer can continue the work.
+> 
+> "this inode" I assume is the inode against filesystem A?
 
-Yes, that's it! Jeepers, I can't believe that even re-reading the past
-LKML posts (even those!) I couldn't find the EDID info and how we had
-gotten them. I guess I need stronger glasses.
+No, the one in B.
 
-Wonder why Luca's proposed patch makes the EDID undetectable, now, and
-why can't it be retrieved at a later time via i2c. Timeouts too small?
+> Why does holding that inode's i_mutex prevent further writeback of
+> pages in A?
 
-> I already have a patch for this which I forgot to send to you
-> before :-).  If you can confirm that this is still the same hardware,
-> I'll send you a test patch
+It is generic_file_aio_write() that is holding the mutex.
 
-Yes, it's the same hardware. I can try the patch, with or without Luca's.
+Here's the stack for the filesystem daemon trying to write back a page:
 
+08dcfb40:  [<08182fe6>] schedule+0x246/0x547
+08dcfb98:  [<08183a03>] schedule_timeout+0x4e/0xb6
+08dcfbcc:  [<08183991>] io_schedule_timeout+0x11/0x20
+08dcfbd4:  [<080a0cf2>] congestion_wait+0x72/0x87
+08dcfc04:  [<0809c693>] balance_dirty_pages+0xa8/0x153
+08dcfc5c:  [<0809c7bf>] balance_dirty_pages_ratelimited_nr+0x43/0x45
+08dcfc68:  [<080992b5>] generic_file_buffered_write+0x3e3/0x6f5
+08dcfd20:  [<0809988e>] __generic_file_aio_write_nolock+0x2c7/0x5dd
+08dcfda8:  [<08099cb6>] generic_file_aio_write+0x55/0xc7
+08dcfddc:  [<080ea1e6>] ext3_file_write+0x39/0xaf
+08dcfe04:  [<080b060b>] do_sync_write+0xd8/0x10e
+08dcfebc:  [<080b06e3>] vfs_write+0xa2/0x1cb
+08dcfeec:  [<080b09b8>] sys_pwrite64+0x65/0x69
 
--- 
-Giuseppe "Oblomov" Bilotta
+Miklos
