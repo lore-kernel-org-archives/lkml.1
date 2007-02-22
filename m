@@ -1,81 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751443AbXBVG4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751444AbXBVG5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751443AbXBVG4d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 01:56:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932997AbXBVG4d
+	id S1751444AbXBVG5T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 01:57:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbXBVG5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 01:56:33 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46980 "EHLO mx2.mail.elte.hu"
+	Thu, 22 Feb 2007 01:57:18 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:34446 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751431AbXBVG4c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 01:56:32 -0500
-Date: Thu, 22 Feb 2007 07:51:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070222065125.GA862@elte.hu>
-References: <20070221211355.GA7302@elte.hu> <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com> <20070221225711.GB32031@elte.hu> <f2b55d220702211653x69718ef4o2dd62ed3156465b0@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f2b55d220702211653x69718ef4o2dd62ed3156465b0@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -3.8
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-3.8 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751448AbXBVG5R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 01:57:17 -0500
+Message-ID: <45DD3EC7.3050801@garzik.org>
+Date: Thu, 22 Feb 2007 01:57:11 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Robert Hancock <hancockr@shaw.ca>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH] libata: add NCQ blacklist entries from Silicon Image
+ Windows driver
+References: <45DD2EC9.4050403@shaw.ca>
+In-Reply-To: <45DD2EC9.4050403@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Michael K. Edwards <medwards.linux@gmail.com> wrote:
-
-> [...] As for threadlets, making them kernel threads is not such a good 
-> design feature, O(1) scheduler or not.  You take the full hit of 
-> kernel task creation, on the spot, for every threadlet that blocks. 
-> [...]
-
-this is very much not how they work. Threadlets share the same basic 
-infrastructure with syslets and they do /not/ take a 'full hit of kernel 
-thread creation' when they block. Please read the announcements, past 
-discussions on lkml and the code about how it works.
-
-about your other point:
-
-> > threadlets, when they block, are regular kernel threads, so the 
-> > regular O(1) scheduler takes care of them. If MMU trashing is of any 
-> > concern then syslets should be used to implement the most 
-> > performance-critical events: under Linux a kernel thread that does 
-> > not exit out to user-space does not do any TLB switching at all. 
-> > (even if there are multiple processes active and their syslets 
-> > intermix)
+Robert Hancock wrote:
+> This patch adds in some NCQ blacklist entries taken from the Silicon
+> Image Windows drivers' .inf files for the 3124 and 3132 controllers.
+> These entries were marked as ""DisableSataQueueing". Assume these are
+> in their blacklist for a reason and disable NCQ on these drives.
 > 
-> As far as I am concerned syslets by themselves are a dead letter, 
-> because you can't do any of the things that potential application 
-> coders need to do with them. [...]
+> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
+> 
+> --- linux-2.6.21-rc1edit/drivers/ata/libata-core.c.prev    2007-02-21 
+> 22:23:05.000000000 -0600
+> +++ linux-2.6.21-rc1edit/drivers/ata/libata-core.c    2007-02-21 
+> 22:25:44.000000000 -0600
+> @@ -3269,6 +3269,13 @@ static const struct ata_blacklist_entry
+>     /* Devices with NCQ limits */
+> 
+> +    /* The following blacklist entries are taken from the Windows
+> +       driver .inf files for the Silicon Image 3124 and 3132. */
+> +    { "Maxtor 7B250S0",    "BANC1B70",    ATA_HORKAGE_NONCQ, },
+> +    { "HTS541060G9SA00",    "MB3OC60D",    ATA_HORKAGE_NONCQ, },
+> +    { "HTS541080G9SA00",    "MB4OC60D",    ATA_HORKAGE_NONCQ, },
+> +    { "HTS541010G9SA00",    "MBZOC60D",    ATA_HORKAGE_NONCQ, },
 
-syslets are not meant to be directly exposed to application coders. 
-Syslets (like many of my previous mails stated) are meant as building 
-blocks to higher-level AIO interfaces such as in glibc or libaio. Then 
-user-space can build its state-machine based on syslet-implemented 
-glibc/libaio. In that specific role they are a very fast and scalable 
-mechanism.
+Do we have information that these drives fail on non-SiI controllers?
 
-	Ingo
+Sometimes the problem can be related to a single family of controllers.
+
+	Jeff
+
+
+
