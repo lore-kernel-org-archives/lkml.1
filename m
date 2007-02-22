@@ -1,58 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932851AbXBVBBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751341AbXBVBDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932851AbXBVBBq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 20:01:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932890AbXBVBBq
+	id S1751341AbXBVBDS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 20:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbXBVBDS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 20:01:46 -0500
-Received: from nz-out-0506.google.com ([64.233.162.234]:32605 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932851AbXBVBBo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 20:01:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nQnfHgomkhGiEgbyvJdeXAUZRDvJA7h1O4ayoGEwJrBeZ80yhahN2xMI+zFURO5q21uhyWQ5tIEpbxfonHqSrdv77uzgdBPzV09bMM96TdzlX51ya8p3pVzMGUqerV6hBeEBWa1NjelfDavM3JN9NFRhig9q//doOlJoyrGWJnY=
-Message-ID: <e5ab0f710702211701u4c5b62c5jb560f166641512ff@mail.gmail.com>
-Date: Thu, 22 Feb 2007 01:01:43 +0000
-From: "Francesco Pretto" <ceztko@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Weird hard disk noise on shutdown (bug #7674)
-In-Reply-To: <20070221235541.35f3d0da@lxorguk.ukuu.org.uk>
+	Wed, 21 Feb 2007 20:03:18 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:37963 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751341AbXBVBDR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 20:03:17 -0500
+Message-ID: <45DCEB16.2070907@redhat.com>
+Date: Wed, 21 Feb 2007 20:00:06 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Greg KH <greg@kroah.com>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Robert Hancock <hancockr@shaw.ca>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: Re: [patch 01/21] V4L: cx88: Fix lockup on suspend
+References: <20070221012758.925122216@mini.kroah.org> <20070221013634.GB30227@kroah.com>
+In-Reply-To: <20070221013634.GB30227@kroah.com>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <e5ab0f710702211415p37444279td690c2db4b4ca8ab@mail.gmail.com>
-	 <20070221235541.35f3d0da@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(I'm sorry if the thread breaks, i'm not subscribed)
+Greg KH wrote:
+> -stable review patch.  If anyone has any objections, please let us know.
+> 
+> ------------------
+> Suspending with the cx88xx module loaded causes the system to lock up
+> because the cx88_audio_thread kthread was missing a try_to_freeze()
+> call, which caused it to go into a tight loop and result in softlockup
+> when suspending. Fix that.
+> 
+> (cherry picked from commit a96afb3e9428f2e7463344f12dbc85faf08e2e09)
+> 
+> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
+> Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+> Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> ---
+>  drivers/media/video/cx88/cx88-tvaudio.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> --- linux-2.6.19.4.orig/drivers/media/video/cx88/cx88-tvaudio.c
+> +++ linux-2.6.19.4/drivers/media/video/cx88/cx88-tvaudio.c
+> @@ -38,6 +38,7 @@
+>  #include <linux/module.h>
+>  #include <linux/moduleparam.h>
+>  #include <linux/errno.h>
+> +#include <linux/freezer.h>
+>  #include <linux/kernel.h>
+>  #include <linux/slab.h>
+>  #include <linux/mm.h>
+> @@ -974,6 +975,7 @@ int cx88_audio_thread(void *data)
+>  		msleep_interruptible(1000);
+>  		if (kthread_should_stop())
+>  			break;
+> +		try_to_freeze();
+>  
+>  		/* just monitor the audio status for now ... */
+>  		memset(&t, 0, sizeof(t));
+> 
 
-2007/2/21, Alan <alan@lxorguk.ukuu.org.uk>:
-> Stick some printk calls in drivers/ata/libata-eh.c in ata_eh_suspend, or
-> turn on all the ATA debug and shutdown, the code should issue a cache
-> flush followed by a standbynow1 command for each disk.
->
-> Alan
->
+drivers/media/video/cx88/cx88-tvaudio.c:41:27: error: linux/freezer.h: No such file or directory
+make[4]: *** [drivers/media/video/cx88/cx88-tvaudio.o] Error 1
+make[3]: *** [drivers/media/video/cx88] Error 2
+make[3]: *** Waiting for unfinished jobs....
 
-Hi! Using netconsole, i was able to capture some printk output.
-Following some advices in the net (forum threads about similar
-problems), i did this to enable more verbose printk printing:
-
-echo 8 > /proc/sys/kernel/printk
-echo 1 > /proc/sys/vm/block_dump
-
-This was the result:
-http://bugzilla.kernel.org/attachment.cgi?id=10492&action=view
-
-However, i'm not still sure i enabled as much debugging info as i
-could in the kernel configuration. If you need more, please point me
-to precise configuration options.
-
-Thanks for your response.
-
-Francesco Pretto
