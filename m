@@ -1,69 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752044AbXBVX2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752038AbXBVXbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752044AbXBVX2T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 18:28:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbXBVX2S
+	id S1752038AbXBVXbg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 18:31:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbXBVXbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 18:28:18 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35154 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752044AbXBVX2S (ORCPT
+	Thu, 22 Feb 2007 18:31:36 -0500
+Received: from py-out-1112.google.com ([64.233.166.179]:38380 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752038AbXBVXbf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 18:28:18 -0500
-Date: Fri, 23 Feb 2007 00:30:18 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
-       "Ulrich Drepper" <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "Andrew Morton" <akpm@zip.com.au>, "Zach Brown" <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Suparna Bhattacharya" <suparna@in.ibm.com>,
-       "Davide Libenzi" <davidel@xmailserver.org>,
-       "Jens Axboe" <jens.axboe@oracle.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070223003018.0d244576@lxorguk.ukuu.org.uk>
-In-Reply-To: <f2b55d220702221324n788506b6oee4f8ed4f168fbf1@mail.gmail.com>
-References: <20070221211355.GA7302@elte.hu>
-	<f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
-	<20070221233111.GB5895@elte.hu>
-	<45DCD9E5.2010106@redhat.com>
-	<20070222074044.GA4158@elte.hu>
-	<20070222113148.GA3781@2ka.mipt.ru>
-	<20070222125931.GB25788@elte.hu>
-	<f2b55d220702221324n788506b6oee4f8ed4f168fbf1@mail.gmail.com>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Thu, 22 Feb 2007 18:31:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=U8CWHcN4bruj4F0LuUFcpVM6Kv3pwVOTmTiEMW2p/pzxVMrjlt8COFBYkvidNApFJwLQNfUopYoP7vumzz6p6IF5jjuIz9rEPPvlh8u+v7HqkPelQIp2i22HuwA1PriO0k562go0W+9CGJUUy0QB0IevUeaQy33S/Ypg3jRKtzg=
+Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+Cc: James Simmons <jsimmons@infradead.org>, Luca Tettamanti <kronos@people.it>,
+       linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>,
+       Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <cb7bb73a0702221108r161441ebt61886ce67746f389@mail.gmail.com>
+References: <ephv35$4i3$1@sea.gmane.org>
+	 <Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
+	 <cb7bb73a0702061508x767882dcia1b13f85d898b6e7@mail.gmail.com>
+	 <1172101406.4217.16.camel@daplas>
+	 <cb7bb73a0702220001u6acbdd95ncdc9fad10d06b421@mail.gmail.com>
+	 <1172133646.4086.5.camel@daplas>
+	 <cb7bb73a0702220548s55380f7fk995726ffd349823b@mail.gmail.com>
+	 <1172153358.4306.17.camel@daplas>
+	 <cb7bb73a0702220755y3eb2e5b1r8e7908ae0c1720c9@mail.gmail.com>
+	 <1172161290.4198.12.camel@daplas>
+	 <cb7bb73a0702221108r161441ebt61886ce67746f389@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 23 Feb 2007 07:34:09 +0800
+Message-Id: <1172187249.4279.7.camel@daplas>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> to do anything but chase pointers through cache.  Done right, it
-> hardly even branches (although the branch misprediction penalty is a
-> lot less of a worry on current x86_64 than it was in the
-> mega-superscalar-out-of-order-speculative-execution days).  It's damn
+On Thu, 2007-02-22 at 20:08 +0100, Giuseppe Bilotta wrote:
+> On 2/22/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> > On Thu, 2007-02-22 at 16:55 +0100, Giuseppe Bilotta wrote:
+> > >
+> > > However, I'm still getting the same snowy effects, which doesn't come
+> > > as a surprise since the actual mode timings used are just the same ...
+> >
+> > Yes, because the EDID has only 1 mode entry. But now you can use 'fbset
+> > 1024x768-60' (or any mode smaller than 1600x1200-60) for example and it
+> > should work.
+> 
+> No, it doesn't. I've tried all the methods from 640x480 to 1600x1200,
+> and they /all/ come up snowy. This is starting to look queerer and
+> queerer. I've also tried changing vf min and max as you suggested:
 
-Actually it costs a lot more on at least one vendors processor because
-you stall very long pipelines.
+Before we proceed, do you agree that the patch will allow you to change
+video modes without disabling DDC support?  So this is still a valid
+fix?
 
-> threadlets promise that they will not touch anything thread-local, and
-> that when the FPU is handed to them in a specific, known state, they
-> leave it in that same state.  (Some of the flags can be
+> 
+> >  You might want to change  vfmin and vfmax to 59 and 61
+> 
+> and even the M and MR methods which you suggested in the other email.
+> Since nvidiafb is being loaded from the command line because it's a
+> blacklisted module otherwise, I've been using the mode_option option.
+> However, neither the mode_option nor fbset seem to give me anything
+> not snowy.
 
-We don't use the FPU in the kernel except in very weird cases where it
-makes an enormous performance difference. The threadlets also have the
-same page tables so they have the same %cr3 so its very cheap to switch,
-basically a predicted jump and some register loads
+When does your display become snowy? Is the snow constant or does it
+only snow when doing heavy text operations, such as scrolling?
 
-> Do me a favor.  Do some floating point math and a memcpy() in between
-> syscalls in the threadlet.  Actually fiddle with errno and the FPU
+I presume that X's nv driver or vesafb does not exhibit this problem?
 
-We don't have an errno in the kernel because its a stupid idea. Errno is
-a user space hack for compatibility with 1970's bad design. So its not
-relevant either.
+Tony
 
-Alan
+
