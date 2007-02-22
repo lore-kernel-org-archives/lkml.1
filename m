@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965073AbXBVA24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965150AbXBVAeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965073AbXBVA24 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 19:28:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965114AbXBVA24
+	id S965150AbXBVAeR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 19:34:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965135AbXBVAeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 19:28:56 -0500
-Received: from an-out-0708.google.com ([209.85.132.246]:42609 "EHLO
+	Wed, 21 Feb 2007 19:34:17 -0500
+Received: from an-out-0708.google.com ([209.85.132.242]:45424 "EHLO
 	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965073AbXBVA2y (ORCPT
+	with ESMTP id S965138AbXBVAeQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 19:28:54 -0500
+	Wed, 21 Feb 2007 19:34:16 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OuszrYLI1Ij8JYo9KOVSiqm48DmPiohDZJEO0UrjpN58JcquhkjfdAQM/5FXyreNJDWxDYbetQPR26zqFZ+Y7XNq9HxFSA4qTkA+NsOOk8Nsj4oZyzUqOjPZrFOxJU8E/ut8b3u+ooUw7eAmicocstkrrFXptQ+rE0y1FaUb1/s=
-Message-ID: <f2b55d220702211628v6c8b16e7ibdfeb293592b2093@mail.gmail.com>
-Date: Wed, 21 Feb 2007 16:28:52 -0800
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KiZfL8hSCGxJh1RsPVOKOgvW3KWpF5FuG7v7LVARiP6AXGfbetfYeD/WH3Q5vlKtOuzO8pSypKnP4bVWbP3zon2Z8B21bhxlEjiZ7RYNaMdKvWFs1qseXeakXD0qPOexblMWc5Cy2GhUkoi/i7FYAbPk8dK7lqwKuvANdp0bU2Y=
+Message-ID: <f2b55d220702211634s77d23ddem8ee6523ff6020d98@mail.gmail.com>
+Date: Wed, 21 Feb 2007 16:34:15 -0800
 From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: "David Lang" <david.lang@digitalinsight.com>
-Subject: Re: GPL vs non-GPL device drivers
-Cc: davids@webmaster.com, "v j" <vj.linux@gmail.com>,
-       trent.waddington@gmail.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>
-In-Reply-To: <Pine.LNX.4.63.0702211527080.15723@qynat.qvtvafvgr.pbz>
+To: "Jose Goncalves" <jose.goncalves@inov.pt>,
+       "Frederik Deweerdt" <deweerdt@free.fr>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Serial related oops
+In-Reply-To: <20070221230503.GA28156@flint.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>
-	 <MDEHLPKNGKAHNMBLJOLKIEFNBLAC.davids@webmaster.com>
-	 <f2b55d220702211408r7954d5dar2c59e1e679316811@mail.gmail.com>
-	 <Pine.LNX.4.63.0702211527080.15723@qynat.qvtvafvgr.pbz>
+References: <20070219134539.GA27370@flint.arm.linux.org.uk>
+	 <20070219143520.GB27370@flint.arm.linux.org.uk>
+	 <20070220144814.GJ566@slug>
+	 <20070219150508.GD27370@flint.arm.linux.org.uk>
+	 <45D9D073.7020701@inov.pt>
+	 <20070219164200.GF27370@flint.arm.linux.org.uk>
+	 <45D9E46C.4030408@inov.pt>
+	 <20070219212347.GA4258@flint.arm.linux.org.uk>
+	 <45DC537B.6020108@inov.pt>
+	 <20070221230503.GA28156@flint.arm.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think you just misread.  I said that the Evil Linker has cheerfully
-shipped the source code of the modified POP server.  He may not have
-given you the compiler he compiled it with, wihout which the source
-code is a nice piece of literature but of no engineering utility; but
-that's the situation the GPL is DESIGNED TO PRODUCE.
-
-Cheers,
-- Michael
+Are you using an unpatched gcc 4.1.1?  Its optimizer did nasty things
+to us, at least on an ARM target ...
