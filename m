@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750866AbXBVCne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750790AbXBVCtC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750866AbXBVCne (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 21:43:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750882AbXBVCne
+	id S1750790AbXBVCtC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 21:49:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750856AbXBVCtB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 21:43:34 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:40980 "EHLO
-	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750866AbXBVCnd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 21:43:33 -0500
-Date: Wed, 21 Feb 2007 20:43:20 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Weird hard disk noise on shutdown (bug #7674)
-In-reply-to: <fa.YHt2nIlQmoW5r2enmTSzsaySwH4@ifi.uio.no>
-To: Alan <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Francesco Pretto <ceztko@gmail.com>, Tejun Heo <htejun@gmail.com>
-Message-id: <45DD0348.5040005@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no>
- <fa.YHt2nIlQmoW5r2enmTSzsaySwH4@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Wed, 21 Feb 2007 21:49:01 -0500
+Received: from mx2.suse.de ([195.135.220.15]:46368 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750790AbXBVCtB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 21:49:01 -0500
+From: Neil Brown <neilb@suse.de>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Date: Thu, 22 Feb 2007 13:48:00 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17885.1120.437885.35438@notabene.brown>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Block layer still stack abuser?
+In-Reply-To: message from Pierre Ossman on Friday February 16
+References: <45D59C3C.4090403@drzeus.cx>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan wrote:
-> Stick some printk calls in drivers/ata/libata-eh.c in ata_eh_suspend, or
-> turn on all the ATA debug and shutdown, the code should issue a cache
-> flush followed by a standbynow1 command for each disk.
+On Friday February 16, drzeus-list@drzeus.cx wrote:
+> I was wondering if the block layer has been changed into a more serialized
+> manner yet? I've been trying to google this, but so far no luck. I know there
+> was some talk about removing the stack based approach, but I can't find any
+> information about where this went.
 > 
-> Alan
+> If it is currently fixed, a pointer to from which version would be nice.
 
-I believe it runs on suspend, but we don't run that code on normal 
-shutdown, do we?
+Might this:
+   http://lkml.org/lkml/2007/2/10/22
 
-Tejun Heo had a patch for sd that could (optionally) trigger a START 
-STOP UNIT command to spin the disk down after synchronizing the cache 
-before shutdown, but I haven't heard anything of it lately..
+relate to your question?
+If you are talking about stacking block device (via dm or md), then a
+patch to fix this in in -mm but there are or were some potential
+issues in dm that seem to be holding it up.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+NeilBrown
