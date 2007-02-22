@@ -1,62 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751334AbXBVR04@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751367AbXBVR2O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751334AbXBVR04 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 12:26:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbXBVR0z
+	id S1751367AbXBVR2O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 12:28:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbXBVR2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 12:26:55 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37479 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751334AbXBVR0y (ORCPT
+	Thu, 22 Feb 2007 12:28:14 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41215
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751367AbXBVR2N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 12:26:54 -0500
-Date: Thu, 22 Feb 2007 18:29:39 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Robert Hancock <hancockr@shaw.ca>, akpm@osdl.org,
+	Thu, 22 Feb 2007 12:28:13 -0500
+Date: Thu, 22 Feb 2007 09:28:12 -0800 (PST)
+Message-Id: <20070222.092812.112620509.davem@davemloft.net>
+To: jsimmons@infradead.org
+Cc: Joel.Becker@oracle.com, lists@onerussian.com, rpurdie@rpsys.net,
+       akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ACPI driver support for pata
-Message-ID: <20070222182939.56d43a68@lxorguk.ukuu.org.uk>
-In-Reply-To: <45DDCEC4.7050208@garzik.org>
-References: <fa.IjFXvdcBtWXV65pRZipPd0NVTOA@ifi.uio.no>
-	<45DD2E12.6000705@shaw.ca>
-	<45DD3F20.7050907@pobox.com>
-	<20070222142439.50cff3e9@lxorguk.ukuu.org.uk>
-	<45DDCEC4.7050208@garzik.org>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Subject: Re: [Linux-fbdev-devel] no backlight on radeon after recent kernel
+ "upgrade"s
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0702221549530.29542@pentafluge.infradead.org>
+References: <Pine.LNX.4.64.0702220109450.17121@pentafluge.infradead.org>
+	<20070222020951.GR7920@ca-server1.us.oracle.com>
+	<Pine.LNX.4.64.0702221549530.29542@pentafluge.infradead.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Feb 2007 12:11:32 -0500
-Jeff Garzik <jeff@garzik.org> wrote:
+From: James Simmons <jsimmons@infradead.org>
+Date: Thu, 22 Feb 2007 15:55:24 +0000 (GMT)
 
-> Alan wrote:
-> > ACPI is the only way to do cable handling on the Nvidia PATA chipset. The
-> 
-> You failed to quote the salient part of the message.  Disliking a 
-> separate pata_acpi driver in no way invalidates your statement (quoted 
-> above).
+> I just tested various confirations of backlight support. Backlight is 
+> ALWAYS selected by default when you select a particular fbdev driver that 
+> has backlight support. You just have the option to turn it off if you 
+> want. These problems are showing up because of stale .config files.
 
-If you drive a device by the ACPI interface you don't get to fiddle with
-it directly or you end up in a murky world of undefined and ungood
-behaviour. Testing and vendor information both say pata_acpi is the right
-way to drive Nvidia PATA ports.
+BTW, enabling the backlight option broke things for me with
+Radeon on sparc64 too, FWIW.
 
-Cable problem appears to be that
-- Tejun fixed the drive side detect logic to be stricter and correct
-- Large numbers of controllers with host side detect don't do drive side
-detect
+And when the option was presented to me for the first time,
+the default was yes, so that's what I gave it.
 
-Changing the code to clip rates only for 40wire or unknown cables
-improves the behaviour.
-
-In the ACPI case I found another corner case with one BIOS which chooses
-to boot in PIO mode and which therefore fooled the cable detect trick
-used by pata_acpi. It now does further cable checking in ->mode_filter
-which combined with the patch in -mm to do the cable logic last means it
-works for that case too.
-
-Alan
+This is what a lot of users would see.
