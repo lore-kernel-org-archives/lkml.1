@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946010AbXBVOJr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946013AbXBVOJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946010AbXBVOJr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 09:09:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946013AbXBVOJq
+	id S1946013AbXBVOJu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 09:09:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946011AbXBVOJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 09:09:46 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:38413 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946010AbXBVOJp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 09:09:45 -0500
-Subject: Re: [kvm-devel] [PATCH 10/13] KVM: Wire up hypercall handlers to
-	a	central arch-independent location
-From: Arjan van de Ven <arjan@infradead.org>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Dor Laor <dor.laor@qumranet.com>, Pavel Machek <pavel@ucw.cz>,
-       kvm-devel@lists.sourceforge.net, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <45DD9A9D.4060500@qumranet.com>
-References: <45D979D3.2020907@qumranet.com>
-	 <20070219103052.4D23725016B@il.qumranet.com><20070221103733.GI3945@ucw.cz>
-	 <45DD6CF0.3010509@qumranet.com>
-	 <64F9B87B6B770947A9F8391472E032160A91BAF3@ehost011-8.exch011.intermedia.net>
-	 <1172140490.3531.236.camel@laptopd505.fenrus.org>
-	 <45DD7330.1030001@qumranet.com>
-	 <1172142081.3531.243.camel@laptopd505.fenrus.org>
-	 <45DD94D3.4030102@qumranet.com>
-	 <1172149924.3531.260.camel@laptopd505.fenrus.org>
-	 <45DD9A9D.4060500@qumranet.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Thu, 22 Feb 2007 15:09:33 +0100
-Message-Id: <1172153373.3531.268.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+	Thu, 22 Feb 2007 09:09:50 -0500
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:51974 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946013AbXBVOJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 09:09:49 -0500
+Message-ID: <45DDA43A.4030509@drzeus.cx>
+Date: Thu, 22 Feb 2007 15:10:02 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Luca Tettamanti <kronos.it@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: NO_HZ: timer interrupt stuck [Re: Linux 2.6.21-rc1]
+References: <20070221230409.GA1158@dreamland.darkstar.lan>	 <1172099859.25076.132.camel@localhost.localdomain>	 <Pine.LNX.4.61.0702221334460.28624@yvahk01.tjqt.qr> <1172150712.3531.265.camel@laptopd505.fenrus.org>
+In-Reply-To: <1172150712.3531.265.camel@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Arjan van de Ven wrote:
+> 
+> some can be used for both (PIT), but on a concept level the uses are
+> independent. The advantage of local apic over PIT is that local apic is
+> cheap to do "one shot" future events with, while the PIT will tick
+> periodic at a fixed frequency. With tickless idle.. that's not what you
+> want.
+> 
 
-> Can't it be done by a helper function using a timer and a signal (or 
-> whatever mechanism we use to wake up vcpus)?
+So with a local apic, and acpi_pm as clocksource, I shouldn't be getting timer
+interrupts? Yet I do. Which I assume means that the kernel will still get woken
+up very often.
 
-one could do that but it's not optimal; if the process DOES get waken up
-earlier, it should take the interrupt then immediately, so that it
-doesn't have to wake up again when the timer fires. 
-
-(in fact it would be nice if the guest could somehow poll at the irq
-mask at waking from idle, so that it wouldn't need a vmexit/entry for
-every such interrupt, but just do the right thing for all pending work)
-
-In addition, yes it'll be a helper function, but since all drivers will
-want the functionality its probably best off in the generic code
-
-
+Rgds
 -- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+     -- Pierre Ossman
 
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
