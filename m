@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751384AbXBVEZD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751386AbXBVE0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751384AbXBVEZD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 23:25:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbXBVEZD
+	id S1751386AbXBVE0c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 23:26:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbXBVE0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 23:25:03 -0500
-Received: from wr-out-0506.google.com ([64.233.184.228]:28093 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751384AbXBVEZB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 23:25:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jw33xkcgI+AG6wcTqQ4Fem68FY/f7S77lyrgVT2vQXHs83nVutmTxb93vAz9Te41b9DzbkvT+ZD19Z2+j1y95JOiDohIslA/RZjpqhDlWaTG+EKAjXToiOcIWKAi5AirQjjUhDHZiIbHpaGtcdRoXVwRjj+S4DgVSBWz/gq1wUg=
-Message-ID: <3d57814d0702212024v67cc2863x64aea671798533f8@mail.gmail.com>
-Date: Thu, 22 Feb 2007 14:24:59 +1000
-From: "Trent Waddington" <trent.waddington@gmail.com>
-To: "D. Hazelton" <dhazelton@enter.net>
-Subject: Re: GPL vs non-GPL device drivers
-Cc: "Michael K. Edwards" <medwards.linux@gmail.com>,
-       "David Lang" <david.lang@digitalinsight.com>, davids@webmaster.com,
-       "v j" <vj.linux@gmail.com>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>
-In-Reply-To: <200702212317.16262.dhazelton@enter.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 21 Feb 2007 23:26:32 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:36527 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751386AbXBVE0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 23:26:31 -0500
+Date: Wed, 21 Feb 2007 20:26:15 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: staubach@redhat.com, hugh@veritas.com, linux-fsdevel@vger.kernel.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update ctime and mtime for mmaped write
+Message-Id: <20070221202615.a0a167f4.akpm@linux-foundation.org>
+In-Reply-To: <E1HJvdA-0003Nj-00@dorka.pomaz.szeredi.hu>
+References: <E1HJvdA-0003Nj-00@dorka.pomaz.szeredi.hu>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>
-	 <200702212030.58317.dhazelton@enter.net>
-	 <f2b55d220702211805h6df0b342o7676e37c7aa43bdd@mail.gmail.com>
-	 <200702212317.16262.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/22/07, D. Hazelton <dhazelton@enter.net> wrote:
-> "  We protect your rights with two steps: (1) copyright the software, and
-> (2) offer you this license which gives you legal permission to copy,
-> distribute and/or modify the software."
-> --IE: Once you release the code under the GPL, it becomes the *copyrighted*
-> *property* of the FSF and you are just another person that the GPL is applied
-> to.
+On Wed, 21 Feb 2007 18:51:52 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
 
-Put *down* the crack pipe.
+> This patch makes writing to shared memory mappings update st_ctime and
+> st_mtime as defined by SUSv3:
+> 
+>    The st_ctime and st_mtime fields of a file that is mapped with
+>    MAP_SHARED and PROT_WRITE shall be marked for update at some point
+>    in the interval between a write reference to the mapped region and
+>    the next call to msync() with MS_ASYNC or MS_SYNC for that portion
+>    of the file by any process. If there is no such call and if the
+>    underlying file is modified as a result of a write reference, then
+>    these fields shall be marked for update at some time after the
+>    write reference.
+> 
+> A new address_space flag is introduced: AS_CMTIME.  This is set each
+> time a page is dirtied through a userspace memory mapping.  This
+> includes write accesses via get_user_pages().
+> 
+> Note, the flag is set unconditionally, even if the page is already
+> dirty.  This is important, because the page might have been dirtied
+> earlier by a non-mmap write.
+> 
+> This flag is checked in msync() and __fput(), and if set, the file
+> times are updated and the flag is cleared
+> 
+> The flag is also cleared, if the time update is triggered by a normal
+> write.  This is not mandated by the standard, but seems to be a sane
+> thing to do.
 
-Trent
+Why is the flag checked in __fput()?
