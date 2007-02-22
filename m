@@ -1,84 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751905AbXBVVZK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751912AbXBVVZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751905AbXBVVZK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 16:25:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbXBVVZJ
+	id S1751912AbXBVVZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 16:25:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbXBVVZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 16:25:09 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:49017 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751905AbXBVVZI (ORCPT
+	Thu, 22 Feb 2007 16:25:27 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:53229 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751912AbXBVVZZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 16:25:08 -0500
-In-Reply-To: <20070222074044.GA4158@elte.hu>
-References: <20070221211355.GA7302@elte.hu> <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com> <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com> <20070222074044.GA4158@elte.hu>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A97A8AFD-3D1C-49EC-84DE-901D900244A0@oracle.com>
-Cc: Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Transfer-Encoding: 7bit
-From: Zach Brown <zach.brown@oracle.com>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Date: Thu, 22 Feb 2007 13:23:57 -0800
-To: Ingo Molnar <mingo@elte.hu>
-X-Mailer: Apple Mail (2.752.3)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Thu, 22 Feb 2007 16:25:25 -0500
+Date: Thu, 22 Feb 2007 22:25:24 +0100
+From: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: Arjan van de Ven <arjan@infradead.org>, tglx@linutronix.de,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Luca Tettamanti <kronos.it@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: NO_HZ: timer interrupt stuck [Re: Linux 2.6.21-rc1]
+Message-ID: <20070222212524.GA16830@rhlx01.hs-esslingen.de>
+References: <Pine.LNX.4.61.0702221334460.28624@yvahk01.tjqt.qr> <1172150712.3531.265.camel@laptopd505.fenrus.org> <45DDA43A.4030509@drzeus.cx> <1172154034.3531.270.camel@laptopd505.fenrus.org> <45DDADEB.3030309@drzeus.cx> <45DDB31C.8070306@drzeus.cx> <1172160024.25076.188.camel@localhost.localdomain> <45DDC488.1080008@drzeus.cx> <1172162526.3531.275.camel@laptopd505.fenrus.org> <45DE0607.2090601@drzeus.cx>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45DE0607.2090601@drzeus.cx>
+User-Agent: Mutt/1.4.2.2i
+X-Priority: none
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Plus there's the fundamental killer that KAIO is a /lot/ harder to
-> implement (and to maintain) on the kernel side: it has to be  
-> implemented
-> for every IO discipline, and even for the IO disciplines it  
-> supports at
-> the moment, it is not truly asynchronous for things like metadata
-> blocking or VFS blocking. To handle things like metadata blocking  
-> it has
-> to resort to non-statemachine techniques like retries - which are bad
-> for performance.
+Hi,
 
-Yes, yes, yes.
+On Thu, Feb 22, 2007 at 10:07:19PM +0100, Pierre Ossman wrote:
+> Arjan van de Ven wrote:
+> > no; c3 saves a TON more power. 
+> >
+> > you can try enabling HPET in your BIOS...
+> >
+> >   
+> 
+> Hah, I wish! This is a laptop, so the BIOS is as brain dead and broken
+> as is humanly possible.
+> 
+> Can I determine if I have the required hardware? So I can tell if I'm
+> permanently screwed, or just temporarily.
 
-As one of the poor suckers who has been fixing bugs in fs/aio.c and  
-fs/direct-io.c, I really want everyone to read Ingo's paragraph a few  
-times.  Have it printed on a t-shirt.
+http://lkml.org/lkml/2006/11/14/153
 
-Look at the number of man-years that have gone into fs/aio.c and fs/ 
-direct-io.c.  After all that effort it *barely* supports non-blocking  
-O_DIRECT IO.
+and related posts in this older thread
+("CONFIG_NO_HZ: missed ticks, stall (keyb IRQ required) [2.6.18-rc4-mm1]")
+should help.
 
-The maintenance overhead of those two files, above all else, is what  
-pushed me to finally try that nutty fibril attempt.
-
-> Syslets/threadlets on the other hand, once the core is implemented,  
-> have
-> near zero ongoing maintainance cost (compared to KAIO pushed into  
-> every
-> IO subsystem) and cover all IO disciplines and API variants  
-> immediately,
-> and they are as perfectly asynchronous as it gets.
-
-Amen.
-
-As an experiment, I'm working on backing the sys_io_*() calls with  
-syslets.  It's looking very promising so far.
-
-> So all in one, i used to think that AIO state-machines have a long- 
-> term
-> place within the kernel, but with syslets i think i've proven myself
-> embarrasingly wrong =B-)
-
-Welcome to the party :).
-
-- z
+Andreas Mohr
