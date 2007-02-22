@@ -1,87 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751380AbXBVCkp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750866AbXBVCne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751380AbXBVCkp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 21:40:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbXBVCko
+	id S1750866AbXBVCne (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 21:43:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750882AbXBVCne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 21:40:44 -0500
-Received: from ns1.suse.de ([195.135.220.2]:38013 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751380AbXBVCkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 21:40:43 -0500
-From: Neil Brown <neilb@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Thu, 22 Feb 2007 13:39:56 +1100
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17885.636.133245.572876@notabene.brown>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 006 of 6] md: Add support for reshape of a raid6
-In-Reply-To: message from Andrew Morton on Wednesday February 21
-References: <20070220172544.15678.patches@notabene>
-	<1070220063516.16208@suse.de>
-	<20070221144806.e6eed85c.akpm@linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+	Wed, 21 Feb 2007 21:43:34 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:40980 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750866AbXBVCnd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 21:43:33 -0500
+Date: Wed, 21 Feb 2007 20:43:20 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Weird hard disk noise on shutdown (bug #7674)
+In-reply-to: <fa.YHt2nIlQmoW5r2enmTSzsaySwH4@ifi.uio.no>
+To: Alan <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Francesco Pretto <ceztko@gmail.com>, Tejun Heo <htejun@gmail.com>
+Message-id: <45DD0348.5040005@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no>
+ <fa.YHt2nIlQmoW5r2enmTSzsaySwH4@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday February 21, akpm@linux-foundation.org wrote:
-> On Tue, 20 Feb 2007 17:35:16 +1100
-> NeilBrown <neilb@suse.de> wrote:
+Alan wrote:
+> Stick some printk calls in drivers/ata/libata-eh.c in ata_eh_suspend, or
+> turn on all the ATA debug and shutdown, the code should issue a cache
+> flush followed by a standbynow1 command for each disk.
 > 
-> > +		for (i = conf->raid_disks ; i-- ;  ) {
-> 
-> That statement should be dragged out, shot, stomped on then ceremonially
-> incinerated.
+> Alan
 
-An experiment in lateral thinking?  I liked it, but there is no
-accounting for taste.
+I believe it runs on suspend, but we don't run that code on normal 
+shutdown, do we?
 
-> 
-> What's wrong with doing
-> 
-> 	for (i = 0; i < conf->raid_disks; i++) {
-> 
-> in a manner which can be understood without alcoholic fortification?
+Tejun Heo had a patch for sd that could (optionally) trigger a START 
+STOP UNIT command to spin the disk down after synchronizing the cache 
+before shutdown, but I haven't heard anything of it lately..
 
-I guess...  "Egoless programmer" and all that, "write for others to
-read, not for the compiler", and as you say it comes to the same
-number of bytes of code on common architectures.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-> 
-> ho hum.
-
-
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-I must right code that Andrew can read.
-
-
-NeilBrown
