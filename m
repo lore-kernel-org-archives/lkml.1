@@ -1,97 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751588AbXBVNFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751586AbXBVNJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751588AbXBVNFP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 08:05:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbXBVNFP
+	id S1751586AbXBVNJk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 08:09:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751587AbXBVNJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 08:05:15 -0500
-Received: from il.qumranet.com ([82.166.9.18]:54727 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751584AbXBVNFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 08:05:12 -0500
-Message-ID: <45DD94D3.4030102@qumranet.com>
-Date: Thu, 22 Feb 2007 15:04:19 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Dor Laor <dor.laor@qumranet.com>, Pavel Machek <pavel@ucw.cz>,
-       kvm-devel@lists.sourceforge.net, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [PATCH 10/13] KVM: Wire up hypercall handlers to
- a	central arch-independent location
-References: <45D979D3.2020907@qumranet.com>	 <20070219103052.4D23725016B@il.qumranet.com><20070221103733.GI3945@ucw.cz>	 <45DD6CF0.3010509@qumranet.com>	 <64F9B87B6B770947A9F8391472E032160A91BAF3@ehost011-8.exch011.intermedia.net>	 <1172140490.3531.236.camel@laptopd505.fenrus.org>	 <45DD7330.1030001@qumranet.com> <1172142081.3531.243.camel@laptopd505.fenrus.org>
-In-Reply-To: <1172142081.3531.243.camel@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 22 Feb 2007 08:09:40 -0500
+Received: from [81.2.110.250] ([81.2.110.250]:49452 "EHLO lxorguk.ukuu.org.uk"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751582AbXBVNJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 08:09:39 -0500
+Date: Thu, 22 Feb 2007 14:10:47 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: "D. Hazelton" <dhazelton@enter.net>
+Cc: "Michael K. Edwards" <medwards.linux@gmail.com>,
+       "David Lang" <david.lang@digitalinsight.com>, davids@webmaster.com,
+       "v j" <vj.linux@gmail.com>, trent.waddington@gmail.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       "Neil Brown" <neilb@suse.de>
+Subject: Re: GPL vs non-GPL device drivers
+Message-ID: <20070222141047.425337a0@lxorguk.ukuu.org.uk>
+In-Reply-To: <200702212030.58317.dhazelton@enter.net>
+References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>
+	<Pine.LNX.4.63.0702211527080.15723@qynat.qvtvafvgr.pbz>
+	<f2b55d220702211628v6c8b16e7ibdfeb293592b2093@mail.gmail.com>
+	<200702212030.58317.dhazelton@enter.net>
+X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
+> As a side note: The distinct wording of the GPL actually *invalidates* the 
+> GNU/FSF claim that dynamically linking a work with, say, the readline 
+> library,  means the work is a derivative of said library. The GPL states (in 
 
-> - execution of hypercall handlers outside vcpu_load() (so they are 
-> > preemptible and sleepable)
->   
->
-> I don't need this; most of my hypercalls are non-blocking. The ones that
-> are can already undo the load themselves, no big deal.
->   
+Not that I can see no, but you could take this to a list with lawyers not
+programmers on and improve life for both parties
 
-I don't really like exposing the vcpu_load()/vcpu_put() interfaces.
+> clause 0) that the license only covers copying, modification and 
+> distribution. Unless they are confusing "Linking" with "copying" or "creating 
+> a derivative work" the claim is invalid - because, as it has been shown, a 
+> mechanical process such as compilation or linking *cannot* create a 
+> derivative work.
 
-On the other hand, sleeping in a hypercall means the guest vcpu is not 
-doing any processing.  Maybe we should declare hypercall handlers atomic 
-and let them use a workqueue if they can't be atomic.
+If you take the microsoft windows source code and compile it yourself
+believe me you will get sued if you ship the resulting binaries and you
+will lose in court.
 
-On the third hand, sleeping in a hypercall should be a rare event, so 
-forcing hypercall handlers to handle the sleeping case introduces a lot 
-of complexity for marginal gain.
+Copyright law deals with the right to copy hence the name. Generally
+speaking your right to use a work you have a copy of isn't constrained
+(and isn't constrainable) by pure copyright, only by contract. The author
+of a book for example has no power to stop you boiling the book if you
+don't like it, or using it as bog paper. 
 
->> - passing unhandled hypercalls to userspace for qemu-based devices
->>     
->
-> hm could do I suppose
->   
+I would also note that the FSF makes no claim about dynamic v static
+linking, merely about derivative works - which is the boundary the law is
+interested in. Indeed the GPLv2 was written in the days where dynamic
+linking was quite novel which is one reason the LGPL talks about
 
-One user would be the opengl guest to host tunneling driver/device 
-that's being developed for qemu.
+"For example, if you distribute copies of the library, whether gratis
+ or for a fee, you must give the recipients all the rights that we gave
+ you.  You must make sure that they, too, receive or can get the source
+ code.  If you link a program with the library, you must provide
+ complete object files to the recipients so that they can relink them
+ with the library, after making changes to the library and recompiling
+ it.  And you must show them these terms so they know their rights."
 
-> One thing I'd like to see is some way to do batched hypercalls. I don't
-> quite know how this will work in general, but let me explain the
-> scenario:
-> The guest submits a bunch of disk IO requests into a submit queue.
-> The host gets a hypercall and goes to process the submit queue
-> While this is processing, the guest submits more IO
-> The guest would here do another hypercall.. 
->
-> .. but what could be done is have the host poll at the end of it's scan
-> of the queue if there's more, and while the host is scanning, just
-> disable the hypercall the guest would make. So that if there is a
-> "submit while scanning/processing" going on, no need for more
-> hypercalls. 
->   
+and says nothing about dynamic/static linking.
 
-Xen does exactly that.  It's actually outside the scope of hypercalls, 
-and more related to the protocol between guest and host.  Not that it 
-can't be made generic (and the Xen rings are).
+> Related to that... Though a parser generated by Bison and a tokenizer
+> generated by Flex both contain large chunks of GPL'd code, their inclusion in 
+> the source file that is to be compiled is mechanical - the true unique work 
+> is in writing the file that is processed by the tool to produce the output. 
 
-Maybe we should just copy the code.
+Flex is more complex because the resulting binary contains both compiled
+work of yours and a support library of FSF owned code (-lfl). The non
+computing analogy here is the difference between using a paint program to
+create a work, and using a paint program to create a work but also
+including other artwork (eg clipart). The same is true of the GCC compiler
+as it merges your work with supporting library helper code modules which
+are themselves creative works. Clearly you could replace those helper
+modules with your own work and the result would be different.
 
-> (Otoh... the current situation isn't all that bad, there's one hypercall
-> for an entire batch of IO's, and the blocklayer isn't all that bad at
-> giving us nice large batches)
->   
+A better example for your case might be indent where the program
+processes your work mechanically and produces an output that doesn't
+contain any other creative works, or most of intltools which merges
+translations mechanically. (the merge code is sometimes a little creative
+but thats in the sense of being a nuisance not in the legal sense of
+creative work)
 
-True.  I expect it's more necessary with networking.
-
-Somthing else that came up in a conversation with Dor: the need for a 
-clean way to raise a guest interrupt.  The guest may be sleeping in 
-userspace, scheduled out, or running on another cpu (and requiring an 
-ipi to get it out of guest mode).
-
-Right now I'm thinking about using the signal machinery since it appears 
-to do exactly the right thing.
-
--- 
-error compiling committee.c: too many arguments to function
-
+Alan
