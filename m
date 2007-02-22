@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933063AbXBVMiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933067AbXBVMjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933063AbXBVMiV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 07:38:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933064AbXBVMiV
+	id S933067AbXBVMjK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 07:39:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933066AbXBVMjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 07:38:21 -0500
-Received: from science.horizon.com ([192.35.100.1]:11559 "HELO
-	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933062AbXBVMiU (ORCPT
+	Thu, 22 Feb 2007 07:39:09 -0500
+Received: from yue.linux-ipv6.org ([203.178.140.15]:57096 "EHLO
+	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933065AbXBVMjH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 07:38:20 -0500
-Date: 22 Feb 2007 07:27:21 -0500
-Message-ID: <20070222122721.12459.qmail@science.horizon.com>
-From: linux@horizon.com
-To: mingo@elte.hu
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Cc: linux@horizon.com, linux-kernel@vger.kernel.org
+	Thu, 22 Feb 2007 07:39:07 -0500
+Date: Thu, 22 Feb 2007 21:39:15 +0900 (JST)
+Message-Id: <20070222.213915.89824941.yoshfuji@linux-ipv6.org>
+To: divy@chelsio.com
+Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com, yoshfuji@linux-ipv6.org
+Subject: Re: [PATCH 2/7] cxgb3 - private ioctl cleanup
+From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
+	<yoshfuji@linux-ipv6.org>
+In-Reply-To: <45DD8DDA.8060303@chelsio.com>
+References: <20070222115925.10001.61276.stgit@localhost.localdomain>
+	<20070222.210618.134161490.yoshfuji@linux-ipv6.org>
+	<45DD8DDA.8060303@chelsio.com>
+Organization: USAGI/WIDE Project
+X-URL: http://www.yoshifuji.org/%7Ehideaki/
+X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
+X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
+X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
+ $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
+X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-May I just say, that this is f***ing brilliant.
-It completely separates the threadlet/fibril core from the (contentious)
-completion notification debate, and allows you to use whatever mechanism
-you like.  (fd, signal, kevent, futex, ...)
-
-You can also add a "macro syscall" like the original syslet idea,
-and it can be independent of the threadlet mechanism but provide the
-same effects.
-
-If the macros can be designed to always exit when donew, a guarantee
-never to return to user space, then you can always recycle the stack
-after threadlet_exec() returns, whether it blocked in the syscall or not,
-and you have your original design.
+In article <45DD8DDA.8060303@chelsio.com> (at Thu, 22 Feb 2007 04:34:34 -0800), Divy Le Ray <divy@chelsio.com> says:
 
 
-May I just suggest, however, that the interface be:
-	tid = threadlet_exec(...)
-Where tid < 0 means error, tid == 0 means completed synchronously,
-and tod > 0 identifies the child so it can be waited for?
+> > 1. Please do do change the values.
+> > 2. Explain why you are going to kill these ioctls.
+> >   
+> Jeff and Arjan have required that most of these ioctls go.
+> Please read:
+> http://marc.theaimsgroup.com/?l=linux-netdev&m=117029584904193&w=2
 
+Even if you remove them, PLEASE DO NOT CHANGE THE VALUES,
+unless you have very, very good reason.
 
-Anyway, this is a really excellent user-space API.  (You might add some
-sort of "am I synchronous?" query, or maybe you could just use gettid()
-for the purpose.)
-
-The one interesting question is, can you nest threadlet_exec() calls?
-I think it's implementable, and I can definitely see the attraction
-of being able to call libraries that use it internally (to do async
-read-ahead or whatever) from a threadlet function.
+--yoshfuji
