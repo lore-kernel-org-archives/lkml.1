@@ -1,215 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945924AbXBVHcK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945922AbXBVHeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945924AbXBVHcK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 02:32:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945922AbXBVHcK
+	id S1945922AbXBVHeV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 02:34:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945928AbXBVHeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 02:32:10 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:43422 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932755AbXBVHcJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 02:32:09 -0500
-Message-ID: <45DD46E5.4060804@cosmosbay.com>
-Date: Thu, 22 Feb 2007 08:31:49 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Thu, 22 Feb 2007 02:34:21 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:41926 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1945922AbXBVHeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 02:34:21 -0500
+To: Dmitriy Monakhov <dmonakhov@openvz.org>
+Cc: linux-kernel@vger.kernel.org, devel@openvz.org,
+       ecryptfs-devel@lists.sourceforge.net
+Subject: [PATCH] ecryptfs remove unnecessary flush_dcache_page
+References: <87wt2ew716.fsf@sw.ru>
+From: Dmitriy Monakhov <dmonakhov@sw.ru>
+Date: Thu, 22 Feb 2007 10:34:00 +0300
+In-Reply-To: <87wt2ew716.fsf@sw.ru> (Dmitriy Monakhov's message of "Mon, 19 Feb 2007 17:34:13 +0300")
+Message-ID: <87r6si7ijb.fsf@sw.ru>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] Speedup divides by cpu_power in scheduler
-References: <20070221211039.GA2672@beardog.cca.cpqcorp.net> <20070221191427.9b7cf4b0.akpm@linux-foundation.org>
-In-Reply-To: <20070221191427.9b7cf4b0.akpm@linux-foundation.org>
-Content-Type: multipart/mixed;
- boundary="------------000502080407010905090206"
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Thu, 22 Feb 2007 08:32:03 +0100 (CET)
+Content-Type: multipart/mixed; boundary="=-=-="
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000502080407010905090206
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+--=-=-=
 
-I noticed expensive divides done in try_to_wakeup() and find_busiest_group() 
-on a bi dual core Opteron machine (total of 4 cores), moderatly loaded (15.000 
-context switch per second)
+Dmitriy Monakhov <dmonakhov@openvz.org> writes:
 
-oprofile numbers :
+> 1)Function ecryptfs_do_readpage() calls flush_dcache_page(lower_page),
+>   but lower_page was't changed here. So remove this line.
+>
+> 2)prepare_write ret val was ignored in ecryptfs_write_inode_size_to_header().
+> If error happends we can't call commit_write, just do cleanup and fial.
+> It is issue easy to reproduce with full lower_fs, in this case prepare_write()
+Second issue was fixed by "ecryptfs-resolve-lower-page-unlocking-problem.patch",
+but first issue was't.
 
-CPU: AMD64 processors, speed 2600.05 MHz (estimated)
-Counted CPU_CLK_UNHALTED events (Cycles outside of halt state) with a unit 
-mask of 0x00 (No unit mask) count 50000
-samples  %        symbol name
-...
-613914    1.0498  try_to_wake_up
-    834  0.0013 :ffffffff80227ae1:   div    %rcx
-77513  0.1191 :ffffffff80227ae4:   mov    %rax,%r11
-
-608893    1.0413  find_busiest_group
-   1841  0.0031 :ffffffff802260bf:       div    %rdi
-140109  0.2394 :ffffffff802260c2:       test   %sil,%sil
+[LOG]
+  Function ecryptfs_do_readpage() calls flush_dcache_page(lower_page),
+  but lower_page was't changed here. Even if it was changed by 
+  lower_a_ops->readpage() dcache was flushed by readpage() itself.
+  So remove this unnecessary line.
+Signed-off-by: Dmitriy Monakhov <dmonakhov@openvz.org>
 
 
-Some of these divides can use the reciprocal divides we introduced some time 
-ago (currently used in slab AFAIK)
+--=-=-=
+Content-Disposition: inline; filename=diff-mm-ecryptfs-false-flush_dcache
 
-We can assume a load will fit in a 32bits number, because with a 
-SCHED_LOAD_SCALE=128 value, its still a theorical limit of 33554432
+diff --git a/fs/ecryptfs/mmap.c b/fs/ecryptfs/mmap.c
+index 1e5d2ba..2e45513 100644
+--- a/fs/ecryptfs/mmap.c
++++ b/fs/ecryptfs/mmap.c
+@@ -238,7 +238,6 @@ int ecryptfs_do_readpage(struct file *file, struct page *page,
+ 	lower_page_data = kmap_atomic(lower_page, KM_USER1);
+ 	memcpy(page_data, lower_page_data, PAGE_CACHE_SIZE);
+ 	kunmap_atomic(lower_page_data, KM_USER1);
+-	flush_dcache_page(lower_page);
+ 	kunmap_atomic(page_data, KM_USER0);
+ 	flush_dcache_page(page);
+ 	rc = 0;
 
-When/if we reach this limit one day, probably cpus will have a fast hardware 
-divide and we can zap the reciprocal divide trick.
+--=-=-=--
 
-I did not convert the divide in cpu_avg_load_per_task(), because tracking 
-nr_running changes may be not worth it ? We could use a static table of 32 
-reciprocal values but it would add a conditional branch and table lookup.
-
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-
---------------000502080407010905090206
-Content-Type: text/plain;
- name="sched_use_reciprocal_divide.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="sched_use_reciprocal_divide.patch"
-
---- linux-2.6.21-rc1/include/linux/sched.h	2007-02-21 21:08:32.000000000 +0100
-+++ linux-2.6.21-rc1-ed/include/linux/sched.h	2007-02-22 08:53:26.000000000 +0100
-@@ -669,7 +669,12 @@ struct sched_group {
- 	 * CPU power of this group, SCHED_LOAD_SCALE being max power for a
- 	 * single CPU. This is read only (except for setup, hotplug CPU).
- 	 */
--	unsigned long cpu_power;
-+	unsigned int cpu_power;
-+	/*
-+	 * reciprocal value of cpu_power to avoid expensive divides
-+	 * (see include/linux/reciprocal_div.h)
-+	 */
-+	u32 reciprocal_cpu_power;
- };
- 
- struct sched_domain {
---- linux-2.6.21-rc1/kernel/sched.c.orig	2007-02-21 21:10:54.000000000 +0100
-+++ linux-2.6.21-rc1-ed/kernel/sched.c	2007-02-22 08:46:56.000000000 +0100
-@@ -52,6 +52,7 @@
- #include <linux/tsacct_kern.h>
- #include <linux/kprobes.h>
- #include <linux/delayacct.h>
-+#include <linux/reciprocal_div.h>
- #include <asm/tlb.h>
- 
- #include <asm/unistd.h>
-@@ -182,6 +183,26 @@ static unsigned int static_prio_timeslic
- }
- 
- /*
-+ * Divide a load by a sched group cpu_power : (load / sg->cpu_power)
-+ * Since cpu_power is a 'constant', we can use a reciprocal divide.
-+ */
-+static inline u32 sg_div_cpu_power(const struct sched_group *sg, u32 load)
-+{
-+	return reciprocal_divide(load, sg->reciprocal_cpu_power);
-+}
-+/*
-+ * Each time a sched group cpu_power is changed,
-+ * we must compute its reciprocal value
-+ */
-+static inline void sg_inc_cpu_power(struct sched_group *sg, u32 val)
-+{
-+	sg->cpu_power += val;
-+	BUG_ON(sg->cpu_power == 0);
-+	sg->reciprocal_cpu_power = reciprocal_value(sg->cpu_power);
-+}
-+
-+
-+/*
-  * task_timeslice() scales user-nice values [ -20 ... 0 ... 19 ]
-  * to time slice values: [800ms ... 100ms ... 5ms]
-  *
-@@ -1241,7 +1262,8 @@ find_idlest_group(struct sched_domain *s
- 		}
- 
- 		/* Adjust by relative CPU power of the group */
--		avg_load = (avg_load * SCHED_LOAD_SCALE) / group->cpu_power;
-+		avg_load = sg_div_cpu_power(group,
-+				avg_load * SCHED_LOAD_SCALE);
- 
- 		if (local_group) {
- 			this_load = avg_load;
-@@ -2355,7 +2377,8 @@ find_busiest_group(struct sched_domain *
- 		total_pwr += group->cpu_power;
- 
- 		/* Adjust by relative CPU power of the group */
--		avg_load = (avg_load * SCHED_LOAD_SCALE) / group->cpu_power;
-+		avg_load = sg_div_cpu_power(group,
-+				avg_load * SCHED_LOAD_SCALE);
- 
- 		group_capacity = group->cpu_power / SCHED_LOAD_SCALE;
- 
-@@ -2510,8 +2533,8 @@ small_imbalance:
- 		pwr_now /= SCHED_LOAD_SCALE;
- 
- 		/* Amount of load we'd subtract */
--		tmp = busiest_load_per_task * SCHED_LOAD_SCALE /
--			busiest->cpu_power;
-+		tmp = sg_div_cpu_power(busiest,
-+				busiest_load_per_task * SCHED_LOAD_SCALE);
- 		if (max_load > tmp)
- 			pwr_move += busiest->cpu_power *
- 				min(busiest_load_per_task, max_load - tmp);
-@@ -2519,10 +2542,11 @@ small_imbalance:
- 		/* Amount of load we'd add */
- 		if (max_load * busiest->cpu_power <
- 				busiest_load_per_task * SCHED_LOAD_SCALE)
--			tmp = max_load * busiest->cpu_power / this->cpu_power;
-+			tmp = sg_div_cpu_power(this,
-+					max_load * busiest->cpu_power);
- 		else
--			tmp = busiest_load_per_task * SCHED_LOAD_SCALE /
--				this->cpu_power;
-+			tmp = sg_div_cpu_power(this,
-+				busiest_load_per_task * SCHED_LOAD_SCALE);
- 		pwr_move += this->cpu_power *
- 			min(this_load_per_task, this_load + tmp);
- 		pwr_move /= SCHED_LOAD_SCALE;
-@@ -6352,7 +6376,7 @@ next_sg:
- 			continue;
- 		}
- 
--		sg->cpu_power += sd->groups->cpu_power;
-+		sg_inc_cpu_power(sg, sd->groups->cpu_power);
- 	}
- 	sg = sg->next;
- 	if (sg != group_head)
-@@ -6427,6 +6451,8 @@ static void init_sched_groups_power(int 
- 
- 	child = sd->child;
- 
-+	sd->groups->cpu_power = 0;
-+
- 	/*
- 	 * For perf policy, if the groups in child domain share resources
- 	 * (for example cores sharing some portions of the cache hierarchy
-@@ -6437,18 +6463,16 @@ static void init_sched_groups_power(int 
- 	if (!child || (!(sd->flags & SD_POWERSAVINGS_BALANCE) &&
- 		       (child->flags &
- 			(SD_SHARE_CPUPOWER | SD_SHARE_PKG_RESOURCES)))) {
--		sd->groups->cpu_power = SCHED_LOAD_SCALE;
-+		sg_inc_cpu_power(sd->groups, SCHED_LOAD_SCALE);
- 		return;
- 	}
- 
--	sd->groups->cpu_power = 0;
--
- 	/*
- 	 * add cpu_power of each child group to this groups cpu_power
- 	 */
- 	group = child->groups;
- 	do {
--		sd->groups->cpu_power += group->cpu_power;
-+		sg_inc_cpu_power(sd->groups, group->cpu_power);
- 		group = group->next;
- 	} while (group != child->groups);
- }
-
---------------000502080407010905090206--
