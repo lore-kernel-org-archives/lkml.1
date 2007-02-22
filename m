@@ -1,37 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751729AbXBVRjG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751739AbXBVRjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751729AbXBVRjG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 12:39:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbXBVRjF
+	id S1751739AbXBVRjz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 12:39:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbXBVRjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 12:39:05 -0500
-Received: from gw.goop.org ([64.81.55.164]:46487 "EHLO mail.goop.org"
+	Thu, 22 Feb 2007 12:39:55 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:55576 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751385AbXBVRjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 12:39:04 -0500
-Message-ID: <45DDD538.1040309@goop.org>
-Date: Thu, 22 Feb 2007 09:39:04 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	id S1751734AbXBVRjx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 12:39:53 -0500
+Message-ID: <45DDD55F.4060106@redhat.com>
+Date: Thu, 22 Feb 2007 12:39:43 -0500
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061215)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Andi Kleen <ak@muc.de>, Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: -freg-struct-return?
-References: <45DCF1C5.4030006@goop.org> <1172131463.3531.226.camel@laptopd505.fenrus.org> <45DD4FA0.5030205@goop.org> <20070222112207.GA10190@muc.de> <45DDC810.3000401@zytor.com>
-In-Reply-To: <45DDC810.3000401@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: akpm@linux-foundation.org, hugh@veritas.com, linux-fsdevel@vger.kernel.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update ctime and mtime for mmaped write
+References: <E1HJvdA-0003Nj-00@dorka.pomaz.szeredi.hu> <20070221202615.a0a167f4.akpm@linux-foundation.org> <E1HK8hU-0005Mq-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1HK8hU-0005Mq-00@dorka.pomaz.szeredi.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Sometimes returning small structures is really nice.  If you can pass
-> them in registers, it's often generates the fastest possible code;
-> much better than using a pointer. 
+Miklos Szeredi wrote:
+>> On Wed, 21 Feb 2007 18:51:52 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
+>>
+>>     
+>>> This patch makes writing to shared memory mappings update st_ctime and
+>>> st_mtime as defined by SUSv3:
+>>>
+>>>    The st_ctime and st_mtime fields of a file that is mapped with
+>>>    MAP_SHARED and PROT_WRITE shall be marked for update at some point
+>>>    in the interval between a write reference to the mapped region and
+>>>    the next call to msync() with MS_ASYNC or MS_SYNC for that portion
+>>>    of the file by any process. If there is no such call and if the
+>>>    underlying file is modified as a result of a write reference, then
+>>>    these fields shall be marked for update at some time after the
+>>>    write reference.
+>>>
+>>> A new address_space flag is introduced: AS_CMTIME.  This is set each
+>>> time a page is dirtied through a userspace memory mapping.  This
+>>> includes write accesses via get_user_pages().
+>>>
+>>> Note, the flag is set unconditionally, even if the page is already
+>>> dirty.  This is important, because the page might have been dirtied
+>>> earlier by a non-mmap write.
+>>>
+>>> This flag is checked in msync() and __fput(), and if set, the file
+>>> times are updated and the flag is cleared
+>>>
+>>> The flag is also cleared, if the time update is triggered by a normal
+>>> write.  This is not mandated by the standard, but seems to be a sane
+>>> thing to do.
+>>>       
+>> Why is the flag checked in __fput()?
+>>     
+>
+> It's because of this bit in the standard:
+>
+>     If there is no such call and if the underlying file is modified
+>     as a result of a write reference, then these fields shall be
+>     marked for update at some time after the write reference.
+>
+> It could be done in munmap/mremap, but it seemed more difficult to
+> track down all the places where the vma is removed.  But yes, that may
+> be a nicer solution.
 
-Yes, but specifically, are there any pieces of assembler which return
-structures?  It appears there are none (since Ingo got a booting
-kernel), but there might be something obscure in some corner.
+It seems to me that, with this support, a file, which is mmap'd,
+modified, but never msync'd or munmap'd, will never get its mtime
+updated.  Or did I miss that?
 
-    J
+I also don't see how an mmap'd block device will get its mtime
+updated either.
+
+    Thanx...
+
+       ps
