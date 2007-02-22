@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932124AbXBVOyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932151AbXBVO4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932124AbXBVOyR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 09:54:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932154AbXBVOyR
+	id S932151AbXBVO4S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 09:56:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932152AbXBVO4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 09:54:17 -0500
-Received: from il.qumranet.com ([82.166.9.18]:38212 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932124AbXBVOyQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 09:54:16 -0500
-Message-ID: <45DDAE64.8070603@argo.co.il>
-Date: Thu, 22 Feb 2007 16:53:24 +0200
-From: Avi Kivity <avi@argo.co.il>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Thu, 22 Feb 2007 09:56:18 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:44245 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932151AbXBVO4R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 09:56:17 -0500
+X-Sasl-enc: cqOjgq1AOo5cnmyOCgUk4XHMxJYajZEWVIrLFpRKGRkm 1172156263
+Date: Thu, 22 Feb 2007 12:56:13 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: Alex Romosan <romosan@sycorax.lbl.gov>,
+       Yaroslav Halchenko <kernel@onerussian.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net,
+       James Simmons <jsimmons@infradead.org>
+Subject: Re: no backlight on radeon after recent kernel "upgrade"s
+Message-ID: <20070222145613.GD25887@khazad-dum.debian.net>
+References: <20070219044616.GC25659@washoe.onerussian.com> <20070219000412.acad13de.akpm@linux-foundation.org> <1171876788.6046.3.camel@localhost.localdomain> <877iub9mu2.fsf@sycorax.lbl.gov> <1172097718.5790.29.camel@localhost.localdomain> <20070221231706.GA3336@khazad-dum.debian.net> <1172103159.5790.45.camel@localhost.localdomain> <20070222005122.GA7928@khazad-dum.debian.net> <20070222011017.GA8845@khazad-dum.debian.net> <1172138450.5837.34.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: johnpol@2ka.mipt.ru, arjan@infradead.org, mingo@elte.hu,
-       drepper@redhat.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, hch@infradead.org, akpm@zip.com.au,
-       alan@lxorguk.ukuu.org.uk, zach.brown@oracle.com, suparna@in.ibm.com,
-       davidel@xmailserver.org, jens.axboe@oracle.com, tglx@linutronix.de
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-References: <20070222113148.GA3781@2ka.mipt.ru>	<1172145159.3531.253.camel@laptopd505.fenrus.org>	<20070222123929.GA5208@2ka.mipt.ru> <20070222.054127.104035694.davem@davemloft.net>
-In-Reply-To: <20070222.054127.104035694.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1172138450.5837.34.camel@localhost.localdomain>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-> Date: Thu, 22 Feb 2007 15:39:30 +0300
->
->   
->> It does not matter - even with threads cost of having thousands of
->> threads is _too_ expensive. So, IMO, it is wrong to have to create 
->> 20k threads for the simple web server which only sends one index page to
->> 80k connections with 4k connections per seconds rate.
->>
->> Just have that example in mind - more than 20k blocks in 80k connections 
->> over gigabit lan, and it is likely optimistic result, when designing new 
->> type of AIO.
->>     
->
-> I totally agree with Evgeniy on these points.
->
-> Using things like syslets and threadlets for networking I/O
-> is not a very good idea.  Blocking is more the norm than the
-> exception for networking I/O.
->   
+On Thu, 22 Feb 2007, Richard Purdie wrote:
+> > it to Len Brown for merging into 2.6.21, or NACK it if you'd rather do it in
+> > the backlight class core.
+> 
+> We can't change the backlight class code since some hardware can't read
+> from the device, only write to it. Initialisation in that case is a bit
+> different.
 
-And for O_DIRECT, and for large storage systems which overwhelm caches.  
-The optimize for the nonblocking case approach does not fit all 
-workloads.  And of course we have to be able to mix mostly-nonblocking 
-threadlets and mostly-blocking O_DIRECT and networking.
+Initializing stuff after registering is also racy as the device is not
+locked but we are going to clobber data in its properties struct.  I don't
+particularly care about that race, but...
 
+Anyway, you have the 2.6.21-rc patch now, to ACK or NACK.  I still think the
+class should be handling this.  If a device is write-only, it should have no
+_get ops handler, which means that the class can easily differentiate the
+two cases and do the right thing for both.  There's less code duplication
+that way.
+
+Howerver, I *do* strongly wish for a way to combine various drivers into a
+single backlight device, where radeon/intelfb takes care of some stuff,
+ibm-acpi/asus-laptop/sony-laptop takes care of other stuff, etc.  Also, a
+standard naming for the builtin screen(s) would help, calling it "ibm",
+"asus", "sony" is not good IMHO.
 
 -- 
-error compiling committee.c: too many arguments to function
-
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
