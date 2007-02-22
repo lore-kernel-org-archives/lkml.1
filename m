@@ -1,73 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751414AbXBVCe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751380AbXBVCkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751414AbXBVCe6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 21:34:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbXBVCe5
+	id S1751380AbXBVCkp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 21:40:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbXBVCko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 21:34:57 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:3753 "EHLO
-	pd5mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751413AbXBVCe4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 21:34:56 -0500
-Date: Wed, 21 Feb 2007 20:34:42 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: High CPU usage with sata_nv
-In-reply-to: <0c69abe94bbc69f652831a64ad77d0cb@digium.com>
-To: Matthew Fredrickson <creslin@digium.com>
-Cc: Tejun Heo <htejun@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>
-Message-id: <45DD0142.9020301@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.1OWRIIUBXsZOXflsGLA+7d4YCc0@ifi.uio.no>
- <fa.A0XBTh7eCfsh11d3AhMO71/4xQU@ifi.uio.no>
- <fa.fCm35VohC2wt9vlkg94Ru7me4ic@ifi.uio.no>
- <fa.qDqCne4pXntL0PolSS2j8t4py3g@ifi.uio.no>
- <fa.8TboLRab6f7zzIWFr/JPM6q04Zo@ifi.uio.no>
- <fa.PMqnzxUBiShkWV4h9SiztNIwYc0@ifi.uio.no> <45DBBFE8.5080901@shaw.ca>
- <0c69abe94bbc69f652831a64ad77d0cb@digium.com>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Wed, 21 Feb 2007 21:40:44 -0500
+Received: from ns1.suse.de ([195.135.220.2]:38013 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751380AbXBVCkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 21:40:43 -0500
+From: Neil Brown <neilb@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Thu, 22 Feb 2007 13:39:56 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17885.636.133245.572876@notabene.brown>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 006 of 6] md: Add support for reshape of a raid6
+In-Reply-To: message from Andrew Morton on Wednesday February 21
+References: <20070220172544.15678.patches@notabene>
+	<1070220063516.16208@suse.de>
+	<20070221144806.e6eed85c.akpm@linux-foundation.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Fredrickson wrote:
+On Wednesday February 21, akpm@linux-foundation.org wrote:
+> On Tue, 20 Feb 2007 17:35:16 +1100
+> NeilBrown <neilb@suse.de> wrote:
 > 
-> On Feb 20, 2007, at 9:43 PM, Robert Hancock wrote:
+> > +		for (i = conf->raid_disks ; i-- ;  ) {
 > 
->> Matthew Fredrickson wrote:
->>> I have noticed something that might be related as well.  I am working 
->>> on a device driver that would have periodic data errors due to 
->>> exceptionally long interrupt handling latency.  I have come to the 
->>> point that I suspect that it's the sata_nv driver, and now that we 
->>> can't do the hdparm -u1 option for sata, it seems to be a bigger 
->>> problem.
->>
->> What kernel are you using? There were some complaints about latency 
->> problems (the ATA status register read taking a ridiculous amount of 
->> time to complete) on sata_nv previously, but 2.6.20 should eliminate 
->> that problem at least on nForce4 chipsets..
->>
+> That statement should be dragged out, shot, stomped on then ceremonially
+> incinerated.
+
+An experiment in lateral thinking?  I liked it, but there is no
+accounting for taste.
+
 > 
-> It's a 2.6.18 kernel.  What we're seeing (by means of the interrupt pin 
-> on another card) is extremely large interrupt latency (measured from the 
-> time the interrupt pin goes low to the first couple lines of code in the 
-> IRQ handler to clear it) occasionally, in the order of 500-700 
-> microseconds.  I figured it was some other driver on the system 
-> disabling irqs for a long period of time, but it's difficult to trace 
-> what might be doing that.
+> What's wrong with doing
+> 
+> 	for (i = 0; i < conf->raid_disks; i++) {
+> 
+> in a manner which can be understood without alcoholic fortification?
 
-There were reports that an read of the interrupt status register on the 
-sata_nv controller could take a huge amount of time (something like 14 
-milliseconds as I recall). I don't think it was ever really established 
-what was causing that big delay (there was speculation it was trapping 
-into SMM mode, but Nvidia denied that one).
+I guess...  "Egoless programmer" and all that, "write for others to
+read, not for the compiler", and as you say it comes to the same
+number of bytes of code on common architectures.
 
-In 2.6.20 kernels we use a different operating mode, ADMA, on the 
-nForce4 chipsets which usually avoids using that register.
+> 
+> ho hum.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
 
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+I must right code that Andrew can read.
+
+
+NeilBrown
