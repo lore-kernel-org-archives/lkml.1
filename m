@@ -1,81 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945933AbXBVBEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932817AbXBVBFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945933AbXBVBEw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 20:04:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945934AbXBVBEv
+	id S932817AbXBVBFg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 20:05:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932632AbXBVBFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 20:04:51 -0500
-Received: from an-out-0708.google.com ([209.85.132.246]:61764 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945932AbXBVBEr (ORCPT
+	Wed, 21 Feb 2007 20:05:36 -0500
+Received: from nz-out-0506.google.com ([64.233.162.224]:33823 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932817AbXBVBFe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 20:04:47 -0500
+	Wed, 21 Feb 2007 20:05:34 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Uf0a/XlRuLWJPePGJbWJYivUMB3K9RKq5FRqueyFTrjAnrhP9cFjDDqzE/ii1qEsakCOhNyaZDoxgK46D5zZ+M98B9U0bhk/y8fpYHJEzx8JyzzIkwgjrdno247YUhVJGg38iqi2B76FXOm0XWe4/oCKnNIqMHpik4ikIGvPgWk=
-Message-ID: <f2b55d220702211704o549efd70oc0998cc663537ddd@mail.gmail.com>
-Date: Wed, 21 Feb 2007 17:04:45 -0800
-From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Cc: linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "Andrew Morton" <akpm@zip.com.au>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Ulrich Drepper" <drepper@redhat.com>,
-       "Zach Brown" <zach.brown@oracle.com>,
-       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Suparna Bhattacharya" <suparna@in.ibm.com>,
-       "Davide Libenzi" <davidel@xmailserver.org>,
-       "Jens Axboe" <jens.axboe@oracle.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <20070221233111.GB5895@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=OJRt5+pbGLJpeRoeH4gHL5wG/GDyB3FD4LkV/2us3jv0/jW366wXeY3ptQaW6eCQ9HyniheEkRNTEkWeLbeqodVXMCBXMbmUdt/kFRBdwEgNFhIo0BWYguWgUGzpOwk+/sybpqo0v9YDWSKTCn9QDXyOeDyFnNduK7065uJ9fvY=
+Subject: Re: [PATCH] fbdev driver for S3 Trio/Virge, updated
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Ondrej Zajicek <santiago@crfreenet.org>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
+       Jiri Slaby <jirislaby@gmail.com>
+In-Reply-To: <Pine.LNX.4.64.0702220049320.17121@pentafluge.infradead.org>
+References: <20070209193405.GB2637@localhost.localdomain>
+	 <1172102733.4217.38.camel@daplas>
+	 <Pine.LNX.4.64.0702220049320.17121@pentafluge.infradead.org>
+Content-Type: text/plain
+Date: Thu, 22 Feb 2007 09:08:25 +0800
+Message-Id: <1172106505.4217.54.camel@daplas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070221211355.GA7302@elte.hu>
-	 <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
-	 <20070221233111.GB5895@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/21/07, Ingo Molnar <mingo@elte.hu> wrote:
-> threadlets (and syslets) are parallel contexts and they behave so -
-> queuing and execution semantics are then ontop of that, implemented
-> either by glibc, or implemented by the application. There is no
-> 'pipeline' of requests imposed - the structure of pending requests is
-> totally free-form. For example in threadlet-test.c i've in essence
-> implemented a 'set of requests' with the submission site only interested
-> in whether all requests are done or not - but any stricter (or even
-> looser) semantics and ordering can be used too.
+On Thu, 2007-02-22 at 00:53 +0000, James Simmons wrote:
+> > > +/* image data is MSB-first, fb structure is MSB-first too */
+> > > +static inline u32 expand_color(u32 c)
+> > > +{
+> > > +	return ((c & 1) | ((c & 2) << 7) | ((c & 4) << 14) | ((c & 8) << 21)) * 0xFF;
+> > > +}
+> > > +
+> > > +/* s3fb_iplan_imageblit silently assumes that almost everything is 8-pixel aligned */
+> > 
+> > Hmn, same thing with vga16fb... Perhaps we should bring back the
+> > fontwidth flag of 2.2 and 2.4 kernels.
+> 
+> Ug no. It is possible to get 12,6 bit width fonts working with vga 
+> interleaved planes. I got it paritally working but never got back to it.
+> Its in my queue of this to do. Now that I finished the display class I 
+> need to get around to makeing drm/fbdev work together :-)
+> 
 
-In short, you have a dataflow model with infinite parallelism,
-implemented using threads of control mapped willy-nilly onto the
-underlying hardware.  This has not proven to be a successful model in
-the past.
+Of course, not fontwidth exactly, but to allow the driver to specify the
+alignment of the blit engine, in this case 8 pixels. I do believe X also
+has similar functionality to compensate for the limitation of the
+hardware.
 
-> in terms of AIO, the best queueing model is i think what the kernel uses
-> internally: freely ordered, with barrier support. (That is equivalent to
-> a "queue of sets", where the queue are the barriers, and the sets are
-> the requests within barriers. If there is no barrier pending then
-> there's just one large freely-ordered set of requests.)
+Tony
 
-That's a big part of why Linux scales poorly for workloads that
-involve a large volume of in-flight I/O transactions.  Unless you
-essentially lock one application thread to each CPU core, with a
-complete understanding of its cache sharing and latency relationships
-to all the other cores, and do your own userspace I/O scheduling and
-dispatching state machine -- which is what all industrial-strength
-databases and other sorts of transaction engines currently do -- you
-get the same old best-effort context-thrashing scheduler we've had
-since Solaris 2.0.
-
-Let's do something genuinely better this time, OK?
-
-Cheers,
-- Michael
