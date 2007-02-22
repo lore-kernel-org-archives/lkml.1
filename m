@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751571AbXBVJtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932936AbXBVJx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751571AbXBVJtU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 04:49:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbXBVJtU
+	id S932936AbXBVJx0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 04:53:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932939AbXBVJx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 04:49:20 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:56208 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751570AbXBVJtT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 04:49:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=YP3lWmH7e96UeXWUwLk0yLPC1LrCxx2ivDk+WdT1knMlL/lmMAXQ+rJEaeszWreMkRqupXpsUYZI/9z9mffS/gPD8AIxJn7z35rfDRfawaMI6M3XvE1SeIqEE7DDBO4EXU3WyDgOxrAqMYlMFE3M+SQTpTYvVW8+PNf8uYlNUB4=
-Message-ID: <84144f020702220149m21543847ge6af27e0468a5c86@mail.gmail.com>
-Date: Thu, 22 Feb 2007 11:49:16 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 08/29] mm: kmem_cache_objs_to_pages()
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org,
-       "Trond Myklebust" <trond.myklebust@fys.uio.no>,
-       "Thomas Graf" <tgraf@suug.ch>, "David Miller" <davem@davemloft.net>
-In-Reply-To: <84144f020702220145h4f670ec6g428dc046ee9dcc71@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Feb 2007 04:53:26 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:37280 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932936AbXBVJxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 04:53:25 -0500
+Date: Thu, 22 Feb 2007 04:50:39 -0500
+From: Jakub Jelinek <jakub@redhat.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, Andi Kleen <ak@muc.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: -freg-struct-return?
+Message-ID: <20070222095039.GR10425@devserv.devel.redhat.com>
+Reply-To: Jakub Jelinek <jakub@redhat.com>
+References: <45DCF1C5.4030006@goop.org> <1172131463.3531.226.camel@laptopd505.fenrus.org> <45DD4FA0.5030205@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070221144304.512721000@taijtu.programming.kicks-ass.net>
-	 <20070221144842.299190000@taijtu.programming.kicks-ass.net>
-	 <84144f020702210747t50d7d92ei1a2f5da8bf117d40@mail.gmail.com>
-	 <1172136508.6374.41.camel@twins>
-	 <84144f020702220145h4f670ec6g428dc046ee9dcc71@mail.gmail.com>
-X-Google-Sender-Auth: d8585ad940c1a080
+In-Reply-To: <45DD4FA0.5030205@goop.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/22/07, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> So you are only interested in rough estimation of how much many pages
-> you need for a given amount of objects? Why not use ksize() for that
-> then?
+On Thu, Feb 22, 2007 at 12:09:04AM -0800, Jeremy Fitzhardinge wrote:
+> Arjan van de Ven wrote:
+> > Do we know how many gcc bugs this has? (regparm used to have many)
+> > other than that.. sounds like a win...
+> >   
+> 
+> The documentation suggests that its the preferred mode of operation, and
+> that its the default on platforms where gcc is the primary compiler.  So
+> the fact that it isn't for Linux suggests either an oversight or that it
+> is actually broken...
 
-Uhm, I obviously meant, why not expose obj_size() instead.
+It is used for Linux on many architectures (x86_64, sparc64, ia64,
+ppc{,64}, arm, sh, m68k to name just a few), but it is an ABI decision,
+so e.g. on i386 is not used by default as the ABI mandates structs/unions
+are returned in memory.
+
+	Jakub
