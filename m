@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965045AbXBVA2I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965072AbXBVA21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965045AbXBVA2I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 19:28:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965073AbXBVA2I
+	id S965072AbXBVA21 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 19:28:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965073AbXBVA21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 19:28:08 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:51796 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965045AbXBVA2H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 19:28:07 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Wed, 21 Feb 2007 19:25:56 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: reiserfs-dev@namesys.com
-Subject: [PATCH] ReiserFS:  Correct misspelled "REISERFS_PROC_INFO" to
- "CONFIG_REISERFS_PROC_INFO".
-Message-ID: <Pine.LNX.4.64.0702211922570.6954@CPE00045a9c397f-CM001225dbafb6>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, UPPERCASE_25_50 0.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Wed, 21 Feb 2007 19:28:27 -0500
+Received: from www.osadl.org ([213.239.205.134]:33841 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965072AbXBVA20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 19:28:26 -0500
+Subject: [PATCH] Fix posix-cpu-timer breakage caused by stale p->last_ran
+	value
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
+       Roman Zippel <zippel@linux-m68k.org>, Mike Galbraith <efault@gmx.de>,
+       Ken Chen <kenneth.w.chen@intel.com>, balducci@units.it,
+       LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+In-Reply-To: <20070221104747.3cb0da32.akpm@linux-foundation.org>
+References: <20070221104747.3cb0da32.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 22 Feb 2007 01:33:29 +0100
+Message-Id: <1172104409.25076.165.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Problem description at:
+http://bugzilla.kernel.org/show_bug.cgi?id=8048
 
-  Correct the misspelling of the preprocessor check of a Kconfig
-option to refer to CONFIG_REISERFS_PROC_INFO and not just the
-incorrect REISERFS_PROC_INFO.
+Commit b18ec80396834497933d77b81ec0918519f4e2a7 
+    [PATCH] sched: improve migration accuracy
+optimized the scheduler time calculations, but broke posix-cpu-timers.
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+The problem is that the p->last_ran value is not updated after a context
+switch. So a subsequent call to current_sched_time() calculates with a
+stale p->last_ran value, i.e. accounts the full time, which the task was
+scheduled away.
 
----
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-diff --git a/fs/reiserfs/procfs.c b/fs/reiserfs/procfs.c
-index ecc9943..83b9135 100644
---- a/fs/reiserfs/procfs.c
-+++ b/fs/reiserfs/procfs.c
-@@ -20,7 +20,7 @@
- #include <linux/init.h>
- #include <linux/proc_fs.h>
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -3566,7 +3566,7 @@ switch_tasks:
+ 
+ 	sched_info_switch(prev, next);
+ 	if (likely(prev != next)) {
+-		next->timestamp = now;
++		next->timestamp = next->last_ran = now;
+ 		rq->nr_switches++;
+ 		rq->curr = next;
+ 		++*switch_count;
 
--#if defined( REISERFS_PROC_INFO )
-+#ifdef CONFIG_REISERFS_PROC_INFO
 
- /*
-  * LOCKING:
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
