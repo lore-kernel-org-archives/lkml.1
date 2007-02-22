@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945968AbXBVLFi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933024AbXBVLLy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945968AbXBVLFi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 06:05:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945966AbXBVLFi
+	id S933024AbXBVLLy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 06:11:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933025AbXBVLLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 06:05:38 -0500
-Received: from brick.kernel.dk ([62.242.22.158]:24270 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945962AbXBVLFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 06:05:36 -0500
-Date: Thu, 22 Feb 2007 12:32:28 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] libata: add NCQ blacklist entries from Silicon Image  Windows driver
-Message-ID: <20070222113226.GI5549@kernel.dk>
-References: <45DD2EC9.4050403@shaw.ca> <45DD3EC7.3050801@garzik.org>
+	Thu, 22 Feb 2007 06:11:54 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58567
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S933024AbXBVLLx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 06:11:53 -0500
+Date: Thu, 22 Feb 2007 03:11:49 -0800 (PST)
+Message-Id: <20070222.031149.112617356.davem@davemloft.net>
+To: hpa@zytor.com
+Cc: linux-kernel@vger.kernel.org, vapier.adi@gmail.com
+Subject: Re: <linux/socket.h>, <linux/stat.h> breakage: AF_* constants are
+ part of ABI definition
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <45DA1154.9020601@zytor.com>
+References: <45DA1154.9020601@zytor.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45DD3EC7.3050801@garzik.org>
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 22 2007, Jeff Garzik wrote:
-> Robert Hancock wrote:
-> >This patch adds in some NCQ blacklist entries taken from the Silicon
-> >Image Windows drivers' .inf files for the 3124 and 3132 controllers.
-> >These entries were marked as ""DisableSataQueueing". Assume these are
-> >in their blacklist for a reason and disable NCQ on these drives.
-> >
-> >Signed-off-by: Robert Hancock <hancockr@shaw.ca>
-> >
-> >--- linux-2.6.21-rc1edit/drivers/ata/libata-core.c.prev    2007-02-21 
-> >22:23:05.000000000 -0600
-> >+++ linux-2.6.21-rc1edit/drivers/ata/libata-core.c    2007-02-21 
-> >22:25:44.000000000 -0600
-> >@@ -3269,6 +3269,13 @@ static const struct ata_blacklist_entry
-> >    /* Devices with NCQ limits */
-> >
-> >+    /* The following blacklist entries are taken from the Windows
-> >+       driver .inf files for the Silicon Image 3124 and 3132. */
-> >+    { "Maxtor 7B250S0",    "BANC1B70",    ATA_HORKAGE_NONCQ, },
-> >+    { "HTS541060G9SA00",    "MB3OC60D",    ATA_HORKAGE_NONCQ, },
-> >+    { "HTS541080G9SA00",    "MB4OC60D",    ATA_HORKAGE_NONCQ, },
-> >+    { "HTS541010G9SA00",    "MBZOC60D",    ATA_HORKAGE_NONCQ, },
+From: "H. Peter Anvin" <hpa@zytor.com>
+Date: Mon, 19 Feb 2007 13:06:28 -0800
+
+> In the current git tree, commit 57a87bb0720a5cf7a9ece49a8c8ed288398fd1bb 
+> removes any way to automatically extracting a whole lot of ABI constants 
+> from the kernel headers, especially AF_* and the various S_* constants.
 > 
-> Do we have information that these drives fail on non-SiI controllers?
+> Furthermore, the patch breaks <linux/in.h> which uses sa_family_t, which 
+> is now defined under __KERNEL__.
+ ...
+> This patch breaks klibc in ways that are painfully hard to fix, and 
+> *definitely* cannot be fixed by anything less than replication of all 
+> these definitions, which is exactly the Wrong Thing[TM].
 > 
-> Sometimes the problem can be related to a single family of controllers.
+> A much better solution (or complement) would be something like:
+> 
+> #if defined(__KERNEL__) || defined(__KHDR_CONSTANTS)
+> 
+> We could have __KHDR_CONSTANTS for the AF_* constants and __KHDR_MACROS 
+> for the various macros (cmsg et al).  That way the userspace library can 
+> ask for what it wants.
 
-I don't know about the Hitachi's, but the Maxtor with that firmware is
-definitely broken. It _appeared_ to work if the depth was limited to 4,
-but I didn't test it long enough to be absolutely certain. So the safest
-is indeed to blacklist it.
-
-I'm pretty sure my initial NCQ patches had a blacklist entry for that
-drive as well, but apparently the blacklist got lost somewhere along the
-way?
-
--- 
-Jens Axboe
-
+I'll think about what to do about this, thanks for pointing out
+the problem.
