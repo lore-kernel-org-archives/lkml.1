@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422833AbXBVLec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945976AbXBVLhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422833AbXBVLec (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 06:34:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422852AbXBVLec
+	id S1945976AbXBVLhF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 06:37:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945975AbXBVLhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 06:34:32 -0500
-Received: from mail.screens.ru ([213.234.233.54]:48983 "EHLO mail.screens.ru"
+	Thu, 22 Feb 2007 06:37:05 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:33729 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422833AbXBVLeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 06:34:31 -0500
-Date: Thu, 22 Feb 2007 14:33:56 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: paulmck@linux.vnet.ibm.com, ego@in.ibm.com, akpm@osdl.org,
-       paulmck@us.ibm.com, mingo@elte.hu, vatsa@in.ibm.com,
-       dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-Subject: Re: freezer problems
-Message-ID: <20070222113356.GA83@tv-sign.ru>
-References: <20070214144031.GA15257@in.ibm.com> <20070221200314.GA91@tv-sign.ru> <20070221210606.GH7063@linux.vnet.ibm.com> <200702220010.54126.rjw@sisk.pl> <20070222104747.GA505@tv-sign.ru>
+	id S1945976AbXBVLhD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 06:37:03 -0500
+Date: Thu, 22 Feb 2007 14:31:50 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070222113148.GA3781@2ka.mipt.ru>
+References: <20070221211355.GA7302@elte.hu> <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com> <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com> <20070222074044.GA4158@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-In-Reply-To: <20070222104747.GA505@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070222074044.GA4158@elte.hu>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 22 Feb 2007 14:33:11 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/22, Oleg Nesterov wrote:
->
-> On 02/22, Rafael J. Wysocki wrote:
-> >
-> > @@ -207,7 +209,7 @@ static void thaw_tasks(int thaw_user_spa
-> >  		if (is_user_space(p) == !thaw_user_space)
-> >  			continue;
-> >  
-> > -		if (!thaw_process(p))
-> > +		if (!thaw_process(p) && !freezer_should_skip(p))
-> >  			printk(KERN_WARNING " Strange, %s not stopped\n",
-> 
-> This is racy, the warning could be false. We wake up the task, testing
-> its ->flags is not reliable.
-> 
-> Damn. PF_FREEZER_SKIP task could be woken before, clear PF_FREEZER_SKIP,
-> but not frozen.
-> 
-> We can change freezer_count() to clear PF_FREEZER_SKIP after try_to_freeze(),
-> not before. Now thaw_process() can take PF_FREEZER_SKIP into account and
-> return "true".
-> 
-> But this means the task may be PF_FREEZER_SKIP | PF_FROZEN. What if we we
-> call try_to_freeze_tasks() soon after thaw_tasks()? We may hit the task which
-> leaves the refrigerator, but didn't clear PF_FREEZER_SKIP yet. This means
-> that thaw_process() should clear PF_FREEZER_SKIP as well. This is messy :(
-> 
-> Any other ideas? In any case we should imho avoid a separate loop for
-> PF_FREEZER_SKIP tasks to just fix debug messages. In fact it can't help
-> anyway.
+Hi Ingo, developers.
 
-Probably: current clears PF_FREEZER_SKIP along with TIF_FREEZE "atomically"
-under task_lock in refrigerator(). thaw_process() takes PF_FREEZER_SKIP into
-account.
+On Thu, Feb 22, 2007 at 08:40:44AM +0100, Ingo Molnar (mingo@elte.hu) wrote:
+> Syslets/threadlets on the other hand, once the core is implemented, have 
+> near zero ongoing maintainance cost (compared to KAIO pushed into every 
+> IO subsystem) and cover all IO disciplines and API variants immediately, 
+> and they are as perfectly asynchronous as it gets.
+> 
+> So all in one, i used to think that AIO state-machines have a long-term 
+> place within the kernel, but with syslets i think i've proven myself 
+> embarrasingly wrong =B-)
 
-Oleg.
+Hmm...
+Try to have a network web server with huge load made on top of
+syslets/threadlets.
 
+It is not a TUX anymore - you had 1024 threads, and all of them will be
+consumed by tcp_sendmsg() for slow clients - rescheduling will kill a
+machine.
+
+My tests show that with 4k connections per second (8k concurrency) more
+than 20k connections of 80k total block in tcp_sendmsg() over gigabit
+lan between quite fast machines.
+
+Or threadlet/syslet AIO should not be used with networking too?
+
+> 	Ingo
+
+-- 
+	Evgeniy Polyakov
