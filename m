@@ -1,77 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751947AbXBVVpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751948AbXBVVpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751947AbXBVVpd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 16:45:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbXBVVpd
+	id S1751948AbXBVVpi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 16:45:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbXBVVpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 16:45:33 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:58414 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751947AbXBVVpb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 16:45:31 -0500
-In-Reply-To: <20070222213212.GJ18976@kvack.org>
-References: <20070221211355.GA7302@elte.hu> <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com> <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com> <20070222074044.GA4158@elte.hu> <A97A8AFD-3D1C-49EC-84DE-901D900244A0@oracle.com> <20070222213212.GJ18976@kvack.org>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <00896E31-0A0A-4938-8638-49F893E308EF@oracle.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
+	Thu, 22 Feb 2007 16:45:38 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:40809 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751948AbXBVVpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 16:45:35 -0500
+Message-ID: <45DE0EF7.6050902@garzik.org>
+Date: Thu, 22 Feb 2007 16:45:27 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+CC: Meelis Roos <mroos@linux.ee>, Alan <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: ata-piix ACPI errors
+References: <Pine.SOC.4.64.0702221525480.20840@math> <20070222150641.037f7fbe@lxorguk.ukuu.org.uk> <Pine.SOC.4.64.0702221614540.20840@math> <Pine.LNX.4.61.0702222017290.7553@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0702222017290.7553@yvahk01.tjqt.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Zach Brown <zach.brown@oracle.com>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Date: Thu, 22 Feb 2007 13:44:07 -0800
-To: Benjamin LaHaise <bcrl@kvack.org>
-X-Mailer: Apple Mail (2.752.3)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> direct-io.c is evil.  Ridiculously.
+Jan Engelhardt wrote:
+> On Feb 22 2007 17:26, Meelis Roos wrote:
+>>> Not in those but again note that the cable detection is broken 
+>>>
+>>>> ata2.00: ATAPI, max UDMA/33
+>> It shows UDMA/100 for HDD and UDMA/33 for DVD-ROM. Visual inspection 
+>> confirms that this is correct - DVD-ROM has 40-pin cable and HDD has 
+>> 80-pin one. So at least the result is not wrong.
+> 
+> But should not it do UDMA/66 then?
 
-You will have a hard time finding someone to defend it, I predict :).
+40-pin cable limits you to UDMA/33.
 
-There is good news on that front, too.  Chris (Mason) is making  
-progress on getting rid of the worst of the Magical Locking that  
-makes buffered races with O_DIRECT ops so awful.
+	Jeff
 
-I'm not holding my breath for a page cache so fine grained that it  
-could pin and reference 512B granular user regions and build bios  
-from them, though that sure would be nice :).
 
->> As an experiment, I'm working on backing the sys_io_*() calls with
->> syslets.  It's looking very promising so far.
->
-> Great, I'd love to see the comparisons.
 
-I'm out for data.  If it sucks, well, we'll know just how much.  I'm  
-pretty hopeful that it won't :).
-
-> One other implementation to consider is actually using kernel threads
-> compared to how syslets perform.  Direct IO for one always blocks, so
-> there shouldn't be much of a performance difference compared to  
-> syslets,
-> with the bonus that no arch specific code is needed.
-
-Yeah, I'm starting with raw kernel threads so we can get some numbers  
-before moving to syslets.
-
-One of the benefits syslets bring is the ability to start processing  
-the next pending request the moment current request processing  
-blocks.  In the concurrent O_DIRECT write case that avoids releasing  
-a ton of kernel threads which all just run to serialize on i_mutex  
-(potentially bouncing it around cache domains) as the O_DIRECT ops  
-are built and sent.
-
--z 
