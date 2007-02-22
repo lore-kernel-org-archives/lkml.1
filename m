@@ -1,66 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932146AbXBVOvG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932149AbXBVOxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932146AbXBVOvG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 09:51:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932124AbXBVOvG
+	id S932149AbXBVOxm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 09:53:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932151AbXBVOxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 09:51:06 -0500
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:43938 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932146AbXBVOvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 09:51:05 -0500
-Message-ID: <45DDADEB.3030309@drzeus.cx>
-Date: Thu, 22 Feb 2007 15:51:23 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Thu, 22 Feb 2007 09:53:42 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34169 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932149AbXBVOxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 09:53:41 -0500
+Message-ID: <45DDAE24.6080905@redhat.com>
+Date: Thu, 22 Feb 2007 09:52:20 -0500
+From: Jon Masters <jcm@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Luca Tettamanti <kronos.it@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: NO_HZ: timer interrupt stuck [Re: Linux 2.6.21-rc1]
-References: <20070221230409.GA1158@dreamland.darkstar.lan>	 <1172099859.25076.132.camel@localhost.localdomain>	 <Pine.LNX.4.61.0702221334460.28624@yvahk01.tjqt.qr>	 <1172150712.3531.265.camel@laptopd505.fenrus.org>	 <45DDA43A.4030509@drzeus.cx> <1172154034.3531.270.camel@laptopd505.fenrus.org>
-In-Reply-To: <1172154034.3531.270.camel@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=iso-8859-1
+To: Sergey Vlasov <vsu@altlinux.ru>
+CC: "Luiz Fernando N.Capitulino" <lcapitulino@mandriva.com.br>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mit-devel@lists.printk.net
+Subject: Re: module-init-tools-3.3-pre10 available
+References: <45DD0031.9010808@redhat.com> <20070222170732.22c1320b.vsu@altlinux.ru>
+In-Reply-To: <20070222170732.22c1320b.vsu@altlinux.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Thu, 2007-02-22 at 15:10 +0100, Pierre Ossman wrote:
->   
->>
->> So with a local apic, and acpi_pm as clocksource, I shouldn't be getting timer
->> interrupts? 
->>     
->
-> timer interrupts as in "irq0"?
->
->   
+Sergey Vlasov wrote:
 
-Yes:
+> I see that you have merged some patches which change depmod.8.
+> However, this file is generated from doc/depmod.sgml, which was not
+> changed appropriately.
 
-  0:    9786349    XT-PIC-XT        timer
+Ah. A valid point - Luiz, do you want to redo your patch or I can take a 
+look at the SGML source myself.
 
-> you shouldn't if you use the hrtimers/tickless stuff...
->   
-
-CONFIG_HIGH_RES_TIMERS=y
-CONFIG_NO_HZ=y
-
-> can you get us a dmesg somewhere? maybe the kernel mentions why ;)
->
->   
-
-Sure. My dmesg is full of mmc debug crud right now, but I'll just reboot
-and I'll have a clean one for you.
-
-Rgds
-
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
-
+Jon.
