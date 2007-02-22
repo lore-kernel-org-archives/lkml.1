@@ -1,140 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751721AbXBVQ6E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751717AbXBVRAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751721AbXBVQ6E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 11:58:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbXBVQ6D
+	id S1751717AbXBVRAs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 12:00:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbXBVRAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 11:58:03 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:34765 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751721AbXBVQ6A (ORCPT
+	Thu, 22 Feb 2007 12:00:48 -0500
+Received: from py-out-1112.google.com ([64.233.166.182]:27222 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751716AbXBVRAr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 11:58:00 -0500
-Date: Thu, 22 Feb 2007 11:48:38 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: stable@kernel.org, linux-kernel@vger.kernel.org
-Cc: Blaisorblade <blaisorblade@yahoo.it>,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: [PATCH] UML - Fix 2.6.20 hang
-Message-ID: <20070222164838.GA3396@ccure.user-mode-linux.org>
+	Thu, 22 Feb 2007 12:00:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=hdZT8vy6nMJ+qUnjfCEDemYYLI3jmBY3XsQYt1mebnaOa9ikzauQ83EeK0qMO23L7WMXJ9kZLJkuJR5U16Iw2ezcsLp8RKsiwHafmV7Ce31Cp6yWSkRtUeMfi6KbwdUNmlhUPYnXpEtdEtIMj7/1aFqZRVt03S+GkaYe0B1ghno=
+Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+Cc: James Simmons <jsimmons@infradead.org>, Luca Tettamanti <kronos@people.it>,
+       linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>,
+       Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <cb7bb73a0702220755y3eb2e5b1r8e7908ae0c1720c9@mail.gmail.com>
+References: <ephv35$4i3$1@sea.gmane.org>
+	 <20070130203301.GA15067@dreamland.darkstar.lan>
+	 <20070204201713.GA12867@dreamland.darkstar.lan>
+	 <Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
+	 <cb7bb73a0702061508x767882dcia1b13f85d898b6e7@mail.gmail.com>
+	 <1172101406.4217.16.camel@daplas>
+	 <cb7bb73a0702220001u6acbdd95ncdc9fad10d06b421@mail.gmail.com>
+	 <1172133646.4086.5.camel@daplas>
+	 <cb7bb73a0702220548s55380f7fk995726ffd349823b@mail.gmail.com>
+	 <1172153358.4306.17.camel@daplas>
+	 <cb7bb73a0702220755y3eb2e5b1r8e7908ae0c1720c9@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 23 Feb 2007 01:03:31 +0800
+Message-Id: <1172163811.4198.19.camel@daplas>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ I mistyped the -stable email in my original posting ]
+On Thu, 2007-02-22 at 16:55 +0100, Giuseppe Bilotta wrote:
+> On 2/22/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> However, I'm still getting the same snowy effects, which doesn't come
+> as a surprise since the actual mode timings used are just the same ...
+> 
 
-A previous cleanup misused need_poll, which had a fairly broken
-interface.  It implemented a growable array, changing the used
-elements count itself, but leaving it up to the caller to fill in the
-actual elements, including the entire array if the array had to be
-reallocated.  This worked because the previous users were switching
-between two such structures, and the elements were copied from the
-inactive array to the active array after making sure the active array
-had enough room.
+BTW, you can also use CVT modes for nvidiafb, even if the mode in
+question is not present in the EDID block.  For example:
 
-maybe_sigio_broken was made to use need_poll, but it was operating on
-a single array, so when the buffer was reallocated, the previous
-contents were lost.
+video=nvidiafb:1024x768M@60 or 1600x1200M@60 
 
-This patch makes need_poll implement more sane semantics.  It merely
-assures that the array is of the proper size and that the contents are
-preserved.  It is up to the caller to adjust the used elements count
-and to ensure that the proper elements are resent.
+(The 'M' tells fb_find_mode to do a CVT calculation instead).
 
-This manifested itself as a hang in 2.6.20 as the uninitialized buffer
-convinced UML that one of its own file descriptors didn't support
-SIGIO and needed to be watched by poll in a separate thread.  The
-result was an interrupt flood as control traffic over this descriptor
-sparked interrupts, which resulted in more control traffic, ad nauseum.
+If you use a reduced-blanking CVT mode, it might even reduce the snow of
+your DVI even at the highest resolution.  So:
 
-Signed-off-by: Jeff Dike <jdike@addtoit.com>
---
- arch/um/os-Linux/sigio.c |   38 ++++++++++++++++++++------------------
- 1 file changed, 20 insertions(+), 18 deletions(-)
+video=nvidiafb:1600x1200MR@60
 
-Index: linux-2.6.18-mm/arch/um/os-Linux/sigio.c
-===================================================================
---- linux-2.6.18-mm.orig/arch/um/os-Linux/sigio.c	2007-02-08 16:48:00.000000000 -0500
-+++ linux-2.6.18-mm/arch/um/os-Linux/sigio.c	2007-02-14 19:16:22.000000000 -0500
-@@ -97,20 +97,22 @@ static int write_sigio_thread(void *unus
- 
- static int need_poll(struct pollfds *polls, int n)
- {
--	if(n <= polls->size){
--		polls->used = n;
-+	struct pollfd *new;
-+
-+	if(n <= polls->size)
- 		return 0;
--	}
--	kfree(polls->poll);
--	polls->poll = um_kmalloc_atomic(n * sizeof(struct pollfd));
--	if(polls->poll == NULL){
-+
-+	new = um_kmalloc_atomic(n * sizeof(struct pollfd));
-+	if(new == NULL){
- 		printk("need_poll : failed to allocate new pollfds\n");
--		polls->size = 0;
--		polls->used = 0;
- 		return -ENOMEM;
- 	}
-+
-+	memcpy(new, polls->poll, polls->used * sizeof(struct pollfd));
-+	kfree(polls->poll);
-+
-+	polls->poll = new;
- 	polls->size = n;
--	polls->used = n;
- 	return 0;
- }
- 
-@@ -171,15 +173,15 @@ int add_sigio_fd(int fd)
- 			goto out;
- 	}
- 
--	n = current_poll.used + 1;
--	err = need_poll(&next_poll, n);
-+	n = current_poll.used;
-+	err = need_poll(&next_poll, n + 1);
- 	if(err)
- 		goto out;
- 
--	for(i = 0; i < current_poll.used; i++)
--		next_poll.poll[i] = current_poll.poll[i];
--
--	next_poll.poll[n - 1] = *p;
-+	memcpy(next_poll.poll, current_poll.poll,
-+	       current_poll.used * sizeof(struct pollfd));
-+	next_poll.poll[n] = *p;
-+	next_poll.used = n + 1;
- 	update_thread();
-  out:
- 	sigio_unlock();
-@@ -214,6 +216,7 @@ int ignore_sigio_fd(int fd)
- 		if(p->fd != fd)
- 			next_poll.poll[n++] = *p;
- 	}
-+	next_poll.used = current_poll.used - 1;
- 
- 	update_thread();
-  out:
-@@ -331,10 +334,9 @@ void maybe_sigio_broken(int fd, int read
- 
- 	sigio_lock();
- 	err = need_poll(&all_sigio_fds, all_sigio_fds.used + 1);
--	if(err){
--		printk("maybe_sigio_broken - failed to add pollfd\n");
-+	if(err)
- 		goto out;
--	}
-+
- 	all_sigio_fds.poll[all_sigio_fds.used++] =
- 		((struct pollfd) { .fd  	= fd,
- 				   .events 	= read ? POLLIN : POLLOUT,
+(The additional 'R' will do reduced-blanking CVT calculation)
 
+Tony
 
--- 
-Work email - jdike at linux dot intel dot com
