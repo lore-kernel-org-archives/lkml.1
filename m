@@ -1,38 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751913AbXBVVZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751917AbXBVV2J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751913AbXBVVZr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 16:25:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbXBVVZr
+	id S1751917AbXBVV2J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 16:28:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbXBVV2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 16:25:47 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:35635 "EHLO twin.jikos.cz"
+	Thu, 22 Feb 2007 16:28:09 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:39593 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751915AbXBVVZp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 16:25:45 -0500
-Date: Thu, 22 Feb 2007 22:24:27 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: webmaster@kernel.org
-cc: linux-kernel@vger.kernel.org
-Subject: gitweb on kernel.org buggy?
-Message-ID: <Pine.LNX.4.64.0702222219520.10496@twin.jikos.cz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751910AbXBVV2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 16:28:05 -0500
+Date: Thu, 22 Feb 2007 13:24:34 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+Cc: mike.miller@hp.com, jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, gregkh@novell.com
+Subject: Re: [Patch 1/2] cciss: fix for 2TB support
+Message-Id: <20070222132434.d84d3248.akpm@linux-foundation.org>
+In-Reply-To: <20070222165123.GC2672@beardog.cca.cpqcorp.net>
+References: <20070221211039.GA2672@beardog.cca.cpqcorp.net>
+	<20070221191427.9b7cf4b0.akpm@linux-foundation.org>
+	<20070222165123.GC2672@beardog.cca.cpqcorp.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> On Thu, 22 Feb 2007 10:51:23 -0600 "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> wrote:
+> On Wed, Feb 21, 2007 at 07:14:27PM -0800, Andrew Morton wrote:
+> > On Wed, 21 Feb 2007 15:10:39 -0600 "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> wrote:
+> > 
+> > > Patch 1/2
+> > > +  	if (total_size == 0xFFFFFFFF) {
+> > 
+> > I seem to remember having already questioned this.  total_size is sector_t, which
+> > can be either 32-bit or 64-bit.  Are you sure that comparison works as
+> > intended in both cases?
+> > 
+> > 
+> > > +		if(total_size == 0xFFFFFFFF) {
+> > >  			cciss_read_capacity_16(cntl_num, i, 0,
+> > >  			&total_size, &block_size);
+> > >  			hba[cntl_num]->cciss_read = CCISS_READ_16;
+> > 
+> > Here too.
+> It has worked in all of the configs I've tested. Should I change it from sector_t to a
+> __64? I have not tested all possible configs.
+> 
 
-the gitweb running on git(2).kernel.org has looked buggy to me for quite a 
-some time (a month or so) with respect to branches vs. shortlog.
-
-When you browse a repository with mutliple branches, and switch between 
-branches, the shortlog shown is always the one from master, never from the 
-branch you switched to, which seems wrong to me.
-
-This definitely worked previously (and works on other installations of 
-gitweb outside the kernel.org), so it might be worth fixing.
-
-Thanks,
-
--- 
-Jiri Kosina
+I'd suggest using -1: that just works.
