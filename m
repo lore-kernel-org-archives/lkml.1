@@ -1,138 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965131AbXBVEEN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965137AbXBVEEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965131AbXBVEEN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 23:04:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965134AbXBVEEN
+	id S965137AbXBVEEs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 23:04:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965238AbXBVEEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 23:04:13 -0500
-Received: from lvps87-230-19-68.dedicated.hosteurope.de ([87.230.19.68]:45410
-	"EHLO lvps87-230-19-68.dedicated.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965131AbXBVEEL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 23:04:11 -0500
-X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Feb 2007 23:04:11 EST
-Message-ID: <45DD1441.3010703@toshsoft.de>
-Date: Thu, 22 Feb 2007 04:55:45 +0100
-From: Oliver Pahl <opahl@toshsoft.de>
-User-Agent: Thunderbird 2.0b2 (X11/20070123)
+	Wed, 21 Feb 2007 23:04:47 -0500
+Received: from sycorax.lbl.gov ([128.3.11.121]:2583 "EHLO sycorax.lbl.gov"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965137AbXBVEEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 23:04:47 -0500
+From: Alex Romosan <romosan@sycorax.lbl.gov>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: Yaroslav Halchenko <kernel@onerussian.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net,
+       James Simmons <jsimmons@infradead.org>
+Subject: Re: no backlight on radeon after recent kernel "upgrade"s
+References: <20070219044616.GC25659@washoe.onerussian.com>
+	<20070219000412.acad13de.akpm@linux-foundation.org>
+	<1171876788.6046.3.camel@localhost.localdomain>
+	<877iub9mu2.fsf@sycorax.lbl.gov>
+	<1172097718.5790.29.camel@localhost.localdomain>
+Date: Wed, 21 Feb 2007 20:03:57 -0800
+In-Reply-To: <1172097718.5790.29.camel@localhost.localdomain> (message from
+	Richard Purdie on Wed, 21 Feb 2007 22:41:57 +0000)
+Message-ID: <877iuaalea.fsf@sycorax.lbl.gov>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-mm2: Oops in generic_make_request
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is this Problem still investigated? I got the same kernel bug a few
-minutes after booting my system with 2.6.20-mm2. As a student i am not
-yet as familiar with kernel programming as i want to be, but i will try,
-i promise. In the meantime, i always try to test the newest mm patches,
-and i have to say, this one is the first which doesent work right on my
-sys since 2.6.15-mm1. Thanks, keep up the good work an please help me
-with this Problem
+Richard Purdie writes:
 
-Greetz
+> Can you have a look at the differences between the defconfigs for
+> 2.6.20 and 2.6.21-rc1?
 
-Oli
+this is probably the relevant part:
+
+--- config-2.6.20	2007-02-04 12:09:28.000000000 -0800
++++ config-2.6.21-rc1	2007-02-21 08:37:53.000000000 -0800
+@@ -1270,16 +1302,25 @@
+ #
+ # Graphics support
+ #
+-CONFIG_FIRMWARE_EDID=y
++CONFIG_BACKLIGHT_LCD_SUPPORT=y
++CONFIG_BACKLIGHT_CLASS_DEVICE=y
++CONFIG_LCD_CLASS_DEVICE=y
++# CONFIG_BACKLIGHT_PROGEAR is not set
+ CONFIG_FB=y
++CONFIG_FIRMWARE_EDID=y
+ CONFIG_FB_DDC=y
+ CONFIG_FB_CFB_FILLRECT=y
+ CONFIG_FB_CFB_COPYAREA=y
+ CONFIG_FB_CFB_IMAGEBLIT=y
++# CONFIG_FB_SVGALIB is not set
+ # CONFIG_FB_MACMODES is not set
+-# CONFIG_FB_BACKLIGHT is not set
++CONFIG_FB_BACKLIGHT=y
+ CONFIG_FB_MODE_HELPERS=y
+ CONFIG_FB_TILEBLITTING=y
++
++#
++# Frambuffer hardware drivers
++#
+ # CONFIG_FB_CIRRUS is not set
+ # CONFIG_FB_PM2 is not set
+ # CONFIG_FB_CYBER2000 is not set
+@@ -1297,9 +1338,11 @@
+ # CONFIG_FB_MATROX is not set
+ CONFIG_FB_RADEON=y
+ CONFIG_FB_RADEON_I2C=y
++CONFIG_FB_RADEON_BACKLIGHT=y
+ # CONFIG_FB_RADEON_DEBUG is not set
+ # CONFIG_FB_ATY128 is not set
+ # CONFIG_FB_ATY is not set
++# CONFIG_FB_S3 is not set
+ # CONFIG_FB_SAVAGE is not set
+ # CONFIG_FB_SIS is not set
+ # CONFIG_FB_NEOMAGIC is not set
+@@ -1333,11 +1376,6 @@
+ # CONFIG_LOGO_LINUX_MONO is not set
+ # CONFIG_LOGO_LINUX_VGA16 is not set
+ CONFIG_LOGO_LINUX_CLUT224=y
+-CONFIG_BACKLIGHT_LCD_SUPPORT=y
+-CONFIG_BACKLIGHT_CLASS_DEVICE=y
+-CONFIG_BACKLIGHT_DEVICE=y
+-CONFIG_LCD_CLASS_DEVICE=m
+-CONFIG_LCD_DEVICE=y
+ 
+ #
+ # Sound
 
 
-On 18/02/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Sun, 18 Feb 2007 18:58:05 +0100 Mattia Dongili <malattia@linux.it>
-wrote:
->
-> > On Sun, Feb 18, 2007 at 02:06:59PM +0100, Laurent Riffard wrote:
-> > > Le 18.02.2007 06:51, Andrew Morton a écrit :
-> > > >Temporarily at
-> > > >
-> > > >  http://userweb.kernel.org/~akpm/2.6.20-mm2/
-> > > >
-> > > >Will appear later at
-> > > >
-> > > >
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.20/2.6.20-mm2/
-> > >
-> > > Hello, I've got a fully reproducible Oops. I just have to boot to
-> > > runlevel 2 and wait less than one minute.
-> >
-> > Maybe this oops is related too?
->
-> Looks that way.
->
-> > Can't yet tell if it's easily reproducible, this is on a JFS filesystem.
-> >
-> > BUG: unable to handle kernel NULL pointer dereference at virtual
-address 00000004
-> >  printing eip:
-> > c02206aa
-> > *pde = 00000000
-> > Oops: 0000 [#1]
-> > PREEMPT
-> > last sysfs file: /devices/pci0000:00/0000:00:00.0/class
-> > CPU:    0
-> > EIP:    0060:[<c02206aa>]    Not tainted VLI
-> > EFLAGS: 00010297   (2.6.20-mm2-1 #1)
-> > EIP is at __make_request+0x13a/0x390
-> > eax: ffffffff   ebx: 00000000   ecx: 042b0dd8   edx: 00010485
-> > esi: c5f8cea0   edi: cfd587f8   ebp: c653dadc   esp: c653dabc
-> > ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-> > Process sh (pid: 4549, ti=c653c000 task=ccca2090 task.ti=c653c000)
-> > Stack: c137eae8 00000001 cfd587e4 c5f8cea0 c5f893e4 c137eae8
-c5f8cea0 00000008
-> >        c653db28 c021e0ca cfa3ffa0 cee6a2e0 cfa3ffa0 00000000
-00000008 00000100
-> >        00011250 cfedaf60 c653db10 00000206 00000000 c653db18
-c014a31e c653db48
-> > Call Trace:
-> >  [<c01048ba>] show_trace_log_lvl+0x1a/0x30
-> >  [<c0104979>] show_stack_log_lvl+0xa9/0xd0
-> >  [<c0104ba6>] show_registers+0x206/0x350
-> >  [<c0104dfe>] die+0x10e/0x210
-> >  [<c0114652>] do_page_fault+0x2d2/0x600
-> >  [<c0351f84>] error_code+0x74/0x7c
-> >  [<c021e0ca>] generic_make_request+0x15a/0x200
-> >  [<c0220318>] submit_bio+0x58/0xe0
-> >  [<c0205d0f>] metapage_writepage+0x18f/0x1b0
-> >  [<c014cc2b>] __writepage+0xb/0x30
-> >  [<c014d20f>] write_cache_pages+0x22f/0x300
-> >  [<c014d303>] generic_writepages+0x23/0x30
-> >  [<c014d36c>] do_writepages+0x5c/0x60
-> >  [<c0148307>] __filemap_fdatawrite_range+0x67/0x80
-> >  [<c0149785>] filemap_flush+0x25/0x30
-> >  [<c02080cd>] lmLogSync+0x19d/0x230
-> >  [<c020871e>] lmLog+0x5e/0x190
-> >  [<c020a360>] txCommit+0x8c0/0x1010
-> >  [<c01eecf4>] jfs_create+0x324/0x370
-> >  [<c016f38f>] vfs_create+0xaf/0x100
-> >  [<c017269c>] open_namei+0x58c/0x640
-> >  [<c0165b7c>] do_filp_open+0x2c/0x50
-> >  [<c0165be7>] do_sys_open+0x47/0xe0
-> >  [<c0165cbc>] sys_open+0x1c/0x20
-> >  [<c01041c0>] syscall_call+0x7/0xb
->
-> Michal Piotrowski is hitting it too, and has bisected it down to
-> git-block.patch.
->
+> If the backlight changes are at fault, I'm guessing James' Kconfig
+> changes to the video Kconfig would be the culprit since
+> FB_RADEON_BACKLIGHT only used to be selectable if PMAC_BACKLIGHT was
+> enabled. On a thinkpad, the backlight is probably under ACPI
+> control.
 
-> I have bisected it down to this patches
+there was no FB_RADEON_BACKLIGHT in 2.6.20 and CONFIG_FB_BACKLIGHT
+wasn't set.
 
-> revert-md-avoid-possible-bug_on-in-md-bitmap-handling-for-git-block.patch
-> git-block.patch
-> git-block-fixup.patch
-> git-block-dupe-definitions.patch
-> git-block-xfs-barriers-broke.patch
+> If FB_RADEON_BACKLIGHT wasn't set for 2.6.20, can you try 2.6.21-rc1
+> with that option disabled?
 
-> Regards,
-> Michal
+i'll try recompiling without this option and let you know what happened.
 
-> --
-> Michal K. K. Piotrowski
-> LTG - Linux Testers Group (PL)
-> (http://www.stardust.webpages.pl/ltg/)
-> LTG - Linux Testers Group (EN)
-> (http://www.stardust.webpages.pl/linux_testers_group_en/)
-> -
-> To unsubscribe from this list: send the line "unsubscribe
-linux-kernel" > in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> An ls /sys/class/backlight under 2.6.20 will tell us which driver it
+> was using...
+
+ls /sys/class/backlight/
+0 ./  0 ../  0 ibm/
+
+--alex--
+
+-- 
+| I believe the moment is at hand when, by a paranoiac and active |
+|  advance of the mind, it will be possible (simultaneously with  |
+|  automatism and other passive states) to systematize confusion  |
+|  and thus to help to discredit completely the world of reality. |
