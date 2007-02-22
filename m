@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945922AbXBVHeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932699AbXBVHkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945922AbXBVHeV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 02:34:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945928AbXBVHeV
+	id S932699AbXBVHkp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 02:40:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932730AbXBVHkp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 02:34:21 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:41926 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945922AbXBVHeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 02:34:21 -0500
-To: Dmitriy Monakhov <dmonakhov@openvz.org>
-Cc: linux-kernel@vger.kernel.org, devel@openvz.org,
-       ecryptfs-devel@lists.sourceforge.net
-Subject: [PATCH] ecryptfs remove unnecessary flush_dcache_page
-References: <87wt2ew716.fsf@sw.ru>
-From: Dmitriy Monakhov <dmonakhov@sw.ru>
-Date: Thu, 22 Feb 2007 10:34:00 +0300
-In-Reply-To: <87wt2ew716.fsf@sw.ru> (Dmitriy Monakhov's message of "Mon, 19 Feb 2007 17:34:13 +0300")
-Message-ID: <87r6si7ijb.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	Thu, 22 Feb 2007 02:40:45 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:14012 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932699AbXBVHko (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 02:40:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=agfMN20Dadtiy6uWOU4lMFUSGgPFyPxz3BxVE4GdMfb/F424IfKwTzhRtfZDzOeUy2tIKrTt7Z/K28/LID5YfZk3LLQEdNt5gGVF9rHqgY4r2900vQmFZqQXg0QHqfSq3h4RPb1/XeznpQ+x2qT40PxYcBb7m2sYTMCKP8u/riM=
+Date: Thu, 22 Feb 2007 07:39:30 +0000
+From: Frederik Deweerdt <deweerdt@free.fr>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Jose Goncalves <jose.goncalves@inov.pt>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Serial related oops
+Message-ID: <20070222073930.GB4113@slug>
+References: <20070219143520.GB27370@flint.arm.linux.org.uk> <20070220144814.GJ566@slug> <20070219150508.GD27370@flint.arm.linux.org.uk> <45D9D073.7020701@inov.pt> <20070219164200.GF27370@flint.arm.linux.org.uk> <45D9E46C.4030408@inov.pt> <20070219212347.GA4258@flint.arm.linux.org.uk> <45DC537B.6020108@inov.pt> <20070221230503.GA28156@flint.arm.linux.org.uk> <45DD30DE.20503@zytor.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-=-="
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45DD30DE.20503@zytor.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
+On Wed, Feb 21, 2007 at 09:57:50PM -0800, H. Peter Anvin wrote:
+> Russell King wrote:
+> 
+> >Plainly, %ebx changed across the call to serial_in() at c01c0f7b.
+> >First thing to notice is this violates the C code - "up" can not
+> >change.
+> >Now let's look at serial_in:
+> >c01bfa70:       55                      push   %ebp
+> >c01bfa71:       89 e5                   mov    %esp,%ebp
+> >c01bfa73:       53                      push   %ebx
+> >...
+> >c01bfab7:       5b                      pop    %ebx
+> >c01bfab8:       5d                      pop    %ebp
+> >c01bfab9:       c3                      ret
+> >This code tells the CPU to preserves %ebx and %ebp.  But we know %ebx
+> >_wasn't_ preserved.  Ergo, your CPU is plainly not doing what the code
+> >told it to do.
+> 
+> ... assuming nothing else clobbered the stack slot (which would be a compiler 
+> error, or a wild pointer.)
+> 
+> Got a disassembly of the whole function?
+> 
+Jose posted it higher in the thread:
+http://lkml.org/lkml/2007/2/21/139
 
-Dmitriy Monakhov <dmonakhov@openvz.org> writes:
-
-> 1)Function ecryptfs_do_readpage() calls flush_dcache_page(lower_page),
->   but lower_page was't changed here. So remove this line.
->
-> 2)prepare_write ret val was ignored in ecryptfs_write_inode_size_to_header().
-> If error happends we can't call commit_write, just do cleanup and fial.
-> It is issue easy to reproduce with full lower_fs, in this case prepare_write()
-Second issue was fixed by "ecryptfs-resolve-lower-page-unlocking-problem.patch",
-but first issue was't.
-
-[LOG]
-  Function ecryptfs_do_readpage() calls flush_dcache_page(lower_page),
-  but lower_page was't changed here. Even if it was changed by 
-  lower_a_ops->readpage() dcache was flushed by readpage() itself.
-  So remove this unnecessary line.
-Signed-off-by: Dmitriy Monakhov <dmonakhov@openvz.org>
-
-
---=-=-=
-Content-Disposition: inline; filename=diff-mm-ecryptfs-false-flush_dcache
-
-diff --git a/fs/ecryptfs/mmap.c b/fs/ecryptfs/mmap.c
-index 1e5d2ba..2e45513 100644
---- a/fs/ecryptfs/mmap.c
-+++ b/fs/ecryptfs/mmap.c
-@@ -238,7 +238,6 @@ int ecryptfs_do_readpage(struct file *file, struct page *page,
- 	lower_page_data = kmap_atomic(lower_page, KM_USER1);
- 	memcpy(page_data, lower_page_data, PAGE_CACHE_SIZE);
- 	kunmap_atomic(lower_page_data, KM_USER1);
--	flush_dcache_page(lower_page);
- 	kunmap_atomic(page_data, KM_USER0);
- 	flush_dcache_page(page);
- 	rc = 0;
-
---=-=-=--
-
+Regards,
+Frederik
