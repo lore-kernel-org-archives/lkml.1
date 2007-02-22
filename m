@@ -1,74 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751581AbXBVNEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751588AbXBVNFP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751581AbXBVNEy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 08:04:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbXBVNEx
+	id S1751588AbXBVNFP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 08:05:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbXBVNFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 08:04:53 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44061 "EHLO mx2.mail.elte.hu"
+	Thu, 22 Feb 2007 08:05:15 -0500
+Received: from il.qumranet.com ([82.166.9.18]:54727 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751576AbXBVNEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 08:04:53 -0500
-Date: Thu, 22 Feb 2007 13:59:31 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070222125931.GB25788@elte.hu>
-References: <20070221211355.GA7302@elte.hu> <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com> <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com> <20070222074044.GA4158@elte.hu> <20070222113148.GA3781@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070222113148.GA3781@2ka.mipt.ru>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -3.8
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-3.8 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0026]
+	id S1751584AbXBVNFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 08:05:12 -0500
+Message-ID: <45DD94D3.4030102@qumranet.com>
+Date: Thu, 22 Feb 2007 15:04:19 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Dor Laor <dor.laor@qumranet.com>, Pavel Machek <pavel@ucw.cz>,
+       kvm-devel@lists.sourceforge.net, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] [PATCH 10/13] KVM: Wire up hypercall handlers to
+ a	central arch-independent location
+References: <45D979D3.2020907@qumranet.com>	 <20070219103052.4D23725016B@il.qumranet.com><20070221103733.GI3945@ucw.cz>	 <45DD6CF0.3010509@qumranet.com>	 <64F9B87B6B770947A9F8391472E032160A91BAF3@ehost011-8.exch011.intermedia.net>	 <1172140490.3531.236.camel@laptopd505.fenrus.org>	 <45DD7330.1030001@qumranet.com> <1172142081.3531.243.camel@laptopd505.fenrus.org>
+In-Reply-To: <1172142081.3531.243.camel@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Arjan van de Ven wrote:
 
-* Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+> - execution of hypercall handlers outside vcpu_load() (so they are 
+> > preemptible and sleepable)
+>   
+>
+> I don't need this; most of my hypercalls are non-blocking. The ones that
+> are can already undo the load themselves, no big deal.
+>   
 
-> It is not a TUX anymore - you had 1024 threads, and all of them will 
-> be consumed by tcp_sendmsg() for slow clients - rescheduling will kill 
-> a machine.
+I don't really like exposing the vcpu_load()/vcpu_put() interfaces.
 
-maybe it will, maybe it wont. Lets try? There is no true difference 
-between having a 'request structure' that represents the current state 
-of the HTTP connection plus a statemachine that moves that request 
-between various queues, and a 'kernel stack' that goes in and out of 
-runnable state and carries its processing state in its stack - other 
-than the amount of RAM they take. (the kernel stack is 4K at a minimum - 
-so with a million outstanding requests they would use up 4 GB of RAM. 
-With 20k outstanding requests it's 80 MB of RAM - that's acceptable.)
+On the other hand, sleeping in a hypercall means the guest vcpu is not 
+doing any processing.  Maybe we should declare hypercall handlers atomic 
+and let them use a workqueue if they can't be atomic.
 
-> My tests show that with 4k connections per second (8k concurrency) 
-> more than 20k connections of 80k total block in tcp_sendmsg() over 
-> gigabit lan between quite fast machines.
+On the third hand, sleeping in a hypercall should be a rare event, so 
+forcing hypercall handlers to handle the sleeping case introduces a lot 
+of complexity for marginal gain.
 
-yeah. Note that you can have a million sleeping threads if you want, the 
-scheduler wont care. What matters more is the amount of true concurrency 
-that is present at any given time. But yes, i agree that overscheduling 
-can be a problem.
+>> - passing unhandled hypercalls to userspace for qemu-based devices
+>>     
+>
+> hm could do I suppose
+>   
 
-btw., what is the measurement utility you are using with kevents ('ab' 
-perhaps, with a high -c concurrency count?), and which webserver are you 
-using? (light-httpd?)
+One user would be the opengl guest to host tunneling driver/device 
+that's being developed for qemu.
 
-	Ingo
+> One thing I'd like to see is some way to do batched hypercalls. I don't
+> quite know how this will work in general, but let me explain the
+> scenario:
+> The guest submits a bunch of disk IO requests into a submit queue.
+> The host gets a hypercall and goes to process the submit queue
+> While this is processing, the guest submits more IO
+> The guest would here do another hypercall.. 
+>
+> .. but what could be done is have the host poll at the end of it's scan
+> of the queue if there's more, and while the host is scanning, just
+> disable the hypercall the guest would make. So that if there is a
+> "submit while scanning/processing" going on, no need for more
+> hypercalls. 
+>   
+
+Xen does exactly that.  It's actually outside the scope of hypercalls, 
+and more related to the protocol between guest and host.  Not that it 
+can't be made generic (and the Xen rings are).
+
+Maybe we should just copy the code.
+
+> (Otoh... the current situation isn't all that bad, there's one hypercall
+> for an entire batch of IO's, and the blocklayer isn't all that bad at
+> giving us nice large batches)
+>   
+
+True.  I expect it's more necessary with networking.
+
+Somthing else that came up in a conversation with Dor: the need for a 
+clean way to raise a guest interrupt.  The guest may be sleeping in 
+userspace, scheduled out, or running on another cpu (and requiring an 
+ipi to get it out of guest mode).
+
+Right now I'm thinking about using the signal machinery since it appears 
+to do exactly the right thing.
+
+-- 
+error compiling committee.c: too many arguments to function
+
