@@ -1,74 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751523AbXBVJVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751526AbXBVJZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751523AbXBVJVt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 04:21:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbXBVJVt
+	id S1751526AbXBVJZd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 04:25:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbXBVJZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 04:21:49 -0500
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:7891 "EHLO
-	amsfep14-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751156AbXBVJVr (ORCPT
+	Thu, 22 Feb 2007 04:25:33 -0500
+Received: from mailmxout.mailmx.agnat.pl ([193.239.44.238]:2096 "EHLO
+	mailmxout.mailmx.agnat.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751525AbXBVJZb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 04:21:47 -0500
-Subject: Re: [PATCH 03/29] mm: allow PF_MEMALLOC from softirq context
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>
-In-Reply-To: <1172073217.3531.200.camel@laptopd505.fenrus.org>
-References: <20070221144304.512721000@taijtu.programming.kicks-ass.net>
-	 <20070221144841.823705000@taijtu.programming.kicks-ass.net>
-	 <1172073217.3531.200.camel@laptopd505.fenrus.org>
-Content-Type: text/plain
-Date: Thu, 22 Feb 2007 10:16:23 +0100
-Message-Id: <1172135783.6374.30.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Feb 2007 04:25:31 -0500
+From: Arkadiusz Miskiewicz <arekm@maven.pl>
+Organization: SelfOrganizing
+To: Greg KH <greg@kroah.com>
+Subject: Re: 2.6.21rc1 git usb mouse stops working after resume from ram
+Date: Thu, 22 Feb 2007 10:24:52 +0100
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
+       konstantin.a.karasyov@intel.com, len.brown@intel.com
+References: <200702212314.56958.arekm@maven.pl> <20070221234905.GB7133@kroah.com>
+In-Reply-To: <20070221234905.GB7133@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200702221024.52551.arekm@maven.pl>
+X-Authenticated-Id: arekm
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-21 at 16:53 +0100, Arjan van de Ven wrote:
-> > Index: linux-2.6-git/kernel/softirq.c
-> > ===================================================================
-> > --- linux-2.6-git.orig/kernel/softirq.c	2006-12-14 10:02:18.000000000 +0100
-> > +++ linux-2.6-git/kernel/softirq.c	2006-12-14 10:02:52.000000000 +0100
-> > @@ -209,6 +209,8 @@ asmlinkage void __do_softirq(void)
-> >  	__u32 pending;
-> >  	int max_restart = MAX_SOFTIRQ_RESTART;
-> >  	int cpu;
-> > +	unsigned long pflags = current->flags;
-> > +	current->flags &= ~PF_MEMALLOC;
-> >  
-> >  	pending = local_softirq_pending();
-> >  	account_system_vtime(current);
-> > @@ -247,6 +249,7 @@ restart:
-> >  
-> >  	account_system_vtime(current);
-> >  	_local_bh_enable();
-> > +	current->flags = pflags;
-> 
-> this wipes out all the flags in one go.... evil.
-> What if something just selected this process for OOM killing? you nuke
-> that flag here again. Would be nicer if only the PF_MEMALLOC bit got
-> inherited in the restore path..
+On Thursday 22 of February 2007, Greg KH wrote:
+> On Wed, Feb 21, 2007 at 11:14:56PM +0100, Arkadiusz Miskiewicz wrote:
+> > Hello,
+> >
+> > Today version of Linus git tree has a problem with resuming of usb
+> > devices. My trackball is no longer working after resume from ram. It not
+> > even seen by lsusb.  Newly plugged devices are no longer detected (ie. my
+> > usb camera) after resume.
+> >
+> > Reloading all usb + ohci/ehci modules doesn't fix the problem. I need to
+> > reboot entire machine (thinkpad z60m).
+>
+> If you disable CONFIG_USB_SUSPEND, does it work properly for you?
 
-would something like this:
+Didn't test but I did bisecting and after reverting commits:
 
-#define PF_PUSH(tsk, pflags, mask)		\
-do {						\
-	(pflags) = ((tsk)->flags) & (mask);	\
-} while (0)
+e8363f332757ac22395fb120cc33b3262f9ee26c
+
+and the main problematic one:
+
+commit 0a6139027f3986162233adc17285151e78b39cac
+Author: Konstantin Karasyov <konstantin.a.karasyov@intel.com>
+Date:   Fri Feb 16 01:47:06 2007 -0500
+
+    ACPI: Thermal issues on HP nx6325
+
+    The previous reference counting scheme to enable power resources
+    got confused when multiple devices were present that might
+    repeatedly enable or disable the resource and throw off the count.
+
+    The new code simply lists the referencing devices which
+    are requesting the resource to be enabled.  When there are none,
+    then it is off.
+
+    Signed-off-by: Konstantin Karasyov <konstantin.a.karasyov@intel.com>
+    Signed-off-by: Len Brown <len.brown@intel.com>
 
 
-#define PF_POP(tsk, pflags, mask)		\
-do {						\
-	((tsk)->flags &= ~(mask);		\
-	((tsk)->flags |= (pflags);		\
-} while (0)
+I again have working usb after resume.
 
-be useful, or shall I just open code it in various places?
+> (rest of the boot log left below for the benifit of the linux-usb-devel
+> mailing list readers.)
+>
+> thanks,
+>
+> greg k-h
 
-(I made this same mistake; ignorant of the problem; all over this patch series)
 
+-- 
+Arkadiusz Mi¶kiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
