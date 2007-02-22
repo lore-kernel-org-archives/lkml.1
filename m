@@ -1,150 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752017AbXBVWaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751996AbXBVWeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752017AbXBVWaX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 17:30:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbXBVWaW
+	id S1751996AbXBVWeQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 17:34:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbXBVWeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 17:30:22 -0500
-Received: from mga07.intel.com ([143.182.124.22]:7983 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752010AbXBVWaV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 17:30:21 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,207,1170662400"; 
-   d="scan'208"; a="185891394:sNHT74803470"
-Date: Thu, 22 Feb 2007 13:54:57 -0800
-From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Dave Jones <davej@redhat.com>, linux-acpi@vger.kernel.org
-Cc: Adam Belay <abelay@novell.com>, Shaohua Li <shaohua.li@intel.com>,
-       Len Brown <len.brown@intel.com>
-Subject: [PATCH 3/3]cpuidle take2: Basic documentation for cpuidle
-Message-ID: <20070222135457.C26335@unix-os.sc.intel.com>
+	Thu, 22 Feb 2007 17:34:16 -0500
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:41339 "EHLO
+	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751996AbXBVWeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 17:34:15 -0500
+Date: Thu, 22 Feb 2007 23:31:22 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Tom Burns <tom.i.burns@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [r8169] Any success with RTL8110SC?
+Message-ID: <20070222223122.GA28191@electric-eye.fr.zoreil.com>
+References: <671c20540702221117p3f5c16b3h52173c94d17f7eda@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.2.5.1i
+In-Reply-To: <671c20540702221117p3f5c16b3h52173c94d17f7eda@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
+X-Organisation: Land of Sunshine Inc.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Tom Burns <tom.i.burns@gmail.com> :
+[...]
+> 2.6.15-1 - it was trivial changes aside from 2.6.20.1 which required
+> changes to the task scheduling code, but I'm pretty certain I didn't
+> break anything.
 
+I do not have the answar that you expect but some information could help:
+- which motherboard is it ?
+- can you send a dmesg for 2.6.20.1 as well as a lspci -vvx from your
+  computer ?
 
-Documentation for cpuidle infrastructure
+[...]
+> The r1000 driver seems to be able to send data on the wire for about a
+> minute, receive packets back about 5% of the time, and after a minute
+> stop working altogether, complaining that the "send buffer is full."
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Adam Belay <abelay@novell.com>
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+If I read you correctly, this version of the driver is less broken than
+the others, right ?
 
-Index: linux-2.6.21-rc-mm/Documentation/cpuidle/core.txt
-===================================================================
---- /dev/null
-+++ linux-2.6.21-rc-mm/Documentation/cpuidle/core.txt
-@@ -0,0 +1,17 @@
-+
-+		Supporting multiple CPU idle levels in kernel
-+
-+				cpuidle
-+
-+General Information:
-+
-+Various CPUs today support multiple idle levels that are differentiated
-+by varying exit latencies and power consumption during idle.
-+cpuidle is a generic in-kernel infrastructure that separates
-+idle policy (governor) from idle mechanism (driver) and provides a
-+standardized infrastructure to support independent development of
-+governors and drivers.
-+
-+cpuidle resides under /drivers/cpuidle.
-+
-+
-Index: linux-2.6.21-rc-mm/Documentation/cpuidle/driver.txt
-===================================================================
---- /dev/null
-+++ linux-2.6.21-rc-mm/Documentation/cpuidle/driver.txt
-@@ -0,0 +1,24 @@
-+
-+
-+		Supporting multiple CPU idle levels in kernel
-+
-+				cpuidle drivers
-+
-+
-+
-+
-+cpuidle driver supports capability detection for a particular system. The
-+init and exit routines will be called for each online CPU, with a percpu
-+cpuidle_driver object and driver should fill in cpuidle_states inside
-+cpuidle_driver depending on the CPU capability.
-+
-+Driver can handle dynamic state changes (like battery<->AC), by calling
-+force_redetect interface.
-+
-+It is possible to have more than one driver registered at the same time and
-+user can switch between drivers using /sysfs interface.
-+
-+Interfaces:
-+int cpuidle_register_driver(struct cpuidle_driver *drv);
-+void cpuidle_unregister_driver(struct cpuidle_driver *drv);
-+int cpuidle_force_redetect(struct cpuidle_device *dev);
-Index: linux-2.6.21-rc-mm/Documentation/cpuidle/sysfs.txt
-===================================================================
---- /dev/null
-+++ linux-2.6.21-rc-mm/Documentation/cpuidle/sysfs.txt
-@@ -0,0 +1,27 @@
-+
-+
-+		Supporting multiple CPU idle levels in kernel
-+
-+				cpuidle sysfs
-+
-+System global cpuidle information are under
-+/sys/devices/system/cpu/cpuidle
-+
-+The current interfaces in this directory has self-explanatory names:
-+* available_drivers
-+* available_governors
-+* current_driver
-+* current_governor
-+
-+Per logical CPU specific cpuidle information are under
-+/sys/devices/system/cpu/cpuX/cpuidle
-+for each online cpu X
-+
-+Under this percpu directory, there is a directory for each idle state supported
-+by the driver, which in turn has
-+* latency
-+* power
-+* time
-+* usage
-+
-+
-Index: linux-2.6.21-rc-mm/Documentation/cpuidle/governor.txt
-===================================================================
---- /dev/null
-+++ linux-2.6.21-rc-mm/Documentation/cpuidle/governor.txt
-@@ -0,0 +1,24 @@
-+
-+
-+
-+		Supporting multiple CPU idle levels in kernel
-+
-+				cpuidle governors
-+
-+
-+
-+
-+cpuidle governor is policy routine that decides what idle state to enter at
-+any given time. cpuidle core uses different callbacks to governor while
-+handling idle entry.
-+* select_state callback where governor can determine next idle state to enter
-+* prepare_idle callback is called before entering an idle state
-+* scan callback is called after a driver forces redetection of the states
-+
-+More than one governor can be registered at the same time and
-+user can switch between drivers using /sysfs interface.
-+
-+Interfaces:
-+int cpuidle_register_governor(struct cpuidle_governor *gov);
-+void cpuidle_unregister_governor(struct cpuidle_governor *gov);
-+
+If you are brave, you can try the patch below against 2.6.20-rc1:
+http://www.fr.zoreil.com/people/francois/misc/20070221-2.6.21-rc1-r8169-test.patch
+
+-- 
+Ueimor
