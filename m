@@ -1,60 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751682AbXBVQ5E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751721AbXBVQ6E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751682AbXBVQ5E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 11:57:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712AbXBVQ5E
+	id S1751721AbXBVQ6E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 11:58:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbXBVQ6D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 11:57:04 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4545 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751682AbXBVQ5B (ORCPT
+	Thu, 22 Feb 2007 11:58:03 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:34765 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751721AbXBVQ6A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 11:57:01 -0500
-Date: Thu, 22 Feb 2007 16:56:50 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Jose Goncalves <jose.goncalves@inov.pt>
-Cc: "Michael K. Edwards" <medwards.linux@gmail.com>,
-       Frederik Deweerdt <deweerdt@free.fr>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Serial related oops
-Message-ID: <20070222165650.GA633@flint.arm.linux.org.uk>
-Mail-Followup-To: Jose Goncalves <jose.goncalves@inov.pt>,
-	"Michael K. Edwards" <medwards.linux@gmail.com>,
-	Frederik Deweerdt <deweerdt@free.fr>, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
-References: <20070219150508.GD27370@flint.arm.linux.org.uk> <45D9D073.7020701@inov.pt> <20070219164200.GF27370@flint.arm.linux.org.uk> <45D9E46C.4030408@inov.pt> <20070219212347.GA4258@flint.arm.linux.org.uk> <45DC537B.6020108@inov.pt> <20070221230503.GA28156@flint.arm.linux.org.uk> <f2b55d220702211634s77d23ddem8ee6523ff6020d98@mail.gmail.com> <20070222085413.GB15841@flint.arm.linux.org.uk> <45DDB1A6.8020409@inov.pt>
+	Thu, 22 Feb 2007 11:58:00 -0500
+Date: Thu, 22 Feb 2007 11:48:38 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: stable@kernel.org, linux-kernel@vger.kernel.org
+Cc: Blaisorblade <blaisorblade@yahoo.it>,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: [PATCH] UML - Fix 2.6.20 hang
+Message-ID: <20070222164838.GA3396@ccure.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45DDB1A6.8020409@inov.pt>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 22, 2007 at 03:07:18PM +0000, Jose Goncalves wrote:
-> Russell King wrote:
-> > On Wed, Feb 21, 2007 at 04:34:15PM -0800, Michael K. Edwards wrote:
-> >   
-> >> Are you using an unpatched gcc 4.1.1?  Its optimizer did nasty things
-> >> to us, at least on an ARM target ...
-> >>     
-> >
-> > That's ruled out.  Please think about it for a moment - serial_in()
-> > managed to work correctly most of the time, and then spontaneously
-> > changes its well-defined ABI behaviour in a way that analysis of the
-> > asm doesn't allow it to.
-> >   
-> 
-> I'm using gcc 3.4.6.
-> But I agree with Russell, if it was such a problem it would hit on the
-> first iteration of my application and not after 1 day of executing the
-> same piece of code...
+[ I mistyped the -stable email in my original posting ]
 
-One thing you might think about is running memtest86 on the machine
-for the same kind of time interval, just in case it's something trivial
-like bad ram.
+A previous cleanup misused need_poll, which had a fairly broken
+interface.  It implemented a growable array, changing the used
+elements count itself, but leaving it up to the caller to fill in the
+actual elements, including the entire array if the array had to be
+reallocated.  This worked because the previous users were switching
+between two such structures, and the elements were copied from the
+inactive array to the active array after making sure the active array
+had enough room.
+
+maybe_sigio_broken was made to use need_poll, but it was operating on
+a single array, so when the buffer was reallocated, the previous
+contents were lost.
+
+This patch makes need_poll implement more sane semantics.  It merely
+assures that the array is of the proper size and that the contents are
+preserved.  It is up to the caller to adjust the used elements count
+and to ensure that the proper elements are resent.
+
+This manifested itself as a hang in 2.6.20 as the uninitialized buffer
+convinced UML that one of its own file descriptors didn't support
+SIGIO and needed to be watched by poll in a separate thread.  The
+result was an interrupt flood as control traffic over this descriptor
+sparked interrupts, which resulted in more control traffic, ad nauseum.
+
+Signed-off-by: Jeff Dike <jdike@addtoit.com>
+--
+ arch/um/os-Linux/sigio.c |   38 ++++++++++++++++++++------------------
+ 1 file changed, 20 insertions(+), 18 deletions(-)
+
+Index: linux-2.6.18-mm/arch/um/os-Linux/sigio.c
+===================================================================
+--- linux-2.6.18-mm.orig/arch/um/os-Linux/sigio.c	2007-02-08 16:48:00.000000000 -0500
++++ linux-2.6.18-mm/arch/um/os-Linux/sigio.c	2007-02-14 19:16:22.000000000 -0500
+@@ -97,20 +97,22 @@ static int write_sigio_thread(void *unus
+ 
+ static int need_poll(struct pollfds *polls, int n)
+ {
+-	if(n <= polls->size){
+-		polls->used = n;
++	struct pollfd *new;
++
++	if(n <= polls->size)
+ 		return 0;
+-	}
+-	kfree(polls->poll);
+-	polls->poll = um_kmalloc_atomic(n * sizeof(struct pollfd));
+-	if(polls->poll == NULL){
++
++	new = um_kmalloc_atomic(n * sizeof(struct pollfd));
++	if(new == NULL){
+ 		printk("need_poll : failed to allocate new pollfds\n");
+-		polls->size = 0;
+-		polls->used = 0;
+ 		return -ENOMEM;
+ 	}
++
++	memcpy(new, polls->poll, polls->used * sizeof(struct pollfd));
++	kfree(polls->poll);
++
++	polls->poll = new;
+ 	polls->size = n;
+-	polls->used = n;
+ 	return 0;
+ }
+ 
+@@ -171,15 +173,15 @@ int add_sigio_fd(int fd)
+ 			goto out;
+ 	}
+ 
+-	n = current_poll.used + 1;
+-	err = need_poll(&next_poll, n);
++	n = current_poll.used;
++	err = need_poll(&next_poll, n + 1);
+ 	if(err)
+ 		goto out;
+ 
+-	for(i = 0; i < current_poll.used; i++)
+-		next_poll.poll[i] = current_poll.poll[i];
+-
+-	next_poll.poll[n - 1] = *p;
++	memcpy(next_poll.poll, current_poll.poll,
++	       current_poll.used * sizeof(struct pollfd));
++	next_poll.poll[n] = *p;
++	next_poll.used = n + 1;
+ 	update_thread();
+  out:
+ 	sigio_unlock();
+@@ -214,6 +216,7 @@ int ignore_sigio_fd(int fd)
+ 		if(p->fd != fd)
+ 			next_poll.poll[n++] = *p;
+ 	}
++	next_poll.used = current_poll.used - 1;
+ 
+ 	update_thread();
+  out:
+@@ -331,10 +334,9 @@ void maybe_sigio_broken(int fd, int read
+ 
+ 	sigio_lock();
+ 	err = need_poll(&all_sigio_fds, all_sigio_fds.used + 1);
+-	if(err){
+-		printk("maybe_sigio_broken - failed to add pollfd\n");
++	if(err)
+ 		goto out;
+-	}
++
+ 	all_sigio_fds.poll[all_sigio_fds.used++] =
+ 		((struct pollfd) { .fd  	= fd,
+ 				   .events 	= read ? POLLIN : POLLOUT,
+
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Work email - jdike at linux dot intel dot com
