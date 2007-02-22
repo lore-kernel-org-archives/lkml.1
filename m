@@ -1,33 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965155AbXBVBaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965014AbXBVBbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965155AbXBVBaU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 20:30:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965014AbXBVBaU
+	id S965014AbXBVBbU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 20:31:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965168AbXBVBbU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 20:30:20 -0500
-Received: from gw.goop.org ([64.81.55.164]:48448 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965155AbXBVBaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 20:30:20 -0500
-Message-ID: <45DCF1C5.4030006@goop.org>
-Date: Wed, 21 Feb 2007 17:28:37 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Wed, 21 Feb 2007 20:31:20 -0500
+Received: from keil-draco.com ([216.193.185.50]:50666 "EHLO mail"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965208AbXBVBbT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 20:31:19 -0500
+From: "D. Hazelton" <dhazelton@enter.net>
+To: "Michael K. Edwards" <medwards.linux@gmail.com>
+Subject: Re: GPL vs non-GPL device drivers
+Date: Wed, 21 Feb 2007 20:30:58 -0500
+User-Agent: KMail/1.9.5
+Cc: "David Lang" <david.lang@digitalinsight.com>, davids@webmaster.com,
+       "v j" <vj.linux@gmail.com>, trent.waddington@gmail.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       "Neil Brown" <neilb@suse.de>
+References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com> <Pine.LNX.4.63.0702211527080.15723@qynat.qvtvafvgr.pbz> <f2b55d220702211628v6c8b16e7ibdfeb293592b2093@mail.gmail.com>
+In-Reply-To: <f2b55d220702211628v6c8b16e7ibdfeb293592b2093@mail.gmail.com>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>, Andi Kleen <ak@muc.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: -freg-struct-return?
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702212030.58317.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We have a number of functions which return small structures (such as
-pte_t).  It seems that the kernel is not compiled with
--freg-struct-return, so all these small structures are being returned
-via the stack, even though they would fit into registers.
+On Wednesday 21 February 2007 19:28, Michael K. Edwards wrote:
+> I think you just misread.  I said that the Evil Linker has cheerfully
+> shipped the source code of the modified POP server.  He may not have
+> given you the compiler he compiled it with, wihout which the source
+> code is a nice piece of literature but of no engineering utility; but
+> that's the situation the GPL is DESIGNED TO PRODUCE.
 
-Is there a reason for this?  Would -freg-struct-return be preferred?  It
-would make a good compliment to -mregparm.
+Actually, if memory serves, when you license a work under the GPL, part of the 
+terms is that you have to provide the source and any scripts needed to 
+produce a functioning executable.
 
-    J
+*checks a local copy of GPLv2 for the exact wording*
+
+Third clause of the license:
+"For an executable work, complete source code means all the source code for 
+all modules it contains, plus any associated interface definition files, plus 
+the scripts used to control compilation and installation of the executable."
+
+So yes, someone could produce a work that compiles on a specific compiler, but 
+there is then nothing stopping someone from fixing the problems that cause it 
+to not compile using another compiler and releasing that source code - 
+distributing it as a patch, AFAICT, falls outside coverage by the GPLv2. The 
+build tool-chain, libraries and other works that are not a direct part of the 
+program produced by compilation of the source code. (the wording of the GPL 
+is: "However, as a special exception, the source code distributed need not 
+include anything that is normally distributed (in either source or binary 
+form) with the major components (compiler, kernel, and so on) of the 
+operating system on which the executable runs, unless that component itself 
+accompanies the executable.")
+
+As a side note: The distinct wording of the GPL actually *invalidates* the 
+GNU/FSF claim that dynamically linking a work with, say, the readline 
+library,  means the work is a derivative of said library. The GPL states (in 
+clause 0) that the license only covers copying, modification and 
+distribution. Unless they are confusing "Linking" with "copying" or "creating 
+a derivative work" the claim is invalid - because, as it has been shown, a 
+mechanical process such as compilation or linking *cannot* create a 
+derivative work.
+
+Related to that... Though a parser generated by Bison and a tokenizer 
+generated by Flex both contain large chunks of GPL'd code, their inclusion in 
+the source file that is to be compiled is mechanical - the true unique work 
+is in writing the file that is processed by the tool to produce the output. 
+Since the aggregation of the GPL'd code into the output source is done 
+mechanically - via mechanical translation (which is what compilation is as 
+well) - the result is *not* and under US copyright law *cannot* be a 
+derivative work. What this means is that the GNU/FSF "special" terms applied 
+to parsers generated by Bison and tokenizers generated by Flex is 
+unnecessary - they are granting you a right you already have.
+
+Anyway, it's been fun watching this thread. If I've made a mistake somewhere 
+in there, let me know - IANAL and I am just starting to really get into the 
+meat of Copyright and related laws in independant study.
+
+DRH
