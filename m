@@ -1,90 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751722AbXBVREF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751105AbXBVRJO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751722AbXBVREF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 12:04:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbXBVREF
+	id S1751105AbXBVRJO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 12:09:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbXBVRJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 12:04:05 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4015 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751720AbXBVREC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 12:04:02 -0500
-Date: Thu, 22 Feb 2007 17:03:54 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Jose Goncalves <jose.goncalves@inov.pt>
-Cc: Frederik Deweerdt <deweerdt@free.fr>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Serial related oops
-Message-ID: <20070222170354.GB633@flint.arm.linux.org.uk>
-Mail-Followup-To: Jose Goncalves <jose.goncalves@inov.pt>,
-	Frederik Deweerdt <deweerdt@free.fr>, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
-References: <20070219143520.GB27370@flint.arm.linux.org.uk> <20070220144814.GJ566@slug> <20070219150508.GD27370@flint.arm.linux.org.uk> <45D9D073.7020701@inov.pt> <20070219164200.GF27370@flint.arm.linux.org.uk> <45D9E46C.4030408@inov.pt> <20070219212347.GA4258@flint.arm.linux.org.uk> <45DC537B.6020108@inov.pt> <20070221230503.GA28156@flint.arm.linux.org.uk> <45DDB096.2020807@inov.pt>
+	Thu, 22 Feb 2007 12:09:13 -0500
+Received: from tim.rpsys.net ([194.106.48.114]:53748 "EHLO tim.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751105AbXBVRJM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 12:09:12 -0500
+Subject: Re: no backlight on radeon after recent kernel "upgrade"s
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Alex Romosan <romosan@sycorax.lbl.gov>,
+       Yaroslav Halchenko <kernel@onerussian.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net,
+       James Simmons <jsimmons@infradead.org>
+In-Reply-To: <20070222163405.GF25887@khazad-dum.debian.net>
+References: <1171876788.6046.3.camel@localhost.localdomain>
+	 <877iub9mu2.fsf@sycorax.lbl.gov>
+	 <1172097718.5790.29.camel@localhost.localdomain>
+	 <20070221231706.GA3336@khazad-dum.debian.net>
+	 <1172103159.5790.45.camel@localhost.localdomain>
+	 <20070222005122.GA7928@khazad-dum.debian.net>
+	 <20070222011017.GA8845@khazad-dum.debian.net>
+	 <1172138450.5837.34.camel@localhost.localdomain>
+	 <20070222145613.GD25887@khazad-dum.debian.net>
+	 <1172157592.5837.89.camel@localhost.localdomain>
+	 <20070222163405.GF25887@khazad-dum.debian.net>
+Content-Type: text/plain
+Date: Thu, 22 Feb 2007 17:08:39 +0000
+Message-Id: <1172164119.5837.98.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45DDB096.2020807@inov.pt>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 22, 2007 at 03:02:46PM +0000, Jose Goncalves wrote:
-> It could be a silly question (tamper with me as I'm not familiar with
-> such low level programming), but couldn't it be possible for a interrupt
-> to hit in the middle of the serial_in() calls and mess with %ebx?
-
-I'm no expert on x86, but if an interrupt was messing with %ebx, you'd
-have random crashes verywhere - userspace, kernel space in unpredicatable
-ways.
-
-> What I find real hard to understand is why a hardware fault happens
-> always in the same software instruction! I would expect a hardware fault
-> to hit randomly...
-
-Well, compared with your previous report, your latest report is different.
-Your first report had  both EIP and %ebx being zero (because they got
-corrupted when returning from serial_in).  This time only %ebx was
-corrupted.
-
-Consequently, this time we oopsed in the subsequent serial_in() rather
-than trying to return to serial8250_startup() as last time.
-
-> I left my application running this night, with a 2.6.16.41 kernel
-> unpatched  on the serial driver (my last Oops report was with Frederik
-> patch to remove the insertion made in 2.6.12) and it crashed again on
-> exactly the same point!
-
->From that I take it that you removed the test in serial8250_startup which
-sets UART_BUG_TXEN, and the problem persisted.  That tends to suggest
-that it's not the culpret.
-
-> > For all we know, it could be a one-off fault on the hardware you
-> > happen to have - other identical units may not behave the same (can
-> > you check?)
+On Thu, 2007-02-22 at 14:34 -0200, Henrique de Moraes Holschuh wrote:
+> On Thu, 22 Feb 2007, Richard Purdie wrote:
+> > If you really care, add a a call to backlight_update_status() after you
+> > set the brightness attribute like some of the other drivers have. The
 > 
-> Yes I have other units that I can test it. I'll do that to see if it's
-> really a one-off fault on the hardware.
+> I will.  Do you ACK the patch, then?
 
-Would be nice to know.
+Yes, it can have an Acked-by: Richard Purdie <rpurdie@rpsys.net>.
 
-> If it continues to crash with other units I will then test with the
-> msleep(10) before the "And clear the interrupt registers again for
-> luck.", as you suggested earlier.
+> > Have a look at what corgi_bl does. It can know what state it set the
+> > hardware too as it keeps track itself, it just can't read that state
 > 
-> > If it is a one off case, you are welcome to patch that test out in
-> > your kernel build to remove the problem, and if it's an isolated case
-> > I encourage you to do this.  This is one of the great advantages of
-> > open source - if you hit such a problem rather than throwing the
-> > hardware away you can work around such issues.
+> You are assuming nothing else is changing the hardware behind the driver's
+> back. 
+
+Which it can't in the corgi_bl case (excluding poking things
+like /dev/mem). Its safe to assume it has exclusive access.
+
+>  I am against such assumptions when they can be avoided, but that's a
+> particular PoV and not much more than that.  IMHO, if you cannot query the
+> hardware, you shouldn't provide a way to query the current brightness that
+> will be right only if nobody else messed with the device.
 > 
-> I didn't understand what you mean by "you are welcome to patch that test
-> out in your kernel build to remove the problem". Which test are you
-> talking about?
+> Maybe for corgi, that doesn't hold much strength, but for stuff tied to
+> ACPI, it does.  And in a ThinkPad's case, where even writes to /dev/nvram
+> can change the brightness, well, if there weren't a way to ask the EC the
+> current real brightness, there is NO way I'd be implementing it based on a
+> memory cache.
 
-The one which sets UART_BUG_TXEN.
+Right, I'd be against such a driver. On the embedded hardware we can
+safely assume there is nothing else playing with the brightness settings
+though and such a driver is perfectly valid.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+> > > Howerver, I *do* strongly wish for a way to combine various drivers into a
+> > > single backlight device, where radeon/intelfb takes care of some stuff,
+> > > ibm-acpi/asus-laptop/sony-laptop takes care of other stuff, etc.  Also, a
+> > > standard naming for the builtin screen(s) would help, calling it "ibm",
+> > > "asus", "sony" is not good IMHO.
+> > 
+> > I wasn't aware of this problem. If some devices need bits from both
+> > raedon/whatever and acpi, the current implementations are just plain
+> > wrong. Its not really a backlight class problem and more of an
+> > implementation and interaction problem between acpi and the framebuffer
+> > drivers. They should be presenting and registering *one* backlight class
+> 
+> I.e. we should add hooks to the framebuffer drivers?  It would work, that's
+> for sure.
+
+If the backlight controls would then power off the backlight properly
+that would be desirable as we've have a more standard interface.
+
+Richard
+
