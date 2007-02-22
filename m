@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751834AbXBVUVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751838AbXBVUXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751834AbXBVUVi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 15:21:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbXBVUVi
+	id S1751838AbXBVUXh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 15:23:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbXBVUXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 15:21:38 -0500
-Received: from gw.goop.org ([64.81.55.164]:53952 "EHLO mail.goop.org"
+	Thu, 22 Feb 2007 15:23:37 -0500
+Received: from gw.goop.org ([64.81.55.164]:49544 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751834AbXBVUVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 15:21:38 -0500
-Message-ID: <45DDFB4D.9050809@goop.org>
-Date: Thu, 22 Feb 2007 12:21:33 -0800
+	id S1751838AbXBVUXg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 15:23:36 -0500
+Message-ID: <45DDFBC3.3070304@goop.org>
+Date: Thu, 22 Feb 2007 12:23:31 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
@@ -47,8 +47,6 @@ Pavel Machek wrote:
 > Why the fastcall stuff?  Why is io_delay different from activate_mm in
 > this regard?
 >   
-
-That's crud; I forgot to remove it.  Everything is effectively fastcall
-now that -mregparm=3 is always on.
+Actually, I did remove it.  I think you're looking at an old patch.
 
     J
