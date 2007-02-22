@@ -1,92 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422655AbXBVBAE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932798AbXBVBA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422655AbXBVBAE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 20:00:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422849AbXBVBAE
+	id S932798AbXBVBA5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 20:00:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932817AbXBVBA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 20:00:04 -0500
-Received: from tim.rpsys.net ([194.106.48.114]:46626 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422655AbXBVBAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 20:00:01 -0500
-Subject: Re: [PATCH 1/1] PXAFB: Support for backlight control
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Paul Sokolovsky <pmiscml@gmail.com>
-In-Reply-To: <20070221145353.GA23916@enneenne.com>
-References: <20070221145353.GA23916@enneenne.com>
-Content-Type: text/plain
-Date: Thu, 22 Feb 2007 00:59:06 +0000
-Message-Id: <1172105946.5790.78.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Feb 2007 20:00:57 -0500
+Received: from web63201.mail.re1.yahoo.com ([69.147.97.11]:26265 "HELO
+	web63201.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932798AbXBVBA4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 20:00:56 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Feb 2007 20:00:56 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=DWAEtW1MspBQ6m1GFqaTNDMXYfXo3rSj4zTYTjT6Z9U9nX54yeKiggdEWZeIWQtQBdy5cZ6A2+vD8qqoqjEWddojyXBWYWvOB/k2ohwIUnyKLpScNxFqmH3xb/NQMFCYD40UBelOCDBAtDnf3nZqQhfRjSTo20Akb9aApgWD7gc=  ;
+Message-ID: <20070222005414.4843.qmail@web63201.mail.re1.yahoo.com>
+X-YMail-OSG: aptcqNoVM1mTds8QrRUSh_2ReqskxTteqHpqv.X.9j91b0Lo7lSJWXmHsukG8dEodKI5sp2nV4zcueg0qBekDH231l_DxZp8vl.6q4Qsmazn2v5w5P6iMw--
+Date: Wed, 21 Feb 2007 16:54:14 -0800 (PST)
+From: Brandon Howard <brandon_waldgrave@yahoo.com>
+Subject: First desktop motherboard supported by LinuxBIOS: GIGABYTE M57SLI-S4
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-21 at 15:53 +0100, Rodolfo Giometti wrote:
-> Backlight control support for the PXA fram buffer.
-> 
-> Signed-off-by: Rodolfo Giometti <giometti@enneenne.com>
-> 
-> ---
-> 
-> Each platform should define the backlight properties in its own setup
-> file in "linux/arch/arm/mach-pxa/" as follow:
-> 
->    static int pxafb_bl_get_brightness(struct backlight_device *bl_dev)
->    {
->         return read_the_backlight_brightness();
->    }
-> 
->    static int pxafb_bl_update_status(struct backlight_device *bl_dev)
->    {
->            int perc, ret;
-> 
->            if (bl_dev->props->power != FB_BLANK_UNBLANK ||
->                bl_dev->props->fb_blank != FB_BLANK_UNBLANK)
->                    perc = 0;
->            else
->                    perc = bl_dev->props->brightness;
-> 
->         write_the_backlight_brightness(perc);
-> 
->            return 0;
->    }
-> 
->    static struct backlight_properties wwpc1100_backlight_props = {
->            .get_brightness         = pxafb_bl_get_brightness,
->            .update_status          = pxafb_bl_update_status,
->            .max_brightness         = 100,
->    };
->       
-> and then seting up the fb info as follow:
-> 
->    wwpc1100_pxafb_info.modes = &special_modes;
->    wwpc1100_pxafb_info.bl_props = &wwpc1100_backlight_props;
->    set_pxa_fb_info(&wwpc1100_pxafb_info);
+Hi,
 
-Reading through the patch its:
+The GIGABYTE M57SLI-S4 [1] is the first-ever desktop motherboard
+supported by a Free & Open Source BIOS, thanks to AMD engineer Yinghai
+Lu who released GPL-licensed code last month. This state-of-the-art
+motherboard is based on the NVIDIA nForce 570 SLI chipset and AMD's
+latest Socket AM2. It contains tons of advanced features such as:
 
-1) Not against any mainline kernel
-2) Not against a recent kernel
+Support for AMD Athlon 64 X2, Athlon 64 FX and Athlon 64 processors
+2X PCI Express x16 slots
+3X PCI Express x1 slots
+2X PCI slots
+3X 1394a (FireWire) ports
+10X USB 2.0
+16GB maximum memory
+SATA RAID
+6X SATA 3Gb/s slots.
 
-There were a number of backlight class changes just merged into mainline
-and you need to sync up any patch against them.
+This motherboard can be obtained today from many retail and online
+stores [2] and the source code for the BIOS can be downloaded from the
+LinuxBIOS SVN server [3]. 
 
-As mentioned by others, there is no need to tie the backlight driver
-into the framebuffer any more. Have a look at
-drivers/video/backlight/corgi_bl.c for an example (its used by PXA
-devices).
+This is a huge victory in the quest for a completely Free & Open
+Source general-purpose computer that enables users to have full
+control over their own hardware. The Free Software Foundation has made
+the campaign for a Free BIOS a top priority because it is a key
+component in the software stack of personal computers [4]. The need
+for a Free BIOS is even more pressing since DRM and Treacherous
+Computing have found their way into some proprietary BIOSes and EFI.
+>From a practical perspective, LinuxBIOS removes the need for ugly
+hacks and workarounds in the kernel that compensate for buggy BIOSes –
+we can now fix the BIOS ourselves.
 
-I have said elsewhere I will take patches to make corgi_bl a more
-generic driver (or maybe create a simple generic backlight driver) along
-the lines of what Paul mentioned.
+I encourage everyone upgrading their desktop computers to consider
+getting this motherboard or another one that is supported by
+LinuxBIOS.
 
-Regards,
-
-Richard
+-Brandon
 
 
+ 
+____________________________________________________________________________________
+Food fight? Enjoy some healthy debate 
+in the Yahoo! Answers Food & Drink Q&A.
+http://answers.yahoo.com/dir/?link=list&sid=396545367
