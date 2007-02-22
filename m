@@ -1,76 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932601AbXBVP3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751650AbXBVPeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932601AbXBVP3o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 10:29:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933098AbXBVP3o
+	id S1751650AbXBVPeQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 10:34:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbXBVPeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 10:29:44 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:40798 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932601AbXBVP3m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 10:29:42 -0500
-Date: Thu, 22 Feb 2007 16:29:38 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>, stable@kernel.org
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
-Subject: Re: [patch 03/18] Dont leak NT bit into next task
-Message-ID: <20070222152938.GP13958@stusta.de>
-References: <20070221014413.282048309@mini.kroah.org> <20070221014953.GD3684@kroah.com> <erh57g$oeb$1@sea.gmane.org>
-MIME-Version: 1.0
+	Thu, 22 Feb 2007 10:34:16 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33205 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751638AbXBVPeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 10:34:15 -0500
+Date: Thu, 22 Feb 2007 16:29:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: johnpol@2ka.mipt.ru, arjan@infradead.org, drepper@redhat.com,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       hch@infradead.org, akpm@zip.com.au, alan@lxorguk.ukuu.org.uk,
+       zach.brown@oracle.com, suparna@in.ibm.com, davidel@xmailserver.org,
+       jens.axboe@oracle.com, tglx@linutronix.de
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070222152904.GA17799@elte.hu>
+References: <20070222123929.GA5208@2ka.mipt.ru> <20070222.054127.104035694.davem@davemloft.net> <20070222143145.GA3246@elte.hu> <20070222.064704.71093028.davem@davemloft.net> <20070222151509.GA13670@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <erh57g$oeb$1@sea.gmane.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070222151509.GA13670@elte.hu>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -3.8
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-3.8 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0017]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 21, 2007 at 11:00:15AM +0100, Giuseppe Bilotta wrote:
-> On Wednesday 21 February 2007 02:49, Greg KH wrote:
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> > The pushback to the primary thread you speak of is just extra work 
+> > in my mind, for networking.  Better to just begin operations and sit 
+> > in the primary thread(s) waiting for events, and when they arrive 
+> > push the operations further along using non-blocking writes, reads, 
+> > and accept() calls.  There is no blocking context really needed for 
+> > these kinds of things, so a mechanism that tries to provide one is a 
+> > waste.
 > 
-> >  /* frame pointer must be last for get_wchan */
-> > -#define SAVE_CONTEXT    "pushq %%rbp ; movq %%rsi,%%rbp\n\t"
-> > -#define RESTORE_CONTEXT "movq %%rbp,%%rsi ; popq %%rbp\n\t"
-> > +#define SAVE_CONTEXT    "pushf ; pushq %%rbp ; movq %%rsi,%%rbp\n\t"
-> > +#define RESTORE_CONTEXT "movq %%rbp,%%rsi ; popq %%rbp ; popf\t"
-> 
-> No idea if this is a problem or not, but you forgot a \n after popf.
+> one question is, what is cheaper, to block out of a read and a write and 
+                                         ^-------to back out
+> to set up the event notification and then to return to the user 
+> context, or to just stay right in there with all the context already 
+> constructed and on the stack, and schedule away and then come back and 
+> queue back to the primary thread once the condition the thread is 
+> waiting for is done? The latter isnt all that unattractive in my mind, 
+> because it always does forward progress, with minimal 'backout' costs.
 
-A discussion of this issue is in the thread starting with [1]
-(and I'd re-add the \n in -stable kernels with the patch below 
- (stolen from 2.6.16) no matter what happened in Linus' tree).
-
-> Giuseppe "Oblomov" Bilotta
-
-cu
-Adrian
-
-[1] http://lkml.org/lkml/2007/1/8/374
-
-
-commit e02612a14b2b714e9d231d14c91e729f0f168299
-Author: Adrian Bunk <bunk@stusta.de>
-Date:   Tue Jan 9 03:36:59 2007 +0100
-
-    x86_64: re-add a newline to RESTORE_CONTEXT
-    
-    RESTORE_CONTEXT lost a newline:
-    http://www.mail-archive.com/kgdb-bugreport@lists.sourceforge.net/msg00559.html
-    
-    Reported by Steven M. Christey.
-    
-    Signed-off-by: Adrian Bunk <bunk@stusta.de>
-
-diff --git a/include/asm-x86_64/system.h b/include/asm-x86_64/system.h
-index 7b2c7aa..dacec59 100644
---- a/include/asm-x86_64/system.h
-+++ b/include/asm-x86_64/system.h
-@@ -21,7 +21,7 @@
- 
- /* frame pointer must be last for get_wchan */
- #define SAVE_CONTEXT    "pushf ; pushq %%rbp ; movq %%rsi,%%rbp\n\t"
--#define RESTORE_CONTEXT "movq %%rbp,%%rsi ; popq %%rbp ; popf\t"
-+#define RESTORE_CONTEXT "movq %%rbp,%%rsi ; popq %%rbp ; popf\n\t"
- 
- #define __EXTRA_CLOBBER  \
- 	,"rcx","rbx","rdx","r8","r9","r10","r11","r12","r13","r14","r15"
+	Ingo
