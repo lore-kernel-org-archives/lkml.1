@@ -1,50 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945994AbXBVMZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945986AbXBVMev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945994AbXBVMZY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 07:25:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945985AbXBVMZY
+	id S1945986AbXBVMev (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 07:34:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945997AbXBVMev
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 07:25:24 -0500
-Received: from stargate.chelsio.com ([12.22.49.110]:21064 "EHLO
+	Thu, 22 Feb 2007 07:34:51 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:2553 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945979AbXBVMZX (ORCPT
+	with ESMTP id S1945986AbXBVMeu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 07:25:23 -0500
-Message-ID: <45DD8B83.5040604@chelsio.com>
-Date: Thu, 22 Feb 2007 04:24:35 -0800
+	Thu, 22 Feb 2007 07:34:50 -0500
+Message-ID: <45DD8DDA.8060303@chelsio.com>
+Date: Thu, 22 Feb 2007 04:34:34 -0800
 From: Divy Le Ray <divy@chelsio.com>
 User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: shemminger@osdl.org, benh@kernel.crashing.org, netdev@vger.kernel.org,
-       ebs@ebshome.net, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] split NAPI from network device.
-References: <20061213113537.6baf410f@dxpl.pdx.osdl.net>	<1166042552.11914.188.camel@localhost.localdomain>	<20061213154635.1f284bf6@dxpl.pdx.osdl.net> <20070220.213125.74747066.davem@davemloft.net>
-In-Reply-To: <20070220.213125.74747066.davem@davemloft.net>
+To: yoshfuji@linux-ipv6.org
+CC: divy@chelsio.com, jeff@garzik.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, swise@opengridcomputing.com,
+       yoshfuji@linux-ipv6.org
+Subject: Re: [PATCH 2/7] cxgb3 - private ioctl cleanup
+References: <20070222115925.10001.61276.stgit@localhost.localdomain> <20070222.210618.134161490.yoshfuji@linux-ipv6.org>
+In-Reply-To: <20070222.210618.134161490.yoshfuji@linux-ipv6.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Feb 2007 12:24:39.0070 (UTC) FILETIME=[6BF80BE0:01C7567C]
+X-OriginalArrivalTime: 22 Feb 2007 12:34:37.0387 (UTC) FILETIME=[D097F9B0:01C7567D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+Hi Yoshfuji,
+>> From: Divy Le Ray <divy@chelsio.com>
+>>
+>> Clean up some private ioctls.
+>>
+>> Signed-off-by: Divy Le Ray <divy@chelsio.com>
+>> ---
+>>
+>>  drivers/net/cxgb3/cxgb3_ioctl.h |   21 ++++-------------
+>>  drivers/net/cxgb3/cxgb3_main.c  |   48 +++------------------------------------
+>>  2 files changed, 9 insertions(+), 60 deletions(-)
+>>
+>> diff --git a/drivers/net/cxgb3/cxgb3_ioctl.h b/drivers/net/cxgb3/cxgb3_ioctl.h
+>> index a942818..42d4bf6 100644
+>> --- a/drivers/net/cxgb3/cxgb3_ioctl.h
+>> +++ b/drivers/net/cxgb3/cxgb3_ioctl.h
+>> @@ -36,28 +36,17 @@
+>>   * Ioctl commands specific to this driver.
+>>   */
+>>  enum {
+>> -	CHELSIO_SETREG = 1024,
+>> -	CHELSIO_GETREG,
+>> -	CHELSIO_SETTPI,
+>> -	CHELSIO_GETTPI,
+>> -	CHELSIO_GETMTUTAB,
+>> +	CHELSIO_GETMTUTAB = 1024,
+>>  	CHELSIO_SETMTUTAB,
+>> -	CHELSIO_GETMTU,
+>> -	CHELSIO_SET_PM,
+>> -	CHELSIO_GET_PM,
+>> -	CHELSIO_GET_TCAM,
+>> -	CHELSIO_SET_TCAM,
+>> -	CHELSIO_GET_TCB,
+>>  	CHELSIO_GET_MEM,
+>>  	CHELSIO_LOAD_FW,
+>> -	CHELSIO_GET_PROTO,
+>> -	CHELSIO_SET_PROTO,
+>>  	CHELSIO_SET_TRACE_FILTER,
+>> -	CHELSIO_SET_QSET_PARAMS,
+>>  	CHELSIO_GET_QSET_PARAMS,
+>> -	CHELSIO_SET_QSET_NUM,
+>> +	CHELSIO_SET_QSET_PARAMS,
+>>  	CHELSIO_GET_QSET_NUM,
+>> -	CHELSIO_SET_PKTSCHED,
+>> +	CHELSIO_SET_QSET_NUM,
+>> +	CHELSIO_GET_PM,
+>> +	CHELSIO_SET_PM,
+>>  };
+>>  
+>>     
 >
-> @@ -919,10 +920,7 @@ int dev_close(struct net_device *dev)
->  	 * engine, but this requires more changes in devices. */
->  
->  	smp_mb__after_clear_bit(); /* Commit netif_running(). */
-> -	while (test_bit(__LINK_STATE_RX_SCHED, &dev->state)) {
-> -		/* No hurry. */
-> -		msleep(1);
-> -	}
-> +	netif_poll_disable(dev);
-When dev_close() exits, NAPI_STATE_SCHED will be set,
-whereas __LINK_STATE_RX_SCHED was previously reset.
-The cxgb3 driver assumes that the device is not scheduled after the 
-interface was brought up.
-It's no longer true if the interface is brought up, brought down, and 
-then brought up.
-Should cxgb3 explicitly call napi_enable() on the open() path ?
+> I disagree. This is very bad.
+>
+> 1. Please do do change the values.
+> 2. Explain why you are going to kill these ioctls.
+>   
+Jeff and Arjan have required that most of these ioctls go.
+Please read:
+http://marc.theaimsgroup.com/?l=linux-netdev&m=117029584904193&w=2
 
 Cheers,
 Divy
