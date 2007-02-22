@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945949AbXBVHtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932819AbXBVHvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945949AbXBVHtu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 02:49:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945946AbXBVHtt
+	id S932819AbXBVHvW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 02:51:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932803AbXBVHvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 02:49:49 -0500
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:39387 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932730AbXBVHtt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 02:49:49 -0500
-To: akpm@linux-foundation.org
-CC: staubach@redhat.com, hugh@veritas.com, linux-fsdevel@vger.kernel.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-reply-to: <20070221202615.a0a167f4.akpm@linux-foundation.org> (message from
-	Andrew Morton on Wed, 21 Feb 2007 20:26:15 -0800)
-Subject: Re: [PATCH] update ctime and mtime for mmaped write
-References: <E1HJvdA-0003Nj-00@dorka.pomaz.szeredi.hu> <20070221202615.a0a167f4.akpm@linux-foundation.org>
-Message-Id: <E1HK8hU-0005Mq-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 22 Feb 2007 08:49:12 +0100
+	Thu, 22 Feb 2007 02:51:22 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56815 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932819AbXBVHvV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 02:51:21 -0500
+Date: Thu, 22 Feb 2007 08:46:24 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       john stultz <johnstul@us.ibm.com>, Roman Zippel <zippel@linux-m68k.org>,
+       Mike Galbraith <efault@gmx.de>, Ken Chen <kenneth.w.chen@intel.com>,
+       balducci@units.it, LKML <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] Fix posix-cpu-timer breakage caused by stale p->last_ran value
+Message-ID: <20070222074624.GA9800@elte.hu>
+References: <20070221104747.3cb0da32.akpm@linux-foundation.org> <1172104409.25076.165.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1172104409.25076.165.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.8
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.1.7
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4699]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 21 Feb 2007 18:51:52 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
+
+* Thomas Gleixner <tglx@linutronix.de> wrote:
+
+> The problem is that the p->last_ran value is not updated after a 
+> context switch. So a subsequent call to current_sched_time() 
+> calculates with a stale p->last_ran value, i.e. accounts the full 
+> time, which the task was scheduled away.
 > 
-> > This patch makes writing to shared memory mappings update st_ctime and
-> > st_mtime as defined by SUSv3:
-> > 
-> >    The st_ctime and st_mtime fields of a file that is mapped with
-> >    MAP_SHARED and PROT_WRITE shall be marked for update at some point
-> >    in the interval between a write reference to the mapped region and
-> >    the next call to msync() with MS_ASYNC or MS_SYNC for that portion
-> >    of the file by any process. If there is no such call and if the
-> >    underlying file is modified as a result of a write reference, then
-> >    these fields shall be marked for update at some time after the
-> >    write reference.
-> > 
-> > A new address_space flag is introduced: AS_CMTIME.  This is set each
-> > time a page is dirtied through a userspace memory mapping.  This
-> > includes write accesses via get_user_pages().
-> > 
-> > Note, the flag is set unconditionally, even if the page is already
-> > dirty.  This is important, because the page might have been dirtied
-> > earlier by a non-mmap write.
-> > 
-> > This flag is checked in msync() and __fput(), and if set, the file
-> > times are updated and the flag is cleared
-> > 
-> > The flag is also cleared, if the time update is triggered by a normal
-> > write.  This is not mandated by the standard, but seems to be a sane
-> > thing to do.
-> 
-> Why is the flag checked in __fput()?
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-It's because of this bit in the standard:
+>  	sched_info_switch(prev, next);
+>  	if (likely(prev != next)) {
+> -		next->timestamp = now;
+> +		next->timestamp = next->last_ran = now;
 
-    If there is no such call and if the underlying file is modified
-    as a result of a write reference, then these fields shall be
-    marked for update at some time after the write reference.
+ouch! nice catch. Also for v2.6.20.2 i think. 2.6.19 should be 
+unaffected.
 
-It could be done in munmap/mremap, but it seemed more difficult to
-track down all the places where the vma is removed.  But yes, that may
-be a nicer solution.
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-Miklos
+	Ingo
