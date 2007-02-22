@@ -1,63 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752046AbXBVXcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752048AbXBVXfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752046AbXBVXcQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 18:32:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbXBVXcQ
+	id S1752048AbXBVXfU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 18:35:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbXBVXfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 18:32:16 -0500
-Received: from nz-out-0506.google.com ([64.233.162.229]:62954 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752046AbXBVXcP (ORCPT
+	Thu, 22 Feb 2007 18:35:20 -0500
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:43341 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752048AbXBVXfT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 18:32:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=hudeRklxzyyXTb60GuFGZ6fnl4am1aekP8Mm0B14M144G0SvUZkzvk7e21PUJVFolbKcnz6wBh/9PnK+oMjajyUNGv9xoqmOgAiMBBwf465/yfMRUXWhENIiV4WvQoy8dnyHt+LhDwpIiUbOVFNv/jAnaFvFgZRiiHXGfCfOhhA=
-Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Luca Tettamanti <kronos@people.it>
-Cc: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>,
-       James Simmons <jsimmons@infradead.org>,
-       linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>,
-       Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070222203904.GA15349@dreamland.darkstar.lan>
-References: <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
-	 <20070128162907.370f5476.akpm@osdl.org>
-	 <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
-	 <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
-	 <20070130203301.GA15067@dreamland.darkstar.lan>
-	 <20070204201713.GA12867@dreamland.darkstar.lan>
-	 <Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
-	 <cb7bb73a0702061508x767882dcia1b13f85d898b6e7@mail.gmail.com>
-	 <1172101406.4217.16.camel@daplas>
-	 <cb7bb73a0702220001u6acbdd95ncdc9fad10d06b421@mail.gmail.com>
-	 <20070222203904.GA15349@dreamland.darkstar.lan>
-Content-Type: text/plain
-Date: Fri, 23 Feb 2007 07:34:11 +0800
-Message-Id: <1172187251.4279.9.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Feb 2007 18:35:19 -0500
+X-Greylist: delayed 2028 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 Feb 2007 18:35:19 EST
+Date: Thu, 22 Feb 2007 15:01:30 -0800 (PST)
+From: Christoph Lameter <clameter@engr.sgi.com>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, wli@holomorphy.com
+Subject: Re: [RFC/PATCH] slab: free pages in a batch in drain_freelist
+Message-ID: <Pine.LNX.4.64.0702221500420.22546@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-02-22 at 21:39 +0100, Luca Tettamanti wrote:
-> Il Thu, Feb 22, 2007 at 09:01:52AM +0100, Giuseppe Bilotta ha scritto: 
-> > On 2/22/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> > >On Wed, 2007-02-07 at 00:08 +0100, Giuseppe Bilotta wrote:
+On Thu, 22 Feb 2007, Pekka J Enberg wrote:
 
-> 
-> Still scratching my head :|
-> 
-> Tony,
-> this is the patch (modulo cosmetic stuff) that I sent to Giuseppe. I
-> believe it's correct (I cross checked with X.org driver):
-> 
+> As suggested by William, free the actual pages in a batch so that we
+> don't keep pounding on l3->list_lock.
 
-Yes, the patch does look correct.  I also don't understand why
-Giuseppe's hardware failed to do i2c with this...
+This means holding the l3->list_lock for a prolonged time period. The 
+existing code was done this way in order to make sure that the interrupt 
+holdoffs are minimal.
 
-Tony
-
+There is no pounding. The cacheline with the list_lock is typically held 
+until the draining is complete. While we drain the freelist we need to be 
+able to respond to interrupts.
 
