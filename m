@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932745AbXBVIiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751467AbXBVIjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932745AbXBVIiZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 03:38:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932786AbXBVIiZ
+	id S1751467AbXBVIjN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 03:39:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbXBVIjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 03:38:25 -0500
-Received: from nz-out-0506.google.com ([64.233.162.237]:38210 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932745AbXBVIiY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 03:38:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=eyQqoIuDssNb6bhc3cBOfcqyClJwzvohbzxa6cO32Xn/jHC6ULxGf6bDgJDsvEtDkmJEgcdlOFIheCUHoRxpiByyJuWvsRDNai5tegwNsT1+DlqhDyMecCqeav6dg4n4eglhRoo41aLOxxTeaJXt/Z60j+T4xx9qFdEbA6YJfrM=
-Message-ID: <8d158e1f0702220038h6101ab50h4ae57aa4ed0684a7@mail.gmail.com>
-Date: Thu, 22 Feb 2007 09:38:23 +0100
-From: "Patrick Ale" <patrick.ale@gmail.com>
-To: rol@as2917.net
-Subject: Re: libsata doesn't like bus without master
-Cc: "Vincent Legoll" <vincent.legoll@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <033401c75659$251d8c40$4b00a8c0@donald>
+	Thu, 22 Feb 2007 03:39:13 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:42593 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751467AbXBVIjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 03:39:12 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: 2.6.20-mm2
+Date: Thu, 22 Feb 2007 09:33:37 +0100
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <20070217215146.30e7ffa3.akpm@linux-foundation.org> <200702202307.45432.rjw@sisk.pl> <200702211957.00930.david-b@pacbell.net>
+In-Reply-To: <200702211957.00930.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <8d158e1f0702211301n3d30f590t14b1501e418da7e0@mail.gmail.com>
-	 <033401c75659$251d8c40$4b00a8c0@donald>
+Message-Id: <200702220933.37559.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/22/07, Paul Rolland <rol@as2917.net> wrote:
-> Hello,
+On Thursday, 22 February 2007 04:57, David Brownell wrote:
+> On Tuesday 20 February 2007 2:07 pm, Rafael J. Wysocki wrote:
+> 
+> > > Plus, I'd guess, the old rtc driver statically linked.
+> > 
+> > Yes (mistakenly).
+> 
+> Until someone merges the BSOD-for-Linux patch, I'll continue to
+> assume that oopsing is the wrong response to "user" mistakes.  ;)
+> 
+> Legacy drivers can be such a PITA.
 
+Unfortunately, the userland shipped with OpenSUSE refuses to talk to the new
+one (or I don't know how to make it do that).
 
-> <please no flame war>
->
-I dont think there is one or that this reply of yours could cause it :P
+> > > What I see is a should-not-happen fault of some kind in a cleanup
+> > > path that's been tested with non-PNP rtc drivers.  A quick glance
+> > > at the code left me puzzled.  Would sleeping a second or two before
+> > > calling rtc_device_unregister() change that behavior?
+> > 
+> > [tries]
+> > 
+> > No.
+> 
+> Shoot.  OK, I'll see if I can reproduce it myself.  Is this system
+> using a generic CMOS RTC?  Or is HPET somehow involved?  (That old
+> RTC driver has HPET voodoo as well as normal RTC stuff.)
 
-> Just to add my $0.02 on this point : this could also be one of the problem
-> I'm facing on my machine right now, but the point is that Windows supports
-> it perfectly. At least that proves it can work, and it does work.
+How can I check that?
 
-If I read the posts correctly it was allready established that the
-drivers in Linux should support this but yes, I do agree with you,
-whatever a BIOS supports should be supported by the kernel as well in
-my opinion. And, at least the BIOSes and drives I used, support single
-slave operations, how stupid this might be :)
-
-Anyways, today is my first day at work again after a fever, so I will
-be messing with stuff and hardware again, and will try to do some more
-tests/breakage hoorah.
-
-Patrick
+Rafael
