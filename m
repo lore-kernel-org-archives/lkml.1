@@ -1,80 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945946AbXBVIBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932823AbXBVIBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945946AbXBVIBe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 03:01:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932847AbXBVIBd
+	id S932823AbXBVIBz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 03:01:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933003AbXBVIBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 03:01:33 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39304 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932807AbXBVIBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 03:01:33 -0500
-Date: Thu, 22 Feb 2007 08:56:23 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Speedup divides by cpu_power in scheduler
-Message-ID: <20070222075623.GB9800@elte.hu>
-References: <20070221211039.GA2672@beardog.cca.cpqcorp.net> <20070221191427.9b7cf4b0.akpm@linux-foundation.org> <45DD46E5.4060804@cosmosbay.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 22 Feb 2007 03:01:54 -0500
+Received: from wx-out-0506.google.com ([66.249.82.234]:26939 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932823AbXBVIBx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 03:01:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PJEQR0xb+ge8dsYQcwmidgMTNssAUUa713eHomM65KZdGafqckUnyTnGfc+7NrU+aSnlZkN8KuwQLreUea/i+f68UL3l0n+rlfN4fsr9+94o9cVOiyQF/nf7zmXdT4YWaHYgkIg9/HD2PDqX68MuCb7Bgc+YzT1tWQzawMn7Z78=
+Message-ID: <cb7bb73a0702220001u6acbdd95ncdc9fad10d06b421@mail.gmail.com>
+Date: Thu, 22 Feb 2007 09:01:52 +0100
+From: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
+Cc: "James Simmons" <jsimmons@infradead.org>,
+       "Luca Tettamanti" <kronos@people.it>,
+       linux-fbdev-devel@lists.sourceforge.net,
+       "Andrew Morton" <akpm@osdl.org>, "Dave Airlie" <airlied@gmail.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1172101406.4217.16.camel@daplas>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <45DD46E5.4060804@cosmosbay.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.8
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.1.7
-	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4995]
+References: <ephv35$4i3$1@sea.gmane.org>
+	 <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
+	 <20070128162907.370f5476.akpm@osdl.org>
+	 <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
+	 <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
+	 <20070130203301.GA15067@dreamland.darkstar.lan>
+	 <20070204201713.GA12867@dreamland.darkstar.lan>
+	 <Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
+	 <cb7bb73a0702061508x767882dcia1b13f85d898b6e7@mail.gmail.com>
+	 <1172101406.4217.16.camel@daplas>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 2/22/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> On Wed, 2007-02-07 at 00:08 +0100, Giuseppe Bilotta wrote:
+> >
+> > As mentioned in another post in this thread, I can't get any info out
+> > of the i2c busses, because even when I have them available (i.e. after
+> > loading nvidiafb) I get XXXX all around (on all three of them).
+> > Suggestions on how to get the information welcome.
+>
+> Is this the same monitor you posted here?
+>
+> http://marc.theaimsgroup.com/?l=linux-kernel&m=112807065616218&w=2
+>
+> If yes, we already have the manufacturer and model code. The main
+> problem is that the EDID of this display has no sync range (H: 75-75kHz
+> and V: 60-60Hz).  Extending Hsync from 30-75kHz as a fix to the EDID
+> block shouldn't be too hard.
 
-* Eric Dumazet <dada1@cosmosbay.com> wrote:
+Yes, that's it! Jeepers, I can't believe that even re-reading the past
+LKML posts (even those!) I couldn't find the EDID info and how we had
+gotten them. I guess I need stronger glasses.
 
-> I noticed expensive divides done in try_to_wakeup() and 
-> find_busiest_group() on a bi dual core Opteron machine (total of 4 
-> cores), moderatly loaded (15.000 context switch per second)
-> 
-> oprofile numbers :
+Wonder why Luca's proposed patch makes the EDID undetectable, now, and
+why can't it be retrieved at a later time via i2c. Timeouts too small?
 
-nice patch! Ack for -mm testing:
+> I already have a patch for this which I forgot to send to you
+> before :-).  If you can confirm that this is still the same hardware,
+> I'll send you a test patch
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Yes, it's the same hardware. I can try the patch, with or without Luca's.
 
-one general suggestion: could you rename ->cpu_power to ->__cpu_power? 
-That makes it perfectly clear that this field's semantics have changed 
-and that it should never be manipulated directly without also changing 
-->reciprocal_cpu_power, and will also flag any out of tree code 
-trivially.
 
-> + * Divide a load by a sched group cpu_power : (load / sg->cpu_power)
-> + * Since cpu_power is a 'constant', we can use a reciprocal divide.
-> + */
-> +static inline u32 sg_div_cpu_power(const struct sched_group *sg, u32 load)
-> +{
-> +	return reciprocal_divide(load, sg->reciprocal_cpu_power);
-> +}
-> +/*
-> + * Each time a sched group cpu_power is changed,
-> + * we must compute its reciprocal value
-> + */
-> +static inline void sg_inc_cpu_power(struct sched_group *sg, u32 val)
-> +{
-> +	sg->cpu_power += val;
-> +	BUG_ON(sg->cpu_power == 0);
-> +	sg->reciprocal_cpu_power = reciprocal_value(sg->cpu_power);
-> +}
-
-Could you remove the BUG_ON() - it will most likely cause the 
-non-inlining of these functions if CONFIG_CC_OPTIMIZE_FOR_SIZE=y and 
-CONFIG_FORCED_INLINING is disabled (which is a popular combination in 
-distro kernels, it reduces the kernel's size by over 30%). And it's not 
-like we'll be able to overlook a divide by zero crash in 
-reciprocal_value() anyway, if cpu_power were to be zero ;-)
-
-	Ingo
+-- 
+Giuseppe "Oblomov" Bilotta
