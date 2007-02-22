@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751501AbXBVInf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751510AbXBVIur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751501AbXBVInf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 03:43:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbXBVInf
+	id S1751510AbXBVIur (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 03:50:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932636AbXBVIur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 03:43:35 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56881 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751501AbXBVIne (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 03:43:34 -0500
-Date: Thu, 22 Feb 2007 09:38:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, Andi Kleen <ak@muc.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [patch] x86: add -freg-struct-return to CFLAGS
-Message-ID: <20070222083822.GB15068@elte.hu>
-References: <45DCF1C5.4030006@goop.org> <1172131463.3531.226.camel@laptopd505.fenrus.org> <45DD4FA0.5030205@goop.org>
-Mime-Version: 1.0
+	Thu, 22 Feb 2007 03:50:47 -0500
+Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:44177 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751510AbXBVIuq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 03:50:46 -0500
+Date: Thu, 22 Feb 2007 09:51:06 +0100
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com
+Message-ID: <20070222085106.GC23916@enneenne.com>
+References: <20070216185230.GO8882@enneenne.com> <45DA6354.3000305@zytor.com> <20070221120426.GJ4641@enneenne.com> <45DC6FD6.4040005@zytor.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45DD4FA0.5030205@goop.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.8
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.8 required=5.9 tests=ALL_TRUSTED,BAYES_50 autolearn=no SpamAssassin version=3.1.7
-	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4910]
+In-Reply-To: <45DC6FD6.4040005@zytor.com>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [patch] x86: add -freg-struct-return to CFLAGS
-From: Ingo Molnar <mingo@elte.hu>
+On Wed, Feb 21, 2007 at 08:14:14AM -0800, H. Peter Anvin wrote:
+> 
+> If you have a kernel driver at all, then it makes perfect sense.  If you 
+> don't have a kernel driver at all, then it's irrelevant to the 
+> linux-kernel discussion.
 
-Jeremy Fitzhardinge suggested the use of -freg-struct-return, which does 
-structure-returns (such as when using pte_t) in registers instead of on 
-the stack.
+???
 
-that is indeed so, and this option reduced the kernel size a bit:
+So you are told me that if my PPS source is connected with a single
+CPU GPIO I have to add a new driver to the kernel? I have to choose a
+proper major/minor numbers for just one PIN? =:-o
 
-    text    data     bss     dec     hex filename
- 4799506  543456 3760128 9103090  8ae6f2 vmlinux.before
- 4798117  543456 3760128 9101701  8ae185 vmlinux.after
+> >RFC simply doesn't consider the fact that you can have a PPS source
+> >__without__ a filedes connected with, and a single filedes is
+> >considered __always__ connected with a single PPS source.
+> 
+> That's the Unix way.
 
-the resulting kernel booted fine on my testbox. Lets go for it.
+But not PPS one. In several embedded systems the GPS antenna is
+connected with the serial port and the PPS source, which cames from
+the __same__ GPS antenna, is connected with a GPIO.
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/i386/Makefile |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+How I should manage such case? Which fildes I should use? Also
+consider that NTPD currently manage only one filedes which should
+support both GPS antenna's data and PPS source. My patch can solve
+this problem.
 
-Index: linux/arch/i386/Makefile
-===================================================================
---- linux.orig/arch/i386/Makefile
-+++ linux/arch/i386/Makefile
-@@ -31,7 +31,7 @@ LDFLAGS_vmlinux := --emit-relocs
- endif
- CHECKFLAGS	+= -D__i386__
- 
--CFLAGS += -pipe -msoft-float -mregparm=3
-+CFLAGS += -pipe -msoft-float -mregparm=3 -freg-struct-return
- 
- # prevent gcc from keeping the stack 16 byte aligned
- CFLAGS += $(call cc-option,-mpreferred-stack-boundary=2)
+Ciao,
+
+Rodolfo
+
+-- 
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
