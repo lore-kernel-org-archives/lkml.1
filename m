@@ -1,60 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750738AbXBVKW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932184AbXBVK2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750738AbXBVKW7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 05:22:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbXBVKW7
+	id S932184AbXBVK2M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 05:28:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932939AbXBVK2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 05:22:59 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:41462 "EHLO
-	outbound2-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750738AbXBVKW6 (ORCPT
+	Thu, 22 Feb 2007 05:28:12 -0500
+Received: from mail2.ameuro.de ([195.140.232.8]:51258 "EHLO mail2.ameuro.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1945961AbXBVK2L convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 05:22:58 -0500
-X-BigFish: VP
-X-Server-Uuid: 519AC16A-9632-469E-B354-112C592D09E8
-Date: Thu, 22 Feb 2007 11:22:28 +0100
-From: "Joerg Roedel" <joerg.roedel@amd.com>
-To: "Dor Laor" <dor.laor@qumranet.com>
-cc: "Avi Kivity" <avi@qumranet.com>, "Pavel Machek" <pavel@ucw.cz>,
-       kvm-devel@lists.sourceforge.net, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [PATCH 10/13] KVM: Wire up hypercall handlers
- to a central arch-independent location
-Message-ID: <20070222102228.GC12801@amd.com>
-References: <45DD6CF0.3010509@qumranet.com>
- <64F9B87B6B770947A9F8391472E032160A91BAF3@ehost011-8.exch011.intermedia.net>
+	Thu, 22 Feb 2007 05:28:11 -0500
+X-Greylist: delayed 1807 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 Feb 2007 05:28:11 EST
+Date: Thu, 22 Feb 2007 10:57:47 +0100
+From: Anders Larsen <al@alarsen.net>
+Subject: Re: request_module: runaway loop modprobe net-pf-1 (is Re: Linux
+ 2.6.21-rc1)
+To: Greg KH <greg@kroah.com>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>,
+       linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+References: <87abz75hzs.fsf@duaron.myhome.or.jp>
+	<20070222001809.GB30444@kroah.com>
+In-Reply-To: <20070222001809.GB30444@kroah.com> (from greg@kroah.com on Thu
+	Feb 22 01:18:09 2007)
+X-Mailer: Balsa 2.3.14
+Message-Id: <1172138267l.24074l.0l@ecxwww1.reanet.de>
 MIME-Version: 1.0
-In-Reply-To: <64F9B87B6B770947A9F8391472E032160A91BAF3@ehost011-8.exch011.intermedia.net>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 22 Feb 2007 10:22:42.0713 (UTC)
- FILETIME=[63149090:01C7566B]
-X-WSS-ID: 69C3B17C2X01161818-01-01
-Content-Type: text/plain;
- charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
+X-AEV-Kundenmail-Information: AEV Virus and Spam Secure Mail System
+X-AEV-Kundenmail-SpamCheck: 
+X-MailScanner-From: al@alarsen.net
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 22, 2007 at 02:17:54AM -0800, Dor Laor wrote:
-> I have Ingo's network PV hypercalls to commit in my piplien.
-> Till then we can just add the test hypercall:
-> 	case __NR_hypercall_test:
-> 		printk(KERN_DEBUG "%s __NR_hypercall_test\n",
-> __FUNCTION__);
-> 		ret = 0x5a5a;
-> 		break;
-> 	default:
-> 		BUG();
+On 2007-02-22 01:18:09, Greg KH wrote:
+> On Thu, Feb 22, 2007 at 06:16:23AM +0900, OGAWA Hirofumi wrote:
+> > E.g. something calls the request_modle(), and if hotplug is using
+> > socket(PF_UNIX) and af_unix is module, it also calls request_modle()?
+> > 
+> > Just my guess though...
+> 
+> Ugh, why does anyone make af_unix a module these days.  I thought only
+> Debian was that foolish...  :)
 
-Is it a good idea to call BUG() on an undefined hypercall? I assume its
-better to inform the guest that is has issued an illegal call...
+Then how about making CONFIG_UNIX bool instead of tristate?
 
-Joerg
+Cheers
+ Anders
 
--- 
-Joerg Roedel
-Operating System Research Center
-AMD Saxony LLC & Co. KG
+diff --git a/net/unix/Kconfig b/net/unix/Kconfig
+index 5a69733..b589254 100644
+--- a/net/unix/Kconfig
++++ b/net/unix/Kconfig
+@@ -3,7 +3,7 @@
+ #
+
+ config UNIX
+-       tristate "Unix domain sockets"
++       bool "Unix domain sockets"
+        ---help---
+          If you say Y here, you will include support for Unix domain sockets;
+          sockets are the standard Unix mechanism for establishing and
+@@ -13,9 +13,5 @@ config UNIX
+          an embedded system or something similar, you therefore definitely
+          want to say Y here.
+
+-         To compile this driver as a module, choose M here: the module will be
+-         called unix.  Note that several important services won't work
+-         correctly if you say M here and then neglect to load the module.
+-
+          Say Y unless you know what you are doing.
 
 
