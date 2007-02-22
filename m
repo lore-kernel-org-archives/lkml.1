@@ -1,86 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945932AbXBVBKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932964AbXBVBL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945932AbXBVBKu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 20:10:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945931AbXBVBKu
+	id S932964AbXBVBL2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 20:11:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932987AbXBVBL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 20:10:50 -0500
-Received: from tim.rpsys.net ([194.106.48.114]:58182 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932935AbXBVBKs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 20:10:48 -0500
-Subject: Re: no backlight on radeon after recent kernel "upgrade"s
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Alex Romosan <romosan@sycorax.lbl.gov>,
-       Yaroslav Halchenko <kernel@onerussian.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net,
-       James Simmons <jsimmons@infradead.org>
-In-Reply-To: <20070222005122.GA7928@khazad-dum.debian.net>
+	Wed, 21 Feb 2007 20:11:27 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:53526 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932964AbXBVBL1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 20:11:27 -0500
+Date: Thu, 22 Feb 2007 01:11:18 +0000 (GMT)
+From: James Simmons <jsimmons@infradead.org>
+To: Yaroslav Halchenko <lists@onerussian.com>
+cc: Richard Purdie <rpurdie@rpsys.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [Linux-fbdev-devel] no backlight on radeon after recent kernel
+ "upgrade"s
+In-Reply-To: <20070221055648.GM25659@washoe.onerussian.com>
+Message-ID: <Pine.LNX.4.64.0702220109450.17121@pentafluge.infradead.org>
 References: <20070219044616.GC25659@washoe.onerussian.com>
-	 <20070219000412.acad13de.akpm@linux-foundation.org>
-	 <1171876788.6046.3.camel@localhost.localdomain>
-	 <877iub9mu2.fsf@sycorax.lbl.gov>
-	 <1172097718.5790.29.camel@localhost.localdomain>
-	 <20070221231706.GA3336@khazad-dum.debian.net>
-	 <1172103159.5790.45.camel@localhost.localdomain>
-	 <20070222005122.GA7928@khazad-dum.debian.net>
-Content-Type: text/plain
-Date: Thu, 22 Feb 2007 01:10:16 +0000
-Message-Id: <1172106616.5790.90.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+ <20070219000412.acad13de.akpm@linux-foundation.org>
+ <1171876788.6046.3.camel@localhost.localdomain> <20070221055648.GM25659@washoe.onerussian.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-21 at 22:51 -0200, Henrique de Moraes Holschuh wrote:
-> On Thu, 22 Feb 2007, Richard Purdie wrote:
-> > I have a thinkpad with Intel GM graphics ;-). I need it to work so I try
-> > not to experiment too much on it. I've just tried the ibm-acpi driver
-> > and it doesn't work well :-(.
+
+> I built 2.6.20-mm2 without backlight support
+> $> grep BACKLIGH /boot/config-2.6.20-mm2 
+> # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+> # CONFIG_FB_BACKLIGHT is not set
+> # CONFIG_FB_RIVA_BACKLIGHT is not set
+> # CONFIG_FB_RADEON_BACKLIGHT is not set
 > 
-> 2.6.21-rc, or 2.6.20? 
-
-2.6.21-rc1
-
-> If it is in 2.6.21, could you give me a report of how
-> it fares on 2.6.20?
-
-Maybe next week. I'm away over the weekend and I need it working now ;-).
-
-> > * 'echo 0 > brightness' lowered the intensity but by a level or two, not
-> > set it to level 0. A couple of more attempts and it did jump from 7 -> 1
-> > and so on, it seems erratic.
+> that "eliminated" the problem. Also I can see the screen with pure
+> 2.6.20 with backlight support (whatever it does since after
+> loading lcd, backlight modules, my /sys/class/{lcd,backlight} are empty):
 > 
-> I know it used to work fine before 2.6.20.  Let me check...  works fine on a
-> T43, 2.6.20 (Radeon X300).  I need more data to fix it :-)
+> *$> grep BACKLIGH /boot/config-2.6.20 
+> # CONFIG_FB_BACKLIGHT is not set
+> CONFIG_BACKLIGHT_LCD_SUPPORT=y
+> CONFIG_BACKLIGHT_CLASS_DEVICE=m
+> CONFIG_BACKLIGHT_DEVICE=y
 
-The following sequence is reproducible:
-
-echo 7 > brightness (repeat until actual_brightness reads 7)
-echo 0 > brightness (brightness reads 0, actual_brightness reads 4)
-echo 0 > brightness (brightness reads 0, actual_brightness reads 0)
-
-I suspect this is interference from software on the machine as it does
-show an onscreen display when I change the values in sysfs and the
-values on the OSD don't match what's really going on.  The
-actual_brightness does match the screen.
-
-I guess this just means we need to get userspace to agree on one method
-of access for this kind of thing. It makes me wondering where the
-hardware brightness keys fit into things though...
-
-> > actual_brightness always seems to be correct, as does brightness so it
-> > looks like its not updating the hardware correctly.
-> 
-> Well, if you have the ACPI video module loaded, unload it.  Does it work
-> now?
-
-No change if unloaded.
-
-Cheers,
-
-Richard
+You need to explictly enable the backlight for your fbdev driver. It 
+doesn't do the selecting magically for you.
+Jus do a make "favorite"config and go to the fbdev menu and select the 
+backlight option for your fbdev driver.
 
