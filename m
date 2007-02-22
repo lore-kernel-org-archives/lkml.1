@@ -1,41 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751480AbXBVC5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751477AbXBVDAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751480AbXBVC5o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 21:57:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbXBVC5o
+	id S1751477AbXBVDAT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 22:00:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbXBVDAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 21:57:44 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:34733 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751435AbXBVC5n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 21:57:43 -0500
-Date: Wed, 21 Feb 2007 18:57:39 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Neil Brown <neilb@suse.de>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 006 of 6] md: Add support for reshape of a raid6
-Message-Id: <20070221185739.0d509c0d.akpm@linux-foundation.org>
-In-Reply-To: <17885.636.133245.572876@notabene.brown>
-References: <20070220172544.15678.patches@notabene>
-	<1070220063516.16208@suse.de>
-	<20070221144806.e6eed85c.akpm@linux-foundation.org>
-	<17885.636.133245.572876@notabene.brown>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 21 Feb 2007 22:00:19 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:54365 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751477AbXBVDAR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 22:00:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=UhKEVL94V7msgDHS2IYFM8kgBT+TeRa/lCxmAwZbgkwpaNTmvE5sKxoZCfy292tbbj3W9C6Ql1YqUHjOeaolZsnZCTC2S+s9leLpZtbpCS3IXjo96Z15TTThzly/gFScwJQncMoS/ecqliRBin2G8zIEsM7Y77MpxGFuQgweyXY=
+Message-ID: <a2ebde260702211900v29c3f9a3y45ec5867e36b7a4b@mail.gmail.com>
+Date: Thu, 22 Feb 2007 11:00:16 +0800
+From: "Dong Feng" <middle.fengdong@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: PREEMP_ACTIVE in cond_resched
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Feb 2007 13:39:56 +1100 Neil Brown <neilb@suse.de> wrote:
+cond_resched() checks and conditionally sets PREEMPT_ACTIVE flag for
+the current task. The comments says,
 
-> I must right code that Andrew can read.
+/*
+* The BKS might be reacquired before we have dropped
+* PREEMPT_ACTIVE, which could trigger a second
+* cond_resched() call.
+*/
 
-That's write.
+My understanding is that cond_resched() would be indirectly invoked
+twice recursively, through the following path,
 
-But more importantly, things that people can immediately see and understand
-help reduce the possibility of mistakes.  Now and in the future.
+cond_resched() -> schedule() -> reacquire_kernel_lock() -> down() ->
+might_sleep() -> might_resched() -> cond_resched().
 
-If we did all loops like that, then it'd be the the best way to do it in new code,
-because people's eyes and brains are locked into that idiom and we just
-don't have to think about it when we see it.
+However, the above path is possible only in a voluntary-preemptive
+kernel. In a full-preemptive kernel, I do not find any possible path
+to cause recursive cond_resched(). Does that mean we can actually
+remove the check and setting of PREEMPT_ACTIVE for a full-preemptive
+kernel?
