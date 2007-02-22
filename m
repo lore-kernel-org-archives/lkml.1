@@ -1,85 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751548AbXBVJ3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751524AbXBVJcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751548AbXBVJ3a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 04:29:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbXBVJ3a
+	id S1751524AbXBVJcT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 04:32:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbXBVJcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 04:29:30 -0500
-Received: from wr-out-0506.google.com ([64.233.184.233]:16320 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751547AbXBVJ32 (ORCPT
+	Thu, 22 Feb 2007 04:32:19 -0500
+Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:44835 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751524AbXBVJcS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 04:29:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Fn8DBFoHcLTx/jEBo98Gb4pgcxeuYlRbQycx+CPlxxNW5E45e0+kgQo7zPi+5byjnYrNI7sZvF+RxqNE/n4t3OGdy01hEa5EprYPit9HDzMGcQPMhij8U4llxKDai7AIOpqQLkH6DUTxj4Dy0dnckB2gB+sjc/cPPs/fsMSTpxI=
-Message-ID: <f2b55d220702220129l2a596441k28f03fde252f72c3@mail.gmail.com>
-Date: Thu, 22 Feb 2007 01:29:23 -0800
-From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Cc: linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "Andrew Morton" <akpm@zip.com.au>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Ulrich Drepper" <drepper@redhat.com>,
-       "Zach Brown" <zach.brown@oracle.com>,
-       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Suparna Bhattacharya" <suparna@in.ibm.com>,
-       "Davide Libenzi" <davidel@xmailserver.org>,
-       "Jens Axboe" <jens.axboe@oracle.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <20070222070013.GA30921@elte.hu>
+	Thu, 22 Feb 2007 04:32:18 -0500
+Date: Thu, 22 Feb 2007 10:32:38 +0100
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Paul Sokolovsky <pmiscml@gmail.com>
+Message-ID: <20070222093238.GF13924@enneenne.com>
+References: <20070221145353.GA23916@enneenne.com> <1172105946.5790.78.camel@localhost.localdomain> <20070222082848.GM4641@enneenne.com> <1172136430.5837.9.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070221211355.GA7302@elte.hu>
-	 <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
-	 <20070221233111.GB5895@elte.hu>
-	 <f2b55d220702211704o549efd70oc0998cc663537ddd@mail.gmail.com>
-	 <20070222070013.GA30921@elte.hu>
+In-Reply-To: <1172136430.5837.9.camel@localhost.localdomain>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH 1/1] PXAFB: Support for backlight control
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/21/07, Ingo Molnar <mingo@elte.hu> wrote:
-> the syslet/threadlet framework has been derived from Tux, which one can
-> accuse of may things, but which i definitely can not accuse of being
-> slow. It has no relationship whatsoever to Solaris 2.0 or later.
+On Thu, Feb 22, 2007 at 09:27:09AM +0000, Richard Purdie wrote:
+> 
+> Yes, my point is that you shouldn't need to touch pxafb if you use the
+> backlight class. I know pxafb has backlight hooks but they are probably
+> going to get removed at some point as they should no longer be needed.
 
-So how well does Tux fare on a NUMA box?  The Solaris 2.0 reference
-was not about the origins of the code, it was about the era when SMP
-first became relevant to the UNIX application programmer.  I remember
-an emphasis on scheduler scalability then, too.  It took them quite a
-while to figure out that having an efficient scheduler is of little
-use if you are scheduling the wrong things on the wrong CPUs in the
-wrong order and thereby thrashing continuously.  By that time we had
-given up and gone back to message passing via the network stack, which
-was the one kernel component that could figure out how to get state
-from one CPU to another without taking all of its clothes off and
-changing underwear in between.  Sound familiar?
+I see.
 
-> Your other mail showed that you have very basic misunderstandings about
-> how threadlets work, on which you based a string of firm but incorrect
-> conclusions. In this discussion i'm mostly interested in specific
-> feedback about syslets/threadlets - thankfully we are past the years of
-> "unless Linux does generic technique X it will stay a hobby OS forever"
-> type of time-wasting discussions.
+> What changes do you need to it to be able to use it as a generic driver?
+> 
+> The main issue is that the structure definition is in one of the
+> sharpsl.h files at the moment so most drivers can't get to it. Fix that
+> and it should make a good generic driver.
 
-Well, maybe I'll let someone else weigh in about whether I understood
-threadlets well enough to provide feedback worth reading.  As for the
-"hobby OS forever" bit, that's an utter misrepresentation of my
-comments and criticism.  Linux is now good enough for Oracle to have
-more or less abandoned Sun for Linux.  That's as good as it needs to
-be, as far as Oracle and IBM are concerned.  The question is now
-whether it will ever get substantially _better_, so that you can do
-something constructive with a NUMA box or a 64-core MIPS without
-having the resources of an Oracle or a Google to build an
-OS-atop-the-OS.
+I'll do as you suggest!
 
-Cheers,
-- Michael
+> Ideally I'd prefer to leave the name alone since there is broken
+> userspace on the Zaurus that uses that name but I can see why people
+> want it renamed if its to be used as a generic driver...
+
+Yes. :)
+
+I'll wait for the 2.6.21 to see what to do... thanks a lot,
+
+Rodolfo
+
+-- 
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
