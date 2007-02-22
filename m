@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751690AbXBVQhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751689AbXBVQmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751690AbXBVQhs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 11:37:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbXBVQhs
+	id S1751689AbXBVQmO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 11:42:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbXBVQmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 11:37:48 -0500
-Received: from smtp-104-thursday.nerim.net ([62.4.16.104]:2492 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751686AbXBVQhr (ORCPT
+	Thu, 22 Feb 2007 11:42:14 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:38683 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751686AbXBVQmN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 11:37:47 -0500
-Date: Thu, 22 Feb 2007 17:37:11 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Dave Jones <davej@redhat.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org,
-       notting@redhat.com
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Message-Id: <20070222173711.9364695b.khali@linux-fr.org>
-In-Reply-To: <20070221201944.GD13794@redhat.com>
-References: <45D5EA88.7090300@redhat.com>
-	<45D6DDCE.5050803@assembler.cz>
-	<45D7461A.2040808@redhat.com>
-	<45D8D6AE.3000204@assembler.cz>
-	<45DB0EEA.2010205@redhat.com>
-	<20070220191142.GE16614@redhat.com>
-	<20070221171737.b6592104.khali@linux-fr.org>
-	<20070221173740.GD19851@redhat.com>
-	<20070221201944.GD13794@redhat.com>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
+	Thu, 22 Feb 2007 11:42:13 -0500
+Subject: Re: NO_HZ: timer interrupt stuck [Re: Linux 2.6.21-rc1]
+From: Arjan van de Ven <arjan@infradead.org>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: tglx@linutronix.de, Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Luca Tettamanti <kronos.it@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <45DDC488.1080008@drzeus.cx>
+References: <20070221230409.GA1158@dreamland.darkstar.lan>
+	 <1172099859.25076.132.camel@localhost.localdomain>
+	 <Pine.LNX.4.61.0702221334460.28624@yvahk01.tjqt.qr>
+	 <1172150712.3531.265.camel@laptopd505.fenrus.org>
+	 <45DDA43A.4030509@drzeus.cx>
+	 <1172154034.3531.270.camel@laptopd505.fenrus.org>
+	 <45DDADEB.3030309@drzeus.cx>  <45DDB31C.8070306@drzeus.cx>
+	 <1172160024.25076.188.camel@localhost.localdomain>
+	 <45DDC488.1080008@drzeus.cx>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Thu, 22 Feb 2007 17:42:06 +0100
+Message-Id: <1172162526.3531.275.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Feb 2007 15:19:44 -0500, Dave Jones wrote:
-> Ah, Fedora has this horror in its initscripts (which explains why I missed
-> it in my grep)..
+On Thu, 2007-02-22 at 17:27 +0100, Pierre Ossman wrote:
+> Thomas Gleixner wrote:
+> >
+> > Here is the reason. The local APIC stops working in C3 state and we fall
+> > back to the PIT in that case. Not really exciting for dynticks, but the
+> > only way to keep the system alive. There is a patch coming up from
+> > Intel, which finds out how to use HPET even if it is not enabled by the
+> > BIOS. This will still end up on IRQ#0, but will give way longer idle
+> > sleeps than the PIT.
+> >
+> >   
 > 
-> # Initialize ACPI bits
-> if [ -d /proc/acpi ]; then
->     for module in /lib/modules/$unamer/kernel/drivers/acpi/* ; do
->         module=${module##*/}
->         module=${module%.ko}
->         modprobe $module >/dev/null 2>&1
->     done
-> fi
+> So then the next two questions are; is it possible to disable C3 
 
-Ah, this also explains why the i2c_ec and sbs drivers were loaded on
-Chuck's system, although they were not needed.
+yeah there is a commandline thingy for it
+> and is
+> it a net power gain to get rid of the wakeups in favor of having C3.
 
-> This is there because there's no clean way for userspace to know whether
-> to load the system specific stuff right now.   Bill Nottingham pointed
-> out that we could add a /sys/class/dmi/modalias and appropriate MODULE_DMI
-> tags to the various modules like asus_acpi to make udev autoload them.
+no; c3 saves a TON more power. 
 
-Something similiar should be doable for i2c_ec, as it's only useful if a
-given ACPI object is present. sbs, in turn, is only useful if i2c_ec is
-loaded.
+you can try enabling HPET in your BIOS...
 
 -- 
-Jean Delvare
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+
