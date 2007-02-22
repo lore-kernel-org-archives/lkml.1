@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751961AbXBVVzJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751963AbXBVVz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751961AbXBVVzJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 16:55:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbXBVVzJ
+	id S1751963AbXBVVz2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 16:55:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbXBVVz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 16:55:09 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:52807 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751963AbXBVVzH (ORCPT
+	Thu, 22 Feb 2007 16:55:27 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:52183 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751963AbXBVVz0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 16:55:07 -0500
-Date: Thu, 22 Feb 2007 21:55:01 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>, akpm@osdl.org,
-       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, gregkh@novell.com, hch@infradead.org
-Subject: Re: [Patch 2/2] cciss: add shutdown support (replaces reboot notifier)
-Message-ID: <20070222215501.GA21037@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	James Bottomley <James.Bottomley@SteelEye.com>,
-	"Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>,
-	akpm@osdl.org, jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-	linux-scsi@vger.kernel.org, gregkh@novell.com
-References: <20070222213845.GA14162@beardog.cca.cpqcorp.net> <1172180978.3378.35.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1172180978.3378.35.camel@mulgrave.il.steeleye.com>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 22 Feb 2007 16:55:26 -0500
+Message-ID: <45DE113D.1020606@zytor.com>
+Date: Thu, 22 Feb 2007 13:55:09 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: Jiri Kosina <jikos@jikos.cz>
+CC: webmaster@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: gitweb on kernel.org buggy?
+References: <Pine.LNX.4.64.0702222219520.10496@twin.jikos.cz>
+In-Reply-To: <Pine.LNX.4.64.0702222219520.10496@twin.jikos.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 22, 2007 at 03:49:38PM -0600, James Bottomley wrote:
-> On Thu, 2007-02-22 at 15:38 -0600, Mike Miller (OS Dev) wrote:
-> >         .remove = __devexit_p(cciss_remove_one),
-> >         .id_table = cciss_pci_device_id,        /* id_table */
-> > +       .shutdown = cciss_remove_one,
+Jiri Kosina wrote:
+> Hi,
 > 
-> You need a __devexit_p() wrapper for this one too.
+> the gitweb running on git(2).kernel.org has looked buggy to me for quite a 
+> some time (a month or so) with respect to branches vs. shortlog.
+> 
+> When you browse a repository with mutliple branches, and switch between 
+> branches, the shortlog shown is always the one from master, never from the 
+> branch you switched to, which seems wrong to me.
+> 
+> This definitely worked previously (and works on other installations of 
+> gitweb outside the kernel.org), so it might be worth fixing.
+> 
+> Thanks,
+> 
 
-No.  We want to call this even in the non-modular, non-hotplug
-case.  So we should remove __devexit from cciss_remove_one.  Or
-alternatively implement a separate cciss_shutdown that just does
-the nessecary cache flushing, like most other drivers do.
+gitweb on kernel.org is at least in part orphanned, since the "official" 
+gitweb maintainers don't seem to listen to us (kernel.org people) w.r.t. 
+some issues, mainly related to caching, we've had to fork gitweb and 
+maintain it ourselves -- however, since kernel.org is currently all 
+volunteer labor, we have limited amount of time in which to deal with 
+things.
+
+	-hpa
