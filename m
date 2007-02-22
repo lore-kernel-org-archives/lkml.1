@@ -1,56 +1,355 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932129AbXBVNyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933083AbXBVNzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932129AbXBVNyd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 08:54:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933068AbXBVNyd
+	id S933083AbXBVNzN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 08:55:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933080AbXBVNzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 08:54:33 -0500
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:58821 "EHLO smtp2.it.da.ut.ee"
+	Thu, 22 Feb 2007 08:55:12 -0500
+Received: from netgear.net.ru ([195.178.208.66]:48458 "EHLO tservice.net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932129AbXBVNyc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 08:54:32 -0500
-X-Greylist: delayed 1485 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 Feb 2007 08:54:31 EST
-Date: Thu, 22 Feb 2007 15:29:42 +0200 (EET)
-From: Meelis Roos <mroos@linux.ee>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: ata-piix ACPI errors
-Message-ID: <Pine.SOC.4.64.0702221525480.20840@math>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S933072AbXBVNzE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 08:55:04 -0500
+Cc: David Miller <davem@davemloft.net>, Ulrich Drepper <drepper@redhat.com>,
+       Andrew Morton <akpm@osdl.org>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       netdev <netdev@vger.kernel.org>, Zach Brown <zach.brown@oracle.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Chase Venters <chase.venters@clientec.com>,
+       Johann Borck <johann.borck@densedata.com>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, Jamal Hadi Salim <hadi@cyberus.ca>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [take37 3/10] kevent: poll/select() notifications.
+In-Reply-To: <11721525001685@2ka.mipt.ru>
+X-Mailer: gregkh_patchbomb
+Date: Thu, 22 Feb 2007 16:55:00 +0300
+Message-Id: <11721525001824@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Reply-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Content-Transfer-Encoding: 7BIT
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Testbooted 2.6.21-rc1+todays git on a PC with Intel 845 chipset and PATA 
-HDD. Works fine but I now have these ACPI errors in dmesg, maybe someone 
-is interested:
 
-ata_piix 0000:00:1f.1: version 2.00ac7
-PCI: Enabling device 0000:00:1f.1 (0005 -> 0007)
-ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 18 (level, low) -> IRQ 18
-PCI: Setting latency timer of device 0000:00:1f.1 to 64
-ata1: PATA max UDMA/100 cmd 0x000101f0 ctl 0x000103f6 bmdma 0x0001ffa0 irq 14
-ata2: PATA max UDMA/100 cmd 0x00010170 ctl 0x00010376 bmdma 0x0001ffa8 irq 15
-scsi0 : ata_piix
-ACPI Error (dsopcode-0481): Attempt to CreateField of length zero [20070126]
-ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.IDE0.RATA] (Node c18edbf8), AE_AML_OPERAND_VALUE
-ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.IDE0.CHN0.DRV0._GTF] (Node c18ed608), AE_AML_OPERAND_VALUE
-ata1.00: ATA-5: ST380021A, 3.19, max UDMA/100
-ata1.00: 156301488 sectors, multi 16: LBA
-ACPI Error (dsopcode-0481): Attempt to CreateField of length zero [20070126]
-ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.IDE0.RATA] (Node c18edbf8), AE_AML_OPERAND_VALUE
-ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.IDE0.CHN0.DRV0._GTF] (Node c18ed608), AE_AML_OPERAND_VALUE
-ata1.00: configured for UDMA/100
-scsi1 : ata_piix
-ACPI Error (dsopcode-0481): Attempt to CreateField of length zero [20070126]
-ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.IDE0.RATA] (Node c18edbf8), AE_AML_OPERAND_VALUE
-ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.IDE0.CHN1.DRV0._GTF] (Node c18ed464), AE_AML_OPERAND_VALUE
-ata2.00: ATAPI, max UDMA/33
-ACPI Error (dsopcode-0481): Attempt to CreateField of length zero [20070126]
-ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.IDE0.RATA] (Node c18edbf8), AE_AML_OPERAND_VALUE
-ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.IDE0.CHN1.DRV0._GTF] (Node c18ed464), AE_AML_OPERAND_VALUE
-ata2.00: configured for UDMA/33
-scsi 0:0:0:0: Direct-Access     ATA      ST380021A        3.19 PQ: 0 ANSI: 5
-scsi 1:0:0:0: CD-ROM            _NEC     DV-5800B         G9H3 PQ: 0 ANSI: 5
+poll/select() notifications.
 
--- 
-Meelis Roos (mroos@linux.ee)
+This patch includes generic poll/select notifications.
+kevent_poll works simialr to epoll and has the same issues (callback
+is invoked not from internal state machine of the caller, but through
+process awake, a lot of allocations and so on).
+
+Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mitp.ru>
+
+diff --git a/fs/file_table.c b/fs/file_table.c
+index 4c17a18..46f458c 100644
+--- a/fs/file_table.c
++++ b/fs/file_table.c
+@@ -20,6 +20,7 @@
+ #include <linux/cdev.h>
+ #include <linux/fsnotify.h>
+ #include <linux/sysctl.h>
++#include <linux/kevent.h>
+ #include <linux/percpu_counter.h>
+ 
+ #include <asm/atomic.h>
+@@ -119,6 +120,7 @@ struct file *get_empty_filp(void)
+ 	f->f_uid = tsk->fsuid;
+ 	f->f_gid = tsk->fsgid;
+ 	eventpoll_init_file(f);
++	kevent_init_file(f);
+ 	/* f->f_version: 0 */
+ 	return f;
+ 
+@@ -164,6 +166,7 @@ void fastcall __fput(struct file *file)
+ 	 * in the file cleanup chain.
+ 	 */
+ 	eventpoll_release(file);
++	kevent_cleanup_file(file);
+ 	locks_remove_flock(file);
+ 
+ 	if (file->f_op && file->f_op->release)
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 86ec3f4..222b0cd 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -281,6 +281,7 @@ extern int dir_notify_enable;
+ #include <linux/init.h>
+ #include <linux/pid.h>
+ #include <linux/mutex.h>
++#include <linux/kevent_storage.h>
+ 
+ #include <asm/atomic.h>
+ #include <asm/semaphore.h>
+@@ -409,6 +410,8 @@ struct address_space_operations {
+ 
+ 	int (*readpages)(struct file *filp, struct address_space *mapping,
+ 			struct list_head *pages, unsigned nr_pages);
++	int (*aio_readpages)(struct file *filp, struct address_space *mapping,
++			struct list_head *pages, unsigned nr_pages, void *priv);
+ 
+ 	/*
+ 	 * ext3 requires that a successful prepare_write() call be followed
+@@ -580,6 +583,10 @@ struct inode {
+ 	struct mutex		inotify_mutex;	/* protects the watches list */
+ #endif
+ 
++#if defined CONFIG_KEVENT_SOCKET || defined CONFIG_KEVENT_PIPE
++	struct kevent_storage	st;
++#endif
++
+ 	unsigned long		i_state;
+ 	unsigned long		dirtied_when;	/* jiffies of first dirtying */
+ 
+@@ -739,6 +746,9 @@ struct file {
+ 	struct list_head	f_ep_links;
+ 	spinlock_t		f_ep_lock;
+ #endif /* #ifdef CONFIG_EPOLL */
++#ifdef CONFIG_KEVENT_POLL
++	struct kevent_storage	st;
++#endif
+ 	struct address_space	*f_mapping;
+ };
+ extern spinlock_t files_lock;
+diff --git a/kernel/kevent/kevent_poll.c b/kernel/kevent/kevent_poll.c
+new file mode 100644
+index 0000000..58129fa
+--- /dev/null
++++ b/kernel/kevent/kevent_poll.c
+@@ -0,0 +1,234 @@
++/*
++ * 2006 Copyright (c) Evgeniy Polyakov <johnpol@2ka.mipt.ru>
++ * All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include <linux/kernel.h>
++#include <linux/types.h>
++#include <linux/list.h>
++#include <linux/slab.h>
++#include <linux/spinlock.h>
++#include <linux/timer.h>
++#include <linux/file.h>
++#include <linux/kevent.h>
++#include <linux/poll.h>
++#include <linux/fs.h>
++
++static struct kmem_cache *kevent_poll_container_cache;
++static struct kmem_cache *kevent_poll_priv_cache;
++
++struct kevent_poll_ctl
++{
++	struct poll_table_struct 	pt;
++	struct kevent			*k;
++};
++
++struct kevent_poll_wait_container
++{
++	struct list_head		container_entry;
++	wait_queue_head_t		*whead;
++	wait_queue_t			wait;
++	struct kevent			*k;
++};
++
++struct kevent_poll_private
++{
++	struct list_head		container_list;
++	spinlock_t			container_lock;
++};
++
++static int kevent_poll_enqueue(struct kevent *k);
++static int kevent_poll_dequeue(struct kevent *k);
++static int kevent_poll_callback(struct kevent *k);
++
++static int kevent_poll_wait_callback(wait_queue_t *wait,
++		unsigned mode, int sync, void *key)
++{
++	struct kevent_poll_wait_container *cont =
++		container_of(wait, struct kevent_poll_wait_container, wait);
++	struct kevent *k = cont->k;
++
++	kevent_storage_ready(k->st, NULL, KEVENT_MASK_ALL);
++	return 0;
++}
++
++static void kevent_poll_qproc(struct file *file, wait_queue_head_t *whead,
++		struct poll_table_struct *poll_table)
++{
++	struct kevent *k =
++		container_of(poll_table, struct kevent_poll_ctl, pt)->k;
++	struct kevent_poll_private *priv = k->priv;
++	struct kevent_poll_wait_container *cont;
++	unsigned long flags;
++
++	cont = kmem_cache_alloc(kevent_poll_container_cache, GFP_KERNEL);
++	if (!cont) {
++		kevent_break(k);
++		return;
++	}
++
++	cont->k = k;
++	init_waitqueue_func_entry(&cont->wait, kevent_poll_wait_callback);
++	cont->whead = whead;
++
++	spin_lock_irqsave(&priv->container_lock, flags);
++	list_add_tail(&cont->container_entry, &priv->container_list);
++	spin_unlock_irqrestore(&priv->container_lock, flags);
++
++	add_wait_queue(whead, &cont->wait);
++}
++
++static int kevent_poll_enqueue(struct kevent *k)
++{
++	struct file *file;
++	int err;
++	unsigned int revents;
++	unsigned long flags;
++	struct kevent_poll_ctl ctl;
++	struct kevent_poll_private *priv;
++
++	file = fget(k->event.id.raw[0]);
++	if (!file)
++		return -EBADF;
++	
++	err = -EINVAL;
++	if (!file->f_op || !file->f_op->poll)
++		goto err_out_fput;
++	
++	err = -ENOMEM;
++	priv = kmem_cache_alloc(kevent_poll_priv_cache, GFP_KERNEL);
++	if (!priv)
++		goto err_out_fput;
++
++	spin_lock_init(&priv->container_lock);
++	INIT_LIST_HEAD(&priv->container_list);
++
++	k->priv = priv;
++
++	ctl.k = k;
++	init_poll_funcptr(&ctl.pt, &kevent_poll_qproc);
++	
++	err = kevent_storage_enqueue(&file->st, k);
++	if (err)
++		goto err_out_free;
++
++	revents = file->f_op->poll(file, &ctl.pt);
++	if (k->event.req_flags & KEVENT_REQ_ALWAYS_QUEUE) {
++		kevent_requeue(k);
++	} else {
++		if (revents & k->event.event) {
++			err = 1;
++			goto out_dequeue;
++		}
++	}
++
++	spin_lock_irqsave(&k->ulock, flags);
++	k->event.req_flags |= KEVENT_REQ_LAST_CHECK;
++	spin_unlock_irqrestore(&k->ulock, flags);
++
++	return 0;
++
++out_dequeue:
++	kevent_storage_dequeue(k->st, k);
++err_out_free:
++	kmem_cache_free(kevent_poll_priv_cache, priv);
++err_out_fput:
++	fput(file);
++	return err;
++}
++
++static int kevent_poll_dequeue(struct kevent *k)
++{
++	struct file *file = k->st->origin;
++	struct kevent_poll_private *priv = k->priv;
++	struct kevent_poll_wait_container *w, *n;
++	unsigned long flags;
++
++	kevent_storage_dequeue(k->st, k);
++
++	spin_lock_irqsave(&priv->container_lock, flags);
++	list_for_each_entry_safe(w, n, &priv->container_list, container_entry) {
++		list_del(&w->container_entry);
++		remove_wait_queue(w->whead, &w->wait);
++		kmem_cache_free(kevent_poll_container_cache, w);
++	}
++	spin_unlock_irqrestore(&priv->container_lock, flags);
++
++	kmem_cache_free(kevent_poll_priv_cache, priv);
++	k->priv = NULL;
++
++	fput(file);
++
++	return 0;
++}
++
++static int kevent_poll_callback(struct kevent *k)
++{
++	if (k->event.req_flags & KEVENT_REQ_LAST_CHECK) {
++		return 1;
++	} else {
++		struct file *file = k->st->origin;
++		unsigned int revents = file->f_op->poll(file, NULL);
++
++		k->event.ret_data[0] = revents & k->event.event;
++
++		return (revents & k->event.event);
++	}
++}
++
++static int __init kevent_poll_sys_init(void)
++{
++	struct kevent_callbacks pc = {
++		.callback = &kevent_poll_callback,
++		.enqueue = &kevent_poll_enqueue,
++		.dequeue = &kevent_poll_dequeue,
++		.flags = 0,
++	};
++
++	kevent_poll_container_cache = kmem_cache_create("kevent_poll_container_cache",
++			sizeof(struct kevent_poll_wait_container), 0, 0, NULL, NULL);
++	if (!kevent_poll_container_cache) {
++		printk(KERN_ERR "Failed to create kevent poll container cache.\n");
++		return -ENOMEM;
++	}
++
++	kevent_poll_priv_cache = kmem_cache_create("kevent_poll_priv_cache",
++			sizeof(struct kevent_poll_private), 0, 0, NULL, NULL);
++	if (!kevent_poll_priv_cache) {
++		printk(KERN_ERR "Failed to create kevent poll private data cache.\n");
++		kmem_cache_destroy(kevent_poll_container_cache);
++		kevent_poll_container_cache = NULL;
++		return -ENOMEM;
++	}
++
++	kevent_add_callbacks(&pc, KEVENT_POLL);
++
++	printk(KERN_INFO "Kevent poll()/select() subsystem has been initialized.\n");
++	return 0;
++}
++
++static struct lock_class_key kevent_poll_key;
++
++void kevent_poll_reinit(struct file *file)
++{
++	lockdep_set_class(&file->st.lock, &kevent_poll_key);
++}
++
++static void __exit kevent_poll_sys_fini(void)
++{
++	kmem_cache_destroy(kevent_poll_priv_cache);
++	kmem_cache_destroy(kevent_poll_container_cache);
++}
++
++module_init(kevent_poll_sys_init);
++module_exit(kevent_poll_sys_fini);
+
