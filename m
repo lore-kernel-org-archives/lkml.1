@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932598AbXBVIbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751388AbXBVIdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932598AbXBVIbp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 03:31:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbXBVIbp
+	id S1751388AbXBVIdQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 03:33:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932636AbXBVIdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 03:31:45 -0500
-Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:43932 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751498AbXBVIbo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 03:31:44 -0500
-Date: Thu, 22 Feb 2007 09:32:04 +0100
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Paul Sokolovsky <pmiscml@gmail.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net,
-       Richard Purdie <rpurdie@rpsys.net>
-Message-ID: <20070222083204.GN4641@enneenne.com>
-References: <20070221145353.GA23916@enneenne.com> <1056908425.20070221180037@gmail.com> <20070221161210.GL4641@enneenne.com> <1741775233.20070221182608@gmail.com>
+	Thu, 22 Feb 2007 03:33:16 -0500
+Received: from ns2.suse.de ([195.135.220.15]:60234 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751388AbXBVIdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 03:33:15 -0500
+Message-ID: <45DD553E.4000301@suse.de>
+Date: Thu, 22 Feb 2007 09:33:02 +0100
+From: Gerd Hoffmann <kraxel@suse.de>
+Organization: =?ISO-8859-1?Q?SUSE_LINUX_Products_GmbH=2C_GF=3A_?=
+ =?ISO-8859-1?Q?Markus_Rex=2C_HRB_16746_=28AG_N=FCrnberg=29?=
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1741775233.20070221182608@gmail.com>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 1/1] PXAFB: Support for backlight control
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
+       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [patch 18/24] Xen-paravirt_ops: Some generic early printk & boot
+ console fixups
+References: <20070221205254.169835700@goop.org>	<20070221205323.842917348@goop.org> <20070221191047.8d21acaa.akpm@linux-foundation.org> <45DD2E9E.5030601@goop.org>
+In-Reply-To: <45DD2E9E.5030601@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 21, 2007 at 06:26:08PM +0200, Paul Sokolovsky wrote:
-k>   Why? It's the same, except that it already exists, generic one (not
-> limited to pxafb), and requires 1 function (too bad that C doesn't
-> support lambda's):
+Jeremy Fitzhardinge wrote:
+> Andrew Morton wrote:
+>> hm, this patch series seems to have gone out of its way to cause problems.
+>>
+>> This particular (pathetically changelogged) patch is already in my tree,
+>> only in a later, much more comprehensive form.  Similarly the HVC changes
+>> were already in Rusty's stuff and were supposed to be merged by Paulus, but
+>> haven't been yet.
+>>
+>> Can we just drop this one?  Does the Xen work actually depend on it?
 
-Ah, ok.
+Yes.  The other which made it into -mm via lkml is a more recent version
+of the same patch (+documentation, +!x86 arch updates).
 
->   I sent a bit of criticism for that too ;-). YMMV, but kernel
-> solutions are just bound to be pretty simple and generic and lack
-> any "niceties", which you'd likely want to do anyway eventually. For
-> example, what if you'll want to implement "fade out" effect for
-> keyboard backlight? Doing it in adhoc manner in kernel? Whereas with
-> the LCD classdev, you can write generic "fade out" trigger and
-> attach/detach it from userspace.
+On the hvm_console.c changes: there is just a small change needed to
+make it build on !ppc, that should be identical identical in my (xen)
+and rusty (lguest) patch series.  Patching it only once is fine for
+obvious reasons ;)
 
-I agree. I just wish to add a backlight support for my LCD and
-minikeypad.
-
-What do you suggest to me in order to accomplish such task?
-
-Thanks for your suggestions,
-
-Rodolfo
+cheers,
+  Gerd
 
 -- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+Gerd Hoffmann <kraxel@suse.de>
