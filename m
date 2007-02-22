@@ -1,36 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945967AbXBVLEB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945968AbXBVLFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945967AbXBVLEB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 06:04:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945966AbXBVLEA
+	id S1945968AbXBVLFi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 06:05:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945966AbXBVLFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 06:04:00 -0500
-Received: from raven.upol.cz ([158.194.120.4]:51485 "EHLO raven.upol.cz"
+	Thu, 22 Feb 2007 06:05:38 -0500
+Received: from brick.kernel.dk ([62.242.22.158]:24270 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945965AbXBVLEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 06:04:00 -0500
-To: Neil Brown <neilb@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: loops (Re: [PATCH 006 of 6] md: Add support for reshape of a raid6)
-In-Reply-To: <17885.636.133245.572876@notabene.brown>
-References: <20070220172544.15678.patches@notabene> <1070220063516.16208@suse.de> <20070221144806.e6eed85c.akpm@linux-foundation.org> <17885.636.133245.572876@notabene.brown>
-Date: Thu, 22 Feb 2007 12:13:17 +0100
-Message-Id: <E1HKBsz-0001Am-OR@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
+	id S1945962AbXBVLFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 06:05:36 -0500
+Date: Thu, 22 Feb 2007 12:32:28 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH] libata: add NCQ blacklist entries from Silicon Image  Windows driver
+Message-ID: <20070222113226.GI5549@kernel.dk>
+References: <45DD2EC9.4050403@shaw.ca> <45DD3EC7.3050801@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45DD3EC7.3050801@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Neil Brown
-> Newsgroups: gmane.linux.raid,gmane.linux.kernel
-> Subject: Re: [PATCH 006 of 6] md: Add support for reshape of a raid6
-> Date: Thu, 22 Feb 2007 13:39:56 +1100
-[]
-> I guess...  "Egoless programmer" and all that, "write for others to
-> read, not for the compiler",
+On Thu, Feb 22 2007, Jeff Garzik wrote:
+> Robert Hancock wrote:
+> >This patch adds in some NCQ blacklist entries taken from the Silicon
+> >Image Windows drivers' .inf files for the 3124 and 3132 controllers.
+> >These entries were marked as ""DisableSataQueueing". Assume these are
+> >in their blacklist for a reason and disable NCQ on these drives.
+> >
+> >Signed-off-by: Robert Hancock <hancockr@shaw.ca>
+> >
+> >--- linux-2.6.21-rc1edit/drivers/ata/libata-core.c.prev    2007-02-21 
+> >22:23:05.000000000 -0600
+> >+++ linux-2.6.21-rc1edit/drivers/ata/libata-core.c    2007-02-21 
+> >22:25:44.000000000 -0600
+> >@@ -3269,6 +3269,13 @@ static const struct ata_blacklist_entry
+> >    /* Devices with NCQ limits */
+> >
+> >+    /* The following blacklist entries are taken from the Windows
+> >+       driver .inf files for the Silicon Image 3124 and 3132. */
+> >+    { "Maxtor 7B250S0",    "BANC1B70",    ATA_HORKAGE_NONCQ, },
+> >+    { "HTS541060G9SA00",    "MB3OC60D",    ATA_HORKAGE_NONCQ, },
+> >+    { "HTS541080G9SA00",    "MB4OC60D",    ATA_HORKAGE_NONCQ, },
+> >+    { "HTS541010G9SA00",    "MBZOC60D",    ATA_HORKAGE_NONCQ, },
+> 
+> Do we have information that these drives fail on non-SiI controllers?
+> 
+> Sometimes the problem can be related to a single family of controllers.
 
-Few years back on AVR GCC uC architecture, suggested by me
-do {...} while(--i) resulted to different numbers of loops with
-different optimization levels...
+I don't know about the Hitachi's, but the Maxtor with that firmware is
+definitely broken. It _appeared_ to work if the depth was limited to 4,
+but I didn't test it long enough to be absolutely certain. So the safest
+is indeed to blacklist it.
 
-Compilers are written by humans anyway.
-____
+I'm pretty sure my initial NCQ patches had a blacklist entry for that
+drive as well, but apparently the blacklist got lost somewhere along the
+way?
+
+-- 
+Jens Axboe
+
