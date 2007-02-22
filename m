@@ -1,83 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751526AbXBVJZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751530AbXBVJ17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751526AbXBVJZd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 04:25:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbXBVJZd
+	id S1751530AbXBVJ17 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 04:27:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbXBVJ17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 04:25:33 -0500
-Received: from mailmxout.mailmx.agnat.pl ([193.239.44.238]:2096 "EHLO
-	mailmxout.mailmx.agnat.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751525AbXBVJZb convert rfc822-to-8bit (ORCPT
+	Thu, 22 Feb 2007 04:27:59 -0500
+Received: from aa012msr.fastwebnet.it ([85.18.95.72]:44868 "EHLO
+	aa012msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751521AbXBVJ16 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 04:25:31 -0500
-From: Arkadiusz Miskiewicz <arekm@maven.pl>
-Organization: SelfOrganizing
-To: Greg KH <greg@kroah.com>
-Subject: Re: 2.6.21rc1 git usb mouse stops working after resume from ram
-Date: Thu, 22 Feb 2007 10:24:52 +0100
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
-       konstantin.a.karasyov@intel.com, len.brown@intel.com
-References: <200702212314.56958.arekm@maven.pl> <20070221234905.GB7133@kroah.com>
-In-Reply-To: <20070221234905.GB7133@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200702221024.52551.arekm@maven.pl>
-X-Authenticated-Id: arekm
+	Thu, 22 Feb 2007 04:27:58 -0500
+Date: Thu, 22 Feb 2007 10:26:31 +0100
+From: Paolo Ornati <ornati@fastwebnet.it>
+To: Michael Opdenacker <michael-lists@free-electrons.com>
+Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [TRIVIAL] Fixing occurrences of "the the "
+Message-ID: <20070222102631.231bf605@localhost>
+In-Reply-To: <200702220927.28393.michael-lists@free-electrons.com>
+References: <200702220927.28393.michael-lists@free-electrons.com>
+X-Mailer: Sylpheed-Claws 2.4.0 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 22 of February 2007, Greg KH wrote:
-> On Wed, Feb 21, 2007 at 11:14:56PM +0100, Arkadiusz Miskiewicz wrote:
-> > Hello,
-> >
-> > Today version of Linus git tree has a problem with resuming of usb
-> > devices. My trackball is no longer working after resume from ram. It not
-> > even seen by lsusb.  Newly plugged devices are no longer detected (ie. my
-> > usb camera) after resume.
-> >
-> > Reloading all usb + ohci/ehci modules doesn't fix the problem. I need to
-> > reboot entire machine (thinkpad z60m).
->
-> If you disable CONFIG_USB_SUSPEND, does it work properly for you?
+On Thu, 22 Feb 2007 09:27:28 +0100
+Michael Opdenacker <michael-lists@free-electrons.com> wrote:
 
-Didn't test but I did bisecting and after reverting commits:
+> -	  Note the the latest Xeons (Xeon 51xx and 53xx) are not based on the
+> +	  Note the latest Xeons (Xeon 51xx and 53xx) are not based on the
 
-e8363f332757ac22395fb120cc33b3262f9ee26c
+shouldn't this be "Note that the"?  (and so on)
 
-and the main problematic one:
+IOW: some of these are typos.
 
-commit 0a6139027f3986162233adc17285151e78b39cac
-Author: Konstantin Karasyov <konstantin.a.karasyov@intel.com>
-Date:   Fri Feb 16 01:47:06 2007 -0500
-
-    ACPI: Thermal issues on HP nx6325
-
-    The previous reference counting scheme to enable power resources
-    got confused when multiple devices were present that might
-    repeatedly enable or disable the resource and throw off the count.
-
-    The new code simply lists the referencing devices which
-    are requesting the resource to be enabled.  When there are none,
-    then it is off.
-
-    Signed-off-by: Konstantin Karasyov <konstantin.a.karasyov@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-
-I again have working usb after resume.
-
-> (rest of the boot log left below for the benifit of the linux-usb-devel
-> mailing list readers.)
->
-> thanks,
->
-> greg k-h
-
+Some time ago I've done a similar patch for "Documentation/" (remove
+duplicated words) and fallen in the same mistake :)
 
 -- 
-Arkadiusz Mi¶kiewicz        PLD/Linux Team
-arekm / maven.pl            http://ftp.pld-linux.org/
+	Paolo Ornati
+	Linux 2.6.20 on x86_64
