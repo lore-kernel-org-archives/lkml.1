@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945972AbXBVLdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422833AbXBVLec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945972AbXBVLdk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 06:33:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945974AbXBVLdk
+	id S1422833AbXBVLec (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 06:34:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422852AbXBVLec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 06:33:40 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:46703 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945972AbXBVLdj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 06:33:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UzQ2cwG2vRVfO3YbWknM2DqGtiKhlEkxlJbnWw8SWhaOsQc+gpMRswJjD1fkg1mknhm7LeEbCJgIY3lFwm2Lb6rJPjWCt4A0+2S59u8ruIDZzKWg0P7qg/xw4H5HgFTQJca5dTCsOkDrWolr/9G9hsvduH8QhxSYzA6xrlCJHu4=
-Message-ID: <e5ab0f710702220333k384d43b4r1bd07c64d55cbdc7@mail.gmail.com>
-Date: Thu, 22 Feb 2007 12:33:37 +0100
-From: "Francesco Pretto" <ceztko@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       "Robert Hancock" <hancockr@shaw.ca>
-Subject: Re: Weird hard disk noise on shutdown (bug #7674)
-In-Reply-To: <45DD37E9.7010303@shaw.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Feb 2007 06:34:32 -0500
+Received: from mail.screens.ru ([213.234.233.54]:48983 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422833AbXBVLeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 06:34:31 -0500
+Date: Thu, 22 Feb 2007 14:33:56 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: paulmck@linux.vnet.ibm.com, ego@in.ibm.com, akpm@osdl.org,
+       paulmck@us.ibm.com, mingo@elte.hu, vatsa@in.ibm.com,
+       dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Subject: Re: freezer problems
+Message-ID: <20070222113356.GA83@tv-sign.ru>
+References: <20070214144031.GA15257@in.ibm.com> <20070221200314.GA91@tv-sign.ru> <20070221210606.GH7063@linux.vnet.ibm.com> <200702220010.54126.rjw@sisk.pl> <20070222104747.GA505@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <fa.Fk9DulKIUBewV0V2B72MDzbelmU@ifi.uio.no>
-	 <fa.RCbhxyLCSR5f65HWabMGmxZNYQ4@ifi.uio.no>
-	 <fa.G4k+9fbJDE0N5pygu22mRYU6gfE@ifi.uio.no> <45DD37E9.7010303@shaw.ca>
+In-Reply-To: <20070222104747.GA505@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/2/22, Robert Hancock <hancockr@shaw.ca>:
+On 02/22, Oleg Nesterov wrote:
 >
-> And yes, this is something we need to deal with. I don't think that
-> disks that use contact start-stop heads care so much, but disks that use
-> load-unload heads (like most laptop drives, it seems) generally quote a
-> much lower cycle lifetime for "emergency unloads" caused by power loss
-> than by normal unloads done while power is still applied. It's important
-> enough that in some cases, like the Compaq X1000-series laptop I have,
-> the BIOS appears to have a power button handler that spins down the
-> drive before power-down when the power button is pressed and an ACPI OS
-> isn't running. (Holding the button down when an ACPI OS is running just
-> forces the power off, then you get the clunk from the drive..)
->
-> Windows XP (and even as far back as Windows 98) get this right, surely
-> we can do as well :-)
->
->
+> On 02/22, Rafael J. Wysocki wrote:
+> >
+> > @@ -207,7 +209,7 @@ static void thaw_tasks(int thaw_user_spa
+> >  		if (is_user_space(p) == !thaw_user_space)
+> >  			continue;
+> >  
+> > -		if (!thaw_process(p))
+> > +		if (!thaw_process(p) && !freezer_should_skip(p))
+> >  			printk(KERN_WARNING " Strange, %s not stopped\n",
+> 
+> This is racy, the warning could be false. We wake up the task, testing
+> its ->flags is not reliable.
+> 
+> Damn. PF_FREEZER_SKIP task could be woken before, clear PF_FREEZER_SKIP,
+> but not frozen.
+> 
+> We can change freezer_count() to clear PF_FREEZER_SKIP after try_to_freeze(),
+> not before. Now thaw_process() can take PF_FREEZER_SKIP into account and
+> return "true".
+> 
+> But this means the task may be PF_FREEZER_SKIP | PF_FROZEN. What if we we
+> call try_to_freeze_tasks() soon after thaw_tasks()? We may hit the task which
+> leaves the refrigerator, but didn't clear PF_FREEZER_SKIP yet. This means
+> that thaw_process() should clear PF_FREEZER_SKIP as well. This is messy :(
+> 
+> Any other ideas? In any case we should imho avoid a separate loop for
+> PF_FREEZER_SKIP tasks to just fix debug messages. In fact it can't help
+> anyway.
 
-Yes, windows XP could handle better the power button pressed event
-(causing the hd not to go to emergency parking, even when forced
-shut-down, most of the times). But regarding a normal shut-down cycle,
-isn't this a regression? You don't solve a regression adding a feature
-(IMHO).
+Probably: current clears PF_FREEZER_SKIP along with TIF_FREEZE "atomically"
+under task_lock in refrigerator(). thaw_process() takes PF_FREEZER_SKIP into
+account.
+
+Oleg.
+
