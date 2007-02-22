@@ -1,81 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751739AbXBVRjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751734AbXBVRmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751739AbXBVRjz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 12:39:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbXBVRjz
+	id S1751734AbXBVRmx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 12:42:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbXBVRmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 12:39:55 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55576 "EHLO mx1.redhat.com"
+	Thu, 22 Feb 2007 12:42:53 -0500
+Received: from mail.screens.ru ([213.234.233.54]:47239 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751734AbXBVRjx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 12:39:53 -0500
-Message-ID: <45DDD55F.4060106@redhat.com>
-Date: Thu, 22 Feb 2007 12:39:43 -0500
-From: Peter Staubach <staubach@redhat.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061215)
-MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: akpm@linux-foundation.org, hugh@veritas.com, linux-fsdevel@vger.kernel.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update ctime and mtime for mmaped write
-References: <E1HJvdA-0003Nj-00@dorka.pomaz.szeredi.hu> <20070221202615.a0a167f4.akpm@linux-foundation.org> <E1HK8hU-0005Mq-00@dorka.pomaz.szeredi.hu>
-In-Reply-To: <E1HK8hU-0005Mq-00@dorka.pomaz.szeredi.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751727AbXBVRmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 12:42:53 -0500
+Date: Thu, 22 Feb 2007 20:44:39 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: paulmck@linux.vnet.ibm.com, ego@in.ibm.com, akpm@osdl.org,
+       paulmck@us.ibm.com, mingo@elte.hu, vatsa@in.ibm.com,
+       dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Subject: Re: freezer problems
+Message-ID: <20070222174439.GA236@tv-sign.ru>
+References: <20070214144031.GA15257@in.ibm.com> <200702220010.54126.rjw@sisk.pl> <20070222104747.GA505@tv-sign.ru> <200702221803.41549.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702221803.41549.rjw@sisk.pl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi wrote:
->> On Wed, 21 Feb 2007 18:51:52 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
->>
->>     
->>> This patch makes writing to shared memory mappings update st_ctime and
->>> st_mtime as defined by SUSv3:
->>>
->>>    The st_ctime and st_mtime fields of a file that is mapped with
->>>    MAP_SHARED and PROT_WRITE shall be marked for update at some point
->>>    in the interval between a write reference to the mapped region and
->>>    the next call to msync() with MS_ASYNC or MS_SYNC for that portion
->>>    of the file by any process. If there is no such call and if the
->>>    underlying file is modified as a result of a write reference, then
->>>    these fields shall be marked for update at some time after the
->>>    write reference.
->>>
->>> A new address_space flag is introduced: AS_CMTIME.  This is set each
->>> time a page is dirtied through a userspace memory mapping.  This
->>> includes write accesses via get_user_pages().
->>>
->>> Note, the flag is set unconditionally, even if the page is already
->>> dirty.  This is important, because the page might have been dirtied
->>> earlier by a non-mmap write.
->>>
->>> This flag is checked in msync() and __fput(), and if set, the file
->>> times are updated and the flag is cleared
->>>
->>> The flag is also cleared, if the time update is triggered by a normal
->>> write.  This is not mandated by the standard, but seems to be a sane
->>> thing to do.
->>>       
->> Why is the flag checked in __fput()?
->>     
->
-> It's because of this bit in the standard:
->
->     If there is no such call and if the underlying file is modified
->     as a result of a write reference, then these fields shall be
->     marked for update at some time after the write reference.
->
-> It could be done in munmap/mremap, but it seemed more difficult to
-> track down all the places where the vma is removed.  But yes, that may
-> be a nicer solution.
+On 02/22, Rafael J. Wysocki wrote:
+> 
+> Okay, attached.  The first one closes the race between thaw_tasks() and the
+> refrigerator that can occurs if the freezing fails.  The second one fixes the
+> vfork problem (should go on top of the first one).
 
-It seems to me that, with this support, a file, which is mmap'd,
-modified, but never msync'd or munmap'd, will never get its mtime
-updated.  Or did I miss that?
+Looks good to me.
 
-I also don't see how an mmap'd block device will get its mtime
-updated either.
+> > Any other ideas? In any case we should imho avoid a separate loop for
+> > PF_FREEZER_SKIP tasks to just fix debug messages. In fact it can't help
+> > anyway.
+> 
+> Why don't we just drop the warning?  try_to_freeze_tasks() should give us a
+> warning if there's anything wrong anyway.
 
-    Thanx...
+Indeed :)
 
-       ps
+Oleg.
+
