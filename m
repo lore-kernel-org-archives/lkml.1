@@ -1,59 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751467AbXBVIjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932837AbXBVIkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751467AbXBVIjN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 03:39:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbXBVIjN
+	id S932837AbXBVIkA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 03:40:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932636AbXBVIj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 03:39:13 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:42593 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751467AbXBVIjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 03:39:12 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: 2.6.20-mm2
-Date: Thu, 22 Feb 2007 09:33:37 +0100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <20070217215146.30e7ffa3.akpm@linux-foundation.org> <200702202307.45432.rjw@sisk.pl> <200702211957.00930.david-b@pacbell.net>
-In-Reply-To: <200702211957.00930.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 22 Feb 2007 03:39:59 -0500
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:22305 "EHLO
+	amsfep13-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751510AbXBVIj6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 03:39:58 -0500
+Subject: Re: SLUB: The unqueued Slab allocator
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>,
+       akpm@linux-foundation.org
+In-Reply-To: <Pine.LNX.4.64.0702212250271.30485@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0702212250271.30485@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Thu, 22 Feb 2007 09:34:34 +0100
+Message-Id: <1172133274.6374.12.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702220933.37559.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 22 February 2007 04:57, David Brownell wrote:
-> On Tuesday 20 February 2007 2:07 pm, Rafael J. Wysocki wrote:
-> 
-> > > Plus, I'd guess, the old rtc driver statically linked.
-> > 
-> > Yes (mistakenly).
-> 
-> Until someone merges the BSOD-for-Linux patch, I'll continue to
-> assume that oopsing is the wrong response to "user" mistakes.  ;)
-> 
-> Legacy drivers can be such a PITA.
+On Wed, 2007-02-21 at 23:00 -0800, Christoph Lameter wrote:
 
-Unfortunately, the userland shipped with OpenSUSE refuses to talk to the new
-one (or I don't know how to make it do that).
+> +/*
+> + * Lock order:
+> + *   1. slab_lock(page)
+> + *   2. slab->list_lock
+> + *
 
-> > > What I see is a should-not-happen fault of some kind in a cleanup
-> > > path that's been tested with non-PNP rtc drivers.  A quick glance
-> > > at the code left me puzzled.  Would sleeping a second or two before
-> > > calling rtc_device_unregister() change that behavior?
-> > 
-> > [tries]
-> > 
-> > No.
-> 
-> Shoot.  OK, I'll see if I can reproduce it myself.  Is this system
-> using a generic CMOS RTC?  Or is HPET somehow involved?  (That old
-> RTC driver has HPET voodoo as well as normal RTC stuff.)
+That seems to contradict this:
 
-How can I check that?
+> +/*
+> + * Lock page and remove it from the partial list
+> + *
+> + * Must hold list_lock
+> + */
+> +static __always_inline int lock_and_del_slab(struct kmem_cache *s,
+> +						struct page *page)
+> +{
+> +	if (slab_trylock(page)) {
+> +		list_del(&page->lru);
+> +		s->nr_partial--;
+> +		return 1;
+> +	}
+> +	return 0;
+> +}
+> +
+> +/*
+> + * Get a partial page, lock it and return it.
+> + */
+> +#ifdef CONFIG_NUMA
+> +static struct page *get_partial(struct kmem_cache *s, gfp_t flags, int node)
+> +{
+> +	struct page *page;
+> +	int searchnode = (node == -1) ? numa_node_id() : node;
+> +
+> +	if (!s->nr_partial)
+> +		return NULL;
+> +
+> +	spin_lock(&s->list_lock);
+> +	/*
+> +	 * Search for slab on the right node
+> +	 */
+> +	list_for_each_entry(page, &s->partial, lru)
+> +		if (likely(page_to_nid(page) == searchnode) &&
+> +			lock_and_del_slab(s, page))
+> +				goto out;
+> +
+> +	if (likely(!(flags & __GFP_THISNODE))) {
+> +		/*
+> +		 * We can fall back to any other node in order to
+> +		 * reduce the size of the partial list.
+> +		 */
+> +		list_for_each_entry(page, &s->partial, lru)
+> +			if (likely(lock_and_del_slab(s, page)))
+> +				goto out;
+> +	}
+> +
+> +	/* Nothing found */
+> +	page = NULL;
+> +out:
+> +	spin_unlock(&s->list_lock);
+> +	return page;
+> +}
+> +#else
+> +static struct page *get_partial(struct kmem_cache *s, gfp_t flags, int node)
+> +{
+> +	struct page *page;
+> +
+> +	/*
+> +	 * Racy check. If we mistakenly see no partial slabs then we
+> +	 * just allocate an empty slab.
+> +	 */
+> +	if (!s->nr_partial)
+> +		return NULL;
+> +
+> +	spin_lock(&s->list_lock);
+> +	list_for_each_entry(page, &s->partial, lru)
+> +		if (likely(lock_and_del_slab(s, page)))
+> +			goto out;
+> +
+> +	/* No slab or all slabs busy */
+> +	page = NULL;
+> +out:
+> +	spin_unlock(&s->list_lock);
+> +	return page;
+> +}
+> +#endif
 
-Rafael
