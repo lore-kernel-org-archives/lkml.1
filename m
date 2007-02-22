@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965057AbXBVD05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751487AbXBVDd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965057AbXBVD05 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 22:26:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965034AbXBVD05
+	id S1751487AbXBVDd1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 22:33:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbXBVDd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 22:26:57 -0500
-Received: from mail.suse.de ([195.135.220.2]:40492 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965057AbXBVD04 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 22:26:56 -0500
-Date: Thu, 22 Feb 2007 04:26:54 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, rostedt@goodmis.org
-Subject: Re: [patch 2/2] sched: dynticks idle load balancing - v2
-Message-ID: <20070222032654.GD12137@wotan.suse.de>
-References: <20061213231316.GA13849@elte.hu> <20061213150314.B12795@unix-os.sc.intel.com> <20061213233157.GA20470@elte.hu> <20061213151926.C12795@unix-os.sc.intel.com> <20061219201247.GA12648@elte.hu> <20061219131223.E23105@unix-os.sc.intel.com> <20070116113505.GA6294@elte.hu> <20070130135709.B32010@unix-os.sc.intel.com> <20070216180335.A8744@unix-os.sc.intel.com> <20070216180842.B8744@unix-os.sc.intel.com>
+	Wed, 21 Feb 2007 22:33:27 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:41389 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751350AbXBVDd0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 22:33:26 -0500
+Date: Thu, 22 Feb 2007 03:33:19 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: mike.miller@hp.com
+Cc: jens.axboe@oracle.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, gregkh@novell.com
+Subject: Re: [Patch 2/2] cciss: add reboot notifier support to driver
+Message-ID: <20070222033319.GA7493@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>, mike.miller@hp.com,
+	jens.axboe@oracle.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
+	linux-scsi@vger.kernel.org, gregkh@novell.com
+References: <20070221211251.GB2672@beardog.cca.cpqcorp.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070216180842.B8744@unix-os.sc.intel.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070221211251.GB2672@beardog.cca.cpqcorp.net>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 16, 2007 at 06:08:42PM -0800, Suresh B wrote:
-> Changes since v1:
+On Wed, Feb 21, 2007 at 03:12:51PM -0600, Mike Miller (OS Dev) wrote:
+> Patch 2/2
 > 
->   - Move the idle load balancer selection from schedule()
->     to the first busy scheduler_tick() after restarting the tick.
->     This will avoid the unnecessay ownership changes when 
->     softirq's(which are run in softirqd context in certain -rt
->     configurations) like timer, sched are invoked for every idle tick
->     that happens.
+> This patch adds reboot_notifier support to cciss. Changes in firmware make this patch
+> essential. Without this patch there may be valid data left in the controller's battery
+> backed write cache (BBWC) on shutdown. We found out the hard way that the kernel does
+> not call our cleanup routines on shutdown or reboot. It seems that only rmmod calls
+> the cleanup.
+> Please consider this for inclusion.
 > 
->   - Misc cleanups.
-> 
-> ---
-> Fix the process idle load balancing in the presence of dynticks.
-> cpus for which ticks are stopped will sleep till the next event wakes it up.
-> Potentially these sleeps can be for large durations and during which today,
-> there is no periodic idle load balancing being done.
-> 
-> This patch nominates an owner among the idle cpus, which does the idle load
-> balancing on behalf of the other idle cpus. And once all the cpus are
-> completely idle, then we can stop this idle load balancing too. Checks added
-> in fast path are minimized.  Whenever there are busy cpus in the system, there
-> will be an owner(idle cpu) doing the system wide idle load balancing.
 
-This is really ugly, sorry :(
+NAK.  This should be using the shutdown method in struct pci_driver instead.
 
-My suggestion for handling this was to increase the maximum balance
-interval for an idle CPU, and just implement a global shutdown when
-the entire system goes idle.
+I really wish we wouldn't export the reboot_notifier so people don't repeat
+this mistake over and over again..
 
-The former should take care of the power savings issues for bare metal
-hardware, and the latter should solve performance problems for many idle
-SMP guests. It should take very little code to implement.
-
-If that approach doesn't cut it, then at least we can have some numbers
-to see how much better yours is so we can justify including it.
-
-If you are against my approach, then I can have a try at coding it up
-if you like?
