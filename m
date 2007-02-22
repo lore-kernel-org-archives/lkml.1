@@ -1,68 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751773AbXBVTJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751781AbXBVTNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751773AbXBVTJK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 14:09:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbXBVTJK
+	id S1751781AbXBVTNx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 14:13:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbXBVTNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 14:09:10 -0500
-Received: from www17.your-server.de ([213.133.104.17]:1485 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751775AbXBVTJF (ORCPT
+	Thu, 22 Feb 2007 14:13:53 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:38568 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751781AbXBVTNw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 14:09:05 -0500
-Message-ID: <45DDEA1D.7060703@m3y3r.de>
-Date: Thu, 22 Feb 2007 20:08:13 +0100
-From: Thomas Meyer <thomas@m3y3r.de>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061222)
+	Thu, 22 Feb 2007 14:13:52 -0500
+Message-ID: <45DDEB10.6020200@zytor.com>
+Date: Thu, 22 Feb 2007 11:12:16 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [ACPI] Several remarks for 9654640d0af8f2de40ff3807d3695109d3463f54
-Content-Type: text/plain; charset=ISO-8859-15
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+CC: Andi Kleen <ak@muc.de>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: -freg-struct-return?
+References: <45DCF1C5.4030006@goop.org> <1172131463.3531.226.camel@laptopd505.fenrus.org> <45DD4FA0.5030205@goop.org> <20070222112207.GA10190@muc.de> <45DDC810.3000401@zytor.com> <45DDD538.1040309@goop.org> <20070222183628.GA65601@muc.de> <Pine.LNX.4.61.0702221955200.7553@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0702221955200.7553@yvahk01.tjqt.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1.) My kde klaptopdaemon icon is gone. This icon displayed the remaining
-battery time. This is maybe a kde problem?
+Jan Engelhardt wrote:
+> On Feb 22 2007 19:36, Andi Kleen wrote:
+>> BTW would it make sense to have a special announcement list for such changes?
+> 
+> A changelog in the kernel tree would be helpful. A real changelog that is,
+> not that info blob located at /Documentation/Changes.
+> 
 
-2.) I get these new messages in the kernel log buffer:
-[...]
-ACPI: bus type pci registered
-PCI: Using MMCONFIG
-Setting up standard PCI resources
-ACPI Exception (evregion-0420): AE_NOT_FOUND, Returned by Handler for
-[EmbeddedControl] [20070126]
-ACPI Exception (dswexec-0462): AE_NOT_FOUND, While resolving operands
-for [OpcodeName unavailable] [20070126]
-ACPI Error (psparse-0537): Method parse/execution failed
-[\_SB_.PCI0.LPCB.EC__._REG] (Node c190db1c), AE_NOT_FOUND
-ACPI Exception (ec-0956): AE_NOT_FOUND, Could not use ECDT [20070126]
-ACPI: Interpreter enabled
-ACPI: (supports S0 S3 S4 S5)
-ACPI: Using IOAPIC for interrupt routing
-[...]
-ACPI Exception (evregion-0420): AE_NOT_FOUND, Returned by Handler for
-[EmbeddedControl] [20070126]
-ACPI Exception (dswexec-0462): AE_NOT_FOUND, While resolving operands
-for [OpcodeName unavailable] [20070126]
-ACPI Error (psparse-0537): Method parse/execution failed
-[\_SB_.PCI0.LPCB.EC__.SMB0.SBRW] (Node c190dbbc), AE_NOT_FOUND
-ACPI Error (psparse-0537): Method parse/execution failed
-[\_SB_.BAT0.UBSS] (Node c190da2c), AE_NOT_FOUND
-ACPI Error (psparse-0537): Method parse/execution failed
-[\_SB_.BAT0._STA] (Node c190da7c), AE_NOT_FOUND
-ACPI Exception (evregion-0420): AE_NOT_FOUND, Returned by Handler for
-[EmbeddedControl] [20070126]
-ACPI Error (psparse-0537): Method parse/execution failed
-[\_SB_.PCI0.LPCB.EC__._REG] (Node c190db1c), AE_NOT_FOUND
-ACPI Exception (evregion-0513): AE_NOT_FOUND, from region _REG,
-[EmbeddedControl] [20070126]
-ACPI: PCI Root Bridge [PCI0] (0000:00)
+I presume you're talking about a BSD-style ChangeLog.  I've always found 
+those utterly useless, since they're basically the equivalent of SCM 
+history but without any of the abilities to sort, filter, etc, thus 
+making it utterly impossible to find anything.  They're a pain to 
+maintain (they inherently *always* cause merge failures) and add very 
+little.
 
-But i guess this is ok and seems to be an acpi problem on my computer,
-aren't they?
-
-mfg
-thomas
-
+	-hpa
