@@ -1,150 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161109AbXBVPDM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932154AbXBVPEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161109AbXBVPDM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 10:03:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161131AbXBVPDL
+	id S932154AbXBVPEh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 10:04:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932160AbXBVPEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 10:03:11 -0500
-Received: from lmv.inov.pt ([146.193.64.2]:53067 "EHLO lmv.inov.pt"
+	Thu, 22 Feb 2007 10:04:37 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59385 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161109AbXBVPDK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 10:03:10 -0500
-Message-ID: <45DDB096.2020807@inov.pt>
-Date: Thu, 22 Feb 2007 15:02:46 +0000
-From: Jose Goncalves <jose.goncalves@inov.pt>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070111)
-MIME-Version: 1.0
-To: Frederik Deweerdt <deweerdt@free.fr>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Serial related oops
-References: <20070219134539.GA27370@flint.arm.linux.org.uk> <20070220142442.GF566@slug> <20070219143520.GB27370@flint.arm.linux.org.uk> <20070220144814.GJ566@slug> <20070219150508.GD27370@flint.arm.linux.org.uk> <45D9D073.7020701@inov.pt> <20070219164200.GF27370@flint.arm.linux.org.uk> <45D9E46C.4030408@inov.pt> <20070219212347.GA4258@flint.arm.linux.org.uk> <45DC537B.6020108@inov.pt> <20070221230503.GA28156@flint.arm.linux.org.uk>
-In-Reply-To: <20070221230503.GA28156@flint.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-INOV-EmailServer-Information: Please contact the Email service provider for more information
-X-INOV-EmailServer: Found to be clean
-X-INOV-EmailServer-From: jose.goncalves@inov.pt
+	id S932154AbXBVPEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 10:04:36 -0500
+Date: Thu, 22 Feb 2007 15:59:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: johnpol@2ka.mipt.ru, arjan@infradead.org, drepper@redhat.com,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       hch@infradead.org, akpm@zip.com.au, alan@lxorguk.ukuu.org.uk,
+       zach.brown@oracle.com, suparna@in.ibm.com, davidel@xmailserver.org,
+       jens.axboe@oracle.com, tglx@linutronix.de
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070222145933.GA12671@elte.hu>
+References: <20070222113148.GA3781@2ka.mipt.ru> <1172145159.3531.253.camel@laptopd505.fenrus.org> <20070222123929.GA5208@2ka.mipt.ru> <20070222.054127.104035694.davem@davemloft.net> <20070222143145.GA3246@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070222143145.GA3246@elte.hu>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -3.8
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-3.8 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0004]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King wrote:
-> On Wed, Feb 21, 2007 at 02:13:15PM +0000, Jose Goncalves wrote:
->   
->> <1>[18840.304048] Unable to handle kernel NULL pointer dereference at virtual address 00000012
->> <1>[18840.313046]  printing eip:
->> <4>[18840.321687] c01bfa7a
->> <1>[18840.321714] *pde = 00000000
->> <0>[18840.331287] Oops: 0000 [#1]
->> <4>[18840.340687] Modules linked in:
->> <0>[18840.349749] CPU:    0
->> <4>[18840.349767] EIP:    0060:[<c01bfa7a>]    Not tainted VLI
->> <4>[18840.349782] EFLAGS: 00010202   (2.6.16.41-mtm5-debug1 #1) 
->> <0>[18840.377277] EIP is at serial_in+0xa/0x4a
->> <0>[18840.387221] eax: 00000060   ebx: 00000000   ecx: 00000000   edx: 00000000
->> <0>[18840.397805] esi: 00000000   edi: 00000040   ebp: c728fe1c   esp: c728fe18
->> <0>[18840.408579] ds: 007b   es: 007b   ss: 0068
->> <0>[18840.419624] Process gp_position (pid: 11629, threadinfo=c728e000 task=c7443a90)
->> <0>[18840.420509] Stack: <0>00000000 00000000 c01c0f88 00000000 00000000 c031fef0 00000005 00000202 
->> <0>[18840.445655]        c7161a1c c031fef0 c124b510 c728fe60 c01bd97d c031fef0 c124b510 c124b510 
->> <0>[18840.460540]        00000000 c773dbcc c728fe7c c01befe7 c124b510 00000000 ffffffed c773dbcc 
->>     
->
-> Okay, this one is even more plainly "not a coding error".
->
->   
->> <0>[18840.566645]  [<c01c0f88>] serial8250_startup+0x28f/0x2a9
->>     
->
-> The code around this point (with the return point marked) is:
->
->   
->> c01c0f78:	6a 05                	push   $0x5
->> c01c0f7a:	53                   	push   %ebx
->> c01c0f7b:	e8 f0 ea ff ff       	call   c01bfa70 <serial_in>
->> c01c0f80:	6a 00                	push   $0x0
->> c01c0f82:	53                   	push   %ebx
->> c01c0f83:	e8 e8 ea ff ff       	call   c01bfa70 <serial_in>
->> c01c0f88<<<	6a 02                	push   $0x2
->> c01c0f8a:	53                   	push   %ebx
->> c01c0f8b:	e8 e0 ea ff ff       	call   c01bfa70 <serial_in>
->>     
->
-> and corresponds with this C code:
->
->         (void) serial_inp(up, UART_LSR);
->         (void) serial_inp(up, UART_RX);
->         (void) serial_inp(up, UART_IIR);
->
-> Now let's look at the words pushed on the stack around this code:
->
->   00000000
->   00000000
->   c01c0f88 <- return address for serial_in (serial8250_startup+0x28f/0x2a9)
->   00000000 <- from push %ebx at c01c0f82
->   00000000 <- from push $0x0 at c01c0f80
->   c031fef0 <- from push %ebx at c01c0f7a
->   00000005 <- from push %0x5 at c01c0f78
->
-> Plainly, %ebx changed across the call to serial_in() at c01c0f7b.
-> First thing to notice is this violates the C code - "up" can not
-> change.
->
-> Now let's look at serial_in:
->
-> c01bfa70:       55                      push   %ebp
-> c01bfa71:       89 e5                   mov    %esp,%ebp
-> c01bfa73:       53                      push   %ebx
-> ...
-> c01bfab7:       5b                      pop    %ebx
-> c01bfab8:       5d                      pop    %ebp
-> c01bfab9:       c3                      ret
->
-> This code tells the CPU to preserves %ebx and %ebp.  But we know %ebx
-> _wasn't_ preserved.  Ergo, your CPU is plainly not doing what the code
-> told it to do.
->
-> Moreover, serial_in() has preserved %ebx in the past otherwise we'd
-> never got past all the other serial_in()s in serial8250_startup().
->
-> So I think it's very demonstrably a hardware fault, and not software
-> related.
->   
 
-It could be a silly question (tamper with me as I'm not familiar with
-such low level programming), but couldn't it be possible for a interrupt
-to hit in the middle of the serial_in() calls and mess with %ebx?
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-What I find real hard to understand is why a hardware fault happens
-always in the same software instruction! I would expect a hardware fault
-to hit randomly...
+> Firstly, i dont think you are fully applying the syslet/threadlet 
+> model. There is no reason why an 'idle' client would have to use up a 
+> full thread! It all depends on how you use syslets/threadlets, and how 
+> (frequently) you queue back requests from cachemiss threads back to 
+> the primary thread. It is only the simplest queueing model where there 
+> is one thread per request that is currently blocked. 
+> Syslets/threadlets do /not/ force request processing to be performed 
+> in the async context forever - the async thread could very much queue 
+> it back to the primary context. (That's in essence what Tux did.) So 
+> the same state-machine techniques can be applied on both the syslet 
+> and the threadlet model, but in much more natural (and thus lower 
+> overhead) points: /between/ system calls and not in the middle of 
+> them. There are a number of measures that can be used to keep the 
+> number of parallel threads down.
 
-I left my application running this night, with a 2.6.16.41 kernel
-unpatched  on the serial driver (my last Oops report was with Frederik
-patch to remove the insertion made in 2.6.12) and it crashed again on
-exactly the same point!
+i think the best model here is to use kevents or epoll to discover 
+accept()-able or recv()-able keepalive sockets, and to do the main 
+request loop via syslets/threadlets, with a 'queue back to the main 
+context if we went async and if the request is done' feedback mechanism 
+that keeps the size of the pool down.
 
-> For all we know, it could be a one-off fault on the hardware you
-> happen to have - other identical units may not behave the same (can
-> you check?)
->   
-
-Yes I have other units that I can test it. I'll do that to see if it's
-really a one-off fault on the hardware.
-If it continues to crash with other units I will then test with the
-msleep(10) before the "And clear the interrupt registers again for
-luck.", as you suggested earlier.
-
-> If it is a one off case, you are welcome to patch that test out in
-> your kernel build to remove the problem, and if it's an isolated case
-> I encourage you to do this.  This is one of the great advantages of
-> open source - if you hit such a problem rather than throwing the
-> hardware away you can work around such issues.
->   
-
-I didn't understand what you mean by "you are welcome to patch that test
-out in your kernel build to remove the problem". Which test are you
-talking about?
-
-Regards,
-José Gonçalves
-
+	Ingo
