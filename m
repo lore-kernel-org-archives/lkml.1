@@ -1,89 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752004AbXBVWmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752018AbXBVWmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752004AbXBVWmH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 17:42:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbXBVWmH
+	id S1752018AbXBVWmk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 17:42:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbXBVWmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 17:42:07 -0500
-Received: from mexforward.lss.emc.com ([128.222.32.20]:54917 "EHLO
-	mexforward.lss.emc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752004AbXBVWmF (ORCPT
+	Thu, 22 Feb 2007 17:42:40 -0500
+Received: from an-out-0708.google.com ([209.85.132.242]:50741 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752018AbXBVWmj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 17:42:05 -0500
-Message-ID: <45DE1BD5.1000902@emc.com>
-Date: Thu, 22 Feb 2007 17:40:21 -0500
-From: Ric Wheeler <ric@emc.com>
-Reply-To: ric@emc.com
-User-Agent: Thunderbird 1.5.0.8 (X11/20061025)
+	Thu, 22 Feb 2007 17:42:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HZHUC6QYOynXwedAsEvF1GQeTb75UMHogz+nhCAuQoxmCH1oVRc/U46rCQKyWJ/CNCmgCgCzeWDxIcHCR444j1k+IBhSSf/5LpTVKJdpTrynVvby+L2BOOSPl+Ujo8T7PQecgk4tqyM/wfiMdt0WUjSnRIHZcWEh9Z/L8KYOLWo=
+Message-ID: <f2b55d220702221442h3700a32epd183b974767f4f9d@mail.gmail.com>
+Date: Thu, 22 Feb 2007 14:42:38 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Subject: Re: GPL vs non-GPL device drivers
+Cc: "D. Hazelton" <dhazelton@enter.net>,
+       "David Lang" <david.lang@digitalinsight.com>, davids@webmaster.com,
+       "v j" <vj.linux@gmail.com>, trent.waddington@gmail.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       "Neil Brown" <neilb@suse.de>
+In-Reply-To: <20070222141434.3beb8a94@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Tejun Heo <htejun@gmail.com>, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       edmudama@gmail.com, Nicolas.Mailhot@LaPoste.net,
-       Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Mark Lord <mlord@pobox.com>, Dongjun Shin <d.j.shin@samsung.com>,
-       Hannes Reinecke <hare@suse.de>
-Subject: Re: libata FUA revisited
-References: <fa.S80SRyQbD/hm4SxliPUKU88BaCo@ifi.uio.no> <fa.Q/csgyCHkAsD84yi+bN78H1WNNM@ifi.uio.no> <45D104F3.7040602@shaw.ca> <45D1D72D.9020509@gmail.com> <45D252CD.5010303@shaw.ca> <45D25CF2.5030508@gmail.com> <20070215180023.GA4438@kernel.dk> <45D9FE7B <20070221084613.GB3924@kernel.dk>
-In-Reply-To: <20070221084613.GB3924@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.5.0.283055, Antispam-Data: 2007.2.22.142934
-X-PerlMx-Spam: Gauge=, SPAM=2%, Reasons='EMC_FROM_0+ -2, RDNS_NXDOMAIN 0, RDNS_SUSP_GENERIC 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0, __USER_AGENT 0'
+Content-Disposition: inline
+References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>
+	 <Pine.LNX.4.63.0702211527080.15723@qynat.qvtvafvgr.pbz>
+	 <f2b55d220702211628v6c8b16e7ibdfeb293592b2093@mail.gmail.com>
+	 <200702212030.58317.dhazelton@enter.net>
+	 <f2b55d220702211805h6df0b342o7676e37c7aa43bdd@mail.gmail.com>
+	 <20070222141434.3beb8a94@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Wed, Feb 21 2007, Tejun Heo wrote:
->> [cc'ing Ric, Hannes and Dongjun, Hello.  Feel free to drag other people in.]
->>
->> Robert Hancock wrote:
->>> Jens Axboe wrote:
->>>> But we can't really change that, since you need the cache flushed before
->>>> issuing the FUA write. I've been advocating for an ordered bit for
->>>> years, so that we could just do:
->>>>
->>>> 3. w/FUA+ORDERED
->>>>
->>>> normal operation -> barrier issued -> write barrier FUA+ORDERED
->>>>  -> normal operation resumes
->>>>
->>>> So we don't have to serialize everything both at the block and device
->>>> level. I would have made FUA imply this already, but apparently it's not
->>>> what MS wanted FUA for, so... The current implementations take the FUA
->>>> bit (or WRITE FUA) as a hint to boost it to head of queue, so you are
->>>> almost certainly going to jump ahead of already queued writes. Which we
->>>> of course really do not.
->> Yeah, I think if we have tagged write command and flush tagged (or
->> barrier tagged) things can be pretty efficient.  Again, I'm much more
->> comfortable with separate opcodes for those rather than bits changing
->> the behavior.
-> 
-> ORDERED+FUA NCQ would still be preferable to an NCQ enabled flush
-> command, though.
-> 
->> Another idea Dongjun talked about while drinking in LSF was ranged
->> flush.  Not as flexible/efficient as the previous option but much less
->> intrusive and should help quite a bit, I think.
-> 
-> But that requires extensive tracking, I'm not so sure the implementation
-> of that for barriers would be very clean. It'd probably be good for
-> fsync, though.
-> 
+On 2/22/07, Alan <alan@lxorguk.ukuu.org.uk> wrote:
+> > compiler people caught on to the economic opportunity.  Ever pay $5K
+> > for a CD full of GNU binaries for a commercial UNIX?  I did, after
+>
+> No because I just downloaded them. Much easier and since they are GPL I
+> was allowed to do so, then rebuilt them all which took about 30 minutes
+> of brain time and a day of CPU time.
 
-If we could invent any mechanism, it would seem that it would be nicest 
-if we could have independent sequences of IO requests (say with a 
-distinct tag per sequence) and an ability to issue a per sequence flush 
-request.  That might tie into the QOS support, but would still have 
-issues when you try to map it back up the stack through the journal and 
-into application level promises of data integrity.
+Oh yeah?  For IRIX in 1991?  Or for that matter, for Linux/ARM EABI
+today?  Tell me, how many of what sort of users do you support
+singlehandedly in an environment where you are a minority architecture
+and everyone else takes the GNU tools for granted?  God knows I've got
+better things to do with my time than roll the compiler-flag dice
+again and again trying to get a sketchy GCC port not to ICE or, worse,
+generate subtly broken code.  If it's so bloody easy, how do
+CodeSourcery and MontaVista and Red Hat stay in business?  Not with
+the quality of their code or their customer service, I'll tell you
+that -- although Mark Mitchell is probably the best release manager
+that any GNU project has ever had.
 
-For example, in data journal mode, we would probably need to flush not 
-only the transaction level data, but also all data sequences that had 
-IO's in that transaction first.
+> <Balmer impersonation deleted>
 
-Pretty rapidly, we start to get into the database notions of nested 
-transactions and so on ;-)
+Oh, please.  Steve Ballmer doesn't waste his time trying to explain to
+overpaid GNU/Linux Morlocks (among which I number myself) how the
+legal and economic underpinnings of their industry work and why they
+shouldn't RAPE THEMSELVES playing stupid EXPORT_SYMBOL_GPL games and
+cryptographically signing kernel modules.  But don't worry -- neither
+do I beyond a couple of weeks after something really dunderheaded sets
+me off, and in the meantime, you know where to find your keyboard's
+"stick my fingers in my ears and shout la-la-la-I-can't-hear-you" key.
+ :-)
 
-ric
-
+Cheers,
+- Michael
