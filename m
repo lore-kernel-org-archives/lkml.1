@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751713AbXBVQv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751709AbXBVQyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751713AbXBVQv1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 11:51:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbXBVQv1
+	id S1751709AbXBVQyX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 11:54:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbXBVQyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 11:51:27 -0500
-Received: from palrel10.hp.com ([156.153.255.245]:38822 "EHLO palrel10.hp.com"
+	Thu, 22 Feb 2007 11:54:23 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:59233 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751708AbXBVQv0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 11:51:26 -0500
-Date: Thu, 22 Feb 2007 10:51:23 -0600
-From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mike.miller@hp.com, jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, gregkh@novell.com
-Subject: Re: [Patch 1/2] cciss: fix for 2TB support
-Message-ID: <20070222165123.GC2672@beardog.cca.cpqcorp.net>
-References: <20070221211039.GA2672@beardog.cca.cpqcorp.net> <20070221191427.9b7cf4b0.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	id S1751706AbXBVQyX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 11:54:23 -0500
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: SLUB: The unqueued Slab allocator
+References: <Pine.LNX.4.64.0702212250271.30485@schroedinger.engr.sgi.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 22 Feb 2007 18:54:06 +0100
+In-Reply-To: <Pine.LNX.4.64.0702212250271.30485@schroedinger.engr.sgi.com>
+Message-ID: <p73hctecc3l.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070221191427.9b7cf4b0.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 21, 2007 at 07:14:27PM -0800, Andrew Morton wrote:
-> On Wed, 21 Feb 2007 15:10:39 -0600 "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> wrote:
-> 
-> > Patch 1/2
-> > 
-> > This patch changes the way we determine if a logical volume is larger than 2TB. The
-> > original test looked for a total_size of 0. Originally we added 1 to the total_size.
-> > That would make our read_capacity return size 0 for >2TB lv's. We assumed that we
-> > could not have a lv size of 0 so it seemed OK until we were in a clustered system. The
-> > backup node would see a size of 0 due to the reservation on the drive. That caused
-> > the driver to switch to 16-byte CDB's which are not supported on older controllers.
-> > After that everything was broken.
-> > It may seem petty but I don't see the value in trying to determine if the LBA is
-> > beyond the 2TB boundary. That's why when we switch we use 16-byte CDB's for all
-> > read/write operations.
-> > Please consider this for inclusion.
-> > 
-> > ...
-> >
-> > +  	if (total_size == 0xFFFFFFFF) {
-> 
-> I seem to remember having already questioned this.  total_size is sector_t, which
-> can be either 32-bit or 64-bit.  Are you sure that comparison works as
-> intended in both cases?
-> 
-> 
-> > +		if(total_size == 0xFFFFFFFF) {
-> >  			cciss_read_capacity_16(cntl_num, i, 0,
-> >  			&total_size, &block_size);
-> >  			hba[cntl_num]->cciss_read = CCISS_READ_16;
-> 
-> Here too.
-It has worked in all of the configs I've tested. Should I change it from sector_t to a
-__64? I have not tested all possible configs.
+Christoph Lameter <clameter@sgi.com> writes:
 
--- mikem
+> This is a new slab allocator which was motivated by the complexity of the
+> with the existing implementation.
+
+Thanks for doing that work. It certainly was long overdue.
+
+> D. SLAB has a complex cache reaper
+> 
+>    SLUB does not need a cache reaper for UP systems.
+
+This means constructors/destructors are becomming worthless? 
+Can you describe your rationale why you think they don't make
+sense on UP?
+
+> G. Slab merging
+> 
+>    We often have slab caches with similar parameters. SLUB detects those
+>    on bootup and merges them into the corresponding general caches. This
+>    leads to more effective memory use.
+
+Did you do any tests on what that does to long term memory fragmentation?
+It is against the "object of same type have similar livetime and should
+be clustered together" theory at least.
+
+-Andi
