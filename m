@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750733AbXBVMu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750718AbXBVMuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750733AbXBVMu1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 07:50:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbXBVMu0
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 07:50:26 -0500
-Received: from [81.2.110.250] ([81.2.110.250]:48462 "EHLO lxorguk.ukuu.org.uk"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750733AbXBVMuY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1750718AbXBVMuY (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 22 Feb 2007 07:50:24 -0500
-Date: Thu, 22 Feb 2007 13:53:06 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: "Francesco Pretto" <ceztko@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Weird hard disk noise on shutdown (bug #7674)
-Message-ID: <20070222135306.4eb757c2@lxorguk.ukuu.org.uk>
-In-Reply-To: <e5ab0f710702211701u4c5b62c5jb560f166641512ff@mail.gmail.com>
-References: <e5ab0f710702211415p37444279td690c2db4b4ca8ab@mail.gmail.com>
-	<20070221235541.35f3d0da@lxorguk.ukuu.org.uk>
-	<e5ab0f710702211701u4c5b62c5jb560f166641512ff@mail.gmail.com>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbXBVMuY
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 22 Feb 2007 07:50:24 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:8407 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750718AbXBVMuX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 07:50:23 -0500
+Message-ID: <45DD917D.5010807@chelsio.com>
+Date: Thu, 22 Feb 2007 04:50:05 -0800
+From: Divy Le Ray <divy@chelsio.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+MIME-Version: 1.0
+To: yoshfuji@linux-ipv6.org
+CC: divy@chelsio.com, jeff@garzik.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, swise@opengridcomputing.com,
+       yoshfuji@linux-ipv6.org
+Subject: Re: [PATCH 2/7] cxgb3 - private ioctl cleanup
+References: <20070222115925.10001.61276.stgit@localhost.localdomain>	<20070222.210618.134161490.yoshfuji@linux-ipv6.org>	<45DD8DDA.8060303@chelsio.com> <20070222.213915.89824941.yoshfuji@linux-ipv6.org>
+In-Reply-To: <20070222.213915.89824941.yoshfuji@linux-ipv6.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Feb 2007 12:50:09.0088 (UTC) FILETIME=[FBEE4400:01C7567F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> However, i'm not still sure i enabled as much debugging info as i
-> could in the kernel configuration. If you need more, please point me
-> to precise configuration options.
+YOSHIFUJI Hideaki / $B5HF#1QL@ wrote:
+> In article <45DD8DDA.8060303@chelsio.com> (at Thu, 22 Feb 2007 04:34:34 -0800), Divy Le Ray <divy@chelsio.com> says:
+>
+>
+>   
+>>> 1. Please do do change the values.
+>>> 2. Explain why you are going to kill these ioctls.
+>>>   
+>>>       
+>> Jeff and Arjan have required that most of these ioctls go.
+>> Please read:
+>> http://marc.theaimsgroup.com/?l=linux-netdev&m=117029584904193&w=2
+>>     
+>
+> Even if you remove them, PLEASE DO NOT CHANGE THE VALUES,
+> unless you have very, very good reason.
+>   
 
-You grabbed a lot of junk but you did grab this line
+The cxgb3 driver has not yet appeared in a stable version of the linux 
+kernel.
+The odds of breaking an application using these private ioctls are 
+pretty slim.
+Since some cleanup was required, I chose not to let holes between the 
+values.
 
-[17179682.560000] Synchronizing SCSI cache for disk sda: 
-
-Which means sd_sync_cache got called and flushed the data to disk.
-
-I don't think you can do the other needed debugging without a recompile.
-
-The following will generate a vast amount of debug of which only the end
-matters. You may well want to build a kernel this way, boot it with
-init=/bin/sh and then at the shell prompt do "halt -f" so you don't get
-too much debug
-
-In include/linux/libata.h change
-
-#undef ATA_DEBUG                /* debugging output */
-#undef ATA_VERBOSE_DEBUG        /* yet more debugging output */
-
-so both of the undef-s read define
-
-#define ATA_DEBUG
-#define ATA_VERBOSE_DEBUG
-
-and recompile
+Cheers,
+Divy
 
 
