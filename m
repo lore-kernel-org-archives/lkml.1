@@ -1,43 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751978AbXBVWH4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751980AbXBVWJN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751978AbXBVWH4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 17:07:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbXBVWH4
+	id S1751980AbXBVWJN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 17:09:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbXBVWJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 17:07:56 -0500
-Received: from hancock.steeleye.com ([71.30.118.248]:45519 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751969AbXBVWHz (ORCPT
+	Thu, 22 Feb 2007 17:09:12 -0500
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:45538 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751967AbXBVWJL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 17:07:55 -0500
-Subject: Re: [Patch 1/2] cciss: fix for 2TB support
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, mike.miller@hp.com,
-       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, gregkh@novell.com
-In-Reply-To: <20070222220225.GC14162@beardog.cca.cpqcorp.net>
-References: <20070221211039.GA2672@beardog.cca.cpqcorp.net>
-	 <20070221191427.9b7cf4b0.akpm@linux-foundation.org>
-	 <20070222165123.GC2672@beardog.cca.cpqcorp.net>
-	 <20070222132434.d84d3248.akpm@linux-foundation.org>
-	 <1172180484.3378.34.camel@mulgrave.il.steeleye.com>
-	 <20070222220225.GC14162@beardog.cca.cpqcorp.net>
-Content-Type: text/plain
-Date: Thu, 22 Feb 2007 16:06:41 -0600
-Message-Id: <1172182001.3378.38.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Feb 2007 17:09:11 -0500
+To: staubach@redhat.com
+CC: miklos@szeredi.hu, trond.myklebust@fys.uio.no, akpm@linux-foundation.org,
+       hugh@veritas.com, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <45DE108C.6010101@redhat.com> (message from Peter Staubach on
+	Thu, 22 Feb 2007 16:52:12 -0500)
+Subject: Re: [PATCH] update ctime and mtime for mmaped write
+References: <E1HJvdA-0003Nj-00@dorka.pomaz.szeredi.hu>	 <20070221202615.a0a167f4.akpm@linux-foundation.org>	 <E1HK8hU-0005Mq-00@dorka.pomaz.szeredi.hu> <45DDD55F.4060106@redhat.com>	 <E1HKIN1-0006RX-00@dorka.pomaz.szeredi.hu> <45DDF9C1.4090003@redhat.com>	 <E1HKKrL-0006k6-00@dorka.pomaz.szeredi.hu> <1172178253.6382.12.camel@heimdal.trondhjem.org> <E1HKLUp-0006qY-00@dorka.pomaz.szeredi.hu> <45DE108C.6010101@redhat.com>
+Message-Id: <E1HKM6y-0006xN-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 22 Feb 2007 23:08:24 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-02-22 at 16:02 -0600, Mike Miller (OS Dev) wrote:
-> Will this patch for my patch work for now?
+> Miklos Szeredi wrote:
+> >>>> This still does not address the situation where a file is 'permanently'
+> >>>> mmap'd, does it?
+> >>>>         
+> >>> So?  If application doesn't do msync, then the file times won't be
+> >>> updated.  That's allowed by the standard, and so portable applications
+> >>> will have to call msync.
+> >>>       
+> >> It is allowed, but it is clearly not useful behaviour. Nowhere is it set
+> >> in stone that we should be implementing just the minimum allowed.
+> >>     
+> >
+> > You're right.  In theory, at least.  But in practice I don't think
+> > this matters.  Show me an application that writes to a shared mapping
+> > then doesn't call either msync or munmap and doesn't even exit.
+> >
+> > If there were lot of these apps, then this bug would have been fixed
+> > lots of years earlier.  In fact there are _very_ few apps writing to
+> > shared mappings at all.
+> >
+> >   
+> 
+> Perhaps true, although I know of at least one customer of Red Hat who
+> does have an application (or more) than uses mmap'd files and is
+> suffering from this lack of appropriate semantics.  They are not
+> getting files backed up which need to be.
 
-Yes, I think that should be fine ... it's only a theoretical worry; at
-the moment sector_t is unsigned ... but just in case.
+Yeah, but I bet, that just updating the times on msync and munmap will
+cure the problem.  Until you prove me wrong, this is a purely
+theoretical argument.
 
-James
+> > Applications should be encouraged to call msync(MS_ASYNC) because:
+> >
+> >   - it's very fast (basically a no-op) on recent linux kernels
+> >
+> >   - it's the only portable way to guarantee, that the data you written
+> >     will _ever_ hit the disk.
+> >
+> > There's really no downside to using msync(MS_ASYNC) in your
+> > application, so making an effort to support applications that don't do
+> > this is stupid, IMO.
+> 
+> It may be a no-op on recent Linux kernels, but I don't think that it
+> is a no-op on other systems.
 
+Exactly.  Which is the reason applications _have_ to call msync on
+these OSs if they want data to be synchronized with the file.
 
+There are two cases:
+
+ 1) app don't cares about it's data being synchronized with the file
+
+ 2) app does care
+
+In the first case there's no problem if the times aren't updated,
+since the app didn't care.
+
+In the second case the a portable application has to call msync, and
+on linux it doesn't even lose any performance from this, so it should
+be happy.
+
+You are trying to provide for an app that requires 1) on non-linux and
+2) on linux.  Does that make any sense?
+
+Miklos
