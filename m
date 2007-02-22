@@ -1,68 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751927AbXBVViK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751934AbXBVVis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751927AbXBVViK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 16:38:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbXBVViK
+	id S1751934AbXBVVis (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 16:38:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbXBVVir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 16:38:10 -0500
-Received: from mx0.towertech.it ([213.215.222.73]:54463 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751931AbXBVViJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 16:38:09 -0500
-Date: Thu, 22 Feb 2007 22:37:58 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: David Brownell <david-b@pacbell.net>
-Cc: Greg KH <greg@kroah.com>, rtc-linux@googlegroups.com,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.osdl.org, Andrew Morton <akpm@linux-foundation.org>,
-       john stultz <johnstul@us.ibm.com>
-Subject: Re: [patch/rfc 0/6] rtc framework: remove class_device, use class
- suspend()/resume()
-Message-ID: <20070222223758.55fce4b3@inspiron>
-In-Reply-To: <200702221244.32442.david-b@pacbell.net>
-References: <200702211945.15003.david-b@pacbell.net>
-	<20070222180941.GA15289@kroah.com>
-	<200702221244.32442.david-b@pacbell.net>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
+	Thu, 22 Feb 2007 16:38:47 -0500
+Received: from palrel12.hp.com ([156.153.255.237]:40304 "EHLO palrel12.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751920AbXBVViq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 16:38:46 -0500
+Date: Thu, 22 Feb 2007 15:38:45 -0600
+From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+To: akpm@osdl.org, jens.axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       gregkh@novell.com, hch@infradead.org
+Subject: [Patch 2/2] cciss: add shutdown support (replaces reboot notifier)
+Message-ID: <20070222213845.GA14162@beardog.cca.cpqcorp.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Feb 2007 12:44:31 -0800
-David Brownell <david-b@pacbell.net> wrote:
+Patch 2/2
 
-> > All of these looks good to me, feel free to add an:
-> > 	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > to them if you want.
-> 
-> Thanks ...
-> 
->  
-> > thanks for doing the class_device removal work, I appreciate it.
-> 
-> Actually the class_device removal work was because that was the
-> only way to clean the RTC suspend()/remove() patch out of my
-> queue, where it's been sitting since not log after those class
-> suspend/resume methods started to circulate, early last summer.
-> 
-> It'll be good to have that finally gone!
+This adds support for struct pci_driver shutdown and negates the previous NAK'ed
+reboot_notifier patch. It's much easier, wish I had know about this before. Thanks to
+Christoph for pointing this out.
 
-
- Hi David,
-
-  thanks for your work. The interface system was originally
- in place because it seemed the right-thing-to-do. if it isn't,
- better to remove it ;)
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+Signed-off-by: Mike Miller <mike.miller@hp.com>
+------------------------------------------------------------------------------------------
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index 916aab0..1abf1f5 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -3428,9 +3428,10 @@ static void __devexit cciss_remove_one(s
+ 	memset(flush_buf, 0, 4);
+ 	return_code = sendcmd(CCISS_CACHE_FLUSH, i, flush_buf, 4, 0, 0, 0, NULL,
+ 			      TYPE_CMD);
+-	if (return_code != IO_OK) {
+-		printk(KERN_WARNING "Error Flushing cache on controller %d\n",
+-		       i);
++	if (return_code = IO_OK) {
++		printk(KERN_WARNING "Completed cache flush on controller %d\n", i);
++	} else {
++		printk(KERN_WARNING "Error Flushing cache on controller %d\n", i);
+ 	}
+ 	free_irq(hba[i]->intr[2], hba[i]);
+ 
+@@ -3481,6 +3482,7 @@ static struct pci_driver cciss_pci_drive
+ 	.probe = cciss_init_one,
+ 	.remove = __devexit_p(cciss_remove_one),
+ 	.id_table = cciss_pci_device_id,	/* id_table */
++	.shutdown = cciss_remove_one,
+ };
+ 
+ /*
