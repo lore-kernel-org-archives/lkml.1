@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932997AbXBVKi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933005AbXBVKij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932997AbXBVKi3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 05:38:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933005AbXBVKi3
+	id S933005AbXBVKij (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 05:38:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933011AbXBVKij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 05:38:29 -0500
-Received: from il.qumranet.com ([82.166.9.18]:46387 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932997AbXBVKi2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 05:38:28 -0500
-Message-ID: <45DD7271.6000503@qumranet.com>
-Date: Thu, 22 Feb 2007 12:37:37 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-CC: Dor Laor <dor.laor@qumranet.com>, Pavel Machek <pavel@ucw.cz>,
-       kvm-devel@lists.sourceforge.net, akpm@osdl.org,
+	Thu, 22 Feb 2007 05:38:39 -0500
+Received: from relais.videotron.ca ([24.201.245.36]:14065 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933005AbXBVKii (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 05:38:38 -0500
+Date: Thu, 22 Feb 2007 05:38:39 -0500
+From: Veronique & Vincent <vinctre@videotron.ca>
+Subject: Re: Boot time Bluetooth BUG: warning: (value > m) at hid-core.c:793
+In-reply-to: <20070221185012.e4deeb68.zaitcev@redhat.com>
+To: Pete Zaitcev <zaitcev@redhat.com>, Jiri Kosina <jikos@jikos.cz>
+Cc: marcel@holtmann.org, vincent.fortier1@ec.gc.ca,
        linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [PATCH 10/13] KVM: Wire up hypercall handlers to
- a central arch-independent location
-References: <45DD6CF0.3010509@qumranet.com> <64F9B87B6B770947A9F8391472E032160A91BAF3@ehost011-8.exch011.intermedia.net> <20070222102228.GC12801@amd.com>
-In-Reply-To: <20070222102228.GC12801@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-id: <200702220538.39341.vinctre@videotron.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <200702192111.47017.vinctre@videotron.ca>
+ <Pine.LNX.4.64.0702200854520.25686@twin.jikos.cz>
+ <20070221185012.e4deeb68.zaitcev@redhat.com>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
-> On Thu, Feb 22, 2007 at 02:17:54AM -0800, Dor Laor wrote:
->   
->> I have Ingo's network PV hypercalls to commit in my piplien.
->> Till then we can just add the test hypercall:
->> 	case __NR_hypercall_test:
->> 		printk(KERN_DEBUG "%s __NR_hypercall_test\n",
->> __FUNCTION__);
->> 		ret = 0x5a5a;
->> 		break;
->> 	default:
->> 		BUG();
->>     
->
-> Is it a good idea to call BUG() on an undefined hypercall? I assume its
-> better to inform the guest that is has issued an illegal call...
->
->   
+> 
+> > > I've set up the hid-core.c to DEBUG mode... and it literally got pretty 
+verbose...
+> 
+> > thanks for the output. Is this really the full output? The important part 
+> > - report descriptor dump - seems to be missing in the output (it should 
+> > read something like "hid-core.c: report descriptor (size XY, read YZ) = 
+> > ... some hexadecimal numbers". This should be output by the time the HID 
+> > device is connected.
 
-The code returns -KVM_EINVAL if the hypercall is not handled (and BUG() 
-on the host as a response to something controlled by a guest is not a 
-good idea).
+The full dmesg with define DEBUG was included in the original message.  Unless 
+something else was needed?
 
+> Can I get something useful without a kernel recompile, with something
+> like evtest? I have users on Fedora hitting this too. It very likely is
+> a regression caused by the new unified HID.
 
--- 
-error compiling committee.c: too many arguments to function
+I was actually getting that on a stock FC6 kernel.  The dmesg output comes 
+from a recompiled vanilla 2.6.19.x with the exact same configuration BUT the 
+modified define's in hid-core.c and a local version appended to the .config 
+file.  So this BUG does not only affect FC6 users but also the vanilla 
+kernel.
 
+> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=227598
+> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=228755
+
+Good thing, I've added myself to the CC list of both.
+
+> 
+> -- Pete
+> 
+
+- vin
