@@ -1,64 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751535AbXBVSNc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751479AbXBVSNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751535AbXBVSNc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 13:13:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbXBVSNc
+	id S1751479AbXBVSNh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 13:13:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbXBVSNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 13:13:32 -0500
-Received: from mail.kroah.org ([69.55.234.183]:55088 "EHLO perch.kroah.org"
+	Thu, 22 Feb 2007 13:13:37 -0500
+Received: from mail.kroah.org ([69.55.234.183]:55104 "EHLO perch.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751535AbXBVSNb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 13:13:31 -0500
-Date: Thu, 22 Feb 2007 10:09:41 -0800
+	id S1751479AbXBVSNg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 13:13:36 -0500
+Date: Thu, 22 Feb 2007 10:13:15 -0800
 From: Greg KH <greg@kroah.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: rtc-linux@googlegroups.com,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.osdl.org, Andrew Morton <akpm@linux-foundation.org>,
-       Alessandro Zummo <alessandro.zummo@towertech.it>,
-       john stultz <johnstul@us.ibm.com>
-Subject: Re: [patch/rfc 0/6] rtc framework: remove class_device, use class suspend()/resume()
-Message-ID: <20070222180941.GA15289@kroah.com>
-References: <200702211945.15003.david-b@pacbell.net>
+To: Arkadiusz Miskiewicz <arekm@maven.pl>
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
+       konstantin.a.karasyov@intel.com, len.brown@intel.com
+Subject: Re: 2.6.21rc1 git usb mouse stops working after resume from ram
+Message-ID: <20070222181315.GC15289@kroah.com>
+References: <200702212314.56958.arekm@maven.pl> <20070221234905.GB7133@kroah.com> <200702221024.52551.arekm@maven.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200702211945.15003.david-b@pacbell.net>
+In-Reply-To: <200702221024.52551.arekm@maven.pl>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 21, 2007 at 07:45:14PM -0800, David Brownell wrote:
-> Hi,
+On Thu, Feb 22, 2007 at 10:24:52AM +0100, Arkadiusz Miskiewicz wrote:
+> On Thursday 22 of February 2007, Greg KH wrote:
+> > On Wed, Feb 21, 2007 at 11:14:56PM +0100, Arkadiusz Miskiewicz wrote:
+> > > Hello,
+> > >
+> > > Today version of Linus git tree has a problem with resuming of usb
+> > > devices. My trackball is no longer working after resume from ram. It not
+> > > even seen by lsusb.  Newly plugged devices are no longer detected (ie. my
+> > > usb camera) after resume.
+> > >
+> > > Reloading all usb + ohci/ehci modules doesn't fix the problem. I need to
+> > > reboot entire machine (thinkpad z60m).
+> >
+> > If you disable CONFIG_USB_SUSPEND, does it work properly for you?
 > 
-> Following this message (on the RTC list) are six patches:
+> Didn't test but I did bisecting and after reverting commits:
 > 
->  - Remove the /sys/class/rtc-dev class_device, and a class_interface
->  - Use "struct rtc_device" in the external interface, not class_device
->  - Simplify the sysfs attribute handling, removing a class_interface
->  - Simplify the /proc/driver/rtc handling, removing the last class_interface
->  - Remove the class_device in "struct rtc_device"; now suspend()/resume() work
->  - Implement class suspend()/resume() so the system clock is updated on resume
+> e8363f332757ac22395fb120cc33b3262f9ee26c
 > 
-> The main point of this series of patches is that last one, which I'll
-> circulate just a bit more widely.  (Although I think the first four are
-> also nice cleanups!)   It might be the first example of a framework that
-> uses the "new" class level suspend()/resume() calls to offload drivers.
+> and the main problematic one:
 > 
-> Other than actually using that new PM infrastructure, this series should
-> be interesting since it addresses one of the few remaining obstacles to
-> having the "Generic Time-Of-Day" (GTOD) framework be fully generic, in
-> the sense of working with whatever RTC is available on the platform (which
-> includes ones accessed through I2C or SPI, so that spinlocked access is
-> insufficient) and removing arch-specific RTC hooks.
+> commit 0a6139027f3986162233adc17285151e78b39cac
+> Author: Konstantin Karasyov <konstantin.a.karasyov@intel.com>
+> Date:   Fri Feb 16 01:47:06 2007 -0500
 > 
-> This has been lightly tested on one of the ARMs that doesn't yet have
-> new-style dynamic tick working.  I'm sure fault paths need tweaking yet.
+>     ACPI: Thermal issues on HP nx6325
+> 
+>     The previous reference counting scheme to enable power resources
+>     got confused when multiple devices were present that might
+>     repeatedly enable or disable the resource and throw off the count.
+> 
+>     The new code simply lists the referencing devices which
+>     are requesting the resource to be enabled.  When there are none,
+>     then it is off.
+> 
+>     Signed-off-by: Konstantin Karasyov <konstantin.a.karasyov@intel.com>
+>     Signed-off-by: Len Brown <len.brown@intel.com>
+> 
+> 
+> I again have working usb after resume.
 
-All of these looks good to me, feel free to add an:
-	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-to them if you want.
-
-thanks for doing the class_device removal work, I appreciate it.
+Thanks for tracking this down, I'll leave it to Len to debug now :)
 
 greg k-h
