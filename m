@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933024AbXBVLLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750810AbXBVLTE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933024AbXBVLLy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 06:11:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933025AbXBVLLy
+	id S1750810AbXBVLTE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 06:19:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbXBVLTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 06:11:54 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58567
+	Thu, 22 Feb 2007 06:19:04 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35430
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S933024AbXBVLLx (ORCPT
+	by vger.kernel.org with ESMTP id S1750797AbXBVLTB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 06:11:53 -0500
-Date: Thu, 22 Feb 2007 03:11:49 -0800 (PST)
-Message-Id: <20070222.031149.112617356.davem@davemloft.net>
-To: hpa@zytor.com
-Cc: linux-kernel@vger.kernel.org, vapier.adi@gmail.com
-Subject: Re: <linux/socket.h>, <linux/stat.h> breakage: AF_* constants are
- part of ABI definition
+	Thu, 22 Feb 2007 06:19:01 -0500
+Date: Thu, 22 Feb 2007 03:18:58 -0800 (PST)
+Message-Id: <20070222.031858.39163926.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Cc: shemminger@osdl.org, netdev@vger.kernel.org, ebs@ebshome.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] split NAPI from network device.
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <45DA1154.9020601@zytor.com>
-References: <45DA1154.9020601@zytor.com>
+In-Reply-To: <1172100271.6792.7.camel@localhost.localdomain>
+References: <20061213154635.1f284bf6@dxpl.pdx.osdl.net>
+	<20070220.213125.74747066.davem@davemloft.net>
+	<1172100271.6792.7.camel@localhost.localdomain>
 X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -26,27 +28,43 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "H. Peter Anvin" <hpa@zytor.com>
-Date: Mon, 19 Feb 2007 13:06:28 -0800
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 22 Feb 2007 10:24:31 +1100
 
-> In the current git tree, commit 57a87bb0720a5cf7a9ece49a8c8ed288398fd1bb 
-> removes any way to automatically extracting a whole lot of ABI constants 
-> from the kernel headers, especially AF_* and the various S_* constants.
-> 
-> Furthermore, the patch breaks <linux/in.h> which uses sa_family_t, which 
-> is now defined under __KERNEL__.
- ...
-> This patch breaks klibc in ways that are painfully hard to fix, and 
-> *definitely* cannot be fixed by anything less than replication of all 
-> these definitions, which is exactly the Wrong Thing[TM].
-> 
-> A much better solution (or complement) would be something like:
-> 
-> #if defined(__KERNEL__) || defined(__KHDR_CONSTANTS)
-> 
-> We could have __KHDR_CONSTANTS for the AF_* constants and __KHDR_MACROS 
-> for the various macros (cmsg et al).  That way the userspace library can 
-> ask for what it wants.
+> The device has a single interrupt though that interrupt at least can
+> tell you which queues need servicing. It can't mask the interrupt per
+> queue though, which is the main issue.
 
-I'll think about what to do about this, thanks for pointing out
-the problem.
+Right, which effectively turns it into a single interrupt
+for multiple queues as far as NAPI is concerned.
+
+> So while I think this scheme would work (the driver, ibm_emac, currently
+> uses a fake net_device and that sort-of works, budget is set a CONFIG_*
+> time though, I'm sure that can/needs to be improved), I've been
+> wondering all along if I could do something smarter by doing some
+> interrupt soft-disabling instead, though I have to get my head around
+> properly kicking softirqs from task context (if I need to re-trigger
+> from a enable_*() call occuring at task context).
+
+If you cannot make use of it sanely in your driver, it's hard to
+justify this patch just in the cleanup sense since it breaks
+NAPI interfaces and makes driver maintainence harder than it would
+need to be.
+
+Whereas if it makes a straightforward implementation in drivers
+like ibm_emac possible, this tends to tip things over the edge
+such that we can justify the maintainence hassles to some extent.
+
+I think the intention with these changes, is that you would
+have a napi struct per-queue.  It would be embedded in some
+private per-queue software state struct, and from which you
+could also get to the device.  So you'd do the "container_of()"
+bit a little bit differently at the beginning of your ->poll()
+method.
+
+This way you don't need the dummy netdevices.
+
+Anyways, please let us know what you come up with once you get
+a chance to investigate this.
+
+Thanks!
