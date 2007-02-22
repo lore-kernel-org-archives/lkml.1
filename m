@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751884AbXBVUzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751886AbXBVVD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751884AbXBVUzz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 15:55:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbXBVUzz
+	id S1751886AbXBVVD5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 16:03:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbXBVVD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 15:55:55 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:43614 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751882AbXBVUzy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 15:55:54 -0500
-Message-ID: <45DE034D.7080000@redhat.com>
-Date: Thu, 22 Feb 2007 15:55:41 -0500
-From: Peter Staubach <staubach@redhat.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061215)
+	Thu, 22 Feb 2007 16:03:57 -0500
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:52228 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751886AbXBVVD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 16:03:56 -0500
+Message-ID: <45DE0548.5000307@drzeus.cx>
+Date: Thu, 22 Feb 2007 22:04:08 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: akpm@linux-foundation.org, hugh@veritas.com, linux-fsdevel@vger.kernel.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update ctime and mtime for mmaped write
-References: <E1HJvdA-0003Nj-00@dorka.pomaz.szeredi.hu> <20070221202615.a0a167f4.akpm@linux-foundation.org> <E1HK8hU-0005Mq-00@dorka.pomaz.szeredi.hu> <45DDD55F.4060106@redhat.com> <E1HKIN1-0006RX-00@dorka.pomaz.szeredi.hu> <45DDF9C1.4090003@redhat.com> <E1HKKrL-0006k6-00@dorka.pomaz.szeredi.hu>
-In-Reply-To: <E1HKKrL-0006k6-00@dorka.pomaz.szeredi.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH -mm] mmc build fix
+References: <200702220619.l1M6JsG7006504@shell0.pdx.osdl.net> <45DDC7F7.6080205@googlemail.com>
+In-Reply-To: <45DDC7F7.6080205@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi wrote:
->>> __fput() will be called when there are no more references to 'file',
->>> then it will update the time if the flag is set.  This applies to
->>> regular files as well as devices.
->>>
->>>   
->>>       
->> I suspect that you will find that, for a block device, the wrong inode
->> gets updated.  That's where the bd_inode_update_time() portion of my
->> proposed patch came from.
->>     
->
-> How horrible :( I haven't noticed that part of the patch.  But I don't
-> think that's needed.  Updating the times through the file pointer
-> should be OK.  You have this problem because you use the inode which
-> comes from the blockdev pseudo-filesystem.
->
->   
+Michal Piotrowski wrote:
+> Hi,
+> 
+> akpm@linux-foundation.org napisa³(a):
+>> The mm snapshot broken-out-2007-02-21-22-18.tar.gz has been uploaded to
+>>
+>>    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-02-21-22-18.tar.gz
+>>
+>> It contains the following patches against 2.6.21-rc1:
+>>
+> 
+> Possible build fix for
+> 
+> drivers/built-in.o: In function `mmc_queue_thread':
+> /mnt/md0/devel/linux-work5/drivers/mmc/card/queue.c:76: undefined reference to `blk_queue_plugged'
+> make: *** [.tmp_vmlinux1] Error 1
+> 
 
-It was nasty, I certainly agree.  :-)
+Huh? Is blk_queue_plugged() deprecated?
 
->>> But I've moved the check from __fput to remove_vma() in the next
->>> revision of the patch, which would give slightly nicer semantics, and
->>> be equally conforming.
->>>       
->> This still does not address the situation where a file is 'permanently'
->> mmap'd, does it?
->>     
->
-> So?  If application doesn't do msync, then the file times won't be
-> updated.  That's allowed by the standard, and so portable applications
-> will have to call msync.
 
-Well, there allowable by the specification, and then there is expected and
-reasonable.  It seems reasonable to me that the file times should be
-updated _sometime_, even if the application does not take proactive action
-to cause them to be updated.  Otherwise, it would be easy to end up with a
-file, whose contents are updated and reside on stable storage, but whose
-mtime never changes.  Part of the motivation behind starting this work was
-to address the situation where an application modifies files using mmap
-but then backup software would never see the need to backup those files.
+-- 
+     -- Pierre Ossman
 
-It seems to me that if something like sync() causes the file contents to
-be written to stable storage, then the file metadata should follow in a
-not too distant fashion.
-
-    Thanx...
-
-       ps
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
