@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932096AbXBVHLO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751442AbXBVH1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932096AbXBVHLO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 02:11:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbXBVHLO
+	id S1751442AbXBVH1o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 02:27:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945922AbXBVH1o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 02:11:14 -0500
-Received: from nz-out-0506.google.com ([64.233.162.235]:10274 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751442AbXBVHLN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 02:11:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=AYFLPzOcYvOciBrRY+MJBEIst/8HKem9pXj3TblcIemRoMEDo/9jclHc4AigQPI1SeFUajiR4QPEAW7u0pz3rm10FHeniyuUsack60NQVnhoqxyxsQJ4flr5u+yXZfZ4eZe0kg7dTke7jvf2qBPjSM1Z0DRFzq70yUzQbS9t6Ys=
-Message-ID: <45DD420F.4000501@gmail.com>
-Date: Thu, 22 Feb 2007 16:11:11 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Thu, 22 Feb 2007 02:27:44 -0500
+Received: from mail.sf-mail.de ([62.27.20.61]:36276 "EHLO mail.sf-mail.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751442AbXBVH1n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 02:27:43 -0500
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH] EXPORT_SYMBOL() time functions
+Date: Thu, 22 Feb 2007 08:28:15 +0100
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       john stultz <johnstul@us.ibm.com>, Roman Zippel <zippel@linux-m68k.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+References: <200702211412.23388.eike-kernel@sf-tec.de> <200702211413.38840.eike-kernel@sf-tec.de> <20070222034001.GB9027@infradead.org>
+In-Reply-To: <20070222034001.GB9027@infradead.org>
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       Alan <alan@lxorguk.ukuu.org.uk>, ceztko@gmail.com
-Subject: Re: Weird hard disk noise on shutdown (bug #7674)
-References: <fa.Fk9DulKIUBewV0V2B72MDzbelmU@ifi.uio.no> <fa.RCbhxyLCSR5f65HWabMGmxZNYQ4@ifi.uio.no> <fa.G4k+9fbJDE0N5pygu22mRYU6gfE@ifi.uio.no> <45DD37E9.7010303@shaw.ca>
-In-Reply-To: <45DD37E9.7010303@shaw.ca>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/signed;
+  boundary="nextPart2679821.4R8GGvqh4J";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200702220828.16578.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Robert Hancock wrote:
->> Alan wrote:
->>> Stick some printk calls in drivers/ata/libata-eh.c in ata_eh_suspend, or
->>> turn on all the ATA debug and shutdown, the code should issue a cache
->>> flush followed by a standbynow1 command for each disk.
->>>
->>> Alan
->>
->> I believe it runs on suspend, but we don't run that code on normal
->> shutdown, do we?
->>
->> Tejun Heo had a patch for sd that could (optionally) trigger a START
->> STOP UNIT command to spin the disk down after synchronizing the cache
->> before shutdown, but I haven't heard anything of it lately..
+--nextPart2679821.4R8GGvqh4J
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I just came back from LSF and lunar new year's holidays and need a bit
-more time to get to it.  I'll get to it in one or two weeks.
+Christoph Hellwig wrote:
+> On Wed, Feb 21, 2007 at 02:13:38PM +0100, Rolf Eike Beer wrote:
+> > These functions were inlines before
+> > 8b9365d753d9870bb6451504c13570b81923228f. Now EXPORT_SYMBOL() them to
+> > allow them to be used in modules again.
+>
+> Just because they happened to be inlined that doesn't mean modules should
+> be using them.  In fact no intree module uses them exactly because they're
+> not intended to be used by this kind of code.  Please show the code you
+> want to use this for so we can see what you're really trying to do.
 
--- 
-tejun
+Trying to convert a given user value (in milliseconds) to a timeout. No=20
+problem doing this with struct timespec.
+
+Eike
+
+--nextPart2679821.4R8GGvqh4J
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQBF3UYQXKSJPmm5/E4RAjUiAJ9V0IJNZ6sqGYvXqPgr5xdP7lKyHQCeIqXX
+gqG/tw4ifJgoUmXF92/T6Ro=
+=hwkR
+-----END PGP SIGNATURE-----
+
+--nextPart2679821.4R8GGvqh4J--
