@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751906AbXBVVUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751909AbXBVVWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751906AbXBVVUV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 16:20:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbXBVVUV
+	id S1751909AbXBVVWY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 16:22:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbXBVVWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 16:20:21 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:39340 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751906AbXBVVUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 16:20:20 -0500
-Date: Thu, 22 Feb 2007 13:19:31 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: viro@ftp.linux.org.uk, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, sgrubb@redhat.com, jmorris@namei.org
-Subject: Re: [GIT PULL] audit patches
-Message-Id: <20070222131931.1ed6ffa4.akpm@linux-foundation.org>
-In-Reply-To: <1172150567.14363.337.camel@moss-spartans.epoch.ncsc.mil>
-References: <20070218040127.GA5422@ftp.linux.org.uk>
-	<20070221160319.6de08b64.akpm@linux-foundation.org>
-	<1172150567.14363.337.camel@moss-spartans.epoch.ncsc.mil>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Feb 2007 16:22:24 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:35174 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751909AbXBVVWX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 16:22:23 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Thu, 22 Feb 2007 16:19:16 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: trivial@kernel.org
+Subject: [PATCH] Correct comment to refer to proper /proc file.
+Message-ID: <Pine.LNX.4.64.0702221617130.7104@CPE00045a9c397f-CM001225dbafb6>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 22 Feb 2007 08:22:47 -0500 Stephen Smalley <sds@tycho.nsa.gov> wrote:
-> On Wed, 2007-02-21 at 16:03 -0800, Andrew Morton wrote:
-> > 
-> > Looking at the changes to audit_receive_msg():
-> > 
-> > 
-> > 				if (sid) {
-> > 					if (selinux_sid_to_string(
-> > 							sid, &ctx, &len)) {
-> > 						audit_log_format(ab,
-> > 							" ssid=%u", sid);
-> > 						/* Maybe call audit_panic? */
-> > 					} else
-> > 						audit_log_format(ab,
-> > 							" subj=%s", ctx);
-> > 					kfree(ctx);
-> > 				}
-> > 
-> > This is assuming that selinux_sid_to_string() always initialises `ctx'.
-> > 
-> > But AFAICT there are two error paths in security_sid_to_context() which
-> > forget to do that, so we end up doing kfree(uninitialised-local).
-> > 
-> > I'd consider that a shortcoming in security_sid_to_context(), so not a
-> > problem in this patch, as long as people agree with my blaming above.
-> 
-> I wouldn't assume that the function initializes an argument if it
-> returns an error, and at least some of the callers (in auditsc.c) appear
-> to correctly initialize ctx to NULL themselves before calling
-> selinux_sid_to_string().  But if you'd prefer the function to always
-> handle it, we can do that.
-> 
 
-Well we now have (at least) one caller which assumes that *ctx is
-initialied in error cases.
+  Correct a comment that information is exported via, not /proc/rtc,
+but /proc/driver/rtc.
 
-And I think it's sane to make it do that: safer, and will simplify coding
-in the callers.
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+
+---
+
+diff --git a/drivers/char/genrtc.c b/drivers/char/genrtc.c
+index 23b25ad..ea05265 100644
+--- a/drivers/char/genrtc.c
++++ b/drivers/char/genrtc.c
+@@ -377,7 +377,7 @@ static int gen_rtc_release(struct inode *inode, struct file *file)
+ #ifdef CONFIG_PROC_FS
+
+ /*
+- *	Info exported via "/proc/rtc".
++ *	Info exported via "/proc/driver/rtc".
+  */
+
+ static int gen_rtc_proc_output(char *buf)
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
