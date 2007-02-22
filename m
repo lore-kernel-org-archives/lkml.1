@@ -1,91 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751632AbXBVPVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751627AbXBVPWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751632AbXBVPVH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 10:21:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbXBVPVH
+	id S1751627AbXBVPWo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 10:22:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbXBVPWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 10:21:07 -0500
-Received: from tim.rpsys.net ([194.106.48.114]:51084 "EHLO tim.rpsys.net"
+	Thu, 22 Feb 2007 10:22:44 -0500
+Received: from main.gmane.org ([80.91.229.2]:35526 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751632AbXBVPVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 10:21:05 -0500
-Subject: Re: no backlight on radeon after recent kernel "upgrade"s
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Alex Romosan <romosan@sycorax.lbl.gov>,
-       Yaroslav Halchenko <kernel@onerussian.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net,
-       James Simmons <jsimmons@infradead.org>
-In-Reply-To: <20070222145613.GD25887@khazad-dum.debian.net>
-References: <20070219044616.GC25659@washoe.onerussian.com>
-	 <20070219000412.acad13de.akpm@linux-foundation.org>
-	 <1171876788.6046.3.camel@localhost.localdomain>
-	 <877iub9mu2.fsf@sycorax.lbl.gov>
-	 <1172097718.5790.29.camel@localhost.localdomain>
-	 <20070221231706.GA3336@khazad-dum.debian.net>
-	 <1172103159.5790.45.camel@localhost.localdomain>
-	 <20070222005122.GA7928@khazad-dum.debian.net>
-	 <20070222011017.GA8845@khazad-dum.debian.net>
-	 <1172138450.5837.34.camel@localhost.localdomain>
-	 <20070222145613.GD25887@khazad-dum.debian.net>
-Content-Type: text/plain
-Date: Thu, 22 Feb 2007 15:19:52 +0000
-Message-Id: <1172157592.5837.89.camel@localhost.localdomain>
+	id S1751627AbXBVPWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 10:22:43 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Rolf Offermanns <roffermanns@gmail.com>
+Subject: Re: Weird hard disk noise on shutdown (bug #7674)
+Date: Thu, 22 Feb 2007 16:22:20 +0100
+Message-ID: <erkcfc$f3n$1@sea.gmane.org>
+References: <e5ab0f710702211415p37444279td690c2db4b4ca8ab@mail.gmail.com> <20070221235541.35f3d0da@lxorguk.ukuu.org.uk> <e5ab0f710702211701u4c5b62c5jb560f166641512ff@mail.gmail.com> <20070222135306.4eb757c2@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: 62.8.134.2
+User-Agent: KNode/0.10.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-02-22 at 12:56 -0200, Henrique de Moraes Holschuh wrote:
-> On Thu, 22 Feb 2007, Richard Purdie wrote:
-> > > it to Len Brown for merging into 2.6.21, or NACK it if you'd rather do it in
-> > > the backlight class core.
-> > 
-> > We can't change the backlight class code since some hardware can't read
-> > from the device, only write to it. Initialisation in that case is a bit
-> > different.
+Alan wrote:
+
+>> However, i'm not still sure i enabled as much debugging info as i
+>> could in the kernel configuration. If you need more, please point me
+>> to precise configuration options.
 > 
-> Initializing stuff after registering is also racy as the device is not
-> locked but we are going to clobber data in its properties struct.  I don't
-> particularly care about that race, but...
+> You grabbed a lot of junk but you did grab this line
+> 
+> [17179682.560000] Synchronizing SCSI cache for disk sda:
+> 
+> Which means sd_sync_cache got called and flushed the data to disk.
+> 
+> I don't think you can do the other needed debugging without a recompile.
+> 
+> The following will generate a vast amount of debug of which only the end
+> matters. You may well want to build a kernel this way, boot it with
+> init=/bin/sh and then at the shell prompt do "halt -f" so you don't get
+> too much debug
+> 
+> In include/linux/libata.h change
+> 
+> #undef ATA_DEBUG                /* debugging output */
+> #undef ATA_VERBOSE_DEBUG        /* yet more debugging output */
+> 
+> so both of the undef-s read define
+> 
+> #define ATA_DEBUG
+> #define ATA_VERBOSE_DEBUG
+> 
+> and recompile
+I hear the same strange noise on poweroff (2.6.20 vanilla). This is what I
+get on my system with ATA_DEBUG and ATA_VERBOSE_DEBUG both defined. The
+system will *not* poweroff with "halt -f" so there was no noise!
 
-If you really care, add a a call to backlight_update_status() after you
-set the brightness attribute like some of the other drivers have. The
-only data you're changing are single numbers and as long as
-update_status is called afterwards, a consistent state is pushed to the
-hardware so there is no race problem.
+md: stopping all md devices.
+Synchronizing SCSI cache for disk sda:
+ata_scsi_dump_cdb: CDB (1:0,0,0) 35 00 00 00 00 00 00 00 00
+ata_scsi_translate: ENTER
+ata1: ata_dev_select: ENTER, ata1: device 0, wait 1
+ata_tf_load_pio: device 0xA0
+ata_exec_command_pio: ata1: cmd 0xE7
+ata_scsi_translate: EXIT
+ata_host_intr: ata1: protocol 1 task_state 2
+ata_hsm_move: ata1: protocol 1 task_state 2 (dev_stat 0x50)
+ata_hsm_move: ata1: dev 0 command complete, drv_stat 0x50
+System halted.
 
-> Anyway, you have the 2.6.21-rc patch now, to ACK or NACK.  I still think the
-> class should be handling this.  If a device is write-only, it should have no
-> _get ops handler, which means that the class can easily differentiate the
-> two cases and do the right thing for both.  There's less code duplication
-> that way.
+If I do a sysrq-o right after this, the above message repeate once more and
+the system turns off w/o the disturbing noise.
 
-Have a look at what corgi_bl does. It can know what state it set the
-hardware too as it keeps track itself, it just can't read that state
-from the hardware. Note how there is extra code in it to handle a power
-limit on the backlight under certain conditions and how this is fed back
-through the class through the get_brightness method.
+For the next messages, I booted the system completely (no init=/bin/sh) and
+did a "poweroff" at the console prompt after the boot was completed. This
+time the noise was there.
 
-Adding one line of code (admittedly slight more due to error handling),
-is hardly that much code duplication.
+ata_host_intr: ata1: protocol 3 task_state 2
+ata_host_intr: ata1: host_stat 0x24
+ata_hsm_move: ata1: protocol 3 task_state 2 (dev_stat 0x50)
+ata_hsm_move: ata1: dev 0 command complete, drv_stat 0x50
+ata_sg_clean: unmapping 1 sg elements
+ata_scsi_dump_cdb: CDB (1:0,0,0) 28 00 04 b5 d4 c8 00 00 08
+ata_scsi_translate: ENTER
+scsi_10_lba_len: ten-byte command
+ata_sg_setup: ENTER, ata1
+ata_sg_setup: 1 sg elements mapped
+ata_fill_sg: PRD[0] = (0x39A63000, 0x1000)
+ata_tf_load_pio: feat 0x0 nsect 0x8 lba 0xC8 0xD4 0xB5
+ata_tf_load_pio: device 0xE4
+ata_exec_command_pio: ata1: cmd 0xC8
+ata_scsi_translate: EXIT
+ata_host_intr: ata1: protocol 3 task_state 2
+ata_host_intr: ata1: host_stat 0x24
+ata_hsm_move: ata1: protocol 3 task_state 2 (dev_stat 0x50)
+ata_hsm_move: ata1: dev 0 command complete, drv_stat 0x50
+ata_sg_clean: unmapping 1 sg elements
+ata_scsi_dump_cdb: CDB (1:0,0,0) 35 00 00 00 00 00 00 00 00
+ata_scsi_translate: ENTER
+ata_tf_load_pio: device 0xA0
+ata_exec_command_pio: ata1: cmd 0xE7
+ata_scsi_translate: EXIT
+ata_host_intr: ata1: protocol 1 task_state 2
+ata_hsm_move: ata1: protocol 1 task_state 2 (dev_stat 0x50)
+ata_hsm_move: ata1: dev 0 command complete, drv_stat 0x50
+Power down.
 
-> Howerver, I *do* strongly wish for a way to combine various drivers into a
-> single backlight device, where radeon/intelfb takes care of some stuff,
-> ibm-acpi/asus-laptop/sony-laptop takes care of other stuff, etc.  Also, a
-> standard naming for the builtin screen(s) would help, calling it "ibm",
-> "asus", "sony" is not good IMHO.
 
-I wasn't aware of this problem. If some devices need bits from both
-raedon/whatever and acpi, the current implementations are just plain
-wrong. Its not really a backlight class problem and more of an
-implementation and interaction problem between acpi and the framebuffer
-drivers. They should be presenting and registering *one* backlight class
-device, not two. Without knowing more about the circumstances and
-how/when to combine which drivers its hard for me to help further...
-
-Richard
-
+HTH,
+Rolf
 
