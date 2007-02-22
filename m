@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751518AbXBVIyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932636AbXBVI60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751518AbXBVIyX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 03:54:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbXBVIyX
+	id S932636AbXBVI60 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 03:58:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932862AbXBVI60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 03:54:23 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2753 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751514AbXBVIyW (ORCPT
+	Thu, 22 Feb 2007 03:58:26 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54563
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S932636AbXBVI6Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 03:54:22 -0500
-Date: Thu, 22 Feb 2007 08:54:13 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Cc: Jose Goncalves <jose.goncalves@inov.pt>,
-       Frederik Deweerdt <deweerdt@free.fr>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Serial related oops
-Message-ID: <20070222085413.GB15841@flint.arm.linux.org.uk>
-Mail-Followup-To: "Michael K. Edwards" <medwards.linux@gmail.com>,
-	Jose Goncalves <jose.goncalves@inov.pt>,
-	Frederik Deweerdt <deweerdt@free.fr>, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
-References: <20070219143520.GB27370@flint.arm.linux.org.uk> <20070220144814.GJ566@slug> <20070219150508.GD27370@flint.arm.linux.org.uk> <45D9D073.7020701@inov.pt> <20070219164200.GF27370@flint.arm.linux.org.uk> <45D9E46C.4030408@inov.pt> <20070219212347.GA4258@flint.arm.linux.org.uk> <45DC537B.6020108@inov.pt> <20070221230503.GA28156@flint.arm.linux.org.uk> <f2b55d220702211634s77d23ddem8ee6523ff6020d98@mail.gmail.com>
+	Thu, 22 Feb 2007 03:58:25 -0500
+Date: Thu, 22 Feb 2007 00:58:24 -0800 (PST)
+Message-Id: <20070222.005824.34601725.davem@davemloft.net>
+To: clameter@sgi.com
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: SLUB: The unqueued Slab allocator
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0702212250271.30485@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0702212250271.30485@schroedinger.engr.sgi.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f2b55d220702211634s77d23ddem8ee6523ff6020d98@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 21, 2007 at 04:34:15PM -0800, Michael K. Edwards wrote:
-> Are you using an unpatched gcc 4.1.1?  Its optimizer did nasty things
-> to us, at least on an ARM target ...
+From: Christoph Lameter <clameter@sgi.com>
+Date: Wed, 21 Feb 2007 23:00:30 -0800 (PST)
 
-That's ruled out.  Please think about it for a moment - serial_in()
-managed to work correctly most of the time, and then spontaneously
-changes its well-defined ABI behaviour in a way that analysis of the
-asm doesn't allow it to.
+> +#ifdef CONFIG_ZONE_DMA
+> +static struct kmem_cache *kmalloc_caches_dma[KMALLOC_NR_CACHES];
+> +#endif
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Therefore.
+
+> +static struct kmem_cache *get_slab(size_t size, gfp_t flags)
+> +{
+ ...
+> +	s = kmalloc_caches_dma[index];
+> +	if (s)
+> +		return s;
+> +
+> +	/* Dynamically create dma cache */
+> +	x = kmalloc(sizeof(struct kmem_cache), flags & ~(__GFP_DMA));
+> +
+> +	if (!x)
+> +		panic("Unable to allocate memory for dma cache\n");
+> +
+> +#ifdef KMALLOC_EXTRA
+> +	if (index <= KMALLOC_SHIFT_HIGH - KMALLOC_SHIFT_LOW)
+> +#endif
+> +		realsize = 1 << index;
+> +#ifdef KMALLOC_EXTRA
+> +	else if (index == KMALLOC_EXTRAS)
+> +		realsize = 96;
+> +	else
+> +		realsize = 192;
+> +#endif
+> +
+> +	s = create_kmalloc_cache(x, "kmalloc_dma", realsize);
+> +	kmalloc_caches_dma[index] = s;
+> +	return s;
+> +}
+
+All of that logic needs to be protected by CONFIG_ZONE_DMA too.
+
+I noticed this due to a build failure on sparc64 with this patch.
