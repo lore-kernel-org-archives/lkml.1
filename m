@@ -1,41 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751425AbXBVGaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751428AbXBVGbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751425AbXBVGaW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 01:30:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbXBVGaW
+	id S1751428AbXBVGbk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 01:31:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbXBVGbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 01:30:22 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:49182 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751425AbXBVGaV (ORCPT
+	Thu, 22 Feb 2007 01:31:39 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:20992 "EHLO
+	pd5mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751428AbXBVGbj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 01:30:21 -0500
-Date: Thu, 22 Feb 2007 01:28:40 -0500
-From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
-       linux-kernel@vger.kernel.org, unionfs@filesystems.org, clameter@sgi.com
-Subject: Re: [-mm patch] UNION_FS must depend on SLAB
-Message-ID: <20070222062840.GA23838@filer.fsl.cs.sunysb.edu>
-References: <20070217215146.30e7ffa3.akpm@linux-foundation.org> <20070220000810.GK13958@stusta.de> <84144f020702192237k78a5045bl51e0871fb3cac253@mail.gmail.com> <20070220151356.GA19239@filer.fsl.cs.sunysb.edu> <20070221141944.af6001db.akpm@linux-foundation.org> <20070222020036.GE5867@filer.fsl.cs.sunysb.edu> <20070221182657.57264123.akpm@linux-foundation.org> <45DD3574.9070801@cs.helsinki.fi> <45DD35BF.9010309@cs.helsinki.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45DD35BF.9010309@cs.helsinki.fi>
-User-Agent: Mutt/1.4.1i
+	Thu, 22 Feb 2007 01:31:39 -0500
+Date: Thu, 22 Feb 2007 00:27:53 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Weird hard disk noise on shutdown (bug #7674)
+In-reply-to: <fa.G4k+9fbJDE0N5pygu22mRYU6gfE@ifi.uio.no>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Alan <alan@lxorguk.ukuu.org.uk>, ceztko@gmail.com, htejun@gmail.com
+Message-id: <45DD37E9.7010303@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.Fk9DulKIUBewV0V2B72MDzbelmU@ifi.uio.no>
+ <fa.RCbhxyLCSR5f65HWabMGmxZNYQ4@ifi.uio.no>
+ <fa.G4k+9fbJDE0N5pygu22mRYU6gfE@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 22, 2007 at 08:18:39AM +0200, Pekka Enberg wrote:
-> Pekka Enberg wrote:
-> >The ksize exports we can add later if unionfs is to be merged.
+Robert Hancock wrote:
+> Alan wrote:
+>> Stick some printk calls in drivers/ata/libata-eh.c in ata_eh_suspend, or
+>> turn on all the ATA debug and shutdown, the code should issue a cache
+>> flush followed by a standbynow1 command for each disk.
+>>
+>> Alan
 > 
-> Actually, we probably don't need it after the krealloc optimizations. I 
-> think we need a new unionfs patch too... :)
- 
-I'm for it!
- 
-Josef "Jeff" Sipek.
+> I believe it runs on suspend, but we don't run that code on normal 
+> shutdown, do we?
+> 
+> Tejun Heo had a patch for sd that could (optionally) trigger a START 
+> STOP UNIT command to spin the disk down after synchronizing the cache 
+> before shutdown, but I haven't heard anything of it lately..
+
+And yes, this is something we need to deal with. I don't think that 
+disks that use contact start-stop heads care so much, but disks that use 
+load-unload heads (like most laptop drives, it seems) generally quote a 
+much lower cycle lifetime for "emergency unloads" caused by power loss 
+than by normal unloads done while power is still applied. It's important 
+enough that in some cases, like the Compaq X1000-series laptop I have, 
+the BIOS appears to have a power button handler that spins down the 
+drive before power-down when the power button is pressed and an ACPI OS 
+isn't running. (Holding the button down when an ACPI OS is running just 
+forces the power off, then you get the clunk from the drive..)
+
+Windows XP (and even as far back as Windows 98) get this right, surely 
+we can do as well :-)
 
 -- 
-Don't drink and derive. Alcohol and algebra don't mix.
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
