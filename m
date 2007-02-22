@@ -1,107 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933106AbXBVPz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933102AbXBVQAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933106AbXBVPz7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 10:55:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933108AbXBVPz7
+	id S933102AbXBVQAY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 11:00:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933110AbXBVQAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 10:55:59 -0500
-Received: from nz-out-0506.google.com ([64.233.162.235]:6262 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933106AbXBVPz5 (ORCPT
+	Thu, 22 Feb 2007 11:00:24 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:45712 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933102AbXBVQAY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 10:55:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=H8DYabeoWOnK6Rw3gs3C++/SlV1C+qfPcVwTzu+AMk0NfjHWGyxHGgeZGExf1vJbU5FVJ1dizSqKTZV40JKzyAlLxaVobvIX5o4gipEX4RDlTx1SF7h8dBPMw7XQNcXn970bHtGwvGtrG5xLfszgirr1F68Y4+oOmbrvF0q9jak=
-Message-ID: <cb7bb73a0702220755y3eb2e5b1r8e7908ae0c1720c9@mail.gmail.com>
-Date: Thu, 22 Feb 2007 16:55:56 +0100
-From: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
-Cc: "James Simmons" <jsimmons@infradead.org>,
-       "Luca Tettamanti" <kronos@people.it>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       "Andrew Morton" <akpm@osdl.org>, "Dave Airlie" <airlied@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1172153358.4306.17.camel@daplas>
+	Thu, 22 Feb 2007 11:00:24 -0500
+Date: Thu, 22 Feb 2007 16:00:16 +0000 (GMT)
+From: James Simmons <jsimmons@infradead.org>
+To: Richard Purdie <rpurdie@rpsys.net>
+cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Alex Romosan <romosan@sycorax.lbl.gov>,
+       Yaroslav Halchenko <kernel@onerussian.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: no backlight on radeon after recent kernel "upgrade"s
+In-Reply-To: <1172157592.5837.89.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0702221558550.29542@pentafluge.infradead.org>
+References: <20070219044616.GC25659@washoe.onerussian.com> 
+ <20070219000412.acad13de.akpm@linux-foundation.org> 
+ <1171876788.6046.3.camel@localhost.localdomain>  <877iub9mu2.fsf@sycorax.lbl.gov>
+  <1172097718.5790.29.camel@localhost.localdomain>  <20070221231706.GA3336@khazad-dum.debian.net>
+  <1172103159.5790.45.camel@localhost.localdomain>  <20070222005122.GA7928@khazad-dum.debian.net>
+  <20070222011017.GA8845@khazad-dum.debian.net>  <1172138450.5837.34.camel@localhost.localdomain>
+  <20070222145613.GD25887@khazad-dum.debian.net> <1172157592.5837.89.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <ephv35$4i3$1@sea.gmane.org>
-	 <20070130203301.GA15067@dreamland.darkstar.lan>
-	 <20070204201713.GA12867@dreamland.darkstar.lan>
-	 <Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
-	 <cb7bb73a0702061508x767882dcia1b13f85d898b6e7@mail.gmail.com>
-	 <1172101406.4217.16.camel@daplas>
-	 <cb7bb73a0702220001u6acbdd95ncdc9fad10d06b421@mail.gmail.com>
-	 <1172133646.4086.5.camel@daplas>
-	 <cb7bb73a0702220548s55380f7fk995726ffd349823b@mail.gmail.com>
-	 <1172153358.4306.17.camel@daplas>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/22/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
->
-> Ah, my fault.  Apply this patch on top.
 
-We're getting closer! The patch now works, and the dmesg has the following info:
+> > Howerver, I *do* strongly wish for a way to combine various drivers into a
+> > single backlight device, where radeon/intelfb takes care of some stuff,
+> > ibm-acpi/asus-laptop/sony-laptop takes care of other stuff, etc.  Also, a
+> > standard naming for the builtin screen(s) would help, calling it "ibm",
+> > "asus", "sony" is not good IMHO.
+> 
+> I wasn't aware of this problem. If some devices need bits from both
+> raedon/whatever and acpi, the current implementations are just plain
+> wrong. Its not really a backlight class problem and more of an
+> implementation and interaction problem between acpi and the framebuffer
+> drivers. They should be presenting and registering *one* backlight class
+> device, not two. Without knowing more about the circumstances and
+> how/when to combine which drivers its hard for me to help further...
 
+This is always been a problem. For the fbdev layer you can run vesafb with 
+a specific fbdev driver and they both access the same hardware. There is 
+no really way around this. The user has to be smart enough to not enable 
+bothe drivers.
 
-ACPI: PCI Interrupt 0000:01:00.0[A] -> Link [LNKA] -> GSI 11 (level,
-low) -> IRQ 11
-nvidiafb: Device ID: 10de0112
-fbmon: The EDID Block of Manufacturer: SHP Model: 0x138e is known to be broken,
-fbmon: trying to fix monitor timings
-nvidiafb: EDID found from BUS2
-========================================
-Display Information (EDID)
-========================================
-   EDID Version 1.3
-   Manufacturer: SHP
-   Model: 138e
-   Serial#: 0
-   Year: 1990 Week 0
-   Display Characteristics:
-      Monitor Operating Limits: From EDID
-           H: 30-75KHz V: 60-60Hz DCLK: 170MHz
-      Digital Display Input
-      Sync:
-      Max H-size in cm: 30
-      Max V-size in cm: 23
-      Gamma: 2.20
-      DPMS: Active no, Suspend yes, Standby yes
-      RGB Color Display
-      Chroma
-         RedX:     0.599 RedY:     0.335
-         GreenX:   0.313 GreenY:   0.552
-         BlueX:    0.150 BlueY:    0.145
-         WhiteX:   0.313 WhiteY:   0.328
-      First DETAILED Timing is preferred
-   Detailed Timings
-      160 MHz 1600 1664 1856 2112 1200 1201 1204 1250 -HSync -VSync
-
-   Supported VESA Modes
-      Manufacturer's mask: 0
-   Standard Timings
-      1600x1200@60Hz
-========================================
-nvidiafb: CRTC 1 is currently programmed for DFP
-nvidiafb: Using DFP on CRTC 1
-nvidiafb: Panel size is 1600 x 1200
-nvidiafb: Panel is TMDS
-nvidiafb: MTRR set to ON
-nvidiafb: Flat panel dithering disabled
-Console: switching to colour frame buffer device 200x75
-nvidiafb: PCI nVidia NV11 framebuffer (32MB @ 0xE0000000)
-
-
-
-
-However, I'm still getting the same snowy effects, which doesn't come
-as a surprise since the actual mode timings used are just the same ...
-
-
--- 
-Giuseppe "Oblomov" Bilotta
