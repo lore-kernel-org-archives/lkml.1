@@ -1,67 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751728AbXBVReL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751326AbXBVRht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751728AbXBVReL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 12:34:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbXBVReL
+	id S1751326AbXBVRht (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 12:37:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbXBVRht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 12:34:11 -0500
-Received: from www.osadl.org ([213.239.205.134]:51265 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751727AbXBVReK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 12:34:10 -0500
-Subject: Re: NO_HZ: timer interrupt stuck
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: David Miller <davem@davemloft.net>
-Cc: jengelh@linux01.gwdg.de, kronos.it@gmail.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20070222.092652.55507017.davem@davemloft.net>
-References: <1172099859.25076.132.camel@localhost.localdomain>
-	 <Pine.LNX.4.61.0702221334460.28624@yvahk01.tjqt.qr>
-	 <1172159501.25076.182.camel@localhost.localdomain>
-	 <20070222.092652.55507017.davem@davemloft.net>
-Content-Type: text/plain
-Date: Thu, 22 Feb 2007 18:39:19 +0100
-Message-Id: <1172165959.25076.192.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 22 Feb 2007 12:37:49 -0500
+Received: from wx-out-0506.google.com ([66.249.82.239]:26592 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751326AbXBVRhr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 12:37:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=fIY4J2VH2CV95CkMNkMbb0JZ1sptJDvSXYmPGsNeW9bJAKceqBvvACH+RfW2u4fcATTQaIMZ1crmu1dHuQ/eSFVcKkI1jXUGIS66/4daaWLud/6tHzVqNfClCDqa06aYHuWXEdKmgIT4riTymEprdr/qGKJmBor5+LWNImN0dcw=
+Date: Thu, 22 Feb 2007 12:37:44 -0500
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] tty_io: fix race in master pty close/slave pty close path
+Message-ID: <20070222173744.GB6938@cathedrallabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Aristeu Sergio Rozanski Filho <aristeu.sergio@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-02-22 at 09:26 -0800, David Miller wrote:
-> BTW, I'm adding support for sparc64, and before I get much further
-> will the code handle a oneshot-only device?  That's basically what I
-> have (sparc64 basically has a TSC and a "comparison" register, you
-> write the "comparison" register with the TSC value at which you'd like
-> the timer interrupt to occur, so it's one-shot and you have to write
-> it again to get the next timer).
+This patch fixes a possible race that leads to double freeing an idr index.
+When the master begin to close, release_dev() is called and then pty_close()
+is called:
+        if (tty->driver->close)
+                tty->driver->close(tty, filp);
+This is done without helding any locks other than BKL. Inside pty_close(),
+being a master close, the devpts entry will be removed:
+#ifdef CONFIG_UNIX98_PTYS
+                if (tty->driver == ptm_driver)
+                        devpts_pty_kill(tty->index);
+#endif
+But devpts_pty_kill() will call get_node() that may sleep while waiting for
+&devpts_root->d_inode->i_sem. When this happens and the slave is being
+opened, tty_open() just found the driver and index:
+        driver = get_tty_driver(device, &index);
+        if (!driver) {
+                mutex_unlock(&tty_mutex);
+                return -ENODEV;
+        }
+This part of the code is already protected under tty_mute. The problem
+is that the slave close already got an index. Then init_dev() is called and
+blocks waiting for the same &devpts_root->d_inode->i_sem.
 
-Yes, all you need is to omit the CLOCK_EVT_FEAT_PERIODIC flag when you
-register your device.
+When the master close resumes, it removes the devpts entry, and the relation
+between idr index and the tty is gone. The master then sleeps waiting for the
+tty_mutex on release_dev().
 
-> I see logic in the generic code to do periodic events when the
-> timer only provides one-shot ticks.  But as far as I can tell
-> both the HPET and the local APIC support periodic timers so
-> I can't tell how much testing that code has gotten :-)
+Slave open resumes and found no tty for that index. As result, a NULL tty is
+returned and init_dev() doesn't flow to fast_track:
+        /* check whether we're reopening an existing tty */
+        if (driver->flags & TTY_DRIVER_DEVPTS_MEM) {
+                tty = devpts_get_tty(idx);
+                if (tty && driver->subtype == PTY_TYPE_MASTER)
+                        tty = tty->link;
+        } else {
+                tty = driver->ttys[idx];
+        }
+        if (tty) goto fast_track;
+The result of this, is that a new tty will be created and init_dev() returns
+sucessfull. After returning, tty_mutex is dropped and master close may resume.
 
-Not much :)
+Master close finds it's the only use and both sides are closing, then releases
+the tty and the index. At this point, the idr index is free, but slave still
+has it.
 
-> I, in fact, don't see any clockevent device in the current tree that
-> does not set CLOCK_EVT_FEAT_PERIODIC.
+Slave open then calls pty_open() and finds that tty->link->count is 0, because
+there's no master and returns error. Then tty_open() calls release_dev() which
+executes without any warning, as it was a case of last slave close when the
+master is already closed (master->count == 0, slave->count == 1). The tty is
+then released with the already released idr index.
 
-There is an ARM patch which makes use of it.
+This normally would only issue a warning on idr_remove() but in case of a
+customer's critical application, it's never too simple:
 
-> I guess you could clear that bit just to test those generic code
-> paths. :-)
+thread1: opens master, gets index X
+thread1: begin closing master
+thread2: begin opening slave with index X
+thread1: finishes closing master, index X released
+thread3: opens master, gets index X, just released
+thread2: fails opening slave, releases index X         <----
+thread4: opens master, gets index X, init_dev() then find an already in use
+	 and healthy tty and fails
 
-yep.
+If no more indexes are released, ptmx_open() will keep failing, as the first
+free index available is X, and it will make init_dev() fail because you're
+trying to "reopen a master" which isn't valid.
 
-> BTW, sparc64 always did the trick where the do_timer() work was done
-> by one of the per-cpu local timer interrupts, I'm glad the idea gained
-> traction generically. :-)))
+The patch notices when this race happens and make init_dev() fail imediately.
+The init_dev() function is called with tty_mutex held, so it's safe to continue
+with tty till the end of function because release_dev() won't make any further
+changes without grabbing the tty_mutex.
 
-:)
+Without the patch, on some machines it's possible get easily idr warnings like
+this one:
+idr_remove called for id=15 which is not allocated.
+ [<c02555b9>] idr_remove+0x139/0x170
+ [<c02a1b62>] release_mem+0x182/0x230
+ [<c02a28e7>] release_dev+0x4b7/0x700
+ [<c02a0ea7>] tty_ldisc_enable+0x27/0x30
+ [<c02a1e64>] init_dev+0x254/0x580
+ [<c02a0d64>] check_tty_count+0x14/0xb0
+ [<c02a4f05>] tty_open+0x1c5/0x340
+ [<c02a4d40>] tty_open+0x0/0x340
+ [<c017388f>] chrdev_open+0xaf/0x180
+ [<c017c2ac>] open_namei+0x8c/0x760
+ [<c01737e0>] chrdev_open+0x0/0x180
+ [<c0167bc9>] __dentry_open+0xc9/0x210
+ [<c0167e2c>] do_filp_open+0x5c/0x70
+ [<c0167a91>] get_unused_fd+0x61/0xd0
+ [<c0167e93>] do_sys_open+0x53/0x100
+ [<c0167f97>] sys_open+0x27/0x30
+ [<c010303b>] syscall_call+0x7/0xb
+using this test application available on:
+ http://www.ruivo.org/~aris/pty_sodomizer.c
 
-	tglx
+Signed-off-by: Aristeu Sergio Rozanski Filho <aris@ruivo.org>
 
-
+Index: linus-2.6/drivers/char/tty_io.c
+===================================================================
+--- linus-2.6.orig/drivers/char/tty_io.c
++++ linus-2.6/drivers/char/tty_io.c
+@@ -1901,6 +1901,20 @@ static int init_dev(struct tty_driver *d
+ 	/* check whether we're reopening an existing tty */
+ 	if (driver->flags & TTY_DRIVER_DEVPTS_MEM) {
+ 		tty = devpts_get_tty(idx);
++		/*
++		 * If we don't have a tty here on a slave open, it's because
++		 * the master already started the close process and there's
++		 * no relation between devpts file and tty anymore.
++		 */
++		if (!tty && driver->subtype == PTY_TYPE_SLAVE) {
++			retval = -EIO;
++			goto end_init;
++		}
++		/*
++		 * It's safe from now on because init_dev() is called with
++		 * tty_mutex held and release_dev() won't change tty->count
++		 * or tty->flags without having to grab tty_mutex
++		 */
+ 		if (tty && driver->subtype == PTY_TYPE_MASTER)
+ 			tty = tty->link;
+ 	} else {
