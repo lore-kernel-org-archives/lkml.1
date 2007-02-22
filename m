@@ -1,43 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751965AbXBVV5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751975AbXBVWCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751965AbXBVV5l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 16:57:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbXBVV5k
+	id S1751975AbXBVWCn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 17:02:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbXBVWCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 16:57:40 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:40353 "EHLO smtp.osdl.org"
+	Thu, 22 Feb 2007 17:02:43 -0500
+Received: from palrel12.hp.com ([156.153.255.237]:49599 "EHLO palrel12.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751965AbXBVV5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 16:57:38 -0500
-Date: Thu, 22 Feb 2007 13:57:19 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: stern@rowland.harvard.edu, hirofumi@mail.parknet.co.jp,
-       linux-usb-devel@lists.sourceforge.net, zaitcev@redhat.com,
-       gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [linux-usb-devel] 2.6.20 kernel hang with USB drive and vfat
- doing ftruncate
-Message-Id: <20070222135719.fb35535a.akpm@linux-foundation.org>
-In-Reply-To: <0305C117-1099-49EA-B0F3-C0E31E18A19A@kernel.crashing.org>
-References: <20070221125736.e5ff4206.akpm@linux-foundation.org>
-	<Pine.LNX.4.44L0.0702211621310.3435-100000@iolanthe.rowland.org>
-	<20070221133112.aec2bdac.akpm@linux-foundation.org>
-	<F2C532BC-C83A-4DD5-BACE-49F8CC11236C@kernel.crashing.org>
-	<0305C117-1099-49EA-B0F3-C0E31E18A19A@kernel.crashing.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+	id S1751973AbXBVWCm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 17:02:42 -0500
+Date: Thu, 22 Feb 2007 16:02:25 -0600
+From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, mike.miller@hp.com,
+       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, gregkh@novell.com
+Subject: Re: [Patch 1/2] cciss: fix for 2TB support
+Message-ID: <20070222220225.GC14162@beardog.cca.cpqcorp.net>
+References: <20070221211039.GA2672@beardog.cca.cpqcorp.net> <20070221191427.9b7cf4b0.akpm@linux-foundation.org> <20070222165123.GC2672@beardog.cca.cpqcorp.net> <20070222132434.d84d3248.akpm@linux-foundation.org> <1172180484.3378.34.camel@mulgrave.il.steeleye.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1172180484.3378.34.camel@mulgrave.il.steeleye.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 22 Feb 2007 12:20:06 -0600 Kumar Gala <galak@kernel.crashing.org> wrote:
-> +       if ((gfp_mask & (__GFP_FS|__GFP_IO)) != (__GFP_FS|__GFP_IO)) {
+On Thu, Feb 22, 2007 at 03:41:24PM -0600, James Bottomley wrote:
+> On Thu, 2007-02-22 at 13:24 -0800, Andrew Morton wrote:
+> > > On Thu, 22 Feb 2007 10:51:23 -0600 "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> wrote:
+> > > On Wed, Feb 21, 2007 at 07:14:27PM -0800, Andrew Morton wrote:
+> > > > On Wed, 21 Feb 2007 15:10:39 -0600 "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> wrote:
+> > > > 
+> > > > > Patch 1/2
+> > > > > +  	if (total_size == 0xFFFFFFFF) {
+> > > > 
+> > > > I seem to remember having already questioned this.  total_size is sector_t, which
+> > > > can be either 32-bit or 64-bit.  Are you sure that comparison works as
+> > > > intended in both cases?
+> > > > 
+> > > > 
+> > > > > +		if(total_size == 0xFFFFFFFF) {
+> > > > >  			cciss_read_capacity_16(cntl_num, i, 0,
+> > > > >  			&total_size, &block_size);
+> > > > >  			hba[cntl_num]->cciss_read = CCISS_READ_16;
+> > > > 
+> > > > Here too.
+> > > It has worked in all of the configs I've tested. Should I change it from sector_t to a
+> > > __64? I have not tested all possible configs.
+> > > 
+> > 
+> > I'd suggest using -1: that just works.
 > 
-> The second seems to make more sense.  I tested with the first last  
-> night which didn't help.
+> Actually, no, that won't work.
 > 
-> With the proper patch in place things look good.  Is this a candidate  
-> for 2.6.20-stable?
+> This is a SCSI heuristic for determining when to use the 16 byte version
+> of the read capacity command.  The 10 byte command can only return 32
+> bits of information (this is in sectors, so it returns up to 2TB of
+> bytes).
+> 
+> The heuristic requirement is that if the size is exactly 0xffffffff then
+> you should try the 16 byte command (which can return 64 bits of
+> information).  If that fails then you assume the 0xfffffff is a real
+> size otherwize, you assume it was truncated and take the real result
+> from the 16 byte command.
+> 
+> You can see a far more elaborate version of this in operation in
+> sd.c:sd_read_capacity().
+> 
+> The only thing I'd suggest is to use 0xFFFFFFFFULL as the constant to
+> prevent sign extension issues.
+> 
+> James
+> 
+> 
+Will this patch for my patch work for now?
 
-I suppose so, yes.
+
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index 1abf1f5..a1f1d9f 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -1303,7 +1303,7 @@ static void cciss_update_drive_info(int 
+ 
+   	/* if read_capacity returns all F's this volume is >2TB in size */
+   	/* so we switch to 16-byte CDB's for all read/write ops */
+-  	if (total_size == 0xFFFFFFFF) {
++  	if (total_size == 0xFFFFFFFFULL) {
+ 		cciss_read_capacity_16(ctlr, drv_index, 1,
+ 		&total_size, &block_size);
+ 		h->cciss_read = CCISS_READ_16;
+@@ -3129,7 +3129,7 @@ #endif				/* CCISS_DEBUG */
+ 
+ 		/* If read_capacity returns all F's the logical is >2TB */
+ 		/* so we switch to 16-byte CDBs for all read/write ops */
+-		if(total_size == 0xFFFFFFFF) {
++		if(total_size == 0xFFFFFFFFULL) {
+ 			cciss_read_capacity_16(cntl_num, i, 0,
+ 			&total_size, &block_size);
+ 			hba[cntl_num]->cciss_read = CCISS_READ_16;
