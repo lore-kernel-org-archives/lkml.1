@@ -1,77 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932755AbXBVHlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945931AbXBVHmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932755AbXBVHlk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 02:41:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932803AbXBVHlk
+	id S1945931AbXBVHmx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 02:42:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932799AbXBVHmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 02:41:40 -0500
-Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:37996 "EHLO
-	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932755AbXBVHlj (ORCPT
+	Thu, 22 Feb 2007 02:42:53 -0500
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:53035 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932730AbXBVHmw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 02:41:39 -0500
-In-Reply-To: <20070221133112.aec2bdac.akpm@linux-foundation.org>
-References: <20070221125736.e5ff4206.akpm@linux-foundation.org> <Pine.LNX.4.44L0.0702211621310.3435-100000@iolanthe.rowland.org> <20070221133112.aec2bdac.akpm@linux-foundation.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F2C532BC-C83A-4DD5-BACE-49F8CC11236C@kernel.crashing.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       <linux-usb-devel@lists.sourceforge.net>,
-       Pete Zaitcev <zaitcev@redhat.com>, Greg KH <gregkh@suse.de>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [linux-usb-devel] 2.6.20 kernel hang with USB drive and vfat doing ftruncate
-Date: Thu, 22 Feb 2007 01:40:29 -0600
-To: Andrew Morton <akpm@linux-foundation.org>
-X-Mailer: Apple Mail (2.752.2)
-X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - kernel.crashing.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Thu, 22 Feb 2007 02:42:52 -0500
+To: akpm@linux-foundation.org
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-reply-to: <20070221133631.a5cbf49f.akpm@linux-foundation.org> (message from
+	Andrew Morton on Wed, 21 Feb 2007 13:36:31 -0800)
+Subject: Re: dirty balancing deadlock
+References: <E1HIqlm-0004iZ-00@dorka.pomaz.szeredi.hu>
+	<20070218125307.4103c04a.akpm@linux-foundation.org>
+	<E1HIurG-0005Bw-00@dorka.pomaz.szeredi.hu>
+	<20070218145929.547c21c7.akpm@linux-foundation.org>
+	<E1HIvMB-0005Fd-00@dorka.pomaz.szeredi.hu>
+	<20070218155916.0d3c73a9.akpm@linux-foundation.org>
+	<E1HJC3P-0006tz-00@dorka.pomaz.szeredi.hu> <20070221133631.a5cbf49f.akpm@linux-foundation.org>
+Message-Id: <E1HK8aw-0005Lg-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 22 Feb 2007 08:42:26 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > How about this?
+> 
+> I still don't understand this bug.
+> 
+> > Solves the FUSE deadlock, but not the throttle_vm_writeout() one.
+> > I'll try to tackle that one as well.
+> > 
+> > If the per-bdi dirty counter goes below 16, balance_dirty_pages()
+> > returns.
+> > 
+> > Does the constant need to tunable?  If it's too large, then the global
+> > threshold is more easily exceeded.  If it's too small, then in a tight
+> > situation progress will be slower.
+> > 
+> > Thanks,
+> > Miklos
+> > 
+> > Index: linux/mm/page-writeback.c
+> > ===================================================================
+> > --- linux.orig/mm/page-writeback.c	2007-02-19 17:32:41.000000000 +0100
+> > +++ linux/mm/page-writeback.c	2007-02-19 18:05:28.000000000 +0100
+> > @@ -198,6 +198,25 @@ static void balance_dirty_pages(struct a
+> >  			dirty_thresh)
+> >  				break;
+> >  
+> > +		/*
+> > +		 * Acquit this producer if there's little or nothing
+> > +		 * to write back to this particular queue
+> > +		 *
+> > +		 * Without this check a deadlock is possible in the
+> > +		 * following case:
+> > +		 *
+> > +		 * - filesystem A writes data through filesystem B
+> > +		 * - filesystem A has dirty pages over dirty_thresh
+> > +		 * - writeback is started, this triggers a write in B
+> > +		 * - balance_dirty_pages() is called synchronously
+> > +		 * - the write to B blocks
+> > +		 * - the writeback completes, but dirty is still over threshold
+> > +		 * - the blocking write prevents futher writes from happening
+> > +		 */
+> > +		if (atomic_long_read(&bdi->nr_dirty) +
+> > +		    atomic_long_read(&bdi->nr_writeback) < 16)
+> > +			break;
+> > +
+> 
+> The problem seems to that little "- the write to B blocks".
+> 
+> How come it blocks?  I mean, if we cannot retire writes to that filesystem
+> then we're screwed anyway.
 
-On Feb 21, 2007, at 3:31 PM, Andrew Morton wrote:
+Sorry about the sloppy description.  I mean, it's not the lowlevel
+write that will block, but rather the VFS one
+(generic_file_aio_write).  It will block (or rather loop forever with
+0.1 second sleeps) in balance_dirty_pages().  That means, that for
+this inode, i_mutex is held and no other writer can continue the work.
 
-> On Wed, 21 Feb 2007 16:22:17 -0500 (EST)
-> Alan Stern <stern@rowland.harvard.edu> wrote:
->
->> On Wed, 21 Feb 2007, Andrew Morton wrote:
->>
->>>>> It seems like usb-storage and aio are completely off in the weeds.
->>>>> Ideas?
->>>>
->>>> It seems usb-storage should remove some kmalloc and use mempool 
->>>> () for
->>>> urb...  Is someone working on this? And idea?
->>>
->>> I think Pete said that we're supposed to be using GFP_NOIO in there.
->>
->> We _are_ using it.
->
-> How admirably prompt.
->
->>> Not that it'll help much: the VM calls throttle_vm_writeout() for  
->>> GFP_NOIO
->>> and GFP_NOFS allocations, which is a bug.  Because if the caller  
->>> holds
->>> locks which prevent filesystem or IO progress, we deadlock.
->>>
->>> I'll fix the VM if someone else fixes USB ;)
->>
->> What else needs to be fixed?
->
-> Would be nice if someone can confirm that this fixes it:
-
-Doesn't seem to help my problem in a quick test, will get more data  
-in the morning.
-
-- k
+Miklos
