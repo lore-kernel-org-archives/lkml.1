@@ -1,93 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751586AbXBVNJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750872AbXBVNMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751586AbXBVNJk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 08:09:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751587AbXBVNJk
+	id S1750872AbXBVNMP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 08:12:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbXBVNMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 08:09:40 -0500
-Received: from [81.2.110.250] ([81.2.110.250]:49452 "EHLO lxorguk.ukuu.org.uk"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751582AbXBVNJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 08:09:39 -0500
-Date: Thu, 22 Feb 2007 14:10:47 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: "D. Hazelton" <dhazelton@enter.net>
-Cc: "Michael K. Edwards" <medwards.linux@gmail.com>,
-       "David Lang" <david.lang@digitalinsight.com>, davids@webmaster.com,
-       "v j" <vj.linux@gmail.com>, trent.waddington@gmail.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>
-Subject: Re: GPL vs non-GPL device drivers
-Message-ID: <20070222141047.425337a0@lxorguk.ukuu.org.uk>
-In-Reply-To: <200702212030.58317.dhazelton@enter.net>
-References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>
-	<Pine.LNX.4.63.0702211527080.15723@qynat.qvtvafvgr.pbz>
-	<f2b55d220702211628v6c8b16e7ibdfeb293592b2093@mail.gmail.com>
-	<200702212030.58317.dhazelton@enter.net>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Thu, 22 Feb 2007 08:12:15 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:36002 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750864AbXBVNMO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 08:12:14 -0500
+Subject: Re: [kvm-devel] [PATCH 10/13] KVM: Wire up hypercall handlers to
+	a	central arch-independent location
+From: Arjan van de Ven <arjan@infradead.org>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Dor Laor <dor.laor@qumranet.com>, Pavel Machek <pavel@ucw.cz>,
+       kvm-devel@lists.sourceforge.net, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <45DD94D3.4030102@qumranet.com>
+References: <45D979D3.2020907@qumranet.com>
+	 <20070219103052.4D23725016B@il.qumranet.com><20070221103733.GI3945@ucw.cz>
+	 <45DD6CF0.3010509@qumranet.com>
+	 <64F9B87B6B770947A9F8391472E032160A91BAF3@ehost011-8.exch011.intermedia.net>
+	 <1172140490.3531.236.camel@laptopd505.fenrus.org>
+	 <45DD7330.1030001@qumranet.com>
+	 <1172142081.3531.243.camel@laptopd505.fenrus.org>
+	 <45DD94D3.4030102@qumranet.com>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Thu, 22 Feb 2007 14:12:04 +0100
+Message-Id: <1172149924.3531.260.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> As a side note: The distinct wording of the GPL actually *invalidates* the 
-> GNU/FSF claim that dynamically linking a work with, say, the readline 
-> library,  means the work is a derivative of said library. The GPL states (in 
 
-Not that I can see no, but you could take this to a list with lawyers not
-programmers on and improve life for both parties
+> Somthing else that came up in a conversation with Dor: the need for a 
+> clean way to raise a guest interrupt.  The guest may be sleeping in 
+> userspace, scheduled out, or running on another cpu (and requiring an 
+> ipi to get it out of guest mode).
 
-> clause 0) that the license only covers copying, modification and 
-> distribution. Unless they are confusing "Linking" with "copying" or "creating 
-> a derivative work" the claim is invalid - because, as it has been shown, a 
-> mechanical process such as compilation or linking *cannot* create a 
-> derivative work.
+yeah it'd be nice if I could just call a function for it rather than
+poking into kvm internals ;)
 
-If you take the microsoft windows source code and compile it yourself
-believe me you will get sued if you ship the resulting binaries and you
-will lose in court.
+> Right now I'm thinking about using the signal machinery since it appears 
+> to do exactly the right thing.
 
-Copyright law deals with the right to copy hence the name. Generally
-speaking your right to use a work you have a copy of isn't constrained
-(and isn't constrainable) by pure copyright, only by contract. The author
-of a book for example has no power to stop you boiling the book if you
-don't like it, or using it as bog paper. 
+signals are *expensive* though.
 
-I would also note that the FSF makes no claim about dynamic v static
-linking, merely about derivative works - which is the boundary the law is
-interested in. Indeed the GPLv2 was written in the days where dynamic
-linking was quite novel which is one reason the LGPL talks about
+If you design an interrupt interface, it'd rock if you could make it
+such that it is "raise <this> interrupt within <x> miliseconds from
+now", rather than making it mostly synchronous. That way irq mitigation
+becomes part of the interface rather than having to duplicate it all
+over the virtual drivers...
 
-"For example, if you distribute copies of the library, whether gratis
- or for a fee, you must give the recipients all the rights that we gave
- you.  You must make sure that they, too, receive or can get the source
- code.  If you link a program with the library, you must provide
- complete object files to the recipients so that they can relink them
- with the library, after making changes to the library and recompiling
- it.  And you must show them these terms so they know their rights."
 
-and says nothing about dynamic/static linking.
 
-> Related to that... Though a parser generated by Bison and a tokenizer
-> generated by Flex both contain large chunks of GPL'd code, their inclusion in 
-> the source file that is to be compiled is mechanical - the true unique work 
-> is in writing the file that is processed by the tool to produce the output. 
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
 
-Flex is more complex because the resulting binary contains both compiled
-work of yours and a support library of FSF owned code (-lfl). The non
-computing analogy here is the difference between using a paint program to
-create a work, and using a paint program to create a work but also
-including other artwork (eg clipart). The same is true of the GCC compiler
-as it merges your work with supporting library helper code modules which
-are themselves creative works. Clearly you could replace those helper
-modules with your own work and the result would be different.
-
-A better example for your case might be indent where the program
-processes your work mechanically and produces an output that doesn't
-contain any other creative works, or most of intltools which merges
-translations mechanically. (the merge code is sometimes a little creative
-but thats in the sense of being a nuisance not in the legal sense of
-creative work)
-
-Alan
