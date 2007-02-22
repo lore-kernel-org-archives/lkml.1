@@ -1,491 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750941AbXBVQMg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750829AbXBVQSs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750941AbXBVQMg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 11:12:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750908AbXBVQMg
+	id S1750829AbXBVQSs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 11:18:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750881AbXBVQSs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 11:12:36 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50049 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750827AbXBVQMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 11:12:34 -0500
-Message-ID: <45DDC02F.2030002@redhat.com>
-Date: Thu, 22 Feb 2007 11:09:19 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/21] 2.6.19-stable review
-References: <20070221013619.GA30227@kroah.com>
-In-Reply-To: <20070221013619.GA30227@kroah.com>
-Content-Type: multipart/mixed;
- boundary="------------000201000704010006000506"
+	Thu, 22 Feb 2007 11:18:48 -0500
+Received: from py-out-1112.google.com ([64.233.166.180]:2868 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750829AbXBVQSq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 11:18:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=a13RvhXc0AipBgKZXoA4Q+BVaHcaUPSiUkxNggMTQFOvNo4iPrSHvoNpHzxthm/eelpW9Zvo+EFcet0wr1/ueAfo3c/9YXilNl/yFmZAjvRSTHXJiVQHRU8nJqadE/kB3ZV89Nyjbw3h5YUkTIpm6hF0fMeYmws4fWTX4c0TsR0=
+Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+Cc: James Simmons <jsimmons@infradead.org>, Luca Tettamanti <kronos@people.it>,
+       linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>,
+       Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <cb7bb73a0702220755y3eb2e5b1r8e7908ae0c1720c9@mail.gmail.com>
+References: <ephv35$4i3$1@sea.gmane.org>
+	 <20070130203301.GA15067@dreamland.darkstar.lan>
+	 <20070204201713.GA12867@dreamland.darkstar.lan>
+	 <Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
+	 <cb7bb73a0702061508x767882dcia1b13f85d898b6e7@mail.gmail.com>
+	 <1172101406.4217.16.camel@daplas>
+	 <cb7bb73a0702220001u6acbdd95ncdc9fad10d06b421@mail.gmail.com>
+	 <1172133646.4086.5.camel@daplas>
+	 <cb7bb73a0702220548s55380f7fk995726ffd349823b@mail.gmail.com>
+	 <1172153358.4306.17.camel@daplas>
+	 <cb7bb73a0702220755y3eb2e5b1r8e7908ae0c1720c9@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 23 Feb 2007 00:21:30 +0800
+Message-Id: <1172161290.4198.12.camel@daplas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000201000704010006000506
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-
-Greg KH wrote:
-> This is the start of the stable review cycle for the 2.6.19.5 release.
+On Thu, 2007-02-22 at 16:55 +0100, Giuseppe Bilotta wrote:
+> On 2/22/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> >
+> > Ah, my fault.  Apply this patch on top.
 > 
-> This will probably be the last release of the 2.6.19-stable series, so
-> if there are patches that you feel should be applied to that tree,
-> please let me know.
+> We're getting closer! The patch now works, and the dmesg has the following info:
 
-This seems appropriate for 2.6.19-stable.  It fixes CVE-2006-5753,
-listed as a "high" security risk. Taken from hg kernel repository,
-and already in 2.6.20.
+Okay.
 
+> 
+> 
+> ACPI: PCI Interrupt 0000:01:00.0[A] -> Link [LNKA] -> GSI 11 (level,
+> low) -> IRQ 11
+> nvidiafb: Device ID: 10de0112
+> fbmon: The EDID Block of Manufacturer: SHP Model: 0x138e is known to be broken,
+> fbmon: trying to fix monitor timings
+> nvidiafb: EDID found from BUS2
+> ========================================
+> Display Information (EDID)
+> ========================================
+>    EDID Version 1.3
+>    Manufacturer: SHP
+>    Model: 138e
+>    Serial#: 0
+>    Year: 1990 Week 0
+>    Display Characteristics:
+>       Monitor Operating Limits: From EDID
+>            H: 30-75KHz V: 60-60Hz DCLK: 170MHz
+>       Digital Display Input
+>       Sync:
+>       Max H-size in cm: 30
+>       Max V-size in cm: 23
+>       Gamma: 2.20
+>       DPMS: Active no, Suspend yes, Standby yes
+>       RGB Color Display
+>       Chroma
+>          RedX:     0.599 RedY:     0.335
+>          GreenX:   0.313 GreenY:   0.552
+>          BlueX:    0.150 BlueY:    0.145
+>          WhiteX:   0.313 WhiteY:   0.328
+>       First DETAILED Timing is preferred
+>    Detailed Timings
+>       160 MHz 1600 1664 1856 2112 1200 1201 1204 1250 -HSync -VSync
+> 
+>    Supported VESA Modes
+>       Manufacturer's mask: 0
+>    Standard Timings
+>       1600x1200@60Hz
+> ========================================
+> nvidiafb: CRTC 1 is currently programmed for DFP
+> nvidiafb: Using DFP on CRTC 1
+> nvidiafb: Panel size is 1600 x 1200
+> nvidiafb: Panel is TMDS
+> nvidiafb: MTRR set to ON
+> nvidiafb: Flat panel dithering disabled
+> Console: switching to colour frame buffer device 200x75
+> nvidiafb: PCI nVidia NV11 framebuffer (32MB @ 0xE0000000)
+> 
+> 
+> 
+> 
+> However, I'm still getting the same snowy effects, which doesn't come
+> as a surprise since the actual mode timings used are just the same ...
+> 
 
+Yes, because the EDID has only 1 mode entry. But now you can use 'fbset
+1024x768-60' (or any mode smaller than 1600x1200-60) for example and it
+should work.  You might want to change  vfmin and vfmax to 59 and 61
+respectively just to get leeway for mode calculation errors. This is in
+drivers/video/fbmon.c, particularly b[5] and b[6] in this code:
 
---------------000201000704010006000506
-Content-Type: text/plain;
- name="linux-2.6-19-bad_inode_ops.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="linux-2.6-19-bad_inode_ops.patch"
+	case FBMON_FIX_TIMINGS:
+		printk("fbmon: trying to fix monitor timings\n");
+		b = edid + DETAILED_TIMING_DESCRIPTIONS_START;
+		for (i = 0; i < 4; i++) {
+			if (!(edid_is_serial_block(b) ||
+			      edid_is_ascii_block(b) ||
+			      edid_is_monitor_block(b) ||
+			      edid_is_timing_block(b))) {
+				b[0] = 0x00; 
+				b[1] = 0x00;  
+				b[2] = 0x00;
+				b[3] = 0xfd;   
+				b[4] = 0x00;
+				b[5] = 60;   /* vfmin */
+				b[6] = 60;   /* vfmax */
+				b[7] = 30;   /* hfmin */
+				b[8] = 75;   /* hfmax */
+				b[9] = 17;   /* pixclock - 170 MHz*/
+				b[10] = 0;   /* GTF */
+				break;
+			}
 
+			b += DETAILED_TIMING_DESCRIPTION_SIZE; 
+		}
 
-# HG changeset patch
-# User Eric Sandeen <sandeen@redhat.com>
-# Date 1168070123 28800
-# Node ID 2ce8209bd3b1a96b6701821b70144b69d61098c6
-# Parent e1242b48d243513737eaa39f3ad0a7d849030359
-[PATCH] fix memory corruption from misinterpreted bad_inode_ops return values
+Also try doing fbset 640x480-60, 800x600-60, 1024x768-60 and
+1280x1024-60, and if they displayed correctly, we can add these modes to
+your EDID block.
 
-CVE-2006-5753 is for a case where an inode can be marked bad, switching
-the ops to bad_inode_ops, which are all connected as:
+Tony
 
-static int return_EIO(void)
-{
-        return -EIO;
-}
-
-#define EIO_ERROR ((void *) (return_EIO))
-
-static struct inode_operations bad_inode_ops =
-{
-        .create         = bad_inode_create
-...etc...
-
-The problem here is that the void cast causes return types to not be
-promoted, and for ops such as listxattr which expect more than 32 bits of
-return value, the 32-bit -EIO is interpreted as a large positive 64-bit
-number, i.e. 0x00000000fffffffa instead of 0xfffffffa.
-
-This goes particularly badly when the return value is taken as a number of
-bytes to copy into, say, a user's buffer for example...
-
-I originally had coded up the fix by creating a return_EIO_<TYPE> macro
-for each return type, like this:
-
-static int return_EIO_int(void)
-{
-	return -EIO;
-}
-#define EIO_ERROR_INT ((void *) (return_EIO_int))
-
-static struct inode_operations bad_inode_ops =
-{
-	.create		= EIO_ERROR_INT,
-...etc...
-
-but Al felt that it was probably better to create an EIO-returner for each
-actual op signature.  Since so few ops share a signature, I just went ahead
-& created an EIO function for each individual file & inode op that returns
-a value.
-
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
-Signed-off-by: Linus Torvalds <torvalds@osdl.org>
-
-committer: Linus Torvalds <torvalds@woody.osdl.org> 1168070123 -0800
-
---- a/fs/bad_inode.c	Fri Jan 05 23:55:23 2007 -0800
-+++ b/fs/bad_inode.c	Fri Jan 05 23:55:23 2007 -0800
-@@ -14,59 +14,307 @@
- #include <linux/time.h>
- #include <linux/smp_lock.h>
- #include <linux/namei.h>
--
--static int return_EIO(void)
--{
--	return -EIO;
--}
--
--#define EIO_ERROR ((void *) (return_EIO))
-+#include <linux/poll.h>
-+
-+
-+static loff_t bad_file_llseek(struct file *file, loff_t offset, int origin)
-+{
-+	return -EIO;
-+}
-+
-+static ssize_t bad_file_read(struct file *filp, char __user *buf,
-+			size_t size, loff_t *ppos)
-+{
-+        return -EIO;
-+}
-+
-+static ssize_t bad_file_write(struct file *filp, const char __user *buf,
-+			size_t siz, loff_t *ppos)
-+{
-+        return -EIO;
-+}
-+
-+static ssize_t bad_file_aio_read(struct kiocb *iocb, const struct iovec *iov,
-+			unsigned long nr_segs, loff_t pos)
-+{
-+	return -EIO;
-+}
-+
-+static ssize_t bad_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
-+			unsigned long nr_segs, loff_t pos)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_file_readdir(struct file *filp, void *dirent, filldir_t filldir)
-+{
-+	return -EIO;
-+}
-+
-+static unsigned int bad_file_poll(struct file *filp, poll_table *wait)
-+{
-+	return POLLERR;
-+}
-+
-+static int bad_file_ioctl (struct inode *inode, struct file *filp,
-+			unsigned int cmd, unsigned long arg)
-+{
-+	return -EIO;
-+}
-+
-+static long bad_file_unlocked_ioctl(struct file *file, unsigned cmd,
-+			unsigned long arg)
-+{
-+	return -EIO;
-+}
-+
-+static long bad_file_compat_ioctl(struct file *file, unsigned int cmd,
-+			unsigned long arg)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_file_mmap(struct file *file, struct vm_area_struct *vma)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_file_open(struct inode *inode, struct file *filp)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_file_flush(struct file *file, fl_owner_t id)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_file_release(struct inode *inode, struct file *filp)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_file_fsync(struct file *file, struct dentry *dentry,
-+			int datasync)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_file_aio_fsync(struct kiocb *iocb, int datasync)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_file_fasync(int fd, struct file *filp, int on)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_file_lock(struct file *file, int cmd, struct file_lock *fl)
-+{
-+	return -EIO;
-+}
-+
-+static ssize_t bad_file_sendfile(struct file *in_file, loff_t *ppos,
-+			size_t count, read_actor_t actor, void *target)
-+{
-+	return -EIO;
-+}
-+
-+static ssize_t bad_file_sendpage(struct file *file, struct page *page,
-+			int off, size_t len, loff_t *pos, int more)
-+{
-+	return -EIO;
-+}
-+
-+static unsigned long bad_file_get_unmapped_area(struct file *file,
-+				unsigned long addr, unsigned long len,
-+				unsigned long pgoff, unsigned long flags)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_file_check_flags(int flags)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_file_dir_notify(struct file *file, unsigned long arg)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_file_flock(struct file *filp, int cmd, struct file_lock *fl)
-+{
-+	return -EIO;
-+}
-+
-+static ssize_t bad_file_splice_write(struct pipe_inode_info *pipe,
-+			struct file *out, loff_t *ppos, size_t len,
-+			unsigned int flags)
-+{
-+	return -EIO;
-+}
-+
-+static ssize_t bad_file_splice_read(struct file *in, loff_t *ppos,
-+			struct pipe_inode_info *pipe, size_t len,
-+			unsigned int flags)
-+{
-+	return -EIO;
-+}
- 
- static const struct file_operations bad_file_ops =
- {
--	.llseek		= EIO_ERROR,
--	.aio_read	= EIO_ERROR,
--	.read		= EIO_ERROR,
--	.write		= EIO_ERROR,
--	.aio_write	= EIO_ERROR,
--	.readdir	= EIO_ERROR,
--	.poll		= EIO_ERROR,
--	.ioctl		= EIO_ERROR,
--	.mmap		= EIO_ERROR,
--	.open		= EIO_ERROR,
--	.flush		= EIO_ERROR,
--	.release	= EIO_ERROR,
--	.fsync		= EIO_ERROR,
--	.aio_fsync	= EIO_ERROR,
--	.fasync		= EIO_ERROR,
--	.lock		= EIO_ERROR,
--	.sendfile	= EIO_ERROR,
--	.sendpage	= EIO_ERROR,
--	.get_unmapped_area = EIO_ERROR,
-+	.llseek		= bad_file_llseek,
-+	.read		= bad_file_read,
-+	.write		= bad_file_write,
-+	.aio_read	= bad_file_aio_read,
-+	.aio_write	= bad_file_aio_write,
-+	.readdir	= bad_file_readdir,
-+	.poll		= bad_file_poll,
-+	.ioctl		= bad_file_ioctl,
-+	.unlocked_ioctl	= bad_file_unlocked_ioctl,
-+	.compat_ioctl	= bad_file_compat_ioctl,
-+	.mmap		= bad_file_mmap,
-+	.open		= bad_file_open,
-+	.flush		= bad_file_flush,
-+	.release	= bad_file_release,
-+	.fsync		= bad_file_fsync,
-+	.aio_fsync	= bad_file_aio_fsync,
-+	.fasync		= bad_file_fasync,
-+	.lock		= bad_file_lock,
-+	.sendfile	= bad_file_sendfile,
-+	.sendpage	= bad_file_sendpage,
-+	.get_unmapped_area = bad_file_get_unmapped_area,
-+	.check_flags	= bad_file_check_flags,
-+	.dir_notify	= bad_file_dir_notify,
-+	.flock		= bad_file_flock,
-+	.splice_write	= bad_file_splice_write,
-+	.splice_read	= bad_file_splice_read,
- };
- 
-+static int bad_inode_create (struct inode *dir, struct dentry *dentry,
-+		int mode, struct nameidata *nd)
-+{
-+	return -EIO;
-+}
-+
-+static struct dentry *bad_inode_lookup(struct inode *dir,
-+			struct dentry *dentry, struct nameidata *nd)
-+{
-+	return ERR_PTR(-EIO);
-+}
-+
-+static int bad_inode_link (struct dentry *old_dentry, struct inode *dir,
-+		struct dentry *dentry)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_inode_unlink(struct inode *dir, struct dentry *dentry)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_inode_symlink (struct inode *dir, struct dentry *dentry,
-+		const char *symname)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_inode_mkdir(struct inode *dir, struct dentry *dentry,
-+			int mode)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_inode_rmdir (struct inode *dir, struct dentry *dentry)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_inode_mknod (struct inode *dir, struct dentry *dentry,
-+			int mode, dev_t rdev)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_inode_rename (struct inode *old_dir, struct dentry *old_dentry,
-+		struct inode *new_dir, struct dentry *new_dentry)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_inode_readlink(struct dentry *dentry, char __user *buffer,
-+		int buflen)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_inode_permission(struct inode *inode, int mask,
-+			struct nameidata *nd)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_inode_getattr(struct vfsmount *mnt, struct dentry *dentry,
-+			struct kstat *stat)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_inode_setattr(struct dentry *direntry, struct iattr *attrs)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_inode_setxattr(struct dentry *dentry, const char *name,
-+		const void *value, size_t size, int flags)
-+{
-+	return -EIO;
-+}
-+
-+static ssize_t bad_inode_getxattr(struct dentry *dentry, const char *name,
-+			void *buffer, size_t size)
-+{
-+	return -EIO;
-+}
-+
-+static ssize_t bad_inode_listxattr(struct dentry *dentry, char *buffer,
-+			size_t buffer_size)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_inode_removexattr(struct dentry *dentry, const char *name)
-+{
-+	return -EIO;
-+}
-+
- static struct inode_operations bad_inode_ops =
- {
--	.create		= EIO_ERROR,
--	.lookup		= EIO_ERROR,
--	.link		= EIO_ERROR,
--	.unlink		= EIO_ERROR,
--	.symlink	= EIO_ERROR,
--	.mkdir		= EIO_ERROR,
--	.rmdir		= EIO_ERROR,
--	.mknod		= EIO_ERROR,
--	.rename		= EIO_ERROR,
--	.readlink	= EIO_ERROR,
-+	.create		= bad_inode_create,
-+	.lookup		= bad_inode_lookup,
-+	.link		= bad_inode_link,
-+	.unlink		= bad_inode_unlink,
-+	.symlink	= bad_inode_symlink,
-+	.mkdir		= bad_inode_mkdir,
-+	.rmdir		= bad_inode_rmdir,
-+	.mknod		= bad_inode_mknod,
-+	.rename		= bad_inode_rename,
-+	.readlink	= bad_inode_readlink,
- 	/* follow_link must be no-op, otherwise unmounting this inode
- 	   won't work */
--	.truncate	= EIO_ERROR,
--	.permission	= EIO_ERROR,
--	.getattr	= EIO_ERROR,
--	.setattr	= EIO_ERROR,
--	.setxattr	= EIO_ERROR,
--	.getxattr	= EIO_ERROR,
--	.listxattr	= EIO_ERROR,
--	.removexattr	= EIO_ERROR,
-+	/* put_link returns void */
-+	/* truncate returns void */
-+	.permission	= bad_inode_permission,
-+	.getattr	= bad_inode_getattr,
-+	.setattr	= bad_inode_setattr,
-+	.setxattr	= bad_inode_setxattr,
-+	.getxattr	= bad_inode_getxattr,
-+	.listxattr	= bad_inode_listxattr,
-+	.removexattr	= bad_inode_removexattr,
-+	/* truncate_range returns void */
- };
- 
- 
-@@ -88,7 +336,7 @@ static struct inode_operations bad_inode
-  *	on it to fail from this point on.
-  */
-  
--void make_bad_inode(struct inode * inode) 
-+void make_bad_inode(struct inode *inode)
- {
- 	remove_inode_hash(inode);
- 
-@@ -113,7 +361,7 @@ EXPORT_SYMBOL(make_bad_inode);
-  *	Returns true if the inode in question has been marked as bad.
-  */
-  
--int is_bad_inode(struct inode * inode) 
-+int is_bad_inode(struct inode *inode)
- {
- 	return (inode->i_op == &bad_inode_ops);	
- }
-
-
---------------000201000704010006000506--
