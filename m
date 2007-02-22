@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751500AbXBVIm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945956AbXBVImo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751500AbXBVIm1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 03:42:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbXBVIm1
+	id S1945956AbXBVImo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 03:42:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945950AbXBVImo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 03:42:27 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56696 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751500AbXBVIm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 03:42:27 -0500
-Date: Thu, 22 Feb 2007 09:37:16 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@muc.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: -freg-struct-return?
-Message-ID: <20070222083716.GA15068@elte.hu>
-References: <45DCF1C5.4030006@goop.org> <1172131463.3531.226.camel@laptopd505.fenrus.org> <45DD4FA0.5030205@goop.org> <1172132103.3531.228.camel@laptopd505.fenrus.org>
+	Thu, 22 Feb 2007 03:42:44 -0500
+Received: from mx10.go2.pl ([193.17.41.74]:56404 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1945951AbXBVImm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 03:42:42 -0500
+Date: Thu, 22 Feb 2007 09:46:10 +0100
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
+       "David S\. Miller" <davem@davemloft.net>,
+       David Howells <dhowells@redhat.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFT] bridge: eliminate port_check workqueue
+Message-ID: <20070222084610.GA2399@ff.dom.local>
+References: <20070220221941.GA707@tv-sign.ru> <20070220162434.72d3ad7b@freekitty> <20070221082345.GB1662@ff.dom.local> <20070221142342.GB134@tv-sign.ru> <20070221105555.4d1b40a6@freekitty>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1172132103.3531.228.camel@laptopd505.fenrus.org>
+In-Reply-To: <20070221105555.4d1b40a6@freekitty>
 User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -5.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Feb 21, 2007 at 10:55:55AM -0800, Stephen Hemminger wrote:
+> This is what I was suggesting by getting rid of the work queue completely.
+...
+> --- bridge.orig/net/bridge/br_if.c	2007-02-21 10:22:46.000000000 -0800
+> +++ bridge/net/bridge/br_if.c	2007-02-21 10:53:25.000000000 -0800
+> @@ -77,26 +77,15 @@
+>   * Called from work queue to allow for calling functions that
+>   * might sleep (such as speed check), and to debounce.
+>   */
 
-* Arjan van de Ven <arjan@infradead.org> wrote:
+What about this comment?
 
-> > Do we have much assembler which cares about the struct return 
-> > calling convention?  If not, it should be a fairly easy test.
-> 
-> is there an attribute to turn it off? because if so we should just 
-> make that part of "asmlinkage".... (not that I know much code using 
-> structs in asm)
+> -static void port_carrier_check(struct work_struct *work)
+> +void br_port_carrier_check(struct net_bridge_port *p)
 
-i dont know of any such code - asmlinkage is 'long' or pointer based.
+Of course my opinion shouldn't matter here, but it looks
+like withdrawing (or giving up) to the older way. So I'm
+not excited, but I trust there is a reason for this. 
 
-	Ingo
+Cheers,
+Jarek P.
