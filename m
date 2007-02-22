@@ -1,136 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751618AbXBVNi2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751604AbXBVNkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751618AbXBVNi2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 08:38:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624AbXBVNi2
+	id S1751604AbXBVNkQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 08:40:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbXBVNkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 08:38:28 -0500
-Received: from nz-out-0506.google.com ([64.233.162.235]:10970 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751616AbXBVNi1 (ORCPT
+	Thu, 22 Feb 2007 08:40:15 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48428
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751604AbXBVNkO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 08:38:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ETB/S3UwvvTqVWmPU4q7LhRnISpp4MnZoqZV04kjanPiktitzELjQ2KxvPnh4DD4bQT1jDU6I4lvE/IGBIbtAiKibYboGdBzlnurMH6bc6Ye2eA9JSS8a4GZC4XvVjVMH65oBL1XN4TYBGKEKEqg5N7G4dMlgZyzoBo3ZB67TIs=
-Subject: Re: [BUG] at drivers/char/vt.c:3332 do_blank_screen() on resume
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: caglar@pardus.org.tr
-Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       lkml <linux-kernel@vger.kernel.org>, spock@gentoo.org
-In-Reply-To: <200702221453.18153.caglar@pardus.org.tr>
-References: <200702090838.21060.caglar@pardus.org.tr>
-	 <200702151300.41343.caglar@pardus.org.tr> <1172101421.4217.20.camel@daplas>
-	 <200702221453.18153.caglar@pardus.org.tr>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 22 Feb 2007 21:41:11 +0800
-Message-Id: <1172151671.4306.13.camel@daplas>
+	Thu, 22 Feb 2007 08:40:14 -0500
+Date: Thu, 22 Feb 2007 05:40:12 -0800 (PST)
+Message-Id: <20070222.054012.71091934.davem@davemloft.net>
+To: linux@horizon.com
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070222122721.12459.qmail@science.horizon.com>
+References: <20070222122721.12459.qmail@science.horizon.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 8bit
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-02-22 at 14:53 +0200, S.Çağlar Onur wrote:
-> Hi;
-> 
-> 22 Şub 2007 Per tarihinde, Antonino A. Daplas şunları yazmıştı: 
-> > On Thu, 2007-02-15 at 13:00 +0200, S.Çağlar Onur wrote:
-> > > 15 Şub 2007 Per tarihinde, Andrew Morton şunları yazmıştı:
-> > > > On Thu, 15 Feb 2007 11:40:32 +0100 Pavel Machek <pavel@ucw.cz> wrote:
-> > > > > Contact fbcon people...
-> > > >
-> > > > There aren't any, basically.  Since Tony disappeared James has been
-> > > > helping out but doesn't have a lot of time.  So we're pretty much on
-> > > > our own with problems in this area.
-> > >
-> > > I already sent same mail to
-> > > linux-fbdev-devel mailing lists at sf.net with hope :)
-> > >
-> > > Cheers
-> >
-> > Interesting... It does look like this was triggered by calling
-> > do_blank_screen() without taking the console semaphore, but
-> > console_callback() should have taken that.
-> >
-> > Second point is that vesafb does not have any blanking functionality,
-> > thus it should not trigger fbcon_event_notify().  My guess is you are
-> > using an out-of-tree vesafb?
-> 
-> As i wrote we are using vesafb-tng [http://dev.gentoo.org/~spock/projects/] 
-> for a long time but this hits me only with 2.6.20 and only after 
-> suspend2disk, so im adding Michał Januszewski to CC if this is vesafb-tng 
-> related :).
-> 
+From: linux@horizon.com
+Date: 22 Feb 2007 07:27:21 -0500
 
-Ah, and you have fb_splash too.  That's why the tracing was not what I
-expected it to be.
+> May I just say, that this is f***ing brilliant.
 
-Try using video=vesafb:noblank to disable hardware blanking and find out
-if you can still reproduce the oops.
+It's brilliant for disk I/O, not for networking for which
+blocking is the norm not the exception.
 
-> > BUG: at drivers/char/vt.c:3332 do_blank_screen()
-> >  [<c02881f7>] do_blank_screen+0x4e/0x218
-> >  [<c02977fa>] fbcon_event_notify+0x8f1/0xa1e
-> >  [<c027b2b0>] extract_buf+0xac/0xe1
-> >  [<c0102002>] __switch_to+0xeb/0x15d
-> >  [<c034bbe5>] __sched_text_start+0x865/0x929
-> >  [<c029a50d>] bit_cursor+0x4c8/0x50b
-> >  [<c034bd67>] wait_for_completion+0x79/0xaf
-> >  [<c011cbe2>] default_wake_function+0x0/0xc
-> >  [<c034ece2>] notifier_call_chain+0x19/0x32
-> >  [<c012d1c6>] blocking_notifier_call_chain+0x23/0x33
-> >  [<c028db54>] fb_blank+0x4a/0x53
-> >  [<c0299028>] fbcon_blank+0xf4/0x1e3
-> >  [<c0294f33>] fbcon_cursor+0x21c/0x250
-> >  [<c029a045>] bit_cursor+0x0/0x50b
-> >  [<c0129e90>] lock_timer_base+0x15/0x2f
-> >  [<c0129eee>] try_to_del_timer_sync+0x44/0x4a
-> >  [<c0298f34>] fbcon_blank+0x0/0x1e3
-> >  [<c028835a>] do_blank_screen+0x1b1/0x218
-> >  [<c028abdd>] console_callback+0xaf/0xbf
-> >  [<c012fa59>] run_workqueue+0x85/0x135
-> >  [<c028ab2e>] console_callback+0x0/0xbf
-> >  [<c01302f0>] worker_thread+0x10a/0x136
-> >  [<c011cbe2>] default_wake_function+0x0/0xc
-> >  [<c01301e6>] worker_thread+0x0/0x136
-> >  [<c0132982>] kthread+0xb2/0xdc
-> >  [<c01328d0>] kthread+0x0/0xdc
-> >  [<c0103a8f>] kernel_thread_helper+0x7/0x10
-> >
-> > As for the last tracing, it looks to be valid bug to me.
-> > complete_change_console() should be called with the console sem
-> > taken. I'll look into this.
-> 
-> If testing needed just ask please :)
+So people will have to likely do something like divide their
+applications into handling for I/O to files and I/O to networking.
+So beautiful. :-)
 
-After grepping for change_console, all callers of change_console and
-complete_change_console are acquiring the console semaphore, so I really
-don't know what's going on here...
+Nobody has proposed anything yet which scales well and handles both
+cases.
 
-Since you are using a non-vanilla kernel, can you just do
-a grep change_console of the kernel source and see if you can find a
-caller that missed doing an acquire_console_sem().
- 
-> 
-> > BUG: at drivers/char/vt.c:3486 set_palette()
-> >  [<c0287538>] set_palette+0x41/0x59
-> >  [<c028886f>] redraw_screen+0x110/0x17e
-> >  [<c0282394>] complete_change_console+0x2a/0xba
-> >  [<c028ab73>] console_callback+0x45/0xbf
-> >  [<c012fa59>] run_workqueue+0x85/0x135
-> >  [<c028ab2e>] console_callback+0x0/0xbf
-> >  [<c01302f0>] worker_thread+0x10a/0x136
-> >  [<c011cbe2>] default_wake_function+0x0/0xc
-> >  [<c01301e6>] worker_thread+0x0/0x136
-> >  [<c0132982>] kthread+0xb2/0xdc
-> >  [<c01328d0>] kthread+0x0/0xdc
-> >  [<c0103a8f>] kernel_thread_helper+0x7/0x10
-> >
-> > Tony
-> 
-> Cheers
+It is one reoccuring point made by Evgeniy, and he is very right
+about it.
 
-Tony
-
+If used for networking one could easily make this new interface create
+an arbitrary number of threads by just opening up that many
+connections to such a server and just sitting there not reading
+anything from any of the client sockets.  And this happens
+non-maliciously for slow clients, whether that is due to application
+blockage or the characteristics of the network path.
