@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933100AbXBVPGM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932152AbXBVPHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933100AbXBVPGM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 10:06:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933098AbXBVPGL
+	id S932152AbXBVPHo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 10:07:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933086AbXBVPHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 10:06:11 -0500
-Received: from wr-out-0506.google.com ([64.233.184.230]:32221 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933100AbXBVPGK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 10:06:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Btaf8kYD85uechuxHolWwtyWQ3VOkk7bpxMprqZmbxUXaD/RMGjWHH5LLk5e8wnnljJbMG00SlZPQDR2eRYPK+4xP+DQSqIZ/j9ZrfXDL/w8n2WpG4QaFesqNIHk6WrOGvJ1CQQXrHtNYTvaTz4tOAf0Hzwuek+KNMpMeUjWITA=
-Message-ID: <d120d5000702220706m5376d133lac6f7807da055e19@mail.gmail.com>
-Date: Thu, 22 Feb 2007 10:06:09 -0500
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Marcel Holtmann" <marcel@holtmann.org>
-Subject: Re: Re: Phis in /proc/bus/input/devices same for all devices?
-Cc: CIJOML <cijoml@volny.cz>, linux-kernel@vger.kernel.org
-In-Reply-To: <1172098430.7403.54.camel@violet>
+	Thu, 22 Feb 2007 10:07:44 -0500
+Received: from lmv.inov.pt ([146.193.64.2]:53707 "EHLO lmv.inov.pt"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932152AbXBVPHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 10:07:43 -0500
+Message-ID: <45DDB1A6.8020409@inov.pt>
+Date: Thu, 22 Feb 2007 15:07:18 +0000
+From: Jose Goncalves <jose.goncalves@inov.pt>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070111)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200702212313.30359.cijoml@volny.cz>
-	 <d120d5000702211427y423acfdekb83343a4f90caab0@mail.gmail.com>
-	 <1172097890.7403.52.camel@violet>
-	 <d120d5000702211448s7d3569cdl1fdcb71d13c3c3ff@mail.gmail.com>
-	 <1172098430.7403.54.camel@violet>
+To: "Michael K. Edwards" <medwards.linux@gmail.com>,
+       Frederik Deweerdt <deweerdt@free.fr>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Serial related oops
+References: <20070219143520.GB27370@flint.arm.linux.org.uk> <20070220144814.GJ566@slug> <20070219150508.GD27370@flint.arm.linux.org.uk> <45D9D073.7020701@inov.pt> <20070219164200.GF27370@flint.arm.linux.org.uk> <45D9E46C.4030408@inov.pt> <20070219212347.GA4258@flint.arm.linux.org.uk> <45DC537B.6020108@inov.pt> <20070221230503.GA28156@flint.arm.linux.org.uk> <f2b55d220702211634s77d23ddem8ee6523ff6020d98@mail.gmail.com> <20070222085413.GB15841@flint.arm.linux.org.uk>
+In-Reply-To: <20070222085413.GB15841@flint.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-INOV-EmailServer-Information: Please contact the Email service provider for more information
+X-INOV-EmailServer: Found to be clean
+X-INOV-EmailServer-From: jose.goncalves@inov.pt
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Marcel,
-
-On 2/21/07, Marcel Holtmann <marcel@holtmann.org> wrote:
-> Hi Dmitry,
+Russell King wrote:
+> On Wed, Feb 21, 2007 at 04:34:15PM -0800, Michael K. Edwards wrote:
+>   
+>> Are you using an unpatched gcc 4.1.1?  Its optimizer did nasty things
+>> to us, at least on an ARM target ...
+>>     
 >
-> > > > > can anybody reply to this and share his/her opinion?
-> > > >
-> > > > Input core already exports uniq to udev and also via sysfs.
-> > >
-> > > so do you think it would be better to create phys as a string of the
-> > > source and destination address like "<src>-<dst>" for Bluetooth. And
-> > > then keep the uniq empty like all USB devices without serial number do?
-> > >
-> >
-> > I'd keep uniq as is and do what you proposed with phys. This way you
-> > can either use uniq to identify your device while moving it from one
-> > receiver to another (if you have several) or do exact match on phys to
-> > get receiver/device pair.
-> >
-> > Does this make sense?
->
-> actually it doesn't help to keep uniq around since the Bluetooth HID
-> always reconnects to the same source/host address. Making it reconnect
-> results in a virtual cable unplug. So I think that I am going to modify
-> the phys to include source and destination address. In the end it is
-> only a string.
->
+> That's ruled out.  Please think about it for a moment - serial_in()
+> managed to work correctly most of the time, and then spontaneously
+> changes its well-defined ABI behaviour in a way that analysis of the
+> asm doesn't allow it to.
+>   
 
-Matching on uniq (and having uniq available) makes sense when you want
-to perform device-specific setup and want it to work even if you
-change your BT adapter. Imagne yopu have a keyboard that yoou want to
-handle in a special way and after you set up your BT card gets fried
-and you buy another one. When matchign on uniq your setup will not
-change at all.
+I'm using gcc 3.4.6.
+But I agree with Russell, if it was such a problem it would hit on the
+first iteration of my application and not after 1 day of executing the
+same piece of code...
 
--- 
-Dmitry
+Regards,
+José Gonçalves
+
