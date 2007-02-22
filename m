@@ -1,48 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751734AbXBVRmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751738AbXBVRvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751734AbXBVRmx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 12:42:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbXBVRmx
+	id S1751738AbXBVRvA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 12:51:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751742AbXBVRvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 12:42:53 -0500
-Received: from mail.screens.ru ([213.234.233.54]:47239 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751727AbXBVRmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 12:42:53 -0500
-Date: Thu, 22 Feb 2007 20:44:39 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: paulmck@linux.vnet.ibm.com, ego@in.ibm.com, akpm@osdl.org,
-       paulmck@us.ibm.com, mingo@elte.hu, vatsa@in.ibm.com,
-       dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-Subject: Re: freezer problems
-Message-ID: <20070222174439.GA236@tv-sign.ru>
-References: <20070214144031.GA15257@in.ibm.com> <200702220010.54126.rjw@sisk.pl> <20070222104747.GA505@tv-sign.ru> <200702221803.41549.rjw@sisk.pl>
+	Thu, 22 Feb 2007 12:51:00 -0500
+Received: from [198.99.130.12] ([198.99.130.12]:34977 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751738AbXBVRu7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 12:50:59 -0500
+Date: Thu, 22 Feb 2007 12:42:56 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: Blaisorblade <blaisorblade@yahoo.it>
+Cc: user-mode-linux-devel@lists.sourceforge.net, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [uml-devel] [PATCH 4/4] UML - lock host ldt retrieval
+Message-ID: <20070222174256.GE3396@ccure.user-mode-linux.org>
+References: <200702212025.l1LKPKRm006789@ccure.user-mode-linux.org> <200702212340.28900.blaisorblade@yahoo.it>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200702221803.41549.rjw@sisk.pl>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <200702212340.28900.blaisorblade@yahoo.it>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/22, Rafael J. Wysocki wrote:
-> 
-> Okay, attached.  The first one closes the race between thaw_tasks() and the
-> refrigerator that can occurs if the freezing fails.  The second one fixes the
-> vfork problem (should go on top of the first one).
+On Wed, Feb 21, 2007 at 11:40:28PM +0100, Blaisorblade wrote:
+> Please remove GFP_KERNEL allocation under spin_lock
 
-Looks good to me.
+Nice spotting - I'll redo the patch.
 
-> > Any other ideas? In any case we should imho avoid a separate loop for
-> > PF_FREEZER_SKIP tasks to just fix debug messages. In fact it can't help
-> > anyway.
-> 
-> Why don't we just drop the warning?  try_to_freeze_tasks() should give us a
-> warning if there's anything wrong anyway.
+				Jeff
 
-Indeed :)
-
-Oleg.
-
+-- 
+Work email - jdike at linux dot intel dot com
