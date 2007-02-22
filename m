@@ -1,86 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965014AbXBVBbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945890AbXBVBdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965014AbXBVBbU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Feb 2007 20:31:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965168AbXBVBbU
+	id S1945890AbXBVBdJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Feb 2007 20:33:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945934AbXBVBdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Feb 2007 20:31:20 -0500
-Received: from keil-draco.com ([216.193.185.50]:50666 "EHLO mail"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965208AbXBVBbT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Feb 2007 20:31:19 -0500
-From: "D. Hazelton" <dhazelton@enter.net>
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Subject: Re: GPL vs non-GPL device drivers
-Date: Wed, 21 Feb 2007 20:30:58 -0500
-User-Agent: KMail/1.9.5
-Cc: "David Lang" <david.lang@digitalinsight.com>, davids@webmaster.com,
-       "v j" <vj.linux@gmail.com>, trent.waddington@gmail.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>
-References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com> <Pine.LNX.4.63.0702211527080.15723@qynat.qvtvafvgr.pbz> <f2b55d220702211628v6c8b16e7ibdfeb293592b2093@mail.gmail.com>
-In-Reply-To: <f2b55d220702211628v6c8b16e7ibdfeb293592b2093@mail.gmail.com>
+	Wed, 21 Feb 2007 20:33:09 -0500
+Received: from wr-out-0506.google.com ([64.233.184.239]:32197 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945890AbXBVBdH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Feb 2007 20:33:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZtShZi2oy22uufubtTEzNC91uybI/rjamePA62DWxRZ/lyINk7I8TVxNGjBXKtd/kdjhDCDipormzDS4XfMCE6K2PdtEJIWaS3t8hmti9a6e1g+fo0kjgFQbg+U/s9vh7jyaXul32JwQiyGc6r9ayKz1WQxo8t55EdZ/D45bFhQ=
+Message-ID: <f2b55d220702211733l336a5bc9r10e69abc4f0afca6@mail.gmail.com>
+Date: Wed, 21 Feb 2007 17:33:05 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Cc: linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Andrew Morton" <akpm@zip.com.au>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Ulrich Drepper" <drepper@redhat.com>,
+       "Zach Brown" <zach.brown@oracle.com>,
+       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Suparna Bhattacharya" <suparna@in.ibm.com>,
+       "Davide Libenzi" <davidel@xmailserver.org>,
+       "Jens Axboe" <jens.axboe@oracle.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <f2b55d220702211653x69718ef4o2dd62ed3156465b0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702212030.58317.dhazelton@enter.net>
+References: <20070221211355.GA7302@elte.hu>
+	 <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
+	 <20070221225711.GB32031@elte.hu>
+	 <f2b55d220702211653x69718ef4o2dd62ed3156465b0@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 February 2007 19:28, Michael K. Edwards wrote:
-> I think you just misread.  I said that the Evil Linker has cheerfully
-> shipped the source code of the modified POP server.  He may not have
-> given you the compiler he compiled it with, wihout which the source
-> code is a nice piece of literature but of no engineering utility; but
-> that's the situation the GPL is DESIGNED TO PRODUCE.
+On 2/21/07, Michael K. Edwards <medwards.linux@gmail.com> wrote:
+> You won't be able to do it later if you don't design for it now.
+> Don't reinvent the square wheel -- there's a model to follow that was
+> so successful that it has killed all alternate models in its sphere.
+> Namely, IEEE 754.  But please try not to make pipeline flushes suck as
+> much as they did on the i860.
 
-Actually, if memory serves, when you license a work under the GPL, part of the 
-terms is that you have to provide the source and any scripts needed to 
-produce a functioning executable.
+To understand why I harp on IEEE 754 as a sane model for pipelined
+AIO, you might consider reading (at least parts of):
+    http://www.cs.berkeley.edu/~wkahan/JAVAhurt.pdf
 
-*checks a local copy of GPLv2 for the exact wording*
+People who write industrial-strength floating point programs rely on
+the IEEE floating point semantics to avoid having to check every
+result of every arithmetic step to see whether it is a valid input to
+the next step.  NaNs and +/-0 and overflows and all that jazz are
+essential to efficient coding of things like matrix inversion, because
+the only alternative is simply to fail.  But in-line indications of an
+exceptional result aren't enough, because it may or may not have been
+a coding error, and you may need fine-grained control over which
+"failure conditions" are within the realm of the expected and which
+are not.
 
-Third clause of the license:
-"For an executable work, complete source code means all the source code for 
-all modules it contains, plus any associated interface definition files, plus 
-the scripts used to control compilation and installation of the executable."
+Here's a quotable bit from Kahan and Darcy's polemic:
+<quote>
+To achieve Floating-Point Predictability:
+     Limit programmers' choices to what is reasonable and necessary as
+well as parsimonious, and
+     Limit language implementors'choices so as always to honor the
+programmer's choices.
+To do so, language designers must understand floating-point well
+enough to validate their determination of "what is reasonable and
+necessary," or else must entrust that determination to someone else
+with the necessary competency.
+</quote>
 
-So yes, someone could produce a work that compiles on a specific compiler, but 
-there is then nothing stopping someone from fixing the problems that cause it 
-to not compile using another compiler and releasing that source code - 
-distributing it as a patch, AFAICT, falls outside coverage by the GPLv2. The 
-build tool-chain, libraries and other works that are not a direct part of the 
-program produced by compilation of the source code. (the wording of the GPL 
-is: "However, as a special exception, the source code distributed need not 
-include anything that is normally distributed (in either source or binary 
-form) with the major components (compiler, kernel, and so on) of the 
-operating system on which the executable runs, unless that component itself 
-accompanies the executable.")
+Now I ain't that "someone else", when it comes to AIO pipelining.  But
+they're out there.  Figure out how to create an AIO model that honors
+the RDBMS programmer's choices efficiently on a NUMA box without
+making him understand NUMA, and you really will have created something
+for the ages.
 
-As a side note: The distinct wording of the GPL actually *invalidates* the 
-GNU/FSF claim that dynamically linking a work with, say, the readline 
-library,  means the work is a derivative of said library. The GPL states (in 
-clause 0) that the license only covers copying, modification and 
-distribution. Unless they are confusing "Linking" with "copying" or "creating 
-a derivative work" the claim is invalid - because, as it has been shown, a 
-mechanical process such as compilation or linking *cannot* create a 
-derivative work.
-
-Related to that... Though a parser generated by Bison and a tokenizer 
-generated by Flex both contain large chunks of GPL'd code, their inclusion in 
-the source file that is to be compiled is mechanical - the true unique work 
-is in writing the file that is processed by the tool to produce the output. 
-Since the aggregation of the GPL'd code into the output source is done 
-mechanically - via mechanical translation (which is what compilation is as 
-well) - the result is *not* and under US copyright law *cannot* be a 
-derivative work. What this means is that the GNU/FSF "special" terms applied 
-to parsers generated by Bison and tokenizers generated by Flex is 
-unnecessary - they are granting you a right you already have.
-
-Anyway, it's been fun watching this thread. If I've made a mistake somewhere 
-in there, let me know - IANAL and I am just starting to really get into the 
-meat of Copyright and related laws in independant study.
-
-DRH
+Cheers,
+- Michael
