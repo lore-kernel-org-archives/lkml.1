@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751935AbXBVVjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751937AbXBVVmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751935AbXBVVjI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 16:39:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbXBVVjH
+	id S1751937AbXBVVmL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 16:42:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbXBVVmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 16:39:07 -0500
-Received: from ccerelbas03.cce.hp.com ([161.114.21.106]:43558 "EHLO
-	ccerelbas03.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751920AbXBVVjF convert rfc822-to-8bit (ORCPT
+	Thu, 22 Feb 2007 16:42:10 -0500
+Received: from an-out-0708.google.com ([209.85.132.244]:14034 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751937AbXBVVmJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 16:39:05 -0500
-X-Greylist: delayed 999 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 Feb 2007 16:39:04 EST
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 22 Feb 2007 16:42:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oCp9D6ityxeNr3SYjLFzo0r352d8ltmKA9JCkewpgORPG3jmxrkjW4N5DSQ/g5N/pw83z0GwskMAWma9LCQQMQcxQAZ9ZX2mNHBr0Gv80vQkxKUwev4k03TNSnVxqyesnVunWmbulymLpJTgcv1SO7Y+gzDJLZ8n1HrVv9dK+Nk=
+Message-ID: <f2b55d220702221342n5d712f16hfe689ee837b3516d@mail.gmail.com>
+Date: Thu, 22 Feb 2007 13:42:04 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Cc: "David Miller" <davem@davemloft.net>, johnpol@2ka.mipt.ru,
+       arjan@infradead.org, drepper@redhat.com, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, hch@infradead.org, akpm@zip.com.au,
+       alan@lxorguk.ukuu.org.uk, zach.brown@oracle.com, suparna@in.ibm.com,
+       davidel@xmailserver.org, jens.axboe@oracle.com, tglx@linutronix.de
+In-Reply-To: <20070222143145.GA3246@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [Patch 1/2] cciss: fix for 2TB support
-Date: Thu, 22 Feb 2007 21:22:19 -0000
-Message-ID: <226E1C65E4F6164E8EA5FD3CC913AE8C5C80F7@G3W0639.americas.hpqcorp.net>
-In-reply-to: <20070222201809.GA1530@beardog.cca.cpqcorp.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [Patch 1/2] cciss: fix for 2TB support
-Thread-Index: AcdWvpLMoRxJTAhKTo23iCDj5M2CuAACMigg
-References: <20070221211039.GA2672@beardog.cca.cpqcorp.net> <20070221191427.9b7cf4b0.akpm@linux-foundation.org> <20070222201809.GA1530@beardog.cca.cpqcorp.net>
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Cc: <jens.axboe@oracle.com>, <linux-kernel@vger.kernel.org>,
-       <linux-scsi@vger.kernel.org>, <gregkh@novell.com>
-X-OriginalArrivalTime: 22 Feb 2007 21:22:20.0344 (UTC) FILETIME=[892FCB80:01C756C7]
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070222113148.GA3781@2ka.mipt.ru>
+	 <1172145159.3531.253.camel@laptopd505.fenrus.org>
+	 <20070222123929.GA5208@2ka.mipt.ru>
+	 <20070222.054127.104035694.davem@davemloft.net>
+	 <20070222143145.GA3246@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+On 2/22/07, Ingo Molnar <mingo@elte.hu> wrote:
+> Secondly, even assuming lots of pending requests/async-threads and a
+> naive queueing model, an open request will eat up resources on the
+> server no matter what.
 
-> -----Original Message-----
-> From: Mike Miller (OS Dev) [mailto:mikem@beardog.cca.cpqcorp.net] 
-> 
-> Andrew,
-> Using this test program and changing the type of x to int, 
-> long, long long signed and unsigned the comparison always 
-> worked on x86, x86_64, and ia64. It looks to me like the 
-> comparsion will always do what we expect. Unless you see some 
-> other problem.
-> 
-> 
-> #include <stdio.h>
-> 
-> int main(int argc, char *argv[])
-> {
-> 	unsigned long long x;
-> 	
-> 	x =  0x00000000ffffffff;
-> 
-> 	printf(sizeof(x) == 8 ? 
-> 		"x = %lld, sizeof(x) = %d\n" :
-> 		"x = %ld, sizeof(x) = %d\n",  x, sizeof(x));
-> 	if (x == 0xffffffff)
-> 		printf("equal\n");
-> 	else
-> 		printf("not equal\n");
-> 	
-> }
-> 
-> -- mikem
-> 
-BTW: also changed x to be 8 f's, 16 f's, and 8 and 8 as shown.
+Another fundamental misconception.  Kernel AIO is not for servers.
+One programmer in a hundred is working on a server codebase, and one
+in a thousand dares to touch server plumbing.  Kernel AIO is for
+clients, especially when mated to GUIs with an event delivery
+mechanism.  Ask yourself why the one and only thing that Windows NT
+has ever gotten right about networking is I/O completion ports.
+
+Cheers,
+- Michael
