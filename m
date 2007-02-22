@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933005AbXBVKij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750719AbXBVKlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933005AbXBVKij (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 05:38:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933011AbXBVKij
+	id S1750719AbXBVKlj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 05:41:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750726AbXBVKlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 05:38:39 -0500
-Received: from relais.videotron.ca ([24.201.245.36]:14065 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933005AbXBVKii (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 05:38:38 -0500
-Date: Thu, 22 Feb 2007 05:38:39 -0500
-From: Veronique & Vincent <vinctre@videotron.ca>
-Subject: Re: Boot time Bluetooth BUG: warning: (value > m) at hid-core.c:793
-In-reply-to: <20070221185012.e4deeb68.zaitcev@redhat.com>
-To: Pete Zaitcev <zaitcev@redhat.com>, Jiri Kosina <jikos@jikos.cz>
-Cc: marcel@holtmann.org, vincent.fortier1@ec.gc.ca,
+	Thu, 22 Feb 2007 05:41:39 -0500
+Received: from il.qumranet.com ([82.166.9.18]:37496 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750719AbXBVKlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 05:41:39 -0500
+Message-ID: <45DD7330.1030001@qumranet.com>
+Date: Thu, 22 Feb 2007 12:40:48 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Dor Laor <dor.laor@qumranet.com>, Pavel Machek <pavel@ucw.cz>,
+       kvm-devel@lists.sourceforge.net, akpm@osdl.org,
        linux-kernel@vger.kernel.org
-Message-id: <200702220538.39341.vinctre@videotron.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-References: <200702192111.47017.vinctre@videotron.ca>
- <Pine.LNX.4.64.0702200854520.25686@twin.jikos.cz>
- <20070221185012.e4deeb68.zaitcev@redhat.com>
-User-Agent: KMail/1.9.6
+Subject: Re: [kvm-devel] [PATCH 10/13] KVM: Wire up hypercall handlers to
+ a	central arch-independent location
+References: <45D979D3.2020907@qumranet.com>	 <20070219103052.4D23725016B@il.qumranet.com><20070221103733.GI3945@ucw.cz>	 <45DD6CF0.3010509@qumranet.com>	 <64F9B87B6B770947A9F8391472E032160A91BAF3@ehost011-8.exch011.intermedia.net> <1172140490.3531.236.camel@laptopd505.fenrus.org>
+In-Reply-To: <1172140490.3531.236.camel@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> > > I've set up the hid-core.c to DEBUG mode... and it literally got pretty 
-verbose...
-> 
-> > thanks for the output. Is this really the full output? The important part 
-> > - report descriptor dump - seems to be missing in the output (it should 
-> > read something like "hid-core.c: report descriptor (size XY, read YZ) = 
-> > ... some hexadecimal numbers". This should be output by the time the HID 
-> > device is connected.
+Arjan van de Ven wrote:
+>> I have Ingo's network PV hypercalls to commit in my piplien.
+>>     
+>
+> I have 5 or so pending as well :)
+> can't wait for the infrastructure to be there so that it's relatively
+> easy to add my paravirt block driver
+>   
 
-The full dmesg with define DEBUG was included in the original message.  Unless 
-something else was needed?
+I can't wait for your pv block driver :)
 
-> Can I get something useful without a kernel recompile, with something
-> like evtest? I have users on Fedora hitting this too. It very likely is
-> a regression caused by the new unified HID.
+What do you think is missing?  My list has:
 
-I was actually getting that on a stock FC6 kernel.  The dmesg output comes 
-from a recompiled vanilla 2.6.19.x with the exact same configuration BUT the 
-modified define's in hid-core.c and a local version appended to the .config 
-file.  So this BUG does not only affect FC6 users but also the vanilla 
-kernel.
+- registration of hypercall handlers from modules
+- execution of hypercall handlers outside vcpu_load() (so they are 
+preemptible and sleepable)
+- passing unhandled hypercalls to userspace for qemu-based devices
 
-> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=227598
-> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=228755
+Please do post the patches to kvm-devel, even if they aren't ready, so 
+we can get a taste of what's coming.
 
-Good thing, I've added myself to the CC list of both.
+-- 
+error compiling committee.c: too many arguments to function
 
-> 
-> -- Pete
-> 
-
-- vin
