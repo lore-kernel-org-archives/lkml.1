@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750719AbXBVKlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750742AbXBVKqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750719AbXBVKlj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 05:41:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750726AbXBVKlj
+	id S1750742AbXBVKqy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 05:46:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750757AbXBVKqy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 05:41:39 -0500
-Received: from il.qumranet.com ([82.166.9.18]:37496 "EHLO il.qumranet.com"
+	Thu, 22 Feb 2007 05:46:54 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:55634 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750719AbXBVKlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 05:41:39 -0500
-Message-ID: <45DD7330.1030001@qumranet.com>
-Date: Thu, 22 Feb 2007 12:40:48 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	id S1750742AbXBVKqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 05:46:53 -0500
+Date: Thu, 22 Feb 2007 11:46:34 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Veronique & Vincent <vinctre@videotron.ca>
+cc: Pete Zaitcev <zaitcev@redhat.com>, marcel@holtmann.org,
+       vincent.fortier1@ec.gc.ca, linux-kernel@vger.kernel.org
+Subject: Re: Boot time Bluetooth BUG: warning: (value > m) at hid-core.c:793
+In-Reply-To: <200702220538.39341.vinctre@videotron.ca>
+Message-ID: <Pine.LNX.4.64.0702221139500.10496@twin.jikos.cz>
+References: <200702192111.47017.vinctre@videotron.ca>
+ <Pine.LNX.4.64.0702200854520.25686@twin.jikos.cz> <20070221185012.e4deeb68.zaitcev@redhat.com>
+ <200702220538.39341.vinctre@videotron.ca>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Dor Laor <dor.laor@qumranet.com>, Pavel Machek <pavel@ucw.cz>,
-       kvm-devel@lists.sourceforge.net, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [PATCH 10/13] KVM: Wire up hypercall handlers to
- a	central arch-independent location
-References: <45D979D3.2020907@qumranet.com>	 <20070219103052.4D23725016B@il.qumranet.com><20070221103733.GI3945@ucw.cz>	 <45DD6CF0.3010509@qumranet.com>	 <64F9B87B6B770947A9F8391472E032160A91BAF3@ehost011-8.exch011.intermedia.net> <1172140490.3531.236.camel@laptopd505.fenrus.org>
-In-Reply-To: <1172140490.3531.236.camel@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
->> I have Ingo's network PV hypercalls to commit in my piplien.
->>     
->
-> I have 5 or so pending as well :)
-> can't wait for the infrastructure to be there so that it's relatively
-> easy to add my paravirt block driver
->   
+On Thu, 22 Feb 2007, Veronique & Vincent wrote:
 
-I can't wait for your pv block driver :)
+> > > - report descriptor dump - seems to be missing in the output (it 
+> > >   should read something like "hid-core.c: report descriptor (size 
+> > >   XY, read YZ) = ... some hexadecimal numbers". This should be 
+> > >   output by the time the HID device is connected.
+> The full dmesg with define DEBUG was included in the original message.  Unless 
+> something else was needed?
 
-What do you think is missing?  My list has:
+Unfortunately it was missing the report descriptor dump. The output should 
+look like
 
-- registration of hypercall handlers from modules
-- execution of hypercall handlers outside vcpu_load() (so they are 
-preemptible and sleepable)
-- passing unhandled hypercalls to userspace for qemu-based devices
+drivers/usb/input/hid-core.c: report descriptor (size 59, read 59) = 05 01 
+09 06 a1 01 05 07 19 e0 29 e7 15 00 25 01 75 01 95 08 81 02 81 03 95 05 05 
+08 19 01 29 05 91 02 95 01 75 03 91 01 95 06 75 08 15 00 26 a4 00 05 07 19 
+00 2a a4 00 81 00 c0
 
-Please do post the patches to kvm-devel, even if they aren't ready, so 
-we can get a taste of what's coming.
+and it should appear as soon as you connect the device. If it didn't, I 
+suspect that the 
+
+	#define DEBUG_DATA
+
+was not set properly in drivers/usb/input/hid-core.c (only defining DEBUG 
+is not enough for report descriptor dump to appear).
+
+> I was actually getting that on a stock FC6 kernel.  The dmesg output 
+> comes from a recompiled vanilla 2.6.19.x with the exact same 
+> configuration BUT the modified define's in hid-core.c and a local 
+> version appended to the .config file.  So this BUG does not only affect 
+> FC6 users but also the vanilla kernel.
+
+But so far all reports that have gathered for this bug at me seem to come 
+from FC6 ... does hid2hci by any chance in FC6 have any additional patches 
+that could be causing it, instead of being a kernel issue?
+
+Thanks,
 
 -- 
-error compiling committee.c: too many arguments to function
-
+Jiri Kosina
