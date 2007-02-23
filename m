@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932111AbXBWLZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932122AbXBWL23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932111AbXBWLZA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 06:25:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932114AbXBWLZA
+	id S932122AbXBWL23 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 06:28:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932127AbXBWL22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 06:25:00 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53645 "EHLO
+	Fri, 23 Feb 2007 06:28:28 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44601 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932111AbXBWLY7 (ORCPT
+	with ESMTP id S932122AbXBWL21 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 06:24:59 -0500
+	Fri, 23 Feb 2007 06:28:27 -0500
 From: ebiederm@xmission.com (Eric W. Biederman)
 To: Andrew Morton <akpm@osdl.org>
 Cc: linux-kernel@vger.kernel.org, Zwane Mwaikambo <zwane@infradead.org>,
@@ -18,9 +18,8 @@ Cc: linux-kernel@vger.kernel.org, Zwane Mwaikambo <zwane@infradead.org>,
        Natalie Protasevich <protasnb@gmail.com>, Andi Kleen <ak@suse.de>,
        "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
        Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 07/14] x86_64 irq: In __DO_ACTION perform the FINAL action for every entry.
+Subject: [PATCH 08/14] x86_64 irq: Use NR_IRQS not NR_IRQ_VECTORS
 References: <200701221116.13154.luigi.genoni@pirelli.com>
-	<m1odo7q6cq.fsf@ebiederm.dsl.xmission.com>
 	<20070206222523.GA11602@elte.hu>
 	<m1irecamzh.fsf@ebiederm.dsl.xmission.com>
 	<m1wt2s8ksa.fsf@ebiederm.dsl.xmission.com>
@@ -40,10 +39,11 @@ References: <200701221116.13154.luigi.genoni@pirelli.com>
 	<m1tzxdunsg.fsf_-_@ebiederm.dsl.xmission.com>
 	<m1ps81uno3.fsf_-_@ebiederm.dsl.xmission.com>
 	<m1lkipunl0.fsf_-_@ebiederm.dsl.xmission.com>
-Date: Fri, 23 Feb 2007 04:23:52 -0700
-In-Reply-To: <m1lkipunl0.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Fri, 23 Feb 2007 04:20:59 -0700")
-Message-ID: <m1ejohung7.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1ejohung7.fsf_-_@ebiederm.dsl.xmission.com>
+Date: Fri, 23 Feb 2007 04:26:53 -0700
+In-Reply-To: <m1ejohung7.fsf_-_@ebiederm.dsl.xmission.com> (Eric
+	W. Biederman's message of "Fri, 23 Feb 2007 04:23:52 -0700")
+Message-ID: <m17iu9unb6.fsf_-_@ebiederm.dsl.xmission.com>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -51,33 +51,67 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-If we have an irq that comes from multiple io_apic pins the FINAL action
-(which is io_apic_sync or nothing) needs to be called for every entry or
-else if the two pins come from different io_apics we may not wait until
-after the action happens on the io_apic.
+NR_IRQ_VECTORS is currently a compatiblity define set to NR_IRQs.
+This patch updates the users of NR_IRQ_VECTORS to use NR_IRQs instead
+so that NR_IRQ_VECTORS can be removed.
+
+There is still shared code with arch/i386 that uses NR_IRQ_VECTORS 
+so we can't remove the #define just yet :(
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/x86_64/kernel/io_apic.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/x86_64/kernel/io_apic.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/arch/x86_64/kernel/io_apic.c b/arch/x86_64/kernel/io_apic.c
-index 74671de..52fc19b 100644
+index 52fc19b..65d7218 100644
 --- a/arch/x86_64/kernel/io_apic.c
 +++ b/arch/x86_64/kernel/io_apic.c
-@@ -149,11 +149,11 @@ static inline void io_apic_sync(unsigned int apic)
- 		reg = io_apic_read(entry->apic, 0x10 + R + pin*2);	\
- 		reg ACTION;						\
- 		io_apic_modify(entry->apic, reg);			\
-+		FINAL;							\
- 		if (!entry->next)					\
- 			break;						\
- 		entry = irq_2_pin + entry->next;			\
- 	}								\
--	FINAL;								\
- }
+@@ -74,7 +74,7 @@ int nr_ioapic_registers[MAX_IO_APICS];
+  * Rough estimation of how many shared IRQs there are, can
+  * be changed anytime.
+  */
+-#define MAX_PLUS_SHARED_IRQS NR_IRQ_VECTORS
++#define MAX_PLUS_SHARED_IRQS NR_IRQS
+ #define PIN_MAP_SIZE (MAX_PLUS_SHARED_IRQS + NR_IRQS)
  
- union entry_union {
+ /*
+@@ -615,7 +615,7 @@ static int pin_2_irq(int idx, int apic, int pin)
+ 
+ 
+ /* irq_vectors is indexed by the sum of all RTEs in all I/O APICs. */
+-static u8 irq_vector[NR_IRQ_VECTORS] __read_mostly = {
++static u8 irq_vector[NR_IRQS] __read_mostly = {
+ 	[0] = FIRST_EXTERNAL_VECTOR + 0,
+ 	[1] = FIRST_EXTERNAL_VECTOR + 1,
+ 	[2] = FIRST_EXTERNAL_VECTOR + 2,
+@@ -634,7 +634,7 @@ static u8 irq_vector[NR_IRQ_VECTORS] __read_mostly = {
+ 	[15] = FIRST_EXTERNAL_VECTOR + 15,
+ };
+ 
+-static cpumask_t irq_domain[NR_IRQ_VECTORS] __read_mostly = {
++static cpumask_t irq_domain[NR_IRQS] __read_mostly = {
+ 	[0] = CPU_MASK_ALL,
+ 	[1] = CPU_MASK_ALL,
+ 	[2] = CPU_MASK_ALL,
+@@ -671,7 +671,7 @@ static int __assign_irq_vector(int irq, cpumask_t mask, cpumask_t *result)
+ 	int old_vector = -1;
+ 	int cpu;
+ 
+-	BUG_ON((unsigned)irq >= NR_IRQ_VECTORS);
++	BUG_ON((unsigned)irq >= NR_IRQS);
+ 
+ 	/* Only try and allocate irqs on cpus that are present */
+ 	cpus_and(mask, mask, cpu_online_map);
+@@ -758,7 +758,7 @@ void __setup_vector_irq(int cpu)
+ 	int irq, vector;
+ 
+ 	/* Mark the inuse vectors */
+-	for (irq = 0; irq < NR_IRQ_VECTORS; ++irq) {
++	for (irq = 0; irq < NR_IRQS; ++irq) {
+ 		if (!cpu_isset(cpu, irq_domain[irq]))
+ 			continue;
+ 		vector = irq_vector[irq];
 -- 
 1.5.0.g53756
 
