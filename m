@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932354AbXBWNeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932339AbXBWNlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932354AbXBWNeS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 08:34:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932364AbXBWNeS
+	id S932339AbXBWNlk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 08:41:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932346AbXBWNlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 08:34:18 -0500
-Received: from nz-out-0506.google.com ([64.233.162.228]:6264 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932354AbXBWNeR (ORCPT
+	Fri, 23 Feb 2007 08:41:40 -0500
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:10408 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932339AbXBWNlj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 08:34:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NZKrEXypv05pvBQatp/Ovx80HcBo7OHNKN8FFr/36Uwc6Hjyojz2XEZ/qzPisQSwyY+mHdd+h4hINHMXaq0/vOViwWv7qgeyOns3ees6abM4tVmNaE6lCi147odPAXw+z4cTHT8H9S9l/pTVsNJ5VoRfldqpDoUYeg0VfaQzct0=
-Message-ID: <cb7bb73a0702230534o4e2c7e9frd5f2b05accf18c05@mail.gmail.com>
-Date: Fri, 23 Feb 2007 14:34:15 +0100
-From: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
-Cc: "James Simmons" <jsimmons@infradead.org>,
-       "Luca Tettamanti" <kronos@people.it>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       "Andrew Morton" <akpm@osdl.org>, "Dave Airlie" <airlied@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1172187249.4279.7.camel@daplas>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <ephv35$4i3$1@sea.gmane.org> <1172101406.4217.16.camel@daplas>
-	 <cb7bb73a0702220001u6acbdd95ncdc9fad10d06b421@mail.gmail.com>
-	 <1172133646.4086.5.camel@daplas>
-	 <cb7bb73a0702220548s55380f7fk995726ffd349823b@mail.gmail.com>
-	 <1172153358.4306.17.camel@daplas>
-	 <cb7bb73a0702220755y3eb2e5b1r8e7908ae0c1720c9@mail.gmail.com>
-	 <1172161290.4198.12.camel@daplas>
-	 <cb7bb73a0702221108r161441ebt61886ce67746f389@mail.gmail.com>
-	 <1172187249.4279.7.camel@daplas>
+	Fri, 23 Feb 2007 08:41:39 -0500
+Subject: Re: [patch] s390: do not use _local_bh_enable()
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20070223093649.GA8084@osiris.boeblingen.de.ibm.com>
+References: <20070223061459.GA10106@elte.hu>
+	 <20070223093649.GA8084@osiris.boeblingen.de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Organization: IBM Corporation
+Date: Fri, 23 Feb 2007 14:41:37 +0100
+Message-Id: <1172238097.30132.34.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/23/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> On Thu, 2007-02-22 at 20:08 +0100, Giuseppe Bilotta wrote:
-> > No, it doesn't. I've tried all the methods from 640x480 to 1600x1200,
-> > and they /all/ come up snowy. This is starting to look queerer and
-> > queerer. I've also tried changing vf min and max as you suggested:
->
-> Before we proceed, do you agree that the patch will allow you to change
-> video modes without disabling DDC support?  So this is still a valid
-> fix?
+On Fri, 2007-02-23 at 10:36 +0100, Heiko Carstens wrote:
+> Same here: this is not really an irq handler but a function that gets called
+> from different contexts and pretends to be an irq handler. The
+> local_bh_disable()/_local_bh_enable() pair is just a trick to prevent bottom
+> halve execution. I think you can blame Martin for this ;)
 
-You're right, I hadn't realized that. I can now access all the sizes
-from 640 to 1600, so I would say the fix is valid.
+This code is really tricky. There are now three functions (cio_tpi,
+sclp_sync_wait and __udelay) where we use a local_bh_disable()
+_local_bh_enable() pair while we are disabled for interrupts. cio_tpi
+and sclp_sync_wait are used to wait for the interrupt of the console
+device to make room in the buffer for a printk out of disabled context.
+__udelay() is used in the ETR clock-synchronization code where we are
+disabled as well and the only alternative would be looping on a STCK for
+about a second.
 
-> When does your display become snowy? Is the snow constant or does it
-> only snow when doing heavy text operations, such as scrolling?
-
-The snowy is constant and abundant, and it seems to be independent of
-video size (640 through 1600) and screen occupation (single prompt
-line to fullscreen mc session) and usage.
-
-> I presume that X's nv driver or vesafb does not exhibit this problem?
-
-X's nv gives a very clean display, /unless/ I load nvidiafb before: if
-I modprobe nvidiafb (it's a module, and it's blacklisted precisely for
-this reason), then the screen is very snowy with X's nv too.
+So basically we want to synchronously receive a specific interrupt. All
+other interrupt sources are disabled. We know that the interrupt we wait
+for will not cause a softirq to get scheduled. In case of sclp_sync_wait
+and __udelay the interrupt is delivered the usual way by using the
+asynchronous interrupt handler (I told you it is tricky ;-). That works
+as long as only the hardirq part of the interrupt is executed, the
+softirq part may not happen -> local_bh_disable. Back in the function
+after the interrupt we cannot allow the softirq to happen when we
+reenable the bottom-halves since the functions are called disabled and
+need to stay disabled -> _local_bh_enable. Since the interrupt we waited
+for did not add a softirq no harms is done, no?
 
 -- 
-Giuseppe "Oblomov" Bilotta
+blue skies,              IBM Deutschland Entwicklung GmbH
+   Martin                Vorsitzender des Aufsichtsrats: Johann Weihen
+                         Geschäftsführung: Herbert Kircher
+Martin Schwidefsky       Sitz der Gesellschaft: Böblingen
+Linux on zSeries         Registergericht: Amtsgericht Stuttgart,
+   Development           HRB 243294
+
+"Reality continues to ruin my life." - Calvin.
+
+
