@@ -1,95 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946015AbXBWRKS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946017AbXBWRSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946015AbXBWRKS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 12:10:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946016AbXBWRKS
+	id S1946017AbXBWRSL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 12:18:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946018AbXBWRSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 12:10:18 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:34240 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946015AbXBWRKQ (ORCPT
+	Fri, 23 Feb 2007 12:18:11 -0500
+Received: from email13.mywebmailserver.com ([199.231.136.143]:1640 "EHLO
+	email13.mywebmailserver.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1946017AbXBWRSK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 12:10:16 -0500
-Date: Fri, 23 Feb 2007 22:43:48 +0530
-From: Suparna Bhattacharya <suparna@in.ibm.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: A quick fio test (was Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3)
-Message-ID: <20070223171348.GA27838@in.ibm.com>
-Reply-To: suparna@in.ibm.com
-References: <20070221211355.GA7302@elte.hu> <20070223125247.GO5737@kernel.dk> <20070223135525.GA31569@in.ibm.com> <20070223145826.GA32465@elte.hu> <20070223151515.GA12960@in.ibm.com> <20070223162508.GA16782@kernel.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070223162508.GA16782@kernel.dk>
-User-Agent: Mutt/1.5.11
+	Fri, 23 Feb 2007 12:18:10 -0500
+X-Greylist: delayed 735 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Feb 2007 12:18:10 EST
+Message-ID: <45DF1EEC.4040602@kuchera.com>
+Date: Fri, 23 Feb 2007 12:05:48 -0500
+From: Rob Prowel <prowel@kuchera.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20070104 Red Hat/1.0.7-0.6.fc5 SeaMonkey/1.0.7
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: questions about 8250 uart support for adhoc boards
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 23 Feb 2007 17:05:52.0472 (UTC) FILETIME=[DFB69D80:01C7576C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 23, 2007 at 05:25:08PM +0100, Jens Axboe wrote:
-> On Fri, Feb 23 2007, Suparna Bhattacharya wrote:
-> > On Fri, Feb 23, 2007 at 03:58:26PM +0100, Ingo Molnar wrote:
-> > > 
-> > > * Suparna Bhattacharya <suparna@in.ibm.com> wrote:
-> > > 
-> > > > As a really crude (and not very realistic) example of the potential 
-> > > > impact of large numbers of outstanding IOs, I tried some quick direct 
-> > > > IO comparisons using fio:
-> > > > 
-> > > > [global]
-> > > > ioengine=syslet-rw
-> > > > buffered=0
-> > > > rw=randread
-> > > > bs=64k
-> > > > size=1024m
-> > > > iodepth=64
-> > > 
-> > > could you please try those iodepth=20000 tests with the latest 
-> > > fio-testing branch of fio as well? Jens wrote a new, smarter syslet 
-> > > plugin for FIO. You'll need the v3 syslet kernel plus:
-> > > 
-> > >  git-clone git://git.kernel.dk/data/git/fio.git
-> > >  cd fio
-> > >  git-checkout syslet-testing
-> > > 
-> > > my expectation is that it should behave better with iodepth=20000 
-> > > (although i havent tried that yet).
-> > 
-> > I picked up the fio snapshot from 22nd Feb (fio-git-20070222212513.tar.gz)
-> > and used the v3 syslet patches from your web-site.
-> > 
-> > Do I still need to get something more recent ?
-> 
-> Yes, you need to test the syslet+testing branch that Ingo referenced.
-> Your test above is not totally fair right now, since you are doing
-> significantly less system calls with libaio. So to compare apples with
-> apples, try the syslet-testing branch. If you can't get it because of
-> firewall problems, check http://brick.kernel.dk/snaps/ for the latest
-> fio snapshot. If it has the syslet-testing branch, then that is
-> recent enough.
+I have a PC104 embedded system and am trying to make a Diamond 
+Emerald-mm-opto four port serial board work in a recent kernel version 
+(>=2.6.17).  The vendor only validates the board against 2.6.11: a 
+kernel nearly two years old and several serial kernel config parameters 
+have changed in that time period.
 
-I have a feeling this is getting to be a little more bleeding edge than
-I had anticipated :), so will just hold off for a bit until this
-crystallizes a bit.
+the board uses two 16c2850 uarts and has four ports.  It supports 
+interrupt sharing through an ISR bitmask.
 
-Regards
-Suparna
+since the recent 2.6.x kernels now break down the non-standard uart 
+support into specific hardware groups I cannot figure out how to get the 
+blasted thing to register/recognize with setserial.  the MULTIPORT 
+option no longer exists in the kernel code so I had to explicitly 
+compile in "fourport" support just so ttyS4 through ttyS7 would be 
+accessible...and yes, you can assume that I've increased the available 
+ports using 8250.nr_uarts=16
 
-> 
-> -- 
-> Jens Axboe
+At least now, with fourport compiled into the kernel, I can use 
+setserial to see the uarts and correctly identify them...but the shared 
+interrupt vector doesn't seem to work.  I haven't even attempted yet to 
+try stty or echoing data our to an o-scope.
 
--- 
-Suparna Bhattacharya (suparna@in.ibm.com)
-Linux Technology Center
-IBM Software Lab, India
+Here is the setserial dialog
+
+# for i in 0 1 2 3 4 5 6 7; do setserial /dev/ttyS$i; 
+done                          
+/dev/ttyS0, UART: 16550A, Port: 0x03f8, IRQ: 4
+/dev/ttyS1, UART: 16550A, Port: 0x02f8, IRQ: 3
+/dev/ttyS2, UART: unknown, Port: 0x03e8, IRQ: 4
+/dev/ttyS3, UART: unknown, Port: 0x02e8, IRQ: 3
+/dev/ttyS4, UART: unknown, Port: 0x01a0, IRQ: 2, Flags: Fourport
+/dev/ttyS5, UART: unknown, Port: 0x01a8, IRQ: 2, Flags: Fourport
+/dev/ttyS6, UART: unknown, Port: 0x01b0, IRQ: 2, Flags: Fourport
+/dev/ttyS7, UART: unknown, Port: 0x01b8, IRQ: 2, Flags: Fourport
+
+# sh /root/setserial
++ SS=/bin/setserial
+++ /bin/setserial /dev/ttyS4 port 0x120 irq 12 autoconfig '^fourport'
+++ /bin/setserial /dev/ttyS5 port 0x128 irq 12 autoconfig '^fourport'
+++ /bin/setserial /dev/ttyS6 port 0x130 irq 12 autoconfig '^fourport'
+++ /bin/setserial /dev/ttyS7 port 0x138 irq 12 autoconfig '^fourport'
+++ /bin/setserial /dev/ttyS4 set_multiport port1 0x244 mask1 0x0f match1 0
+Cannot get multiport config: Invalid argument
+
+# for i in 0 1 2 3 4 5 6 7; do setserial /dev/ttyS$i; done             
+/dev/ttyS0, UART: 16550A, Port: 0x03f8, IRQ: 4
+/dev/ttyS1, UART: 16550A, Port: 0x02f8, IRQ: 3
+/dev/ttyS2, UART: unknown, Port: 0x03e8, IRQ: 4
+/dev/ttyS3, UART: unknown, Port: 0x02e8, IRQ: 3
+/dev/ttyS4, UART: 16850, Port: 0x0120, IRQ: 12
+/dev/ttyS5, UART: 16850, Port: 0x0128, IRQ: 12
+/dev/ttyS6, UART: 16850, Port: 0x0130, IRQ: 12
+/dev/ttyS7, UART: 16850, Port: 0x0138, IRQ: 12
+-bash-3.1#
+
+and the isadump shows that the ports are visible
+
+# # dump uart registers
+# isadump -f -y 0x120 32
+     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+00: 00 10 01 00 00 60 00 00 00 10 01 00 00 60 00 00
+10: 00 10 01 00 00 60 00 00 00 10 01 00 00 60 00 80
+
+# # dump ISR at 0x244
+# isadump -f -y 0x240 16
+     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+00: ff ff ff ff 00 ff ff ff ff ff ff ff ff ff ff ff
+-bash-3.1#
+
+
+
+I would so much appreciate if someone intimately familiar with the 
+serial drivers could enlighten me as to what is going on here.
+
+I'm not registered on the kernel list so CC to my email address would be 
+appreciated.
+
+
+Thanks,
+Rob Prowel
+Kuchera Defense Systems
+
+
 
