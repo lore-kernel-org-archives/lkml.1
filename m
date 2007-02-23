@@ -1,80 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933174AbXBWShu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932572AbXBWSpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933174AbXBWShu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 13:37:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932583AbXBWShu
+	id S932572AbXBWSpA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 13:45:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932596AbXBWSpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 13:37:50 -0500
-Received: from wr-out-0506.google.com ([64.233.184.226]:11586 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933174AbXBWSht (ORCPT
+	Fri, 23 Feb 2007 13:45:00 -0500
+Received: from smtp-vbr15.xs4all.nl ([194.109.24.35]:1605 "EHLO
+	smtp-vbr15.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932572AbXBWSo7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 13:37:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qylL/nh10jlPOIsND0N+TWZgXzpVDo7gtC9wKiRNrTPwgDHL5BxrMcb9aVVTxVLjxfh+LXEh8ZKJ0g0cjuFcdDcsIlL0NnCzgANgHl6NlNFuwd+08tgbat4BK/wyPX+33Fl+T0JpIn11nRsbPwNfzIFsnuBUXVmbs8/AKzL2xwk=
-Message-ID: <d120d5000702231037q511f8073n47beed320f097458@mail.gmail.com>
-Date: Fri, 23 Feb 2007 13:37:47 -0500
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Richard Knutsson" <ricknu-0@student.ltu.se>
-Subject: Re: [KJ][RFC][PATCH] BIT macro cleanup
-Cc: "Milind Choudhary" <milindchoudhary@gmail.com>,
-       kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       linux-joystick@atrey.karlin.mff.cuni.cz
-In-Reply-To: <45DF2F57.2080309@student.ltu.se>
+	Fri, 23 Feb 2007 13:44:59 -0500
+Message-ID: <45DF3628.8060706@xs4all.nl>
+Date: Fri, 23 Feb 2007 19:44:56 +0100
+From: Udo van den Heuvel <udovdh@xs4all.nl>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: linux-kernel@vger.kernel.org
+CC: Krzysztof Halasa <khc@pm.waw.pl>
+Subject: Re: PCI riser cards and PCI irq routing, etc
+References: <45D85DA1.7090502@xs4all.nl> <m3hctfqjna.fsf@maximus.localdomain>	<20070221224027.GK22464@csclub.uwaterloo.ca>	<200702212355.25601.s0348365@sms.ed.ac.uk>	<m3bqjnrntu.fsf@maximus.localdomain> <45DF0C29.2080201@xs4all.nl> <m3slcw68vr.fsf@maximus.localdomain>
+In-Reply-To: <m3slcw68vr.fsf@maximus.localdomain>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: id=8300CC02
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3b44d3fb0702222056k1d2a9b57q69a3555a09a9058e@mail.gmail.com>
-	 <3b44d3fb0702230014x4ee4a1dewdc624c54b3635e15@mail.gmail.com>
-	 <45DEAC45.7090105@student.ltu.se>
-	 <3b44d3fb0702230215o2fbd5a3y25729e481a447149@mail.gmail.com>
-	 <45DEF5EE.4030002@student.ltu.se>
-	 <d120d5000702230657s1860efb3o6986277901f13d03@mail.gmail.com>
-	 <45DF1165.2080003@student.ltu.se>
-	 <d120d5000702230905r6b50a1bbm3b71551f855cdf01@mail.gmail.com>
-	 <45DF2F57.2080309@student.ltu.se>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/23/07, Richard Knutsson <ricknu-0@student.ltu.se> wrote:
-> Dmitry Torokhov wrote:
-> > I was not talking about name (I hate BITWRAP) but behavior.
-> Oh, my bad :)
-> >
-> >> but mainly since it only enables wrapping of the long-type.
-> >
-> > I'd provde BIT and separate LLBIT for ones who really need long long.
-> > People who intereseted in smaller than BITS_PER_LONG bitmaps shoud use
-> > your proposal - BIT(x % DESIRED_WITH) and BIT should do modulo
-> > BITS_PER_LONG internally.
-> I agree that _if_ there is a "BITWRAP" then it should be long, but I
-> don't see the reason for it to be in bitops.h when it is only input.h
-> that uses it. + I find it different with BIT since it works as well with
-> 'char' as 'long'.
-> Also, I think it would be best if the name indicated it is a 'long'.
->
-> Am a little bit curious why you would like it in bitops.h, but won't
-> complain if you do (think you have noticed my view of it ;))
->
+Krzysztof Halasa wrote:
+> Udo van den Heuvel <udovdh@xs4all.nl> writes:
+> 
+>> I will try a different case with a different dual PCI riser card soon.
+>> This Morex riser has DN20-31 or so, so more options.
+> 
+> OTOH I wonder how do they use DN 21-31? The board uses lines AD11 to AD31
+> (21 lines) for selecting devices #0 - #20. 32-bit PCI bus has only 32
+> address/data lines :-)
+> 
+> Perhaps they mean AD20-AD31 lines = device #9 - #0x14=20? If that is
+> the case, you can try:
+> - their "DN30" = device 0x13 = 19, which is apparently what the VIA riser
+>   card does,
+> - their "DN21" = device 0xA = 10, which could work as well.
+> 
+> I'm afraid both would require (different) soldering.
 
-Hm, I thought as was clear, but apparently I messed up explaining my position:
+My dmesg says:
 
-1. I don't like BITWRAP name at all and I don't want anything like
-that near input code. I think BIT is just fine.
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
+ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 6 7 10 11 12) *5
+ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 6 7 10 *11 12)
+ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 6 7 *10 11 12)
+ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 6 7 10 11 12) *0, disabled.
+ACPI: PCI Interrupt Link [LNKE] (IRQs 3 4 6 7 10 11 12) *0, disabled.
+ACPI: PCI Interrupt Link [LNKF] (IRQs 3 4 6 7 10 11 12) *0, disabled.
+ACPI: PCI Interrupt Link [LNK0] (IRQs 3 4 6 7 10 11 12) *0, disabled.
+ACPI: PCI Interrupt Link [LNK1] (IRQs 3 4 6 7 10 11 12) *0, disabled.
+ACPI: PCI Interrupt Link [ALKA] (IRQs *20)
+ACPI: PCI Interrupt Link [ALKB] (IRQs *21)
+ACPI: PCI Interrupt Link [ALKC] (IRQs *22)
+ACPI: PCI Interrupt Link [ALKD] (IRQs *23), disabled.
 
-2. I don't want to use BIT(x % BITS_PER_BITLONG) as it will
-significantly litter code in the input drivers. You want see whta bits
-you are actually setting behind all these "% BITS_PER_BITLONG".
+lspci -v says:
 
-3. I think most of users could use input's implementation of BIT,
-possibly using BIT(x % BM_WIDTH) format to further limit width of the
-bitmap if needed.
+00:13.0 Multimedia controller: Philips Semiconductors SAA7146 (rev 01)
+        Subsystem: TERRATEC Electronic GmbH Unknown device 1157
+        Flags: bus master, medium devsel, latency 32, IRQ 16
+        Memory at fdffc000 (32-bit, non-prefetchable) [size=512]
 
-4. LLBIT should be provided to users who really want long long.
+00:14.0 Multimedia controller: Philips Semiconductors SAA7146 (rev 01)
+        Subsystem: TERRATEC Electronic GmbH Unknown device 1155
+        Flags: bus master, medium devsel, latency 32, IRQ 20
+        Memory at fdffb000 (32-bit, non-prefetchable) [size=512]
 
--- 
-Dmitry
+Does this provide additional info to you?
+
+http://www.itx-warehouse.co.uk/Product.aspx?ProductID=410 says:
+
+Description VIA Dual PCI Riser
+The EXT-PCI is a PCI riser card which expands a PCI slot into two PCI slots.
+EXT-PCI slot 1 (lower slot) uses the system resources (Device ID, INT)
+of the PCI slot of the motherboard.
+EXT-PCI slot 2 (Upper slot) uses device 19 and INT_A.
+
+Upper slot has the problems. TranquilPC does not even respond anymore.
+The lower slot is a copy of the normal (single) PCI slot w.r.t. devcie
+and irq, it has DN20 and irq 20.
+dmesg links ALNKA to IRQ 20. So if ALNKA is INTA both PCI cards should
+share IRQ 20?
+
