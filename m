@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752114AbXBWBpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752119AbXBWBqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752114AbXBWBpx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 20:45:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbXBWBpx
+	id S1752119AbXBWBqn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 20:46:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbXBWBqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 20:45:53 -0500
-Received: from mga06.intel.com ([134.134.136.21]:40001 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752114AbXBWBpv (ORCPT
+	Thu, 22 Feb 2007 20:46:43 -0500
+Received: from mga05.intel.com ([192.55.52.89]:39419 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752112AbXBWBql (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 20:45:51 -0500
+	Thu, 22 Feb 2007 20:46:41 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: i="4.14,208,1170662400"; 
-   d="scan'208"; a="200336040:sNHT70674849"
-Date: Thu, 22 Feb 2007 17:10:27 -0800
+   d="scan'208"; a="203159230:sNHT20849689"
+Date: Thu, 22 Feb 2007 17:11:18 -0800
 From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 To: linux-kernel <linux-kernel@vger.kernel.org>,
        Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 3/5] RT kernel: HPET as per CPU eventsource 
-Message-ID: <20070222171027.B27475@unix-os.sc.intel.com>
+Subject: [PATCH 4/5] RT kernel: HPET emulate RTC and other cleanups
+Message-ID: <20070222171118.C27475@unix-os.sc.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -28,623 +28,357 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-Register HPET as eventsource.
-If number of logical CPUs is less than number of HPET channels, HPET provides
-a per CPU eventsource (using as many timers as needed). Otherwise, it is a
-global eventsource (using only one timer).
-HPET timers are programmed in their standard interrupt mapping mode (not
-in legacy replacement mode).
+Cleanup HPET RTC emulation based on earlier patch which uses HPET interrupts
+in normal mode instead of legacy replacement mode. RTC can now coexist with
+HPET.
 
 Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
-Index: linux-2.6.21-rc-mm/arch/x86_64/kernel/apic.c
+Index: linux-2.6.21-rc-mm/arch/x86_64/Kconfig
 ===================================================================
---- linux-2.6.21-rc-mm.orig/arch/x86_64/kernel/apic.c
-+++ linux-2.6.21-rc-mm/arch/x86_64/kernel/apic.c
-@@ -794,17 +794,24 @@ static void lapic_timer_setup(enum clock
- 	unsigned long flags;
+--- linux-2.6.21-rc-mm.orig/arch/x86_64/Kconfig
++++ linux-2.6.21-rc-mm/arch/x86_64/Kconfig
+@@ -448,6 +448,7 @@ config ARCH_ENABLE_MEMORY_HOTPLUG
+ config HPET_TIMER
+ 	bool
+ 	default y
++	depends ACPI
+ 	help
+ 	  Use the IA-PC HPET (High Precision Event Timer) to manage
+ 	  time in preference to the PIT and RTC, if a HPET is
+@@ -458,7 +459,7 @@ config HPET_TIMER
  
- 	local_irq_save(flags);
--	/* Turn off PIT interrupt if we use APIC timer as main timer.
--	   Only works with the PM timer right now
--	   TBD fix it for HPET too. */
--	if ((pmtmr_ioport != 0) &&
--		smp_processor_id() == boot_cpu_id &&
--		apic_runs_main_timer == 1 &&
--		!cpu_isset(boot_cpu_id, timer_interrupt_broadcast_ipi_mask)) {
--		stop_timer_interrupt();
--		apic_runs_main_timer++;
-+	if (mode == CLOCK_EVT_MODE_SHUTDOWN) {
-+		unsigned long v;
-+		v = apic_read(APIC_LVTT);
-+		v |= (APIC_LVT_MASKED | LOCAL_TIMER_VECTOR);
-+		apic_write(APIC_LVTT, v);
-+	} else {
-+		/* Turn off IRQ 0 timer if we use APIC timer as main timer. */
-+		if ( smp_processor_id() == boot_cpu_id &&
-+				apic_runs_main_timer == 1 &&
-+				!cpu_isset(boot_cpu_id,
-+				timer_interrupt_broadcast_ipi_mask)) {
-+			stop_timer_interrupt();
-+			apic_runs_main_timer++;
-+		}
-+		__setup_APIC_LVTT(calibration_result,
-+				mode != CLOCK_EVT_MODE_PERIODIC);
- 	}
--	__setup_APIC_LVTT(calibration_result, mode != CLOCK_EVT_MODE_PERIODIC);
-+
- 	local_irq_restore(flags);
- }
+ config HPET_EMULATE_RTC
+ 	bool "Provide RTC interrupt"
+-	depends on HPET_TIMER && RTC=y
++	depends on HPET_TIMER && RTC=y && !GENERIC_TIME
  
+ # Mark as embedded because too many people got it wrong.
+ # The code disables itself when not needed.
 Index: linux-2.6.21-rc-mm/arch/x86_64/kernel/hpet.c
 ===================================================================
 --- linux-2.6.21-rc-mm.orig/arch/x86_64/kernel/hpet.c
 +++ linux-2.6.21-rc-mm/arch/x86_64/kernel/hpet.c
-@@ -1,3 +1,4 @@
-+
+@@ -2,7 +2,6 @@
  #include <linux/kernel.h>
  #include <linux/sched.h>
  #include <linux/init.h>
-@@ -7,10 +8,14 @@
+-#include <linux/mc146818rtc.h>
+ #include <linux/time.h>
+ #include <linux/clocksource.h>
  #include <linux/ioport.h>
- #include <linux/acpi.h>
+@@ -10,6 +9,8 @@
  #include <linux/hpet.h>
-+#include <linux/clockchips.h>
-+#include <linux/delay.h>
-+
+ #include <linux/clockchips.h>
+ #include <linux/delay.h>
++#include <linux/irq.h>
++#include <linux/interrupt.h>
+ 
  #include <asm/pgtable.h>
  #include <asm/vsyscall.h>
- #include <asm/timex.h>
- #include <asm/hpet.h>
-+#include <asm/idle.h>
+@@ -44,36 +45,35 @@ static __init int late_hpet_init(void)
  
- int nohpet __initdata;
+ 	/*
+ 	 * Register with driver.
+-	 * Timer0 and Timer1 is used by platform.
++	 * num_timers_used timers are used by platform.
+ 	 */
+ 	hd.hd_phys_address = hpet_address;
+ 	hd.hd_address = (void __iomem *)fix_to_virt(FIX_HPET_BASE);
+ 	hd.hd_nirqs = ntimer;
+ 	hd.hd_flags = HPET_DATA_PLATFORM;
+-	hpet_reserve_timer(&hd, 0);
+-#ifdef	CONFIG_HPET_EMULATE_RTC
+-	hpet_reserve_timer(&hd, 1);
+-#endif
+-	hd.hd_irq[0] = HPET_LEGACY_8254;
+-	hd.hd_irq[1] = HPET_LEGACY_RTC;
+-	if (ntimer > 2) {
++
++	for (i = 0; i < num_timers_used; i++) {
++		hpet_reserve_timer(&hd, i);
++	}
++
++	if (ntimer > num_timers_used) {
+ 		struct hpet		*hpet;
+ 		struct hpet_timer	*timer;
+ 		int			i;
  
-@@ -71,7 +76,7 @@ static __init int late_hpet_init(void)
- fs_initcall(late_hpet_init);
- #endif
- 
--int hpet_timer_stop_set_go(unsigned long tick)
-+static int hpet_timer_stop_set_go(unsigned long tick)
- {
- 	unsigned int cfg;
- 
-@@ -158,11 +163,6 @@ int __init hpet_arch_init(void)
- 	return hpet_timer_stop_set_go(hpet_tick);
- }
- 
--int hpet_reenable(void)
--{
--	return hpet_timer_stop_set_go(hpet_tick);
--}
+ 		hpet = (struct hpet *) fix_to_virt(FIX_HPET_BASE);
+-		timer = &hpet->hpet_timers[2];
+-		for (i = 2; i < ntimer; timer++, i++)
++		for (i = num_timers_used; i < ntimer; timer++, i++) {
++			timer = &hpet->hpet_timers[i];
+ 			hd.hd_irq[i] = (timer->hpet_config &
+ 					Tn_INT_ROUTE_CNF_MASK) >>
+ 				Tn_INT_ROUTE_CNF_SHIFT;
 -
- /*
-  * calibrate_tsc() calibrates the processor TSC in a very simple way, comparing
-  * it to the HPET timer of known frequency.
-@@ -468,6 +468,7 @@ static int __init nohpet_setup(char *s)
- 
- __setup("nohpet", nohpet_setup);
- 
-+/* Clocksource */
- #define HPET_MASK	0xFFFFFFFF
- #define HPET_SHIFT	22
- 
-@@ -517,6 +518,454 @@ static int __init init_hpet_clocksource(
- 	return clocksource_register(&clocksource_hpet);
- }
- 
-+/* Eventsource */
-+static unsigned int num_timers_used;
-+
-+#define HPET_DEV_FLAG_ONESHOT	0x1
-+#define HPET_DEV_FLAG_PERIODIC	0x2
-+#define HPET_DEV_FLAG_TEST	0x10
-+
-+/* HPET as clockevent */
-+struct hpet_dev {
-+	unsigned int num;
-+	int cpu;
-+	cpumask_t cpu_mask;
-+	unsigned int irq;
-+	unsigned int tick;
-+	unsigned int count;
-+	unsigned int flags;
-+	char name[10];
-+};
-+
-+static struct hpet_dev *cpu_hpet_dev; /* per CPU ptr */
-+
-+#define HPET_INTERRUPT_TEST_COUNT	5
-+
-+static irqreturn_t hpet_normal_interrupt(int irq, void *data);
-+
-+static irqreturn_t hpet_normal_interrupt_test(int irq, void *data)
-+{
-+	unsigned int readin;
-+	struct hpet_dev *dev = (struct hpet_dev *)data;
-+
-+	dev->count++;
-+	if (dev->count < HPET_INTERRUPT_TEST_COUNT) {
-+		unsigned long flags;
-+
-+		local_irq_save(flags);
-+		readin = hpet_readl(HPET_COUNTER);
-+		hpet_writel(readin + dev->tick, HPET_Tn_CMP(dev->num));
-+		local_irq_restore(flags);
-+	}
-+	return IRQ_HANDLED;
-+}
-+
-+static unsigned int cpu_hpet_irq[NR_CPUS] = {[0 ... NR_CPUS-1] = -1};
-+static unsigned int assigned_irqs_map = 0;
-+
-+/* Called sequentially and hence no synchronization */
-+static int hpet_assign_irq(struct hpet_dev *dev)
-+{
-+	unsigned int irq = -1;
-+	unsigned int cpu = dev->cpu;
-+	int ret = 0;
-+
-+	dev->irq = -1;
-+	/*
-+	 * Simple IRQ allocation policy : One IRQ per CPU and use
-+	 * first available for this timer.
-+	 */
-+	if (cpu > NR_CPUS)
-+		return -1;
-+
-+	if (cpu_hpet_irq[cpu] == -1) {
-+		unsigned int possible_irqs_map;
-+		unsigned int avail_irqs_map;
-+
-+		/* Assign a new possible IRQ for this CPU */
-+		possible_irqs_map = hpet_readl(HPET_Tn_CFG(dev->num) + 4);
-+
-+		/*
-+		 * TBD: Only use IOAPIC sharable interrupts
-+		 * IRQ 20 seems to have some problem on my platform.
-+		 * Using 21..24 for now.
-+		 */
-+		possible_irqs_map &= 0xe00000;
-+
-+		avail_irqs_map = possible_irqs_map & (~assigned_irqs_map);
-+		if (unlikely(!avail_irqs_map))
-+			return -1;
-+
-+		irq = find_first_bit((void *)&avail_irqs_map,
-+				sizeof(unsigned int));
-+		if (unlikely(irq > 31 || irq < 0))
-+			return -1;
-+
-+		set_bit(irq, &assigned_irqs_map);
-+		cpu_hpet_irq[cpu] = irq;
-+	}
-+
-+	dev->irq = cpu_hpet_irq[cpu];
-+
-+	if (dev->irq != -1) {
-+		/*
-+		 * BIOS does not list these interrupts in tables.
-+		 * We set the routing here.
-+		 * HPET is connected to IOAPIC 0 and IRQ and GSI are same.
-+		 */
-+		ret = io_apic_set_pci_routing(0, irq, irq, 1, 1);
-+	}
-+
-+	return ret;
-+}
-+
-+static void hpet_setup_cfg(struct hpet_dev *dev, int enable)
-+{
-+	if (enable) {
-+		hpet_writel(HPET_TN_ENABLE | HPET_TN_32BIT |
-+		       HPET_TN_LEVEL | (dev->irq << HPET_TN_ROUTE_SHIFT),
-+		       HPET_Tn_CFG(dev->num));
-+	} else {
-+		hpet_writel(HPET_TN_32BIT |
-+		       HPET_TN_LEVEL | (dev->irq << HPET_TN_ROUTE_SHIFT),
-+		       HPET_Tn_CFG(dev->num));
-+	}
-+}
-+
-+static int hpet_setup_timer_on(struct hpet_dev *dev)
-+{
-+	unsigned int readin;
-+	cpumask_t mask;
-+
-+	cpus_clear(mask);
-+	cpu_set(dev->cpu, mask);
-+	set_pending_irq(dev->irq, mask);
-+
-+	if (request_irq(dev->irq, hpet_normal_interrupt,
-+		       IRQF_SHARED|IRQF_NOBALANCING, dev->name, dev)) {
-+		return -1;
-+	}
-+
-+	readin = hpet_readl(HPET_COUNTER);
-+	hpet_writel(readin + (unsigned int)hpet_tick, HPET_Tn_CMP(dev->num));
-+	hpet_setup_cfg(dev, 1);
-+	return 0;
-+}
-+
-+static void hpet_timer_setup(enum clock_event_mode mode,
-+			struct clock_event_device *evt);
-+
-+static int hpet_next_event(unsigned long delta,
-+			struct clock_event_device *evt);
-+
-+static struct clock_event_device clockevent_hpet = {
-+	.name		= "hpet",
-+	.features	= CLOCK_EVT_FEAT_ONESHOT | CLOCK_EVT_FEAT_PERIODIC,
-+	.mult		= 0, /* set below */
-+	.shift		= HPET_SHIFT,
-+	.rating		= 110,
-+	.set_mode	= hpet_timer_setup,
-+	.set_next_event	= hpet_next_event,
-+};
-+
-+static DEFINE_PER_CPU(struct clock_event_device, hpet_events);
-+
-+static void hpet_timer_setup(enum clock_event_mode mode,
-+			struct clock_event_device *evt)
-+{
-+	struct hpet_dev *hdev = per_cpu_ptr(cpu_hpet_dev, smp_processor_id());
-+	unsigned long flags;
-+	unsigned int readin;
-+
-+	local_irq_save(flags);
-+
-+	hdev->flags &= (~(HPET_DEV_FLAG_ONESHOT | HPET_DEV_FLAG_PERIODIC));
-+
-+	switch (mode) {
-+	case CLOCK_EVT_MODE_PERIODIC:
-+		hdev->flags |= HPET_DEV_FLAG_PERIODIC;
-+		readin = hpet_readl(HPET_COUNTER);
-+		hpet_writel(readin + hdev->tick, HPET_Tn_CMP(hdev->num));
-+		readin = hpet_readl(HPET_Tn_CFG(hdev->num));
-+		hpet_writel(readin | HPET_TN_ENABLE, HPET_Tn_CFG(hdev->num));
-+		break;
-+	case CLOCK_EVT_MODE_ONESHOT:
-+		hdev->flags |= HPET_DEV_FLAG_ONESHOT;
-+		readin = hpet_readl(HPET_COUNTER);
-+		hpet_writel(readin + hdev->tick, HPET_Tn_CMP(hdev->num));
-+		readin = hpet_readl(HPET_Tn_CFG(hdev->num));
-+		hpet_writel(readin | HPET_TN_ENABLE, HPET_Tn_CFG(hdev->num));
-+		break;
-+	case CLOCK_EVT_MODE_SHUTDOWN:
-+		readin = hpet_readl(HPET_Tn_CFG(hdev->num));
-+		hpet_writel(readin & (~HPET_TN_ENABLE), HPET_Tn_CFG(hdev->num));
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	local_irq_restore(flags);
-+}
-+
-+static int hpet_next_event(unsigned long delta,
-+			struct clock_event_device *evt)
-+{
-+	struct hpet_dev *hdev = per_cpu_ptr(cpu_hpet_dev, smp_processor_id());
-+	unsigned long flags;
-+	unsigned int readin;
-+
-+	local_irq_save(flags);
-+	readin = hpet_readl(HPET_COUNTER);
-+	hpet_writel(readin + (unsigned int)delta, HPET_Tn_CMP(hdev->num));
-+	readin = hpet_readl(HPET_Tn_CFG(hdev->num));
-+	hpet_writel(readin | HPET_TN_ENABLE, HPET_Tn_CFG(hdev->num));
-+	hdev->count++;
-+	local_irq_restore(flags);
-+	return 0;
-+}
-+
-+static irqreturn_t hpet_normal_interrupt(int irq, void *data)
-+{
-+	unsigned int readin, status;
-+	struct hpet_dev *dev = (struct hpet_dev *)data;
-+	struct clock_event_device *hevt = &__get_cpu_var(hpet_events);
-+
-+	status = hpet_readl(HPET_STATUS);
-+	if (!(status & (0x1 << dev->num))) {
-+		return IRQ_NONE;
-+	}
-+	hpet_writel((0x1 << dev->num), HPET_STATUS);
-+
-+	if (unlikely(dev->flags & HPET_DEV_FLAG_TEST))
-+		return hpet_normal_interrupt_test(irq, data);
-+
-+	/* TBD: Needed for NMI watchdog? */
-+	//add_pda(apic_timer_irqs, 1);
-+
-+	dev->count++;
-+	if (dev->flags & HPET_DEV_FLAG_ONESHOT) {
-+		readin = hpet_readl(HPET_Tn_CFG(dev->num));
-+		hpet_writel(readin & (~HPET_TN_ENABLE), HPET_Tn_CFG(dev->num));
-+	} else if (dev->flags & HPET_DEV_FLAG_PERIODIC) {
-+		readin = hpet_readl(HPET_COUNTER);
-+		hpet_writel(readin + dev->tick, HPET_Tn_CMP(dev->num));
-+	}
-+
-+	if (!hevt->event_handler) {
-+		printk("Spurious HPET timer interrupt on HPET timer %d\n",
-+			       dev->num);
-+		return IRQ_HANDLED;
-+	}
-+
-+	exit_idle();
-+	irq_enter();
-+	hevt->event_handler(hevt);
-+	irq_exit();
-+	return IRQ_HANDLED;
-+}
-+
-+#define HPET_PERCPU_EVENT	1
-+#define HPET_GLOBAL_EVENT	2
-+
-+static void __devinit setup_cpu_hpet_timer(void *param)
-+{
-+	struct clock_event_device *hevt = &__get_cpu_var(hpet_events);
-+
-+	memcpy(hevt, &clockevent_hpet, sizeof(*hevt));
-+	if ((unsigned long)param == HPET_PERCPU_EVENT)
-+		hevt->cpumask = cpumask_of_cpu(smp_processor_id());
-+	else if ((unsigned long)param == HPET_GLOBAL_EVENT)
-+		hevt->cpumask = cpumask_of_cpu(0);
-+
-+	clockevents_register_device(hevt);
-+}
-+
-+static int init_hpet_eventsource(void)
-+{
-+	unsigned int id, cfg;
-+	int ret = 0;
-+	struct hpet_dev **hdev;
-+	unsigned long tmp;
-+	unsigned long tmp1;
-+	unsigned int num_timers;
-+	unsigned int percpu_timer;
-+	int i;
-+
-+
-+	id = hpet_readl(HPET_ID);
-+	num_timers = ((id & HPET_ID_NUMBER) >> HPET_ID_NUMBER_SHIFT);
-+	num_timers++; /* Value read out starts from 0 */
-+	if (num_possible_cpus() <= 2 && num_possible_cpus() <= num_timers) {
-+		percpu_timer = 1;
-+		num_timers_used = num_possible_cpus();
-+	} else {
-+		percpu_timer = 0;
-+		num_timers_used = 1;
-+	}
-+
-+	cpu_hpet_dev = alloc_percpu(struct hpet_dev);
-+	if (cpu_hpet_dev == NULL)
-+		return -1;
-+
-+	printk("Dump percpu_timer %d, num_timers_used %d, num_timers %d\n", percpu_timer, num_timers_used, num_timers);
-+
-+	hdev = kzalloc(sizeof(struct hpet_dev *) * num_timers_used, GFP_KERNEL);
-+	if (!hdev)
-+		return -1;
-+
-+	for (i = 0; i < num_timers_used; i++) {
-+		hdev[i] = per_cpu_ptr(cpu_hpet_dev, i);
-+		hdev[i]->num = i;
-+		hdev[i]->cpu = i;
-+
-+		hdev[i]->tick = hpet_tick;
-+		hdev[i]->count = 0;
-+		hdev[i]->flags |= HPET_DEV_FLAG_TEST;
-+		sprintf(hdev[i]->name, "hpet%d", i);
-+		if (hpet_assign_irq(hdev[i]) || (hdev[i]->irq < 0)) {
-+			printk(KERN_DEBUG "HPET IRQ allocation failed\n");
-+			goto free_exit;
 +		}
-+	}
-+
-+	for (i = 0; i < num_timers_used; i++) {
-+		if (hpet_setup_timer_on(hdev[i])) {
-+			num_timers_used = i-1;
-+			goto free_irq_exit;
-+		}
-+	}
-+
-+	/* Start the timers and test events */
-+	cfg = hpet_readl(HPET_CFG);
-+	cfg |= HPET_CFG_ENABLE;
-+	hpet_writel(cfg, HPET_CFG);
-+
-+	msleep(HPET_INTERRUPT_TEST_COUNT * 2 * 1000 / HZ);
-+
-+	for (i = 0; i < num_timers_used; i++) {
-+		hdev[i]->flags &= (~HPET_DEV_FLAG_TEST);
-+	}
-+
-+	for (i = 0; i < num_timers_used; i++) {
-+		if (hdev[i]->count < HPET_INTERRUPT_TEST_COUNT)
-+			goto free_irq_exit;
-+	}
-+
-+	/*
-+	 * Convert hpet_period to ticks/ns and then calculate multiplier with
-+	 * HPET_SHIFT
-+	 */
-+	tmp = (u64)hpet_period;
-+	do_div(tmp, FSEC_PER_NSEC);
-+
-+	tmp1 = 1 << HPET_SHIFT;
-+	do_div(tmp1, (u32)tmp);
-+
-+	clockevent_hpet.mult = (u32)tmp1;
-+
-+	clockevent_hpet.min_delta_ns =
-+		clockevent_delta2ns(hpet_tick, &clockevent_hpet);
-+	clockevent_hpet.max_delta_ns =
-+		clockevent_delta2ns(0x7FFFFFFF, &clockevent_hpet);
-+	printk(KERN_DEBUG "hpet max_delta_ns: %ld\n",
-+			clockevent_hpet.max_delta_ns);
-+	printk(KERN_DEBUG "hpet min_delta_ns: %ld\n",
-+			clockevent_hpet.min_delta_ns);
-+	printk(KERN_DEBUG "hpet mult: %ld\n", clockevent_hpet.mult);
-+
-+	if (percpu_timer) {
-+		on_each_cpu(setup_cpu_hpet_timer, (void *)HPET_PERCPU_EVENT,
-+			       0, 1);
-+	} else {
-+		/* Reduce the rating as event device is not per cpu */
-+		clockevent_hpet.rating -= 20;
-+		setup_cpu_hpet_timer((void *)HPET_GLOBAL_EVENT);
-+	}
-+
-+	kfree(hdev);
-+	return ret;
-+
-+free_irq_exit:
-+	/* Cleanup on failure */
-+	hpet_timer_stop();
-+	for (i = 0; i < num_timers_used; i++) {
-+		// TBD: free_irq does not work at this point
-+		//free_irq(hdev[i]->irq, hdev[i]);
-+	}
-+
-+free_exit:
-+	if (!force_hpet_address) {
-+		/* Switch back to legacy mode */
-+		hpet_timer_stop_set_go(hpet_tick);
-+		num_timers_used = 2;
-+	} else {
-+		num_timers_used = 0;
-+	}
-+	kfree(hdev);
-+	hdev = NULL;
-+	return -1;
-+}
-+
-+/* Core Init */
-+static int hpet_timer_reset(unsigned int resume)
-+{
-+	unsigned int cfg;
-+
-+	/*
-+	 * Stop the timers and reset the main counter.
-+	 */
-+	cfg = hpet_readl(HPET_CFG);
-+	cfg &= ~HPET_CFG_ENABLE;
-+	hpet_writel(cfg, HPET_CFG);
-+	hpet_writel(0, HPET_COUNTER);
-+	hpet_writel(0, HPET_COUNTER + 4);
-+
-+	if (!resume) {
-+		cfg = hpet_readl(HPET_CFG);
-+		cfg &= ~(HPET_CFG_ENABLE|HPET_CFG_LEGACY);
-+		hpet_writel(cfg, HPET_CFG);
-+
-+		/* Disable HPET timer 0 and 1 */
-+		cfg = hpet_readl(HPET_T0_CFG);
-+		hpet_writel((~HPET_TN_ENABLE) & cfg, HPET_T0_CFG);
-+		cfg = hpet_readl(HPET_T1_CFG);
-+		hpet_writel((~HPET_TN_ENABLE) & cfg, HPET_T1_CFG);
-+		return 0;
-+	}
-+
-+	/*
-+	 * Set up as many timers as enabled earlier, without enabling
-+	 * them. Timer subsystem should issue restart on them as they are
-+	 * in one shot mode
-+	 */
-+	if (cpu_hpet_dev) {
-+		int i;
-+		for (i = 0; i < num_timers_used; i++) {
-+			struct hpet_dev *hdev;
-+			hdev = per_cpu_ptr(cpu_hpet_dev, i);
-+			hpet_setup_cfg(hdev, 0);
-+		}
-+	}
-+
-+	/* Enable global counting */
-+	cfg |= HPET_CFG_ENABLE;
-+	hpet_writel(cfg, HPET_CFG);
-+
-+	return 0;
-+}
-+
-+/* Used to halt the timer from time.c */
-+int hpet_timer_stop(void)
-+{
-+	return hpet_timer_reset(0);
-+}
-+
-+/* Used to restart the timer after resume from time.c */
-+int hpet_timer_reenable(void)
-+{
-+	return hpet_timer_reset(1);
-+}
-+
- static int __init init_hpet_generic_timer(void)
- {
- 	int ret;
-@@ -524,8 +973,11 @@ static int __init init_hpet_generic_time
- 	if (nohpet)
- 		return -ENODEV;
- 
--	if (!hpet_address)
-+	if (!hpet_address) {
- 		hpet_address = force_hpet_address;
-+	} else {
-+		hpet_timer_stop();
-+	}
- 
- 	if (!hpet_address)
- 		return -ENODEV;
-@@ -541,6 +993,13 @@ static int __init init_hpet_generic_time
- 		printk(KERN_DEBUG "HPET clocksource init failed\n");
  	}
  
-+	ret |= init_hpet_eventsource();
-+	if (!ret) {
-+		printk(KERN_DEBUG "Successfully registered HPET eventsource\n");
-+	} else {
-+		printk(KERN_DEBUG "HPET eventsource init failed\n");
-+	}
-+
- 	if (ret) {
- 		unsigned int cfg;
- 		cfg = hpet_readl(HPET_CFG);
-Index: linux-2.6.21-rc-mm/arch/x86_64/kernel/time.c
-===================================================================
---- linux-2.6.21-rc-mm.orig/arch/x86_64/kernel/time.c
-+++ linux-2.6.21-rc-mm/arch/x86_64/kernel/time.c
-@@ -341,7 +341,7 @@ void __init stop_timer_interrupt(void)
- 	char *name;
- 	if (hpet_address) {
- 		name = "HPET";
--		hpet_timer_stop_set_go(0);
-+		hpet_timer_stop();
- 	} else {
- 		name = "PIT";
- 		pit_stop_interrupt();
-@@ -417,7 +417,7 @@ static int timer_suspend(struct sys_devi
- static int timer_resume(struct sys_device *dev)
+ 	hpet_alloc(&hd);
+ 	return 0;
+ }
+-fs_initcall(late_hpet_init);
++late_initcall(late_hpet_init);
+ #endif
+ 
+ static int hpet_timer_stop_set_go(unsigned long tick)
+@@ -209,257 +209,6 @@ unsigned int __init hpet_calibrate_tsc(v
+ 		/ ((hpet_now - hpet_start) * hpet_period / 1000);
+ }
+ 
+-#ifdef CONFIG_HPET_EMULATE_RTC
+-/* HPET in LegacyReplacement Mode eats up RTC interrupt line. When, HPET
+- * is enabled, we support RTC interrupt functionality in software.
+- * RTC has 3 kinds of interrupts:
+- * 1) Update Interrupt - generate an interrupt, every sec, when RTC clock
+- *    is updated
+- * 2) Alarm Interrupt - generate an interrupt at a specific time of day
+- * 3) Periodic Interrupt - generate periodic interrupt, with frequencies
+- *    2Hz-8192Hz (2Hz-64Hz for non-root user) (all freqs in powers of 2)
+- * (1) and (2) above are implemented using polling at a frequency of
+- * 64 Hz. The exact frequency is a tradeoff between accuracy and interrupt
+- * overhead. (DEFAULT_RTC_INT_FREQ)
+- * For (3), we use interrupts at 64Hz or user specified periodic
+- * frequency, whichever is higher.
+- */
+-#include <linux/rtc.h>
+-
+-#define DEFAULT_RTC_INT_FREQ 	64
+-#define RTC_NUM_INTS 		1
+-
+-static unsigned long UIE_on;
+-static unsigned long prev_update_sec;
+-
+-static unsigned long AIE_on;
+-static struct rtc_time alarm_time;
+-
+-static unsigned long PIE_on;
+-static unsigned long PIE_freq = DEFAULT_RTC_INT_FREQ;
+-static unsigned long PIE_count;
+-
+-static unsigned long hpet_rtc_int_freq; /* RTC interrupt frequency */
+-static unsigned int hpet_t1_cmp; /* cached comparator register */
+-
+-int is_hpet_enabled(void)
+-{
+-	return hpet_address != 0;
+-}
+-
+-/*
+- * Timer 1 for RTC, we do not use periodic interrupt feature,
+- * even if HPET supports periodic interrupts on Timer 1.
+- * The reason being, to set up a periodic interrupt in HPET, we need to
+- * stop the main counter. And if we do that everytime someone diables/enables
+- * RTC, we will have adverse effect on main kernel timer running on Timer 0.
+- * So, for the time being, simulate the periodic interrupt in software.
+- *
+- * hpet_rtc_timer_init() is called for the first time and during subsequent
+- * interuppts reinit happens through hpet_rtc_timer_reinit().
+- */
+-int hpet_rtc_timer_init(void)
+-{
+-	unsigned int cfg, cnt;
+-	unsigned long flags;
+-
+-	if (!is_hpet_enabled())
+-		return 0;
+-	/*
+-	 * Set the counter 1 and enable the interrupts.
+-	 */
+-	if (PIE_on && (PIE_freq > DEFAULT_RTC_INT_FREQ))
+-		hpet_rtc_int_freq = PIE_freq;
+-	else
+-		hpet_rtc_int_freq = DEFAULT_RTC_INT_FREQ;
+-
+-	local_irq_save(flags);
+-
+-	cnt = hpet_readl(HPET_COUNTER);
+-	cnt += ((hpet_tick*HZ)/hpet_rtc_int_freq);
+-	hpet_writel(cnt, HPET_T1_CMP);
+-	hpet_t1_cmp = cnt;
+-
+-	cfg = hpet_readl(HPET_T1_CFG);
+-	cfg &= ~HPET_TN_PERIODIC;
+-	cfg |= HPET_TN_ENABLE | HPET_TN_32BIT;
+-	hpet_writel(cfg, HPET_T1_CFG);
+-
+-	local_irq_restore(flags);
+-
+-	return 1;
+-}
+-
+-static void hpet_rtc_timer_reinit(void)
+-{
+-	unsigned int cfg, cnt, ticks_per_int, lost_ints;
+-
+-	if (unlikely(!(PIE_on | AIE_on | UIE_on))) {
+-		cfg = hpet_readl(HPET_T1_CFG);
+-		cfg &= ~HPET_TN_ENABLE;
+-		hpet_writel(cfg, HPET_T1_CFG);
+-		return;
+-	}
+-
+-	if (PIE_on && (PIE_freq > DEFAULT_RTC_INT_FREQ))
+-		hpet_rtc_int_freq = PIE_freq;
+-	else
+-		hpet_rtc_int_freq = DEFAULT_RTC_INT_FREQ;
+-
+-	/* It is more accurate to use the comparator value than current count.*/
+-	ticks_per_int = hpet_tick * HZ / hpet_rtc_int_freq;
+-	hpet_t1_cmp += ticks_per_int;
+-	hpet_writel(hpet_t1_cmp, HPET_T1_CMP);
+-
+-	/*
+-	 * If the interrupt handler was delayed too long, the write above tries
+-	 * to schedule the next interrupt in the past and the hardware would
+-	 * not interrupt until the counter had wrapped around.
+-	 * So we have to check that the comparator wasn't set to a past time.
+-	 */
+-	cnt = hpet_readl(HPET_COUNTER);
+-	if (unlikely((int)(cnt - hpet_t1_cmp) > 0)) {
+-		lost_ints = (cnt - hpet_t1_cmp) / ticks_per_int + 1;
+-		/* Make sure that, even with the time needed to execute
+-		 * this code, the next scheduled interrupt has been moved
+-		 * back to the future: */
+-		lost_ints++;
+-
+-		hpet_t1_cmp += lost_ints * ticks_per_int;
+-		hpet_writel(hpet_t1_cmp, HPET_T1_CMP);
+-
+-		if (PIE_on)
+-			PIE_count += lost_ints;
+-
+-		if (printk_ratelimit())
+-			printk(KERN_WARNING "rtc: lost some interrupts at %ldHz.\n",
+-			       hpet_rtc_int_freq);
+-	}
+-}
+-
+-/*
+- * The functions below are called from rtc driver.
+- * Return 0 if HPET is not being used.
+- * Otherwise do the necessary changes and return 1.
+- */
+-int hpet_mask_rtc_irq_bit(unsigned long bit_mask)
+-{
+-	if (!is_hpet_enabled())
+-		return 0;
+-
+-	if (bit_mask & RTC_UIE)
+-		UIE_on = 0;
+-	if (bit_mask & RTC_PIE)
+-		PIE_on = 0;
+-	if (bit_mask & RTC_AIE)
+-		AIE_on = 0;
+-
+-	return 1;
+-}
+-
+-int hpet_set_rtc_irq_bit(unsigned long bit_mask)
+-{
+-	int timer_init_reqd = 0;
+-
+-	if (!is_hpet_enabled())
+-		return 0;
+-
+-	if (!(PIE_on | AIE_on | UIE_on))
+-		timer_init_reqd = 1;
+-
+-	if (bit_mask & RTC_UIE) {
+-		UIE_on = 1;
+-	}
+-	if (bit_mask & RTC_PIE) {
+-		PIE_on = 1;
+-		PIE_count = 0;
+-	}
+-	if (bit_mask & RTC_AIE) {
+-		AIE_on = 1;
+-	}
+-
+-	if (timer_init_reqd)
+-		hpet_rtc_timer_init();
+-
+-	return 1;
+-}
+-
+-int hpet_set_alarm_time(unsigned char hrs, unsigned char min, unsigned char sec)
+-{
+-	if (!is_hpet_enabled())
+-		return 0;
+-
+-	alarm_time.tm_hour = hrs;
+-	alarm_time.tm_min = min;
+-	alarm_time.tm_sec = sec;
+-
+-	return 1;
+-}
+-
+-int hpet_set_periodic_freq(unsigned long freq)
+-{
+-	if (!is_hpet_enabled())
+-		return 0;
+-
+-	PIE_freq = freq;
+-	PIE_count = 0;
+-
+-	return 1;
+-}
+-
+-int hpet_rtc_dropped_irq(void)
+-{
+-	if (!is_hpet_enabled())
+-		return 0;
+-
+-	return 1;
+-}
+-
+-irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id)
+-{
+-	struct rtc_time curr_time;
+-	unsigned long rtc_int_flag = 0;
+-	int call_rtc_interrupt = 0;
+-
+-	hpet_rtc_timer_reinit();
+-
+-	if (UIE_on | AIE_on) {
+-		rtc_get_rtc_time(&curr_time);
+-	}
+-	if (UIE_on) {
+-		if (curr_time.tm_sec != prev_update_sec) {
+-			/* Set update int info, call real rtc int routine */
+-			call_rtc_interrupt = 1;
+-			rtc_int_flag = RTC_UF;
+-			prev_update_sec = curr_time.tm_sec;
+-		}
+-	}
+-	if (PIE_on) {
+-		PIE_count++;
+-		if (PIE_count >= hpet_rtc_int_freq/PIE_freq) {
+-			/* Set periodic int info, call real rtc int routine */
+-			call_rtc_interrupt = 1;
+-			rtc_int_flag |= RTC_PF;
+-			PIE_count = 0;
+-		}
+-	}
+-	if (AIE_on) {
+-		if ((curr_time.tm_sec == alarm_time.tm_sec) &&
+-		    (curr_time.tm_min == alarm_time.tm_min) &&
+-		    (curr_time.tm_hour == alarm_time.tm_hour)) {
+-			/* Set alarm int info, call real rtc int routine */
+-			call_rtc_interrupt = 1;
+-			rtc_int_flag |= RTC_AF;
+-		}
+-	}
+-	if (call_rtc_interrupt) {
+-		rtc_int_flag |= (RTC_IRQF | (RTC_NUM_INTS << 8));
+-		rtc_interrupt(rtc_int_flag, dev_id);
+-	}
+-	return IRQ_HANDLED;
+-}
+-#endif
+-
+ static int __init nohpet_setup(char *s)
  {
- 	if (hpet_address)
--		hpet_reenable();
-+		hpet_timer_reenable();
- 	else
- 		i8254_timer_resume();
- 
-Index: linux-2.6.21-rc-mm/include/asm-x86_64/hpet.h
-===================================================================
---- linux-2.6.21-rc-mm.orig/include/asm-x86_64/hpet.h
-+++ linux-2.6.21-rc-mm/include/asm-x86_64/hpet.h
-@@ -57,8 +57,8 @@ extern int is_hpet_enabled(void);
- extern int hpet_rtc_timer_init(void);
- extern int apic_is_clustered_box(void);
- extern int hpet_arch_init(void);
--extern int hpet_timer_stop_set_go(unsigned long tick);
--extern int hpet_reenable(void);
-+extern int hpet_timer_stop(void);
-+extern int hpet_timer_reenable(void);
- extern unsigned int hpet_calibrate_tsc(void);
- 
- extern int hpet_use_timer;
+ 	nohpet = 1;
