@@ -1,291 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932091AbXBWKJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752190AbXBWKKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932091AbXBWKJv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 05:09:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932104AbXBWKJv
+	id S1752190AbXBWKKi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 05:10:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbXBWKKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 05:09:51 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:47885 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932091AbXBWKJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 05:09:36 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC][PATCH 1/7] Freezer:
-Date: Fri, 23 Feb 2007 11:02:51 +0100
-User-Agent: KMail/1.9.5
-Cc: paulmck@linux.vnet.ibm.com, ego@in.ibm.com, akpm@osdl.org, mingo@elte.hu,
-       vatsa@in.ibm.com, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
-       Pavel Machek <pavel@ucw.cz>, "Aneesh Kumar" <aneesh.kumar@gmail.com>
-References: <200702231101.41278.rjw@sisk.pl>
-In-Reply-To: <200702231101.41278.rjw@sisk.pl>
+	Fri, 23 Feb 2007 05:10:38 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42109 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932097AbXBWKKg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 05:10:36 -0500
+Date: Fri, 23 Feb 2007 11:10:36 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.16.42-rc1
+Message-ID: <20070223101036.GA12392@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702231102.52454.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- arch/i386/kernel/apm.c              |    2 ++
- drivers/block/loop.c                |    2 ++
- drivers/char/apm-emulation.c        |    3 +++
- drivers/ieee1394/ieee1394_core.c    |    3 +++
- drivers/md/md.c                     |    2 ++
- drivers/mmc/card/queue.c            |    3 +++
- drivers/mtd/mtd_blkdevs.c           |    3 +++
- drivers/scsi/libsas/sas_scsi_host.c |    3 +++
- drivers/scsi/scsi_error.c           |    3 +++
- drivers/usb/storage/usb.c           |    2 ++
- kernel/softirq.c                    |    2 ++
- kernel/softlockup.c                 |    2 ++
- kernel/workqueue.c                  |    3 +--
- 13 files changed, 31 insertions(+), 2 deletions(-)
+Security fixes since 2.6.16.41:
+- CVE-2006-5753: fix bad_inode_ops memory corruption
+- CVE-2007-0006: Keys: Fix key serial number collision handling
+- CVE-2007-0772: Fix a free-wrong-pointer bug in nfs/acl server
 
-Index: linux-2.6.20-mm2/arch/i386/kernel/apm.c
-===================================================================
---- linux-2.6.20-mm2.orig/arch/i386/kernel/apm.c	2007-02-22 23:48:52.000000000 +0100
-+++ linux-2.6.20-mm2/arch/i386/kernel/apm.c	2007-02-23 00:34:25.000000000 +0100
-@@ -227,6 +227,7 @@
- #include <linux/dmi.h>
- #include <linux/suspend.h>
- #include <linux/kthread.h>
-+#include <linux/freezer.h>
- 
- #include <asm/system.h>
- #include <asm/uaccess.h>
-@@ -1402,6 +1403,7 @@ static void apm_mainloop(void)
- 	add_wait_queue(&apm_waitqueue, &wait);
- 	set_current_state(TASK_INTERRUPTIBLE);
- 	for (;;) {
-+		try_to_freeze();
- 		schedule_timeout(APM_CHECK_TIMEOUT);
- 		if (kthread_should_stop())
- 			break;
-Index: linux-2.6.20-mm2/drivers/md/md.c
-===================================================================
---- linux-2.6.20-mm2.orig/drivers/md/md.c	2007-02-22 23:48:52.000000000 +0100
-+++ linux-2.6.20-mm2/drivers/md/md.c	2007-02-23 00:34:25.000000000 +0100
-@@ -4513,6 +4513,8 @@ static int md_thread(void * arg)
- 			 || kthread_should_stop(),
- 			 thread->timeout);
- 
-+		try_to_freeze();
-+
- 		clear_bit(THREAD_WAKEUP, &thread->flags);
- 
- 		thread->run(thread->mddev);
-Index: linux-2.6.20-mm2/drivers/mmc/card/queue.c
-===================================================================
---- linux-2.6.20-mm2.orig/drivers/mmc/card/queue.c	2007-02-22 23:48:52.000000000 +0100
-+++ linux-2.6.20-mm2/drivers/mmc/card/queue.c	2007-02-23 00:34:25.000000000 +0100
-@@ -12,6 +12,7 @@
- #include <linux/module.h>
- #include <linux/blkdev.h>
- #include <linux/kthread.h>
-+#include <linux/freezer.h>
- 
- #include <linux/mmc/card.h>
- #include <linux/mmc/host.h>
-@@ -71,6 +72,8 @@ static int mmc_queue_thread(void *d)
- 	do {
- 		struct request *req = NULL;
- 
-+		try_to_freeze();
-+
- 		spin_lock_irq(q->queue_lock);
- 		set_current_state(TASK_INTERRUPTIBLE);
- 		if (!blk_queue_plugged(q))
-Index: linux-2.6.20-mm2/drivers/mtd/mtd_blkdevs.c
-===================================================================
---- linux-2.6.20-mm2.orig/drivers/mtd/mtd_blkdevs.c	2007-02-22 23:48:52.000000000 +0100
-+++ linux-2.6.20-mm2/drivers/mtd/mtd_blkdevs.c	2007-02-23 00:34:25.000000000 +0100
-@@ -20,6 +20,7 @@
- #include <linux/hdreg.h>
- #include <linux/init.h>
- #include <linux/mutex.h>
-+#include <linux/freezer.h>
- #include <asm/uaccess.h>
- 
- static LIST_HEAD(blktrans_majors);
-@@ -113,6 +114,8 @@ static int mtd_blktrans_thread(void *arg
- 			schedule();
- 			remove_wait_queue(&tr->blkcore_priv->thread_wq, &wait);
- 
-+			try_to_freeze();
-+
- 			spin_lock_irq(rq->queue_lock);
- 
- 			continue;
-Index: linux-2.6.20-mm2/drivers/usb/storage/usb.c
-===================================================================
---- linux-2.6.20-mm2.orig/drivers/usb/storage/usb.c	2007-02-22 23:48:52.000000000 +0100
-+++ linux-2.6.20-mm2/drivers/usb/storage/usb.c	2007-02-23 00:34:25.000000000 +0100
-@@ -304,6 +304,8 @@ static int usb_stor_control_thread(void 
- 	current->flags |= PF_NOFREEZE;
- 
- 	for(;;) {
-+		try_to_freeze();
-+
- 		US_DEBUGP("*** thread sleeping.\n");
- 		if(down_interruptible(&us->sema))
- 			break;
-Index: linux-2.6.20-mm2/drivers/ieee1394/ieee1394_core.c
-===================================================================
---- linux-2.6.20-mm2.orig/drivers/ieee1394/ieee1394_core.c	2007-02-22 23:48:52.000000000 +0100
-+++ linux-2.6.20-mm2/drivers/ieee1394/ieee1394_core.c	2007-02-23 00:34:25.000000000 +0100
-@@ -35,6 +35,7 @@
- #include <linux/kthread.h>
- #include <linux/preempt.h>
- #include <linux/time.h>
-+#include <linux/freezer.h>
- 
- #include <asm/system.h>
- #include <asm/byteorder.h>
-@@ -1081,6 +1082,8 @@ static int hpsbpkt_thread(void *__hi)
- 			complete_routine(complete_data);
- 		}
- 
-+		try_to_freeze();
-+
- 		set_current_state(TASK_INTERRUPTIBLE);
- 		if (!skb_peek(&hpsbpkt_queue))
- 			schedule();
-Index: linux-2.6.20-mm2/drivers/char/apm-emulation.c
-===================================================================
---- linux-2.6.20-mm2.orig/drivers/char/apm-emulation.c	2007-02-22 23:48:52.000000000 +0100
-+++ linux-2.6.20-mm2/drivers/char/apm-emulation.c	2007-02-23 00:34:25.000000000 +0100
-@@ -27,6 +27,7 @@
- #include <linux/completion.h>
- #include <linux/kthread.h>
- #include <linux/delay.h>
-+#include <linux/freezer.h>
- 
- #include <asm/system.h>
- 
-@@ -539,6 +540,8 @@ static int kapmd(void *arg)
- 		apm_event_t event;
- 		int ret;
- 
-+		try_to_freeze();
-+
- 		wait_event_interruptible(kapmd_wait,
- 				!queue_empty(&kapmd_queue) || kthread_should_stop());
- 
-Index: linux-2.6.20-mm2/drivers/block/loop.c
-===================================================================
---- linux-2.6.20-mm2.orig/drivers/block/loop.c	2007-02-22 23:48:52.000000000 +0100
-+++ linux-2.6.20-mm2/drivers/block/loop.c	2007-02-23 00:34:25.000000000 +0100
-@@ -74,6 +74,7 @@
- #include <linux/highmem.h>
- #include <linux/gfp.h>
- #include <linux/kthread.h>
-+#include <linux/freezer.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -580,6 +581,7 @@ static int loop_thread(void *data)
- 	set_user_nice(current, -20);
- 
- 	while (!kthread_should_stop() || lo->lo_bio) {
-+		try_to_freeze();
- 
- 		wait_event_interruptible(lo->lo_event,
- 				lo->lo_bio || kthread_should_stop());
-Index: linux-2.6.20-mm2/drivers/scsi/libsas/sas_scsi_host.c
-===================================================================
---- linux-2.6.20-mm2.orig/drivers/scsi/libsas/sas_scsi_host.c	2007-02-22 23:48:52.000000000 +0100
-+++ linux-2.6.20-mm2/drivers/scsi/libsas/sas_scsi_host.c	2007-02-23 00:34:25.000000000 +0100
-@@ -39,6 +39,7 @@
- #include <linux/err.h>
- #include <linux/blkdev.h>
- #include <linux/scatterlist.h>
-+#include <linux/freezer.h>
- 
- /* ---------- SCSI Host glue ---------- */
- 
-@@ -875,6 +876,8 @@ static int sas_queue_thread(void *_sas_h
- 	complete(&queue_th_comp);
- 
- 	while (1) {
-+		try_to_freeze();
-+
- 		down_interruptible(&core->queue_thread_sema);
- 		sas_queue(sas_ha);
- 		if (core->queue_thread_kill)
-Index: linux-2.6.20-mm2/drivers/scsi/scsi_error.c
-===================================================================
---- linux-2.6.20-mm2.orig/drivers/scsi/scsi_error.c	2007-02-22 23:48:52.000000000 +0100
-+++ linux-2.6.20-mm2/drivers/scsi/scsi_error.c	2007-02-23 00:34:25.000000000 +0100
-@@ -24,6 +24,7 @@
- #include <linux/interrupt.h>
- #include <linux/blkdev.h>
- #include <linux/delay.h>
-+#include <linux/freezer.h>
- 
- #include <scsi/scsi.h>
- #include <scsi/scsi_cmnd.h>
-@@ -1536,6 +1537,8 @@ int scsi_error_handler(void *data)
- 	 */
- 	set_current_state(TASK_INTERRUPTIBLE);
- 	while (!kthread_should_stop()) {
-+		try_to_freeze();
-+
- 		if ((shost->host_failed == 0 && shost->host_eh_scheduled == 0) ||
- 		    shost->host_failed != shost->host_busy) {
- 			SCSI_LOG_ERROR_RECOVERY(1,
-Index: linux-2.6.20-mm2/kernel/softlockup.c
-===================================================================
---- linux-2.6.20-mm2.orig/kernel/softlockup.c	2007-02-22 23:48:52.000000000 +0100
-+++ linux-2.6.20-mm2/kernel/softlockup.c	2007-02-23 00:34:25.000000000 +0100
-@@ -13,6 +13,7 @@
- #include <linux/kthread.h>
- #include <linux/notifier.h>
- #include <linux/module.h>
-+#include <linux/freezer.h>
- 
- static DEFINE_SPINLOCK(print_lock);
- 
-@@ -93,6 +94,7 @@ static int watchdog(void * __bind_cpu)
- 	 * debug-printout triggers in softlockup_tick().
- 	 */
- 	while (!kthread_should_stop()) {
-+		try_to_freeze();
- 		set_current_state(TASK_INTERRUPTIBLE);
- 		touch_softlockup_watchdog();
- 		schedule();
-Index: linux-2.6.20-mm2/kernel/softirq.c
-===================================================================
---- linux-2.6.20-mm2.orig/kernel/softirq.c	2007-02-22 23:48:52.000000000 +0100
-+++ linux-2.6.20-mm2/kernel/softirq.c	2007-02-23 00:34:25.000000000 +0100
-@@ -18,6 +18,7 @@
- #include <linux/rcupdate.h>
- #include <linux/smp.h>
- #include <linux/tick.h>
-+#include <linux/freezer.h>
- 
- #include <asm/irq.h>
- /*
-@@ -494,6 +495,7 @@ static int ksoftirqd(void * __bind_cpu)
- 	set_current_state(TASK_INTERRUPTIBLE);
- 
- 	while (!kthread_should_stop()) {
-+		try_to_freeze();
- 		preempt_disable();
- 		if (!local_softirq_pending()) {
- 			preempt_enable_no_resched();
-Index: linux-2.6.20-mm2/kernel/workqueue.c
-===================================================================
---- linux-2.6.20-mm2.orig/kernel/workqueue.c	2007-02-22 23:48:52.000000000 +0100
-+++ linux-2.6.20-mm2/kernel/workqueue.c	2007-02-23 00:34:25.000000000 +0100
-@@ -316,8 +316,7 @@ static int worker_thread(void *__cwq)
- 	do_sigaction(SIGCHLD, &sa, (struct k_sigaction *)0);
- 
- 	for (;;) {
--		if (cwq->wq->freezeable)
--			try_to_freeze();
-+		try_to_freeze();
- 
- 		prepare_to_wait(&cwq->more_work, &wait, TASK_INTERRUPTIBLE);
- 		if (!cwq->should_stop && list_empty(&cwq->worklist))
+
+Location:
+ftp://ftp.kernel.org/pub/linux/kernel/people/bunk/linux-2.6.16.y/testing/
+
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+
+
+Changes since 2.6.16.41:
+
+Adrian Bunk (1):
+      Linux 2.6.16.42-rc1
+
+Al Viro (2):
+      ATM horizon.c: missing __devinit
+      fix rtl8150
+
+Alexey Dobriyan (1):
+      [ATM] ambassador, firestream: "-1 >>" is implementation defined
+
+Dan Streetman (1):
+      USB: add ZyXEL vendor/product ID to rtl8150 driver
+
+David Howells (1):
+      Keys: Fix key serial number collision handling (CVE-2007-0006)
+
+David S. Miller (1):
+      [ATM] horizon: read_bia() needs to be __devinit
+
+Eric Sandeen (1):
+      fix bad_inode_ops memory corruption (CVE-2006-5753)
+
+Greg Banks (1):
+      Fix a free-wrong-pointer bug in nfs/acl server (CVE-2007-0772)
+
+Jeff Garzik (1):
+      [ATM] firestream: handle thrown error
+
+Marcel Holtmann (2):
+      [Bluetooth] Missing endian swapping for L2CAP socket list
+      [Bluetooth] Restrict well known PSM to privileged users
+
+Oleg Nesterov (1):
+      V4L/DVB: Buf_qbuf: fix: videobuf_queue->stream corruption and lockup
+
+Petko Manolov (1):
+      USB: rtl8150 new device id
+
+Stephen Hemminger (2):
+      sky2: fix for NAPI with dual port boards
+      sky2: dual-port pci-x checksum fix
+
+
+ Makefile                        |    2 
+ drivers/atm/ambassador.c        |    2 
+ drivers/atm/firestream.c        |    6 
+ drivers/atm/horizon.c           |    4 
+ drivers/media/video/video-buf.c |    1 
+ drivers/net/sky2.c              |   27 ++
+ drivers/usb/net/rtl8150.c       |   12 -
+ fs/bad_inode.c                  |  330 +++++++++++++++++++++++++++-----
+ fs/nfsd/nfs2acl.c               |   17 +
+ net/bluetooth/l2cap.c           |   10 
+ security/keys/key.c             |   33 +--
+ 11 files changed, 366 insertions(+), 78 deletions(-)
+
+
