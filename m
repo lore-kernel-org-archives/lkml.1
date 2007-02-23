@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752197AbXBWVSM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932968AbXBWVXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752197AbXBWVSM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 16:18:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932968AbXBWVSM
+	id S932968AbXBWVXY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 16:23:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933212AbXBWVXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 16:18:12 -0500
-Received: from smtp102.sbc.mail.re2.yahoo.com ([68.142.229.103]:27313 "HELO
-	smtp102.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752197AbXBWVSL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 16:18:11 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=jAtX+U0P/u6HhzzWJFRIsTs+Kr1DcM+NSfsKXTSVS/tGZONZX+KIQ4FMuoXhmlYRg99cHb+feMHL53PqO59KhvlnIQ4ICPvi4t7VOuoGASGuz5e4zuif+xZibW0t+Trng/IFSXoEonseQJWIDH/8BZjcmV+C3Xc0ILeHnw3Y+a0=  ;
-X-YMail-OSG: NqyKDwoVM1n41zM88vyfJ1REEZ8HknEq5VGq19tiCQEFJ1P0yFJiSoPUTrkwphS4ie_v6oKbDk2c2icVbcWPp6HpyyDsdTPWYehRRIo8CFQTPzBCOhJBIPhrTeFJziORHqx1sF3QiOdio6Y-
-Message-ID: <45DF5A24.507@sbcglobal.net>
-Date: Fri, 23 Feb 2007 15:18:28 -0600
-From: Matthew Frost <artusemrys@sbcglobal.net>
-Reply-To: artusemrys@sbcglobal.net
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
-MIME-Version: 1.0
-To: Mockern@yandex.ru
-CC: linux-kernel@vger.kernel.org
-Subject: Re: battery time living  in Linux
-References: <45DF0417.000001.16244@webmail9.yandex.ru>
-In-Reply-To: <45DF0417.000001.16244@webmail9.yandex.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 23 Feb 2007 16:23:24 -0500
+Received: from mail.screens.ru ([213.234.233.54]:48166 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932968AbXBWVXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 16:23:23 -0500
+Date: Sat, 24 Feb 2007 00:23:03 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Hugh Dickins <hugh@veritas.com>
+Cc: dipankar@in.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: PREEMPT_RCU breaks anon_vma locking ?
+Message-ID: <20070223212303.GA423@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mockern wrote:
-> Hello,
-> 
-> I need to know how much time my battery will be alive (an embedded system).
-> 
-> How does Linux calculate it? How should I know that after 3 or 4 hours my battery will be completely discharged?
-> 
+If my understanding correct, vmscan can find a page which lives in a already
+anon_vma_unlink'ed vma. This is ok, the page is pinned, and page->mapping is
+not cleared until free_hot_cold_page().
 
-Your battery will discharge at a rate proportionate to its total charge and the
-wattage draw of the load (your embedded system, in this case) over time.  If the
-drain is constant, as opposed to variable, this becomes easier to predict.
-However, your system load probably won't be constant.  Also, the discharge rate
-of a battery depends on the environment and age/condition of the battery.
+So page_lock_anon_vma() works correctly due to SLAB_DESTROY_BY_RCU even if
+anon_vma_unlink() has already freed anon_vma. In that case we should see
+list_empty(&anon_vma->head), we are safe.
 
-I could just be missing something, but I am unaware of linux kernel
-functionality for determining battery life.  There are benchmarks that can give
-you an estimate, but they are artificial.  YMMV based on actual usage.  Check
-out Len Brown et al. from the 2006 Ottawa Linux Symposium on Linux Laptop
-Battery Life, and adapt to suit.  The only way to know for sure is to do the
-tests yourself and get an idea of your average battery life.
+However, we are doing spin_unlock(anon_vma->lock) after page_lock_anon_vma(),
+and this looks unsafe to me because page_lock_anon_vma() does rcu_read_unlock()
+on return.
 
-Matt
+This worked before because spin_lock() implied rcu_read_lock(), so rcu was
+blocked if page_lock_anon_vma() returns !NULL. With CONFIG_PREEMPT_RCU this
+is not true (yes?), so it is possible that the slab returns the memory to
+the system and it is re-used when we write to anon_vma->lock.
+
+IOW, don't we need something like this
+
+	static struct anon_vma *page_lock_anon_vma(struct page *page)
+	{
+		struct anon_vma *anon_vma;
+		unsigned long anon_mapping;
+
+		rcu_read_lock();
+		anon_mapping = (unsigned long) page->mapping;
+		if (!(anon_mapping & PAGE_MAPPING_ANON))
+			goto out;
+		if (!page_mapped(page))
+			goto out;
+
+		anon_vma = (struct anon_vma *) (anon_mapping - PAGE_MAPPING_ANON);
+		spin_lock(&anon_vma->lock);
+		return anon_vma;
+
+	out:
+		rcu_read_unlock();
+		return NULL;
+	}
+
+	static inline void page_lock_anon_vma(struct anon_vma *anon_vma)
+	{
+		spin_unlock(&anon_vma->lock);
+		rcu_read_unlock();
+	}
+?
+
+Oleg.
+
