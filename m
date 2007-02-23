@@ -1,333 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750892AbXBWFTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750924AbXBWFvN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750892AbXBWFTP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 00:19:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbXBWFTP
+	id S1750924AbXBWFvN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 00:51:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbXBWFvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 00:19:15 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:34543 "EHLO e6.ny.us.ibm.com"
+	Fri, 23 Feb 2007 00:51:12 -0500
+Received: from gherkin.frus.com ([192.158.254.49]:1106 "EHLO gherkin.frus.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750876AbXBWFTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 00:19:14 -0500
-Date: Thu, 22 Feb 2007 23:19:10 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Chris Wright <chrisw@sous-sol.org>,
-       KaiGai Kohei <kaigai@kaigai.gr.jp>
-Subject: [PATCH 2/2] file caps: accomodate future 64-bit caps
-Message-ID: <20070223051910.GA8881@sergelap.austin.ibm.com>
+	id S1750924AbXBWFvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 00:51:12 -0500
+X-Greylist: delayed 345 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Feb 2007 00:51:11 EST
+Subject: 2.6.21-rc1: Ethernet card not detected correctly (followup)
+To: linux-kernel@vger.kernel.org
+Date: Thu, 22 Feb 2007 23:51:07 -0600 (CST)
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20070223055107.C429BDBA2@gherkin.frus.com>
+From: rct@gherkin.frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is another attempt.  This format is compatible with
-KaiGai's current tools.
+I forgot to include some possibly useful "lspci -v" output.  This
+is while running 2.6.20:
 
-Tested on s390 with 32 and 64-bit caps stored in the xattrs.
+00:0a.0 Ethernet controller: National Semiconductor Corporation DP83815 (MacPhyter) Ethernet Controller
+        Subsystem: Netgear FA311 / FA312 (FA311 with WoL HW)
+	Flags: bus master, medium devsel, latency 32, IRQ 12
+	I/O ports at dc00 [size=256]
+	Memory at df005000 (32-bit, non-prefetchable) [size=4K]
+	Expansion ROM at 20020000 [disabled] [size=64K]
+	Capabilities: [40] Power Management version 2
 
--serge
-
-
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: [PATCH 2/2] file caps: accomodate future 64-bit caps
-
-As the capability set changes and distributions start tagging
-binaries with capabilities, we would like for running an older
-kernel to not necessarily make those binaries unusable.
-
-	(1. Rename CONFIG_SECURITY_FS_CAPABILITIES to
-	   CONFIG_SECURITY_FILE_CAPABILITIES)
-	2. Introduce CONFIG_SECURITY_FILE_CAPABILITIES_STRICTXATTR
-	   which, when set, prevents loading binaries with capabilities
-	   set which the kernel doesn't know about.  When not set,
-	   such capabilities run, ignoring the unknown caps.
-	3. To accomodate 64-bit caps, specify that capabilities are
-	   stored as
-	   	u32 version; u32 eff0; u32 perm0; u32 inh0;
-		u32 eff1; u32 perm1; u32 inh1; (etc)
-
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-
----
-
- include/linux/capability.h |   23 ++++++
- security/Kconfig           |   12 +++
- security/commoncap.c       |  157 ++++++++++++++++++++++++++++----------------
- 3 files changed, 131 insertions(+), 61 deletions(-)
-
-987fe7fcd60aaea6aaa86e6eb24a35f8bf2bdc68
-diff --git a/include/linux/capability.h b/include/linux/capability.h
-index 2776886..4dbfef3 100644
---- a/include/linux/capability.h
-+++ b/include/linux/capability.h
-@@ -44,11 +44,28 @@ typedef struct __user_cap_data_struct {
- 
- #define XATTR_CAPS_SUFFIX "capability"
- #define XATTR_NAME_CAPS XATTR_SECURITY_PREFIX XATTR_CAPS_SUFFIX
-+
-+/* size of caps that we work with */
-+#define XATTR_CAPS_SZ (4*sizeof(__le32))
-+
-+/*
-+ * data[] is organized as:
-+ *   effective[0]
-+ *   permitted[0]
-+ *   inheritable[0]
-+ *   effective[1]
-+ *   ...
-+ * this way we can just read as much of the on-disk capability as
-+ * we know should exist and know we'll get the data we'll need.
-+ */
- struct vfs_cap_data_disk {
- 	__le32 version;
--	__le32 effective;
--	__le32 permitted;
--	__le32 inheritable;
-+	__le32 data[];  /* eff[0], perm[0], inh[0], eff[1], ... */
-+};
-+
-+struct vfs_cap_data_disk_v1 {
-+	__le32 version;
-+	__le32 data[3];  /* eff[0], perm[0], inh[0] */
- };
- 
- #ifdef __KERNEL__
-diff --git a/security/Kconfig b/security/Kconfig
-index bc5b1be..3d5de26 100644
---- a/security/Kconfig
-+++ b/security/Kconfig
-@@ -88,7 +88,7 @@ config SECURITY_CAPABILITIES
- 	  This enables the "default" Linux capabilities functionality.
- 	  If you are unsure how to answer this question, answer Y.
- 
--config SECURITY_FS_CAPABILITIES
-+config SECURITY_FILE_CAPABILITIES
- 	bool "File POSIX Capabilities"
- 	depends on SECURITY=n || SECURITY_CAPABILITIES!=n
- 	default n
-@@ -98,6 +98,16 @@ config SECURITY_FS_CAPABILITIES
- 
- 	  If in doubt, answer N.
- 
-+config SECURITY_FILE_CAPABILITIES_STRICTXATTR
-+	bool "Refuse to run files with unknown caps"
-+	depends on SECURITY_FILE_CAPABILITIES
-+	default y
-+	help
-+	  Refuse to run files which have unknown capabilities set
-+	  in the security.capability xattr.  This could prevent
-+	  running important binaries from an updated distribution
-+	  on an older kernel.
-+
- config SECURITY_ROOTPLUG
- 	tristate "Root Plug Support"
- 	depends on USB && SECURITY
-diff --git a/security/commoncap.c b/security/commoncap.c
-index be86acb..86894be 100644
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -110,36 +110,73 @@ void cap_capset_set (struct task_struct 
- 	target->cap_permitted = *permitted;
- }
- 
--#ifdef CONFIG_SECURITY_FS_CAPABILITIES
--static inline void cap_from_disk(struct vfs_cap_data_disk *dcap,
--					struct vfs_cap_data *cap)
-+#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
-+
-+#ifdef CONFIG_SECURITY_FILE_CAPABILITIES_STRICTXATTR
-+static int check_cap_sanity(struct vfs_cap_data_disk *dcap, int size)
- {
--	cap->version = le32_to_cpu(dcap->version);
--	cap->effective = le32_to_cpu(dcap->effective);
--	cap->permitted = le32_to_cpu(dcap->permitted);
--	cap->inheritable = le32_to_cpu(dcap->inheritable);
-+	int word, bit;
-+	u32 eff, inh, perm;
-+	int sz = (size-1)/3;
-+
-+	word = CAP_NUMCAPS / 32;
-+	bit = CAP_NUMCAPS % 32;
-+
-+	eff  = le32_to_cpu(dcap->data[3*word]);
-+	perm = le32_to_cpu(dcap->data[3*word+1]);
-+	inh  = le32_to_cpu(dcap->data[3*word+2]);
-+
-+	while (word < sz) {
-+		if (bit == 32) {
-+			bit = 0;
-+			word++;
-+			if (word >= sz)
-+				break;
-+			eff  = le32_to_cpu(dcap->data[3*word]);
-+			perm = le32_to_cpu(dcap->data[3*word+1]);
-+			inh  = le32_to_cpu(dcap->data[3*word+2]);
-+			continue;
-+		}
-+		if (eff & CAP_TO_MASK(bit))
-+			return -EINVAL;
-+		if (inh & CAP_TO_MASK(bit))
-+			return -EINVAL;
-+		if (perm & CAP_TO_MASK(bit))
-+			return -EINVAL;
-+		bit++;
-+	}
-+
-+	return 0;
- }
-+#else
-+static int check_cap_sanity(struct vfs_cap_data_disk *dcap, int sz)
-+{ return 0 }
-+#endif
- 
--static int check_cap_sanity(struct vfs_cap_data *cap)
-+static inline int cap_from_disk(struct vfs_cap_data_disk *dcap,
-+					struct linux_binprm *bprm, int size)
- {
--	int i;
-+	int rc, version;
- 
--	if (cap->version != _LINUX_CAPABILITY_VERSION)
--		return -EPERM;
-+	version = le32_to_cpu(dcap->version);
-+	if (version != _LINUX_CAPABILITY_VERSION)
-+		return -EINVAL;
- 
--	for (i = CAP_NUMCAPS; i < 8*sizeof(cap->effective); i++) {
--		if (cap->effective & CAP_TO_MASK(i))
--			return -EPERM;
--	}
--	for (i = CAP_NUMCAPS; i < 8*sizeof(cap->permitted); i++) {
--		if (cap->permitted & CAP_TO_MASK(i))
--			return -EPERM;
--	}
--	for (i = CAP_NUMCAPS; i < 8*sizeof(cap->inheritable); i++) {
--		if (cap->inheritable & CAP_TO_MASK(i))
--			return -EPERM;
-+	size /= sizeof(u32);
-+	if ((size-1)%3) {
-+		printk(KERN_WARNING "%s: size is an invalid size (%d)\n",
-+						__FUNCTION__, size);
-+		return -EINVAL;
- 	}
- 
-+	rc = check_cap_sanity(dcap, size);
-+	if (rc)
-+		return rc;
-+
-+	bprm->cap_effective = le32_to_cpu(dcap->data[0]);
-+	bprm->cap_permitted = le32_to_cpu(dcap->data[1]);
-+	bprm->cap_inheritable = le32_to_cpu(dcap->data[2]);
-+
- 	return 0;
- }
- 
-@@ -147,52 +184,58 @@ static int check_cap_sanity(struct vfs_c
- static int set_file_caps(struct linux_binprm *bprm)
- {
- 	struct dentry *dentry;
--	ssize_t rc;
--	struct vfs_cap_data_disk dcaps;
--	struct vfs_cap_data caps;
-+	int rc;
-+	struct vfs_cap_data_disk_v1 v1caps;
-+	struct vfs_cap_data_disk *dcaps;
- 	struct inode *inode;
--	int err;
- 
-+	dcaps = (struct vfs_cap_data_disk *)&v1caps;
- 	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID)
- 		return 0;
- 
- 	dentry = dget(bprm->file->f_dentry);
- 	inode = dentry->d_inode;
--	if (!inode->i_op || !inode->i_op->getxattr) {
--		dput(dentry);
--		return 0;
--	}
--
--	rc = inode->i_op->getxattr(dentry, XATTR_NAME_CAPS, &dcaps,
--						sizeof(dcaps));
--	dput(dentry);
--
--	if (rc == -ENODATA)
--		return 0;
--
--	if (rc < 0) {
--		printk(KERN_NOTICE "%s: Error (%zd) getting xattr\n",
--				__FUNCTION__, rc);
--		return rc;
-+	rc = 0;
-+	if (!inode->i_op || !inode->i_op->getxattr)
-+		goto out;
-+
-+	rc = inode->i_op->getxattr(dentry, XATTR_NAME_CAPS, dcaps,
-+							XATTR_CAPS_SZ);
-+	if (rc == -ENODATA || rc == -EOPNOTSUPP) {
-+		rc = 0;
-+		goto out;
-+	}
-+	if (rc == -ERANGE) {
-+		int size;
-+		size = inode->i_op->getxattr(dentry, XATTR_NAME_CAPS, NULL, 0);
-+		if (size <= 0) {  /* shouldn't ever happen */
-+			rc = -EINVAL;
-+			goto out;
-+		}
-+		dcaps = kmalloc(size, GFP_KERNEL);
-+		if (!dcaps) {
-+			rc = -ENOMEM;
-+			goto out;
-+		}
-+		rc = inode->i_op->getxattr(dentry, XATTR_NAME_CAPS, dcaps,
-+							size);
- 	}
--
--	if (rc != sizeof(dcaps)) {
--		printk(KERN_NOTICE "%s: got wrong size for getxattr (%zd)\n",
--					__FUNCTION__, rc);
--		return -EPERM;
-+	if (rc < 0)
-+		goto out;
-+	if (rc < sizeof(struct vfs_cap_data_disk_v1)) {
-+		rc = -EINVAL;
-+		goto out;
- 	}
- 
--	cap_from_disk(&dcaps, &caps);
--	err = check_cap_sanity(&caps);
--	if (err)
--		return err;
--
--	bprm->cap_effective = caps.effective;
--	bprm->cap_permitted = caps.permitted;
--	bprm->cap_inheritable = caps.inheritable;
-+	rc = cap_from_disk(dcaps, bprm, rc);
- 
--	return 0;
-+out:
-+	dput(dentry);
-+	if ((void *)dcaps != (void *)&v1caps)
-+		kfree(dcaps);
-+	return rc;
- }
-+
- #else
- static inline int set_file_caps(struct linux_binprm *bprm)
- {
-@@ -399,7 +442,7 @@ int cap_task_post_setuid (uid_t old_ruid
- 	return 0;
- }
- 
--#ifdef CONFIG_SECURITY_FS_CAPABILITIES
-+#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
- /*
-  * Rationale: code calling task_setscheduler, task_setioprio, and
-  * task_setnice, assumes that
 -- 
-1.1.6
+-----------------------------------------------------------------------
+Bob Tracy                   WTO + WIPO = DMCA? http://www.anti-dmca.org
+rct@frus.com
+-----------------------------------------------------------------------
