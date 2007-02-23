@@ -1,100 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932195AbXBWJZM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752153AbXBWJZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932195AbXBWJZM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 04:25:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932200AbXBWJZM
+	id S1752153AbXBWJZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 04:25:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbXBWJZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 04:25:12 -0500
-Received: from smtp.ocgnet.org ([64.20.243.3]:34339 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932203AbXBWJZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 04:25:08 -0500
-Date: Fri, 23 Feb 2007 18:22:37 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [RFC 2.6.20 1/1] fbdev,mm: Deferred IO and hecubafb driver
-Message-ID: <20070223092237.GA16889@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Jaya Kumar <jayakumar.lkml@gmail.com>,
-	linux-fbdev-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org
-References: <20070223063228.GA9906@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070223063228.GA9906@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 23 Feb 2007 04:25:56 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56593
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752153AbXBWJZz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 04:25:55 -0500
+Date: Fri, 23 Feb 2007 01:25:19 -0800 (PST)
+Message-Id: <20070223.012519.48528691.davem@davemloft.net>
+To: tglx@linutronix.de
+Cc: jengelh@linux01.gwdg.de, kronos.it@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: NO_HZ: timer interrupt stuck
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1172165959.25076.192.camel@localhost.localdomain>
+References: <1172159501.25076.182.camel@localhost.localdomain>
+	<20070222.092652.55507017.davem@davemloft.net>
+	<1172165959.25076.192.camel@localhost.localdomain>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 23, 2007 at 07:32:28AM +0100, Jaya Kumar wrote:
-> This is a first pass at abstracting deferred IO out from hecubafb and
-> into fbdev as was discussed before: 
-> http://marc.theaimsgroup.com/?l=linux-fbdev-devel&m=117187443327466&w=2
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Thu, 22 Feb 2007 18:39:19 +0100
+
+> On Thu, 2007-02-22 at 09:26 -0800, David Miller wrote:
+> > BTW, I'm adding support for sparc64, and before I get much further
+> > will the code handle a oneshot-only device?  That's basically what I
+> > have (sparc64 basically has a TSC and a "comparison" register, you
+> > write the "comparison" register with the TSC value at which you'd like
+> > the timer interrupt to occur, so it's one-shot and you have to write
+> > it again to get the next timer).
 > 
-> Please let me know your feedback and if it looks okay so far.
-> 
-How about this for an fsync()? I wonder if this will be sufficient for
-msync() based flushing, or whether the ->sync VMA op is needed again..
+> Yes, all you need is to omit the CLOCK_EVT_FEAT_PERIODIC flag when you
+> register your device.
 
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+Thanks a lot Thomas.
 
---
-
- drivers/video/fb_defio.c |   12 ++++++++++++
- drivers/video/fbmem.c    |    3 +++
- include/linux/fb.h       |    2 ++
- 3 files changed, 17 insertions(+)
-
-diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
-index c3e57cc..8a66dc8 100644
---- a/drivers/video/fb_defio.c
-+++ b/drivers/video/fb_defio.c
-@@ -52,6 +52,18 @@ static void fb_deferred_io_work(struct work_struct *work)
- 	mutex_unlock(&fbdefio->lock);
- }
- 
-+int fb_deferred_io_fsync(struct file *file, struct dentry *dentry, int datasync)
-+{
-+	struct fb_info *info = file->private_data;
-+
-+	/* Kill off the delayed work */
-+	cancel_rearming_delayed_work(&info->deferred_work);
-+
-+	/* Run it immediately */
-+	return schedule_delayed_work(&info->deferred_work, 0);
-+}
-+EXPORT_SYMBOL_GPL(fb_deferred_io_fsync);
-+
- /* vm_ops->page_mkwrite handler */
- int fb_deferred_io_mkwrite(struct vm_area_struct *vma, 
- 					struct page *page)
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 863126a..69bbbe2 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1266,6 +1266,9 @@ static const struct file_operations fb_fops = {
- #ifdef HAVE_ARCH_FB_UNMAPPED_AREA
- 	.get_unmapped_area = get_fb_unmapped_area,
- #endif
-+#ifdef CONFIG_FB_DEFERRED_IO
-+	.fsync =	fb_deferred_io_fsync,
-+#endif
- };
- 
- struct class *fb_class;
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index af217dd..3f62652 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -933,6 +933,8 @@ extern void fb_deferred_io_init(struct fb_info *info);
- extern void fb_deferred_io_cleanup(struct fb_info *info);
- extern int fb_deferred_io_mkwrite(struct vm_area_struct *vma, 
- 					struct page *page);
-+extern int fb_deferred_io_fsync(struct file *file, struct dentry *dentry,
-+				int datasync);
- #else
- #define fb_deferred_io_init(fb_info)	do { } while (0)
- #define fb_deferred_io_cleanup(fb_info)	do { } while (0)
+I noticed while doing this work that the generic clock code is
+incompatible with the time interpolator, since both provide a
+do_{get,set}timeofday() implementation.  Just FYI...
