@@ -1,83 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933115AbXBWQIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933121AbXBWQME@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933115AbXBWQIS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 11:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933114AbXBWQIS
+	id S933121AbXBWQME (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 11:12:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933122AbXBWQME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 11:08:18 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:43121 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933115AbXBWQIR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 11:08:17 -0500
-Message-ID: <45DF1165.2080003@student.ltu.se>
-Date: Fri, 23 Feb 2007 17:08:05 +0100
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Fri, 23 Feb 2007 11:12:04 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47376 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933121AbXBWQMB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 11:12:01 -0500
+Message-ID: <45DF121D.7060705@stud.feec.vutbr.cz>
+Date: Fri, 23 Feb 2007 17:11:09 +0100
+From: Michal Schmidt <xschmi00@stud.feec.vutbr.cz>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070105)
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Milind Choudhary <milindchoudhary@gmail.com>,
-       kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       linux-joystick@atrey.karlin.mff.cuni.cz
-Subject: Re: [KJ][RFC][PATCH] BIT macro cleanup
-References: <3b44d3fb0702222056k1d2a9b57q69a3555a09a9058e@mail.gmail.com>	 <3b44d3fb0702230014x4ee4a1dewdc624c54b3635e15@mail.gmail.com>	 <45DEAC45.7090105@student.ltu.se>	 <3b44d3fb0702230215o2fbd5a3y25729e481a447149@mail.gmail.com>	 <45DEF5EE.4030002@student.ltu.se> <d120d5000702230657s1860efb3o6986277901f13d03@mail.gmail.com>
-In-Reply-To: <d120d5000702230657s1860efb3o6986277901f13d03@mail.gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix compilation of drivers with -O0
+References: <45DF0EFA.3070706@redhat.com>
+In-Reply-To: <45DF0EFA.3070706@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
-> On 2/23/07, Richard Knutsson <ricknu-0@student.ltu.se> wrote:
->> Milind Choudhary wrote:
->> > On 2/23/07, Richard Knutsson <ricknu-0@student.ltu.se> wrote:
->> >> > +#define BITWRAP(nr)    (1UL << ((nr) % BITS_PER_LONG))
->> >> >
->> >> > & make the whole input subsystem use it
->> >> > The change is huge, more than 125 files using input.h
->> >> > & almost all use the BIT macro.
->> >> It is as a big of change, but have you dismissed the "BIT(nr %
->> >> BITS_PER_LONG)" approach?
->> >
->> > no..
->> > but just looking at the number of places it is being used,
->> > it seems that adding a new  macro would be good
->> > which makes it look short n sweet
->> You have a point there but I still don't think it should be in bitops.h.
->> Why should we favor long-wrap before byte-wrap, so what do you think
->> about doing:
->>
->> #define BITWRAP(x)      BIT((x) % BITS_PER_LONG)
->>
->> in input.h? Otherwise I think it should be call LBITWRAP (or something)
->> to both show what kind it is and enable us to add others later.
->
-> Why would you not want to have what you call bitwrap as a standard
-> behavior? Most placed to not use modulus because they know the kind of
-> data they are working with but should still be fine if generic
-> implementation did that.
->
-Both because I find the name not as expressive as simple "BIT(x % 
-something)", but mainly since it only enables wrapping of the long-type. 
-But that is just my opinion.
-Just to test:
+[that still wasn't right, here's for the 3rd and final time.]
 
-> grep -Enr "BIT\(.*\%" *
-include/asm-arm/arch-h720x/irqs.h:114:#define IRQ_TO_BIT(irq) (1 << ((irq - NR_GLBL_IRQS) % 32))
-include/asm-arm/arch-omap/irqs.h:274:#define OMAP_IRQ_BIT(irq)  (1 << ((irq) % 32))
-include/asm-i386/mach-visws/piix4.h:17:#define  GPIBIT(x)               (1 << ((x)%8))
-include/linux/netfilter/xt_conntrack.h:11:#define XT_CONNTRACK_STATE_BIT(ctinfo) (1 << ((ctinfo)%IP_CT_IS_REPLY+1))
-include/linux/netfilter/xt_state.h:4:#define XT_STATE_BIT(ctinfo) (1 << ((ctinfo)%IP_CT_IS_REPLY+1))
-...
+It is sometimes useful to compile individual drivers with optimization
+disabled for easier debugging. Currently drivers which use htonl() and
+similar functions don't compile with -O0. This patch fixes it.
+It also removes obsolete and misleading comments. This header is not
+for userspace, so we don't have to care about strange programs these
+comments mention.
 
-So it seems there are some instances who wrap but they don't seem to 
-like BITSWAP (well, maybe those "% 32" on an appropriate arch).
+Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
 
-So I think that if an subsystem uses something like this much (like 
-input.h), then it is up to that subsystem to provide it. When more then 
-one sub-system have a need for it, then it should be a common define (as 
-BIT is now). But as I said, that is just my opinion.
+diff --git a/include/linux/byteorder/generic.h b/include/linux/byteorder/generic.h
+index e86e4a9..3dc715b 100644
+--- a/include/linux/byteorder/generic.h
++++ b/include/linux/byteorder/generic.h
+@@ -124,19 +124,8 @@
+ #define be32_to_cpus __be32_to_cpus
+ #define cpu_to_be16s __cpu_to_be16s
+ #define be16_to_cpus __be16_to_cpus
+-#endif
+ 
+-
+-#if defined(__KERNEL__)
+ /*
+- * Handle ntohl and suches. These have various compatibility
+- * issues - like we want to give the prototype even though we
+- * also have a macro for them in case some strange program
+- * wants to take the address of the thing or something..
+- *
+- * Note that these used to return a "long" in libc5, even though
+- * long is often 64-bit these days.. Thus the casts.
+- *
+  * They have to be macros in order to do the constant folding
+  * correctly - if the argument passed into a inline function
+  * it is no longer constant according to gcc..
+@@ -147,17 +136,6 @@
+ #undef htonl
+ #undef htons
+ 
+-/*
+- * Do the prototypes. Somebody might want to take the
+- * address or some such sick thing..
+- */
+-extern __u32			ntohl(__be32);
+-extern __be32			htonl(__u32);
+-extern __u16			ntohs(__be16);
+-extern __be16			htons(__u16);
+-
+-#if defined(__GNUC__) && defined(__OPTIMIZE__)
+-
+ #define ___htonl(x) __cpu_to_be32(x)
+ #define ___htons(x) __cpu_to_be16(x)
+ #define ___ntohl(x) __be32_to_cpu(x)
+@@ -168,9 +146,6 @@ extern __be16			htons(__u16);
+ #define htons(x) ___htons(x)
+ #define ntohs(x) ___ntohs(x)
+ 
+-#endif /* OPTIMIZE */
+-
+ #endif /* KERNEL */
+ 
+-
+ #endif /* _LINUX_BYTEORDER_GENERIC_H */
 
-Richard Knutsson
 
