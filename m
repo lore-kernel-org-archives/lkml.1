@@ -1,68 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946018AbXBWRVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933157AbXBWRYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946018AbXBWRVg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 12:21:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946019AbXBWRVg
+	id S933157AbXBWRYk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 12:24:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965136AbXBWRYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 12:21:36 -0500
-Received: from rwcrmhc12.comcast.net ([204.127.192.82]:41803 "EHLO
-	rwcrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946018AbXBWRVf (ORCPT
+	Fri, 23 Feb 2007 12:24:40 -0500
+Received: from mail.velocity.net ([66.211.211.55]:38846 "EHLO
+	mail.velocity.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933157AbXBWRYj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 12:21:35 -0500
-Message-ID: <45DF1ADD.9000600@wolfmountaingroup.com>
-Date: Fri, 23 Feb 2007 09:48:29 -0700
-From: "Jeff V. Merkey" <jmerkey@wolfmountaingroup.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20050921 Red Hat/1.7.12-1.4.1
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: linux-kernel@vger.kernel.org, Zwane Mwaikambo <zwane@infradead.org>,
-       Ashok Raj <ashok.raj@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@osdl.org>, "Lu, Yinghai" <yinghai.lu@amd.com>,
-       Natalie Protasevich <protasnb@gmail.com>, Andi Kleen <ak@suse.de>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Conclusions from my investigation about ioapic programming
-References: <200701221116.13154.luigi.genoni@pirelli.com>	<200702021848.55921.luigi.genoni@pirelli.com>	<m1ejp85tgm.fsf@ebiederm.dsl.xmission.com>	<200702021905.39922.luigi.genoni@pirelli.com>	<m1zm7w3wvr.fsf_-_@ebiederm.dsl.xmission.com>	<m1veik3woc.fsf_-_@ebiederm.dsl.xmission.com>	<20070206073616.GA15016@elte.hu>	<m1odo7q6cq.fsf@ebiederm.dsl.xmission.com>	<20070206222523.GA11602@elte.hu>	<m1irecamzh.fsf@ebiederm.dsl.xmission.com>	<m1wt2s8ksa.fsf@ebiederm.dsl.xmission.com>	<m1veib6dgi.fsf@ebiederm.dsl.xmission.com>	<m1hctt1sfp.fsf_-_@ebiederm.dsl.xmission.com>	<Pine.LNX.4.64.0702102146380.8245@montezuma.fsmlabs.com>	<m13b5d0zdp.fsf@ebiederm.dsl.xmission.com>	<Pine.LNX.4.64.0702110753390.8245@montezuma.fsmlabs.com>	<m17iuoz74f.fsf@ebiederm.dsl.xmission.com>	<Pine.LNX.4.64.0702111416220.24829@montezuma.fsmlabs.com>	<m1r6swx9l2.fsf@ebiederm.dsl.xmission.com> <m1irdtw3jb.fsf_-_@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1irdtw3jb.fsf_-_@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Fri, 23 Feb 2007 12:24:39 -0500
+X-Greylist: delayed 1451 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Feb 2007 12:24:39 EST
+X-AV-Checked: Fri Feb 23 12:00:28 2007 clean
+Subject: sata_sil problems with recent kernels
+From: Dale Blount <linux-kernel@dale.us>
+To: linux-kernel@vger.kernel.org
+Cc: linux-kernel@dale.us
+Content-Type: text/plain
+Date: Fri, 23 Feb 2007 12:00:27 -0500
+Message-Id: <1172250027.15179.16.camel@dale.velocity.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
+Hi,
 
->
->
->** Conclusions.
->
->*IRQs must be reprogramed in interrupt context.
->
->The result of this is investigation is that I am convinced we need
->to perform the irq migration activities in interrupt context although
->I am not convinced it is completely safe.  I suspect multiple irqs
->firing closely enough to each other may hit the same issues as
->migrating irqs from process context.  However the odds are on our
->side, when we are in irq context.
->
->  
->
-In my older days of programmin 82489DX chipsets (which the AMD APIC 
-versions resemble
-the 82489DX more closely than intel's newer incarnations), you had to 
-EOI the apic early if you
-wanted to migrate interrupt assignments. I had to do the following steps 
-to move an IRQ:
+Excuse me if this has been covered or fixed, I couldn't find anything in
+the archives.
 
-1. Mask the LOCAL APIC
-2, EOI the interrupt
-3. Leave the interrupt entry masked until the ISR completed.
-4. Reprogram the interrupt.
-5. Unmask as the ISR exits
+I upgraded from 2.6.11.7 to 2.6.20.1 today and found all the drives
+connected to 2 brands of sata_sil sata controllers not working.  The
+drives are also (now) of various brands, Maxtor 300GB and 500GB
+Seagates.
 
-In other words, EOI early in all cases to clear the local and IOAPIC state.
+On boot (or after modprobing sata_sil if not configured to load in my
+initrd), I get the below messages in dmesg and no drives showing up
+in /dev.
 
-Jeff
+There's 4 drives total, and 6 BUGs so I'm a little confused.  One of the
+drive (old sdb, which happened to be the first drive on sata_sil
+controllers) is known to have bad sectors, but I didn't think it could
+cause this... I'm away from the machine currently, so I haven't tested a
+single drive to see if it fails also.
 
+I rebooted back into 2.6.11.7 and everything was peachy (minus the known
+bad disk).
+
+Any suggestions or hints to more data I could provide to be diagnosed?
+
+Thanks,
+
+Dale
+
+***************
+
+ata3: SATA max UDMA/100 cmd 0xF8848080 ctl 0xF884808A bmdma 0xF8848000
+irq 18
+ata4: SATA max UDMA/100 cmd 0xF88480C0 ctl 0xF88480CA bmdma 0xF8848008
+irq 18
+scsi2 : sata_sil
+ata3: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+BUG: at drivers/ata/libata-core.c:4365 ata_hsm_move()
+ [<f882c9ae>] ata_hsm_move+0x1be/0x7d0 [libata]
+ [<c033eb42>] schedule_timeout+0x52/0xd0
+ [<c0130170>] process_timeout+0x0/0x10
+ [<f882fe97>] ata_pio_task+0x27/0x100 [libata]
+ [<c01378d3>] run_workqueue+0x93/0x140
+ [<f882fe70>] ata_pio_task+0x0/0x100 [libata]
+ [<c0138447>] worker_thread+0x147/0x170
+ [<c0121360>] default_wake_function+0x0/0x10
+ [<c0138300>] worker_thread+0x0/0x170
+ [<c013b2eb>] kthread+0xbb/0xf0
+ [<c013b230>] kthread+0x0/0xf0
+ [<c0103e4f>] kernel_thread_helper+0x7/0x18
+ =======================
+ata3.00: zero err_mask for failed internal command, assuming
+AC_ERR_OTHER
+ata3.00: failed to IDENTIFY (I/O error, err_mask=0x100)
+ata3: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+BUG: at drivers/ata/libata-core.c:4365 ata_hsm_move()
+ [<f882c9ae>] ata_hsm_move+0x1be/0x7d0 [libata]
+ [<c033eb42>] schedule_timeout+0x52/0xd0
+ [<c011e519>] __wake_up_common+0x39/0x70
+ [<c0130170>] process_timeout+0x0/0x10
+ [<f882fe97>] ata_pio_task+0x27/0x100 [libata]
+ [<c01378d3>] run_workqueue+0x93/0x140
+ [<f882fe70>] ata_pio_task+0x0/0x100 [libata]
+ [<c0138447>] worker_thread+0x147/0x170
+ [<c0121360>] default_wake_function+0x0/0x10
+ [<c0138300>] worker_thread+0x0/0x170
+ [<c013b2eb>] kthread+0xbb/0xf0
+ [<c013b230>] kthread+0x0/0xf0
+ [<c0103e4f>] kernel_thread_helper+0x7/0x18
+ =======================
+ata3.00: zero err_mask for failed internal command, assuming
+AC_ERR_OTHER
+ata3.00: failed to IDENTIFY (I/O error, err_mask=0x100)
+ata3: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+BUG: at drivers/ata/libata-core.c:4365 ata_hsm_move()
+ [<f882c9ae>] ata_hsm_move+0x1be/0x7d0 [libata]
+ [<c033eb42>] schedule_timeout+0x52/0xd0
+ [<c011e519>] __wake_up_common+0x39/0x70
+ [<c0130170>] process_timeout+0x0/0x10
+ [<f882fe97>] ata_pio_task+0x27/0x100 [libata]
+ [<c01378d3>] run_workqueue+0x93/0x140
+ [<f882fe70>] ata_pio_task+0x0/0x100 [libata]
+ [<c0138447>] worker_thread+0x147/0x170
+ [<c0121360>] default_wake_function+0x0/0x10
+ [<c0138300>] worker_thread+0x0/0x170
+ [<c013b2eb>] kthread+0xbb/0xf0
+ [<c013b230>] kthread+0x0/0xf0
+ [<c0103e4f>] kernel_thread_helper+0x7/0x18
+ =======================
+ata3.00: zero err_mask for failed internal command, assuming
+AC_ERR_OTHER
+ata3.00: failed to IDENTIFY (I/O error, err_mask=0x100)
+ata3: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+scsi3 : sata_sil
+ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+BUG: at drivers/ata/libata-core.c:4365 ata_hsm_move()
+ [<f882c9ae>] ata_hsm_move+0x1be/0x7d0 [libata]
+ [<c033eb42>] schedule_timeout+0x52/0xd0
+ [<c011e519>] __wake_up_common+0x39/0x70
+ [<c0130170>] process_timeout+0x0/0x10
+ [<f882fe97>] ata_pio_task+0x27/0x100 [libata]
+ [<c01378d3>] run_workqueue+0x93/0x140
+ [<f882fe70>] ata_pio_task+0x0/0x100 [libata]
+ [<c0138447>] worker_thread+0x147/0x170
+ [<c0121360>] default_wake_function+0x0/0x10
+ [<c0138300>] worker_thread+0x0/0x170
+ [<c013b2eb>] kthread+0xbb/0xf0
+ [<c013b230>] kthread+0x0/0xf0
+ [<c0103e4f>] kernel_thread_helper+0x7/0x18
+ =======================
+ata4.00: zero err_mask for failed internal command, assuming
+AC_ERR_OTHER
+ata4.00: failed to IDENTIFY (I/O error, err_mask=0x100)
+ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+BUG: at drivers/ata/libata-core.c:4365 ata_hsm_move()
+ [<f882c9ae>] ata_hsm_move+0x1be/0x7d0 [libata]
+ [<c033eb42>] schedule_timeout+0x52/0xd0
+ [<c011e519>] __wake_up_common+0x39/0x70
+ [<c0130170>] process_timeout+0x0/0x10
+ [<f882fe97>] ata_pio_task+0x27/0x100 [libata]
+ [<c01378d3>] run_workqueue+0x93/0x140
+ [<f882fe70>] ata_pio_task+0x0/0x100 [libata]
+ [<c0138447>] worker_thread+0x147/0x170
+ [<c0121360>] default_wake_function+0x0/0x10
+ [<c0138300>] worker_thread+0x0/0x170
+ [<c013b2eb>] kthread+0xbb/0xf0
+ [<c013b230>] kthread+0x0/0xf0
+ [<c0103e4f>] kernel_thread_helper+0x7/0x18
+ =======================
+ata4.00: zero err_mask for failed internal command, assuming
+AC_ERR_OTHER
+ata4.00: failed to IDENTIFY (I/O error, err_mask=0x100)
+ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+BUG: at drivers/ata/libata-core.c:4365 ata_hsm_move()
+ [<f882c9ae>] ata_hsm_move+0x1be/0x7d0 [libata]
+ [<c033eb42>] schedule_timeout+0x52/0xd0
+ [<c011e519>] __wake_up_common+0x39/0x70
+ [<c0130170>] process_timeout+0x0/0x10
+ [<f882fe97>] ata_pio_task+0x27/0x100 [libata]
+ [<c01378d3>] run_workqueue+0x93/0x140
+ [<f882fe70>] ata_pio_task+0x0/0x100 [libata]
+ [<c0138447>] worker_thread+0x147/0x170
+ [<c0121360>] default_wake_function+0x0/0x10
+ [<c0138300>] worker_thread+0x0/0x170
+ [<c013b2eb>] kthread+0xbb/0xf0
+ [<c013b230>] kthread+0x0/0xf0
+ [<c0103e4f>] kernel_thread_helper+0x7/0x18
+ =======================
+ata4.00: zero err_mask for failed internal command, assuming
+AC_ERR_OTHER
+ata4.00: failed to IDENTIFY (I/O error, err_mask=0x100)
+ata4: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
 
