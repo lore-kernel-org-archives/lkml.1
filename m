@@ -1,70 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752222AbXBWXLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932704AbXBWXNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752222AbXBWXLv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 18:11:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbXBWXLv
+	id S932704AbXBWXNo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 18:13:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933252AbXBWXNo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 18:11:51 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:17377 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752222AbXBWXLu (ORCPT
+	Fri, 23 Feb 2007 18:13:44 -0500
+Received: from wr-out-0506.google.com ([64.233.184.232]:59636 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932704AbXBWXNn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 18:11:50 -0500
-Date: Fri, 23 Feb 2007 15:11:12 -0800
-From: Joel Becker <Joel.Becker@oracle.com>
-To: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] mm/mincore: Return EFAULT when passed an invalid address.
-Message-ID: <20070223231112.GM7920@ca-server1.us.oracle.com>
-Mail-Followup-To: linux-kernel@vger.kernel.org,
-	Linus Torvalds <torvalds@linux-foundation.org>
-References: <20070223225847.GL7920@ca-server1.us.oracle.com>
+	Fri, 23 Feb 2007 18:13:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ofMkIavSrZsoDVPfHi+f87tXwX1x/8UWw2Vjbarz9iMaeeV0uS7pHYBrW1W0dQi/i/uEjGiMOC7qUuS+FASMr9LGqWmawU+fIK28A8hqdPmvSga4T6zbea8NndYRWvc/G+Ccvz0nErTEnonBx7w2cH/mFiwuqWAGkBCiRTO6rGg=
+Message-ID: <b0943d9e0702231513w1c42d017q9091b0fc3a16978a@mail.gmail.com>
+Date: Fri, 23 Feb 2007 23:13:40 +0000
+From: "Catalin Marinas" <catalin.marinas@gmail.com>
+To: "GIT list" <git@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: [ANNOUNCE] Stacked GIT 0.12.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070223225847.GL7920@ca-server1.us.oracle.com>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever come to perfection.
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 	The locking fix to sys_mincore in commit
-2f77d107050abc14bc393b34bdb7b91cf670c250 returns -ENOMEM when given a
-bad userspace address.  It should return -EFAULT.
+Stacked GIT 0.12.1 release is available from http://www.procode.org/stgit/.
 
-Signed-off-by: Joel Becker <joel.becker@oracle.com>
+StGIT is a Python application providing similar functionality to Quilt
+(i.e. pushing/popping patches to/from a stack) on top of GIT. These
+operations are performed using GIT commands and the patches are stored
+as GIT commit objects, allowing easy merging of the StGIT patches into
+other repositories using standard GIT functionality.
 
-diff --git a/mm/mincore.c b/mm/mincore.c
-index 8aca6f7..4af963c 100644
---- a/mm/mincore.c
-+++ b/mm/mincore.c
-@@ -122,7 +122,7 @@ asmlinkage long sys_mincore(unsigned long start, size_t len,
- 
- 	/* ..and we need to be passed a valid user-space range */
- 	if (!access_ok(VERIFY_READ, (void __user *) start, len))
--		return -ENOMEM;
-+		return -EFAULT;
- 
- 	/* This also avoids any overflows on PAGE_CACHE_ALIGN */
- 	pages = len >> PAGE_SHIFT;
+The main features in this release:
 
+    * Allow StGIT to run when there is no user information configured
+    * Use 'git-pull' rather than 'git-fetch' by default
+    * Fix the 'mail' command to parse multiple-lines address headers
+    * Fix the alias check in the 'stg mail --bcc' command
+    * Add '--merged' option to rebase
+    * Add '--url' option to 'import' to import a file directly from the network
+    * Add '--author' option to 'series'
+
+Acknowledgements (generated with 'git shortlog'):
+
+Catalin Marinas (10):
+      Make StGIT aware of the STGIT_DEBUG_LEVEL environment variable
+      Fix the behaviour when there is no user information configured
+      Allow importing mbox files from stdin
+      Add --author option to series
+      Fix import to allow --name and --strip for most import types
+      Display whether the patch is empty after refresh
+      Fix the alias check in the mail --bcc command
+      Fix the mail command to parse longer address headers
+      Use 'git-pull' rather than 'git-fetch' by default
+      Release 0.12.1
+
+Yann Dirson (7):
+      Add --merged option to rebase.
+      Use canonical command name in help message.
+      Support for pre-1.5 git in stgit tests.
+      Factorize rebasing behaviour.
+      Move stack-base querying into Series class.
+      Various cleanups for clarity.
+      Keep track of safe base changes.
+
+Clark Williams (1):
+      URL import for stgit
+
+Sam Vilain (1):
+      Some minor debian packaging fixes
 
 -- 
-
-"But then she looks me in the eye
- And says, 'We're going to last forever,'
- And man you know I can't begin to doubt it.
- Cause it just feels so good and so free and so right,
- I know we ain't never going to change our minds about it, Hey!
- Here comes my girl."
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+Catalin
