@@ -1,215 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933232AbXBWWQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933244AbXBWWQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933232AbXBWWQW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 17:16:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933236AbXBWWQW
+	id S933244AbXBWWQo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 17:16:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933237AbXBWWQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 17:16:22 -0500
-Received: from atlrel8.hp.com ([156.153.255.206]:43629 "EHLO atlrel8.hp.com"
+	Fri, 23 Feb 2007 17:16:44 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:49834 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933232AbXBWWQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 17:16:21 -0500
-Message-ID: <45DF678E.9020700@hp.com>
-Date: Fri, 23 Feb 2007 17:15:42 -0500
-From: Peter Keilty <peter.keilty@hp.com>
-User-Agent: Mozilla Thunderbird 1.0RC1 (X11/20041209)
-X-Accept-Language: en-us, en
+	id S933240AbXBWWQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 17:16:43 -0500
+Message-ID: <45DF67C4.8090802@garzik.org>
+Date: Fri, 23 Feb 2007 17:16:36 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-To: john stultz <johnstul@us.ibm.com>
-Cc: David Miller <davem@davemloft.net>, tglx@linutronix.de,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: sparc generic time / clockevents
-References: <1172165959.25076.192.camel@localhost.localdomain>	 <20070223.012519.48528691.davem@davemloft.net>	 <1172224579.25076.219.camel@localhost.localdomain>	 <20070223.015520.125893182.davem@davemloft.net> <1172260279.6261.20.camel@localhost>
-In-Reply-To: <1172260279.6261.20.camel@localhost>
+To: Robert Hancock <hancockr@shaw.ca>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, Tejun Heo <htejun@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "Eric D. Mudama" <edmudama@gmail.com>
+Subject: Re: [PATCH] libata: add NCQ blacklist entries from Silicon Image
+ Windows driver
+References: <45DD2EC9.4050403@shaw.ca>
+In-Reply-To: <45DD2EC9.4050403@shaw.ca>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-john stultz wrote:
+Robert Hancock wrote:
+> This patch adds in some NCQ blacklist entries taken from the Silicon
+> Image Windows drivers' .inf files for the 3124 and 3132 controllers.
+> These entries were marked as ""DisableSataQueueing". Assume these are
+> in their blacklist for a reason and disable NCQ on these drives.
+> 
+> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
+> 
+> --- linux-2.6.21-rc1edit/drivers/ata/libata-core.c.prev    2007-02-21 
+> 22:23:05.000000000 -0600
+> +++ linux-2.6.21-rc1edit/drivers/ata/libata-core.c    2007-02-21 
+> 22:25:44.000000000 -0600
+> @@ -3269,6 +3269,13 @@ static const struct ata_blacklist_entry
+>     /* Devices with NCQ limits */
+> 
+> +    /* The following blacklist entries are taken from the Windows
+> +       driver .inf files for the Silicon Image 3124 and 3132. */
+> +    { "Maxtor 7B250S0",    "BANC1B70",    ATA_HORKAGE_NONCQ, },
+> +    { "HTS541060G9SA00",    "MB3OC60D",    ATA_HORKAGE_NONCQ, },
+> +    { "HTS541080G9SA00",    "MB4OC60D",    ATA_HORKAGE_NONCQ, },
+> +    { "HTS541010G9SA00",    "MBZOC60D",    ATA_HORKAGE_NONCQ, },
 
->On Fri, 2007-02-23 at 01:55 -0800, David Miller wrote:
->  
->
->>From: Thomas Gleixner <tglx@linutronix.de>
->>Date: Fri, 23 Feb 2007 10:56:18 +0100
->>
->>    
->>
->>>On Fri, 2007-02-23 at 01:25 -0800, David Miller wrote:
->>>      
->>>
->>>>>Yes, all you need is to omit the CLOCK_EVT_FEAT_PERIODIC flag when you
->>>>>register your device.
->>>>>          
->>>>>
->>>>Thanks a lot Thomas.
->>>>
->>>>I noticed while doing this work that the generic clock code is
->>>>incompatible with the time interpolator, since both provide a
->>>>do_{get,set}timeofday() implementation.  Just FYI...
->>>>        
->>>>
->>>John, can you have a look at this ?
->>>      
->>>
->>Note we may not care :-)  All the interpolator does is provide
->>a generic tick based gettimeofday implementation, and the generic
->>clock code does essentially the same thing.
->>
->>And the generic clock code must in fact provide the implementations
->>in order to deal with dyntick issues.
->>
->>The only other platform using the time interpolator is IA64,
->>and after my dyntick implementation on sparc64 the one and
->>only user will be IA64 :-)
->>    
->>
->
->Yea. I actually have some in-progress patches from Peter Keilty that
->convert ia64 and sparc64 time_interpolators to clocksources, then
->removes the time_interpolator code.
->
->The ia64 conversion is more complicated due to the fsyscall asm, but I
->think the sparc64 conversion (below) is pretty straight forward. I've
->only built tested this, so I have no clue if it actually works. 
->
->Any thoughts?
->  
->
-I have only build tested also, I thought it was pretty straight forward.
 
->thanks
->-john
->
->
->From: Peter Keilty <peter.keilty@hp.com>
->
->Initial sparc64 conversion to generic clocksource/timekeeping code.
->
->Signed-off-by: Peter Keilty <peter.keilty@hp.com>
->Signed-off-by: John Stultz <johnstul@us.ibm.com>
->
->
-> Kconfig       |    2 +-
-> defconfig     |    2 +-
-> kernel/time.c |   34 +++++++++++++++++++++++-----------
-> 3 files changed, 25 insertions(+), 13 deletions(-)
->
->linux-2.6.21-rc1_timeofday-arch-sparc64_C7.patch
->============================================
->diff --git a/arch/sparc64/Kconfig b/arch/sparc64/Kconfig
->index f75a686..13a4547 100644
->--- a/arch/sparc64/Kconfig
->+++ b/arch/sparc64/Kconfig
->@@ -34,7 +34,7 @@ config LOCKDEP_SUPPORT
-> 	bool
-> 	default y
-> 
->-config TIME_INTERPOLATION
->+config GENERIC_TIME
-> 	bool
-> 	default y
-> 
->diff --git a/arch/sparc64/defconfig b/arch/sparc64/defconfig
->index 0f44a6a..33e061a 100644
->--- a/arch/sparc64/defconfig
->+++ b/arch/sparc64/defconfig
->@@ -9,7 +9,7 @@ CONFIG_64BIT=y
-> CONFIG_MMU=y
-> CONFIG_STACKTRACE_SUPPORT=y
-> CONFIG_LOCKDEP_SUPPORT=y
->-CONFIG_TIME_INTERPOLATION=y
->+CONFIG_GENERIC_TIME=y
-> CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-> # CONFIG_ARCH_HAS_ILOG2_U32 is not set
-> # CONFIG_ARCH_HAS_ILOG2_U64 is not set
->diff --git a/arch/sparc64/kernel/time.c b/arch/sparc64/kernel/time.c
->index f84da4f..497b29b 100644
->--- a/arch/sparc64/kernel/time.c
->+++ b/arch/sparc64/kernel/time.c
->@@ -31,6 +31,7 @@ #include <linux/percpu.h>
-> #include <linux/profile.h>
-> #include <linux/miscdevice.h>
-> #include <linux/rtc.h>
->+#include <linux/clocksource.h>
-> 
-> #include <asm/oplib.h>
-> #include <asm/mostek.h>
->@@ -620,7 +621,7 @@ #endif
-> 	if (!mregs && !dregs) {
-> 		prom_printf("Something wrong, clock regs not mapped yet.\n");
-> 		prom_halt();
->-	}		
->+	}
-> 
-> 	if (mregs) {
-> 		spin_lock_irq(&mostek_lock);
->@@ -820,7 +821,7 @@ #endif
-> 	}
-> 
-> 	set_system_time();
->-	
->+
-> 	local_irq_restore(flags);
-> 
-> 	return 0;
->@@ -975,22 +976,33 @@ static struct notifier_block sparc64_cpu
-> 
-> #endif /* CONFIG_CPU_FREQ */
-> 
->-static struct time_interpolator sparc64_cpu_interpolator = {
->-	.source		=	TIME_SOURCE_CPU,
->-	.shift		=	16,
->-	.mask		=	0xffffffffffffffffLL
->+static cycle_t read_sparc64_cpuclock(void)
->+{
->+        return (cycle_t)get_cycles();
->+}
->+
->+static struct clocksource clocksource_sparc64_cpuclock = {
->+	.name           = "sparc64_cpuclock",
->+	.rating         = 300,
->+	.read           = read_sparc64_cpuclock,
->+	.mask           = 0xffffffffffffffffLL,
->+	.mult           = 0, /*to be caluclated*/
->+	.shift          = 16,
->+	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
-> };
-> 
->+
-> /* The quotient formula is taken from the IA64 port. */
-> #define SPARC64_NSEC_PER_CYC_SHIFT	10UL
-> void __init time_init(void)
-> {
-> 	unsigned long clock = sparc64_init_timers();
-> 
->-	sparc64_cpu_interpolator.frequency = clock;
->-	register_time_interpolator(&sparc64_cpu_interpolator);
->+	clocksource_sparc64_cpuclock.mult = clocksource_hz2mult(clock,
->+					clocksource_sparc64_cpuclock.shift);
->+	clocksource_register(&clocksource_sparc64_cpuclock);
-> 
->-	/* Now that the interpolator is registered, it is
->+	/* Now that the clocksource is registered, it is
-> 	 * safe to start the timer ticking.
-> 	 */
-> 	sparc64_start_timers();
->@@ -1025,11 +1037,11 @@ #endif
-> 	unsigned long flags;
-> 	u8 tmp;
-> 
->-	/* 
->+	/*
-> 	 * Not having a register set can lead to trouble.
-> 	 * Also starfire doesn't have a tod clock.
-> 	 */
->-	if (!mregs && !dregs) 
->+	if (!mregs && !dregs)
-> 		return -1;
-> 
-> 	if (mregs) {
->
->
->  
->
+The general consensus of private emails seems to be that its ok to 
+blacklist the Maxtor one, at least.
+
+So let's go ahead and at least get that entry in.
+
+	Jeff
+
+
