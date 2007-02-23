@@ -1,36 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933247AbXBWWcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933253AbXBWWca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933247AbXBWWcw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 17:32:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933257AbXBWWcw
+	id S933253AbXBWWca (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 17:32:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933247AbXBWWca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 17:32:52 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50600
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S933247AbXBWWcv (ORCPT
+	Fri, 23 Feb 2007 17:32:30 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:60383 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933256AbXBWWc3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 17:32:51 -0500
-Date: Fri, 23 Feb 2007 14:32:24 -0800 (PST)
-Message-Id: <20070223.143224.74748313.davem@davemloft.net>
-To: johnstul.lkml@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: radeon breaks with clocksource_jiffies
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1f1b08da0702231410x24728480n463d08540c1c665f@mail.gmail.com>
-References: <20070223.134505.74749340.davem@davemloft.net>
-	<20070223.140328.74752162.davem@davemloft.net>
-	<1f1b08da0702231410x24728480n463d08540c1c665f@mail.gmail.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 23 Feb 2007 17:32:29 -0500
+Date: Fri, 23 Feb 2007 14:31:12 -0800
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: A quick fio test (was Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3)
+Message-ID: <20070223223112.GJ7920@ca-server1.us.oracle.com>
+Mail-Followup-To: Jens Axboe <jens.axboe@oracle.com>,
+	Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Christoph Hellwig <hch@infradead.org>,
+	Andrew Morton <akpm@zip.com.au>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Ulrich Drepper <drepper@redhat.com>,
+	Zach Brown <zach.brown@oracle.com>,
+	Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+	"David S. Miller" <davem@davemloft.net>,
+	Suparna Bhattacharya <suparna@in.ibm.com>,
+	Davide Libenzi <davidel@xmailserver.org>,
+	Thomas Gleixner <tglx@linutronix.de>
+References: <20070221211355.GA7302@elte.hu> <20070223125247.GO5737@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070223125247.GO5737@kernel.dk>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever come to perfection.
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "john stultz-lkml" <johnstul.lkml@gmail.com>
-Date: Fri, 23 Feb 2007 14:10:07 -0800
+On Fri, Feb 23, 2007 at 01:52:47PM +0100, Jens Axboe wrote:
+> Results:
+> 
+> Engine          Depth           Bw (MiB/sec)
+> --------------------------------------------
+> libaio            1             441
+> syslet            1             574
+> sync              1             589
+> libaio           32             613
+> syslet           32             681
 
-> Check out the patch I sent out yesterday. It should resolve this problem.
+	Can we get runs with large I/Os, large I/O depths, and most
+importantly tons of processes?  I can absolutely believe that syslets
+would compete well with one process on the system.  But with 1000
+processes doing 1000s of blocking I/Os, I'd really be interested to see
+how that plays out.
 
-Yep, changing that finished_booting setting into an fs_initcall()
-fixes this issue.
+Joel
+
+-- 
+
+ Joel's Second Law:
+
+	If a code change requires additional user setup, it is wrong.
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
