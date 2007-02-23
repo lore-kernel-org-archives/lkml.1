@@ -1,91 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933132AbXBWQ2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933136AbXBWQbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933132AbXBWQ2f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 11:28:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933133AbXBWQ2f
+	id S933136AbXBWQbb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 11:31:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933137AbXBWQbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 11:28:35 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:11805 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933132AbXBWQ2e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 11:28:34 -0500
-Message-ID: <45DF15D4.6040403@mvista.com>
-Date: Fri, 23 Feb 2007 08:27:00 -0800
-From: akuster <akuster@mvista.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Fri, 23 Feb 2007 11:31:31 -0500
+Received: from pfx2.jmh.fr ([194.153.89.55]:45961 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933136AbXBWQbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 11:31:31 -0500
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Nick Piggin <npiggin@suse.de>
+Subject: Re: [rfc][patch] dynamic resizing dentry hash using RCU
+Date: Fri, 23 Feb 2007 17:31:17 +0100
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20070223153743.GA26141@wotan.suse.de>
+In-Reply-To: <20070223153743.GA26141@wotan.suse.de>
 MIME-Version: 1.0
-To: Ingo Oeser <ioe-lkml@rameria.de>
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [patch 1/1] MM:  detach_vmas_to_be_unmapped fix
-References: <20070221180742.A05F31C49A@hermes.mvista.com> <200702212159.07295.ioe-lkml@rameria.de>
-In-Reply-To: <200702212159.07295.ioe-lkml@rameria.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702231731.17262.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 23 February 2007 16:37, Nick Piggin wrote:
+> The dentry hash uses up 8MB for 1 million entries on my 4GB system is one
+> of the biggest wasters of memory for me. Because I rarely have more than
+> one or two hundred thousand dentries. And that's with several kernel trees
+> worth of entries. Most desktop and probably even many types of servers will
+> only use a fraction of that.
+>
+> So I introduce a new method for resizing hash tables with RCU, and apply
+> that to the dentry hash.
+>
+> The primitive heuristic is that the hash size is doubled when the number of
+> entries reaches 150% the hash size, and halved when the number is 50%.
+> It should also be able to shrink under memory pressure, and scale up as
+> large as we go.
+>
+> A pity it uses vmalloc memory for the moment.
+>
+> The implementation is not highly stress tested, but it is running now. It
+> could do a bit more RCU stuff asynchronously rather than with
+> synchronize_rcu, but who cares, for now.
+>
+> The hash is costing me about 256K now, which is a 32x reduction in memory.
+>
+> I don't know if it's worthwhile to do this, rather than move things to
+> other data structures, but something just tempted me to have a go!  I'd be
+> interested to hear comments, and how many holes people can spot in my
+> design ;)
+>
+> Thanks,
+> Nick
 
+Hi Nick
 
-Ingo Oeser wrote:
-> Hi,
-> 
-> On Wednesday, 21. February 2007, akuster@mvista.com wrote:
->> ---
->>
->>  mm/mmap.c |    4 ++--
->>  1 file changed, 2 insertions(+), 2 deletions(-)
->>
->> diff -puN mm/mmap.c~Avoiding-mmap-fragmentation_fixup mm/mmap.c
->> --- linux-2.6_clean/mm/mmap.c~Avoiding-mmap-fragmentation_fixup	2007-02-21 09:49:32.000000000 -0800
->> +++ linux-2.6_clean-akuster/mm/mmap.c	2007-02-21 09:51:26.000000000 -0800
->> @@ -1720,9 +1720,9 @@ detach_vmas_to_be_unmapped(struct mm_str
->>  	*insertion_point = vma;
->>  	tail_vma->vm_next = NULL;
->>  	if (mm->unmap_area == arch_unmap_area)
->> -		addr = prev ? prev->vm_end : mm->mmap_base;
->> +		addr = prev ? prev->vm_start : mm->mmap_base;
->>  	else
->> -		addr = vma ?  vma->vm_start : mm->mmap_base;
->> +		addr = vma ?  vma->vm_end : mm->mmap_base;
->>  	mm->unmap_area(mm, addr);
->>  	mm->mmap_cache = NULL;		/* Kill the cache. */
->>  }
-> 
-> Please comment, why you think this is necessary.
+Thats a really good idea !
 
-Yes that would help.
+The vmalloc() thing could be a problem, so :
 
-On Feb. 16th I asked a question and got no response. Here is what should 
-have been included with the above patch.
+Could you bring back the support of 'dhash_entries=262144' boot param, so that 
+an admin could set the initial size of dhash table, (and not shrink it under 
+this size even if the number of dentries is low)
 
-Wolfgang Wander submitted a fix to address a mmap fragmentation issue. 
-The git patch ( 1363c3cd8603a913a27e2995dccbd70d5312d8e6 ) is somewhat 
-different and yields different results when running Wolfgang's test case 
-leakme.c.
+In case dhash_entries is set in boot params, we could try to use 
+alloc_large_system_hash() for the initial table, (eventually using Hugepages 
+(not vmalloc)), if we add a free_large_system_hash() function to be able to 
+free the initial table.
 
-IMHO, the vm start and end address are swapped in arch_unmap_area and 
-arch_unmap_area_topdown functions.
+Or else, time is to add the possibility for vmalloc() to use hugepages 
+itself...
 
-Prior to this patch arch_unmap_area() used area->vm_start and 
-arch_unmap_area_topdown used area->vm_end in the git patch the following 
-change showed up.
-
-if (mm->unmap_area == arch_unmap_area)
-     addr = prev ? prev->vm_start : mm->mmap_base;
-else
-     addr = vma ?  vma->vm_end : mm->mmap_base;
-
-Using Wolfgang Wander's leakme.c test, I get the same results seen with 
-his original "Avoiding mmap fragmentation" patch as I do after swapping 
-  the start & end address in the above code segment. The patch I 
-submitted  addresses this typo issue.
-
-TIA,
-Armin
-
-> 
-> 
-> Thanks & Regards
-> 
-> Ingo Oeser
