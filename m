@@ -1,105 +1,273 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932567AbXBWLTA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932579AbXBWLUP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932567AbXBWLTA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 06:19:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932571AbXBWLTA
+	id S932579AbXBWLUP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 06:20:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932586AbXBWLUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 06:19:00 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42462 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932567AbXBWLS6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 06:18:58 -0500
-Date: Fri, 23 Feb 2007 12:12:45 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: johnpol@2ka.mipt.ru, arjan@infradead.org, drepper@redhat.com,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       hch@infradead.org, akpm@zip.com.au, alan@lxorguk.ukuu.org.uk,
-       zach.brown@oracle.com, suparna@in.ibm.com, davidel@xmailserver.org,
-       jens.axboe@oracle.com, tglx@linutronix.de
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070223111245.GF22870@elte.hu>
-References: <20070222143145.GA3246@elte.hu> <20070222.064704.71093028.davem@davemloft.net> <20070222151509.GA13670@elte.hu> <20070222.091735.30182079.davem@davemloft.net>
-Mime-Version: 1.0
+	Fri, 23 Feb 2007 06:20:15 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50684 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932579AbXBWLUM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 06:20:12 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, Zwane Mwaikambo <zwane@infradead.org>,
+       Ashok Raj <ashok.raj@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       "Lu, Yinghai" <yinghai.lu@amd.com>,
+       Natalie Protasevich <protasnb@gmail.com>, Andi Kleen <ak@suse.de>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH 05/14] x86_64 irq: Refactor setup_IO_APIC_irq
+References: <200701221116.13154.luigi.genoni@pirelli.com>
+	<m1veik3woc.fsf_-_@ebiederm.dsl.xmission.com>
+	<20070206073616.GA15016@elte.hu>
+	<m1odo7q6cq.fsf@ebiederm.dsl.xmission.com>
+	<20070206222523.GA11602@elte.hu>
+	<m1irecamzh.fsf@ebiederm.dsl.xmission.com>
+	<m1wt2s8ksa.fsf@ebiederm.dsl.xmission.com>
+	<m1veib6dgi.fsf@ebiederm.dsl.xmission.com>
+	<m1hctt1sfp.fsf_-_@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.64.0702102146380.8245@montezuma.fsmlabs.com>
+	<m13b5d0zdp.fsf@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.64.0702110753390.8245@montezuma.fsmlabs.com>
+	<m17iuoz74f.fsf@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.64.0702111416220.24829@montezuma.fsmlabs.com>
+	<m1r6swx9l2.fsf@ebiederm.dsl.xmission.com>
+	<m1irdtw3jb.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1bqjlw2mr.fsf_-_@ebiederm.dsl.xmission.com>
+	<m17iu9w2kj.fsf_-_@ebiederm.dsl.xmission.com>
+	<m13b4xw2h8.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1y7mpunuk.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1tzxdunsg.fsf_-_@ebiederm.dsl.xmission.com>
+Date: Fri, 23 Feb 2007 04:19:08 -0700
+In-Reply-To: <m1tzxdunsg.fsf_-_@ebiederm.dsl.xmission.com> (Eric
+	W. Biederman's message of "Fri, 23 Feb 2007 04:16:31 -0700")
+Message-ID: <m1ps81uno3.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070222.091735.30182079.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* David Miller <davem@davemloft.net> wrote:
+Currently we have two routines that do practically the same thing
+setup_IO_APIC_irq and io_apic_set_pci_routing.  This patch makes
+setup_IO_APIC_irq the common factor of these two previous routines.
+For setup_IO_APIC_irq all that was needed was to pass the trigger
+and polarity to make the code a proper subset of io_apic_set_pci_routing.
 
-> > furthermore, in a real webserver there's a whole lot of other stuff 
-> > happening too: VFS blocking, mutex/lock blocking, memory pressure 
-> > blocking, filesystem blocking, etc., etc. Threadlets/syslets cover 
-> > them /all/ and never hold up the primary context: as long as there's 
-> > more requests to process, they will be processed. Plus other 
-> > important networked workloads, like fileservers are typically on 
-> > fast LANs and those requests are very much a fire-and-forget matter 
-> > most of the time.
-> 
-> I expect clients of a fileserver to cause the server to block in 
-> places such as tcp_sendmsg() as much if not more so than a webserver
-> :-)
+Hopefully consolidating these two routines will improve maintenance
+there were several differences that simply appear to be one routine
+or the other getting it wrong.
 
-yeah, true. But ... i'd still like to midly disagree with the 
-characterisation that due to blocking being the norm in networking, that 
-this goes against the concept of syslets/threadlets.
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ arch/x86_64/kernel/io_apic.c |  126 +++++++++++------------------------------
+ 1 files changed, 34 insertions(+), 92 deletions(-)
 
-Networking has a 'work cache' too, in an abstract sense, which works in 
-favor of syslets: the socket buffers. If there is a reasonably sized 
-output queue for sockets (not extremely small like 4k per socket but 
-something at least 16k), then user-space can chunk up its workload along 
-pretty reasonable lines without assuming too much, and turn one such 
-'chunk' into one atomic step done in the 'syslet/threadlet request'. In 
-the rare cases where blocking happens in an unexpected way, the 
-syslet/threadlet 'goes async' but that only holds up that particular 
-request, and only for that chunk, not the main loop of processing and 
-doesnt force the request into an async thread forever.
+diff --git a/arch/x86_64/kernel/io_apic.c b/arch/x86_64/kernel/io_apic.c
+index a69c38b..e064838 100644
+--- a/arch/x86_64/kernel/io_apic.c
++++ b/arch/x86_64/kernel/io_apic.c
+@@ -615,22 +615,6 @@ static int pin_2_irq(int idx, int apic, int pin)
+ 	return irq;
+ }
+ 
+-static inline int IO_APIC_irq_trigger(int irq)
+-{
+-	int apic, idx, pin;
+-
+-	for (apic = 0; apic < nr_ioapics; apic++) {
+-		for (pin = 0; pin < nr_ioapic_registers[apic]; pin++) {
+-			idx = find_irq_entry(apic,pin,mp_INT);
+-			if ((idx != -1) && (irq == pin_2_irq(idx,apic,pin)))
+-				return irq_trigger(idx);
+-		}
+-	}
+-	/*
+-	 * nonexistent IRQs are edge default
+-	 */
+-	return 0;
+-}
+ 
+ /* irq_vectors is indexed by the sum of all RTEs in all I/O APICs. */
+ static u8 irq_vector[NR_IRQ_VECTORS] __read_mostly = {
+@@ -795,26 +779,36 @@ void __setup_vector_irq(int cpu)
+ 
+ static struct irq_chip ioapic_chip;
+ 
+-#define IOAPIC_AUTO	-1
+-#define IOAPIC_EDGE	0
+-#define IOAPIC_LEVEL	1
+-
+ static void ioapic_register_intr(int irq, unsigned long trigger)
+ {
+-	if ((trigger == IOAPIC_AUTO && IO_APIC_irq_trigger(irq)) ||
+-			trigger == IOAPIC_LEVEL)
++	if (trigger)
+ 		set_irq_chip_and_handler_name(irq, &ioapic_chip,
+ 					      handle_fasteoi_irq, "fasteoi");
+ 	else
+ 		set_irq_chip_and_handler_name(irq, &ioapic_chip,
+ 					      handle_edge_irq, "edge");
+ }
+-static void __init setup_IO_APIC_irq(int apic, int pin, int idx, int irq)
++
++static void setup_IO_APIC_irq(int apic, int pin, unsigned int irq,
++			      int trigger, int polarity)
+ {
+ 	struct IO_APIC_route_entry entry;
++	cpumask_t mask;
+ 	int vector;
+ 	unsigned long flags;
+ 
++	if (!IO_APIC_IRQ(irq))
++		return;
++
++	vector = assign_irq_vector(irq, TARGET_CPUS, &mask);
++	if (vector < 0)
++		return;
++
++	apic_printk(APIC_VERBOSE,KERN_DEBUG
++		    "IOAPIC[%d]: Set routing entry (%d-%d -> 0x%x -> "
++		    "IRQ %d Mode:%i Active:%i)\n",
++		    apic, mp_ioapics[apic].mpc_apicid, pin, vector,
++		    irq, trigger, polarity);
+ 
+ 	/*
+ 	 * add it to the IO-APIC irq-routing table:
+@@ -823,41 +817,27 @@ static void __init setup_IO_APIC_irq(int apic, int pin, int idx, int irq)
+ 
+ 	entry.delivery_mode = INT_DELIVERY_MODE;
+ 	entry.dest_mode = INT_DEST_MODE;
++	entry.dest = cpu_mask_to_apicid(mask);
+ 	entry.mask = 0;				/* enable IRQ */
+-	entry.dest = cpu_mask_to_apicid(TARGET_CPUS);
+-
+-	entry.trigger = irq_trigger(idx);
+-	entry.polarity = irq_polarity(idx);
++	entry.trigger = trigger;
++	entry.polarity = polarity;
++	entry.vector = vector;
+ 
+-	if (irq_trigger(idx)) {
+-		entry.trigger = 1;
++	/* Mask level triggered irqs.
++	 * Use IRQ_DELAYED_DISABLE for edge triggered irqs.
++	 */
++	if (trigger)
+ 		entry.mask = 1;
+-		entry.dest = cpu_mask_to_apicid(TARGET_CPUS);
+-	}
+-
+-	if (!apic && !IO_APIC_IRQ(irq))
+-		return;
+ 
+-	if (IO_APIC_IRQ(irq)) {
+-		cpumask_t mask;
+-		vector = assign_irq_vector(irq, TARGET_CPUS, &mask);
+-		if (vector < 0)
+-			return;
+-
+-		entry.dest = cpu_mask_to_apicid(mask);
+-		entry.vector = vector;
+-
+-		ioapic_register_intr(irq, IOAPIC_AUTO);
+-		if (!apic && (irq < 16))
+-			disable_8259A_irq(irq);
+-	}
++	ioapic_register_intr(irq, trigger);
++	if (irq < 16)
++		disable_8259A_irq(irq);
+ 
+ 	ioapic_write_entry(apic, pin, entry);
+ 
+ 	spin_lock_irqsave(&ioapic_lock, flags);
+ 	irq_desc[irq].affinity = TARGET_CPUS;
+ 	spin_unlock_irqrestore(&ioapic_lock, flags);
+-
+ }
+ 
+ static void __init setup_IO_APIC_irqs(void)
+@@ -882,8 +862,8 @@ static void __init setup_IO_APIC_irqs(void)
+ 		irq = pin_2_irq(idx, apic, pin);
+ 		add_pin_to_irq(irq, apic, pin);
+ 
+-		setup_IO_APIC_irq(apic, pin, idx, irq);
+-
++		setup_IO_APIC_irq(apic, pin, irq,
++				  irq_trigger(idx), irq_polarity(idx));
+ 	}
+ 	}
+ 
+@@ -2090,11 +2070,6 @@ int __init io_apic_get_redir_entries (int ioapic)
+ 
+ int io_apic_set_pci_routing (int ioapic, int pin, int irq, int triggering, int polarity)
+ {
+-	struct IO_APIC_route_entry entry;
+-	unsigned long flags;
+-	int vector;
+-	cpumask_t mask;
+-
+ 	if (!IO_APIC_IRQ(irq)) {
+ 		apic_printk(APIC_QUIET,KERN_ERR "IOAPIC[%d]: Invalid reference to IRQ 0\n",
+ 			ioapic);
+@@ -2107,42 +2082,7 @@ int io_apic_set_pci_routing (int ioapic, int pin, int irq, int triggering, int p
+ 	if (irq >= 16)
+ 		add_pin_to_irq(irq, ioapic, pin);
+ 
+-
+-	vector = assign_irq_vector(irq, TARGET_CPUS, &mask);
+-	if (vector < 0)
+-		return vector;
+-
+-	/*
+-	 * Generate a PCI IRQ routing entry and program the IOAPIC accordingly.
+-	 * Note that we mask (disable) IRQs now -- these get enabled when the
+-	 * corresponding device driver registers for this IRQ.
+-	 */
+-
+-	memset(&entry,0,sizeof(entry));
+-
+-	entry.delivery_mode = INT_DELIVERY_MODE;
+-	entry.dest_mode = INT_DEST_MODE;
+-	entry.dest = cpu_mask_to_apicid(mask);
+-	entry.trigger = triggering;
+-	entry.polarity = polarity;
+-	entry.mask = 1;					 /* Disabled (masked) */
+-	entry.vector = vector & 0xff;
+-
+-	apic_printk(APIC_VERBOSE,KERN_DEBUG "IOAPIC[%d]: Set PCI routing entry (%d-%d -> 0x%x -> "
+-		"IRQ %d Mode:%i Active:%i)\n", ioapic, 
+-	       mp_ioapics[ioapic].mpc_apicid, pin, entry.vector, irq,
+-	       triggering, polarity);
+-
+-	ioapic_register_intr(irq, triggering);
+-
+-	if (!ioapic && (irq < 16))
+-		disable_8259A_irq(irq);
+-
+-	ioapic_write_entry(ioapic, pin, entry);
+-
+-	spin_lock_irqsave(&ioapic_lock, flags);
+-	irq_desc[irq].affinity = TARGET_CPUS;
+-	spin_unlock_irqrestore(&ioapic_lock, flags);
++	setup_IO_APIC_irq(ioapic, pin, irq, triggering, polarity);
+ 
+ 	return 0;
+ }
+@@ -2175,7 +2115,9 @@ void __init setup_ioapic_dest(void)
+ 			 * cpu is online.
+ 			 */
+ 			if(!irq_vector[irq])
+-				setup_IO_APIC_irq(ioapic, pin, irq_entry, irq);
++				setup_IO_APIC_irq(ioapic, pin, irq,
++						  irq_trigger(irq_entry),
++						  irq_polarity(irq_entry));
+ 			else
+ 				set_ioapic_affinity_irq(irq, TARGET_CPUS);
+ 		}
+-- 
+1.5.0.g53756
 
-the kevent model is very much about: /never every/ block the main 
-thread. If you ever block, performance goes down the drain.
-
-the syslet performance model is: if you block less than say 10-20% of 
-the time, you are basically as fast as the most extreme kevents based 
-model. Syslets/threadlets also avoids the fundamental workflow problem 
-that nonblocking designs have in a natural way: 'how do we guarantee 
-that the system progresses forward', which problem makes nonblocking 
-code quite fragile.
-
-another property is that the performance curve is alot less sensitive to 
-blocking in the syslet model - and real user-space servers will always 
-have unexpected points of blockage - unless all of userspace code is 
-perfectly converted into state machines - which is not reasonable. So 
-with syslets we are not forced to program everything as state-machines 
-in user-space, such techniques are only needed to reduce the amount of 
-context-switching and to reduce the RAM footprint - they wont change 
-fundamental scalability.
-
-plus there's the hidden advantage of having a 'constructed state' on the 
-kernel stack: thread that blocks in the middle of tcp_sendmsg() has 
-quite some state: the socket has been looked up in the hash(es), all 
-input parameters have been validated, the timer has been set, skbs have 
-been allocated ahead, etc. Those things do add up especially if you are 
-after a long wait and all those things are scattered around the memory 
-map cache-cold - not nicely composed into a single block of memory on 
-the stack (generating only a single cachemiss in essence).
-
-All in one, i'm cautiosly optimistic that even a totally naive, 
-blocks-itself-for-every-request syslet application would perform pretty 
-close to a Tux/kevents type of nonblock+event-queueing based application 
-- with a vastly higher generic utility benefit. So i'm not dismissing 
-this possibility and i'm not writing off syslet performance just because 
-they do context-switches :-)
-
-	Ingo
