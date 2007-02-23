@@ -1,81 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932375AbXBWOLN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932387AbXBWOOG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932375AbXBWOLN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 09:11:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932384AbXBWOLM
+	id S932387AbXBWOOG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 09:14:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932395AbXBWOOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 09:11:12 -0500
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:39071 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932375AbXBWOLL (ORCPT
+	Fri, 23 Feb 2007 09:14:06 -0500
+Received: from mail-gw3.adaptec.com ([216.52.22.36]:55921 "EHLO
+	mail-gw3.adaptec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932387AbXBWOOF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 09:11:11 -0500
-Message-ID: <45DEF5EE.4030002@student.ltu.se>
-Date: Fri, 23 Feb 2007 15:10:54 +0100
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Fri, 23 Feb 2007 09:14:05 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Milind Choudhary <milindchoudhary@gmail.com>
-CC: kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org,
-       dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz,
-       linux-joystick@atrey.karlin.mff.cuni.cz
-Subject: Re: [KJ][RFC][PATCH] BIT macro cleanup
-References: <3b44d3fb0702222056k1d2a9b57q69a3555a09a9058e@mail.gmail.com>	 <3b44d3fb0702230014x4ee4a1dewdc624c54b3635e15@mail.gmail.com>	 <45DEAC45.7090105@student.ltu.se> <3b44d3fb0702230215o2fbd5a3y25729e481a447149@mail.gmail.com>
-In-Reply-To: <3b44d3fb0702230215o2fbd5a3y25729e481a447149@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [Patch] bug in gdth.c crashing machine
+Date: Fri, 23 Feb 2007 15:13:46 +0100
+Message-ID: <D0623D6A71405C429DBFB3928CDC9E29013163@mtce2k301.adaptec.com>
+In-Reply-To: <20070223132955.GQ3250@Redstar.dorchain.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [Patch] bug in gdth.c crashing machine
+Thread-Index: AcdXTsF2u8CuYG2nTVeDd/24cKP//wABd/Hg
+From: "Leubner, Achim" <Achim_Leubner@adaptec.com>
+To: "Joerg Dorchain" <joerg@dorchain.net>
+Cc: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Milind Choudhary wrote:
-> On 2/23/07, Richard Knutsson <ricknu-0@student.ltu.se> wrote:
->> > +#define BITWRAP(nr)    (1UL << ((nr) % BITS_PER_LONG))
->> >
->> > & make the whole input subsystem use it
->> > The change is huge, more than 125 files using input.h
->> > & almost all use the BIT macro.
->> It is as a big of change, but have you dismissed the "BIT(nr %
->> BITS_PER_LONG)" approach?
->
-> no..
-> but just looking at the number of places it is being used,
-> it seems that adding a new  macro would be good
-> which makes it look short n sweet
-You have a point there but I still don't think it should be in bitops.h. 
-Why should we favor long-wrap before byte-wrap, so what do you think 
-about doing:
+Hi Joerg,
 
-#define BITWRAP(x)	BIT((x) % BITS_PER_LONG)
+You are right, this patch should be added to a bugfix release as soon as
+possible. 
 
-in input.h? Otherwise I think it should be call LBITWRAP (or something) 
-to both show what kind it is and enable us to add others later.
->> > -#define BIT(i)         (1UL << ((i)&(__NFDBITS-1)))
->> Are you sure you can just delete this one?
-> yes...no users in this file
-Ok
->> > -#define BIT(x)         (1ul<<(x))
->> > #define POW2(x)                (1ul<<(x))
->> Maybe you can clean up POW2 as well (or define it as "#define POW2(x)
->> BIT(x)")
-> yes
-> but want to go one step at a time
-> currently just  cleaning up places where BIT macro is explicitly defined
-> the implicit uses [replacing 1UL << (x)] will be handled in another 
-> patch series
-> "use BIT macro wherever appropriate"
-Sounds good
->
->>
->> Also, it seems your mail-client swapped the tabs to spaces (aka not able
->> to apply).
-> attaching the patch file
-> bear with me for the time being
->
-No problem :)
-It is of course always a good idea to send the patches to yourself and 
-then trying to apply that patch to see it is alright. But sometimes you 
-can't get the mailer working, then sendpatchset can be of interest:
-http://www.speakeasy.org/~pj99/sgi/sendpatchset
+Thanks,
+Achim
 
-Richard Knutsson
+=======================
+Achim Leubner
+Software Engineer / RAID drivers
+ICP vortex GmbH / Adaptec Inc.
+Phone: +49-351-8718291
+ 
 
+-----Original Message-----
+From: Joerg Dorchain [mailto:joerg@dorchain.net] 
+Sent: Freitag, 23. Februar 2007 14:30
+To: Leubner, Achim
+Cc: linux-kernel@vger.kernel.org
+Subject: [Patch] bug in gdth.c crashing machine
+
+Hello Achim,
+
+wrt to your mail to the lkml from 13 Oct 2006 Message-ID:
+<EF6AF37986D67948AD48624A3E5D93AFE72291@mtce2k01.adaptec.com>,
+I'd be pleased if you could integrate the derived patch into a bugfix
+release of the driver asap.
+
+This bug kept me busy for three days, endangering  backup to tapes.
+
+Patch is against vanilla 2.6.20.
+
+Kind regards,
+
+Joerg
+
+Signed-off-by: Joerg Dorchain <joerg@dorchain.net>
+
+--- gdth.c.orig	2007-02-23 12:48:56.000000000 +0100
++++ gdth.c	2007-02-23 12:51:44.000000000 +0100
+@@ -3092,6 +3092,7 @@
+             cmdp->u.raw64.direction  = 
+                 gdth_direction_tab[scp->cmnd[0]]==DOU ?
+GDTH_DATA_OUT:GDTH_DATA_IN;
+             memcpy(cmdp->u.raw64.cmd,scp->cmnd,16);
++            cmdp->u.raw64.sg_ranz    = 0;
+         } else {
+             cmdp->u.raw.reserved   = 0;
+             cmdp->u.raw.mdisc_time = 0;
+@@ -3108,6 +3109,7 @@
+             cmdp->u.raw.direction  = 
+                 gdth_direction_tab[scp->cmnd[0]]==DOU ?
+GDTH_DATA_OUT:GDTH_DATA_IN;
+             memcpy(cmdp->u.raw.cmd,scp->cmnd,12);
++            cmdp->u.raw.sg_ranz    = 0;
+         }
+ 
+         if (scp->use_sg) {
