@@ -1,51 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932514AbXBWO7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932507AbXBWPEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932514AbXBWO7a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 09:59:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932474AbXBWO7a
+	id S932507AbXBWPEs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 10:04:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932480AbXBWPEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 09:59:30 -0500
-Received: from perninha.conectiva.com.br ([200.140.247.100]:43335 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932515AbXBWO72 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 09:59:28 -0500
-Date: Fri, 23 Feb 2007 12:01:36 -0300
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: Jon Masters <jcm@redhat.com>
-Cc: Sergey Vlasov <vsu@altlinux.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mit-devel@lists.printk.net
-Subject: Re: module-init-tools-3.3-pre10 available
-Message-ID: <20070223120136.12ea11db@home.brethil>
-In-Reply-To: <45DDAE24.6080905@redhat.com>
-References: <45DD0031.9010808@redhat.com>
-	<20070222170732.22c1320b.vsu@altlinux.ru>
-	<45DDAE24.6080905@redhat.com>
-Organization: Mandriva
-X-Mailer: Sylpheed-Claws 1.0.4 (GTK+ 1.2.10; x86_64-mandriva-linux-gnu)
+	Fri, 23 Feb 2007 10:04:48 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37586 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932507AbXBWPEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 10:04:47 -0500
+Date: Fri, 23 Feb 2007 15:58:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Suparna Bhattacharya <suparna@in.ibm.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: A quick fio test (was Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3)
+Message-ID: <20070223145826.GA32465@elte.hu>
+References: <20070221211355.GA7302@elte.hu> <20070223125247.GO5737@kernel.dk> <20070223135525.GA31569@in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070223135525.GA31569@in.ibm.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Feb 2007 09:52:20 -0500
-Jon Masters <jcm@redhat.com> wrote:
 
-| Sergey Vlasov wrote:
-| 
-| > I see that you have merged some patches which change depmod.8.
-| > However, this file is generated from doc/depmod.sgml, which was not
-| > changed appropriately.
-| 
-| Ah. A valid point - Luiz, do you want to redo your patch or I can take a 
-| look at the SGML source myself.
+* Suparna Bhattacharya <suparna@in.ibm.com> wrote:
 
- Urgh, I didn't know that, sorry.
+> As a really crude (and not very realistic) example of the potential 
+> impact of large numbers of outstanding IOs, I tried some quick direct 
+> IO comparisons using fio:
+> 
+> [global]
+> ioengine=syslet-rw
+> buffered=0
+> rw=randread
+> bs=64k
+> size=1024m
+> iodepth=64
 
- I can redo my patch, but shouldn't the manpages be removed from the
-repository then?
+could you please try those iodepth=20000 tests with the latest 
+fio-testing branch of fio as well? Jens wrote a new, smarter syslet 
+plugin for FIO. You'll need the v3 syslet kernel plus:
 
--- 
-Luiz Fernando N. Capitulino
+ git-clone git://git.kernel.dk/data/git/fio.git
+ cd fio
+ git-checkout syslet-testing
+
+my expectation is that it should behave better with iodepth=20000 
+(although i havent tried that yet).
+
+	Ingo
