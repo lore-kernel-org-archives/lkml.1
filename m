@@ -1,53 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932498AbXBWSMB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932500AbXBWSML@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932498AbXBWSMB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 13:12:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932500AbXBWSMB
+	id S932500AbXBWSML (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 13:12:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932501AbXBWSMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 13:12:01 -0500
-Received: from firewall.rowland.harvard.edu ([140.247.233.35]:29674 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S932498AbXBWSMB (ORCPT
+	Fri, 23 Feb 2007 13:12:10 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:54971 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932500AbXBWSMI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 13:12:01 -0500
-Date: Fri, 23 Feb 2007 13:11:59 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Duncan Sands <duncan.sands@math.u-psud.fr>
-cc: Pete Zaitcev <zaitcev@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       <linux-usb-devel@lists.sourceforge.net>,
-       Simon Arlott <254ad70138dc1cdf241hjzcr0007jhhw@thunder.lp0.eu>
-Subject: Re: [linux-usb-devel] [PATCH 2/2] usbatm: Detect usb device shutdown
- and ignore failed urbs.
-In-Reply-To: <200702231805.44397.duncan.sands@math.u-psud.fr>
-Message-ID: <Pine.LNX.4.44L0.0702231306450.14262-100000@netrider.rowland.org>
+	Fri, 23 Feb 2007 13:12:08 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Jeff V. Merkey" <jmerkey@wolfmountaingroup.com>
+Cc: linux-kernel@vger.kernel.org, Zwane Mwaikambo <zwane@infradead.org>,
+       Ashok Raj <ashok.raj@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@osdl.org>, "Lu, Yinghai" <yinghai.lu@amd.com>,
+       Natalie Protasevich <protasnb@gmail.com>, Andi Kleen <ak@suse.de>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Conclusions from my investigation about ioapic programming
+References: <200701221116.13154.luigi.genoni@pirelli.com>
+	<200702021848.55921.luigi.genoni@pirelli.com>
+	<m1ejp85tgm.fsf@ebiederm.dsl.xmission.com>
+	<200702021905.39922.luigi.genoni@pirelli.com>
+	<m1zm7w3wvr.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1veik3woc.fsf_-_@ebiederm.dsl.xmission.com>
+	<20070206073616.GA15016@elte.hu>
+	<m1odo7q6cq.fsf@ebiederm.dsl.xmission.com>
+	<20070206222523.GA11602@elte.hu>
+	<m1irecamzh.fsf@ebiederm.dsl.xmission.com>
+	<m1wt2s8ksa.fsf@ebiederm.dsl.xmission.com>
+	<m1veib6dgi.fsf@ebiederm.dsl.xmission.com>
+	<m1hctt1sfp.fsf_-_@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.64.0702102146380.8245@montezuma.fsmlabs.com>
+	<m13b5d0zdp.fsf@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.64.0702110753390.8245@montezuma.fsmlabs.com>
+	<m17iuoz74f.fsf@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.64.0702111416220.24829@montezuma.fsmlabs.com>
+	<m1r6swx9l2.fsf@ebiederm.dsl.xmission.com>
+	<m1irdtw3jb.fsf_-_@ebiederm.dsl.xmission.com>
+	<45DF1ADD.9000600@wolfmountaingroup.com>
+Date: Fri, 23 Feb 2007 11:10:39 -0700
+In-Reply-To: <45DF1ADD.9000600@wolfmountaingroup.com> (Jeff V. Merkey's
+	message of "Fri, 23 Feb 2007 09:48:29 -0700")
+Message-ID: <m13b4wu4m8.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Feb 2007, Duncan Sands wrote:
+"Jeff V. Merkey" <jmerkey@wolfmountaingroup.com> writes:
 
-> Thanks Alan.  The original question was: if an urb fails with an error,
-> is there any point in resubmitting it after a delay (which is what the
-> driver usually does) if the error was -ESHUTDOWN?  It sounds like there
-> is no point to it.
+> In my older days of programmin 82489DX chipsets (which the AMD APIC versions
+> resemble
+> the 82489DX more closely than intel's newer incarnations), you had to EOI the
+> apic early if you
+> wanted to migrate interrupt assignments. I had to do the following steps to move
+> an IRQ:
+>
+> 1. Mask the LOCAL APIC
+> 2, EOI the interrupt
+> 3. Leave the interrupt entry masked until the ISR completed.
+> 4. Reprogram the interrupt.
+> 5. Unmask as the ISR exits
+>
+> In other words, EOI early in all cases to clear the local and IOAPIC state.
 
-No, there isn't.
+Thanks.
 
->  And if the device is not disconnected, then it could
-> even be harmful since the urb will be resubmitted endlessly...  While on
-> the topic, are there any other error codes for which an urb should not be
-> resubmitted?
+That is the essence of what I am doing with level triggered interrupts.
+- Mask
+- ACK
+- Reprogram
+- Unmask.
+Which essentially comes from the definition of how level triggered
+interrupts operate in the ioapics.
 
-Let's see...  ENOENT and ECONNRESET indicate the URB was unlinked, so you
-probably don't want to resubmit it.  EPIPE indicates a problem on the 
-device end, so you would want to fix the problem before resubmitting (at 
-the very least you would want to clear the halt).  EOVERFLOW is 
-questionable; if the device sent too much data once then it might do so 
-again.  Ditto for EREMOTEIO (the device sent too little data).  ENODEV 
-means the device was removed, so you definitely don't want to resubmit.
+Having to run the EOI before the ISR routine runs or having to keep
+the ISR masked while the ISR runs isn't something that I have encountered.
+And if it was a problem there is enough volume I expect someone would have gotten
+a bug report about it by now.
 
-Alan Stern
-
+Eric
