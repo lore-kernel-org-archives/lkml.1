@@ -1,91 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932387AbXBWOOG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932396AbXBWOTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932387AbXBWOOG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 09:14:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932395AbXBWOOG
+	id S932396AbXBWOTZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 09:19:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932398AbXBWOTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 09:14:06 -0500
-Received: from mail-gw3.adaptec.com ([216.52.22.36]:55921 "EHLO
-	mail-gw3.adaptec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932387AbXBWOOF convert rfc822-to-8bit (ORCPT
+	Fri, 23 Feb 2007 09:19:25 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:56026 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932396AbXBWOTY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 09:14:05 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [Patch] bug in gdth.c crashing machine
-Date: Fri, 23 Feb 2007 15:13:46 +0100
-Message-ID: <D0623D6A71405C429DBFB3928CDC9E29013163@mtce2k301.adaptec.com>
-In-Reply-To: <20070223132955.GQ3250@Redstar.dorchain.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [Patch] bug in gdth.c crashing machine
-Thread-Index: AcdXTsF2u8CuYG2nTVeDd/24cKP//wABd/Hg
-From: "Leubner, Achim" <Achim_Leubner@adaptec.com>
-To: "Joerg Dorchain" <joerg@dorchain.net>
-Cc: <linux-kernel@vger.kernel.org>
+	Fri, 23 Feb 2007 09:19:24 -0500
+Date: Fri, 23 Feb 2007 19:53:01 +0530
+From: Suparna Bhattacharya <suparna@in.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070223142301.GA20292@in.ibm.com>
+Reply-To: suparna@in.ibm.com
+References: <20070221211355.GA7302@elte.hu> <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com> <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com> <20070222074044.GA4158@elte.hu> <20070222113148.GA3781@2ka.mipt.ru> <20070222125931.GB25788@elte.hu> <20070222141726.GA31874@in.ibm.com> <20070222143657.GB3246@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070222143657.GB3246@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Joerg,
+On Thu, Feb 22, 2007 at 03:36:58PM +0100, Ingo Molnar wrote:
+> 
+> * Suparna Bhattacharya <suparna@in.ibm.com> wrote:
+> 
+> > > maybe it will, maybe it wont. Lets try? There is no true difference 
+> > > between having a 'request structure' that represents the current 
+> > > state of the HTTP connection plus a statemachine that moves that 
+> > > request between various queues, and a 'kernel stack' that goes in 
+> > > and out of runnable state and carries its processing state in its 
+> > > stack - other than the amount of RAM they take. (the kernel stack is 
+> > > 4K at a minimum - so with a million outstanding requests they would 
+> > > use up 4 GB of RAM. With 20k outstanding requests it's 80 MB of RAM 
+> > > - that's acceptable.)
+> > 
+> > At what point are the cachemiss threads destroyed ? In other words how 
+> > well does this adapt to load variations ? For example, would this 80MB 
+> > of RAM continue to be locked down even during periods of lighter loads 
+> > thereafter ?
+> 
+> you can destroy them at will from user-space too - just start a slow 
+> timer that zaps them if load goes down. I can add a 
+> sys_async_thread_exit(nr_threads) API to be able to drive this without 
+> knowing the TIDs of those threads, and/or i can add a kernel-internal 
+> mechanism to zap inactive threads. It would be rather easy and 
+> low-overhead - the v2 code already had a max_nr_threads tunable, i can 
+> reintroduce it. So the size of the pool of contexts does not have to be 
+> permanent at all.
 
-You are right, this patch should be added to a bugfix release as soon as
-possible. 
+If you can find a way to do this without additional tunables burden on
+the administrator that would certainly help ! IIRC, performance problems
+linked to having too many or too few AIO kernel threads has been a commonly
+reported issue elsewhere - it would be nice to be able to avoid repeating
+the crux of that (mistake) in Linux. To me, any need to manually tune the
+number has always seemed to defeat the very benefit of adaptability of varying
+loads that AIO intrinsically provides. 
 
-Thanks,
-Achim
+Regards
+Suparna
 
-=======================
-Achim Leubner
-Software Engineer / RAID drivers
-ICP vortex GmbH / Adaptec Inc.
-Phone: +49-351-8718291
- 
+> 
+> 	Ingo
 
------Original Message-----
-From: Joerg Dorchain [mailto:joerg@dorchain.net] 
-Sent: Freitag, 23. Februar 2007 14:30
-To: Leubner, Achim
-Cc: linux-kernel@vger.kernel.org
-Subject: [Patch] bug in gdth.c crashing machine
+-- 
+Suparna Bhattacharya (suparna@in.ibm.com)
+Linux Technology Center
+IBM Software Lab, India
 
-Hello Achim,
-
-wrt to your mail to the lkml from 13 Oct 2006 Message-ID:
-<EF6AF37986D67948AD48624A3E5D93AFE72291@mtce2k01.adaptec.com>,
-I'd be pleased if you could integrate the derived patch into a bugfix
-release of the driver asap.
-
-This bug kept me busy for three days, endangering  backup to tapes.
-
-Patch is against vanilla 2.6.20.
-
-Kind regards,
-
-Joerg
-
-Signed-off-by: Joerg Dorchain <joerg@dorchain.net>
-
---- gdth.c.orig	2007-02-23 12:48:56.000000000 +0100
-+++ gdth.c	2007-02-23 12:51:44.000000000 +0100
-@@ -3092,6 +3092,7 @@
-             cmdp->u.raw64.direction  = 
-                 gdth_direction_tab[scp->cmnd[0]]==DOU ?
-GDTH_DATA_OUT:GDTH_DATA_IN;
-             memcpy(cmdp->u.raw64.cmd,scp->cmnd,16);
-+            cmdp->u.raw64.sg_ranz    = 0;
-         } else {
-             cmdp->u.raw.reserved   = 0;
-             cmdp->u.raw.mdisc_time = 0;
-@@ -3108,6 +3109,7 @@
-             cmdp->u.raw.direction  = 
-                 gdth_direction_tab[scp->cmnd[0]]==DOU ?
-GDTH_DATA_OUT:GDTH_DATA_IN;
-             memcpy(cmdp->u.raw.cmd,scp->cmnd,12);
-+            cmdp->u.raw.sg_ranz    = 0;
-         }
- 
-         if (scp->use_sg) {
