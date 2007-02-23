@@ -1,57 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752151AbXBWJiI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752159AbXBWJiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752151AbXBWJiI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 04:38:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbXBWJiH
+	id S1752159AbXBWJiT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 04:38:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbXBWJiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 04:38:07 -0500
-Received: from hqemgate02.nvidia.com ([216.228.112.143]:16250 "EHLO
-	HQEMGATE02.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752151AbXBWJiG convert rfc822-to-8bit (ORCPT
+	Fri, 23 Feb 2007 04:38:19 -0500
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:59559 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752159AbXBWJiS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 04:38:06 -0500
-Content-class: urn:content-classes:message
+	Fri, 23 Feb 2007 04:38:18 -0500
+Date: Fri, 23 Feb 2007 10:36:49 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [patch] s390: do not use _local_bh_enable()
+Message-ID: <20070223093649.GA8084@osiris.boeblingen.de.ibm.com>
+References: <20070223061459.GA10106@elte.hu>
 MIME-Version: 1.0
-Subject: RE: [PATCH] ACPI driver support for pata
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Date: Fri, 23 Feb 2007 01:36:04 -0800
-Message-ID: <DBFABB80F7FD3143A911F9E6CFD477B00E48D718@hqemmail02.nvidia.com>
-In-Reply-To: <45DE3207.6020707@shaw.ca>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] ACPI driver support for pata
-thread-index: AcdW3/aXM9krtdrITXOG7UY88PkljQATODHA
-References: <fa.IjFXvdcBtWXV65pRZipPd0NVTOA@ifi.uio.no> <45DD2E12.6000705@shaw.ca> <45DD3F20.7050907@pobox.com> <20070222142439.50cff3e9@lxorguk.ukuu.org.uk> <45DDCEC4.7050208@garzik.org> <20070222182939.56d43a68@lxorguk.ukuu.org.uk> <45DE3207.6020707@shaw.ca>
-From: "Allen Martin" <AMartin@nvidia.com>
-To: "Robert Hancock" <hancockr@shaw.ca>, "Alan" <alan@lxorguk.ukuu.org.uk>
-Cc: "Jeff Garzik" <jeff@garzik.org>, <akpm@osdl.org>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 23 Feb 2007 09:36:05.0993 (UTC) FILETIME=[0A84B590:01C7572E]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070223061459.GA10106@elte.hu>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Couldn't be do this generically inside libata core somehow, 
-> i.e. try to 
-> use ACPI to set the proper mode and fall back to the driver-specific 
-> mode setting code if that didn't work? I think if we could do that it 
-> would solve a number of problems (i.e. we could prevent it from doing 
-> this on SATA controllers which appear to be IDE based on the PCI ID, 
-> like the NVIDIA SATA controllers, since the _GTM and _STM 
-> methods seem 
-> to have undefined behavior on SATA). 
+On Fri, Feb 23, 2007 at 07:14:59AM +0100, Ingo Molnar wrote:
+> 
+> Heiko, what do you think about the patch below - is there perhaps some 
+> deeper reason to s390's _local_bh_enable() use that i missed?
 
-_GTM and _STM don't have undefined behavior on SATA.  They are there for
-compatability with the MS Windows ATA driver.  Any SATA device that
-reports PCI class code 0101 should implement them if that controller is
-supposed to work on Windows.  They are NOPs for SATA controllers
-generally.
+Yes, both of these usages are quite subtle.
 
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------
+> Index: linux/drivers/s390/char/sclp.c
+> ===================================================================
+> --- linux.orig/drivers/s390/char/sclp.c
+> +++ linux/drivers/s390/char/sclp.c
+> @@ -407,8 +407,8 @@ sclp_sync_wait(void)
+>  	}
+>  	local_irq_disable();
+>  	__ctl_load(cr0, 0, 0);
+> -	_local_bh_enable();
+>  	local_irq_restore(flags);
+> +	local_bh_enable();
+>  }
+> 
+>  EXPORT_SYMBOL(sclp_sync_wait);
+
+The code here looks a bit different in the meantime.
+See c59d744bd8a0e283daf6726881e4c9aa4bd25261. What we want to do here: the
+console driver has requests pending and needs to wait _synchronously_ that
+an interrupt arrives. It does that regardless of whatever context we are in:
+process/softirq/hardirq/irqs disabled/irqs enabled. That's why we have the
+local_irq_save() at the very beginning. Also when we leave this function we
+do not want to execute bottom halves, since it could be that interrupts
+where disabled before this function was called.
+That's why we call _local_bh_enable() instead of local_bh_enable().
+
+> Index: linux/drivers/s390/cio/cio.c
+> ===================================================================
+> --- linux.orig/drivers/s390/cio/cio.c
+> +++ linux/drivers/s390/cio/cio.c
+> @@ -140,7 +140,6 @@ cio_tpi(void)
+>  	sch = (struct subchannel *)(unsigned long)tpi_info->intparm;
+>  	if (!sch)
+>  		return 1;
+> -	local_bh_disable();
+>  	irq_enter ();
+>  	spin_lock(sch->lock);
+>  	memcpy (&sch->schib.scsw, &irb->scsw, sizeof (struct scsw));
+> @@ -148,7 +147,7 @@ cio_tpi(void)
+>  		sch->driver->irq(&sch->dev);
+>  	spin_unlock(sch->lock);
+>  	irq_exit ();
+> -	_local_bh_enable();
+> +
+>  	return 1;
+>  }
+
+Same here: this is not really an irq handler but a function that gets called
+from different contexts and pretends to be an irq handler. The
+local_bh_disable()/_local_bh_enable() pair is just a trick to prevent bottom
+halve execution. I think you can blame Martin for this ;)
+
+Probably both of these functions needs some comment I guess... and this one
+as well: bf6f6aa46feada857a52cb67d99a7c2fe4a70e87 (our new __udelay
+implementation).
+
+-- 
+Heiko Carstens
+Linux on System z Development
+
+IBM Deutschland Entwicklung GmbH
+Vorsitzender des Aufsichtsrats: Johann Weihen
+Geschaeftsfuehrung : Herbert Kircher
+Sitz der Gesellschaft: Boeblingen
+Registergericht: Amtsgericht Stuttgart, HRB 243294
