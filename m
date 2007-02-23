@@ -1,65 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750816AbXBWDnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750819AbXBWDnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750816AbXBWDnb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 22:43:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750819AbXBWDnb
+	id S1750819AbXBWDnd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 22:43:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750833AbXBWDnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 22:43:31 -0500
-Received: from mx2.suse.de ([195.135.220.15]:33179 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750816AbXBWDna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 22:43:30 -0500
-Date: Fri, 23 Feb 2007 04:43:09 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, rostedt@goodmis.org
-Subject: Re: [patch 2/2] sched: dynticks idle load balancing - v2
-Message-ID: <20070223034309.GA21886@wotan.suse.de>
-References: <20061213233157.GA20470@elte.hu> <20061213151926.C12795@unix-os.sc.intel.com> <20061219201247.GA12648@elte.hu> <20061219131223.E23105@unix-os.sc.intel.com> <20070116113505.GA6294@elte.hu> <20070130135709.B32010@unix-os.sc.intel.com> <20070216180335.A8744@unix-os.sc.intel.com> <20070216180842.B8744@unix-os.sc.intel.com> <20070222032654.GD12137@wotan.suse.de> <20070222143259.B14789@unix-os.sc.intel.com>
-Mime-Version: 1.0
+	Thu, 22 Feb 2007 22:43:33 -0500
+Received: from [204.127.200.81] ([204.127.200.81]:54906 "EHLO
+	sccrmhc11.comcast.net" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1750819AbXBWDnc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 22:43:32 -0500
+Date: Thu, 22 Feb 2007 19:43:43 -0800
+From: Deepak Saxena <dsaxena@plexity.net>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Allow kernel to build on Cygwin
+Message-ID: <20070223034343.GA3320@plexity.net>
+Reply-To: dsaxena@plexity.net
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070222143259.B14789@unix-os.sc.intel.com>
-User-Agent: Mutt/1.5.9i
+Organization: Plexity Networks
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 22, 2007 at 02:33:00PM -0800, Suresh B wrote:
-> On Thu, Feb 22, 2007 at 04:26:54AM +0100, Nick Piggin wrote:
-> > This is really ugly, sorry :(
-> 
-> hm. myself and others too thought it was a simple and nice idea.
 
-The idea is not bad. I won't guarantee mine will be as good or better,
-but I think it is sensible to try implementing the simplest approach
-first, so we can get a baseline to justify more complexity against...
+This patch contains a set of small fixes to allow the kernel to build under
+the Cygwin environment, which is unfortunately used by more people than
+one would think in the embedded world. :(
 
-Your code just needs work, but if it really produces good results then
-it should be able to be made into a mergeable patch.
+Signed-off-by: Deepak Saxena <dsaxena@mvista.com>
 
-> > My suggestion for handling this was to increase the maximum balance
-> > interval for an idle CPU, and just implement a global shutdown when
-> > the entire system goes idle.
-> > 
-> > The former should take care of the power savings issues for bare metal
-> > hardware, and the latter should solve performance problems for many idle
-> > SMP guests. It should take very little code to implement.
-> 
-> coming to max balance interval will be challenging. It needs to save
-> power and at the same time respond to load changes fast enough.
+---
+ lib/gen_crc32table.c                       |    2 ++
+ scripts/kconfig/Makefile                   |    6 ++++++
+ scripts/kconfig/lxdialog/check-lxdialog.sh |    4 ++++
+ scripts/mod/file2alias.c                   |    4 ++++
+ scripts/mod/mk_elfconfig.c                 |    4 ++++
+ scripts/mod/modpost.h                      |    4 ++++
+ scripts/mod/sumversion.c                   |    6 +++++-
+ 7 files changed, 29 insertions(+), 1 deletion(-)
 
-Yep.
 
-> > If that approach doesn't cut it, then at least we can have some numbers
-> > to see how much better yours is so we can justify including it.
-> > 
-> > If you are against my approach, then I can have a try at coding it up
-> > if you like?
-> 
-> Sure. If you can provide a patch, I will be glad to provide power and
-> performance comparision numbers with both the approaches.
+diff --git a/lib/gen_crc32table.c b/lib/gen_crc32table.c
+index bea5d97..ce447ff 100644
+--- a/lib/gen_crc32table.c
++++ b/lib/gen_crc32table.c
+@@ -1,6 +1,8 @@
+ #include <stdio.h>
+ #include "crc32defs.h"
++#ifndef __CYGWIN__
+ #include <inttypes.h>
++#endif
+ 
+ #define ENTRIES_PER_LINE 4
+ 
+diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
+index 7e7e147..ca57efe 100644
+--- a/scripts/kconfig/Makefile
++++ b/scripts/kconfig/Makefile
+@@ -161,6 +161,12 @@ HOSTLOADLIBES_gconf	= `pkg-config --libs
+ HOSTCFLAGS_gconf.o	= `pkg-config --cflags gtk+-2.0 gmodule-2.0 libglade-2.0` \
+                           -D LKC_DIRECT_LINK
+ 
++HOST_OS := $(shell uname -o)
++ifeq ($(HOST_OS),Cygwin)
++HOSTLOADLIBES_mconf	= -lintl
++HOSTLOADLIBES_conf	= -lintl
++endif
++
+ $(obj)/qconf.o: $(obj)/.tmp_qtcheck
+ 
+ ifeq ($(qconf-target),1)
+diff --git a/scripts/kconfig/lxdialog/check-lxdialog.sh b/scripts/kconfig/lxdialog/check-lxdialog.sh
+index 120d624..c44b559 100644
+--- a/scripts/kconfig/lxdialog/check-lxdialog.sh
++++ b/scripts/kconfig/lxdialog/check-lxdialog.sh
+@@ -4,6 +4,10 @@ # Check ncurses compatibility
+ # What library to link
+ ldflags()
+ {
++	if [ "`uname -o`" == "Cygwin" ]; then
++		echo '-lintl -lncurses'
++		exit
++	fi
+ 	$cc -print-file-name=libncursesw.so | grep -q /
+ 	if [ $? -eq 0 ]; then
+ 		echo '-lncursesw'
+diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
+index f61c9cc..479293f 100644
+--- a/scripts/mod/file2alias.c
++++ b/scripts/mod/file2alias.c
+@@ -29,7 +29,11 @@ #endif
+ 
+ #include <ctype.h>
+ 
++#if defined(__CYGWIN__)
++typedef __uint32_t	__u32;
++#else
+ typedef uint32_t	__u32;
++#endif
+ typedef uint16_t	__u16;
+ typedef unsigned char	__u8;
+ 
+diff --git a/scripts/mod/mk_elfconfig.c b/scripts/mod/mk_elfconfig.c
+index 725d61c..4908f7a 100644
+--- a/scripts/mod/mk_elfconfig.c
++++ b/scripts/mod/mk_elfconfig.c
+@@ -1,7 +1,11 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#ifdef __CYGWIN__
++#include <libelf.h>
++#else
+ #include <elf.h>
++#endif
+ 
+ int
+ main(int argc, char **argv)
+diff --git a/scripts/mod/modpost.h b/scripts/mod/modpost.h
+index d398c61..7cdf2c6 100644
+--- a/scripts/mod/modpost.h
++++ b/scripts/mod/modpost.h
+@@ -7,7 +7,11 @@ #include <sys/stat.h>
+ #include <sys/mman.h>
+ #include <fcntl.h>
+ #include <unistd.h>
++#ifdef __CYGWIN__
++#include <libelf.h>
++#else
+ #include <elf.h>
++#endif
+ 
+ #include "elfconfig.h"
+ 
+diff --git a/scripts/mod/sumversion.c b/scripts/mod/sumversion.c
+index 8a28756..4404f87 100644
+--- a/scripts/mod/sumversion.c
++++ b/scripts/mod/sumversion.c
+@@ -1,7 +1,11 @@
++#if defined(__sun__)
+ #include <netinet/in.h>
+-#ifdef __sun__
+ #include <inttypes.h>
++#elif defined(__CYGWIN__)
++#include <asm/byteorder.h>	/* For ntohl/htonl */
++#include <limits.h>
+ #else
++#include <netinet/in.h>
+ #include <stdint.h>
+ #endif
+ #include <ctype.h>
 
-OK that would be good. I'll see if I can code something up by next week.
+-- 
+Deepak Saxena - dsaxena@plexity.net - http://www.plexity.net
 
-Thanks,
-Nick
+In the end, they will not say, "those were dark times,"  they will ask
+"why were their poets silent?" - Bertolt Brecht
