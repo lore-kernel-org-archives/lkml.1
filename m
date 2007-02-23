@@ -1,113 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750793AbXBWDM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750796AbXBWDTL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750793AbXBWDM6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 22:12:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750796AbXBWDM6
+	id S1750796AbXBWDTL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 22:19:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbXBWDTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 22:12:58 -0500
-Received: from ozlabs.org ([203.10.76.45]:36139 "EHLO ozlabs.org"
+	Thu, 22 Feb 2007 22:19:10 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:53399 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750793AbXBWDM5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 22:12:57 -0500
-Subject: [PATCH] Make hvc_console.c compile on non-powerpc: Remove NO_IRQ
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Paul Mackerras <paulus@samba.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Gerd Hoffmann <kraxel@suse.de>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 23 Feb 2007 14:12:02 +1100
-Message-Id: <1172200322.6111.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	id S1750796AbXBWDTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 22:19:10 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Jeff Dike <jdike@addtoit.com>
+X-Fcc: ~/Mail/utrace
+Cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [PATCH] UML utrace support, step 1
+In-Reply-To: Jeff Dike's message of  Wednesday, 21 February 2007 13:18:11 -0500 <20070221181811.GA5845@ccure.user-mode-linux.org>
+Emacs: the definitive fritterware.
+Message-Id: <20070223031903.A55241800E4@magilla.sf.frob.com>
+Date: Thu, 22 Feb 2007 19:19:03 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please apply.  Andrew, please drop the other hvc_console patch
-you have.
+> OK, I'll do it this way.
 
-Paulus preferred this over #defining NO_IRQ in the file, since that's
-0 for powerpc anyway.
+Your replacement patch still has utrace_regset stuff in it, so it doesn't
+compile without the later patches in the series.  Try applying only
+utrace-tracehook.patch from the series, then get it to build and make your
+utrace-tracehook-um.patch.  Then apply only utrace-regset.patch on top of
+that, and get that building to make utrace-regset-um.patch.  Then apply
+utrace-core.patch and utrace-ptrace-compat.patch to get ptrace finally
+working again and make utrace-ptrace-compat-um.patch.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Acked-by: Paul Mackerras <paulus@samba.org>
+> Yup, I'll leave this here, with .name initialized as SUBARCH, with the
+> regsets defined in sys-$(ARCH) somewhere.
 
-diff -urpN --exclude TAGS -X /home/rusty/devel/kernel/kernel-patches/dontdiff --minimal linux-2.6.21-rc1/drivers/char/hvc_console.c working-2.6.21-rc1-NO_IRQ/drivers/char/hvc_console.c
---- linux-2.6.21-rc1/drivers/char/hvc_console.c	2007-02-05 17:30:59.000000000 +1100
-+++ working-2.6.21-rc1-NO_IRQ/drivers/char/hvc_console.c	2007-02-23 14:03:26.000000000 +1100
-@@ -316,7 +316,7 @@ static int hvc_open(struct tty_struct *t
- {
- 	struct hvc_struct *hp;
- 	unsigned long flags;
--	int irq = NO_IRQ;
-+	int irq = 0;
- 	int rc = 0;
- 	struct kobject *kobjp;
- 
-@@ -338,14 +338,14 @@ static int hvc_open(struct tty_struct *t
- 	hp->tty = tty;
- 	/* Save for request_irq outside of spin_lock. */
- 	irq = hp->irq;
--	if (irq != NO_IRQ)
-+	if (irq)
- 		hp->irq_requested = 1;
- 
- 	kobjp = &hp->kobj;
- 
- 	spin_unlock_irqrestore(&hp->lock, flags);
- 	/* check error, fallback to non-irq */
--	if (irq != NO_IRQ)
-+	if (irq)
- 		rc = request_irq(irq, hvc_handle_interrupt, IRQF_DISABLED, "hvc_console", hp);
- 
- 	/*
-@@ -373,7 +373,7 @@ static void hvc_close(struct tty_struct 
- {
- 	struct hvc_struct *hp;
- 	struct kobject *kobjp;
--	int irq = NO_IRQ;
-+	int irq = 0;
- 	unsigned long flags;
- 
- 	if (tty_hung_up_p(filp))
-@@ -407,7 +407,7 @@ static void hvc_close(struct tty_struct 
- 		 */
- 		tty_wait_until_sent(tty, HVC_CLOSE_WAIT);
- 
--		if (irq != NO_IRQ)
-+		if (irq)
- 			free_irq(irq, hp);
- 
- 	} else {
-@@ -424,7 +424,7 @@ static void hvc_hangup(struct tty_struct
- {
- 	struct hvc_struct *hp = tty->driver_data;
- 	unsigned long flags;
--	int irq = NO_IRQ;
-+	int irq = 0;
- 	int temp_open_count;
- 	struct kobject *kobjp;
- 
-@@ -453,7 +453,7 @@ static void hvc_hangup(struct tty_struct
- 		irq = hp->irq;
- 	hp->irq_requested = 0;
- 	spin_unlock_irqrestore(&hp->lock, flags);
--	if (irq != NO_IRQ)
-+	if (irq)
- 		free_irq(irq, hp);
- 	while(temp_open_count) {
- 		--temp_open_count;
-@@ -583,7 +583,7 @@ static int hvc_poll(struct hvc_struct *h
- 	/* If we aren't interrupt driven and aren't throttled, we always
- 	 * request a reschedule
- 	 */
--	if (hp->irq == NO_IRQ)
-+	if (hp->irq == 0)
- 		poll_mask |= HVC_POLL_READ;
- 
- 	/* Read data if any */
+You'll still find this insufficient when you get to biarch support (x86_64).
+At least you'll have to add another one elsewhere too, and make
+utrace_native_view refer to both.
+
+> Fixed.  block-step is hardware-trap-on-branch or something similar?
+
+Correct.
+
+> No, this is with preempt off.
+
+Ok.  We do seem to have a problem when the host has CONFIG_PREEMPT=y, which
+makes me suspect it might be a race problem that could also hit with enough
+hardware parallelism.  If you get a chance to try that and can characterize
+the way it misbehaves at the level of specific ptrace/wait calls, that
+would be a great help.  Otherwise I'll try to look into it when I get some
+time, but it's falling down the queue a bit since people don't seem too put
+out about it right now.
 
 
+Thanks very much,
+Roland
