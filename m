@@ -1,33 +1,27 @@
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand id S933135AbXBRJYa (ORCPT <rfc822;ralf@linux-mips.org>); Sun, 18 Feb 2007 04:24:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933137AbXBRJYa (ORCPT <rfc822;linux-kernel-outgoing>); Sun, 18 Feb 2007 04:24:30 -0500
-Received: from naig.caltech.edu ([131.215.239.125]:35058 "EHLO naig.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP id S933135AbXBRJY3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>); Sun, 18 Feb 2007 04:24:29 -0500
-Date: Sun, 18 Feb 2007 09:10:39 -0600
-From: William <tgeqxlh@bmseng.com>
-X-Mailer: The Bat! (v3.80.06) UNREG / CD5BF9353B3B7091
-X-Priority: 3 (Normal)
-Message-ID: <093144787.05247686966512@thebat.net>
-To: mlist-ace-users@nntp-server.caltech.edu
-Subject: assortment of packaged Linux distributions allows you to almost drop  it
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand id S1752157AbXBWJkm (ORCPT <rfc822;ralf@linux-mips.org>); Fri, 23 Feb 2007 04:40:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbXBWJkl (ORCPT <rfc822;linux-kernel-outgoing>); Fri, 23 Feb 2007 04:40:41 -0500
+Received: from smtp-out4.libero.it ([212.52.84.46]:45774 "EHLO smtp-out4.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP id S1752157AbXBWJkl convert rfc822-to-8bit (ORCPT <rfc822;linux-kernel@vger.kernel.org>); Fri, 23 Feb 2007 04:40:41 -0500
+X-Scanned: with antispam and antivirus automated system at libero.it
+Date: Fri, 23 Feb 2007 10:27:20 +0100
+Message-Id: <JDWSXK$F1278575EFBB54DABEC4DECD10B25851@libero.it>
+Subject: FREELOTTO STAKE 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8bit
-X-Spam: Not detected
+X-Sensitivity: 3
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+From: "juliecruz_fl10" <juliecruz_fl10@libero.it>
+X-XaM3-API-Version: 4.3 (R1) (B3pl17)
+X-SenderIP: 62.194.7.25
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S933135AbXBRJYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1752157AbXBWJkm@vger.kernel.org>
 
-front of get-smart daughter involved play is a simple videos, enrichmentwho are free to come really need for 
 
-Nothing could be better than 
- &#9679; CARBON RACE CORP (CBRJ.PK) &#9679; STOCK!!!
 
-New CBRJ.PK SHARE this is GREAT CHANCE  to BECOME a rich man!!!
-Forecasts for YOU is only positive just get this CBRJ.PK STOCK!!!
-Trust us cause we ASSURE U the real profit!!!
 
-CBRJ.PK founded on advanced compound materials using patent "Carbon Fiber" technology
-For more info about CBRJ.PK check broker web-site!!!
+------------------------------------------------------
+Passa a Infostrada. ADSL e Telefono senza limiti e senza canone Telecom
+http://click.libero.it/infostrada23feb07
 
-Hurry up U have to grab this CBRJ.PK STOCK on TUES DAY: 02.20.07
 
- the report says.report says.overscheduled  with get-smart 
