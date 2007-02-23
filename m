@@ -1,111 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752112AbXBWBre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752125AbXBWBuc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752112AbXBWBre (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 20:47:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbXBWBre
+	id S1752125AbXBWBuc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 20:50:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbXBWBuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 20:47:34 -0500
-Received: from mga05.intel.com ([192.55.52.89]:22511 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752112AbXBWBrd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 20:47:33 -0500
+	Thu, 22 Feb 2007 20:50:32 -0500
+Received: from mga09.intel.com ([134.134.136.24]:22420 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752125AbXBWBub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 20:50:31 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: i="4.14,208,1170662400"; 
-   d="scan'208"; a="203159446:sNHT18953375"
-Date: Thu, 22 Feb 2007 17:12:10 -0800
-From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 5/5] RT kernel: HPET relates boot option changes in x86-64
-Message-ID: <20070222171210.D27475@unix-os.sc.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+   d="scan'208"; a="49745297:sNHT332553834"
+From: =?iso-8859-1?q?I=F1aky_P=E9rez-Gonz=E1lez?= 
+	<inaky.perez-gonzalez@intel.com>
+To: linux-kernel@vger.kernel.org
+Subject: RFC/patch: down_timeout_interruptible()
+Date: Thu, 22 Feb 2007 17:54:30 -0800
+User-Agent: KMail/1.9.5
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.2.5.1i
+Message-Id: <200702221754.31165.inaky.perez-gonzalez@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Hi All
 
-Cleanup HPET related boot options in x86-64 and deprecate 'nohpet'.
+I was in a situation where I could really simplify many things by
+using down_interruptible() with a timeout. I went around looking for
+how could one be implemented and ran away from the asm code in arch/.
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+At the end I realized I could make a simple one by setting up a timer
+that would 'fake' a sigpending situation (setting the task's TIF_SIGPENDING
+bit) so that the __down_interruptible_failed() path would quit when 
+the timer went off.
 
-Index: linux-2.6.21-rc-mm/arch/x86_64/kernel/hpet.c
-===================================================================
---- linux-2.6.21-rc-mm.orig/arch/x86_64/kernel/hpet.c
-+++ linux-2.6.21-rc-mm/arch/x86_64/kernel/hpet.c
-@@ -19,6 +19,7 @@
- #include <asm/idle.h>
+I gave it a quick try (must admit, not too tested) and it seems that
+the setting of TIF_SIGPENDING without really having a signal queued
+is not having easily visible ugly consequences.
+
+Does anybody have suggestions on how to alternatively implement this?
+
+Thanks,
+
+-- Inaky
+
+
+ include/asm-i386/semaphore.h |    3 ++
+ lib/semaphore-sleepers.c     |   51 +++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 54 insertions(+)
+
+diff -r 9ed3c4dc013f include/asm-i386/semaphore.h
+--- a/include/asm-i386/semaphore.h	Wed Feb 21 13:02:17 2007 -0800
++++ b/include/asm-i386/semaphore.h	Thu Feb 22 17:09:13 2007 -0800
+@@ -88,6 +88,9 @@ fastcall int  __down_failed_interruptibl
+ fastcall int  __down_failed_interruptible(void  /* params in registers */);
+ fastcall int  __down_failed_trylock(void  /* params in registers */);
+ fastcall void __up_wakeup(void /* special register calling convention */);
++/* FIXME: need to add to other header files */
++extern void down_timeout_interruptible(struct semaphore *);
++
  
- int nohpet __initdata;
-+static int nohpetforce __initdata;
- 
- unsigned long hpet_address;
- unsigned long hpet_period;	/* fsecs / HPET clock */
-@@ -217,6 +218,19 @@ static int __init nohpet_setup(char *s)
- 
- __setup("nohpet", nohpet_setup);
- 
-+static int __init hpet_setup(char *str)
+ /*
+  * This is ugly, but we want the default case to fall through.
+diff -r 9ed3c4dc013f lib/semaphore-sleepers.c
+--- a/lib/semaphore-sleepers.c	Wed Feb 21 13:02:17 2007 -0800
++++ b/lib/semaphore-sleepers.c	Thu Feb 22 16:52:54 2007 -0800
+@@ -174,3 +174,54 @@ fastcall int __down_trylock(struct semap
+ 	spin_unlock_irqrestore(&sem->wait.lock, flags);
+ 	return 1;
+ }
++
++
++struct dit_data 
 +{
-+	if (str) {
-+		if (!strncmp("disable", str, 7))
-+			nohpet = 1;
-+		if (!strncmp("noforce", str, 7))
-+			nohpetforce = 1;
-+	}
-+	return 1;
++	struct task_struct *task;
++	int result;
++};
++
++/**
++ * dit_kick_process - set a fake 'signal pending' and kick
++ *
++ * Helper for down_interruptible_timeout(). Sets the signal pending
++ * flag on the task that is waiting for a semaphore and kicks it. That
++ * tells the down_interruptible() code to quit waiting.
++ */
++static 
++void dit_kick_process(unsigned long _data)
++{
++	struct dit_data *data = (void *) _data;
++	set_tsk_thread_flag(data->task, TIF_SIGPENDING);
++	data->result = -ETIMEDOUT;
++	kick_process(data->task);
 +}
 +
-+__setup("hpet=", hpet_setup);
 +
- /* Clocksource */
- #define HPET_MASK	0xFFFFFFFF
- #define HPET_SHIFT	22
-@@ -722,7 +736,7 @@ static int __init init_hpet_generic_time
- 	if (nohpet)
- 		return -ENODEV;
- 
--	if (!hpet_address) {
-+	if (!hpet_address && !nohpetforce) {
- 		hpet_address = force_hpet_address;
- 	} else {
- 		hpet_timer_stop();
-Index: linux-2.6.21-rc-mm/Documentation/kernel-parameters.txt
-===================================================================
---- linux-2.6.21-rc-mm.orig/Documentation/kernel-parameters.txt
-+++ linux-2.6.21-rc-mm/Documentation/kernel-parameters.txt
-@@ -371,8 +371,12 @@ and is between 256 and 4096 characters. 
- 			over the 8254 in addition to over the IO-APIC. The
- 			kernel tries to set a sensible default.
- 
--	hpet=		[IA-32,HPET] option to disable HPET and use PIT.
--			Format: disable
-+	hpet=		[IA-32/X86_64,HPET] option to disable HPET and use PIT.
-+			Format: disable|noforce
-+			disable - disables HPET timer detection and usage
-+			noforce - disables HPET timer detection and usage when
-+			          it is not explicitly enabled in BIOS. i.e,
-+				  HPET is not enabled based on quirks.
- 
- 	cm206=		[HW,CD]
- 			Format: { auto | [<io>,][<irq>] }
-Index: linux-2.6.21-rc-mm/Documentation/feature-removal-schedule.txt
-===================================================================
---- linux-2.6.21-rc-mm.orig/Documentation/feature-removal-schedule.txt
-+++ linux-2.6.21-rc-mm/Documentation/feature-removal-schedule.txt
-@@ -316,3 +316,12 @@ Why:	Unmaintained for years, superceded 
- Who:	Jeff Garzik <jeff@garzik.org>
- 
- ---------------------------
++/*
++ * Interruptible try to acquire a semaphore.  If we obtained
++ * it, return zero.  If we were interrupted, returns -EINTR. If we
++ * timedout, we return -ETIMEDOUT;
++ *
++ * Note the ugly hack, using a helper timer and function to wake up
++ * the waiter. We need to distinguish, if we get an error, if it was
++ * because we were woken up (-ETIMEDOUT) or for other reason (-EINTR),
++ * hence the last if block.
++ */
++int down_interruptible_timeout(struct semaphore *sem, unsigned long to) 
++{
++	int result;
++	struct dit_data data = {
++		.task = get_current(), .result = 0 
++	};
++	DEFINE_TIMER(dit_timer, dit_kick_process, to, (unsigned long) &data);
++	add_timer(&dit_timer);
++	result = down_interruptible(sem);
++	del_timer(&dit_timer);
++	if (result < 0 && data.result < 0)
++		result = data.result;
++	return result;
++}
 +
-+What:	X86-64 "nohpet" boot option
-+When:	May 2007
-+Why:	nohpet is not documented boot option in x86-64. There is a documented
-+	boot option in i386 for similar purpose (hpet=), which is now in
-+	x86-64 as well.
-+Who:	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 +
-+---------------------------
