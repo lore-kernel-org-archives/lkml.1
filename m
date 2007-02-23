@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932596AbXBWSus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933175AbXBWSvH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932596AbXBWSus (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 13:50:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932619AbXBWSus
+	id S933175AbXBWSvH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 13:51:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932627AbXBWSvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 13:50:48 -0500
-Received: from mail.tnnet.fi ([217.112.240.26]:38503 "EHLO mail.tnnet.fi"
+	Fri, 23 Feb 2007 13:51:07 -0500
+Received: from mail.astral.ro ([193.230.240.11]:48427 "EHLO mail.astral.ro"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932596AbXBWSur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 13:50:47 -0500
-X-Greylist: delayed 1505 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Feb 2007 13:50:46 EST
-Message-ID: <45DF319E.3157C85A@users.sourceforge.net>
-Date: Fri, 23 Feb 2007 20:25:34 +0200
-From: Jari Ruusu <jariruusu@users.sourceforge.net>
-To: linux-crypto@nl.linux.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Announce loop-AES-v3.1f file/swap crypto package
-Content-Type: text/plain; charset=us-ascii
+	id S933175AbXBWSvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 13:51:05 -0500
+Message-ID: <45DF3795.3040005@astral.ro>
+Date: Fri, 23 Feb 2007 20:51:01 +0200
+From: Gergely Imre <imre.gergely@astral.ro>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: linux-kernel@vger.kernel.org, hancockr@shaw.ca
+Subject: Re: irq balancing question
+References: <45DED0D6.1040700@astral.ro>	 <1172241917.3241.4.camel@laptopd505.fenrus.org>	 <45DF012D.3080802@astral.ro> <1172246085.3241.24.camel@laptopd505.fenrus.org>
+In-Reply-To: <1172246085.3241.24.camel@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-loop-AES changes since previous release:
-- Work around dash /bin/sh shell and make-3.81 incompatibilities.
-- Work around block layer breakage in 2.6.20-rcX-mmX kernels.
-- Added "cleartextkey=file" mount option to mount, and "-P file" command
-  line option to losetup. These options help automounters.
-- Added loop-aes-keygen script from Max Vozeler.
 
-bzip2 compressed tarball is here:
+Arjan van de Ven wrote:
+>> in fact i have two cards, and 4 CPUs, but i was interested in then answer
+>> Robert gave, that only _some_ machines distribute interrupts in hardware.
+>> software distribution is obviously not good. consider this scenario:
+>>
+>> you have one machine with 4 cpus, and two ethernet cards with a lot of
+>> traffic on them. if you bind every card to one cpu, two of them are not used,
+>> so you really use only half the power. not let's say you have so much traffic
+>> (with limiting enabled, htb or something), that the two CPUs are on 100% all
+>> the time, but the other two are doing nothing.
+>>
+>> now if you could balance that to all 4 cpus, you could use all the power AND
+>> no cpu would be used 100%.
+> 
+> actually this will give you worse performance than only using 2 cores.
+> The reason for this is twofold
+> 1) If you rotate the irqs, TCP and IP packet fragments will arrive at
+> different CPUs. This in turn means that a VERY expensive reassembly path
+> gets taken, compared to local-cpu-only reassembly
+> 2) If you rotate the irqs, you bounce cachelines between the caches ALL
+> THE TIME, which is also very expensive.
+> 
+> Both make it more likely that you'll be slower than just using only 2
+> cores...
 
-    http://osdn.dl.sourceforge.net/sourceforge/loop-aes/loop-AES-v3.1f.tar.bz2
-    md5sum 1020b93d723f1d573bacfe4a3362fc25
+and i guess it doesn't matter if the distribution is being done by the
+hardware, from the point of view of the kernel, i would still get the
+performance penalty.
 
-    http://osdn.dl.sourceforge.net/sourceforge/loop-aes/loop-AES-v3.1f.tar.bz2.sign
+and what if CPU0 and CPU1 is actually the same CPU, only duo core, and i'm
+distributing interrupts to them, and with the other card to CPU2 and 3 (which
+are part of the other physical CPU) ?
 
-
-Additional ciphers package changes since previous release:
-- Work around dash /bin/sh shell and make-3.81 incompatibilities.
-
-bzip2 compressed tarball is here:
-
-    http://osdn.dl.sourceforge.net/sourceforge/loop-aes/ciphers-v3.0e.tar.bz2
-    md5sum 10aeb23387a1e2d635cfe9345c21b444
-
-    http://osdn.dl.sourceforge.net/sourceforge/loop-aes/ciphers-v3.0e.tar.bz2.sign
-
-Note: As of this writing, files at http://loop-aes.sourceforge.net/ have not
-been updated yet.
-
--- 
-Jari Ruusu  1024R/3A220F51 5B 4B F9 BB D3 3F 52 E9  DB 1D EB E3 24 0E A9 DD
+i'm just trying to figure it out, i have no real knowledge of the inner
+kernel workings, so i dont know. but i really would like to use all 4 cores.
+just how expensive is that reassembly path ?
