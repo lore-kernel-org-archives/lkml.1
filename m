@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932176AbXBWLkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932213AbXBWLlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932176AbXBWLkH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 06:40:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932178AbXBWLkH
+	id S932213AbXBWLlO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 06:41:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932206AbXBWLlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 06:40:07 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52686 "EHLO mx2.mail.elte.hu"
+	Fri, 23 Feb 2007 06:41:14 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56228 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932176AbXBWLkF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 06:40:05 -0500
-Date: Fri, 23 Feb 2007 12:35:00 +0100
+	id S932145AbXBWLlM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 06:41:12 -0500
+Date: Fri, 23 Feb 2007 12:36:15 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: tglx@linutronix.de, dwalker@mvista.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.21-rc1
-Message-ID: <20070223113500.GB1177@elte.hu>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <1172075053.8577.38.camel@imap.mvista.com> <1172077664.25076.75.camel@localhost.localdomain> <1172078340.8577.43.camel@imap.mvista.com> <1172079671.25076.80.camel@localhost.localdomain> <20070223020829.40e5fac3.akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: circular locking: /proc/sys/vm/drop_caches
+Message-ID: <20070223113615.GC1177@elte.hu>
+References: <20070223063538.GA13679@elte.hu> <20070223020743.28ede2d4.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070223020829.40e5fac3.akpm@linux-foundation.org>
+In-Reply-To: <20070223020743.28ede2d4.akpm@linux-foundation.org>
 User-Agent: Mutt/1.4.2.2i
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.1.7
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4920]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 * Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> I already bisected this on my old pIII, which has the same problem: 
-> clockevents-i386-drivers.patch
+> The only (lame) thing I can say for now is that drop_caches is a 
+> debug-only, root-only thing :(
 
-yes - we know what the problem is (and will fix it): the stopping of the 
-PIT - nmi_watchdog=1 is hack to use the IO-APIC's PIT pin to also signal 
-NMIs.
-
-Just to clarify, this problem does not occur if HIGH_RES_TIMERS is off, 
-correct?
+ok, that's fair enough.
 
 	Ingo
