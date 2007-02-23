@@ -1,85 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932336AbXBWNaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932354AbXBWNeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932336AbXBWNaY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 08:30:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932339AbXBWNaX
+	id S932354AbXBWNeS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 08:34:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932364AbXBWNeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 08:30:23 -0500
-Received: from RedStar.dorchain.net ([212.88.133.153]:58547 "EHLO
-	Redstar.dorchain.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932336AbXBWNaM (ORCPT
+	Fri, 23 Feb 2007 08:34:18 -0500
+Received: from nz-out-0506.google.com ([64.233.162.228]:6264 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932354AbXBWNeR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 08:30:12 -0500
-Date: Fri, 23 Feb 2007 14:29:55 +0100
-From: Joerg Dorchain <joerg@dorchain.net>
-To: "Leubner, Achim" <Achim_Leubner@adaptec.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [Patch] bug in gdth.c crashing machine
-Message-ID: <20070223132955.GQ3250@Redstar.dorchain.net>
+	Fri, 23 Feb 2007 08:34:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NZKrEXypv05pvBQatp/Ovx80HcBo7OHNKN8FFr/36Uwc6Hjyojz2XEZ/qzPisQSwyY+mHdd+h4hINHMXaq0/vOViwWv7qgeyOns3ees6abM4tVmNaE6lCi147odPAXw+z4cTHT8H9S9l/pTVsNJ5VoRfldqpDoUYeg0VfaQzct0=
+Message-ID: <cb7bb73a0702230534o4e2c7e9frd5f2b05accf18c05@mail.gmail.com>
+Date: Fri, 23 Feb 2007 14:34:15 +0100
+From: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
+Cc: "James Simmons" <jsimmons@infradead.org>,
+       "Luca Tettamanti" <kronos@people.it>,
+       linux-fbdev-devel@lists.sourceforge.net,
+       "Andrew Morton" <akpm@osdl.org>, "Dave Airlie" <airlied@gmail.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1172187249.4279.7.camel@daplas>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="zKUz1/qH9cAHBnoy"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-message-flag: Formating hard disk. please wait...   10%...  20%...
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <ephv35$4i3$1@sea.gmane.org> <1172101406.4217.16.camel@daplas>
+	 <cb7bb73a0702220001u6acbdd95ncdc9fad10d06b421@mail.gmail.com>
+	 <1172133646.4086.5.camel@daplas>
+	 <cb7bb73a0702220548s55380f7fk995726ffd349823b@mail.gmail.com>
+	 <1172153358.4306.17.camel@daplas>
+	 <cb7bb73a0702220755y3eb2e5b1r8e7908ae0c1720c9@mail.gmail.com>
+	 <1172161290.4198.12.camel@daplas>
+	 <cb7bb73a0702221108r161441ebt61886ce67746f389@mail.gmail.com>
+	 <1172187249.4279.7.camel@daplas>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 2/23/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> On Thu, 2007-02-22 at 20:08 +0100, Giuseppe Bilotta wrote:
+> > No, it doesn't. I've tried all the methods from 640x480 to 1600x1200,
+> > and they /all/ come up snowy. This is starting to look queerer and
+> > queerer. I've also tried changing vf min and max as you suggested:
+>
+> Before we proceed, do you agree that the patch will allow you to change
+> video modes without disabling DDC support?  So this is still a valid
+> fix?
 
---zKUz1/qH9cAHBnoy
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+You're right, I hadn't realized that. I can now access all the sizes
+from 640 to 1600, so I would say the fix is valid.
 
-Hello Achim,
+> When does your display become snowy? Is the snow constant or does it
+> only snow when doing heavy text operations, such as scrolling?
 
-wrt to your mail to the lkml from 13 Oct 2006 Message-ID:
-<EF6AF37986D67948AD48624A3E5D93AFE72291@mtce2k01.adaptec.com>,
-I'd be pleased if you could integrate the derived patch into a bugfix
-release of the driver asap.
+The snowy is constant and abundant, and it seems to be independent of
+video size (640 through 1600) and screen occupation (single prompt
+line to fullscreen mc session) and usage.
 
-This bug kept me busy for three days, endangering  backup to tapes.
+> I presume that X's nv driver or vesafb does not exhibit this problem?
 
-Patch is against vanilla 2.6.20.
+X's nv gives a very clean display, /unless/ I load nvidiafb before: if
+I modprobe nvidiafb (it's a module, and it's blacklisted precisely for
+this reason), then the screen is very snowy with X's nv too.
 
-Kind regards,
-
-Joerg
-
-Signed-off-by: Joerg Dorchain <joerg@dorchain.net>
-
---- gdth.c.orig	2007-02-23 12:48:56.000000000 +0100
-+++ gdth.c	2007-02-23 12:51:44.000000000 +0100
-@@ -3092,6 +3092,7 @@
-             cmdp->u.raw64.direction  =3D=20
-                 gdth_direction_tab[scp->cmnd[0]]=3D=3DDOU ? GDTH_DATA_OUT:=
-GDTH_DATA_IN;
-             memcpy(cmdp->u.raw64.cmd,scp->cmnd,16);
-+            cmdp->u.raw64.sg_ranz    =3D 0;
-         } else {
-             cmdp->u.raw.reserved   =3D 0;
-             cmdp->u.raw.mdisc_time =3D 0;
-@@ -3108,6 +3109,7 @@
-             cmdp->u.raw.direction  =3D=20
-                 gdth_direction_tab[scp->cmnd[0]]=3D=3DDOU ? GDTH_DATA_OUT:=
-GDTH_DATA_IN;
-             memcpy(cmdp->u.raw.cmd,scp->cmnd,12);
-+            cmdp->u.raw.sg_ranz    =3D 0;
-         }
-=20
-         if (scp->use_sg) {
-
---zKUz1/qH9cAHBnoy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFF3uxTjY4+4PdzvOARAvLgAJwKAHhquIXkk//DqXDFji04/GT2eQCfWpzu
-+Cz5DEjRuPpNZgkQz6IljRI=
-=9Hsc
------END PGP SIGNATURE-----
-
---zKUz1/qH9cAHBnoy--
+-- 
+Giuseppe "Oblomov" Bilotta
