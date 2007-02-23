@@ -1,117 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932122AbXBWL23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932134AbXBWL3B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932122AbXBWL23 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 06:28:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932127AbXBWL22
+	id S932134AbXBWL3B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 06:29:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932127AbXBWL3B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 06:28:28 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44601 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932122AbXBWL21 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 06:28:27 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, Zwane Mwaikambo <zwane@infradead.org>,
-       Ashok Raj <ashok.raj@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       "Lu, Yinghai" <yinghai.lu@amd.com>,
-       Natalie Protasevich <protasnb@gmail.com>, Andi Kleen <ak@suse.de>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 08/14] x86_64 irq: Use NR_IRQS not NR_IRQ_VECTORS
-References: <200701221116.13154.luigi.genoni@pirelli.com>
-	<20070206222523.GA11602@elte.hu>
-	<m1irecamzh.fsf@ebiederm.dsl.xmission.com>
-	<m1wt2s8ksa.fsf@ebiederm.dsl.xmission.com>
-	<m1veib6dgi.fsf@ebiederm.dsl.xmission.com>
-	<m1hctt1sfp.fsf_-_@ebiederm.dsl.xmission.com>
-	<Pine.LNX.4.64.0702102146380.8245@montezuma.fsmlabs.com>
-	<m13b5d0zdp.fsf@ebiederm.dsl.xmission.com>
-	<Pine.LNX.4.64.0702110753390.8245@montezuma.fsmlabs.com>
-	<m17iuoz74f.fsf@ebiederm.dsl.xmission.com>
-	<Pine.LNX.4.64.0702111416220.24829@montezuma.fsmlabs.com>
-	<m1r6swx9l2.fsf@ebiederm.dsl.xmission.com>
-	<m1irdtw3jb.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1bqjlw2mr.fsf_-_@ebiederm.dsl.xmission.com>
-	<m17iu9w2kj.fsf_-_@ebiederm.dsl.xmission.com>
-	<m13b4xw2h8.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1y7mpunuk.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1tzxdunsg.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1ps81uno3.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1lkipunl0.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1ejohung7.fsf_-_@ebiederm.dsl.xmission.com>
-Date: Fri, 23 Feb 2007 04:26:53 -0700
-In-Reply-To: <m1ejohung7.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Fri, 23 Feb 2007 04:23:52 -0700")
-Message-ID: <m17iu9unb6.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 23 Feb 2007 06:29:01 -0500
+Received: from mail.pxnet.com ([195.227.45.3]:32782 "EHLO lx1.pxnet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932136AbXBWL3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 06:29:00 -0500
+Date: Fri, 23 Feb 2007 12:28:09 +0100
+Message-Id: <200702231128.l1NBS9R5025966@lx1.pxnet.com>
+From: Tilman Schmidt <tilman@imap.cc>
+Subject: [PATCH] drivers/isdn/gigaset: mark some static data as const
+To: Andrew Morton <akpm@osdl.org>, Karsten Keil <kkeil@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       i4ldeveloper@listserv.isdn4linux.de
+CC: Hansjoerg Lipp <hjlipp@web.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Tilman Schmidt <tilman@imap.cc>
 
-NR_IRQ_VECTORS is currently a compatiblity define set to NR_IRQs.
-This patch updates the users of NR_IRQ_VECTORS to use NR_IRQs instead
-so that NR_IRQ_VECTORS can be removed.
+Mark some static arrays as const that aren't and shouldn't be modified,
+and remove incorrect static attribute from some variables.
 
-There is still shared code with arch/i386 that uses NR_IRQ_VECTORS 
-so we can't remove the #define just yet :(
+Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+Signed-off-by: Hansjoerg Lipp <hjlipp@web.de>
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/x86_64/kernel/io_apic.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86_64/kernel/io_apic.c b/arch/x86_64/kernel/io_apic.c
-index 52fc19b..65d7218 100644
---- a/arch/x86_64/kernel/io_apic.c
-+++ b/arch/x86_64/kernel/io_apic.c
-@@ -74,7 +74,7 @@ int nr_ioapic_registers[MAX_IO_APICS];
-  * Rough estimation of how many shared IRQs there are, can
-  * be changed anytime.
-  */
--#define MAX_PLUS_SHARED_IRQS NR_IRQ_VECTORS
-+#define MAX_PLUS_SHARED_IRQS NR_IRQS
- #define PIN_MAP_SIZE (MAX_PLUS_SHARED_IRQS + NR_IRQS)
+This patch applies to 2.6.20-rc1. Please merge.
+
+ bas-gigaset.c |    4 ++--
+ common.c      |    6 +++---
+ ev-layer.c    |    4 ++--
+ isocdata.c    |    4 ++--
+ ser-gigaset.c |    2 +-
+ usb-gigaset.c |    4 ++--
+ 6 files changed, 12 insertions(+), 12 deletions(-)
+
+diff -purX linux-2.6.20-work/Documentation/dontdiff local/drivers/isdn/gigaset/bas-gigaset.c linux-2.6.21-rc1-work/drivers/isdn/gigaset/bas-gigaset.c
+--- local/drivers/isdn/gigaset/bas-gigaset.c	2007-02-17 15:08:56.000000000 +0100
++++ linux-2.6.21-rc1-work/drivers/isdn/gigaset/bas-gigaset.c	2007-02-23 00:12:58.000000000 +0100
+@@ -54,7 +54,7 @@ MODULE_PARM_DESC(cidmode, "Call-ID mode"
+ #define USB_SX353_PRODUCT_ID    0x0022
  
- /*
-@@ -615,7 +615,7 @@ static int pin_2_irq(int idx, int apic, int pin)
+ /* table of devices that work with this driver */
+-static struct usb_device_id gigaset_table [] = {
++static const struct usb_device_id gigaset_table [] = {
+ 	{ USB_DEVICE(USB_GIGA_VENDOR_ID, USB_3070_PRODUCT_ID) },
+ 	{ USB_DEVICE(USB_GIGA_VENDOR_ID, USB_3075_PRODUCT_ID) },
+ 	{ USB_DEVICE(USB_GIGA_VENDOR_ID, USB_SX303_PRODUCT_ID) },
+@@ -2298,7 +2298,7 @@ static void gigaset_disconnect(struct us
+ 	gigaset_unassign(cs);
+ }
  
+-static struct gigaset_ops gigops = {
++static const struct gigaset_ops gigops = {
+ 	gigaset_write_cmd,
+ 	gigaset_write_room,
+ 	gigaset_chars_in_buffer,
+diff -purX linux-2.6.20-work/Documentation/dontdiff local/drivers/isdn/gigaset/common.c linux-2.6.21-rc1-work/drivers/isdn/gigaset/common.c
+--- local/drivers/isdn/gigaset/common.c	2007-02-07 22:22:18.000000000 +0100
++++ linux-2.6.21-rc1-work/drivers/isdn/gigaset/common.c	2007-02-23 00:02:10.000000000 +0100
+@@ -944,8 +944,8 @@ static DEFINE_SPINLOCK(driver_lock);
+ struct cardstate *gigaset_get_cs_by_id(int id)
+ {
+ 	unsigned long flags;
+-	static struct cardstate *ret = NULL;
+-	static struct cardstate *cs;
++	struct cardstate *ret = NULL;
++	struct cardstate *cs;
+ 	struct gigaset_driver *drv;
+ 	unsigned i;
  
- /* irq_vectors is indexed by the sum of all RTEs in all I/O APICs. */
--static u8 irq_vector[NR_IRQ_VECTORS] __read_mostly = {
-+static u8 irq_vector[NR_IRQS] __read_mostly = {
- 	[0] = FIRST_EXTERNAL_VECTOR + 0,
- 	[1] = FIRST_EXTERNAL_VECTOR + 1,
- 	[2] = FIRST_EXTERNAL_VECTOR + 2,
-@@ -634,7 +634,7 @@ static u8 irq_vector[NR_IRQ_VECTORS] __read_mostly = {
- 	[15] = FIRST_EXTERNAL_VECTOR + 15,
+@@ -999,7 +999,7 @@ void gigaset_debugdrivers(void)
+ static struct cardstate *gigaset_get_cs_by_minor(unsigned minor)
+ {
+ 	unsigned long flags;
+-	static struct cardstate *ret = NULL;
++	struct cardstate *ret = NULL;
+ 	struct gigaset_driver *drv;
+ 	unsigned index;
+ 
+diff -purX linux-2.6.20-work/Documentation/dontdiff local/drivers/isdn/gigaset/ev-layer.c linux-2.6.21-rc1-work/drivers/isdn/gigaset/ev-layer.c
+--- local/drivers/isdn/gigaset/ev-layer.c	2007-02-07 21:56:37.000000000 +0100
++++ linux-2.6.21-rc1-work/drivers/isdn/gigaset/ev-layer.c	2007-02-23 00:21:24.000000000 +0100
+@@ -409,7 +409,7 @@ static struct reply_t tab_cid[] = /* no 
  };
+ #endif
  
--static cpumask_t irq_domain[NR_IRQ_VECTORS] __read_mostly = {
-+static cpumask_t irq_domain[NR_IRQS] __read_mostly = {
- 	[0] = CPU_MASK_ALL,
- 	[1] = CPU_MASK_ALL,
- 	[2] = CPU_MASK_ALL,
-@@ -671,7 +671,7 @@ static int __assign_irq_vector(int irq, cpumask_t mask, cpumask_t *result)
- 	int old_vector = -1;
- 	int cpu;
+-static struct resp_type_t resp_type[]=
++static const struct resp_type_t resp_type[] =
+ {
+ 	/*{"",		RSP_EMPTY,	RT_NOTHING},*/
+ 	{"OK",		RSP_OK,		RT_NOTHING},
+@@ -511,7 +511,7 @@ void gigaset_handle_modem_response(struc
+ 	unsigned char *argv[MAX_REC_PARAMS + 1];
+ 	int params;
+ 	int i, j;
+-	struct resp_type_t *rt;
++	const struct resp_type_t *rt;
+ 	int curarg;
+ 	unsigned long flags;
+ 	unsigned next, tail, head;
+diff -purX linux-2.6.20-work/Documentation/dontdiff local/drivers/isdn/gigaset/isocdata.c linux-2.6.21-rc1-work/drivers/isdn/gigaset/isocdata.c
+--- local/drivers/isdn/gigaset/isocdata.c	2007-02-17 15:06:39.000000000 +0100
++++ linux-2.6.21-rc1-work/drivers/isdn/gigaset/isocdata.c	2007-02-21 12:46:09.000000000 +0100
+@@ -274,7 +274,7 @@ static inline void dump_bytes(enum debug
+  *        bit 12..10 = number of trailing '1' bits in result
+  *        bit 14..13 = number of bits added by stuffing
+  */
+-static const u16 stufftab[5 * 256] = {
++static u16 stufftab[5 * 256] = {
+ // previous 1s = 0:
+  0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007, 0x0008, 0x0009, 0x000a, 0x000b, 0x000c, 0x000d, 0x000e, 0x000f,
+  0x0010, 0x0011, 0x0012, 0x0013, 0x0014, 0x0015, 0x0016, 0x0017, 0x0018, 0x0019, 0x001a, 0x001b, 0x001c, 0x001d, 0x001e, 0x201f,
+@@ -629,7 +629,7 @@ static inline void hdlc_frag(struct bc_s
+  *		     (replacing 8 by 7 to make it fit; the algorithm won't care)
+  *        bit 7 set if there are 5 or more "interior" consecutive '1' bits
+  */
+-static const unsigned char bitcounts[256] = {
++static unsigned char bitcounts[256] = {
+   0x00, 0x01, 0x00, 0x02, 0x00, 0x01, 0x00, 0x03, 0x00, 0x01, 0x00, 0x02, 0x00, 0x01, 0x00, 0x04,
+   0x00, 0x01, 0x00, 0x02, 0x00, 0x01, 0x00, 0x03, 0x00, 0x01, 0x00, 0x02, 0x00, 0x01, 0x00, 0x05,
+   0x00, 0x01, 0x00, 0x02, 0x00, 0x01, 0x00, 0x03, 0x00, 0x01, 0x00, 0x02, 0x00, 0x01, 0x00, 0x04,
+diff -purX linux-2.6.20-work/Documentation/dontdiff local/drivers/isdn/gigaset/ser-gigaset.c linux-2.6.21-rc1-work/drivers/isdn/gigaset/ser-gigaset.c
+--- local/drivers/isdn/gigaset/ser-gigaset.c	2007-02-07 23:25:32.000000000 +0100
++++ linux-2.6.21-rc1-work/drivers/isdn/gigaset/ser-gigaset.c	2007-02-23 00:11:04.000000000 +0100
+@@ -459,7 +459,7 @@ static int gigaset_set_line_ctrl(struct 
+ 	return -EINVAL;
+ }
  
--	BUG_ON((unsigned)irq >= NR_IRQ_VECTORS);
-+	BUG_ON((unsigned)irq >= NR_IRQS);
+-static struct gigaset_ops ops = {
++static const struct gigaset_ops ops = {
+ 	gigaset_write_cmd,
+ 	gigaset_write_room,
+ 	gigaset_chars_in_buffer,
+diff -purX linux-2.6.20-work/Documentation/dontdiff local/drivers/isdn/gigaset/usb-gigaset.c linux-2.6.21-rc1-work/drivers/isdn/gigaset/usb-gigaset.c
+--- local/drivers/isdn/gigaset/usb-gigaset.c	2006-12-19 01:38:19.000000000 +0100
++++ linux-2.6.21-rc1-work/drivers/isdn/gigaset/usb-gigaset.c	2007-02-23 00:11:03.000000000 +0100
+@@ -50,7 +50,7 @@ MODULE_PARM_DESC(cidmode, "Call-ID mode"
+ #define USB_M105_PRODUCT_ID	0x0009
  
- 	/* Only try and allocate irqs on cpus that are present */
- 	cpus_and(mask, mask, cpu_online_map);
-@@ -758,7 +758,7 @@ void __setup_vector_irq(int cpu)
- 	int irq, vector;
+ /* table of devices that work with this driver */
+-static struct usb_device_id gigaset_table [] = {
++static const struct usb_device_id gigaset_table [] = {
+ 	{ USB_DEVICE(USB_M105_VENDOR_ID, USB_M105_PRODUCT_ID) },
+ 	{ }					/* Terminating entry */
+ };
+@@ -860,7 +860,7 @@ static void gigaset_disconnect(struct us
+ 	gigaset_unassign(cs);
+ }
  
- 	/* Mark the inuse vectors */
--	for (irq = 0; irq < NR_IRQ_VECTORS; ++irq) {
-+	for (irq = 0; irq < NR_IRQS; ++irq) {
- 		if (!cpu_isset(cpu, irq_domain[irq]))
- 			continue;
- 		vector = irq_vector[irq];
--- 
-1.5.0.g53756
-
+-static struct gigaset_ops ops = {
++static const struct gigaset_ops ops = {
+ 	gigaset_write_cmd,
+ 	gigaset_write_room,
+ 	gigaset_chars_in_buffer,
