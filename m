@@ -1,91 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932572AbXBWSpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932596AbXBWSus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932572AbXBWSpA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 13:45:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932596AbXBWSpA
+	id S932596AbXBWSus (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 13:50:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932619AbXBWSus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 13:45:00 -0500
-Received: from smtp-vbr15.xs4all.nl ([194.109.24.35]:1605 "EHLO
-	smtp-vbr15.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932572AbXBWSo7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 13:44:59 -0500
-Message-ID: <45DF3628.8060706@xs4all.nl>
-Date: Fri, 23 Feb 2007 19:44:56 +0100
-From: Udo van den Heuvel <udovdh@xs4all.nl>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: PCI riser cards and PCI irq routing, etc
-References: <45D85DA1.7090502@xs4all.nl> <m3hctfqjna.fsf@maximus.localdomain>	<20070221224027.GK22464@csclub.uwaterloo.ca>	<200702212355.25601.s0348365@sms.ed.ac.uk>	<m3bqjnrntu.fsf@maximus.localdomain> <45DF0C29.2080201@xs4all.nl> <m3slcw68vr.fsf@maximus.localdomain>
-In-Reply-To: <m3slcw68vr.fsf@maximus.localdomain>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: id=8300CC02
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 23 Feb 2007 13:50:48 -0500
+Received: from mail.tnnet.fi ([217.112.240.26]:38503 "EHLO mail.tnnet.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932596AbXBWSur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 13:50:47 -0500
+X-Greylist: delayed 1505 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Feb 2007 13:50:46 EST
+Message-ID: <45DF319E.3157C85A@users.sourceforge.net>
+Date: Fri, 23 Feb 2007 20:25:34 +0200
+From: Jari Ruusu <jariruusu@users.sourceforge.net>
+To: linux-crypto@nl.linux.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Announce loop-AES-v3.1f file/swap crypto package
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Udo van den Heuvel <udovdh@xs4all.nl> writes:
-> 
->> I will try a different case with a different dual PCI riser card soon.
->> This Morex riser has DN20-31 or so, so more options.
-> 
-> OTOH I wonder how do they use DN 21-31? The board uses lines AD11 to AD31
-> (21 lines) for selecting devices #0 - #20. 32-bit PCI bus has only 32
-> address/data lines :-)
-> 
-> Perhaps they mean AD20-AD31 lines = device #9 - #0x14=20? If that is
-> the case, you can try:
-> - their "DN30" = device 0x13 = 19, which is apparently what the VIA riser
->   card does,
-> - their "DN21" = device 0xA = 10, which could work as well.
-> 
-> I'm afraid both would require (different) soldering.
+loop-AES changes since previous release:
+- Work around dash /bin/sh shell and make-3.81 incompatibilities.
+- Work around block layer breakage in 2.6.20-rcX-mmX kernels.
+- Added "cleartextkey=file" mount option to mount, and "-P file" command
+  line option to losetup. These options help automounters.
+- Added loop-aes-keygen script from Max Vozeler.
 
-My dmesg says:
+bzip2 compressed tarball is here:
 
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
-ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 6 7 10 11 12) *5
-ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 6 7 10 *11 12)
-ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 6 7 *10 11 12)
-ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 6 7 10 11 12) *0, disabled.
-ACPI: PCI Interrupt Link [LNKE] (IRQs 3 4 6 7 10 11 12) *0, disabled.
-ACPI: PCI Interrupt Link [LNKF] (IRQs 3 4 6 7 10 11 12) *0, disabled.
-ACPI: PCI Interrupt Link [LNK0] (IRQs 3 4 6 7 10 11 12) *0, disabled.
-ACPI: PCI Interrupt Link [LNK1] (IRQs 3 4 6 7 10 11 12) *0, disabled.
-ACPI: PCI Interrupt Link [ALKA] (IRQs *20)
-ACPI: PCI Interrupt Link [ALKB] (IRQs *21)
-ACPI: PCI Interrupt Link [ALKC] (IRQs *22)
-ACPI: PCI Interrupt Link [ALKD] (IRQs *23), disabled.
+    http://osdn.dl.sourceforge.net/sourceforge/loop-aes/loop-AES-v3.1f.tar.bz2
+    md5sum 1020b93d723f1d573bacfe4a3362fc25
 
-lspci -v says:
+    http://osdn.dl.sourceforge.net/sourceforge/loop-aes/loop-AES-v3.1f.tar.bz2.sign
 
-00:13.0 Multimedia controller: Philips Semiconductors SAA7146 (rev 01)
-        Subsystem: TERRATEC Electronic GmbH Unknown device 1157
-        Flags: bus master, medium devsel, latency 32, IRQ 16
-        Memory at fdffc000 (32-bit, non-prefetchable) [size=512]
 
-00:14.0 Multimedia controller: Philips Semiconductors SAA7146 (rev 01)
-        Subsystem: TERRATEC Electronic GmbH Unknown device 1155
-        Flags: bus master, medium devsel, latency 32, IRQ 20
-        Memory at fdffb000 (32-bit, non-prefetchable) [size=512]
+Additional ciphers package changes since previous release:
+- Work around dash /bin/sh shell and make-3.81 incompatibilities.
 
-Does this provide additional info to you?
+bzip2 compressed tarball is here:
 
-http://www.itx-warehouse.co.uk/Product.aspx?ProductID=410 says:
+    http://osdn.dl.sourceforge.net/sourceforge/loop-aes/ciphers-v3.0e.tar.bz2
+    md5sum 10aeb23387a1e2d635cfe9345c21b444
 
-Description VIA Dual PCI Riser
-The EXT-PCI is a PCI riser card which expands a PCI slot into two PCI slots.
-EXT-PCI slot 1 (lower slot) uses the system resources (Device ID, INT)
-of the PCI slot of the motherboard.
-EXT-PCI slot 2 (Upper slot) uses device 19 and INT_A.
+    http://osdn.dl.sourceforge.net/sourceforge/loop-aes/ciphers-v3.0e.tar.bz2.sign
 
-Upper slot has the problems. TranquilPC does not even respond anymore.
-The lower slot is a copy of the normal (single) PCI slot w.r.t. devcie
-and irq, it has DN20 and irq 20.
-dmesg links ALNKA to IRQ 20. So if ALNKA is INTA both PCI cards should
-share IRQ 20?
+Note: As of this writing, files at http://loop-aes.sourceforge.net/ have not
+been updated yet.
 
+-- 
+Jari Ruusu  1024R/3A220F51 5B 4B F9 BB D3 3F 52 E9  DB 1D EB E3 24 0E A9 DD
