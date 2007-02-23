@@ -1,33 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752045AbXBVXPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752044AbXBVX2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752045AbXBVXPF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 18:15:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbXBVXPE
+	id S1752044AbXBVX2T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 18:28:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbXBVX2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 18:15:04 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42515 "EHLO
+	Thu, 22 Feb 2007 18:28:18 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35154 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752045AbXBVXPB (ORCPT
+	with ESMTP id S1752044AbXBVX2S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 18:15:01 -0500
-Date: Fri, 23 Feb 2007 00:18:26 +0000
+	Thu, 22 Feb 2007 18:28:18 -0500
+Date: Fri, 23 Feb 2007 00:30:18 +0000
 From: Alan <alan@lxorguk.ukuu.org.uk>
 To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Cc: "D. Hazelton" <dhazelton@enter.net>,
-       "David Lang" <david.lang@digitalinsight.com>, davids@webmaster.com,
-       "v j" <vj.linux@gmail.com>, trent.waddington@gmail.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>
-Subject: Re: GPL vs non-GPL device drivers
-Message-ID: <20070223001826.01b83cb1@lxorguk.ukuu.org.uk>
-In-Reply-To: <f2b55d220702221442h3700a32epd183b974767f4f9d@mail.gmail.com>
-References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>
-	<Pine.LNX.4.63.0702211527080.15723@qynat.qvtvafvgr.pbz>
-	<f2b55d220702211628v6c8b16e7ibdfeb293592b2093@mail.gmail.com>
-	<200702212030.58317.dhazelton@enter.net>
-	<f2b55d220702211805h6df0b342o7676e37c7aa43bdd@mail.gmail.com>
-	<20070222141434.3beb8a94@lxorguk.ukuu.org.uk>
-	<f2b55d220702221442h3700a32epd183b974767f4f9d@mail.gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
+       "Ulrich Drepper" <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Andrew Morton" <akpm@zip.com.au>, "Zach Brown" <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Suparna Bhattacharya" <suparna@in.ibm.com>,
+       "Davide Libenzi" <davidel@xmailserver.org>,
+       "Jens Axboe" <jens.axboe@oracle.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070223003018.0d244576@lxorguk.ukuu.org.uk>
+In-Reply-To: <f2b55d220702221324n788506b6oee4f8ed4f168fbf1@mail.gmail.com>
+References: <20070221211355.GA7302@elte.hu>
+	<f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
+	<20070221233111.GB5895@elte.hu>
+	<45DCD9E5.2010106@redhat.com>
+	<20070222074044.GA4158@elte.hu>
+	<20070222113148.GA3781@2ka.mipt.ru>
+	<20070222125931.GB25788@elte.hu>
+	<f2b55d220702221324n788506b6oee4f8ed4f168fbf1@mail.gmail.com>
 X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -35,33 +42,28 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Oh yeah?  For IRIX in 1991?  Or for that matter, for Linux/ARM EABI
-> today?  Tell me, how many of what sort of users do you support
+> to do anything but chase pointers through cache.  Done right, it
+> hardly even branches (although the branch misprediction penalty is a
+> lot less of a worry on current x86_64 than it was in the
+> mega-superscalar-out-of-order-speculative-execution days).  It's damn
 
-Solaris (NTL - very large ISP/Telco), Dec server 5000 (for fun), Irix (and
-linux cross for Irix removal), MIPS embedded (including the port to Linux
-of Algorithmics toolchain) for Sonix then 3COM routers.
+Actually it costs a lot more on at least one vendors processor because
+you stall very long pipelines.
 
-It's not a hard problem. gcc 2.x wasn't too hot on MIPS but it worked
-although the Irix compiler generated vastly better code (and AFAIK still
-does).
+> threadlets promise that they will not touch anything thread-local, and
+> that when the FPU is handed to them in a specific, known state, they
+> leave it in that same state.  (Some of the flags can be
 
-There are folks who maintain cross devel chains for just about every
-Linux platform specifically for testing and while it isn't a small job
-they do seem to be coping quite happily.
+We don't use the FPU in the kernel except in very weird cases where it
+makes an enormous performance difference. The threadlets also have the
+same page tables so they have the same %cr3 so its very cheap to switch,
+basically a predicted jump and some register loads
 
-> CodeSourcery and MontaVista and Red Hat stay in business?  Not with
-> the quality of their code or their customer service, I'll tell you
-> that -- although Mark Mitchell is probably the best release manager
+> Do me a favor.  Do some floating point math and a memcpy() in between
+> syscalls in the threadlet.  Actually fiddle with errno and the FPU
 
-Lots of people would disagree with you about that (and independant
-surveys would back the disagreement), like they would disagree with you
-about most things.
+We don't have an errno in the kernel because its a stupid idea. Errno is
+a user space hack for compatibility with 1970's bad design. So its not
+relevant either.
 
-> that any GNU project has ever had.
-
-> me off, and in the meantime, you know where to find your keyboard's
-> "stick my fingers in my ears and shout la-la-la-I-can't-hear-you" key.
->  :-)
-
-I was hoping you'd take the pseudo-legal noise elsewhere.
+Alan
