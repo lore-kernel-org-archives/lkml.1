@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752187AbXBWKJD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932067AbXBWKJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752187AbXBWKJD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 05:09:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbXBWKJD
+	id S932067AbXBWKJX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 05:09:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932091AbXBWKJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 05:09:03 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:60054 "EHLO smtp.osdl.org"
+	Fri, 23 Feb 2007 05:09:23 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:60076 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752187AbXBWKJB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 05:09:01 -0500
-Date: Fri, 23 Feb 2007 02:08:29 -0800
+	id S932067AbXBWKJW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 05:09:22 -0500
+Date: Fri, 23 Feb 2007 02:09:14 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: tglx@linutronix.de
-Cc: dwalker@mvista.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: Linux 2.6.21-rc1
-Message-Id: <20070223020829.40e5fac3.akpm@linux-foundation.org>
-In-Reply-To: <1172079671.25076.80.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-	<1172075053.8577.38.camel@imap.mvista.com>
-	<1172077664.25076.75.camel@localhost.localdomain>
-	<1172078340.8577.43.camel@imap.mvista.com>
-	<1172079671.25076.80.camel@localhost.localdomain>
+To: pgf111000 <junkmail@petergfrazier.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Areca driver 2.6.19 on x86_64
+Message-Id: <20070223020914.4a9a7ece.akpm@linux-foundation.org>
+In-Reply-To: <9113207.post@talk.nabble.com>
+References: <3193.213.203.144.13.1165423892.squirrel@mailserver.omnibit.it>
+	<20061206230949.GA25461@brong.net>
+	<000301c719a9$70e4f8d0$2900a8c0@arecakevin>
+	<9113207.post@talk.nabble.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,20 +27,32 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 21 Feb 2007 18:41:11 +0100 Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Wed, 2007-02-21 at 09:19 -0800, Daniel Walker wrote:
-> > > At this point the PIT / HPET _is_ active and incrementing jiffies. The
-> > > switch to local apic timers happens afterwards. 
+> On Thu, 22 Feb 2007 20:04:07 -0800 (PST) pgf111000 <junkmail@petergfrazier.com> wrote:
+> 
+> These solutions are laughable....
+> 
+> 
+> 
+> 
+> Areca Support wrote:
 > > 
-> > Could be the switch over then which confuses the NMI . 
-> 
-> Why? The switch just stops the PIT/HPET. It does not fiddle with IO_APIC
-> and friends at all.
-> 
-> > ftp://source.mvista.com/pub/dwalker/tglx/
-> 
-> Nothing obvious. Bisect time :(
-> 
+> > Dear Sir,
+> > 
+> > This is Kevin Wang from Areca Technology, Tech-Support Team.
+> > regarding your problem, please trying to disable ACPI in kernel loader.
+> > if the problem happen as soon as driver loaded, it should be the IRQ
+> > releated issue.
+> > the motherboard bios didn't assigned a correct IRQ to controller, it makes
+> > the driver can't initialize controller.
+> > and in our experience, disable ACPI in kernel loader can solved this ussue
+> > in some distro.
 
-I already bisected this on my old pIII, which has the same problem:
-clockevents-i386-drivers.patch
+What we're probably looking at here are BIOS bugs.
+
+But areca's suggestions are good ones: if those things fix the problem then
+we probably need to fix Linus acpi or, more likely, add suitable
+workarounds for yet more BIOS bugs.
+
+So yes, please try the diagnostic steps which they suggested and if that
+helps, raise a report against acpi at bugzilla.kernel.org.
+
