@@ -1,50 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752171AbXBWJvI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752180AbXBWJwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752171AbXBWJvI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 04:51:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbXBWJvI
+	id S1752180AbXBWJwL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 04:52:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbXBWJwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 04:51:08 -0500
-Received: from www.osadl.org ([213.239.205.134]:52376 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752171AbXBWJvH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 04:51:07 -0500
-Subject: sparc generic time / clockevents [ was Re: NO_HZ: timer interrupt
-	stuck ]
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, john stultz <johnstul@us.ibm.com>
-In-Reply-To: <20070223.012519.48528691.davem@davemloft.net>
-References: <1172159501.25076.182.camel@localhost.localdomain>
-	 <20070222.092652.55507017.davem@davemloft.net>
-	 <1172165959.25076.192.camel@localhost.localdomain>
-	 <20070223.012519.48528691.davem@davemloft.net>
-Content-Type: text/plain
-Date: Fri, 23 Feb 2007 10:56:18 +0100
-Message-Id: <1172224579.25076.219.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 23 Feb 2007 04:52:11 -0500
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:39522 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752184AbXBWJwJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 04:52:09 -0500
+Date: Fri, 23 Feb 2007 10:50:40 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, James.Bottomley@SteelEye.com,
+       Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH] dma-mapping-broken.h: flesh-out DMA API stubs
+Message-ID: <20070223095040.GB8084@osiris.boeblingen.de.ibm.com>
+References: <20070223005945.GA13084@tuxdriver.com> <20070223034243.GA7988@osiris.ibm.com> <20070223061332.GB27126@osiris.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070223061332.GB27126@osiris.ibm.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David,
-
-<trimmed CC due to sparcness, added John instaed >
-
-On Fri, 2007-02-23 at 01:25 -0800, David Miller wrote:
-> > Yes, all you need is to omit the CLOCK_EVT_FEAT_PERIODIC flag when you
-> > register your device.
+On Fri, Feb 23, 2007 at 07:13:32AM +0100, Heiko Carstens wrote:
+> How about this for telling that an architecture doesn't support DMA?
+> At least we could get rid of dma-mapping-broken.h and don't need to
+> compile some afterwards dead code.
 > 
-> Thanks a lot Thomas.
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> ---
+>  arch/s390/Kconfig              |    3 +++
+>  drivers/base/Makefile          |    4 ++--
+>  include/asm-s390/dma-mapping.h |    2 --
+>  lib/Kconfig                    |    5 +++++
+>  4 files changed, 10 insertions(+), 4 deletions(-)
 > 
-> I noticed while doing this work that the generic clock code is
-> incompatible with the time interpolator, since both provide a
-> do_{get,set}timeofday() implementation.  Just FYI...
+> Index: linux-2.6/arch/s390/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/arch/s390/Kconfig
+> +++ linux-2.6/arch/s390/Kconfig
+> @@ -44,6 +44,9 @@ config GENERIC_TIME
+>  config NO_IOMEM
+>  	def_bool y
+> 
+> +config NO_DMA
+> +	def_bool y
+> +
+>  mainmenu "Linux Kernel Configuration"
+> 
+>  config S390
+> Index: linux-2.6/drivers/base/Makefile
+> ===================================================================
+> --- linux-2.6.orig/drivers/base/Makefile
+> +++ linux-2.6/drivers/base/Makefile
+> @@ -2,10 +2,10 @@
+> 
+>  obj-y			:= core.o sys.o bus.o dd.o \
+>  			   driver.o class.o platform.o \
+> -			   cpu.o firmware.o init.o map.o dmapool.o \
+> -			   dma-mapping.o devres.o \
+> +			   cpu.o firmware.o init.o map.o devres.o \
+>  			   attribute_container.o transport_class.o
+>  obj-y			+= power/
+> +obj-$(CONFIG_DMA)	+= dma-mapping.o dmapool.o
 
-John, can you have a look at this ?
+This should have been CONFIG_HAS_DMA. Anyway I'm going to resend this one
+if nobody objects.
 
-	tglx
 
 
+>  obj-$(CONFIG_ISA)	+= isa.o
+>  obj-$(CONFIG_FW_LOADER)	+= firmware_class.o
+>  obj-$(CONFIG_NUMA)	+= node.o
+> Index: linux-2.6/include/asm-s390/dma-mapping.h
+> ===================================================================
+> --- linux-2.6.orig/include/asm-s390/dma-mapping.h
+> +++ linux-2.6/include/asm-s390/dma-mapping.h
+> @@ -9,6 +9,4 @@
+>  #ifndef _ASM_DMA_MAPPING_H
+>  #define _ASM_DMA_MAPPING_H
+> 
+> -#include <asm-generic/dma-mapping-broken.h>
+> -
+>  #endif /* _ASM_DMA_MAPPING_H */
+> Index: linux-2.6/lib/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/lib/Kconfig
+> +++ linux-2.6/lib/Kconfig
+> @@ -111,4 +111,9 @@ config HAS_IOPORT
+>  	depends on HAS_IOMEM && !NO_IOPORT
+>  	default y
+> 
+> +config HAS_DMA
+> +	boolean
+> +	depends on !NO_DMA
+> +	default y
+> +
+>  endmenu
+
+-- 
+Heiko Carstens
+Linux on System z Development
+
+IBM Deutschland Entwicklung GmbH
+Vorsitzender des Aufsichtsrats: Johann Weihen
+Geschaeftsfuehrung : Herbert Kircher
+Sitz der Gesellschaft: Boeblingen
+Registergericht: Amtsgericht Stuttgart, HRB 243294
