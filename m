@@ -1,92 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932484AbXBWLRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932536AbXBWLSO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932484AbXBWLRc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 06:17:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932515AbXBWLRb
+	id S932536AbXBWLSO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 06:18:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932561AbXBWLSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 06:17:31 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50670 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932484AbXBWLRa (ORCPT
+	Fri, 23 Feb 2007 06:18:14 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:58308 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932536AbXBWLSN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 06:17:30 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, Zwane Mwaikambo <zwane@infradead.org>,
-       Ashok Raj <ashok.raj@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       "Lu, Yinghai" <yinghai.lu@amd.com>,
-       Natalie Protasevich <protasnb@gmail.com>, Andi Kleen <ak@suse.de>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 04/14] x86_64 irq: Remove the unused vector parameter from ioapic_register_intr
-References: <200701221116.13154.luigi.genoni@pirelli.com>
-	<m1zm7w3wvr.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1veik3woc.fsf_-_@ebiederm.dsl.xmission.com>
-	<20070206073616.GA15016@elte.hu>
-	<m1odo7q6cq.fsf@ebiederm.dsl.xmission.com>
-	<20070206222523.GA11602@elte.hu>
-	<m1irecamzh.fsf@ebiederm.dsl.xmission.com>
-	<m1wt2s8ksa.fsf@ebiederm.dsl.xmission.com>
-	<m1veib6dgi.fsf@ebiederm.dsl.xmission.com>
-	<m1hctt1sfp.fsf_-_@ebiederm.dsl.xmission.com>
-	<Pine.LNX.4.64.0702102146380.8245@montezuma.fsmlabs.com>
-	<m13b5d0zdp.fsf@ebiederm.dsl.xmission.com>
-	<Pine.LNX.4.64.0702110753390.8245@montezuma.fsmlabs.com>
-	<m17iuoz74f.fsf@ebiederm.dsl.xmission.com>
-	<Pine.LNX.4.64.0702111416220.24829@montezuma.fsmlabs.com>
-	<m1r6swx9l2.fsf@ebiederm.dsl.xmission.com>
-	<m1irdtw3jb.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1bqjlw2mr.fsf_-_@ebiederm.dsl.xmission.com>
-	<m17iu9w2kj.fsf_-_@ebiederm.dsl.xmission.com>
-	<m13b4xw2h8.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1y7mpunuk.fsf_-_@ebiederm.dsl.xmission.com>
-Date: Fri, 23 Feb 2007 04:16:31 -0700
-In-Reply-To: <m1y7mpunuk.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Fri, 23 Feb 2007 04:15:15 -0700")
-Message-ID: <m1tzxdunsg.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 23 Feb 2007 06:18:13 -0500
+Subject: Re: several messages
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
+       rtc-linux@googlegroups.com, linux-pm@lists.osdl.org,
+       Torrance <torrance123@gmail.com>,
+       Alessandro Zummo <alessandro.zummo@towertech.it>,
+       john stultz <johnstul@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.60.0702222352460.6771@poirot.grange>
+References: <200702211929.17203.david-b@pacbell.net>
+	 <200702211950.22422.david-b@pacbell.net>
+	 <Pine.LNX.4.60.0702222352460.6771@poirot.grange>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-cDwk91uBwu/qFu5OL5oW"
+Date: Fri, 23 Feb 2007 12:17:30 +0100
+Message-Id: <1172229450.3870.5.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- arch/x86_64/kernel/io_apic.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+--=-cDwk91uBwu/qFu5OL5oW
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/x86_64/kernel/io_apic.c b/arch/x86_64/kernel/io_apic.c
-index 2d154e1..a69c38b 100644
---- a/arch/x86_64/kernel/io_apic.c
-+++ b/arch/x86_64/kernel/io_apic.c
-@@ -799,7 +799,7 @@ static struct irq_chip ioapic_chip;
- #define IOAPIC_EDGE	0
- #define IOAPIC_LEVEL	1
- 
--static void ioapic_register_intr(int irq, int vector, unsigned long trigger)
-+static void ioapic_register_intr(int irq, unsigned long trigger)
- {
- 	if ((trigger == IOAPIC_AUTO && IO_APIC_irq_trigger(irq)) ||
- 			trigger == IOAPIC_LEVEL)
-@@ -847,7 +847,7 @@ static void __init setup_IO_APIC_irq(int apic, int pin, int idx, int irq)
- 		entry.dest = cpu_mask_to_apicid(mask);
- 		entry.vector = vector;
- 
--		ioapic_register_intr(irq, vector, IOAPIC_AUTO);
-+		ioapic_register_intr(irq, IOAPIC_AUTO);
- 		if (!apic && (irq < 16))
- 			disable_8259A_irq(irq);
- 	}
-@@ -2133,7 +2133,7 @@ int io_apic_set_pci_routing (int ioapic, int pin, int irq, int triggering, int p
- 	       mp_ioapics[ioapic].mpc_apicid, pin, entry.vector, irq,
- 	       triggering, polarity);
- 
--	ioapic_register_intr(irq, entry.vector, triggering);
-+	ioapic_register_intr(irq, triggering);
- 
- 	if (!ioapic && (irq < 16))
- 		disable_8259A_irq(irq);
--- 
-1.5.0.g53756
+On Thu, 2007-02-22 at 23:58 +0100, Guennadi Liakhovetski wrote:
+
+> I think, we only want 1, right? And the latter seems to be more generic /=
+=20
+> platform independent? And as a side-effect, powermac would have to migrat=
+e=20
+> to generic rtc:-)
+
+Can we migrate all of powerpc to genrtc? But yes, I agree. Had enough to
+do though already to get suspend working :)
+
+johannes
+
+--=-cDwk91uBwu/qFu5OL5oW
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBF3s1K/ETPhpq3jKURAqBaAKCjpO/qgcV3Np3alMq15nGj5PhYJwCfdoXp
+kJ5f8zbUKkdzRtWtwHQOV0Q=
+=CzDY
+-----END PGP SIGNATURE-----
+
+--=-cDwk91uBwu/qFu5OL5oW--
 
