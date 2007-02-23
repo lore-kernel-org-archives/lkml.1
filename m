@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933014AbXBWVNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752197AbXBWVSM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933014AbXBWVNZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 16:13:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932767AbXBWVNY
+	id S1752197AbXBWVSM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 16:18:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932968AbXBWVSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 16:13:24 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:59460 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752191AbXBWVNU (ORCPT
+	Fri, 23 Feb 2007 16:18:12 -0500
+Received: from smtp102.sbc.mail.re2.yahoo.com ([68.142.229.103]:27313 "HELO
+	smtp102.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752197AbXBWVSL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 16:13:20 -0500
-X-AuditID: d80ac21c-9419bbb000007de4-60-45df58f02618 
-Date: Fri, 23 Feb 2007 21:13:23 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Chris Wright <chrisw@sous-sol.org>
-cc: Greg KH <greg@kroah.com>, "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
-       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Dave Jones <davej@redhat.com>,
-       akpm@linux-foundation.org, Chuck Wolber <chuckw@quantumlinux.com>,
-       stable@kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 00/18] 2.6.18-stable review
-In-Reply-To: <20070223203430.GR10574@sequoia.sous-sol.org>
-Message-ID: <Pine.LNX.4.64.0702232110170.9182@blonde.wat.veritas.com>
-References: <20070221014927.GA3684@kroah.com> <Pine.LNX.4.64.0702232000550.5954@blonde.wat.veritas.com>
- <20070223203430.GR10574@sequoia.sous-sol.org>
+	Fri, 23 Feb 2007 16:18:11 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=jAtX+U0P/u6HhzzWJFRIsTs+Kr1DcM+NSfsKXTSVS/tGZONZX+KIQ4FMuoXhmlYRg99cHb+feMHL53PqO59KhvlnIQ4ICPvi4t7VOuoGASGuz5e4zuif+xZibW0t+Trng/IFSXoEonseQJWIDH/8BZjcmV+C3Xc0ILeHnw3Y+a0=  ;
+X-YMail-OSG: NqyKDwoVM1n41zM88vyfJ1REEZ8HknEq5VGq19tiCQEFJ1P0yFJiSoPUTrkwphS4ie_v6oKbDk2c2icVbcWPp6HpyyDsdTPWYehRRIo8CFQTPzBCOhJBIPhrTeFJziORHqx1sF3QiOdio6Y-
+Message-ID: <45DF5A24.507@sbcglobal.net>
+Date: Fri, 23 Feb 2007 15:18:28 -0600
+From: Matthew Frost <artusemrys@sbcglobal.net>
+Reply-To: artusemrys@sbcglobal.net
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 23 Feb 2007 21:13:20.0102 (UTC) FILETIME=[71972860:01C7578F]
-X-Brightmail-Tracker: AAAAAA==
+To: Mockern@yandex.ru
+CC: linux-kernel@vger.kernel.org
+Subject: Re: battery time living  in Linux
+References: <45DF0417.000001.16244@webmail9.yandex.ru>
+In-Reply-To: <45DF0417.000001.16244@webmail9.yandex.ru>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Feb 2007, Chris Wright wrote:
-> * Hugh Dickins (hugh@veritas.com) wrote:
-> > 
-> > There's two from 2.6.19-stable that I thought Chris had agreed
-> > for 2.6.18-stable (Linus' mincore and my read_zero_pagealigned);
-> > two that I sent Chris cc stable for 2.6.18-stable on 4th January
-> > (msync and powerpc current); one I know about from 2.6.19-stable
-> > equally desirable in 2.6.18-stable (Badari's shmem_truncate); and
-> > a new one I was waiting to appear in 2.6.21-rc1 before sending
-> > (Tigran's extN noacl umask).
+Mockern wrote:
+> Hello,
 > 
-> Yes, you're right.  I've got the first five here, will get those
-> sorted shortly.
+> I need to know how much time my battery will be alive (an embedded system).
+> 
+> How does Linux calculate it? How should I know that after 3 or 4 hours my battery will be completely discharged?
+> 
 
-Okay, thanks a lot Chris, I'll minimize the noise and stick to
-just sending the .18 .19 .20 versions of the last one (umask).
+Your battery will discharge at a rate proportionate to its total charge and the
+wattage draw of the load (your embedded system, in this case) over time.  If the
+drain is constant, as opposed to variable, this becomes easier to predict.
+However, your system load probably won't be constant.  Also, the discharge rate
+of a battery depends on the environment and age/condition of the battery.
 
-Hugh
+I could just be missing something, but I am unaware of linux kernel
+functionality for determining battery life.  There are benchmarks that can give
+you an estimate, but they are artificial.  YMMV based on actual usage.  Check
+out Len Brown et al. from the 2006 Ottawa Linux Symposium on Linux Laptop
+Battery Life, and adapt to suit.  The only way to know for sure is to do the
+tests yourself and get an idea of your average battery life.
+
+Matt
