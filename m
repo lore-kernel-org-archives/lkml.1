@@ -1,63 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933175AbXBWSvH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932627AbXBWS4H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933175AbXBWSvH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 13:51:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932627AbXBWSvH
+	id S932627AbXBWS4H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 13:56:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932619AbXBWS4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 13:51:07 -0500
-Received: from mail.astral.ro ([193.230.240.11]:48427 "EHLO mail.astral.ro"
+	Fri, 23 Feb 2007 13:56:07 -0500
+Received: from brick.kernel.dk ([62.242.22.158]:7953 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933175AbXBWSvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 13:51:05 -0500
-Message-ID: <45DF3795.3040005@astral.ro>
-Date: Fri, 23 Feb 2007 20:51:01 +0200
-From: Gergely Imre <imre.gergely@astral.ro>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	id S933177AbXBWS4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 13:56:04 -0500
+Date: Fri, 23 Feb 2007 19:35:40 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Suparna Bhattacharya <suparna@in.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: A quick fio test (was Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3)
+Message-ID: <20070223183540.GB22586@kernel.dk>
+References: <20070221211355.GA7302@elte.hu> <20070223125247.GO5737@kernel.dk> <20070223135525.GA31569@in.ibm.com> <20070223145826.GA32465@elte.hu> <20070223151515.GA12960@in.ibm.com> <20070223162508.GA16782@kernel.dk> <20070223171348.GA27838@in.ibm.com>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: linux-kernel@vger.kernel.org, hancockr@shaw.ca
-Subject: Re: irq balancing question
-References: <45DED0D6.1040700@astral.ro>	 <1172241917.3241.4.camel@laptopd505.fenrus.org>	 <45DF012D.3080802@astral.ro> <1172246085.3241.24.camel@laptopd505.fenrus.org>
-In-Reply-To: <1172246085.3241.24.camel@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070223171348.GA27838@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Arjan van de Ven wrote:
->> in fact i have two cards, and 4 CPUs, but i was interested in then answer
->> Robert gave, that only _some_ machines distribute interrupts in hardware.
->> software distribution is obviously not good. consider this scenario:
->>
->> you have one machine with 4 cpus, and two ethernet cards with a lot of
->> traffic on them. if you bind every card to one cpu, two of them are not used,
->> so you really use only half the power. not let's say you have so much traffic
->> (with limiting enabled, htb or something), that the two CPUs are on 100% all
->> the time, but the other two are doing nothing.
->>
->> now if you could balance that to all 4 cpus, you could use all the power AND
->> no cpu would be used 100%.
+On Fri, Feb 23 2007, Suparna Bhattacharya wrote:
+> On Fri, Feb 23, 2007 at 05:25:08PM +0100, Jens Axboe wrote:
+> > On Fri, Feb 23 2007, Suparna Bhattacharya wrote:
+> > > On Fri, Feb 23, 2007 at 03:58:26PM +0100, Ingo Molnar wrote:
+> > > > 
+> > > > * Suparna Bhattacharya <suparna@in.ibm.com> wrote:
+> > > > 
+> > > > > As a really crude (and not very realistic) example of the potential 
+> > > > > impact of large numbers of outstanding IOs, I tried some quick direct 
+> > > > > IO comparisons using fio:
+> > > > > 
+> > > > > [global]
+> > > > > ioengine=syslet-rw
+> > > > > buffered=0
+> > > > > rw=randread
+> > > > > bs=64k
+> > > > > size=1024m
+> > > > > iodepth=64
+> > > > 
+> > > > could you please try those iodepth=20000 tests with the latest 
+> > > > fio-testing branch of fio as well? Jens wrote a new, smarter syslet 
+> > > > plugin for FIO. You'll need the v3 syslet kernel plus:
+> > > > 
+> > > >  git-clone git://git.kernel.dk/data/git/fio.git
+> > > >  cd fio
+> > > >  git-checkout syslet-testing
+> > > > 
+> > > > my expectation is that it should behave better with iodepth=20000 
+> > > > (although i havent tried that yet).
+> > > 
+> > > I picked up the fio snapshot from 22nd Feb (fio-git-20070222212513.tar.gz)
+> > > and used the v3 syslet patches from your web-site.
+> > > 
+> > > Do I still need to get something more recent ?
+> > 
+> > Yes, you need to test the syslet+testing branch that Ingo referenced.
+> > Your test above is not totally fair right now, since you are doing
+> > significantly less system calls with libaio. So to compare apples with
+> > apples, try the syslet-testing branch. If you can't get it because of
+> > firewall problems, check http://brick.kernel.dk/snaps/ for the latest
+> > fio snapshot. If it has the syslet-testing branch, then that is
+> > recent enough.
 > 
-> actually this will give you worse performance than only using 2 cores.
-> The reason for this is twofold
-> 1) If you rotate the irqs, TCP and IP packet fragments will arrive at
-> different CPUs. This in turn means that a VERY expensive reassembly path
-> gets taken, compared to local-cpu-only reassembly
-> 2) If you rotate the irqs, you bounce cachelines between the caches ALL
-> THE TIME, which is also very expensive.
-> 
-> Both make it more likely that you'll be slower than just using only 2
-> cores...
+> I have a feeling this is getting to be a little more bleeding edge than
+> I had anticipated :), so will just hold off for a bit until this
+> crystallizes a bit.
 
-and i guess it doesn't matter if the distribution is being done by the
-hardware, from the point of view of the kernel, i would still get the
-performance penalty.
+Fair enough, I'll try your test with a huge number of pending requests
+and see how it fares.
 
-and what if CPU0 and CPU1 is actually the same CPU, only duo core, and i'm
-distributing interrupts to them, and with the other card to CPU2 and 3 (which
-are part of the other physical CPU) ?
+-- 
+Jens Axboe
 
-i'm just trying to figure it out, i have no real knowledge of the inner
-kernel workings, so i dont know. but i really would like to use all 4 cores.
-just how expensive is that reassembly path ?
