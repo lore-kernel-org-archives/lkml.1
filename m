@@ -1,81 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752221AbXBWWcI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933247AbXBWWcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752221AbXBWWcI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 17:32:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933261AbXBWWcH
+	id S933247AbXBWWcw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 17:32:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933257AbXBWWcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 17:32:07 -0500
-Received: from washoe.rutgers.edu ([165.230.95.67]:49911 "EHLO
-	smtp.onerussian.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752221AbXBWWcG (ORCPT
+	Fri, 23 Feb 2007 17:32:52 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50600
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S933247AbXBWWcv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 17:32:06 -0500
-Date: Fri, 23 Feb 2007 17:32:00 -0500
-From: Yaroslav Halchenko <yoh@psychology.rutgers.edu>
-To: linux kernel mailing list <linux-kernel@vger.kernel.org>
-Message-ID: <20070223223200.GN26338@washoe.onerussian.com>
-Mail-Followup-To: linux kernel mailing list <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-URL: http://www.onerussian.com
-X-Image-Url: http://www.onerussian.com/img/yoh.png
-X-PGP-Key: http://www.onerussian.com/gpg-yoh.asc
-X-fingerprint: 3BB6 E124 0643 A615 6F00  6854 8D11 4563 75C0 24C8
-User-Agent: mutt-ng/devel-r804 (Debian)
-X-SA-Exim-Connect-IP: 192.168.100.6
-X-SA-Exim-Rcpt-To: linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: yoh@washoe.rutgers.edu
-Subject: nfs_update_inode: inode X mode changed, Y to Z
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on smtp.onerussian.com)
+	Fri, 23 Feb 2007 17:32:51 -0500
+Date: Fri, 23 Feb 2007 14:32:24 -0800 (PST)
+Message-Id: <20070223.143224.74748313.davem@davemloft.net>
+To: johnstul.lkml@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: radeon breaks with clocksource_jiffies
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1f1b08da0702231410x24728480n463d08540c1c665f@mail.gmail.com>
+References: <20070223.134505.74749340.davem@davemloft.net>
+	<20070223.140328.74752162.davem@davemloft.net>
+	<1f1b08da0702231410x24728480n463d08540c1c665f@mail.gmail.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Kernel People,
+From: "john stultz-lkml" <johnstul.lkml@gmail.com>
+Date: Fri, 23 Feb 2007 14:10:07 -0800
 
-I am running a tiny cluster (27 nodes). Setup is as follows:
+> Check out the patch I sent out yesterday. It should resolve this problem.
 
-* NFS server:
-   kernel: vanilla 2.6.18.2 + areca drivers
-   mounted partition is XFS
-   nfs-kernel-server: 1.0.10-1~bpo.1 (from backports.org)
-
-* clients:
-   kernel: 2.6.17-2-amd64 (Debian stock from etch installed few months ago)
-
-Today under heavy load which consisted of the nodes manipulating tons of
-small files, I started to mention that software reported weird errors
-like:
-
-EOFError: EOF read where object expected
-mv: cannot stat <FILENAME> : No such file or directory
-etc
-
-Looking at the client's dmesg I found nasty:
-
-node17.ravana.rutgers.edu: Feb 23 13:32:06 node17 kernel: nfs_update_inode: inode 680223263 mode changed, 0042755 to 0100644
-node17.ravana.rutgers.edu: Feb 23 13:41:19 node17 kernel: nfs_update_inode: inode 681427742 mode changed, 0042755 to 0100644
-node22.ravana.rutgers.edu: Feb 22 22:58:15 node22 kernel: nfs_update_inode: inode 677306152 mode changed, 0042755 to 0100644
-node22.ravana.rutgers.edu: Feb 23 13:48:33 node22 kernel: nfs_update_inode: inode 681695507 mode changed, 0100644 to 0042755
-node12.ravana.rutgers.edu: Feb 23 13:31:01 node12 kernel: nfs_update_inode: inode 680150798 mode changed, 0100644 to 0042755
-node12.ravana.rutgers.edu: Feb 23 13:34:57 node12 kernel: nfs_update_inode: inode 680418141 mode changed, 0100644 to 0042755
-node12.ravana.rutgers.edu: Feb 23 13:37:01 node12 kernel: nfs_update_inode: inode 680637478 mode changed, 0100644 to 0042755
-node12.ravana.rutgers.edu: Feb 23 13:39:25 node12 kernel: nfs_update_inode: inode 681034087 mode changed, 0100644 to 0042755
-node12.ravana.rutgers.edu: Feb 23 13:40:06 node12 kernel: nfs_update_inode: inode 681225056 mode changed, 0042755 to 0100644
-node12.ravana.rutgers.edu: Feb 23 13:43:26 node12 kernel: nfs_update_inode: inode 681474682 mode changed, 0100644 to 0042755
-......
-
-server logs didn't show any abnormal things... where should I look for the
-source of the problem? googling up seems to be of no interesting result...
-is there way to eliminate cause may be by tuning some performance
-parameters (ie sacrificing performance for stability)?
-
-Thanks everyone in advance for hints
--- 
-Yaroslav Halchenko
-Research Assistant, Psychology Department, Rutgers-Newark
-Student  Ph.D. @ CS Dept. NJIT
-Office: (973) 353-5440x263 | FWD: 82823 | Fax: (973) 353-1171
-        101 Warren Str, Smith Hall, Rm 4-105, Newark NJ 07102
-WWW:     http://www.linkedin.com/in/yarik        
+Yep, changing that finished_booting setting into an fs_initcall()
+fixes this issue.
