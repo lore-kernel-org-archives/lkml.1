@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932262AbXBWMJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932274AbXBWMSP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932262AbXBWMJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 07:09:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932276AbXBWMJ1
+	id S932274AbXBWMSP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 07:18:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932226AbXBWMSP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 07:09:27 -0500
-Received: from mx0.towertech.it ([213.215.222.73]:57163 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932274AbXBWMJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 07:09:26 -0500
-Date: Fri, 23 Feb 2007 13:09:16 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Cc: david-b@pacbell.net, Greg KH <greg@kroah.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.osdl.org, Andrew Morton <akpm@linux-foundation.org>,
-       john stultz <johnstul@us.ibm.com>
-Subject: Re: [rtc-linux] Re: [patch/rfc 0/6] rtc framework: remove
- class_device, use class suspend()/resume()
-Message-ID: <20070223130916.21f27e14@inspiron>
-In-Reply-To: <200702221421.37768.david-b@pacbell.net>
-References: <200702211945.15003.david-b@pacbell.net>
-	<200702221244.32442.david-b@pacbell.net>
-	<20070222223758.55fce4b3@inspiron>
-	<200702221421.37768.david-b@pacbell.net>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 23 Feb 2007 07:18:15 -0500
+Received: from embla.aitel.hist.no ([158.38.50.22]:47965 "HELO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932274AbXBWMSO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 07:18:14 -0500
+Message-ID: <45DEDACE.2000601@aitel.hist.no>
+Date: Fri, 23 Feb 2007 13:15:10 +0100
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Neil Brown <neilb@suse.de>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 006 of 6] md: Add support for reshape of a raid6
+References: <20070220172544.15678.patches@notabene>	<1070220063516.16208@suse.de>	<20070221144806.e6eed85c.akpm@linux-foundation.org>	<17885.636.133245.572876@notabene.brown> <20070221185739.0d509c0d.akpm@linux-foundation.org>
+In-Reply-To: <20070221185739.0d509c0d.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Feb 2007 14:21:36 -0800
-David Brownell <david-b@pacbell.net> wrote:
+Andrew Morton wrote:
+> On Thu, 22 Feb 2007 13:39:56 +1100 Neil Brown <neilb@suse.de> wrote:
+>
+>   
+>> I must right code that Andrew can read.
+>>     
+>
+> That's write.
+>
+> But more importantly, things that people can immediately see and understand
+> help reduce the possibility of mistakes.  Now and in the future.
+>
+> If we did all loops like that, then it'd be the the best way to do it in new code,
+> because people's eyes and brains are locked into that idiom and we just
+> don't have to think about it when we see it.
+I have done lots of loops like that and understood it immediately.
+Nice, short, _clear_ and no - a loop that counts down instead of
+up is not difficult at all. 
+Testing "i--" instead of "i >= 0" is also something I consider trivial,
+even though I don't code that much.  If this is among the worst you
+see, then the kernel source must be in great shape ;-)
 
-> > 
-> >   thanks for your work. The interface system was originally
-> >  in place because it seemed the right-thing-to-do. if it isn't,
-> >  better to remove it ;)
-> 
-> The Right Thing may also have changed a bit over time!
-
- eheh :)
-
- given that Greg also agreed, you have my
- Acked-By: Alessandro Zummo <a.zummo@towertech.it>
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+Helge Hafting
