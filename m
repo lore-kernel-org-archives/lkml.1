@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752080AbXBWAVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752076AbXBWA0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752080AbXBWAVo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 19:21:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbXBWAVo
+	id S1752076AbXBWA0M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 19:26:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbXBWA0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 19:21:44 -0500
-Received: from x8.develooper.com ([216.52.237.208]:46520 "EHLO
-	x8.develooper.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752080AbXBWAVn (ORCPT
+	Thu, 22 Feb 2007 19:26:11 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:53405 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752076AbXBWA0K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 19:21:43 -0500
-In-Reply-To: <45DE32E7.1010901@shaw.ca>
-References: <45DD2EC9.4050403@shaw.ca> <45DD3EC7.3050801@garzik.org> <3A2F4CD2-EF4C-4C5D-B1B3-A9C89BA9682C@develooper.com> <45DE32E7.1010901@shaw.ca>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <FE56076A-03A5-429C-A9A0-BBF2CEAA5DA8@develooper.com>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       Tejun Heo <htejun@gmail.com>, "Eric D. Mudama" <edmudama@gmail.com>
-Content-Transfer-Encoding: 7bit
-From: =?ISO-8859-1?Q?Ask_Bj=F8rn_Hansen?= <ask@develooper.com>
-Subject: Re: [PATCH] libata: add NCQ blacklist entries from Silicon Image Windows driver
-Date: Thu, 22 Feb 2007 16:21:41 -0800
-To: Robert Hancock <hancockr@shaw.ca>
-X-Mailer: Apple Mail (2.752.2)
+	Thu, 22 Feb 2007 19:26:10 -0500
+Date: Thu, 22 Feb 2007 18:25:15 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Weird hard disk noise on shutdown (bug #7674)
+In-reply-to: <fa.htPXmkKzsdLgiNC0YHDJwdgDLHg@ifi.uio.no>
+To: Rolf Offermanns <roffermanns@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <45DE346B.2070301@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no>
+ <fa.YHt2nIlQmoW5r2enmTSzsaySwH4@ifi.uio.no>
+ <fa.7/l6y5w9DWACpMl9PLWnCeZVtaY@ifi.uio.no>
+ <fa.jM0Jz2vqE6sFKJ24x7Krs9Md4+Y@ifi.uio.no>
+ <fa.htPXmkKzsdLgiNC0YHDJwdgDLHg@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rolf Offermanns wrote:
+> I hear the same strange noise on poweroff (2.6.20 vanilla). This is what I
+> get on my system with ATA_DEBUG and ATA_VERBOSE_DEBUG both defined. The
+> system will *not* poweroff with "halt -f" so there was no noise!
+> 
+> md: stopping all md devices.
+> Synchronizing SCSI cache for disk sda:
+> ata_scsi_dump_cdb: CDB (1:0,0,0) 35 00 00 00 00 00 00 00 00
+> ata_scsi_translate: ENTER
+> ata1: ata_dev_select: ENTER, ata1: device 0, wait 1
+> ata_tf_load_pio: device 0xA0
+> ata_exec_command_pio: ata1: cmd 0xE7
+> ata_scsi_translate: EXIT
+> ata_host_intr: ata1: protocol 1 task_state 2
+> ata_hsm_move: ata1: protocol 1 task_state 2 (dev_stat 0x50)
+> ata_hsm_move: ata1: dev 0 command complete, drv_stat 0x50
+> System halted.
+> 
+> If I do a sysrq-o right after this, the above message repeate once more and
+> the system turns off w/o the disturbing noise.
+> 
+> For the next messages, I booted the system completely (no init=/bin/sh) and
+> did a "poweroff" at the console prompt after the boot was completed. This
+> time the noise was there.
 
-On Feb 22, 2007, at 4:18 PM, Robert Hancock wrote:
+ From these traces you can clearly see that no STANDBY IMMEDIATE 
+(command code 0xE0) was issued before the power-off, which is what would 
+prevent this problem.
 
->> model and (partial) firmware revision of the drives:
->> Maxtor 7V300F0  VA11
->> Maxtor 7B300S0  BANC
->> Until I disabled NCQ I got gazillions of messages like the ones  
->> below and absymal performance.
->>   - ask
->> ata5: spurious interrupt (irq_stat 0x8 active_tag -84148995  
->> sactive 0xf)
->
-> Sounds like those are some that we should be blacklisting as well,  
-> unless Eric has a good reason why not (CCing). Can you provide the  
-> full firmware revision strings from those drives, i.e. from "hdparm  
-> -I"?
-
-ATA device, with non-removable media
-         Model Number:       Maxtor 7B300S0
-         Firmware Revision:  BANC1B70
-
-ATA device, with non-removable media
-         Model Number:       Maxtor 7V300F0
-         Firmware Revision:  VA111630
-
-
-  - ask
+If you wait long enough after halting before you power down, you may not 
+get the noise, since many laptop drives unload the heads after a fairly 
+short period of inactivity, and so the heads are already unloaded when 
+the power is shut off.
 
 -- 
-http://develooper.com/ - http://askask.com/
-
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
