@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933244AbXBWWQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933248AbXBWWSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933244AbXBWWQo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 17:16:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933237AbXBWWQo
+	id S933248AbXBWWSK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 17:18:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933246AbXBWWSK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 17:16:44 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:49834 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933240AbXBWWQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 17:16:43 -0500
-Message-ID: <45DF67C4.8090802@garzik.org>
-Date: Fri, 23 Feb 2007 17:16:36 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, Tejun Heo <htejun@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "Eric D. Mudama" <edmudama@gmail.com>
-Subject: Re: [PATCH] libata: add NCQ blacklist entries from Silicon Image
- Windows driver
-References: <45DD2EC9.4050403@shaw.ca>
-In-Reply-To: <45DD2EC9.4050403@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.7 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+	Fri, 23 Feb 2007 17:18:10 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60647 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933236AbXBWWSI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 17:18:08 -0500
+Date: Fri, 23 Feb 2007 22:16:57 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Jon Maloy <jon.maloy@ericsson.com>, per.liden@ericsson.com,
+       allan.stephens@windriver.com, netdev@vger.kernel.org,
+       tipc-discussion@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [tipc-discussion] [RFC: 2.6 patch] net/tipc/: possible cleanups
+Message-ID: <20070223221657.GA10153@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Adrian Bunk <bunk@stusta.de>, Jon Maloy <jon.maloy@ericsson.com>,
+	per.liden@ericsson.com, allan.stephens@windriver.com,
+	netdev@vger.kernel.org, tipc-discussion@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
+References: <20070124225850.GU17836@stusta.de> <45B8D5E8.1090308@ericsson.com> <20070223180612.GE12392@stusta.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070223180612.GE12392@stusta.de>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> This patch adds in some NCQ blacklist entries taken from the Silicon
-> Image Windows drivers' .inf files for the 3124 and 3132 controllers.
-> These entries were marked as ""DisableSataQueueing". Assume these are
-> in their blacklist for a reason and disable NCQ on these drives.
+On Fri, Feb 23, 2007 at 07:06:12PM +0100, Adrian Bunk wrote:
+> > >My impression is that most of this might have users that are not yet 
+> > >submitted for inclusion in the kernel - one year after TIPC was merged.
+> > > 
+> > >
+> > Not quite. The exported symbols belong to a public API for driver 
+> > programmers.
+> > We know about several users of this API, and there will be more, but I 
+> > don't think
+> > any of them are aspiring to have their code be included in the kernel.
+> >...
 > 
-> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
+> Why not?
 > 
-> --- linux-2.6.21-rc1edit/drivers/ata/libata-core.c.prev    2007-02-21 
-> 22:23:05.000000000 -0600
-> +++ linux-2.6.21-rc1edit/drivers/ata/libata-core.c    2007-02-21 
-> 22:25:44.000000000 -0600
-> @@ -3269,6 +3269,13 @@ static const struct ata_blacklist_entry
->     /* Devices with NCQ limits */
-> 
-> +    /* The following blacklist entries are taken from the Windows
-> +       driver .inf files for the Silicon Image 3124 and 3132. */
-> +    { "Maxtor 7B250S0",    "BANC1B70",    ATA_HORKAGE_NONCQ, },
-> +    { "HTS541060G9SA00",    "MB3OC60D",    ATA_HORKAGE_NONCQ, },
-> +    { "HTS541080G9SA00",    "MB4OC60D",    ATA_HORKAGE_NONCQ, },
-> +    { "HTS541010G9SA00",    "MBZOC60D",    ATA_HORKAGE_NONCQ, },
+> The goal is to get as many drivers as possible included in the kernel.
 
-
-The general consensus of private emails seems to be that its ok to 
-blacklist the Maxtor one, at least.
-
-So let's go ahead and at least get that entry in.
-
-	Jeff
-
-
+If we don't have any planned in-tree users for tipc we should simply drop
+tipc from the kernel entirely.  No point to make our maintaince work harder
+for out of tree freeloaders.
