@@ -1,75 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932968AbXBWVXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933216AbXBWV2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932968AbXBWVXY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 16:23:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933212AbXBWVXY
+	id S933216AbXBWV2W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 16:28:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933215AbXBWV2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 16:23:24 -0500
-Received: from mail.screens.ru ([213.234.233.54]:48166 "EHLO mail.screens.ru"
+	Fri, 23 Feb 2007 16:28:21 -0500
+Received: from palrel11.hp.com ([156.153.255.246]:49305 "EHLO palrel11.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932968AbXBWVXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 16:23:23 -0500
-Date: Sat, 24 Feb 2007 00:23:03 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Hugh Dickins <hugh@veritas.com>
-Cc: dipankar@in.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: PREEMPT_RCU breaks anon_vma locking ?
-Message-ID: <20070223212303.GA423@tv-sign.ru>
+	id S932767AbXBWV2U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 16:28:20 -0500
+Date: Fri, 23 Feb 2007 15:28:17 -0600
+From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+To: akpm@osdl.org, jens.axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: [Patch 1/2] cciss: fix for 2TB support (again)
+Message-ID: <20070223212817.GA26058@beardog.cca.cpqcorp.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If my understanding correct, vmscan can find a page which lives in a already
-anon_vma_unlink'ed vma. This is ok, the page is pinned, and page->mapping is
-not cleared until free_hot_cold_page().
+Patch 1/2
 
-So page_lock_anon_vma() works correctly due to SLAB_DESTROY_BY_RCU even if
-anon_vma_unlink() has already freed anon_vma. In that case we should see
-list_empty(&anon_vma->head), we are safe.
+This patch changes the constant 0xFFFFFFFF to 0xFFFFFFFFULL to prevent sign extension.
 
-However, we are doing spin_unlock(anon_vma->lock) after page_lock_anon_vma(),
-and this looks unsafe to me because page_lock_anon_vma() does rcu_read_unlock()
-on return.
 
-This worked before because spin_lock() implied rcu_read_lock(), so rcu was
-blocked if page_lock_anon_vma() returns !NULL. With CONFIG_PREEMPT_RCU this
-is not true (yes?), so it is possible that the slab returns the memory to
-the system and it is re-used when we write to anon_vma->lock.
+Previously:
+This patch changes the way we determine if a logical volume is larger than 2TB. The
+original test looked for a total_size of 0. Originally we added 1 to the total_size.
+That would make our read_capacity return size 0 for >2TB lv's. We assumed that we
+could not have a lv size of 0 so it seemed OK until we were in a clustered system. The
+backup node would size a size of 0 due to the reservation on the drive. That caused
+the driver to switch to 16-byte CDB's which are not supported on older controllers.
+After that everything was broken.
+It may seem petty but I don't see the value in trying to determine if the LBA is
+beyond the 2TB boundary. That's why when we switch we use 16-byte CDB's for all
+read/write operations.
+Please consider this for inclusion.
 
-IOW, don't we need something like this
-
-	static struct anon_vma *page_lock_anon_vma(struct page *page)
-	{
-		struct anon_vma *anon_vma;
-		unsigned long anon_mapping;
-
-		rcu_read_lock();
-		anon_mapping = (unsigned long) page->mapping;
-		if (!(anon_mapping & PAGE_MAPPING_ANON))
-			goto out;
-		if (!page_mapped(page))
-			goto out;
-
-		anon_vma = (struct anon_vma *) (anon_mapping - PAGE_MAPPING_ANON);
-		spin_lock(&anon_vma->lock);
-		return anon_vma;
-
-	out:
-		rcu_read_unlock();
-		return NULL;
-	}
-
-	static inline void page_lock_anon_vma(struct anon_vma *anon_vma)
-	{
-		spin_unlock(&anon_vma->lock);
-		rcu_read_unlock();
-	}
-?
-
-Oleg.
-
+Signed-off-by: Mike Miller <mike.miller@hp.com>
+------------------------------------------------------------------------------------------
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index 05dfe35..916aab0 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -1291,13 +1291,19 @@ static void cciss_update_drive_info(int 
+ 	if (inq_buff == NULL)
+ 		goto mem_msg;
+ 
++ 	/* testing to see if 16-byte CDBs are already being used */
++ 	if (h->cciss_read == CCISS_READ_16) {
++ 		cciss_read_capacity_16(h->ctlr, drv_index, 1,
++ 			&total_size, &block_size);
++ 		goto geo_inq;
++ 	}
++  
+ 	cciss_read_capacity(ctlr, drv_index, 1,
+ 			    &total_size, &block_size);
+ 
+-	/* total size = last LBA + 1 */
+-	/* FFFFFFFF + 1 = 0, cannot have a logical volume of size 0 */
+-	/* so we assume this volume this must be >2TB in size */
+-	if (total_size == (__u32) 0) {
++  	/* if read_capacity returns all F's this volume is >2TB in size */
++  	/* so we switch to 16-byte CDB's for all read/write ops */
++  	if (total_size == 0xFFFFFFFFULL) {
+ 		cciss_read_capacity_16(ctlr, drv_index, 1,
+ 		&total_size, &block_size);
+ 		h->cciss_read = CCISS_READ_16;
+@@ -1306,6 +1312,7 @@ static void cciss_update_drive_info(int 
+ 		h->cciss_read = CCISS_READ_10;
+ 		h->cciss_write = CCISS_WRITE_10;
+ 	}
++geo_inq:
+ 	cciss_geometry_inquiry(ctlr, drv_index, 1, total_size, block_size,
+ 			       inq_buff, &h->drv[drv_index]);
+ 
+@@ -1917,13 +1924,14 @@ static void cciss_geometry_inquiry(int c
+ 			drv->raid_level = inq_buff->data_byte[8];
+ 		}
+ 		drv->block_size = block_size;
+-		drv->nr_blocks = total_size;
++		drv->nr_blocks = total_size + 1;
+ 		t = drv->heads * drv->sectors;
+ 		if (t > 1) {
+-			unsigned rem = sector_div(total_size, t);
++			sector_t real_size = total_size + 1;
++			unsigned long rem = sector_div(real_size, t);
+ 			if (rem)
+-				total_size++;
+-			drv->cylinders = total_size;
++				real_size++;
++			drv->cylinders = real_size;
+ 		}
+ 	} else {		/* Get geometry failed */
+ 		printk(KERN_WARNING "cciss: reading geometry failed\n");
+@@ -1953,16 +1961,16 @@ cciss_read_capacity(int ctlr, int logvol
+ 				ctlr, buf, sizeof(ReadCapdata_struct),
+ 					1, logvol, 0, NULL, TYPE_CMD);
+ 	if (return_code == IO_OK) {
+-		*total_size = be32_to_cpu(*(__u32 *) buf->total_size)+1;
++		*total_size = be32_to_cpu(*(__u32 *) buf->total_size);
+ 		*block_size = be32_to_cpu(*(__u32 *) buf->block_size);
+ 	} else {		/* read capacity command failed */
+ 		printk(KERN_WARNING "cciss: read capacity failed\n");
+ 		*total_size = 0;
+ 		*block_size = BLOCK_SIZE;
+ 	}
+-	if (*total_size != (__u32) 0)
++	if (*total_size != 0)
+ 		printk(KERN_INFO "      blocks= %llu block_size= %d\n",
+-		(unsigned long long)*total_size, *block_size);
++		(unsigned long long)*total_size+1, *block_size);
+ 	kfree(buf);
+ 	return;
+ }
+@@ -1989,7 +1997,7 @@ cciss_read_capacity_16(int ctlr, int log
+ 				1, logvol, 0, NULL, TYPE_CMD);
+ 	}
+ 	if (return_code == IO_OK) {
+-		*total_size = be64_to_cpu(*(__u64 *) buf->total_size)+1;
++		*total_size = be64_to_cpu(*(__u64 *) buf->total_size);
+ 		*block_size = be32_to_cpu(*(__u32 *) buf->block_size);
+ 	} else {		/* read capacity command failed */
+ 		printk(KERN_WARNING "cciss: read capacity failed\n");
+@@ -1997,7 +2005,7 @@ cciss_read_capacity_16(int ctlr, int log
+ 		*block_size = BLOCK_SIZE;
+ 	}
+ 	printk(KERN_INFO "      blocks= %llu block_size= %d\n",
+-	       (unsigned long long)*total_size, *block_size);
++	       (unsigned long long)*total_size+1, *block_size);
+ 	kfree(buf);
+ 	return;
+ }
+@@ -3119,8 +3127,9 @@ #endif				/* CCISS_DEBUG */
+ 		}
+ 		cciss_read_capacity(cntl_num, i, 0, &total_size, &block_size);
+ 
+-		/* total_size = last LBA + 1 */
+-		if(total_size == (__u32) 0) {
++		/* If read_capacity returns all F's the logical is >2TB */
++		/* so we switch to 16-byte CDBs for all read/write ops */
++		if(total_size == 0xFFFFFFFFULL) {
+ 			cciss_read_capacity_16(cntl_num, i, 0,
+ 			&total_size, &block_size);
+ 			hba[cntl_num]->cciss_read = CCISS_READ_16;
