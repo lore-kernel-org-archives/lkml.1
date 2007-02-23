@@ -1,60 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932716AbXBWP6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933111AbXBWQD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932716AbXBWP6v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 10:58:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932719AbXBWP6v
+	id S933111AbXBWQD6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 11:03:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932949AbXBWQD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 10:58:51 -0500
-Received: from [198.99.130.12] ([198.99.130.12]:38600 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S932716AbXBWP6u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 10:58:50 -0500
-Date: Fri, 23 Feb 2007 10:50:31 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [PATCH] UML utrace support, step 1
-Message-ID: <20070223155031.GD5198@ccure.user-mode-linux.org>
-References: <20070221181811.GA5845@ccure.user-mode-linux.org> <20070223031903.A55241800E4@magilla.sf.frob.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070223031903.A55241800E4@magilla.sf.frob.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 23 Feb 2007 11:03:58 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:44016 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933111AbXBWQD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 11:03:57 -0500
+Message-ID: <45DF103B.3000104@redhat.com>
+Date: Fri, 23 Feb 2007 17:03:07 +0100
+From: Michal Schmidt <mschmidt@redhat.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070105)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix compilation of drivers with -O0
+References: <45DF0EFA.3070706@redhat.com>
+In-Reply-To: <45DF0EFA.3070706@redhat.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 22, 2007 at 07:19:03PM -0800, Roland McGrath wrote:
-> Your replacement patch still has utrace_regset stuff in it, so it doesn't
-> compile without the later patches in the series.  Try applying only
-> utrace-tracehook.patch from the series, then get it to build and make your
-> utrace-tracehook-um.patch.  Then apply only utrace-regset.patch on top of
-> that, and get that building to make utrace-regset-um.patch.  Then apply
-> utrace-core.patch and utrace-ptrace-compat.patch to get ptrace finally
-> working again and make utrace-ptrace-compat-um.patch.
+[Sorry, the patch was corrupted by the mailer. Hopefully it's ok this time.]
 
-Ah, I was building with all of utrace, and observing that it didn't compile
-without all the bits in that patch.  I'll back out the bits of utrace
-I don't need yet and send another patch.
+It is sometimes useful to compile individual drivers with optimization
+disabled for easier debugging. Currently drivers which use htonl() and
+similar functions don't compile with -O0. This patch fixes it.
+It also removes obsolete and misleading comments. This header is not
+for userspace, so we don't have to care about strange programs these
+comments mention.
 
-> You'll still find this insufficient when you get to biarch support (x86_64).
-> At least you'll have to add another one elsewhere too, and make
-> utrace_native_view refer to both.
 
-OK, I'll deal with that when I get to it.
+Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
 
-> Ok.  We do seem to have a problem when the host has CONFIG_PREEMPT=y, which
-> makes me suspect it might be a race problem that could also hit with enough
-> hardware parallelism.  If you get a chance to try that and can characterize
-> the way it misbehaves at the level of specific ptrace/wait calls, that
-> would be a great help.  Otherwise I'll try to look into it when I get some
-> time, but it's falling down the queue a bit since people don't seem too put
-> out about it right now.
+diff --git a/include/linux/byteorder/generic.h
+b/include/linux/byteorder/generic.h
+index e86e4a9..3dc715b 100644
+--- a/include/linux/byteorder/generic.h
++++ b/include/linux/byteorder/generic.h
+@@ -124,19 +124,8 @@
+ #define be32_to_cpus __be32_to_cpus
+ #define cpu_to_be16s __cpu_to_be16s
+ #define be16_to_cpus __be16_to_cpus
+-#endif
 
-I'll turn on preempt and see what happens.
+-
+-#if defined(__KERNEL__)
+ /*
+- * Handle ntohl and suches. These have various compatibility
+- * issues - like we want to give the prototype even though we
+- * also have a macro for them in case some strange program
+- * wants to take the address of the thing or something..
+- *
+- * Note that these used to return a "long" in libc5, even though
+- * long is often 64-bit these days.. Thus the casts.
+- *
+  * They have to be macros in order to do the constant folding
+  * correctly - if the argument passed into a inline function
+  * it is no longer constant according to gcc..
+@@ -147,17 +136,6 @@
+ #undef htonl
+ #undef htons
 
-				Jeff
+-/*
+- * Do the prototypes. Somebody might want to take the
+- * address or some such sick thing..
+- */
+-extern __u32            ntohl(__be32);
+-extern __be32            htonl(__u32);
+-extern __u16            ntohs(__be16);
+-extern __be16            htons(__u16);
+-
+-#if defined(__GNUC__) && defined(__OPTIMIZE__)
+-
+ #define ___htonl(x) __cpu_to_be32(x)
+ #define ___htons(x) __cpu_to_be16(x)
+ #define ___ntohl(x) __be32_to_cpu(x)
+@@ -168,9 +146,6 @@ extern __be16            htons(__u16);
+ #define htons(x) ___htons(x)
+ #define ntohs(x) ___ntohs(x)
 
--- 
-Work email - jdike at linux dot intel dot com
+-#endif /* OPTIMIZE */
+-
+ #endif /* KERNEL */
+
+-
+ #endif /* _LINUX_BYTEORDER_GENERIC_H */
+
+
