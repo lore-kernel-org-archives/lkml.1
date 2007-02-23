@@ -1,78 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933112AbXBWQZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933132AbXBWQ2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933112AbXBWQZQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 11:25:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933123AbXBWQZQ
+	id S933132AbXBWQ2f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 11:28:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933133AbXBWQ2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 11:25:16 -0500
-Received: from brick.kernel.dk ([62.242.22.158]:26715 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933112AbXBWQZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 11:25:15 -0500
-Date: Fri, 23 Feb 2007 17:25:08 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Suparna Bhattacharya <suparna@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: A quick fio test (was Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3)
-Message-ID: <20070223162508.GA16782@kernel.dk>
-References: <20070221211355.GA7302@elte.hu> <20070223125247.GO5737@kernel.dk> <20070223135525.GA31569@in.ibm.com> <20070223145826.GA32465@elte.hu> <20070223151515.GA12960@in.ibm.com>
+	Fri, 23 Feb 2007 11:28:35 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:11805 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933132AbXBWQ2e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 11:28:34 -0500
+Message-ID: <45DF15D4.6040403@mvista.com>
+Date: Fri, 23 Feb 2007 08:27:00 -0800
+From: akuster <akuster@mvista.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070223151515.GA12960@in.ibm.com>
+To: Ingo Oeser <ioe-lkml@rameria.de>
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
+Subject: Re: [patch 1/1] MM:  detach_vmas_to_be_unmapped fix
+References: <20070221180742.A05F31C49A@hermes.mvista.com> <200702212159.07295.ioe-lkml@rameria.de>
+In-Reply-To: <200702212159.07295.ioe-lkml@rameria.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 23 2007, Suparna Bhattacharya wrote:
-> On Fri, Feb 23, 2007 at 03:58:26PM +0100, Ingo Molnar wrote:
-> > 
-> > * Suparna Bhattacharya <suparna@in.ibm.com> wrote:
-> > 
-> > > As a really crude (and not very realistic) example of the potential 
-> > > impact of large numbers of outstanding IOs, I tried some quick direct 
-> > > IO comparisons using fio:
-> > > 
-> > > [global]
-> > > ioengine=syslet-rw
-> > > buffered=0
-> > > rw=randread
-> > > bs=64k
-> > > size=1024m
-> > > iodepth=64
-> > 
-> > could you please try those iodepth=20000 tests with the latest 
-> > fio-testing branch of fio as well? Jens wrote a new, smarter syslet 
-> > plugin for FIO. You'll need the v3 syslet kernel plus:
-> > 
-> >  git-clone git://git.kernel.dk/data/git/fio.git
-> >  cd fio
-> >  git-checkout syslet-testing
-> > 
-> > my expectation is that it should behave better with iodepth=20000 
-> > (although i havent tried that yet).
+
+
+Ingo Oeser wrote:
+> Hi,
 > 
-> I picked up the fio snapshot from 22nd Feb (fio-git-20070222212513.tar.gz)
-> and used the v3 syslet patches from your web-site.
+> On Wednesday, 21. February 2007, akuster@mvista.com wrote:
+>> ---
+>>
+>>  mm/mmap.c |    4 ++--
+>>  1 file changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff -puN mm/mmap.c~Avoiding-mmap-fragmentation_fixup mm/mmap.c
+>> --- linux-2.6_clean/mm/mmap.c~Avoiding-mmap-fragmentation_fixup	2007-02-21 09:49:32.000000000 -0800
+>> +++ linux-2.6_clean-akuster/mm/mmap.c	2007-02-21 09:51:26.000000000 -0800
+>> @@ -1720,9 +1720,9 @@ detach_vmas_to_be_unmapped(struct mm_str
+>>  	*insertion_point = vma;
+>>  	tail_vma->vm_next = NULL;
+>>  	if (mm->unmap_area == arch_unmap_area)
+>> -		addr = prev ? prev->vm_end : mm->mmap_base;
+>> +		addr = prev ? prev->vm_start : mm->mmap_base;
+>>  	else
+>> -		addr = vma ?  vma->vm_start : mm->mmap_base;
+>> +		addr = vma ?  vma->vm_end : mm->mmap_base;
+>>  	mm->unmap_area(mm, addr);
+>>  	mm->mmap_cache = NULL;		/* Kill the cache. */
+>>  }
 > 
-> Do I still need to get something more recent ?
+> Please comment, why you think this is necessary.
 
-Yes, you need to test the syslet+testing branch that Ingo referenced.
-Your test above is not totally fair right now, since you are doing
-significantly less system calls with libaio. So to compare apples with
-apples, try the syslet-testing branch. If you can't get it because of
-firewall problems, check http://brick.kernel.dk/snaps/ for the latest
-fio snapshot. If it has the syslet-testing branch, then that is
-recent enough.
+Yes that would help.
 
--- 
-Jens Axboe
+On Feb. 16th I asked a question and got no response. Here is what should 
+have been included with the above patch.
 
+Wolfgang Wander submitted a fix to address a mmap fragmentation issue. 
+The git patch ( 1363c3cd8603a913a27e2995dccbd70d5312d8e6 ) is somewhat 
+different and yields different results when running Wolfgang's test case 
+leakme.c.
+
+IMHO, the vm start and end address are swapped in arch_unmap_area and 
+arch_unmap_area_topdown functions.
+
+Prior to this patch arch_unmap_area() used area->vm_start and 
+arch_unmap_area_topdown used area->vm_end in the git patch the following 
+change showed up.
+
+if (mm->unmap_area == arch_unmap_area)
+     addr = prev ? prev->vm_start : mm->mmap_base;
+else
+     addr = vma ?  vma->vm_end : mm->mmap_base;
+
+Using Wolfgang Wander's leakme.c test, I get the same results seen with 
+his original "Avoiding mmap fragmentation" patch as I do after swapping 
+  the start & end address in the above code segment. The patch I 
+submitted  addresses this typo issue.
+
+TIA,
+Armin
+
+> 
+> 
+> Thanks & Regards
+> 
+> Ingo Oeser
