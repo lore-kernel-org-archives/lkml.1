@@ -1,105 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932286AbXBWLG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932288AbXBWLIN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932286AbXBWLG4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 06:06:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932288AbXBWLG4
+	id S932288AbXBWLIN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 06:08:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932294AbXBWLIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 06:06:56 -0500
-Received: from crystal.sipsolutions.net ([195.210.38.204]:53092 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932286AbXBWLGz (ORCPT
+	Fri, 23 Feb 2007 06:08:13 -0500
+Received: from marvin.h-e-r-e-s-y.com ([87.106.62.5]:37862 "EHLO
+	marvin.h-e-r-e-s-y.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932288AbXBWLIM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 06:06:55 -0500
-Subject: ata workqueue corruption
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-RECDe9DmIMaVQoo+jcWP"
-Date: Fri, 23 Feb 2007 02:07:16 +0100
-Message-Id: <1172192836.15769.3.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+	Fri, 23 Feb 2007 06:08:12 -0500
+From: Andrew Walrond <andrew@walrond.org>
+To: sparclinux@vger.kernel.org
+Subject: (Sparc64) 2.6.20 seems to ignore initramfs
+Date: Fri, 23 Feb 2007 11:08:10 +0000
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702231108.10185.andrew@walrond.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On a Sun T1000 I am trying to boot 2.6.20 using initramfs. (I use the same 
+procedure successfully on x86_64 and itanium2 servers).
 
---=-RECDe9DmIMaVQoo+jcWP
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+The relevent silo section looks like this:
 
-While debugging why I keep having problems with suspend to disk on my
-quad with more recent kernels (2.6.20 worked fine), I managed to capture
-this weird ata workqueue corruption via netconsole, just a bit later the
-system froze (I was in X but this seems like a reason to panic):
+image=/boot/2.6.20.image
+        label=2.6.20
+        initrd=/boot/2.6.20.initramfs
+        partition=2
+        read-only
 
-[  243.981215] ata/0         S 0000000000000000     0    80     19         =
-   81    77 (L-TLB)
-[  243.981225] Call Trace:
-[  243.981231] [C00000007EC63AA0] [C000000000529B18] devinet_sysctl+0xb8/0x=
-968 (unreliable)
-[  243.981245] [C00000007EC63C70] [C00000000000FB28] .__switch_to+0xe4/0x11=
-8
-[  243.981257] [C00000007EC63D00] [C00000000035BEA4] .schedule+0x73c/0x894
-[  243.981267] [C00000007EC63E00] [C0000000000597C8] .worker_thread+0x120/0=
-x1b4
-[  243.981278] [C00000007EC63EE0] [C00000000005E4D8] .kthread+0x11c/0x16c
-[  243.981289] [C00000007EC63F90] [C000000000021780] .kernel_thread+0x4c/0x=
-68
-[  243.981298] ata/1         S 0000000000000000     0    81     19         =
-   82    80 (L-TLB)
-[  243.981308] Call Trace:
-[  243.981313] [C00000007EC67AA0] [5A5A5A5A5A5A5A5A] 0x5a5a5a5a5a5a5a5a (un=
-reliable)
-[  243.981325] [C00000007EC67C70] [C00000000000FB28] .__switch_to+0xe4/0x11=
-8
-[  243.981336] [C00000007EC67D00] [C00000000035BEA4] .schedule+0x73c/0x894
-[  243.981347] [C00000007EC67E00] [C0000000000597C8] .worker_thread+0x120/0=
-x1b4
-[  243.981357] [C00000007EC67EE0] [C00000000005E4D8] .kthread+0x11c/0x16c
-[  243.981368] [C00000007EC67F90] [C000000000021780] .kernel_thread+0x4c/0x=
-68
-[  243.981377] ata/2         S 0000000000000000     0    82     19         =
-   84    81 (L-TLB)
-[  243.981387] Call Trace:
-[  243.981393] [C00000007EC6BAA0] [5A5A5A5A5A5A5A5A] 0x5a5a5a5a5a5a5a5a (un=
-reliable)
-[  243.981404] [C00000007EC6BC70] [C00000000000FB28] .__switch_to+0xe4/0x11=
-8
-[  243.981415] [C00000007EC6BD00] [C00000000035BEA4] .schedule+0x73c/0x894
-[  243.981426] [C00000007EC6BE00] [C0000000000597C8] .worker_thread+0x120/0=
-x1b4
-[  243.981437] [C00000007EC6BEE0] [C00000000005E4D8] .kthread+0x11c/0x16c
-[  243.981448] [C00000007EC6BF90] [C000000000021780] .kernel_thread+0x4c/0x=
-68
-[  243.981456] ata_aux       S 0000000000000000     0    84     19         =
-  107    82 (L-TLB)
-[  243.981466] Call Trace:
-[  243.981472] [C00000007EC77AA0] [5A5A5A5A5A5A5AA5] 0x5a5a5a5a5a5a5aa5 (un=
-reliable)
-[  243.981483] [C00000007EC77C70] [C00000000000FB28] .__switch_to+0xe4/0x11=
-8
-[  243.981495] [C00000007EC77D00] [C00000000035BEA4] .schedule+0x73c/0x894
-[  243.981505] [C00000007EC77E00] [C0000000000597C8] .worker_thread+0x120/0=
-x1b4
-[  243.981516] [C00000007EC77EE0] [C00000000005E4D8] .kthread+0x11c/0x16c
-[  243.981527] [C00000007EC77F90] [C000000000021780] .kernel_thread+0x4c/0x=
-68
+The kernel loads and boots and I see
 
-Unfortunately I have no more than this to offer and it doesn't seem to
-be reproducible.
+Allocated 8 Megs of memory at 0x40000000 for kernel
+Loaded kernel version 2.6.20
+Loading initial ramdisk (127932430 bytes at 0x1000000 phys, 0x40C00000 
+virt)...
+/
+Remapping the kernel... done.
+Booting Linux...
+PROMLIB: Sun IEEE Boot Prom 'OBP 4.23.0 2006/06/02 16:14'
+PROMLIB: Root node compatible: sun4v
+Linux version 2.6.20 (nobody@spawn1.secure) (gcc version 4.1.1) #1 SMP Thu Feb 
+22 16:25:18 GMT 2007
+ARCH: SUN4V
+Ethernet address: 00:14:4f:2a:90:92
+PROM: Built device tree with 65903 bytes of memory.
+Built 1 zonelists.  Total pages: 242541
+Kernel command line: ro
 
-johannes
+[snip]
 
---=-RECDe9DmIMaVQoo+jcWP
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+checking if image is initramfs... it is
+Freeing initrd memory: 124934k freed
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+[snip]
 
-iD8DBQBF3j5D/ETPhpq3jKURApzQAJ0YBIqcq88qn2O8D76FQUBDI5cEmQCfVv+a
-CMCnNyoAgNSHVUAuiQprt94=
-=9Aoo
------END PGP SIGNATURE-----
+VFS: Cannot open root device "<NULL>" or unknown-block(0,0)
+Please append a correct "root=" boot option
+Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(0,0)
+ <0>Press Stop-A (L1-A) to return to the boot prom
 
---=-RECDe9DmIMaVQoo+jcWP--
 
+So it knows about the initramfs, but then tries to mount a root filesystem 
+instead...
+
+I haven't tried this (initramfs)  with earlier kernels, so I don't know 
+whether this is a regression. Any clues about how to solve this would be 
+greatly appreciated.
+
+Andrew Walrond
