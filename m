@@ -1,77 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932429AbXBWOqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932431AbXBWOs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932429AbXBWOqY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 09:46:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932431AbXBWOqY
+	id S932431AbXBWOs2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 09:48:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932440AbXBWOs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 09:46:24 -0500
-Received: from marvin.h-e-r-e-s-y.com ([87.106.62.5]:36808 "EHLO
-	marvin.h-e-r-e-s-y.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932429AbXBWOqX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 09:46:23 -0500
-From: Andrew Walrond <andrew@walrond.org>
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-Subject: Re: (Sparc64) 2.6.20 seems to ignore initramfs
-Date: Fri, 23 Feb 2007 14:46:20 +0000
-User-Agent: KMail/1.9.5
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200702231108.10185.andrew@walrond.org> <45DEECEE.6070108@wpkg.org>
-In-Reply-To: <45DEECEE.6070108@wpkg.org>
+	Fri, 23 Feb 2007 09:48:27 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:35696 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932431AbXBWOs1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 09:48:27 -0500
+To: tglx@linutronix.de
+Cc: Luca Tettamanti <kronos.it@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: NO_HZ: timer interrupt stuck [Re: Linux 2.6.21-rc1]
+References: <20070221230409.GA1158@dreamland.darkstar.lan>
+	<1172099859.25076.132.camel@localhost.localdomain>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 23 Feb 2007 16:48:19 +0100
+In-Reply-To: <1172099859.25076.132.camel@localhost.localdomain>
+Message-ID: <p73d540dge4.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702231446.20929.andrew@walrond.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 23 February 2007 13:32, Tomasz Chmielewski wrote:
-> Andrew Walrond schrieb:
-> > On a Sun T1000 I am trying to boot 2.6.20 using initramfs. (I use the
-> > same procedure successfully on x86_64 and itanium2 servers).
-> >
-> > The relevent silo section looks like this:
-> >
-> > image=/boot/2.6.20.image
-> >         label=2.6.20
-> >         initrd=/boot/2.6.20.initramfs
-> >         partition=2
-> >         read-only
-> >
-> > The kernel loads and boots and I see
->
-> (...)
->
-> > So it knows about the initramfs, but then tries to mount a root
-> > filesystem instead...
-> >
-> > I haven't tried this (initramfs)  with earlier kernels, so I don't know
-> > whether this is a regression. Any clues about how to solve this would be
-> > greatly appreciated.
->
-> Does it make a difference if you embed initramfs directly in the kernel?
->
-> CONFIG_INITRAMFS_SOURCE="/path/to/your/initramfs/directory"
+Thomas Gleixner <tglx@linutronix.de> writes:
+> > 
+> > Interrupt 0 is stuck at 114 (the number is consistent across reboots). I
+> > don't experience any problem, time is running fine. Still it's strange
+> > that the timer is doing nothing; maybe something other than the PIT is
+> > used for time keeping?
+> 
+> Yes, we switch away from PIT and use the local APIC timer. (LOC)
 
-Hi Tomasz. I can't tell; The combined kernel+initramfs is bigger than the 8Mb 
-silo allocates for the kernel, and it does this:
+Before this becomes a FAQ. Would anybody mind if I just renamed "timer"
+to "pit" to make this clear? 
 
-	boot: chunky
-	Allocated 8 Megs of memory at 0x40000000 for kernel
-	/
-	Fatal error: Image too large to fit in destination
-	
-	Fatal error: Image too large to fit in destination
-	
-	Error loading /boot/chunky
-	
-	Image not found.... try again
-
-
-I don't see any silo config options to increase this value in the docs.
-
-Good idea though :)
-
-Andrew Walrond
+-Andi
