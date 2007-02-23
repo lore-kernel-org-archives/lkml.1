@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933152AbXBWSNI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932453AbXBWSQH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933152AbXBWSNI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 13:13:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933158AbXBWSNI
+	id S932453AbXBWSQH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 13:16:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933148AbXBWSQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 13:13:08 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:52380 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933152AbXBWSNG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 13:13:06 -0500
-In-Reply-To: <20070220165824.GA31315@sergelap.austin.ibm.com>
-To: serue@linux.vnet.ibm.com
-Cc: Andrew Morton <akpm@osdl.org>, Christoph Hellwig <hch@infradead.org>,
-       kjhall@linux.vnet.ibm.com, lkml <linux-kernel@vger.kernel.org>,
-       David Safford <safford@watson.ibm.com>
+	Fri, 23 Feb 2007 13:16:07 -0500
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:46912 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932453AbXBWSQG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 13:16:06 -0500
+Message-ID: <45DF2F57.2080309@student.ltu.se>
+Date: Fri, 23 Feb 2007 19:15:51 +0100
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Subject: Re: [PATCH] slim: move file revocation into file_table.c and mprotect.c
-X-Mailer: Lotus Notes Release 7.0.1P Oct 16, 2006
-Message-ID: <OF8F16AF17.D3D928C1-ON8525728B.004D777E-8525728B.006512C6@us.ibm.com>
-From: Mimi Zohar <zohar@us.ibm.com>
-Date: Fri, 23 Feb 2007 13:13:06 -0500
-X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Build V80_M3_10312006|October 31, 2006) at
- 02/23/2007 13:13:06,
-	Serialize complete at 02/23/2007 13:13:06
-Content-Type: text/plain; charset="US-ASCII"
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Milind Choudhary <milindchoudhary@gmail.com>,
+       kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       linux-joystick@atrey.karlin.mff.cuni.cz
+Subject: Re: [KJ][RFC][PATCH] BIT macro cleanup
+References: <3b44d3fb0702222056k1d2a9b57q69a3555a09a9058e@mail.gmail.com>	 <3b44d3fb0702230014x4ee4a1dewdc624c54b3635e15@mail.gmail.com>	 <45DEAC45.7090105@student.ltu.se>	 <3b44d3fb0702230215o2fbd5a3y25729e481a447149@mail.gmail.com>	 <45DEF5EE.4030002@student.ltu.se>	 <d120d5000702230657s1860efb3o6986277901f13d03@mail.gmail.com>	 <45DF1165.2080003@student.ltu.se> <d120d5000702230905r6b50a1bbm3b71551f855cdf01@mail.gmail.com>
+In-Reply-To: <d120d5000702230905r6b50a1bbm3b71551f855cdf01@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-serue@linux.vnet.ibm.com wrote on 02/20/2007 11:58:24 AM:
+Dmitry Torokhov wrote:
+> I was not talking about name (I hate BITWRAP) but behavior.
+Oh, my bad :)
+>
+>> but mainly since it only enables wrapping of the long-type.
+>
+> I'd provde BIT and separate LLBIT for ones who really need long long.
+> People who intereseted in smaller than BITS_PER_LONG bitmaps shoud use
+> your proposal - BIT(x % DESIRED_WITH) and BIT should do modulo
+> BITS_PER_LONG internally.
+I agree that _if_ there is a "BITWRAP" then it should be long, but I 
+don't see the reason for it to be in bitops.h when it is only input.h 
+that uses it. + I find it different with BIT since it works as well with 
+'char' as 'long'.
+Also, I think it would be best if the name indicated it is a 'long'.
 
-> Here is a attempt at resolving some of the complaints against the
-> slim security module.  The file revocation is perceived as too 
-> intrusive to live in a security module itself, so it is moved into
-> file_table.c.
-> 
-> This patch retains the explicit file->f_mode tweaking to revoke
-> FMODE_WRITE.  That can be removed by using an approach like Pekka's
-> revokefs, using files in the revokefs filesystem with ->read() passed
-> through to the original file, but ->write() intercepted.
-> 
-> Comments greatly appreciated.
+Am a little bit curious why you would like it in bitops.h, but won't 
+complain if you do (think you have noticed my view of it ;))
 
-I've tested the patch with slim.  The patch has been up and running
-on my system for a couple of weeks now, and it seems to be working 
-just fine.  Is the approach acceptable?  On the assumption that it 
-is, how should we go forward with it?  Can it get a test run in -mm?
-If not, what would be a more acceptable approach?
+Richard Knutsson
 
-Thanks!
-
-Mimi Zohar
