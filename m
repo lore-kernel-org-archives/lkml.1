@@ -1,199 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752107AbXBWBYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750696AbXBWBlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752107AbXBWBYM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 20:24:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbXBWBYL
+	id S1750696AbXBWBlm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 20:41:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbXBWBlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 20:24:11 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:60209 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752107AbXBWBYK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 20:24:10 -0500
-Subject: [PATCH -mm] Log reason why TSC was marked unstable
-From: john stultz <johnstul@us.ibm.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, lkml <linux-kernel@vger.kernel.org>,
-       Daniel Walker <dwalker@mvista.com>
-Content-Type: text/plain
-Date: Thu, 22 Feb 2007 17:24:06 -0800
-Message-Id: <1172193846.5422.43.camel@localhost.localdomain>
+	Thu, 22 Feb 2007 20:41:42 -0500
+Received: from mga09.intel.com ([134.134.136.24]:2760 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750696AbXBWBll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 20:41:41 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,208,1170662400"; 
+   d="scan'208"; a="49742949:sNHT25037667"
+Date: Thu, 22 Feb 2007 17:06:17 -0800
+From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
+Subject: [PATCH 1/5] RT kernel: force detect HPET from PCI space
+Message-ID: <20070222170616.A27455@unix-os.sc.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.2.5.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes mark_tsc_unstable() so it takes a string argument,
-which holds the reason the TSC was marked unstable. 
 
-This is then displayed the first time mark_tsc_unstable is called.
 
-This should help us better debug why the TSC was marked unstable on
-certain systems and allow us to make sure we're not being overly
-paranoid when throwing out this troublesome clocksource.
+Patchset enables force detection of HPET, when it is not listed by BIOS.
+and enables use of HPET as a event source. HPET timers
+configures in stamdard interrupt mode can be used as dependable per CPU timer
+on laptops that are known to have LAPIC stoppage with ACPI C3 state.
 
-thanks
--john
+Patch is against rt kernel (2.6.20-rt8) and patch enables only x86-64
+right now.
 
- arch/i386/kernel/tsc.c                      |    5 +++--
- arch/x86_64/kernel/time.c                   |    2 +-
- arch/x86_64/kernel/tsc.c                    |    5 +++--
- arch/x86_64/kernel/tsc_sync.c               |    2 +-
- drivers/acpi/processor_idle.c               |    4 ++--
- include/asm-i386/mach-summit/mach_mpparse.h |    4 ++--
- include/asm-x86_64/timex.h                  |    2 +-
- include/asm-x86_64/tsc.h                    |    2 +-
- 8 files changed, 14 insertions(+), 12 deletions(-)
+This patch:
 
-linux-2.6.21-rc1_mark-unstable-reason_C7.patch
-============================================
-diff --git a/arch/i386/kernel/tsc.c b/arch/i386/kernel/tsc.c
-index 3082a41..c276575 100644
---- a/arch/i386/kernel/tsc.c
-+++ b/arch/i386/kernel/tsc.c
-@@ -262,7 +262,7 @@ time_cpufreq_notifier(struct notifier_bl
- 				 * TSC based sched_clock turns
- 				 * to junk w/ cpufreq
- 				 */
--				mark_tsc_unstable();
-+				mark_tsc_unstable("cpufreq changes");
- 			}
- 		}
- 	}
-@@ -310,10 +310,11 @@ static struct clocksource clocksource_ts
- 				  CLOCK_SOURCE_MUST_VERIFY,
- };
- 
--void mark_tsc_unstable(void)
-+void mark_tsc_unstable(char *reason)
- {
- 	if (!tsc_unstable) {
- 		tsc_unstable = 1;
-+		printk("Marking TSC unstable due to: %s.\n", reason);
- 		/* Can be called before registration */
- 		if (clocksource_tsc.mult)
- 			clocksource_change_rating(&clocksource_tsc, 0);
-diff --git a/arch/x86_64/kernel/time.c b/arch/x86_64/kernel/time.c
-index c9addcf..b05bb3c 100644
---- a/arch/x86_64/kernel/time.c
-+++ b/arch/x86_64/kernel/time.c
-@@ -348,7 +348,7 @@ void __init time_init(void)
- 	}
- 
- 	if (unsynchronized_tsc())
--		mark_tsc_unstable();
-+		mark_tsc_unstable("TSCs unsynchronized");
- 
- 	if (cpu_has(&boot_cpu_data, X86_FEATURE_RDTSCP))
- 		vgetcpu_mode = VGETCPU_RDTSCP;
-diff --git a/arch/x86_64/kernel/tsc.c b/arch/x86_64/kernel/tsc.c
-index 8958318..d8e5f06 100644
---- a/arch/x86_64/kernel/tsc.c
-+++ b/arch/x86_64/kernel/tsc.c
-@@ -109,7 +109,7 @@ #endif
- 
- 		cpu_khz = cpufreq_scale(cpu_khz_ref, ref_freq, freq->new);
- 		if (!(freq->flags & CPUFREQ_CONST_LOOPS))
--			mark_tsc_unstable();
-+			mark_tsc_unstable("cpufreq changes");
- 	}
- 
- 	set_cyc2ns_scale(cpu_khz_ref);
-@@ -197,10 +197,11 @@ static struct clocksource clocksource_ts
- 	.vread			= vread_tsc,
- };
- 
--void mark_tsc_unstable(void)
-+void mark_tsc_unstable(char *reason)
- {
- 	if (!tsc_unstable) {
- 		tsc_unstable = 1;
-+		printk("Marking TSC unstable due to %s\n", reason);
- 		/* Change only the rating, when not registered */
- 		if (clocksource_tsc.mult)
- 			clocksource_change_rating(&clocksource_tsc, 0);
-diff --git a/arch/x86_64/kernel/tsc_sync.c b/arch/x86_64/kernel/tsc_sync.c
-index 014f0db..fe571fb 100644
---- a/arch/x86_64/kernel/tsc_sync.c
-+++ b/arch/x86_64/kernel/tsc_sync.c
-@@ -138,7 +138,7 @@ void __cpuinit check_tsc_sync_source(int
- 		printk("\n");
- 		printk(KERN_WARNING "Measured %Ld cycles TSC warp between CPUs,"
- 				    " turning off TSC clock.\n", max_warp);
--		mark_tsc_unstable();
-+		mark_tsc_unstable("check_tsc_sync_source failed");
- 		nr_warps = 0;
- 		max_warp = 0;
- 		last_tsc = 0;
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 6077300..44b7836 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -482,7 +482,7 @@ #endif
- 
- #ifdef CONFIG_GENERIC_TIME
- 		/* TSC halts in C2, so notify users */
--		mark_tsc_unstable();
-+		mark_tsc_unstable("possible TSC halt in C2");
+Detect HPET by looking at PCI space, even when BIOS does not list HPET
+device. This is useful to use HPET as dependable per CPU timer with tickless
+kernels.
+
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+
+Index: linux-2.6.21-rc-mm/arch/i386/kernel/quirks.c
+===================================================================
+--- linux-2.6.21-rc-mm.orig/arch/i386/kernel/quirks.c
++++ linux-2.6.21-rc-mm/arch/i386/kernel/quirks.c
+@@ -48,3 +48,58 @@ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_IN
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_E7525_MCH,	quirk_intel_irqbalance);
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_E7520_MCH,	quirk_intel_irqbalance);
  #endif
- 		/* Re-enable interrupts */
- 		local_irq_enable();
-@@ -524,7 +524,7 @@ #endif
++
++#if defined(CONFIG_HPET_TIMER)
++unsigned long force_hpet_address;
++
++static void __init force_enable_hpet(struct pci_dev *dev)
++{
++	u32 val, rcba;
++	void __iomem *base;
++
++	if (hpet_address)
++		return;
++
++	pci_read_config_dword(dev, 0xF0, &rcba);
++	rcba &= 0xFFFFC000;
++	if (rcba == 0) {
++		printk(KERN_DEBUG "RCBA disabled. Cannot force enable HPET\n");
++		return;
++	}
++
++	/* use bits 31:14, 16 kB aligned */
++	base = ioremap_nocache(rcba, 0x4000);
++	if (base == NULL) {
++		printk(KERN_DEBUG "ioremap failed. Cannot force enable HPET\n");
++		return;
++	}
++
++	/* read the Function Disable register, dword mode only */
++	val = readl(base + 0x3404);
++
++	if (!(val & 0x80)) {
++		/* HPET disabled in HPTC. Trying to enable */
++		writel(val | 0x80, base + 0x3404);
++	}
++
++	val = readl(base + 0x3404);
++
++	if (!(val & 0x80)) {
++		printk(KERN_DEBUG "Failed to force enable HPET\n");
++	} else {
++		val = val & 0x3;
++		force_hpet_address = 0xFED00000 | (val << 12);
++		printk(KERN_DEBUG "Force enabled HPET. Base address 0x%x\n",
++			       force_hpet_address);
++	}
++
++	iounmap(base);
++}
++
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_ESB2_0,     force_enable_hpet);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,   PCI_DEVICE_ID_INTEL_ICH6_1,     force_enable_hpet);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,   PCI_DEVICE_ID_INTEL_ICH7_1,     force_enable_hpet);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,   PCI_DEVICE_ID_INTEL_ICH7_31,     force_enable_hpet);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,   PCI_DEVICE_ID_INTEL_ICH8_1,     force_enable_hpet);
++#endif
++
+Index: linux-2.6.21-rc-mm/include/asm-i386/hpet.h
+===================================================================
+--- linux-2.6.21-rc-mm.orig/include/asm-i386/hpet.h
++++ linux-2.6.21-rc-mm/include/asm-i386/hpet.h
+@@ -91,6 +91,7 @@
+ #define HPET_TICK_RATE  (HZ * 100000UL)
  
- #ifdef CONFIG_GENERIC_TIME
- 		/* TSC halts in C3, so notify users */
--		mark_tsc_unstable();
-+		mark_tsc_unstable("TSC halts in C3");
- #endif
- 		/* Re-enable interrupts */
- 		local_irq_enable();
-diff --git a/include/asm-i386/mach-summit/mach_mpparse.h b/include/asm-i386/mach-summit/mach_mpparse.h
-index 9426839..c252053 100644
---- a/include/asm-i386/mach-summit/mach_mpparse.h
-+++ b/include/asm-i386/mach-summit/mach_mpparse.h
-@@ -30,7 +30,7 @@ static inline int mps_oem_check(struct m
- 			(!strncmp(productid, "VIGIL SMP", 9) 
- 			 || !strncmp(productid, "EXA", 3)
- 			 || !strncmp(productid, "RUTHLESS SMP", 12))){
--		mark_tsc_unstable();
-+		mark_tsc_unstable("Summit based system");
- 		use_cyclone = 1; /*enable cyclone-timer*/
- 		setup_summit();
- 		return 1;
-@@ -44,7 +44,7 @@ static inline int acpi_madt_oem_check(ch
- 	if (!strncmp(oem_id, "IBM", 3) &&
- 	    (!strncmp(oem_table_id, "SERVIGIL", 8)
- 	     || !strncmp(oem_table_id, "EXA", 3))){
--		mark_tsc_unstable();
-+		mark_tsc_unstable("Summit based system");
- 		use_cyclone = 1; /*enable cyclone-timer*/
- 		setup_summit();
- 		return 1;
-diff --git a/include/asm-x86_64/timex.h b/include/asm-x86_64/timex.h
-index 8c6808a..326dd42 100644
---- a/include/asm-x86_64/timex.h
-+++ b/include/asm-x86_64/timex.h
-@@ -27,6 +27,6 @@ #define FSEC_PER_TICK (FSEC_PER_SEC / HZ
- #define NS_SCALE        10 /* 2^10, carefully chosen */
- #define US_SCALE        32 /* 2^32, arbitralrily chosen */
+ extern unsigned long hpet_address;	/* hpet memory map physical address */
++extern unsigned long force_hpet_address;/* hpet memory detected by quirk */
+ extern int is_hpet_enabled(void);
  
--extern void mark_tsc_unstable(void);
-+extern void mark_tsc_unstable(char*);
- extern void set_cyc2ns_scale(unsigned long khz);
- #endif
-diff --git a/include/asm-x86_64/tsc.h b/include/asm-x86_64/tsc.h
-index 9a0a368..49b8bdf 100644
---- a/include/asm-x86_64/tsc.h
-+++ b/include/asm-x86_64/tsc.h
-@@ -53,7 +53,7 @@ #endif
- }
+ #ifdef CONFIG_X86_64
+Index: linux-2.6.21-rc-mm/include/asm-x86_64/hpet.h
+===================================================================
+--- linux-2.6.21-rc-mm.orig/include/asm-x86_64/hpet.h
++++ linux-2.6.21-rc-mm/include/asm-x86_64/hpet.h
+@@ -63,6 +63,7 @@ extern unsigned int hpet_calibrate_tsc(v
  
- extern void tsc_init(void);
--extern void mark_tsc_unstable(void);
-+extern void mark_tsc_unstable(char*);
- extern int unsynchronized_tsc(void);
+ extern int hpet_use_timer;
+ extern unsigned long hpet_address;
++extern unsigned long force_hpet_address;
+ extern unsigned long hpet_period;
+ extern unsigned long hpet_tick;
  
- /*
-
-
