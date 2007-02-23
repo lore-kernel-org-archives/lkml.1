@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932486AbXBWSG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932593AbXBWSHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932486AbXBWSG6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 13:06:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932523AbXBWSG6
+	id S932593AbXBWSHw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 13:07:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932589AbXBWSHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 13:06:58 -0500
-Received: from igraine.blacknight.ie ([81.17.252.25]:60093 "EHLO
-	igraine.blacknight.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932486AbXBWSG6 (ORCPT
+	Fri, 23 Feb 2007 13:07:51 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:53870 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932498AbXBWSHu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 13:06:58 -0500
-X-Greylist: delayed 1484 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Feb 2007 13:06:57 EST
-Date: Fri, 23 Feb 2007 17:40:28 +0000
-From: Robert Fitzsimons <robfitz@273k.net>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jiri Kosina <jikos@jikos.cz>,
-       webmaster@kernel.org, linux-kernel@vger.kernel.org,
-       "J.H." <warthog9@kernel.org>
-Subject: Re: gitweb on kernel.org buggy?
-Message-ID: <20070223174028.GC7370@localhost>
-References: <Pine.LNX.4.64.0702222219520.10496@twin.jikos.cz> <45DE113D.1020606@zytor.com> <45DED4F6.3000801@s5r6.in-berlin.de>
+	Fri, 23 Feb 2007 13:07:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=XNUejvNb0zF5EnIIM9cX5AQQqxhFkdpqeO1KUZs98x/CKawrIcv7+tPtFcj4XGD7u/hsDjokuXeQrbi+cMNDuzCQLlGcqybewfJoKhCdpUXdK36c+JoSBA1O2yBG9bQKsGBLWV9ioNcrUGJir4HLEG6zmFdL/GhZbyRyDlLL+v0=
+Date: Fri, 23 Feb 2007 20:07:39 +0200
+To: linux-kernel@vger.kernel.org
+Subject: Video GL rendering worked only between 2.6.20 and 2.6.21-rc1
+Message-ID: <20070223180643.GA6828@Ahmed>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45DED4F6.3000801@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-blacknight-igraine-MailScanner-Information: Please contact the ISP for more information
-X-blacknight-igraine-MailScanner: Found to be clean
-X-blacknight-igraine-MailScanner-SpamCheck: not spam,
-	SpamAssassin (not cached, score=0, required 7, autolearn=disabled)
-X-MailScanner-From: robfitz@273k.net
+User-Agent: Mutt/1.5.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Would be nice if there was anybody familiar with issues concerning
-> high-volume gitweb serving who could contribute.
+Hi list,
 
-This bug is fixed (http://lkml.org/lkml/2007/1/5/204), but I guess the
-change never made it to kernel.org servers.
+Aiglx/Beryl effects (transparency and other stuff) on windows that display 
+video worked magically for the first time in a pull point between 2.6.20 and 
+2.6.21-rc1. Unfortunately It doesn't work again now in 2.6.21-rc1 and even in 
+2.6.20-mm{1,2}.
 
-Robert
+I'm not able to find the good commit again :(. Could someone please tell
+me the files that is most probably responsible for video GL rendering 
+so I can track their changes and find the good commit.
+
+The machine is a Centrino laptop with an i810 card. So I guess those are 
+the responsible files:
+    
+    drivers/char/drm/i810_*.c
+    drivers/video/i810/*
+
+Any more probably responsible files? 
+
+Thanks,
+
+-- 
+Ahmed S. Darwish
+http://darwish.07.googlepages.com
 
