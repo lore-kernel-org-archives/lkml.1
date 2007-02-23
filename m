@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932339AbXBWNlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932346AbXBWNrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932339AbXBWNlk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 08:41:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932346AbXBWNlk
+	id S932346AbXBWNrn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 08:47:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932365AbXBWNrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 08:41:40 -0500
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:10408 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932339AbXBWNlj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 08:41:39 -0500
-Subject: Re: [patch] s390: do not use _local_bh_enable()
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20070223093649.GA8084@osiris.boeblingen.de.ibm.com>
-References: <20070223061459.GA10106@elte.hu>
-	 <20070223093649.GA8084@osiris.boeblingen.de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Organization: IBM Corporation
-Date: Fri, 23 Feb 2007 14:41:37 +0100
-Message-Id: <1172238097.30132.34.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 8bit
+	Fri, 23 Feb 2007 08:47:43 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:2556 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932346AbXBWNrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 08:47:42 -0500
+Date: Fri, 23 Feb 2007 08:47:06 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Markku Savela <msa@moth.iki.fi>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: ipv4 and ipv6 stacks for new link layers?
+Message-ID: <20070223134706.GA24864@hmsreliant.homelinux.net>
+References: <200702231149.l1NBnlZD029626@moth.iki.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702231149.l1NBnlZD029626@moth.iki.fi>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-02-23 at 10:36 +0100, Heiko Carstens wrote:
-> Same here: this is not really an irq handler but a function that gets called
-> from different contexts and pretends to be an irq handler. The
-> local_bh_disable()/_local_bh_enable() pair is just a trick to prevent bottom
-> halve execution. I think you can blame Martin for this ;)
+On Fri, Feb 23, 2007 at 01:49:47PM +0200, Markku Savela wrote:
+> The IPv6 and IPv4 both seem to be rather akwardly hardcoded to support
+> only link layers they know.
+> 
+> This is a pity, because it would be so easy to make the both stacks
+> totally independent of the actual link layers. It only needs one (or
+> two) new function pointer in net_device. This function should do the
+> conversion from IPv4/IPv6 address into corresponding hardware
+> multicast/broadcast address.
+> 
+> In both IPv4 and IPv6, all places where symbols ARPHRD_* are
+> reference, are suspect (there are some related to tunnels, which may
+> be appropriate). For example, in ipv4/arp.c arp_mc_map would call this
+> mapping function, if provided. Similarly ipv6/ndisc.c ndisc_mc_map.
+> 
+> In ipv6/addrconf.c the ivp6_generate_eui64 may possibly need yet
+> another netdev function provided by the driver.
+> 
+> The current Ethernet specific code for these mappings could be moved
+> from the ipv6/ipv6 into eth.c, and ether_setup would give defaults for
+> the functions.
+> 
+> [I run into this while trying to do a netdev to a device is not known
+> by the stacks, and IPv6 even refuses to start on it (because of the
+> ivp6_generate_eui64 fails?). IPv4 ARP seems to fall back to broadcast,
+> so it sort of starts]
+> 
 
-This code is really tricky. There are now three functions (cio_tpi,
-sclp_sync_wait and __udelay) where we use a local_bh_disable()
-_local_bh_enable() pair while we are disabled for interrupts. cio_tpi
-and sclp_sync_wait are used to wait for the interrupt of the console
-device to make room in the buffer for a printk out of disabled context.
-__udelay() is used in the ETR clock-synchronization code where we are
-disabled as well and the only alternative would be looping on a STCK for
-about a second.
+patches welcome :)
 
-So basically we want to synchronously receive a specific interrupt. All
-other interrupt sources are disabled. We know that the interrupt we wait
-for will not cause a softirq to get scheduled. In case of sclp_sync_wait
-and __udelay the interrupt is delivered the usual way by using the
-asynchronous interrupt handler (I told you it is tricky ;-). That works
-as long as only the hardirq part of the interrupt is executed, the
-softirq part may not happen -> local_bh_disable. Back in the function
-after the interrupt we cannot allow the softirq to happen when we
-reenable the bottom-halves since the functions are called disabled and
-need to stay disabled -> _local_bh_enable. Since the interrupt we waited
-for did not add a softirq no harms is done, no?
-
--- 
-blue skies,              IBM Deutschland Entwicklung GmbH
-   Martin                Vorsitzender des Aufsichtsrats: Johann Weihen
-                         Geschäftsführung: Herbert Kircher
-Martin Schwidefsky       Sitz der Gesellschaft: Böblingen
-Linux on zSeries         Registergericht: Amtsgericht Stuttgart,
-   Development           HRB 243294
-
-"Reality continues to ruin my life." - Calvin.
-
-
+> -- 
+> Markku Savela
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
