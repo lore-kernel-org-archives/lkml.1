@@ -1,90 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933121AbXBWQME@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933125AbXBWQQ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933121AbXBWQME (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 11:12:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933122AbXBWQME
+	id S933125AbXBWQQ2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 11:16:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933127AbXBWQQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 11:12:04 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47376 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933121AbXBWQMB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 11:12:01 -0500
-Message-ID: <45DF121D.7060705@stud.feec.vutbr.cz>
-Date: Fri, 23 Feb 2007 17:11:09 +0100
-From: Michal Schmidt <xschmi00@stud.feec.vutbr.cz>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070105)
+	Fri, 23 Feb 2007 11:16:27 -0500
+Received: from firewall.rowland.harvard.edu ([140.247.233.35]:27913 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S933125AbXBWQQ1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 11:16:27 -0500
+Date: Fri, 23 Feb 2007 11:16:24 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Duncan Sands <duncan.sands@math.u-psud.fr>
+cc: Pete Zaitcev <zaitcev@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       <linux-usb-devel@lists.sourceforge.net>,
+       Simon Arlott <254ad70138dc1cdf241hjzcr0007jhhw@thunder.lp0.eu>
+Subject: Re: [linux-usb-devel] [PATCH 2/2] usbatm: Detect usb device shutdown
+ and ignore failed urbs.
+In-Reply-To: <200702231036.14048.duncan.sands@math.u-psud.fr>
+Message-ID: <Pine.LNX.4.44L0.0702231111550.18246-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix compilation of drivers with -O0
-References: <45DF0EFA.3070706@redhat.com>
-In-Reply-To: <45DF0EFA.3070706@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[that still wasn't right, here's for the 3rd and final time.]
+On Fri, 23 Feb 2007, Duncan Sands wrote:
 
-It is sometimes useful to compile individual drivers with optimization
-disabled for easier debugging. Currently drivers which use htonl() and
-similar functions don't compile with -O0. This patch fixes it.
-It also removes obsolete and misleading comments. This header is not
-for userspace, so we don't have to care about strange programs these
-comments mention.
+> if you get ESHUTDOWN, does that mean that you are about to be disconnected,
+> i.e. the disconnect method is about to be called?  Or is it possible for the
+> device to just sit there disabled, but not disconnected?
 
-Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
+It is possible to receive ESHUTDOWN without being disconnected.  For 
+instance, a race with suspend could cause it to happen (although if your 
+driver is written correctly that race should never occur).  Another more 
+likely scenario is that you have an active URB while calling 
+usb_set_interface(); the endpoints for the old altsetting get disabled and 
+the URB returns with an ESHUTDOWN error.
 
-diff --git a/include/linux/byteorder/generic.h b/include/linux/byteorder/generic.h
-index e86e4a9..3dc715b 100644
---- a/include/linux/byteorder/generic.h
-+++ b/include/linux/byteorder/generic.h
-@@ -124,19 +124,8 @@
- #define be32_to_cpus __be32_to_cpus
- #define cpu_to_be16s __cpu_to_be16s
- #define be16_to_cpus __be16_to_cpus
--#endif
- 
--
--#if defined(__KERNEL__)
- /*
-- * Handle ntohl and suches. These have various compatibility
-- * issues - like we want to give the prototype even though we
-- * also have a macro for them in case some strange program
-- * wants to take the address of the thing or something..
-- *
-- * Note that these used to return a "long" in libc5, even though
-- * long is often 64-bit these days.. Thus the casts.
-- *
-  * They have to be macros in order to do the constant folding
-  * correctly - if the argument passed into a inline function
-  * it is no longer constant according to gcc..
-@@ -147,17 +136,6 @@
- #undef htonl
- #undef htons
- 
--/*
-- * Do the prototypes. Somebody might want to take the
-- * address or some such sick thing..
-- */
--extern __u32			ntohl(__be32);
--extern __be32			htonl(__u32);
--extern __u16			ntohs(__be16);
--extern __be16			htons(__u16);
--
--#if defined(__GNUC__) && defined(__OPTIMIZE__)
--
- #define ___htonl(x) __cpu_to_be32(x)
- #define ___htons(x) __cpu_to_be16(x)
- #define ___ntohl(x) __be32_to_cpu(x)
-@@ -168,9 +146,6 @@ extern __be16			htons(__u16);
- #define htons(x) ___htons(x)
- #define ntohs(x) ___ntohs(x)
- 
--#endif /* OPTIMIZE */
--
- #endif /* KERNEL */
- 
--
- #endif /* _LINUX_BYTEORDER_GENERIC_H */
-
+Alan Stern
 
