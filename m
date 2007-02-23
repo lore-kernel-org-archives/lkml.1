@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932186AbXBWJOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932190AbXBWJP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932186AbXBWJOe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 04:14:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932193AbXBWJOe
+	id S932190AbXBWJP1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 04:15:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932193AbXBWJOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 04:14:34 -0500
+	Fri, 23 Feb 2007 04:14:37 -0500
 Received: from mx.neterion.com ([72.1.205.142]:2177 "EHLO owa.neterion.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932186AbXBWJO3 convert rfc822-to-8bit (ORCPT
+	id S932188AbXBWJOc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 04:14:29 -0500
+	Fri, 23 Feb 2007 04:14:32 -0500
 X-Greylist: delayed 847 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Feb 2007 04:14:29 EST
 X-MimeOLE: Produced By Microsoft Exchange V6.5
 Content-class: urn:content-classes:message
@@ -18,12 +18,12 @@ Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
 Subject: RE: [PATCH 1/2] NET: Multiple queue network device support
-Date: Fri, 23 Feb 2007 04:02:26 -0500
-Message-ID: <78C9135A3D2ECE4B8162EBDCE82CAD77013F3840@nekter>
+Date: Fri, 23 Feb 2007 04:00:55 -0500
+Message-ID: <78C9135A3D2ECE4B8162EBDCE82CAD77013F383F@nekter>
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
 Thread-Topic: [PATCH 1/2] NET: Multiple queue network device support
-Thread-Index: AcdL3LXJN6SzN3nAQOClpFmdrE0iwwLS8fmwAAACOYA=
+Thread-Index: AcdL3LXJN6SzN3nAQOClpFmdrE0iwwLS8fmwAAACOYAAAABb4A==
 From: "Sreenivasa Honnur" <Sreenivasa.Honnur@neterion.com>
 To: "Kok, Auke" <auke-jan.h.kok@intel.com>,
        "David Miller" <davem@davemloft.net>,
@@ -36,8 +36,8 @@ Cc: "Peter Waskiewicz Jr" <peter.p.waskiewicz.jr@intel.com>,
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Function "map_queue" returns queue_index as 0 always. There is no
-support to return different queue numbers.
+Fucntion "map_queue" returns queue index as '0'. There is no support to
+return different queue indexes.
 
 -----Original Message-----
 From: netdev-owner@vger.kernel.org [mailto:netdev-owner@vger.kernel.org]
