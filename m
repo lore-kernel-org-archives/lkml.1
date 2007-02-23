@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932229AbXBWLtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932145AbXBWLuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932229AbXBWLtu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 06:49:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932253AbXBWLtu
+	id S932145AbXBWLuZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 06:50:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932226AbXBWLuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 06:49:50 -0500
-Received: from burp.tkv.asdf.org ([212.16.99.49]:51587 "EHLO moth.iki.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932230AbXBWLts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 06:49:48 -0500
-Date: Fri, 23 Feb 2007 13:49:47 +0200
-Message-Id: <200702231149.l1NBnlZD029626@moth.iki.fi>
-From: Markku Savela <msa@moth.iki.fi>
-To: linux-kernel@vger.kernel.org
-Subject: ipv4 and ipv6 stacks for new link layers?
+	Fri, 23 Feb 2007 06:50:25 -0500
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:49257 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932145AbXBWLuX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 06:50:23 -0500
+Message-ID: <45DED4F6.3000801@s5r6.in-berlin.de>
+Date: Fri, 23 Feb 2007 12:50:14 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.0.8) Gecko/20061030 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Jiri Kosina <jikos@jikos.cz>, webmaster@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: gitweb on kernel.org buggy?
+References: <Pine.LNX.4.64.0702222219520.10496@twin.jikos.cz> <45DE113D.1020606@zytor.com>
+In-Reply-To: <45DE113D.1020606@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The IPv6 and IPv4 both seem to be rather akwardly hardcoded to support
-only link layers they know.
+H. Peter Anvin wrote:
+> gitweb on kernel.org is at least in part orphanned, since the "official" 
+> gitweb maintainers don't seem to listen to us (kernel.org people) w.r.t. 
+> some issues, mainly related to caching, we've had to fork gitweb and 
+> maintain it ourselves -- however, since kernel.org is currently all 
+> volunteer labor, we have limited amount of time in which to deal with 
+> things.
 
-This is a pity, because it would be so easy to make the both stacks
-totally independent of the actual link layers. It only needs one (or
-two) new function pointer in net_device. This function should do the
-conversion from IPv4/IPv6 address into corresponding hardware
-multicast/broadcast address.
+A non-representative data point: 98.72% (give or take ten percent) of my
+accesses to kernel.org hosted git repos is via gitweb --- even despite
+its slowness, synchronization lag, and bug(s).
 
-In both IPv4 and IPv6, all places where symbols ARPHRD_* are
-reference, are suspect (there are some related to tunnels, which may
-be appropriate). For example, in ipv4/arp.c arp_mc_map would call this
-mapping function, if provided. Similarly ipv6/ndisc.c ndisc_mc_map.
-
-In ipv6/addrconf.c the ivp6_generate_eui64 may possibly need yet
-another netdev function provided by the driver.
-
-The current Ethernet specific code for these mappings could be moved
-from the ipv6/ipv6 into eth.c, and ether_setup would give defaults for
-the functions.
-
-[I run into this while trying to do a netdev to a device is not known
-by the stacks, and IPv6 even refuses to start on it (because of the
-ivp6_generate_eui64 fails?). IPv4 ARP seems to fall back to broadcast,
-so it sort of starts]
-
+Would be nice if there was anybody familiar with issues concerning
+high-volume gitweb serving who could contribute.
 -- 
-Markku Savela
+Stefan Richter
+-=====-=-=== --=- =-===
+http://arcgraph.de/sr/
