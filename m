@@ -1,132 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750696AbXBWBlm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751545AbXBWBmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750696AbXBWBlm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 20:41:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbXBWBlm
+	id S1751545AbXBWBmt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 20:42:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbXBWBmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 20:41:42 -0500
-Received: from mga09.intel.com ([134.134.136.24]:2760 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750696AbXBWBll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 20:41:41 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,208,1170662400"; 
-   d="scan'208"; a="49742949:sNHT25037667"
-Date: Thu, 22 Feb 2007 17:06:17 -0800
-From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-Subject: [PATCH 1/5] RT kernel: force detect HPET from PCI space
-Message-ID: <20070222170616.A27455@unix-os.sc.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.2.5.1i
+	Thu, 22 Feb 2007 20:42:49 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:50812 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751544AbXBWBms (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 20:42:48 -0500
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: [PATCH] free swap space when (re)activating page
+To: Rik van Riel <riel@redhat.com>, Christoph Lameter <clameter@sgi.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@osdl.org>
+Reply-To: 7eggert@gmx.de
+Date: Fri, 23 Feb 2007 02:44:16 +0100
+References: <7Pk3X-bD-17@gated-at.bofh.it> <7QvgM-3aK-3@gated-at.bofh.it> <7QDeB-7KY-11@gated-at.bofh.it> <7QGc7-3ZB-13@gated-at.bofh.it> <7QGlP-4e1-11@gated-at.bofh.it> <7QHUO-6RS-5@gated-at.bofh.it> <7QJ9Y-mo-1@gated-at.bofh.it> <7QJk7-zW-51@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1HKPTs-0005p5-IV@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: kundenserver.de abuse@kundenserver.de login:9b3b2cc444a07783f194c895a09f1de9
+X-Provags-ID2: V01U2FsdGVkX1/SOXZfGwIqp1rW05O/qHAVDM3UdQ0zY406jW+0RtEnIc3xV0KnLUE/X79yd9S0lpkXBqzknBP3vDbm1+8ghlt69LA8R24OeFg9BsCH35ZVWg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rik van Riel <riel@redhat.com> wrote:
 
++++ linux-2.6.20.noarch/mm/swap.c        2007-02-20 06:44:17.000000000 -0500
+@@ -420,6 +420,26 @@ void pagevec_strip(struct pagevec *pvec)
 
-Patchset enables force detection of HPET, when it is not listed by BIOS.
-and enables use of HPET as a event source. HPET timers
-configures in stamdard interrupt mode can be used as dependable per CPU timer
-on laptops that are known to have LAPIC stoppage with ACPI C3 state.
+> +                        if (printk_ratelimit())
+> +                                printk("kswapd freed a swap space\n");
+> 
 
-Patch is against rt kernel (2.6.20-rt8) and patch enables only x86-64
-right now.
+NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO!!!!!!!!!!!
 
-This patch:
+1) This message is a debug message! You forgot to set the printk level.
 
-Detect HPET by looking at PCI space, even when BIOS does not list HPET
-device. This is useful to use HPET as dependable per CPU timer with tickless
-kernels.
+2) The message text is bad, the average log reader only knows swap files
+   and pages in swapfiles. The first reaction will be like "WTF happened
+   to my swap???". Thousands of admins will cry out in anguish trying to
+   get the meaning of this message, and again cry out in wrath after they
+   found out.
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+3) What should I do if I see this message? It's neither good, nor bad for
+   me, nor is it in any way informative even if it were changed to be
+   meaningfull. It's utterly useless! Let it be!
 
-Index: linux-2.6.21-rc-mm/arch/i386/kernel/quirks.c
-===================================================================
---- linux-2.6.21-rc-mm.orig/arch/i386/kernel/quirks.c
-+++ linux-2.6.21-rc-mm/arch/i386/kernel/quirks.c
-@@ -48,3 +48,58 @@ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_IN
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_E7525_MCH,	quirk_intel_irqbalance);
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_E7520_MCH,	quirk_intel_irqbalance);
- #endif
-+
-+#if defined(CONFIG_HPET_TIMER)
-+unsigned long force_hpet_address;
-+
-+static void __init force_enable_hpet(struct pci_dev *dev)
-+{
-+	u32 val, rcba;
-+	void __iomem *base;
-+
-+	if (hpet_address)
-+		return;
-+
-+	pci_read_config_dword(dev, 0xF0, &rcba);
-+	rcba &= 0xFFFFC000;
-+	if (rcba == 0) {
-+		printk(KERN_DEBUG "RCBA disabled. Cannot force enable HPET\n");
-+		return;
-+	}
-+
-+	/* use bits 31:14, 16 kB aligned */
-+	base = ioremap_nocache(rcba, 0x4000);
-+	if (base == NULL) {
-+		printk(KERN_DEBUG "ioremap failed. Cannot force enable HPET\n");
-+		return;
-+	}
-+
-+	/* read the Function Disable register, dword mode only */
-+	val = readl(base + 0x3404);
-+
-+	if (!(val & 0x80)) {
-+		/* HPET disabled in HPTC. Trying to enable */
-+		writel(val | 0x80, base + 0x3404);
-+	}
-+
-+	val = readl(base + 0x3404);
-+
-+	if (!(val & 0x80)) {
-+		printk(KERN_DEBUG "Failed to force enable HPET\n");
-+	} else {
-+		val = val & 0x3;
-+		force_hpet_address = 0xFED00000 | (val << 12);
-+		printk(KERN_DEBUG "Force enabled HPET. Base address 0x%x\n",
-+			       force_hpet_address);
-+	}
-+
-+	iounmap(base);
-+}
-+
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_ESB2_0,     force_enable_hpet);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,   PCI_DEVICE_ID_INTEL_ICH6_1,     force_enable_hpet);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,   PCI_DEVICE_ID_INTEL_ICH7_1,     force_enable_hpet);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,   PCI_DEVICE_ID_INTEL_ICH7_31,     force_enable_hpet);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,   PCI_DEVICE_ID_INTEL_ICH8_1,     force_enable_hpet);
-+#endif
-+
-Index: linux-2.6.21-rc-mm/include/asm-i386/hpet.h
-===================================================================
---- linux-2.6.21-rc-mm.orig/include/asm-i386/hpet.h
-+++ linux-2.6.21-rc-mm/include/asm-i386/hpet.h
-@@ -91,6 +91,7 @@
- #define HPET_TICK_RATE  (HZ * 100000UL)
- 
- extern unsigned long hpet_address;	/* hpet memory map physical address */
-+extern unsigned long force_hpet_address;/* hpet memory detected by quirk */
- extern int is_hpet_enabled(void);
- 
- #ifdef CONFIG_X86_64
-Index: linux-2.6.21-rc-mm/include/asm-x86_64/hpet.h
-===================================================================
---- linux-2.6.21-rc-mm.orig/include/asm-x86_64/hpet.h
-+++ linux-2.6.21-rc-mm/include/asm-x86_64/hpet.h
-@@ -63,6 +63,7 @@ extern unsigned int hpet_calibrate_tsc(v
- 
- extern int hpet_use_timer;
- extern unsigned long hpet_address;
-+extern unsigned long force_hpet_address;
- extern unsigned long hpet_period;
- extern unsigned long hpet_tick;
- 
+-- 
+We are all born ignorant, but one must work hard to remain stupid.
+        -- Benjamin Franklin
+
+Friß, Spammer: JEN-ersdiT@kowaZ.7eggert.dyndns.org
