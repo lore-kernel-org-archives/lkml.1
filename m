@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932272AbXBWMIG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932273AbXBWMIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932272AbXBWMIG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 07:08:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932262AbXBWMIG
+	id S932273AbXBWMIS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 07:08:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932274AbXBWMIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 07:08:06 -0500
-Received: from mailx.hitachi.co.jp ([133.145.228.49]:39013 "EHLO
+	Fri, 23 Feb 2007 07:08:17 -0500
+Received: from mailx.hitachi.co.jp ([133.145.228.49]:39026 "EHLO
 	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932256AbXBWMIE (ORCPT
+	with ESMTP id S932273AbXBWMIN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 07:08:04 -0500
-Message-ID: <45DED828.6070202@hitachi.com>
-Date: Fri, 23 Feb 2007 21:03:52 +0900
+	Fri, 23 Feb 2007 07:08:13 -0500
+Message-ID: <45DED833.1080804@hitachi.com>
+Date: Fri, 23 Feb 2007 21:04:03 +0900
 From: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>
 User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 MIME-Version: 1.0
@@ -19,83 +19,98 @@ To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, miklos@szeredi.hu, yumiko.sugita.yf@hitachi.com,
        masami.hiramatsu.pt@hitachi.com, hidehiro.kawai.ez@hitachi.com,
        yuji.kakutani.uw@hitachi.com, soshima@redhat.com, haoki@redhat.com
-Subject: [RFC][PATCH 1/3] VM throttling: Add vm.dirty_limit_ratio to sysctl
+Subject: [RFC][PATCH 3/3] VM throttling: Break on no more Dirty pages
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds sysctl variable vm.dirty_limit_ratio.
+This modifies balance_dirty_pages() not to block the caller when
+the amount of Dirty+Writeback is less than `vm.dirty_limit_ratio'
+percent of the total memory.
+
+throttle_vm_writeout() is also changed to calculate the threshold from
+the new limit provided by modified get_dirty_limits().
 
 Signed-off-by: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>
 Signed-off-by: Yuji Kakutani <yuji.kakutani.uw@hitachi.com>
 ---
- include/linux/sysctl.h    |    1 +
- include/linux/writeback.h |    1 +
- kernel/sysctl.c           |   11 +++++++++++
- mm/page-writeback.c       |    5 +++++
- 4 files changed, 18 insertions(+)
+ mm/page-writeback.c |   28 ++++++++++++++++------------
+ 1 file changed, 16 insertions(+), 12 deletions(-)
 
-Index: linux-2.6.20-mm2-bdp/include/linux/sysctl.h
-===================================================================
---- linux-2.6.20-mm2-bdp.orig/include/linux/sysctl.h
-+++ linux-2.6.20-mm2-bdp/include/linux/sysctl.h
-@@ -207,6 +207,7 @@ enum
- 	VM_PANIC_ON_OOM=33,	/* panic at out-of-memory */
- 	VM_VDSO_ENABLED=34,	/* map VDSO into new processes? */
- 	VM_MIN_SLAB=35,		 /* Percent pages ignored by zone reclaim */
-+	VM_DIRTY_LIMIT_RATIO=36,/* dirty_limit_ratio */
-
- 	/* s390 vm cmm sysctls */
- 	VM_CMM_PAGES=1111,
-Index: linux-2.6.20-mm2-bdp/include/linux/writeback.h
-===================================================================
---- linux-2.6.20-mm2-bdp.orig/include/linux/writeback.h
-+++ linux-2.6.20-mm2-bdp/include/linux/writeback.h
-@@ -95,6 +95,7 @@ static inline int laptop_spinned_down(vo
- /* These are exported to sysctl. */
- extern int dirty_background_ratio;
- extern int vm_dirty_ratio;
-+extern int dirty_limit_ratio;
- extern int dirty_writeback_interval;
- extern int dirty_expire_interval;
- extern int block_dump;
-Index: linux-2.6.20-mm2-bdp/kernel/sysctl.c
-===================================================================
---- linux-2.6.20-mm2-bdp.orig/kernel/sysctl.c
-+++ linux-2.6.20-mm2-bdp/kernel/sysctl.c
-@@ -684,6 +684,17 @@ static ctl_table vm_table[] = {
- 		.extra2		= &one_hundred,
- 	},
- 	{
-+		.ctl_name	= VM_DIRTY_LIMIT_RATIO,
-+		.procname	= "dirty_limit_ratio",
-+		.data		= &dirty_limit_ratio,
-+		.maxlen		= sizeof(dirty_limit_ratio),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec_minmax,
-+		.strategy	= &sysctl_intvec,
-+		.extra1		= &zero,
-+		.extra2		= &one_hundred,
-+	},
-+	{
- 		.ctl_name	= VM_DIRTY_WB_CS,
- 		.procname	= "dirty_writeback_centisecs",
- 		.data		= &dirty_writeback_interval,
 Index: linux-2.6.20-mm2-bdp/mm/page-writeback.c
 ===================================================================
 --- linux-2.6.20-mm2-bdp.orig/mm/page-writeback.c
 +++ linux-2.6.20-mm2-bdp/mm/page-writeback.c
-@@ -75,6 +75,11 @@ int dirty_background_ratio = 10;
- int vm_dirty_ratio = 40;
-
- /*
-+ * The generator of dirty data is blocked at this percentage
-+ */
-+int dirty_limit_ratio = 45;
-+
-+/*
-  * The interval between `kupdate'-style writebacks, in jiffies
+@@ -219,12 +219,15 @@ get_dirty_limits(long *pbackground, long
+  * balance_dirty_pages() must be called by processes which are generating dirty
+  * data.  It looks at the number of dirty pages in the machine and will force
+  * the caller to perform writeback if the system is over `vm_dirty_ratio'.
++ * If the caller couldn't writeback `write_chunk' pages and we're over
++ * `dirty_limit_ratio', the caller will be blocked.
+  * If we're over `background_thresh' then pdflush is woken to perform some
+  * writeout.
   */
- int dirty_writeback_interval = 5 * HZ;
+ static void balance_dirty_pages(struct address_space *mapping)
+ {
+ 	long nr_reclaimable;
++	long nr_dirty;
+ 	long background_thresh;
+ 	long dirty_thresh;
+ 	long dirty_limit;
+@@ -246,9 +249,9 @@ static void balance_dirty_pages(struct a
+ 							&dirty_limit, mapping);
+ 		nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
+ 					global_page_state(NR_UNSTABLE_NFS);
+-		if (nr_reclaimable + global_page_state(NR_WRITEBACK) <=
+-			dirty_thresh)
+-				break;
++		nr_dirty = nr_reclaimable + global_page_state(NR_WRITEBACK);
++		if (nr_dirty <= dirty_thresh)
++			break;
+
+ 		if (!dirty_exceeded)
+ 			dirty_exceeded = 1;
+@@ -265,20 +268,21 @@ static void balance_dirty_pages(struct a
+ 					 		&dirty_limit, mapping);
+ 			nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
+ 					global_page_state(NR_UNSTABLE_NFS);
+-			if (nr_reclaimable +
+-				global_page_state(NR_WRITEBACK)
+-					<= dirty_thresh)
+-						break;
++			nr_dirty = nr_reclaimable +
++					global_page_state(NR_WRITEBACK);
++			if (nr_dirty <= dirty_thresh)
++				break;
+ 			pages_written += write_chunk - wbc.nr_to_write;
+ 			if (pages_written >= write_chunk)
+ 				break;		/* We've done our duty */
++			if (nr_dirty <= dirty_limit)
++				break;		/* no more dirty pages on bdi */
+ 		}
+ 		congestion_wait(WRITE, HZ/10);
+ 	}
+
+-	if (nr_reclaimable + global_page_state(NR_WRITEBACK)
+-		<= dirty_thresh && dirty_exceeded)
+-			dirty_exceeded = 0;
++	if (nr_dirty <= dirty_thresh && dirty_exceeded)
++		dirty_exceeded = 0;
+
+ 	if (writeback_in_progress(bdi))
+ 		return;		/* pdflush is already working this queue */
+@@ -362,10 +366,10 @@ void throttle_vm_writeout(void)
+                  * Boost the allowable dirty threshold a bit for page
+                  * allocators so they don't get DoS'ed by heavy writers
+                  */
+-                dirty_thresh += dirty_thresh / 10;      /* wheeee... */
++                dirty_limit += dirty_limit / 10;      /* wheeee... */
+
+                 if (global_page_state(NR_UNSTABLE_NFS) +
+-			global_page_state(NR_WRITEBACK) <= dirty_thresh)
++			global_page_state(NR_WRITEBACK) <= dirty_limit)
+                         	break;
+                 congestion_wait(WRITE, HZ/10);
+         }
 
