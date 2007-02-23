@@ -1,58 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750725AbXBWCbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750701AbXBWCrF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750725AbXBWCbQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 21:31:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750730AbXBWCbQ
+	id S1750701AbXBWCrF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 21:47:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750730AbXBWCrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 21:31:16 -0500
-Received: from wr-out-0506.google.com ([64.233.184.237]:5646 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750725AbXBWCbP (ORCPT
+	Thu, 22 Feb 2007 21:47:05 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:32376 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750701AbXBWCrC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 21:31:15 -0500
+	Thu, 22 Feb 2007 21:47:02 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZwF+9y9zK6mULfXOFadPJANBgfm38fIix/zJXhy4vI6c8kz0AA0oSmaQHnnSG1o6wSRaHKrPrXSLicjlMPsRJPCvCbj7r3SU4ojIAVtA3H6UbsLglYiicx3ZmRG3/7fZ1e8NAYf8sXcAwKkbnfZg4EnixZAdUoNubgeKX/2Jl0A=
-Message-ID: <4df04b840702221831x76626de1rfa70cb653b12f495@mail.gmail.com>
-Date: Fri, 23 Feb 2007 10:31:13 +0800
-From: "yunfeng zhang" <zyf.zeroos@gmail.com>
-To: "Rik van Riel" <riel@redhat.com>
-Subject: Re: [PATCH 2.6.20-rc5 1/1] MM: enhance Linux swap subsystem
-Cc: linux-kernel@vger.kernel.org, "Hugh Dickins" <hugh@veritas.com>,
-       linux-mm@kvack.org
-In-Reply-To: <45DCFDBE.50209@redhat.com>
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=NaxmjUAsxw/eJ/+Rm9+AIM/g70pSbG2aPoQkVLcatnVqi9mx5xMiC0dsHs2WyS2XUh12Wg7dYJ7ZUuo3wtibOv17Qpczr/0s+GfbIgUkD+YiYrlF+nqelpHkQycVFCNgwZg9FJM0kghp23IUc8OFFvRnr0xRqoawBPjoL8SPZlw=
+Message-ID: <a2ebde260702221847q6710be1sbf2d28f37ab4fb2b@mail.gmail.com>
+Date: Fri, 23 Feb 2007 10:47:01 +0800
+From: "Dong Feng" <middle.fengdong@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Why __syscallN macros are removed?
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <4df04b840701212309l2a283357jbdaa88794e5208a7@mail.gmail.com>
-	 <4df04b840701222021w5e1aaab2if2ba7fc38d06d64b@mail.gmail.com>
-	 <4df04b840701222108o6992933bied5fff8a525413@mail.gmail.com>
-	 <Pine.LNX.4.64.0701242015090.1770@blonde.wat.veritas.com>
-	 <4df04b840701301852i41687edfl1462c4ca3344431c@mail.gmail.com>
-	 <Pine.LNX.4.64.0701312022340.26857@blonde.wat.veritas.com>
-	 <4df04b840702122152o64b2d59cy53afcd43bb24cb7a@mail.gmail.com>
-	 <4df04b840702200106q670ff944k118d218fed17b884@mail.gmail.com>
-	 <4df04b840702211758t1906083x78fb53b6283349ca@mail.gmail.com>
-	 <45DCFDBE.50209@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Performance improvement should occur when private pages of multiple processes
-are messed up, such as SMP. To UP, my previous mail is done by timer, which only
-shows a fact, if pages are messed up fully, current readahead will degrade
-remarkably, and unused readaheading pages make a burden to memory subsystem.
-
-You should re-test your testcases following the advises on Linux without my
-patch, do normal testcases and select a testcase randomly and record
-'/proc/vmstat/pswpin', redo the testcase solely, if the results are close, that
-is, your testcases doesn't messed up private pages at all as you expected due to
-Linux schedule. Thank you!
-
-
-2007/2/22, Rik van Riel <riel@redhat.com>:
-> yunfeng zhang wrote:
-> > Any comments or suggestions are always welcomed.
->
-> Same question as always: what problem are you trying to solve?
+The __syscallN series macros have disappeared in
+include/asm-i386/unistd.h. Why? I occasionally what to add and use
+some new system calls, mainly for debug use. Now I can not access the
+system call I added from user space.
