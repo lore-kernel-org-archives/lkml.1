@@ -1,82 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751724AbXBWGNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751748AbXBWGO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751724AbXBWGNV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 01:13:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbXBWGNV
+	id S1751748AbXBWGO7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 01:14:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbXBWGO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 01:13:21 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40825 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751714AbXBWGNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 01:13:21 -0500
-Date: Fri, 23 Feb 2007 07:08:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@googlemail.com>,
-       tglx@linutronix.de, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.20-git15 BUG: soft lockup detected on CPU#0! - timers?
-Message-ID: <20070223060802.GA8562@elte.hu>
-References: <6bffcb0e0702201054rb839bb2m11ef8d33bacffdb8@mail.gmail.com> <1172008584.25076.0.camel@localhost.localdomain> <6bffcb0e0702201437o66db38d5j3066eb3c9951a270@mail.gmail.com> <1172072023.25076.64.camel@localhost.localdomain> <6bffcb0e0702210738p687ca1bdt2c568d7ed5904fff@mail.gmail.com> <1172088044.25076.125.camel@localhost.localdomain> <45DCF644.9040009@googlemail.com> <45DD756D.3040006@googlemail.com>
-Mime-Version: 1.0
+	Fri, 23 Feb 2007 01:14:58 -0500
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:18587 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751748AbXBWGO6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 01:14:58 -0500
+Date: Fri, 23 Feb 2007 07:13:32 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, James.Bottomley@SteelEye.com,
+       Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH] dma-mapping-broken.h: flesh-out DMA API stubs
+Message-ID: <20070223061332.GB27126@osiris.ibm.com>
+References: <20070223005945.GA13084@tuxdriver.com> <20070223034243.GA7988@osiris.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45DD756D.3040006@googlemail.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -4.9
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-4.9 required=5.9 tests=ALL_TRUSTED,BAYES_00,PLING_QUERY autolearn=no SpamAssassin version=3.0.3
-	0.4 PLING_QUERY            Subject has exclamation mark and question mark
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070223034243.GA7988@osiris.ibm.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+How about this for telling that an architecture doesn't support DMA?
+At least we could get rid of dma-mapping-broken.h and don't need to
+compile some afterwards dead code.
 
-Michal,
-
-* Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-
-> Here is more
-> 
-> hardirqs last  enabled at (30787): [<c0104249>] syscall_exit_work+0x11/0x26
-> hardirqs last disabled at (30788): [<c0103fc9>] ret_from_exception+0x9/0xc
-> softirqs last  enabled at (30202): [<c01265df>] __do_softirq+0xe4/0xea
-> softirqs last disabled at (30193): [<c0106a75>] do_softirq+0x64/0xd1
-
-could you please try the patch below? This is pretty much the only 
-condition under which we can silently 'leak' pending softirqs, and 
-trigger the new warning: if something does cond_resched_softirq() in 
-non-runnable state. (which is a no-no, but nothing enforced this, so it 
-could in theory happen.) So the question is, with this patch applied, do 
-you get these new warnings from sched.c?
-
-	Ingo
-
--------------------------->
-Subject: [patch] add warning to cond_resched_softirq()
-From: Ingo Molnar <mingo@elte.hu>
-
-make sure that cond_resched_softirq() is always called with a runnable 
-task - so that we do not leave softirq work pending indefinitely.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 ---
- kernel/sched.c |    1 +
- 1 file changed, 1 insertion(+)
+ arch/s390/Kconfig              |    3 +++
+ drivers/base/Makefile          |    4 ++--
+ include/asm-s390/dma-mapping.h |    2 --
+ lib/Kconfig                    |    5 +++++
+ 4 files changed, 10 insertions(+), 4 deletions(-)
 
-Index: linux/kernel/sched.c
+Index: linux-2.6/arch/s390/Kconfig
 ===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -4689,6 +4689,7 @@ int __sched cond_resched_softirq(void)
- 	BUG_ON(!in_softirq());
+--- linux-2.6.orig/arch/s390/Kconfig
++++ linux-2.6/arch/s390/Kconfig
+@@ -44,6 +44,9 @@ config GENERIC_TIME
+ config NO_IOMEM
+ 	def_bool y
  
- 	if (need_resched() && system_state == SYSTEM_RUNNING) {
-+		WARN_ON(current->state != TASK_RUNNING);
- 		raw_local_irq_disable();
- 		_local_bh_enable();
- 		raw_local_irq_enable();
++config NO_DMA
++	def_bool y
++
+ mainmenu "Linux Kernel Configuration"
+ 
+ config S390
+Index: linux-2.6/drivers/base/Makefile
+===================================================================
+--- linux-2.6.orig/drivers/base/Makefile
++++ linux-2.6/drivers/base/Makefile
+@@ -2,10 +2,10 @@
+ 
+ obj-y			:= core.o sys.o bus.o dd.o \
+ 			   driver.o class.o platform.o \
+-			   cpu.o firmware.o init.o map.o dmapool.o \
+-			   dma-mapping.o devres.o \
++			   cpu.o firmware.o init.o map.o devres.o \
+ 			   attribute_container.o transport_class.o
+ obj-y			+= power/
++obj-$(CONFIG_DMA)	+= dma-mapping.o dmapool.o
+ obj-$(CONFIG_ISA)	+= isa.o
+ obj-$(CONFIG_FW_LOADER)	+= firmware_class.o
+ obj-$(CONFIG_NUMA)	+= node.o
+Index: linux-2.6/include/asm-s390/dma-mapping.h
+===================================================================
+--- linux-2.6.orig/include/asm-s390/dma-mapping.h
++++ linux-2.6/include/asm-s390/dma-mapping.h
+@@ -9,6 +9,4 @@
+ #ifndef _ASM_DMA_MAPPING_H
+ #define _ASM_DMA_MAPPING_H
+ 
+-#include <asm-generic/dma-mapping-broken.h>
+-
+ #endif /* _ASM_DMA_MAPPING_H */
+Index: linux-2.6/lib/Kconfig
+===================================================================
+--- linux-2.6.orig/lib/Kconfig
++++ linux-2.6/lib/Kconfig
+@@ -111,4 +111,9 @@ config HAS_IOPORT
+ 	depends on HAS_IOMEM && !NO_IOPORT
+ 	default y
+ 
++config HAS_DMA
++	boolean
++	depends on !NO_DMA
++	default y
++
+ endmenu
+
+-- 
+Heiko Carstens
+Linux on System z Development
+
+IBM Deutschland Entwicklung GmbH
+Vorsitzender des Aufsichtsrats: Johann Weihen
+Geschaeftsfuehrung : Herbert Kircher
+Sitz der Gesellschaft: Boeblingen
+Registergericht: Amtsgericht Stuttgart, HRB 243294
