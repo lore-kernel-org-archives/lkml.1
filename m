@@ -1,112 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932672AbXBWPsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932687AbXBWPwI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932672AbXBWPsZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 10:48:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932687AbXBWPsZ
+	id S932687AbXBWPwI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 10:52:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932696AbXBWPwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 10:48:25 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:34990 "EHLO 2ka.mipt.ru"
+	Fri, 23 Feb 2007 10:52:08 -0500
+Received: from mail.tmr.com ([64.65.253.246]:50654 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932672AbXBWPsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 10:48:24 -0500
-To: LKML <linux-kernel@vger.kernel.org>
-CC: mhalcrow@us.ibm.com, devel@openvz.org,
-       ecryptfs-devel@lists.sourceforge.net
-Subject: [PATCH] ecryptfs: handles AOP_TRUNCATED_PAGE better
-From: Dmitriy Monakhov <dmonakhov@openvz.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
-Date: Fri, 23 Feb 2007 18:44:42 +0300
-Message-ID: <871wkgkhed.fsf@sw.ru>
+	id S932687AbXBWPwG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 10:52:06 -0500
+Message-ID: <45DF0DA8.9010305@tmr.com>
+Date: Fri, 23 Feb 2007 10:52:08 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [194.85.82.65]); Fri, 23 Feb 2007 18:44:28 +0300 (MSK)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: NeilBrown <neilb@suse.de>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 006 of 6] md: Add support for reshape of a raid6
+References: <20070220172544.15678.patches@notabene>	<1070220063516.16208@suse.de> <20070221144806.e6eed85c.akpm@linux-foundation.org>
+In-Reply-To: <20070221144806.e6eed85c.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- In fact we don't have to fail if AOP_TRUNCATED_PAGE was returned from 
-  prepare_write or commit_write. It is beter to retry attempt where it
-  is possible.
+Andrew Morton wrote:
+> On Tue, 20 Feb 2007 17:35:16 +1100
+> NeilBrown <neilb@suse.de> wrote:
+>
+>   
+>> +		for (i = conf->raid_disks ; i-- ;  ) {
+>>     
+>
+> That statement should be dragged out, shot, stomped on then ceremonially
+> incinerated.
+>
+> What's wrong with doing
+>
+> 	for (i = 0; i < conf->raid_disks; i++) {
+>
+> in a manner which can be understood without alcoholic fortification?
 
-- Rearange ecryptfs_get_lower_page() error handling logic, make it more clean.
+I don't find either hard to read, but you suggestion isn't equivalent, 
+since it increments rather than decrements the index.
+I admit I probably would write it the same way Neil did...
 
-Signed-off-by: Dmitriy Monakhov <dmonakhov@openvz.org>
----
- fs/ecryptfs/mmap.c |   28 ++++++++++++++++------------
- 1 files changed, 16 insertions(+), 12 deletions(-)
-
-diff --git a/fs/ecryptfs/mmap.c b/fs/ecryptfs/mmap.c
-index 842497d..b8fc1ef 100644
---- a/fs/ecryptfs/mmap.c
-+++ b/fs/ecryptfs/mmap.c
-@@ -447,6 +447,7 @@ static int ecryptfs_write_inode_size_to_header(struct file *lower_file,
- 	const struct address_space_operations *lower_a_ops;
- 	u64 file_size;
- 
-+retry:
- 	header_page = grab_cache_page(lower_inode->i_mapping, 0);
- 	if (!header_page) {
- 		ecryptfs_printk(KERN_ERR, "grab_cache_page for "
-@@ -457,9 +458,10 @@ static int ecryptfs_write_inode_size_to_header(struct file *lower_file,
- 	lower_a_ops = lower_inode->i_mapping->a_ops;
- 	rc = lower_a_ops->prepare_write(lower_file, header_page, 0, 8);
- 	if (rc) {
--		if (rc == AOP_TRUNCATED_PAGE)
-+		if (rc == AOP_TRUNCATED_PAGE) {
- 			ecryptfs_release_lower_page(header_page, 0);
--		else
-+			goto retry;
-+		} else
- 			ecryptfs_release_lower_page(header_page, 1);
- 		goto out;
- 	}
-@@ -474,9 +476,10 @@ static int ecryptfs_write_inode_size_to_header(struct file *lower_file,
- 	if (rc < 0)
- 		ecryptfs_printk(KERN_ERR, "Error commiting header page "
- 				"write\n");
--	if (rc == AOP_TRUNCATED_PAGE)
-+	if (rc == AOP_TRUNCATED_PAGE) {
- 		ecryptfs_release_lower_page(header_page, 0);
--	else
-+		goto retry;
-+	} else
- 		ecryptfs_release_lower_page(header_page, 1);
- 	lower_inode->i_mtime = lower_inode->i_ctime = CURRENT_TIME;
- 	mark_inode_dirty_sync(inode);
-@@ -565,6 +568,7 @@ int ecryptfs_get_lower_page(struct page **lower_page, struct inode *lower_inode,
- {
- 	int rc = 0;
- 
-+retry:
- 	*lower_page = grab_cache_page(lower_inode->i_mapping, lower_page_index);
- 	if (!(*lower_page)) {
- 		rc = -EINVAL;
-@@ -578,18 +582,18 @@ int ecryptfs_get_lower_page(struct page **lower_page, struct inode *lower_inode,
- 							  byte_offset,
- 							  region_bytes);
- 	if (rc) {
--		ecryptfs_printk(KERN_ERR, "prepare_write for "
-+		if (rc == AOP_TRUNCATED_PAGE) {
-+			ecryptfs_release_lower_page(*lower_page, 0);
-+			goto retry;
-+		} else {
-+			ecryptfs_printk(KERN_ERR, "prepare_write for "
- 				"lower_page_index = [0x%.16x] failed; rc = "
- 				"[%d]\n", lower_page_index, rc);
--	}
--out:
--	if (rc && (*lower_page)) {
--		if (rc == AOP_TRUNCATED_PAGE)
--			ecryptfs_release_lower_page(*lower_page, 0);
--		else
- 			ecryptfs_release_lower_page(*lower_page, 1);
--		(*lower_page) = NULL;
-+			(*lower_page) = NULL;
-+		}
- 	}
-+out:
- 	return rc;
- }
- 
 -- 
-1.4.4.4
+bill davidsen <davidsen@tmr.com>
+  CTO TMR Associates, Inc
+  Doing interesting things with small computers since 1979
 
