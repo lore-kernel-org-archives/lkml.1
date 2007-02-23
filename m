@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932472AbXBWRzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932489AbXBWRzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932472AbXBWRzd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 12:55:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932479AbXBWRzd
+	id S932489AbXBWRzz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 12:55:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932488AbXBWRzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 12:55:33 -0500
-Received: from tetsuo.zabbo.net ([207.173.201.20]:60065 "EHLO tetsuo.zabbo.net"
+	Fri, 23 Feb 2007 12:55:54 -0500
+Received: from khc.piap.pl ([195.187.100.11]:54310 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932472AbXBWRzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 12:55:32 -0500
-X-Greylist: delayed 1803 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Feb 2007 12:55:32 EST
-In-Reply-To: <20070223153743.GA26141@wotan.suse.de>
-References: <20070223153743.GA26141@wotan.suse.de>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5FD7605C-E132-4893-86FA-F76DDFB16389@zabbo.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Content-Transfer-Encoding: 7bit
-From: Zach Brown <zab@zabbo.net>
-Subject: Re: [rfc][patch] dynamic resizing dentry hash using RCU
-Date: Fri, 23 Feb 2007 09:25:28 -0800
-To: Nick Piggin <npiggin@suse.de>
-X-Mailer: Apple Mail (2.752.3)
+	id S932489AbXBWRzy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 12:55:54 -0500
+To: Udo van den Heuvel <udovdh@xs4all.nl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: PCI riser cards and PCI irq routing, etc
+References: <45D85DA1.7090502@xs4all.nl> <m3hctfqjna.fsf@maximus.localdomain>
+	<20070221224027.GK22464@csclub.uwaterloo.ca>
+	<200702212355.25601.s0348365@sms.ed.ac.uk>
+	<m3bqjnrntu.fsf@maximus.localdomain> <45DF0C29.2080201@xs4all.nl>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Fri, 23 Feb 2007 18:55:50 +0100
+In-Reply-To: <45DF0C29.2080201@xs4all.nl> (Udo van den Heuvel's message of "Fri, 23 Feb 2007 16:45:45 +0100")
+Message-ID: <m3wt2869nd.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-On Feb 23, 2007, at 7:37 AM, Nick Piggin wrote:
+Udo van den Heuvel <udovdh@xs4all.nl> writes:
 
->
-> The dentry hash uses up 8MB for 1 million entries on my 4GB system  
-> is one
-> of the biggest wasters of memory for me. Because I rarely have more  
-> than one or
-> two hundred thousand dentries. And that's with several kernel trees  
-> worth of
-> entries. Most desktop and probably even many types of servers will  
-> only use a
-> fraction of that.
->
-> So I introduce a new method for resizing hash tables with RCU, and  
-> apply
-> that to the dentry hash.
+> I will try a different case with a different dual PCI riser card soon.
+> This Morex riser has DN20-31 or so, so more options.
+> Could this help solve my irq issue? (try 4 consecutive DNs until I have
+> the right mapping?)
 
-Can you compare what you've done to the design that Paul and David  
-talked about a year ago?
+I don't think so. Unless you can configure INT connections on the riser
+card, of course.
 
-   http://lkml.org/lkml/2006/1/30/74
-
-I'd love to see a generic implementation of RCU hashing that  
-subsystems can then take advantage of.  It's long been on the fun  
-side of my todo list.  The side I never get to :/.
-
-- z
-
+You need DN19 for the second slot (and perhaps 10 would work with
+double INTx rotation), that's fixed in the BIOS.
+-- 
+Krzysztof Halasa
