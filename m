@@ -1,54 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750996AbXBWXcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750970AbXBWXf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750996AbXBWXcO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 18:32:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbXBWXcO
+	id S1750970AbXBWXf3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 18:35:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbXBWXf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 18:32:14 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:9675 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750946AbXBWXcN (ORCPT
+	Fri, 23 Feb 2007 18:35:29 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:29178 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750970AbXBWXf2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 18:32:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=dkqpIHA0LNCCKlgM/OJ7LoElCEnH5ae6xypJLWsbkKAO89S0uka4tHLPhekh4gY0nJohcFWM43oinRMlTiTsGx2JA0X0u4WrZXGAPPCDa5cOiMpqfWZXJ8Awz6BwtINXyCQOy0WlkF5STdXeYIEYJNkbpeqxO2OugYPVo+EEGd0=
-Date: Sat, 24 Feb 2007 02:32:26 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@osdl.org
-Cc: parisc-linux@parisc-linux.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] parisc: unbreak setup.c re command_line
-Message-ID: <20070223233226.GC5599@martell.zuzino.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 23 Feb 2007 18:35:28 -0500
+X-Greylist: delayed 583 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Feb 2007 18:35:28 EST
+X-IronPort-AV: i="4.14,213,1170651600"; 
+   d="scan'208"; a="28696224:sNHT31221701"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: linux-kernel@vger.kernel.org
+Subject: MOST(Media Oriented Systems Transport) Interface?
+Date: Fri, 23 Feb 2007 18:26:30 -0500
+User-Agent: KMail/1.9.5
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Message-Id: <200702231826.30395.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 23 Feb 2007 23:25:42.0935 (UTC) FILETIME=[EFE34A70:01C757A1]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What compiler is supposed to do upon seeing
+Does anyone have a pointer for a MOST (Media Oriented Systems Transport) driver?
 
-	char __attribute__((__section__ (".init.data")))	command_line[1024]
-	     __attribute__((__section__(".data.read_mostly")));
+http://en.wikipedia.org/wiki/Media_Oriented_Systems_Transport
 
-?
+I have seen announcements of Linux systems that support MOST:
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+http://linuxdevices.com/news/NS2586090082.html
 
- arch/parisc/kernel/setup.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+But I have not seen the driver architecture, or the protocol that people are running on them...
 
---- a/arch/parisc/kernel/setup.c
-+++ b/arch/parisc/kernel/setup.c
-@@ -45,7 +45,7 @@ #include <asm/pdc_chassis.h>
- #include <asm/io.h>
- #include <asm/setup.h>
- 
--char	__initdata command_line[COMMAND_LINE_SIZE] __read_mostly;
-+static char __initdata command_line[COMMAND_LINE_SIZE];
- 
- /* Intended for ccio/sba/cpu statistics under /proc/bus/{runway|gsc} */
- struct proc_dir_entry * proc_runway_root __read_mostly = NULL;
+Any pointers? 
 
+-Robin
