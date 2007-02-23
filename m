@@ -1,39 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932642AbXBWPps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932688AbXBWPr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932642AbXBWPps (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 10:45:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932664AbXBWPps
+	id S932688AbXBWPr1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 10:47:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932687AbXBWPr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 10:45:48 -0500
-Received: from smtp-vbr9.xs4all.nl ([194.109.24.29]:1356 "EHLO
-	smtp-vbr9.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932642AbXBWPps (ORCPT
+	Fri, 23 Feb 2007 10:47:27 -0500
+Received: from marvin.h-e-r-e-s-y.com ([87.106.62.5]:56631 "EHLO
+	marvin.h-e-r-e-s-y.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932664AbXBWPr0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 10:45:48 -0500
-Message-ID: <45DF0C29.2080201@xs4all.nl>
-Date: Fri, 23 Feb 2007 16:45:45 +0100
-From: Udo van den Heuvel <udovdh@xs4all.nl>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Fri, 23 Feb 2007 10:47:26 -0500
+From: Andrew Walrond <andrew@walrond.org>
+To: Tomasz Chmielewski <mangoo@wpkg.org>
+Subject: Re: (Sparc64) 2.6.20 seems to ignore initramfs
+Date: Fri, 23 Feb 2007 15:47:24 +0000
+User-Agent: KMail/1.9.5
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200702231108.10185.andrew@walrond.org> <200702231446.20929.andrew@walrond.org> <45DF056C.2010806@wpkg.org>
+In-Reply-To: <45DF056C.2010806@wpkg.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: PCI riser cards and PCI irq routing, etc
-References: <45D85DA1.7090502@xs4all.nl> <m3hctfqjna.fsf@maximus.localdomain>	<20070221224027.GK22464@csclub.uwaterloo.ca>	<200702212355.25601.s0348365@sms.ed.ac.uk> <m3bqjnrntu.fsf@maximus.localdomain>
-In-Reply-To: <m3bqjnrntu.fsf@maximus.localdomain>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: id=8300CC02
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702231547.24667.andrew@walrond.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Friday 23 February 2007 15:17, Tomasz Chmielewski wrote:
+>
+> Try to decrease the initramfs size just to know if it boots correctly.
+>
+> I.e., put just a sh/bash/ash/dash binary there (probably /dev/console
+> node, too), executed in init.
+>
+> Then, try to start the kernel with initramfs embedded in the kernel,
+> then as initrd etc. - this will show if the fault is on your side, or
+> kernel's.
 
-Small update:
+I have tracked this down to a broken version of gnu cpio (latest release, 2.7) 
+which was used to create the initramfs archive. Bloody annoying since this 
+has bitten me before! Last time I even sent the maintainer a bug report, and 
+apparently a fix is in CVS waiting for the next release. Ho hum.
 
-I will try a different case with a different dual PCI riser card soon.
-This Morex riser has DN20-31 or so, so more options.
-Could this help solve my irq issue? (try 4 consecutive DNs until I have
-the right mapping?)
+Sorry for the noise.
 
-Kind regrads,
-Udo
+Andrew Walrond
