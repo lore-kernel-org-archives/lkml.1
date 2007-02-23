@@ -1,107 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751748AbXBWGO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751801AbXBWGTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751748AbXBWGO7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 01:14:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbXBWGO6
+	id S1751801AbXBWGTi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 01:19:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbXBWGTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 01:14:58 -0500
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:18587 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751748AbXBWGO6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 01:14:58 -0500
-Date: Fri, 23 Feb 2007 07:13:32 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, James.Bottomley@SteelEye.com,
-       Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH] dma-mapping-broken.h: flesh-out DMA API stubs
-Message-ID: <20070223061332.GB27126@osiris.ibm.com>
-References: <20070223005945.GA13084@tuxdriver.com> <20070223034243.GA7988@osiris.ibm.com>
+	Fri, 23 Feb 2007 01:19:38 -0500
+Received: from hera.kernel.org ([140.211.167.34]:60191 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751785AbXBWGTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 01:19:37 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Thomas Meyer <thomas@m3y3r.de>
+Subject: AE_NOT_FOUND,  (Re: [ACPI] Several remarks for 9654640d0af8f2de40ff3807d3695109d3463f54)
+Date: Fri, 23 Feb 2007 01:17:23 -0500
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+References: <45DDEA1D.7060703@m3y3r.de>
+In-Reply-To: <45DDEA1D.7060703@m3y3r.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070223034243.GA7988@osiris.ibm.com>
-User-Agent: mutt-ng/devel-r804 (Linux)
+Message-Id: <200702230117.23888.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-How about this for telling that an architecture doesn't support DMA?
-At least we could get rid of dma-mapping-broken.h and don't need to
-compile some afterwards dead code.
+On Thursday 22 February 2007 14:08, Thomas Meyer wrote:
+> 1.) My kde klaptopdaemon icon is gone. This icon displayed the remaining
+> battery time. This is maybe a kde problem?
+> 
+> 2.) I get these new messages in the kernel log buffer:
+> [...]
+> ACPI: bus type pci registered
+> PCI: Using MMCONFIG
+> Setting up standard PCI resources
+> ACPI Exception (evregion-0420): AE_NOT_FOUND, Returned by Handler for
+> [EmbeddedControl] [20070126]
+> ACPI Exception (dswexec-0462): AE_NOT_FOUND, While resolving operands
+> for [OpcodeName unavailable] [20070126]
+> ACPI Error (psparse-0537): Method parse/execution failed
+> [\_SB_.PCI0.LPCB.EC__._REG] (Node c190db1c), AE_NOT_FOUND
+> ACPI Exception (ec-0956): AE_NOT_FOUND, Could not use ECDT [20070126]
+> ACPI: Interpreter enabled
+> ACPI: (supports S0 S3 S4 S5)
+> ACPI: Using IOAPIC for interrupt routing
+> [...]
+> ACPI Exception (evregion-0420): AE_NOT_FOUND, Returned by Handler for
+> [EmbeddedControl] [20070126]
+> ACPI Exception (dswexec-0462): AE_NOT_FOUND, While resolving operands
+> for [OpcodeName unavailable] [20070126]
+> ACPI Error (psparse-0537): Method parse/execution failed
+> [\_SB_.PCI0.LPCB.EC__.SMB0.SBRW] (Node c190dbbc), AE_NOT_FOUND
+> ACPI Error (psparse-0537): Method parse/execution failed
+> [\_SB_.BAT0.UBSS] (Node c190da2c), AE_NOT_FOUND
+> ACPI Error (psparse-0537): Method parse/execution failed
+> [\_SB_.BAT0._STA] (Node c190da7c), AE_NOT_FOUND
+> ACPI Exception (evregion-0420): AE_NOT_FOUND, Returned by Handler for
+> [EmbeddedControl] [20070126]
+> ACPI Error (psparse-0537): Method parse/execution failed
+> [\_SB_.PCI0.LPCB.EC__._REG] (Node c190db1c), AE_NOT_FOUND
+> ACPI Exception (evregion-0513): AE_NOT_FOUND, from region _REG,
+> [EmbeddedControl] [20070126]
+> ACPI: PCI Root Bridge [PCI0] (0000:00)
+> 
+> But i guess this is ok and seems to be an acpi problem on my computer,
+> aren't they?
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
- arch/s390/Kconfig              |    3 +++
- drivers/base/Makefile          |    4 ++--
- include/asm-s390/dma-mapping.h |    2 --
- lib/Kconfig                    |    5 +++++
- 4 files changed, 10 insertions(+), 4 deletions(-)
+Please open a bug report here:
+http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
 
-Index: linux-2.6/arch/s390/Kconfig
-===================================================================
---- linux-2.6.orig/arch/s390/Kconfig
-+++ linux-2.6/arch/s390/Kconfig
-@@ -44,6 +44,9 @@ config GENERIC_TIME
- config NO_IOMEM
- 	def_bool y
- 
-+config NO_DMA
-+	def_bool y
-+
- mainmenu "Linux Kernel Configuration"
- 
- config S390
-Index: linux-2.6/drivers/base/Makefile
-===================================================================
---- linux-2.6.orig/drivers/base/Makefile
-+++ linux-2.6/drivers/base/Makefile
-@@ -2,10 +2,10 @@
- 
- obj-y			:= core.o sys.o bus.o dd.o \
- 			   driver.o class.o platform.o \
--			   cpu.o firmware.o init.o map.o dmapool.o \
--			   dma-mapping.o devres.o \
-+			   cpu.o firmware.o init.o map.o devres.o \
- 			   attribute_container.o transport_class.o
- obj-y			+= power/
-+obj-$(CONFIG_DMA)	+= dma-mapping.o dmapool.o
- obj-$(CONFIG_ISA)	+= isa.o
- obj-$(CONFIG_FW_LOADER)	+= firmware_class.o
- obj-$(CONFIG_NUMA)	+= node.o
-Index: linux-2.6/include/asm-s390/dma-mapping.h
-===================================================================
---- linux-2.6.orig/include/asm-s390/dma-mapping.h
-+++ linux-2.6/include/asm-s390/dma-mapping.h
-@@ -9,6 +9,4 @@
- #ifndef _ASM_DMA_MAPPING_H
- #define _ASM_DMA_MAPPING_H
- 
--#include <asm-generic/dma-mapping-broken.h>
--
- #endif /* _ASM_DMA_MAPPING_H */
-Index: linux-2.6/lib/Kconfig
-===================================================================
---- linux-2.6.orig/lib/Kconfig
-+++ linux-2.6/lib/Kconfig
-@@ -111,4 +111,9 @@ config HAS_IOPORT
- 	depends on HAS_IOMEM && !NO_IOPORT
- 	default y
- 
-+config HAS_DMA
-+	boolean
-+	depends on !NO_DMA
-+	default y
-+
- endmenu
+and please attach (don't paste) the complete output from dmesg -s64000
+plus the output from acpidump > acpidump.out.
+If you don't have acpidump, you can get it from the latest pmtools here:
+http://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/utils/
 
--- 
-Heiko Carstens
-Linux on System z Development
+please also attach the config file you're using.
 
-IBM Deutschland Entwicklung GmbH
-Vorsitzender des Aufsichtsrats: Johann Weihen
-Geschaeftsfuehrung : Herbert Kircher
-Sitz der Gesellschaft: Boeblingen
-Registergericht: Amtsgericht Stuttgart, HRB 243294
+thanks,
+-Len
+
+ps. linux-acpi list added to cc:
+
