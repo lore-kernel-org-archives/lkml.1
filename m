@@ -1,61 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751545AbXBWBmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752110AbXBWBou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751545AbXBWBmt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 20:42:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbXBWBmt
+	id S1752110AbXBWBou (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 20:44:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbXBWBou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 20:42:49 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:50812 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751544AbXBWBms (ORCPT
+	Thu, 22 Feb 2007 20:44:50 -0500
+Received: from mga05.intel.com ([192.55.52.89]:9381 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752110AbXBWBot (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 20:42:48 -0500
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [PATCH] free swap space when (re)activating page
-To: Rik van Riel <riel@redhat.com>, Christoph Lameter <clameter@sgi.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@osdl.org>
-Reply-To: 7eggert@gmx.de
-Date: Fri, 23 Feb 2007 02:44:16 +0100
-References: <7Pk3X-bD-17@gated-at.bofh.it> <7QvgM-3aK-3@gated-at.bofh.it> <7QDeB-7KY-11@gated-at.bofh.it> <7QGc7-3ZB-13@gated-at.bofh.it> <7QGlP-4e1-11@gated-at.bofh.it> <7QHUO-6RS-5@gated-at.bofh.it> <7QJ9Y-mo-1@gated-at.bofh.it> <7QJk7-zW-51@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1HKPTs-0005p5-IV@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:9b3b2cc444a07783f194c895a09f1de9
-X-Provags-ID2: V01U2FsdGVkX1/SOXZfGwIqp1rW05O/qHAVDM3UdQ0zY406jW+0RtEnIc3xV0KnLUE/X79yd9S0lpkXBqzknBP3vDbm1+8ghlt69LA8R24OeFg9BsCH35ZVWg==
+	Thu, 22 Feb 2007 20:44:49 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,208,1170662400"; 
+   d="scan'208"; a="203158713:sNHT19194035"
+Date: Thu, 22 Feb 2007 17:09:26 -0800
+From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH 2/5] RT kernel: HPET as clocksource
+Message-ID: <20070222170926.A27475@unix-os.sc.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.2.5.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel <riel@redhat.com> wrote:
 
-+++ linux-2.6.20.noarch/mm/swap.c††††††††2007-02-20 06:44:17.000000000 -0500
-@@ -420,6 +420,26 @@ void pagevec_strip(struct pagevec *pvec)
 
-> +††††††††††††††††††††††††if (printk_ratelimit())
-> +††††††††††††††††††††††††††††††††printk("kswapd freed a swap space\n");
-> 
+Use HPET address detected by quirk, when it is not listed by BIOS and
+register HPET as a clocksource.
 
-NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO!!!!!!!!!!!
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
-1) This message is a debug message! You forgot to set the printk level.
-
-2) The message text is bad, the average log reader only knows swap files
-   and pages in swapfiles. The first reaction will be like "WTF happened
-   to my swap???". Thousands of admins will cry out in anguish trying to
-   get the meaning of this message, and again cry out in wrath after they
-   found out.
-
-3) What should I do if I see this message? It's neither good, nor bad for
-   me, nor is it in any way informative even if it were changed to be
-   meaningfull. It's utterly useless! Let it be!
-
--- 
-We are all born ignorant, but one must work hard to remain stupid.
-        -- Benjamin Franklin
-
-Friﬂ, Spammer: JEN-ersdiT@kowaZ.7eggert.dyndns.org
+Index: linux-2.6.21-rc-mm/arch/x86_64/kernel/hpet.c
+===================================================================
+--- linux-2.6.21-rc-mm.orig/arch/x86_64/kernel/hpet.c
++++ linux-2.6.21-rc-mm/arch/x86_64/kernel/hpet.c
+@@ -12,7 +12,7 @@
+ #include <asm/timex.h>
+ #include <asm/hpet.h>
+ 
+-int nohpet __initdata = 1;
++int nohpet __initdata;
+ 
+ unsigned long hpet_address;
+ unsigned long hpet_period;	/* fsecs / HPET clock */
+@@ -106,18 +106,21 @@ int hpet_timer_stop_set_go(unsigned long
+ 	return 0;
+ }
+ 
+-int hpet_arch_init(void)
++static int init_basic_hpet_done __initdata;
++
++static int __init init_basic_hpet(void)
+ {
+ 	unsigned int id;
+ 
+-	if (!hpet_address)
+-		return -1;
++	if (init_basic_hpet_done)
++		return 0;
++
+ 	set_fixmap_nocache(FIX_HPET_BASE, hpet_address);
+ 	__set_fixmap(VSYSCALL_HPET, hpet_address, PAGE_KERNEL_VSYSCALL_NOCACHE);
+ 
+-/*
+- * Read the period, compute tick and quotient.
+- */
++	/*
++	 * Read the period, compute tick and quotient.
++	 */
+ 
+ 	id = hpet_readl(HPET_ID);
+ 
+@@ -130,6 +133,26 @@ int hpet_arch_init(void)
+ 
+ 	hpet_tick = (FSEC_PER_TICK + hpet_period / 2) / hpet_period;
+ 
++	printk(KERN_DEBUG "HPET: hpet_period %lu, hpet_tick %lu\n", hpet_period,
++			hpet_tick);
++
++	init_basic_hpet_done = 1;
++	return 0;
++}
++
++int __init hpet_arch_init(void)
++{
++	unsigned int id;
++	int ret;
++
++	if (!hpet_address)
++		return -1;
++
++	ret = init_basic_hpet();
++	if (ret)
++		return ret;
++
++	id = hpet_readl(HPET_ID);
+ 	hpet_use_timer = (id & HPET_ID_LEGSUP);
+ 
+ 	return hpet_timer_stop_set_go(hpet_tick);
+@@ -451,16 +474,14 @@ __setup("nohpet", nohpet_setup);
+ /* FSEC = 10^-15 NSEC = 10^-9 */
+ #define FSEC_PER_NSEC	1000000
+ 
+-static void *hpet_ptr;
+-
+ static cycle_t notrace read_hpet(void)
+ {
+-	return (cycle_t)readl(hpet_ptr);
++	return (cycle_t)hpet_readl(HPET_COUNTER);
+ }
+ 
+ static cycle_t __vsyscall_fn vread_hpet(void)
+ {
+-	return readl((void __iomem *)fix_to_virt(VSYSCALL_HPET) + 0xf0);
++	return readl((void __iomem *)fix_to_virt(VSYSCALL_HPET) + HPET_COUNTER);
+ }
+ 
+ struct clocksource clocksource_hpet = {
+@@ -476,20 +497,8 @@ struct clocksource clocksource_hpet = {
+ 
+ static int __init init_hpet_clocksource(void)
+ {
+-	unsigned long hpet_period;
+-	void __iomem *hpet_base;
+ 	u64 tmp;
+ 
+-	if (!hpet_address)
+-		return -ENODEV;
+-
+-	/* calculate the hpet address: */
+-	hpet_base = ioremap_nocache(hpet_address, HPET_MMAP_SIZE);
+-	hpet_ptr = hpet_base + HPET_COUNTER;
+-
+-	/* calculate the frequency: */
+-	hpet_period = readl(hpet_base + HPET_PERIOD);
+-
+ 	/*
+ 	 * hpet period is in femto seconds per cycle
+ 	 * so we need to convert this to ns/cyc units
+@@ -508,4 +517,38 @@ static int __init init_hpet_clocksource(
+ 	return clocksource_register(&clocksource_hpet);
+ }
+ 
+-module_init(init_hpet_clocksource);
++static int __init init_hpet_generic_timer(void)
++{
++	int ret;
++
++	if (nohpet)
++		return -ENODEV;
++
++	if (!hpet_address)
++		hpet_address = force_hpet_address;
++
++	if (!hpet_address)
++		return -ENODEV;
++
++	ret = init_basic_hpet();
++	if (ret)
++		return ret;
++
++	ret = init_hpet_clocksource();
++	if (!ret) {
++		printk(KERN_DEBUG "Successfully registered HPET clocksource\n");
++	} else {
++		printk(KERN_DEBUG "HPET clocksource init failed\n");
++	}
++
++	if (ret) {
++		unsigned int cfg;
++		cfg = hpet_readl(HPET_CFG);
++		cfg &= (~HPET_CFG_ENABLE);
++		hpet_writel(cfg, HPET_CFG);
++	}
++
++	return ret;
++}
++
++module_init(init_hpet_generic_timer);
