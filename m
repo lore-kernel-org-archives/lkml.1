@@ -1,91 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751794AbXBWGUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751824AbXBWGYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751794AbXBWGUV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 01:20:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbXBWGUV
+	id S1751824AbXBWGYW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 01:24:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbXBWGYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 01:20:21 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55803 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751794AbXBWGUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 01:20:19 -0500
-Date: Fri, 23 Feb 2007 07:14:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch] s390: do not use _local_bh_enable()
-Message-ID: <20070223061459.GA10106@elte.hu>
-Mime-Version: 1.0
+	Fri, 23 Feb 2007 01:24:22 -0500
+Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:52535 "EHLO
+	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751824AbXBWGYV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 01:24:21 -0500
+From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Message-Id: <200702230624.l1N6OI9a017864@turbo.physics.adelaide.edu.au>
+Subject: Transparent bridges, assign_busses and poweroff/tsc problems
+To: linux-kernel@vger.kernel.org
+Date: Fri, 23 Feb 2007 16:54:18 +1030 (CST)
+Cc: jwoithe@physics.adelaide.edu.au (Jonathan Woithe)
+X-Mailer: ELM [version 2.5 PL6]
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -5.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-5.3 required=5.9 tests=ALL_TRUSTED,BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all
 
-Heiko, what do you think about the patch below - is there perhaps some 
-deeper reason to s390's _local_bh_enable() use that i missed?
+I have previously posted regarding a message about a transparent
+bridge message I get when booting my laptop.
 
-	Ingo
+  PCI quirk: region 1000-107f claimed by ICH6 ACPI/GPIO/TCO
+  PCI quirk: region 1180-11bf claimed by ICH6 GPIO
+  PCI: Ignoring BAR0-3 of IDE controller 0000:00:1f.1
+  PCI: Transparent bridge - 0000:00:1e.0
+  PCI: Bus #07 (-#0a) is hidden behind transparent bridge #06 (-#07) (try
+  'pci=assign-busses')
+  Please report the result to linux-kernel to fix this permanently
 
--------------------------->
-Subject: [patch] s390: do not use _local_bh_enable()
-From: Ingo Molnar <mingo@elte.hu>
+There doesn't appear to be any ill-effects from this, but a permanent
+fix is probably a good thing and so I'm reporting it.
 
-_local_bh_enable() enables bhs without invoke_softirqs(), and can thus 
-cause missed softirq processing. The s390 code seems to have two such 
-uses of _local_bh_enable().
+I have however tried "pci=assign-busses" as suggested.  While this does
+make the above complaint go away, it introduces two other things, one
+a lot more serious.
 
-in cio.c the bh disable/enable pair is superfluous, because 
-irq_enter()/exit() disables softirqs anyway.
+The first thing I've noticed is that when "pci=assign-busses" has been
+specified, I get the following in the dmesg:
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/s390/char/sclp.c |    2 +-
- drivers/s390/cio/cio.c   |    3 +--
- 2 files changed, 2 insertions(+), 3 deletions(-)
+  Clocksource tsc unstable (delta = -434140355 ns)
 
-Index: linux/drivers/s390/char/sclp.c
-===================================================================
---- linux.orig/drivers/s390/char/sclp.c
-+++ linux/drivers/s390/char/sclp.c
-@@ -407,8 +407,8 @@ sclp_sync_wait(void)
- 	}
- 	local_irq_disable();
- 	__ctl_load(cr0, 0, 0);
--	_local_bh_enable();
- 	local_irq_restore(flags);
-+	local_bh_enable();
- }
- 
- EXPORT_SYMBOL(sclp_sync_wait);
-Index: linux/drivers/s390/cio/cio.c
-===================================================================
---- linux.orig/drivers/s390/cio/cio.c
-+++ linux/drivers/s390/cio/cio.c
-@@ -140,7 +140,6 @@ cio_tpi(void)
- 	sch = (struct subchannel *)(unsigned long)tpi_info->intparm;
- 	if (!sch)
- 		return 1;
--	local_bh_disable();
- 	irq_enter ();
- 	spin_lock(sch->lock);
- 	memcpy (&sch->schib.scsw, &irb->scsw, sizeof (struct scsw));
-@@ -148,7 +147,7 @@ cio_tpi(void)
- 		sch->driver->irq(&sch->dev);
- 	spin_unlock(sch->lock);
- 	irq_exit ();
--	_local_bh_enable();
-+
- 	return 1;
- }
- 
+I don't seem to get this if assignbusses hasn't been given.
+
+The second effect of "pci=assign-busses" is that it prevents Linux powering
+the laptop off; pressing the power button triggers an ACPI event as it
+should and Linux proceeds to close everything down.  However, when it comes
+time to actually kill the power the screen goes blank and the backlight
+gets turned off, but power remains on until I force it off by holding the
+power button down for 4 seconds.
+
+I have verified this with 2.6.18, 2.6.19 and 2.6.20.  Furthermore, the RT
+patchset does not change the behaviour.
+
+Something mighty odd seems to be going on here.  Does anyone have any ideas
+or suggestions of things to try?
+
+Regards
+  jonathan
