@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932501AbXBWSM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933152AbXBWSNI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932501AbXBWSM3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 13:12:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932523AbXBWSM2
+	id S933152AbXBWSNI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 13:13:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933158AbXBWSNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 13:12:28 -0500
-Received: from khc.piap.pl ([195.187.100.11]:41948 "EHLO khc.piap.pl"
+	Fri, 23 Feb 2007 13:13:08 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:52380 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932501AbXBWSM0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 13:12:26 -0500
-To: Udo van den Heuvel <udovdh@xs4all.nl>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: PCI riser cards and PCI irq routing, etc
-References: <45D85DA1.7090502@xs4all.nl> <m3hctfqjna.fsf@maximus.localdomain>
-	<20070221224027.GK22464@csclub.uwaterloo.ca>
-	<200702212355.25601.s0348365@sms.ed.ac.uk>
-	<m3bqjnrntu.fsf@maximus.localdomain> <45DF0C29.2080201@xs4all.nl>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Fri, 23 Feb 2007 19:12:24 +0100
-In-Reply-To: <45DF0C29.2080201@xs4all.nl> (Udo van den Heuvel's message of "Fri, 23 Feb 2007 16:45:45 +0100")
-Message-ID: <m3slcw68vr.fsf@maximus.localdomain>
+	id S933152AbXBWSNG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 13:13:06 -0500
+In-Reply-To: <20070220165824.GA31315@sergelap.austin.ibm.com>
+To: serue@linux.vnet.ibm.com
+Cc: Andrew Morton <akpm@osdl.org>, Christoph Hellwig <hch@infradead.org>,
+       kjhall@linux.vnet.ibm.com, lkml <linux-kernel@vger.kernel.org>,
+       David Safford <safford@watson.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: [PATCH] slim: move file revocation into file_table.c and mprotect.c
+X-Mailer: Lotus Notes Release 7.0.1P Oct 16, 2006
+Message-ID: <OF8F16AF17.D3D928C1-ON8525728B.004D777E-8525728B.006512C6@us.ibm.com>
+From: Mimi Zohar <zohar@us.ibm.com>
+Date: Fri, 23 Feb 2007 13:13:06 -0500
+X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Build V80_M3_10312006|October 31, 2006) at
+ 02/23/2007 13:13:06,
+	Serialize complete at 02/23/2007 13:13:06
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Udo van den Heuvel <udovdh@xs4all.nl> writes:
+serue@linux.vnet.ibm.com wrote on 02/20/2007 11:58:24 AM:
 
-> I will try a different case with a different dual PCI riser card soon.
-> This Morex riser has DN20-31 or so, so more options.
+> Here is a attempt at resolving some of the complaints against the
+> slim security module.  The file revocation is perceived as too 
+> intrusive to live in a security module itself, so it is moved into
+> file_table.c.
+> 
+> This patch retains the explicit file->f_mode tweaking to revoke
+> FMODE_WRITE.  That can be removed by using an approach like Pekka's
+> revokefs, using files in the revokefs filesystem with ->read() passed
+> through to the original file, but ->write() intercepted.
+> 
+> Comments greatly appreciated.
 
-OTOH I wonder how do they use DN 21-31? The board uses lines AD11 to AD31
-(21 lines) for selecting devices #0 - #20. 32-bit PCI bus has only 32
-address/data lines :-)
+I've tested the patch with slim.  The patch has been up and running
+on my system for a couple of weeks now, and it seems to be working 
+just fine.  Is the approach acceptable?  On the assumption that it 
+is, how should we go forward with it?  Can it get a test run in -mm?
+If not, what would be a more acceptable approach?
 
-Perhaps they mean AD20-AD31 lines = device #9 - #0x14=20? If that is
-the case, you can try:
-- their "DN30" = device 0x13 = 19, which is apparently what the VIA riser
-  card does,
-- their "DN21" = device 0xA = 10, which could work as well.
+Thanks!
 
-I'm afraid both would require (different) soldering.
-
-
-It's possible that the riser card includes a bridge, though. A bridge
-chip can select devices differently and thus it can handle 32 devices.
--- 
-Krzysztof Halasa
+Mimi Zohar
