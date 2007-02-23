@@ -1,161 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752109AbXBWBWG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752107AbXBWBYM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752109AbXBWBWG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 20:22:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbXBWBWG
+	id S1752107AbXBWBYM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 20:24:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbXBWBYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 20:22:06 -0500
-Received: from ra.tuxdriver.com ([70.61.120.52]:4073 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752109AbXBWBWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 20:22:04 -0500
-Date: Thu, 22 Feb 2007 19:59:45 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: linux-kernel@vger.kernel.org, James.Bottomley@SteelEye.com
-Cc: Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [PATCH] dma-mapping-broken.h: flesh-out DMA API stubs
-Message-ID: <20070223005945.GA13084@tuxdriver.com>
+	Thu, 22 Feb 2007 20:24:11 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:60209 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752107AbXBWBYK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 20:24:10 -0500
+Subject: [PATCH -mm] Log reason why TSC was marked unstable
+From: john stultz <johnstul@us.ibm.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, lkml <linux-kernel@vger.kernel.org>,
+       Daniel Walker <dwalker@mvista.com>
+Content-Type: text/plain
+Date: Thu, 22 Feb 2007 17:24:06 -0800
+Message-Id: <1172193846.5422.43.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This allows some drivers compile on arches that don't support DMA
-(e.g. s390).
+This patch changes mark_tsc_unstable() so it takes a string argument,
+which holds the reason the TSC was marked unstable. 
 
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
----
-Is there any reason why this header should not cover the whole DMA API?
+This is then displayed the first time mark_tsc_unstable is called.
 
-Compile-tested only...
+This should help us better debug why the TSC was marked unstable on
+certain systems and allow us to make sure we're not being overly
+paranoid when throwing out this troublesome clocksource.
 
- include/asm-generic/dma-mapping-broken.h |  134 ++++++++++++++++++++++++++++++
- 1 files changed, 134 insertions(+), 0 deletions(-)
+thanks
+-john
 
-diff --git a/include/asm-generic/dma-mapping-broken.h b/include/asm-generic/dma-mapping-broken.h
-index 29413d3..84812dd 100644
---- a/include/asm-generic/dma-mapping-broken.h
-+++ b/include/asm-generic/dma-mapping-broken.h
-@@ -21,4 +21,116 @@ dma_free_coherent(struct device *dev, size_t size, void *cpu_addr,
- #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
- #define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
+ arch/i386/kernel/tsc.c                      |    5 +++--
+ arch/x86_64/kernel/time.c                   |    2 +-
+ arch/x86_64/kernel/tsc.c                    |    5 +++--
+ arch/x86_64/kernel/tsc_sync.c               |    2 +-
+ drivers/acpi/processor_idle.c               |    4 ++--
+ include/asm-i386/mach-summit/mach_mpparse.h |    4 ++--
+ include/asm-x86_64/timex.h                  |    2 +-
+ include/asm-x86_64/tsc.h                    |    2 +-
+ 8 files changed, 14 insertions(+), 12 deletions(-)
+
+linux-2.6.21-rc1_mark-unstable-reason_C7.patch
+============================================
+diff --git a/arch/i386/kernel/tsc.c b/arch/i386/kernel/tsc.c
+index 3082a41..c276575 100644
+--- a/arch/i386/kernel/tsc.c
++++ b/arch/i386/kernel/tsc.c
+@@ -262,7 +262,7 @@ time_cpufreq_notifier(struct notifier_bl
+ 				 * TSC based sched_clock turns
+ 				 * to junk w/ cpufreq
+ 				 */
+-				mark_tsc_unstable();
++				mark_tsc_unstable("cpufreq changes");
+ 			}
+ 		}
+ 	}
+@@ -310,10 +310,11 @@ static struct clocksource clocksource_ts
+ 				  CLOCK_SOURCE_MUST_VERIFY,
+ };
  
-+static inline dma_addr_t
-+dma_map_single(struct device *dev, void *ptr, size_t size,
-+	       enum dma_data_direction direction)
-+{
-+	BUG();
-+	return (dma_addr_t)0;
-+}
-+
-+static inline void
-+dma_unmap_single(struct device *dev, dma_addr_t dma_addr, size_t size,
-+		 enum dma_data_direction direction)
-+{
-+	BUG();
-+}
-+
-+static inline int
-+dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
-+	   enum dma_data_direction direction)
-+{
-+	BUG();
-+	return 0;
-+}
-+
-+static inline void
-+dma_unmap_sg(struct device *dev, struct scatterlist *sg, int nhwentries,
-+	     enum dma_data_direction direction)
-+{
-+	BUG();
-+}
-+
-+static inline dma_addr_t
-+dma_map_page(struct device *dev, struct page *page, unsigned long offset,
-+	     size_t size, enum dma_data_direction direction)
-+{
-+	BUG();
-+	return (dma_addr_t)0;
-+}
-+
-+static inline void
-+dma_unmap_page(struct device *dev, dma_addr_t dma_address, size_t size,
-+	       enum dma_data_direction direction)
-+{
-+	BUG();
-+}
-+
-+static inline void
-+dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle, size_t size,
-+			enum dma_data_direction direction)
-+{
-+	BUG();
-+}
-+
-+static inline void
-+dma_sync_single_range_for_cpu(struct device *dev, dma_addr_t dma_handle,
-+			      unsigned long offset, size_t size,
-+			      enum dma_data_direction direction)
-+{
-+	BUG();
-+}
-+
-+static inline void
-+dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int nelems,
-+		    enum dma_data_direction direction)
-+{
-+	BUG();
-+}
-+
-+#define dma_sync_single_for_device dma_sync_single_for_cpu
-+#define dma_sync_single_range_for_device dma_sync_single_range_for_cpu
-+#define dma_sync_sg_for_device dma_sync_sg_for_cpu
-+
-+static inline int
-+dma_mapping_error(dma_addr_t dma_addr)
-+{
-+	BUG();
-+	return 1;
-+}
-+
-+static inline int
-+dma_supported(struct device *dev, u64 mask)
-+{
-+	return 0;
-+}
-+
-+static inline int
-+dma_set_mask(struct device *dev, u64 mask)
-+{
-+	BUG();
-+	return -EIO;
-+}
-+
-+static inline int
-+dma_get_cache_alignment(void)
-+{
-+	BUG();
-+	return 0;
-+}
-+
-+int
-+dma_is_consistent(struct device *dev, dma_addr_t dma_handle)
-+{
-+	BUG();
-+	return 0;
-+}
-+
-+static inline void
-+dma_cache_sync(struct device *dev, void *vaddr, size_t size,
-+	       enum dma_data_direction direction)
-+{
-+	BUG();
-+}
-+
- #endif /* _ASM_GENERIC_DMA_MAPPING_H */
--- 
-1.4.4.2
+-void mark_tsc_unstable(void)
++void mark_tsc_unstable(char *reason)
+ {
+ 	if (!tsc_unstable) {
+ 		tsc_unstable = 1;
++		printk("Marking TSC unstable due to: %s.\n", reason);
+ 		/* Can be called before registration */
+ 		if (clocksource_tsc.mult)
+ 			clocksource_change_rating(&clocksource_tsc, 0);
+diff --git a/arch/x86_64/kernel/time.c b/arch/x86_64/kernel/time.c
+index c9addcf..b05bb3c 100644
+--- a/arch/x86_64/kernel/time.c
++++ b/arch/x86_64/kernel/time.c
+@@ -348,7 +348,7 @@ void __init time_init(void)
+ 	}
+ 
+ 	if (unsynchronized_tsc())
+-		mark_tsc_unstable();
++		mark_tsc_unstable("TSCs unsynchronized");
+ 
+ 	if (cpu_has(&boot_cpu_data, X86_FEATURE_RDTSCP))
+ 		vgetcpu_mode = VGETCPU_RDTSCP;
+diff --git a/arch/x86_64/kernel/tsc.c b/arch/x86_64/kernel/tsc.c
+index 8958318..d8e5f06 100644
+--- a/arch/x86_64/kernel/tsc.c
++++ b/arch/x86_64/kernel/tsc.c
+@@ -109,7 +109,7 @@ #endif
+ 
+ 		cpu_khz = cpufreq_scale(cpu_khz_ref, ref_freq, freq->new);
+ 		if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+-			mark_tsc_unstable();
++			mark_tsc_unstable("cpufreq changes");
+ 	}
+ 
+ 	set_cyc2ns_scale(cpu_khz_ref);
+@@ -197,10 +197,11 @@ static struct clocksource clocksource_ts
+ 	.vread			= vread_tsc,
+ };
+ 
+-void mark_tsc_unstable(void)
++void mark_tsc_unstable(char *reason)
+ {
+ 	if (!tsc_unstable) {
+ 		tsc_unstable = 1;
++		printk("Marking TSC unstable due to %s\n", reason);
+ 		/* Change only the rating, when not registered */
+ 		if (clocksource_tsc.mult)
+ 			clocksource_change_rating(&clocksource_tsc, 0);
+diff --git a/arch/x86_64/kernel/tsc_sync.c b/arch/x86_64/kernel/tsc_sync.c
+index 014f0db..fe571fb 100644
+--- a/arch/x86_64/kernel/tsc_sync.c
++++ b/arch/x86_64/kernel/tsc_sync.c
+@@ -138,7 +138,7 @@ void __cpuinit check_tsc_sync_source(int
+ 		printk("\n");
+ 		printk(KERN_WARNING "Measured %Ld cycles TSC warp between CPUs,"
+ 				    " turning off TSC clock.\n", max_warp);
+-		mark_tsc_unstable();
++		mark_tsc_unstable("check_tsc_sync_source failed");
+ 		nr_warps = 0;
+ 		max_warp = 0;
+ 		last_tsc = 0;
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index 6077300..44b7836 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -482,7 +482,7 @@ #endif
+ 
+ #ifdef CONFIG_GENERIC_TIME
+ 		/* TSC halts in C2, so notify users */
+-		mark_tsc_unstable();
++		mark_tsc_unstable("possible TSC halt in C2");
+ #endif
+ 		/* Re-enable interrupts */
+ 		local_irq_enable();
+@@ -524,7 +524,7 @@ #endif
+ 
+ #ifdef CONFIG_GENERIC_TIME
+ 		/* TSC halts in C3, so notify users */
+-		mark_tsc_unstable();
++		mark_tsc_unstable("TSC halts in C3");
+ #endif
+ 		/* Re-enable interrupts */
+ 		local_irq_enable();
+diff --git a/include/asm-i386/mach-summit/mach_mpparse.h b/include/asm-i386/mach-summit/mach_mpparse.h
+index 9426839..c252053 100644
+--- a/include/asm-i386/mach-summit/mach_mpparse.h
++++ b/include/asm-i386/mach-summit/mach_mpparse.h
+@@ -30,7 +30,7 @@ static inline int mps_oem_check(struct m
+ 			(!strncmp(productid, "VIGIL SMP", 9) 
+ 			 || !strncmp(productid, "EXA", 3)
+ 			 || !strncmp(productid, "RUTHLESS SMP", 12))){
+-		mark_tsc_unstable();
++		mark_tsc_unstable("Summit based system");
+ 		use_cyclone = 1; /*enable cyclone-timer*/
+ 		setup_summit();
+ 		return 1;
+@@ -44,7 +44,7 @@ static inline int acpi_madt_oem_check(ch
+ 	if (!strncmp(oem_id, "IBM", 3) &&
+ 	    (!strncmp(oem_table_id, "SERVIGIL", 8)
+ 	     || !strncmp(oem_table_id, "EXA", 3))){
+-		mark_tsc_unstable();
++		mark_tsc_unstable("Summit based system");
+ 		use_cyclone = 1; /*enable cyclone-timer*/
+ 		setup_summit();
+ 		return 1;
+diff --git a/include/asm-x86_64/timex.h b/include/asm-x86_64/timex.h
+index 8c6808a..326dd42 100644
+--- a/include/asm-x86_64/timex.h
++++ b/include/asm-x86_64/timex.h
+@@ -27,6 +27,6 @@ #define FSEC_PER_TICK (FSEC_PER_SEC / HZ
+ #define NS_SCALE        10 /* 2^10, carefully chosen */
+ #define US_SCALE        32 /* 2^32, arbitralrily chosen */
+ 
+-extern void mark_tsc_unstable(void);
++extern void mark_tsc_unstable(char*);
+ extern void set_cyc2ns_scale(unsigned long khz);
+ #endif
+diff --git a/include/asm-x86_64/tsc.h b/include/asm-x86_64/tsc.h
+index 9a0a368..49b8bdf 100644
+--- a/include/asm-x86_64/tsc.h
++++ b/include/asm-x86_64/tsc.h
+@@ -53,7 +53,7 @@ #endif
+ }
+ 
+ extern void tsc_init(void);
+-extern void mark_tsc_unstable(void);
++extern void mark_tsc_unstable(char*);
+ extern int unsynchronized_tsc(void);
+ 
+ /*
+
+
