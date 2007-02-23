@@ -1,78 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932288AbXBWLIN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932344AbXBWLLy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932288AbXBWLIN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 06:08:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932294AbXBWLIN
+	id S932344AbXBWLLy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 06:11:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932354AbXBWLLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 06:08:13 -0500
-Received: from marvin.h-e-r-e-s-y.com ([87.106.62.5]:37862 "EHLO
-	marvin.h-e-r-e-s-y.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932288AbXBWLIM (ORCPT
+	Fri, 23 Feb 2007 06:11:54 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35421 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932344AbXBWLLx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 06:08:12 -0500
-From: Andrew Walrond <andrew@walrond.org>
-To: sparclinux@vger.kernel.org
-Subject: (Sparc64) 2.6.20 seems to ignore initramfs
-Date: Fri, 23 Feb 2007 11:08:10 +0000
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
+	Fri, 23 Feb 2007 06:11:53 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, Zwane Mwaikambo <zwane@infradead.org>,
+       Ashok Raj <ashok.raj@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       "Lu, Yinghai" <yinghai.lu@amd.com>,
+       Natalie Protasevich <protasnb@gmail.com>, Andi Kleen <ak@suse.de>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH 0/14] x86_64 irq related fixes and cleanups.
+References: <200701221116.13154.luigi.genoni@pirelli.com>
+	<200702021848.55921.luigi.genoni@pirelli.com>
+	<m1ejp85tgm.fsf@ebiederm.dsl.xmission.com>
+	<200702021905.39922.luigi.genoni@pirelli.com>
+	<m1zm7w3wvr.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1veik3woc.fsf_-_@ebiederm.dsl.xmission.com>
+	<20070206073616.GA15016@elte.hu>
+	<m1odo7q6cq.fsf@ebiederm.dsl.xmission.com>
+	<20070206222523.GA11602@elte.hu>
+	<m1irecamzh.fsf@ebiederm.dsl.xmission.com>
+	<m1wt2s8ksa.fsf@ebiederm.dsl.xmission.com>
+	<m1veib6dgi.fsf@ebiederm.dsl.xmission.com>
+	<m1hctt1sfp.fsf_-_@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.64.0702102146380.8245@montezuma.fsmlabs.com>
+	<m13b5d0zdp.fsf@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.64.0702110753390.8245@montezuma.fsmlabs.com>
+	<m17iuoz74f.fsf@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.64.0702111416220.24829@montezuma.fsmlabs.com>
+	<m1r6swx9l2.fsf@ebiederm.dsl.xmission.com>
+	<m1irdtw3jb.fsf_-_@ebiederm.dsl.xmission.com>
+Date: Fri, 23 Feb 2007 04:10:36 -0700
+In-Reply-To: <m1irdtw3jb.fsf_-_@ebiederm.dsl.xmission.com> (Eric
+	W. Biederman's message of "Fri, 23 Feb 2007 03:51:04 -0700")
+Message-ID: <m1bqjlw2mr.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702231108.10185.andrew@walrond.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On a Sun T1000 I am trying to boot 2.6.20 using initramfs. (I use the same 
-procedure successfully on x86_64 and itanium2 servers).
 
-The relevent silo section looks like this:
+My recent ioapic investigation has been painful and has taken me all
+over the place.  One of my conclusions is that our code for dealing with
+ioapics on i386 and x86_64 is a mess that has been growing for years.
 
-image=/boot/2.6.20.image
-        label=2.6.20
-        initrd=/boot/2.6.20.initramfs
-        partition=2
-        read-only
+I saw tremendous amounts of fodder for cleanup patches.  Ugh.
 
-The kernel loads and boots and I see
+When deciding how much to include in the patchset for addressing the irq
+migrations problems that have cropped up in the x86_64 code I really
+wanted to keep the patchset small and minimal.  But I needed to make
+some substantial changes so I would have a low priority IPI I could use
+for ensuring irq migration was complete.  When trying to throw out
+patches I kept finding things that were either bug fixes or relevant
+cleanups to the problem I was addressing.
 
-Allocated 8 Megs of memory at 0x40000000 for kernel
-Loaded kernel version 2.6.20
-Loading initial ramdisk (127932430 bytes at 0x1000000 phys, 0x40C00000 
-virt)...
-/
-Remapping the kernel... done.
-Booting Linux...
-PROMLIB: Sun IEEE Boot Prom 'OBP 4.23.0 2006/06/02 16:14'
-PROMLIB: Root node compatible: sun4v
-Linux version 2.6.20 (nobody@spawn1.secure) (gcc version 4.1.1) #1 SMP Thu Feb 
-22 16:25:18 GMT 2007
-ARCH: SUN4V
-Ethernet address: 00:14:4f:2a:90:92
-PROM: Built device tree with 65903 bytes of memory.
-Built 1 zonelists.  Total pages: 242541
-Kernel command line: ro
+So this patchset is bigger than I would for addressing the issue irq
+migration issue but there is nothing that isn't a simple cleanup or
+isn't a real bug fix.  So I think we need it all one way or another.
 
-[snip]
+I have lost track of who has what in which tree or who it makes sense
+to send this to.  So this patchset is against Linus's latest git tree.
+And hopefully we can include this in 2.6.21. 
 
-checking if image is initramfs... it is
-Freeing initrd memory: 124934k freed
-
-[snip]
-
-VFS: Cannot open root device "<NULL>" or unknown-block(0,0)
-Please append a correct "root=" boot option
-Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(0,0)
- <0>Press Stop-A (L1-A) to return to the boot prom
-
-
-So it knows about the initramfs, but then tries to mount a root filesystem 
-instead...
-
-I haven't tried this (initramfs)  with earlier kernels, so I don't know 
-whether this is a regression. Any clues about how to solve this would be 
-greatly appreciated.
-
-Andrew Walrond
+Eric
