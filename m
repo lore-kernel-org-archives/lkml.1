@@ -1,38 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752048AbXBVXfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752051AbXBVXxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752048AbXBVXfU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 18:35:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbXBVXfU
+	id S1752051AbXBVXxt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 18:53:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbXBVXxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 18:35:20 -0500
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:43341 "EHLO
-	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752048AbXBVXfT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 18:35:19 -0500
-X-Greylist: delayed 2028 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 Feb 2007 18:35:19 EST
-Date: Thu, 22 Feb 2007 15:01:30 -0800 (PST)
-From: Christoph Lameter <clameter@engr.sgi.com>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, wli@holomorphy.com
-Subject: Re: [RFC/PATCH] slab: free pages in a batch in drain_freelist
-Message-ID: <Pine.LNX.4.64.0702221500420.22546@schroedinger.engr.sgi.com>
+	Thu, 22 Feb 2007 18:53:49 -0500
+Received: from raven.upol.cz ([158.194.120.4]:58879 "EHLO raven.upol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752051AbXBVXxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 18:53:49 -0500
+Date: Fri, 23 Feb 2007 01:02:55 +0100
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: .mailmap in top directory
+Message-ID: <20070223000255.GA4568@flower.upol.cz>
+References: <20070207165204.GA5537@martell.zuzino.mipt.ru> <Pine.LNX.4.64.0702071846180.14457@scrub.home> <20070207220435.GC22699@flower.upol.cz> <Pine.LNX.4.64.0702080029030.14457@scrub.home> <Pine.LNX.4.64.0702071546420.8424@woody.linux-foundation.org> <20070207203047.51a95ad0.akpm@linux-foundation.org> <20070208064029.GO22699@flower.upol.cz> <20070207224227.a23ca154.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070207224227.a23ca154.akpm@linux-foundation.org>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Feb 2007, Pekka J Enberg wrote:
+On Wed, Feb 07, 2007 at 10:42:27PM -0800, Andrew Morton wrote:
+[]
+> > > add-mailmap-for-proper-git-shortlog-output.patch
+> > 
+> > i can't tell anything about this one. For what?
+> 
+> Beats me.  git stuff.  I'll let Linus decide.
 
-> As suggested by William, free the actual pages in a batch so that we
-> don't keep pounding on l3->list_lock.
+So it's in 2.6.21-rc1.
 
-This means holding the l3->list_lock for a prolonged time period. The 
-existing code was done this way in order to make sure that the interrupt 
-holdoffs are minimal.
+Is it really so necessary in the linux-source?
+Who suppose to track and update this?
 
-There is no pounding. The cacheline with the list_lock is typically held 
-until the draining is complete. While we drain the freelist we need to be 
-able to respond to interrupts.
-
+____
