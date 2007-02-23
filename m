@@ -1,53 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933221AbXBWVni@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933223AbXBWVog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933221AbXBWVni (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 16:43:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932112AbXBWVni
+	id S933223AbXBWVog (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 16:44:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933226AbXBWVog
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 16:43:38 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:53410 "EHLO 2ka.mipt.ru"
+	Fri, 23 Feb 2007 16:44:36 -0500
+Received: from palrel13.hp.com ([156.153.255.238]:52018 "EHLO palrel13.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933221AbXBWVnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 16:43:37 -0500
-To: linux-kernel@vger.kernel.org
-CC: jgarzik@pobox.com
-Subject: [PATCH] libata: handle ata_pci_device_do_resume() failure while resuming
-From: Dmitriy Monakhov <dmonakhov@openvz.org>
-Date: Sat, 24 Feb 2007 00:43:18 +0300
-Message-ID: <87abz4ble1.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	id S933223AbXBWVof (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 16:44:35 -0500
+Date: Fri, 23 Feb 2007 15:44:33 -0600
+From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+To: Greg KH <gregkh@suse.de>
+Cc: akpm@osdl.org, jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [Patch 2/2] cciss: supercedes add shutdown support (replaces reboot notifier)
+Message-ID: <20070223214433.GB26058@beardog.cca.cpqcorp.net>
+References: <20070223204239.GA10570@beardog.cca.cpqcorp.net> <20070223213236.GA3535@suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [194.85.82.65]); Sat, 24 Feb 2007 00:43:35 +0300 (MSK)
+Content-Disposition: inline
+In-Reply-To: <20070223213236.GA3535@suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since commit:553c4aa630af7bc885e056d0436e4eb7f238579b
-ata_pci_device_do_resume() can return error code, all callers was updated
-except this one.
+On Fri, Feb 23, 2007 at 01:32:36PM -0800, Greg KH wrote:
+> On Fri, Feb 23, 2007 at 02:42:39PM -0600, Mike Miller (OS Dev) wrote:
+> > Patch 2/2
+> > 
+> > This patch supercedes yesterdays cciss-shutdown patch. The primary difference is
+> > removing __devexit from cciss_remove_one. Instead of create another function I'd
+> > rather use the code that was intended to perform the cleanup and cache flush. I've
+> > tested as a loadable module and statically linked without error.
+> > Please consider this for inclusion.
+> > 
+> > Signed-off-by: Mike Miller <mike.miller@hp.com>
+> > ------------------------------------------------------------------------------------------
+> > diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+> > index 9d84ab3..b16f48c 100644
+> > --- a/drivers/block/cciss.c
+> > +++ b/drivers/block/cciss.c
+> > @@ -3404,7 +3404,7 @@ #endif
+> >  	return -1;
+> >  }
+> >  
+> > -static void __devexit cciss_remove_one(struct pci_dev *pdev)
+> > +static void cciss_remove_one(struct pci_dev *pdev)
+> >  {
+> >  	ctlr_info_t *tmp_ptr;
+> >  	int i, j;
+> > @@ -3428,9 +3428,10 @@ static void __devexit cciss_remove_one(s
+> >  	memset(flush_buf, 0, 4);
+> >  	return_code = sendcmd(CCISS_CACHE_FLUSH, i, flush_buf, 4, 0, 0, 0, NULL,
+> >  			      TYPE_CMD);
+> > -	if (return_code != IO_OK) {
+> > -		printk(KERN_WARNING "Error Flushing cache on controller %d\n",
+> > -		       i);
+> > +	if (return_code == IO_OK) {
+> > +		printk(KERN_WARNING "Completed flushing cache on controller %d\n", i);
+> 
+> Why do you want the world to know this on every shutdown?
+> 
+> At the least, use dev_warn() to show the proper device and driver that
+> this is happening to, but does it really need to go to the warning log?
+> It sounds like a normal operation to me.  How about dev_dbg() instead?
+> 
+> thanks,
+> 
+> greg k-h
 
-Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
----
- drivers/ata/sata_inic162x.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+OK, here's a version that only prints if a problem occurred. That's the way the code
+was originally written.
 
-diff --git a/drivers/ata/sata_inic162x.c b/drivers/ata/sata_inic162x.c
-index 31b636f..7933043 100644
---- a/drivers/ata/sata_inic162x.c
-+++ b/drivers/ata/sata_inic162x.c
-@@ -639,7 +639,10 @@ static int inic_pci_device_resume(struct pci_dev *pdev)
- 	void __iomem *mmio_base = host->iomap[MMIO_BAR];
- 	int rc;
+-- mikem
+------------------------------------------------------------------------------------------
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index 9d84ab3..c50c09b 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -3404,7 +3404,7 @@ #endif
+ 	return -1;
+ }
  
--	ata_pci_device_do_resume(pdev);
-+	rc = ata_pci_device_do_resume(pdev);
-+	if (rc) {
-+		return rc;
-+	}
+-static void __devexit cciss_remove_one(struct pci_dev *pdev)
++static void cciss_remove_one(struct pci_dev *pdev)
+ {
+ 	ctlr_info_t *tmp_ptr;
+ 	int i, j;
+@@ -3429,8 +3429,7 @@ static void __devexit cciss_remove_one(s
+ 	return_code = sendcmd(CCISS_CACHE_FLUSH, i, flush_buf, 4, 0, 0, 0, NULL,
+ 			      TYPE_CMD);
+ 	if (return_code != IO_OK) {
+-		printk(KERN_WARNING "Error Flushing cache on controller %d\n",
+-		       i);
++		printk(KERN_WARNING "Error flushing cache on controller %d\n", i);
+ 	}
+ 	free_irq(hba[i]->intr[2], hba[i]);
  
- 	if (pdev->dev.power.power_state.event == PM_EVENT_SUSPEND) {
- 		printk("XXX\n");
--- 
-1.4.4.4
-
-
+@@ -3481,6 +3480,7 @@ static struct pci_driver cciss_pci_drive
+ 	.probe = cciss_init_one,
+ 	.remove = __devexit_p(cciss_remove_one),
+ 	.id_table = cciss_pci_device_id,	/* id_table */
++	.shutdown = cciss_remove_one,
+ };
+ 
+ /*
