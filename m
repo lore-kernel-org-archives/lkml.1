@@ -1,96 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750842AbXBWEEJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750787AbXBWEzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750842AbXBWEEJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Feb 2007 23:04:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750848AbXBWEEJ
+	id S1750787AbXBWEzu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Feb 2007 23:55:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbXBWEzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Feb 2007 23:04:09 -0500
-Received: from www.nabble.com ([72.21.53.35]:37094 "EHLO talk.nabble.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750842AbXBWEEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Feb 2007 23:04:08 -0500
-Message-ID: <9113207.post@talk.nabble.com>
-Date: Thu, 22 Feb 2007 20:04:07 -0800 (PST)
-From: pgf111000 <junkmail@petergfrazier.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Areca driver 2.6.19 on x86_64
-In-Reply-To: <000301c719a9$70e4f8d0$2900a8c0@arecakevin>
+	Thu, 22 Feb 2007 23:55:50 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57625 "EHLO
+	netops-testserver-3.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750787AbXBWEzu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Feb 2007 23:55:50 -0500
+Date: Thu, 22 Feb 2007 20:55:41 -0800 (PST)
+From: Christoph Lameter <clameter@engr.sgi.com>
+To: Andi Kleen <andi@firstfloor.org>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: SLUB: The unqueued Slab allocator
+In-Reply-To: <20070223001653.GA16108@one.firstfloor.org>
+Message-ID: <Pine.LNX.4.64.0702222053540.24461@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0702212250271.30485@schroedinger.engr.sgi.com>
+ <p73hctecc3l.fsf@bingen.suse.de> <Pine.LNX.4.64.0702221040140.2011@schroedinger.engr.sgi.com>
+ <20070223001653.GA16108@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Nabble-From: junkmail@petergfrazier.com
-References: <3193.213.203.144.13.1165423892.squirrel@mailserver.omnibit.it> <20061206230949.GA25461@brong.net> <000301c719a9$70e4f8d0$2900a8c0@arecakevin>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 23 Feb 2007, Andi Kleen wrote:
 
-These solutions are laughable....
+> If you don't cache constructed but free objects then there is no cache
+> advantage of constructors/destructors and they would be useless.
 
-
-
-
-Areca Support wrote:
-> 
-> Dear Sir,
-> 
-> This is Kevin Wang from Areca Technology, Tech-Support Team.
-> regarding your problem, please trying to disable ACPI in kernel loader.
-> if the problem happen as soon as driver loaded, it should be the IRQ
-> releated issue.
-> the motherboard bios didn't assigned a correct IRQ to controller, it makes
-> the driver can't initialize controller.
-> and in our experience, disable ACPI in kernel loader can solved this ussue
-> in some distro.
-> 
-> 
-> Best Regards,
-> 
-> 
-> Kevin Wang
-> 
-> Areca Technology Tech-support Division
-> Tel : 886-2-87974060 Ext. 223
-> Fax : 886-2-87975970
-> Http://www.areca.com.tw
-> Ftp://ftp.areca.com.tw
-> 
-> ----- Original Message ----- 
-> From: "Bron Gondwana" <brong@fastmail.fm>
-> To: <filip@euroweb97.com>
-> Cc: <support@areca.com.tw>; <linux-kernel@vger.kernel.org>;
-> <erich@areca.com.tw>
-> Sent: Thursday, December 07, 2006 7:09 AM
-> Subject: Re: Areca driver 2.6.19 on x86_64
-> 
-> 
->> On Wed, Dec 06, 2006 at 05:51:32PM +0100, filip@euroweb97.com wrote:
->> > OS distro used:
->> > CentOS 4.4 x86_64
->> > Kernel 2.6.19 with hand-crafted config, that we are
->> > able to use successfully with kernel 2.6.16.20.
->>
->> What patches were you applying to 2.6.16.20, since that didn't
->> have an Areca driver in it I presume you're at least using that.
->>
->> > Have you any suggestions to resolve this issue ?
->>
->> 32 bit kernel?  I'm somewhat serious here, depending what applications
->> you're running on the machine.
->>
->> Otherwise, no clue sorry - we're running 32 bit kernels everywhere
->> even on the couple of new Core machines we have.
->>
->> Bron.
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
-
--- 
-View this message in context: http://www.nabble.com/Areca-driver-2.6.19-on-x86_64-tf2769326.html#a9113207
-Sent from the linux-kernel mailing list archive at Nabble.com.
+SLUB caches those objects as long as they are part of a partially 
+allocated slab. If all objects in the slab are freed then the whole slab 
+will be freed. SLUB does not keep queues of freed slabs.
 
