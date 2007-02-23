@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932067AbXBWKJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932074AbXBWKJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932067AbXBWKJX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 05:09:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932091AbXBWKJX
+	id S932074AbXBWKJf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 05:09:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932097AbXBWKJe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 05:09:23 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:60076 "EHLO smtp.osdl.org"
+	Fri, 23 Feb 2007 05:09:34 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:47884 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932067AbXBWKJW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 05:09:22 -0500
-Date: Fri, 23 Feb 2007 02:09:14 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: pgf111000 <junkmail@petergfrazier.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Areca driver 2.6.19 on x86_64
-Message-Id: <20070223020914.4a9a7ece.akpm@linux-foundation.org>
-In-Reply-To: <9113207.post@talk.nabble.com>
-References: <3193.213.203.144.13.1165423892.squirrel@mailserver.omnibit.it>
-	<20061206230949.GA25461@brong.net>
-	<000301c719a9$70e4f8d0$2900a8c0@arecakevin>
-	<9113207.post@talk.nabble.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S932074AbXBWKJd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 05:09:33 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC][PATCH 0/7] Freezer changes
+Date: Fri, 23 Feb 2007 11:01:39 +0100
+User-Agent: KMail/1.9.5
+Cc: paulmck@linux.vnet.ibm.com, ego@in.ibm.com, akpm@osdl.org, mingo@elte.hu,
+       vatsa@in.ibm.com, dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       Pavel Machek <pavel@ucw.cz>, "Aneesh Kumar" <aneesh.kumar@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702231101.41278.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 22 Feb 2007 20:04:07 -0800 (PST) pgf111000 <junkmail@petergfrazier.com> wrote:
-> 
-> These solutions are laughable....
-> 
-> 
-> 
-> 
-> Areca Support wrote:
-> > 
-> > Dear Sir,
-> > 
-> > This is Kevin Wang from Areca Technology, Tech-Support Team.
-> > regarding your problem, please trying to disable ACPI in kernel loader.
-> > if the problem happen as soon as driver loaded, it should be the IRQ
-> > releated issue.
-> > the motherboard bios didn't assigned a correct IRQ to controller, it makes
-> > the driver can't initialize controller.
-> > and in our experience, disable ACPI in kernel loader can solved this ussue
-> > in some distro.
+Hi,
 
-What we're probably looking at here are BIOS bugs.
+The following series of patches implements the changes to the task freezer
+that should close the remaining races in it and harden it before it's used for
+the CPU hotplugging.
 
-But areca's suggestions are good ones: if those things fix the problem then
-we probably need to fix Linus acpi or, more likely, add suitable
-workarounds for yet more BIOS bugs.
+Not all of the patches are from me, but I've decided to make the series out
+of all freezer-related patches that have been posted recently.  If I have
+missed some of them, please let me know.
 
-So yes, please try the diagnostic steps which they suggested and if that
-helps, raise a report against acpi at bugzilla.kernel.org.
+Most of the patches in this series have been already discussed, so they
+should be fine, but of course additional comments are welcome.
 
+Greetings,
+Rafael
