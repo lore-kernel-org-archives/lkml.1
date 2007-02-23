@@ -1,87 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933282AbXBWXSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933271AbXBWXS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933282AbXBWXSd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 18:18:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933283AbXBWXSW
+	id S933271AbXBWXS7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 18:18:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933262AbXBWXRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 18:18:22 -0500
-Received: from ns2.suse.de ([195.135.220.15]:35280 "EHLO mx2.suse.de"
+	Fri, 23 Feb 2007 18:17:49 -0500
+Received: from mx2.suse.de ([195.135.220.15]:35263 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933271AbXBWXR6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 18:17:58 -0500
+	id S933274AbXBWXRm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 18:17:42 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: James Simmons <jsimmons@infradead.org>,
+Cc: Manuel Lauss <mano@roarinelk.homelinux.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 8/9] Driver core: fix error by cleanup up symlinks properly
-Date: Fri, 23 Feb 2007 15:15:55 -0800
-Message-Id: <1172272579116-git-send-email-gregkh@suse.de>
+Subject: [PATCH 4/9] Driver core: more fallout from class_device changes for pcmcia
+Date: Fri, 23 Feb 2007 15:15:51 -0800
+Message-Id: <1172272565581-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.0.1
-In-Reply-To: <11722725761560-git-send-email-gregkh@suse.de>
-References: <20070223231426.GA20498@kroah.com> <11722725561867-git-send-email-gregkh@suse.de> <11722725592291-git-send-email-gregkh@suse.de> <11722725623183-git-send-email-gregkh@suse.de> <1172272565581-git-send-email-gregkh@suse.de> <1172272569255-git-send-email-gregkh@suse.de> <11722725722238-git-send-email-gregkh@suse.de> <11722725761560-git-send-email-gregkh@suse.de>
+In-Reply-To: <11722725623183-git-send-email-gregkh@suse.de>
+References: <20070223231426.GA20498@kroah.com> <11722725561867-git-send-email-gregkh@suse.de> <11722725592291-git-send-email-gregkh@suse.de> <11722725623183-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: James Simmons <jsimmons@infradead.org>
+From: Manuel Lauss <mano@roarinelk.homelinux.net>
 
-When a device fails to register the class symlinks where not cleaned up.
-This left a symlink in the /sys/class/"device"/ directory that pointed
-to no where. This caused the sysfs_follow_link Oops I reported earlier.
-This patch cleanups up the symlink. Please apply. Thank you.
+More fallout from the PCMCIA class_device changes.
 
-Signed-Off: James Simmons <jsimmons@infradead.org>
+The first hunk is run-tested on SH-4, the others are converted
+in the spirit of the original conversion.
+
+
+Signed-off-by: Manuel Lauss  <mano@roarinelk.homelinux.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/core.c |   31 ++++++++++++++++++++++++++++++-
- 1 files changed, 30 insertions(+), 1 deletions(-)
+ drivers/pcmcia/hd64465_ss.c   |    2 +-
+ drivers/pcmcia/m32r_cfc.c     |    2 +-
+ drivers/pcmcia/m8xx_pcmcia.c  |    2 +-
+ drivers/pcmcia/omap_cf.c      |    2 +-
+ drivers/pcmcia/rsrc_mgr.c     |    2 +-
+ drivers/pcmcia/vrc4171_card.c |    2 +-
+ 6 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index d04fd33..cf2a398 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -637,12 +637,41 @@ int device_add(struct device *dev)
- 					     BUS_NOTIFY_DEL_DEVICE, dev);
- 	device_remove_groups(dev);
-  GroupError:
-- 	device_remove_attrs(dev);
-+	device_remove_attrs(dev);
-  AttrsError:
- 	if (dev->devt_attr) {
- 		device_remove_file(dev, dev->devt_attr);
- 		kfree(dev->devt_attr);
+diff --git a/drivers/pcmcia/hd64465_ss.c b/drivers/pcmcia/hd64465_ss.c
+index caca0dc..f2e810f 100644
+--- a/drivers/pcmcia/hd64465_ss.c
++++ b/drivers/pcmcia/hd64465_ss.c
+@@ -907,7 +907,7 @@ static int __init init_hs(void)
+ 
+ 	for (i=0; i<HS_MAX_SOCKETS; i++) {
+ 		unsigned int ret;
+-		hs_sockets[i].socket.dev.dev = &hd64465_device.dev;		
++		hs_sockets[i].socket.dev.parent = &hd64465_device.dev;
+ 		hs_sockets[i].number = i;
+ 		ret = pcmcia_register_socket(&hs_sockets[i].socket);
+ 		if (ret && i)
+diff --git a/drivers/pcmcia/m32r_cfc.c b/drivers/pcmcia/m32r_cfc.c
+index e4a9410..91da15b 100644
+--- a/drivers/pcmcia/m32r_cfc.c
++++ b/drivers/pcmcia/m32r_cfc.c
+@@ -760,7 +760,7 @@ static int __init init_m32r_pcc(void)
+ 	/* Set up interrupt handler(s) */
+ 
+ 	for (i = 0 ; i < pcc_sockets ; i++) {
+-		socket[i].socket.dev.dev = &pcc_device.dev;
++		socket[i].socket.dev.parent = &pcc_device.dev;
+ 		socket[i].socket.ops = &pcc_operations;
+ 		socket[i].socket.resource_ops = &pccard_nonstatic_ops;
+ 		socket[i].socket.owner = THIS_MODULE;
+diff --git a/drivers/pcmcia/m8xx_pcmcia.c b/drivers/pcmcia/m8xx_pcmcia.c
+index d059c91..9721ed7 100644
+--- a/drivers/pcmcia/m8xx_pcmcia.c
++++ b/drivers/pcmcia/m8xx_pcmcia.c
+@@ -1321,7 +1321,7 @@ static int __init m8xx_init(void)
+ 		socket[i].socket.ops = &m8xx_services;
+ 		socket[i].socket.resource_ops = &pccard_iodyn_ops;
+ 		socket[i].socket.cb_dev = NULL;
+-		socket[i].socket.dev.dev = &m8xx_device.dev;
++		socket[i].socket.dev.parent = &m8xx_device.dev;
  	}
-+
-+	if (dev->class) {
-+		sysfs_remove_link(&dev->kobj, "subsystem");
-+		/* If this is not a "fake" compatible device, remove the
-+		 * symlink from the class to the device. */
-+		if (dev->kobj.parent != &dev->class->subsys.kset.kobj)
-+			sysfs_remove_link(&dev->class->subsys.kset.kobj,
-+					  dev->bus_id);
-+#ifdef CONFIG_SYSFS_DEPRECATED
-+		if (parent) {
-+			char *class_name = make_class_name(dev->class->name,
-+							   &dev->kobj);
-+			if (class_name)
-+				sysfs_remove_link(&dev->parent->kobj,
-+						  class_name);
-+			kfree(class_name);
-+			sysfs_remove_link(&dev->kobj, "device");
-+		}
-+#endif
-+
-+		down(&dev->class->sem);
-+		/* notify any interfaces that the device is now gone */
-+		list_for_each_entry(class_intf, &dev->class->interfaces, node)
-+			if (class_intf->remove_dev)
-+				class_intf->remove_dev(dev, class_intf);
-+		/* remove the device from the class list */
-+		list_del_init(&dev->node);
-+		up(&dev->class->sem);
-+	}
-  ueventattrError:
- 	device_remove_file(dev, &dev->uevent_attr);
-  attrError:
+ 
+ 	for (i = 0; i < PCMCIA_SOCKETS_NO; i++)
+diff --git a/drivers/pcmcia/omap_cf.c b/drivers/pcmcia/omap_cf.c
+index 76f7cbc..d77f751 100644
+--- a/drivers/pcmcia/omap_cf.c
++++ b/drivers/pcmcia/omap_cf.c
+@@ -291,7 +291,7 @@ static int __devinit omap_cf_probe(struct device *dev)
+ 		omap_cf_present() ? "present" : "(not present)");
+ 
+ 	cf->socket.owner = THIS_MODULE;
+-	cf->socket.dev.dev = dev;
++	cf->socket.dev.parent = dev;
+ 	cf->socket.ops = &omap_cf_ops;
+ 	cf->socket.resource_ops = &pccard_static_ops;
+ 	cf->socket.features = SS_CAP_PCCARD | SS_CAP_STATIC_MAP
+diff --git a/drivers/pcmcia/rsrc_mgr.c b/drivers/pcmcia/rsrc_mgr.c
+index 81dfc2c..ce22262 100644
+--- a/drivers/pcmcia/rsrc_mgr.c
++++ b/drivers/pcmcia/rsrc_mgr.c
+@@ -232,7 +232,7 @@ static struct resource *iodyn_find_io_region(unsigned long base, int num,
+ 		unsigned long align, struct pcmcia_socket *s)
+ {
+ 	struct resource *res = make_resource(0, num, IORESOURCE_IO,
+-					     s->dev.class_id);
++					     s->dev.bus_id);
+ 	struct pcmcia_align_data data;
+ 	unsigned long min = base;
+ 	int ret;
+diff --git a/drivers/pcmcia/vrc4171_card.c b/drivers/pcmcia/vrc4171_card.c
+index 206e26c..eee2f1c 100644
+--- a/drivers/pcmcia/vrc4171_card.c
++++ b/drivers/pcmcia/vrc4171_card.c
+@@ -596,7 +596,7 @@ static int __devinit vrc4171_add_sockets(void)
+ 		}
+ 
+ 		sprintf(socket->name, "NEC VRC4171 Card Slot %1c", 'A' + slot);
+-		socket->pcmcia_socket.dev.dev = &vrc4171_card_device.dev;
++		socket->pcmcia_socket.dev.parent = &vrc4171_card_device.dev;
+ 		socket->pcmcia_socket.ops = &vrc4171_pccard_operations;
+ 		socket->pcmcia_socket.owner = THIS_MODULE;
+ 
 -- 
 1.5.0.1
 
