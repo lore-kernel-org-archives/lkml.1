@@ -1,185 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933394AbXBXGtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933400AbXBXHCY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933394AbXBXGtZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 01:49:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933396AbXBXGtZ
+	id S933400AbXBXHCY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 02:02:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933401AbXBXHCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 01:49:25 -0500
-Received: from py-out-1112.google.com ([64.233.166.179]:41305 "EHLO
+	Sat, 24 Feb 2007 02:02:24 -0500
+Received: from py-out-1112.google.com ([64.233.166.183]:46766 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933394AbXBXGtY (ORCPT
+	with ESMTP id S933400AbXBXHCX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 01:49:24 -0500
+	Sat, 24 Feb 2007 02:02:23 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=TR/uNyW81C6mRxs0e7YQ7ANr5CDOv+89n4o6ONofsj/Rm7yoi+YyrKy2rB6n6a4o19x6Fry1MsJkIsZKb3bNTIzjGrkt8XF4/iOkd7dqlfxp7dgFsoFCVkAx99JZEBp+5Qv+OSA+BjXJfHE+5rJb13oSX73rk1YMc7NmeE869PA=
-Subject: Re: [Linux-fbdev-devel] [RFC 2.6.20 1/1] fbdev, mm: Deferred IO
-	and hecubafb driver
+        b=n1PjCIXInpqPhpulNZQELNlPt+LWfIra+gm0KqKs3bkk58CVQCQ1c7RoNGYUebfYzP+ysrh00hLZgvsrEqPbGmAR3+iNtcLSMNzWgswmKixrVxlz8YMbLkcpoZE2i8eVks6uI7ZglCyBst3dzAHfkb5ggaWqN6TQ0IuKdLGN9Mk=
+Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: linux-fbdev-devel@lists.sourceforge.net,
-       Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <20070223063228.GA9906@localhost>
-References: <20070223063228.GA9906@localhost>
+To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+Cc: James Simmons <jsimmons@infradead.org>, Luca Tettamanti <kronos@people.it>,
+       linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>,
+       Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <cb7bb73a0702230534o4e2c7e9frd5f2b05accf18c05@mail.gmail.com>
+References: <ephv35$4i3$1@sea.gmane.org> <1172101406.4217.16.camel@daplas>
+	 <cb7bb73a0702220001u6acbdd95ncdc9fad10d06b421@mail.gmail.com>
+	 <1172133646.4086.5.camel@daplas>
+	 <cb7bb73a0702220548s55380f7fk995726ffd349823b@mail.gmail.com>
+	 <1172153358.4306.17.camel@daplas>
+	 <cb7bb73a0702220755y3eb2e5b1r8e7908ae0c1720c9@mail.gmail.com>
+	 <1172161290.4198.12.camel@daplas>
+	 <cb7bb73a0702221108r161441ebt61886ce67746f389@mail.gmail.com>
+	 <1172187249.4279.7.camel@daplas>
+	 <cb7bb73a0702230534o4e2c7e9frd5f2b05accf18c05@mail.gmail.com>
 Content-Type: text/plain
-Date: Sat, 24 Feb 2007 14:51:53 +0800
-Message-Id: <1172299914.4109.47.camel@daplas>
+Date: Sat, 24 Feb 2007 15:04:54 +0800
+Message-Id: <1172300694.4109.50.camel@daplas>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-02-23 at 07:32 +0100, Jaya Kumar wrote:
-> Hi Tony, Paul, Peter, fbdev, lkml, and mm,
+On Fri, 2007-02-23 at 14:34 +0100, Giuseppe Bilotta wrote:
+> On 2/23/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> > On Thu, 2007-02-22 at 20:08 +0100, Giuseppe Bilotta wrote:
+> > > No, it doesn't. I've tried all the methods from 640x480 to 1600x1200,
+> > > and they /all/ come up snowy. This is starting to look queerer and
+> > > queerer. I've also tried changing vf min and max as you suggested:
+> >
+> > Before we proceed, do you agree that the patch will allow you to change
+> > video modes without disabling DDC support?  So this is still a valid
+> > fix?
 > 
-> This is a first pass at abstracting deferred IO out from hecubafb and
-> into fbdev as was discussed before: 
-> http://marc.theaimsgroup.com/?l=linux-fbdev-devel&m=117187443327466&w=2
+> You're right, I hadn't realized that. I can now access all the sizes
+> from 640 to 1600, so I would say the fix is valid.
+
+Okay, thanks.
+
 > 
-> Please let me know your feedback and if it looks okay so far.
+> > When does your display become snowy? Is the snow constant or does it
+> > only snow when doing heavy text operations, such as scrolling?
 > 
-
-Can you create 2 separate patches, one for the deferred_io and another
-for the driver that uses it?
-
-> +Another one may be if one has a device framebuffer that is in an usual format,
-> +say diagonally shifting RGB, this may then be a mechanism for you to allow
-> +apps to pretend to have a normal framebuffer but reswizzle for the device
-> +framebuffer at vsync time based on the touched pagelist.
-
-Hmm, yes, it can be used to implement a shadow framebuffer :-)
-
-> +
-> +How to use it: (for applications)
-> +---------------------------------
-> +No changes needed. mmap the framebuffer like normal and just use it.
-> +
-> +How to use it: (for fbdev drivers)
-> +----------------------------------
-> +The following example may be helpful.
-> +
-> +1. Setup your mmap and vm_ops structures. Eg:
-> +
-> +
-> +The delay is the minimum delay between when the page_mkwrite trigger occurs
-> +and when the deferred_io callback is called. The deferred_io callback is
-> +explained below.
-> +
-> +static struct vm_operations_struct hecubafb_vm_ops = {
-> +	.nopage   	= hecubafb_vm_nopage,
-> +	.page_mkwrite	= fb_deferred_io_mkwrite,
-> +};
-> +
-
-It would seem to me that the above can be made generic, so we have this
-instead:
-
-static struct vm_operations_struct fb_deferred_vm_ops = {
-	.nopage   	= fb_deferred_io_vm_nopage,
-	.page_mkwrite	= fb_deferred_io_mkwrite,
-};
-
-> +You will need a nopage routine to find and retrive the struct page for your
-> +framebuffer pages. You must set page_mkwrite to fb_deferred_io_mkwrite.
-> +Here's the example nopage for hecubafb where it is a vmalloced framebuffer. 
-> +
-> +static int hecubafb_mmap(struct fb_info *info, struct vm_area_struct *vma)
-> +{
-> +	vma->vm_ops = &hecubafb_vm_ops;
-> +	vma->vm_flags |= ( VM_IO | VM_RESERVED | VM_DONTEXPAND );
-> +	vma->vm_private_data = info;
-> +	return 0;
-> +}
-
-And this too as fb_deferred_io_mmap.
-
-> +
-> +static struct page* hecubafb_vm_nopage(struct vm_area_struct *vma, 
-> +					unsigned long vaddr, int *type)
-> +{
-> +	unsigned long offset;
-> +	struct page *page;
-> +	struct fb_info *info = vma->vm_private_data;
-> +
-> +	offset = (vaddr - vma->vm_start) + (vma->vm_pgoff << PAGE_SHIFT);
-> +	if (offset >= (DPY_W*DPY_H)/8)
-> +		return NOPAGE_SIGBUS;
-> +
-
-To make it generic, this can simply be:
-
-	if (offset >= info->fix.smem_len)
-		return NOPAGE_SIGBUS.
-
-> +	page = vmalloc_to_page(info->screen_base + offset);
-> +	if (!page)
-> +		return NOPAGE_OOM;
-> +
-> +	get_page(page);
-> +	if (type)
-> +		*type = VM_FAULT_MINOR;
-> +	return page;
-> +}
-> +
+> The snowy is constant and abundant, and it seems to be independent of
+> video size (640 through 1600) and screen occupation (single prompt
+> line to fullscreen mc session) and usage.
+> 
+> > I presume that X's nv driver or vesafb does not exhibit this problem?
+> 
+> X's nv gives a very clean display, /unless/ I load nvidiafb before: if
+> I modprobe nvidiafb (it's a module, and it's blacklisted precisely for
+> this reason), then the screen is very snowy with X's nv too.
 > 
 
-> +static struct fb_deferred_io hecubafb_defio = {
-> +	.delay		= HZ,
-> +	.deferred_io	= hecubafb_dpy_deferred_io,
-> +};
-
-Leaving the drivers to just fill up the above. This would result in a
-decrease of code duplication and it will be easier for driver writers.
-
-
-> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-> index 2822526..863126a 100644
-> --- a/drivers/video/fbmem.c
-> +++ b/drivers/video/fbmem.c
-> @@ -1325,6 +1325,7 @@ register_framebuffer(struct fb_info *fb_info)
->  
->  	event.info = fb_info;
->  	fb_notifier_call_chain(FB_EVENT_FB_REGISTERED, &event);
-> +	fb_deferred_io_init(fb_info);
->  	return 0;
->  }
->  
-> @@ -1355,6 +1356,7 @@ unregister_framebuffer(struct fb_info *fb_info)
->  	fb_destroy_modelist(&fb_info->modelist);
->  	registered_fb[i]=NULL;
->  	num_registered_fb--;
-> +	fb_deferred_io_cleanup(fb_info);
->  	fb_cleanup_device(fb_info);
->  	device_destroy(fb_class, MKDEV(FB_MAJOR, i));
->  	event.info = fb_info;
-
-I would prefer to have the init and cleanup functions called by the
-driver themselves, instead of piggy-backing them to the
-framebuffer_register/unregister.
-
-
-> +static void hecubafb_dpy_update(struct hecubafb_par *par)
-> +{
-> +	int i;
-> +	unsigned char *buf = par->info->screen_base;
-> +
-> +	apollo_send_command(par, 0xA0);
-> +
-> +	for (i=0; i < (DPY_W*DPY_H/8); i++) {
-> +		apollo_send_data(par, *(buf++));
-> +	}
-> +
-
-This basically dumps the entire framebuffer to the hardware, doesn't it?
-This framebuffer has only 2 pages at the most, so it doesn't matter. But
-for hardware with MB's of RAM, I don't think this is feasible.
-
-Is there a way to selectively update only the touched pages, ie from the
-fbdevio->pagelist? struct page has a field (pgoff_t index), is this
-usable? If not, can we just create a bit array, just to tell the driver
-which are the dirty pages?
+Hmm..., I really don't know how to fix this except to look at Xorg's
+code and look for a difference.
 
 Tony
 
