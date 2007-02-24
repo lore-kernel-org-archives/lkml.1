@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933550AbXBXTyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933546AbXBXUCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933550AbXBXTyR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 14:54:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933552AbXBXTyQ
+	id S933546AbXBXUCK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 15:02:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933552AbXBXUCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 14:54:16 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:56304 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933550AbXBXTyQ (ORCPT
+	Sat, 24 Feb 2007 15:02:09 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:36075 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933546AbXBXUCI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 14:54:16 -0500
-Subject: Re: current git crashes on bootup with pci_iounmap()
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Marcel Holtmann <marcel@holtmann.org>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <45DC2E52.4030506@gmail.com>
-References: <1171380714.3829.6.camel@pim.off.vrfy.org>
-	 <1171382645.23580.29.camel@violet>
-	 <1171385524.3855.2.camel@pim.off.vrfy.org>
-	 <3ae72650702141257w6b30a8efge5b6109feebb5512@mail.gmail.com>
-	 <45DC2E52.4030506@gmail.com>
-Content-Type: text/plain
-Date: Sat, 24 Feb 2007 20:40:15 +0100
-Message-Id: <1172346015.3766.1.camel@min.off.vrfy.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Sat, 24 Feb 2007 15:02:08 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:cc:
+	subject:references:in-reply-to:content-type:content-transfer-encoding;
+	b=koD8jFNzYze6j118beoCzGgLep7ZMUV979Bs5TFyqVZtVfV5pXWeTGtVQ+1BK6Ld1
+	9Adiz/Gn0RbtoZoXByxaw==
+Message-ID: <45E09989.5070604@google.com>
+Date: Sat, 24 Feb 2007 12:01:13 -0800
+From: Markus Gutschke <markus@google.com>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: David Howells <dhowells@redhat.com>
+CC: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
+       Andrew Morton <akpm@osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Robin Holt <holt@sgi.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <soshima@redhat.com>
+Subject: Re: [PATCH 0/4] coredump: core dump masking support v3
+References: <45DFB1C7.1030205@google.com>  <45D5B2E3.3030607@hitachi.com> <17044.1172311335@redhat.com>
+In-Reply-To: <17044.1172311335@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:4ddcc9dd12ba6cf3155e4d81b383efda
-X-Provags-ID2: V01U2FsdGVkX1/TwukZao3rFxvuM0i9BttVAk+zvN5++oaFEeB25Cqo2x4m26PT4+BLPA9wc9Y+KmLcV6w3R7Die/tEP6kt5OhDDE0ks5NptDVK900XpFDowg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-21 at 20:34 +0900, Tejun Heo wrote:
-> Kay Sievers wrote:
-> > On 2/13/07, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> >> On Tue, 2007-02-13 at 17:04 +0100, Marcel Holtmann wrote:
-> >> > > kernel BUG at lib/iomap.c:254!
-> >> > > invalid opcode: 0000 [#1]
-> >> > > ...
-> >> > >
-> >> > > The screen picture is here:
-> >> > >   http://vrfy.org/pci_iounmap.jpg
-> >> > >
-> >> > > It's a Thinkpad T43p.
-> >> > >
-> >> > > 2.6.20 was working fine.
-> >> > >
-> >> > > Commenting out:
-> >> > >   IO_COND(addr, /* nothing */, iounmap(addr));
-> >> > > in:
-> >> > >   lib/iomap.c:254
-> >> > > makes at least booting up possible.
-> >> >
-> >> > I saw a similar one on my X41. Disabling the AHCI driver made the
-> >> > machine booting again.
-> >>
-> >> Hey Marcel,
-> >> yeah, that works fine here too.
-> > 
-> > Tejun, Jeff, any ideas what's going wrong with the iomap change and
-> > the AHCI driver?
-> 
-> The following commit should have fixed the problem, at least the oops.
-> Care to give the current git head a shot?
+David Howells wrote:
+> How does it work when you can't actually get back to userspace to have
+> userspace do the coredump?  You still have to handle the userspace equivalents
+> of double/triple faults.
 
-Yes, it boots fine now with the AHCI driver compiled in.
+My experience shows that there are only very rare occurrences of 
+situations where you cannot get back into userspace to do the coredump, 
+and the coredumper tries very hard never to cause additional faults.
 
-Thanks,
-Kay
+While I am sure you could construct scenarios where this would happen, 
+realistically the only one I have run into were stack overflows, and 
+they can be handled by carefully setting up an alternate stack for 
+signal handlers -- just make sure the entire stack is already dirtied 
+before you run out of memory (or, turn of overcommitting).
 
+
+Markus
