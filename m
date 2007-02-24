@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932808AbXBXPyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932810AbXBXQFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932808AbXBXPyk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 10:54:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932838AbXBXPyj
+	id S932810AbXBXQFz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 11:05:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932838AbXBXQFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 10:54:39 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:23707 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932808AbXBXPyj (ORCPT
+	Sat, 24 Feb 2007 11:05:55 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:41446 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932810AbXBXQFy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 10:54:39 -0500
-X-IronPort-AV: i="4.14,215,1170651600"; 
-   d="scan'208"; a="28784666:sNHT23339771"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Rik van Riel" <riel@redhat.com>
-Subject: Re: MOST(Media Oriented Systems Transport) Interface?
-Date: Sat, 24 Feb 2007 10:55:24 -0500
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <200702231826.30395.rgetz@blackfin.uclinux.org> <45DF9915.1010400@redhat.com>
-In-Reply-To: <45DF9915.1010400@redhat.com>
+	Sat, 24 Feb 2007 11:05:54 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Sat, 24 Feb 2007 10:59:42 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Oleg Verych <olecom@flower.upol.cz>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: ioctls.h (Re: [PATCH][RFC] Make asm-generic/ioctl.h extensible
+ by adding conditionals.)
+In-Reply-To: <E1HKwCy-0005OM-FW@flower>
+Message-ID: <Pine.LNX.4.64.0702241058140.19099@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0702240641520.15087@CPE00045a9c397f-CM001225dbafb6>
+ <E1HKwCy-0005OM-FW@flower>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702241055.24815.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 24 Feb 2007 15:54:37.0726 (UTC) FILETIME=[162DE3E0:01C7582C]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 23 Feb 2007 20:47, Rik van Riel wrote:
-> Robin Getz wrote:
-> > Does anyone have a pointer for a MOST (Media Oriented Systems Transport) driver?
-> 
-> Are there any applications that use that protocol?
+On Sat, 24 Feb 2007, Oleg Verych wrote:
 
-Many - all automotive embedded - If you drive a recent car - from Audi, Aston Martin, Ford, BMW, Honda, Hyundai/Kia, DaimlerChrysler, Jaguar, Land Rover, Nissan, Porsche, Toyota, Volvo, or VW - you may be using it today.
+> > From: "Robert P. J. Day"
+> > Newsgroups: gmane.linux.kernel
+> > Subject: [PATCH][RFC] Make asm-generic/ioctl.h extensible by adding conditionals.
+> > Date: Sat, 24 Feb 2007 06:45:20 -0500 (EST)
+>
+> >   as a followup to my earlier post, is it worth making this change
+> > to allow at least a couple arch-specific ioctl.h files to be
+> > massively simplified?
+>
+> And i wonder, why there is no generic ioctls.h, hm?
 
-> Specifically, any applications worth caring about?
+beats me, but it seems that there are a *number* of arch-specific
+header files that could be treated this way -- a single generic file,
+allowing the small number of customizations that seem to be necessary
+across all architectures.
 
-Again - depends on who you are. If you are one of the above - yes, you care allot. If you are a enthusiast you wants low level access to entertainment system in your car - then you care too.
+but i figured i'd start with ioctl.h first and see where it went from
+there.
 
-It is like asking if I should care about applications using 100Base-T - as a user - I just want it to work and I only care when it doesn't work; as a driver developer - I care alot, but am agnostic to the application.
+rday
 
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-I found a spec that says MOST runs IP - 
-
-http://www.mostcooperation.com/downloads/Specifications/MOST%20Specifications/MAMAC%20Specification
-
-but thought I would ask if anyone else has any public work about the non-IP protocols. 
-
-For those that might care, full spec is at:
-
-http://www.mostcooperation.com/downloads/Specifications/MOST%20Specifications/MOSTSpecification.pdf
-
--Robin
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
