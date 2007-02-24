@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933006AbXBXPZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933007AbXBXP1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933006AbXBXPZZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 10:25:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933007AbXBXPZZ
+	id S933007AbXBXP1V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 10:27:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933509AbXBXP1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 10:25:25 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:45014 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933006AbXBXPZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 10:25:23 -0500
-Date: Sat, 24 Feb 2007 16:23:45 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Andrew Walrond <andrew@walrond.org>
-cc: Tomasz Chmielewski <mangoo@wpkg.org>, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: (Sparc64) 2.6.20 seems to ignore initramfs
-In-Reply-To: <200702231547.24667.andrew@walrond.org>
-Message-ID: <Pine.LNX.4.61.0702241622150.16527@yvahk01.tjqt.qr>
-References: <200702231108.10185.andrew@walrond.org> <200702231446.20929.andrew@walrond.org>
- <45DF056C.2010806@wpkg.org> <200702231547.24667.andrew@walrond.org>
+	Sat, 24 Feb 2007 10:27:20 -0500
+Received: from stinky.trash.net ([213.144.137.162]:54327 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933007AbXBXP1T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 10:27:19 -0500
+Message-ID: <45E05954.8050204@trash.net>
+Date: Sat, 24 Feb 2007 16:27:16 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051017)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 18/29] netfilter: notify about NF_QUEUE vs emergency skbs
+References: <20070221144304.512721000@taijtu.programming.kicks-ass.net> <20070221144843.299254000@taijtu.programming.kicks-ass.net>
+In-Reply-To: <20070221144843.299254000@taijtu.programming.kicks-ass.net>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Feb 23 2007 15:47, Andrew Walrond wrote:
->On Friday 23 February 2007 15:17, Tomasz Chmielewski wrote:
->>
->> Try to decrease the initramfs size just to know if it boots correctly.
->>
->> I.e., put just a sh/bash/ash/dash binary there (probably /dev/console
->> node, too), executed in init.
->>
->> Then, try to start the kernel with initramfs embedded in the kernel,
->> then as initrd etc. - this will show if the fault is on your side, or
->> kernel's.
+Peter Zijlstra wrote:
+> Emergency skbs should never touch user-space, however NF_QUEUE is fully user
+> configurable. Notify the user of his mistake and try to continue.
 >
->I have tracked this down to a broken version of gnu cpio (latest release, 2.7) 
->which was used to create the initramfs archive. Bloody annoying since this 
->has bitten me before! Last time I even sent the maintainer a bug report, and 
->apparently a fix is in CVS waiting for the next release. Ho hum.
+> --- linux-2.6-git.orig/net/netfilter/core.c	2007-02-14 12:09:07.000000000 +0100
+> +++ linux-2.6-git/net/netfilter/core.c	2007-02-14 12:09:18.000000000 +0100
+> @@ -187,6 +187,11 @@ next_hook:
+>  		kfree_skb(*pskb);
+>  		ret = -EPERM;
+>  	} else if ((verdict & NF_VERDICT_MASK)  == NF_QUEUE) {
+> +		if (unlikely((*pskb)->emergency)) {
+> +			printk(KERN_ERR "nf_hook: NF_QUEUE encountered for "
+> +					"emergency skb - skipping rule.\n");
+> +			goto next_hook;
+> +		}
 
-Forgot the -c flag, right?
+If I'm not mistaken any skb on the receive side might get
+allocated from the reserve. I don't see how the user could
+avoid this except by not using queueing at all.
 
+I also didn't see a patch dropping packets allocated from
+the reserve that are forwarded or processed directly without
+getting queued to a socket, so this would allow them to
+bypass userspace queueing and still go through.
 
+I think the user should just exclude packets necessary for
+swapping from queueing manually, based on IP addresses,
+port numbers or something like that.
 
-Jan
--- 
