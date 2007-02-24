@@ -1,33 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933298AbXBXAzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933299AbXBXBFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933298AbXBXAzO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 19:55:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933301AbXBXAzO
+	id S933299AbXBXBFZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 20:05:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933302AbXBXBFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 19:55:14 -0500
-Received: from main.gmane.org ([80.91.229.2]:46324 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933298AbXBXAzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 19:55:12 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Mark Gray <mvg001@markvgray.com>
-Subject: Re: I2O block driver broken in kernel 2.6.19?
-Date: Fri, 23 Feb 2007 22:57:27 +0000 (UTC)
-Message-ID: <loom.20070223T235432-923@post.gmane.org>
-References: <45D8E102.6090004@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 84.92.212.135 (Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.0.9) Gecko/20061206 Firefox/1.5.0.9)
+	Fri, 23 Feb 2007 20:05:25 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:9732 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933299AbXBXBFX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 20:05:23 -0500
+X-AuditID: d80ac287-9ff9dbb000002978-15-45df8f520a93 
+Date: Sat, 24 Feb 2007 01:05:27 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Joel Becker <Joel.Becker@oracle.com>
+cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] mm/mincore: Return EFAULT when passed an invalid address.
+In-Reply-To: <20070223231112.GM7920@ca-server1.us.oracle.com>
+Message-ID: <Pine.LNX.4.64.0702240052360.9507@blonde.wat.veritas.com>
+References: <20070223225847.GL7920@ca-server1.us.oracle.com>
+ <20070223231112.GM7920@ca-server1.us.oracle.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 24 Feb 2007 01:05:22.0449 (UTC) FILETIME=[DBF4B810:01C757AF]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  i2o/hda:<3>Buffer I/O error on device i2o/hda, logical block 0
-> Buffer I/O error on device i2o/hda, logical block 0
+On Fri, 23 Feb 2007, Joel Becker wrote:
 
-Same error here. Both 2.6.19 and 2.6.20 kernels, using Adaptec 2400A RAID.
+>  	The locking fix to sys_mincore in commit
+> 2f77d107050abc14bc393b34bdb7b91cf670c250 returns -ENOMEM when given a
+> bad userspace address.  It should return -EFAULT.
 
+No, I think you're getting confused by the way Linus uses access_ok
+on the address range given with the access_ok on the vector address.
+
+Before and after, an access_ok failure on the output vector address
+gives -EFAULT.  Before and after, an invalid address in the range
+to be inspected gives -ENOMEM.
+
+Which is consistent with the other m* system calls: -EFAULT if
+arguments are inaccessible, -ENOMEM if address range is invalid.
+
+Hugh
