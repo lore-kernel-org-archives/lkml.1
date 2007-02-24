@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933546AbXBXUCK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933540AbXBXUIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933546AbXBXUCK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 15:02:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933552AbXBXUCJ
+	id S933540AbXBXUIR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 15:08:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933552AbXBXUIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 15:02:09 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:36075 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933546AbXBXUCI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 15:02:08 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:user-agent:mime-version:to:cc:
-	subject:references:in-reply-to:content-type:content-transfer-encoding;
-	b=koD8jFNzYze6j118beoCzGgLep7ZMUV979Bs5TFyqVZtVfV5pXWeTGtVQ+1BK6Ld1
-	9Adiz/Gn0RbtoZoXByxaw==
-Message-ID: <45E09989.5070604@google.com>
-Date: Sat, 24 Feb 2007 12:01:13 -0800
-From: Markus Gutschke <markus@google.com>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-CC: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
-       Andrew Morton <akpm@osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Robin Holt <holt@sgi.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <soshima@redhat.com>
-Subject: Re: [PATCH 0/4] coredump: core dump masking support v3
-References: <45DFB1C7.1030205@google.com>  <45D5B2E3.3030607@hitachi.com> <17044.1172311335@redhat.com>
-In-Reply-To: <17044.1172311335@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 24 Feb 2007 15:08:17 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:59946 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933540AbXBXUIR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 15:08:17 -0500
+Date: Sat, 24 Feb 2007 21:07:56 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Detecting section mismatches in vmlinux
+Message-ID: <20070224200756.GA9417@uranus.ravnborg.org>
+References: <20070222.005728.126762028.anemo@mba.ocn.ne.jp> <20070225.035315.25909736.anemo@mba.ocn.ne.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070225.035315.25909736.anemo@mba.ocn.ne.jp>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells wrote:
-> How does it work when you can't actually get back to userspace to have
-> userspace do the coredump?  You still have to handle the userspace equivalents
-> of double/triple faults.
+On Sun, Feb 25, 2007 at 03:53:15AM +0900, Atsushi Nemoto wrote:
+> 
+> This is a dirty hack to check all built-in.o just after linking
+> vmlinux.  But this can not detect mismatches in libs.a files, and
+> modpost fails with "... is truncated" message on empty built-in.o
+> files.
+> 
+> Maybe checking at each $(LD) invocation should detect all mismatches,
+> but I'm not familer with kbuild to do it by myself.  Could someone
+> make perfect solution?
 
-My experience shows that there are only very rare occurrences of 
-situations where you cannot get back into userspace to do the coredump, 
-and the coredumper tries very hard never to cause additional faults.
+I would prefer to find out why it fails when running the check
+on full vmlinux.
+Your suggestion is like papering over the real bug - and only
+if something prevent us from detecting this in full
+vmlinux should we do it for each LD invocation.
 
-While I am sure you could construct scenarios where this would happen, 
-realistically the only one I have run into were stack overflows, and 
-they can be handled by carefully setting up an alternate stack for 
-signal handlers -- just make sure the entire stack is already dirtied 
-before you run out of memory (or, turn of overcommitting).
-
-
-Markus
+	Sam
