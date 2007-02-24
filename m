@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933473AbXBXKKQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933489AbXBXKgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933473AbXBXKKQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 05:10:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933474AbXBXKKQ
+	id S933489AbXBXKgV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 05:36:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933491AbXBXKgU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 05:10:16 -0500
-Received: from nz-out-0506.google.com ([64.233.162.231]:47131 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933473AbXBXKKO (ORCPT
+	Sat, 24 Feb 2007 05:36:20 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:57650 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933489AbXBXKgU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 05:10:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=orAddRGdBas86+muEiAe5fYb9+G17DVVgWnA4cenq/5nUJ8OceAQVkz7ZqIQA6uO5oqTxIRDIeAt0PQjBfXT3wfl2aIwCO9UJapwnBA6Jg83Mg9ZQ2N8gPqL54poibYpIwKucLxG2PxEsftG/HJDkMG05Wp8ebsb/OxNHTt2zCk=
-Message-ID: <8d158e1f0702240210x71f981a6xf2fe8917dac5e91a@mail.gmail.com>
-Date: Sat, 24 Feb 2007 11:10:12 +0100
-From: "Patrick Ale" <patrick.ale@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [QUESTION] Sata RAID
+	Sat, 24 Feb 2007 05:36:20 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Sat, 24 Feb 2007 05:34:15 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: why is asm-parisc/ioctl.h subtly different from asm-generic/ioctl.h?
+Message-ID: <Pine.LNX.4.64.0702240530190.11865@CPE00045a9c397f-CM001225dbafb6>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Quick question,
+  just noticed that parisc's ioctl.h file, rather than simply
+including asm-generic/ioctl.h, has its own copy whose sole
+(meaningful) difference from the generic one is:
 
-Since I am going to open my server today to do some pata tests (for
-the weird detection problems people are giving me fantastic help with,
-no sarcasm, I really mean it) I thought: why not add two 320GB SATA
-disks on the SATA controller that the mainboard has.
+$ diff include/{asm-generic,asm-parisc}/ioctl.h
+...
+41,42c54,55
+< #define _IOC_WRITE    1U
+< #define _IOC_READ     2U
+---
+> #define _IOC_WRITE    2U
+> #define _IOC_READ     1U
 
-I am wondering: should I use the onboard RAID function? Is this
-supported by Linux? I remember back in "the old days (TM)" there were
-seperate (spelling) drivers for ataraid, how does the current 2.6
-branch cope with the RAID functions of modern motherboards?
+ so parisc is identical except that it switches the meaning of the
+direction field?  is there a reason for this?  just curious.
 
-I am aware that it is NOT hardware raid, the raid is done in the
-driver, which is why you need this fancy boot disk before installing
-Windows on your RAID set.
+rday
 
-Or would you suggest me to stick with MD devices?
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-
-Cheers,
-
-Patrick Ale
-patrick.ale@gmail.com
-
-"kun kasvan isoksi, halun olla poro"
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
