@@ -1,78 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933326AbXBXCGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933335AbXBXCHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933326AbXBXCGq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 21:06:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933335AbXBXCGq
+	id S933335AbXBXCHt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 21:07:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933334AbXBXCHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 21:06:46 -0500
-Received: from userg503.nifty.com ([202.248.238.83]:23309 "EHLO
-	userg503.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933326AbXBXCGp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 21:06:45 -0500
-DomainKey-Signature: a=rsa-sha1; s=userg503; d=nifty.com; c=nofws; q=dns;
-	b=RAS97v1KtpCq4UtwIRXpnpDhXwLjbTA2SgSp2RrKSInImjZF93svtwuUqDginKG2K
-	HPgGP1na2gITgl9vGB+HQ==
-Date: Sat, 24 Feb 2007 11:06:19 +0900
-From: Komuro <komurojun-mbn@nifty.com>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [BUG]  PATA_PCMCIA does not work
-Message-Id: <20070224110619.4f170754.komurojun-mbn@nifty.com>
-In-Reply-To: <20070221153729.5eab83b6@lxorguk.ukuu.org.uk>
-References: <20061217212752.d93816b4.komurojun-mbn@nifty.com>
-	<20061217040222.GD17561@ftp.linux.org.uk>
-	<20070211101537.e40fa309.komurojun-mbn@nifty.com>
-	<20070211114013.65b2be2c.komurojun-mbn@nifty.com>
-	<20070218110914.888de729.komurojun-mbn@nifty.com>
-	<20070221153729.5eab83b6@lxorguk.ukuu.org.uk>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.4; i386-redhat-linux-gnu)
+	Fri, 23 Feb 2007 21:07:49 -0500
+Received: from ns1.suse.de ([195.135.220.2]:33792 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933335AbXBXCHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 21:07:48 -0500
+Date: Sat, 24 Feb 2007 03:07:46 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Zach Brown <zab@zabbo.net>, David Miller <davem@davemloft.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [rfc][patch] dynamic resizing dentry hash using RCU
+Message-ID: <20070224020746.GD2201@wotan.suse.de>
+References: <20070223153743.GA26141@wotan.suse.de> <5FD7605C-E132-4893-86FA-F76DDFB16389@zabbo.net> <20070224012602.GB2201@wotan.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070224012602.GB2201@wotan.suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Alan <alan@lxorguk.ukuu.org.uk> wrote:
-
-The oops is fixed. Thanks!
-
-But when I repeat insertion/rejection of the device,
-ataX.00 is incremented.
-Is this correct?
-
->pccard: PCMCIA card inserted into slot 1
->pccard: card ejected from slot 1
->ata1.00: disabled
->
->pccard: PCMCIA card inserted into slot 1
->pccard: card ejected from slot 1
->ata2.00: disabled
->
->pccard: PCMCIA card inserted into slot 1
->pccard: card ejected from slot 1
->ata3.00: disabled
-
-Best Regards
-Komuro
-
-> Does this fix the oops ?
+On Sat, Feb 24, 2007 at 02:26:02AM +0100, Nick Piggin wrote:
+> On Fri, Feb 23, 2007 at 09:25:28AM -0800, Zach Brown wrote:
+> > 
+> > On Feb 23, 2007, at 7:37 AM, Nick Piggin wrote:
+> > 
+> > >
+> > >The dentry hash uses up 8MB for 1 million entries on my 4GB system  
+> > >is one
+> > >of the biggest wasters of memory for me. Because I rarely have more  
+> > >than one or
+> > >two hundred thousand dentries. And that's with several kernel trees  
+> > >worth of
+> > >entries. Most desktop and probably even many types of servers will  
+> > >only use a
+> > >fraction of that.
+> > >
+> > >So I introduce a new method for resizing hash tables with RCU, and  
+> > >apply
+> > >that to the dentry hash.
+> > 
+> > Can you compare what you've done to the design that Paul and David  
+> > talked about a year ago?
+> > 
+> >   http://lkml.org/lkml/2006/1/30/74
 > 
-> Alan
+> Thanks for the link, I wasn't aware of Paul's algorithm before.
 > 
+> I guess most variants are going to have a double pointer scheme,
+> so they are similar in that regard.
 > 
-> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.20-mm2/drivers/ata/pata_pcmcia.c linux-2.6.20-mm2/drivers/ata/pata_pcmcia.c
-> --- linux.vanilla-2.6.20-mm2/drivers/ata/pata_pcmcia.c	2007-02-20 13:37:58.000000000 +0000
-> +++ linux-2.6.20-mm2/drivers/ata/pata_pcmcia.c	2007-02-21 14:06:58.792707976 +0000
-> @@ -308,7 +342,6 @@
->  		if (info->ndev) {
->  			struct ata_host *host = dev_get_drvdata(dev);
->  			ata_host_detach(host);
-> -			dev_set_drvdata(dev, NULL);
->  		}
->  		info->ndev = 0;
->  		pdev->priv = NULL;
+> I think Paul's is quite complex in moving entries to the new table,
+> and it looks like it requires a lot of grace periods. I avoid all
+> that by using the seqlock.
 > 
-> 
-> 
+> It wasn't clear to me how Paul handled the case where an item is
+> present in the not_current table, but the lookup misses it when it
+> gets moved between the tables. It is a little tricky to follow
+> the find details because it is not in code or pseudo code format.
+
+
+I guess the other thing is that Paul's seems quite hash specific,
+wheras mine does not have to be tied to any particular data strcture.
+
+All you need it to know how to perform a lookup on both your old
+and new data structure, and the same algorithm is basically applicable
+to switching between any 2 data structures.
+
+
