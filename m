@@ -1,42 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933467AbXBXJwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932840AbXBXJ4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933467AbXBXJwR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 04:52:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933468AbXBXJwR
+	id S932840AbXBXJ4g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 04:56:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933470AbXBXJ4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 04:52:17 -0500
-Received: from mail.enyo.de ([212.9.189.167]:2404 "EHLO mail.enyo.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933467AbXBXJwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 04:52:16 -0500
-From: Florian Weimer <fw@deneb.enyo.de>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Cc: Samium Gromoff <_deepfire@feelingofgreen.ru>, Pavel Machek <pavel@ucw.cz>,
-       Valdis.Kletnieks@vt.edu, David Wagner <daw@cs.berkeley.edu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Undo some of the pseudo-security madness
-References: <87r6toufpp.wl@betelheise.deep.net>
-	<200701221520.l0MFKLdK032645@turing-police.cc.vt.edu>
-	<871wlnq7ue.wl@betelheise.deep.net> <20070123084805.GB5560@ucw.cz>
-	<87mz4996wg.wl@betelheise.deep.net>
-	<20070123154127.57059632@localhost.localdomain>
-Date: Sat, 24 Feb 2007 10:51:20 +0100
-In-Reply-To: <20070123154127.57059632@localhost.localdomain>
-	(alan@lxorguk.ukuu.org.uk's message of "Tue, 23 Jan 2007 15:41:27
-	+0000")
-Message-ID: <87fy8v9947.fsf@mid.deneb.enyo.de>
+	Sat, 24 Feb 2007 04:56:36 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:30782 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932840AbXBXJ4f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 04:56:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=aEMDJTQDjWbDJ6ZmqOfLjv2gcqVDUD3Bm3yT66VGeEmPG4doS0I+Vu9oLlcuDyWqFezMQwkiN7bcPAJPd+bOzkF5FiSZ+2un5LHGbJ8wLA5gWgKiULTBd9kG2QO32WU9TQwprooi+aQ4hUBvYdi37CmWxprqB3gylmpVQP1KaGA=
+Message-ID: <c9ad85600702240156g717d49cfm9c7ea30c00d48d28@mail.gmail.com>
+Date: Sat, 24 Feb 2007 03:56:34 -0600
+From: "V P" <upathiyayan@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: REQ_HARDBARRIER and REQ_SOFTBARRIER
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Randomisation has nothing to do with C. In fact from a C perspective the
-> compiler and linker do a lot of work to deal with ELF and loading code at
-> arbitary addresses for dynamic linking and the like, not the user and
-> not as language constructs. Perhaps the Lisp universe should wake up and
-> meet the 1980s 8)
+Hi,
 
-Uhm, C++ folks and others have run into loader performance issues due
-to the way DSOs are handled.  The problem is more severe in the lisp
-context because a typical image contains hundreds of thousands of
-small objects on startup.
+I'm trying to modify the ordering of I/O requests in Linux kernel, and
+came across the barrier flags REQ_HARDBARRIER and REQ_SOFTBARRIER.
+
+One thing I noticed (which might be wrong) is that all the requests
+have both these flags set. What is the significance of these flags? Is
+it a must for a request to have this? Can I reorder two requests with
+these flags set? How is SOFTBARRIER different from HARDBARRIER?
+
+I appreciate your time and help.
+
+Thanks much.
