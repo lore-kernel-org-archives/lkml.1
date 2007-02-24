@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932747AbXBXFQH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933389AbXBXF24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932747AbXBXFQH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 00:16:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932758AbXBXFQG
+	id S933389AbXBXF24 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 00:28:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933390AbXBXF24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 00:16:06 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:49420 "EHLO mx2.suse.de"
+	Sat, 24 Feb 2007 00:28:56 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:51681 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932747AbXBXFQE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 00:16:04 -0500
-Date: Sat, 24 Feb 2007 06:15:56 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [rfc][patch] dynamic resizing dentry hash using RCU
-Message-ID: <20070224051556.GB16601@wotan.suse.de>
-References: <20070223153743.GA26141@wotan.suse.de> <20070224130723.01f3c429.kamezawa.hiroyu@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S933389AbXBXF2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 00:28:55 -0500
+Date: Sat, 24 Feb 2007 02:31:25 -0300
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de
+Subject: [PATCH] Print error code in page faults
+Message-ID: <20070224053125.GA20487@redhat.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="T4sUOijqQbZv57TR"
 Content-Disposition: inline
-In-Reply-To: <20070224130723.01f3c429.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 24, 2007 at 01:07:23PM +0900, KAMEZAWA Hiroyuki wrote:
-> On Fri, 23 Feb 2007 16:37:43 +0100
-> Nick Piggin <npiggin@suse.de> wrote:
-> 
-> > +static void dcache_hash_resize(unsigned int new_shift);
-> > +static void mod_nr_dentry(int mod)
-> > +{
-> > +	unsigned long dentry_size;
-> > +
-> > +	dentry_stat.nr_dentry += mod;
-> > +
-> > +	dentry_size = 1 << dentry_hash->shift;
-> > +	if (unlikely(dentry_stat.nr_dentry > dentry_size+(dentry_size>>1)))
-> > +		dcache_hash_resize(dentry_hash->shift+1);
-> > +	else if (unlikely(dentry_stat.nr_dentry < (dentry_size>>1)))
-> > +		dcache_hash_resize(dentry_hash->shift-1);
-> > +}
-> > +
-> 
-> Do we need to do this kind of resizing in implicit automatic way ?
-> I think it's good to show contention rate by /proc and add sysctl for
-> resize this.
 
-Well having the kernel automatically adjust to the workload is better
-than a sysctl. But it could well be the case that these simple heuristics
-are bad (though they're fine for my system).
+--T4sUOijqQbZv57TR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-But a manual override is a good idea as well.
+When a page faults comes from a kernel space, the printed summary
+leaves us clueless about what kind of access was being tried (which
+is encoded in the error_code variable).
+
+Having it promply available may ease debugging in a bunch of
+situations.
+
+Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+
+
+
+--T4sUOijqQbZv57TR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename=patch_err
+
+diff --git a/arch/x86_64/mm/fault.c b/arch/x86_64/mm/fault.c
+index 6ada723..e65522e 100644
+--- a/arch/x86_64/mm/fault.c
++++ b/arch/x86_64/mm/fault.c
+@@ -539,7 +539,7 @@ no_context:
+ 		printk(KERN_ALERT "Unable to handle kernel NULL pointer dereference");
+ 	else
+ 		printk(KERN_ALERT "Unable to handle kernel paging request");
+-	printk(" at %016lx RIP: \n" KERN_ALERT,address);
++	printk(" at %016lx (error=0x%02lx) RIP: \n" KERN_ALERT, error_code, address);
+ 	printk_address(regs->rip);
+ 	dump_pagetable(address);
+ 	tsk->thread.cr2 = address;
+
+--T4sUOijqQbZv57TR--
