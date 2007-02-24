@@ -1,63 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750943AbXBXLjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750951AbXBXLlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750943AbXBXLjS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 06:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750951AbXBXLjS
+	id S1750951AbXBXLlR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 06:41:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932095AbXBXLlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 06:39:18 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:52758 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750940AbXBXLjR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 06:39:17 -0500
-Date: Sat, 24 Feb 2007 12:39:16 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Markus Gutschke <markus@google.com>
-Cc: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
-       Andrew Morton <akpm@osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>, Robin Holt <holt@sgi.com>,
-       dhowells@redhat.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <soshima@redhat.com>
-Subject: Re: [PATCH 0/4] coredump: core dump masking support v3
-Message-ID: <20070224113916.GA9378@atrey.karlin.mff.cuni.cz>
-References: <45D5B2E3.3030607@hitachi.com> <45DFB1C7.1030205@google.com>
-Mime-Version: 1.0
+	Sat, 24 Feb 2007 06:41:17 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:34288 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750951AbXBXLlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 06:41:16 -0500
+To: Dmitriy Monakhov <dmonakhov@openvz.org>
+Cc: Jiri Kosina <jikos@jikos.cz>, Andrew Morton <akpm@osdl.org>,
+       Stephen Hemminger <shemminger@osdl.org>, mlindner@syskonnect.de,
+       rroesler@syskonnect.de, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] sk98lin: handle pci_enable_device() return value in skge_resume()
+References: <Pine.LNX.4.64.0610130002320.29022@twin.jikos.cz>
+	<20061012152512.66f147b8@freekitty>
+	<Pine.LNX.4.64.0610130028450.29022@twin.jikos.cz>
+	<20061012154714.6924f465@freekitty>
+	<Pine.LNX.4.64.0610130052440.29022@twin.jikos.cz>
+	<20061012175013.87564a57.akpm@osdl.org>
+	<Pine.LNX.4.64.0610130310120.29022@twin.jikos.cz>
+	<87hctcv4zk.fsf_-_@sw.ru>
+From: Dmitriy Monakhov <dmonakhov@openvz.org>
+Date: Sat, 24 Feb 2007 14:41:38 +0300
+In-Reply-To: <87hctcv4zk.fsf_-_@sw.ru> (Dmitriy Monakhov's message of "Sat, 24 Feb 2007 02:17:19 +0300")
+Message-ID: <87mz33940d.fsf@sw.ru>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45DFB1C7.1030205@google.com>
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Kawai, Hidehiro wrote:
-> >This patch series is version 3 of the core dump masking feature,
-> >which provides a per-process flag not to dump anonymous shared
-> >memory segments.
-> 
-> I just wanted to remind you that you need to be careful about dumping 
-> the [vdso] segment no matter whether you omit other segments. I didn't 
-> actually try running your patches, and if the kernel doesn't actually 
-> consider this segment anonymous and shared, things might already work 
-> fine as is.
-> 
-> In any case, you can check with "readelf -a", if the [vdso] segment is 
-> there. And you will find that if you forget to dump it, "gdb" can no 
-> longer give you stack traces on call chains that involve signal handlers.
-> 
-> As an alternative to your kernel patch, you could achieve the same goal 
-> in user space, by linking my coredumper 
-> http://code.google.com/p/google-coredumper/ into your binaries and 
-> setting up appropriate signal handlers. An equivalent patch for 
-> selectively omitting memory regions would be trivial to add. While this 
-> does give you more flexibility, it of course has the drawback of 
-> requiring you to change your applications, so there still is some 
-> benefit in a kernelspace solution.
+Dmitriy Monakhov <dmonakhov@openvz.org> writes:
 
-"We are too lazy to change 0.01% of apps that actually need it" is not
-good enough reason to push the feature into kernel, I'd say.
+> This thread looks dead but issue was't fixed.
+>
+> Jiri Kosina <jikos@jikos.cz> writes:
+>>> > -	pci_enable_device(pdev);
+>>> > +	ret = pci_enable_device(pdev);
+>>> > +	if (ret) {
+>>> > +		printk(KERN_ERR "sk98lin: Cannot enable PCI device %s during resume\n", 
+>>> > +				dev->name);
+>>> > +		unregister_netdev(dev);
+>>> This looks rather wrong - skge_exit() will run unregister_netdev() again.
+>>
+>> You are of course right (the problem was also spotted by Russell King). 
+>> This I believe is the correct one for the sk98lin case.
+>>
+>> [PATCH] fix sk98lin driver, ignoring return value from pci_enable_device()
+>>
+>> add check of return value to _resume() function of sk98lin driver.
+>>
+>> Signed-off-by: Jiri Kosina <jikos@jikos.cz>
+>>
+>> ---
+>>
+>> --- a/drivers/net/sk98lin/skge.c
+>> +++ b/drivers/net/sk98lin/skge.c
+>> @@ -5070,7 +5070,12 @@ static int skge_resume(struct pci_dev *p
+>>  
+>>  	pci_set_power_state(pdev, PCI_D0);
+>>  	pci_restore_state(pdev);
+>> -	pci_enable_device(pdev);
+>> +	ret = pci_enable_device(pdev);
+>> +	if (ret) {
+>> +		printk(KERN_WARNING "sk98lin: unable to enable device %s in resume\n",
+>> +				dev->name);
+>> +		goto out_err;
+>> +	}	
+> [snip]
+>> +out_err:
+>> +	pAC->AllocFlag &= ~SK_ALLOC_IRQ;
+>> +	dev->irq = 0;
+>> +	pci_disable_device(pdev);
+> <<<<< Ok what happend if we jump here right after pci_disable_device() has 
+ OOPs.....Of course i mean pci_enable_device() here^^^^^^^^^^^^^^^^^^^^^
+ I'm sorry about this. (Option complete_word not always good, some times 
+ brain work required too :) )
+ So correct comment looks like:
+  <<<<< Ok what happend if we jump here right after pci_enable_device() has
+        failed, but pci_disable_device() was called anyway, this is wrong and 
+        may be fatal because pdev->enable_cnt may becomes negative.  
+>> +
+>> +	return ret;
+>> +
+>>  }
+>>  #else
+>>  #define skge_suspend NULL
+> This is reworked Jiri's patch:
+>
+> [PATCH] sk98lin: handle pci_enable_device() return value in skge_resume()
+>
+> Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
+> ---
+>  drivers/net/sk98lin/skge.c |   20 +++++++++++++++-----
+>  1 files changed, 15 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/net/sk98lin/skge.c b/drivers/net/sk98lin/skge.c
+> index e94ab25..eea753a 100644
+> --- a/drivers/net/sk98lin/skge.c
+> +++ b/drivers/net/sk98lin/skge.c
+> @@ -5125,7 +5125,12 @@ static int skge_resume(struct pci_dev *pdev)
+>  
+>  	pci_set_power_state(pdev, PCI_D0);
+>  	pci_restore_state(pdev);
+> -	pci_enable_device(pdev);
+> +	ret = pci_enable_device(pdev);
+> +	if (ret) {
+> +		printk(KERN_WARNING "sk98lin: unable to enable device %s "
+> +				"in resume\n", dev->name);
+> +		goto err_out;
+> +	}	
+>  	pci_set_master(pdev);
+>  	if (pAC->GIni.GIMacsFound == 2)
+>  		ret = request_irq(dev->irq, SkGeIsr, IRQF_SHARED, "sk98lin", dev);
+> @@ -5133,10 +5138,8 @@ static int skge_resume(struct pci_dev *pdev)
+>  		ret = request_irq(dev->irq, SkGeIsrOnePort, IRQF_SHARED, "sk98lin", dev);
+>  	if (ret) {
+>  		printk(KERN_WARNING "sk98lin: unable to acquire IRQ %d\n", dev->irq);
+> -		pAC->AllocFlag &= ~SK_ALLOC_IRQ;
+> -		dev->irq = 0;
+> -		pci_disable_device(pdev);
+> -		return -EBUSY;
+> +		ret = -EBUSY;
+> +		goto err_out_disable_pdev;
+>  	}
+>  
+>  	netif_device_attach(dev);
+> @@ -5153,6 +5156,13 @@ static int skge_resume(struct pci_dev *pdev)
+>  	}
+>  
+>  	return 0;
+> +
+> +err_out_disable_pdev:
+> +	pci_disable_device(pdev);
+> +err_out:
+> +	pAC->AllocFlag &= ~SK_ALLOC_IRQ;
+> +	dev->irq = 0;
+> +	return ret;
+>  }
+>  #else
+>  #define skge_suspend NULL
+> -- 
+> 1.4.4.4
+>
+>
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
