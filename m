@@ -1,156 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750951AbXBXLlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752244AbXBXLra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750951AbXBXLlR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 06:41:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932095AbXBXLlR
+	id S1752244AbXBXLra (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 06:47:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbXBXLra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 06:41:17 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:34288 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750951AbXBXLlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 06:41:16 -0500
-To: Dmitriy Monakhov <dmonakhov@openvz.org>
-Cc: Jiri Kosina <jikos@jikos.cz>, Andrew Morton <akpm@osdl.org>,
-       Stephen Hemminger <shemminger@osdl.org>, mlindner@syskonnect.de,
-       rroesler@syskonnect.de, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] sk98lin: handle pci_enable_device() return value in skge_resume()
-References: <Pine.LNX.4.64.0610130002320.29022@twin.jikos.cz>
-	<20061012152512.66f147b8@freekitty>
-	<Pine.LNX.4.64.0610130028450.29022@twin.jikos.cz>
-	<20061012154714.6924f465@freekitty>
-	<Pine.LNX.4.64.0610130052440.29022@twin.jikos.cz>
-	<20061012175013.87564a57.akpm@osdl.org>
-	<Pine.LNX.4.64.0610130310120.29022@twin.jikos.cz>
-	<87hctcv4zk.fsf_-_@sw.ru>
-From: Dmitriy Monakhov <dmonakhov@openvz.org>
-Date: Sat, 24 Feb 2007 14:41:38 +0300
-In-Reply-To: <87hctcv4zk.fsf_-_@sw.ru> (Dmitriy Monakhov's message of "Sat, 24 Feb 2007 02:17:19 +0300")
-Message-ID: <87mz33940d.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	Sat, 24 Feb 2007 06:47:30 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:60100 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752244AbXBXLra (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 06:47:30 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Sat, 24 Feb 2007 06:45:20 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH][RFC] Make asm-generic/ioctl.h extensible by adding conditionals.
+Message-ID: <Pine.LNX.4.64.0702240641520.15087@CPE00045a9c397f-CM001225dbafb6>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitriy Monakhov <dmonakhov@openvz.org> writes:
 
-> This thread looks dead but issue was't fixed.
->
-> Jiri Kosina <jikos@jikos.cz> writes:
->>> > -	pci_enable_device(pdev);
->>> > +	ret = pci_enable_device(pdev);
->>> > +	if (ret) {
->>> > +		printk(KERN_ERR "sk98lin: Cannot enable PCI device %s during resume\n", 
->>> > +				dev->name);
->>> > +		unregister_netdev(dev);
->>> This looks rather wrong - skge_exit() will run unregister_netdev() again.
->>
->> You are of course right (the problem was also spotted by Russell King). 
->> This I believe is the correct one for the sk98lin case.
->>
->> [PATCH] fix sk98lin driver, ignoring return value from pci_enable_device()
->>
->> add check of return value to _resume() function of sk98lin driver.
->>
->> Signed-off-by: Jiri Kosina <jikos@jikos.cz>
->>
->> ---
->>
->> --- a/drivers/net/sk98lin/skge.c
->> +++ b/drivers/net/sk98lin/skge.c
->> @@ -5070,7 +5070,12 @@ static int skge_resume(struct pci_dev *p
->>  
->>  	pci_set_power_state(pdev, PCI_D0);
->>  	pci_restore_state(pdev);
->> -	pci_enable_device(pdev);
->> +	ret = pci_enable_device(pdev);
->> +	if (ret) {
->> +		printk(KERN_WARNING "sk98lin: unable to enable device %s in resume\n",
->> +				dev->name);
->> +		goto out_err;
->> +	}	
-> [snip]
->> +out_err:
->> +	pAC->AllocFlag &= ~SK_ALLOC_IRQ;
->> +	dev->irq = 0;
->> +	pci_disable_device(pdev);
-> <<<<< Ok what happend if we jump here right after pci_disable_device() has 
- OOPs.....Of course i mean pci_enable_device() here^^^^^^^^^^^^^^^^^^^^^
- I'm sorry about this. (Option complete_word not always good, some times 
- brain work required too :) )
- So correct comment looks like:
-  <<<<< Ok what happend if we jump here right after pci_enable_device() has
-        failed, but pci_disable_device() was called anyway, this is wrong and 
-        may be fatal because pdev->enable_cnt may becomes negative.  
->> +
->> +	return ret;
->> +
->>  }
->>  #else
->>  #define skge_suspend NULL
-> This is reworked Jiri's patch:
->
-> [PATCH] sk98lin: handle pci_enable_device() return value in skge_resume()
->
-> Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
-> ---
->  drivers/net/sk98lin/skge.c |   20 +++++++++++++++-----
->  1 files changed, 15 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/net/sk98lin/skge.c b/drivers/net/sk98lin/skge.c
-> index e94ab25..eea753a 100644
-> --- a/drivers/net/sk98lin/skge.c
-> +++ b/drivers/net/sk98lin/skge.c
-> @@ -5125,7 +5125,12 @@ static int skge_resume(struct pci_dev *pdev)
->  
->  	pci_set_power_state(pdev, PCI_D0);
->  	pci_restore_state(pdev);
-> -	pci_enable_device(pdev);
-> +	ret = pci_enable_device(pdev);
-> +	if (ret) {
-> +		printk(KERN_WARNING "sk98lin: unable to enable device %s "
-> +				"in resume\n", dev->name);
-> +		goto err_out;
-> +	}	
->  	pci_set_master(pdev);
->  	if (pAC->GIni.GIMacsFound == 2)
->  		ret = request_irq(dev->irq, SkGeIsr, IRQF_SHARED, "sk98lin", dev);
-> @@ -5133,10 +5138,8 @@ static int skge_resume(struct pci_dev *pdev)
->  		ret = request_irq(dev->irq, SkGeIsrOnePort, IRQF_SHARED, "sk98lin", dev);
->  	if (ret) {
->  		printk(KERN_WARNING "sk98lin: unable to acquire IRQ %d\n", dev->irq);
-> -		pAC->AllocFlag &= ~SK_ALLOC_IRQ;
-> -		dev->irq = 0;
-> -		pci_disable_device(pdev);
-> -		return -EBUSY;
-> +		ret = -EBUSY;
-> +		goto err_out_disable_pdev;
->  	}
->  
->  	netif_device_attach(dev);
-> @@ -5153,6 +5156,13 @@ static int skge_resume(struct pci_dev *pdev)
->  	}
->  
->  	return 0;
-> +
-> +err_out_disable_pdev:
-> +	pci_disable_device(pdev);
-> +err_out:
-> +	pAC->AllocFlag &= ~SK_ALLOC_IRQ;
-> +	dev->irq = 0;
-> +	return ret;
->  }
->  #else
->  #define skge_suspend NULL
-> -- 
-> 1.4.4.4
->
->
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+  Add some preprocessor checking to asm-generic/ioctl.h to allow other
+ioctl.h headers to simply override what are normally trivial
+differences.
 
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+
+---
+
+  as a followup to my earlier post, is it worth making this change to
+allow at least a couple arch-specific ioctl.h files to be massively
+simplified?
+
+
+diff --git a/include/asm-generic/ioctl.h b/include/asm-generic/ioctl.h
+index cd02729..e035e6d 100644
+--- a/include/asm-generic/ioctl.h
++++ b/include/asm-generic/ioctl.h
+@@ -21,8 +21,15 @@
+  */
+ #define _IOC_NRBITS	8
+ #define _IOC_TYPEBITS	8
+-#define _IOC_SIZEBITS	14
+-#define _IOC_DIRBITS	2
++/*
++ *  Let any architecture override either of the following.
++ */
++#ifndef _IOC_SIZEBITS
++# define _IOC_SIZEBITS	14
++#endif
++#ifndef _IOC_DIRBITS
++# define _IOC_DIRBITS	2
++#endif
+
+ #define _IOC_NRMASK	((1 << _IOC_NRBITS)-1)
+ #define _IOC_TYPEMASK	((1 << _IOC_TYPEBITS)-1)
+@@ -35,11 +42,17 @@
+ #define _IOC_DIRSHIFT	(_IOC_SIZESHIFT+_IOC_SIZEBITS)
+
+ /*
+- * Direction bits.
++ * Direction bits, which any architecture can choose to override.
+  */
+-#define _IOC_NONE	0U
+-#define _IOC_WRITE	1U
+-#define _IOC_READ	2U
++#ifndef _IOC_NONE
++# define _IOC_NONE	0U
++#endif
++#ifndef _IOC_WRITE
++# define _IOC_WRITE	1U
++#endif
++#ifndef _IOC_READ
++# define _IOC_READ	2U
++#endif
+
+ #define _IOC(dir,type,nr,size) \
+ 	(((dir)  << _IOC_DIRSHIFT) | \
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
