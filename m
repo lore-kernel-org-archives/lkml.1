@@ -1,138 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933547AbXBXTwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933551AbXBXTxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933547AbXBXTwp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 14:52:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933548AbXBXTwp
+	id S933551AbXBXTxK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 14:53:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933550AbXBXTxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 14:52:45 -0500
-Received: from wr-out-0506.google.com ([64.233.184.239]:10508 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933547AbXBXTwn (ORCPT
+	Sat, 24 Feb 2007 14:53:10 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:53626 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933549AbXBXTxH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 14:52:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tH0DvVbjQ8B8SvSnncC/vCY0ti1kMUlBuy4blLcXa4dZmb6t2bbByoGdR5mS5yvSBwYQ2BhUmSJc+rZBhnbhjUQsCsz3kHf8ucDkEg1viWBEqFIJks8ykLV8r4f95DIwuk7ot2VaNhVkrR5exOUe5uyVhbu7KcgvYhJA+xlpreU=
-Message-ID: <f2b55d220702241152o640abaf3jc10afefaae8476cb@mail.gmail.com>
-Date: Sat, 24 Feb 2007 11:52:41 -0800
-From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Cc: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
-       "Ulrich Drepper" <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "Andrew Morton" <akpm@zip.com.au>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Zach Brown" <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Suparna Bhattacharya" <suparna@in.ibm.com>,
-       "Davide Libenzi" <davidel@xmailserver.org>,
-       "Jens Axboe" <jens.axboe@oracle.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <20070223121751.GA6626@elte.hu>
+	Sat, 24 Feb 2007 14:53:07 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: 2.6.19: ACPI reports AC not present after resume from STD
+Date: Sat, 24 Feb 2007 20:46:18 +0100
+User-Agent: KMail/1.9.5
+Cc: "Lebedev, Vladimir P" <vladimir.p.lebedev@intel.com>,
+       "Karasyov, Konstantin A" <konstantin.a.karasyov@intel.com>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-pm@lists.osdl.org
+References: <8E389A5F2FEABA4CB1DEC35A25CB39CE82FE9F@mssmsx411> <200702132116.05404.arvidjaar@mail.ru> <200702241255.02073.arvidjaar@mail.ru>
+In-Reply-To: <200702241255.02073.arvidjaar@mail.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <20070221211355.GA7302@elte.hu>
-	 <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
-	 <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com>
-	 <20070222074044.GA4158@elte.hu> <20070222113148.GA3781@2ka.mipt.ru>
-	 <20070222125931.GB25788@elte.hu>
-	 <f2b55d220702221324n788506b6oee4f8ed4f168fbf1@mail.gmail.com>
-	 <20070223121751.GA6626@elte.hu>
+Message-Id: <200702242046.20216.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/23/07, Ingo Molnar <mingo@elte.hu> wrote:
-> > This is a fundamental misconception. [...]
->
-> > The scheduler, on the other hand, has to blow and reload all of the
-> > hidden state associated with force-loading the PC and wherever your
-> > architecture keeps its TLS (maybe not the whole TLB, but not nothing,
-> > either). [...]
->
-> please read up a bit more about how the Linux scheduler works. Maybe
-> even read the code if in doubt? In any case, please direct kernel newbie
-> questions to http://kernelnewbies.org/, not linux-kernel@vger.kernel.org.
+Hi,
 
-This is not the first kernel I've swum around in, and I've been
-mucking with the Linux kernel since early 2.2 and coding assembly for
-heavily pipelined processors on and off since 1990.  So I may be a
-newbie to your lingo, and I may even be a loud-mouthed idiot, but I'm
-not a wet-behind-the-ears undergrad, OK?
+On Saturday, 24 February 2007 10:55, Andrey Borzenkov wrote:
+> On Вторник 13 февраля 2007, Andrey Borzenkov wrote:
+> > On Четверг 07 декабря 2006, Lebedev, Vladimir P wrote:
+> > > Please register new bug, attach acpidump and dmesg.
+> >
+> > http://bugzilla.kernel.org/show_bug.cgi?id=7995
+> >
+> > regards
+> >
+> 
+> Well, this starts looking like ACPI is not at fault.
+> 
+> When reporting AC state ACPI just reads contents of system memory (I presume
+> it gets updated by BIOS/ACPI when AC state changes). It looks like this
+> memory area is restored during resume from STD. I updated mentioned bug
+> report with more detailed description. Now if someone could suggest a way to
+> catch if specific physical address gets saved/restored this would finally
+> explain it.
 
-Now, I've addressed the non-free-ness of a TLS swap elsewhere; what
-about function pointers in state machines (with or without flipping
-"supervisor mode" bits)?  Just because loading the PC from a data
-register is one opcode in the instruction stream does not mean that it
-is not quite expensive in terms of blown pipeline state and I-cache
-stalls.  Really fast state machines exploit PC-relative branches that
-really smart CPUs can speculatively execute past (after a few
-traversals) because there are a small number of branch targets
-actually hit.  The instruction prefetch / scheduler unit actually
-keeps a table of PC-relative jump instructions found in I-cache, with
-a little histogram of destinations eventually branched to, and
-speculatively executes down the top branch or two.  (Intel Pentiums
-have a fairly primitive but effective variant of this; see
-http://www.x86.org/articles/branch/branchprediction.htm.)
+First, if you want the reserved memory areas to be left alone by swsusp,
+you need to mark them as 'nosave'.  On x86_64 this is done by the function
+e820_mark_nosave_range() in arch/x86_64/kernel/e820.c that can be ported to
+i386 with no problems.  However, we haven't found that very useful, so far,
+since no one has ever reported any problems with the current approach,
+which is to save and restore them.
 
-More general mechanisms are called "branch target buffers" and US
-Patent 6609194 is a good hook into the literature.  A sufficiently
-smart CPU designer may have figured out how to do something similar
-with computed jumps (add pc, pc, foo), but odds are high that it cuts
-out when you throw function pointers around.  Syscall dispatch is a
-special and heavily optimized case, though -- so it's quite
-conceivable that a well designed userland switch/case state machine
-that makes syscalls will outperform an in-kernel state machine data
-structure traversal.  If this doesn't happen to be true on today's
-desktop, it may be on tomorrow's desktop or today's NUMA monstrosity
-or embedded mega-multi-MIPS.
+Second, if you want to know if a suspicious page frame is saved by swsusp,
+it's best to stick a test and a printk in kernel/power/pack_pfns() and
+artificially fail the suspend, eg. by making swsusp_write() always return
+an error.
 
-There can also be other reasons why tabulated PC-relative jumps and
-immediate PC loads are faster than PC loads from data registers.
-Take, for instance, the Transmeta Crusoe, which (AIUI) used a trick
-similar to the FX!32 x86 emulation on Alpha/NT.  If you're going to
-"translate" CISC to RISC on the fly, you're going to recognize
-switch/case idioms (including tabulated PC-relative branches), and fix
-up the translated branch table to contain offsets to the
-RISC-translated branch targets.  So the state transitions are just as
-cheap as if they had been compiled to RISC in the first place.  Do it
-with function pointers, and the the execution machine is going to have
-to stall while it looks up the text location to see if it has it
-translated in I-cache somewhere.  Guess what:  the PIV works the same
-way (http://www.karbosguide.com/books/pcarchitecture/chapter12.htm).
+> Gratefully waiting for patches to test :)
 
-Are you starting to get the picture that syslets -- clever as they
-might have been on a VAX -- defeat many of the mechanisms that CPU and
-compiler architects have negotiated over decades for accelerating real
-code?  Especially now that we have hyper-threaded CPUs (parallel
-instruction decode/issue units sharing almost all of their cache
-hierarchy), you can almost treat the kernel as if it were microcode
-for a syscall coprocessor.  If you try to migrate application code
-across the syscall boundary, you may perform well on micro-benchmarks
-but you're storing up trouble for the future.
+Sorry, no patches this time.  I have more urgent problem to fix. :-)
 
-If you don't think this kind of fallout is real, talk to whoever had
-the bright idea of hijacking FPU registers to implement memcpy in
-1996.  The PIII designers rolled over and added XMM so
-micro-optimizers would get their dirty mitts off the FPU, which it
-appears that Doug Ledford and Jim Blandy duly acted on in 1999.  Yes,
-you still need to use FXSAVE/FXRSTOR when you want to mess with the
-XMM stuff, but the CPU is smart enough to keep a shadow copy of all
-the microstate that the flag states represent.  So if all you do
-between FXSAVE and FXRSTOR is shlep bytes around with MOVAPS, the
-FXRSTOR costs you little or nothing.  What hurts is an FXRSTOR from a
-location that isn't the last location you FXSAVEd to, or an FXRSTOR
-after actual FP arithmetic instructions have altered status flags.
+Greetings,
+Rafael
 
-The preceding may contain errors in detail -- I am neither a CPU
-architect nor an x86 compiler writer nor even a serious kernel hacker.
- But hopefully it's at least food for thought.  If not, you know where
-the "ignore this prolix nitwit" key is to be found on your keyboard.
 
-Cheers,
-- Michael
+> > > -----Original Message-----
+> > > From: Alexey Starikovskiy [mailto:alexey.y.starikovskiy@linux.intel.com]
+> > >
+> > > Sent: Thursday, December 07, 2006 10:49 PM
+> > > To: Rafael J. Wysocki
+> > > Cc: Karasyov, Konstantin A; Andrey Borzenkov;
+> > > linux-acpi@vger.kernel.org; Lebedev, Vladimir P
+> > > Subject: Re: 2.6.19: ACPI reports AC not present after resume from STD
+> > >
+> > > Rafael J. Wysocki wrote:
+> > > > Hi,
+> > > >
+> > > > On Thursday, 7 December 2006 19:57, Karasyov, Konstantin A wrote:
+> > > >> Hi,
+> > > >>
+> > > >> Unfortunately, I cannot reproduce this bug on my system, but the
+> > >
+> > > problem
+> > >
+> > > >> could be solved by adding a resume handler for AC adapter device.
+> > >
+> > > Could
+> > >
+> > > >> you try the attached patch to see if it helps.
+> > > >
+> > > > I can reproduce it and the patch doesn't help.
+> > > >
+> > > > Greetings,
+> > > > Rafael
+> > >
+> > > Any ACPI errors in dmesg?
+> > >
+> > > Regards,
+> > >     Alex.
+> 
+> 
+> 
+> 
+
+-- 
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
