@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750970AbXBWXf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932754AbXBWXoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750970AbXBWXf3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 18:35:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbXBWXf3
+	id S932754AbXBWXoS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 18:44:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932768AbXBWXoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 18:35:29 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:29178 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750970AbXBWXf2 (ORCPT
+	Fri, 23 Feb 2007 18:44:18 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35557 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932754AbXBWXoR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 18:35:28 -0500
-X-Greylist: delayed 583 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Feb 2007 18:35:28 EST
-X-IronPort-AV: i="4.14,213,1170651600"; 
-   d="scan'208"; a="28696224:sNHT31221701"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: linux-kernel@vger.kernel.org
-Subject: MOST(Media Oriented Systems Transport) Interface?
-Date: Fri, 23 Feb 2007 18:26:30 -0500
-User-Agent: KMail/1.9.5
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Fri, 23 Feb 2007 18:44:17 -0500
+Date: Sat, 24 Feb 2007 00:48:09 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: <Tom.Morrison@Verizon.net>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: Problems with init of Marvell PCI Express SATA Card
+Message-ID: <20070224004809.30a0e105@lxorguk.ukuu.org.uk>
+In-Reply-To: <CJEDIOAEPEPAEFLDLKIBAEJMCDAA.Tom.Morrison@Verizon.net>
+References: <20070224001829.2b444773@lxorguk.ukuu.org.uk>
+	<CJEDIOAEPEPAEFLDLKIBAEJMCDAA.Tom.Morrison@Verizon.net>
+X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702231826.30395.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 23 Feb 2007 23:25:42.0935 (UTC) FILETIME=[EFE34A70:01C757A1]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Does anyone have a pointer for a MOST (Media Oriented Systems Transport) driver?
+On Fri, 23 Feb 2007 18:21:26 -0500
+"Tom Morrison" <Tom.Morrison@Verizon.net> wrote:
 
-http://en.wikipedia.org/wiki/Media_Oriented_Systems_Transport
+> Alan,
+> 
+> Where do I look in the kernel to see if there is
+> 'driver support' present based upon the card?
+> 
+> As I mentioned as well, the same driver is used
+> for the PCI Driver (using 6042 chip). So, at some
+> level, the support is there.
+> 
+> The key is does Linux *Kernel* support for PCI
+> Express have support for this card? Which goes
+> back to the initial question - where/how do I
+> look to see if it does????
 
-I have seen announcements of Linux systems that support MOST:
+PCI Express looks like PCI so generally there isn't specific support 
+needed. The Marvell driver supports the 6101 and 6145 chipsets for PATA
+and for SATA the sata_mv driver supports the 5040, 5041, 5080, 5081,
+6040, 6041, 6042, 6080, 6081.
 
-http://linuxdevices.com/news/NS2586090082.html
-
-But I have not seen the driver architecture, or the protocol that people are running on them...
-
-Any pointers? 
-
--Robin
+Alan
