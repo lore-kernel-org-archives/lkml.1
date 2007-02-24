@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933238AbXBXAIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933267AbXBXALT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933238AbXBXAIz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 19:08:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933267AbXBXAIz
+	id S933267AbXBXALT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 19:11:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933276AbXBXALT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 19:08:55 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55776 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933238AbXBXAIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 19:08:54 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-X-Fcc: ~/Mail/utrace
-Cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Kwatch: kernel watchpoints using CPU debug registers
-In-Reply-To: Alan Stern's message of  Friday, 23 February 2007 11:55:01 -0500 <Pine.LNX.4.44L0.0702231137190.6241-100000@netrider.rowland.org>
-X-Windows: a mistake carried out to perfection.
-Message-Id: <20070224000851.C9884180076@magilla.sf.frob.com>
-Date: Fri, 23 Feb 2007 16:08:51 -0800 (PST)
+	Fri, 23 Feb 2007 19:11:19 -0500
+Received: from vms044pub.verizon.net ([206.46.252.44]:64484 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933267AbXBXALS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 19:11:18 -0500
+Date: Fri, 23 Feb 2007 19:11:01 -0500
+From: "Tom Morrison" <Tom.Morrison@Verizon.net>
+Subject: RE: Problems with init of Marvell PCI Express SATA Card
+In-reply-to: <20070224004809.30a0e105@lxorguk.ukuu.org.uk>
+To: "Alan" <alan@lxorguk.ukuu.org.uk>
+Cc: <linux-kernel@vger.kernel.org>
+Reply-to: <Tom.Morrison@Verizon.net>
+Message-id: <CJEDIOAEPEPAEFLDLKIBEEJNCDAA.Tom.Morrison@Verizon.net>
+MIME-version: 1.0
+X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Importance: Normal
+X-Priority: 3 (Normal)
+X-MSMail-priority: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I think the best approach will be not to reset dr7 at all.  Then there 
-> won't be any need to worry about restoring it.  Leaving a userspace 
-> watchpoint enabled while running in the kernel ought not to matter; a 
-> system call shouldn't touch any address in userspace more than once or 
-> twice.
+Alan,
 
-Hmm.  That sounds reasonable.  But I wonder why the old code clears %dr7.
-It's been that way for a long time (since 2.4 at least).
+Where are you looking for sata_mv driver support.
 
-> My idea was to put 4 hwbkpt structures in thread_struct, so they would
-> always be available for use by ptrace.  However it turned out not to be
-> feasible to replace the debugreg array with something more sophisticated,
-> because of conflicting declarations and problems with the ordering of
-> #includes.  So instead I have been forced to replace debugreg[] with a
-> pointer to a structure which can be allocated as needed.
+if you look in the sata_mv.c it has support for the 
+7042 throughout it (exactly the same as PCI in fact - 
+its the same core chip - just different bus interface)...
 
-I think that's preferable anyway.  Most tasks most of the time will never
-need that storage, so why not make thread_struct a little smaller?
-(There is also the potential for sharing, which I mentioned earlier.)
+but agreed an unknown device in the pci ids...or is 
+there another place where I should be looking for 
+7042 support?
 
-> This raises the possibility that a PTRACE syscall might fail because the 
-> allocation fails.  Hopefully that won't be an issue?
+or does it look in pci ids & if it doesn't know 
+the registered device type (chip) - it doesn't 
+probe it - even if it does a pci_register_device()?
 
-It's not a new issue, anyway, after utrace.  The utrace-based ptrace can
-fail for PTRACE_ATTACH because of OOM too, which wasn't possible before.
-I think it's survivable.
+????
 
+I am sorry for being so Naive here - but obviously
+there is a disconnect here (there is some PEBKAC...:-)
 
-Thanks,
-Roland
+t
+
+-----Original Message-----
+From: Alan [mailto:alan@lxorguk.ukuu.org.uk]
+
+>> PCI Express looks like PCI so generally there isn't 
+>> specific support needed. The Marvell driver supports 
+>> the 6101 and 6145 chipsets for PATA and for SATA 
+>> the sata_mv driver supports the 5040, 5041, 5080, 5081,
+>> 6040, 6041, 6042, 6080, 6081.
+
+Alan
