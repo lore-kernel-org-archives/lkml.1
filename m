@@ -1,45 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752226AbXBXAVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752229AbXBXA0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752226AbXBXAVO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 19:21:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbXBXAVO
+	id S1752229AbXBXA0t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 19:26:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbXBXA0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 19:21:14 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34648 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752225AbXBXAVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 19:21:13 -0500
-To: linux-kernel@vger.kernel.org
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: MOST(Media Oriented Systems Transport) Interface?
-Date: Fri, 23 Feb 2007 16:19:58 -0800
-Organization: OSDL
-Message-ID: <20070223161958.19eea6e7@freekitty>
-References: <200702231826.30395.rgetz@blackfin.uclinux.org>
+	Fri, 23 Feb 2007 19:26:48 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55936
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752227AbXBXA0s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 19:26:48 -0500
+Date: Fri, 23 Feb 2007 16:26:47 -0800 (PST)
+Message-Id: <20070223.162647.71091566.davem@davemloft.net>
+To: nhorman@tuxdriver.com
+Cc: msa@moth.iki.fi, linux-kernel@vger.kernel.org
+Subject: Re: ipv4 and ipv6 stacks for new link layers?
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070223134706.GA24864@hmsreliant.homelinux.net>
+References: <200702231149.l1NBnlZD029626@moth.iki.fi>
+	<20070223134706.GA24864@hmsreliant.homelinux.net>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Trace: build.pdx.osdl.net 1172276399 6963 10.8.0.54 (24 Feb 2007 00:19:59 GMT)
-X-Complaints-To: abuse@osdl.org
-NNTP-Posting-Date: Sat, 24 Feb 2007 00:19:59 +0000 (UTC)
-X-Newsreader: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Feb 2007 18:26:30 -0500
-Robin Getz <rgetz@blackfin.uclinux.org> wrote:
+From: Neil Horman <nhorman@tuxdriver.com>
+Date: Fri, 23 Feb 2007 08:47:06 -0500
 
-> Does anyone have a pointer for a MOST (Media Oriented Systems Transport) driver?
-> 
-> http://en.wikipedia.org/wiki/Media_Oriented_Systems_Transport
-> 
-> I have seen announcements of Linux systems that support MOST:
-> 
-> http://linuxdevices.com/news/NS2586090082.html
-> 
-> But I have not seen the driver architecture, or the protocol that people are running on them...
+> patches welcome :)
 
-Oh boy, yet another proprietary protocol stack. 
+And it's a non-trivial task.  The semantics and way in which
+link level encapsulation is done is not straight-forward
+on some devices.
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+So the hooks either have to be too generic, or too specific
+to be useful.
