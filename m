@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933007AbXBXP1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933510AbXBXP3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933007AbXBXP1V (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 10:27:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933509AbXBXP1U
+	id S933510AbXBXP3c (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 10:29:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933512AbXBXP3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 10:27:20 -0500
-Received: from stinky.trash.net ([213.144.137.162]:54327 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933007AbXBXP1T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 10:27:19 -0500
-Message-ID: <45E05954.8050204@trash.net>
-Date: Sat, 24 Feb 2007 16:27:16 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051017)
-X-Accept-Language: en-us, en
+	Sat, 24 Feb 2007 10:29:31 -0500
+Received: from tmailer.gwdg.de ([134.76.10.23]:48016 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933510AbXBXP3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 10:29:31 -0500
+Date: Sat, 24 Feb 2007 16:26:10 +0100 (MET)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Jon Masters <jcm@redhat.com>
+cc: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
+       Sergey Vlasov <vsu@altlinux.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mit-devel@lists.printk.net
+Subject: Re: module-init-tools-3.3-pre10 available
+In-Reply-To: <45DF0B42.2080208@redhat.com>
+Message-ID: <Pine.LNX.4.61.0702241625030.16527@yvahk01.tjqt.qr>
+References: <45DD0031.9010808@redhat.com> <20070222170732.22c1320b.vsu@altlinux.ru>
+ <45DDAE24.6080905@redhat.com> <20070223120136.12ea11db@home.brethil>
+ <45DF0B42.2080208@redhat.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 18/29] netfilter: notify about NF_QUEUE vs emergency skbs
-References: <20070221144304.512721000@taijtu.programming.kicks-ass.net> <20070221144843.299254000@taijtu.programming.kicks-ass.net>
-In-Reply-To: <20070221144843.299254000@taijtu.programming.kicks-ass.net>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> Emergency skbs should never touch user-space, however NF_QUEUE is fully user
-> configurable. Notify the user of his mistake and try to continue.
+
+On Feb 23 2007 10:41, Jon Masters wrote:
 >
-> --- linux-2.6-git.orig/net/netfilter/core.c	2007-02-14 12:09:07.000000000 +0100
-> +++ linux-2.6-git/net/netfilter/core.c	2007-02-14 12:09:18.000000000 +0100
-> @@ -187,6 +187,11 @@ next_hook:
->  		kfree_skb(*pskb);
->  		ret = -EPERM;
->  	} else if ((verdict & NF_VERDICT_MASK)  == NF_QUEUE) {
-> +		if (unlikely((*pskb)->emergency)) {
-> +			printk(KERN_ERR "nf_hook: NF_QUEUE encountered for "
-> +					"emergency skb - skipping rule.\n");
-> +			goto next_hook;
-> +		}
+> I think it's like the configure/Makefile.in situation. These files should
+> technically not be in the repo either (and you removed them in your tree) but I
+> re-added them because people have an expectation that:
+>
+> ./configure
+> make
+>
+> will do something "out of the box".
 
-If I'm not mistaken any skb on the receive side might get
-allocated from the reserve. I don't see how the user could
-avoid this except by not using queueing at all.
+Out of the box perhaps if it is the .tar.bz2 archive, but the same does not
+always hold for CVS repos, much less SVNs [random guess on svn]. He who pulls
+from a developer tree mostly knows to run 'autogen.sh' or 'autoreconf -fi'
+beforehand.
 
-I also didn't see a patch dropping packets allocated from
-the reserve that are forwarded or processed directly without
-getting queued to a socket, so this would allow them to
-bypass userspace queueing and still go through.
 
-I think the user should just exclude packets necessary for
-swapping from queueing manually, based on IP addresses,
-port numbers or something like that.
-
+Jan
+-- 
