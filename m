@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933496AbXBXLNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933498AbXBXLUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933496AbXBXLNZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 06:13:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbXBXLNY
+	id S933498AbXBXLUu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 06:20:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933499AbXBXLUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 06:13:24 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:57791 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750971AbXBXLNX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 06:13:23 -0500
-Date: Sat, 24 Feb 2007 03:09:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Andrew" <andrew@nelless.net>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: 2.6.21-rc1: framebuffer/console boot failure
-Message-Id: <20070224030950.074f88d4.akpm@linux-foundation.org>
-In-Reply-To: <35472.86.7.220.119.1172237750.squirrel@wmbeta.mxes.net>
-References: <35472.86.7.220.119.1172237750.squirrel@wmbeta.mxes.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 24 Feb 2007 06:20:50 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:59065 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933498AbXBXLUt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 06:20:49 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Sat, 24 Feb 2007 06:17:09 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Ralf Baechle <ralf@linux-mips.org>, Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] MIPS: Remove unreferenced _IOC_SLMASK macro in ioctl.h.
+Message-ID: <Pine.LNX.4.64.0702240613250.13622@CPE00045a9c397f-CM001225dbafb6>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, TW_XF 0.08)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, 23 Feb 2007 13:35:50 -0000 (GMT) "Andrew" <andrew@nelless.net> wrote:
-> Hi,
-> 
-> 2.6.21-rc1 fails to boot on my machine. As soon as I switch
-> from grub the screen turns and remains black with no sign
-> of Tux or any output.
-> 
-> I've run a git-bisect between 2.6.20 (which works fine) and
-> 2.6.21-rc1 and found the first bad commit to be
-> #59b8175c771040afcd4ad67022b0cc80c216b866 which seems bizarre
-> to me since this is a mostly an ARM commit.
-> 
-> I haven't tried to revert this commit because frankly I don't
-> know where to go from there with a multi-parent commit.
-> 
-> I'm running on on a Asus A8N-VM CSM motherboard with a single
-> core AMD64 processor, with a nVidia GPU in the PCI-ex slot
-> using the standard VESA frame buffer driver.
-> 
-> Relevant config's can be found here:
-> http://homepage.ntlworld.com/anelless/linux/2.6.21-rc1/
-> 
 
-and, later,
+  Delete the definition of the apparently unreferenced macro
+_IOC_SLMASK.
 
-> I have just discovered 2.6.21-rc1 boots with
-> pci=noacpi ...
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-Presumably this regression was caused by the ACPI merge.  Are you able to
-capture the dmesg output from the 2.6.20-rc1 boot?  netconsole might be
-useful here, thanks.
+---
 
-(You get added to the post-2.6.20 regression list, so you'll be hearing
-from us quite a lot for the next month.  Sorry ;))
+diff --git a/include/asm-mips/ioctl.h b/include/asm-mips/ioctl.h
+index cba641a..2036fcb 100644
+--- a/include/asm-mips/ioctl.h
++++ b/include/asm-mips/ioctl.h
+@@ -38,11 +38,6 @@
+ #define _IOC_DIRSHIFT	(_IOC_SIZESHIFT+_IOC_SIZEBITS)
+
+ /*
+- * We to additionally limit parameters to a maximum 255 bytes.
+- */
+-#define _IOC_SLMASK	0xff
+-
+-/*
+  * Direction bits _IOC_NONE could be 0, but OSF/1 gives it a bit.
+  * And this turns out useful to catch old ioctl numbers in header
+  * files for us.
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
