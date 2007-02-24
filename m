@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933235AbXBXAGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933238AbXBXAIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933235AbXBXAGj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 19:06:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933238AbXBXAGi
+	id S933238AbXBXAIz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 19:08:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933267AbXBXAIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 19:06:38 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43216 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933235AbXBXAGh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 19:06:37 -0500
-Date: Sat, 24 Feb 2007 01:08:24 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
-       "Ulrich Drepper" <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "Andrew Morton" <akpm@zip.com.au>, "Zach Brown" <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Suparna Bhattacharya" <suparna@in.ibm.com>,
-       "Davide Libenzi" <davidel@xmailserver.org>,
-       "Jens Axboe" <jens.axboe@oracle.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070224010824.5cf6c0ac@lxorguk.ukuu.org.uk>
-In-Reply-To: <f2b55d220702231549g47a648e3xd4c9d4a730f0c4ea@mail.gmail.com>
-References: <20070221211355.GA7302@elte.hu>
-	<20070221233111.GB5895@elte.hu>
-	<45DCD9E5.2010106@redhat.com>
-	<20070222074044.GA4158@elte.hu>
-	<20070222113148.GA3781@2ka.mipt.ru>
-	<20070222125931.GB25788@elte.hu>
-	<f2b55d220702221324n788506b6oee4f8ed4f168fbf1@mail.gmail.com>
-	<20070223003018.0d244576@lxorguk.ukuu.org.uk>
-	<f2b55d220702221847p6b28f6eehed1bb5b1b0edf9f4@mail.gmail.com>
-	<20070223123718.54c9670e@lxorguk.ukuu.org.uk>
-	<f2b55d220702231549g47a648e3xd4c9d4a730f0c4ea@mail.gmail.com>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 23 Feb 2007 19:08:55 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:55776 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933238AbXBXAIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 19:08:54 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+X-Fcc: ~/Mail/utrace
+Cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Kwatch: kernel watchpoints using CPU debug registers
+In-Reply-To: Alan Stern's message of  Friday, 23 February 2007 11:55:01 -0500 <Pine.LNX.4.44L0.0702231137190.6241-100000@netrider.rowland.org>
+X-Windows: a mistake carried out to perfection.
+Message-Id: <20070224000851.C9884180076@magilla.sf.frob.com>
+Date: Fri, 23 Feb 2007 16:08:51 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> long my_threadlet_fn(void *data)
-> {
->        char *name = data;
->        int fd;
-> 
->        fd = open(name, O_RDONLY);
->        if (fd < 0)
->                goto out;
-> 
->        fstat(fd, &stat);
->        read(fd, buf, count)
->        ...
-> 
-> out:
->        return threadlet_complete();
-> }
-> 
-> You're telling me that runs entirely in kernel space when open()
-> blocks, and doesn't touch errno if fstat() fails?  Now who hasn't read
-> the code?
+> I think the best approach will be not to reset dr7 at all.  Then there 
+> won't be any need to worry about restoring it.  Leaving a userspace 
+> watchpoint enabled while running in the kernel ought not to matter; a 
+> system call shouldn't touch any address in userspace more than once or 
+> twice.
 
-That example touches back into user space, but doesnt involve MMU changes
-or cache flushes, or tlb flushes, or floating point.
+Hmm.  That sounds reasonable.  But I wonder why the old code clears %dr7.
+It's been that way for a long time (since 2.4 at least).
 
-errno is thread specific if you use it but errno is as I said before
-entirely a C library detail that you don't have to suffer if you don't
-want to. Avoiding that saves a segment register load - which isn't too
-costly but isn't free.
+> My idea was to put 4 hwbkpt structures in thread_struct, so they would
+> always be available for use by ptrace.  However it turned out not to be
+> feasible to replace the debugreg array with something more sophisticated,
+> because of conflicting declarations and problems with the ordering of
+> #includes.  So instead I have been forced to replace debugreg[] with a
+> pointer to a structure which can be allocated as needed.
 
-Alan
+I think that's preferable anyway.  Most tasks most of the time will never
+need that storage, so why not make thread_struct a little smaller?
+(There is also the potential for sharing, which I mentioned earlier.)
+
+> This raises the possibility that a PTRACE syscall might fail because the 
+> allocation fails.  Hopefully that won't be an issue?
+
+It's not a new issue, anyway, after utrace.  The utrace-based ptrace can
+fail for PTRACE_ATTACH because of OOM too, which wasn't possible before.
+I think it's survivable.
+
+
+Thanks,
+Roland
