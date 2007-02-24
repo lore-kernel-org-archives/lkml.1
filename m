@@ -1,36 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752261AbXBXMhT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752269AbXBXMmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752261AbXBXMhT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 07:37:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263AbXBXMhT
+	id S1752269AbXBXMmZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 07:42:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932353AbXBXMmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 07:37:19 -0500
-Received: from raven.upol.cz ([158.194.120.4]:59934 "EHLO raven.upol.cz"
+	Sat, 24 Feb 2007 07:42:25 -0500
+Received: from brick.kernel.dk ([62.242.22.158]:25911 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752261AbXBXMhS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 07:37:18 -0500
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: linux-kernel-list <linux-kernel@vger.kernel.org>,
-       Pete Zaitcev <zaitcev@redhat.com>
-Subject: Re: [PATCH] USB Elan FTDI: check for workqueue creation v2
-In-Reply-To: <20070224074115.GB10139@cvg>
-References: <20070224074115.GB10139@cvg>
-Date: Sat, 24 Feb 2007 13:46:44 +0100
-Message-Id: <E1HKwIW-0005OS-Nw@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
+	id S1752269AbXBXMmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 07:42:25 -0500
+Date: Sat, 24 Feb 2007 13:42:06 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: V P <upathiyayan@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: REQ_HARDBARRIER and REQ_SOFTBARRIER
+Message-ID: <20070224124206.GG22586@kernel.dk>
+References: <c9ad85600702240156g717d49cfm9c7ea30c00d48d28@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c9ad85600702240156g717d49cfm9c7ea30c00d48d28@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Cyrill Gorcunov
-> Newsgroups: gmane.linux.kernel
-> Subject: bss zeroing ([PATCH] USB Elan FTDI: check for workqueue creation v2)
-> Date: Sat, 24 Feb 2007 10:41:15 +0300
-[]
-> Btw, Pete, you are right! C99 ANSI standart says that static pointer
-> if it not initialized explicitly has to be set to NULL by compiler ;)
-> Thanks a lot for comments and Ack the patch please.
+On Sat, Feb 24 2007, V P wrote:
+> Hi,
+> 
+> I'm trying to modify the ordering of I/O requests in Linux kernel, and
+> came across the barrier flags REQ_HARDBARRIER and REQ_SOFTBARRIER.
+> 
+> One thing I noticed (which might be wrong) is that all the requests
+> have both these flags set. What is the significance of these flags? Is
 
-Are you sure about "by compiler"? I mean, why not by OS, in case of uCs
-by code/data memory image generator?
+Uhm? That's definitely not true.
 
-____
+> it a must for a request to have this? Can I reorder two requests with
+> these flags set? How is SOFTBARRIER different from HARDBARRIER?
+
+Both imply a reordering barrier in the io scheduler, and the hard
+barrier further implies a barrier at the drive/driver side. So you may
+not reorder across a barrier.
+
+-- 
+Jens Axboe
+
