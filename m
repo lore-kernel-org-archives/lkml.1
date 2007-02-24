@@ -1,30 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932793AbXBXNeD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932223AbXBXNgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932793AbXBXNeD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 08:34:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932223AbXBXNeD
+	id S932223AbXBXNgj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 08:36:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932796AbXBXNgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 08:34:03 -0500
-Received: from 69-100-st.zelcom.ru ([80.92.100.69]:1789 "EHLO
+	Sat, 24 Feb 2007 08:36:39 -0500
+Received: from 69-100-st.zelcom.ru ([80.92.100.69]:1798 "EHLO
 	etherstorm.feelingofgreen.ru" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932793AbXBXNeB (ORCPT
+	by vger.kernel.org with ESMTP id S932223AbXBXNgi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 08:34:01 -0500
-Date: Sat, 24 Feb 2007 16:33:53 +0300
-Message-ID: <87irdrbry6.wl@betelheise.deep.net>
+	Sat, 24 Feb 2007 08:36:38 -0500
+Date: Sat, 24 Feb 2007 16:36:35 +0300
+Message-ID: <87hctbbrto.wl@betelheise.deep.net>
 From: Samium Gromoff <_deepfire@feelingofgreen.ru>
 To: Florian Weimer <fw@deneb.enyo.de>
-Cc: Samium Gromoff <_deepfire@feelingofgreen.ru>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       David Wagner <daw-usenet@taverner.cs.berkeley.edu>,
-       LKML Kernel <linux-kernel@vger.kernel.org>
+Cc: Alan <alan@lxorguk.ukuu.org.uk>,
+       Samium Gromoff <_deepfire@feelingofgreen.ru>,
+       Pavel Machek <pavel@ucw.cz>, Valdis.Kletnieks@vt.edu,
+       David Wagner <daw@cs.berkeley.edu>, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] Undo some of the pseudo-security madness
-In-Reply-To: <87k5y799lo.fsf@mid.deneb.enyo.de>
+In-Reply-To: <87fy8v9947.fsf@mid.deneb.enyo.de>
 References: <87r6toufpp.wl@betelheise.deep.net>
-	<ep0tb0$f6e$1@taverner.cs.berkeley.edu>
-	<1D317613-B0B6-4517-81B5-DBF3978FA413@mac.com>
-	<87lkjvvnc6.wl@betelheise.deep.net>
-	<87k5y799lo.fsf@mid.deneb.enyo.de>
+	<200701221520.l0MFKLdK032645@turing-police.cc.vt.edu>
+	<871wlnq7ue.wl@betelheise.deep.net>
+	<20070123084805.GB5560@ucw.cz>
+	<87mz4996wg.wl@betelheise.deep.net>
+	<20070123154127.57059632@localhost.localdomain>
+	<87fy8v9947.fsf@mid.deneb.enyo.de>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.8 (=?ISO-8859-4?Q?Shij=F2?=) APEL/10.6 Emacs/23.0.51
  (i486-pc-linux-gnu) MULE/5.0 (SAKAKI)
@@ -34,29 +36,23 @@ Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Sat, 24 Feb 2007 10:40:51 +0100,
+At Sat, 24 Feb 2007 10:51:20 +0100,
 Florian Weimer wrote:
 > 
-> * Samium Gromoff:
+> > Randomisation has nothing to do with C. In fact from a C perspective the
+> > compiler and linker do a lot of work to deal with ELF and loading code at
+> > arbitary addresses for dynamic linking and the like, not the user and
+> > not as language constructs. Perhaps the Lisp universe should wake up and
+> > meet the 1980s 8)
 > 
-> > Lisp environments can produce standalone executables
-> 
-> If you've got a stand-alone executable, you don't need MAP_FIXED.  The
-> ELF loader maps the program at a fixed address anyway (at least on
-> i386 and x86_64, I haven't checked others).
+> Uhm, C++ folks and others have run into loader performance issues due
+> to the way DSOs are handled.  The problem is more severe in the lisp
+> context because a typical image contains hundreds of thousands of
+> small objects on startup.
 
-Not so.
+Well:
 
-The thing is that the picture is of two pieces:
-
- - the executable
- - the unrelocatable lisp core (which is unrelocatable by the virtue
-   of non-PIC code) which is mapped into the AS of the executable.
-
-It is the latter which breaks, as its map can overlap with randomized
-pieces of the executable (along with its libraries).
-
-> AFAIK, PolyML has recently made the switch to stand-alone executables
-> for this reason.
+root@betelheise:/mnt/shared/video1 # cat /proc/`pgrep sbcl | head -n1`/maps | wc -l
+1378
 
 regards, Samium Gromoff
