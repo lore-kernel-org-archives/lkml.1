@@ -1,46 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752269AbXBXMmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752256AbXBXMtD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752269AbXBXMmZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 07:42:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932353AbXBXMmZ
+	id S1752256AbXBXMtD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 07:49:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbXBXMtD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 07:42:25 -0500
-Received: from brick.kernel.dk ([62.242.22.158]:25911 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752269AbXBXMmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 07:42:25 -0500
-Date: Sat, 24 Feb 2007 13:42:06 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: V P <upathiyayan@gmail.com>
+	Sat, 24 Feb 2007 07:49:03 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37805 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752256AbXBXMtB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 07:49:01 -0500
+Date: Sat, 24 Feb 2007 13:52:52 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: "Stephen Dolan" <stedolan@gmail.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: REQ_HARDBARRIER and REQ_SOFTBARRIER
-Message-ID: <20070224124206.GG22586@kernel.dk>
-References: <c9ad85600702240156g717d49cfm9c7ea30c00d48d28@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <c9ad85600702240156g717d49cfm9c7ea30c00d48d28@mail.gmail.com>
+Subject: Re: Memory sharing question
+Message-ID: <20070224135252.21caa191@lxorguk.ukuu.org.uk>
+In-Reply-To: <1eff86fb0702240350l2c111c2apb5639fec67b360b4@mail.gmail.com>
+References: <1eff86fb0702240350l2c111c2apb5639fec67b360b4@mail.gmail.com>
+X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 24 2007, V P wrote:
-> Hi,
-> 
-> I'm trying to modify the ordering of I/O requests in Linux kernel, and
-> came across the barrier flags REQ_HARDBARRIER and REQ_SOFTBARRIER.
-> 
-> One thing I noticed (which might be wrong) is that all the requests
-> have both these flags set. What is the significance of these flags? Is
+> with the address as the "start" parameter and MAP_FIXED. However, that
+> tends to fail, and MAP_FIXED can have annoying side-effects (killing
+> off other mappings).
 
-Uhm? That's definitely not true.
+MAP_FIXED requires you know in advance a good place to put the memory,
+which isn't too hard with some planning but does get fairly platform
+specific and requires good knowledge.
 
-> it a must for a request to have this? Can I reorder two requests with
-> these flags set? How is SOFTBARRIER different from HARDBARRIER?
+> The point of all this is that I want to pass a large, complex (full of
+> pointers) data structure to a different process, and I don't want the
+> overhead of serialising it down a socket and then parsing it at the
+> other end (the data structure's pretty big, and the other process
+> won't need it all). Is this possible?
 
-Both imply a reordering barrier in the io scheduler, and the hard
-barrier further implies a barrier at the drive/driver side. So you may
-not reorder across a barrier.
-
--- 
-Jens Axboe
-
+You can also just use relative pointers, which is actually pretty fast on
+most modern processors
