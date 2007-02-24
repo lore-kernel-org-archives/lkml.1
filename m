@@ -1,83 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933345AbXBXCm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933357AbXBXCqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933345AbXBXCm1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 21:42:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933352AbXBXCm1
+	id S933357AbXBXCqb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 21:46:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933355AbXBXCqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 21:42:27 -0500
-Received: from mga09.intel.com ([134.134.136.24]:45409 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933345AbXBXCm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 21:42:26 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,213,1170662400"; 
-   d="scan'208"; a="50112429:sNHT19897371"
-Date: Fri, 23 Feb 2007 18:06:55 -0800
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Zwane Mwaikambo <zwane@infradead.org>,
-       Ashok Raj <ashok.raj@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       "Lu, Yinghai" <yinghai.lu@amd.com>,
-       Natalie Protasevich <protasnb@gmail.com>, Andi Kleen <ak@suse.de>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 14/14] genirq: Mask irqs when migrating them.
-Message-ID: <20070223180655.B2120@unix-os.sc.intel.com>
-References: <m1tzxdunsg.fsf_-_@ebiederm.dsl.xmission.com> <m1ps81uno3.fsf_-_@ebiederm.dsl.xmission.com> <m1lkipunl0.fsf_-_@ebiederm.dsl.xmission.com> <m1ejohung7.fsf_-_@ebiederm.dsl.xmission.com> <m17iu9unb6.fsf_-_@ebiederm.dsl.xmission.com> <m13b4xun1c.fsf_-_@ebiederm.dsl.xmission.com> <m1y7mpt8d2.fsf_-_@ebiederm.dsl.xmission.com> <m1tzxdt8au.fsf_-_@ebiederm.dsl.xmission.com> <m1ps81t87h.fsf_-_@ebiederm.dsl.xmission.com> <m1hctdt7ub.fsf_-_@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 23 Feb 2007 21:46:31 -0500
+Received: from nz-out-0506.google.com ([64.233.162.228]:39795 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933352AbXBXCqa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Feb 2007 21:46:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZFJ+985pj25sIK9xFIjeB7+r4XFGHtZP9Lmmrjv7GJLIw7AqICCxs4tYmMqT3TLsRM5gj5peuJZGjwXFCPrRWpR8+VBnlfNHoFUQh7NAboVmR9+AXn/BMluebq3gkAySdPTHNifrQjecoAVU36jocBlUXX1Bh1pDSWtxpF4SNy4=
+Message-ID: <f2b55d220702231846l7052d65g4fe56534e0f28ef@mail.gmail.com>
+Date: Fri, 23 Feb 2007 18:46:29 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Michael K. Edwards" <medwards.linux@gmail.com>,
+       "Jose Goncalves" <jose.goncalves@inov.pt>,
+       "Frederik Deweerdt" <deweerdt@free.fr>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Serial related oops
+In-Reply-To: <20070219232020.GL27370@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.2.5.1i
-In-Reply-To: <m1hctdt7ub.fsf_-_@ebiederm.dsl.xmission.com>; from ebiederm@xmission.com on Fri, Feb 23, 2007 at 04:46:20AM -0700
+References: <20070220144814.GJ566@slug> <45D9D073.7020701@inov.pt>
+	 <20070219164200.GF27370@flint.arm.linux.org.uk>
+	 <45D9E46C.4030408@inov.pt>
+	 <f2b55d220702191237o2e6c4211u58a77deae1febe70@mail.gmail.com>
+	 <20070219205153.GH27370@flint.arm.linux.org.uk>
+	 <f2b55d220702191324s17c9cc87xc581a9beba2644f8@mail.gmail.com>
+	 <20070219213151.GJ27370@flint.arm.linux.org.uk>
+	 <f2b55d220702191416k479aa8c0gad4f42e306f26ecb@mail.gmail.com>
+	 <20070219232020.GL27370@flint.arm.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew, This is a bug fix and must go in before 2.6.21.
+Russell, thanks again for offering to look at this; the more oopses
+and soft lockups I see on this board, the more I think you're right
+and we have an IRQ handling race.
 
-Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Here's the struct irqchip setup:
 
-On Fri, Feb 23, 2007 at 04:46:20AM -0700, Eric W. Biederman wrote:
-> 
-> move_native_irqs tries to do the right thing when migrating irqs
-> by disabling them.  However disabling them is a software logical
-> thing, not a hardware thing.  This has always been a little flaky
-> and after Ingo's latest round of changes it is guaranteed to not
-> mask the apic.
-> 
-> So this patch fixes move_native_irq to directly call the mask and
-> unmask chip methods to guarantee that we mask the irq when we
-> are migrating it.  We must do this as it is required by
-> all code that call into the path.
-> 
-> Since we don't know the masked status when IRQ_DISABLED is
-> set so we will not be able to restore it.   The patch makes the code
-> just give up and trying again the next time this routing is called.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-> ---
->  kernel/irq/migration.c |    9 ++++-----
->  1 files changed, 4 insertions(+), 5 deletions(-)
-> 
-> diff --git a/kernel/irq/migration.c b/kernel/irq/migration.c
-> index 4baa3bb..77b7acc 100644
-> --- a/kernel/irq/migration.c
-> +++ b/kernel/irq/migration.c
-> @@ -65,12 +65,11 @@ void move_native_irq(int irq)
->  	if (likely(!(desc->status & IRQ_MOVE_PENDING)))
->  		return;
->  
-> -	if (likely(!(desc->status & IRQ_DISABLED)))
-> -		desc->chip->disable(irq);
-> +	if (unlikely(desc->status & IRQ_DISABLED))
-> +		return;
->  
-> +	desc->chip->mask(irq);
->  	move_masked_irq(irq);
-> -
-> -	if (likely(!(desc->status & IRQ_DISABLED)))
-> -		desc->chip->enable(irq);
-> +	desc->chip->unmask(irq);
->  }
->  
-> -- 
-> 1.5.0.g53756
+/* mask irq, refer ssection 2.6 under chip 8618 document */
+static void mv88w8xx8_mask_irq(unsigned int irq)
+{
+        MV88W8XX8_REG_WRITE(MV88W8XX8_INT_ENABLE_CLR,(1 << irq));
+}
+
+/* unmask irq, refer ssection 2.6 under chip 8618 document */
+static void mv88w8xx8_unmask_irq(unsigned int irq)
+{
+        MV88W8XX8_REG_WRITE(MV88W8XX8_INT_ENABLE_SET,(1 << irq));
+}
+
+/* ack to CPU interrupts and also individual timer interrupts */
+static void mv88w8xx8_mask_ack_irq(unsigned int irq)
+{
+        mv88w8xx8_mask_irq(irq);
+
+        if (irq < IRQ_TIMER1 || irq > IRQ_TIMER4) return;
+
+        /* write 0 to clear interrupt and  re-enable further interrupts */
+        MV88W8XX8_REG_WRITE(MV88W8XX8_TIMER_INT_SOURCE, ~(1<<(irq-4)));
+}
+
+static struct irqchip mv88w8xx8_chip = {
+        .ack    = mv88w8xx8_mask_ack_irq,
+        .mask   = mv88w8xx8_mask_irq,
+        .unmask = mv88w8xx8_unmask_irq,
+};
+
+/**
+ * called by core.c to  initialize the IRQ module
+ */
+void mv88w8xx8_init_irq(void)
+{
+        int irq;
+
+        for (irq = 0; irq < NR_IRQS; irq++) {
+                set_irq_chip(irq, &mv88w8xx8_chip);
+                set_irq_handler(irq, do_level_IRQ);
+                set_irq_flags(irq, IRQF_VALID | IRQF_PROBE);
+        }
+}
