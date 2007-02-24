@@ -1,183 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750945AbXBXVzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932868AbXBXWEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750945AbXBXVzN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 16:55:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932420AbXBXVzN
+	id S932868AbXBXWEX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 17:04:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932870AbXBXWEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 16:55:13 -0500
-Received: from smtp104.sbc.mail.re2.yahoo.com ([68.142.229.101]:31414 "HELO
-	smtp104.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750945AbXBXVzL (ORCPT
+	Sat, 24 Feb 2007 17:04:23 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:41415 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932868AbXBXWEV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 16:55:11 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=hnWqC4VvSYAD+VvX4bLChg4cJoKo0QrGJFAl2XgQ0vhSqnFr/i9Zj6bUo/UkGBIW5Les9GDESm9Ae3EMQsqNmq7FoYx3QKtds9iZiOl8bS8VIhVQ6J9RUi0RQb+fWIBi83JUUVBc3daVGNMMIRdeFwNzIZ88CM/kEmo6k9qq1fo=  ;
-X-YMail-OSG: aN1ZpKIVM1l5ETv_xhKBIthzM.wG6Hlb3UU7T_XN2ndThRvFaTS1oeMOn0hH2dk8RNP7LBrTZcfD6cD81vNV36HNwzmrRG7OwDhE2mdfZAfT4eRKc7QweQxpfS1eoL89HhwNzpuzktoXkPo-
-From: David Brownell <david-b@pacbell.net>
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [patch/rfc 2.6.20-git] parport reports physical devices
-Date: Sat, 24 Feb 2007 13:40:44 -0800
-User-Agent: KMail/1.7.1
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-References: <200702182108.08217.david-b@pacbell.net> <200702190840.30643.david-b@pacbell.net> <20070220221043.ead0b744.khali@linux-fr.org>
-In-Reply-To: <20070220221043.ead0b744.khali@linux-fr.org>
+	Sat, 24 Feb 2007 17:04:21 -0500
+X-AuditID: d80ac287-9d799bb000002978-36-45e0b6501064 
+Date: Sat, 24 Feb 2007 22:04:04 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Oleg Nesterov <oleg@tv-sign.ru>
+cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, dipankar@in.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: PREEMPT_RCU breaks anon_vma locking ?
+In-Reply-To: <20070223212303.GA423@tv-sign.ru>
+Message-ID: <Pine.LNX.4.64.0702242203080.4370@blonde.wat.veritas.com>
+References: <20070223212303.GA423@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702241340.44804.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 24 Feb 2007 22:03:59.0888 (UTC) FILETIME=[AFDB7100:01C7585F]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 20 February 2007 1:10 pm, Jean Delvare wrote:
+On Sat, 24 Feb 2007, Oleg Nesterov wrote:
 
-> Here is the naive patch I have come up with. It does the job, even
-> though it is not clean by any means. But as you said, it's certainly not
-> worse than the current state, so I hope we can still apply it.
+> If my understanding correct, vmscan can find a page which lives in a already
+> anon_vma_unlink'ed vma. This is ok, the page is pinned, and page->mapping is
+> not cleared until free_hot_cold_page().
 
-One glitch I noticed:  on driver rmmod it removes *any* parport platform
-device, rather than just ones that it created.  So the minute any system
-starts doing the Right Thing, registering platform devices itself, trouble
-starts!  Minimally, stick a magic cookie in platform_data and don't remove
-devices without that cookie.  (Cookie might be a pointer to something not
-exported by that driver.)
-
-Plus, that platform_driver won't work with a real platform_device ... but
-that looks like it'd take more time to fix cleanly than I have time for.
-(PowerPC and SPARC64 would probably be happier with real platform_device
-setup, given what their <asm/parport.h> is doing.)
-
-- Dave
-
+That's about right.  The page_mapped checks, at several levels, make
+it very hard to hit this case in practice; but it is possible for the
+page to be unmapped and the anon_vma unlinked and kmem_cache_freed
+while vmscan is racing through page_lock_anon_vma.
 
 > 
-> * * * * *
+> So page_lock_anon_vma() works correctly due to SLAB_DESTROY_BY_RCU even if
+> anon_vma_unlink() has already freed anon_vma. In that case we should see
+> list_empty(&anon_vma->head), we are safe.
+
+(It doesn't affect your argument, but we won't necessarily see list_empty
+there: the anon_vma slot may already have got reused for a different
+bundle of vmas completely; but its lock remains a lock and its list
+remains a list of vmas, and the worst that happens is that
+page_referenced_anon or try_to_unmap_anon wanders through an irrelevant
+bundle of vmas, looking for a page that cannot be found there.)
+
 > 
-> Give legacy parallel ports a platform device in the device tree.
-> This is a quick and dirty implementation, it doesn't actually convert
-> the legacy parport code to the device driver model, but at least
-> parallel port device drivers will have a device to work with.
+> However, we are doing spin_unlock(anon_vma->lock) after page_lock_anon_vma(),
+> and this looks unsafe to me because page_lock_anon_vma() does rcu_read_unlock()
+> on return.
 > 
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> ---
->  drivers/parport/parport_pc.c |   39 +++++++++++++++++++++++++++++++++++++++
->  1 file changed, 39 insertions(+)
+> This worked before because spin_lock() implied rcu_read_lock(), so rcu was
+> blocked if page_lock_anon_vma() returns !NULL. With CONFIG_PREEMPT_RCU this
+> is not true (yes?), so it is possible that the slab returns the memory to
+> the system and it is re-used when we write to anon_vma->lock.
+
+I had been meaning to take a fresh look at page_lock_anon_vma, to see
+whether recent RCU developments in -mm affected it.  Thanks for saving
+me the trouble.
+
+You and Paul know infinitely more about CONFIG_PREEMPT_RCU than I do,
+so if you believe that the change below is enough, that's great, it's
+much simpler than I'd feared might be needed.  CONFIG_PREEMPT_RCU
+rather scares me, but perhaps it's less worrying than I'd imagined.
+
+Have you checked through the SLAB_DESTROY_BY_RCU end in slab.c?
+Is what that's doing still valid?
+
 > 
-> --- linux-2.6.21-pre.orig/drivers/parport/parport_pc.c	2007-02-19 12:03:44.000000000 +0100
-> +++ linux-2.6.21-pre/drivers/parport/parport_pc.c	2007-02-19 18:15:41.000000000 +0100
-> @@ -53,6 +53,7 @@
->  #include <linux/slab.h>
->  #include <linux/pci.h>
->  #include <linux/pnp.h>
-> +#include <linux/platform_device.h>
->  #include <linux/sysctl.h>
->  
->  #include <asm/io.h>
-> @@ -2156,6 +2157,17 @@ struct parport *parport_pc_probe_port (u
->  	struct resource *base_res;
->  	struct resource	*ECR_res = NULL;
->  	struct resource	*EPP_res = NULL;
-> +	struct platform_device *pdev = NULL;
-> +
-> +	if (!dev) {
-> +		/* We need a physical device to attach to, but none was
-> +		   provided. Create our own. */
-> +		pdev = platform_device_register_simple("parport_pc",
-> +						       base, NULL, 0);
-> +		if (IS_ERR(pdev))
-> +			return NULL;
-> +		dev = &pdev->dev;
-> +	}
->  
->  	ops = kmalloc(sizeof (struct parport_operations), GFP_KERNEL);
->  	if (!ops)
-> @@ -2359,6 +2371,8 @@ out3:
->  out2:
->  	kfree (ops);
->  out1:
-> +	if (pdev)
-> +		platform_device_unregister(pdev);
->  	return NULL;
->  }
->  
-> @@ -3106,6 +3120,21 @@ static struct pnp_driver parport_pc_pnp_
->  };
->  
->  
-> +static int __devinit parport_pc_platform_probe(struct platform_device *pdev)
-> +{
-> +	/* Always succeed, the actual probing is done in
-> +	   parport_pc_probe_port(). */
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver parport_pc_platform_driver = {
-> +	.driver = {
-> +		.owner	= THIS_MODULE,
-> +		.name	= "parport_pc",
-> +	},
-> +	.probe		= parport_pc_platform_probe,
-> +};
-> +
->  /* This is called by parport_pc_find_nonpci_ports (in asm/parport.h) */
->  static int __devinit __attribute__((unused))
->  parport_pc_find_isa_ports (int autoirq, int autodma)
-> @@ -3381,9 +3410,15 @@ __setup("parport_init_mode=",parport_ini
->  
->  static int __init parport_pc_init(void)
->  {
-> +	int err;
-> +
->  	if (parse_parport_params())
->  		return -EINVAL;
->  
-> +	err = platform_driver_register(&parport_pc_platform_driver);
-> +	if (err)
-> +		return err;
-> +
->  	if (io[0]) {
->  		int i;
->  		/* Only probe the ports we were given. */
-> @@ -3408,6 +3443,7 @@ static void __exit parport_pc_exit(void)
->  		pci_unregister_driver (&parport_pc_pci_driver);
->  	if (pnp_registered_parport)
->  		pnp_unregister_driver (&parport_pc_pnp_driver);
-> +	platform_driver_unregister(&parport_pc_platform_driver);
->  
->  	spin_lock(&ports_lock);
->  	while (!list_empty(&ports_list)) {
-> @@ -3416,6 +3452,9 @@ static void __exit parport_pc_exit(void)
->  		priv = list_entry(ports_list.next,
->  				  struct parport_pc_private, list);
->  		port = priv->port;
-> +		if (port->dev && port->dev->bus == &platform_bus_type)
-> +			platform_device_unregister(
-> +				to_platform_device(port->dev));
->  		spin_unlock(&ports_lock);
->  		parport_pc_unregister_port(port);
->  		spin_lock(&ports_lock);
+> IOW, don't we need something like this
 > 
-> * * * * *
+> 	static struct anon_vma *page_lock_anon_vma(struct page *page)
+> 	{
+> 		struct anon_vma *anon_vma;
+> 		unsigned long anon_mapping;
 > 
-> > There are probably good reasons (== deep hardware braindamage on older
-> > systems that are now hard to find) for the strange init sequencing in
-> > that code, but I can't see why they should prevent splitting out
-> > 
-> > 	(a) device discovery via probing, PNP, or whatever; from
-> > 
-> > 	(b) the driver itself, getting handed a device node that's
-> > 	    pre-configured with the resources reported by discovery.
-> > 
-> > Maybe the maintainers of the parport stack will have comments.  Though
-> > the info in MAINTAINERS seems dated, if not obsolete.
+> 		rcu_read_lock();
+> 		anon_mapping = (unsigned long) page->mapping;
+> 		if (!(anon_mapping & PAGE_MAPPING_ANON))
+> 			goto out;
+> 		if (!page_mapped(page))
+> 			goto out;
 > 
-> Phil Blundell and Tim Waugh did not reply to me last time I sent a
-> parport cleanup patch to them. I suspect they are indeed no longer
-> maintaining parport in practice.
+> 		anon_vma = (struct anon_vma *) (anon_mapping - PAGE_MAPPING_ANON);
+> 		spin_lock(&anon_vma->lock);
+> 		return anon_vma;
 > 
-> -- 
-> Jean Delvare
+> 	out:
+> 		rcu_read_unlock();
+> 		return NULL;
+> 	}
 > 
+> 	static inline void page_lock_anon_vma(struct anon_vma *anon_vma)
+
+It might be wiser to call that one page_unlock_anon_vma ;)
+
+(I'm slightly disgruntled that page_lock_anon_vma takes a struct page *,
+but page_unlock_anon_vma no struct page *.  But it would be silly to do
+it differently, or mess with the naming: besides, it's a static function
+and the prototype guards against error anyway.)
+
+> 	{
+> 		spin_unlock(&anon_vma->lock);
+> 		rcu_read_unlock();
+> 	}
+> ?
+
+Looks fine to me: please go ahead a make a patch for -mm, Oleg: thanks.
+
+I've CC'ed Christoph for several reasons.
+
+One, I think he was trying to persuade me a year ago to change
+page_lock_anon_vma as you're now proposing; but I resisted, preferring
+to keep the RCU stuff self-contained within page_lock_anon_vma: let's
+credit him for prescience, and admit you've proved me wrong.
+
+Two, in his SLUB thread it sounds like he's toying with mixing up kmem
+caches of similar sizes: that seems a really bad idea to me (for reasons
+Andi and others have made) and I expect it'll get dropped; but in case
+not, let's note that the anon_vma cache is one which would fare very
+badly from getting mixed in with others (lock would no longer remain
+a lock, list would no longer remain a list, across that race).
+
+Three, he has a recurring interest in this unusual page_lock_anon_vma,
+mainly for page migration reasons, so let's keep him informed.
+
+Hugh
