@@ -1,74 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932420AbXBXWp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933578AbXBXWuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932420AbXBXWp4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 17:45:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933572AbXBXWp4
+	id S933578AbXBXWuW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 17:50:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933577AbXBXWuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 17:45:56 -0500
-Received: from wx-out-0506.google.com ([66.249.82.239]:7085 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932420AbXBXWpz (ORCPT
+	Sat, 24 Feb 2007 17:50:22 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:43365 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933572AbXBXWuV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 17:45:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=IKJBPUdzCYF7h1zVW0InoJrZwcXgiiCe5kwpGxriKg1t37g0mZcZuy2GxHYg1QrPJ6rZJsEAmm+cRhs/DxurIV8sN1rc3oPz4gYnBd3d/VhwwK8JEvhnjHtaUkYRRtoe7oDHvgyIyEpDMLOvTcWOrLpde9401G1Koh53DdyDb10=
-Message-ID: <6bffcb0e0702241445v562be44y5ddac6d6abdb5131@mail.gmail.com>
-Date: Sat, 24 Feb 2007 23:45:54 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: 2.6.20-git15 BUG: soft lockup detected on CPU#0! - timers?
-Cc: "Michal Piotrowski" <michal.k.k.piotrowski@googlemail.com>,
-       tglx@linutronix.de, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070223060802.GA8562@elte.hu>
+	Sat, 24 Feb 2007 17:50:21 -0500
+Date: Sat, 24 Feb 2007 23:50:21 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: YOSHIFUJI Hideaki / =?utf-8?B?5ZCJ6Jek6Iux5piO?= 
+	<yoshfuji@linux-ipv6.org>
+Cc: clem@clem.clem-digital.net, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.20-git8 fails compile -- net/built-in.o __ipv6_addr_type
+Message-ID: <20070224225021.GT12392@stusta.de>
+References: <20070213.111345.78160400.yoshfuji@linux-ipv6.org> <200702130236.l1D2a0u7014457@clem.clem-digital.net> <20070213.115510.21486123.yoshfuji@linux-ipv6.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <6bffcb0e0702201054rb839bb2m11ef8d33bacffdb8@mail.gmail.com>
-	 <1172008584.25076.0.camel@localhost.localdomain>
-	 <6bffcb0e0702201437o66db38d5j3066eb3c9951a270@mail.gmail.com>
-	 <1172072023.25076.64.camel@localhost.localdomain>
-	 <6bffcb0e0702210738p687ca1bdt2c568d7ed5904fff@mail.gmail.com>
-	 <1172088044.25076.125.camel@localhost.localdomain>
-	 <45DCF644.9040009@googlemail.com> <45DD756D.3040006@googlemail.com>
-	 <20070223060802.GA8562@elte.hu>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070213.115510.21486123.yoshfuji@linux-ipv6.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Tue, Feb 13, 2007 at 11:55:10AM +0900, YOSHIFUJI Hideaki / 吉藤英明 wrote:
+> In article <200702130236.l1D2a0u7014457@clem.clem-digital.net> (at Mon, 12 Feb 2007 21:35:59 -0500 (EST)), Pete Clements <clem@clem.clem-digital.net> says:
+> 
+> > Quoting YOSHIFUJIHideaki/=?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?=
+> >   > In article <20070212181216.c55ca788.akpm@linux-foundation.org> (at Mon, 12 Feb 2007 18:12:16 -0800), Andrew Morton <akpm@linux-foundation.org> says:
+> >   > 
+> >   > > > On Mon, 12 Feb 2007 20:10:13 -0500 (EST) Pete Clements <clem@clem.clem-digital.net> wrote:
+> >   > > > 2.6.20-git8 fails compile:
+> >   > > > 
+> >   > > >   CHK     include/linux/compile.h
+> >   > > >   UPD     include/linux/compile.h
+> >   > > >   CC      init/version.o
+> >   > > >   LD      init/built-in.o
+> >   > > >   LD      .tmp_vmlinux1
+> >   > > > net/built-in.o: In function `svc_udp_recvfrom':
+> >   > > > svcsock.c:(.text+0x61be4): undefined reference to `__ipv6_addr_type'
+> >   > > > make: *** [.tmp_vmlinux1] Error 1
+> >   > > > 
+> >   > > 
+> >   > > Please send the .config.
+> >   > 
+> >   > and, the gcc version...
+> >   > 
+> >   > --yoshfuji
+> >   > -
+> > 
+> > git 7 compiled just fine.
+> 
+> Ah, this is because of new ipv6 support in sunrpc code.
+> Enable it if it is statically compiled.
+> 
+> Alternatively, we could 
+> - export __ipv6_addr_type in new net/ipv6/addrconf_core.c
+> or
+> - introduce tiny inline for chcking if the address is link-local.
+> 
+> Signed-off-by: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
+> 
+> diff --git a/net/sunrpc/svcsock.c b/net/sunrpc/svcsock.c
+> index 63ae947..27dcb31 100644
+> --- a/net/sunrpc/svcsock.c
+> +++ b/net/sunrpc/svcsock.c
+> @@ -107,12 +107,12 @@ static inline void svc_reclassify_socket
+>  		sock_lock_init_class_and_name(sk, "slock-AF_INET-NFSD",
+>  		    &svc_slock_key[0], "sk_lock-AF_INET-NFSD", &svc_key[0]);
+>  		break;
+> -
+> +#ifdef CONFIG_IPV6
+>  	case AF_INET6:
+>  		sock_lock_init_class_and_name(sk, "slock-AF_INET6-NFSD",
+>  		    &svc_slock_key[1], "sk_lock-AF_INET6-NFSD", &svc_key[1]);
+>  		break;
+> -
+> +#endif
+>  	default:
+>  		BUG();
+>  	}
+> @@ -131,7 +131,7 @@ static char *__svc_print_addr(struct soc
+>  			NIPQUAD(((struct sockaddr_in *) addr)->sin_addr),
+>  			htons(((struct sockaddr_in *) addr)->sin_port));
+>  		break;
+> -#if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
+> +#if defined(CONFIG_IPV6)
+>...
 
-On 23/02/07, Ingo Molnar <mingo@elte.hu> wrote:
->
-> Michal,
->
-> * Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
->
-> > Here is more
-> >
-> > hardirqs last  enabled at (30787): [<c0104249>] syscall_exit_work+0x11/0x26
-> > hardirqs last disabled at (30788): [<c0103fc9>] ret_from_exception+0x9/0xc
-> > softirqs last  enabled at (30202): [<c01265df>] __do_softirq+0xe4/0xea
-> > softirqs last disabled at (30193): [<c0106a75>] do_softirq+0x64/0xd1
->
-> could you please try the patch below? This is pretty much the only
-> condition under which we can silently 'leak' pending softirqs, and
-> trigger the new warning: if something does cond_resched_softirq() in
-> non-runnable state. (which is a no-no, but nothing enforced this, so it
-> could in theory happen.) So the question is, with this patch applied, do
-> you get these new warnings from sched.c?
 
-Here is a dmesg after over 25 hours of uptime
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc1/git-dmesg3
-nothing new.
+In the CONFIG_IPV6=m, CONFIG_SUNRPC=m case, this will result in no IPV6 
+support here.
 
-Regards,
-Michal
+If you are going this way, a Kconfig helper variable might be better:
+
+config SUNRPC_IPV6
+	bool
+	default y if (SUNRPC=y && IPV6=y) || (SUNRPC=m && IPV6) 
+
+
+cu
+Adrian
 
 -- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
