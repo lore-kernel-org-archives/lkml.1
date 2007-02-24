@@ -1,44 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932838AbXBXQPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933516AbXBXQRK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932838AbXBXQPb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 11:15:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932839AbXBXQPa
+	id S933516AbXBXQRK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 11:17:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932844AbXBXQRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 11:15:30 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56427 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932838AbXBXQPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 11:15:30 -0500
-Message-ID: <45E06439.40403@redhat.com>
-Date: Sat, 24 Feb 2007 11:13:45 -0500
-From: Jon Masters <jcm@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Sat, 24 Feb 2007 11:17:09 -0500
+Received: from stinky.trash.net ([213.144.137.162]:55156 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933513AbXBXQRI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 11:17:08 -0500
+Message-ID: <45E064FF.8010000@trash.net>
+Date: Sat, 24 Feb 2007 17:17:03 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051017)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-CC: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
-       Sergey Vlasov <vsu@altlinux.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mit-devel@lists.printk.net
-Subject: Re: module-init-tools-3.3-pre10 available
-References: <45DD0031.9010808@redhat.com> <20070222170732.22c1320b.vsu@altlinux.ru> <45DDAE24.6080905@redhat.com> <20070223120136.12ea11db@home.brethil> <45DF0B42.2080208@redhat.com> <Pine.LNX.4.61.0702241625030.16527@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0702241625030.16527@yvahk01.tjqt.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 18/29] netfilter: notify about NF_QUEUE vs emergency	skbs
+References: <20070221144304.512721000@taijtu.programming.kicks-ass.net>	 <20070221144843.299254000@taijtu.programming.kicks-ass.net>	 <45E05954.8050204@trash.net> <1172332010.28579.6.camel@lappy>
+In-Reply-To: <1172332010.28579.6.camel@lappy>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
+Peter Zijlstra wrote:
+> On Sat, 2007-02-24 at 16:27 +0100, Patrick McHardy wrote:
+> 
+>>> 	} else if ((verdict & NF_VERDICT_MASK)  == NF_QUEUE) {
+>>>+		if (unlikely((*pskb)->emergency)) {
+>>>+			printk(KERN_ERR "nf_hook: NF_QUEUE encountered for "
+>>>+					"emergency skb - skipping rule.\n");
+>>>+			goto next_hook;
+>>>+		}
+>>
+>>If I'm not mistaken any skb on the receive side might get
+>>allocated from the reserve. I don't see how the user could
+>>avoid this except by not using queueing at all.
+> 
+> 
+> Well, the rules could be setup so that the storage path will never hit
+> the queue.
 
-> Out of the box perhaps if it is the .tar.bz2 archive, but the same does not
-> always hold for CVS repos, much less SVNs [random guess on svn]. He who pulls
-> from a developer tree mostly knows to run 'autogen.sh' or 'autoreconf -fi'
-> beforehand.
 
-You know what, you're right of course. Ok, I'm taking those back *out* 
-of the repo in the next update and then will have a script generate 
-these for the tarball. That does sound like the right thing.
+Sure, but other packets might still get allocated from the
+reserve and trigger this.
 
-Thanks!
+>>I think the user should just exclude packets necessary for
+>>swapping from queueing manually, based on IP addresses,
+>>port numbers or something like that.
+> 
+> 
+> Indeed, this patch will just warn the user that he did something very
+> wrong and should avoid this situation.
+> 
+> Perhaps skipping is not the proper action, but dropping them will most
+> certainly freeze the box. Either way seems unlucky. Might as well stick
+> BUG() in there :-(.
 
-Jon.
+
+At this point we don't know whether the packet is destined for
+a SOCK_VMIO socket or not. The only thing we know is that is
+was allocated from the reserve, but it could be anything.
+There is really nothing you can do at this point.
+
+> Any ideas on how to resolve this are most welcome, detecting the
+> situation on either rule insert or swapon and failing the respective
+> action would be most ideal, but I have no idea if that is feasible.
+
+
+Unfortunately this is not possible either. I don't really see why
+queueing is special though, dropping the packets in the ruleset
+will break things just as well, as will routing them to a blackhole.
+I guess the user just needs to be smart enough not to do this.
+
