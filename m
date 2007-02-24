@@ -1,53 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933564AbXBXVXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933566AbXBXVZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933564AbXBXVXn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 16:23:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933567AbXBXVXn
+	id S933566AbXBXVZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 16:25:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933568AbXBXVZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 16:23:43 -0500
-Received: from wr-out-0506.google.com ([64.233.184.226]:38777 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933564AbXBXVXm (ORCPT
+	Sat, 24 Feb 2007 16:25:28 -0500
+Received: from signal.itea.ntnu.no ([129.241.190.231]:59726 "EHLO
+	signal.itea.ntnu.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933566AbXBXVZ2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 16:23:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PfhLp3OgmC8uvZvRtxRo/7wnWN3VvXkWmbYCQmO6Ajekw4Lq1zsxoonONuthbEr77uStAXPFVEucWoAJ8eO6A6PsnRryZF8+T69GP8qmNZ/EA3T86I7Sv06AMBAzRQcyi3SfhbUmkBLnuIbujxuvE883ndDVi4QbYPHsbGLiO88=
-Message-ID: <311601c90702241323i22215a63l33b30e0f0fb009f0@mail.gmail.com>
-Date: Sat, 24 Feb 2007 14:23:40 -0700
-From: "Eric D. Mudama" <edmudama@gmail.com>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH]: pcmcia - spot slave decode flaws (for testing)
-Cc: "Jeff Garzik" <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-In-Reply-To: <20070223120845.19203fcb@lxorguk.ukuu.org.uk>
+	Sat, 24 Feb 2007 16:25:28 -0500
+X-Greylist: delayed 1853 seconds by postgrey-1.27 at vger.kernel.org; Sat, 24 Feb 2007 16:25:27 EST
+Message-ID: <20070224215403.ka5imjqjo08cko0c@webmail.ntnu.no>
+Date: Sat, 24 Feb 2007 21:54:03 +0100
+From: Sindre =?iso-8859-1?b?QWFt5XM=?= <aamas@stud.ntnu.no>
+To: linux-kernel@vger.kernel.org
+Subject: Correct way for an application to sleep?
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII;
+	DelSp=Yes	format=flowed
 Content-Disposition: inline
-References: <20070220181836.524e5f9a@localhost.localdomain>
-	 <45DEC5A0.7050107@garzik.org>
-	 <20070223120845.19203fcb@lxorguk.ukuu.org.uk>
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.3)
+X-Content-Scanned: with sophos and spamassassin at mailgw.ntnu.no.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/23/07, Alan <alan@lxorguk.ukuu.org.uk> wrote:
-> > Code looks OK. Not applied due to "for testing" note.
-> >
-> > General comment:  it might be nice to do this in the core, just as a
-> > sanity check for a variety of problems, past, present and future.
->
-> We tried that with old IDE and all hell broke loose. Lots of virtual disk
-> stuff and raid volumes have non-unique serial numbers. We even found a
-> case of identically serial numbered Maxtor drives.
->
-> It needs to stay in pcmcia, which is the only place we've seen the
-> duplication.
+I realise that this is not a question strictly related to development  
+of linux, but there have been changes related to sleep granularity  
+lately, and I'm assuming these changes are made with an idea of how  
+sleep functions are expected to be used from user space. Since some of  
+these changes have made my situation worse (although the recent  
+development wrt high-res timers and dynamic tick looks promising), I'd  
+like to know if situations like mine are accounted for in the plans  
+behind such changes, or if I'm just relying on the wrong things here,  
+and how the kernel wants a user space app to behave wrt this.
 
-I don't think the maxtor drives actually had duplicate serial numbers.
- They were coming back as "M0000000000000000000" or something like
-that to the limit of the strlen.  It looked more like buffer
-corruption or something, and only happened with one or two people...
+I'm developing a game console emulator. This needs to be synced to the  
+host's time at regular intervals, eg. 70224 emulated cycles pr  
+~16.7427 ms. This should preferably happen once every frame, so that  
+the next frame lasts as long as the previous, giving non-choppy  
+display. At the same time I need to resample the emulated sound to the  
+host's sample rate, and stream it to the sound card. This means that  
+if I fail to consistently keep within these limits I will get choppy  
+display, and fluctuating pitch (or buffer underruns depending on how I  
+resample). One way to keep within these limits is to busy-wait, but  
+that seems like a kind of obnoxious way for an application to behave,  
+not to mention that it will drain an eventual battery (and probably  
+cause global warming, kill kittens etc.). So, I would like to give  
+away as much cpu time as possible keeping within these limits.
 
---eric
+If I have access to waitForVblank()-like functions I could supposedly  
+resample the emulated video to the host's frame rate and use this.  
+Unfortunately I often don't have that possibility, besides resampling  
+frame rate in real time can be very resource intensive (and give  
+motion blurry visuals).
+
+Afaik, if I were to sync by means of sound hardware needing more  
+samples, I wouldn't be able keep a consistent frame rate. Unless I can  
+set a weird buffer size, use a static resampling ratio, and  
+approximate the emulated system's speed slightly. If there are more  
+sophisticated ways to sync through sound hardware, that may be a  
+complete solution (for my specific case).
+
+Without root-privilegies, that leaves general purpose sleep functions  
+like nanosleep afaik. The problem is that the granularity of these  
+seems very unpredictable, and if I am to use a lowest common  
+denominator I'd only be able to sleep like 10 ms pr 16.7 ms on fast  
+systems, and not at all on not so fast systems. So, I'd like to know  
+what the "correct" way to handle this kind of situation is, if any,  
+from a kernel perspective. Is the only sensible thing to do to give a  
+user settable preference, deciding on a compromise default (or one  
+that says "screw you old kernels")?
+
+Please keep me CC'd if you reply to this thread.
+
+Thanks.
+
