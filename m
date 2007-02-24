@@ -1,54 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752297AbXBXSpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932404AbXBXSxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752297AbXBXSpU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 13:45:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbXBXSpU
+	id S932404AbXBXSxS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 13:53:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932741AbXBXSxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 13:45:20 -0500
-Received: from stout.engsoc.carleton.ca ([134.117.69.22]:49559 "EHLO
-	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752297AbXBXSpT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 13:45:19 -0500
-Date: Sat, 24 Feb 2007 13:45:16 -0500
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: why is asm-parisc/ioctl.h subtly different from asm-generic/ioctl.h?
-Message-ID: <20070224184516.GA6755@athena.road.mcmartin.ca>
-References: <Pine.LNX.4.64.0702240530190.11865@CPE00045a9c397f-CM001225dbafb6>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702240530190.11865@CPE00045a9c397f-CM001225dbafb6>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 24 Feb 2007 13:53:18 -0500
+Received: from mba.ocn.ne.jp ([210.190.142.172]:64306 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932404AbXBXSxS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 13:53:18 -0500
+Date: Sun, 25 Feb 2007 03:53:15 +0900 (JST)
+Message-Id: <20070225.035315.25909736.anemo@mba.ocn.ne.jp>
+To: linux-kernel@vger.kernel.org
+Cc: sam@ravnborg.org
+Subject: Re: Detecting section mismatches in vmlinux
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20070222.005728.126762028.anemo@mba.ocn.ne.jp>
+References: <20070222.005728.126762028.anemo@mba.ocn.ne.jp>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 3.3 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 24, 2007 at 05:34:15AM -0500, Robert P. J. Day wrote:
+On Thu, 22 Feb 2007 00:57:28 +0900 (JST), Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+> $ ../build-i386/scripts/mod/modpost ../build-i386/mm/built-in.o
+> WARNING: ../build-i386/mm/built-in.o - Section mismatch: reference to .init.data:initkmem_list3 from .text between 'set_up_list3s' (at offset 0x18382) and '__kmem_cache_destroy'
 > 
->   just noticed that parisc's ioctl.h file, rather than simply
-> including asm-generic/ioctl.h, has its own copy whose sole
-> (meaningful) difference from the generic one is:
+> set_up_list3s() in slab.c is not marked as __init and it references
+> initkmem_list3[] which is marked as __initdata.  So it is not false
+> positive.  But "modpost vmlinux" does not report it.
+
+For this set_up_list3s() case, it is not a fatal since it is only
+called during early bootstrap phase.  But anyway I think we should
+detect these case at compile time.
+
+I found refenrence_*.pl was removed on these commits at 2.6.17:
+
+> commit eae0f536f640bb95f2ad437a57c40c7d5683d1ac
+> Author: Sam Ravnborg <sam@mars.ravnborg.org>
+> Date:   Tue Mar 21 07:28:24 2006 +0100
 > 
-> $ diff include/{asm-generic,asm-parisc}/ioctl.h
-> ...
-> 41,42c54,55
-> < #define _IOC_WRITE    1U
-> < #define _IOC_READ     2U
-> ---
-> > #define _IOC_WRITE    2U
-> > #define _IOC_READ     1U
+>     kbuild: remove obsoleted scripts/reference_* files
 > 
->  so parisc is identical except that it switches the meaning of the
-> direction field?  is there a reason for this?  just curious.
+> commit b39927cf4cc5a9123d2b157ffd396884cb8156eb
+> Author: Sam Ravnborg <sam@mars.ravnborg.org>
+> Date:   Fri Feb 17 22:42:02 2006 +0100
 > 
+>     kbuild: check for section mismatch during modpost stage
 
-HP-UX compatibility.
+Reviving these perl scripts looks overkill for me.
 
-#define IOC_OUT 0x40000000
-#define IOC_IN (int)0x80000000
+This is a dirty hack to check all built-in.o just after linking
+vmlinux.  But this can not detect mismatches in libs.a files, and
+modpost fails with "... is truncated" message on empty built-in.o
+files.
 
-PS: It would be wise to ask questions on the pertinent mailing lists...
+Maybe checking at each $(LD) invocation should detect all mismatches,
+but I'm not familer with kbuild to do it by myself.  Could someone
+make perfect solution?
 
---Kyle
+
+diff --git a/Makefile b/Makefile
+index d442d4b..4e8015d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -738,6 +738,7 @@ ifdef CONFIG_HEADERS_CHECK
+ endif
+ 	$(call if_changed_rule,vmlinux__)
+ 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost $@
++	-scripts/mod/modpost $(filter-out $(libs-y1),$(vmlinux-init) $(vmlinux-main))
+ 	$(Q)rm -f .old_version
+ 
+ # The actual objects are generated when descending, 
+
+
+---
+Atsushi Nemoto
