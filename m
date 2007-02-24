@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750954AbXBXMMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750967AbXBXMSf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750954AbXBXMMq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 07:12:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750959AbXBXMMq
+	id S1750967AbXBXMSf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 07:18:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbXBXMSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 07:12:46 -0500
-Received: from nz-out-0506.google.com ([64.233.162.237]:21779 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750903AbXBXMMp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 07:12:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Z9s03S6X6hVLKvv6QF+Ag2MELFhO3MuUo7OYB+YRQFDqkDDM00zPIrRftWZwDs/JBZBENP8cdgGBIAztfvgPEDuFchzTwLSbbayKb9qx/khD3jsK9EuKwFATMuMcv+I6gPiMbkwxI7A6eU5cSxKkTLTE/6U9XX+iZz/FzHz03K4=
-Message-ID: <b637ec0b0702240412p531299ecn797fdef7e4c53e89@mail.gmail.com>
-Date: Sat, 24 Feb 2007 07:12:44 -0500
-From: "Fabio Comolli" <fabio.comolli@gmail.com>
-To: "Con Kolivas" <kernel@kolivas.org>
-Subject: Re: 2.6.20-ck1
-Cc: "ck mailing list" <ck@vds.kolivas.org>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200702162110.03355.kernel@kolivas.org>
+	Sat, 24 Feb 2007 07:18:35 -0500
+Received: from brick.kernel.dk ([62.242.22.158]:17567 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750964AbXBXMSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 07:18:34 -0500
+Date: Sat, 24 Feb 2007 13:18:16 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: A quick fio test (was Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3)
+Message-ID: <20070224121816.GF22586@kernel.dk>
+References: <20070221211355.GA7302@elte.hu> <20070223125247.GO5737@kernel.dk> <20070223223112.GJ7920@ca-server1.us.oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200702162110.03355.kernel@kolivas.org>
+In-Reply-To: <20070223223112.GJ7920@ca-server1.us.oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/16/07, Con Kolivas <kernel@kolivas.org> wrote:
-> This patchset is designed to improve system responsiveness and interactivity.
-> It is configurable to any workload but the default -ck patch is aimed at the
-> desktop and -cks is available with more emphasis on serverspace.
+On Fri, Feb 23 2007, Joel Becker wrote:
+> On Fri, Feb 23, 2007 at 01:52:47PM +0100, Jens Axboe wrote:
+> > Results:
+> > 
+> > Engine          Depth           Bw (MiB/sec)
+> > --------------------------------------------
+> > libaio            1             441
+> > syslet            1             574
+> > sync              1             589
+> > libaio           32             613
+> > syslet           32             681
+> 
+> 	Can we get runs with large I/Os, large I/O depths, and most
+> importantly tons of processes?  I can absolutely believe that syslets
+> would compete well with one process on the system.  But with 1000
+> processes doing 1000s of blocking I/Os, I'd really be interested to see
+> how that plays out.
 
-Hi Con.
-I usually don't pay a lot of attention to benchmarks. Responsiveness
-under load is much important to me.
+Sure, I'll add this to the testing list for monday.
 
-But this is nice: I use FC6 with initng as boot process manager. With
-vanilla 2.6.20 boot process takes 21 to 23 seconds; with 2.6.20-ck1
-(same config, of course), boot process takes 17 to 19 seconds.
+-- 
+Jens Axboe
 
-So your patchset has become my patchset of choice.
-
-Regards,
-Fabio
