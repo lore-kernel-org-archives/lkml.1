@@ -1,44 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933540AbXBXUIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933552AbXBXUMr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933540AbXBXUIR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 15:08:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933552AbXBXUIR
+	id S933552AbXBXUMr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 15:12:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933556AbXBXUMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 15:08:17 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:59946 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933540AbXBXUIR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 15:08:17 -0500
-Date: Sat, 24 Feb 2007 21:07:56 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Detecting section mismatches in vmlinux
-Message-ID: <20070224200756.GA9417@uranus.ravnborg.org>
-References: <20070222.005728.126762028.anemo@mba.ocn.ne.jp> <20070225.035315.25909736.anemo@mba.ocn.ne.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070225.035315.25909736.anemo@mba.ocn.ne.jp>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 24 Feb 2007 15:12:47 -0500
+Received: from [194.112.174.227] ([194.112.174.227]:37944 "EHLO mail.hofr.at"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S933552AbXBXUMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 15:12:46 -0500
+Date: Sat, 24 Feb 2007 20:29:02 +0100 (CET)
+From: Nicholas Mc Guire <der.herr@hofr.at>
+To: linux-kernel@vger.kernel.org
+Subject: Changelog question
+Message-ID: <Pine.LNX.4.60.0702242012340.2789@rtl14.hofr.at>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 25, 2007 at 03:53:15AM +0900, Atsushi Nemoto wrote:
-> 
-> This is a dirty hack to check all built-in.o just after linking
-> vmlinux.  But this can not detect mismatches in libs.a files, and
-> modpost fails with "... is truncated" message on empty built-in.o
-> files.
-> 
-> Maybe checking at each $(LD) invocation should detect all mismatches,
-> but I'm not familer with kbuild to do it by myself.  Could someone
-> make perfect solution?
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-I would prefer to find out why it fails when running the check
-on full vmlinux.
-Your suggestion is like papering over the real bug - and only
-if something prevent us from detecting this in full
-vmlinux should we do it for each LD invocation.
 
-	Sam
+Hi !
+
+looking at the Changelogs of the last 2.6.17 kernel and the
+first 2.6.18 it is obvious that a lot happened in between - are 
+there some changelogs related to 2.6.18 development that are not found
+at http://www.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.18.# + 
+http://www.kernel.org/pub/linux/kernel/v2.6/testing/ChangeLog-2.6.18-rc#
+For assessment purposes it would be helpfull to know what low level 
+changes happened i.e. when and where were __raw_spin_* introduced ? but
+I was not able to extract such infos from the ChangeLogs in the above
+directories.
+
+thx !
+hofrat
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQFF4JH/nU7rXZKfY2oRAk0OAJ9oFplfJIWhYK7jc0bpMGXw5mnWTgCfVAk+
+p03G4C+kgiIimCBzXhkIL84=
+=FoIv
+-----END PGP SIGNATURE-----
