@@ -1,57 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933489AbXBXKgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750915AbXBXKqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933489AbXBXKgV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 05:36:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933491AbXBXKgU
+	id S1750915AbXBXKqg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 05:46:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933487AbXBXKqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 05:36:20 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:57650 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933489AbXBXKgU (ORCPT
+	Sat, 24 Feb 2007 05:46:36 -0500
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:35607 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750915AbXBXKqf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 05:36:20 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Sat, 24 Feb 2007 05:34:15 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: why is asm-parisc/ioctl.h subtly different from asm-generic/ioctl.h?
-Message-ID: <Pine.LNX.4.64.0702240530190.11865@CPE00045a9c397f-CM001225dbafb6>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Sat, 24 Feb 2007 05:46:35 -0500
+Date: Sat, 24 Feb 2007 11:46:06 +0100 (MET)
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Vincent Sanders <vince@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Richard Knutsson <ricknu-0@student.ltu.se>
+Message-Id: <20070224104603.20765.30521.sendpatchset@thinktank.campus.ltu.se>
+Subject: [PATCH] drivers/mfd/sm501.c: Replace pci_module_init with pci_register_driver
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Replace pci_module_init with pci_register_driver
 
-  just noticed that parisc's ioctl.h file, rather than simply
-including asm-generic/ioctl.h, has its own copy whose sole
-(meaningful) difference from the generic one is:
-
-$ diff include/{asm-generic,asm-parisc}/ioctl.h
-...
-41,42c54,55
-< #define _IOC_WRITE    1U
-< #define _IOC_READ     2U
+Signed-off-by: Richard Knutson <ricknu-0@student.ltu.se>
 ---
-> #define _IOC_WRITE    2U
-> #define _IOC_READ     1U
+Compile-tested with "allyes", "allmod" & "allno" on i386
 
- so parisc is identical except that it switches the meaning of the
-direction field?  is there a reason for this?  just curious.
-
-rday
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+diff --git a/drivers/mfd/sm501.c b/drivers/mfd/sm501.c
+index 5c5a1e2..c707c8e 100644
+--- a/drivers/mfd/sm501.c
++++ b/drivers/mfd/sm501.c
+@@ -1131,7 +1131,7 @@ static struct platform_driver sm501_plat_drv = {
+ static int __init sm501_base_init(void)
+ {
+ 	platform_driver_register(&sm501_plat_drv);
+-	return pci_module_init(&sm501_pci_drv);
++	return pci_register_driver(&sm501_pci_drv);
+ }
+ 
+ static void __exit sm501_base_exit(void)
