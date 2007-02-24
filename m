@@ -1,82 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932404AbXBXSxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933536AbXBXTL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932404AbXBXSxS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 13:53:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932741AbXBXSxS
+	id S933536AbXBXTL1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 14:11:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933537AbXBXTL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 13:53:18 -0500
-Received: from mba.ocn.ne.jp ([210.190.142.172]:64306 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932404AbXBXSxS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 13:53:18 -0500
-Date: Sun, 25 Feb 2007 03:53:15 +0900 (JST)
-Message-Id: <20070225.035315.25909736.anemo@mba.ocn.ne.jp>
-To: linux-kernel@vger.kernel.org
-Cc: sam@ravnborg.org
-Subject: Re: Detecting section mismatches in vmlinux
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20070222.005728.126762028.anemo@mba.ocn.ne.jp>
-References: <20070222.005728.126762028.anemo@mba.ocn.ne.jp>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 3.3 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Sat, 24 Feb 2007 14:11:27 -0500
+Received: from nz-out-0506.google.com ([64.233.162.231]:21362 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933536AbXBXTL0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 14:11:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=hDQ3/RPAY06n5iBiSpTruFptlQ/lafrddw+3ZgeAlVoQfws3Pv7NseTq1DK6GH3Oefm1ZhnPYGDYrMEBpNS+fjIKz19QQFIxI2Jx8I9U1oV2rcvunBxeGfH/tGEMhHELDvlwGUH7Er/EqB5pke/L4ZqKzoNMc39a2UW8w6mIdWQ=
+Date: Sun, 25 Feb 2007 00:41:56 +0530
+From: Milind Arun Choudhary <milindchoudhary@gmail.com>
+To: Vojtech Pavlik <vojtech@suse.cz>
+Cc: Richard Knutsson <ricknu-0@student.ltu.se>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       linux-joystick@atrey.karlin.mff.cuni.cz
+Subject: Re: [KJ][RFC][PATCH] BIT macro cleanup
+Message-ID: <20070224191001.GA9547@arun.site>
+References: <45DEF5EE.4030002@student.ltu.se> <d120d5000702230657s1860efb3o6986277901f13d03@mail.gmail.com> <45DF1165.2080003@student.ltu.se> <d120d5000702230905r6b50a1bbm3b71551f855cdf01@mail.gmail.com> <45DF2F57.2080309@student.ltu.se> <d120d5000702231037q511f8073n47beed320f097458@mail.gmail.com> <45DF3C53.4030100@student.ltu.se> <d120d5000702231358j55cd6665x2add335ceb904c22@mail.gmail.com> <45DF6E20.9060604@student.ltu.se> <20070224111124.GB3609@suse.cz>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070224111124.GB3609@suse.cz>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Feb 2007 00:57:28 +0900 (JST), Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
-> $ ../build-i386/scripts/mod/modpost ../build-i386/mm/built-in.o
-> WARNING: ../build-i386/mm/built-in.o - Section mismatch: reference to .init.data:initkmem_list3 from .text between 'set_up_list3s' (at offset 0x18382) and '__kmem_cache_destroy'
+On 12:11 Sat 24 Feb     , Vojtech Pavlik wrote:
 > 
-> set_up_list3s() in slab.c is not marked as __init and it references
-> initkmem_list3[] which is marked as __initdata.  So it is not false
-> positive.  But "modpost vmlinux" does not report it.
+> That would be my only concern - losing compiler warnings.
+yes
+see
+I wanted a single BIT macro which can be used by the whole tree
 
-For this set_up_list3s() case, it is not a fatal since it is only
-called during early bootstrap phase.  But anyway I think we should
-detect these case at compile time.
+was looking for a multipurpose one.  found it in input.h
+so i thought i will put it at a common place
 
-I found refenrence_*.pl was removed on these commits at 2.6.17:
+why bitops.h? coz BIT qualifies for a "bitop" 
+& bitops.h is  inclued by kernel.h, hence accessible from every part 
+of the tree without mucb efforts
 
-> commit eae0f536f640bb95f2ad437a57c40c7d5683d1ac
-> Author: Sam Ravnborg <sam@mars.ravnborg.org>
-> Date:   Tue Mar 21 07:28:24 2006 +0100
+now
+a> this was written for input user,so they are perfectly happy with it
+only change would be now input.h will have
+ to fetch it from bitops.h..trivial
+
+b> currently almost all other users of BIT are well within the BITS_PER_LONG
+limit
+
+c>but it is not sutaible for  those who want to go beyond this limit, 
+as they will not be warned 
+
+Now if we have LLBIT which takes care of above case
+[& as  LLBIT has no wrap it will warn if we go beyond "long long" for
+some reason]
+
+So all we need is  people to be carefull  before passing anything to BIT
+& use LLBIT whereever appropriate
+
+so  now i think it should be ok to have
+
+#define BIT(nr) (1UL << ((nr) % BITS_PER_LONG))
+#define LLBIT(nr) (1ULL << (nr))
+
+
+thoughts
+
+> > And what about the "1%"?
 > 
->     kbuild: remove obsoleted scripts/reference_* files
-> 
-> commit b39927cf4cc5a9123d2b157ffd396884cb8156eb
-> Author: Sam Ravnborg <sam@mars.ravnborg.org>
-> Date:   Fri Feb 17 22:42:02 2006 +0100
-> 
->     kbuild: check for section mismatch during modpost stage
+> The 1% will need either LLBIT or an extra % 8.
 
-Reviving these perl scripts looks overkill for me.
-
-This is a dirty hack to check all built-in.o just after linking
-vmlinux.  But this can not detect mismatches in libs.a files, and
-modpost fails with "... is truncated" message on empty built-in.o
-files.
-
-Maybe checking at each $(LD) invocation should detect all mismatches,
-but I'm not familer with kbuild to do it by myself.  Could someone
-make perfect solution?
-
-
-diff --git a/Makefile b/Makefile
-index d442d4b..4e8015d 100644
---- a/Makefile
-+++ b/Makefile
-@@ -738,6 +738,7 @@ ifdef CONFIG_HEADERS_CHECK
- endif
- 	$(call if_changed_rule,vmlinux__)
- 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost $@
-+	-scripts/mod/modpost $(filter-out $(libs-y1),$(vmlinux-init) $(vmlinux-main))
- 	$(Q)rm -f .old_version
- 
- # The actual objects are generated when descending, 
-
-
----
-Atsushi Nemoto
+-- 
+Milind Arun Choudhary
