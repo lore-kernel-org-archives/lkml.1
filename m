@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932870AbXBXWK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933573AbXBXWKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932870AbXBXWK2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 17:10:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932883AbXBXWK2
+	id S933573AbXBXWKy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 17:10:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933571AbXBXWKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 17:10:28 -0500
-Received: from smtpout.mac.com ([17.250.248.172]:59507 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932870AbXBXWK1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 17:10:27 -0500
-In-Reply-To: <Pine.LNX.4.64.0702241306070.17345@alien.or.mcafeemobile.com>
-References: <20070221211516.GD7579@elte.hu> <Pine.LNX.4.64.0702231504370.31281@alien.or.mcafeemobile.com> <20070224070409.GB3357@elte.hu> <Pine.LNX.4.64.0702241306070.17345@alien.or.mcafeemobile.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <21665A89-1BEE-459D-8ED1-ACCB352CF8A4@mac.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [patch 04/13] syslets: core code
-Date: Sat, 24 Feb 2007 17:08:47 -0500
-To: Davide Libenzi <davidel@xmailserver.org>
-X-Mailer: Apple Mail (2.752.2)
+	Sat, 24 Feb 2007 17:10:54 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:42261 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933570AbXBXWKx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 17:10:53 -0500
+X-AuditID: d80ac287-9eb9bbb000002978-75-45e0b7edde66 
+Date: Sat, 24 Feb 2007 22:10:57 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Oleg Nesterov <oleg@tv-sign.ru>, dipankar@in.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: PREEMPT_RCU breaks anon_vma locking ?
+In-Reply-To: <20070223224145.GD1630@linux.vnet.ibm.com>
+Message-ID: <Pine.LNX.4.64.0702242204220.4370@blonde.wat.veritas.com>
+References: <20070223212303.GA423@tv-sign.ru> <20070223224145.GD1630@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 24 Feb 2007 22:10:52.0698 (UTC) FILETIME=[A5E93FA0:01C75860]
 X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 24, 2007, at 16:10:33, Davide Libenzi wrote:
-> On Sat, 24 Feb 2007, Ingo Molnar wrote:
->> the on/off calls are shaped in a way that makes them ultimately  
->> vsyscall-able - the kernel only needs to know about the fact that  
->> we are in a threadlet (so that the scheduler can do its special  
->> push-head-to-another-context thing) - and this can be signalled  
->> via a small user-space-side info structure as well, put into the TLS.
->
-> IMO it's not a matter of speed. We'll have those two new syscalls,  
-> that I don't see other practical use for. IMO the best thing would  
-> be to hide all inside the sys_threadlet_exec (or whatever name).
+On Fri, 23 Feb 2007, Paul E. McKenney wrote:
+> 
+> This look like a valid fix to me, at least as long as the lock is never
+> dropped in the meantime (e.g., to do I/O).  If the lock -is- dropped in
+> the meantime, then presumably whatever is done to keep the page from
+> vanishing should allow an rcu_read_unlock() to be placed after each
+> spin_unlock(&...->lock) and an rcu_read_lock() to be placed before each
+> spin_lock(&...->lock).
 
-No, it absolutely is a matter of speed.  The reason to have those two  
-implemented that way is so that they can be implemented as vsyscalls  
-completely in userspace.  This means that on most modern platforms  
-you can implement the "make a threadlet when I block" semantic  
-without even touching kernel-mode.  The way it's set up all you'd  
-have to do is save some parameters, set up a new callstack, and poke  
-a "1" into a memory address in the TLS.  To stop, you effectively  
-just poke a "0" into the spot in the TLS and either return or  
-terminate the thread.
+Thankfully no complications of that kind, page_lock_anon_vma is static
+to mm/rmap.c, and only used to hold the spin lock while examining page
+tables of the vmas in the list, never a need to drop that lock at all.
+(Until the day when someone reports such a long list that we start to
+worry about the latency.)
 
-Cheers,
-Kyle Moffett
+Hugh
