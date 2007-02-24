@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933559AbXBXVCH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933560AbXBXVEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933559AbXBXVCH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 16:02:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933560AbXBXVCG
+	id S933560AbXBXVEZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 16:04:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933562AbXBXVEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 16:02:06 -0500
-Received: from nz-out-0506.google.com ([64.233.162.225]:54064 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933559AbXBXVCE (ORCPT
+	Sat, 24 Feb 2007 16:04:25 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:2027 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933560AbXBXVEZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 16:02:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=RTR2y/b42pFDedGZeXW9VQ0UBuSLjcQCzMTwernVIVDXfv//789IBHfj3wZCiZ5KABmp+ggcDu3fmtC6gB0Em6yJ+B4fMBGhqOuq+U1D1c5+ZU43/AKuqJMy4dmzqS8qgoJRnyU8zRsxOp+EeZuNTOozZ8A5IHUQHdXp1ZVmoEQ=
-Subject: Re: [PATCH] fbdev driver for S3 Trio/Virge, updated
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Ondrej Zajicek <santiago@crfreenet.org>
-Cc: James Simmons <jsimmons@infradead.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       Jiri Slaby <jirislaby@gmail.com>
-In-Reply-To: <20070223124557.GA13443@localhost.localdomain>
-References: <20070209193405.GB2637@localhost.localdomain>
-	 <1172102733.4217.38.camel@daplas>
-	 <20070223124557.GA13443@localhost.localdomain>
-Content-Type: text/plain
-Date: Sun, 25 Feb 2007 05:04:28 +0800
-Message-Id: <1172351068.4415.1.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+	Sat, 24 Feb 2007 16:04:25 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Sat, 24 Feb 2007 13:04:21 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: "Michael K. Edwards" <medwards.linux@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+In-Reply-To: <f2b55d220702241152o640abaf3jc10afefaae8476cb@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0702241211440.17345@alien.or.mcafeemobile.com>
+References: <20070221211355.GA7302@elte.hu> 
+ <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com> 
+ <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com> 
+ <20070222074044.GA4158@elte.hu> <20070222113148.GA3781@2ka.mipt.ru> 
+ <20070222125931.GB25788@elte.hu>  <f2b55d220702221324n788506b6oee4f8ed4f168fbf1@mail.gmail.com>
+  <20070223121751.GA6626@elte.hu> <f2b55d220702241152o640abaf3jc10afefaae8476cb@mail.gmail.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-02-23 at 13:45 +0100, Ondrej Zajicek wrote:
-> On Thu, Feb 22, 2007 at 08:05:33AM +0800, Antonino A. Daplas wrote:
-> > On Fri, 2007-02-09 at 20:34 +0100, Ondrej Zajicek wrote: 
-> > > This patch adds driver for S3 Trio / S3 Virge. Driver is tested
-> > > with most versions of S3 Trio and S3 Virge, on i386.
-> > > It is tested both as compiled-in and module. It is against
-> > > linux-2.6.20 .
-> > > 
-> > > This is version 3. There are some minor modifications from version 2
-> > > (mostly coding style cleanups).
-> > 
-> > Nice, the first driver to use tileblit :-)
-> > 
-> > Since this driver is already in the -mm tree, can you resubmit a diff
-> > against that? 
-> 
-> This driver was removed from -mm tree, because it is in 2.6.21-rc1 .
-> So it is probably unnnecessary to resubmit a diff, isn't it?
-> 
+On Sat, 24 Feb 2007, Michael K. Edwards wrote:
 
-Okay, I thought the one in the tree was an older version. Thanks for
-clarifying.
+> The preceding may contain errors in detail -- I am neither a CPU
+> architect nor an x86 compiler writer nor even a serious kernel hacker.
 
-Tony
+Ok, roger that. But why are you playing "Google & Preach" games to Ingo, 
+that ate bread and CPUs for the last 15 years?
+
+
+
+- Davide
 
 
