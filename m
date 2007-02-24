@@ -1,54 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932743AbXBXOlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932897AbXBXOpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932743AbXBXOlo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 09:41:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932750AbXBXOlo
+	id S932897AbXBXOpQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 09:45:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932888AbXBXOpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 09:41:44 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:52624 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932743AbXBXOlo (ORCPT
+	Sat, 24 Feb 2007 09:45:16 -0500
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:54177 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932897AbXBXOpO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 09:41:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=rwT/LjK6ld4QcTveNzYzIoFzu/Y6zI9H25Nx3L/afp1Vg2ZdO2K/FKnl2JBA4d78NoZ+IIDGoohwOZjAZXHMqoPc0ibFBIcNVBjGjVs2wxKW1KZQ+KmdwAGwx636oiFid/S2dkpVL7Dr2Qa3UyTtmxXoVeyHVgu4N+DXlGiTG6k=
-Date: Sat, 24 Feb 2007 17:38:48 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: linux-kernel-list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] USB Elan FTDI: check for workqueue creation v2
-Message-ID: <20070224143848.GA10148@cvg>
-References: <20070224074115.GB10139@cvg> <E1HKwIW-0005OS-Nw@flower>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1HKwIW-0005OS-Nw@flower>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 24 Feb 2007 09:45:14 -0500
+From: Balbir Singh <balbir@in.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: dev@sw.ru, vatsa@in.ibm.com, ckrm-tech@lists.sourceforge.net,
+       magnus.damm@gmail.com, xemul@sw.ru, Balbir Singh <balbir@in.ibm.com>,
+       linux-mm@kvack.org, kamezawa.hiroyu@jp.fujitsu.com,
+       akpm@linux-foundation.org, svaidy@linux.vnet.ibm.com, menage@google.com,
+       devel@openvz.org
+Date: Sat, 24 Feb 2007 20:15:03 +0530
+Message-Id: <20070224144503.24162.91971.sendpatchset@balbir-laptop>
+Subject: [RFC][PATCH][0/4] Memory controller (RSS Control) (
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 24, 2007 at 01:46:44PM +0100, Oleg Verych wrote:
-| > From: Cyrill Gorcunov
-| > Newsgroups: gmane.linux.kernel
-| > Subject: bss zeroing ([PATCH] USB Elan FTDI: check for workqueue creation v2)
-| > Date: Sat, 24 Feb 2007 10:41:15 +0300
-| []
-| > Btw, Pete, you are right! C99 ANSI standart says that static pointer
-| > if it not initialized explicitly has to be set to NULL by compiler ;)
-| > Thanks a lot for comments and Ack the patch please.
-| 
-| Are you sure about "by compiler"? I mean, why not by OS, in case of uCs
-| by code/data memory image generator?
-| 
-| ____
-| 
+This patch applies on top of Paul Menage's container patches (V7) posted at
 
-I don't think that is the point... C compiler may put that data to a
-special section of image (which is to be filled by zero) or add a few
-explicit instructions... I don't care the method for a while, I need
-the result ;)
+	http://lkml.org/lkml/2007/2/12/88
 
-		Cyrill
+It implements a controller within the containers framework for limiting
+memory usage (RSS usage).
 
+The memory controller was discussed at length in the RFC posted to lkml
+	http://lkml.org/lkml/2006/10/30/51
+
+This is version 2 of the patch, version 1 was posted at
+	http://lkml.org/lkml/2007/2/19/10
+
+I have tried to incorporate all comments, more details can be found
+in the changelog's of induvidual patches. Any remaining mistakes are
+all my fault.
+
+The next question could be why release version 2?
+
+1. It serves a decision point to decide if we should move to a per-container
+   LRU list. Walking through the global LRU is slow, in this patchset I've
+   tried to address the LRU churning issue. The patch
+   memcontrol-reclaim-on-limit has more details
+2. I;ve included fixes for several of the comments/issues raised in version 1
+
+Steps to use the controller
+--------------------------
+0. Download the patches, apply the patches
+1. Turn on CONFIG_CONTAINER_MEMCONTROL in kernel config, build the kernel
+   and boot into the new kernel
+2. mount -t container container -o memcontrol /<mount point>
+3. cd /<mount point>
+   optionally do (mkdir <directory>; cd <directory>) under /<mount point>
+4. echo $$ > tasks (attaches the current shell to the container)
+5. echo -n (limit value) > memcontrol_limit
+6. cat memcontrol_usage
+7. Run tasks, check the usage of the controller, reclaim behaviour
+8. Report bugs, get bug fixes and iterate (goto step 0).
+
+Advantages of the patchset
+--------------------------
+1. Zero overhead in struct page (struct page is not expanded)
+2. Minimal changes to the core-mm code
+3. Shared pages are not reclaimed unless all mappings belong to overlimit
+   containers.
+4. It can be used to debug drivers/applications/kernel components in a
+   constrained memory environment (similar to mem=XXX option), except that
+   several containers can be created simultaneously without rebooting and
+   the limits can be changed. NOTE: There is no support for limiting
+   kernel memory allocations and page cache control (presently).
+
+Testing
+-------
+Created containers, attached tasks to containers with lower limits than
+the memory the tasks require (memory hog tests) and ran some basic tests on
+them.
+Tested the patches on UML and PowerPC. On UML tried the patches with the
+config enabled and disabled (sanity check) and with containers enabled
+but the memory controller disabled.
+
+TODO's and improvement areas
+----------------------------
+1. Come up with cool page replacement algorithms for containers - still holds
+   good (if possible without any changes to struct page)
+2. Add page cache control
+3. Add kernel memory allocator control
+4. Extract benchmark numbers and overhead data
+
+Comments & criticism are welcome.
+
+Series
+------
+memcontrol-setup.patch
+memcontrol-acct.patch
+memcontrol-reclaim-on-limit.patch
+memcontrol-doc.patch
+
+-- 
+	Warm Regards,
+	Balbir Singh
