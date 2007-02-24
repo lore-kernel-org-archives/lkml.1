@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933487AbXBXKrB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750928AbXBXLJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933487AbXBXKrB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 05:47:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933495AbXBXKrA
+	id S1750928AbXBXLJw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 06:09:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750922AbXBXLJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 05:47:00 -0500
-Received: from styx.suse.cz ([82.119.242.94]:36624 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933491AbXBXKqw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 05:46:52 -0500
-Date: Sat, 24 Feb 2007 11:46:38 +0100
-From: Vojtech Pavlik <vojtech@suse.cz>
-To: Milind Choudhary <milindchoudhary@gmail.com>
-Cc: kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org,
-       dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz,
-       linux-joystick@atrey.karlin.mff.cuni.cz
-Subject: Re: [KJ][RFC][PATCH] BIT macro cleanup
-Message-ID: <20070224104638.GA3609@suse.cz>
-References: <3b44d3fb0702222056k1d2a9b57q69a3555a09a9058e@mail.gmail.com> <3b44d3fb0702230014x4ee4a1dewdc624c54b3635e15@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3b44d3fb0702230014x4ee4a1dewdc624c54b3635e15@mail.gmail.com>
-X-Bounce-Cookie: It's a lemon tree, dear Watson!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 24 Feb 2007 06:09:52 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:57668 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750717AbXBXLJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 06:09:52 -0500
+Date: Sat, 24 Feb 2007 03:09:24 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mark Gray <mvg001@markvgray.com>
+Cc: linux-kernel@vger.kernel.org, Sam Hokin <sam@ims.net>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Markus Lidel <Markus.Lidel@shadowconnect.com>
+Subject: Re: I2O block driver broken in kernel 2.6.19?
+Message-Id: <20070224030924.e2b0fcce.akpm@linux-foundation.org>
+In-Reply-To: <loom.20070223T235432-923@post.gmane.org>
+References: <45D8E102.6090004@redhat.com>
+	<loom.20070223T235432-923@post.gmane.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 23, 2007 at 01:44:41PM +0530, Milind Choudhary wrote:
-> Hi all
-> 	working towards the cleanup of BIT macro,
-> I've added one to <linux/bitops.h> & cleaned some obvious users.
+
+(cc's restored.  Please, always do reply-to-all)
+
+> On Fri, 23 Feb 2007 22:57:27 +0000 (UTC) Mark Gray <mvg001@markvgray.com> wrote:
+> >  i2o/hda:<3>Buffer I/O error on device i2o/hda, logical block 0
+> > Buffer I/O error on device i2o/hda, logical block 0
 > 
-> include/linux/input.h also has a BIT macro
-> which does a wrap
-> so currently i've done something like
-> 
-> +#undef BIT
-> #define BIT(nr)        (1UL << ((nr) % BITS_PER_LONG))
- 
-Since the previous definition of
+> Same error here. Both 2.6.19 and 2.6.20 kernels, using Adaptec 2400A RAID.
 
-#define BIT(nr)		(1UL << (nr))
+Is Adaptec 2400 controlled by drivers/message/i2o? I assume so...
 
-gives the same results as the above one for all reasonable usage
-scenarios (you don't want to supply nr larger than BITS_PER_LONG),
-why not just use the modulo version everywhere?
+If so, thats's at least three people reporting breakage in 2.6.19 and later.
 
-The only problem I see is that the compiler would not warn where nr IS
-too large.
+Is anyone able perform a git-bisect to identify the offending commit?  It
+would really help.
 
--- 
-Vojtech Pavlik
-Director SuSE Labs
+Thanks.
+
