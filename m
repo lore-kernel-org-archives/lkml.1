@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933562AbXBXVKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933565AbXBXVLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933562AbXBXVKf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 16:10:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933563AbXBXVKf
+	id S933565AbXBXVLR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 16:11:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933567AbXBXVLQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 16:10:35 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:2038 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933562AbXBXVKf (ORCPT
+	Sat, 24 Feb 2007 16:11:16 -0500
+Received: from p02c11o146.mxlogic.net ([208.65.145.69]:57693 "EHLO
+	p02c11o146.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933565AbXBXVLP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 16:10:35 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Sat, 24 Feb 2007 13:10:33 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 04/13] syslets: core code
-In-Reply-To: <20070224070409.GB3357@elte.hu>
-Message-ID: <Pine.LNX.4.64.0702241306070.17345@alien.or.mcafeemobile.com>
-References: <20070221211516.GD7579@elte.hu> <Pine.LNX.4.64.0702231504370.31281@alien.or.mcafeemobile.com>
- <20070224070409.GB3357@elte.hu>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sat, 24 Feb 2007 16:11:15 -0500
+Date: Sat, 24 Feb 2007 23:11:41 +0200
+From: "Michael S. Tsirkin" <mst@mellanox.co.il>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, bunk@stusta.de, pavel@suse.cz,
+       linux-pm@linux-foundation.org, linux-acpi@vger.kernel.org,
+       len.brown@intel.com, mingo@redhat.com
+Subject: Re: 2.6.21-rc1: T60 resume from suspend to RAM issues
+Message-ID: <20070224211141.GA4425@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+References: <20070223020904.c8fc8a3e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070223020904.c8fc8a3e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
+X-OriginalArrivalTime: 24 Feb 2007 21:13:35.0978 (UTC) FILETIME=[A57764A0:01C75858]
+X-TM-AS-Product-Ver: SMEX-7.0.0.1526-3.6.1039-15016.001
+X-TM-AS-Result: No--16.017600-4.000000-31
+X-Spam: [F=0.1723388037; S=0.172(2007010901)]
+X-MAIL-FROM: <mst@mellanox.co.il>
+X-SOURCE-IP: [194.90.237.34]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Feb 2007, Ingo Molnar wrote:
-
-> * Davide Libenzi <davidel@xmailserver.org> wrote:
+> Quoting Andrew Morton <akpm@linux-foundation.org>:
+> Subject: Re: 2.6.21-rc1: T60 resume from suspend to RAM issues
 > 
-> > > +asmlinkage long
-> > > +sys_threadlet_on(unsigned long restore_stack,
-> > > +		 unsigned long restore_eip,
-> > > +		 struct async_head_user __user *ahu)
+> > On Fri, 23 Feb 2007 01:38:03 +0200 "Michael S. Tsirkin" <mst@mellanox.co.il> wrote:
+> > I tested this:
+> > commit 9654640d0af8f2de40ff3807d3695109d3463f54
+> > and see 2 issues:
+> > 
+> > 1. After suspend to RAM, system wakes up but no screen.
+> > I can log in through ssh though.
+> > dmesg output at this point below.
+> > Works fine on 2.6.20 and below, with same .config
+> > .config and log file for this issue attached.
+> > 
+> > 2. As a separate test, I enabled DynTicks in .config.
+> > Seems to work fine but won't come out of suspend to memory at all:
+> > pressing Fn/F4 seems to have no effect.
+> > 
 > 
-> > > +asmlinkage long sys_threadlet_off(void)
-> 
-> > If we have a new syscall that does the exec, we can save the two 
-> > on/off calls.
-> 
-> the on/off calls are shaped in a way that makes them ultimately 
-> vsyscall-able - the kernel only needs to know about the fact that we are 
-> in a threadlet (so that the scheduler can do its special 
-> push-head-to-another-context thing) - and this can be signalled via a 
-> small user-space-side info structure as well, put into the TLS.
+> Do you believe that the second problem was caused by dynticks?
 
-IMO it's not a matter of speed. We'll have those two new syscalls, that I 
-don't see other practical use for. IMO the best thing would be to hide all 
-inside the sys_threadlet_exec (or whatever name).
+Assuming these are 2 different problems, yes, the second one seems
+to be caused by dyntics.
 
-
-
-
-> > [...] Also, the complete_thread() thingy can be done automatically 
-> > from inside the kernel upon function return, by hence making the 
-> > threadlet function look like a normal thread function:
-> 
-> yeah - and that's how it works in my current codebase already, 
-> threadlet_off() takes a 'completion event' pointer as well, and the ahu. 
-> I'll release v4 so that you can have a look.
-
-Ok. Will look into it...
-
-
-
-- Davide
-
-
+-- 
+MST
