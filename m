@@ -1,66 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932810AbXBXQFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932838AbXBXQPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932810AbXBXQFz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 11:05:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932838AbXBXQFz
+	id S932838AbXBXQPb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 11:15:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932839AbXBXQPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 11:05:55 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:41446 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932810AbXBXQFy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 11:05:54 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Sat, 24 Feb 2007 10:59:42 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Oleg Verych <olecom@flower.upol.cz>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: ioctls.h (Re: [PATCH][RFC] Make asm-generic/ioctl.h extensible
- by adding conditionals.)
-In-Reply-To: <E1HKwCy-0005OM-FW@flower>
-Message-ID: <Pine.LNX.4.64.0702241058140.19099@CPE00045a9c397f-CM001225dbafb6>
-References: <Pine.LNX.4.64.0702240641520.15087@CPE00045a9c397f-CM001225dbafb6>
- <E1HKwCy-0005OM-FW@flower>
+	Sat, 24 Feb 2007 11:15:30 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56427 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932838AbXBXQPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 11:15:30 -0500
+Message-ID: <45E06439.40403@redhat.com>
+Date: Sat, 24 Feb 2007 11:13:45 -0500
+From: Jon Masters <jcm@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+CC: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
+       Sergey Vlasov <vsu@altlinux.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mit-devel@lists.printk.net
+Subject: Re: module-init-tools-3.3-pre10 available
+References: <45DD0031.9010808@redhat.com> <20070222170732.22c1320b.vsu@altlinux.ru> <45DDAE24.6080905@redhat.com> <20070223120136.12ea11db@home.brethil> <45DF0B42.2080208@redhat.com> <Pine.LNX.4.61.0702241625030.16527@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0702241625030.16527@yvahk01.tjqt.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Feb 2007, Oleg Verych wrote:
+Jan Engelhardt wrote:
 
-> > From: "Robert P. J. Day"
-> > Newsgroups: gmane.linux.kernel
-> > Subject: [PATCH][RFC] Make asm-generic/ioctl.h extensible by adding conditionals.
-> > Date: Sat, 24 Feb 2007 06:45:20 -0500 (EST)
->
-> >   as a followup to my earlier post, is it worth making this change
-> > to allow at least a couple arch-specific ioctl.h files to be
-> > massively simplified?
->
-> And i wonder, why there is no generic ioctls.h, hm?
+> Out of the box perhaps if it is the .tar.bz2 archive, but the same does not
+> always hold for CVS repos, much less SVNs [random guess on svn]. He who pulls
+> from a developer tree mostly knows to run 'autogen.sh' or 'autoreconf -fi'
+> beforehand.
 
-beats me, but it seems that there are a *number* of arch-specific
-header files that could be treated this way -- a single generic file,
-allowing the small number of customizations that seem to be necessary
-across all architectures.
+You know what, you're right of course. Ok, I'm taking those back *out* 
+of the repo in the next update and then will have a script generate 
+these for the tarball. That does sound like the right thing.
 
-but i figured i'd start with ioctl.h first and see where it went from
-there.
+Thanks!
 
-rday
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Jon.
