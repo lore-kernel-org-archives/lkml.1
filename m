@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932461AbXBXPma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932370AbXBXPoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932461AbXBXPma (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 10:42:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932808AbXBXPma
+	id S932370AbXBXPoZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 10:44:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932714AbXBXPoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 10:42:30 -0500
-Received: from trinity.fluff.org ([217.147.94.151]:2357 "EHLO
-	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932461AbXBXPm3 (ORCPT
+	Sat, 24 Feb 2007 10:44:24 -0500
+Received: from smtp-out109.alice.it ([85.37.17.109]:1342 "EHLO
+	smtp-out109.alice.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932370AbXBXPoY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 10:42:29 -0500
-Date: Sat, 24 Feb 2007 15:42:17 +0000
-From: Ben Dooks <ben-linux@fluff.org>
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-Cc: Ben Dooks <ben-linux@fluff.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Vincent Sanders <vince@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] drivers/mfd/sm501.c: Replace pci_module_init with pci_register_driver
-Message-ID: <20070224154217.GK14228@trinity.fluff.org>
-References: <20070224104603.20765.30521.sendpatchset@thinktank.campus.ltu.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070224104603.20765.30521.sendpatchset@thinktank.campus.ltu.se>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.9i
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+	Sat, 24 Feb 2007 10:44:24 -0500
+Message-ID: <45E05D54.10508@alice.it>
+Date: Sat, 24 Feb 2007 16:44:20 +0100
+From: Mario Vanoni <vanonim@alice.it>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20061222 SeaMonkey/1.0.7
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.16.41 & 2.6.18.7 OK,   2.6.19.5 NOT,   2.6.18.8 KERNEL PANIC
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Feb 2007 15:44:22.0048 (UTC) FILETIME=[A734E200:01C7582A]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 24, 2007 at 11:46:06AM +0100, Richard Knutsson wrote:
-> Replace pci_module_init with pci_register_driver
+2.6.18.7 vanilla & 2.6.16.41 vanilla:
+/dev/hda CD/DVD
+/dev/hda1 / IDE HD 160GB
+/dev/hda2 swap
+/dev/sda1 /xyz SATA HD 320GB
+/dev/sda2 swap
+/dev/sdb1 /zzz SATA HD 320GB
+/dev/sdb2 swap
+/dev/sdc1 /usb USB KEY 512MB
+all 100% OK since 12-Dec-2006
 
-Thankyou for spotting this.
- 
-> Signed-off-by: Richard Knutson <ricknu-0@student.ltu.se>
-Acked-by: Ben Dooks <ben-linux@fluff.org>
-> ---
-> Compile-tested with "allyes", "allmod" & "allno" on i386
-> 
-> diff --git a/drivers/mfd/sm501.c b/drivers/mfd/sm501.c
-> index 5c5a1e2..c707c8e 100644
-> --- a/drivers/mfd/sm501.c
-> +++ b/drivers/mfd/sm501.c
-> @@ -1131,7 +1131,7 @@ static struct platform_driver sm501_plat_drv = {
->  static int __init sm501_base_init(void)
->  {
->  	platform_driver_register(&sm501_plat_drv);
-> -	return pci_module_init(&sm501_pci_drv);
-> +	return pci_register_driver(&sm501_pci_drv);
->  }
->  
->  static void __exit sm501_base_exit(void)
+2.6.19.5 vanilla:
+/dev/hda, /dev/hdb OK
 
--- 
--- 
-Ben
+fsck 1.38 (30-Jun-2005)
+/dev/sda1: clean 2960/125696 files, 12379/125692 blocks
+but /dev/sda1 is only partially mounted, du -hs says 33M
+...
+/sbin/e2fsck: No such file or directory while trying to open /dev/sdb1
+...
+same for /dev/sdc1
+...
+swapon: cannot stat /dev/sda2: No such file or directory
+same for /dev/sdb2,
+so only 2GB swap, not 6GB
 
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
+---
+2.6.18.8 vanilla: !!!
+screen eating leftmost characters, then
+kernel panic - not syncing: VFS: Unable to mount root fs on
+unknown-block(3,65)
+POWER SWITCH ultima ratio
+---
+
+all 4 kernels same .config from 2.6.18.6,
+make oldconfig, Enter on all new questions
+
+AUSUS P4R800V, P4HT3400, 2GB mem
+Slackware 11.0, udev-105, gcc-3.4.6, glibc-2.3.6,
+all ext2 4096 formated
+
+Rebooting 2.6.18.7 vanilla:
+all devices OK, 6GB swap
+
+FEEDBACK ONLY, _not_ in LMKL
+
+Kind regards
+Mario Vanoni
+
 
