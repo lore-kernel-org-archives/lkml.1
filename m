@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933510AbXBXP3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932461AbXBXPma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933510AbXBXP3c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 10:29:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933512AbXBXP3b
+	id S932461AbXBXPma (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 10:42:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932808AbXBXPma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 10:29:31 -0500
-Received: from tmailer.gwdg.de ([134.76.10.23]:48016 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933510AbXBXP3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 10:29:31 -0500
-Date: Sat, 24 Feb 2007 16:26:10 +0100 (MET)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Jon Masters <jcm@redhat.com>
-cc: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
-       Sergey Vlasov <vsu@altlinux.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mit-devel@lists.printk.net
-Subject: Re: module-init-tools-3.3-pre10 available
-In-Reply-To: <45DF0B42.2080208@redhat.com>
-Message-ID: <Pine.LNX.4.61.0702241625030.16527@yvahk01.tjqt.qr>
-References: <45DD0031.9010808@redhat.com> <20070222170732.22c1320b.vsu@altlinux.ru>
- <45DDAE24.6080905@redhat.com> <20070223120136.12ea11db@home.brethil>
- <45DF0B42.2080208@redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Sat, 24 Feb 2007 10:42:30 -0500
+Received: from trinity.fluff.org ([217.147.94.151]:2357 "EHLO
+	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932461AbXBXPm3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 10:42:29 -0500
+Date: Sat, 24 Feb 2007 15:42:17 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Richard Knutsson <ricknu-0@student.ltu.se>
+Cc: Ben Dooks <ben-linux@fluff.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Vincent Sanders <vince@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] drivers/mfd/sm501.c: Replace pci_module_init with pci_register_driver
+Message-ID: <20070224154217.GK14228@trinity.fluff.org>
+References: <20070224104603.20765.30521.sendpatchset@thinktank.campus.ltu.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070224104603.20765.30521.sendpatchset@thinktank.campus.ltu.se>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.9i
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Feb 24, 2007 at 11:46:06AM +0100, Richard Knutsson wrote:
+> Replace pci_module_init with pci_register_driver
 
-On Feb 23 2007 10:41, Jon Masters wrote:
->
-> I think it's like the configure/Makefile.in situation. These files should
-> technically not be in the repo either (and you removed them in your tree) but I
-> re-added them because people have an expectation that:
->
-> ./configure
-> make
->
-> will do something "out of the box".
+Thankyou for spotting this.
+ 
+> Signed-off-by: Richard Knutson <ricknu-0@student.ltu.se>
+Acked-by: Ben Dooks <ben-linux@fluff.org>
+> ---
+> Compile-tested with "allyes", "allmod" & "allno" on i386
+> 
+> diff --git a/drivers/mfd/sm501.c b/drivers/mfd/sm501.c
+> index 5c5a1e2..c707c8e 100644
+> --- a/drivers/mfd/sm501.c
+> +++ b/drivers/mfd/sm501.c
+> @@ -1131,7 +1131,7 @@ static struct platform_driver sm501_plat_drv = {
+>  static int __init sm501_base_init(void)
+>  {
+>  	platform_driver_register(&sm501_plat_drv);
+> -	return pci_module_init(&sm501_pci_drv);
+> +	return pci_register_driver(&sm501_pci_drv);
+>  }
+>  
+>  static void __exit sm501_base_exit(void)
 
-Out of the box perhaps if it is the .tar.bz2 archive, but the same does not
-always hold for CVS repos, much less SVNs [random guess on svn]. He who pulls
-from a developer tree mostly knows to run 'autogen.sh' or 'autoreconf -fi'
-beforehand.
-
-
-Jan
 -- 
+-- 
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
+
