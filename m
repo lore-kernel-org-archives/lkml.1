@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750729AbXBXRME@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750995AbXBXRTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750729AbXBXRME (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 12:12:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbXBXRMD
+	id S1750995AbXBXRTi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 12:19:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbXBXRTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 12:12:03 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:47381 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750729AbXBXRMB (ORCPT
+	Sat, 24 Feb 2007 12:19:38 -0500
+Received: from wr-out-0506.google.com ([64.233.184.229]:22853 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750966AbXBXRTh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 12:12:01 -0500
-X-Sasl-enc: RCjr3SW4cFyQ92OxIO/OQnbTw7OOkD6+Wd8MvPCspnQ6 1172337119
-In-Reply-To: <200702241624.17024.bzolnier@gmail.com>
-References: <8d158e1f0702240210x71f981a6xf2fe8917dac5e91a@mail.gmail.com> <200702241624.17024.bzolnier@gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <6C96CE3D-85F5-479D-BD44-F5DA0AE744FF@fastmail.to>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-From: Michael-Luke Jones <jonesml@fastmail.to>
+	Sat, 24 Feb 2007 12:19:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Pnyv/RocBqqwHn63RbMIIMYq8kFS7ZVO9nZlsAAxfIZ7LWfCTscy4iniXCKcxYsoZCuvNZu58AuZDsrv/DVGlgXokZoZN47MHsEioPYdmAKqD9S39iZH0JP9RM5AhiATvHVRCT5pacwJZwWB06rM5LCmDoWiHZkJ3KrCpoyCXDo=
+Message-ID: <8d158e1f0702240919v33182ca2qc0a15fdd27a3f96a@mail.gmail.com>
+Date: Sat, 24 Feb 2007 17:19:31 +0000
+From: "Patrick Ale" <patrick.ale@gmail.com>
+To: "Michael-Luke Jones" <jonesml@fastmail.to>
 Subject: Re: [QUESTION] Sata RAID
-Date: Sat, 24 Feb 2007 17:11:56 +0000
-To: Patrick Ale <patrick.ale@gmail.com>
-X-Mailer: Apple Mail (2.752.2)
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <6C96CE3D-85F5-479D-BD44-F5DA0AE744FF@fastmail.to>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <8d158e1f0702240210x71f981a6xf2fe8917dac5e91a@mail.gmail.com>
+	 <200702241624.17024.bzolnier@gmail.com>
+	 <6C96CE3D-85F5-479D-BD44-F5DA0AE744FF@fastmail.to>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-But using 'fakeraid' (i.e. BIOS RAID) together with dmraid is  
-generally discouraged in favour of using the more stable and well  
-supported Linux Software RAID functionality.
+On 2/24/07, Michael-Luke Jones <jonesml@fastmail.to> wrote:
+> But using 'fakeraid' (i.e. BIOS RAID) together with dmraid is
+> generally discouraged in favour of using the more stable and well
+> supported Linux Software RAID functionality.
+>
+> Michael-Luke
 
-Michael-Luke
+I think I actually used dmraid, and the problem I had in those days
+was that it was just a layer over your legacy IDE drivers.
 
-On 24 Feb 2007, at 15:24, Bartlomiej Zolnierkiewicz wrote:
+With 2.4 you had "real" drivers whom created block devices if I recall
+correctly which you could really treat as disks.
 
->
-> use device mapper and dmraid
->
-> 	http://people.redhat.com/~heinzm/sw/dmraid/
->
-> and please read
->
-> 	http://linux-ata.org/faq-sata-raid.html
->
-> On Saturday 24 February 2007, Patrick Ale wrote:
->> Hi,
->>
->> Quick question,
->>
->> Since I am going to open my server today to do some pata tests (for
->> the weird detection problems people are giving me fantastic help  
->> with,
->> no sarcasm, I really mean it) I thought: why not add two 320GB SATA
->> disks on the SATA controller that the mainboard has.
->>
->> I am wondering: should I use the onboard RAID function? Is this
->> supported by Linux? I remember back in "the old days (TM)" there were
->> seperate (spelling) drivers for ataraid, how does the current 2.6
->> branch cope with the RAID functions of modern motherboards?
->>
->> I am aware that it is NOT hardware raid, the raid is done in the
->> driver, which is why you need this fancy boot disk before installing
->> Windows on your RAID set.
->>
->> Or would you suggest me to stick with MD devices?
->>
->>
->> Cheers,
->>
->> Patrick Ale
->> patrick.ale@gmail.com
->>
->> "kun kasvan isoksi, halun olla poro"
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux- 
-> kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
->
+If dmraid still works as it did in the days I used it it's just a
+layer, like LVM, and the kernel itself doesnt care at all for the
+disks being in a RAID set or not and will access the disks
+independently, this I really found a reason to not use dmraid and
+stick with MD devices.
 
+And by the reactions from you guys I guess those reasons still exist :)
+
+So MD it is,
+
+Thanks!
+
+Patrick
