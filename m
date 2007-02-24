@@ -1,39 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752229AbXBXA0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933275AbXBXAdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752229AbXBXA0t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 19:26:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbXBXA0s
+	id S933275AbXBXAdy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 19:33:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933277AbXBXAdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 19:26:48 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55936
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752227AbXBXA0s (ORCPT
+	Fri, 23 Feb 2007 19:33:54 -0500
+Received: from vms040pub.verizon.net ([206.46.252.40]:55279 "EHLO
+	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933275AbXBXAdy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 19:26:48 -0500
-Date: Fri, 23 Feb 2007 16:26:47 -0800 (PST)
-Message-Id: <20070223.162647.71091566.davem@davemloft.net>
-To: nhorman@tuxdriver.com
-Cc: msa@moth.iki.fi, linux-kernel@vger.kernel.org
-Subject: Re: ipv4 and ipv6 stacks for new link layers?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070223134706.GA24864@hmsreliant.homelinux.net>
-References: <200702231149.l1NBnlZD029626@moth.iki.fi>
-	<20070223134706.GA24864@hmsreliant.homelinux.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 23 Feb 2007 19:33:54 -0500
+Date: Fri, 23 Feb 2007 19:33:52 -0500
+From: "Tom Morrison" <Tom.Morrison@Verizon.net>
+Subject: RE: Problems with init of Marvell PCI Express SATA Card
+In-reply-to: <20070224011754.5b8447dc@lxorguk.ukuu.org.uk>
+To: "Alan" <alan@lxorguk.ukuu.org.uk>
+Cc: <linux-kernel@vger.kernel.org>
+Reply-to: <Tom.Morrison@Verizon.net>
+Message-id: <CJEDIOAEPEPAEFLDLKIBCEJOCDAA.Tom.Morrison@Verizon.net>
+MIME-version: 1.0
+X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Importance: Normal
+X-Priority: 3 (Normal)
+X-MSMail-priority: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Neil Horman <nhorman@tuxdriver.com>
-Date: Fri, 23 Feb 2007 08:47:06 -0500
+got it! thank you for showing the error of my way...
+and being so patient with me!  damm, that means
+I gotta work this weekend...:-)...
 
-> patches welcome :)
+-----Original Message-----
+From: Alan [mailto:alan@lxorguk.ukuu.org.uk]
+Sent: Friday, February 23, 2007 8:18 PM
+To: Tom.Morrison@Verizon.net
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Problems with init of Marvell PCI Express SATA Card
 
-And it's a non-trivial task.  The semantics and way in which
-link level encapsulation is done is not straight-forward
-on some devices.
 
-So the hooks either have to be too generic, or too specific
-to be useful.
+> if you look in the sata_mv.c it has support for the 
+> 7042 throughout it (exactly the same as PCI in fact - 
+> its the same core chip - just different bus interface)...
+
+For the 7042 with the TTI PCI identifier but not one with a Marvell ID -
+what vendor/device does your device show up ?
+
+The probe code uses the table in each driver to do matches. For the 7042
+the only version it knows is
+
+   { PCI_VDEVICE(TTI, 0x2310), chip_7042 },
