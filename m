@@ -1,75 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933520AbXBXQ7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750729AbXBXRME@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933520AbXBXQ7M (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 11:59:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933525AbXBXQ7M
+	id S1750729AbXBXRME (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 12:12:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbXBXRMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 11:59:12 -0500
-Received: from gateway.insightbb.com ([74.128.0.19]:41255 "EHLO
-	asav03.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933520AbXBXQ7L (ORCPT
+	Sat, 24 Feb 2007 12:12:03 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:47381 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750729AbXBXRMB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 11:59:11 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aj0KAKL930VKhRO4UGdsb2JhbACHTIc9AQEqkx4BAQE
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Pete Zaitcev <zaitcev@redhat.com>
-Subject: Re: input.c: start on release
-Date: Sat, 24 Feb 2007 11:57:07 -0500
-User-Agent: KMail/1.9.3
-Cc: linux-kernel@vger.kernel.org
-References: <20070222212919.850ceafe.zaitcev@redhat.com> <d120d5000702230706u4e7576du6661ce1b58e058aa@mail.gmail.com> <20070223164424.0454e11e.zaitcev@redhat.com>
-In-Reply-To: <20070223164424.0454e11e.zaitcev@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 24 Feb 2007 12:12:01 -0500
+X-Sasl-enc: RCjr3SW4cFyQ92OxIO/OQnbTw7OOkD6+Wd8MvPCspnQ6 1172337119
+In-Reply-To: <200702241624.17024.bzolnier@gmail.com>
+References: <8d158e1f0702240210x71f981a6xf2fe8917dac5e91a@mail.gmail.com> <200702241624.17024.bzolnier@gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6C96CE3D-85F5-479D-BD44-F5DA0AE744FF@fastmail.to>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702241157.08228.dtor@insightbb.com>
+From: Michael-Luke Jones <jonesml@fastmail.to>
+Subject: Re: [QUESTION] Sata RAID
+Date: Sat, 24 Feb 2007 17:11:56 +0000
+To: Patrick Ale <patrick.ale@gmail.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 23 February 2007 19:44, Pete Zaitcev wrote:
-> On Fri, 23 Feb 2007 10:06:14 -0500, "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
-> > On 2/23/07, Pete Zaitcev <zaitcev@redhat.com> wrote:
-> 
-> > > void input_release_device(struct input_handle *handle)
-> > > {
-> > > ....
-> > >        if (handle->handler->start)
-> > >                handle->handler->start(handle);
-> 
-> > It should be ->start(). You are probably confused a little by the name
-> > of the function. input_release_device() is called when userspace
-> > issues ioctl(fd, EVIOCGRAB, 0) releasing (or ungrabbing) the device
-> > (as opposed to xxx_release(file, inode) type functions that are called
-> > when last user of a file drops off). In our case we want to give
-> > handlers a chance to resume their control over device. Right now
-> > standard keyboard driver uses start method do bring back in sync LED
-> > state of a keyborad-like device after it was released (ungrabbed).
-> 
-> Thanks for the explanation. I suspect people asked you 100 times before.
-> I can see why we would want to do this when a grab ends, but why do
-> we do this on every close of /dev/input/mice? The call path is:
-> 
->  mousedev_release ->
->  mixdev_release (optional for some majors)
->  input_close_device ->
->  input_release_device
+But using 'fakeraid' (i.e. BIOS RAID) together with dmraid is  
+generally discouraged in favour of using the more stable and well  
+supported Linux Software RAID functionality.
+
+Michael-Luke
+
+On 24 Feb 2007, at 15:24, Bartlomiej Zolnierkiewicz wrote:
+
+>
+> use device mapper and dmraid
+>
+> 	http://people.redhat.com/~heinzm/sw/dmraid/
+>
+> and please read
+>
+> 	http://linux-ata.org/faq-sata-raid.html
+>
+> On Saturday 24 February 2007, Patrick Ale wrote:
+>> Hi,
+>>
+>> Quick question,
+>>
+>> Since I am going to open my server today to do some pata tests (for
+>> the weird detection problems people are giving me fantastic help  
+>> with,
+>> no sarcasm, I really mean it) I thought: why not add two 320GB SATA
+>> disks on the SATA controller that the mainboard has.
+>>
+>> I am wondering: should I use the onboard RAID function? Is this
+>> supported by Linux? I remember back in "the old days (TM)" there were
+>> seperate (spelling) drivers for ataraid, how does the current 2.6
+>> branch cope with the RAID functions of modern motherboards?
+>>
+>> I am aware that it is NOT hardware raid, the raid is done in the
+>> driver, which is why you need this fancy boot disk before installing
+>> Windows on your RAID set.
+>>
+>> Or would you suggest me to stick with MD devices?
+>>
+>>
+>> Cheers,
+>>
+>> Patrick Ale
+>> patrick.ale@gmail.com
+>>
+>> "kun kasvan isoksi, halun olla poro"
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux- 
+> kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 >
 
-The actual work withing input_release_device happens only when called
-for handle that grabbed the device earlier. The reason why we call it
-when closing a device so that device is not left in grabbed state if
-userspace forgot to release it voluntarily.
- 
-> Same thing happens upon disconnect, though this is probably harmless,
-> as the device is gone already anyway.
-> 
-> To tell you the truth, all I really want is to hold a static mutex
-> across a call to input_close_device(). Can I do that?
-
-Are you trying to fix locking in mousedev?
-
--- 
-Dmitry
