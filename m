@@ -1,43 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933576AbXBXW4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933575AbXBXW5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933576AbXBXW4p (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 17:56:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933580AbXBXW4p
+	id S933575AbXBXW5h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 17:57:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933580AbXBXW5h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 17:56:45 -0500
-Received: from holomorphy.com ([66.93.40.71]:48721 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933576AbXBXW4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 17:56:44 -0500
-Date: Sat, 24 Feb 2007 14:56:31 -0800
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc][patch] dynamic resizing dentry hash using RCU
-Message-ID: <20070224225631.GA9222@holomorphy.com>
-References: <20070223153743.GA26141@wotan.suse.de> <20070224042444.GU21484@holomorphy.com> <20070224050937.GA16601@wotan.suse.de>
+	Sat, 24 Feb 2007 17:57:37 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:14335 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933575AbXBXW5g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 17:57:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mpc8S6V50F5RVC1i9/mRFZSkkKzwTEnaFXvs6pu2AWwypq3a1R0wGXxJDJ8KFj23uQQXMP212f5QY+cGaI74TYCEp3fSIG9q3N+qAzEvLHBF41sfL55msW4w9CbJfrOHoSEen0ebNT0xamnlR/GCVUy434SmSE4FVIdd6CWyeiU=
+Message-ID: <21d7e9970702241457n746aa069y8dd4e97a07996eed@mail.gmail.com>
+Date: Sun, 25 Feb 2007 09:57:34 +1100
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Subject: Re: Video GL rendering worked only between 2.6.20 and 2.6.21-rc1
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070223180643.GA6828@Ahmed>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070224050937.GA16601@wotan.suse.de>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20070223180643.GA6828@Ahmed>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 23, 2007 at 08:24:44PM -0800, William Lee Irwin III wrote:
->> You would be better served by a data structure different from a hashtable.
+> The machine is a Centrino laptop with an i810 card. So I guess those are
+> the responsible files:
+>
+>     drivers/char/drm/i810_*.c
+>     drivers/video/i810/*
 
-On Sat, Feb 24, 2007 at 06:09:37AM +0100, Nick Piggin wrote:
-> Out of curiosity, what better data structure do you have in mind for
-> the dentry hash?
+drivers/char/agp/i810*
+and
+drivers/char/drm/i915*
 
-Per-directory indices of ->d_subdirs. Hash tries (spelled correctly)
-and B+ trees hung off dentries corresponding to directories are
-plausible. There are plenty of other possibilities; just do it on a
-per-directory basis so you don't intermix children of different parents
-in some boot-time -allocated global trainwreck and you're home free.
-Benchmarking is probably needed to gauge which performs best.
+are most likely.. but it could be anything in the DRM or AGP subdirs..
+ perhaps two X.org logs showing the difference..
 
-
--- wli
+Dave.
