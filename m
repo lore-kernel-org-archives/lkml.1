@@ -1,41 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932840AbXBXJ4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933472AbXBXKDH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932840AbXBXJ4g (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 04:56:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933470AbXBXJ4g
+	id S933472AbXBXKDH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 05:03:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933469AbXBXKDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 04:56:36 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:30782 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932840AbXBXJ4f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 04:56:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=aEMDJTQDjWbDJ6ZmqOfLjv2gcqVDUD3Bm3yT66VGeEmPG4doS0I+Vu9oLlcuDyWqFezMQwkiN7bcPAJPd+bOzkF5FiSZ+2un5LHGbJ8wLA5gWgKiULTBd9kG2QO32WU9TQwprooi+aQ4hUBvYdi37CmWxprqB3gylmpVQP1KaGA=
-Message-ID: <c9ad85600702240156g717d49cfm9c7ea30c00d48d28@mail.gmail.com>
-Date: Sat, 24 Feb 2007 03:56:34 -0600
-From: "V P" <upathiyayan@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: REQ_HARDBARRIER and REQ_SOFTBARRIER
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Sat, 24 Feb 2007 05:03:06 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:42926 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933472AbXBXKDF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 05:03:05 -0500
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <45DFB1C7.1030205@google.com> 
+References: <45DFB1C7.1030205@google.com>  <45D5B2E3.3030607@hitachi.com> 
+To: Markus Gutschke <markus@google.com>
+Cc: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
+       Andrew Morton <akpm@osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Robin Holt <holt@sgi.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <soshima@redhat.com>
+Subject: Re: [PATCH 0/4] coredump: core dump masking support v3 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Sat, 24 Feb 2007 10:02:15 +0000
+Message-ID: <17044.1172311335@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Markus Gutschke <markus@google.com> wrote:
 
-I'm trying to modify the ordering of I/O requests in Linux kernel, and
-came across the barrier flags REQ_HARDBARRIER and REQ_SOFTBARRIER.
+> As an alternative to your kernel patch, you could achieve the same goal in
+> user space, by linking my coredumper
 
-One thing I noticed (which might be wrong) is that all the requests
-have both these flags set. What is the significance of these flags? Is
-it a must for a request to have this? Can I reorder two requests with
-these flags set? How is SOFTBARRIER different from HARDBARRIER?
+How does it work when you can't actually get back to userspace to have
+userspace do the coredump?  You still have to handle the userspace equivalents
+of double/triple faults.
 
-I appreciate your time and help.
-
-Thanks much.
+David
