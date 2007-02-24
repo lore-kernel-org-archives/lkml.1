@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933593AbXBXX2O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933598AbXBXXlB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933593AbXBXX2O (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 18:28:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933592AbXBXX2O
+	id S933598AbXBXXlB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 18:41:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933600AbXBXXlB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 18:28:14 -0500
-Received: from nz-out-0506.google.com ([64.233.162.237]:32777 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933593AbXBXX2N (ORCPT
+	Sat, 24 Feb 2007 18:41:01 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:47474 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933598AbXBXXlA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 18:28:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=tP4AVsjkQVTJtlRmmxTUxNXU0jMi9FYx+xZxQmkhzYl9RyTc0U1K+21HfOL2iR1IChKFQtNJ7ey0osMRFQCwiZmAJYKlaEA9psaw0bupmIDcsQd8D8PzK4xKOQ5lo0NHaP+6puRK0gZme6pm8KJZXBLN2hqZFOrIikQ3bndxCeE=
-Subject: Re: 2.6.21-rc1: framebuffer/console boot failure
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Andrew Nelless <andrew@nelless.net>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-In-Reply-To: <33525.86.7.220.119.1172358010.squirrel@wmbeta.mxes.net>
-References: <35472.86.7.220.119.1172237750.squirrel@wmbeta.mxes.net>
-	 <20070224030950.074f88d4.akpm@linux-foundation.org>
-	 <33525.86.7.220.119.1172358010.squirrel@wmbeta.mxes.net>
-Content-Type: text/plain
-Date: Sun, 25 Feb 2007 07:30:42 +0800
-Message-Id: <1172359843.4415.8.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Sat, 24 Feb 2007 18:41:00 -0500
+Message-ID: <45E0CCFF.60407@zytor.com>
+Date: Sat, 24 Feb 2007 15:40:47 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+CC: dsaxena@plexity.net, Linus Torvalds <torvalds@osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Allow kernel to build on Cygwin
+References: <20070223034343.GA3320@plexity.net> <45DF842F.9000302@zytor.com> <Pine.LNX.4.61.0702242354550.16527@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0702242354550.16527@yvahk01.tjqt.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-02-24 at 23:00 +0000, Andrew Nelless wrote:
-> On Sat, February 24, 2007 11:09 am, Andrew Morton wrote:
-> >
-> > Presumably this regression was caused by the ACPI merge.  Are you able to
-> > capture the dmesg output from the 2.6.20-rc1 boot?  netconsole might be useful here, thanks.
-> >
+Jan Engelhardt wrote:
+> On Feb 23 2007 16:17, H. Peter Anvin wrote:
+>> Deepak Saxena wrote:
+>>> diff --git a/lib/gen_crc32table.c b/lib/gen_crc32table.c
+>>> index bea5d97..ce447ff 100644
+>>> --- a/lib/gen_crc32table.c
+>>> +++ b/lib/gen_crc32table.c
+>>> @@ -1,6 +1,8 @@
+>>> # include <stdio.h>
+>>> # include "crc32defs.h"
+>>> +#ifndef __CYGWIN__
+>>> #include <inttypes.h>
+>>> +#endif
+>>>
+>>> #define ENTRIES_PER_LINE 4
+>> Cygwin has <inttypes.h> just fine; what are you trying to do here?
 > 
-> I've confirmed a few things:
+> What's the benefit of inttypes.h over stdint.h?
 > 
-> 1) 2.6.21-rc1 actually will boot intermittently.
-> 2) pci=noacpi always allows 2.6.21-rc1 to boot.
-> 2) 2.6.20 always boots.
-> 3) There doesn't seem to be a pattern (that I can tell) between booting and not booting,
-> although it'll now boot more often than not (It seemed very much t'other way around yesterday)
-> 4) When 2.6.21-rc1 doesn't boot ('Boot'? Am i using the right term here? hmm...) nothing is
-> sent across netconsole at all.
-> 5) Netconsole is useful.
-> 
-> I've uploaded all the dmesg output i've managed to capture here:
-> http://homepage.ntlworld.com/anelless/linux/2.6.21-rc1/
-> 
-> > (You get added to the post-2.6.20 regression list, so you'll be hearing
-> > from us quite a lot for the next month.  Sorry ;))
-> >
-> 
-> Lucky me :)
 
-How about booting with just vga=normal?
+<inttypes.h> is a superset of <stdint.h>; some older platforms don't 
+have <stdint.h> (but has all the contents thereof in <inttypes.h>) however.
 
-Tony
+In general <inttypes.h> is what you want.  The utility of <stdint.h> is 
+relatively limited; it looks like it's intended so that <stdint.h> 
+contains the compiler-specific portions rather than the library-specific 
+portions.
 
-
+	-hpa
