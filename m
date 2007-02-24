@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933360AbXBXDcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933365AbXBXEGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933360AbXBXDcu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 22:32:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933361AbXBXDcu
+	id S933365AbXBXEGF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 23:06:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933363AbXBXEGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 22:32:50 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:22538 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933360AbXBXDct (ORCPT
+	Fri, 23 Feb 2007 23:06:05 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46977 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933365AbXBXEGE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 22:32:49 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:user-agent:mime-version:to:cc:
-	subject:references:in-reply-to:content-type:content-transfer-encoding;
-	b=KPpuAlGM832RlHy2HkIqCmo7rdR14hkJJWId6cljqCrb/z0YgqA7DsvGV0LWIT6Q5
-	0mWa+t/0RvgqaPiDjO6YA==
-Message-ID: <45DFB1C7.1030205@google.com>
-Date: Fri, 23 Feb 2007 19:32:23 -0800
-From: Markus Gutschke <markus@google.com>
-User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
+	Fri, 23 Feb 2007 23:06:04 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Jeff V. Merkey" <jmerkey@wolfmountaingroup.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Conclusions from my investigation about ioapic programming
+References: <200701221116.13154.luigi.genoni@pirelli.com>
+	<200702021905.39922.luigi.genoni@pirelli.com>
+	<m1zm7w3wvr.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1veik3woc.fsf_-_@ebiederm.dsl.xmission.com>
+	<20070206073616.GA15016@elte.hu>
+	<m1odo7q6cq.fsf@ebiederm.dsl.xmission.com>
+	<20070206222523.GA11602@elte.hu>
+	<m1irecamzh.fsf@ebiederm.dsl.xmission.com>
+	<m1wt2s8ksa.fsf@ebiederm.dsl.xmission.com>
+	<m1veib6dgi.fsf@ebiederm.dsl.xmission.com>
+	<m1hctt1sfp.fsf_-_@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.64.0702102146380.8245@montezuma.fsmlabs.com>
+	<m13b5d0zdp.fsf@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.64.0702110753390.8245@montezuma.fsmlabs.com>
+	<m17iuoz74f.fsf@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.64.0702111416220.24829@montezuma.fsmlabs.com>
+	<m1r6swx9l2.fsf@ebiederm.dsl.xmission.com>
+	<m1irdtw3jb.fsf_-_@ebiederm.dsl.xmission.com>
+	<45DF1ADD.9000600@wolfmountaingroup.com>
+	<m13b4wu4m8.fsf@ebiederm.dsl.xmission.com>
+	<45DF28D7.5010303@wolfmountaingroup.com>
+Date: Fri, 23 Feb 2007 21:05:41 -0700
+In-Reply-To: <45DF28D7.5010303@wolfmountaingroup.com> (Jeff V. Merkey's
+	message of "Fri, 23 Feb 2007 10:48:07 -0700")
+Message-ID: <m18xeoryi2.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
-CC: Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Robin Holt <holt@sgi.com>,
-       dhowells@redhat.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <soshima@redhat.com>
-Subject: Re: [PATCH 0/4] coredump: core dump masking support v3
-References: <45D5B2E3.3030607@hitachi.com>
-In-Reply-To: <45D5B2E3.3030607@hitachi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kawai, Hidehiro wrote:
-> This patch series is version 3 of the core dump masking feature,
-> which provides a per-process flag not to dump anonymous shared
-> memory segments.
+"Jeff V. Merkey" <jmerkey@wolfmountaingroup.com> writes:
 
-I just wanted to remind you that you need to be careful about dumping 
-the [vdso] segment no matter whether you omit other segments. I didn't 
-actually try running your patches, and if the kernel doesn't actually 
-consider this segment anonymous and shared, things might already work 
-fine as is.
+> Eric,
+>
+> Please find attached the APIC code I used in Gadugi. It's code for plain vanilla
+> APICs, but does just this. This code not only allows
+> interrupts to be migrated, but processors to be stopped and restarted on the fly
+> without system interruption. You may find some useful
+> ideas in it.
 
-In any case, you can check with "readelf -a", if the [vdso] segment is 
-there. And you will find that if you forget to dump it, "gdb" can no 
-longer give you stack traces on call chains that involve signal handlers.
+Just for clarification.  Who owns the code you posted. What is the
+copyright license on it?  Or do you own the copyright and place it
+into the public domain?
 
-As an alternative to your kernel patch, you could achieve the same goal 
-in user space, by linking my coredumper 
-http://code.google.com/p/google-coredumper/ into your binaries and 
-setting up appropriate signal handlers. An equivalent patch for 
-selectively omitting memory regions would be trivial to add. While this 
-does give you more flexibility, it of course has the drawback of 
-requiring you to change your applications, so there still is some 
-benefit in a kernelspace solution.
+Eric
 
-
-Markus
