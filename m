@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933365AbXBXEGF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933368AbXBXEIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933365AbXBXEGF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 23:06:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933363AbXBXEGF
+	id S933368AbXBXEIK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 23:08:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933369AbXBXEIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 23:06:05 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46977 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933365AbXBXEGE (ORCPT
+	Fri, 23 Feb 2007 23:08:09 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46409 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933368AbXBXEII (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 23:06:04 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Jeff V. Merkey" <jmerkey@wolfmountaingroup.com>
+	Fri, 23 Feb 2007 23:08:08 -0500
+Date: Sat, 24 Feb 2007 13:07:23 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Nick Piggin <npiggin@suse.de>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: Conclusions from my investigation about ioapic programming
-References: <200701221116.13154.luigi.genoni@pirelli.com>
-	<200702021905.39922.luigi.genoni@pirelli.com>
-	<m1zm7w3wvr.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1veik3woc.fsf_-_@ebiederm.dsl.xmission.com>
-	<20070206073616.GA15016@elte.hu>
-	<m1odo7q6cq.fsf@ebiederm.dsl.xmission.com>
-	<20070206222523.GA11602@elte.hu>
-	<m1irecamzh.fsf@ebiederm.dsl.xmission.com>
-	<m1wt2s8ksa.fsf@ebiederm.dsl.xmission.com>
-	<m1veib6dgi.fsf@ebiederm.dsl.xmission.com>
-	<m1hctt1sfp.fsf_-_@ebiederm.dsl.xmission.com>
-	<Pine.LNX.4.64.0702102146380.8245@montezuma.fsmlabs.com>
-	<m13b5d0zdp.fsf@ebiederm.dsl.xmission.com>
-	<Pine.LNX.4.64.0702110753390.8245@montezuma.fsmlabs.com>
-	<m17iuoz74f.fsf@ebiederm.dsl.xmission.com>
-	<Pine.LNX.4.64.0702111416220.24829@montezuma.fsmlabs.com>
-	<m1r6swx9l2.fsf@ebiederm.dsl.xmission.com>
-	<m1irdtw3jb.fsf_-_@ebiederm.dsl.xmission.com>
-	<45DF1ADD.9000600@wolfmountaingroup.com>
-	<m13b4wu4m8.fsf@ebiederm.dsl.xmission.com>
-	<45DF28D7.5010303@wolfmountaingroup.com>
-Date: Fri, 23 Feb 2007 21:05:41 -0700
-In-Reply-To: <45DF28D7.5010303@wolfmountaingroup.com> (Jeff V. Merkey's
-	message of "Fri, 23 Feb 2007 10:48:07 -0700")
-Message-ID: <m18xeoryi2.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: [rfc][patch] dynamic resizing dentry hash using RCU
+Message-Id: <20070224130723.01f3c429.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070223153743.GA26141@wotan.suse.de>
+References: <20070223153743.GA26141@wotan.suse.de>
+Organization: Fujitsu
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Jeff V. Merkey" <jmerkey@wolfmountaingroup.com> writes:
+On Fri, 23 Feb 2007 16:37:43 +0100
+Nick Piggin <npiggin@suse.de> wrote:
 
-> Eric,
->
-> Please find attached the APIC code I used in Gadugi. It's code for plain vanilla
-> APICs, but does just this. This code not only allows
-> interrupts to be migrated, but processors to be stopped and restarted on the fly
-> without system interruption. You may find some useful
-> ideas in it.
+> +static void dcache_hash_resize(unsigned int new_shift);
+> +static void mod_nr_dentry(int mod)
+> +{
+> +	unsigned long dentry_size;
+> +
+> +	dentry_stat.nr_dentry += mod;
+> +
+> +	dentry_size = 1 << dentry_hash->shift;
+> +	if (unlikely(dentry_stat.nr_dentry > dentry_size+(dentry_size>>1)))
+> +		dcache_hash_resize(dentry_hash->shift+1);
+> +	else if (unlikely(dentry_stat.nr_dentry < (dentry_size>>1)))
+> +		dcache_hash_resize(dentry_hash->shift-1);
+> +}
+> +
 
-Just for clarification.  Who owns the code you posted. What is the
-copyright license on it?  Or do you own the copyright and place it
-into the public domain?
+Do we need to do this kind of resizing in implicit automatic way ?
+I think it's good to show contention rate by /proc and add sysctl for
+resize this.
 
-Eric
+-Kame
 
