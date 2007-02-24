@@ -1,183 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933553AbXBXU1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933555AbXBXUhw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933553AbXBXU1w (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 15:27:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933555AbXBXU1w
+	id S933555AbXBXUhw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 15:37:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933556AbXBXUhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 15:27:52 -0500
-Received: from mail.screens.ru ([213.234.233.54]:53759 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933553AbXBXU1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 15:27:51 -0500
-Date: Sat, 24 Feb 2007 23:27:37 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>, Dave Jones <davej@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] workqueue: kill NOAUTOREL works
-Message-ID: <20070224202737.GA162@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Sat, 24 Feb 2007 15:37:52 -0500
+Received: from inetc.connecttech.com ([64.7.140.42]:4296 "EHLO
+	inetc.connecttech.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933555AbXBXUhv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 15:37:51 -0500
+From: "Stuart MacDonald" <stuartm@connecttech.com>
+To: "'Rob Prowel'" <prowel@kuchera.com>, <linux-kernel@vger.kernel.org>,
+       <rmk+lkml@arm.linux.org.uk>
+Subject: RE: questions about 8250 uart support for adhoc boards
+Date: Sat, 24 Feb 2007 15:34:54 -0500
+Organization: Connect Tech Inc.
+Message-ID: <000001c75853$3e9599f0$294b82ce@stuartm>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook, Build 10.0.6626
+Importance: Normal
+In-Reply-To: <45DF531B.5090505@kuchera.com>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2180
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We don't have any users, and it is not so trivial to use NOAUTOREL works
-correctly. It is better to simplify API.
+From: On Behalf Of Rob Prowel
+> Russell King wrote:
+> > You don't even need to do that.  Just configure SERIAL_8250_NR_UARTS
+> > and SERIAL_8250_RUNTIME_UARTS appropriately for your 
+> system.  There's
+> > absolutely no need to build any of the additional modules.
+> >   
+> Unfortunately what I'm seeing in 2.6.20.1 seems to differ 
+> from this.  If 
 
-Delete NOAUTOREL support and rename work_release to work_clear_pending to
-avoid a confusion.
+PC104 is really an ISA bus. The ISA ports are stored in a table in the
+8250 driver (instead of allocated dynamically like PCI ports); the
+config option _NR_UARTS just tells the driver how large to make the
+table.
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> I use the options below:
+> 
+> CONFIG_SERIAL_8250=y
+> CONFIG_SERIAL_8250_CONSOLE=y
+> CONFIG_SERIAL_8250_PCI=y
+> CONFIG_SERIAL_8250_NR_UARTS=32
 
---- 6.20-rc6-mm3/include/linux/workqueue.h~kill_nar	2007-02-12 03:26:54.000000000 +0300
-+++ 6.20-rc6-mm3/include/linux/workqueue.h	2007-02-24 22:40:15.000000000 +0300
-@@ -24,15 +24,13 @@ typedef void (*work_func_t)(struct work_
- struct work_struct {
- 	atomic_long_t data;
- #define WORK_STRUCT_PENDING 0		/* T if work item pending execution */
--#define WORK_STRUCT_NOAUTOREL 1		/* F if work item automatically released on exec */
- #define WORK_STRUCT_FLAG_MASK (3UL)
- #define WORK_STRUCT_WQ_DATA_MASK (~WORK_STRUCT_FLAG_MASK)
- 	struct list_head entry;
- 	work_func_t func;
- };
- 
--#define WORK_DATA_INIT(autorelease) \
--	ATOMIC_LONG_INIT((autorelease) << WORK_STRUCT_NOAUTOREL)
-+#define WORK_DATA_INIT()	ATOMIC_LONG_INIT(0)
- 
- struct delayed_work {
- 	struct work_struct work;
-@@ -44,14 +42,8 @@ struct execute_work {
- };
- 
- #define __WORK_INITIALIZER(n, f) {				\
--	.data = WORK_DATA_INIT(0),				\
--        .entry	= { &(n).entry, &(n).entry },			\
--	.func = (f),						\
--	}
--
--#define __WORK_INITIALIZER_NAR(n, f) {				\
--	.data = WORK_DATA_INIT(1),				\
--        .entry	= { &(n).entry, &(n).entry },			\
-+	.data = WORK_DATA_INIT(),				\
-+	.entry	= { &(n).entry, &(n).entry },			\
- 	.func = (f),						\
- 	}
- 
-@@ -60,23 +52,12 @@ struct execute_work {
- 	.timer = TIMER_INITIALIZER(NULL, 0, 0),			\
- 	}
- 
--#define __DELAYED_WORK_INITIALIZER_NAR(n, f) {			\
--	.work = __WORK_INITIALIZER_NAR((n).work, (f)),		\
--	.timer = TIMER_INITIALIZER(NULL, 0, 0),			\
--	}
--
- #define DECLARE_WORK(n, f)					\
- 	struct work_struct n = __WORK_INITIALIZER(n, f)
- 
--#define DECLARE_WORK_NAR(n, f)					\
--	struct work_struct n = __WORK_INITIALIZER_NAR(n, f)
--
- #define DECLARE_DELAYED_WORK(n, f)				\
- 	struct delayed_work n = __DELAYED_WORK_INITIALIZER(n, f)
- 
--#define DECLARE_DELAYED_WORK_NAR(n, f)			\
--	struct dwork_struct n = __DELAYED_WORK_INITIALIZER_NAR(n, f)
--
- /*
-  * initialize a work item's function pointer
-  */
-@@ -95,16 +76,9 @@ struct execute_work {
-  * assignment of the work data initializer allows the compiler
-  * to generate better code.
-  */
--#define INIT_WORK(_work, _func)					\
--	do {							\
--		(_work)->data = (atomic_long_t) WORK_DATA_INIT(0);	\
--		INIT_LIST_HEAD(&(_work)->entry);		\
--		PREPARE_WORK((_work), (_func));			\
--	} while (0)
--
--#define INIT_WORK_NAR(_work, _func)					\
-+#define INIT_WORK(_work, _func)						\
- 	do {								\
--		(_work)->data = (atomic_long_t) WORK_DATA_INIT(1);	\
-+		(_work)->data = (atomic_long_t) WORK_DATA_INIT();	\
- 		INIT_LIST_HEAD(&(_work)->entry);			\
- 		PREPARE_WORK((_work), (_func));				\
- 	} while (0)
-@@ -115,12 +89,6 @@ struct execute_work {
- 		init_timer(&(_work)->timer);			\
- 	} while (0)
- 
--#define INIT_DELAYED_WORK_NAR(_work, _func)			\
--	do {							\
--		INIT_WORK_NAR(&(_work)->work, (_func));		\
--		init_timer(&(_work)->timer);			\
--	} while (0)
--
- /**
-  * work_pending - Find out whether a work item is currently pending
-  * @work: The work item in question
-@@ -136,25 +104,7 @@ struct execute_work {
- #define delayed_work_pending(w) \
- 	work_pending(&(w)->work)
- 
--/**
-- * work_release - Release a work item under execution
-- * @work: The work item to release
-- *
-- * This is used to release a work item that has been initialised with automatic
-- * release mode disabled (WORK_STRUCT_NOAUTOREL is set).  This gives the work
-- * function the opportunity to grab auxiliary data from the container of the
-- * work_struct before clearing the pending bit as the work_struct may be
-- * subject to deallocation the moment the pending bit is cleared.
-- *
-- * In such a case, this should be called in the work function after it has
-- * fetched any data it may require from the containter of the work_struct.
-- * After this function has been called, the work_struct may be scheduled for
-- * further execution or it may be deallocated unless other precautions are
-- * taken.
-- *
-- * This should also be used to release a delayed work item.
-- */
--#define work_release(work) \
-+#define work_clear_pending(work) \
- 	clear_bit(WORK_STRUCT_PENDING, work_data_bits(work))
- 
- 
-@@ -201,7 +151,7 @@ static inline int cancel_delayed_work(st
- 
- 	ret = del_timer_sync(&work->timer);
- 	if (ret)
--		work_release(&work->work);
-+		work_clear_pending(&work->work);
- 	return ret;
- }
- 
---- 6.20-rc6-mm3/kernel/workqueue.c~kill_nar	2007-02-17 00:31:18.000000000 +0300
-+++ 6.20-rc6-mm3/kernel/workqueue.c	2007-02-20 02:21:11.000000000 +0300
-@@ -246,8 +246,7 @@ static void run_workqueue(struct cpu_wor
- 		spin_unlock_irq(&cwq->lock);
- 
- 		BUG_ON(get_wq_data(work) != cwq);
--		if (!test_bit(WORK_STRUCT_NOAUTOREL, work_data_bits(work)))
--			work_release(work);
-+		work_clear_pending(work);
- 		f(work);
- 
- 		if (unlikely(in_atomic() || lockdep_depth(current) > 0)) {
-@@ -454,7 +453,7 @@ void cancel_work_sync(struct work_struct
- 	 */
- 	spin_lock_irq(&cwq->lock);
- 	list_del_init(&work->entry);
--	work_release(work);
-+	work_clear_pending(work);
- 	spin_unlock_irq(&cwq->lock);
- 
- 	wq = cwq->wq;
+This makes the internal table be 32 ports big. The first four ports
+end up configured for legacy/standard com ports, the rest are
+unconfigured. You should be able to see them as unknowns with
+setserial.
+
+> CONFIG_SERIAL_8250_RUNTIME_UARTS=16
+> CONFIG_SERIAL_8250_EXTENDED=y
+> CONFIG_SERIAL_8250_MANY_PORTS=y
+> # CONFIG_SERIAL_8250_FOURPORT is not set
+
+All _FOURPORT does is specifically config ports 4-7 in the table to
+have specific address/irqs for the FourPort board. What you do with
+setserial is then change that config info to match your board.
+
+You shouldn't need to do this, and I quickly reviewed 2.6.20.1 and it
+looks like you don't. As long as _NR_UARTS is big enough, thus making
+the internal table big enough, you should be able to configure, with
+setserial, any of the ports in the table, including the first four.
+
+> Then I can only access ttyS0 through ttyS3 sith setserial.  
+> Only after I add
+> CONFIG_SERIAL_8250_FOURPORT=y am I actually able to do 
+> anything with the 
+> additional ports.  I would otherwise get the evil setserial: invalid 
+> parameter error.
+
+Very odd. You get this error when doing "setserial /dev/ttySxx", no
+configuration? If so, that would imply that the table wasn't made big
+enough, and the unconfigured ports haven't been registered with the
+serial core.
+
+> OK.  Fair enough.  My question then becomes, how does the driver deal 
+> with this now? scan all applicable uarts when any relevant 
+> interrupt is 
+> detected (as identified in setserial)?
+
+With our boards, the multiport is just a status register; it shows
+which port has produced the interrupt, so the driver doesn't have to
+loop through all the ports on the board looking for the correct one.
+It doesn't actually enable/disable the sharing of the interrupt. The
+setting of "irq 12" on multiple ports (from your original post) is
+what enables the sharing, from the driver-side view. Maybe your
+hardware is unusual and requires this ISR port to be set properly to
+enable sharing; more likely is that the board itself has one or more
+jumpers to set which interrupt it's using, and that's what enables the
+sharing from the hardware-side view.
+
+If I get some time tomorrow, I'll set up 2.6.20.1 and see what the
+current options are doing.
+
+If you can't get your board working, we have similar boards that do.
+
+..Stu
+
+-- 
+We make multiport serial products.
+http://www.connecttech.com/
+(800) 426-8979
 
