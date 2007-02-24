@@ -1,46 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933552AbXBXUMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933553AbXBXU1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933552AbXBXUMr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 15:12:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933556AbXBXUMr
+	id S933553AbXBXU1w (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 15:27:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933555AbXBXU1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 15:12:47 -0500
-Received: from [194.112.174.227] ([194.112.174.227]:37944 "EHLO mail.hofr.at"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S933552AbXBXUMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 15:12:46 -0500
-Date: Sat, 24 Feb 2007 20:29:02 +0100 (CET)
-From: Nicholas Mc Guire <der.herr@hofr.at>
-To: linux-kernel@vger.kernel.org
-Subject: Changelog question
-Message-ID: <Pine.LNX.4.60.0702242012340.2789@rtl14.hofr.at>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sat, 24 Feb 2007 15:27:52 -0500
+Received: from mail.screens.ru ([213.234.233.54]:53759 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933553AbXBXU1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 15:27:51 -0500
+Date: Sat, 24 Feb 2007 23:27:37 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Howells <dhowells@redhat.com>, Dave Jones <davej@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] workqueue: kill NOAUTOREL works
+Message-ID: <20070224202737.GA162@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+We don't have any users, and it is not so trivial to use NOAUTOREL works
+correctly. It is better to simplify API.
 
+Delete NOAUTOREL support and rename work_release to work_clear_pending to
+avoid a confusion.
 
-Hi !
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-looking at the Changelogs of the last 2.6.17 kernel and the
-first 2.6.18 it is obvious that a lot happened in between - are 
-there some changelogs related to 2.6.18 development that are not found
-at http://www.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.18.# + 
-http://www.kernel.org/pub/linux/kernel/v2.6/testing/ChangeLog-2.6.18-rc#
-For assessment purposes it would be helpfull to know what low level 
-changes happened i.e. when and where were __raw_spin_* introduced ? but
-I was not able to extract such infos from the ChangeLogs in the above
-directories.
+--- 6.20-rc6-mm3/include/linux/workqueue.h~kill_nar	2007-02-12 03:26:54.000000000 +0300
++++ 6.20-rc6-mm3/include/linux/workqueue.h	2007-02-24 22:40:15.000000000 +0300
+@@ -24,15 +24,13 @@ typedef void (*work_func_t)(struct work_
+ struct work_struct {
+ 	atomic_long_t data;
+ #define WORK_STRUCT_PENDING 0		/* T if work item pending execution */
+-#define WORK_STRUCT_NOAUTOREL 1		/* F if work item automatically released on exec */
+ #define WORK_STRUCT_FLAG_MASK (3UL)
+ #define WORK_STRUCT_WQ_DATA_MASK (~WORK_STRUCT_FLAG_MASK)
+ 	struct list_head entry;
+ 	work_func_t func;
+ };
+ 
+-#define WORK_DATA_INIT(autorelease) \
+-	ATOMIC_LONG_INIT((autorelease) << WORK_STRUCT_NOAUTOREL)
++#define WORK_DATA_INIT()	ATOMIC_LONG_INIT(0)
+ 
+ struct delayed_work {
+ 	struct work_struct work;
+@@ -44,14 +42,8 @@ struct execute_work {
+ };
+ 
+ #define __WORK_INITIALIZER(n, f) {				\
+-	.data = WORK_DATA_INIT(0),				\
+-        .entry	= { &(n).entry, &(n).entry },			\
+-	.func = (f),						\
+-	}
+-
+-#define __WORK_INITIALIZER_NAR(n, f) {				\
+-	.data = WORK_DATA_INIT(1),				\
+-        .entry	= { &(n).entry, &(n).entry },			\
++	.data = WORK_DATA_INIT(),				\
++	.entry	= { &(n).entry, &(n).entry },			\
+ 	.func = (f),						\
+ 	}
+ 
+@@ -60,23 +52,12 @@ struct execute_work {
+ 	.timer = TIMER_INITIALIZER(NULL, 0, 0),			\
+ 	}
+ 
+-#define __DELAYED_WORK_INITIALIZER_NAR(n, f) {			\
+-	.work = __WORK_INITIALIZER_NAR((n).work, (f)),		\
+-	.timer = TIMER_INITIALIZER(NULL, 0, 0),			\
+-	}
+-
+ #define DECLARE_WORK(n, f)					\
+ 	struct work_struct n = __WORK_INITIALIZER(n, f)
+ 
+-#define DECLARE_WORK_NAR(n, f)					\
+-	struct work_struct n = __WORK_INITIALIZER_NAR(n, f)
+-
+ #define DECLARE_DELAYED_WORK(n, f)				\
+ 	struct delayed_work n = __DELAYED_WORK_INITIALIZER(n, f)
+ 
+-#define DECLARE_DELAYED_WORK_NAR(n, f)			\
+-	struct dwork_struct n = __DELAYED_WORK_INITIALIZER_NAR(n, f)
+-
+ /*
+  * initialize a work item's function pointer
+  */
+@@ -95,16 +76,9 @@ struct execute_work {
+  * assignment of the work data initializer allows the compiler
+  * to generate better code.
+  */
+-#define INIT_WORK(_work, _func)					\
+-	do {							\
+-		(_work)->data = (atomic_long_t) WORK_DATA_INIT(0);	\
+-		INIT_LIST_HEAD(&(_work)->entry);		\
+-		PREPARE_WORK((_work), (_func));			\
+-	} while (0)
+-
+-#define INIT_WORK_NAR(_work, _func)					\
++#define INIT_WORK(_work, _func)						\
+ 	do {								\
+-		(_work)->data = (atomic_long_t) WORK_DATA_INIT(1);	\
++		(_work)->data = (atomic_long_t) WORK_DATA_INIT();	\
+ 		INIT_LIST_HEAD(&(_work)->entry);			\
+ 		PREPARE_WORK((_work), (_func));				\
+ 	} while (0)
+@@ -115,12 +89,6 @@ struct execute_work {
+ 		init_timer(&(_work)->timer);			\
+ 	} while (0)
+ 
+-#define INIT_DELAYED_WORK_NAR(_work, _func)			\
+-	do {							\
+-		INIT_WORK_NAR(&(_work)->work, (_func));		\
+-		init_timer(&(_work)->timer);			\
+-	} while (0)
+-
+ /**
+  * work_pending - Find out whether a work item is currently pending
+  * @work: The work item in question
+@@ -136,25 +104,7 @@ struct execute_work {
+ #define delayed_work_pending(w) \
+ 	work_pending(&(w)->work)
+ 
+-/**
+- * work_release - Release a work item under execution
+- * @work: The work item to release
+- *
+- * This is used to release a work item that has been initialised with automatic
+- * release mode disabled (WORK_STRUCT_NOAUTOREL is set).  This gives the work
+- * function the opportunity to grab auxiliary data from the container of the
+- * work_struct before clearing the pending bit as the work_struct may be
+- * subject to deallocation the moment the pending bit is cleared.
+- *
+- * In such a case, this should be called in the work function after it has
+- * fetched any data it may require from the containter of the work_struct.
+- * After this function has been called, the work_struct may be scheduled for
+- * further execution or it may be deallocated unless other precautions are
+- * taken.
+- *
+- * This should also be used to release a delayed work item.
+- */
+-#define work_release(work) \
++#define work_clear_pending(work) \
+ 	clear_bit(WORK_STRUCT_PENDING, work_data_bits(work))
+ 
+ 
+@@ -201,7 +151,7 @@ static inline int cancel_delayed_work(st
+ 
+ 	ret = del_timer_sync(&work->timer);
+ 	if (ret)
+-		work_release(&work->work);
++		work_clear_pending(&work->work);
+ 	return ret;
+ }
+ 
+--- 6.20-rc6-mm3/kernel/workqueue.c~kill_nar	2007-02-17 00:31:18.000000000 +0300
++++ 6.20-rc6-mm3/kernel/workqueue.c	2007-02-20 02:21:11.000000000 +0300
+@@ -246,8 +246,7 @@ static void run_workqueue(struct cpu_wor
+ 		spin_unlock_irq(&cwq->lock);
+ 
+ 		BUG_ON(get_wq_data(work) != cwq);
+-		if (!test_bit(WORK_STRUCT_NOAUTOREL, work_data_bits(work)))
+-			work_release(work);
++		work_clear_pending(work);
+ 		f(work);
+ 
+ 		if (unlikely(in_atomic() || lockdep_depth(current) > 0)) {
+@@ -454,7 +453,7 @@ void cancel_work_sync(struct work_struct
+ 	 */
+ 	spin_lock_irq(&cwq->lock);
+ 	list_del_init(&work->entry);
+-	work_release(work);
++	work_clear_pending(work);
+ 	spin_unlock_irq(&cwq->lock);
+ 
+ 	wq = cwq->wq;
 
-thx !
-hofrat
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQFF4JH/nU7rXZKfY2oRAk0OAJ9oFplfJIWhYK7jc0bpMGXw5mnWTgCfVAk+
-p03G4C+kgiIimCBzXhkIL84=
-=FoIv
------END PGP SIGNATURE-----
