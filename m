@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932566AbXBXNI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932569AbXBXNOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932566AbXBXNI6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 08:08:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932569AbXBXNI6
+	id S932569AbXBXNOd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 08:14:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932682AbXBXNOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 08:08:58 -0500
-Received: from web52912.mail.yahoo.com ([206.190.49.22]:30231 "HELO
-	web52912.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932566AbXBXNI5 (ORCPT
+	Sat, 24 Feb 2007 08:14:33 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2437 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932569AbXBXNOc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 08:08:57 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=6ebaJi2EJFb9OXyzHqWECVatArs4Wmx3ce7ouuamqhwdBaSH6FLAfnz1a+2glYTq+rAzYMqtVLcVHcQSYCX0Vt0Eh21NTfT3OxjeqwtnRUwN6dNBYjE/fsE6qZoMEai1KIj2+VZF3LV0l0yJGCxbBNnP/S6vdEWLu/+ZgJ6Cf7A=;
-X-YMail-OSG: sTp6Lo0VM1ncZK59H4c3ijLfUMnqOh4_rsEOfoJY00CwJgebsEfIyxKt8gQSa7ZOTChewMNWDcAeHSWjV8KFXVcE8qy64M56z4AqkuxPj7JgG3nggLUsL2nuiu8drL6BjVFBVDHUsZIFuy4-
-Date: Sat, 24 Feb 2007 13:08:56 +0000 (GMT)
-From: Chris Rankin <rankincj@yahoo.com>
-Subject: Kernel warning from Matrox Framebuffer in 2.6.20.1
-To: linux-fbdev-devel@lists.sourceforge.net
+	Sat, 24 Feb 2007 08:14:32 -0500
+Date: Sat, 24 Feb 2007 13:14:22 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Nicholas Mc Guire <der.herr@hofr.at>
 Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Message-ID: <306590.53720.qm@web52912.mail.yahoo.com>
+Subject: Re: typo in include/linux/irqflags.h ?
+Message-ID: <20070224131422.GA5047@flint.arm.linux.org.uk>
+Mail-Followup-To: Nicholas Mc Guire <der.herr@hofr.at>,
+	linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.60.0702241243270.1583@rtl14.hofr.at>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.60.0702241243270.1583@rtl14.hofr.at>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, Feb 24, 2007 at 12:45:16PM +0100, Nicholas Mc Guire wrote:
+> 
+> Hi !
+> 
+> Seems like there was a cut&past error in include/linux/riqflags.h.
+> 
+> 
+> --- linux-2.6.20/include/linux/irqflags.h	2007-02-04 09:44:54.000000000 -0900
+> +++ linux-2.6.20xm/include/linux/irqflags.h	2008-01-27 20:29:26.000000000 -0900
+> @@ -91,6 +91,6 @@
+>   })
+> 
+>   #define irqs_disabled_flags(flags)	raw_irqs_disabled_flags(flags)
+> -#endif		/* CONFIG_X86 */
+> +#endif		/* CONFIG_TRACE_IRQFLAGS_SUPPORT */
 
-I have just booted 2.6.20.1 on my Pentium 3 machine, which has a G400 MAX graphics card. This
-machine uses the Matrox framebuffer and TV-OUT modules, and I have found these warnings in the
-kernel log:
+Just yet rid of the comment - you can see the corresponding #ifdef on
+the screen without paging up or down so it seems pointless to have such
+a comment - it just adds additional unnecessary clutter to the screen.
 
-**WARNING** I2C adapter driver [DDC:fb0 #0] forgot to specify physical device; fix it!
-**WARNING** I2C adapter driver [DDC:fb0 #1] forgot to specify physical device; fix it!
-**WARNING** I2C adapter driver [MAVEN:fb0] forgot to specify physical device; fix it!
-
-The relevant kernel modules seem to be:
-
-matroxfb_maven         13228  0
-i2c_matroxfb            4064  0
-i2c_algo_bit            6312  1 i2c_matroxfb
-
-Cheers,
-Chris
-
-
-
-		
-___________________________________________________________ 
-All New Yahoo! Mail – Tired of unwanted email come-ons? Let our SpamGuard protect you. http://uk.docs.yahoo.com/nowyoucan.html
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
