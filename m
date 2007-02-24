@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933359AbXBXDZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933360AbXBXDcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933359AbXBXDZo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 22:25:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933360AbXBXDZo
+	id S933360AbXBXDcu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 22:32:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933361AbXBXDcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 22:25:44 -0500
-Received: from nz-out-0506.google.com ([64.233.162.235]:51010 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933359AbXBXDZn (ORCPT
+	Fri, 23 Feb 2007 22:32:50 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:22538 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933360AbXBXDct (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 22:25:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CowX6uI64F4st4bUmqhXDF3f333D822TmORVXz4qTdf8im0BA2oF4Li75xs9upEbuD7aHXS4BgZUPcwm0w3pXV2kGHDmGI/m6kHytcFZ2acpZ4LZzNXEOqEf3foKLOuJHJZkibw5kygy6xJbWU7ZbI1jTj/okj97wHiLeIYBkMk=
-Message-ID: <f2b55d220702231925x2020d2a0lf4722c58ff55c72c@mail.gmail.com>
-Date: Fri, 23 Feb 2007 19:25:37 -0800
-From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
-       "Ulrich Drepper" <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "Andrew Morton" <akpm@zip.com.au>, "Zach Brown" <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Suparna Bhattacharya" <suparna@in.ibm.com>,
-       "Davide Libenzi" <davidel@xmailserver.org>,
-       "Jens Axboe" <jens.axboe@oracle.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <f2b55d220702231651u2c1915b1we04de7ae41393874@mail.gmail.com>
+	Fri, 23 Feb 2007 22:32:49 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:cc:
+	subject:references:in-reply-to:content-type:content-transfer-encoding;
+	b=KPpuAlGM832RlHy2HkIqCmo7rdR14hkJJWId6cljqCrb/z0YgqA7DsvGV0LWIT6Q5
+	0mWa+t/0RvgqaPiDjO6YA==
+Message-ID: <45DFB1C7.1030205@google.com>
+Date: Fri, 23 Feb 2007 19:32:23 -0800
+From: Markus Gutschke <markus@google.com>
+User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
+CC: Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, Robin Holt <holt@sgi.com>,
+       dhowells@redhat.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <soshima@redhat.com>
+Subject: Re: [PATCH 0/4] coredump: core dump masking support v3
+References: <45D5B2E3.3030607@hitachi.com>
+In-Reply-To: <45D5B2E3.3030607@hitachi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070221211355.GA7302@elte.hu> <20070222113148.GA3781@2ka.mipt.ru>
-	 <20070222125931.GB25788@elte.hu>
-	 <f2b55d220702221324n788506b6oee4f8ed4f168fbf1@mail.gmail.com>
-	 <20070223003018.0d244576@lxorguk.ukuu.org.uk>
-	 <f2b55d220702221847p6b28f6eehed1bb5b1b0edf9f4@mail.gmail.com>
-	 <20070223123718.54c9670e@lxorguk.ukuu.org.uk>
-	 <f2b55d220702231549g47a648e3xd4c9d4a730f0c4ea@mail.gmail.com>
-	 <20070224010824.5cf6c0ac@lxorguk.ukuu.org.uk>
-	 <f2b55d220702231651u2c1915b1we04de7ae41393874@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/23/07, Michael K. Edwards <medwards.linux@gmail.com> wrote:
-> which costs you a D-cache stall.)  Now put an sprintf with a %d in it
-> between a couple of the syscalls, and _your_ arch is hurting.  ...
+Kawai, Hidehiro wrote:
+> This patch series is version 3 of the core dump masking feature,
+> which provides a per-process flag not to dump anonymous shared
+> memory segments.
 
-er, that would be a %f.  :-)
+I just wanted to remind you that you need to be careful about dumping 
+the [vdso] segment no matter whether you omit other segments. I didn't 
+actually try running your patches, and if the kernel doesn't actually 
+consider this segment anonymous and shared, things might already work 
+fine as is.
 
-Cheers,
-- Michael
+In any case, you can check with "readelf -a", if the [vdso] segment is 
+there. And you will find that if you forget to dump it, "gdb" can no 
+longer give you stack traces on call chains that involve signal handlers.
+
+As an alternative to your kernel patch, you could achieve the same goal 
+in user space, by linking my coredumper 
+http://code.google.com/p/google-coredumper/ into your binaries and 
+setting up appropriate signal handlers. An equivalent patch for 
+selectively omitting memory regions would be trivial to add. While this 
+does give you more flexibility, it of course has the drawback of 
+requiring you to change your applications, so there still is some 
+benefit in a kernelspace solution.
+
+
+Markus
