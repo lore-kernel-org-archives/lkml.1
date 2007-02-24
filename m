@@ -1,57 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933388AbXBXEcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933382AbXBXEsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933388AbXBXEcY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Feb 2007 23:32:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933387AbXBXEcY
+	id S933382AbXBXEsd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Feb 2007 23:48:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933387AbXBXEsd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Feb 2007 23:32:24 -0500
-Received: from rwcrmhc12.comcast.net ([216.148.227.152]:48119 "EHLO
-	rwcrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933382AbXBXEcY (ORCPT
+	Fri, 23 Feb 2007 23:48:33 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47187 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933382AbXBXEsc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Feb 2007 23:32:24 -0500
-X-Greylist: delayed 36675 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Feb 2007 23:32:24 EST
-Message-ID: <45DFD0D8.9040009@wolfmountaingroup.com>
-Date: Fri, 23 Feb 2007 22:44:56 -0700
-From: "Jeffrey V. Merkey" <jmerkey@wolfmountaingroup.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.8) Gecko/20050513 Fedora/1.7.8-2
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Conclusions from my investigation about ioapic programming
-References: <200701221116.13154.luigi.genoni@pirelli.com>	<200702021905.39922.luigi.genoni@pirelli.com>	<m1zm7w3wvr.fsf_-_@ebiederm.dsl.xmission.com>	<m1veik3woc.fsf_-_@ebiederm.dsl.xmission.com>	<20070206073616.GA15016@elte.hu>	<m1odo7q6cq.fsf@ebiederm.dsl.xmission.com>	<20070206222523.GA11602@elte.hu>	<m1irecamzh.fsf@ebiederm.dsl.xmission.com>	<m1wt2s8ksa.fsf@ebiederm.dsl.xmission.com>	<m1veib6dgi.fsf@ebiederm.dsl.xmission.com>	<m1hctt1sfp.fsf_-_@ebiederm.dsl.xmission.com>	<Pine.LNX.4.64.0702102146380.8245@montezuma.fsmlabs.com>	<m13b5d0zdp.fsf@ebiederm.dsl.xmission.com>	<Pine.LNX.4.64.0702110753390.8245@montezuma.fsmlabs.com>	<m17iuoz74f.fsf@ebiederm.dsl.xmission.com>	<Pine.LNX.4.64.0702111416220.24829@montezuma.fsmlabs.com>	<m1r6swx9l2.fsf@ebiederm.dsl.xmission.com>	<m1irdtw3jb.fsf_-_@ebiederm.dsl.xmission.com>	<45DF1ADD.9000600@wolfmountaingroup.com>	<m13b4wu4m8.fsf@ebiederm.dsl.xmission.com>	<45DF28D7.5010303@wolfmountaingroup.com> <m18xeoryi2.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m18xeoryi2.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Fri, 23 Feb 2007 23:48:32 -0500
+Date: Sat, 24 Feb 2007 13:46:46 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, miklos@szeredi.hu,
+       yumiko.sugita.yf@hitachi.com, masami.hiramatsu.pt@hitachi.com,
+       hidehiro.kawai.ez@hitachi.com, yuji.kakutani.uw@hitachi.com,
+       soshima@redhat.com, haoki@redhat.com
+Subject: Re: [RFC][PATCH 0/3] VM throttling: avoid blocking occasional
+ writers
+Message-Id: <20070224134646.0f4edeae.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <45DED819.9040404@hitachi.com>
+References: <45DED819.9040404@hitachi.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
+On Fri, 23 Feb 2007 21:03:37 +0900
+Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com> wrote:
 
->"Jeff V. Merkey" <jmerkey@wolfmountaingroup.com> writes:
->
->  
->
->>Eric,
->>
->>Please find attached the APIC code I used in Gadugi. It's code for plain vanilla
->>APICs, but does just this. This code not only allows
->>interrupts to be migrated, but processors to be stopped and restarted on the fly
->>without system interruption. You may find some useful
->>ideas in it.
->>    
->>
->
->Just for clarification.  Who owns the code you posted. What is the
->copyright license on it?  Or do you own the copyright and place it
->into the public domain?
->
->Eric
->
->
->  
->
-That particular code modules was released under GPL in 1999.
+> Hi,
+> 
+> I have observed a problem that write(2) can be blocked for a long time
+> if a system has several disks and is under heavy I/O pressure. This
+> patchset is to avoid the problem.
+> 
+> Example of the probrem:
+> 
+> There are two processes on a system which has two disks. Process-A
+> writes heavily to disk-a, and process-B writes small data (e.g. log
+> files) to disk-b occasionally. A portion of system memory, which is
+> depends on vm.dirty_ratio (typically 40%), is filled up with Dirty
+> and Writeback pages of disk-a.
+> 
+> In this situation, write(2) of process-B could be blocked for a very
+> long time (more then 60 seconds), although the load of disk-b is quite
+> low. In particular, the system would become quite slow, if disk-a is
+> slow (e.g. backup to an USB disk).
+> 
+> This seems to be the same problem as discussed in LKML:
+> http://marc.theaimsgroup.com/?t=115559902900003
+> and
+> http://marc.theaimsgroup.com/?t=117182340400003
+> 
+Interesting, but how about adjust this parameter like below instead of
+adding new control knob ?(this kind of knob is not easy to use.)
 
-Jeff
+==
+                struct writeback_control wbc = {
+                        .bdi            = bdi,
+                        .sync_mode      = WB_SYNC_NONE,
+                        .older_than_this = NULL,
+                        .nr_to_write    = 0,
+                        .range_cyclic   = 1,
+                };
+<snip>
+                if (nr_reclaimable) {
+			/* Just do what I can do */
+			dirty_pages_on_device = count_dirty_pages_on_device_limited(bdi, writechunk);
+			wbc.nr_to_write = dirty_pages_on_device.
+			writeback_inodes(&wbc);
+ 
+==
+
+count_dirty_pages_on_device_limited(bdi, writechunk) above returns 
+dirty pages on bdi. if # of dirty_pages on bdi is larger than writechunk,
+just returns writechunk.
+
+-Kame
+
+
+
+
+
