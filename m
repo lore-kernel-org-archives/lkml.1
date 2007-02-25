@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933609AbXBYAqn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932914AbXBYAwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933609AbXBYAqn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 19:46:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933606AbXBYAqm
+	id S932914AbXBYAwH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 19:52:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933608AbXBYAwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 19:46:42 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54351 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933621AbXBYAql (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 19:46:41 -0500
-Date: Sat, 24 Feb 2007 16:44:48 -0800
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: linux-kernel-list <linux-kernel@vger.kernel.org>,
-       <tony.olech@elandigitalsystems.com>,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: [PATCH] USB Elan FTDI: check for workqueue creation v2
-Message-Id: <20070224164448.8fe872c7.zaitcev@redhat.com>
-In-Reply-To: <20070224074115.GB10139@cvg>
-References: <20070224074115.GB10139@cvg>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.9; i386-redhat-linux-gnu)
+	Sat, 24 Feb 2007 19:52:07 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41341
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S932914AbXBYAwG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 19:52:06 -0500
+Date: Sat, 24 Feb 2007 16:52:03 -0800 (PST)
+Message-Id: <20070224.165203.41636677.davem@davemloft.net>
+To: msa@moth.iki.fi
+Cc: olaf@bigred.inka.de, linux-kernel@vger.kernel.org
+Subject: Re: ipv4 and ipv6 stacks for new link layers?
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200702241645.l1OGj3GV023299@moth.iki.fi>
+References: <200702231149.l1NBnlZD029626@moth.iki.fi>
+	<E1HKzK9-0001aX-TT@bigred.inka.de>
+	<200702241645.l1OGj3GV023299@moth.iki.fi>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Feb 2007 10:41:15 +0300, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+From: Markku Savela <msa@moth.iki.fi>
+Date: Sat, 24 Feb 2007 18:45:03 +0200
 
-> Thanks a lot for comments and Ack the patch please.
+> I think that is worse than allow a new driver to provide a simple
+> service function which maps IPv4/6 multicast address into link layer
+> address, when asked.
 
-Cyrill, I forgot to mention a couple of points, sorry.
+The problem is that this mapping isn't so simple for several
+link layer types.
 
->          printk(KERN_INFO "driver %s built at %s on %s\n", ftdi_elan_driver.name,
-> -                 __TIME__, __DATE__);
-> +	       __TIME__, __DATE__);
-
-Is this really necessary?
-
->          respond_queue = create_singlethread_workqueue("ftdi-respond-engine");
-> +	if (!respond_queue)
-> +		goto err3;
-
-This is good, but...
-
->          result = usb_register(&ftdi_elan_driver);
->          if (result)
->                  printk(KERN_ERR "usb_register failed. Error number %d\n",
-> -                        result);
-> +		       result);
->          return result;
-
-What does happen if usb_register fails? Since you fixed the
-create_singlethread_workqueue, why not this too?
-
--- Pete
-cc: to Tony@ELAN and linux-usb-devel
+I outlined in another email this problem, in that any interface
+which would allow a driver-like-API for this would be either
+overly general or so specific as to be useless.
