@@ -1,365 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965082AbXBYSkE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965083AbXBYSkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965082AbXBYSkE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 13:40:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965084AbXBYSkD
+	id S965083AbXBYSkF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 13:40:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965084AbXBYSkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 13:40:03 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:46384 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965082AbXBYSkA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 13:40:00 -0500
-Date: Sun, 25 Feb 2007 18:39:57 +0000 (GMT)
-From: James Simmons <jsimmons@infradead.org>
-To: Linux Fbdev development list 
-	<linux-fbdev-devel@lists.sourceforge.net>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] display class
-Message-ID: <Pine.LNX.4.64.0702251833500.30828@pentafluge.infradead.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 25 Feb 2007 13:40:05 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:45571 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965083AbXBYSkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 13:40:01 -0500
+Date: Sun, 25 Feb 2007 21:37:43 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070225183743.GD29821@2ka.mipt.ru>
+References: <20070221211355.GA7302@elte.hu> <20070224183421.GA6835@2ka.mipt.ru> <20070225172337.GB4998@elte.hu> <20070225174438.GA13647@2ka.mipt.ru> <20070225175437.GA9480@elte.hu> <20070225182135.GB29821@2ka.mipt.ru> <20070225182230.GA3622@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <20070225182230.GA3622@elte.hu>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Sun, 25 Feb 2007 21:38:06 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Feb 25, 2007 at 07:22:30PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
+> > > Do you have any link where i could check the type of HTTP parsing 
+> > > and send transport you are (or will be) using? What type of http 
+> > > client are you using to measure, with precisely what options?
+> > 
+> > For example this ones (essentially the same, except that epoll and
+> > kevent are used):
+> > http://tservice.net.ru/~s0mbre/archive/kevent/evserver_kevent.c
+> > http://tservice.net.ru/~s0mbre/archive/kevent/evserver_epoll.c
+> 
+> thx - i guess i should just run them without any options and they bind 
+> themselves to port 80? What 'ab' options are you using typically to 
+> measure them?
 
-Here is the second round to the new display class. This is meant to unite 
-the various solutions to display units ie acpi output device, auxdisplay 
-and the defunct lcd class in the backlight directory. Please apply.
+Yes, but they require /tmp/index.html to have http header and actual
+data page. They do not parse http request :)
 
-Signed-off-by: James Simmons <jsimmons@infradead.org>
+For athlon 3500 I used
+ab -c8000 -n80000 $url
 
-diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/display/display-sysfs.c fbdev-2.6/drivers/video/display/display-sysfs.c
---- linus-2.6/drivers/video/display/display-sysfs.c	1969-12-31 19:00:00.000000000 -0500
-+++ fbdev-2.6/drivers/video/display/display-sysfs.c	2007-02-24 16:20:42.000000000 -0500
-@@ -0,0 +1,203 @@
-+/*
-+ *  display-sysfs.c - Display output driver sysfs interface
-+ *
-+ *  Copyright (C) 2007 James Simmons <jsimmons@infradead.org>
-+ *
-+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or (at
-+ *  your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful, but
-+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ *  General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License along
-+ *  with this program; if not, write to the Free Software Foundation, Inc.,
-+ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-+ *
-+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ */
-+#include <linux/module.h>
-+#include <linux/display.h>
-+#include <linux/bitmap.h>
-+#include <linux/err.h>
-+#include <linux/ctype.h>
-+
-+static ssize_t display_show_name(struct device *dev, struct device_attribute *attr,
-+				char *buf)
-+{
-+	struct display_device *dsp = dev_get_drvdata(dev);
-+	return snprintf(buf, PAGE_SIZE, "%s\n", dsp->name);
-+}
-+
-+static ssize_t display_show_type(struct device *dev, struct device_attribute *attr,
-+				char *buf)
-+{
-+	struct display_device *dsp = dev_get_drvdata(dev);
-+	return snprintf(buf, PAGE_SIZE, "%s\n", dsp->type);
-+}
-+
-+static ssize_t display_show_contrast(struct device *dev, struct device_attribute *attr,
-+				char *buf)
-+{
-+	struct display_device *dsp = dev_get_drvdata(dev);
-+	ssize_t rc = -ENXIO;
-+
-+	mutex_lock(&dsp->lock);
-+	if (likely(dsp->driver) && dsp->driver->get_contrast)
-+		rc = sprintf(buf, "%d\n", dsp->driver->get_contrast(dsp));
-+	mutex_unlock(&dsp->lock);
-+	return rc;
-+}
-+
-+static ssize_t display_store_contrast(struct device *dev, struct device_attribute *attr,
-+				const char *buf, size_t count)
-+{
-+	struct display_device *dsp = dev_get_drvdata(dev);
-+	ssize_t ret = -EINVAL, size;
-+	int contrast;
-+	char *endp;
-+
-+	contrast = simple_strtoul(buf, &endp, 0);
-+	size = endp - buf;
-+
-+	if (*endp && isspace(*endp))
-+		size++;
-+
-+	if (size != count)
-+		return ret;
-+
-+	mutex_lock(&dsp->lock);
-+	if (likely(dsp->driver && dsp->driver->set_contrast)) {
-+		pr_debug("display: set contrast to %d\n", contrast);
-+		dsp->driver->set_contrast(dsp, contrast);
-+		ret = count;
-+	}
-+	mutex_unlock(&dsp->lock);
-+	return ret;
-+}
-+
-+static ssize_t display_show_max_contrast(struct device *dev, struct device_attribute *attr,
-+					char *buf)
-+{
-+	struct display_device *dsp = dev_get_drvdata(dev);
-+	ssize_t rc = -ENXIO;
-+
-+	mutex_lock(&dsp->lock);
-+	if (likely(dsp->driver))
-+		rc = sprintf(buf, "%d\n", dsp->driver->max_contrast);
-+	mutex_unlock(&dsp->lock);
-+	return rc;
-+}
-+
-+static struct device_attribute display_attrs[] = {
-+	__ATTR(name, S_IRUGO, display_show_name, NULL),
-+	__ATTR(type, S_IRUGO, display_show_type, NULL),
-+	__ATTR(contrast, S_IRUGO | S_IWUSR, display_show_contrast, display_store_contrast),
-+	__ATTR(max_contrast, S_IRUGO, display_show_max_contrast, NULL),
-+};
-+
-+static int display_suspend(struct device *dev, pm_message_t state)
-+{
-+	struct display_device *dsp = dev_get_drvdata(dev);
-+
-+	mutex_lock(&dsp->lock);
-+	if (likely(dsp->driver->suspend))
-+		dsp->driver->suspend(dsp, state);
-+	mutex_unlock(&dsp->lock);
-+	return 0;
-+};
-+
-+static int display_resume(struct device *dev)
-+{
-+	struct display_device *dsp = dev_get_drvdata(dev);
-+
-+	mutex_lock(&dsp->lock);
-+	if (likely(dsp->driver->resume))
-+		dsp->driver->resume(dsp);
-+	mutex_unlock(&dsp->lock);
-+	return 0;
-+};
-+
-+struct class *display_class;
-+EXPORT_SYMBOL(display_class);
-+
-+#define NUM_OF_DISPLAYS		32
-+DECLARE_BITMAP(inuse, NUM_OF_DISPLAYS);
-+
-+struct display_device *display_device_register(struct display_driver *driver,
-+						struct device *parent, void *devdata)
-+{
-+	int idx = find_first_zero_bit(inuse, NUM_OF_DISPLAYS);
-+	struct display_device *new_dev = NULL;
-+	struct device *display_device = NULL;
-+
-+	if (unlikely(!driver))
-+		return ERR_PTR(-EINVAL);
-+
-+	display_device = device_create(display_class, parent, 0, "display%d", idx);
-+	if (IS_ERR(display_device))
-+		return ERR_PTR(-ENOMEM);
-+
-+	new_dev = kzalloc(sizeof(struct display_device), GFP_KERNEL);
-+	if (likely(new_dev) && unlikely(driver->probe(new_dev, devdata))) {
-+		dev_set_drvdata(display_device, new_dev);
-+		new_dev->dev = display_device;
-+		new_dev->parent = parent;
-+		new_dev->driver = driver;
-+		mutex_init(&new_dev->lock);
-+		set_bit(idx, inuse);
-+		new_dev->idx = idx;
-+	} else
-+		device_unregister(display_device);
-+	return new_dev;
-+}
-+EXPORT_SYMBOL(display_device_register);
-+
-+void display_device_unregister(struct display_device *ddev)
-+{
-+	if (!ddev)
-+		return;
-+	mutex_lock(&ddev->lock);
-+	device_unregister(ddev->parent);
-+	clear_bit(ddev->idx, inuse);
-+	mutex_unlock(&ddev->lock);
-+	kfree(ddev);
-+}
-+EXPORT_SYMBOL(display_device_unregister);
-+
-+static int __init display_class_init(void)
-+{
-+	display_class = class_create(THIS_MODULE, "display");
-+	if (IS_ERR(display_class)) {
-+		printk(KERN_ERR "Failed to create display class\n");
-+		display_class = NULL;
-+		return -EINVAL;
-+	}
-+	display_class->dev_attrs = display_attrs;
-+	display_class->suspend = display_suspend;
-+	display_class->resume = display_resume;
-+	bitmap_zero(inuse, NUM_OF_DISPLAYS);	
-+	return 0;
-+}
-+
-+#ifdef MODULE
-+module_init(display_class_init);
-+
-+static void __exit display_class_exit(void)
-+{
-+	class_destroy(display_class);
-+}
-+module_exit(display_class_exit);
-+#else
-+subsys_initcall(display_class_init);
-+#endif
-+
-+MODULE_DESCRIPTION("Display Hardware handling");
-+MODULE_AUTHOR("James Simmons <jsimmons@infradead.org>");
-+MODULE_LICENSE("GPL");
-+
-diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/display/Kconfig fbdev-2.6/drivers/video/display/Kconfig
---- linus-2.6/drivers/video/display/Kconfig	1969-12-31 19:00:00.000000000 -0500
-+++ fbdev-2.6/drivers/video/display/Kconfig	2007-02-24 16:22:27.000000000 -0500
-@@ -0,0 +1,24 @@
-+#
-+# Display drivers configuration
-+#
-+
-+menu "Display device support"
-+
-+config DISPLAY_SUPPORT
-+	tristate "Display panel/monitor support"
-+	---help---
-+	  This framework adds support for low-level control of a display.
-+	  This includes support for power.
-+
-+	  Enable this to be able to choose the drivers for controlling the
-+	  physical display panel/monitor on some platforms. This not only
-+	  covers LCD displays for PDAs but also other types of displays
-+	  such as CRT, TVout etc.
-+
-+	  To have support for your specific display panel you will have to
-+	  select the proper drivers which depend on this option.
-+
-+comment "Display hardware drivers"
-+	depends on DISPLAY_SUPPORT
-+
-+endmenu
-diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/display/Makefile fbdev-2.6/drivers/video/display/Makefile
---- linus-2.6/drivers/video/display/Makefile	1969-12-31 19:00:00.000000000 -0500
-+++ fbdev-2.6/drivers/video/display/Makefile	2007-02-24 16:22:13.000000000 -0500
-@@ -0,0 +1,6 @@
-+# Display drivers
-+
-+display-objs				:= display-sysfs.o
-+
-+obj-$(CONFIG_DISPLAY_SUPPORT)		+= display.o
-+
-diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/Kconfig fbdev-2.6/drivers/video/Kconfig
---- linus-2.6/drivers/video/Kconfig	2007-02-21 10:59:24.000000000 -0500
-+++ fbdev-2.6/drivers/video/Kconfig	2007-02-24 10:57:18.000000000 -0500
-@@ -5,6 +5,7 @@
- menu "Graphics support"
- 
- source "drivers/video/backlight/Kconfig"
-+source "drivers/video/display/Kconfig"
- 
- config FB
- 	tristate "Support for frame buffer devices"
-diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/Makefile fbdev-2.6/drivers/video/Makefile
---- linus-2.6/drivers/video/Makefile	2007-02-21 10:59:24.000000000 -0500
-+++ fbdev-2.6/drivers/video/Makefile	2007-02-22 09:41:41.000000000 -0500
-@@ -12,7 +12,7 @@
- 
- obj-$(CONFIG_VT)		  += console/
- obj-$(CONFIG_LOGO)		  += logo/
--obj-y				  += backlight/
-+obj-y				  += backlight/ display/
- 
- obj-$(CONFIG_FB_CFB_FILLRECT)  += cfbfillrect.o
- obj-$(CONFIG_FB_CFB_COPYAREA)  += cfbcopyarea.o
-diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/include/linux/display.h fbdev-2.6/include/linux/display.h
---- linus-2.6/include/linux/display.h	1969-12-31 19:00:00.000000000 -0500
-+++ fbdev-2.6/include/linux/display.h	2007-02-24 11:09:13.000000000 -0500
-@@ -0,0 +1,61 @@
-+/*
-+ *  Copyright (C) 2006 James Simmons <jsimmons@infradead.org>
-+ *
-+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or (at
-+ *  your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful, but
-+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ *  General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License along
-+ *  with this program; if not, write to the Free Software Foundation, Inc.,
-+ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-+ *
-+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ */
-+
-+#ifndef _LINUX_DISPLAY_H
-+#define _LINUX_DISPLAY_H
-+
-+#include <linux/device.h>
-+
-+struct display_device;
-+
-+/* This structure defines all the properties of a Display. */
-+struct display_driver {
-+	int  (*set_contrast)(struct display_device *, unsigned int);
-+	int  (*get_contrast)(struct display_device *);
-+	void (*suspend)(struct display_device *, pm_message_t state);
-+	void (*resume)(struct display_device *);
-+	int  (*probe)(struct display_device *, void *);
-+	int  (*remove)(struct display_device *);
-+	int  max_contrast;
-+};
-+
-+struct display_device {
-+	struct module *owner;			/* Owner module */
-+	struct display_driver *driver;
-+	struct device *parent;			/* This is the parent */
-+	struct device *dev;			/* This is this display device */
-+	struct mutex lock;
-+	void *priv_data;
-+	char type[16];
-+	char *name;
-+	int idx;
-+};
-+
-+extern struct display_device *display_device_register(struct display_driver *driver,
-+					struct device *dev, void *devdata);
-+extern void display_device_unregister(struct display_device *dev);
-+
-+extern int probe_edid(struct display_device *dev, void *devdata);
-+
-+#define to_display_device(obj) container_of(obj, struct display_device, class_dev)
-+
-+#endif
+for via epia likely two/three times less.
+
+> 	Ingo
+
+-- 
+	Evgeniy Polyakov
