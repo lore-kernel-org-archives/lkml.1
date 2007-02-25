@@ -1,77 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964804AbXBYLeJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964806AbXBYLox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964804AbXBYLeJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 06:34:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964805AbXBYLeJ
+	id S964806AbXBYLox (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 06:44:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964805AbXBYLow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 06:34:09 -0500
-Received: from mail1.webmaster.com ([216.152.64.169]:2624 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964804AbXBYLeH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 06:34:07 -0500
-From: "David Schwartz" <davids@webmaster.com>
-To: "Pavel Machek" <pavel@ucw.cz>
-Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: GPL vs non-GPL device drivers
-Date: Sun, 25 Feb 2007 03:33:38 -0800
-Message-ID: <MDEHLPKNGKAHNMBLJOLKOEDMBNAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <20070225104211.GB2045@elf.ucw.cz>
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Sun, 25 Feb 2007 03:34:04 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Sun, 25 Feb 2007 03:34:05 -0800
+	Sun, 25 Feb 2007 06:44:52 -0500
+Received: from aun.it.uu.se ([130.238.12.36]:36885 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964801AbXBYLov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 06:44:51 -0500
+Date: Sun, 25 Feb 2007 12:44:39 +0100 (MET)
+Message-Id: <200702251144.l1PBidUj003214@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH 2.6.21-rc1] sata_promise: fix 20619 new EH merge error
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When I merged my 20619 new EH conversion with #libata-upstream
+I had to manually resolve a conflict, and inadvertently lost
+pdc_pata_ops' ->post_internal_cmd binding. Corrected by this patch.
 
-> But... how does situation change when Evil Linker does #include
-> <pop3/gpl_header_file_with_some_inline_functions.h> from his
-> binary-only part?
+Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
 
-Right, but *why* is he doing that? The answer: It is the most practical way
-to write his driver.
+---
 
-> I believe situation in this case changes a lot... And that's what
-> embedded people are doing; I do not think they are creating their own
-> headers or their own inline functions where headers contain them.
+ drivers/ata/sata_promise.c |    1 +
+ 1 files changed, 1 insertion(+)
 
-They don't have to. You *cannot* use copyright to make ideas harder to
-express. That's what patents are for.
-
-All the people who make this linking argument seem to be completely missing
-the entire *point* of copyright. A copyright protects the *one* way you
-chose to express a particular idea. It cannot protect function. It cannot
-make other ideas harder to express.
-
-This is not some loophole or something. This is the most fundamental thing
-about copyrights that there is. This is the reason they're so easy to get.
-This is the reason they last so long. They *cannot* impede interoperation.
-They cannot make other ideas harder to express. They can't even make the
-very same idea you expressed harder to express.
-
-Copyrights are not patents.
-
-It is clear, at least in the United States, that something like "a kernel
-driver to make <some particular version of Linux> work with <some particular
-piece of hardware>" is an idea. You cannot own all the most practical ways
-to express that idea. When practical engineering concerns make one way (or
-one group of ways) the most reasonable, you simply *cannot* own them all
-with copyright.
-
-DS
-
-
+diff -rupN linux-2.6.21-rc1/drivers/ata/sata_promise.c linux-2.6.21-rc1.sata_promise-20619-newEH-fix/drivers/ata/sata_promise.c
+--- linux-2.6.21-rc1/drivers/ata/sata_promise.c	2007-02-24 22:32:42.000000000 +0100
++++ linux-2.6.21-rc1.sata_promise-20619-newEH-fix/drivers/ata/sata_promise.c	2007-02-24 23:05:08.000000000 +0100
+@@ -218,6 +218,7 @@ static const struct ata_port_operations 
+ 	.freeze			= pdc_freeze,
+ 	.thaw			= pdc_thaw,
+ 	.error_handler		= pdc_error_handler,
++	.post_internal_cmd	= pdc_post_internal_cmd,
+ 	.data_xfer		= ata_data_xfer,
+ 	.irq_handler		= pdc_interrupt,
+ 	.irq_clear		= pdc_irq_clear,
