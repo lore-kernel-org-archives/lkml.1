@@ -1,84 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933631AbXBYCPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933633AbXBYCa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933631AbXBYCPr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 21:15:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933629AbXBYCPr
+	id S933633AbXBYCa4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 21:30:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933634AbXBYCa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 21:15:47 -0500
-Received: from holomorphy.com ([66.93.40.71]:40883 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933631AbXBYCPq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 21:15:46 -0500
-Date: Sat, 24 Feb 2007 18:15:34 -0800
-From: William Lee Irwin III <wli@holomorphy.com>
-To: David Miller <davem@davemloft.net>
-Cc: npiggin@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [rfc][patch] dynamic resizing dentry hash using RCU
-Message-ID: <20070225021534.GB9222@holomorphy.com>
-References: <20070224042444.GU21484@holomorphy.com> <20070224050937.GA16601@wotan.suse.de> <20070224225631.GA9222@holomorphy.com> <20070224.165631.78711967.davem@davemloft.net>
+	Sat, 24 Feb 2007 21:30:56 -0500
+Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:49978 "EHLO
+	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933633AbXBYCaz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 21:30:55 -0500
+Message-ID: <45E0F4D1.9080900@lwfinger.net>
+Date: Sat, 24 Feb 2007 20:30:41 -0600
+From: Larry Finger <larry.finger@lwfinger.net>
+User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070224.165631.78711967.davem@davemloft.net>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Pavel Machek <pavel@ucw.cz>
+CC: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 01/18] bcm43xx: Fix for oops on resume
+References: <20070221014413.282048309@mini.kroah.org> <20070221014939.GB3684@kroah.com> <20070223052526.GA1889@elf.ucw.cz>
+In-Reply-To: <20070223052526.GA1889@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: William Lee Irwin III <wli@holomorphy.com>
-> Date: Sat, 24 Feb 2007 14:56:31 -0800
->> just do it on a per-directory basis so you don't intermix children
->> of different parents in some boot-time -allocated global trainwreck
->> and you're home free.  Benchmarking is probably needed to gauge
->> which performs best.
+Pavel Machek wrote:
+> Hi!
+> 
+>> -stable review patch.  If anyone has any objections, please let us know.
+>>
+>> ------------------
+>> From: Larry Finger <Larry.Finger@lwfinger.net>
+>>
+>> There is a kernel oops on bcm43xx when resuming due to an overly tight timeout loop.
+>>
+>> Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+>> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+>>
+>> ---
+>>  drivers/net/wireless/bcm43xx/bcm43xx.h |    2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> --- linux-2.6.18.7.orig/drivers/net/wireless/bcm43xx/bcm43xx.h
+>> +++ linux-2.6.18.7/drivers/net/wireless/bcm43xx/bcm43xx.h
+>> @@ -21,7 +21,7 @@
+>>  #define PFX				KBUILD_MODNAME ": "
+>>  
+>>  #define BCM43xx_SWITCH_CORE_MAX_RETRIES	50
+>> -#define BCM43xx_IRQWAIT_MAX_RETRIES	50
+>> +#define BCM43xx_IRQWAIT_MAX_RETRIES	100
+>>  
+>>  #define BCM43xx_IO_SIZE			8192
+> 
+> I'm sorry, but this does not look like fixing an oops. It may make it
+> go away for you, or make it less probable, but it certainly can't fix
+> it.
 
-On Sat, Feb 24, 2007 at 04:56:31PM -0800, David Miller wrote:
-> The original dentry implementation in the kernel did things
-> per-directory and it sucked.
-> The problem you run into is that you end up with recursive algorithms
-> all over the place, which chew up and overflow the kernel stack.
-> So it would be a regression to go to a per-directory type
-> lookup data structure for dentries.
+Upon resume, it was taking 65 times through the loop, which caused an oops. We think it is due to a
+slow-clock setting at that point, but it certainly does get rid of the oops. This change has also
+eliminated the odd oops seen by a few users.
 
-Recursive code is clearly inadmissible in kernel environments. Any
-implementations would clearly be required to be coded iteratively.
-It's unclear to me where the choice of data structure would make a
-demand for recursive code, but wherever it ostensibly does so, an
-explicitly-allocated stack (or queue or worklist of whatever sort)
-should be able to unravel it. There are furthermore rather stringent
-bounds on balanced tree heights due to address space limits, so
-whatever explicitly-allocated stacks may be required for e.g. tree
-balancing algorithms are tightly bounded in depth.
-
-The usual objection is to lexicographically ordered balanced trees
-such as B+ trees on the grounds that string comparison is cache-
-intensive. Hash tries resolve that concern, albeit at the amortized
-cost of expansion and contraction of what are effectively nodes in
-a radix tree with a large radix as well as undoing path compression
-where required (speaking of which, lib/radix-tree.c should really do
-path compression instead of the ->depth hack). The quest, as I see it,
-is for self-sizing data structures with as little restructuring and
-direct key (string) comparison as possible. Should the obvious
-candidates not incur significant overhead on account of where they
-do such, maybe they're good enough.
-
-So I'm not sure what else to say as far as the per-directory lookup
-structure commentary goes. There's no way I'd propose putting
-recursive code in the kernel. I don't believe any of what I'm talking
-about requires such. I'm aware of various drawbacks the algorithms
-have, and have in mind that they should pass benchmark criteria in
-addition to reducing kernel memory consumption in order to prove that
-they don't overwhelm the putative benefits. So I think I've got all the
-bases covered.
-
-Am I off-base on any of this? Is there anything I missed?
-
-
--- wli
-
-(P.S.: The only time I ever proposed putting something "recursive"
-in the kernel, it used a flag to limit the recursion depth to two
-stack frames. It was for the purpose of simplifying the reservation
-of metadata in an allocator, and so not strictly necessary. A 
-simplified metadata allocator could've easily been devised, albeit at
-the cost of some code duplication.)
+Larry
