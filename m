@@ -1,153 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752374AbXBYRGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964989AbXBYRHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752374AbXBYRGs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 12:06:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbXBYRGr
+	id S964989AbXBYRHd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 12:07:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964981AbXBYRHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 12:06:47 -0500
-Received: from lazybastard.de ([212.112.238.170]:45986 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752373AbXBYRGr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 12:06:47 -0500
-Date: Sun, 25 Feb 2007 12:23:54 +0000
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Christoph Lameter <clameter@engr.sgi.com>
-Cc: David Miller <davem@davemloft.net>, kamezawa.hiroyu@jp.fujitsu.com,
-       andi@firstfloor.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: SLUB: The unqueued Slab allocator
-Message-ID: <20070225122354.GB19047@lazybastard.org>
-References: <Pine.LNX.4.64.0702221040140.2011@schroedinger.engr.sgi.com> <20070224142835.4c7a3207.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0702232145340.1872@schroedinger.engr.sgi.com> <20070223.215439.92580943.davem@davemloft.net> <Pine.LNX.4.64.0702240931030.3912@schroedinger.engr.sgi.com> <20070224193322.GA17276@lazybastard.org> <Pine.LNX.4.64.0702241613520.4891@schroedinger.engr.sgi.com>
+	Sun, 25 Feb 2007 12:07:32 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:36428 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964980AbXBYRHb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 12:07:31 -0500
+Date: Sun, 25 Feb 2007 20:06:56 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: bert hubert <bert.hubert@netherlabs.nl>, Andi Kleen <andi@firstfloor.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: all syscalls initially taking 4usec on a P4? Re: nonblocking UDPv4 recvfrom() taking 4usec @ 3GHz?
+Message-ID: <20070225170656.GA14698@2ka.mipt.ru>
+References: <20070219231447.GA4400@outpost.ds9a.nl> <p73d545drx6.fsf@bingen.suse.de> <20070220162714.GA3245@outpost.ds9a.nl> <20070220164124.GA24930@2ka.mipt.ru> <20070225104154.GA2045@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0702241613520.4891@schroedinger.engr.sgi.com>
+In-Reply-To: <20070225104154.GA2045@elf.ucw.cz>
 User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Sun, 25 Feb 2007 20:07:08 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 February 2007 16:14:48 -0800, Christoph Lameter wrote:
+On Sun, Feb 25, 2007 at 11:41:54AM +0100, Pavel Machek (pavel@ucw.cz) wrote:
+> > > I've done so, with some interesting results. Source on
+> > > http://ds9a.nl/tmp/recvtimings.c - be careful to adjust the '3000' divider
+> > > to your CPU frequency if you care about absolute numbers!
+> > > 
+> > > These are two groups, each consisting of 10 consecutive nonblocking UDP
+> > > recvfroms, with 10 packets preloaded. Reported is the number of microseconds
+> > > per recvfrom call which yielded a packet:
+> > > 
+> > > $ ./recvtimings
+> > > 4.142333
+> > 
+> > It can be recvfrom only problem - syscall overhead on my p4 (core duo,
+> > debian testing) is bout 300 usec - to test I ran 
 > 
-> It eliminates 50% of the slab caches. Thus it reduces the management 
-> overhead by half.
+> core duo is _not_ p4 class cpu; rsulets there will be very different.
 
-How much management overhead is there left with SLUB?  Is it just the
-one per-node slab?  Is there runtime overhead as well?
+Results nevertheless are the same.
+Each syscall takes some time first (noticebly more than subsequent
+calls), and that was a main problem for Bert.
+Given the high load, recvfrom() can even take tens of microseconds
+(although I can not provide a profile output yet, but I showed a data).
 
-In a slightly different approach, can we possibly get rid of some slab
-caches, instead of merging them at boot time?  On my system I have 97
-slab caches right now, ignoring the generic kmalloc() ones.  Of those,
-28 are completely empty, 23 contain <=10 objects, 23 <=100 and 23
-contain >100 objects.
+So, syscall overhead itself is very small no matter which type of the
+CPU is used - athlon is about 300 nsec, via epia about 1.4 usec), 
+but the whole function can take quite a lot of time.
 
-It is fairly obvious to me that the highly populated slab caches are a
-big win.  But is it worth it to have slab caches with a single object
-inside?  Maybe some of these caches are populated for some systems.
-But there could also be candidates for removal among them.
-
-# <active_objs> <num_objs> name
-0 0 dm-crypt_io
-0 0 dm_io
-0 0 dm_tio
-0 0 ext3_xattr
-0 0 fat_cache
-0 0 fat_inode_cache
-0 0 flow_cache
-0 0 inet_peer_cache
-0 0 ip_conntrack_expect
-0 0 ip_mrt_cache
-0 0 isofs_inode_cache
-0 0 jbd_1k
-0 0 jbd_4k
-0 0 kiocb
-0 0 kioctx
-0 0 nfs_inode_cache
-0 0 nfs_page
-0 0 posix_timers_cache
-0 0 request_sock_TCP
-0 0 revoke_record
-0 0 rpc_inode_cache
-0 0 scsi_io_context
-0 0 secpath_cache
-0 0 skbuff_fclone_cache
-0 0 tw_sock_TCP
-0 0 udf_inode_cache
-0 0 uhci_urb_priv
-0 0 xfrm_dst_cache
-1 169 dnotify_cache
-1 30 arp_cache
-1 7 mqueue_inode_cache
-2 101 eventpoll_pwq
-2 203 fasync_cache
-2 254 revoke_table
-2 30 eventpoll_epi
-2 9 RAW
-4 17 ip_conntrack
-7 10 biovec-128
-7 10 biovec-64
-7 20 biovec-16
-7 42 file_lock_cache
-7 59 biovec-4
-7 59 uid_cache
-7 8 biovec-256
-7 9 bdev_cache
-8 127 inotify_event_cache
-8 20 rpc_tasks
-8 8 rpc_buffers
-10 113 ip_fib_alias
-10 113 ip_fib_hash
-10 12 blkdev_queue
-11 203 biovec-1
-11 22 blkdev_requests
-13 92 inotify_watch_cache
-16 169 journal_handle
-16 203 tcp_bind_bucket
-16 72 journal_head
-18 18 UDP
-19 19 names_cache
-19 28 TCP
-22 30 mnt_cache
-27 27 sigqueue
-27 60 ip_dst_cache
-32 32 sgpool-128
-32 32 sgpool-32
-32 32 sgpool-64
-32 36 nfs_read_data
-32 45 sgpool-16
-32 60 sgpool-8
-36 42 nfs_write_data
-72 80 cfq_pool
-74 127 blkdev_ioc
-78 92 cfq_ioc_pool
-94 94 pgd
-107 113 fs_cache
-108 108 mm_struct
-108 140 files_cache
-123 123 sighand_cache
-125 140 UNIX
-130 130 signal_cache
-147 147 task_struct
-154 174 idr_layer_cache
-158 404 pid
-190 190 sock_inode_cache
-260 295 bio
-273 273 proc_inode_cache
-840 920 skbuff_head_cache
-1234 1326 inode_cache
-1507 1510 shmem_inode_cache
-2871 3051 anon_vma
-2910 3360 filp
-5161 5292 sysfs_dir_cache
-5762 6164 vm_area_struct
-12056 19446 radix_tree_node
-65776 151272 buffer_head
-578304 578304 ext3_inode_cache
-677490 677490 dentry_cache
-
-Jörn
+> 									Pavel
+> 
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 
 -- 
-And spam is a useful source of entropy for /dev/random too!
--- Jasmine Strong
+	Evgeniy Polyakov
