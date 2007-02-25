@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964812AbXBYMAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964810AbXBYMHJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964812AbXBYMAb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 07:00:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964825AbXBYMAa
+	id S964810AbXBYMHJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 07:07:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964821AbXBYMHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 07:00:30 -0500
-Received: from pne-smtpout3-sn2.hy.skanova.net ([81.228.8.111]:52252 "EHLO
-	pne-smtpout3-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S964812AbXBYMAa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 07:00:30 -0500
-Message-ID: <45E178A7.7090403@kolumbus.fi>
-Date: Sun, 25 Feb 2007 13:53:11 +0200
-From: =?ISO-8859-1?Q?Mika_Penttil=E4?= <mika.penttila@kolumbus.fi>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       Zwane Mwaikambo <zwane@infradead.org>, Ashok Raj <ashok.raj@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, "Lu, Yinghai" <yinghai.lu@amd.com>,
-       Natalie Protasevich <protasnb@gmail.com>, Andi Kleen <ak@suse.de>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 13/14] x86_64 irq: Safely cleanup an irq after moving
- it.
-References: <200701221116.13154.luigi.genoni@pirelli.com>	<m13b5d0zdp.fsf@ebiederm.dsl.xmission.com>	<Pine.LNX.4.64.0702110753390.8245@montezuma.fsmlabs.com>	<m17iuoz74f.fsf@ebiederm.dsl.xmission.com>	<Pine.LNX.4.64.0702111416220.24829@montezuma.fsmlabs.com>	<m1r6swx9l2.fsf@ebiederm.dsl.xmission.com>	<m1irdtw3jb.fsf_-_@ebiederm.dsl.xmission.com>	<m1bqjlw2mr.fsf_-_@ebiederm.dsl.xmission.com>	<m17iu9w2kj.fsf_-_@ebiederm.dsl.xmission.com>	<m13b4xw2h8.fsf_-_@ebiederm.dsl.xmission.com>	<m1y7mpunuk.fsf_-_@ebiederm.dsl.xmission.com>	<m1tzxdunsg.fsf_-_@ebiederm.dsl.xmission.com>	<m1ps81uno3.fsf_-_@ebiederm.dsl.xmission.com>	<m1lkipunl0.fsf_-_@ebiederm.dsl.xmission.com>	<m1ejohung7.fsf_-_@ebiederm.dsl.xmission.com>	<m17iu9unb6.fsf_-_@ebiederm.dsl.xmission.com>	<m13b4xun1c.fsf_-_@ebiederm.dsl.xmission.com>	<m1y7mpt8d2.fsf_-_@ebiederm.dsl.xmission.com>	<m1tzxdt8au.fsf_-_@ebiederm.dsl.xmission.com>	<m1ps81t87h.fsf_-_@ebiederm.dsl.xmission.com> <m1lkipt839.fsf_-_@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1lkipt839.fsf_-_@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Sun, 25 Feb 2007 07:07:09 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:33845 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964810AbXBYMHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 07:07:08 -0500
+Date: Sun, 25 Feb 2007 04:06:57 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: linux-kernel@vger.kernel.org, npiggin@suse.de, linux-mm@kvack.org
+Subject: Re: [patch 3/3] mm: fix PageUptodate memorder
+Message-Id: <20070225040657.eb4fc159.akpm@linux-foundation.org>
+In-Reply-To: <20070215051851.7443.65811.sendpatchset@linux.site>
+References: <20070215051822.7443.30110.sendpatchset@linux.site>
+	<20070215051851.7443.65811.sendpatchset@linux.site>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
->   * Vectors 0x20-0x2f are used for ISA interrupts.
->   */
-> -#define IRQ0_VECTOR		FIRST_EXTERNAL_VECTOR
-> +#define IRQ0_VECTOR		FIRST_EXTERNAL_VECTOR + 0x10
->  #define IRQ1_VECTOR		IRQ0_VECTOR + 1
->  #define IRQ2_VECTOR		IRQ0_VECTOR + 2
->  #define IRQ3_VECTOR		IRQ0_VECTOR + 3
-> @@ -82,7 +87,7 @@
->   
-I think we have a dependency in i8259.c that irq0 is mapped to vector 0x20.
 
---Mika
+What an unpleasing patchset.  I really really hope we really have a bug in
+there, and that all this crap isn't pointless uglification.
 
+We _do_ need a flush_dcaceh_page() in all cases which you're concerned
+about.  Perhaps we should stick the appropriate barriers in there.
+
+> On Thu, 15 Feb 2007 08:31:31 +0100 (CET) Nick Piggin <npiggin@suse.de> wrote:
+> +static inline void SetNewPageUptodate(struct page *page)
+> +{
+> +	/*
+> +	 * S390 sets page dirty bit on IO operations, which is why it is
+> +	 * cleared in SetPageUptodate. This is not an issue for newly
+> +	 * allocated pages that are brought uptodate by zeroing memory.
+> +	 */
+> +	smp_wmb();
+> +	__set_bit(PG_uptodate, &(page)->flags);
+> +}
+
+__SetPageUptodate() might be more conventional.
+
+Boy we'd better get the callers of this little handgrenade right.
