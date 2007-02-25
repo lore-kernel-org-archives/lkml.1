@@ -1,95 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964790AbXBYKwK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751010AbXBYK6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964790AbXBYKwK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 05:52:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964801AbXBYKwK
+	id S1751010AbXBYK6H (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 05:58:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbXBYK6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 05:52:10 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55069 "EHLO ogre.sisk.pl"
+	Sun, 25 Feb 2007 05:58:06 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55099 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964790AbXBYKwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 05:52:08 -0500
+	id S1751015AbXBYK6F convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 05:58:05 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH 4/7] Freezer: Fix vfork problem
-Date: Sun, 25 Feb 2007 11:45:37 +0100
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: 2.6.19: ACPI reports AC not present after resume from STD
+Date: Sun, 25 Feb 2007 11:51:11 +0100
 User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>, paulmck@linux.vnet.ibm.com,
-       ego@in.ibm.com, akpm@osdl.org, mingo@elte.hu, vatsa@in.ibm.com,
-       dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
-       Aneesh Kumar <aneesh.kumar@gmail.com>
-References: <200702231116.23607.rjw@sisk.pl> <200702231122.44040.rjw@sisk.pl> <20070225104612.GM2045@elf.ucw.cz>
-In-Reply-To: <20070225104612.GM2045@elf.ucw.cz>
+Cc: "Lebedev, Vladimir P" <vladimir.p.lebedev@intel.com>,
+       "Karasyov, Konstantin A" <konstantin.a.karasyov@intel.com>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-pm@lists.osdl.org
+References: <8E389A5F2FEABA4CB1DEC35A25CB39CE82FE9F@mssmsx411> <200702251117.30462.rjw@sisk.pl> <200702251337.08914.arvidjaar@mail.ru>
+In-Reply-To: <200702251337.08914.arvidjaar@mail.ru>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200702251145.39595.rjw@sisk.pl>
+Message-Id: <200702251151.12107.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sunday, 25 February 2007 11:37, Andrey Borzenkov wrote:
+> On Воскресенье 25 февраля 2007, Rafael J. Wysocki wrote:
+> > On Sunday, 25 February 2007 00:26, Andrey Borzenkov wrote:
+> > > On Суббота 24 февраля 2007, Rafael J. Wysocki wrote:
+> > > > Hi,
+> > > >
+> > > > On Saturday, 24 February 2007 10:55, Andrey Borzenkov wrote:
+> > > > > On Вторник 13 февраля 2007, Andrey Borzenkov wrote:
+> > > > > > On Четверг 07 декабря 2006, Lebedev, Vladimir P wrote:
+> > > > > > > Please register new bug, attach acpidump and dmesg.
+> > > > > >
+> > > > > > http://bugzilla.kernel.org/show_bug.cgi?id=7995
+> > > > > >
+> > > > > > regards
+> > > > >
+> > > > > Well, this starts looking like ACPI is not at fault.
+> > > > >
+> > > > > When reporting AC state ACPI just reads contents of system memory (I
+> > > > > presume it gets updated by BIOS/ACPI when AC state changes). It looks
+> > > > > like this memory area is restored during resume from STD. I updated
+> > > > > mentioned bug report with more detailed description. Now if someone
+> > > > > could suggest a way to catch if specific physical address gets
+> > > > > saved/restored this would finally explain it.
+> > > >
+> > > > First, if you want the reserved memory areas to be left alone by
+> > > > swsusp, you need to mark them as 'nosave'.  On x86_64 this is done by
+> > > > the function e820_mark_nosave_range() in arch/x86_64/kernel/e820.c that
+> > > > can be ported to i386 with no problems.  However, we haven't found that
+> > > > very useful, so far, since no one has ever reported any problems with
+> > > > the current approach, which is to save and restore them.
+> > >
+> > > Well, the following proof of concept patch fixes this issue for me.
+> > > Please notice that original version of e820_mark_nosave_range() could
+> > > fail to exclude some areas due to alignment issues (exactly what happened
+> > > to me on first try) so it still can explain your problem too.
+> >
+> > Great job, thanks for the patch!  It looks good, so I'm going to forward it
+> > for merging.
+> >
+> 
+> Please no; I'm currently testing slightly more polished version; I will send
+> it later.
 
-On Sunday, 25 February 2007 11:46, Pavel Machek wrote:
-> Hi!
-> 
-> > Currently try_to_freeze_tasks() has to wait until all of the vforked processes
-> > exit and for this reason every user can make it fail.  To fix this problem
-> > we can introduce the additional process flag PF_FREEZER_SKIP to be used by tasks
-> > that do not want to be counted as freezable by the freezer and want to have
-> > TIF_FREEZE set nevertheless.  Then, this flag can be set by tasks using
-> > sys_vfork() before they call wait_for_completion() and cleared after they have
-> > woken up and called try_to_freeze().  In case such a task freezes with
-> > PF_FREEZER_SKIP set, refrigerator() clears this flag for the current task before
-> > calling frozen_process(current) to avoid having both PF_FREEZER_SKIP and
-> > PF_FROZEN set at the same time.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> > @@ -1393,7 +1394,9 @@ long do_fork(unsigned long clone_flags,
-> >  		tracehook_report_clone_complete(clone_flags, nr, p);
-> >  
-> >  		if (clone_flags & CLONE_VFORK) {
-> > +			freezer_do_not_count();
-> >  			wait_for_completion(&vfork);
-> > +			freezer_count();
-> >  			tracehook_report_vfork_done(p, nr);
-> >  		}
-> >  	} else {
-> 
-> All the infrastructure for this...Would it be easier to introduce
-> 
-> void fastcall __sched wait_for_completion_freezeable(struct completion *x)
-> {
->         might_sleep();
-> 
->         spin_lock_irq(&x->wait.lock);
->         if (!x->done) {
->                 DECLARE_WAITQUEUE(wait, current);
-> 
->                 wait.flags |= WQ_FLAG_EXCLUSIVE;
->                 __add_wait_queue_tail(&x->wait, &wait);
->                 do {
->                         __set_current_state(TASK_UNINTERRUPTIBLE);
->                         spin_unlock_irq(&x->wait.lock);
->                         schedule();
-> try_to_freeze(); /* HERE */
->                         spin_lock_irq(&x->wait.lock);
->                 } while (!x->done);
->                 __remove_wait_queue(&x->wait, &wait);
->         }
->         x->done--;
->         spin_unlock_irq(&x->wait.lock);
-> }
-> 
-> ...and be done with that, in a very obvious way? (Ok, you probably do
-> not want to duplicate the function, but you get the idea).
+OK
 
-Yes, I though about that too, but I was thinking of sticking try_to_freeze()
-in wait wait_for_completion() itself, which was obviously wrong.
+> Could anybody explain (or give pointer to) what happens which region that is
+> not page-aligned? In particular, the very first one:
+> 
+>  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+>  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+> 
+> Will the kernel allocate partial page (how?) or will the kernel ignore last
+> (first) incomplete page? In the former case how those incomplete pages can be
+> detected?
 
-Still, the above might work.  I'll try to prepare a patch.
+Well, on x86_64, if I understand e820_register_active_regions() correctly,
+the partial pages won't be registered.
 
 Greetings,
 Rafael
