@@ -1,135 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965051AbXBYRwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965050AbXBYRzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965051AbXBYRwu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 12:52:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965054AbXBYRwu
+	id S965050AbXBYRzW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 12:55:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965054AbXBYRzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 12:52:50 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:43894 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965049AbXBYRwr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 12:52:47 -0500
-Date: Sun, 25 Feb 2007 18:52:47 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Marcel Holtmann <marcel@holtmann.org>,
-       linux-pm@lists.osdl.org, "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Ingo Molnar <mingo@elte.hu>, lenb@kernel.org,
-       linux-acpi@vger.kernel.org, luming.yu@intel.com,
-       Arkadiusz Miskiewicz <arekm@maven.pl>,
-       Konstantin Karasyov <konstantin.a.karasyov@intel.com>,
-       linux-usb-devel@lists.sourceforge.net, Thomas Meyer <thomas.mey@web.de>,
-       Andrew <andrew@nelless.net>, Janosch Machowinski <jmachowinski@gmx.de>,
-       vladimir.p.lebedev@intel.com, Lukas Hejtmanek <xhejtman@fi.muni.cz>,
-       jgarzik@pobox.com, linux-ide@vger.kernel.org,
-       Meelis Roos <mroos@linux.ee>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Fabio Comolli <fabio.comolli@gmail.com>,
-       Jean-Luc Coulon <jean.luc.coulon@gmail.com>,
-       Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Tejun Heo <htejun@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: 2.6.21-rc1: known regressions (part 1)
-Message-ID: <20070225175247.GB12392@stusta.de>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 25 Feb 2007 12:55:21 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:58028 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965050AbXBYRzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 12:55:20 -0500
+Date: Sun, 25 Feb 2007 20:44:38 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070225174438.GA13647@2ka.mipt.ru>
+References: <20070221211355.GA7302@elte.hu> <20070224183421.GA6835@2ka.mipt.ru> <20070225172337.GB4998@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070225172337.GB4998@elte.hu>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Sun, 25 Feb 2007 20:45:18 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This email lists some known regressions in 2.6.21-rc1 compared to 2.6.20
-that are not yet fixed in Linus' tree.
+On Sun, Feb 25, 2007 at 06:23:38PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
+> 
+> * Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+> 
+> > On Wed, Feb 21, 2007 at 10:13:55PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
+> > > this is the v3 release of the syslet/threadlet subsystem:
+> > > 
+> > >    http://redhat.com/~mingo/syslet-patches/
+> > 
+> > There is no %xgs.
+> > 
+> > --- ./arch/i386/kernel/process.c~	2007-02-24 22:56:14.000000000 +0300
+> > +++ ./arch/i386/kernel/process.c	2007-02-24 22:53:19.000000000 +0300
+> > @@ -426,7 +426,6 @@
+> >  
+> >  	regs.xds = __USER_DS;
+> >  	regs.xes = __USER_DS;
+> > -	regs.xgs = __KERNEL_PDA;
+> 
+> hm, what tree are you using as a base? The syslet patches are against 
+> v2.6.20 at the moment. (the x86 PDA changes will probably interfere with 
+> it on v2.6.21-rc1-ish kernels) Note that otherwise the syslet/threadlet 
+> patches are for x86 only at the moment (as i mentioned in the 
+> announcement), and the generic code itself contains some occasional 
+> x86-ishms as well. (None of the concepts are x86-specific though - 
+> multi-stack architectures should work just as well as RISC-ish CPUs.)
 
-If you find your name in the Cc header, you are either submitter of one
-of the bugs, maintainer of an affectected subsystem or driver, a patch
-of you caused a breakage or I'm considering you in any other way possibly
-involved with one or more of these issues.
+It is rc1 - and crashes.
+I test on i386 via epia (the only machine which runs x86 right now).
 
-Due to the huge amount of recipients, please trim the Cc when answering.
+If there will not be any new patches, I will create 2.6.20 test tree
+tomorrow.
 
+> if you create a threadlet based test-webserver, could you please do a 
+> comparable kevents implementation as well? I.e. same HTTP parser (or 
+> non-parser, as usually the case is with prototypes ;). Best would be 
+> something that one could trigger between threadlet and kevent mode, 
+> using the same binary :-)
 
-Subject    : resume: slab error in verify_redzone_free(): cache `size-512':
-                     memory outside object was overwritten
-References : http://lkml.org/lkml/2007/2/24/41
-Submitter  : Pavel Machek <pavel@ucw.cz>
-Handled-By : Marcel Holtmann <marcel@holtmann.org>
-Status     : unknown
+Ok, I will create such a monster tomorrow :)
 
+I will use the same base for threadlet as for kevent/epoll - there is no
+parser, just sendfile() of the static file which contains http header
+and actual page.
 
-Subject    : ThinkPad T60: no screen after suspend to RAM
-References : http://lkml.org/lkml/2007/2/22/391
-Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
-Handled-By : Ingo Molnar <mingo@elte.hu>
-Status     : unknown
+threadlet1 {
+	accept() 
+	create threadlet2 {
+		send data
+	}
+}
 
+Is above scheme correct for threadlet scenario?
 
-Subject    : HP nx6325 notebook: usb mouse stops working after suspend to ram
-References : http://lkml.org/lkml/2007/2/21/413
-Submitter  : Arkadiusz Miskiewicz <arekm@maven.pl>
-Caused-By  : Konstantin Karasyov <konstantin.a.karasyov@intel.com>
-             commit 0a6139027f3986162233adc17285151e78b39cac
-Status     : unknown
+But note, that on my athlon64 3500 test machine kevent is about 7900
+requests per second compared to 4000+ epoll, so expect a challenge.
+lighhtpd is about the same 4000 requests per second though, since it can
+not be easily optimized for kevents.
 
+> 	Ingo
 
-Subject    : MacBook: AE_NOT_FOUND ACPI messages
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8066
-Submitter  : Thomas Meyer <thomas.mey@web.de>
-Status     : unknown
-
-
-Subject    : Asus A8N-VM motherboard: boot failure (ACPI related)
-References : http://lkml.org/lkml/2007/2/23/132
-Submitter  : Andrew <andrew@nelless.net>
-Status     : unknown
-
-
-Subject    : Asus M6Ne notebook: ACPI: First battery is not detected
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8080
-Submitter  : Janosch Machowinski <jmachowinski@gmx.de>
-Status     : unknown
-
-
-Subject    : Asus M6Ne/M6A notebooks: SATA_ACPI errors during kernel boot
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8080
-             http://bugzilla.kernel.org/show_bug.cgi?id=8046
-Submitter  : Janosch Machowinski <jmachowinski@gmx.de>
-             Lukas Hejtmanek <xhejtman@fi.muni.cz>
-Status     : unknown
-
-
-Subject    : ata-piix ACPI errors (40/80 pin cable mix)
-References : http://lkml.org/lkml/2007/2/22/159
-Submitter  : Meelis Roos <mroos@linux.ee>
-Handled-By : Alan Cox <alan@lxorguk.ukuu.org.uk>
-Status     : unknown
-
-
-Subject    : ata_piix: PATA UDMA/100 configured as UDMA/33
-References : http://lkml.org/lkml/2007/2/20/294
-Submitter  : Fabio Comolli <fabio.comolli@gmail.com>
-Status     : unknown
-
-
-Subject    : sata_via failure
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8025
-Submitter  : Jean-Luc Coulon <jean.luc.coulon@gmail.com>
-             Markus Trippelsdorf <markus@trippelsdorf.de>
-Handled-By : Tejun Heo <htejun@gmail.com>
-Patch      : http://www.mail-archive.com/linux-ide@vger.kernel.org/msg03945.html
-Status     : patch available
-
-
-Subject    : BUG: at drivers/pci/pci.c:817 pcim_enable_device() (suspend, ata)
-References : http://lkml.org/lkml/2007/2/14/275
-             http://lkml.org/lkml/2007/2/22/367
-Submitter  : Rafael J. Wysocki <rjw@sisk.pl>
-             Lukas Hejtmanek <xhejtman@mail.muni.cz>
-Handled-By : Tejun Heo <htejun@gmail.com>
-Patch      : http://lkml.org/lkml/2007/2/25/102
-Status     : patch available
-
-
+-- 
+	Evgeniy Polyakov
