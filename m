@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751022AbXBYT1L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752395AbXBYT2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751022AbXBYT1L (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 14:27:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752390AbXBYT1L
+	id S1752395AbXBYT2m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 14:28:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbXBYT2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 14:27:11 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56693 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751022AbXBYT1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 14:27:09 -0500
-Date: Sun, 25 Feb 2007 20:21:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070225192112.GA15681@elte.hu>
-References: <20070221211355.GA7302@elte.hu> <20070224183421.GA6835@2ka.mipt.ru> <20070225172337.GB4998@elte.hu> <20070225174438.GA13647@2ka.mipt.ru> <20070225175437.GA9480@elte.hu> <20070225182135.GB29821@2ka.mipt.ru> <20070225182230.GA3622@elte.hu> <20070225183743.GD29821@2ka.mipt.ru>
+	Sun, 25 Feb 2007 14:28:42 -0500
+Received: from rrcs-24-153-217-226.sw.biz.rr.com ([24.153.217.226]:36279 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752395AbXBYT2l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 14:28:41 -0500
+Subject: Re: [PATCH 3/7] cxgb3 - FW version update
+From: Steve Wise <swise@opengridcomputing.com>
+To: divy@chelsio.com
+Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070225004401.20831.3292.stgit@localhost.localdomain>
+References: <20070225004401.20831.3292.stgit@localhost.localdomain>
+Content-Type: text/plain
+Date: Sun, 25 Feb 2007 13:28:39 -0600
+Message-Id: <1172431719.4717.8.camel@stevo-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070225183743.GD29821@2ka.mipt.ru>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hey Divy,
 
-* Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+You missed a printk change.  Here is an updated patch.
 
-> > thx - i guess i should just run them without any options and they 
-> > bind themselves to port 80? What 'ab' options are you using 
-> > typically to measure them?
-> 
-> Yes, but they require /tmp/index.html to have http header and actual 
-> data page. They do not parse http request :)
-> 
-> For athlon 3500 I used
-> ab -c8000 -n80000 $url
+------------
 
-how do the header portions of your /tmp/index.html data page look like?
+Update FW version to 3.2
 
-	Ingo
+Signed-off-by: Steve Wise <swise@opengridcomputing.com>
+---
+
+ drivers/net/cxgb3/t3_hw.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/cxgb3/t3_hw.c b/drivers/net/cxgb3/t3_hw.c
+index 365a7f5..08a6295 100644
+--- a/drivers/net/cxgb3/t3_hw.c
++++ b/drivers/net/cxgb3/t3_hw.c
+@@ -884,11 +884,11 @@ int t3_check_fw_version(struct adapter *
+ 	major = G_FW_VERSION_MAJOR(vers);
+ 	minor = G_FW_VERSION_MINOR(vers);
+ 
+-	if (type == FW_VERSION_T3 && major == 3 && minor == 1)
++	if (type == FW_VERSION_T3 && major == 3 && minor == 2)
+ 		return 0;
+ 
+ 	CH_ERR(adapter, "found wrong FW version(%u.%u), "
+-	       "driver needs version 3.1\n", major, minor);
++	       "driver needs version 3.2\n", major, minor);
+ 	return -EINVAL;
+ }
+ 
+
+
