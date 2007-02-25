@@ -1,51 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933788AbXBZHZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932855AbXBZH1M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933788AbXBZHZS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 02:25:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933793AbXBZHZR
+	id S932855AbXBZH1M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 02:27:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933791AbXBZH1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 02:25:17 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:14578 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933783AbXBZHZP (ORCPT
+	Mon, 26 Feb 2007 02:27:12 -0500
+Received: from pne-smtpout3-sn2.hy.skanova.net ([81.228.8.111]:36473 "EHLO
+	pne-smtpout3-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932855AbXBZH1L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 02:25:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=mV9WrJbDDIzYA7Icx7W9zYPL3ImrrcY6T5OiUWwR6To5eZCeb+Vf6J3Fl+y4gbJcEt4XgkqAyn/vZes/TpPS1uZS+0fAgfFzn4MqqDfJ3x90AK+T5Z6elXdWXU3mGV2OhcjLDLDETst8M1vz9AhtAt50ww8C2pLiqXErw/K/n9A=
-Message-ID: <84144f020702252325j29da2819i50c99477cce89359@mail.gmail.com>
-Date: Mon, 26 Feb 2007 09:25:13 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [RFC/PATCH] revokeat/frevoke system calls V5
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, hch@lst.de
-In-Reply-To: <20070226003307.6f38d2ee@lxorguk.ukuu.org.uk>
+	Mon, 26 Feb 2007 02:27:11 -0500
+Date: Sun, 25 Feb 2007 15:56:30 +0200 (EET)
+From: "Petri T. Koistinen" <petri.koistinen@iki.fi>
+To: netdev@vger.kernel.org
+cc: ShuChen <shuchen@realtek.com.tw>, linux-kernel@vger.kernel.org
+Subject: D-Link DGE-528T (r8159) autonegotation of 1000 Mbps link does not
+ work
+Message-ID: <Pine.LNX.4.64.0702242214120.1830@qfy-uxvtj8-sro4so00-137.qupc.varg.sv>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0701282200450.17167@sbz-30.cs.Helsinki.FI>
-	 <20070226003307.6f38d2ee@lxorguk.ukuu.org.uk>
-X-Google-Sender-Auth: 935ea1a97a43ae39
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
+Hi!
 
-On 2/26/07, Alan <alan@lxorguk.ukuu.org.uk> wrote:
-> Whats the status on this, I was suprised to see something so important
-> just go dead ?
+I just brought two D-Link DGE-528T (uses r8159 driver) network adapters
+to have nice 1 Gbps home network between two computers.
 
-It's not dead. You can find the latest patches here:
+I have gigabit crossover cable that is connected like this
 
-http://www.cs.helsinki.fi/u/penberg/linux/revoke/patches/
+Pin  Connector #1  Connector #2
+1    white/orange  white/green
+2    orange        green
+3    white/green   white/orange
+4    blue          white/brown
+5    white/blue    brown
+6    green         orange
+7    white/brown   blue
+8    brown         white/blue
+(from: http://logout.sh/computers/net/gigabit/)
 
-and user-space tests here:
+and when I use this cable I only get 10 Mbps connection when connected
+another D-Link DGE-528T.
 
-http://www.cs.helsinki.fi/u/penberg/linux/revoke/utils/
+However if I connect other end of cable to Intel EtherExpress 100 Mbps
+card, I get 100 Mbps connection auto-negotiated OK.
 
-What they are lacking is review so I am not sure how to proceed with
-the patches.
+I can however force gigabit link on both D-Link DGE-528T using
 
-                                 Pekka
+	insmod ./r8169.ko media=0x10
+
+command. And I get about 15 MiB/s transfer speed when testing
+with netcat and pmr[1] (without NAPI). Which I count as some kind of
+sucky gigabit connection.
+
+Few questions for you:
+
+Do anyone know if there some known bug in auto-negotiation with
+Realtek 8159 chip? (Or is that just wrong cable?)
+
+Can I force 1000 Mbps link on some other way than giving option to
+insmod? Using /proc or something?
+
+What kind of transfer speed you have reached with these cards? That
+15 MiB/s is not what I expected.
+
+Thanks!
+
+Best regards,
+Petri Koistinen
+
+[1]
+Test setup:
+Server: nc -l -p 2000 </dev/zero
+Client: nc 192.168.1.1 2000 | pmr >/dev/null
+
+pmr (ex. pipemeter) is a command line filter that measures
+bandwidth going through the pipe:
+http://zakalwe.fi/~shd/foss/pmr/pmr-0.12.tar.bz2
+
