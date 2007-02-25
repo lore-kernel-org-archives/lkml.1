@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964868AbXBYMsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964821AbXBYMwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964868AbXBYMsp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 07:48:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964872AbXBYMsp
+	id S964821AbXBYMwp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 07:52:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964872AbXBYMwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 07:48:45 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:35282 "EHLO smtp.osdl.org"
+	Sun, 25 Feb 2007 07:52:45 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:35417 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964871AbXBYMso (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 07:48:44 -0500
-Date: Sun, 25 Feb 2007 04:47:54 -0800
+	id S964821AbXBYMwo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 07:52:44 -0500
+Date: Sun, 25 Feb 2007 04:52:31 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: "J.J. Green" <j.j.green@sheffield.ac.uk>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: sparc64 / bbc_i2c.c
-Message-Id: <20070225044754.1d849a8d.akpm@linux-foundation.org>
-In-Reply-To: <1171978032.18442.11.camel@lax.shef.ac.uk>
-References: <1171978032.18442.11.camel@lax.shef.ac.uk>
+To: "Markus Rechberger" <markus.rechberger@amd.com>
+Cc: linux-kernel@vger.kernel.org,
+       Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: [PATCH] pcmcia/pccard deadlock fix
+Message-Id: <20070225045231.81682e06.akpm@linux-foundation.org>
+In-Reply-To: <45DB0EDB.3090803@amd.com>
+References: <45DB0EDB.3090803@amd.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -24,41 +25,38 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 20 Feb 2007 13:27:12 +0000 "J.J. Green" <j.j.green@sheffield.ac.uk> wrote:
-> Hi all
+> On Tue, 20 Feb 2007 16:08:11 +0100 "Markus Rechberger" <markus.rechberger@amd.com> wrote:
+> following patch prevents a mutex/semaphore deadlock within the pcmcia
+> framework when ejecting devices multiple times using pccardctl eject.
 > 
-> I got bitten by this problem on sparc64 (a blade 1000)
+> For some more details see:
+> http://lkml.org/lkml/2007/2/19/58
 > 
->   http://ubuntuforums.org/showthread.php?t=297474
->
-> summary :
-> 
->   modprobe bbc
-> 
-> runs kenvctrld which uses 100% of a CPU for 5 seconds,
-> then 0% for 5 seconds, then 100% .. and so on. The author
-> cited above suggests removing the line 
-> 
->   remove_wait_queue(&bp->wq, &wait);
-> 
-> in the function 
-> 
->   static int wait_for_pin(struct bbc_i2c_bus *bp, u8 *status)
-> 
-> Is there a better way?
-> 
-> I can test patches if that would be helpful.
-> 
+> --- a/drivers/pcmcia/cs.c
+> +++ b/drivers/pcmcia/cs.c
+> @@ -856,7 +856,8 @@ int pcmcia_eject_card(struct pcmcia_socket *skt)
+>      
+>  	cs_dbg(skt, 1, "user eject request\n");
+>  
+> -	mutex_lock(&skt->skt_mutex);
+> +	if (!mutex_trylock(&skt->skt_mutex)) 
+> +		return -EAGAIN;
+>  	do {
+>  		if (!(skt->state & SOCKET_PRESENT)) {
+>  			ret = -ENODEV;
+> index 18e111e..b9d3440 100644
+> --- a/drivers/pcmcia/ds.c
+> +++ b/drivers/pcmcia/ds.c
+> @@ -1100,7 +1100,9 @@ static ssize_t pcmcia_store_allow_func_id_match(struct device *dev,
+>  	if (!count)
+>  		return -EINVAL;
+>  
+> -	mutex_lock(&p_dev->socket->skt_mutex);
+> +	if (!mutex_trylock(&p_dev->socket->skt_mutex)) 
+> +		return -EAGAIN;
+> +
+>  	p_dev->allow_func_id_match = 1;
+>  	mutex_unlock(&p_dev->socket->skt_mutex);
 
-The code around there looks relatively unbuggy to me.  Removing that
-remove_wait_queue() would be very bad - it would cause later stack
-corruption.
-
-msleep_interruptible() certainly shouldn't consume CPU like that.  Do we
-know where the CPU time is being spent?  The output of:
-
-readprofile -r
-sleep 10
-readprofile -n -v -m /boot/System.map | sort -n -k 3 | tail -40
-
-would tell us.
+That looks rather hacky.  I'll queue it up to bug Dominik with, but
+hopeully we'll come up with some fix which avoids the trylocks.
