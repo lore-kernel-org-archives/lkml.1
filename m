@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932310AbXBYUDA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932322AbXBYUGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932310AbXBYUDA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 15:03:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932322AbXBYUDA
+	id S932322AbXBYUGY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 15:06:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932684AbXBYUGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 15:03:00 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:14394 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932310AbXBYUC7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 15:02:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=Tr0gvxq6vJBvWJEXMEGGid4w9W2CHNgqqyVF3jtgocEGp7R7ZxrZRFi92WSIF4rmCjnEQ09OfqTVmJygLBocgkuOnkJ3oYXEMG+l5bZ8ZDPKa0hIbt9rB/XK6QIXkSCEyqlFjPpav7T+MYPtzwrbVVRpTkJRgf6fAhtR/S/Xpsk=
-Date: Sun, 25 Feb 2007 20:01:39 +0000
-From: Frederik Deweerdt <deweerdt@free.fr>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070225200139.GB31486@slug>
-References: <20070221211355.GA7302@elte.hu> <20070224183421.GA6835@2ka.mipt.ru> <20070225172337.GB4998@elte.hu> <20070225174438.GA13647@2ka.mipt.ru> <20070225175437.GA9480@elte.hu> <20070225182135.GB29821@2ka.mipt.ru> <20070225182230.GA3622@elte.hu> <20070225183743.GD29821@2ka.mipt.ru> <20070225183438.GA6460@elte.hu>
-MIME-Version: 1.0
+	Sun, 25 Feb 2007 15:06:24 -0500
+Received: from mail.screens.ru ([213.234.233.54]:36233 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932322AbXBYUGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 15:06:23 -0500
+Date: Sun, 25 Feb 2007 23:06:21 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Hugh Dickins <hugh@veritas.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] adapt page_lock_anon_vma() to PREEMPT_RCU
+Message-ID: <20070225200621.GA2259@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070225183438.GA6460@elte.hu>
-User-Agent: mutt-ng/devel-r804 (Linux)
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 25, 2007 at 07:34:38PM +0100, Ingo Molnar wrote:
-> 
-> * Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
-> 
-> > > thx - i guess i should just run them without any options and they 
-> > > bind themselves to port 80? What 'ab' options are you using 
-> > > typically to measure them?
-> > 
-> > Yes, but they require /tmp/index.html to have http header and actual 
-> > data page. They do not parse http request :)
-> 
-> ok. When i connect to the epoll server via "telnet mysever 80", and 
-> enter a 'request', i get back the content - but the socket connection is 
-> not closed. Every time i type enter i get a new content back. Why is 
-> that so - the code seems to contain a close(fd).
-> 
-I'd say a close(s); is missing just before return 0; in
-evtest_callback_client() ?
+page_lock_anon_vma() uses spin_lock() to block RCU. This doesn't work with
+PREEMPT_RCU, we have to do rcu_read_lock() explicitely. Otherwise, it is
+theoretically possible that slab returns anon_vma's memory to the system
+before we do spin_unlock(&anon_vma->lock).
 
-Regards,
-Frederik
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+
+--- WQ/mm/rmap.c~	2007-02-18 22:56:49.000000000 +0300
++++ WQ/mm/rmap.c	2007-02-25 22:43:00.000000000 +0300
+@@ -183,7 +183,7 @@ void __init anon_vma_init(void)
+  */
+ static struct anon_vma *page_lock_anon_vma(struct page *page)
+ {
+-	struct anon_vma *anon_vma = NULL;
++	struct anon_vma *anon_vma;
+ 	unsigned long anon_mapping;
+ 
+ 	rcu_read_lock();
+@@ -195,9 +195,16 @@ static struct anon_vma *page_lock_anon_v
+ 
+ 	anon_vma = (struct anon_vma *) (anon_mapping - PAGE_MAPPING_ANON);
+ 	spin_lock(&anon_vma->lock);
++	return anon_vma;
+ out:
+ 	rcu_read_unlock();
+-	return anon_vma;
++	return NULL;
++}
++
++static void page_unlock_anon_vma(struct anon_vma *anon_vma)
++{
++	spin_unlock(&anon_vma->lock);
++	rcu_read_unlock();
+ }
+ 
+ /*
+@@ -333,7 +340,8 @@ static int page_referenced_anon(struct p
+ 		if (!mapcount)
+ 			break;
+ 	}
+-	spin_unlock(&anon_vma->lock);
++
++	page_unlock_anon_vma(anon_vma);
+ 	return referenced;
+ }
+ 
+@@ -809,7 +817,8 @@ static int try_to_unmap_anon(struct page
+ 				!page_mapped(page))
+ 			break;
+ 	}
+-	spin_unlock(&anon_vma->lock);
++
++	page_unlock_anon_vma(anon_vma);
+ 	return ret;
+ }
+ 
+
