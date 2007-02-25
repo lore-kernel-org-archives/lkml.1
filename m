@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933666AbXBYFvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933665AbXBYFzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933666AbXBYFvm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 00:51:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933668AbXBYFvm
+	id S933665AbXBYFzY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 00:55:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933669AbXBYFzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 00:51:42 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:48705 "EHLO
+	Sun, 25 Feb 2007 00:55:24 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60500 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933666AbXBYFvl (ORCPT
+	with ESMTP id S933665AbXBYFzX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 00:51:41 -0500
-Date: Sun, 25 Feb 2007 05:51:39 +0000
+	Sun, 25 Feb 2007 00:55:23 -0500
+Date: Sun, 25 Feb 2007 05:55:22 +0000
 From: Christoph Hellwig <hch@infradead.org>
 To: Artem Bityutskiy <dedekind@infradead.org>
-Cc: Theodore Tso <tytso@mit.edu>,
+Cc: Christoph Hellwig <hch@infradead.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>,
        Frank Haverkamp <haver@vnet.ibm.com>,
        Thomas Gleixner <tglx@linutronix.de>,
        David Woodhouse <dwmw2@infradead.org>,
        Josh Boyer <jwboyer@linux.vnet.ibm.com>
 Subject: Re: [PATCH 00/44 take 2] [UBI] Unsorted Block Images
-Message-ID: <20070225055139.GA9137@infradead.org>
+Message-ID: <20070225055522.GB9137@infradead.org>
 Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
 	Artem Bityutskiy <dedekind@infradead.org>,
-	Theodore Tso <tytso@mit.edu>,
 	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
 	Frank Haverkamp <haver@vnet.ibm.com>,
 	Thomas Gleixner <tglx@linutronix.de>,
 	David Woodhouse <dwmw2@infradead.org>,
 	Josh Boyer <jwboyer@linux.vnet.ibm.com>
-References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain> <20070217224952.GB16522@thunk.org> <1171889303.13817.29.camel@sauron> <20070219143321.GE25490@thunk.org> <1171904866.14817.36.camel@sauron>
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain> <20070219105009.GA15792@infradead.org> <1171907056.14817.70.camel@sauron>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1171904866.14817.36.camel@sauron>
+In-Reply-To: <1171907056.14817.70.camel@sauron>
 User-Agent: Mutt/1.4.2.2i
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 19, 2007 at 07:07:46PM +0200, Artem Bityutskiy wrote:
-> > And when you create that many interfaces, it adds inertia to changing
-> > the interfaces later on, because it's sometimes not clear how many
-> > users of the interface there really are.  My general rule of thumb is
-> > that if an interface only has one user, then it may be a good idea to
-> > combine it with the user of that interface, and then make the
-> > functions involved be a static, so that it becomes clear the only user
-> > of that functoin is within that one file.  You can take this too far,
-> > and to extremes it doesn't work all that well, but the UBI layer has
-> > gone waaaaaay off the deep end in terms of functional decomposition.
+On Mon, Feb 19, 2007 at 07:44:16PM +0200, Artem Bityutskiy wrote:
+> On Mon, 2007-02-19 at 10:50 +0000, Christoph Hellwig wrote:
+> > I think this is the wrong approach.  For one thing the unit terms is
+> > rather foregin in Linux
 > 
-> Well... I do not want any flame on this topic. It is about taste,
-> trade-offs, compromises. It is difficult to provide _objective_ and
-> killing arguments here. But I will think on this, point taken, thanks.
+> I would rather disagree. Subjective. Unit is a generic word, just like
+> subsystem. Unit-tests for example is a widespread word it refer to
+> internal units of a big system.
 
-Codingstyle is and always will be about tastes, but it usually helps a lot
-if you try to understand and follow the style of the project you want
-to contribute to :)
+What I meant is that we currently do not use the 'unit' term for code
+modules in the linux kernel at all.  
+
+> Please, refine what does this exactly mean. I do not see how I should
+> have sent it, sorry. OK, I've separated external headers, JFFS2 support,
+> build stuff. What next?
+
+You should not separate more but less.  Generelly the review-"unit"
+should be a functionally separate kenrel module, not microscopic pieces
+of it.  Unfortunately there are mailinglist limitations why we sometimes
+have to split things up a little further, but it's usually really hard
+to do useful splits at this boundary.
+
