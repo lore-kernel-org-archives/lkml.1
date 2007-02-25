@@ -1,101 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932287AbXBYTyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932310AbXBYUDA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932287AbXBYTyr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 14:54:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932293AbXBYTyr
+	id S932310AbXBYUDA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 15:03:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932322AbXBYUDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 14:54:47 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:40243 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932287AbXBYTyq (ORCPT
+	Sun, 25 Feb 2007 15:03:00 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:14394 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932310AbXBYUC7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 14:54:46 -0500
-Date: Sun, 25 Feb 2007 20:54:31 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: stable@kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Stefan Seyfried <seife@suse.de>
-Subject: Re: [PATCH] swsusp: Fix possible oops in userland interface
-Message-ID: <20070225195431.GD1746@elf.ucw.cz>
-References: <200702242306.44445.rjw@sisk.pl>
+	Sun, 25 Feb 2007 15:02:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=Tr0gvxq6vJBvWJEXMEGGid4w9W2CHNgqqyVF3jtgocEGp7R7ZxrZRFi92WSIF4rmCjnEQ09OfqTVmJygLBocgkuOnkJ3oYXEMG+l5bZ8ZDPKa0hIbt9rB/XK6QIXkSCEyqlFjPpav7T+MYPtzwrbVVRpTkJRgf6fAhtR/S/Xpsk=
+Date: Sun, 25 Feb 2007 20:01:39 +0000
+From: Frederik Deweerdt <deweerdt@free.fr>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070225200139.GB31486@slug>
+References: <20070221211355.GA7302@elte.hu> <20070224183421.GA6835@2ka.mipt.ru> <20070225172337.GB4998@elte.hu> <20070225174438.GA13647@2ka.mipt.ru> <20070225175437.GA9480@elte.hu> <20070225182135.GB29821@2ka.mipt.ru> <20070225182230.GA3622@elte.hu> <20070225183743.GD29821@2ka.mipt.ru> <20070225183438.GA6460@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200702242306.44445.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <20070225183438.GA6460@elte.hu>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sun, Feb 25, 2007 at 07:34:38PM +0100, Ingo Molnar wrote:
+> 
+> * Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+> 
+> > > thx - i guess i should just run them without any options and they 
+> > > bind themselves to port 80? What 'ab' options are you using 
+> > > typically to measure them?
+> > 
+> > Yes, but they require /tmp/index.html to have http header and actual 
+> > data page. They do not parse http request :)
+> 
+> ok. When i connect to the epoll server via "telnet mysever 80", and 
+> enter a 'request', i get back the content - but the socket connection is 
+> not closed. Every time i type enter i get a new content back. Why is 
+> that so - the code seems to contain a close(fd).
+> 
+I'd say a close(s); is missing just before return 0; in
+evtest_callback_client() ?
 
-> From: Stefan Seyfried <seife@suse.de>
-> 
-> Fix the Oops occuring when SNAPSHOT_PMOPS or SNAPSHOT_S2RAM ioctl is called on
-> a system without pm_ops defined (eg. a non-ACPI kernel on x86 PC).
-> 
-> Signed-off-by: Stefan Seyfried <seife@suse.de>
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-
-ACK.
-									Pavel
-> ---
-> 
->  user.c |   19 ++++++++++++-------
->  1 file changed, 12 insertions(+), 7 deletions(-)
-> 
-> --- a/kernel/power/user.c	2007-02-01 01:07:38.000000000 +0100
-> +++ b/kernel/power/user.c	2007-02-01 22:25:48.000000000 +0100
-> @@ -292,7 +292,7 @@ static int snapshot_ioctl(struct inode *
->  			break;
->  		}
->  
-> -		if (pm_ops->prepare) {
-> +		if (pm_ops && pm_ops->prepare) {
->  			error = pm_ops->prepare(PM_SUSPEND_MEM);
->  			if (error)
->  				goto OutS3;
-> @@ -311,7 +311,7 @@ static int snapshot_ioctl(struct inode *
->  			device_resume();
->  		}
->  		resume_console();
-> -		if (pm_ops->finish)
-> +		if (pm_ops && pm_ops->finish)
->  			pm_ops->finish(PM_SUSPEND_MEM);
->  
->   OutS3:
-> @@ -322,20 +322,25 @@ static int snapshot_ioctl(struct inode *
->  		switch (arg) {
->  
->  		case PMOPS_PREPARE:
-> -			if (pm_ops->prepare) {
-> +			if (pm_ops && pm_ops->prepare)
->  				error = pm_ops->prepare(PM_SUSPEND_DISK);
-> -			}
-> +			else
-> +				error = -ENOSYS;
->  			break;
->  
->  		case PMOPS_ENTER:
->  			kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
-> -			error = pm_ops->enter(PM_SUSPEND_DISK);
-> +			if (pm_ops && pm_ops->enter)
-> +				error = pm_ops->enter(PM_SUSPEND_DISK);
-> +			else
-> +				error = -ENOSYS;
->  			break;
->  
->  		case PMOPS_FINISH:
-> -			if (pm_ops && pm_ops->finish) {
-> +			if (pm_ops && pm_ops->finish)
->  				pm_ops->finish(PM_SUSPEND_DISK);
-> -			}
-> +			else
-> +				error = -ENOSYS;
->  			break;
->  
->  		default:
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Regards,
+Frederik
