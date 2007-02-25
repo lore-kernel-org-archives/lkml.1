@@ -1,1279 +1,388 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752314AbXBYFCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752317AbXBYFNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752314AbXBYFCO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 00:02:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbXBYFCO
+	id S1752317AbXBYFNw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 00:13:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbXBYFNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 00:02:14 -0500
-Received: from pool-71-111-73-6.ptldor.dsl-w.verizon.net ([71.111.73.6]:4453
-	"EHLO IBM-8EC8B5596CA.beaverton.ibm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752311AbXBYFCL (ORCPT
+	Sun, 25 Feb 2007 00:13:52 -0500
+Received: from nz-out-0506.google.com ([64.233.162.226]:3440 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752317AbXBYFNv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 00:02:11 -0500
-Date: Sat, 24 Feb 2007 21:02:12 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: mingo@elte.hu, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: BUG in 2.6.20-rt8
-Message-ID: <20070225050212.GA17258@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	Sun, 25 Feb 2007 00:13:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:cc:date:message-id:subject;
+        b=O30fsk3gKtjKs45b3u8PGVGqR/dNpvN0+pfLlnrwIycxBl9WAkQNdXdkVGfkVGCifZ9czUTE64yr0j27hbUval8Cauu3NkWIbflb+FlkGseWFmcWsT4367t8R1DCR2QiXJeXs70/qkF7GZTshgqYXTu4T6fzTF3R3TCA3qE/gGo=
+From: Jaya Kumar <jayakumar.lkml@gmail.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Date: Sun, 25 Feb 2007 06:13:12 +0100
+Message-Id: <20070225051312.17454.80741.sendpatchset@localhost>
+Subject: [PATCH/RFC 2.6.20 1/2] fbdev, mm: Deferred IO support
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
 
-I got the following running stock 2.6.20-rt8 on an 4-CPU 1.8GHz Opteron
-box.  The machine continued to run a few rounds of kernbench and LTP.
-Looks a bit scary -- a tasklet was "stolen" from __tasklet_action().
-
-Thoughts?  In the meantime, kicking it off again to see if it repeats.
-
-						Thanx, Paul
-
-BUG: at kernel/softirq.c:559 __tasklet_action()
-
-Call Trace:
- [<ffffffff8022ec1b>] __tasklet_action+0xdb/0x120
- [<ffffffff8022ee12>] ksoftirqd+0xf3/0x179
- [<ffffffff8022ed1f>] ksoftirqd+0x0/0x179
- [<ffffffff8023be23>] kthread+0xc8/0xf1
- [<ffffffff8020a708>] child_rip+0xa/0x12
- [<ffffffff8023bf27>] kthread_create+0x6e/0x159
- [<ffffffff8023bd5b>] kthread+0x0/0xf1
- [<ffffffff8020a6fe>] child_rip+0x0/0x12
-
----------------------------
-| preempt count: 00000000 ]
-| 0-level deep critical section nesting:
-----------------------------------------
-
-Config:
-
-#
-# Automatically generated make config: don't edit
-# Linux kernel version: 2.6.20-rt8-autokern1
-# Sat Feb 24 17:05:11 2007
-#
-CONFIG_X86_64=y
-CONFIG_64BIT=y
-CONFIG_X86=y
-CONFIG_GENERIC_TIME=y
-CONFIG_GENERIC_CLOCKEVENTS=y
-CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
-CONFIG_GENERIC_TIME_VSYSCALL=y
-CONFIG_ZONE_DMA32=y
-CONFIG_LOCKDEP_SUPPORT=y
-CONFIG_STACKTRACE_SUPPORT=y
-CONFIG_SEMAPHORE_SLEEPERS=y
-CONFIG_MMU=y
-CONFIG_GENERIC_HWEIGHT=y
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_X86_CMPXCHG=y
-CONFIG_EARLY_PRINTK=y
-CONFIG_GENERIC_ISA_DMA=y
-CONFIG_GENERIC_IOMAP=y
-CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-CONFIG_ARCH_POPULATES_NODE_MAP=y
-CONFIG_DMI=y
-CONFIG_AUDIT_ARCH=y
-CONFIG_GENERIC_BUG=y
-# CONFIG_ARCH_HAS_ILOG2_U32 is not set
-# CONFIG_ARCH_HAS_ILOG2_U64 is not set
-CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-
-#
-# Code maturity level options
-#
-CONFIG_EXPERIMENTAL=y
-CONFIG_LOCK_KERNEL=y
-CONFIG_INIT_ENV_ARG_LIMIT=32
-
-#
-# General setup
-#
-CONFIG_LOCALVERSION=""
-CONFIG_LOCALVERSION_AUTO=y
-CONFIG_SWAP=y
-CONFIG_SYSVIPC=y
-# CONFIG_IPC_NS is not set
-# CONFIG_POSIX_MQUEUE is not set
-# CONFIG_BSD_PROCESS_ACCT is not set
-# CONFIG_TASKSTATS is not set
-# CONFIG_UTS_NS is not set
-# CONFIG_AUDIT is not set
-# CONFIG_IKCONFIG is not set
-# CONFIG_CPUSETS is not set
-CONFIG_SYSFS_DEPRECATED=y
-# CONFIG_RELAY is not set
-CONFIG_INITRAMFS_SOURCE=""
-CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-CONFIG_SYSCTL=y
-# CONFIG_EMBEDDED is not set
-CONFIG_UID16=y
-CONFIG_SYSCTL_SYSCALL=y
-CONFIG_KALLSYMS=y
-# CONFIG_KALLSYMS_ALL is not set
-# CONFIG_KALLSYMS_EXTRA_PASS is not set
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-CONFIG_BUG=y
-CONFIG_ELF_CORE=y
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-CONFIG_EPOLL=y
-CONFIG_SHMEM=y
-CONFIG_SLAB=y
-CONFIG_VM_EVENT_COUNTERS=y
-CONFIG_RT_MUTEXES=y
-# CONFIG_TINY_SHMEM is not set
-CONFIG_BASE_SMALL=0
-# CONFIG_SLOB is not set
-
-#
-# Loadable module support
-#
-CONFIG_MODULES=y
-CONFIG_MODULE_UNLOAD=y
-CONFIG_MODULE_FORCE_UNLOAD=y
-# CONFIG_MODVERSIONS is not set
-# CONFIG_MODULE_SRCVERSION_ALL is not set
-# CONFIG_KMOD is not set
-CONFIG_STOP_MACHINE=y
-
-#
-# Block layer
-#
-CONFIG_BLOCK=y
-# CONFIG_BLK_DEV_IO_TRACE is not set
-
-#
-# IO Schedulers
-#
-CONFIG_IOSCHED_NOOP=y
-CONFIG_IOSCHED_AS=y
-CONFIG_IOSCHED_DEADLINE=y
-CONFIG_IOSCHED_CFQ=y
-# CONFIG_DEFAULT_AS is not set
-# CONFIG_DEFAULT_DEADLINE is not set
-CONFIG_DEFAULT_CFQ=y
-# CONFIG_DEFAULT_NOOP is not set
-CONFIG_DEFAULT_IOSCHED="cfq"
-
-#
-# Processor type and features
-#
-CONFIG_X86_PC=y
-# CONFIG_X86_VSMP is not set
-CONFIG_MK8=y
-# CONFIG_MPSC is not set
-# CONFIG_MCORE2 is not set
-# CONFIG_GENERIC_CPU is not set
-CONFIG_X86_L1_CACHE_BYTES=64
-CONFIG_X86_L1_CACHE_SHIFT=6
-CONFIG_X86_INTERNODE_CACHE_BYTES=64
-CONFIG_X86_TSC=y
-CONFIG_X86_GOOD_APIC=y
-# CONFIG_MICROCODE is not set
-CONFIG_X86_MSR=y
-CONFIG_X86_CPUID=y
-CONFIG_X86_IO_APIC=y
-CONFIG_X86_LOCAL_APIC=y
-CONFIG_MTRR=y
-CONFIG_SMP=y
-# CONFIG_SCHED_SMT is not set
-CONFIG_SCHED_MC=y
-# CONFIG_TICK_ONESHOT is not set
-# CONFIG_NO_HZ is not set
-# CONFIG_HIGH_RES_TIMERS is not set
-# CONFIG_PREEMPT_NONE is not set
-# CONFIG_PREEMPT_VOLUNTARY is not set
-# CONFIG_PREEMPT_DESKTOP is not set
-CONFIG_PREEMPT_RT=y
-CONFIG_PREEMPT=y
-CONFIG_PREEMPT_SOFTIRQS=y
-CONFIG_PREEMPT_HARDIRQS=y
-CONFIG_PREEMPT_BKL=y
-# CONFIG_CLASSIC_RCU is not set
-CONFIG_PREEMPT_RCU=y
-# CONFIG_RCU_TRACE is not set
-CONFIG_NUMA=y
-CONFIG_RWSEM_GENERIC_SPINLOCK=y
-CONFIG_K8_NUMA=y
-CONFIG_NODES_SHIFT=6
-CONFIG_X86_64_ACPI_NUMA=y
-# CONFIG_NUMA_EMU is not set
-CONFIG_ARCH_DISCONTIGMEM_ENABLE=y
-CONFIG_ARCH_DISCONTIGMEM_DEFAULT=y
-CONFIG_ARCH_SPARSEMEM_ENABLE=y
-CONFIG_SELECT_MEMORY_MODEL=y
-# CONFIG_FLATMEM_MANUAL is not set
-CONFIG_DISCONTIGMEM_MANUAL=y
-# CONFIG_SPARSEMEM_MANUAL is not set
-CONFIG_DISCONTIGMEM=y
-CONFIG_FLAT_NODE_MEM_MAP=y
-CONFIG_NEED_MULTIPLE_NODES=y
-# CONFIG_SPARSEMEM_STATIC is not set
-# CONFIG_MEMORY_HOTPLUG is not set
-CONFIG_SPLIT_PTLOCK_CPUS=4
-CONFIG_MIGRATION=y
-CONFIG_RESOURCES_64BIT=y
-CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID=y
-CONFIG_OUT_OF_LINE_PFN_TO_PAGE=y
-CONFIG_NR_CPUS=8
-# CONFIG_HOTPLUG_CPU is not set
-CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-CONFIG_HPET_TIMER=y
-# CONFIG_HPET_EMULATE_RTC is not set
-CONFIG_IOMMU=y
-# CONFIG_CALGARY_IOMMU is not set
-CONFIG_SWIOTLB=y
-CONFIG_X86_MCE=y
-CONFIG_X86_MCE_INTEL=y
-CONFIG_X86_MCE_AMD=y
-# CONFIG_KEXEC is not set
-# CONFIG_CRASH_DUMP is not set
-CONFIG_PHYSICAL_START=0x200000
-CONFIG_SECCOMP=y
-# CONFIG_CC_STACKPROTECTOR is not set
-# CONFIG_HZ_100 is not set
-CONFIG_HZ_250=y
-# CONFIG_HZ_300 is not set
-# CONFIG_HZ_1000 is not set
-CONFIG_HZ=250
-# CONFIG_REORDER is not set
-CONFIG_K8_NB=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_GENERIC_IRQ_PROBE=y
-CONFIG_ISA_DMA_API=y
-CONFIG_GENERIC_PENDING_IRQ=y
-
-#
-# Power management options
-#
-CONFIG_PM=y
-# CONFIG_PM_LEGACY is not set
-# CONFIG_PM_DEBUG is not set
-# CONFIG_PM_SYSFS_DEPRECATED is not set
-
-#
-# ACPI (Advanced Configuration and Power Interface) Support
-#
-CONFIG_ACPI=y
-CONFIG_ACPI_AC=y
-CONFIG_ACPI_BATTERY=y
-CONFIG_ACPI_BUTTON=y
-CONFIG_ACPI_VIDEO=m
-# CONFIG_ACPI_HOTKEY is not set
-CONFIG_ACPI_FAN=y
-# CONFIG_ACPI_DOCK is not set
-CONFIG_ACPI_PROCESSOR=y
-CONFIG_ACPI_THERMAL=y
-CONFIG_ACPI_NUMA=y
-# CONFIG_ACPI_ASUS is not set
-CONFIG_ACPI_IBM=m
-# CONFIG_ACPI_IBM_DOCK is not set
-CONFIG_ACPI_TOSHIBA=y
-CONFIG_ACPI_BLACKLIST_YEAR=0
-CONFIG_ACPI_DEBUG=y
-CONFIG_ACPI_EC=y
-CONFIG_ACPI_POWER=y
-CONFIG_ACPI_SYSTEM=y
-CONFIG_X86_PM_TIMER=y
-# CONFIG_ACPI_CONTAINER is not set
-
-#
-# CPU Frequency scaling
-#
-# CONFIG_CPU_FREQ is not set
-
-#
-# Bus options (PCI etc.)
-#
-CONFIG_PCI=y
-CONFIG_PCI_DIRECT=y
-# CONFIG_PCI_MMCONFIG is not set
-# CONFIG_PCIEPORTBUS is not set
-# CONFIG_PCI_MSI is not set
-# CONFIG_PCI_DEBUG is not set
-CONFIG_HT_IRQ=y
-
-#
-# PCCARD (PCMCIA/CardBus) support
-#
-# CONFIG_PCCARD is not set
-
-#
-# PCI Hotplug Support
-#
-# CONFIG_HOTPLUG_PCI is not set
-
-#
-# Executable file formats / Emulations
-#
-CONFIG_BINFMT_ELF=y
-# CONFIG_BINFMT_MISC is not set
-CONFIG_IA32_EMULATION=y
-# CONFIG_IA32_AOUT is not set
-CONFIG_COMPAT=y
-CONFIG_SYSVIPC_COMPAT=y
-
-#
-# Networking
-#
-CONFIG_NET=y
-
-#
-# Networking options
-#
-# CONFIG_NETDEBUG is not set
-CONFIG_PACKET=y
-# CONFIG_PACKET_MMAP is not set
-CONFIG_UNIX=y
-CONFIG_XFRM=y
-# CONFIG_XFRM_USER is not set
-# CONFIG_XFRM_SUB_POLICY is not set
-# CONFIG_NET_KEY is not set
-CONFIG_INET=y
-CONFIG_IP_MULTICAST=y
-# CONFIG_IP_ADVANCED_ROUTER is not set
-CONFIG_IP_FIB_HASH=y
-# CONFIG_IP_PNP is not set
-# CONFIG_NET_IPIP is not set
-# CONFIG_NET_IPGRE is not set
-# CONFIG_IP_MROUTE is not set
-# CONFIG_ARPD is not set
-# CONFIG_SYN_COOKIES is not set
-# CONFIG_INET_AH is not set
-# CONFIG_INET_ESP is not set
-# CONFIG_INET_IPCOMP is not set
-# CONFIG_INET_XFRM_TUNNEL is not set
-# CONFIG_INET_TUNNEL is not set
-CONFIG_INET_XFRM_MODE_TRANSPORT=y
-CONFIG_INET_XFRM_MODE_TUNNEL=y
-CONFIG_INET_XFRM_MODE_BEET=y
-CONFIG_INET_DIAG=y
-CONFIG_INET_TCP_DIAG=y
-# CONFIG_TCP_CONG_ADVANCED is not set
-CONFIG_TCP_CONG_CUBIC=y
-CONFIG_DEFAULT_TCP_CONG="cubic"
-# CONFIG_TCP_MD5SIG is not set
-# CONFIG_IPV6 is not set
-# CONFIG_INET6_XFRM_TUNNEL is not set
-# CONFIG_INET6_TUNNEL is not set
-# CONFIG_NETWORK_SECMARK is not set
-# CONFIG_NETFILTER is not set
-
-#
-# DCCP Configuration (EXPERIMENTAL)
-#
-# CONFIG_IP_DCCP is not set
-
-#
-# SCTP Configuration (EXPERIMENTAL)
-#
-# CONFIG_IP_SCTP is not set
-
-#
-# TIPC Configuration (EXPERIMENTAL)
-#
-# CONFIG_TIPC is not set
-# CONFIG_ATM is not set
-# CONFIG_BRIDGE is not set
-# CONFIG_VLAN_8021Q is not set
-# CONFIG_DECNET is not set
-# CONFIG_LLC2 is not set
-# CONFIG_IPX is not set
-# CONFIG_ATALK is not set
-# CONFIG_X25 is not set
-# CONFIG_LAPB is not set
-# CONFIG_ECONET is not set
-# CONFIG_WAN_ROUTER is not set
-
-#
-# QoS and/or fair queueing
-#
-# CONFIG_NET_SCHED is not set
-
-#
-# Network testing
-#
-# CONFIG_NET_PKTGEN is not set
-# CONFIG_HAMRADIO is not set
-# CONFIG_IRDA is not set
-# CONFIG_BT is not set
-# CONFIG_IEEE80211 is not set
-
-#
-# Device Drivers
-#
-
-#
-# Generic Driver Options
-#
-CONFIG_STANDALONE=y
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-# CONFIG_FW_LOADER is not set
-# CONFIG_DEBUG_DRIVER is not set
-# CONFIG_SYS_HYPERVISOR is not set
-
-#
-# Connector - unified userspace <-> kernelspace linker
-#
-# CONFIG_CONNECTOR is not set
-
-#
-# Memory Technology Devices (MTD)
-#
-# CONFIG_MTD is not set
-
-#
-# Parallel port support
-#
-# CONFIG_PARPORT is not set
-
-#
-# Plug and Play support
-#
-# CONFIG_PNP is not set
-
-#
-# Block devices
-#
-# CONFIG_BLK_DEV_FD is not set
-# CONFIG_BLK_CPQ_DA is not set
-# CONFIG_BLK_CPQ_CISS_DA is not set
-# CONFIG_BLK_DEV_DAC960 is not set
-# CONFIG_BLK_DEV_UMEM is not set
-# CONFIG_BLK_DEV_COW_COMMON is not set
-CONFIG_BLK_DEV_LOOP=y
-# CONFIG_BLK_DEV_CRYPTOLOOP is not set
-# CONFIG_BLK_DEV_NBD is not set
-# CONFIG_BLK_DEV_SX8 is not set
-CONFIG_BLK_DEV_RAM=y
-CONFIG_BLK_DEV_RAM_COUNT=16
-CONFIG_BLK_DEV_RAM_SIZE=4096
-CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
-CONFIG_BLK_DEV_INITRD=y
-# CONFIG_CDROM_PKTCDVD is not set
-# CONFIG_ATA_OVER_ETH is not set
-
-#
-# Misc devices
-#
-# CONFIG_IBM_ASM is not set
-# CONFIG_SGI_IOC4 is not set
-# CONFIG_TIFM_CORE is not set
-# CONFIG_MSI_LAPTOP is not set
-
-#
-# ATA/ATAPI/MFM/RLL support
-#
-CONFIG_IDE=y
-CONFIG_BLK_DEV_IDE=y
-
-#
-# Please see Documentation/ide.txt for help/info on IDE drives
-#
-# CONFIG_BLK_DEV_IDE_SATA is not set
-# CONFIG_BLK_DEV_HD_IDE is not set
-CONFIG_BLK_DEV_IDEDISK=y
-CONFIG_IDEDISK_MULTI_MODE=y
-CONFIG_BLK_DEV_IDECD=y
-# CONFIG_BLK_DEV_IDETAPE is not set
-# CONFIG_BLK_DEV_IDEFLOPPY is not set
-# CONFIG_BLK_DEV_IDESCSI is not set
-# CONFIG_IDE_TASK_IOCTL is not set
-
-#
-# IDE chipset support/bugfixes
-#
-CONFIG_IDE_GENERIC=y
-# CONFIG_BLK_DEV_CMD640 is not set
-CONFIG_BLK_DEV_IDEPCI=y
-# CONFIG_IDEPCI_SHARE_IRQ is not set
-# CONFIG_BLK_DEV_OFFBOARD is not set
-# CONFIG_BLK_DEV_GENERIC is not set
-# CONFIG_BLK_DEV_OPTI621 is not set
-# CONFIG_BLK_DEV_RZ1000 is not set
-CONFIG_BLK_DEV_IDEDMA_PCI=y
-# CONFIG_BLK_DEV_IDEDMA_FORCED is not set
-CONFIG_IDEDMA_PCI_AUTO=y
-# CONFIG_IDEDMA_ONLYDISK is not set
-# CONFIG_BLK_DEV_AEC62XX is not set
-# CONFIG_BLK_DEV_ALI15X3 is not set
-CONFIG_BLK_DEV_AMD74XX=y
-# CONFIG_BLK_DEV_ATIIXP is not set
-# CONFIG_BLK_DEV_CMD64X is not set
-# CONFIG_BLK_DEV_TRIFLEX is not set
-# CONFIG_BLK_DEV_CY82C693 is not set
-# CONFIG_BLK_DEV_CS5520 is not set
-# CONFIG_BLK_DEV_CS5530 is not set
-# CONFIG_BLK_DEV_HPT34X is not set
-# CONFIG_BLK_DEV_HPT366 is not set
-# CONFIG_BLK_DEV_JMICRON is not set
-# CONFIG_BLK_DEV_SC1200 is not set
-# CONFIG_BLK_DEV_PIIX is not set
-# CONFIG_BLK_DEV_IT821X is not set
-# CONFIG_BLK_DEV_NS87415 is not set
-# CONFIG_BLK_DEV_PDC202XX_OLD is not set
-# CONFIG_BLK_DEV_PDC202XX_NEW is not set
-# CONFIG_BLK_DEV_SVWKS is not set
-# CONFIG_BLK_DEV_SIIMAGE is not set
-# CONFIG_BLK_DEV_SIS5513 is not set
-# CONFIG_BLK_DEV_SLC90E66 is not set
-# CONFIG_BLK_DEV_TRM290 is not set
-# CONFIG_BLK_DEV_VIA82CXXX is not set
-# CONFIG_IDE_ARM is not set
-CONFIG_BLK_DEV_IDEDMA=y
-# CONFIG_IDEDMA_IVB is not set
-CONFIG_IDEDMA_AUTO=y
-# CONFIG_BLK_DEV_HD is not set
-
-#
-# SCSI device support
-#
-# CONFIG_RAID_ATTRS is not set
-CONFIG_SCSI=y
-# CONFIG_SCSI_TGT is not set
-# CONFIG_SCSI_NETLINK is not set
-# CONFIG_SCSI_PROC_FS is not set
-
-#
-# SCSI support type (disk, tape, CD-ROM)
-#
-CONFIG_BLK_DEV_SD=y
-# CONFIG_CHR_DEV_ST is not set
-# CONFIG_CHR_DEV_OSST is not set
-# CONFIG_BLK_DEV_SR is not set
-# CONFIG_CHR_DEV_SG is not set
-# CONFIG_CHR_DEV_SCH is not set
-
-#
-# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
-#
-CONFIG_SCSI_MULTI_LUN=y
-# CONFIG_SCSI_CONSTANTS is not set
-CONFIG_SCSI_LOGGING=y
-# CONFIG_SCSI_SCAN_ASYNC is not set
-
-#
-# SCSI Transports
-#
-CONFIG_SCSI_SPI_ATTRS=y
-# CONFIG_SCSI_FC_ATTRS is not set
-# CONFIG_SCSI_ISCSI_ATTRS is not set
-# CONFIG_SCSI_SAS_ATTRS is not set
-# CONFIG_SCSI_SAS_LIBSAS is not set
-
-#
-# SCSI low-level drivers
-#
-# CONFIG_ISCSI_TCP is not set
-# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
-# CONFIG_SCSI_3W_9XXX is not set
-# CONFIG_SCSI_ACARD is not set
-# CONFIG_SCSI_AACRAID is not set
-# CONFIG_SCSI_AIC7XXX is not set
-# CONFIG_SCSI_AIC7XXX_OLD is not set
-# CONFIG_SCSI_AIC79XX is not set
-# CONFIG_SCSI_AIC94XX is not set
-# CONFIG_SCSI_ARCMSR is not set
-# CONFIG_MEGARAID_NEWGEN is not set
-# CONFIG_MEGARAID_LEGACY is not set
-# CONFIG_MEGARAID_SAS is not set
-# CONFIG_SCSI_HPTIOP is not set
-# CONFIG_SCSI_BUSLOGIC is not set
-# CONFIG_SCSI_DMX3191D is not set
-# CONFIG_SCSI_EATA is not set
-# CONFIG_SCSI_FUTURE_DOMAIN is not set
-# CONFIG_SCSI_GDTH is not set
-CONFIG_SCSI_IPS=m
-# CONFIG_SCSI_INITIO is not set
-# CONFIG_SCSI_INIA100 is not set
-# CONFIG_SCSI_STEX is not set
-# CONFIG_SCSI_SYM53C8XX_2 is not set
-# CONFIG_SCSI_QLOGIC_1280 is not set
-# CONFIG_SCSI_QLA_FC is not set
-# CONFIG_SCSI_QLA_ISCSI is not set
-# CONFIG_SCSI_LPFC is not set
-# CONFIG_SCSI_DC395x is not set
-# CONFIG_SCSI_DC390T is not set
-# CONFIG_SCSI_DEBUG is not set
-# CONFIG_SCSI_SRP is not set
-
-#
-# Serial ATA (prod) and Parallel ATA (experimental) drivers
-#
-# CONFIG_ATA is not set
-
-#
-# Multi-device support (RAID and LVM)
-#
-# CONFIG_MD is not set
-
-#
-# Fusion MPT device support
-#
-CONFIG_FUSION=y
-CONFIG_FUSION_SPI=y
-# CONFIG_FUSION_FC is not set
-# CONFIG_FUSION_SAS is not set
-CONFIG_FUSION_MAX_SGE=40
-# CONFIG_FUSION_CTL is not set
-
-#
-# IEEE 1394 (FireWire) support
-#
-# CONFIG_IEEE1394 is not set
-
-#
-# I2O device support
-#
-# CONFIG_I2O is not set
-
-#
-# Network device support
-#
-CONFIG_NETDEVICES=y
-# CONFIG_DUMMY is not set
-# CONFIG_BONDING is not set
-# CONFIG_EQUALIZER is not set
-# CONFIG_TUN is not set
-
-#
-# ARCnet devices
-#
-# CONFIG_ARCNET is not set
-
-#
-# PHY device support
-#
-# CONFIG_PHYLIB is not set
-
-#
-# Ethernet (10 or 100Mbit)
-#
-CONFIG_NET_ETHERNET=y
-CONFIG_MII=y
-# CONFIG_HAPPYMEAL is not set
-# CONFIG_SUNGEM is not set
-# CONFIG_CASSINI is not set
-# CONFIG_NET_VENDOR_3COM is not set
-
-#
-# Tulip family network device support
-#
-# CONFIG_NET_TULIP is not set
-# CONFIG_HP100 is not set
-CONFIG_NET_PCI=y
-# CONFIG_PCNET32 is not set
-CONFIG_AMD8111_ETH=y
-# CONFIG_AMD8111E_NAPI is not set
-# CONFIG_ADAPTEC_STARFIRE is not set
-# CONFIG_B44 is not set
-# CONFIG_FORCEDETH is not set
-# CONFIG_DGRS is not set
-# CONFIG_EEPRO100 is not set
-# CONFIG_E100 is not set
-# CONFIG_FEALNX is not set
-# CONFIG_NATSEMI is not set
-# CONFIG_NE2K_PCI is not set
-CONFIG_8139CP=m
-CONFIG_8139TOO=m
-# CONFIG_8139TOO_PIO is not set
-# CONFIG_8139TOO_TUNE_TWISTER is not set
-# CONFIG_8139TOO_8129 is not set
-# CONFIG_8139_OLD_RX_RESET is not set
-# CONFIG_SIS900 is not set
-# CONFIG_EPIC100 is not set
-# CONFIG_SUNDANCE is not set
-# CONFIG_VIA_RHINE is not set
-
-#
-# Ethernet (1000 Mbit)
-#
-# CONFIG_ACENIC is not set
-# CONFIG_DL2K is not set
-CONFIG_E1000=m
-# CONFIG_E1000_NAPI is not set
-# CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
-# CONFIG_NS83820 is not set
-# CONFIG_HAMACHI is not set
-# CONFIG_YELLOWFIN is not set
-# CONFIG_R8169 is not set
-# CONFIG_SIS190 is not set
-# CONFIG_SKGE is not set
-# CONFIG_SKY2 is not set
-# CONFIG_SK98LIN is not set
-# CONFIG_VIA_VELOCITY is not set
-CONFIG_TIGON3=y
-# CONFIG_BNX2 is not set
-# CONFIG_QLA3XXX is not set
-
-#
-# Ethernet (10000 Mbit)
-#
-# CONFIG_CHELSIO_T1 is not set
-# CONFIG_IXGB is not set
-# CONFIG_S2IO is not set
-# CONFIG_MYRI10GE is not set
-# CONFIG_NETXEN_NIC is not set
-
-#
-# Token Ring devices
-#
-# CONFIG_TR is not set
-
-#
-# Wireless LAN (non-hamradio)
-#
-# CONFIG_NET_RADIO is not set
-
-#
-# Wan interfaces
-#
-# CONFIG_WAN is not set
-# CONFIG_FDDI is not set
-# CONFIG_HIPPI is not set
-# CONFIG_PPP is not set
-# CONFIG_SLIP is not set
-# CONFIG_NET_FC is not set
-# CONFIG_SHAPER is not set
-# CONFIG_NETCONSOLE is not set
-# CONFIG_NETPOLL is not set
-# CONFIG_NET_POLL_CONTROLLER is not set
-
-#
-# ISDN subsystem
-#
-# CONFIG_ISDN is not set
-
-#
-# Telephony Support
-#
-# CONFIG_PHONE is not set
-
-#
-# Input device support
-#
-CONFIG_INPUT=y
-# CONFIG_INPUT_FF_MEMLESS is not set
-
-#
-# Userland interfaces
-#
-CONFIG_INPUT_MOUSEDEV=y
-CONFIG_INPUT_MOUSEDEV_PSAUX=y
-CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
-CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-# CONFIG_INPUT_JOYDEV is not set
-# CONFIG_INPUT_TSDEV is not set
-CONFIG_INPUT_EVDEV=y
-# CONFIG_INPUT_EVBUG is not set
-
-#
-# Input Device Drivers
-#
-CONFIG_INPUT_KEYBOARD=y
-CONFIG_KEYBOARD_ATKBD=y
-# CONFIG_KEYBOARD_SUNKBD is not set
-# CONFIG_KEYBOARD_LKKBD is not set
-# CONFIG_KEYBOARD_XTKBD is not set
-# CONFIG_KEYBOARD_NEWTON is not set
-# CONFIG_KEYBOARD_STOWAWAY is not set
-CONFIG_INPUT_MOUSE=y
-CONFIG_MOUSE_PS2=y
-# CONFIG_MOUSE_SERIAL is not set
-# CONFIG_MOUSE_VSXXXAA is not set
-# CONFIG_INPUT_JOYSTICK is not set
-# CONFIG_INPUT_TOUCHSCREEN is not set
-# CONFIG_INPUT_MISC is not set
-
-#
-# Hardware I/O ports
-#
-CONFIG_SERIO=y
-CONFIG_SERIO_I8042=y
-# CONFIG_SERIO_SERPORT is not set
-# CONFIG_SERIO_CT82C710 is not set
-# CONFIG_SERIO_PCIPS2 is not set
-CONFIG_SERIO_LIBPS2=y
-# CONFIG_SERIO_RAW is not set
-# CONFIG_GAMEPORT is not set
-
-#
-# Character devices
-#
-CONFIG_VT=y
-CONFIG_VT_CONSOLE=y
-CONFIG_HW_CONSOLE=y
-# CONFIG_VT_HW_CONSOLE_BINDING is not set
-# CONFIG_SERIAL_NONSTANDARD is not set
-
-#
-# Serial drivers
-#
-CONFIG_SERIAL_8250=y
-CONFIG_SERIAL_8250_CONSOLE=y
-CONFIG_SERIAL_8250_PCI=y
-CONFIG_SERIAL_8250_NR_UARTS=4
-CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-# CONFIG_SERIAL_8250_EXTENDED is not set
-
-#
-# Non-8250 serial port support
-#
-CONFIG_SERIAL_CORE=y
-CONFIG_SERIAL_CORE_CONSOLE=y
-# CONFIG_SERIAL_JSM is not set
-CONFIG_UNIX98_PTYS=y
-CONFIG_LEGACY_PTYS=y
-CONFIG_LEGACY_PTY_COUNT=256
-
-#
-# IPMI
-#
-# CONFIG_IPMI_HANDLER is not set
-
-#
-# Watchdog Cards
-#
-# CONFIG_WATCHDOG is not set
-CONFIG_HW_RANDOM=y
-CONFIG_HW_RANDOM_INTEL=y
-CONFIG_HW_RANDOM_AMD=y
-CONFIG_HW_RANDOM_GEODE=y
-# CONFIG_NVRAM is not set
-CONFIG_RTC=y
-# CONFIG_RTC_HISTOGRAM is not set
-CONFIG_BLOCKER=y
-CONFIG_LPPTEST=y
-# CONFIG_DTLK is not set
-# CONFIG_R3964 is not set
-# CONFIG_APPLICOM is not set
-CONFIG_AGP=y
-CONFIG_AGP_AMD64=y
-# CONFIG_AGP_INTEL is not set
-# CONFIG_AGP_SIS is not set
-# CONFIG_AGP_VIA is not set
-# CONFIG_DRM is not set
-# CONFIG_MWAVE is not set
-# CONFIG_PC8736x_GPIO is not set
-CONFIG_RAW_DRIVER=y
-CONFIG_MAX_RAW_DEVS=256
-# CONFIG_HPET is not set
-CONFIG_HANGCHECK_TIMER=y
-
-#
-# TPM devices
-#
-# CONFIG_TCG_TPM is not set
-# CONFIG_TELCLOCK is not set
-
-#
-# I2C support
-#
-# CONFIG_I2C is not set
-
-#
-# SPI support
-#
-# CONFIG_SPI is not set
-# CONFIG_SPI_MASTER is not set
-
-#
-# Dallas's 1-wire bus
-#
-# CONFIG_W1 is not set
-
-#
-# Hardware Monitoring support
-#
-CONFIG_HWMON=y
-# CONFIG_HWMON_VID is not set
-# CONFIG_SENSORS_ABITUGURU is not set
-# CONFIG_SENSORS_K8TEMP is not set
-# CONFIG_SENSORS_F71805F is not set
-# CONFIG_SENSORS_PC87427 is not set
-# CONFIG_SENSORS_VT1211 is not set
-# CONFIG_SENSORS_HDAPS is not set
-# CONFIG_HWMON_DEBUG_CHIP is not set
-
-#
-# Multimedia devices
-#
-# CONFIG_VIDEO_DEV is not set
-
-#
-# Digital Video Broadcasting Devices
-#
-# CONFIG_DVB is not set
-
-#
-# Graphics support
-#
-CONFIG_FIRMWARE_EDID=y
-# CONFIG_FB is not set
-
-#
-# Console display driver support
-#
-CONFIG_VGA_CONSOLE=y
-# CONFIG_VGACON_SOFT_SCROLLBACK is not set
-# CONFIG_VIDEO_SELECT is not set
-CONFIG_DUMMY_CONSOLE=y
-# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
-CONFIG_BACKLIGHT_CLASS_DEVICE=y
-CONFIG_BACKLIGHT_DEVICE=y
-
-#
-# Sound
-#
-CONFIG_SOUND=y
-
-#
-# Advanced Linux Sound Architecture
-#
-# CONFIG_SND is not set
-
-#
-# Open Sound System
-#
-CONFIG_SOUND_PRIME=y
-# CONFIG_SOUND_BT878 is not set
-# CONFIG_SOUND_ES1371 is not set
-CONFIG_SOUND_ICH=y
-# CONFIG_SOUND_TRIDENT is not set
-# CONFIG_SOUND_MSNDCLAS is not set
-# CONFIG_SOUND_MSNDPIN is not set
-# CONFIG_SOUND_VIA82CXXX is not set
-# CONFIG_SOUND_OSS is not set
-
-#
-# HID Devices
-#
-CONFIG_HID=y
-
-#
-# USB support
-#
-CONFIG_USB_ARCH_HAS_HCD=y
-CONFIG_USB_ARCH_HAS_OHCI=y
-CONFIG_USB_ARCH_HAS_EHCI=y
-# CONFIG_USB is not set
-
-#
-# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
-#
-
-#
-# USB Gadget Support
-#
-# CONFIG_USB_GADGET is not set
-
-#
-# MMC/SD Card support
-#
-# CONFIG_MMC is not set
-
-#
-# LED devices
-#
-# CONFIG_NEW_LEDS is not set
-
-#
-# LED drivers
-#
-
-#
-# LED Triggers
-#
-
-#
-# InfiniBand support
-#
-# CONFIG_INFINIBAND is not set
-
-#
-# EDAC - error detection and reporting (RAS) (EXPERIMENTAL)
-#
-# CONFIG_EDAC is not set
-
-#
-# Real Time Clock
-#
-# CONFIG_RTC_CLASS is not set
-
-#
-# DMA Engine support
-#
-# CONFIG_DMA_ENGINE is not set
-
-#
-# DMA Clients
-#
-
-#
-# DMA Devices
-#
-
-#
-# Virtualization
-#
-# CONFIG_KVM is not set
-
-#
-# Firmware Drivers
-#
-# CONFIG_EDD is not set
-# CONFIG_DELL_RBU is not set
-# CONFIG_DCDBAS is not set
-
-#
-# File systems
-#
-CONFIG_EXT2_FS=y
-CONFIG_EXT2_FS_XATTR=y
-CONFIG_EXT2_FS_POSIX_ACL=y
-# CONFIG_EXT2_FS_SECURITY is not set
-# CONFIG_EXT2_FS_XIP is not set
-CONFIG_EXT3_FS=y
-CONFIG_EXT3_FS_XATTR=y
-CONFIG_EXT3_FS_POSIX_ACL=y
-# CONFIG_EXT3_FS_SECURITY is not set
-# CONFIG_EXT4DEV_FS is not set
-CONFIG_JBD=y
-# CONFIG_JBD_DEBUG is not set
-CONFIG_FS_MBCACHE=y
-CONFIG_REISERFS_FS=y
-# CONFIG_REISERFS_CHECK is not set
-# CONFIG_REISERFS_PROC_INFO is not set
-# CONFIG_REISERFS_FS_XATTR is not set
-CONFIG_JFS_FS=y
-# CONFIG_JFS_POSIX_ACL is not set
-# CONFIG_JFS_SECURITY is not set
-# CONFIG_JFS_DEBUG is not set
-# CONFIG_JFS_STATISTICS is not set
-CONFIG_FS_POSIX_ACL=y
-# CONFIG_XFS_FS is not set
-# CONFIG_GFS2_FS is not set
-# CONFIG_OCFS2_FS is not set
-# CONFIG_MINIX_FS is not set
-# CONFIG_ROMFS_FS is not set
-CONFIG_INOTIFY=y
-CONFIG_INOTIFY_USER=y
-# CONFIG_QUOTA is not set
-CONFIG_DNOTIFY=y
-CONFIG_AUTOFS_FS=y
-# CONFIG_AUTOFS4_FS is not set
-# CONFIG_FUSE_FS is not set
-
-#
-# CD-ROM/DVD Filesystems
-#
-CONFIG_ISO9660_FS=y
-# CONFIG_JOLIET is not set
-# CONFIG_ZISOFS is not set
-# CONFIG_UDF_FS is not set
-
-#
-# DOS/FAT/NT Filesystems
-#
-# CONFIG_MSDOS_FS is not set
-# CONFIG_VFAT_FS is not set
-# CONFIG_NTFS_FS is not set
-
-#
-# Pseudo filesystems
-#
-CONFIG_PROC_FS=y
-CONFIG_PROC_KCORE=y
-CONFIG_PROC_SYSCTL=y
-CONFIG_SYSFS=y
-CONFIG_TMPFS=y
-# CONFIG_TMPFS_POSIX_ACL is not set
-# CONFIG_HUGETLBFS is not set
-# CONFIG_HUGETLB_PAGE is not set
-CONFIG_RAMFS=y
-# CONFIG_CONFIGFS_FS is not set
-
-#
-# Miscellaneous filesystems
-#
-# CONFIG_ADFS_FS is not set
-# CONFIG_AFFS_FS is not set
-# CONFIG_HFS_FS is not set
-# CONFIG_HFSPLUS_FS is not set
-# CONFIG_BEFS_FS is not set
-# CONFIG_BFS_FS is not set
-# CONFIG_EFS_FS is not set
-# CONFIG_CRAMFS is not set
-# CONFIG_VXFS_FS is not set
-# CONFIG_HPFS_FS is not set
-# CONFIG_QNX4FS_FS is not set
-# CONFIG_SYSV_FS is not set
-# CONFIG_UFS_FS is not set
-
-#
-# Network File Systems
-#
-CONFIG_NFS_FS=y
-CONFIG_NFS_V3=y
-# CONFIG_NFS_V3_ACL is not set
-# CONFIG_NFS_V4 is not set
-# CONFIG_NFS_DIRECTIO is not set
-CONFIG_NFSD=y
-CONFIG_NFSD_V3=y
-# CONFIG_NFSD_V3_ACL is not set
-# CONFIG_NFSD_V4 is not set
-CONFIG_NFSD_TCP=y
-CONFIG_LOCKD=y
-CONFIG_LOCKD_V4=y
-CONFIG_EXPORTFS=y
-CONFIG_NFS_COMMON=y
-CONFIG_SUNRPC=y
-# CONFIG_RPCSEC_GSS_KRB5 is not set
-# CONFIG_RPCSEC_GSS_SPKM3 is not set
-# CONFIG_SMB_FS is not set
-# CONFIG_CIFS is not set
-# CONFIG_NCP_FS is not set
-# CONFIG_CODA_FS is not set
-# CONFIG_AFS_FS is not set
-# CONFIG_9P_FS is not set
-
-#
-# Partition Types
-#
-# CONFIG_PARTITION_ADVANCED is not set
-CONFIG_MSDOS_PARTITION=y
-
-#
-# Native Language Support
-#
-CONFIG_NLS=y
-CONFIG_NLS_DEFAULT="iso8859-1"
-# CONFIG_NLS_CODEPAGE_437 is not set
-# CONFIG_NLS_CODEPAGE_737 is not set
-# CONFIG_NLS_CODEPAGE_775 is not set
-# CONFIG_NLS_CODEPAGE_850 is not set
-# CONFIG_NLS_CODEPAGE_852 is not set
-# CONFIG_NLS_CODEPAGE_855 is not set
-# CONFIG_NLS_CODEPAGE_857 is not set
-# CONFIG_NLS_CODEPAGE_860 is not set
-# CONFIG_NLS_CODEPAGE_861 is not set
-# CONFIG_NLS_CODEPAGE_862 is not set
-# CONFIG_NLS_CODEPAGE_863 is not set
-# CONFIG_NLS_CODEPAGE_864 is not set
-# CONFIG_NLS_CODEPAGE_865 is not set
-# CONFIG_NLS_CODEPAGE_866 is not set
-# CONFIG_NLS_CODEPAGE_869 is not set
-# CONFIG_NLS_CODEPAGE_936 is not set
-# CONFIG_NLS_CODEPAGE_950 is not set
-# CONFIG_NLS_CODEPAGE_932 is not set
-# CONFIG_NLS_CODEPAGE_949 is not set
-# CONFIG_NLS_CODEPAGE_874 is not set
-# CONFIG_NLS_ISO8859_8 is not set
-# CONFIG_NLS_CODEPAGE_1250 is not set
-# CONFIG_NLS_CODEPAGE_1251 is not set
-# CONFIG_NLS_ASCII is not set
-# CONFIG_NLS_ISO8859_1 is not set
-# CONFIG_NLS_ISO8859_2 is not set
-# CONFIG_NLS_ISO8859_3 is not set
-# CONFIG_NLS_ISO8859_4 is not set
-# CONFIG_NLS_ISO8859_5 is not set
-# CONFIG_NLS_ISO8859_6 is not set
-# CONFIG_NLS_ISO8859_7 is not set
-# CONFIG_NLS_ISO8859_9 is not set
-# CONFIG_NLS_ISO8859_13 is not set
-# CONFIG_NLS_ISO8859_14 is not set
-# CONFIG_NLS_ISO8859_15 is not set
-# CONFIG_NLS_KOI8_R is not set
-# CONFIG_NLS_KOI8_U is not set
-# CONFIG_NLS_UTF8 is not set
-
-#
-# Distributed Lock Manager
-#
-# CONFIG_DLM is not set
-
-#
-# Instrumentation Support
-#
-CONFIG_PROFILING=y
-CONFIG_OPROFILE=y
-# CONFIG_KPROBES is not set
-
-#
-# Kernel hacking
-#
-CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-# CONFIG_PRINTK_TIME is not set
-CONFIG_ENABLE_MUST_CHECK=y
-CONFIG_MAGIC_SYSRQ=y
-CONFIG_UNUSED_SYMBOLS=y
-# CONFIG_DEBUG_FS is not set
-# CONFIG_HEADERS_CHECK is not set
-CONFIG_DEBUG_KERNEL=y
-CONFIG_LOG_BUF_SHIFT=18
-CONFIG_DETECT_SOFTLOCKUP=y
-# CONFIG_SCHEDSTATS is not set
-# CONFIG_TIMER_STATS is not set
-# CONFIG_DEBUG_SLAB is not set
-CONFIG_DEBUG_PREEMPT=y
-# CONFIG_DEBUG_RT_MUTEXES is not set
-# CONFIG_RT_MUTEX_TESTER is not set
-# CONFIG_DEBUG_SPINLOCK is not set
-# CONFIG_DEBUG_RWSEMS is not set
-# CONFIG_DEBUG_LOCK_ALLOC is not set
-# CONFIG_PROVE_LOCKING is not set
-# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
-# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
-CONFIG_PREEMPT_TRACE=y
-# CONFIG_EVENT_TRACE is not set
-# CONFIG_FUNCTION_TRACE is not set
-CONFIG_WAKEUP_TIMING=y
-# CONFIG_LATENCY_TRACE is not set
-# CONFIG_CRITICAL_PREEMPT_TIMING is not set
-# CONFIG_CRITICAL_IRQSOFF_TIMING is not set
-# CONFIG_WAKEUP_LATENCY_HIST is not set
-CONFIG_LATENCY_TIMING=y
-# CONFIG_DEBUG_KOBJECT is not set
-CONFIG_DEBUG_BUGVERBOSE=y
-# CONFIG_DEBUG_INFO is not set
-# CONFIG_DEBUG_VM is not set
-# CONFIG_DEBUG_LIST is not set
-# CONFIG_FRAME_POINTER is not set
-# CONFIG_UNWIND_INFO is not set
-CONFIG_FORCED_INLINING=y
-CONFIG_RCU_TORTURE_TEST=m
-# CONFIG_DEBUG_RODATA is not set
-CONFIG_IOMMU_DEBUG=y
-CONFIG_IOMMU_LEAK=y
-# CONFIG_DEBUG_STACKOVERFLOW is not set
-# CONFIG_DEBUG_STACK_USAGE is not set
-
-#
-# Security options
-#
-# CONFIG_KEYS is not set
-# CONFIG_SECURITY is not set
-
-#
-# Cryptographic options
-#
-# CONFIG_CRYPTO is not set
-
-#
-# Library routines
-#
-CONFIG_BITREVERSE=y
-# CONFIG_CRC_CCITT is not set
-# CONFIG_CRC16 is not set
-CONFIG_CRC32=y
-# CONFIG_LIBCRC32C is not set
-CONFIG_PLIST=y
-CONFIG_IOMAP_COPY=y
+This patch implements deferred IO support in fbdev. Deferred IO is a way to
+delay and repurpose IO. This implementation is done using mm's page_mkwrite
+and page_mkclean hooks in order to detect, delay and then rewrite IO. This
+functionality is used by hecubafb.
+
+Thanks,
+jaya
+
+Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+
+---
+
+ Documentation/fb/deferred_io.txt |   75 +++++++++++++++++++++
+ drivers/video/Kconfig            |   20 +++++
+ drivers/video/Makefile           |    2 
+ drivers/video/fb_defio.c         |  137 +++++++++++++++++++++++++++++++++++++++
+ include/linux/fb.h               |   20 +++++
+ mm/rmap.c                        |    1 
+ 6 files changed, 255 insertions(+)
+
+---
+
+diff --git a/Documentation/fb/deferred_io.txt b/Documentation/fb/deferred_io.txt
+new file mode 100644
+index 0000000..838c1a3
+--- /dev/null
++++ b/Documentation/fb/deferred_io.txt
+@@ -0,0 +1,75 @@
++Deferred IO
++-----------
++
++Deferred IO is a way to delay and repurpose IO. It uses host memory as a
++buffer and the MMU pagefault as a pretrigger for when to perform the device
++IO. The following example may be a useful explaination of how one such setup
++works:
++
++- userspace app like Xfbdev mmaps framebuffer
++- deferred IO and driver sets up nopage and page_mkwrite handlers
++- userspace app tries to write to mmaped vaddress
++- we get pagefault and reach nopage handler
++- nopage handler finds and returns physical page
++- we get page_mkwrite where we add this page to a list
++- schedule a workqueue task to be run after a delay
++- app continues writing to that page with no additional cost. this is
++  the key benefit.
++- the workqueue task comes in and mkcleans the pages on the list, then
++ completes the work associated with updating the framebuffer. this is
++  the real work talking to the device.
++- app tries to write to the address (that has now been mkcleaned)
++- get pagefault and the above sequence occurs again
++
++As can be seen from above, one benefit is roughly to allow bursty framebuffer
++writes to occur at minimum cost. Then after some time when hopefully things
++have gone quiet, we go and really update the framebuffer which would be
++a relatively more expensive operation.
++
++For some types of nonvolatile high latency displays, the desired image is
++the final image rather than the intermediate stages which is why it's okay
++to not update for each write that is occuring.
++
++It may be the case that this is useful in other scenarios as well. Paul Mundt
++has mentioned a case where it is beneficial to use the page count to decide
++whether to coalesce and issue SG DMA or to do memory bursts.
++
++Another one may be if one has a device framebuffer that is in an usual format,
++say diagonally shifting RGB, this may then be a mechanism for you to allow
++apps to pretend to have a normal framebuffer but reswizzle for the device
++framebuffer at vsync time based on the touched pagelist.
++
++How to use it: (for applications)
++---------------------------------
++No changes needed. mmap the framebuffer like normal and just use it.
++
++How to use it: (for fbdev drivers)
++----------------------------------
++The following example may be helpful.
++
++1. Setup your structure. Eg:
++
++static struct fb_deferred_io hecubafb_defio = {
++	.delay		= HZ,
++	.deferred_io	= hecubafb_dpy_deferred_io,
++};
++
++The delay is the minimum delay between when the page_mkwrite trigger occurs
++and when the deferred_io callback is called. The deferred_io callback is
++explained below.
++
++2. Setup your deferred IO callback. Eg:
++static void hecubafb_dpy_deferred_io(struct fb_info *info,
++				struct list_head *pagelist)
++
++The deferred_io callback is where you would perform all your IO to the display
++device. You receive the pagelist which is the list of pages that were written
++to during the delay. You must not modify this list. This callback is called
++from a workqueue. 
++
++3. Call init 
++	info->fbdefio = &hecubafb_defio;
++	fb_deferred_io_init(info);
++
++4. Call cleanup 
++	fb_deferred_io_cleanup(info);
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 8874cf2..a03c772 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -85,6 +85,12 @@ config FB_CFB_IMAGEBLIT
+ 	  blitting. This is used by drivers that don't provide their own
+ 	  (accelerated) version.
+ 
++# used by hecubafb
++config FB_DEFERRED_IO
++	bool
++	depends on FB
++	default n
++
+ config FB_SVGALIB
+ 	tristate
+ 	depends on FB
+@@ -540,6 +546,20 @@ config FB_IMAC
+ 	help
+ 	  This is the frame buffer device driver for the Intel-based Macintosh
+ 
++config FB_HECUBA
++	tristate "Hecuba board support"
++	depends on FB && X86 && MMU
++	select FB_CFB_FILLRECT
++	select FB_CFB_COPYAREA
++	select FB_CFB_IMAGEBLIT
++	select FB_DEFERRED_IO
++	help
++	  This enables support for the Hecuba board. This driver was tested 
++	  with an E-Ink 800x600 display and x86 SBCs through a 16 bit GPIO
++	  interface (8 bit data, 4 bit control). If you anticpate using
++	  this driver, say Y or M; otherwise say N. You must specify the
++	  GPIO IO address to be used for setting control and data.
++
+ config FB_HGA
+ 	tristate "Hercules mono graphics support"
+ 	depends on FB && X86
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 6801edf..c36a323 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -20,6 +20,7 @@ obj-$(CONFIG_FB_CFB_IMAGEBLIT) += cfbimgblt.o
+ obj-$(CONFIG_FB_SVGALIB)       += svgalib.o
+ obj-$(CONFIG_FB_MACMODES)      += macmodes.o
+ obj-$(CONFIG_FB_DDC)           += fb_ddc.o
++obj-$(CONFIG_FB_DEFERRED_IO)   += fb_defio.o
+ 
+ # Hardware specific drivers go first
+ obj-$(CONFIG_FB_AMIGA)            += amifb.o c2p.o
+@@ -65,6 +66,7 @@ obj-$(CONFIG_FB_SGIVW)            += sgivwfb.o
+ obj-$(CONFIG_FB_ACORN)            += acornfb.o
+ obj-$(CONFIG_FB_ATARI)            += atafb.o
+ obj-$(CONFIG_FB_MAC)              += macfb.o
++obj-$(CONFIG_FB_HECUBA)           += hecubafb.o
+ obj-$(CONFIG_FB_HGA)              += hgafb.o
+ obj-$(CONFIG_FB_IGA)              += igafb.o
+ obj-$(CONFIG_FB_APOLLO)           += dnfb.o
+diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
+new file mode 100644
+index 0000000..5ed9053
+--- /dev/null
++++ b/drivers/video/fb_defio.c
+@@ -0,0 +1,137 @@
++/*
++ *  linux/drivers/video/fb_defio.c
++ *
++ *  Copyright (C) 2006 Jaya Kumar
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file COPYING in the main directory of this archive
++ * for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/string.h>
++#include <linux/mm.h>
++#include <linux/slab.h>
++#include <linux/vmalloc.h>
++#include <linux/delay.h>
++#include <linux/interrupt.h>
++#include <linux/fb.h>
++#include <linux/list.h>
++#include <asm/uaccess.h>
++
++/* to support deferred IO */
++#include <linux/rmap.h>
++#include <linux/pagemap.h>
++
++/* this is to find and return the vmalloc-ed fb pages */
++static struct page* fb_deferred_io_nopage(struct vm_area_struct *vma, 
++					unsigned long vaddr, int *type)
++{
++	unsigned long offset;
++	struct page *page;
++	struct fb_info *info = vma->vm_private_data;
++
++	offset = (vaddr - vma->vm_start) + (vma->vm_pgoff << PAGE_SHIFT);
++	if (offset >= info->fix.smem_len)
++		return NOPAGE_SIGBUS;
++
++	page = vmalloc_to_page(info->screen_base + offset);
++	if (!page)
++		return NOPAGE_OOM;
++
++	get_page(page);
++	if (type)
++		*type = VM_FAULT_MINOR;
++	return page;
++}
++
++/* vm_ops->page_mkwrite handler */
++int fb_deferred_io_mkwrite(struct vm_area_struct *vma, 
++					struct page *page)
++{
++	struct fb_info *info = vma->vm_private_data;
++	struct fb_deferred_io *fbdefio = info->fbdefio;
++
++	/* this is a callback we get when userspace first tries to 
++	write to the page. we schedule a workqueue. that workqueue 
++	will eventually mkclean the touched pages and execute the 
++	deferred framebuffer IO. then if userspace touches a page 
++	again, we repeat the same scheme */
++
++	/* protect against the workqueue changing the page list */
++	mutex_lock(&fbdefio->lock);
++	list_add(&page->lru, &fbdefio->pagelist);
++	mutex_unlock(&fbdefio->lock);
++
++	/* come back after delay to process the deferred IO */
++	schedule_delayed_work(&info->deferred_work, fbdefio->delay);
++	return 0;
++}
++
++static struct vm_operations_struct fb_deferred_io_vm_ops = {
++	.nopage   	= fb_deferred_io_nopage,
++	.page_mkwrite	= fb_deferred_io_mkwrite,
++};
++
++static int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
++{
++	vma->vm_ops = &fb_deferred_io_vm_ops;
++	vma->vm_flags |= ( VM_IO | VM_RESERVED | VM_DONTEXPAND );
++	vma->vm_private_data = info;
++	return 0;
++}
++
++/* workqueue callback */
++static void fb_deferred_io_work(struct work_struct *work)
++{
++	struct fb_info *info = container_of(work, struct fb_info, 
++						deferred_work.work);
++	struct list_head *node, *next;
++	struct page *cur;
++	struct fb_deferred_io *fbdefio = info->fbdefio;
++
++	/* here we mkclean the pages, then do all deferred IO */
++	mutex_lock(&fbdefio->lock);
++	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
++		lock_page(cur);
++		page_mkclean(cur);
++		unlock_page(cur);
++	}
++
++	/* driver's callback with pagelist */
++	fbdefio->deferred_io(info, &fbdefio->pagelist); 
++
++	/* clear the list */
++	list_for_each_safe(node, next, &fbdefio->pagelist) {
++		list_del(node);
++	}
++	mutex_unlock(&fbdefio->lock);
++}
++
++void fb_deferred_io_init(struct fb_info *info)
++{
++	struct fb_deferred_io *fbdefio = info->fbdefio;
++
++	BUG_ON(!fbdefio);
++	mutex_init(&fbdefio->lock);
++	info->fbops->fb_mmap = fb_deferred_io_mmap;
++	INIT_DELAYED_WORK(&info->deferred_work, fb_deferred_io_work);
++	INIT_LIST_HEAD(&fbdefio->pagelist);
++	if (fbdefio->delay == 0) /* set a default of 1 s */
++		fbdefio->delay = HZ;
++}
++EXPORT_SYMBOL_GPL(fb_deferred_io_init);
++
++void fb_deferred_io_cleanup(struct fb_info *info)
++{
++	struct fb_deferred_io *fbdefio = info->fbdefio;
++
++	BUG_ON(!fbdefio);
++	cancel_delayed_work(&info->deferred_work);
++	flush_scheduled_work();
++}
++EXPORT_SYMBOL_GPL(fb_deferred_io_cleanup);
++
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index a78e256..03c587a 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -559,6 +559,16 @@ struct fb_pixmap {
+ 	void (*readio) (struct fb_info *info, void *dst, void __iomem *src, unsigned int size);
+ };
+ 
++#ifdef CONFIG_FB_DEFERRED_IO
++struct fb_deferred_io {
++	/* delay between mkwrite and deferred handler */
++	unsigned long delay;	
++	struct mutex lock; /* mutex that protects the page list */
++	struct list_head pagelist; /* list of touched pages */
++	/* callback */
++	void (*deferred_io)(struct fb_info *info, struct list_head *pagelist);
++};
++#endif
+ 
+ /*
+  * Frame buffer operations
+@@ -779,6 +789,10 @@ struct fb_info {
+ 	/* Backlight level curve */
+ 	u8 bl_curve[FB_BACKLIGHT_LEVELS];
+ #endif
++#ifdef CONFIG_FB_DEFERRED_IO
++	struct delayed_work deferred_work;
++	struct fb_deferred_io *fbdefio;
++#endif
+ 
+ 	struct fb_ops *fbops;
+ 	struct device *device;		/* This is the parent */
+@@ -914,6 +928,12 @@ static inline void __fb_pad_aligned_buffer(u8 *dst, u32 d_pitch,
+ 	}
+ }
+ 
++#ifdef CONFIG_FB_DEFERRED_IO
++/* drivers/video/fb_defio.c */
++extern void fb_deferred_io_init(struct fb_info *info);
++extern void fb_deferred_io_cleanup(struct fb_info *info);
++#endif
++
+ /* drivers/video/fbsysfs.c */
+ extern struct fb_info *framebuffer_alloc(size_t size, struct device *dev);
+ extern void framebuffer_release(struct fb_info *info);
+diff --git a/mm/rmap.c b/mm/rmap.c
+index 669acb2..0fa0521 100644
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -496,6 +496,7 @@ int page_mkclean(struct page *page)
+ 
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(page_mkclean);
+ 
+ /**
+  * page_set_anon_rmap - setup new anonymous rmap
