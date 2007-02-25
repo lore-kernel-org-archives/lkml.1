@@ -1,58 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752435AbXBYXro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751150AbXBYXrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752435AbXBYXro (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 18:47:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbXBYXro
+	id S1751150AbXBYXrv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 18:47:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbXBYXrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 18:47:44 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53064 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751150AbXBYXrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 18:47:43 -0500
-Message-ID: <45E21FEC.9060605@redhat.com>
-Date: Sun, 25 Feb 2007 18:46:52 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: Lorenzo Allegrucci <l_allegrucci@yahoo.it>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: SMP performance degradation with sysbench
-References: <1172425476.5489.11.camel@odyssey.lan>
-In-Reply-To: <1172425476.5489.11.camel@odyssey.lan>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sun, 25 Feb 2007 18:47:51 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:58190 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751150AbXBYXru (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 18:47:50 -0500
+Date: Sun, 25 Feb 2007 15:44:38 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Mario Vanoni <vanonim@alice.it>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.16.41 & 2.6.18.7 OK,   2.6.19.5 NOT,   2.6.18.8 KERNEL
+ PANIC
+Message-Id: <20070225154438.dbf695f0.randy.dunlap@oracle.com>
+In-Reply-To: <45E1B3E6.60403@alice.it>
+References: <45E05D54.10508@alice.it>
+	<20070224201902.a2a7b3da.randy.dunlap@oracle.com>
+	<45E1B3E6.60403@alice.it>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lorenzo Allegrucci wrote:
-> Hi lkml,
+On Sun, 25 Feb 2007 17:05:58 +0100 Mario Vanoni wrote:
+
+> Randy Dunlap wrote:
+> > On Sat, 24 Feb 2007 16:44:20 +0100 Mario Vanoni wrote:
+> > 
+> >> 2.6.18.7 vanilla & 2.6.16.41 vanilla:
+> >> /dev/hda CD/DVD
+> >> /dev/hda1 / IDE HD 160GB
+> >> /dev/hda2 swap
+> >> /dev/sda1 /xyz SATA HD 320GB
+> >> /dev/sda2 swap
+> >> /dev/sdb1 /zzz SATA HD 320GB
+> >> /dev/sdb2 swap
+> >> /dev/sdc1 /usb USB KEY 512MB
 > 
-> according to the test below (sysbench) Linux seems to have scalability
-> problems beyond 8 client threads:
-> http://jeffr-tech.livejournal.com/6268.html#cutid1
-> http://jeffr-tech.livejournal.com/5705.html
-> Hardware is an 8-core amd64 system and jeffr seems willing to try more
-> Linux versions on that machine.
-> Anyway, is there anyone who can reproduce this?
+> > For 2.6.19.*, does .config contain any CONFIG_ATA* entries?
+> > FYI, in 2.6.19, CONFIG_SCSI_SATA* config symbols were renamed to
+> > CONFIG_ATA*, so just using an oldconfig won't be sufficient
+> > for SATA support.
+> 
+> You are 100% right, I was lazy, thanks for the gentle blame.
+> 2.6.19.5 vanilla works perfectly, 2.6.20.1 vanilla too!
+> 
+> >> ---
+> >> 2.6.18.8 vanilla: !!!
+> >> screen eating leftmost characters, then
+> >> kernel panic - not syncing: VFS: Unable to mount root fs on
+> >> unknown-block(3,65)
+> >> POWER SWITCH ultima ratio
+> >> ---
 
-I have reproduced it on a quad core test system.
+What is (3,65) supposed to be?  devices.txt says that it's /dev/hdb1.
+I don't see that listed anywhere here...
 
-With 4 threads (on 4 cores) I get a high throughput, with
-approximately 58% user time and 42% system time.
+> Strange error, due to a partially corrupted MBR (?):
+> 2.6.19.5 with incorrect .config, lilo, SATA missing
+> reboot with old 2.6.18.7, OK
+> 2.6.18.8 with old .config from 2.6.18.6,
+> lilo objects not seeing /dev/sdb and /dev/sdc,
+> reboot and kernel panic,
+> reboot with 2.6.18.7, OK
+> 2.6.18.8 make mrproper and rm -r /lib/modules/2.6.18.8
+> make bzImage etc., lilo: 2.6.18.8 works perfectly.
 
-With 8 threads (on 4 cores) I get way lower throughput,
-with 37% user time, 29% system time 35% idle time!
 
-The maximum time taken per query also increases from
-0.0096s to 0.5273s. Ouch!
-
-I don't know if this is MySQL, glibc or Linux kernel,
-but something strange is going on...
-
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+---
+~Randy
