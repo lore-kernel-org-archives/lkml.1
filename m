@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752395AbXBYT2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752406AbXBYTjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752395AbXBYT2m (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 14:28:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbXBYT2m
+	id S1752406AbXBYTjv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 14:39:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932244AbXBYTjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 14:28:42 -0500
-Received: from rrcs-24-153-217-226.sw.biz.rr.com ([24.153.217.226]:36279 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752395AbXBYT2l (ORCPT
+	Sun, 25 Feb 2007 14:39:51 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:39432 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752406AbXBYTjv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 14:28:41 -0500
-Subject: Re: [PATCH 3/7] cxgb3 - FW version update
-From: Steve Wise <swise@opengridcomputing.com>
-To: divy@chelsio.com
-Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070225004401.20831.3292.stgit@localhost.localdomain>
-References: <20070225004401.20831.3292.stgit@localhost.localdomain>
-Content-Type: text/plain
-Date: Sun, 25 Feb 2007 13:28:39 -0600
-Message-Id: <1172431719.4717.8.camel@stevo-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 25 Feb 2007 14:39:51 -0500
+Date: Sun, 25 Feb 2007 20:39:07 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: David Schwartz <davids@webmaster.com>
+Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: GPL vs non-GPL device drivers
+Message-ID: <20070225193907.GA1802@elf.ucw.cz>
+References: <20070225104211.GB2045@elf.ucw.cz> <MDEHLPKNGKAHNMBLJOLKOEDMBNAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKOEDMBNAC.davids@webmaster.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey Divy,
+On Sun 2007-02-25 03:33:38, David Schwartz wrote:
+> 
+> > But... how does situation change when Evil Linker does #include
+> > <pop3/gpl_header_file_with_some_inline_functions.h> from his
+> > binary-only part?
+> 
+> Right, but *why* is he doing that? The answer: It is the most practical way
+> to write his driver.
 
-You missed a printk change.  Here is an updated patch.
+Most practical way to get something Windows compatible is to pirate
+Windows; I do not think that gives me permission to do so.
 
-------------
-
-Update FW version to 3.2
-
-Signed-off-by: Steve Wise <swise@opengridcomputing.com>
----
-
- drivers/net/cxgb3/t3_hw.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/cxgb3/t3_hw.c b/drivers/net/cxgb3/t3_hw.c
-index 365a7f5..08a6295 100644
---- a/drivers/net/cxgb3/t3_hw.c
-+++ b/drivers/net/cxgb3/t3_hw.c
-@@ -884,11 +884,11 @@ int t3_check_fw_version(struct adapter *
- 	major = G_FW_VERSION_MAJOR(vers);
- 	minor = G_FW_VERSION_MINOR(vers);
- 
--	if (type == FW_VERSION_T3 && major == 3 && minor == 1)
-+	if (type == FW_VERSION_T3 && major == 3 && minor == 2)
- 		return 0;
- 
- 	CH_ERR(adapter, "found wrong FW version(%u.%u), "
--	       "driver needs version 3.1\n", major, minor);
-+	       "driver needs version 3.2\n", major, minor);
- 	return -EINVAL;
- }
- 
-
-
+Similary, there are many ways to write inline functions present in
+headers, and no, embedded developer being lazy does not mean they can
+copy those functions into their proprietary module.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
