@@ -1,44 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752330AbXBYJ60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752337AbXBYKYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752330AbXBYJ60 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 04:58:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbXBYJ60
+	id S1752337AbXBYKYm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 05:24:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbXBYKYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 04:58:26 -0500
-Received: from il.qumranet.com ([82.166.9.18]:35740 "EHLO il.qumranet.com"
+	Sun, 25 Feb 2007 05:24:42 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:54992 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752330AbXBYJ6Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 04:58:25 -0500
-Message-ID: <45E15DBF.8000106@qumranet.com>
-Date: Sun, 25 Feb 2007 11:58:23 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	id S1752337AbXBYKYk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 05:24:40 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: 2.6.19: ACPI reports AC not present after resume from STD
+Date: Sun, 25 Feb 2007 11:17:29 +0100
+User-Agent: KMail/1.9.5
+Cc: "Lebedev, Vladimir P" <vladimir.p.lebedev@intel.com>,
+       "Karasyov, Konstantin A" <konstantin.a.karasyov@intel.com>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-pm@lists.osdl.org
+References: <8E389A5F2FEABA4CB1DEC35A25CB39CE82FE9F@mssmsx411> <200702242046.20216.rjw@sisk.pl> <200702250226.34877.arvidjaar@mail.ru>
+In-Reply-To: <200702250226.34877.arvidjaar@mail.ru>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: kvm-devel <kvm-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 0/6] KVM userspace interface updates for 2.6.21
-References: <45DC8B6E.5050205@qumranet.com> <45DC8D97.9060408@qumranet.com>
-In-Reply-To: <45DC8D97.9060408@qumranet.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200702251117.30462.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
->
-> The patchset, along with the previous fixset, is available as a git 
-> tree from git://kvm.qumranet.com/home/avi/kvm/linux-2.6.  You may wish 
-> to plant it in your little git forest.
->
+On Sunday, 25 February 2007 00:26, Andrey Borzenkov wrote:
+> On Суббота 24 февраля 2007, Rafael J. Wysocki wrote:
+> > Hi,
+> >
+> > On Saturday, 24 February 2007 10:55, Andrey Borzenkov wrote:
+> > > On Вторник 13 февраля 2007, Andrey Borzenkov wrote:
+> > > > On Четверг 07 декабря 2006, Lebedev, Vladimir P wrote:
+> > > > > Please register new bug, attach acpidump and dmesg.
+> > > >
+> > > > http://bugzilla.kernel.org/show_bug.cgi?id=7995
+> > > >
+> > > > regards
+> > >
+> > > Well, this starts looking like ACPI is not at fault.
+> > >
+> > > When reporting AC state ACPI just reads contents of system memory (I
+> > > presume it gets updated by BIOS/ACPI when AC state changes). It looks
+> > > like this memory area is restored during resume from STD. I updated
+> > > mentioned bug report with more detailed description. Now if someone could
+> > > suggest a way to catch if specific physical address gets saved/restored
+> > > this would finally explain it.
+> >
+> > First, if you want the reserved memory areas to be left alone by swsusp,
+> > you need to mark them as 'nosave'.  On x86_64 this is done by the function
+> > e820_mark_nosave_range() in arch/x86_64/kernel/e820.c that can be ported to
+> > i386 with no problems.  However, we haven't found that very useful, so far,
+> > since no one has ever reported any problems with the current approach,
+> > which is to save and restore them.
+> >
+> 
+> Well, the following proof of concept patch fixes this issue for me. Please 
+> notice that original version of e820_mark_nosave_range() could fail to 
+> exclude some areas due to alignment issues (exactly what happened to me on 
+> first try) so it still can explain your problem too.
 
-This is now git://kvm.qumranet.com/home/avi/kvm.git, as a bare 'git 
-pull' will pull the current branch instead of master, giving you 
-whatever I was working on at the moment.  The kvm.git repo will always 
-have 'master' as the current branch.
+Great job, thanks for the patch!  It looks good, so I'm going to forward it for
+merging.
 
+I'll also change the x86_64 version to use PFN_UP and PFN_DOWN.
 
--- 
-error compiling committee.c: too many arguments to function
-
+Greetings,
+Rafael
