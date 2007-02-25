@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964869AbXBYMsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964868AbXBYMsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964869AbXBYMsm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 07:48:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964868AbXBYMsm
+	id S964868AbXBYMsp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 07:48:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964872AbXBYMsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 07:48:42 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35128 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964869AbXBYMsl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 07:48:41 -0500
-Date: Sun, 25 Feb 2007 13:52:08 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Cc: "Pavel Machek" <pavel@ucw.cz>, davids@webmaster.com,
-       "v j" <vj.linux@gmail.com>, trent.waddington@gmail.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>
-Subject: Re: GPL vs non-GPL device drivers
-Message-ID: <20070225135208.6e2eab9c@lxorguk.ukuu.org.uk>
-In-Reply-To: <f2b55d220702250354j29583e5ak1397d28ef7028783@mail.gmail.com>
-References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>
-	<MDEHLPKNGKAHNMBLJOLKIEFNBLAC.davids@webmaster.com>
-	<f2b55d220702211408r7954d5dar2c59e1e679316811@mail.gmail.com>
-	<20070225104211.GB2045@elf.ucw.cz>
-	<f2b55d220702250354j29583e5ak1397d28ef7028783@mail.gmail.com>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Sun, 25 Feb 2007 07:48:45 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:35282 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964871AbXBYMso (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 07:48:44 -0500
+Date: Sun, 25 Feb 2007 04:47:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "J.J. Green" <j.j.green@sheffield.ac.uk>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: sparc64 / bbc_i2c.c
+Message-Id: <20070225044754.1d849a8d.akpm@linux-foundation.org>
+In-Reply-To: <1171978032.18442.11.camel@lax.shef.ac.uk>
+References: <1171978032.18442.11.camel@lax.shef.ac.uk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> of other places too.  Especially when the graphics chip maker explains
-> that keeping their driver source code closed isn't really an attempt
-> to hide their knowledge under a bushel basket.  It's a defensive
-> measure against having their retail margins destroyed by nitwits who
-> take out all the busy-wait loops and recompile with -O9 to get another
-> tenth of a frame per second, and then pretend ignorance when
-> attempting to return their slagged GPU at Fry's.
+> On Tue, 20 Feb 2007 13:27:12 +0000 "J.J. Green" <j.j.green@sheffield.ac.uk> wrote:
+> Hi all
+> 
+> I got bitten by this problem on sparc64 (a blade 1000)
+> 
+>   http://ubuntuforums.org/showthread.php?t=297474
+>
+> summary :
+> 
+>   modprobe bbc
+> 
+> runs kenvctrld which uses 100% of a CPU for 5 seconds,
+> then 0% for 5 seconds, then 100% .. and so on. The author
+> cited above suggests removing the line 
+> 
+>   remove_wait_queue(&bp->wq, &wait);
+> 
+> in the function 
+> 
+>   static int wait_for_pin(struct bbc_i2c_bus *bp, u8 *status)
+> 
+> Is there a better way?
+> 
+> I can test patches if that would be helpful.
+> 
 
-Wrong as usual...
+The code around there looks relatively unbuggy to me.  Removing that
+remove_wait_queue() would be very bad - it would cause later stack
+corruption.
 
-The Nvidia driver and ATI drivers aren't full of magical delay loops and
-if there was a way to fry those cards easily in hardware the virus folks
-would already be doing it. The reverse engineering teams know what is in
-the existing code thank you. Creating new open source drivers from it is
-however hard because of all the corner cases.
+msleep_interruptible() certainly shouldn't consume CPU like that.  Do we
+know where the CPU time is being spent?  The output of:
 
-You will instead find that both vendors stopping providing Linux related
-source code at about the point they got Xbox related contracts. A matter
-which has been pointed out to various competition and legal authorities
-and for now where it seems to lie.
+readprofile -r
+sleep 10
+readprofile -n -v -m /boot/System.map | sort -n -k 3 | tail -40
 
-Fortunately at the moment there is a simple cure - buy Intel hardware.
-That also has the advantage that you are more likely to get help because
-some of us only look at AMD processor related problems as part of
-official work duties nowdays, and plan to do so until AMD (as owner
-of ATI) behave.
-
-Alan
+would tell us.
