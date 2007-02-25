@@ -1,47 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933602AbXBYAIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933603AbXBYANu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933602AbXBYAIs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 19:08:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933603AbXBYAIs
+	id S933603AbXBYANu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 19:13:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933605AbXBYANu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 19:08:48 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:43400 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933602AbXBYAIr (ORCPT
+	Sat, 24 Feb 2007 19:13:50 -0500
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:39787 "EHLO
+	netops-testserver-4.corp.sgi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S933603AbXBYANt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 19:08:47 -0500
-Date: Sun, 25 Feb 2007 01:08:47 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] remove the jffs MAINTAINERS entry
-Message-ID: <20070225000847.GV12392@stusta.de>
+	Sat, 24 Feb 2007 19:13:49 -0500
+Date: Sat, 24 Feb 2007 16:13:47 -0800 (PST)
+From: Christoph Lameter <clameter@engr.sgi.com>
+To: Hugh Dickins <hugh@veritas.com>
+cc: Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, dipankar@in.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: PREEMPT_RCU breaks anon_vma locking ?
+In-Reply-To: <Pine.LNX.4.64.0702242203080.4370@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0702241612470.4891@schroedinger.engr.sgi.com>
+References: <20070223212303.GA423@tv-sign.ru> <Pine.LNX.4.64.0702242203080.4370@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the MAINTAINERS entry for the removed jffs 
-filesystem.
+On Sat, 24 Feb 2007, Hugh Dickins wrote:
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> Two, in his SLUB thread it sounds like he's toying with mixing up kmem
+> caches of similar sizes: that seems a really bad idea to me (for reasons
+> Andi and others have made) and I expect it'll get dropped; but in case
+> not, let's note that the anon_vma cache is one which would fare very
+> badly from getting mixed in with others (lock would no longer remain
+> a lock, list would no longer remain a list, across that race).
 
---- linux-2.6.20-mm2/MAINTAINERS.old	2007-02-24 23:31:48.000000000 +0100
-+++ linux-2.6.20-mm2/MAINTAINERS	2007-02-24 23:32:04.000000000 +0100
-@@ -1956,13 +1956,6 @@
- W:	http://www.melware.de
- S:	Maintained
- 
--JOURNALLING FLASH FILE SYSTEM (JFFS)
--P:	Axis Communications AB
--M:	jffs-dev@axis.com
--L:	jffs-dev@axis.com
--W:	http://www.developer.axis.com/software/jffs/
--S:	Maintained
--
- JOURNALLING FLASH FILE SYSTEM V2 (JFFS2)
- P:	David Woodhouse
- M:	dwmw2@infradead.org
-
+Dont worry DESTROY_BY_RCU slabs wont be mixed with those not marked 
+DESTROY_BY_RCU.
