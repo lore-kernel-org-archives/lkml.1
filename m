@@ -1,115 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751676AbXBYTLN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752388AbXBYTYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751676AbXBYTLN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 14:11:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbXBYTLN
+	id S1752388AbXBYTYX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 14:24:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbXBYTYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 14:11:13 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42676 "EHLO mx2.mail.elte.hu"
+	Sun, 25 Feb 2007 14:24:23 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:56461 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751676AbXBYTLL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 14:11:11 -0500
-Date: Sun, 25 Feb 2007 20:04:15 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070225190414.GB6460@elte.hu>
-References: <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com> <20070222074044.GA4158@elte.hu> <20070222113148.GA3781@2ka.mipt.ru> <20070222125931.GB25788@elte.hu> <20070222133201.GB5208@2ka.mipt.ru> <20070223115152.GA2565@elte.hu> <20070223122224.GB5392@2ka.mipt.ru> <20070225174505.GA7048@elte.hu> <20070225180910.GA29821@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1750999AbXBYTYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 14:24:22 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Aneesh Kumar" <aneesh.kumar@gmail.com>
+Subject: Re: [RFC][PATCH 4/7] Freezer: Fix vfork problem
+Date: Sun, 25 Feb 2007 20:17:20 +0100
+User-Agent: KMail/1.9.5
+Cc: "Pavel Machek" <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
+       paulmck@linux.vnet.ibm.com, ego@in.ibm.com, akpm@osdl.org,
+       mingo@elte.hu, vatsa@in.ibm.com, dipankar@in.ibm.com,
+       venkatesh.pallipadi@intel.com, "Oleg Nesterov" <oleg@tv-sign.ru>
+References: <200702231116.23607.rjw@sisk.pl> <cc723f590702250728ra1bbb10l190ab73ce3d6fc77@mail.gmail.com> <cc723f590702250740t1fec263cq5378027527c3d9f8@mail.gmail.com>
+In-Reply-To: <cc723f590702250740t1fec263cq5378027527c3d9f8@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070225180910.GA29821@2ka.mipt.ru>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200702252017.22077.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday, 25 February 2007 16:40, Aneesh Kumar wrote:
+> On 2/25/07, Aneesh Kumar <aneesh.kumar@gmail.com> wrote:
+> > On 2/25/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > On Sunday, 25 February 2007 15:33, Aneesh Kumar wrote:
+> > > > On 2/25/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+[--snip--]
+> 
+> Thinking about this  i guess we have a problem with the above approach
+> i outlined. if we have one task that is waiting on the event and more
+> than one that can generate the event then the above logic would not
+> work. Also with cases other than vfork; logic of tracking the waiting
+> task gets complex. I guess what we have right now is better.
 
-* Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+I assume by "righ now" you mean the latest version of my patch. ;-)
 
-> Kevent is a _very_ small entity and there is _no_ cost of requeueing 
-> (well, there is list_add guarded by lock) - after it is done, process 
-> can start real work. With rescheduling there are _too_ many things to 
-> be done before we can start new work. [...]
+Still, having pondered the Pavel's suggestion for a while I think it's doable
+without the addtitional process flag.  Patch below.
 
-actually, no. For example a wakeup too is fundamentally a list_add 
-guarded by a lock. Take a look at try_to_wake_up(). The rest you see 
-there is just extra frills that relate to things like 'load-balancing 
-the requests over multiple CPUs [which i'm sure kevent users would 
-request in the future too]'.
+Greetings,
+Rafael
 
-> [...] We have to change registers, change address space, various tlb 
-> bits and so on - we have to do it, since task describes very heavy 
-> entity - the whole process. [...]
+ include/linux/completion.h |   13 ++++++++++++-
+ kernel/fork.c              |    2 +-
+ kernel/power/process.c     |   20 ++++++--------------
+ kernel/sched.c             |    8 ++++++--
+ 4 files changed, 25 insertions(+), 18 deletions(-)
 
-but ... 'threadlets' are called thread-lets because they are not full 
-processes, they are threads. There's no TLB state in that case. There's 
-indeed register state associated with them, and currently there can 
-certainly be quite a bit of overhead in a context switch - but not in 
-register saving. We do user-space register saving not in the scheduler 
-but upon /every system call/. Fundamentally a kernel thread is just its 
-EIP/ESP [on x86, similar on other architectures] - which can be 
-saved/restored in near zero time. All the rest is something we added for 
-good /work queueing/ reasons - and those same extras should either be 
-eliminated if they turn out to be not so good reasons after all, or they 
-will be wanted for kevents too eventually, once it matures as a work 
-queueing solution.
-
-> I think it is _too_ heavy to have such a monster structure like 
-> task(thread/process) and related overhead just to do an IO.
-
-i think you are really, really mistaken if you believe that the fact 
-that whole tasks/threads or processes can be 'monster structures', 
-somehow has any relevance to scheduling/task-queueing performance and 
-scalability. It does not matter how large a task's address space is - 
-scheduling only relates to the minimal context that is in the CPU. And 
-most of that context we save upon /every system call entry/, and restore 
-it upon every system call return. If it's so expensive to manipulate, 
-why can the Linux kernel do a full system call in ~150 cycles? That's 
-cheaper than the access latency to a single DRAM page.
-
-for the same reason has it no relevance that the full kevent-based 
-webserver is a 'monster structure' - still a single request's basic 
-queueing operation is cheap. The same is true to tasks/threads.
-
-Really, you dont even have to know or assume anything about the 
-scheduler, just lets do some elementary math here:
-
-the reqs/sec your sendfile+kevent based webserver can do is 7900 per 
-sec. Lets assume you will write further great kevent code which will 
-optimize it further and it goes up to 10,100 reqs per sec (100 usecs per 
-request), ok? Then also try how many reschedules/sec can your Athon64 
-3500 box do. My guess is: about a million per second (1 usec per 
-reschedule), perhaps a bit more.
-
-Now lets assume that a threadlet based server would have to 
-context-switch for /every single/ request served. That's totally 
-over-estimating it, even with lots of slow clients, but lets assume it, 
-to judge the worst-case impact.
-
-So if you had to schedule once per every request served, you'd have to 
-add 1 usec to your 100 usecs cost, making it 101 usecs. That would bring 
-your 10,100 requests per sec to 10,000 requests/sec, under a threadlet 
-model of operation. Put differently: it will cost you only 1% in 
-performance to schedule once for every request. Or lets assume the task 
-is totally cache-cold and you'd have to add 4 usecs for its scheduling - 
-that'd still only be 4%. So where is the fat?
-
-	Ingo
+Index: linux-2.6.20-mm2/include/linux/completion.h
+===================================================================
+--- linux-2.6.20-mm2.orig/include/linux/completion.h	2007-02-25 14:02:54.000000000 +0100
++++ linux-2.6.20-mm2/include/linux/completion.h	2007-02-25 20:20:35.000000000 +0100
+@@ -42,7 +42,18 @@ static inline void init_completion(struc
+ 	init_waitqueue_head(&x->wait);
+ }
+ 
+-extern void FASTCALL(wait_for_completion(struct completion *));
++extern void FASTCALL(__wait_for_completion(struct completion *, int));
++
++static inline void wait_for_completion(struct completion *x)
++{
++	__wait_for_completion(x, 0);
++}
++
++static inline void wait_for_completion_freezable(struct completion *x)
++{
++	__wait_for_completion(x, 1);
++}
++
+ extern int FASTCALL(wait_for_completion_interruptible(struct completion *x));
+ extern unsigned long FASTCALL(wait_for_completion_timeout(struct completion *x,
+ 						   unsigned long timeout));
+Index: linux-2.6.20-mm2/kernel/sched.c
+===================================================================
+--- linux-2.6.20-mm2.orig/kernel/sched.c	2007-02-25 14:02:54.000000000 +0100
++++ linux-2.6.20-mm2/kernel/sched.c	2007-02-25 20:20:35.000000000 +0100
+@@ -3803,7 +3803,8 @@ void fastcall complete_all(struct comple
+ }
+ EXPORT_SYMBOL(complete_all);
+ 
+-void fastcall __sched wait_for_completion(struct completion *x)
++void fastcall __sched
++__wait_for_completion(struct completion *x, int freezable)
+ {
+ 	might_sleep();
+ 
+@@ -3817,6 +3818,9 @@ void fastcall __sched wait_for_completio
+ 			__set_current_state(TASK_UNINTERRUPTIBLE);
+ 			spin_unlock_irq(&x->wait.lock);
+ 			schedule();
++			if (freezable)
++				try_to_freeze();
++
+ 			spin_lock_irq(&x->wait.lock);
+ 		} while (!x->done);
+ 		__remove_wait_queue(&x->wait, &wait);
+@@ -3824,7 +3828,7 @@ void fastcall __sched wait_for_completio
+ 	x->done--;
+ 	spin_unlock_irq(&x->wait.lock);
+ }
+-EXPORT_SYMBOL(wait_for_completion);
++EXPORT_SYMBOL(__wait_for_completion);
+ 
+ unsigned long fastcall __sched
+ wait_for_completion_timeout(struct completion *x, unsigned long timeout)
+Index: linux-2.6.20-mm2/kernel/fork.c
+===================================================================
+--- linux-2.6.20-mm2.orig/kernel/fork.c	2007-02-25 20:17:25.000000000 +0100
++++ linux-2.6.20-mm2/kernel/fork.c	2007-02-25 20:20:35.000000000 +0100
+@@ -1393,7 +1393,7 @@ long do_fork(unsigned long clone_flags,
+ 		tracehook_report_clone_complete(clone_flags, nr, p);
+ 
+ 		if (clone_flags & CLONE_VFORK) {
+-			wait_for_completion(&vfork);
++			wait_for_completion_freezable(&vfork);
+ 			tracehook_report_vfork_done(p, nr);
+ 		}
+ 	} else {
+Index: linux-2.6.20-mm2/kernel/power/process.c
+===================================================================
+--- linux-2.6.20-mm2.orig/kernel/power/process.c	2007-02-25 20:17:25.000000000 +0100
++++ linux-2.6.20-mm2/kernel/power/process.c	2007-02-25 20:20:35.000000000 +0100
+@@ -48,6 +48,9 @@ void refrigerator(void)
+ 		task_unlock(current);
+ 		return;
+ 	}
++	if (current->vfork_done)
++		wake_up_process(current->parent);
++
+ 	save = current->state;
+ 	pr_debug("%s entered refrigerator\n", current->comm);
+ 
+@@ -127,21 +130,10 @@ static unsigned int try_to_freeze_tasks(
+ 				cancel_freezing(p);
+ 				continue;
+ 			}
+-			if (is_user_space(p)) {
+-				if (!freeze_user_space)
+-					continue;
+-
+-				/* Freeze the task unless there is a vfork
+-				 * completion pending
+-				 */
+-				if (!p->vfork_done)
+-					freeze_process(p);
+-			} else {
+-				if (freeze_user_space)
+-					continue;
++			if (is_user_space(p) == !freeze_user_space)
++				continue;
+ 
+-				freeze_process(p);
+-			}
++			freeze_process(p);
+ 			todo++;
+ 		} while_each_thread(g, p);
+ 		read_unlock(&tasklist_lock);
