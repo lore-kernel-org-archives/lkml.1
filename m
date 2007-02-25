@@ -1,99 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751672AbXBYTK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751676AbXBYTLN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751672AbXBYTK2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 14:10:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbXBYTK2
+	id S1751676AbXBYTLN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 14:11:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbXBYTLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 14:10:28 -0500
-Received: from mailfront2.netatonce.net ([217.10.96.66]:54121 "EHLO
-	mailfront2.citynet.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750828AbXBYTK1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 14:10:27 -0500
-X-Greylist: delayed 1931 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 Feb 2007 14:10:26 EST
-Subject: Re: Soft lockup on shutdown in nf_ct_iterate_cleanup()
-From: Martin Josefsson <gandalf@wlug.westbo.se>
-To: Patrick McHardy <kaber@trash.net>
-Cc: Chuck Ebbert <cebbert@redhat.com>, netfilter-devel@lists.netfilter.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <45E1C7E0.9070102@trash.net>
-References: <45DB9C1F.1080605@redhat.com> <45DCEA47.5080100@redhat.com>
-	 <45E04468.7020001@trash.net> <45E06546.504@redhat.com>
-	 <45E1C7E0.9070102@trash.net>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-N1rREts8Rj+1DcGD7fDt"
-Date: Sun, 25 Feb 2007 19:38:13 +0100
-Message-Id: <1172428694.4485.31.camel@localhost.localdomain>
+	Sun, 25 Feb 2007 14:11:13 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42676 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751676AbXBYTLL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 14:11:11 -0500
+Date: Sun, 25 Feb 2007 20:04:15 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070225190414.GB6460@elte.hu>
+References: <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com> <20070222074044.GA4158@elte.hu> <20070222113148.GA3781@2ka.mipt.ru> <20070222125931.GB25788@elte.hu> <20070222133201.GB5208@2ka.mipt.ru> <20070223115152.GA2565@elte.hu> <20070223122224.GB5392@2ka.mipt.ru> <20070225174505.GA7048@elte.hu> <20070225180910.GA29821@2ka.mipt.ru>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-X-Spam-Count: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070225180910.GA29821@2ka.mipt.ru>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-N1rREts8Rj+1DcGD7fDt
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+* Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
 
-On Sun, 2007-02-25 at 18:31 +0100, Patrick McHardy wrote:
+> Kevent is a _very_ small entity and there is _no_ cost of requeueing 
+> (well, there is list_add guarded by lock) - after it is done, process 
+> can start real work. With rescheduling there are _too_ many things to 
+> be done before we can start new work. [...]
 
-> [NETFILTER]: conntrack: fix {nf,ip}_ct_iterate_cleanup endless loops
->=20
-> {nf,ip}_ct_iterate_cleanup iterate over the unconfirmed list for cleaning
-> up conntrack entries, which is wrong for multiple reasons:
->=20
-> - unconfirmed entries can not be killed manually, which means we might
->   iterate forever without making forward progress.
->=20
->   This can happen in combination with the conntrack event cache, which
->   holds a reference to the conntrack entry, which is only released when
->   the packet makes it all the way through the stack or a different
->   packet is handled.
->
-> - taking references to an unconfirmed entry and using it outside the
->   locked section doesn't work, the list entries are not refcounted and
->   another CPU might already be waiting to destroy the entry
->=20
-> Split ip_ct_iterate_cleanup in ip_ct_iterate, which iterates over both
-> confirmed and unconfirmed entries, but doesn't attempt to kill them,
-> and ip_ct_cleanup, which makes sure no unconfirmed entries exist by
-> calling synchronize_net() prior to walking the conntrack hash.
+actually, no. For example a wakeup too is fundamentally a list_add 
+guarded by a lock. Take a look at try_to_wake_up(). The rest you see 
+there is just extra frills that relate to things like 'load-balancing 
+the requests over multiple CPUs [which i'm sure kevent users would 
+request in the future too]'.
 
-What about this case:
+> [...] We have to change registers, change address space, various tlb 
+> bits and so on - we have to do it, since task describes very heavy 
+> entity - the whole process. [...]
 
-1. Conntrack entry is created and placed on the unconfirmed list
-2. The event cache bumps the refcount of the conntrack entry
-3. module removal of ip_conntrack unregisters all hooks
-4. packet is dropped by an iptables rule
-5. packet is freed but we still have a refcount on the conntrack entry
+but ... 'threadlets' are called thread-lets because they are not full 
+processes, they are threads. There's no TLB state in that case. There's 
+indeed register state associated with them, and currently there can 
+certainly be quite a bit of overhead in a context switch - but not in 
+register saving. We do user-space register saving not in the scheduler 
+but upon /every system call/. Fundamentally a kernel thread is just its 
+EIP/ESP [on x86, similar on other architectures] - which can be 
+saved/restored in near zero time. All the rest is something we added for 
+good /work queueing/ reasons - and those same extras should either be 
+eliminated if they turn out to be not so good reasons after all, or they 
+will be wanted for kevents too eventually, once it matures as a work 
+queueing solution.
 
-Now there's no way to get that refcount to decrease as that only happens
-when the event cache receives another packet or the current packet makes
-it through the stack as you wrote above. And neither of this will happen
-since we unregistered the hooks providing the packets and dropped the
-packet.
+> I think it is _too_ heavy to have such a monster structure like 
+> task(thread/process) and related overhead just to do an IO.
 
-I ran into this case a while ago during stresstesting and rewrote the
-event cache to not increase the refcount, but this has the drawback that
-events caused by dropped packets won't be reported. This may not be a
-good thing...
+i think you are really, really mistaken if you believe that the fact 
+that whole tasks/threads or processes can be 'monster structures', 
+somehow has any relevance to scheduling/task-queueing performance and 
+scalability. It does not matter how large a task's address space is - 
+scheduling only relates to the minimal context that is in the CPU. And 
+most of that context we save upon /every system call entry/, and restore 
+it upon every system call return. If it's so expensive to manipulate, 
+why can the Linux kernel do a full system call in ~150 cycles? That's 
+cheaper than the access latency to a single DRAM page.
 
-Old patch can be found here:
-http://performance.netfilter.org/patches/nf_conntrack_ecache-fix
+for the same reason has it no relevance that the full kevent-based 
+webserver is a 'monster structure' - still a single request's basic 
+queueing operation is cheap. The same is true to tasks/threads.
 
---=20
-/Martin
+Really, you dont even have to know or assume anything about the 
+scheduler, just lets do some elementary math here:
 
---=-N1rREts8Rj+1DcGD7fDt
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+the reqs/sec your sendfile+kevent based webserver can do is 7900 per 
+sec. Lets assume you will write further great kevent code which will 
+optimize it further and it goes up to 10,100 reqs per sec (100 usecs per 
+request), ok? Then also try how many reschedules/sec can your Athon64 
+3500 box do. My guess is: about a million per second (1 usec per 
+reschedule), perhaps a bit more.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+Now lets assume that a threadlet based server would have to 
+context-switch for /every single/ request served. That's totally 
+over-estimating it, even with lots of slow clients, but lets assume it, 
+to judge the worst-case impact.
 
-iD8DBQBF4deVWm2vlfa207ERAhZOAJ4wwLtE4BJ7He5HfPoDYWuhO4xEBACfTa0v
-koSHK6ziYbPehHuf6mJG65Q=
-=yYBJ
------END PGP SIGNATURE-----
+So if you had to schedule once per every request served, you'd have to 
+add 1 usec to your 100 usecs cost, making it 101 usecs. That would bring 
+your 10,100 requests per sec to 10,000 requests/sec, under a threadlet 
+model of operation. Put differently: it will cost you only 1% in 
+performance to schedule once for every request. Or lets assume the task 
+is totally cache-cold and you'd have to add 4 usecs for its scheduling - 
+that'd still only be 4%. So where is the fat?
 
---=-N1rREts8Rj+1DcGD7fDt--
-
+	Ingo
