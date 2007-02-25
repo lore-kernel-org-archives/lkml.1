@@ -1,280 +1,398 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752381AbXBYROb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965013AbXBYRZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752381AbXBYROb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 12:14:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964986AbXBYROb
+	id S965013AbXBYRZZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 12:25:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965018AbXBYRZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 12:14:31 -0500
-Received: from mx27.mail.ru ([194.67.23.64]:5912 "EHLO mx27.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752380AbXBYROa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 12:14:30 -0500
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.19: ACPI reports AC not present after resume from STD
-Date: Sun, 25 Feb 2007 20:14:22 +0300
-User-Agent: KMail/1.9.6
-Cc: "Lebedev, Vladimir P" <vladimir.p.lebedev@intel.com>,
-       "Karasyov, Konstantin A" <konstantin.a.karasyov@intel.com>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-pm@lists.osdl.org, Andrew Morton <akpm@osdl.org>
-References: <8E389A5F2FEABA4CB1DEC35A25CB39CE82FE9F@mssmsx411> <200702251337.08914.arvidjaar@mail.ru> <200702251151.12107.rjw@sisk.pl>
-In-Reply-To: <200702251151.12107.rjw@sisk.pl>
+	Sun, 25 Feb 2007 12:25:25 -0500
+Received: from stinky.trash.net ([213.144.137.162]:46291 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965013AbXBYRZY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 12:25:24 -0500
+Message-ID: <45E1C7E0.9070102@trash.net>
+Date: Sun, 25 Feb 2007 18:31:12 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1222813.WCPcBIExH4";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200702252014.26110.arvidjaar@mail.ru>
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: netfilter-devel@lists.netfilter.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Soft lockup on shutdown in nf_ct_iterate_cleanup()
+References: <45DB9C1F.1080605@redhat.com> <45DCEA47.5080100@redhat.com> <45E04468.7020001@trash.net> <45E06546.504@redhat.com>
+In-Reply-To: <45E06546.504@redhat.com>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: multipart/mixed;
+ boundary="------------000501040101060500070205"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1222813.WCPcBIExH4
-Content-Type: multipart/mixed;
-  boundary="Boundary-01=_xPc4FyUkCnyB/l+"
+This is a multi-part message in MIME format.
+--------------000501040101060500070205
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
---Boundary-01=_xPc4FyUkCnyB/l+
+Chuck Ebbert wrote:
+> It is the standard Fedora script "iptables" and it recursively
+> unloads all referring modules, then the base ones: ip_tables and
+> ip_conntrack. I can't tell which module it stopped on because
+> that computer is at home today. 
+> 
+> And yes, it really locks up until it's caught by the softlockup
+> watchdog. Has only happened on a uniprocessor i686 system so far,
+> but happens every time on shutdown.
+
+
+Can you try this patch please?
+
+--------------000501040101060500070205
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-On =D0=92=D0=BE=D1=81=D0=BA=D1=80=D0=B5=D1=81=D0=B5=D0=BD=D1=8C=D0=B5 25 =
-=D1=84=D0=B5=D0=B2=D1=80=D0=B0=D0=BB=D1=8F 2007, Rafael J. Wysocki wrote:
-> On Sunday, 25 February 2007 11:37, Andrey Borzenkov wrote:
-> > On =D0=92=D0=BE=D1=81=D0=BA=D1=80=D0=B5=D1=81=D0=B5=D0=BD=D1=8C=D0=B5 2=
-5 =D1=84=D0=B5=D0=B2=D1=80=D0=B0=D0=BB=D1=8F 2007, Rafael J. Wysocki wrote:
-> > > On Sunday, 25 February 2007 00:26, Andrey Borzenkov wrote:
-> > > > On =D0=A1=D1=83=D0=B1=D0=B1=D0=BE=D1=82=D0=B0 24 =D1=84=D0=B5=D0=B2=
-=D1=80=D0=B0=D0=BB=D1=8F 2007, Rafael J. Wysocki wrote:
-> > > > > Hi,
-> > > > >
-> > > > > On Saturday, 24 February 2007 10:55, Andrey Borzenkov wrote:
-> > > > > > On =D0=92=D1=82=D0=BE=D1=80=D0=BD=D0=B8=D0=BA 13 =D1=84=D0=B5=
-=D0=B2=D1=80=D0=B0=D0=BB=D1=8F 2007, Andrey Borzenkov wrote:
-> > > > > > > On =D0=A7=D0=B5=D1=82=D0=B2=D0=B5=D1=80=D0=B3 07 =D0=B4=D0=B5=
-=D0=BA=D0=B0=D0=B1=D1=80=D1=8F 2006, Lebedev, Vladimir P wrote:
-> > > > > > > > Please register new bug, attach acpidump and dmesg.
-> > > > > > >
-> > > > > > > http://bugzilla.kernel.org/show_bug.cgi?id=3D7995
-> > > > > > >
-> > > > > > > regards
-> > > > > >
-> > > > > > Well, this starts looking like ACPI is not at fault.
-> > > > > >
-> > > > > > When reporting AC state ACPI just reads contents of system memo=
-ry
-> > > > > > (I presume it gets updated by BIOS/ACPI when AC state changes).
-> > > > > > It looks like this memory area is restored during resume from
-> > > > > > STD. I updated mentioned bug report with more detailed
-> > > > > > description. Now if someone could suggest a way to catch if
-> > > > > > specific physical address gets saved/restored this would finally
-> > > > > > explain it.
-> > > > >
-> > > > > First, if you want the reserved memory areas to be left alone by
-> > > > > swsusp, you need to mark them as 'nosave'.  On x86_64 this is done
-> > > > > by the function e820_mark_nosave_range() in
-> > > > > arch/x86_64/kernel/e820.c that can be ported to i386 with no
-> > > > > problems.  However, we haven't found that very useful, so far,
-> > > > > since no one has ever reported any problems with the current
-> > > > > approach, which is to save and restore them.
-> > > >
-> > > > Well, the following proof of concept patch fixes this issue for me.
-> > > > Please notice that original version of e820_mark_nosave_range() cou=
-ld
-> > > > fail to exclude some areas due to alignment issues (exactly what
-> > > > happened to me on first try) so it still can explain your problem
-> > > > too.
-> > >
-> > > Great job, thanks for the patch!  It looks good, so I'm going to
-> > > forward it for merging.
-> >
-> > Please no; I'm currently testing slightly more polished version; I will
-> > send it later.
->
-> OK
->
-> > Could anybody explain (or give pointer to) what happens which region th=
-at
-> > is not page-aligned? In particular, the very first one:
-> >
-> >  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
-> >  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
-> >
-> > Will the kernel allocate partial page (how?) or will the kernel ignore
-> > last (first) incomplete page? In the former case how those incomplete
-> > pages can be detected?
->
-> Well, on x86_64, if I understand e820_register_active_regions() correctly,
-> the partial pages won't be registered.
->
-
-It appears that for low memory kernel will ignore incomplete pages for sure=
-=2E I=20
-hope it does the same for high memory - but for now I just throw this in an=
-d=20
-pray :) This also significantly simplifies patch.
-
-As this touches quite sensitive field, I Cc Andrew - if he considers this=20
-appropriate for mm; or would you do it as part of your tree? Also he probab=
-ly=20
-can easily clarify memory allocation questions :p
-
-regards
-
-=2Dandrey
-
---Boundary-01=_xPc4FyUkCnyB/l+
-Content-Type: text/x-diff;
-  charset="utf-8";
-  name="nosave_reserved_memory"
-Content-Transfer-Encoding: quoted-printable
+ name="x"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
-	filename="nosave_reserved_memory"
+ filename="x"
 
-Subject: [PATCH] Mark e820 reserved memory areas as nosave for suspend/resu=
-me
-=46rom: Andrey Borzenkov <<arvidjaar@mail.ru>>
+[NETFILTER]: conntrack: fix {nf,ip}_ct_iterate_cleanup endless loops
 
-This fixes bug http://bugzilla.kernel.org/show_bug.cgi?id=3D7995. From
-lkml discussion (http://marc.theaimsgroup.com/?t=3D116514878500001&r=3D1&w=
-=3D2):
+{nf,ip}_ct_iterate_cleanup iterate over the unconfirmed list for cleaning
+up conntrack entries, which is wrong for multiple reasons:
 
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> When reporting AC state ACPI just reads contents of system memory (I
-> presume
-> it gets updated by BIOS/ACPI when AC state changes). It looks like this
-> memory area is restored during resume from STD. I updated mentioned bug
-> report with more detailed description. Now if someone could suggest a way
-> to
-> catch if specific physical address gets saved/restored this would finally
-> explain it.
+- unconfirmed entries can not be killed manually, which means we might
+  iterate forever without making forward progress.
 
-=46irst, if you want the reserved memory areas to be left alone by swsusp,
-you need to mark them as 'nosave'.  On x86_64 this is done by the function
-e820_mark_nosave_range() in arch/x86_64/kernel/e820.c that can be ported to
-i386 with no problems.  However, we haven't found that very useful, so far,
-since no one has ever reported any problems with the current approach,
-which is to save and restore them.
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+  This can happen in combination with the conntrack event cache, which
+  holds a reference to the conntrack entry, which is only released when
+  the packet makes it all the way through the stack or a different
+  packet is handled.
 
-The patch adds adapted x84_64 version for i386. It differs from x86_64
-in that
+- taking references to an unconfirmed entry and using it outside the
+  locked section doesn't work, the list entries are not refcounted and
+  another CPU might already be waiting to destroy the entry
 
-=2D it does not touch memory regions not covered by e820 table (I simply
-have no idea if this is appropriate to do)
+Split ip_ct_iterate_cleanup in ip_ct_iterate, which iterates over both
+confirmed and unconfirmed entries, but doesn't attempt to kill them,
+and ip_ct_cleanup, which makes sure no unconfirmed entries exist by
+calling synchronize_net() prior to walking the conntrack hash.
 
-=2D it properly marks also partial pages (like the initial one in second
-line below). Apparently kernel won't allocate and use such pages, so there
-is nothing to preserve there.
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 
- BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
- BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+---
+commit 08ace206d2703e377efebe1852539177458593ff
+tree 1d27d4759a77db062d48c4420459c810e7fec14a
+parent 9654640d0af8f2de40ff3807d3695109d3463f54
+author Patrick McHardy <kaber@trash.net> Sun, 25 Feb 2007 17:57:21 +0100
+committer Patrick McHardy <kaber@trash.net> Sun, 25 Feb 2007 18:28:22 +0100
 
-The region in question starts at ee800. This is likely true for x86_64 as
-well.
+ include/linux/netfilter_ipv4/ip_conntrack.h  |    5 ++--
+ include/net/netfilter/nf_conntrack.h         |    5 +++-
+ include/net/netfilter/nf_nat_rule.h          |    3 ++
+ net/ipv4/netfilter/ip_conntrack_core.c       |   30 ++++++++++++++++++------
+ net/ipv4/netfilter/ip_conntrack_standalone.c |    5 ++--
+ net/ipv4/netfilter/ip_nat_core.c             |    5 ++--
+ net/ipv4/netfilter/ipt_MASQUERADE.c          |    4 ++-
+ net/ipv4/netfilter/nf_nat_core.c             |    7 ++----
+ net/netfilter/nf_conntrack_core.c            |   33 ++++++++++++++++++++------
+ net/netfilter/nf_conntrack_proto.c           |    4 ++-
+ 10 files changed, 69 insertions(+), 32 deletions(-)
 
-Signed-off-by: Andrey Borzenkov <<arvidjaar@mail.ru>>
-
-=2D--
-
- arch/i386/kernel/e820.c  |   41 +++++++++++++++++++++++++++++++++++++++++
- arch/i386/kernel/setup.c |    1 +
- include/asm-i386/e820.h  |    1 +
- 3 files changed, 43 insertions(+), 0 deletions(-)
-
-diff --git a/arch/i386/kernel/e820.c b/arch/i386/kernel/e820.c
-index f391abc..adf0e6f 100644
-=2D-- a/arch/i386/kernel/e820.c
-+++ b/arch/i386/kernel/e820.c
-@@ -311,6 +311,47 @@ static int __init request_standard_resources(void)
-=20
- subsys_initcall(request_standard_resources);
-=20
-+/*
-+ * Mark pages corresponding to given pfn range as nosaves
-+ *
-+ * For low memory kernel definitely won't use partial pages;
-+ * I hope the same happens for high memory too. That is why
-+ * round in outer direction to be sure to preserve those partial
-+ * pages if they contain reserved regions.
-+ */
-+static void __init
-+e820_mark_nosave_range(unsigned long long start, unsigned long long end)
-+{
-+	unsigned long pfn, max_pfn =3D PFN_UP(end);
+diff --git a/include/linux/netfilter_ipv4/ip_conntrack.h b/include/linux/netfilter_ipv4/ip_conntrack.h
+index da9274e..90b12b2 100644
+--- a/include/linux/netfilter_ipv4/ip_conntrack.h
++++ b/include/linux/netfilter_ipv4/ip_conntrack.h
+@@ -250,8 +250,9 @@ ip_ct_gather_frags(struct sk_buff *skb, 
+ 
+ /* Iterate over all conntracks: if iter returns true, it's deleted. */
+ extern void
+-ip_ct_iterate_cleanup(int (*iter)(struct ip_conntrack *i, void *data),
+-		      void *data);
++ip_ct_cleanup(int (*iter)(struct ip_conntrack *i, void *data), void *data);
++extern void
++ip_ct_iterate(void (*iter)(struct ip_conntrack *i, void *data), void *data);
+ 
+ extern struct ip_conntrack_helper *
+ __ip_conntrack_helper_find_byname(const char *);
+diff --git a/include/net/netfilter/nf_conntrack.h b/include/net/netfilter/nf_conntrack.h
+index 0e690e3..a9271df 100644
+--- a/include/net/netfilter/nf_conntrack.h
++++ b/include/net/netfilter/nf_conntrack.h
+@@ -233,7 +233,10 @@ extern int nf_ct_no_defrag;
+ 
+ /* Iterate over all conntracks: if iter returns true, it's deleted. */
+ extern void
+-nf_ct_iterate_cleanup(int (*iter)(struct nf_conn *i, void *data), void *data);
++nf_ct_cleanup(int (*iter)(struct nf_conn *i, void *data), void *data);
++extern void
++nf_ct_iterate(void (*iter)(struct nf_conn *i, void *data), void *data);
 +
-+	if (start >=3D end)
-+		return;
-+
-+	printk("Nosave address range: %016Lx - %016Lx\n", start, end);
-+	for (pfn =3D PFN_DOWN(start); pfn < max_pfn; pfn++)
-+		if (pfn_valid(pfn))
-+			SetPageNosave(pfn_to_page(pfn));
-+}
-+
-+/*
-+ * Find the ranges of physical addresses that do not correspond to
-+ * e820 RAM areas and mark the corresponding pages as nosave for software
-+ * suspend and suspend to RAM.
-+ *
-+ * This assumes kernel won't use partial pages.
-+ */
-+void __init e820_mark_nosave_regions(void)
-+{
-+	int i;
-+
-+	for (i =3D 0; i < e820.nr_map; i++) {
-+		struct e820entry *ei =3D &e820.map[i];
-+
-+		if (ei->type !=3D E820_RAM)
-+			e820_mark_nosave_range(ei->addr, ei->addr + ei->size);
-+	}
-+}
-+
- void __init add_memory_region(unsigned long long start,
- 			      unsigned long long size, int type)
+ extern void nf_conntrack_free(struct nf_conn *ct);
+ extern struct nf_conn *
+ nf_conntrack_alloc(const struct nf_conntrack_tuple *orig,
+diff --git a/include/net/netfilter/nf_nat_rule.h b/include/net/netfilter/nf_nat_rule.h
+index f191c67..2f16114 100644
+--- a/include/net/netfilter/nf_nat_rule.h
++++ b/include/net/netfilter/nf_nat_rule.h
+@@ -11,7 +11,8 @@ #define ip_conntrack_get		nf_ct_get
+ #define ip_conntrack			nf_conn
+ #define ip_nat_setup_info		nf_nat_setup_info
+ #define ip_nat_multi_range_compat	nf_nat_multi_range_compat
+-#define ip_ct_iterate_cleanup		nf_ct_iterate_cleanup
++#define ip_ct_cleanup			nf_ct_cleanup
++#define ip_ct_iterate			nf_ct_iterate
+ #define	IP_NF_ASSERT			NF_CT_ASSERT
+ 
+ extern int nf_nat_rule_init(void) __init;
+diff --git a/net/ipv4/netfilter/ip_conntrack_core.c b/net/ipv4/netfilter/ip_conntrack_core.c
+index 07ba1dd..eaf6b07 100644
+--- a/net/ipv4/netfilter/ip_conntrack_core.c
++++ b/net/ipv4/netfilter/ip_conntrack_core.c
+@@ -1251,11 +1251,6 @@ get_next_corpse(int (*iter)(struct ip_co
+ 				goto found;
+ 		}
+ 	}
+-	list_for_each_entry(h, &unconfirmed, list) {
+-		ct = tuplehash_to_ctrack(h);
+-		if (iter(ct, data))
+-			goto found;
+-	}
+ 	write_unlock_bh(&ip_conntrack_lock);
+ 	return NULL;
+ 
+@@ -1266,11 +1261,16 @@ found:
+ }
+ 
+ void
+-ip_ct_iterate_cleanup(int (*iter)(struct ip_conntrack *i, void *), void *data)
++ip_ct_cleanup(int (*iter)(struct ip_conntrack *i, void *), void *data)
  {
-diff --git a/arch/i386/kernel/setup.c b/arch/i386/kernel/setup.c
-index 4b31ad7..4f43e46 100644
-=2D-- a/arch/i386/kernel/setup.c
-+++ b/arch/i386/kernel/setup.c
-@@ -640,6 +640,7 @@ void __init setup_arch(char **cmdline_p)
- #endif
-=20
- 	e820_register_memory();
-+	e820_mark_nosave_regions();
-=20
- #ifdef CONFIG_VT
- #if defined(CONFIG_VGA_CONSOLE)
-diff --git a/include/asm-i386/e820.h b/include/asm-i386/e820.h
-index c5b8fc6..80e49bc 100644
-=2D-- a/include/asm-i386/e820.h
-+++ b/include/asm-i386/e820.h
-@@ -43,6 +43,7 @@ extern void register_bootmem_low_pages(unsigned long max_=
-low_pfn);
- extern void e820_register_memory(void);
- extern void limit_regions(unsigned long long size);
- extern void print_memory_map(char *who);
-+extern void e820_mark_nosave_regions(void);
-=20
- #endif/*!__ASSEMBLY__*/
-=20
+ 	struct ip_conntrack *ct;
+ 	unsigned int bucket = 0;
+ 
++	if (!list_empty(&unconfirmed)) {
++		synchronize_net();
++		WARN_ON(!list_empty(&unconfirmed));
++	}
++
+ 	while ((ct = get_next_corpse(iter, data, &bucket)) != NULL) {
+ 		/* Time to push up daises... */
+ 		if (del_timer(&ct->timeout))
+@@ -1281,6 +1281,22 @@ ip_ct_iterate_cleanup(int (*iter)(struct
+ 	}
+ }
+ 
++void ip_ct_iterate(void (*iter)(struct ip_conntrack *i, void *), void *data)
++{
++	struct ip_conntrack_tuple_hash *h;
++	unsigned int i;
++
++	read_lock_bh(&ip_conntrack_lock);
++
++	list_for_each_entry(h, &unconfirmed, list)
++		iter(tuplehash_to_ctrack(h), data);
++	for (i = 0; i < ip_conntrack_htable_size; i++) {
++		list_for_each_entry(h, &ip_conntrack_hash[i], list)
++			iter(tuplehash_to_ctrack(h), data);
++	}
++	read_unlock_bh(&ip_conntrack_lock);
++}
++
+ /* Fast function for those who don't want to parse /proc (and I don't
+    blame them). */
+ /* Reversing the socket's dst/src point of view gives us the reply
+@@ -1351,7 +1367,7 @@ static int kill_all(struct ip_conntrack 
+ 
+ void ip_conntrack_flush(void)
+ {
+-	ip_ct_iterate_cleanup(kill_all, NULL);
++	ip_ct_cleanup(kill_all, NULL);
+ }
+ 
+ static void free_conntrack_hash(struct list_head *hash, int vmalloced,int size)
+diff --git a/net/ipv4/netfilter/ip_conntrack_standalone.c b/net/ipv4/netfilter/ip_conntrack_standalone.c
+index 56b2f75..0288527 100644
+--- a/net/ipv4/netfilter/ip_conntrack_standalone.c
++++ b/net/ipv4/netfilter/ip_conntrack_standalone.c
+@@ -811,7 +811,7 @@ void ip_conntrack_protocol_unregister(st
+ 	synchronize_rcu();
+ 
+ 	/* Remove all contrack entries for this protocol */
+-	ip_ct_iterate_cleanup(kill_proto, &proto->proto);
++	ip_ct_cleanup(kill_proto, &proto->proto);
+ }
+ 
+ static int __init ip_conntrack_standalone_init(void)
+@@ -915,7 +915,8 @@ EXPORT_SYMBOL(ip_conntrack_destroyed);
+ EXPORT_SYMBOL(need_conntrack);
+ EXPORT_SYMBOL(ip_conntrack_helper_register);
+ EXPORT_SYMBOL(ip_conntrack_helper_unregister);
+-EXPORT_SYMBOL(ip_ct_iterate_cleanup);
++EXPORT_SYMBOL(ip_ct_cleanup);
++EXPORT_SYMBOL(ip_ct_iterate);
+ EXPORT_SYMBOL(__ip_ct_refresh_acct);
+ 
+ EXPORT_SYMBOL(ip_conntrack_expect_alloc);
+diff --git a/net/ipv4/netfilter/ip_nat_core.c b/net/ipv4/netfilter/ip_nat_core.c
+index 40737fd..bcdc22b 100644
+--- a/net/ipv4/netfilter/ip_nat_core.c
++++ b/net/ipv4/netfilter/ip_nat_core.c
+@@ -613,16 +613,15 @@ static int __init ip_nat_init(void)
+ }
+ 
+ /* Clear NAT section of all conntracks, in case we're loaded again. */
+-static int clean_nat(struct ip_conntrack *i, void *data)
++static void clean_nat(struct ip_conntrack *i, void *data)
+ {
+ 	memset(&i->nat, 0, sizeof(i->nat));
+ 	i->status &= ~(IPS_NAT_MASK | IPS_NAT_DONE_MASK | IPS_SEQ_ADJUST);
+-	return 0;
+ }
+ 
+ static void __exit ip_nat_cleanup(void)
+ {
+-	ip_ct_iterate_cleanup(&clean_nat, NULL);
++	ip_ct_iterate(&clean_nat, NULL);
+ 	rcu_assign_pointer(ip_conntrack_destroyed, NULL);
+ 	synchronize_rcu();
+ 	vfree(bysource);
+diff --git a/net/ipv4/netfilter/ipt_MASQUERADE.c b/net/ipv4/netfilter/ipt_MASQUERADE.c
+index b5955f3..5b3883e 100644
+--- a/net/ipv4/netfilter/ipt_MASQUERADE.c
++++ b/net/ipv4/netfilter/ipt_MASQUERADE.c
+@@ -158,7 +158,7 @@ static int masq_device_event(struct noti
+ 		   and forget them. */
+ 		IP_NF_ASSERT(dev->ifindex != 0);
+ 
+-		ip_ct_iterate_cleanup(device_cmp, (void *)(long)dev->ifindex);
++		ip_ct_cleanup(device_cmp, (void *)(long)dev->ifindex);
+ 	}
+ 
+ 	return NOTIFY_DONE;
+@@ -176,7 +176,7 @@ static int masq_inet_event(struct notifi
+ 		   and forget them. */
+ 		IP_NF_ASSERT(dev->ifindex != 0);
+ 
+-		ip_ct_iterate_cleanup(device_cmp, (void *)(long)dev->ifindex);
++		ip_ct_cleanup(device_cmp, (void *)(long)dev->ifindex);
+ 	}
+ 
+ 	return NOTIFY_DONE;
+diff --git a/net/ipv4/netfilter/nf_nat_core.c b/net/ipv4/netfilter/nf_nat_core.c
+index 2c01378..5bc459c 100644
+--- a/net/ipv4/netfilter/nf_nat_core.c
++++ b/net/ipv4/netfilter/nf_nat_core.c
+@@ -628,20 +628,19 @@ static int __init nf_nat_init(void)
+ }
+ 
+ /* Clear NAT section of all conntracks, in case we're loaded again. */
+-static int clean_nat(struct nf_conn *i, void *data)
++static void clean_nat(struct nf_conn *i, void *data)
+ {
+ 	struct nf_conn_nat *nat = nfct_nat(i);
+ 
+ 	if (!nat)
+-		return 0;
++		return;
+ 	memset(nat, 0, sizeof(nat));
+ 	i->status &= ~(IPS_NAT_MASK | IPS_NAT_DONE_MASK | IPS_SEQ_ADJUST);
+-	return 0;
+ }
+ 
+ static void __exit nf_nat_cleanup(void)
+ {
+-	nf_ct_iterate_cleanup(&clean_nat, NULL);
++	nf_ct_iterate(&clean_nat, NULL);
+ 	rcu_assign_pointer(nf_conntrack_destroyed, NULL);
+ 	synchronize_rcu();
+ 	vfree(bysource);
+diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core.c
+index 32891eb..6dc20da 100644
+--- a/net/netfilter/nf_conntrack_core.c
++++ b/net/netfilter/nf_conntrack_core.c
+@@ -1067,11 +1067,6 @@ get_next_corpse(int (*iter)(struct nf_co
+ 				goto found;
+ 		}
+ 	}
+-	list_for_each_entry(h, &unconfirmed, list) {
+-		ct = nf_ct_tuplehash_to_ctrack(h);
+-		if (iter(ct, data))
+-			goto found;
+-	}
+ 	write_unlock_bh(&nf_conntrack_lock);
+ 	return NULL;
+ found:
+@@ -1081,11 +1076,16 @@ found:
+ }
+ 
+ void
+-nf_ct_iterate_cleanup(int (*iter)(struct nf_conn *i, void *data), void *data)
++nf_ct_cleanup(int (*iter)(struct nf_conn *i, void *data), void *data)
+ {
+ 	struct nf_conn *ct;
+ 	unsigned int bucket = 0;
+ 
++	if (!list_empty(&unconfirmed)) {
++		synchronize_net();
++		WARN_ON(!list_empty(&unconfirmed));
++	}
++
+ 	while ((ct = get_next_corpse(iter, data, &bucket)) != NULL) {
+ 		/* Time to push up daises... */
+ 		if (del_timer(&ct->timeout))
+@@ -1095,7 +1095,24 @@ nf_ct_iterate_cleanup(int (*iter)(struct
+ 		nf_ct_put(ct);
+ 	}
+ }
+-EXPORT_SYMBOL_GPL(nf_ct_iterate_cleanup);
++EXPORT_SYMBOL_GPL(nf_ct_cleanup);
++
++void
++nf_ct_iterate(void (*iter)(struct nf_conn *i, void *data), void *data)
++{
++	struct nf_conntrack_tuple_hash *h;
++	unsigned int i;
++
++	read_lock_bh(&nf_conntrack_lock);
++	list_for_each_entry(h, &unconfirmed, list)
++		iter(nf_ct_tuplehash_to_ctrack(h), data);
++	for (i = 0; i < nf_conntrack_htable_size; i++) {
++		list_for_each_entry(h, &nf_conntrack_hash[i], list)
++			iter(nf_ct_tuplehash_to_ctrack(h), data);
++	}
++	read_unlock_bh(&nf_conntrack_lock);
++}
++EXPORT_SYMBOL_GPL(nf_ct_iterate);
+ 
+ static int kill_all(struct nf_conn *i, void *data)
+ {
+@@ -1113,7 +1130,7 @@ static void free_conntrack_hash(struct l
+ 
+ void nf_conntrack_flush(void)
+ {
+-	nf_ct_iterate_cleanup(kill_all, NULL);
++	nf_ct_cleanup(kill_all, NULL);
+ }
+ EXPORT_SYMBOL_GPL(nf_conntrack_flush);
+ 
+diff --git a/net/netfilter/nf_conntrack_proto.c b/net/netfilter/nf_conntrack_proto.c
+index 456155f..695b734 100644
+--- a/net/netfilter/nf_conntrack_proto.c
++++ b/net/netfilter/nf_conntrack_proto.c
+@@ -229,7 +229,7 @@ void nf_conntrack_l3proto_unregister(str
+ 	nf_ct_l3proto_unregister_sysctl(proto);
+ 
+ 	/* Remove all contrack entries for this protocol */
+-	nf_ct_iterate_cleanup(kill_l3proto, proto);
++	nf_ct_cleanup(kill_l3proto, proto);
+ }
+ EXPORT_SYMBOL_GPL(nf_conntrack_l3proto_unregister);
+ 
+@@ -374,6 +374,6 @@ void nf_conntrack_l4proto_unregister(str
+ 	nf_ct_l4proto_unregister_sysctl(l4proto);
+ 
+ 	/* Remove all contrack entries for this protocol */
+-	nf_ct_iterate_cleanup(kill_l4proto, l4proto);
++	nf_ct_cleanup(kill_l4proto, l4proto);
+ }
+ EXPORT_SYMBOL_GPL(nf_conntrack_l4proto_unregister);
 
---Boundary-01=_xPc4FyUkCnyB/l+--
-
---nextPart1222813.WCPcBIExH4
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBF4cPyR6LMutpd94wRAouVAJ0f0PqS/Jm7HzkltbFxXC77v6xEoQCfR2bP
-okU1Nt+WzUslf3CnHAIQKt0=
-=p/e1
------END PGP SIGNATURE-----
-
---nextPart1222813.WCPcBIExH4--
+--------------000501040101060500070205--
