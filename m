@@ -1,34 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932962AbXBYI6I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933685AbXBYI6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932962AbXBYI6I (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 03:58:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933681AbXBYI6I
+	id S933685AbXBYI6V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 03:58:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933683AbXBYI6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 03:58:08 -0500
-Received: from il.qumranet.com ([82.166.9.18]:44054 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932962AbXBYI6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 03:58:07 -0500
-Message-ID: <45E14F9D.3050502@qumranet.com>
-Date: Sun, 25 Feb 2007 10:58:05 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: kvm-devel <kvm-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: PIO port width on various archs?
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sun, 25 Feb 2007 03:58:21 -0500
+Received: from www.osadl.org ([213.239.205.134]:37252 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933681AbXBYI6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 03:58:19 -0500
+Subject: Re: 2.6.21-rc1: T60 resume from suspend to RAM issues
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>, pavel@suse.cz, linux-pm@osdl.org,
+       linux-acpi@vger.kernel.org, len.brown@intel.com, mingo@redhat.com
+In-Reply-To: <20070222233803.GA4447@mellanox.co.il>
+References: <20070222233803.GA4447@mellanox.co.il>
+Content-Type: text/plain
+Date: Sun, 25 Feb 2007 10:03:41 +0100
+Message-Id: <1172394221.25076.359.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm changing the kvm userspace interface to be more friendly to other 
-archs.  One issue is the PIO port size.  x86 uses 16 bits to hold the 
-port size (64K ports).  Is that an issue for other archs?
+On Fri, 2007-02-23 at 01:38 +0200, Michael S. Tsirkin wrote:
+> 1. After suspend to RAM, system wakes up but no screen.
+> I can log in through ssh though.
+> dmesg output at this point below.
+> Works fine on 2.6.20 and below, with same .config
+> .config and log file for this issue attached.
+> 
+> 2. As a separate test, I enabled DynTicks in .config.
+> Seems to work fine but won't come out of suspend to memory at all:
+> pressing Fn/F4 seems to have no effect.
 
-I guess I could change it to __u32, but it's better to know what various 
-architectures actually require.
+Am I reading this correct, that the box is simply dead after supsend ?
+Fn/F4 are the keys you use to resume, right ?
 
--- 
-error compiling committee.c: too many arguments to function
+Hmm, I have no idea how dynticks should influence the keyboard wakeup.
+The box is somewhere in the guts of the BIOS at this point.
+
+	tglx
+
 
