@@ -1,42 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932926AbXBYA5N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932908AbXBYA7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932926AbXBYA5N (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 19:57:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932924AbXBYA5N
+	id S932908AbXBYA7q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 19:59:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932928AbXBYA7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 19:57:13 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57209
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S932908AbXBYA5L (ORCPT
+	Sat, 24 Feb 2007 19:59:46 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:43425 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932908AbXBYA7p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 19:57:11 -0500
-Date: Sat, 24 Feb 2007 16:57:10 -0800 (PST)
-Message-Id: <20070224.165710.112620232.davem@davemloft.net>
-To: xmxwx@asn.pl
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] IPv6 anycast refcnt fix
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <erqkc9$9sb$1@sea.gmane.org>
-References: <erqkc9$9sb$1@sea.gmane.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 24 Feb 2007 19:59:45 -0500
+Date: Sun, 25 Feb 2007 01:59:43 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Theodore Tso <tytso@mit.edu>, "D. Hazelton" <dhazelton@enter.net>,
+       "Michael K. Edwards" <medwards.linux@gmail.com>,
+       David Lang <david.lang@digitalinsight.com>, davids@webmaster.com,
+       v j <vj.linux@gmail.com>, trent.waddington@gmail.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       Neil Brown <neilb@suse.de>
+Subject: Re: GPL vs non-GPL device drivers
+Message-ID: <20070225005943.GW12392@stusta.de>
+References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com> <200702212030.58317.dhazelton@enter.net> <f2b55d220702211805h6df0b342o7676e37c7aa43bdd@mail.gmail.com> <200702212317.16262.dhazelton@enter.net> <20070222164522.GB15659@thunk.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070222164522.GB15659@thunk.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michal Wrobel <xmxwx@asn.pl>
-Date: Sun, 25 Feb 2007 01:13:59 +0100
+On Thu, Feb 22, 2007 at 11:45:22AM -0500, Theodore Tso wrote:
+>...
+> The only way GPL'ed code can be become copyrighted by the FSF is if
+> you explicitly sign a copyright statement
+>...
+ 
+And even this is only possible if permitted by copyright law.
 
-> This patch fixes a bug in Linux IPv6 stack which caused anycast address 
-> to be added to a device prior DAD has been completed. This led to 
-> incorrect reference count which resulted in infinite wait for 
-> unregister_netdevice completion on interface removal.
-> 
-> Signed-off-by: Michal Wrobel <xmxwx@asn.pl>
+E.g. German copyright law explicitely states that copyright is not 
+transferable except through inheritage. [1]
 
-Please post networking patches to the networking mailing list,
-netdev@vger.kernel.org, because most of the networking
-developers do not read linux-kernel
+And German copyright law says that if you are granting exclusive usage 
+rights, you must get an appropriate payment. [2]
 
-Thank you.
+Often much might depend on which copyright law applies in a specific 
+case...
+
+> 						- Ted
+
+cu
+Adrian
+
+[1] http://bundesrecht.juris.de/urhg/__29.html
+[2] http://bundesrecht.juris.de/urhg/__32.html
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
