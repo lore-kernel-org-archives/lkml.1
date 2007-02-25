@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932570AbXBYAaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932848AbXBYAcO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932570AbXBYAaJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 19:30:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932789AbXBYAaJ
+	id S932848AbXBYAcO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 19:32:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932789AbXBYAcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 19:30:09 -0500
-Received: from main.gmane.org ([80.91.229.2]:37788 "EHLO ciao.gmane.org"
+	Sat, 24 Feb 2007 19:32:14 -0500
+Received: from mailgw.cvut.cz ([147.32.3.235]:43993 "EHLO mailgw.cvut.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932570AbXBYAaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 19:30:08 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Michal Wrobel <xmxwx@asn.pl>
-Subject: [PATCH] IPv6 anycast refcnt fix
-Date: Sun, 25 Feb 2007 01:13:59 +0100
-Message-ID: <erqkc9$9sb$1@sea.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+	id S932848AbXBYAcO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 19:32:14 -0500
+Message-ID: <45E0D8F7.9050803@vc.cvut.cz>
+Date: Sat, 24 Feb 2007 16:31:51 -0800
+From: Petr Vandrovec <vandrove@vc.cvut.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20061219 Iceape/1.0.7 (Debian-1.0.7-3)
+MIME-Version: 1.0
+To: Ondrej Zary <linux@rainbow-software.org>
+CC: Chris Rankin <rankincj@yahoo.com>, linux-fbdev-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: Kernel warning from Matrox Framebuffer in 2.6.20.1
+References: <306590.53720.qm@web52912.mail.yahoo.com> <200702241818.24675.linux@rainbow-software.org>
+In-Reply-To: <200702241818.24675.linux@rainbow-software.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: vw54.internetdsl.tpnet.pl
-User-Agent: IceDove 1.5.0.8 (X11/20061128)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a bug in Linux IPv6 stack which caused anycast address 
-to be added to a device prior DAD has been completed. This led to 
-incorrect reference count which resulted in infinite wait for 
-unregister_netdevice completion on interface removal.
+Ondrej Zary wrote:
+> On Saturday 24 February 2007 14:08, Chris Rankin wrote:
+>> Hi,
+>>
+>> I have just booted 2.6.20.1 on my Pentium 3 machine, which has a G400 MAX
+>> graphics card. This machine uses the Matrox framebuffer and TV-OUT modules,
+>> and I have found these warnings in the kernel log:
+>>
+>> **WARNING** I2C adapter driver [DDC:fb0 #0] forgot to specify physical
+>> device; fix it! **WARNING** I2C adapter driver [DDC:fb0 #1] forgot to
+>> specify physical device; fix it! **WARNING** I2C adapter driver [MAVEN:fb0]
+>> forgot to specify physical device; fix it!
+> 
+> I'm seeing something like that since installing 2.6.20.1 yesterday:
+> 
+> matroxfb: Matrox Mystique (PCI) detected
+> PInS memtype = 0
+> matroxfb: MTRR's turned on
+> matroxfb: 1024x768x8bpp (virtual: 1024x4096)
+> matroxfb: framebuffer at 0xE1000000, mapped to 0xcc880000, size 4194304
+> Console: switching to colour frame buffer device 128x48
+> fb0: MATROX frame buffer device
+> **WARNING** I2C adapter driver [DDC:fb0 #0] forgot to specify physical device; 
+> fix it!
 
-Signed-off-by: Michal Wrobel <xmxwx@asn.pl>
+Can you try current git tree?  I believe that it is already fixed by 
+Jean Delvare checkin from Feb 13th (thanks Jean!)
+							Petr
 
---- linux/net/ipv6/addrconf.c	2007-02-22 19:46:27.000000000 +0100
-+++ linux/net/ipv6/addrconf.c	2007-02-25 00:22:37.000000000 +0100
-@@ -456,6 +456,8 @@
-  			ipv6_dev_mc_dec(dev, &addr);
-  	}
-  	for (ifa=idev->addr_list; ifa; ifa=ifa->if_next) {
-+		if (ifa->flags&IFA_F_TENTATIVE)
-+			continue;
-  		if (idev->cnf.forwarding)
-  			addrconf_join_anycast(ifa);
-  		else
 
