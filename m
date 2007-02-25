@@ -1,41 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965187AbXBYWjL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965185AbXBYWkI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965187AbXBYWjL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 17:39:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965185AbXBYWjL
+	id S965185AbXBYWkI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 17:40:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965191AbXBYWkI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 17:39:11 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:35372 "EHLO mail.dvmed.net"
+	Sun, 25 Feb 2007 17:40:08 -0500
+Received: from ns1.suse.de ([195.135.220.2]:57526 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965181AbXBYWjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 17:39:09 -0500
-Message-ID: <45E21009.6040706@garzik.org>
-Date: Sun, 25 Feb 2007 17:39:05 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	id S965185AbXBYWkG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 17:40:06 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Mikael Pettersson <mikpe@it.uu.se>
+Subject: Re: [PATCH 2.6.21-rc1] x86 signal number delivery fixes
+Date: Sun, 25 Feb 2007 23:39:48 +0100
+User-Agent: KMail/1.9.5
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+References: <200702251147.l1PBl9ab003231@harpo.it.uu.se>
+In-Reply-To: <200702251147.l1PBl9ab003231@harpo.it.uu.se>
 MIME-Version: 1.0
-To: Steve Wise <swise@opengridcomputing.com>
-CC: divy@chelsio.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/7] cxgb3 - FW version update
-References: <20070225004401.20831.3292.stgit@localhost.localdomain>	 <1172431719.4717.8.camel@stevo-laptop>  <45E1E810.2000706@garzik.org> <1172440758.4717.17.camel@stevo-laptop>
-In-Reply-To: <1172440758.4717.17.camel@stevo-laptop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200702252339.48933.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steve Wise wrote:
->> I would rather fix the code to use constants, and thus avoid this 
->> problem ever happening again.
->>
->> 	Jeff
->>
+On Sunday 25 February 2007 12:47, Mikael Pettersson wrote:
+> The invokation of signal handlers on x86 has several bugs
+> in its treatment of the signal number parameter:
 > 
-> How's this (not tested)?
+> - the i386 kernel passes the raw not the translated signal number
+>   in EAX to non-SA_SIGINFO handlers compiled with -mregparm=3;
+>   the value passed on the stack is correct, and SA_SIGINFO handlers
+>   are also invoked correctly
+> - the x86-64 kernel's ia32 emulation for SA_SIGINFO handlers also
+>   passes the wrong (untranslated) signal number in EAX; the value
+>   on the stack is correct
+> - the x86-64 kernel's ia32 emulation for non-SA_SIGINFO handlers
+>   passes the wrong (untranslated) signal number both on the stack 
+>   and in EAX
 
-seems OK to me
 
+Nobody should be using that signal translation code anymore. Certainly
+nothing in tree. Perhaps it would be better to just rip it out.
 
+If you have a user you should submit it.
+
+-Andi
