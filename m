@@ -1,96 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965059AbXBYSCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932635AbXBYSG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965059AbXBYSCx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 13:02:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932635AbXBYSCx
+	id S932635AbXBYSG5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 13:06:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932574AbXBYSG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 13:02:53 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:43926 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932649AbXBYSCv (ORCPT
+	Sun, 25 Feb 2007 13:06:57 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48466 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932635AbXBYSG5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 13:02:51 -0500
-Date: Sun, 25 Feb 2007 19:02:51 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Albert Hopkins <kernel@marduk.letterboxes.org>,
-       Ayaz Abdulla <aabdulla@nvidia.com>, jgarzik@pobox.com,
-       netdev@vger.kernel.org, Bob Tracy <rct@gherkin.frus.com>,
-       Mark Brown <broonie@sirena.org.uk>,
-       YOSHIFUJI Hideaki / =?utf-8?B?5ZCJ6Jek6Iux5piO?= 
-	<yoshfuji@linux-ipv6.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
-       Michael-Luke Jones <mlj28@cam.ac.uk>,
-       Pete Clements <clem@clem.clem-digital.net>,
-       Sid Boyce <g3vbv@blueyonder.co.uk>,
-       Chuck Lever <chuck.lever@oracle.com>, Andreas Schwab <schwab@suse.de>,
-       Dave Jones <davej@redhat.com>
-Subject: 2.6.21-rc1: known regressions (part 3)
-Message-ID: <20070225180251.GD12392@stusta.de>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 25 Feb 2007 13:06:57 -0500
+Date: Sun, 25 Feb 2007 19:10:28 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: "Michael K. Edwards" <medwards.linux@gmail.com>
+Cc: "Pavel Machek" <pavel@ucw.cz>, davids@webmaster.com,
+       "v j" <vj.linux@gmail.com>, trent.waddington@gmail.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
+       "Neil Brown" <neilb@suse.de>
+Subject: Re: GPL vs non-GPL device drivers
+Message-ID: <20070225191028.4f0ecdfb@lxorguk.ukuu.org.uk>
+In-Reply-To: <f2b55d220702250621h1877f8e8x19293cc8b95bf56@mail.gmail.com>
+References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>
+	<MDEHLPKNGKAHNMBLJOLKIEFNBLAC.davids@webmaster.com>
+	<f2b55d220702211408r7954d5dar2c59e1e679316811@mail.gmail.com>
+	<20070225104211.GB2045@elf.ucw.cz>
+	<f2b55d220702250354j29583e5ak1397d28ef7028783@mail.gmail.com>
+	<20070225135208.6e2eab9c@lxorguk.ukuu.org.uk>
+	<f2b55d220702250621h1877f8e8x19293cc8b95bf56@mail.gmail.com>
+X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This email lists some known regressions in 2.6.21-rc1 compared to 2.6.20
-that are not yet fixed in Linus' tree.
+> Busy-wait loops were a rhetorical flourish, I grant you.  
 
-If you find your name in the Cc header, you are either submitter of one
-of the bugs, maintainer of an affectected subsystem or driver, a patch
-of you caused a breakage or I'm considering you in any other way possibly
-involved with one or more of these issues.
+Thats a complicated fancy way of saying you were talking rubbish ?
 
-Due to the huge amount of recipients, please trim the Cc when answering.
-
-
-Subject    : forcedeth: skb_over_panic
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8058
-Submitter  : Albert Hopkins <kernel@marduk.letterboxes.org>
-Status     : unknown
-
-
-Subject    : natsemi ethernet card not detected correctly
-References : http://lkml.org/lkml/2007/2/23/4
-             http://lkml.org/lkml/2007/2/23/7
-Submitter  : Bob Tracy <rct@gherkin.frus.com>
-Caused-By  : Mark Brown <broonie@sirena.org.uk>
-Handled-By : Mark Brown <broonie@sirena.org.uk>
-Patch      : http://lkml.org/lkml/2007/2/23/142
-Status     : patch available
-
-
-Subject    : request_module: runaway loop modprobe net-pf-1
-References : http://lkml.org/lkml/2007/2/21/206
-Submitter  : YOSHIFUJI Hideaki / 吉藤英明 <yoshfuji@linux-ipv6.org>
-Caused-By  : Kay Sievers <kay.sievers@vrfy.org>
-             commit c353c3fb0700a3c17ea2b0237710a184232ccd7f
-Handled-By : Greg KH <greg@kroah.com>
-Status     : problem is being discussed
-
-
-Subject    : IPV6=m, SUNRPC=y compile error
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8050
-             http://lkml.org/lkml/2007/2/12/442
-             http://lkml.org/lkml/2007/2/20/384
-Submitter  : Michael-Luke Jones <mlj28@cam.ac.uk>
-             Pete Clements <clem@clem.clem-digital.net>
-             Sid Boyce <g3vbv@blueyonder.co.uk>
-Caused-By  : Chuck Lever <chuck.lever@oracle.com>
-Handled-By : YOSHIFUJI Hideaki / 吉藤英明 <yoshfuji@linux-ipv6.org>
-Status     : patch available
-
-
-Subject    : WARNING: "compat_agp_ioctl" undefined!
-References : http://lkml.org/lkml/2007/2/21/272
-Submitter  : Andreas Schwab <schwab@suse.de>
-Handled-By : Dave Jones <davej@redhat.com>
-Status     : patch available
-
-
+Alan
