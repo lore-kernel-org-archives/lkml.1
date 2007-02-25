@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932914AbXBYAwH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933610AbXBYAxN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932914AbXBYAwH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 19:52:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933608AbXBYAwH
+	id S933610AbXBYAxN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 19:53:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933615AbXBYAxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 19:52:07 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41341
+	Sat, 24 Feb 2007 19:53:13 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41345
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S932914AbXBYAwG (ORCPT
+	by vger.kernel.org with ESMTP id S933610AbXBYAxM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 19:52:06 -0500
-Date: Sat, 24 Feb 2007 16:52:03 -0800 (PST)
-Message-Id: <20070224.165203.41636677.davem@davemloft.net>
-To: msa@moth.iki.fi
-Cc: olaf@bigred.inka.de, linux-kernel@vger.kernel.org
-Subject: Re: ipv4 and ipv6 stacks for new link layers?
+	Sat, 24 Feb 2007 19:53:12 -0500
+Date: Sat, 24 Feb 2007 16:53:11 -0800 (PST)
+Message-Id: <20070224.165311.71091931.davem@davemloft.net>
+To: clameter@engr.sgi.com
+Cc: kamezawa.hiroyu@jp.fujitsu.com, andi@firstfloor.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: SLUB: The unqueued Slab allocator
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <200702241645.l1OGj3GV023299@moth.iki.fi>
-References: <200702231149.l1NBnlZD029626@moth.iki.fi>
-	<E1HKzK9-0001aX-TT@bigred.inka.de>
-	<200702241645.l1OGj3GV023299@moth.iki.fi>
+In-Reply-To: <Pine.LNX.4.64.0702240931030.3912@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0702232145340.1872@schroedinger.engr.sgi.com>
+	<20070223.215439.92580943.davem@davemloft.net>
+	<Pine.LNX.4.64.0702240931030.3912@schroedinger.engr.sgi.com>
 X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -27,16 +29,19 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Markku Savela <msa@moth.iki.fi>
-Date: Sat, 24 Feb 2007 18:45:03 +0200
+From: Christoph Lameter <clameter@engr.sgi.com>
+Date: Sat, 24 Feb 2007 09:32:49 -0800 (PST)
 
-> I think that is worse than allow a new driver to provide a simple
-> service function which maps IPv4/6 multicast address into link layer
-> address, when asked.
+> On Fri, 23 Feb 2007, David Miller wrote:
+> 
+> > I also agree with Andi in that merging could mess up how object type
+> > local lifetimes help reduce fragmentation in object pools.
+> 
+> If that is a problem for particular object pools then we may be able to 
+> except those from the merging.
 
-The problem is that this mapping isn't so simple for several
-link layer types.
+If it is a problem, it's going to be a problem "in general"
+and not for specific SLAB caches.
 
-I outlined in another email this problem, in that any interface
-which would allow a driver-like-API for this would be either
-overly general or so specific as to be useless.
+I think this is really a very unwise idea.  We have enough
+fragmentation problems as it is.
