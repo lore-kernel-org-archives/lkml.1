@@ -1,80 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964795AbXBYKqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964785AbXBYKqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964795AbXBYKqT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 05:46:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964800AbXBYKqT
+	id S964785AbXBYKqZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 05:46:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964801AbXBYKqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 05:46:19 -0500
-Received: from mail28.syd.optusnet.com.au ([211.29.133.169]:34767 "EHLO
-	mail28.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S964795AbXBYKqS (ORCPT
+	Sun, 25 Feb 2007 05:46:25 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:40535 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964785AbXBYKqX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 05:46:18 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: 2.6.20-ck1
-Date: Sun, 25 Feb 2007 21:32:14 +1100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, ck mailing list <ck@vds.kolivas.org>
-References: <200702162110.03355.kernel@kolivas.org> <200702242334.31864.gene.heskett@gmail.com>
-In-Reply-To: <200702242334.31864.gene.heskett@gmail.com>
+	Sun, 25 Feb 2007 05:46:23 -0500
+Date: Sun, 25 Feb 2007 11:46:12 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, paulmck@linux.vnet.ibm.com,
+       ego@in.ibm.com, akpm@osdl.org, mingo@elte.hu, vatsa@in.ibm.com,
+       dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       Aneesh Kumar <aneesh.kumar@gmail.com>
+Subject: Re: [RFC][PATCH 4/7] Freezer: Fix vfork problem
+Message-ID: <20070225104612.GM2045@elf.ucw.cz>
+References: <200702231116.23607.rjw@sisk.pl> <200702231122.44040.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702252132.15145.kernel@kolivas.org>
+In-Reply-To: <200702231122.44040.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 25 February 2007 15:34, Gene Heskett wrote:
-> I have a problem, Con.  The patch itself works fine for me, BUT it doesn't
-> update the version.h available in
-> /lib/modules/2.6.20-ck1/source/include/linux to include the -ck1 in the
-> reported kernel version when trying to build an fglrx driver with the
-> latest ati driver builder.
-> Which leaves this error message in /usr/share/fglrx/flgrx-install.log:
-> [root@coyote fglrx]# cat fglrx-install.log
-> [Message] Kernel Module : Trying to install a precompiled kernel module.
-> [Message] Kernel Module : Precompiled kernel module version mismatched.
-> [Message] Kernel Module : Found kernel module build environment,
-> generating kernel module now.
-> ATI module generator V 2.0
-> ==========================
-> initializing...
-> Error:
-> kernel includes at /lib/modules/2.6.20-ck1/build/include do not match
-> current kernel.
-> they are versioned as ""
-> instead of "2.6.20-ck1".
-> you might need to adjust your symlinks:
-> - /usr/include
-> - /usr/src/linux
-> [Error] Kernel Module : Failed to compile kernel module - please consult
-> readme.
-> ==========================
-> Unforch, the installer does not leave a readme behind that I've been able
-> to find, nor does it report the error on-screen.
->
-> The above files are not simlinks here on this FC6 install.  And of
-> course /usr/src/linux does not exist allthough I could set it up for the
-> duration of a rebuild/reinstall cycle of my script.
->
-> Can we have a patch to address this?  Or should I just hardcode it since
-> it will never be linked to any other later kernel?
->
-> I tried that in the src tree's include/linux/version.h, but it was
-> refreshed back to the original regex code by the make, so that's not
-> where to do it obviously.  I've also made the simlink in /usr/src, but
-> since a kernel make re-writes version.h, that didn't help.
->
-> Whats next?
+Hi!
 
-I've never heard of this problem before. As far as I'm aware the EXTRAVERSION 
-usually is not included in version.h so it seems to be a limitation of the 
-flgrx installer? That would mean the flgrx installer wouldn't work on any 
-kernel with an extra version such as the -rc releases of mainline even. So 
-I'm sorry but I don't really know what to do about this problem.
+> Currently try_to_freeze_tasks() has to wait until all of the vforked processes
+> exit and for this reason every user can make it fail.  To fix this problem
+> we can introduce the additional process flag PF_FREEZER_SKIP to be used by tasks
+> that do not want to be counted as freezable by the freezer and want to have
+> TIF_FREEZE set nevertheless.  Then, this flag can be set by tasks using
+> sys_vfork() before they call wait_for_completion() and cleared after they have
+> woken up and called try_to_freeze().  In case such a task freezes with
+> PF_FREEZER_SKIP set, refrigerator() clears this flag for the current task before
+> calling frozen_process(current) to avoid having both PF_FREEZER_SKIP and
+> PF_FROZEN set at the same time.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+
+> @@ -1393,7 +1394,9 @@ long do_fork(unsigned long clone_flags,
+>  		tracehook_report_clone_complete(clone_flags, nr, p);
+>  
+>  		if (clone_flags & CLONE_VFORK) {
+> +			freezer_do_not_count();
+>  			wait_for_completion(&vfork);
+> +			freezer_count();
+>  			tracehook_report_vfork_done(p, nr);
+>  		}
+>  	} else {
+
+All the infrastructure for this...Would it be easier to introduce
+
+void fastcall __sched wait_for_completion_freezeable(struct completion *x)
+{
+        might_sleep();
+
+        spin_lock_irq(&x->wait.lock);
+        if (!x->done) {
+                DECLARE_WAITQUEUE(wait, current);
+
+                wait.flags |= WQ_FLAG_EXCLUSIVE;
+                __add_wait_queue_tail(&x->wait, &wait);
+                do {
+                        __set_current_state(TASK_UNINTERRUPTIBLE);
+                        spin_unlock_irq(&x->wait.lock);
+                        schedule();
+try_to_freeze(); /* HERE */
+                        spin_lock_irq(&x->wait.lock);
+                } while (!x->done);
+                __remove_wait_queue(&x->wait, &wait);
+        }
+        x->done--;
+        spin_unlock_irq(&x->wait.lock);
+}
+
+...and be done with that, in a very obvious way? (Ok, you probably do
+not want to duplicate the function, but you get the idea).
+								Pavel
 
 -- 
--ck
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
