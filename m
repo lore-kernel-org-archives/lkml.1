@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965066AbXBYS42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965105AbXBYTDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965066AbXBYS42 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 13:56:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965096AbXBYS42
+	id S965105AbXBYTDk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 14:03:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965107AbXBYTDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 13:56:28 -0500
-Received: from web710.biz.mail.mud.yahoo.com ([209.191.119.235]:43258 "HELO
-	web710.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S965066AbXBYS41 (ORCPT
+	Sun, 25 Feb 2007 14:03:40 -0500
+Received: from stinky.trash.net ([213.144.137.162]:48013 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965105AbXBYTDj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 13:56:27 -0500
-X-YMail-OSG: spSrBN0VM1kBcKmvIxwWXa7OKll_kyBeohEu5vnBOGk6YrutFWd7pkjNyl8hY6JSbud_wd1xScgCxyHMrP2Lp8djyEIgyUlFQOMP1hOkkG4d.IC20mK08SwfA1zTU1uu09pOOTugycsZO_Q-
-Date: Sun, 25 Feb 2007 19:56:26 +0100 (CET)
-From: Jon Paul Maloy <jon.maloy@donjonn.com>
-Subject: SV: Re: [tipc-discussion] [RFC: 2.6 patch] net/tipc/: possible cleanups
-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070225161411.GX12392@stusta.de>
+	Sun, 25 Feb 2007 14:03:39 -0500
+Message-ID: <45E1DD88.6080206@trash.net>
+Date: Sun, 25 Feb 2007 20:03:36 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051017)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <812945.13617.qm@web710.biz.mail.mud.yahoo.com>
+To: Martin Josefsson <gandalf@wlug.westbo.se>
+CC: Chuck Ebbert <cebbert@redhat.com>, netfilter-devel@lists.netfilter.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Soft lockup on shutdown in nf_ct_iterate_cleanup()
+References: <45DB9C1F.1080605@redhat.com> <45DCEA47.5080100@redhat.com>	 <45E04468.7020001@trash.net> <45E06546.504@redhat.com>	 <45E1C7E0.9070102@trash.net> <1172428694.4485.31.camel@localhost.localdomain>
+In-Reply-To: <1172428694.4485.31.camel@localhost.localdomain>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Adrian Bunk <bunk@stusta.de> skrev:
-
-> It can be re-added at any time when an in-kernel
-> user comes.
+Martin Josefsson wrote:
+> What about this case:
 > 
-> But the most interesting question is:
-> Why is noone interested in getting his TIPC using
-> drivers merged?
+> 1. Conntrack entry is created and placed on the unconfirmed list
+> 2. The event cache bumps the refcount of the conntrack entry
+> 3. module removal of ip_conntrack unregisters all hooks
+> 4. packet is dropped by an iptables rule
+> 5. packet is freed but we still have a refcount on the conntrack entry
 > 
-I don't think lack of interest is the issue here. The
-users I know anything about, would be both happy and
-proud to contribute code to the main tree. One I know
-about,who has developed a very interesting "reliable
-bond interface" based on this API, doesn't regard his
-code to be up to the kernel coding standards yet,
-although I am trying to encourage him. Another one
-thinks his function is just too specialized to be of
-any common interest.
-In the future, I would be also be very interested in
-seeing a cross-node netlink implementation, carried
-over TIPC, using this API. (Unfortunately, I don't
-dare to commit to this myself right now, there is too
-much left to be done in TIPC.)
-So, as you see, keeping the exported symbols would be
-a definite advantage, as current and future developers
-would not have to patch the kernel to do their work.
+> Now there's no way to get that refcount to decrease as that only happens
+> when the event cache receives another packet or the current packet makes
+> it through the stack as you wrote above. And neither of this will happen
+> since we unregistered the hooks providing the packets and dropped the
+> packet.
 
-Regards
-///jon 
+The event cache is flushed on conntrack module unload after the hooks
+have been unregistered, which should release all references.
