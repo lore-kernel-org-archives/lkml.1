@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933606AbXBYBrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933623AbXBYBvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933606AbXBYBrn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 20:47:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933608AbXBYBrn
+	id S933623AbXBYBvb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 20:51:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933622AbXBYBvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 20:47:43 -0500
-Received: from wx-out-0506.google.com ([66.249.82.228]:9746 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933606AbXBYBrm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 20:47:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AoDlUQKhixLnRLr+ktxePhl5sX/zjwjLVD/FciZwGINaBJzqzmtdDVUzjmyplNaPkhEYE0L/1EQo7KuAtLEgqKEjuvf5jHV9f/Iwirl6g18PkIMrL2e96+Qc3rWyLuKLF1h5H/NihIdwLi9UQfI/aouOiPnvVug7LEhwWf21bV8=
-Message-ID: <4df04b840702241747ne903699w636d37b40351b752@mail.gmail.com>
-Date: Sun, 25 Feb 2007 09:47:41 +0800
-From: "yunfeng zhang" <zyf.zeroos@gmail.com>
-To: "Rik van Riel" <riel@redhat.com>
-Subject: Re: [PATCH 2.6.20-rc5 1/1] MM: enhance Linux swap subsystem
-Cc: linux-kernel@vger.kernel.org, "Hugh Dickins" <hugh@veritas.com>,
-       linux-mm@kvack.org
-In-Reply-To: <45DE6080.6030904@redhat.com>
+	Sat, 24 Feb 2007 20:51:31 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:58306 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933618AbXBYBva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 20:51:30 -0500
+Message-ID: <45E0EB9F.3050001@garzik.org>
+Date: Sat, 24 Feb 2007 20:51:27 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Komuro <komurojun-mbn@nifty.com>
+Subject: Re: [PATCH] libata: clear drvdata in ata_host_release()
+References: <20070224074823.GA20322@htj.dyndns.org>
+In-Reply-To: <20070224074823.GA20322@htj.dyndns.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4df04b840701212309l2a283357jbdaa88794e5208a7@mail.gmail.com>
-	 <Pine.LNX.4.64.0701242015090.1770@blonde.wat.veritas.com>
-	 <4df04b840701301852i41687edfl1462c4ca3344431c@mail.gmail.com>
-	 <Pine.LNX.4.64.0701312022340.26857@blonde.wat.veritas.com>
-	 <4df04b840702122152o64b2d59cy53afcd43bb24cb7a@mail.gmail.com>
-	 <4df04b840702200106q670ff944k118d218fed17b884@mail.gmail.com>
-	 <4df04b840702211758t1906083x78fb53b6283349ca@mail.gmail.com>
-	 <45DCFDBE.50209@redhat.com>
-	 <4df04b840702221831x76626de1rfa70cb653b12f495@mail.gmail.com>
-	 <45DE6080.6030904@redhat.com>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To a two-CPU architecture, its page distribution just like theoretically
+Tejun Heo wrote:
+> ata_host_release() uses drvdata to determine ata_host to release and
+> clearing drvdata in ->remove_one causes NULL pointer deference.  Clear
+> drvdata only in ata_host_release() after all resources are freed.
+> 
+> This bug was first analyzed by Alan Cox for pata_pcmcia.
+> 
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> ---
+> Alan, this is the bug you talked about, right?  I took the fix from
+> "[BUG] PATA_PCMCIA does not work" and expanded it.  If this isn't the
+> one, please let me know.  Thanks.
 
-ABABAB....
+Has a tester confirmed that this patch fixes the problem, and supercedes 
+Alan's patch?
 
-So every readahead of A process will create 4 unused readahead pages unless you
-are sure B will resume soon.
+	Jeff
 
-Have you ever compared the results among UP, 2 or 4-CPU?
+
