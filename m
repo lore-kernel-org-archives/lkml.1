@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964983AbXBYQON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347AbXBYQcD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964983AbXBYQON (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 11:14:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964980AbXBYQON
+	id S1752347AbXBYQcD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 11:32:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbXBYQcD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 11:14:13 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:43826 "EHLO
+	Sun, 25 Feb 2007 11:32:03 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:43849 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964976AbXBYQOM (ORCPT
+	with ESMTP id S1751118AbXBYQcB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 11:14:12 -0500
-Date: Sun, 25 Feb 2007 17:14:11 +0100
+	Sun, 25 Feb 2007 11:32:01 -0500
+Date: Sun, 25 Feb 2007 17:32:00 +0100
 From: Adrian Bunk <bunk@stusta.de>
-To: "Stephens, Allan" <allan.stephens@windriver.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Jon Maloy <jon.maloy@ericsson.com>,
-       per.liden@ericsson.com, netdev@vger.kernel.org,
-       tipc-discussion@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [tipc-discussion] [RFC: 2.6 patch] net/tipc/: possible cleanups
-Message-ID: <20070225161411.GX12392@stusta.de>
-References: <20070223221657.GA10153@infradead.org> <AF1602CB2550CE4381C0C75118A7856BA2ACC6@ala-mail02.corp.ad.wrs.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-ide@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, Jeff Garzik <jeff@garzik.org>,
+       Alan <alan@lxorguk.ukuu.org.uk>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.20-git10 (and -git13): BUG at drivers/pci/pci.c:817 during resume from disk
+Message-ID: <20070225163200.GZ12392@stusta.de>
+References: <200702150016.24865.rjw@sisk.pl> <200702151223.44846.rjw@sisk.pl> <200702171100.39114.rjw@sisk.pl> <45DA6E6D.5030700@gmail.com> <20070224230259.GU12392@stusta.de> <45E1107A.2040708@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <AF1602CB2550CE4381C0C75118A7856BA2ACC6@ala-mail02.corp.ad.wrs.com>
+In-Reply-To: <45E1107A.2040708@gmail.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 24, 2007 at 04:19:19PM -0800, Stephens, Allan wrote:
->...
-> 2) There are portions of TIPC's native API which are intended for use by
-> driver programmers, but which are not being used by any code that is
-> currently in the kernel.  While removing these API's from TIPC will only
-> impact these "freeloaders", it has the potential to discourage future
-> programmers who *do* want to contribute their work to the kernel by
-> removing API's that are apparently necessary/useful when doing coding of
-> this sort.
+On Sun, Feb 25, 2007 at 01:28:42PM +0900, Tejun Heo wrote:
+> Hello, Adrian.
+> 
+> Adrian Bunk wrote:
+> > On Tue, Feb 20, 2007 at 12:43:41PM +0900, Tejun Heo wrote:
+> >> Rafael J. Wysocki wrote:
+> >>> Update:
+> >>>
+> >>> I get the same BUG with 2.6.20-git13 100% of the time during the resume.
+> >>> The system seems to be fully functional nonetheless.
+> >> Known bug, will be fixed soon.
+> > 
+> > Is this a variation of
+> > 
+> > Subject    : HP nx6325: usb mouse stops working after resume from ram
+> > References : http://lkml.org/lkml/2007/2/21/413
+> > Submitter  : Arkadiusz Miskiewicz <arekm@maven.pl>
+> > Caused-By  : Konstantin Karasyov <konstantin.a.karasyov@intel.com>
+> >              commit 0a6139027f3986162233adc17285151e78b39cac
+> > Status     : unknown
+> > 
+> > or one of the other ACPI problems in 2.6.21-rc1?
+> 
+> No, it's not related to ACPI.  It's caused by devres changes and fixed
+> in libata-dev tree.
 
-It can be re-added at any time when an in-kernel user comes.
+I'm currently a bit lost with all the ATA/ACPI/suspend regression 
+reports...
 
-But the most interesting question is:
-Why is noone interested in getting his TIPC using drivers merged?
+Which patch fixes this regression?
 
-> Regards,
-> Al
->...
+> tejun
 
 cu
 Adrian
