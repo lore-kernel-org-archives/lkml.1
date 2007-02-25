@@ -1,90 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965144AbXBYVkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965146AbXBYVl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965144AbXBYVkk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 16:40:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965148AbXBYVkj
+	id S965146AbXBYVl7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 16:41:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965153AbXBYVl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 16:40:39 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:32874 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965144AbXBYVki (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 16:40:38 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Sun, 25 Feb 2007 16:33:32 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: David Woodhouse <dwmw2@infradead.org>, kaber@trash.net
-Subject: [PATCH] Kbuild: Remove "unifdef" entries for files that generate
- nothing.
-Message-ID: <Pine.LNX.4.64.0702251629520.28950@CPE00045a9c397f-CM001225dbafb6>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Sun, 25 Feb 2007 16:41:59 -0500
+Received: from ozlabs.org ([203.10.76.45]:50038 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965146AbXBYVl6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 16:41:58 -0500
+Subject: Re: [PATCH] module: use krealloc
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0702230940220.22414@sbz-30.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0702230940220.22414@sbz-30.cs.Helsinki.FI>
+Content-Type: text/plain
+Date: Mon, 26 Feb 2007 08:41:02 +1100
+Message-Id: <1172439662.13541.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2007-02-23 at 09:41 +0200, Pekka J Enberg wrote:
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
+> 
+> This converts an open-coded krealloc() to use the shiny new API.
 
-  Remove, from their corresponding Kbuild files, entries for header
-files that generate content-free sanitized header files.
+OK, why not.
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+Thanks!
+Rusty.
 
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+
+This converts an open-coded krealloc() to use the shiny new API.
+
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
+ kernel/module.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
- include/linux/Kbuild                |    3 ---
- include/linux/netfilter_ipv4/Kbuild |    1 -
- 2 files changed, 4 deletions(-)
+Index: uml-2.6/kernel/module.c
+===================================================================
+--- uml-2.6.orig/kernel/module.c	2007-02-23 09:24:14.000000000 +0200
++++ uml-2.6/kernel/module.c	2007-02-23 09:34:43.000000000 +0200
+@@ -308,14 +308,14 @@
+ {
+ 	/* Reallocation required? */
+ 	if (pcpu_num_used + 1 > pcpu_num_allocated) {
+-		int *new = kmalloc(sizeof(new[0]) * pcpu_num_allocated*2,
+-				   GFP_KERNEL);
++		int *new;
++
++		new = krealloc(pcpu_size, sizeof(new[0])*pcpu_num_allocated*2,
++			       GFP_KERNEL);
+ 		if (!new)
+ 			return 0;
+ 
+-		memcpy(new, pcpu_size, sizeof(new[0])*pcpu_num_allocated);
+ 		pcpu_num_allocated *= 2;
+-		kfree(pcpu_size);
+ 		pcpu_size = new;
+ 	}
+ 
 
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index e81e301..3c31650 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -238,7 +238,6 @@ unifdef-y += ipv6_route.h
- unifdef-y += isdn.h
- unifdef-y += isdnif.h
- unifdef-y += isdn_ppp.h
--unifdef-y += isicom.h
- unifdef-y += jbd.h
- unifdef-y += joystick.h
- unifdef-y += kdev_t.h
-@@ -313,13 +312,11 @@ unifdef-y += socket.h
- unifdef-y += sonet.h
- unifdef-y += sonypi.h
- unifdef-y += soundcard.h
--unifdef-y += stat.h
- unifdef-y += stddef.h
- unifdef-y += sysctl.h
- unifdef-y += tcp.h
- unifdef-y += time.h
- unifdef-y += timex.h
--unifdef-y += tty.h
- unifdef-y += types.h
- unifdef-y += udf_fs_i.h
- unifdef-y += udp.h
-diff --git a/include/linux/netfilter_ipv4/Kbuild b/include/linux/netfilter_ipv4/Kbuild
-index 1803378..ea17e7f 100644
---- a/include/linux/netfilter_ipv4/Kbuild
-+++ b/include/linux/netfilter_ipv4/Kbuild
-@@ -50,7 +50,6 @@ header-y += ipt_TTL.h
- header-y += ipt_ULOG.h
 
- unifdef-y += ip_conntrack.h
--unifdef-y += ip_conntrack_h323.h
- unifdef-y += ip_conntrack_irc.h
- unifdef-y += ip_conntrack_pptp.h
- unifdef-y += ip_conntrack_proto_gre.h
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
