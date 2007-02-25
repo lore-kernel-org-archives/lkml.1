@@ -1,120 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964936AbXBYP2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964954AbXBYPhl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964936AbXBYP2b (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 10:28:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964954AbXBYP2b
+	id S964954AbXBYPhl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 10:37:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964955AbXBYPhl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 10:28:31 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:5678 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964936AbXBYP2a (ORCPT
+	Sun, 25 Feb 2007 10:37:41 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:4542 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964954AbXBYPhk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 10:28:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=t2hVDrcuTB5U5IGJZK78UpkdMVm3ZuneuaDeflF/dWLYkrTQPCCunvp2AiU0Jr+FolLFMt62IBUqwCSBeoL+p4bdgr65YzGhFC/sLOBraFH35pVM5U6lJSIncTL9z4JYEEuXKljAd99urzKpSDXVhJL7DrITFTvbKUWSAkkxsBQ=
-Message-ID: <cc723f590702250728ra1bbb10l190ab73ce3d6fc77@mail.gmail.com>
-Date: Sun, 25 Feb 2007 20:58:29 +0530
-From: "Aneesh Kumar" <aneesh.kumar@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 4/7] Freezer: Fix vfork problem
-Cc: "Pavel Machek" <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
-       paulmck@linux.vnet.ibm.com, ego@in.ibm.com, akpm@osdl.org,
-       mingo@elte.hu, vatsa@in.ibm.com, dipankar@in.ibm.com,
-       venkatesh.pallipadi@intel.com, "Oleg Nesterov" <oleg@tv-sign.ru>
-In-Reply-To: <200702251605.42312.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 25 Feb 2007 10:37:40 -0500
+Date: Sun, 25 Feb 2007 15:37:27 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>, Tim Hockin <thockin@hockin.org>,
+       Jeff Garzik <jgarzik@pobox.com>
+Cc: Adrian Bunk <bunk@stusta.de>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: natsemi: Fix detection of vanilla natsemi cards
+Message-ID: <20070225153726.GB15068@sirena.org.uk>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Tim Hockin <thockin@hockin.org>, Jeff Garzik <jgarzik@pobox.com>,
+	Adrian Bunk <bunk@stusta.de>, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200702231116.23607.rjw@sisk.pl> <200702251359.53411.rjw@sisk.pl>
-	 <cc723f590702250633i27a79a9tedd5fe670cd9e4ed@mail.gmail.com>
-	 <200702251605.42312.rjw@sisk.pl>
+X-Cookie: Sauron is alive in Argentina!
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/25/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Sunday, 25 February 2007 15:33, Aneesh Kumar wrote:
-> > On 2/25/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > On Sunday, 25 February 2007 11:45, Rafael J. Wysocki wrote:
-> > > > Hi,
-> > > >
-> > > > =========
-> > > --- linux-2.6.20-mm2.orig/kernel/power/process.c        2007-02-22 23:44:04.000000000 +0100
-> > > +++ linux-2.6.20-mm2/kernel/power/process.c     2007-02-23 22:33:11.000000000 +0100
-> > > @@ -127,22 +127,12 @@ static unsigned int try_to_freeze_tasks(
-> > >                                 cancel_freezing(p);
-> > >                                 continue;
-> > >                         }
-> > > -                       if (is_user_space(p)) {
-> > > -                               if (!freeze_user_space)
-> > > -                                       continue;
-> > > -
-> > > -                               /* Freeze the task unless there is a vfork
-> > > -                                * completion pending
-> > > -                                */
-> > > -                               if (!p->vfork_done)
-> > > -                                       freeze_process(p);
-> > > -                       } else {
-> > > -                               if (freeze_user_space)
-> > > -                                       continue;
-> > > +                       if (is_user_space(p) == !freeze_user_space)
-> > > +                               continue;
-> > >
-> >
-> > How about ?
-> > if ( ! (is_user_space(p) == freeze_user_space) )
-> >      continue;
->
-> I think it would be safer to do
->
-> if ( is_user_space(p) != !!freeze_user_space)
->       continue;
->
-> which is equivalent to my previous version, but contains one '!' more. ;-)
->
-> Seriously, the one in the patch is consistent with the other occurrences of
-> it in the file and I'm going to change it anyway in a separate patch
-> (while freezing kernel threads we need to freeze userspace tasks too in case
-> one of the kernel threads called kernel_execve() in the meantime).
->
-> > BTW one of the concern that vatsa had was; is it ok to allow some of
-> > the tasks to be left running  ( the parent from vfork ) while
-> > freezing.  I guess we can solve this in a nice way.
-> >
-> > in fork.c
-> >
-> > if (clone_flags & CLONE_VFORK) {
-> >                         p->vfork_done = &vfork;
-> >                         p->flags |= PF_PARENT_WAKEUP_ON_FREEZE;
-> >                         init_completion(&vfork);
-> > }
-> >
-> >
-> > and in freeze_process(struct task_struct *p)
-> >
-> > if ( p->flags & PF_PARENT_WAKEUP_ON_FREEZE ) {
-> >   wake_up_parent();
-> > }
-> >
-> > now parent should be wating for these completion via
-> >
-> > wait_for_completion_freezable(); // pavel's implementation.
->
-> Hm, I think this leaves us with an analogous problem: we need a method
-> to tell a vforking task that the child should set PF_PARENT_WAKEUP_ON_FREEZE.
->
-> In the approach with PF_FREEZER_SKIP we need a method to tell the
-> vforking task that it should skip try_to_freeze() in freezer_count(), and I
-> think there are some possible ways to do this.  The patch doesn't implement
-> any of them, because this is a different issue that can be deal with later.
+Bob Tracy <rct@gherkin.frus.com> reported that the addition of support
+for Aculab E1/T1 cPCI carrier cards broke detection of vanilla natsemi
+cards.  This patch fixes that: the problem is that the driver-specific
+ta in the PCI device table is an index into a second table and this
+had not been updated for the vanilla cards.
 
+This patch fixes the problem minimally.
 
-But approach i outlined above make sure both parent and child get
-frozen during the freeze_process. where as with PF_FREEZER_SKIP the
-child waits in the completion wait_queue in an uninterruptible state.
-I am not sure whether it really make any difference from any of the
-freezer users point of view. (suspend, hotplug, kprobes etc ).
+Signed-Off-By: Mark Brown <broonie@sirena.org.uk>
 
- -aneesh
+--- linux.orig/drivers/net/natsemi.c	2007-02-23 11:13:03.000000000 +0000
++++ linux/drivers/net/natsemi.c	2007-02-23 11:12:00.000000000 +0000
+@@ -260,7 +260,7 @@
+ 
+ static const struct pci_device_id natsemi_pci_tbl[] __devinitdata = {
+ 	{ PCI_VENDOR_ID_NS, 0x0020, 0x12d9,     0x000c,     0, 0, 0 },
+-	{ PCI_VENDOR_ID_NS, 0x0020, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
++	{ PCI_VENDOR_ID_NS, 0x0020, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 1 },
+ 	{ }	/* terminate list */
+ };
+ MODULE_DEVICE_TABLE(pci, natsemi_pci_tbl);
+
+-- 
+"You grabbed my hand and we fell into it, like a daydream - or a fever."
