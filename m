@@ -1,41 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932635AbXBYSG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932787AbXBYSMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932635AbXBYSG5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 13:06:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932574AbXBYSG5
+	id S932787AbXBYSMi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 13:12:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932792AbXBYSMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 13:06:57 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48466 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932635AbXBYSG5 (ORCPT
+	Sun, 25 Feb 2007 13:12:37 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:59136 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932787AbXBYSMh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 13:06:57 -0500
-Date: Sun, 25 Feb 2007 19:10:28 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Cc: "Pavel Machek" <pavel@ucw.cz>, davids@webmaster.com,
-       "v j" <vj.linux@gmail.com>, trent.waddington@gmail.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>
-Subject: Re: GPL vs non-GPL device drivers
-Message-ID: <20070225191028.4f0ecdfb@lxorguk.ukuu.org.uk>
-In-Reply-To: <f2b55d220702250621h1877f8e8x19293cc8b95bf56@mail.gmail.com>
-References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com>
-	<MDEHLPKNGKAHNMBLJOLKIEFNBLAC.davids@webmaster.com>
-	<f2b55d220702211408r7954d5dar2c59e1e679316811@mail.gmail.com>
-	<20070225104211.GB2045@elf.ucw.cz>
-	<f2b55d220702250354j29583e5ak1397d28ef7028783@mail.gmail.com>
-	<20070225135208.6e2eab9c@lxorguk.ukuu.org.uk>
-	<f2b55d220702250621h1877f8e8x19293cc8b95bf56@mail.gmail.com>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 25 Feb 2007 13:12:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=qU4BhhydTBxDaxgJDoOUqOxlLc6Axgw2wOoEhY0IxFk01NncbHtAPfoe+dz2AEaoMKMjaXtEQBQ2fq+LrOGwMion55z15+QtG9/A/dWBNh32LlCrDGDYFADCe6xwt66FA0dCvODGNcFKOV5/qhzNqpxc2APlqJ4udgSV9hAQM0c=
+Message-ID: <4727185d0702251012l7114d6ccxb09dca96f03ae354@mail.gmail.com>
+Date: Sun, 25 Feb 2007 19:12:35 +0100
+From: "Vincent Legoll" <vincent.legoll@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [patch] Re: linux-2.6.today: rtc_cmos init oops/panic inrtc_sysfs_remove_device()
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Busy-wait loops were a rhetorical flourish, I grant you.  
+I had the same problem, and your patch fixes it.
 
-Thats a complicated fancy way of saying you were talking rubbish ?
+I found that disabling CONFIG_RTC_DRV_CMOS
+fixes^Wworkarounds it too...
 
-Alan
+Acked-by: Vincent Legoll <vincent.legoll@gmail.com>
+
+-- 
+Vincent Legoll
