@@ -1,31 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964789AbXBYKni@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964791AbXBYKnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964789AbXBYKni (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 05:43:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964791AbXBYKni
+	id S964791AbXBYKnu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 05:43:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964792AbXBYKnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 05:43:38 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:40335 "EHLO
+	Sun, 25 Feb 2007 05:43:50 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:40351 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964789AbXBYKng (ORCPT
+	with ESMTP id S964791AbXBYKns (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 05:43:36 -0500
-Date: Sun, 25 Feb 2007 11:43:27 +0100
+	Sun, 25 Feb 2007 05:43:48 -0500
+Date: Sun, 25 Feb 2007 11:43:45 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       Zwane Mwaikambo <zwane@infradead.org>, Ashok Raj <ashok.raj@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, "Lu, Yinghai" <yinghai.lu@amd.com>,
-       Natalie Protasevich <protasnb@gmail.com>, Andi Kleen <ak@suse.de>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 12/14] x86_64 irq: Add constants for the reserved IRQ vectors.
-Message-ID: <20070225104327.GF2045@elf.ucw.cz>
-References: <m1y7mpunuk.fsf_-_@ebiederm.dsl.xmission.com> <m1tzxdunsg.fsf_-_@ebiederm.dsl.xmission.com> <m1ps81uno3.fsf_-_@ebiederm.dsl.xmission.com> <m1lkipunl0.fsf_-_@ebiederm.dsl.xmission.com> <m1ejohung7.fsf_-_@ebiederm.dsl.xmission.com> <m17iu9unb6.fsf_-_@ebiederm.dsl.xmission.com> <m13b4xun1c.fsf_-_@ebiederm.dsl.xmission.com> <m1y7mpt8d2.fsf_-_@ebiederm.dsl.xmission.com> <m1tzxdt8au.fsf_-_@ebiederm.dsl.xmission.com> <m1ps81t87h.fsf_-_@ebiederm.dsl.xmission.com>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Advice on backlight support
+Message-ID: <20070225104345.GG2045@elf.ucw.cz>
+References: <20070221160213.GK4641@enneenne.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1ps81t87h.fsf_-_@ebiederm.dsl.xmission.com>
+In-Reply-To: <20070221160213.GK4641@enneenne.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
@@ -33,36 +28,19 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> For the ISA irqs we reserve 16 vectors.  This patch adds constants for
-> those vectors and modifies the code to use them.  Making the code a
-> little clearer and making it possible to move these vectors in the future.
+> I'd like to add backlight support for input devices since my custom
+> board has a backlighted mini keyboard.
+> 
+> It could be acceptable to move the code from drivers/video/backlight/
+> to drivers/backlight/ renaming the "Backlight & LCD" name into
+> "Backlight" and adding two new entries "LCD" and, maybe, "Input" (or
+> something like that?).
 
+Either that or using led class...
 
->  /*
->   * Vectors 0x20-0x2f are used for ISA interrupts.
->   */
-> +#define IRQ0_VECTOR		FIRST_EXTERNAL_VECTOR
-> +#define IRQ1_VECTOR		IRQ0_VECTOR + 1
-
-Maybe IRQ_VECTOR(1) would be similary readable, and would avoid 
-
-> +#define IRQ2_VECTOR		IRQ0_VECTOR + 2
-> +#define IRQ3_VECTOR		IRQ0_VECTOR + 3
-> +#define IRQ4_VECTOR		IRQ0_VECTOR + 4
-> +#define IRQ5_VECTOR		IRQ0_VECTOR + 5 
-> +#define IRQ6_VECTOR		IRQ0_VECTOR + 6
-> +#define IRQ7_VECTOR		IRQ0_VECTOR + 7
-> +#define IRQ8_VECTOR		IRQ0_VECTOR + 8
-> +#define IRQ9_VECTOR		IRQ0_VECTOR + 9
-> +#define IRQ10_VECTOR		IRQ0_VECTOR + 10
-> +#define IRQ11_VECTOR		IRQ0_VECTOR + 11
-> +#define IRQ12_VECTOR		IRQ0_VECTOR + 12
-> +#define IRQ13_VECTOR		IRQ0_VECTOR + 13
-> +#define IRQ14_VECTOR		IRQ0_VECTOR + 14
-> +#define IRQ15_VECTOR		IRQ0_VECTOR + 15
-
-...these defines?
-								Pavel
+...keyboard backlight actually has selectable level in many cases, so
+I'm not sure how possible it is to do with led class...?
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
