@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964979AbXBYQGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964983AbXBYQON@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964979AbXBYQGP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 11:06:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964981AbXBYQGP
+	id S964983AbXBYQON (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 11:14:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964980AbXBYQON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 11:06:15 -0500
-Received: from smtp-out12.alice.it ([85.37.17.107]:2791 "EHLO
-	smtp-out12.alice.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964979AbXBYQGO (ORCPT
+	Sun, 25 Feb 2007 11:14:13 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:43826 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964976AbXBYQOM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 11:06:14 -0500
-Message-ID: <45E1B3E6.60403@alice.it>
-Date: Sun, 25 Feb 2007 17:05:58 +0100
-From: Mario Vanoni <vanonim@alice.it>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.9) Gecko/20061222 SeaMonkey/1.0.7
+	Sun, 25 Feb 2007 11:14:12 -0500
+Date: Sun, 25 Feb 2007 17:14:11 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: "Stephens, Allan" <allan.stephens@windriver.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Jon Maloy <jon.maloy@ericsson.com>,
+       per.liden@ericsson.com, netdev@vger.kernel.org,
+       tipc-discussion@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [tipc-discussion] [RFC: 2.6 patch] net/tipc/: possible cleanups
+Message-ID: <20070225161411.GX12392@stusta.de>
+References: <20070223221657.GA10153@infradead.org> <AF1602CB2550CE4381C0C75118A7856BA2ACC6@ala-mail02.corp.ad.wrs.com>
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.16.41 & 2.6.18.7 OK,   2.6.19.5 NOT,   2.6.18.8 KERNEL PANIC
-References: <45E05D54.10508@alice.it> <20070224201902.a2a7b3da.randy.dunlap@oracle.com>
-In-Reply-To: <20070224201902.a2a7b3da.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Feb 2007 16:06:00.0482 (UTC) FILETIME=[D78BF020:01C758F6]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <AF1602CB2550CE4381C0C75118A7856BA2ACC6@ala-mail02.corp.ad.wrs.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Sat, 24 Feb 2007 16:44:20 +0100 Mario Vanoni wrote:
-> 
->> 2.6.18.7 vanilla & 2.6.16.41 vanilla:
->> /dev/hda CD/DVD
->> /dev/hda1 / IDE HD 160GB
->> /dev/hda2 swap
->> /dev/sda1 /xyz SATA HD 320GB
->> /dev/sda2 swap
->> /dev/sdb1 /zzz SATA HD 320GB
->> /dev/sdb2 swap
->> /dev/sdc1 /usb USB KEY 512MB
+On Sat, Feb 24, 2007 at 04:19:19PM -0800, Stephens, Allan wrote:
+>...
+> 2) There are portions of TIPC's native API which are intended for use by
+> driver programmers, but which are not being used by any code that is
+> currently in the kernel.  While removing these API's from TIPC will only
+> impact these "freeloaders", it has the potential to discourage future
+> programmers who *do* want to contribute their work to the kernel by
+> removing API's that are apparently necessary/useful when doing coding of
+> this sort.
 
-> For 2.6.19.*, does .config contain any CONFIG_ATA* entries?
-> FYI, in 2.6.19, CONFIG_SCSI_SATA* config symbols were renamed to
-> CONFIG_ATA*, so just using an oldconfig won't be sufficient
-> for SATA support.
+It can be re-added at any time when an in-kernel user comes.
 
-You are 100% right, I was lazy, thanks for the gentle blame.
-2.6.19.5 vanilla works perfectly, 2.6.20.1 vanilla too!
+But the most interesting question is:
+Why is noone interested in getting his TIPC using drivers merged?
 
->> ---
->> 2.6.18.8 vanilla: !!!
->> screen eating leftmost characters, then
->> kernel panic - not syncing: VFS: Unable to mount root fs on
->> unknown-block(3,65)
->> POWER SWITCH ultima ratio
->> ---
+> Regards,
+> Al
+>...
 
-Strange error, due to a partially corrupted MBR (?):
-2.6.19.5 with incorrect .config, lilo, SATA missing
-reboot with old 2.6.18.7, OK
-2.6.18.8 with old .config from 2.6.18.6,
-lilo objects not seeing /dev/sdb and /dev/sdc,
-reboot and kernel panic,
-reboot with 2.6.18.7, OK
-2.6.18.8 make mrproper and rm -r /lib/modules/2.6.18.8
-make bzImage etc., lilo: 2.6.18.8 works perfectly.
+cu
+Adrian
 
-Many thanks and kind regards
-Mario Vanoni
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
