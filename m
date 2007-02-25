@@ -1,38 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933695AbXBYK1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964784AbXBYKmG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933695AbXBYK1V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 05:27:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933696AbXBYK1U
+	id S964784AbXBYKmG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 05:42:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964783AbXBYKmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 05:27:20 -0500
-Received: from quechua.inka.de ([193.197.184.2]:55837 "EHLO mail.inka.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933695AbXBYK1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 05:27:20 -0500
-To: linux-kernel@vger.kernel.org
-Subject: Re: ipv4 and ipv6 stacks for new link layers?
-References: <200702231149.l1NBnlZD029626@moth.iki.fi> <E1HKzK9-0001aX-TT@bigred.inka.de> <200702241645.l1OGj3GV023299@moth.iki.fi>
-Organization: private Linux site, southern Germany
-From: Olaf Titz <olaf@bigred.inka.de>
-Date: Sun, 25 Feb 2007 11:27:13 +0100
-Message-ID: <E1HLGb3-000102-Dh@bigred.inka.de>
+	Sun, 25 Feb 2007 05:42:05 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:40248 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964778AbXBYKmE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 05:42:04 -0500
+Date: Sun, 25 Feb 2007 11:41:54 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: bert hubert <bert.hubert@netherlabs.nl>, Andi Kleen <andi@firstfloor.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: all syscalls initially taking 4usec on a P4? Re: nonblocking UDPv4 recvfrom() taking 4usec @ 3GHz?
+Message-ID: <20070225104154.GA2045@elf.ucw.cz>
+References: <20070219231447.GA4400@outpost.ds9a.nl> <p73d545drx6.fsf@bingen.suse.de> <20070220162714.GA3245@outpost.ds9a.nl> <20070220164124.GA24930@2ka.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070220164124.GA24930@2ka.mipt.ru>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> In current architecture, you have to patch kernel IPv6 and IPv4
-> protocols when you add new link layer that they don't recognize.
+Hi!
 
-Which is right, because the IP layer is the place which knows how to
-map IP addresses to link layer addresses.
+> > I've done so, with some interesting results. Source on
+> > http://ds9a.nl/tmp/recvtimings.c - be careful to adjust the '3000' divider
+> > to your CPU frequency if you care about absolute numbers!
+> > 
+> > These are two groups, each consisting of 10 consecutive nonblocking UDP
+> > recvfroms, with 10 packets preloaded. Reported is the number of microseconds
+> > per recvfrom call which yielded a packet:
+> > 
+> > $ ./recvtimings
+> > 4.142333
+> 
+> It can be recvfrom only problem - syscall overhead on my p4 (core duo,
+> debian testing) is bout 300 usec - to test I ran 
 
-IP must know its link layer. E.g. it needs a way to decide if the link
-layer is multicast capable at all.
+core duo is _not_ p4 class cpu; rsulets there will be very different.
 
-> I think that is worse than allow a new driver to provide a simple
-> service function which maps IPv4/6 multicast address into link layer
-> address, when asked.
+									Pavel
 
-"Link layer address" is not a generic concept at all, even though too
-much code assumes everything is Ethernet.
-
-Olaf
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
