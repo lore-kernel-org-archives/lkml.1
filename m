@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932896AbXBYAoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932876AbXBYAoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932896AbXBYAoB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 19:44:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932895AbXBYAoB
+	id S932876AbXBYAoj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 19:44:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933611AbXBYAof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 19:44:01 -0500
-Received: from stargate.chelsio.com ([12.22.49.110]:28213 "EHLO
+	Sat, 24 Feb 2007 19:44:35 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:22094 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932896AbXBYAn7 (ORCPT
+	with ESMTP id S932876AbXBYAoG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 19:43:59 -0500
+	Sat, 24 Feb 2007 19:44:06 -0500
 From: divy@chelsio.com
-Subject: [PATCH 2/7] cxgb3 - private ioctl cleanup
+Subject: [PATCH 3/7] cxgb3 - FW version update
 To: jeff@garzik.org
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        swise@opengridcomputing.com
-Date: Sat, 24 Feb 2007 16:43:56 -0800
-Message-ID: <20070225004355.20813.60704.stgit@localhost.localdomain>
+Date: Sat, 24 Feb 2007 16:44:01 -0800
+Message-ID: <20070225004401.20831.3292.stgit@localhost.localdomain>
 User-Agent: StGIT/0.12
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -26,129 +26,24 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Divy Le Ray <divy@chelsio.com>
 
-Clean up some private ioctls.
+Update FW version to 3.2
 
 Signed-off-by: Divy Le Ray <divy@chelsio.com>
 ---
 
- drivers/net/cxgb3/cxgb3_ioctl.h |   33 +++++++++------------------
- drivers/net/cxgb3/cxgb3_main.c  |   48 +++------------------------------------
- 2 files changed, 15 insertions(+), 66 deletions(-)
+ drivers/net/cxgb3/t3_hw.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/cxgb3/cxgb3_ioctl.h b/drivers/net/cxgb3/cxgb3_ioctl.h
-index a942818..0a82fcd 100644
---- a/drivers/net/cxgb3/cxgb3_ioctl.h
-+++ b/drivers/net/cxgb3/cxgb3_ioctl.h
-@@ -36,28 +36,17 @@
-  * Ioctl commands specific to this driver.
-  */
- enum {
--	CHELSIO_SETREG = 1024,
--	CHELSIO_GETREG,
--	CHELSIO_SETTPI,
--	CHELSIO_GETTPI,
--	CHELSIO_GETMTUTAB,
--	CHELSIO_SETMTUTAB,
--	CHELSIO_GETMTU,
--	CHELSIO_SET_PM,
--	CHELSIO_GET_PM,
--	CHELSIO_GET_TCAM,
--	CHELSIO_SET_TCAM,
--	CHELSIO_GET_TCB,
--	CHELSIO_GET_MEM,
--	CHELSIO_LOAD_FW,
--	CHELSIO_GET_PROTO,
--	CHELSIO_SET_PROTO,
--	CHELSIO_SET_TRACE_FILTER,
--	CHELSIO_SET_QSET_PARAMS,
--	CHELSIO_GET_QSET_PARAMS,
--	CHELSIO_SET_QSET_NUM,
--	CHELSIO_GET_QSET_NUM,
--	CHELSIO_SET_PKTSCHED,
-+	CHELSIO_GETMTUTAB 		= 1029,
-+	CHELSIO_SETMTUTAB 		= 1030,
-+	CHELSIO_SET_PM 			= 1032,
-+	CHELSIO_GET_PM			= 1033,
-+	CHELSIO_GET_MEM			= 1038,
-+	CHELSIO_LOAD_FW			= 1041,
-+	CHELSIO_SET_TRACE_FILTER	= 1044,
-+	CHELSIO_SET_QSET_PARAMS		= 1045,
-+	CHELSIO_GET_QSET_PARAMS		= 1046,
-+	CHELSIO_SET_QSET_NUM		= 1047,
-+	CHELSIO_GET_QSET_NUM		= 1048,
- };
+diff --git a/drivers/net/cxgb3/t3_hw.c b/drivers/net/cxgb3/t3_hw.c
+index 365a7f5..ec06ad6 100644
+--- a/drivers/net/cxgb3/t3_hw.c
++++ b/drivers/net/cxgb3/t3_hw.c
+@@ -884,7 +884,7 @@ int t3_check_fw_version(struct adapter *
+ 	major = G_FW_VERSION_MAJOR(vers);
+ 	minor = G_FW_VERSION_MINOR(vers);
  
- struct ch_reg {
-diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
-index 59f2b51..7ff834e 100644
---- a/drivers/net/cxgb3/cxgb3_main.c
-+++ b/drivers/net/cxgb3/cxgb3_main.c
-@@ -1552,32 +1552,6 @@ static int cxgb_extension_ioctl(struct n
- 		return -EFAULT;
+-	if (type == FW_VERSION_T3 && major == 3 && minor == 1)
++	if (type == FW_VERSION_T3 && major == 3 && minor == 2)
+ 		return 0;
  
- 	switch (cmd) {
--	case CHELSIO_SETREG:{
--		struct ch_reg edata;
--
--		if (!capable(CAP_NET_ADMIN))
--			return -EPERM;
--		if (copy_from_user(&edata, useraddr, sizeof(edata)))
--			return -EFAULT;
--		if ((edata.addr & 3) != 0
--			|| edata.addr >= adapter->mmio_len)
--			return -EINVAL;
--		writel(edata.val, adapter->regs + edata.addr);
--		break;
--	}
--	case CHELSIO_GETREG:{
--		struct ch_reg edata;
--
--		if (copy_from_user(&edata, useraddr, sizeof(edata)))
--			return -EFAULT;
--		if ((edata.addr & 3) != 0
--			|| edata.addr >= adapter->mmio_len)
--			return -EINVAL;
--		edata.val = readl(adapter->regs + edata.addr);
--		if (copy_to_user(useraddr, &edata, sizeof(edata)))
--			return -EFAULT;
--		break;
--	}
- 	case CHELSIO_SET_QSET_PARAMS:{
- 		int i;
- 		struct qset_params *q;
-@@ -1841,10 +1815,10 @@ static int cxgb_extension_ioctl(struct n
- 			return -EINVAL;
- 
- 		/*
--			* Version scheme:
--			* bits 0..9: chip version
--			* bits 10..15: chip revision
--			*/
-+		 * Version scheme:
-+		 * bits 0..9: chip version
-+		 * bits 10..15: chip revision
-+		 */
- 		t.version = 3 | (adapter->params.rev << 10);
- 		if (copy_to_user(useraddr, &t, sizeof(t)))
- 			return -EFAULT;
-@@ -1893,20 +1867,6 @@ static int cxgb_extension_ioctl(struct n
- 						t.trace_rx);
- 		break;
- 	}
--	case CHELSIO_SET_PKTSCHED:{
--		struct ch_pktsched_params p;
--
--		if (!capable(CAP_NET_ADMIN))
--				return -EPERM;
--		if (!adapter->open_device_map)
--				return -EAGAIN;	/* uP and SGE must be running */
--		if (copy_from_user(&p, useraddr, sizeof(p)))
--				return -EFAULT;
--		send_pktsched_cmd(adapter, p.sched, p.idx, p.min, p.max,
--				  p.binding);
--		break;
--			
--	}
- 	default:
- 		return -EOPNOTSUPP;
- 	}
+ 	CH_ERR(adapter, "found wrong FW version(%u.%u), "
