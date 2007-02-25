@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964968AbXBYPsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964974AbXBYP7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964968AbXBYPsk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 10:48:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964972AbXBYPsk
+	id S964974AbXBYP7V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 10:59:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964976AbXBYP7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 10:48:40 -0500
-Received: from mba.ocn.ne.jp ([210.190.142.172]:52271 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964968AbXBYPsj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 10:48:39 -0500
-Date: Mon, 26 Feb 2007 00:48:38 +0900 (JST)
-Message-Id: <20070226.004838.126574842.anemo@mba.ocn.ne.jp>
-To: sam@ravnborg.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Detecting section mismatches in vmlinux
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20070224232527.GA10768@uranus.ravnborg.org>
-References: <20070222.005728.126762028.anemo@mba.ocn.ne.jp>
-	<20070225.035315.25909736.anemo@mba.ocn.ne.jp>
-	<20070224232527.GA10768@uranus.ravnborg.org>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 3.3 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 25 Feb 2007 10:59:21 -0500
+Received: from smtp-vbr2.xs4all.nl ([194.109.24.22]:1738 "EHLO
+	smtp-vbr2.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964974AbXBYP7U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 10:59:20 -0500
+Message-ID: <45E1B254.70801@xs4all.nl>
+Date: Sun, 25 Feb 2007 16:59:16 +0100
+From: Udo van den Heuvel <udovdh@xs4all.nl>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Krzysztof Halasa <khc@pm.waw.pl>
+Subject: Re: PCI riser cards and PCI irq routing, etc
+References: <45D85DA1.7090502@xs4all.nl> <m3hctfqjna.fsf@maximus.localdomain>	<20070221224027.GK22464@csclub.uwaterloo.ca>	<200702212355.25601.s0348365@sms.ed.ac.uk>	<m3bqjnrntu.fsf@maximus.localdomain> <45DF0C29.2080201@xs4all.nl> <m3slcw68vr.fsf@maximus.localdomain>
+In-Reply-To: <m3slcw68vr.fsf@maximus.localdomain>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: id=8300CC02
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Feb 2007 00:25:27 +0100, Sam Ravnborg <sam@ravnborg.org> wrote:
-> Attached patch does:
-> 1) Do not check vmlinux but check all .o files that is used to create vmlinux
-> 2) Teach modpost to skip non-elf files (.a files and empty .o files etc)
+Krzysztof Halasa wrote:
+> Udo van den Heuvel <udovdh@xs4all.nl> writes:
 > 
-> With this change we get proper check of vmlinux (or files used to create vmlinux)
-
-Thanks!  It works fine for me too.
-
-> This gives following errors in a x86_64 defconfig build:
+>> I will try a different case with a different dual PCI riser card soon.
+>> This Morex riser has DN20-31 or so, so more options.
 > 
-> WARNING: init/built-in.o - Section mismatch: reference to .init.text:init from .text between 'rest_init' (at offset 0xe) and 'run_init_process'
+> OTOH I wonder how do they use DN 21-31? The board uses lines AD11 to AD31
+> (21 lines) for selecting devices #0 - #20. 32-bit PCI bus has only 32
+> address/data lines :-)
+> 
+> Perhaps they mean AD20-AD31 lines = device #9 - #0x14=20? If that is
+> the case, you can try:
+> - their "DN30" = device 0x13 = 19, which is apparently what the VIA riser
+>   card does,
 
-This is because rest_init() (non __init) references 'init' (__init) as
-an argument of kernel_thread().  No idea how to avoid this warning...
-
-> WARNING: mm/built-in.o - Section mismatch: reference to .init.data:initkmem_list3 from .text between 'set_up_list3s' (at offset 0x1e6fb) and 'slab_get_obj'
-> WARNING: mm/built-in.o - Section mismatch: reference to .init.data:initkmem_list3 from .text between 'set_up_list3s' (at offset 0x1e71c) and 'slab_get_obj'
-
-This is because set_up_list3s() (non __init) references
-initkmem_list3[] (__initdata).  The set_up_list3s() is only used on
-early stage so can be __init, but it cause an another mismatch ---
-setup_cpu_cache() (non __init) calls __init function.  Some trick
-using a function pointer might solve this issue, but I wonder it is a
-right thing to do...
-
-Or we need another whitelist for vmlinux?
-
----
-Atsushi Nemoto
+Got the Morex stuff here today.
+Surprise: the (current) default jumper location is ID30.
