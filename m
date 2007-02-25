@@ -1,143 +1,365 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965061AbXBYSfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965082AbXBYSkE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965061AbXBYSfR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 13:35:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965075AbXBYSfR
+	id S965082AbXBYSkE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 13:40:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965084AbXBYSkD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 13:35:17 -0500
-Received: from s0001.shadowconnect.net ([88.198.24.147]:46680 "EHLO
-	mail.shadowconnect.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965061AbXBYSfP (ORCPT
+	Sun, 25 Feb 2007 13:40:03 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46384 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965082AbXBYSkA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 13:35:15 -0500
-X-Greylist: delayed 1328 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 Feb 2007 13:35:15 EST
-Message-ID: <45E1D1A8.7050901@shadowconnect.com>
-Date: Sun, 25 Feb 2007 19:12:56 +0100
-From: Markus Lidel <Markus.Lidel@shadowconnect.com>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Sun, 25 Feb 2007 13:40:00 -0500
+Date: Sun, 25 Feb 2007 18:39:57 +0000 (GMT)
+From: James Simmons <jsimmons@infradead.org>
+To: Linux Fbdev development list 
+	<linux-fbdev-devel@lists.sourceforge.net>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] display class
+Message-ID: <Pine.LNX.4.64.0702251833500.30828@pentafluge.infradead.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Mark Gray <mvg001@markvgray.com>, linux-kernel@vger.kernel.org,
-       Sam Hokin <sam@ims.net>, Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: I2O block driver broken in kernel 2.6.19?
-References: <45D8E102.6090004@redhat.com>	<loom.20070223T235432-923@post.gmane.org> <20070224030924.e2b0fcce.akpm@linux-foundation.org>
-In-Reply-To: <20070224030924.e2b0fcce.akpm@linux-foundation.org>
-Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg=sha1; boundary="------------ms030307030401080407060304"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a cryptographically signed message in MIME format.
 
---------------ms030307030401080407060304
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Here is the second round to the new display class. This is meant to unite 
+the various solutions to display units ie acpi output device, auxdisplay 
+and the defunct lcd class in the backlight directory. Please apply.
 
-Hello,
+Signed-off-by: James Simmons <jsimmons@infradead.org>
 
-Andrew Morton wrote:
-> (cc's restored.  Please, always do reply-to-all)
->> On Fri, 23 Feb 2007 22:57:27 +0000 (UTC) Mark Gray <mvg001@markvgray.com> wrote:
->>>  i2o/hda:<3>Buffer I/O error on device i2o/hda, logical block 0
->>> Buffer I/O error on device i2o/hda, logical block 0
->> Same error here. Both 2.6.19 and 2.6.20 kernels, using Adaptec 2400A RAID.
-> Is Adaptec 2400 controlled by drivers/message/i2o? I assume so...
-> If so, thats's at least three people reporting breakage in 2.6.19 and later.
-> Is anyone able perform a git-bisect to identify the offending commit?  It
-> would really help.
-> Thanks.
-
-I've already reversed the changes from 2.6.19 for the I2O subsystem, but 
-it wasn't the solution. Probably it has something to do with the DMA 
-handling, because some commands go through very well, while others 
-don't. I'm working on the issue and report back as soon as i find a 
-solution.
-
-
-Best regards,
-
-
-Markus Lidel
-------------------------------------------
-Markus Lidel (Senior IT Consultant)
-
-Shadow Connect GmbH
-Carl-Reisch-Weg 12
-D-86381 Krumbach
-Germany
-
-Phone:  +49 82 82/99 51-0
-Fax:    +49 82 82/99 51-11
-
-E-Mail: Markus.Lidel@shadowconnect.com
-URL:    http://www.shadowconnect.com
-
-Geschäftsführer/CEO: Markus Lidel
-HRB 10357, Amtsgericht Memmingen
-
---------------ms030307030401080407060304
-Content-Type: application/x-pkcs7-signature; name="smime.p7s"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Description: S/MIME Cryptographic Signature
-
-MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIJUTCC
-AwMwggJsoAMCAQICEAhPjzaw/32e9mQOW/Zli3owDQYJKoZIhvcNAQEEBQAwYjELMAkGA1UE
-BhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMT
-I1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBMB4XDTA2MDQxMDE2NDg0MloX
-DTA3MDQxMDE2NDg0MlowgeAxCzAJBgNVBAYTAkRFMQ8wDQYDVQQIEwZCYXllcm4xETAPBgNV
-BAcTCEtydW1iYWNoMScwJQYDVQQKEx5TaGFkb3cgQ29ubmVjdCBHbWJIIChJbnRlcm5ldCkx
-HTAbBgNVBAwTFFNlbmlvciBJVCBDb25zdWx0YW50MQ4wDAYDVQQEEwVMaWRlbDEPMA0GA1UE
-KhMGTWFya3VzMRUwEwYDVQQDEwxNYXJrdXMgTGlkZWwxLTArBgkqhkiG9w0BCQEWHk1hcmt1
-cy5MaWRlbEBzaGFkb3djb25uZWN0LmNvbTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEA
-yknWBzALDg1PobgTc7XwpX/KkmBfZqIKUDQzifj379tzvaaGFkdySSYhHTWK3EjNneuKCkx0
-B0FILFLyL59I6PJLh1xvl34JiqzHt1B8VgR05/r0tx3aHn6SyT2Wx8KethLZloqb27W2/Hfb
-fteXGcZzhepOHvKkDiEkwMnuIi0CAwEAAaM7MDkwKQYDVR0RBCIwIIEeTWFya3VzLkxpZGVs
-QHNoYWRvd2Nvbm5lY3QuY29tMAwGA1UdEwEB/wQCMAAwDQYJKoZIhvcNAQEEBQADgYEAAxUl
-pLJ0d8C3+FREKRKeU/B4n9kefOkBWr0GeYCmw92Umkryr5Radlr1CU1S+L81KerOR2vAhskV
-610BbaF1Ibd1DoZ6jzR076RLcD7FFT4NjS8wY5zXiGmcb7y3YpkNuCdkfWSWNP34+LOKW1ev
-d4QZLtCVFxpl5ava/8slz2wwggMDMIICbKADAgECAhAIT482sP99nvZkDlv2ZYt6MA0GCSqG
-SIb3DQEBBAUAMGIxCzAJBgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAo
-UHR5KSBMdGQuMSwwKgYDVQQDEyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBD
-QTAeFw0wNjA0MTAxNjQ4NDJaFw0wNzA0MTAxNjQ4NDJaMIHgMQswCQYDVQQGEwJERTEPMA0G
-A1UECBMGQmF5ZXJuMREwDwYDVQQHEwhLcnVtYmFjaDEnMCUGA1UEChMeU2hhZG93IENvbm5l
-Y3QgR21iSCAoSW50ZXJuZXQpMR0wGwYDVQQMExRTZW5pb3IgSVQgQ29uc3VsdGFudDEOMAwG
-A1UEBBMFTGlkZWwxDzANBgNVBCoTBk1hcmt1czEVMBMGA1UEAxMMTWFya3VzIExpZGVsMS0w
-KwYJKoZIhvcNAQkBFh5NYXJrdXMuTGlkZWxAc2hhZG93Y29ubmVjdC5jb20wgZ8wDQYJKoZI
-hvcNAQEBBQADgY0AMIGJAoGBAMpJ1gcwCw4NT6G4E3O18KV/ypJgX2aiClA0M4n49+/bc72m
-hhZHckkmIR01itxIzZ3rigpMdAdBSCxS8i+fSOjyS4dcb5d+CYqsx7dQfFYEdOf69Lcd2h5+
-ksk9lsfCnrYS2ZaKm9u1tvx3237XlxnGc4XqTh7ypA4hJMDJ7iItAgMBAAGjOzA5MCkGA1Ud
-EQQiMCCBHk1hcmt1cy5MaWRlbEBzaGFkb3djb25uZWN0LmNvbTAMBgNVHRMBAf8EAjAAMA0G
-CSqGSIb3DQEBBAUAA4GBAAMVJaSydHfAt/hURCkSnlPweJ/ZHnzpAVq9BnmApsPdlJpK8q+U
-WnZa9QlNUvi/NSnqzkdrwIbJFetdAW2hdSG3dQ6Geo80dO+kS3A+xRU+DY0vMGOc14hpnG+8
-t2KZDbgnZH1kljT9+PiziltXr3eEGS7QlRcaZeWr2v/LJc9sMIIDPzCCAqigAwIBAgIBDTAN
-BgkqhkiG9w0BAQUFADCB0TELMAkGA1UEBhMCWkExFTATBgNVBAgTDFdlc3Rlcm4gQ2FwZTES
-MBAGA1UEBxMJQ2FwZSBUb3duMRowGAYDVQQKExFUaGF3dGUgQ29uc3VsdGluZzEoMCYGA1UE
-CxMfQ2VydGlmaWNhdGlvbiBTZXJ2aWNlcyBEaXZpc2lvbjEkMCIGA1UEAxMbVGhhd3RlIFBl
-cnNvbmFsIEZyZWVtYWlsIENBMSswKQYJKoZIhvcNAQkBFhxwZXJzb25hbC1mcmVlbWFpbEB0
-aGF3dGUuY29tMB4XDTAzMDcxNzAwMDAwMFoXDTEzMDcxNjIzNTk1OVowYjELMAkGA1UEBhMC
-WkExJTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMTI1Ro
-YXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBMIGfMA0GCSqGSIb3DQEBAQUAA4GN
-ADCBiQKBgQDEpjxVc1X7TrnKmVoeaMB1BHCd3+n/ox7svc31W/Iadr1/DDph8r9RzgHU5VAK
-MNcCY1osiRVwjt3J8CuFWqo/cVbLrzwLB+fxH5E2JCoTzyvV84J3PQO+K/67GD4Hv0CAAmTX
-p6a7n2XRxSpUhQ9IBH+nttE8YQRAHmQZcmC3+wIDAQABo4GUMIGRMBIGA1UdEwEB/wQIMAYB
-Af8CAQAwQwYDVR0fBDwwOjA4oDagNIYyaHR0cDovL2NybC50aGF3dGUuY29tL1RoYXd0ZVBl
-cnNvbmFsRnJlZW1haWxDQS5jcmwwCwYDVR0PBAQDAgEGMCkGA1UdEQQiMCCkHjAcMRowGAYD
-VQQDExFQcml2YXRlTGFiZWwyLTEzODANBgkqhkiG9w0BAQUFAAOBgQBIjNFQg+oLLswNo2as
-Zw9/r6y+whehQ5aUnX9MIbj4Nh+qLZ82L8D0HFAgk3A8/a3hYWLD2ToZfoSxmRsAxRoLgnSe
-JVCUYsfbJ3FXJY3dqZw5jowgT2Vfldr394fWxghOrvbqNOUQGls1TXfjViF4gtwhGTXeJLHT
-HUb/XV9lTzGCAuMwggLfAgEBMHYwYjELMAkGA1UEBhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBD
-b25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMTI1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFp
-bCBJc3N1aW5nIENBAhAIT482sP99nvZkDlv2ZYt6MAkGBSsOAwIaBQCgggHDMBgGCSqGSIb3
-DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTA3MDIyNTE4MTI1NlowIwYJKoZI
-hvcNAQkEMRYEFH2vmUKcz6ATPn3kK+1Rynnq30lrMFIGCSqGSIb3DQEJDzFFMEMwCgYIKoZI
-hvcNAwcwDgYIKoZIhvcNAwICAgCAMA0GCCqGSIb3DQMCAgFAMAcGBSsOAwIHMA0GCCqGSIb3
-DQMCAgEoMIGFBgkrBgEEAYI3EAQxeDB2MGIxCzAJBgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3
-dGUgQ29uc3VsdGluZyAoUHR5KSBMdGQuMSwwKgYDVQQDEyNUaGF3dGUgUGVyc29uYWwgRnJl
-ZW1haWwgSXNzdWluZyBDQQIQCE+PNrD/fZ72ZA5b9mWLejCBhwYLKoZIhvcNAQkQAgsxeKB2
-MGIxCzAJBgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5KSBMdGQu
-MSwwKgYDVQQDEyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBDQQIQCE+PNrD/
-fZ72ZA5b9mWLejANBgkqhkiG9w0BAQEFAASBgBvo/8ubMxX0giEUyNygr/mi7bPZFDqUphBX
-83lzX0JLtmNTAhdtAMHDIgD8deyqbpo+vhH79WIuTjs9ij2TeIZ+8ploNJ5Q4aeukQRthhnd
-IpsRxJTZabf1decsXKaTyDyVxzHkw3nRTG4/JeTB8Y0/7dCTeZnlu3r++SwumlALAAAAAAAA
-
---------------ms030307030401080407060304--
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/display/display-sysfs.c fbdev-2.6/drivers/video/display/display-sysfs.c
+--- linus-2.6/drivers/video/display/display-sysfs.c	1969-12-31 19:00:00.000000000 -0500
++++ fbdev-2.6/drivers/video/display/display-sysfs.c	2007-02-24 16:20:42.000000000 -0500
+@@ -0,0 +1,203 @@
++/*
++ *  display-sysfs.c - Display output driver sysfs interface
++ *
++ *  Copyright (C) 2007 James Simmons <jsimmons@infradead.org>
++ *
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or (at
++ *  your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful, but
++ *  WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ *  General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License along
++ *  with this program; if not, write to the Free Software Foundation, Inc.,
++ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
++ *
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ */
++#include <linux/module.h>
++#include <linux/display.h>
++#include <linux/bitmap.h>
++#include <linux/err.h>
++#include <linux/ctype.h>
++
++static ssize_t display_show_name(struct device *dev, struct device_attribute *attr,
++				char *buf)
++{
++	struct display_device *dsp = dev_get_drvdata(dev);
++	return snprintf(buf, PAGE_SIZE, "%s\n", dsp->name);
++}
++
++static ssize_t display_show_type(struct device *dev, struct device_attribute *attr,
++				char *buf)
++{
++	struct display_device *dsp = dev_get_drvdata(dev);
++	return snprintf(buf, PAGE_SIZE, "%s\n", dsp->type);
++}
++
++static ssize_t display_show_contrast(struct device *dev, struct device_attribute *attr,
++				char *buf)
++{
++	struct display_device *dsp = dev_get_drvdata(dev);
++	ssize_t rc = -ENXIO;
++
++	mutex_lock(&dsp->lock);
++	if (likely(dsp->driver) && dsp->driver->get_contrast)
++		rc = sprintf(buf, "%d\n", dsp->driver->get_contrast(dsp));
++	mutex_unlock(&dsp->lock);
++	return rc;
++}
++
++static ssize_t display_store_contrast(struct device *dev, struct device_attribute *attr,
++				const char *buf, size_t count)
++{
++	struct display_device *dsp = dev_get_drvdata(dev);
++	ssize_t ret = -EINVAL, size;
++	int contrast;
++	char *endp;
++
++	contrast = simple_strtoul(buf, &endp, 0);
++	size = endp - buf;
++
++	if (*endp && isspace(*endp))
++		size++;
++
++	if (size != count)
++		return ret;
++
++	mutex_lock(&dsp->lock);
++	if (likely(dsp->driver && dsp->driver->set_contrast)) {
++		pr_debug("display: set contrast to %d\n", contrast);
++		dsp->driver->set_contrast(dsp, contrast);
++		ret = count;
++	}
++	mutex_unlock(&dsp->lock);
++	return ret;
++}
++
++static ssize_t display_show_max_contrast(struct device *dev, struct device_attribute *attr,
++					char *buf)
++{
++	struct display_device *dsp = dev_get_drvdata(dev);
++	ssize_t rc = -ENXIO;
++
++	mutex_lock(&dsp->lock);
++	if (likely(dsp->driver))
++		rc = sprintf(buf, "%d\n", dsp->driver->max_contrast);
++	mutex_unlock(&dsp->lock);
++	return rc;
++}
++
++static struct device_attribute display_attrs[] = {
++	__ATTR(name, S_IRUGO, display_show_name, NULL),
++	__ATTR(type, S_IRUGO, display_show_type, NULL),
++	__ATTR(contrast, S_IRUGO | S_IWUSR, display_show_contrast, display_store_contrast),
++	__ATTR(max_contrast, S_IRUGO, display_show_max_contrast, NULL),
++};
++
++static int display_suspend(struct device *dev, pm_message_t state)
++{
++	struct display_device *dsp = dev_get_drvdata(dev);
++
++	mutex_lock(&dsp->lock);
++	if (likely(dsp->driver->suspend))
++		dsp->driver->suspend(dsp, state);
++	mutex_unlock(&dsp->lock);
++	return 0;
++};
++
++static int display_resume(struct device *dev)
++{
++	struct display_device *dsp = dev_get_drvdata(dev);
++
++	mutex_lock(&dsp->lock);
++	if (likely(dsp->driver->resume))
++		dsp->driver->resume(dsp);
++	mutex_unlock(&dsp->lock);
++	return 0;
++};
++
++struct class *display_class;
++EXPORT_SYMBOL(display_class);
++
++#define NUM_OF_DISPLAYS		32
++DECLARE_BITMAP(inuse, NUM_OF_DISPLAYS);
++
++struct display_device *display_device_register(struct display_driver *driver,
++						struct device *parent, void *devdata)
++{
++	int idx = find_first_zero_bit(inuse, NUM_OF_DISPLAYS);
++	struct display_device *new_dev = NULL;
++	struct device *display_device = NULL;
++
++	if (unlikely(!driver))
++		return ERR_PTR(-EINVAL);
++
++	display_device = device_create(display_class, parent, 0, "display%d", idx);
++	if (IS_ERR(display_device))
++		return ERR_PTR(-ENOMEM);
++
++	new_dev = kzalloc(sizeof(struct display_device), GFP_KERNEL);
++	if (likely(new_dev) && unlikely(driver->probe(new_dev, devdata))) {
++		dev_set_drvdata(display_device, new_dev);
++		new_dev->dev = display_device;
++		new_dev->parent = parent;
++		new_dev->driver = driver;
++		mutex_init(&new_dev->lock);
++		set_bit(idx, inuse);
++		new_dev->idx = idx;
++	} else
++		device_unregister(display_device);
++	return new_dev;
++}
++EXPORT_SYMBOL(display_device_register);
++
++void display_device_unregister(struct display_device *ddev)
++{
++	if (!ddev)
++		return;
++	mutex_lock(&ddev->lock);
++	device_unregister(ddev->parent);
++	clear_bit(ddev->idx, inuse);
++	mutex_unlock(&ddev->lock);
++	kfree(ddev);
++}
++EXPORT_SYMBOL(display_device_unregister);
++
++static int __init display_class_init(void)
++{
++	display_class = class_create(THIS_MODULE, "display");
++	if (IS_ERR(display_class)) {
++		printk(KERN_ERR "Failed to create display class\n");
++		display_class = NULL;
++		return -EINVAL;
++	}
++	display_class->dev_attrs = display_attrs;
++	display_class->suspend = display_suspend;
++	display_class->resume = display_resume;
++	bitmap_zero(inuse, NUM_OF_DISPLAYS);	
++	return 0;
++}
++
++#ifdef MODULE
++module_init(display_class_init);
++
++static void __exit display_class_exit(void)
++{
++	class_destroy(display_class);
++}
++module_exit(display_class_exit);
++#else
++subsys_initcall(display_class_init);
++#endif
++
++MODULE_DESCRIPTION("Display Hardware handling");
++MODULE_AUTHOR("James Simmons <jsimmons@infradead.org>");
++MODULE_LICENSE("GPL");
++
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/display/Kconfig fbdev-2.6/drivers/video/display/Kconfig
+--- linus-2.6/drivers/video/display/Kconfig	1969-12-31 19:00:00.000000000 -0500
++++ fbdev-2.6/drivers/video/display/Kconfig	2007-02-24 16:22:27.000000000 -0500
+@@ -0,0 +1,24 @@
++#
++# Display drivers configuration
++#
++
++menu "Display device support"
++
++config DISPLAY_SUPPORT
++	tristate "Display panel/monitor support"
++	---help---
++	  This framework adds support for low-level control of a display.
++	  This includes support for power.
++
++	  Enable this to be able to choose the drivers for controlling the
++	  physical display panel/monitor on some platforms. This not only
++	  covers LCD displays for PDAs but also other types of displays
++	  such as CRT, TVout etc.
++
++	  To have support for your specific display panel you will have to
++	  select the proper drivers which depend on this option.
++
++comment "Display hardware drivers"
++	depends on DISPLAY_SUPPORT
++
++endmenu
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/display/Makefile fbdev-2.6/drivers/video/display/Makefile
+--- linus-2.6/drivers/video/display/Makefile	1969-12-31 19:00:00.000000000 -0500
++++ fbdev-2.6/drivers/video/display/Makefile	2007-02-24 16:22:13.000000000 -0500
+@@ -0,0 +1,6 @@
++# Display drivers
++
++display-objs				:= display-sysfs.o
++
++obj-$(CONFIG_DISPLAY_SUPPORT)		+= display.o
++
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/Kconfig fbdev-2.6/drivers/video/Kconfig
+--- linus-2.6/drivers/video/Kconfig	2007-02-21 10:59:24.000000000 -0500
++++ fbdev-2.6/drivers/video/Kconfig	2007-02-24 10:57:18.000000000 -0500
+@@ -5,6 +5,7 @@
+ menu "Graphics support"
+ 
+ source "drivers/video/backlight/Kconfig"
++source "drivers/video/display/Kconfig"
+ 
+ config FB
+ 	tristate "Support for frame buffer devices"
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/Makefile fbdev-2.6/drivers/video/Makefile
+--- linus-2.6/drivers/video/Makefile	2007-02-21 10:59:24.000000000 -0500
++++ fbdev-2.6/drivers/video/Makefile	2007-02-22 09:41:41.000000000 -0500
+@@ -12,7 +12,7 @@
+ 
+ obj-$(CONFIG_VT)		  += console/
+ obj-$(CONFIG_LOGO)		  += logo/
+-obj-y				  += backlight/
++obj-y				  += backlight/ display/
+ 
+ obj-$(CONFIG_FB_CFB_FILLRECT)  += cfbfillrect.o
+ obj-$(CONFIG_FB_CFB_COPYAREA)  += cfbcopyarea.o
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/include/linux/display.h fbdev-2.6/include/linux/display.h
+--- linus-2.6/include/linux/display.h	1969-12-31 19:00:00.000000000 -0500
++++ fbdev-2.6/include/linux/display.h	2007-02-24 11:09:13.000000000 -0500
+@@ -0,0 +1,61 @@
++/*
++ *  Copyright (C) 2006 James Simmons <jsimmons@infradead.org>
++ *
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or (at
++ *  your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful, but
++ *  WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ *  General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License along
++ *  with this program; if not, write to the Free Software Foundation, Inc.,
++ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
++ *
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ */
++
++#ifndef _LINUX_DISPLAY_H
++#define _LINUX_DISPLAY_H
++
++#include <linux/device.h>
++
++struct display_device;
++
++/* This structure defines all the properties of a Display. */
++struct display_driver {
++	int  (*set_contrast)(struct display_device *, unsigned int);
++	int  (*get_contrast)(struct display_device *);
++	void (*suspend)(struct display_device *, pm_message_t state);
++	void (*resume)(struct display_device *);
++	int  (*probe)(struct display_device *, void *);
++	int  (*remove)(struct display_device *);
++	int  max_contrast;
++};
++
++struct display_device {
++	struct module *owner;			/* Owner module */
++	struct display_driver *driver;
++	struct device *parent;			/* This is the parent */
++	struct device *dev;			/* This is this display device */
++	struct mutex lock;
++	void *priv_data;
++	char type[16];
++	char *name;
++	int idx;
++};
++
++extern struct display_device *display_device_register(struct display_driver *driver,
++					struct device *dev, void *devdata);
++extern void display_device_unregister(struct display_device *dev);
++
++extern int probe_edid(struct display_device *dev, void *devdata);
++
++#define to_display_device(obj) container_of(obj, struct display_device, class_dev)
++
++#endif
