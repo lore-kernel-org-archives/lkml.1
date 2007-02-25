@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932322AbXBYUGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932684AbXBYUGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932322AbXBYUGY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 15:06:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932684AbXBYUGY
+	id S932684AbXBYUGa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 15:06:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964777AbXBYUGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 15:06:24 -0500
-Received: from mail.screens.ru ([213.234.233.54]:36233 "EHLO mail.screens.ru"
+	Sun, 25 Feb 2007 15:06:30 -0500
+Received: from mail.screens.ru ([213.234.233.54]:36238 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932322AbXBYUGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 15:06:23 -0500
-Date: Sun, 25 Feb 2007 23:06:21 +0300
+	id S932684AbXBYUGa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 15:06:30 -0500
+Date: Sun, 25 Feb 2007 23:05:50 +0300
 From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Hugh Dickins <hugh@veritas.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+To: Hugh Dickins <hugh@veritas.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, dipankar@in.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>,
        Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] adapt page_lock_anon_vma() to PREEMPT_RCU
-Message-ID: <20070225200621.GA2259@tv-sign.ru>
+Subject: Re: PREEMPT_RCU breaks anon_vma locking ?
+Message-ID: <20070225200550.GA497@tv-sign.ru>
+References: <20070223212303.GA423@tv-sign.ru> <Pine.LNX.4.64.0702242203080.4370@blonde.wat.veritas.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702242203080.4370@blonde.wat.veritas.com>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-page_lock_anon_vma() uses spin_lock() to block RCU. This doesn't work with
-PREEMPT_RCU, we have to do rcu_read_lock() explicitely. Otherwise, it is
-theoretically possible that slab returns anon_vma's memory to the system
-before we do spin_unlock(&anon_vma->lock).
+On 02/24, Hugh Dickins wrote:
+>
+> On Sat, 24 Feb 2007, Oleg Nesterov wrote:
+> 
+> > So page_lock_anon_vma() works correctly due to SLAB_DESTROY_BY_RCU even if
+> > anon_vma_unlink() has already freed anon_vma. In that case we should see
+> > list_empty(&anon_vma->head), we are safe.
+> 
+> (It doesn't affect your argument, but we won't necessarily see list_empty
+> there: the anon_vma slot may already have got reused for a different
+> bundle of vmas completely; but its lock remains a lock and its list
+> remains a list of vmas, and the worst that happens is that
+> page_referenced_anon or try_to_unmap_anon wanders through an irrelevant
+> bundle of vmas, looking for a page that cannot be found there.)
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+Yes, but in that case we are safe, right? We hold the lock, anon_vma can't be
+freed. But thanks for clarification! Somehow I missed that not only unlock()
+is unsafe (in theory). If anon_vma's memory was re-used for something else, we
+can't assume that we will see list_empty(&anon_vma->head).
 
---- WQ/mm/rmap.c~	2007-02-18 22:56:49.000000000 +0300
-+++ WQ/mm/rmap.c	2007-02-25 22:43:00.000000000 +0300
-@@ -183,7 +183,7 @@ void __init anon_vma_init(void)
-  */
- static struct anon_vma *page_lock_anon_vma(struct page *page)
- {
--	struct anon_vma *anon_vma = NULL;
-+	struct anon_vma *anon_vma;
- 	unsigned long anon_mapping;
- 
- 	rcu_read_lock();
-@@ -195,9 +195,16 @@ static struct anon_vma *page_lock_anon_v
- 
- 	anon_vma = (struct anon_vma *) (anon_mapping - PAGE_MAPPING_ANON);
- 	spin_lock(&anon_vma->lock);
-+	return anon_vma;
- out:
- 	rcu_read_unlock();
--	return anon_vma;
-+	return NULL;
-+}
-+
-+static void page_unlock_anon_vma(struct anon_vma *anon_vma)
-+{
-+	spin_unlock(&anon_vma->lock);
-+	rcu_read_unlock();
- }
- 
- /*
-@@ -333,7 +340,8 @@ static int page_referenced_anon(struct p
- 		if (!mapcount)
- 			break;
- 	}
--	spin_unlock(&anon_vma->lock);
-+
-+	page_unlock_anon_vma(anon_vma);
- 	return referenced;
- }
- 
-@@ -809,7 +817,8 @@ static int try_to_unmap_anon(struct page
- 				!page_mapped(page))
- 			break;
- 	}
--	spin_unlock(&anon_vma->lock);
-+
-+	page_unlock_anon_vma(anon_vma);
- 	return ret;
- }
- 
+> > 	static inline void page_lock_anon_vma(struct anon_vma *anon_vma)
+> 
+> It might be wiser to call that one page_unlock_anon_vma ;)
+
+Congratulations, you passed the test! Paul didn't :)
+
+> (I'm slightly disgruntled that page_lock_anon_vma takes a struct page *,
+> but page_unlock_anon_vma no struct page *.  But it would be silly to do
+> it differently, or mess with the naming: besides, it's a static function
+> and the prototype guards against error anyway.)
+
+OK. I thought about "unlock_anon_vma", but symmetry is good indeed.
+
+Oleg.
 
