@@ -1,108 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932792AbXBYSNp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932978AbXBYS0B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932792AbXBYSNp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 13:13:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932978AbXBYSNp
+	id S932978AbXBYS0B (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 13:26:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932980AbXBYS0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 13:13:45 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:32844 "EHLO 2ka.mipt.ru"
+	Sun, 25 Feb 2007 13:26:00 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:53096 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932792AbXBYSNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 13:13:44 -0500
-Date: Sun, 25 Feb 2007 21:09:11 +0300
+	id S932978AbXBYS0A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 13:26:00 -0500
+Date: Sun, 25 Feb 2007 21:21:35 +0300
 From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+Cc: linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Arjan van de Ven <arjan@infradead.org>,
        Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
        "David S. Miller" <davem@davemloft.net>,
        Suparna Bhattacharya <suparna@in.ibm.com>,
        Davide Libenzi <davidel@xmailserver.org>,
        Jens Axboe <jens.axboe@oracle.com>,
        Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070225180910.GA29821@2ka.mipt.ru>
-References: <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com> <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com> <20070222074044.GA4158@elte.hu> <20070222113148.GA3781@2ka.mipt.ru> <20070222125931.GB25788@elte.hu> <20070222133201.GB5208@2ka.mipt.ru> <20070223115152.GA2565@elte.hu> <20070223122224.GB5392@2ka.mipt.ru> <20070225174505.GA7048@elte.hu>
+Message-ID: <20070225182135.GB29821@2ka.mipt.ru>
+References: <20070221211355.GA7302@elte.hu> <20070224183421.GA6835@2ka.mipt.ru> <20070225172337.GB4998@elte.hu> <20070225174438.GA13647@2ka.mipt.ru> <20070225175437.GA9480@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-In-Reply-To: <20070225174505.GA7048@elte.hu>
+In-Reply-To: <20070225175437.GA9480@elte.hu>
 User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Sun, 25 Feb 2007 21:10:41 +0300 (MSK)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Sun, 25 Feb 2007 21:21:55 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 25, 2007 at 06:45:05PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
+On Sun, Feb 25, 2007 at 06:54:37PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
 > 
 > * Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
 > 
-> > My main concern was only about the situation, when we ends up with 
-> > truly bloking context (like network), and this results in having 
-> > thousands of threads doing the work - even having most of them 
-> > sleeping, there is a problem with memory overhead and context 
-> > switching, although it is usable situation, but when all of them are 
-> > ready immediately - context switching will kill a machine even with 
-> > O(1) scheduler which made situation damn better than before, but it is 
-> > not a cure for the problem.
+> > > hm, what tree are you using as a base? The syslet patches are 
+> > > against v2.6.20 at the moment. (the x86 PDA changes will probably 
+> > > interfere with it on v2.6.21-rc1-ish kernels) Note that otherwise 
+> > > the syslet/threadlet patches are for x86 only at the moment (as i 
+> > > mentioned in the announcement), and the generic code itself contains 
+> > > some occasional x86-ishms as well. (None of the concepts are 
+> > > x86-specific though - multi-stack architectures should work just as 
+> > > well as RISC-ish CPUs.)
+> > 
+> > It is rc1 - and crashes.
 > 
-> yes. This is why in the original fibril discussion i concentrated so 
-> much on scheduling performance.
-> 
-> to me the picture is this: conceptually the scheduler runqueue is a 
-> queue of work. You get items queued upon certain events, and they can 
-> unqueue themselves. (there is also register context but that is already 
-> optimized to death by hardware) So whatever scheduling overhead we have, 
-> it's a pure software thing. It's because we have priorities attached. 
-> It's because we have some legacies. Etc., etc. - it's all stuff /we/ 
-> wanted to add, but nothing truly fundamental on top of the basic 'work 
-> queueing' model.
-> 
-> now look at kevents as the queueing model. It does not queue 'tasks', it 
-> lets user-space queue requests in essence, in various states. But it's 
-> still the same conceptual thing: a memory buffer with some state 
-> associated to it. Yes, it has no legacies, it has no priorities and 
-> other queueing concepts attached to it ... yet. If kevents got 
-> mainstream, it would get the same kind of pressure to grow 'more 
-> advanced' event queueing and event scheduling capabilities. 
-> Prioritization would be needed, etc.
-> 
-> So my fundamental claim is: a kernel thread /is/ our main request 
-> structure. We've got tons of really good system calls that queue these 
-> 'requests' around the place and offer functionality around this concept. 
-> Plus there's a 1.2+ billion lines of Linux userspace code that works 
-> well with this abstraction - while there's nary a few thousand lines of 
-> event-based user-space code.
-> 
-> I also say that you'll likely get kevents outperform threadlets. Maybe 
-> even significantly so under the right conditions. But i very much 
-> believe we want to get similar kind of performance out of thread/task 
-> scheduling, and not introduce a parallel framework to do request 
-> scheduling the hard way ... just because our task concept and scheduling 
-> implementation got too fat. For the same reason i didnt really like 
-> fibrils: they are nice, and Zach's core idea i think nicely survived in 
-> the syslet/threadlet model too, but they are more limited than true 
-> threads. So doing that parallel infrastructure, which really just 
-> implements the same, and is only faster because it skips features, would 
-> just be hiding the problem with our primary abstraction. Ok?
+> yeah. I'm not surprised. The PDA is not set up in create_async_thread() 
+> for example.
 
-Kevent is a _very_ small entity and there is _no_ cost of requeueing
-(well, there is list_add guarded by lock) - after it is done, process
-can start real work. With rescheduling there are _too_ many things to be
-done before we can start new work. We have to change registers, change
-address space, various tlb bits and so on - we have to do it, since task
-describes very heavy entity - the whole process.
-IO in turn is a very small subset of what process is (can do), so there 
-is no need to change the whole picture, so it is enough to have one 
-process, which does the work.
+Ok, I will roll back to vanilla 2.6.20 tomorrow.
 
-Threads are a bit smaller than process, but still it is too heavy to
-have it per IO - so we have pools - this decreases rescheduling
-overhead, but limits parallelism.
+> > > if you create a threadlet based test-webserver, could you please do 
+> > > a comparable kevents implementation as well? I.e. same HTTP parser 
+> > > (or non-parser, as usually the case is with prototypes ;). Best 
+> > > would be something that one could trigger between threadlet and 
+> > > kevent mode, using the same binary :-)
+> > 
+> > Ok, I will create such a monster tomorrow :)
+> > 
+> > I will use the same base for threadlet as for kevent/epoll - there is 
+> > no parser, just sendfile() of the static file which contains http 
+> > header and actual page.
+> > 
+> > threadlet1 {
+> > 	accept() 
+> > 	create threadlet2 {
+> > 		send data
+> > 	}
+> > }
+> > 
+> > Is above scheme correct for threadlet scenario?
+> 
+> yep, this is a good first cut. Doing this after the listen() is useful:
+> 
+>         int one = 1;
+> 
+>         ret = setsockopt(listen_sock_fd, SOL_SOCKET, SO_REUSEADDR,
+> 			 (char *)&one, sizeof(int));
+> 
+> and i'd suggest to do this after every accept()-ed socket:
+> 
+>         int flag = 1;
+> 
+>         setsockopt(sock_fd, IPPROTO_TCP, TCP_NODELAY,
+>                             (char *) &flag, sizeof(int));
+> 
+> Do you have any link where i could check the type of HTTP parsing and 
+> send transport you are (or will be) using? What type of http client are 
+> you using to measure, with precisely what options?
 
-I think it is _too_ heavy to have such a monster structure like
-task(thread/process) and related overhead just to do an IO.
+For example this ones (essentially the same, except that epoll and
+kevent are used):
+http://tservice.net.ru/~s0mbre/archive/kevent/evserver_kevent.c
+http://tservice.net.ru/~s0mbre/archive/kevent/evserver_epoll.c
+
+> > But note, that on my athlon64 3500 test machine kevent is about 7900 
+> > requests per second compared to 4000+ epoll, so expect a challenge.
+> 
+> single-core CPU i suspect?
+
+Yep.
+
+> > lighhtpd is about the same 4000 requests per second though, since it 
+> > can not be easily optimized for kevents.
+> 
+> mean question: do you promise to post the results even if they are not 
+> unfavorable to threadlets? ;-)
+
+If they are too good, I will start searching for bugs and tune my code
+first, but eventually of course yes. 
+In my blog I will post them in 'real-time' even if kevent will
+unbelieveably suck.
+
+> if i want to test kevents on a v2.6.20 kernel base, do you have an URL 
+> for me to try?
+
+I have a git tree at (based on rc1 as requested by Andrew Morton):
+http://tservice.net.ru/~s0mbre/archive/kevent/kevent.git/
+
+Or patches at kevent homepage:
+http://tservice.net.ru/~s0mbre/old/?section=projects&item=kevent
+
+Direct link to the latest patchset:
+http://tservice.net.ru/~s0mbre/archive/kevent/kevent-37/
+
+(order is insignificant as far as I recall, except 'compile-fix',
+whcih must be the latest).
 
 > 	Ingo
 
