@@ -1,88 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932861AbXBYR4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932975AbXBYR6O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932861AbXBYR4f (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 12:56:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932973AbXBYR4f
+	id S932975AbXBYR6O (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 12:58:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932978AbXBYR6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 12:56:35 -0500
-Received: from smtpout07-01.prod.mesa1.secureserver.net ([64.202.165.230]:55509
-	"HELO smtpout07-04.prod.mesa1.secureserver.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S932861AbXBYR4e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 12:56:34 -0500
-Message-ID: <45E1CDD0.5080108@seclark.us>
-Date: Sun, 25 Feb 2007 12:56:32 -0500
-From: Stephen Clark <Stephen.Clark@seclark.us>
-Reply-To: Stephen.Clark@seclark.us
-User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
-X-Accept-Language: en-us, en
+	Sun, 25 Feb 2007 12:58:14 -0500
+Received: from nz-out-0506.google.com ([64.233.162.231]:42082 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932975AbXBYR6N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 12:58:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=AnGQ/hWyQnLRz5CxUBmZIxlKIRNJx+3SgfYs3FQinkZALjR9R+O5onQeUb11+n3LKUxc6CcztBYB0S1J9a0Ogz8E7w84iDrlgYidOjrcjqqbEHeNGCYSTeMGUsNq1t9zSAaIJ+hdRW5x0dePxNtYjpXcG3bsHdoBip9JaUpSotQ=
+Message-ID: <e5bfff550702250958n6cddc5b5lec4badf1f7fc8231@mail.gmail.com>
+Date: Sun, 25 Feb 2007 18:58:12 +0100
+From: "Marco Costalba" <mcostalba@gmail.com>
+To: "Git Mailing List" <git@vger.kernel.org>, linux-kernel@vger.kernel.org
+Subject: [ANNOUNCE] qgit-1.5.5
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: "Michael K. Edwards" <medwards.linux@gmail.com>, davids@webmaster.com,
-       v j <vj.linux@gmail.com>, trent.waddington@gmail.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       Neil Brown <neilb@suse.de>
-Subject: Re: GPL vs non-GPL device drivers
-References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com> <MDEHLPKNGKAHNMBLJOLKIEFNBLAC.davids@webmaster.com> <f2b55d220702211408r7954d5dar2c59e1e679316811@mail.gmail.com> <20070225104211.GB2045@elf.ucw.cz>
-In-Reply-To: <20070225104211.GB2045@elf.ucw.cz>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
+qgit is a git repository GUI browser. This is mostly a bug fix release.
 
->Hi!
->
->  
->
->>Actually, it's quite clear under US law what a derivative work is and
->>what rights you need to distribute it, and equally clear that
->>compiling code does not make a "translation" in a copyright sense.
->>Read Micro Star v. Formgen -- it's good law and it's funny and
->>readable.
->>
->>I've drafted summaries from a couple of different angles since VJ
->>requested a "translation into English", and I think this is the most
->>coherent (and least foaming-at-the-mouth) I've crafted yet.  It was
->>written as an answer to a private query to this effect:  "I write a
->>POP server and release it under the GPL.  The Evil Linker adds some
->>hooks to my code, calls those hooks (along some of the existing ones)
->>from his newly developed program, and only provides recipients of the
->>binaries with source code for the modified POP server.  His code
->>depends on, and only works with, this modified version of my POP
->>server.  Doesn't he have to GPL his whole product, because he's
->>combined his work with mine?"
->>
->>This is a fundamental misconception.  A <<product>> is not a "work
->>    
->>
->
->Ok, but this is not realistic. I agree that if Evil Linker only adds
->two hooks "void pop_server_starting(), void pop_server_stopping()", he
->can get away with that.
->
->But... how does situation change when Evil Linker does #include
-><pop3/gpl_header_file_with_some_inline_functions.h> from his
->binary-only part?
->
->I believe situation in this case changes a lot... And that's what
->embedded people are doing; I do not think they are creating their own
->headers or their own inline functions where headers contain them.
->									Pavel
->  
->
-The amount copied has to be significant. A few lines against the 
-millions in the kernel would
-not be enough to be copyright infringement.
+Due to a change in git-rev-list output in git version 1.5 and above in
+case of commit encoding information old version of qgit are no more
+compatible and big issues in revision list view are possible under
+some circumstances.
 
--- 
+So an upgrade to this release is strongly suggested for all the users
+of new version of git (1.5 and above).
 
-"They that give up essential liberty to obtain temporary safety, 
-deserve neither liberty nor safety."  (Ben Franklin)
+Download tarball from http://www.sourceforge.net/projects/qgit or
+directly from git public repository
+git://git.kernel.org/pub/scm/qgit/qgit.git
 
-"The course of history shows that as a government grows, liberty 
-decreases."  (Thomas Jefferson)
+Please refer to http://digilander.libero.it/mcostalba/ for additional
+information.
+
+	Marco
+
+P.S: There is also a Qt4 version (works under Windows) downloadable
+from git://repo.or.cz/qgit4.git  it is a little bit experimental
+tough.
 
 
 
+ChangeLog from 1.5.4
+
+- fix a spurious double popup menu in rare cases
+
+- add support to show user info in Edit->Settings->Commit
+
+- file names cache optimization: reduce load time by 35% and memory by 30%
+
+- fix opening a repo from a read-only filesystem
+
+- filter out StGIT bases in our tag list
+
+- use light orange for remote branches (Pavel Roskin)
+
+- add 'Remote branches' context sub menu
+
+- fix disappearing merge files list when browsing revs
+
+- delay cache loading a little bit and fix a bug
+
+- fix a parsing error in case of combined merges
+
+- support new git text encoding policy in log messages
+
+- fix a subtle bug that could lead to miss an update event
+
+- fix bug in revisions loading sequence numbers
+
+- fix parsing in case of revision headers with extended information
+
+- fix stripping of comments in commit dialog message
