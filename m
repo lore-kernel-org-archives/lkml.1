@@ -1,81 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750953AbXBYJXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752327AbXBYJsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750953AbXBYJXe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 04:23:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752325AbXBYJXe
+	id S1752327AbXBYJsK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 04:48:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbXBYJsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 04:23:34 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:35149 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750939AbXBYJXd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 04:23:33 -0500
-Date: Sun, 25 Feb 2007 04:23:31 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: linux-ide@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] sata_mv: fix 50xx irq mask
-Message-ID: <20070225092331.GA15203@havoc.gtf.org>
+	Sun, 25 Feb 2007 04:48:09 -0500
+Received: from www.osadl.org ([213.239.205.134]:59224 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752327AbXBYJsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 04:48:08 -0500
+Subject: Re: 2.6.20-git15 BUG: soft lockup detected on CPU#0! - timers?
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Michal Piotrowski <michal.k.k.piotrowski@googlemail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <6bffcb0e0702241445v562be44y5ddac6d6abdb5131@mail.gmail.com>
+References: <6bffcb0e0702201054rb839bb2m11ef8d33bacffdb8@mail.gmail.com>
+	 <1172008584.25076.0.camel@localhost.localdomain>
+	 <6bffcb0e0702201437o66db38d5j3066eb3c9951a270@mail.gmail.com>
+	 <1172072023.25076.64.camel@localhost.localdomain>
+	 <6bffcb0e0702210738p687ca1bdt2c568d7ed5904fff@mail.gmail.com>
+	 <1172088044.25076.125.camel@localhost.localdomain>
+	 <45DCF644.9040009@googlemail.com> <45DD756D.3040006@googlemail.com>
+	 <20070223060802.GA8562@elte.hu>
+	 <6bffcb0e0702241445v562be44y5ddac6d6abdb5131@mail.gmail.com>
+Content-Type: text/plain
+Date: Sun, 25 Feb 2007 10:53:28 +0100
+Message-Id: <1172397209.25076.365.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Michal,
 
-commit 7aa3ffd983c12d224e33e5d4f89ad083392f9d8d
-Author: Jeff Garzik <jeff@garzik.org>
-Date:   Sun Feb 25 04:19:45 2007 -0500
+On Sat, 2007-02-24 at 23:45 +0100, Michal Piotrowski wrote:
+> Here is a dmesg after over 25 hours of uptime
+> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc1/git-dmesg3
+> nothing new.
 
-    [libata] sata_mv: Fix 50xx irq mask
-    
-    IRQ mask bits assumed a 60xx or newer generation chip, which is very
-    wrong for the 50xx series.  Luckily both generations shared the per-port
-    interrupt mask bits, leaving only the "misc chip features" bits to be
-    completely mismatched.
-    
-    Fix 50xx by ensuring we only program bits that exist.
-    
-    Signed-off-by: Jeff Garzik <jeff@garzik.org>
+can you please turn off CONFIG_SCHED_SMT ? It seems all reports have one
+thing in common:
 
- drivers/ata/sata_mv.c |   11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+CPU == P4 and CONFIG_SCHED_SMT turned on.
 
-7aa3ffd983c12d224e33e5d4f89ad083392f9d8d
-diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
-index 30fd84e..208a9d8 100644
---- a/drivers/ata/sata_mv.c
-+++ b/drivers/ata/sata_mv.c
-@@ -137,14 +137,19 @@ enum {
- 	PCI_ERR			= (1 << 18),
- 	TRAN_LO_DONE		= (1 << 19),	/* 6xxx: IRQ coalescing */
- 	TRAN_HI_DONE		= (1 << 20),	/* 6xxx: IRQ coalescing */
-+	PORTS_0_3_COAL_DONE	= (1 << 8),
-+	PORTS_4_7_COAL_DONE	= (1 << 17),
- 	PORTS_0_7_COAL_DONE	= (1 << 21),	/* 6xxx: IRQ coalescing */
- 	GPIO_INT		= (1 << 22),
- 	SELF_INT		= (1 << 23),
- 	TWSI_INT		= (1 << 24),
- 	HC_MAIN_RSVD		= (0x7f << 25),	/* bits 31-25 */
-+	HC_MAIN_RSVD_5		= (0x1fff << 19), /* bits 31-19 */
- 	HC_MAIN_MASKED_IRQS	= (TRAN_LO_DONE | TRAN_HI_DONE |
- 				   PORTS_0_7_COAL_DONE | GPIO_INT | TWSI_INT |
- 				   HC_MAIN_RSVD),
-+	HC_MAIN_MASKED_IRQS_5	= (PORTS_0_3_COAL_DONE | PORTS_4_7_COAL_DONE |
-+				   HC_MAIN_RSVD_5),
- 
- 	/* SATAHC registers */
- 	HC_CFG_OFS		= 0,
-@@ -2239,7 +2244,11 @@ static int mv_init_host(struct pci_dev *pdev, struct ata_probe_ent *probe_ent,
- 
- 	/* and unmask interrupt generation for host regs */
- 	writelfl(PCI_UNMASK_ALL_IRQS, mmio + PCI_IRQ_MASK_OFS);
--	writelfl(~HC_MAIN_MASKED_IRQS, mmio + HC_MAIN_IRQ_MASK_OFS);
-+
-+	if (IS_50XX(hpriv))
-+		writelfl(~HC_MAIN_MASKED_IRQS_5, mmio + HC_MAIN_IRQ_MASK_OFS);
-+	else
-+		writelfl(~HC_MAIN_MASKED_IRQS, mmio + HC_MAIN_IRQ_MASK_OFS);
- 
- 	VPRINTK("HC MAIN IRQ cause/mask=0x%08x/0x%08x "
- 		"PCI int cause/mask=0x%08x/0x%08x\n",
+	tglx
+
+
