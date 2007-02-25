@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751143AbXBYXqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752435AbXBYXro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751143AbXBYXqi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 18:46:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbXBYXqi
+	id S1752435AbXBYXro (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 18:47:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbXBYXro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 18:46:38 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52457
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751143AbXBYXqh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 18:46:37 -0500
-Date: Sun, 25 Feb 2007 15:46:37 -0800 (PST)
-Message-Id: <20070225.154637.70478886.davem@davemloft.net>
-To: ebiederm@xmission.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: MSI entry unlinked before arch_teardown_msi_irq().
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <m17iu6r4eg.fsf@ebiederm.dsl.xmission.com>
-References: <20070224.235020.92583817.davem@davemloft.net>
-	<m17iu6r4eg.fsf@ebiederm.dsl.xmission.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 25 Feb 2007 18:47:44 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:53064 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751150AbXBYXrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 18:47:43 -0500
+Message-ID: <45E21FEC.9060605@redhat.com>
+Date: Sun, 25 Feb 2007 18:46:52 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Lorenzo Allegrucci <l_allegrucci@yahoo.it>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: SMP performance degradation with sysbench
+References: <1172425476.5489.11.camel@odyssey.lan>
+In-Reply-To: <1172425476.5489.11.camel@odyssey.lan>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sun, 25 Feb 2007 02:08:07 -0700
+Lorenzo Allegrucci wrote:
+> Hi lkml,
+> 
+> according to the test below (sysbench) Linux seems to have scalability
+> problems beyond 8 client threads:
+> http://jeffr-tech.livejournal.com/6268.html#cutid1
+> http://jeffr-tech.livejournal.com/5705.html
+> Hardware is an 8-core amd64 system and jeffr seems willing to try more
+> Linux versions on that machine.
+> Anyway, is there anyone who can reproduce this?
 
-> If that isn't the issue holler and I will look into it a little more.
+I have reproduced it on a quad core test system.
 
-Talking in code is always more effective :-)
+With 4 threads (on 4 cores) I get a high throughput, with
+approximately 58% user time and 42% system time.
 
-This patch fixes the OOPS I was talking about:
+With 8 threads (on 4 cores) I get way lower throughput,
+with 37% user time, 29% system time 35% idle time!
 
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 68555c1..2f2d92e 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -678,12 +678,14 @@ static int msi_free_irq(struct pci_dev* dev, int irq)
- 	}
- 	type = entry->msi_attrib.type;
- 	entry_nr = entry->msi_attrib.entry_nr;
-+
-+	arch_teardown_msi_irq(irq);
-+
- 	head = entry->link.head;
- 	base = entry->mask_base;
- 	get_irq_msi(entry->link.head)->link.tail = entry->link.tail;
- 	get_irq_msi(entry->link.tail)->link.head = entry->link.head;
- 
--	arch_teardown_msi_irq(irq);
- 	kmem_cache_free(msi_cachep, entry);
- 
- 	if (type == PCI_CAP_ID_MSIX) {
+The maximum time taken per query also increases from
+0.0096s to 0.5273s. Ouch!
+
+I don't know if this is MySQL, glibc or Linux kernel,
+but something strange is going on...
+
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
