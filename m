@@ -1,63 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932908AbXBYA7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933612AbXBYBp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932908AbXBYA7q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 19:59:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932928AbXBYA7q
+	id S933612AbXBYBp1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 20:45:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933608AbXBYBp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 19:59:46 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:43425 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932908AbXBYA7p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 19:59:45 -0500
-Date: Sun, 25 Feb 2007 01:59:43 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Theodore Tso <tytso@mit.edu>, "D. Hazelton" <dhazelton@enter.net>,
-       "Michael K. Edwards" <medwards.linux@gmail.com>,
-       David Lang <david.lang@digitalinsight.com>, davids@webmaster.com,
-       v j <vj.linux@gmail.com>, trent.waddington@gmail.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       Neil Brown <neilb@suse.de>
-Subject: Re: GPL vs non-GPL device drivers
-Message-ID: <20070225005943.GW12392@stusta.de>
-References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com> <200702212030.58317.dhazelton@enter.net> <f2b55d220702211805h6df0b342o7676e37c7aa43bdd@mail.gmail.com> <200702212317.16262.dhazelton@enter.net> <20070222164522.GB15659@thunk.org>
+	Sat, 24 Feb 2007 20:45:27 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:58270 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932945AbXBYBp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Feb 2007 20:45:26 -0500
+Message-ID: <45E0EA2E.5050004@garzik.org>
+Date: Sat, 24 Feb 2007 20:45:18 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070222164522.GB15659@thunk.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Komuro <komurojun-mbn@nifty.com>
+CC: Alan <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [BUG]  PATA_PCMCIA does not work
+References: <20061217212752.d93816b4.komurojun-mbn@nifty.com>	<20061217040222.GD17561@ftp.linux.org.uk>	<20070211101537.e40fa309.komurojun-mbn@nifty.com>	<20070211114013.65b2be2c.komurojun-mbn@nifty.com>	<20070218110914.888de729.komurojun-mbn@nifty.com>	<20070221153729.5eab83b6@lxorguk.ukuu.org.uk> <20070225081407.8ebce421.komurojun-mbn@nifty.com>
+In-Reply-To: <20070225081407.8ebce421.komurojun-mbn@nifty.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 22, 2007 at 11:45:22AM -0500, Theodore Tso wrote:
->...
-> The only way GPL'ed code can be become copyrighted by the FSF is if
-> you explicitly sign a copyright statement
->...
- 
-And even this is only possible if permitted by copyright law.
+Komuro wrote:
+> Hi,
+> 
+> The pata_pcmcia problem is fixed. Thanks!
+> (I tested it on kernel 2.6.20-git14)
+> 
+> But kernel 2.6.20-mm2 introduced new oops
+> when I insert the pata_pcmcia device.
+> 
+> 
+> pcmcia: registering new device pcmcia1.0
+> SCSI subsystem initialized
+> libata version 2.10 loaded.
+> ata1: PATA max PIO0 cmd 0x0001d100 ctl 0x0001d10e bmdma 0x00000000 irq 3
+> scsi0 : pata_pcmcia
+> BUG: unable to handle kernel NULL pointer dereference at virtual address 0000004d
+>  printing eip:
+> d8a1b10e
+> *pde = 00000000
+> Oops: 0000 [#1]
+> last sysfs file: /block/hda/size
+> Modules linked in: pata_pcmcia libata scsi_mod dm_mirror dm_multipath dm_mod pcmcia yenta_socket rsrc_nonstatic pcmcia_core
+> CPU:    0
+> EIP:    0060:[<d8a1b10e>]    Not tainted VLI
+> EFLAGS: 00010296   (2.6.20-mm2 #1)
+> EIP is at ata_acpi_exec_tfs+0x157/0x8ad [libata]
+> eax: 00000001   ebx: 00000000   ecx: d6d43c84   edx: d6d43c84
+> esi: d51f4514   edi: 00000000   ebp: d51f438c   esp: d6f2bcdc
+> ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+> Process scsi_eh_0 (pid: 1647, ti=d6f2a000 task=c13c9a70 task.ti=d6f2a000)
+> Stack: d51f6190 00000246 00000246 00000000 d8a130b7 00000000 00000000 00000000 
+>        00000000 d6f2bd48 d6f2bdf0 d51f4514 ec000000 d51f6190 00000000 00000000 
+>        00000000 00000246 d6d43c84 00000000 00000000 00000000 00000000 ffffffff 
+> Call Trace:
+>  [<d8a130b7>] ata_exec_internal_sg+0x3ae/0x3b8 [libata]
+>  [<d8a125f8>] ata_dev_configure+0xc1/0x7d2 [libata]
+>  [<d8a10e87>] ata_dev_select+0xce/0x11a [libata]
 
-E.g. German copyright law explicitely states that copyright is not 
-transferable except through inheritage. [1]
+Any chance you could insert some printk() calls into ata_apci_exec_tfs? 
+  ata_exec_internal_sg() never calls that function, so I'm curious if 
+something corrupted memory a bit, or what happened.
 
-And German copyright law says that if you are granting exclusive usage 
-rights, you must get an appropriate payment. [2]
+In any case, I'm surprised that ACPI would be executing taskfiles on 
+PCMCIA anyway.
 
-Often much might depend on which copyright law applies in a specific 
-case...
+	Jeff
 
-> 						- Ted
 
-cu
-Adrian
-
-[1] http://bundesrecht.juris.de/urhg/__29.html
-[2] http://bundesrecht.juris.de/urhg/__32.html
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
