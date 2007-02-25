@@ -1,157 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964802AbXBYKqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964790AbXBYKwK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964802AbXBYKqx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 05:46:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964803AbXBYKqw
+	id S964790AbXBYKwK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 05:52:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964801AbXBYKwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 05:46:52 -0500
-Received: from comtv.ru ([217.10.32.17]:53005 "EHLO comtv.ru"
+	Sun, 25 Feb 2007 05:52:10 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55069 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964802AbXBYKqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 05:46:50 -0500
-X-UCL: actv
-Date: Sun, 25 Feb 2007 13:35:47 +0300 (MSK)
-From: malc <av1474@comtv.ru>
-X-X-Sender: malc@linmac.oyster.ru
+	id S964790AbXBYKwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 05:52:08 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Pavel Machek <pavel@ucw.cz>
-cc: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
-Subject: Re: CPU load
-In-Reply-To: <20070214204515.GA26153@elf.ucw.cz>
-Message-ID: <Pine.LNX.4.64.0702251334200.17241@linmac.oyster.ru>
-References: <loom.20070212T063225-663@post.gmane.org> <20070212143219.GB5226@ucw.cz>
- <Pine.LNX.4.64.0702140059390.727@home.oyster.ru> <200702140908.44934.kernel@kolivas.org>
- <Pine.LNX.4.64.0702141023000.672@home.oyster.ru> <20070214204515.GA26153@elf.ucw.cz>
+Subject: Re: [RFC][PATCH 4/7] Freezer: Fix vfork problem
+Date: Sun, 25 Feb 2007 11:45:37 +0100
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>, paulmck@linux.vnet.ibm.com,
+       ego@in.ibm.com, akpm@osdl.org, mingo@elte.hu, vatsa@in.ibm.com,
+       dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       Aneesh Kumar <aneesh.kumar@gmail.com>
+References: <200702231116.23607.rjw@sisk.pl> <200702231122.44040.rjw@sisk.pl> <20070225104612.GM2045@elf.ucw.cz>
+In-Reply-To: <20070225104612.GM2045@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702251145.39595.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 Feb 2007, Pavel Machek wrote:
+Hi,
 
+On Sunday, 25 February 2007 11:46, Pavel Machek wrote:
 > Hi!
+> 
+> > Currently try_to_freeze_tasks() has to wait until all of the vforked processes
+> > exit and for this reason every user can make it fail.  To fix this problem
+> > we can introduce the additional process flag PF_FREEZER_SKIP to be used by tasks
+> > that do not want to be counted as freezable by the freezer and want to have
+> > TIF_FREEZE set nevertheless.  Then, this flag can be set by tasks using
+> > sys_vfork() before they call wait_for_completion() and cleared after they have
+> > woken up and called try_to_freeze().  In case such a task freezes with
+> > PF_FREEZER_SKIP set, refrigerator() clears this flag for the current task before
+> > calling frozen_process(current) to avoid having both PF_FREEZER_SKIP and
+> > PF_FROZEN set at the same time.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> > @@ -1393,7 +1394,9 @@ long do_fork(unsigned long clone_flags,
+> >  		tracehook_report_clone_complete(clone_flags, nr, p);
+> >  
+> >  		if (clone_flags & CLONE_VFORK) {
+> > +			freezer_do_not_count();
+> >  			wait_for_completion(&vfork);
+> > +			freezer_count();
+> >  			tracehook_report_vfork_done(p, nr);
+> >  		}
+> >  	} else {
+> 
+> All the infrastructure for this...Would it be easier to introduce
+> 
+> void fastcall __sched wait_for_completion_freezeable(struct completion *x)
+> {
+>         might_sleep();
+> 
+>         spin_lock_irq(&x->wait.lock);
+>         if (!x->done) {
+>                 DECLARE_WAITQUEUE(wait, current);
+> 
+>                 wait.flags |= WQ_FLAG_EXCLUSIVE;
+>                 __add_wait_queue_tail(&x->wait, &wait);
+>                 do {
+>                         __set_current_state(TASK_UNINTERRUPTIBLE);
+>                         spin_unlock_irq(&x->wait.lock);
+>                         schedule();
+> try_to_freeze(); /* HERE */
+>                         spin_lock_irq(&x->wait.lock);
+>                 } while (!x->done);
+>                 __remove_wait_queue(&x->wait, &wait);
+>         }
+>         x->done--;
+>         spin_unlock_irq(&x->wait.lock);
+> }
+> 
+> ...and be done with that, in a very obvious way? (Ok, you probably do
+> not want to duplicate the function, but you get the idea).
 
-[..snip..]
+Yes, I though about that too, but I was thinking of sticking try_to_freeze()
+in wait wait_for_completion() itself, which was obviously wrong.
 
->> The current situation ought to be documented. Better yet some flag
->> can
->
-> It probably _is_ documented, somewhere :-). If you find nice place
-> where to document it (top manpage?) go ahead with the patch.
+Still, the above might work.  I'll try to prepare a patch.
 
-
-How about this:
-
-<Documentation/load.txt>
-CPU load
---------
-
-Linux exports various bits     of information via  `/proc/stat'    and
-`/proc/uptime' that userland tools,  such as top(1), use  to calculate
-the average time system spent in a particular state, for example:
-
-<transcript>
-$ iostat
-Linux 2.6.18.3-exp (linmac)     02/20/2007
-
-avg-cpu:  %user   %nice %system %iowait  %steal   %idle
-           10.01    0.00    2.92    5.44    0.00   81.63
-
-...
-</transcript>
-
-Here   the system  thinks that  over   the default sampling period the
-system spent 10.01% of the time doing work in user space, 2.92% in the
-kernel, and was overall 81.63% of the time idle.
-
-In most cases the `/proc/stat'  information reflects the reality quite
-closely, however  due to the   nature of how/when  the kernel collects
-this data sometimes it can not be trusted at all.
-
-So  how is this information  collected?   Whenever timer interrupt  is
-signalled the  kernel looks  what kind  of task   was running at  this
-moment  and   increments the counter  that  corresponds  to this tasks
-kind/state.  The  problem with  this is  that  the  system  could have
-switched between  various states   multiple times between    two timer
-interrupts yet the counter is incremented only for the last state.
-
-
-Example
--------
-
-If we imagine the system with one task that periodically burns cycles
-in the following manner:
-
-  time line between two timer interrupts
-|--------------------------------------|
-  ^                                    ^
-  |_ something begins working          |
-                                       |_ something goes to sleep
-                                      (only to be awaken quite soon)
-
-In the above  situation the system will be  0% loaded according to the
-`/proc/stat' (since  the timer interrupt will   always happen when the
-system is  executing  the idle  handler),  but in reality  the load is
-closer to 99%.
-
-One can imagine many more situations where this behavior of the kernel
-will lead to quite erratic information inside `/proc/stat'.
-
-
-/* gcc -o hog smallhog.c */
-#include <time.h>
-#include <limits.h>
-#include <signal.h>
-#include <sys/time.h>
-#define HIST 10
-
-static volatile sig_atomic_t stop;
-
-static void sighandler (int signr)
-{
-      (void) signr;
-      stop = 1;
-}
-static unsigned long hog (unsigned long niters)
-{
-      stop = 0;
-      while (!stop && --niters);
-      return niters;
-}
-int main (void)
-{
-      int i;
-      struct itimerval it = { .it_interval = { .tv_sec = 0, .tv_usec = 1 },
-                              .it_value = { .tv_sec = 0, .tv_usec = 1 } };
-      sigset_t set;
-      unsigned long v[HIST];
-      double tmp = 0.0;
-      unsigned long n;
-      signal (SIGALRM, &sighandler);
-      setitimer (ITIMER_REAL, &it, NULL);
-
-      hog (ULONG_MAX);
-      for (i = 0; i < HIST; ++i) v[i] = ULONG_MAX - hog (ULONG_MAX);
-      for (i = 0; i < HIST; ++i) tmp += v[i];
-      tmp /= HIST;
-      n = tmp - (tmp / 3.0);
-
-      sigemptyset (&set);
-      sigaddset (&set, SIGALRM);
-
-      for (;;) {
-          hog (n);
-          sigwait (&set, &i);
-      }
-      return 0;
-}
-
-
-References
-----------
-
-http://lkml.org/lkml/2007/2/12/6
-Documentation/filesystems/proc.txt (1.8)
-</Documentation/load.txt>
-
--- 
-vale
+Greetings,
+Rafael
