@@ -1,98 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752344AbXBYQeJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752348AbXBYQgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752344AbXBYQeJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 11:34:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbXBYQeJ
+	id S1752348AbXBYQgU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 11:36:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbXBYQgU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 11:34:09 -0500
-Received: from vms046pub.verizon.net ([206.46.252.46]:42232 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752344AbXBYQeI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 11:34:08 -0500
-Date: Sun, 25 Feb 2007 11:33:52 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: 2.6.20-ck1
-In-reply-to: <200702252132.15145.kernel@kolivas.org>
-To: linux-kernel@vger.kernel.org
-Cc: Con Kolivas <kernel@kolivas.org>, ck mailing list <ck@vds.kolivas.org>
-Message-id: <200702251133.53117.gene.heskett@gmail.com>
-Organization: very little
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200702162110.03355.kernel@kolivas.org>
- <200702242334.31864.gene.heskett@gmail.com>
- <200702252132.15145.kernel@kolivas.org>
-User-Agent: KMail/1.9.6
+	Sun, 25 Feb 2007 11:36:20 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:36070 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752346AbXBYQgT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 11:36:19 -0500
+Date: Sun, 25 Feb 2007 18:24:27 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Threadlet/syslet v4 bug report.
+Message-ID: <20070225152426.GA27316@2ka.mipt.ru>
+References: <20070221211355.GA7302@elte.hu> <20070225143310.GA12456@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <20070225143310.GA12456@2ka.mipt.ru>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Sun, 25 Feb 2007 19:33:36 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 25 February 2007, Con Kolivas wrote:
->On Sunday 25 February 2007 15:34, Gene Heskett wrote:
->> I have a problem, Con.  The patch itself works fine for me, BUT it
-[...]
->> Can we have a patch to address this?  Or should I just hardcode it
->> since it will never be linked to any other later kernel?
->>
->> I tried that in the src tree's include/linux/version.h, but it was
->> refreshed back to the original regex code by the make, so that's not
->> where to do it obviously.  I've also made the simlink in /usr/src, but
->> since a kernel make re-writes version.h, that didn't help.
->>
->> Whats next?
->
->I've never heard of this problem before. As far as I'm aware the
-> EXTRAVERSION usually is not included in version.h so it seems to be a
-> limitation of the flgrx installer? That would mean the flgrx installer
-> wouldn't work on any kernel with an extra version such as the -rc
-> releases of mainline even. So I'm sorry but I don't really know what to
-> do about this problem.
+On Sun, Feb 25, 2007 at 05:33:10PM +0300, Evgeniy Polyakov (johnpol@2ka.mipt.ru) wrote:
+> Hi Ingo.
+> 
+> I tried to create web server application for threadlets to show (will
+> not write what I wanted to show, but you might guess :)
+> 
+> I started threadlet-test from async-test-v4 and got following bug.
+> 
+> To compile v4 and v3 I need to apply a patch (sent in previous e-mail),
+> which removes %xgs assignment since it is never used and actually does
+> not even exist it pt_regs.
 
-Well, fwiw, I rebooted to 2.6.20 after looking at the error message again, 
-and I didn't expect it to work, and it didn't.  Attempting to build it 
-from a console before I ever startx'd, the error message is that the 
-modules are versioned as "" where the kernel is "2.6.20".
-========================================
-[Message] Kernel Module : Trying to install a precompiled kernel module.
-[Message] Kernel Module : Precompiled kernel module version mismatched.
-[Message] Kernel Module : Found kernel module build environment, 
-generating kernel module now.
-ATI module generator V 2.0
-==========================
-initializing...
-Error:
-kernel includes at /lib/modules/2.6.20/build/include do not match current 
-kernel.
-they are versioned as ""
-instead of "2.6.20".
-you might need to adjust your symlinks:
-- /usr/include
-- /usr/src/linux
-[Error] Kernel Module : Failed to compile kernel module - please consult 
-readme.
-=======================
-Modules versioning is enabled in the build .config:
+If I uncomment xgs and recompile - kernel crashes early on init...
 
-[root@coyote linux-2.6.20]# grep VERSION .config
-CONFIG_LOCALVERSION=""
-# CONFIG_LOCALVERSION_AUTO is not set
-# CONFIG_MODVERSIONS is not set
-CONFIG_MODULE_SRCVERSION_ALL=y
-
-So it appears the installer simply isn't capable of finding the modinfo at 
-all.
-
-So much for ati's linux support, they can't even throw working code over 
-the fence.  I've ordered an nvidia 6800 card for the next round of 
-testing.  2+ years of screwing around with a garden slug speed video is 
-enough.
-
-Thanks for the reply Con, I appreciate it.
+Btw, could you create a git tree to pull from?
+That would be much easier to track problems and to test for others.
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
+	Evgeniy Polyakov
