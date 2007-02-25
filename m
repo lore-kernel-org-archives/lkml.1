@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932425AbXBYAyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932887AbXBYA4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932425AbXBYAyz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Feb 2007 19:54:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932856AbXBYAyz
+	id S932887AbXBYA4d (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Feb 2007 19:56:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932908AbXBYA4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Feb 2007 19:54:55 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41352
+	Sat, 24 Feb 2007 19:56:33 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57205
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S932425AbXBYAyy (ORCPT
+	by vger.kernel.org with ESMTP id S932887AbXBYA4c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Feb 2007 19:54:54 -0500
-Date: Sat, 24 Feb 2007 16:54:53 -0800 (PST)
-Message-Id: <20070224.165453.104035690.davem@davemloft.net>
-To: bunk@stusta.de
-Cc: yoshfuji@linux-ipv6.org, clem@clem.clem-digital.net,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.20-git8 fails compile -- net/built-in.o __ipv6_addr_type
+	Sat, 24 Feb 2007 19:56:32 -0500
+Date: Sat, 24 Feb 2007 16:56:31 -0800 (PST)
+Message-Id: <20070224.165631.78711967.davem@davemloft.net>
+To: wli@holomorphy.com
+Cc: npiggin@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [rfc][patch] dynamic resizing dentry hash using RCU
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070224225021.GT12392@stusta.de>
-References: <200702130236.l1D2a0u7014457@clem.clem-digital.net>
-	<20070213.115510.21486123.yoshfuji@linux-ipv6.org>
-	<20070224225021.GT12392@stusta.de>
+In-Reply-To: <20070224225631.GA9222@holomorphy.com>
+References: <20070224042444.GU21484@holomorphy.com>
+	<20070224050937.GA16601@wotan.suse.de>
+	<20070224225631.GA9222@holomorphy.com>
 X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,20 +27,19 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@stusta.de>
-Date: Sat, 24 Feb 2007 23:50:21 +0100
+From: William Lee Irwin III <wli@holomorphy.com>
+Date: Sat, 24 Feb 2007 14:56:31 -0800
 
-> In the CONFIG_IPV6=m, CONFIG_SUNRPC=m case, this will result in no IPV6 
-> support here.
-> 
-> If you are going this way, a Kconfig helper variable might be better:
-> 
-> config SUNRPC_IPV6
-> 	bool
-> 	default y if (SUNRPC=y && IPV6=y) || (SUNRPC=m && IPV6) 
+> just do it on a per-directory basis so you don't intermix children
+> of different parents in some boot-time -allocated global trainwreck
+> and you're home free.  Benchmarking is probably needed to gauge
+> which performs best.
 
-Please, don't worry about any of this, Yoshifuji already
-gave me a fix for this, that will provide the symbol statically
-and exported to modules, even if  ipv6 is built modular.
+The original dentry implementation in the kernel did things
+per-directory and it sucked.
 
-So we don't need to worry about this problem any more.
+The problem you run into is that you end up with recursive algorithms
+all over the place, which chew up and overflow the kernel stack.
+
+So it would be a regression to go to a per-directory type
+lookup data structure for dentries.
