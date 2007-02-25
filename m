@@ -1,81 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751150AbXBYXrv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932166AbXBYXzF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751150AbXBYXrv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 18:47:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbXBYXrv
+	id S932166AbXBYXzF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 18:55:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932315AbXBYXzF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 18:47:51 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:58190 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751150AbXBYXru (ORCPT
+	Sun, 25 Feb 2007 18:55:05 -0500
+Received: from coyote.holtmann.net ([217.160.111.169]:49588 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932166AbXBYXzD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 18:47:50 -0500
-Date: Sun, 25 Feb 2007 15:44:38 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Mario Vanoni <vanonim@alice.it>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.16.41 & 2.6.18.7 OK,   2.6.19.5 NOT,   2.6.18.8 KERNEL
- PANIC
-Message-Id: <20070225154438.dbf695f0.randy.dunlap@oracle.com>
-In-Reply-To: <45E1B3E6.60403@alice.it>
-References: <45E05D54.10508@alice.it>
-	<20070224201902.a2a7b3da.randy.dunlap@oracle.com>
-	<45E1B3E6.60403@alice.it>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Sun, 25 Feb 2007 18:55:03 -0500
+Subject: Re: [RFC][PATCH 6/7] Freezer: Remove PF_NOFREEZE from bluetooth
+	threads
+From: Marcel Holtmann <marcel@holtmann.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, paulmck@linux.vnet.ibm.com,
+       ego@in.ibm.com, akpm@osdl.org, mingo@elte.hu, vatsa@in.ibm.com,
+       dipankar@in.ibm.com, venkatesh.pallipadi@intel.com,
+       Pavel Machek <pavel@ucw.cz>, Aneesh Kumar <aneesh.kumar@gmail.com>,
+       bluez-devel@lists.sourceforge.net
+In-Reply-To: <200702231125.43910.rjw@sisk.pl>
+References: <200702231116.23607.rjw@sisk.pl>
+	 <200702231125.43910.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Mon, 26 Feb 2007 00:53:41 +0100
+Message-Id: <1172447621.20450.21.camel@violet>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.9.91 
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Feb 2007 17:05:58 +0100 Mario Vanoni wrote:
+Hi Rafael,
 
-> Randy Dunlap wrote:
-> > On Sat, 24 Feb 2007 16:44:20 +0100 Mario Vanoni wrote:
-> > 
-> >> 2.6.18.7 vanilla & 2.6.16.41 vanilla:
-> >> /dev/hda CD/DVD
-> >> /dev/hda1 / IDE HD 160GB
-> >> /dev/hda2 swap
-> >> /dev/sda1 /xyz SATA HD 320GB
-> >> /dev/sda2 swap
-> >> /dev/sdb1 /zzz SATA HD 320GB
-> >> /dev/sdb2 swap
-> >> /dev/sdc1 /usb USB KEY 512MB
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> > For 2.6.19.*, does .config contain any CONFIG_ATA* entries?
-> > FYI, in 2.6.19, CONFIG_SCSI_SATA* config symbols were renamed to
-> > CONFIG_ATA*, so just using an oldconfig won't be sufficient
-> > for SATA support.
+> Remove PF_NOFREEZE from the bluetooth threads, adding try_to_freeze() calls as
+> required.
 > 
-> You are 100% right, I was lazy, thanks for the gentle blame.
-> 2.6.19.5 vanilla works perfectly, 2.6.20.1 vanilla too!
-> 
-> >> ---
-> >> 2.6.18.8 vanilla: !!!
-> >> screen eating leftmost characters, then
-> >> kernel panic - not syncing: VFS: Unable to mount root fs on
-> >> unknown-block(3,65)
-> >> POWER SWITCH ultima ratio
-> >> ---
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  net/bluetooth/bnep/core.c   |    6 ++++--
+>  net/bluetooth/cmtp/core.c   |    4 +++-
+>  net/bluetooth/hidp/core.c   |    4 +++-
+>  net/bluetooth/rfcomm/core.c |    4 +++-
+>  4 files changed, 13 insertions(+), 5 deletions(-)
 
-What is (3,65) supposed to be?  devices.txt says that it's /dev/hdb1.
-I don't see that listed anywhere here...
+Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
 
-> Strange error, due to a partially corrupted MBR (?):
-> 2.6.19.5 with incorrect .config, lilo, SATA missing
-> reboot with old 2.6.18.7, OK
-> 2.6.18.8 with old .config from 2.6.18.6,
-> lilo objects not seeing /dev/sdb and /dev/sdc,
-> reboot and kernel panic,
-> reboot with 2.6.18.7, OK
-> 2.6.18.8 make mrproper and rm -r /lib/modules/2.6.18.8
-> make bzImage etc., lilo: 2.6.18.8 works perfectly.
+for the Bluetooth part of this patch series.
+
+Regards
+
+Marcel
 
 
----
-~Randy
