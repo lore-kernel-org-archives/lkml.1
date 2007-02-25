@@ -1,45 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965199AbXBYXGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965197AbXBYXOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965199AbXBYXGl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 18:06:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965217AbXBYXGl
+	id S965197AbXBYXOO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 18:14:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965217AbXBYXOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 18:06:41 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:52147 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965199AbXBYXGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 18:06:41 -0500
-Date: Sun, 25 Feb 2007 15:06:41 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Joel Becker <Joel.Becker@oracle.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: mincore returning -ENOMEM instead of -EFAULT
-In-Reply-To: <20070223225847.GL7920@ca-server1.us.oracle.com>
-Message-ID: <Pine.LNX.4.64.0702251504400.12485@woody.linux-foundation.org>
-References: <20070223225847.GL7920@ca-server1.us.oracle.com>
+	Sun, 25 Feb 2007 18:14:14 -0500
+Received: from nz-out-0506.google.com ([64.233.162.228]:5702 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965197AbXBYXON (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 18:14:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NZAyOmXX19AvMZZ7WQJny0v2ExhF7ZomeGcg2OUY/QGRUyZFzeNfkaOJgl3KgnGhI74PMEXV5bPE7BYo3gI82aVGjtPt9CE3lnCkD89SeGXf/5AqjAYk4yzkCO0ztgGFlLggCgcD2jb34OMB8JL/BBicbeFgmP6e+DR9MWmVrUo=
+Message-ID: <f2b55d220702251514y2531931ag8fe880b9b1402361@mail.gmail.com>
+Date: Sun, 25 Feb 2007 15:14:11 -0800
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Cc: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
+       "Ulrich Drepper" <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Andrew Morton" <akpm@zip.com.au>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Zach Brown" <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Suparna Bhattacharya" <suparna@in.ibm.com>,
+       "Davide Libenzi" <davidel@xmailserver.org>,
+       "Jens Axboe" <jens.axboe@oracle.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <20070225190414.GB6460@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070221233111.GB5895@elte.hu> <20070222074044.GA4158@elte.hu>
+	 <20070222113148.GA3781@2ka.mipt.ru> <20070222125931.GB25788@elte.hu>
+	 <20070222133201.GB5208@2ka.mipt.ru> <20070223115152.GA2565@elte.hu>
+	 <20070223122224.GB5392@2ka.mipt.ru> <20070225174505.GA7048@elte.hu>
+	 <20070225180910.GA29821@2ka.mipt.ru> <20070225190414.GB6460@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 2/25/07, Ingo Molnar <mingo@elte.hu> wrote:
+> Fundamentally a kernel thread is just its
+> EIP/ESP [on x86, similar on other architectures] - which can be
+> saved/restored in near zero time.
 
+That's because the kernel address space is identical in every
+process's MMU context, so the MMU doesn't have to be touched _at_all_.
+ Also, the kernel very rarely touches FPU state, and even when it
+does, the FXSAVE/FXRSTOR pair is highly optimized for the "save state
+just long enough to move some memory around with XMM instructions"
+case.  (I know you know this; this is for the benefit of less
+experienced readers.)  If your threadlet model shares the FPU state
+and TLS arena among all threadlets running on the same CPU, and
+threadlets are scheduled in bursts belonging to the same process (and
+preferably the same threadlet entrypoint), then you will get similarly
+efficient userspace threadlet-to-threadlet transitions.  If not, not.
 
-On Fri, 23 Feb 2007, Joel Becker wrote:
->
-> 	Your fix in commit 2f77d107050abc14bc393b34bdb7b91cf670c250
-> modifies sys_mincore() to return -ENOMEM instead of -EFAULT on a totally
-> bogus address.  Was this intentional, or is it something that should be
-> fixed up?
+> scheduling only relates to the minimal context that is in the CPU. And
+> most of that context we save upon /every system call entry/, and restore
+> it upon every system call return. If it's so expensive to manipulate,
+> why can the Linux kernel do a full system call in ~150 cycles? That's
+> cheaper than the access latency to a single DRAM page.
 
-It was intentional, and I don't actually think it was even a change. The 
-access_ok() in question is not done on the actual array that we fill up 
-with the result of the operation, but on the address range that is being 
-queried, and if the queried address range is bogus, we should return 
-ENOMEM.
+That would be the magic of shadow register files.  When the software
+does things that hardware expects it to do, everybody wins.  When the
+software tries to get clever based on micro-benchmarks, everybody
+loses.
 
-It's even mentioned in the man-page..
-
-We *do* return -EFAULT for the case where the "vec" array itself is not 
-mapped.
-
-		Linus
+Cheers,
+- Michael
