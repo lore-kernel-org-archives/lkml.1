@@ -1,138 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964803AbXBYLrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964805AbXBYLsH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964803AbXBYLrb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 06:47:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964807AbXBYLrb
+	id S964805AbXBYLsH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 06:48:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964810AbXBYLsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 06:47:31 -0500
-Received: from aun.it.uu.se ([130.238.12.36]:36942 "EHLO aun.it.uu.se"
+	Sun, 25 Feb 2007 06:48:07 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:33242 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964803AbXBYLrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 06:47:31 -0500
-Date: Sun, 25 Feb 2007 12:47:09 +0100 (MET)
-Message-Id: <200702251147.l1PBl9ab003231@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: torvalds@linux-foundation.org
-Subject: [PATCH 2.6.21-rc1] x86 signal number delivery fixes
-Cc: ak@suse.de, linux-kernel@vger.kernel.org
+	id S964805AbXBYLsG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 06:48:06 -0500
+Date: Sun, 25 Feb 2007 03:47:37 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Avi Kivity <avi@qumranet.com>
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Subject: Re: [PATCH 0/6] KVM userspace interface updates for 2.6.21
+Message-Id: <20070225034737.16353a46.akpm@linux-foundation.org>
+In-Reply-To: <45E15DBF.8000106@qumranet.com>
+References: <45DC8B6E.5050205@qumranet.com>
+	<45DC8D97.9060408@qumranet.com>
+	<45E15DBF.8000106@qumranet.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The invokation of signal handlers on x86 has several bugs
-in its treatment of the signal number parameter:
+> On Sun, 25 Feb 2007 11:58:23 +0200 Avi Kivity <avi@qumranet.com> wrote:
+> Avi Kivity wrote:
+> >
+> > The patchset, along with the previous fixset, is available as a git 
+> > tree from git://kvm.qumranet.com/home/avi/kvm/linux-2.6.  You may wish 
+> > to plant it in your little git forest.
+> >
+> 
+> This is now git://kvm.qumranet.com/home/avi/kvm.git, as a bare 'git 
+> pull' will pull the current branch instead of master, giving you 
+> whatever I was working on at the moment.  The kvm.git repo will always 
+> have 'master' as the current branch.
 
-- the i386 kernel passes the raw not the translated signal number
-  in EAX to non-SA_SIGINFO handlers compiled with -mregparm=3;
-  the value passed on the stack is correct, and SA_SIGINFO handlers
-  are also invoked correctly
-- the x86-64 kernel's ia32 emulation for SA_SIGINFO handlers also
-  passes the wrong (untranslated) signal number in EAX; the value
-  on the stack is correct
-- the x86-64 kernel's ia32 emulation for non-SA_SIGINFO handlers
-  passes the wrong (untranslated) signal number both on the stack
-  and in EAX
+OK.
 
-Also, the x86-64 kernel's ia32_setup_rt_frame() has duplicated code
-for setting up -mregparm=3 parameters: it looks like the same patch
-hunk was merged twice at some point.
+ drivers/kvm/kvm.h         |   13 +
+ drivers/kvm/kvm_main.c    |  774 ++++++++++++++++++++++++++++++++-------------
+ drivers/kvm/kvm_svm.h     |    3 
+ drivers/kvm/mmu.c         |   36 +-
+ drivers/kvm/paging_tmpl.h |   18 +
+ drivers/kvm/svm.c         |   42 ++
+ drivers/kvm/vmx.c         |   33 ++
+ include/linux/kvm.h       |   50 ++-
+ include/linux/kvm_para.h  |   73 ++++
 
-Fixed by the following patch.
+However things might get messy later on if that tree starts introducing changes
+outside drivers/kvm.  There's a ton of activity in x86-world.
 
-Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
-
----
-
-The fix in ia32_setup_frame() is ugly, but follows the coding style
-of ia32_setup_rt_frame().
-
- arch/i386/kernel/signal.c      |    2 +-
- arch/x86_64/ia32/ia32_signal.c |   31 +++++++++++++++++--------------
- 2 files changed, 18 insertions(+), 15 deletions(-)
-
-diff -rupN linux-2.6.21-rc1/arch/i386/kernel/signal.c linux-2.6.21-rc1.x86-signals-usig-fixes/arch/i386/kernel/signal.c
---- linux-2.6.21-rc1/arch/i386/kernel/signal.c	2007-02-24 22:32:42.000000000 +0100
-+++ linux-2.6.21-rc1.x86-signals-usig-fixes/arch/i386/kernel/signal.c	2007-02-25 11:09:24.000000000 +0100
-@@ -377,7 +377,7 @@ static int setup_frame(int sig, struct k
- 	/* Set up registers for signal handler */
- 	regs->esp = (unsigned long) frame;
- 	regs->eip = (unsigned long) ka->sa.sa_handler;
--	regs->eax = (unsigned long) sig;
-+	regs->eax = (unsigned long) usig;
- 	regs->edx = (unsigned long) 0;
- 	regs->ecx = (unsigned long) 0;
- 
-diff -rupN linux-2.6.21-rc1/arch/x86_64/ia32/ia32_signal.c linux-2.6.21-rc1.x86-signals-usig-fixes/arch/x86_64/ia32/ia32_signal.c
---- linux-2.6.21-rc1/arch/x86_64/ia32/ia32_signal.c	2007-02-24 22:32:42.000000000 +0100
-+++ linux-2.6.21-rc1.x86-signals-usig-fixes/arch/x86_64/ia32/ia32_signal.c	2007-02-25 11:09:24.000000000 +0100
-@@ -426,13 +426,21 @@ int ia32_setup_frame(int sig, struct k_s
- {
- 	struct sigframe __user *frame;
- 	int err = 0;
-+	int usig;
- 
- 	frame = get_sigframe(ka, regs, sizeof(*frame));
- 
- 	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
- 		goto give_sigsegv;
- 
--	err |= __put_user(sig, &frame->sig);
-+	{
-+		struct exec_domain *ed = current_thread_info()->exec_domain;
-+		if (ed && ed->signal_invmap && sig < 32)
-+			usig = ed->signal_invmap[sig];
-+		else
-+			usig = sig;
-+		err |= __put_user(usig, &frame->sig);
-+	}
- 	if (err)
- 		goto give_sigsegv;
- 
-@@ -484,7 +492,7 @@ int ia32_setup_frame(int sig, struct k_s
- 	regs->rip = (unsigned long) ka->sa.sa_handler;
- 
- 	/* Make -mregparm=3 work */
--	regs->rax = sig;
-+	regs->rax = usig;
- 	regs->rdx = 0;
- 	regs->rcx = 0;
- 
-@@ -516,6 +524,7 @@ int ia32_setup_rt_frame(int sig, struct 
- {
- 	struct rt_sigframe __user *frame;
- 	int err = 0;
-+	int usig;
- 
- 	frame = get_sigframe(ka, regs, sizeof(*frame));
- 
-@@ -524,12 +533,11 @@ int ia32_setup_rt_frame(int sig, struct 
- 
- 	{
- 		struct exec_domain *ed = current_thread_info()->exec_domain;
--		err |= __put_user((ed
--		    	   && ed->signal_invmap
--		    	   && sig < 32
--		    	   ? ed->signal_invmap[sig]
--			   : sig),
--			  &frame->sig);
-+		if (ed && ed->signal_invmap && sig < 32)
-+			usig = ed->signal_invmap[sig];
-+		else
-+			usig = sig;
-+		err |= __put_user(usig, &frame->sig);
- 	}
- 	err |= __put_user(ptr_to_compat(&frame->info), &frame->pinfo);
- 	err |= __put_user(ptr_to_compat(&frame->uc), &frame->puc);
-@@ -585,12 +593,7 @@ int ia32_setup_rt_frame(int sig, struct 
- 	regs->rip = (unsigned long) ka->sa.sa_handler;
- 
- 	/* Make -mregparm=3 work */
--	regs->rax = sig;
--	regs->rdx = (unsigned long) &frame->info;
--	regs->rcx = (unsigned long) &frame->uc;
--
--	/* Make -mregparm=3 work */
--	regs->rax = sig;
-+	regs->rax = usig;
- 	regs->rdx = (unsigned long) &frame->info;
- 	regs->rcx = (unsigned long) &frame->uc;
- 
+But if there are problems, you'll hear about it ;)
