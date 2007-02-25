@@ -1,67 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964969AbXBYNQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964831AbXBYNus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964969AbXBYNQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 08:16:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964962AbXBYNQ7
+	id S964831AbXBYNus (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 08:50:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964854AbXBYNus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 08:16:59 -0500
-Received: from wr-out-0506.google.com ([64.233.184.234]:5959 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964964AbXBYNQ5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 08:16:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Du98AIpCxx3xO4DVXJzCId+eNU/to4tycWONIHpO9DUEzxsMuXXgSAlXpRsHKlVIrPb9AjkDwKAA+CoAUqDC6bYpPgDhpx76wNGnKHYNepgMpwzJIYn4Oay91MeHnZcluMsWst5MdENdXk1uMr5GdcBuIkb9AfLJDhW+8zHUVCw=
-Message-ID: <cb7bb73a0702250516p4e64ec64ueca3128f752bb421@mail.gmail.com>
-Date: Sun, 25 Feb 2007 14:16:55 +0100
-From: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
-Cc: "James Simmons" <jsimmons@infradead.org>,
-       "Luca Tettamanti" <kronos@people.it>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       "Andrew Morton" <akpm@osdl.org>, "Dave Airlie" <airlied@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1172401825.6187.2.camel@daplas>
+	Sun, 25 Feb 2007 08:50:48 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55545 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964831AbXBYNus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 08:50:48 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Aneesh Kumar" <aneesh.kumar@gmail.com>
+Subject: Re: [RFC][PATCH 4/7] Freezer: Fix vfork problem
+Date: Sun, 25 Feb 2007 14:43:50 +0100
+User-Agent: KMail/1.9.5
+Cc: "Pavel Machek" <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
+       paulmck@linux.vnet.ibm.com, ego@in.ibm.com, akpm@osdl.org,
+       mingo@elte.hu, vatsa@in.ibm.com, dipankar@in.ibm.com,
+       venkatesh.pallipadi@intel.com
+References: <200702231116.23607.rjw@sisk.pl> <20070225104612.GM2045@elf.ucw.cz> <cc723f590702250501t7f920336hd383da3a703a99fa@mail.gmail.com>
+In-Reply-To: <cc723f590702250501t7f920336hd383da3a703a99fa@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <ephv35$4i3$1@sea.gmane.org> <1172161290.4198.12.camel@daplas>
-	 <cb7bb73a0702221108r161441ebt61886ce67746f389@mail.gmail.com>
-	 <1172187249.4279.7.camel@daplas>
-	 <cb7bb73a0702230534o4e2c7e9frd5f2b05accf18c05@mail.gmail.com>
-	 <1172300694.4109.50.camel@daplas>
-	 <cb7bb73a0702240116g33a9b5bv2e3668a536a70938@mail.gmail.com>
-	 <1172351769.4415.5.camel@daplas>
-	 <cb7bb73a0702250226k53369655vc9c4e5a71c337a8c@mail.gmail.com>
-	 <1172401825.6187.2.camel@daplas>
+Message-Id: <200702251443.52339.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/25/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> On Sun, 2007-02-25 at 11:26 +0100, Giuseppe Bilotta wrote:
+On Sunday, 25 February 2007 14:01, Aneesh Kumar wrote:
+> On 2/25/07, Pavel Machek <pavel@ucw.cz> wrote:
+> > Hi!
 > >
-> > Applied. No noticeable difference, in the sense that the EDID debug
-> > output is still the same and so is the snow effect.
->
-> Here's a temporary workaround:
->
-> In drivers/video/nvidia/nv_i2c.c:nvidia_probe_i2c_connector(),comment
-> this out:
->
->         if (par->chan[conn - 1].par)
->                 edid = fb_ddc_read(&par->chan[conn - 1].adapter);
->
-> and make sure CONFIG_FIRMWARE_EDID=y.
+> > > Currently try_to_freeze_tasks() has to wait until all of the vforked processes
+> > > exit and for this reason every user can make it fail.  To fix this problem
+> > > we can introduce the additional process flag PF_FREEZER_SKIP to be used by tasks
+> > > that do not want to be counted as freezable by the freezer and want to have
+> > > TIF_FREEZE set nevertheless.  Then, this flag can be set by tasks using
+> > > sys_vfork() before they call wait_for_completion() and cleared after they have
+> > > woken up and called try_to_freeze().  In case such a task freezes with
+> > > PF_FREEZER_SKIP set, refrigerator() clears this flag for the current task before
+> > > calling frozen_process(current) to avoid having both PF_FREEZER_SKIP and
+> > > PF_FROZEN set at the same time.
+> > >
+> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> >
+> > > @@ -1393,7 +1394,9 @@ long do_fork(unsigned long clone_flags,
+> > >               tracehook_report_clone_complete(clone_flags, nr, p);
+> > >
+> > >               if (clone_flags & CLONE_VFORK) {
+> > > +                     freezer_do_not_count();
+> > >                       wait_for_completion(&vfork);
+> > > +                     freezer_count();
+> > >                       tracehook_report_vfork_done(p, nr);
+> > >               }
+> > >       } else {
+> >
+> > All the infrastructure for this...Would it be easier to introduce
+> >
+> > void fastcall __sched wait_for_completion_freezeable(struct completion *x)
+> > {
+> >         might_sleep();
+> >
+> >         spin_lock_irq(&x->wait.lock);
+> >         if (!x->done) {
+> >                 DECLARE_WAITQUEUE(wait, current);
+> >
+> >                 wait.flags |= WQ_FLAG_EXCLUSIVE;
+> >                 __add_wait_queue_tail(&x->wait, &wait);
+> >                 do {
+> >                         __set_current_state(TASK_UNINTERRUPTIBLE);
+> >                         spin_unlock_irq(&x->wait.lock);
+> >                         schedule();
+> > try_to_freeze(); /* HERE */
+> >                         spin_lock_irq(&x->wait.lock);
+> >                 } while (!x->done);
+> >                 __remove_wait_queue(&x->wait, &wait);
+> >         }
+> >         x->done--;
+> >         spin_unlock_irq(&x->wait.lock);
+> > }
+> >
+> >
+> 
+> I don't see a call  to freezer_do_not_count here. Rafel was talking
+> about a similar change but that would involve special cases in
+> refrigerator such as  wakeup parent if the process which is going to
+> be frozen have vfork_done set.
+> 
+> if (->vfork_done) {
+> wakeup_parent()
+> }
+> 
+> how about
+> 
+> void fastcall __sched wait_for_completion_freezeable(struct completion *x)
+> {
+>      freezer_do_not_count();
+>      wait_for_completion(x);
+>      freezer_count();
+> }
 
-With this patch, I don't get any dmesg info about my monitor EDID, but
-I still get the snow. Could it be that there's something else on my
-system which is setting the video to some absurd timings when I
-switchg on the framebuffer console? I'm running an up-to-date debian
-unstable.
+I think we can something like that on top of my original patch (or rather, the
+patch that I've just sent in another message) if it's needed by anything else
+than vfork.
 
--- 
-Giuseppe "Oblomov" Bilotta
+Greetings,
+Rafael
