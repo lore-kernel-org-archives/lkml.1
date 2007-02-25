@@ -1,79 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964777AbXBYUQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965111AbXBYUQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964777AbXBYUQA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 15:16:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933700AbXBYUQA
+	id S965111AbXBYUQp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 15:16:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965058AbXBYUQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 15:16:00 -0500
-Received: from keil-draco.com ([216.193.185.50]:50367 "EHLO mail"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932995AbXBYUPx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 15:15:53 -0500
-From: "D. Hazelton" <dhazelton@enter.net>
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-Subject: Re: GPL vs non-GPL device drivers
-Date: Sun, 25 Feb 2007 15:15:22 -0500
-User-Agent: KMail/1.9.5
-Cc: "Pavel Machek" <pavel@ucw.cz>, davids@webmaster.com,
-       "v j" <vj.linux@gmail.com>, trent.waddington@gmail.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>
-References: <3d57814d0702191458l1021caeyaefd7775398c5f2a@mail.gmail.com> <20070225104211.GB2045@elf.ucw.cz> <f2b55d220702250354j29583e5ak1397d28ef7028783@mail.gmail.com>
-In-Reply-To: <f2b55d220702250354j29583e5ak1397d28ef7028783@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Sun, 25 Feb 2007 15:16:44 -0500
+Received: from mail.screens.ru ([213.234.233.54]:40507 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932976AbXBYUQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 15:16:43 -0500
+Date: Sun, 25 Feb 2007 23:16:41 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, mingo@elte.hu, hch@infradead.org, akpm@osdl.org,
+       stern@rowland.harvard.edu
+Subject: Re: [PATCH] QRCU with lockless fastpath
+Message-ID: <20070225201641.GA2266@tv-sign.ru>
+References: <20070225062349.GA17468@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702251515.22703.dhazelton@enter.net>
+In-Reply-To: <20070225062349.GA17468@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 25 February 2007 06:54, Michael K. Edwards wrote:
-> On 2/25/07, Pavel Machek <pavel@ucw.cz> wrote:
-<snip>
-> But a 20KLoC 3-D graphics driver that happens to #include
-> <linux/whatever.h> is not thereby a "derivative work" of the kernel,
-> no matter how many entrypoints are labeled EXPORT_SYMBOL_GPL or
-> provided as inline functions.  And under the Lexmark standard,
-> MODULE_LICENSE("GPL") with a disclaimer in the doco is by far the
-> sanest way to deal with the EXPORT_SYMBOL_GPL mind games, and likely
-> (IANAL, TINLA) to be endorsed by any court in the US and probably lots
-> of other places too.  Especially when the graphics chip maker explains
-> that keeping their driver source code closed isn't really an attempt
-> to hide their knowledge under a bushel basket.  It's a defensive
-> measure against having their retail margins destroyed by nitwits who
-> take out all the busy-wait loops and recompile with -O9 to get another
-> tenth of a frame per second, and then pretend ignorance when
-> attempting to return their slagged GPU at Fry's.
+On 02/24, Paul E. McKenney wrote:
+> 
+> This is an updated version of Oleg Nesterov's QRCU that avoids the
+> earlier lock acquisition on the synchronize_qrcu() fastpath.  This passes
+> rcutorture on x86 and the weakly ordered POWER.  A promela model of the
+> code passes as noted before for 2 readers and 3 updaters and for 3 readers
+> and 2 updaters.  3 readers and 3 updaters runs every machine that I have
+> access to out of memory -- nothing like a little combinatorial explosion!
+> However, after some thought, the proof ended up being simple enough:
+> 
+> 1.	If synchronize_qrcu() exits too soon, then by definition
+> 	there has been a reader present during synchronize_srcu()'s
+> 	full execution.
+> 
+> 2.	The counter corresponding to this reader will be at least
+> 	1 at all times.
+> 
+> 3.	The synchronize_qrcu() code forces at least one of the counters
+> 	to be at least one at all times -- if there is a reader, the
+> 	sum will be at least two.  (Unfortunately, we cannot fetch
+> 	the pair of counters atomically.)
+> 
+> 4.	Therefore, the only way that synchronize_qrcu()s fastpath can
+> 	see a sum of 1 is if it races with another synchronize_qrcu() --
+> 	the first synchronize_qrcu() must read one of the counters before
+> 	the second synchronize_qrcu() increments it, and must read the
+> 	other counter after the second synchronize_qrcu() decrements it.
+> 	There can be at most one reader present through this entire
+> 	operation -- otherwise, the first synchronize_qrcu() will see
+> 	a sum of 2 or greater.
+> 
+> 5.	But the second synchronize_qrcu() will not release the mutex
+> 	until after the reader is done.  During this time, the first
+> 	synchronize_qrcu() will always see a sum of at least 2, and
+> 	therefore cannot take the remainder of the fastpath until the
+> 	reader is done.
+> 
+> 6.	Because the second synchronize_qrcu() holds the mutex, no other
+> 	synchronize_qrcu() can manipulate the counters until the reader
+> 	is done.  A repeat of the race called out in #4 above therefore
+> 	cannot happen until after the reader is done, in which case it
+> 	is safe for the first synchronize_qrcu() to proceed.
+> 
+> Therefore, two summations of the counter separated by a memory barrier
+> suffices and the implementation shown below also suffices.
+> 
+> (And, yes, the fastpath -could- check for a sum of zero and exit
+> immediately, but this would help only in case of a three-way race
+> between two synchronize_qrcu()s and a qrcu_read_unlock(), would add
+> another compare, so is not worth it.)
+> 
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-At that point, Mike, you are treading on *very* thin ice. With Intel having 
-released the complete source to their chipsets and with the number of totally 
-free 3D drivers that don't slag GPU's...
+Thanks! This fastpath really improves QRCU.
 
-However - if the hardware is really that fickle then why is it on the market? 
-Yes, it can run hot enough to slag itself - all modern CPU's run the same 
-risk. Yet people, mostly the "Power Gamers", will push a CPU beyond their 
-rated spec's and have it riding the edge of thermal breakdown. Because of the 
-nature of the 3D accelerator market most manufacturers (of the chips 
-themselves) have already pushed their chips to that thermal edge, and some of 
-the makers of the boards will even provide the end user means to push the 
-chips even further.
+Oleg.
 
-However, even *with* some hardware manufacturers providing a way for the 
-end-user to do it, pushing the componets to the edge of thermal breakdown (or 
-beyond and keeping them in check through an active cooling system) is 
-not "normal and expected use". As well, if the that is the argument that 
-NVidia and ATI use (that they are worried about people recompiling the code 
-with busy-loops stripped out) then they don't know the Open Source community 
-well. In general the people that are most likely to recompile the driver with 
-the busy-loops removed don't run Open Source systems - they run Windows. 
-Those people are called "competetive gamers" and 99% of the games they play 
-are only available for Windows.
 
-What I'm trying to say is: Just like the "It gives away too much information 
-on our IP" claim, the "People will recompile it with code needed to keep it 
-from destroying itself" claim is bunk. Even moreso if their code is 
-documented well enough that the purpose of the busy-wait loop is clear.
-
-DRH
