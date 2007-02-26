@@ -1,374 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933741AbXBZBZK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933740AbXBZB0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933741AbXBZBZK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 20:25:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933740AbXBZBZK
+	id S933740AbXBZB0L (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 20:26:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933738AbXBZB0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 20:25:10 -0500
-Received: from pool-71-111-73-6.ptldor.dsl-w.verizon.net ([71.111.73.6]:12015
-	"EHLO IBM-8EC8B5596CA.beaverton.ibm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933739AbXBZBZH (ORCPT
+	Sun, 25 Feb 2007 20:26:11 -0500
+Received: from web52904.mail.yahoo.com ([206.190.49.14]:44602 "HELO
+	web52904.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933743AbXBZB0J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 20:25:07 -0500
-Date: Sun, 25 Feb 2007 17:25:13 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: BUG in 2.6.20-rt8
-Message-ID: <20070226012512.GM5049@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070225050212.GA17258@linux.vnet.ibm.com> <20070225062747.GA13432@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070225062747.GA13432@elte.hu>
-User-Agent: Mutt/1.5.9i
+	Sun, 25 Feb 2007 20:26:09 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=r8PVRHjEx0w5fqTGp40Iquh2KP3nZnTnsMqh1vp6VqPVsiAioD2XgcHrBAie5+gydNiz2B7OEQEtWyfr5hwrgVJHlhAOXHwTu3giXTfFNYYfsec8FmlIEkkpIviu1otnxfRTCVI6XDvXYMHB/I1N6JVZuzI1jY+x1Dktz/hoxUE=;
+X-YMail-OSG: dDUxsrwVM1nNsmMS1_B1wZx4mr0HQOxE9LMwE.4VFc0vENNBOcwhdK48Nirm8KbaXw8zfKcFVaAIDL6ARzxlYAG.DkvffUw_mxH__Nm6le10LO1L7lE.DFDOxSaTkaOyk8oKcuA3aU3K2KI-
+Date: Mon, 26 Feb 2007 01:26:06 +0000 (GMT)
+From: Chris Rankin <rankincj@yahoo.com>
+Subject: [BUG] Linux 2.6.20.1 - unable to handle kernel paging request - accessing freed memory?
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Message-ID: <689096.76239.qm@web52904.mail.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 25, 2007 at 07:27:47AM +0100, Ingo Molnar wrote:
-> 
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > I got the following running stock 2.6.20-rt8 on an 4-CPU 1.8GHz 
-> > Opteron box.  The machine continued to run a few rounds of kernbench 
-> > and LTP. Looks a bit scary -- a tasklet was "stolen" from 
-> > __tasklet_action().
-> > 
-> > Thoughts?  In the meantime, kicking it off again to see if it repeats.
-> 
-> > BUG: at kernel/softirq.c:559 __tasklet_action()
-> 
-> this seems to happen very sporadically. Seems to happen more likely on 
-> hyperthreading CPUs. It is very likely caused by the 
-> redesign-tasklet-locking-to-be-sane patch below - which is a quick hack 
-> of mine from early -rt days. Can you see any obvious bug in it? The 
-> cmpxchg logic is certainly a bit ... tricky, locking-wise.
+Hi,
 
-One thing thus far...
+This looks like a memory fault to me; are those 0x6b characters "slab poisoning"? This is the dual
+P4 Xeon / 2 GB RAM machine, and I'm guessing that udevd has just loaded snd_rtctimer (because
+that's the module at the top of the list):
 
-There is the repeated-reschedule case that looks like it can result
-in a tasklet being dropped on the floor:
+BUG: unable to handle kernel paging request at virtual address 6b6b6ceb
+ printing eip:
+c013010b
+*pde = 00000000
+Oops: 0002 [#1]
+PREEMPT SMP
+Modules linked in: snd_rtctimer radeon drm pwc eeprom cpufreq_ondemand p4_clockmod speedstep_lib
+nfsd exportfs ipv6 autofs4 nfs lockd sunrpc af_packet firmware_class binfmt_misc video thermal
+processor fan button ac lp parport_pc parport nvram video1394 raw1394 eth1394 compat_ioctl32
+videodev snd_usb_audio sd_mod snd_usb_lib v4l2_common sg v4l1_compat snd_emu10k1_synth
+snd_emux_synth snd_seq_virmidi snd_seq_midi_emul snd_emu10k1 snd_rawmidi snd_ac97_codec ac97_bus
+snd_seq_dummy snd_seq_oss ohci1394 snd_seq_midi_event snd_seq snd_pcm_oss snd_mixer_oss ieee1394
+snd_pcm ehci_hcd snd_seq_device uhci_hcd snd_timer snd_page_alloc snd_util_mem sata_sil libata
+e7xxx_edac edac_mc snd_hwdep i2c_i801 e1000 serio_raw psmouse scsi_mod snd soundcore pcspkr
+i2c_core intel_agp agpgart ide_cd cdrom usbcore ext3 jbd
+CPU:    0
+EIP:    0060:[<c013010b>]    Not tainted VLI
+EFLAGS: 00010246   (2.6.20.1 #1)
+EIP is at module_put+0x20/0x52
+eax: 6b6b6ceb   ebx: 6b6b6b6b   ecx: 00000001   edx: e5bf0000
+esi: e9040b08   edi: 6b6b6b6b   ebp: eae0bb3c   esp: e5bf0f58
+ds: 007b   es: 007b   ss: 0068
+Process udevd (pid: 18662, ti=e5bf0000 task=e6aaa030 task.ti=e5bf0000)
+Stack: eb3ff7bc c01839fe 00000010 ed009b7c ed9291d0 c015124b 00000000 00000000
+       f7ff2208 ed009b7c f7bd0678 00000000 ed009b7c c014ed88 00000003 00000003
+       f7bd0678 f7bd06f8 c014fd81 00000003 00000007 00000003 e5bf0000 c0102bce
+Call Trace:
+ [<c01839fe>] sysfs_release+0x2d/0x4c
+ [<c015124b>] __fput+0x96/0x13c
+ [<c014ed88>] filp_close+0x51/0x58
+ [<c014fd81>] sys_close+0x70/0xa7
+ [<c0102bce>] sysenter_past_esp+0x5f/0x85
+ [<c0270033>] __sched_text_start+0x703/0x958
+ =======================
+Code: 00 89 f0 83 c4 0c 5b 5e 5f 5d c3 53 89 c3 85 c0 74 49 b8 01 00 00 00 e8 63 49 fe ff e8 e3 5a
+07 00 c1 e0 07 8d 84 18 80 01 00 00 <ff> 08 83 3b 02 75 0b 8b 83 88 05 00 00 e8 ad 45 fe ff b8 01
+00
+EIP: [<c013010b>] module_put+0x20/0x52 SS:ESP 0068:e5bf0f58
+ <6>note: udevd[18662] exited with preempt_count 1
+BUG: scheduling while atomic: udevd/0x10000001/18662
+ [<c026f986>] __sched_text_start+0x56/0x958
+ [<c011cc6e>] irq_exit+0x37/0x42
+ [<c010d1d3>] smp_apic_timer_interrupt+0x70/0x79
+ [<c010369c>] apic_timer_interrupt+0x28/0x30
+ [<c0114afd>] __cond_resched+0x12/0x2c
+ [<c027088c>] cond_resched+0x26/0x31
+ [<c01404ca>] unmap_vmas+0x3d3/0x4df
+ [<c0142ced>] exit_mmap+0x7e/0x10a
+ [<c0116bd3>] mmput+0x1d/0x78
+ [<c011b31e>] do_exit+0x1b2/0x6d8
+ [<c011007b>] sys_vm86+0x9d/0x21d
+ [<c01040f7>] die+0x1f2/0x217
+ [<c011180a>] do_page_fault+0x442/0x510
+ [<c01113c8>] do_page_fault+0x0/0x510
+ [<c02722b4>] error_code+0x7c/0x84
+ [<c013010b>] module_put+0x20/0x52
+ [<c01839fe>] sysfs_release+0x2d/0x4c
+ [<c015124b>] __fput+0x96/0x13c
+ [<c014ed88>] filp_close+0x51/0x58
+ [<c014fd81>] sys_close+0x70/0xa7
+ [<c0102bce>] sysenter_past_esp+0x5f/0x85
+ [<c0270033>] __sched_text_start+0x703/0x958
+ =======================
 
-o	__tasklet_action() runs out of "loops" (at which point,
-	we know TASKLET_STATE_SCHED is clear due to the prior test).
 
-o	Someone calls tasklet_schedule(), which sets TASKLET_STATE_SCHED
-	and calls __tasklet_schedule(), which fails in tasklet_trylock()
-	due to __tasklet_action() still having the TASKLET_STATE_RUN
-	bit set.  So the tasklet is not queued.
 
-o	__tasklet_action() then forcibly unlocks, and the tasklet can
-	never run again, because its TASKLET_STATE_SCHED is already
-	set.
-
-But this would have printed the "hm" message, which I didn't see.
-And been a low-probability race on top of that.
-
-And I have not yet come up with a better way of handling this -- and
-if I did, it would likely involve more rather than less cmpxchg.  ;-)
-
-If I can figure out a reasonable assertion, I will throw it at Promela
-and see what happens.
-
-						Thanx, Paul
-
-> ---------------->
-> From: Ingo Molnar <mingo@elte.hu>
-> 
-> tasklet redesign: make it saner and make it easier to thread.
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> ----
->  include/linux/interrupt.h |   39 ++++++-----
->  kernel/softirq.c          |  155 +++++++++++++++++++++++++++++++---------------
->  2 files changed, 128 insertions(+), 66 deletions(-)
-> 
-> Index: linux/include/linux/interrupt.h
-> ===================================================================
-> --- linux.orig/include/linux/interrupt.h
-> +++ linux/include/linux/interrupt.h
-> @@ -276,8 +276,9 @@ extern void wait_for_softirq(int softirq
->       to be executed on some cpu at least once after this.
->     * If the tasklet is already scheduled, but its excecution is still not
->       started, it will be executed only once.
-> -   * If this tasklet is already running on another CPU (or schedule is called
-> -     from tasklet itself), it is rescheduled for later.
-> +   * If this tasklet is already running on another CPU, it is rescheduled
-> +     for later.
-> +   * Schedule must not be called from the tasklet itself (a lockup occurs)
->     * Tasklet is strictly serialized wrt itself, but not
->       wrt another tasklets. If client needs some intertask synchronization,
->       he makes it with spinlocks.
-> @@ -302,15 +303,25 @@ struct tasklet_struct name = { NULL, 0, 
->  enum
->  {
->  	TASKLET_STATE_SCHED,	/* Tasklet is scheduled for execution */
-> -	TASKLET_STATE_RUN	/* Tasklet is running (SMP only) */
-> +	TASKLET_STATE_RUN,	/* Tasklet is running (SMP only) */
-> +	TASKLET_STATE_PENDING	/* Tasklet is pending */
->  };
-> 
-> -#ifdef CONFIG_SMP
-> +#define TASKLET_STATEF_SCHED	(1 << TASKLET_STATE_SCHED)
-> +#define TASKLET_STATEF_RUN	(1 << TASKLET_STATE_RUN)
-> +#define TASKLET_STATEF_PENDING	(1 << TASKLET_STATE_PENDING)
-> +
-> +#if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT_RT)
->  static inline int tasklet_trylock(struct tasklet_struct *t)
->  {
->  	return !test_and_set_bit(TASKLET_STATE_RUN, &(t)->state);
->  }
-> 
-> +static inline int tasklet_tryunlock(struct tasklet_struct *t)
-> +{
-> +	return cmpxchg(&t->state, TASKLET_STATEF_RUN, 0) == TASKLET_STATEF_RUN;
-> +}
-> +
->  static inline void tasklet_unlock(struct tasklet_struct *t)
->  {
->  	smp_mb__before_clear_bit(); 
-> @@ -322,9 +333,10 @@ static inline void tasklet_unlock_wait(s
->  	while (test_bit(TASKLET_STATE_RUN, &(t)->state)) { barrier(); }
->  }
->  #else
-> -#define tasklet_trylock(t) 1
-> -#define tasklet_unlock_wait(t) do { } while (0)
-> -#define tasklet_unlock(t) do { } while (0)
-> +# define tasklet_trylock(t)		1
-> +# define tasklet_tryunlock(t)		1
-> +# define tasklet_unlock_wait(t)		do { } while (0)
-> +# define tasklet_unlock(t)		do { } while (0)
->  #endif
-> 
->  extern void FASTCALL(__tasklet_schedule(struct tasklet_struct *t));
-> @@ -357,17 +369,8 @@ static inline void tasklet_disable(struc
->  	smp_mb();
->  }
-> 
-> -static inline void tasklet_enable(struct tasklet_struct *t)
-> -{
-> -	smp_mb__before_atomic_dec();
-> -	atomic_dec(&t->count);
-> -}
-> -
-> -static inline void tasklet_hi_enable(struct tasklet_struct *t)
-> -{
-> -	smp_mb__before_atomic_dec();
-> -	atomic_dec(&t->count);
-> -}
-> +extern fastcall void tasklet_enable(struct tasklet_struct *t);
-> +extern fastcall void tasklet_hi_enable(struct tasklet_struct *t);
-> 
->  extern void tasklet_kill(struct tasklet_struct *t);
->  extern void tasklet_kill_immediate(struct tasklet_struct *t, unsigned int cpu);
-> Index: linux/kernel/softirq.c
-> ===================================================================
-> --- linux.orig/kernel/softirq.c
-> +++ linux/kernel/softirq.c
-> @@ -464,14 +464,24 @@ struct tasklet_head
->  static DEFINE_PER_CPU(struct tasklet_head, tasklet_vec) = { NULL };
->  static DEFINE_PER_CPU(struct tasklet_head, tasklet_hi_vec) = { NULL };
-> 
-> +static void inline
-> +__tasklet_common_schedule(struct tasklet_struct *t, struct tasklet_head *head, unsigned int nr)
-> +{
-> +	if (tasklet_trylock(t)) {
-> +		WARN_ON(t->next != NULL);
-> +		t->next = head->list;
-> +		head->list = t;
-> +		raise_softirq_irqoff(nr);
-> +		tasklet_unlock(t);
-> +	}
-> +}
-> +
->  void fastcall __tasklet_schedule(struct tasklet_struct *t)
->  {
->  	unsigned long flags;
-> 
->  	local_irq_save(flags);
-> -	t->next = __get_cpu_var(tasklet_vec).list;
-> -	__get_cpu_var(tasklet_vec).list = t;
-> -	raise_softirq_irqoff(TASKLET_SOFTIRQ);
-> +	__tasklet_common_schedule(t, &__get_cpu_var(tasklet_vec), TASKLET_SOFTIRQ);
->  	local_irq_restore(flags);
->  }
-> 
-> @@ -482,81 +492,130 @@ void fastcall __tasklet_hi_schedule(stru
->  	unsigned long flags;
-> 
->  	local_irq_save(flags);
-> -	t->next = __get_cpu_var(tasklet_hi_vec).list;
-> -	__get_cpu_var(tasklet_hi_vec).list = t;
-> -	raise_softirq_irqoff(HI_SOFTIRQ);
-> +	__tasklet_common_schedule(t, &__get_cpu_var(tasklet_hi_vec), HI_SOFTIRQ);
->  	local_irq_restore(flags);
->  }
-> 
->  EXPORT_SYMBOL(__tasklet_hi_schedule);
-> 
-> -static void tasklet_action(struct softirq_action *a)
-> +void fastcall tasklet_enable(struct tasklet_struct *t)
->  {
-> -	struct tasklet_struct *list;
-> +	if (!atomic_dec_and_test(&t->count))
-> +		return;
-> +	if (test_and_clear_bit(TASKLET_STATE_PENDING, &t->state))
-> +		tasklet_schedule(t);
-> +}
-> 
-> -	local_irq_disable();
-> -	list = __get_cpu_var(tasklet_vec).list;
-> -	__get_cpu_var(tasklet_vec).list = NULL;
-> -	local_irq_enable();
-> +EXPORT_SYMBOL(tasklet_enable);
-> +
-> +void fastcall tasklet_hi_enable(struct tasklet_struct *t)
-> +{
-> +	if (!atomic_dec_and_test(&t->count))
-> +		return;
-> +	if (test_and_clear_bit(TASKLET_STATE_PENDING, &t->state))
-> +		tasklet_hi_schedule(t);
-> +}
-> +
-> +EXPORT_SYMBOL(tasklet_hi_enable);
-> +
-> +static void
-> +__tasklet_action(struct softirq_action *a, struct tasklet_struct *list)
-> +{
-> +	int loops = 1000000;
-> 
->  	while (list) {
->  		struct tasklet_struct *t = list;
-> 
->  		list = list->next;
-> +		/*
-> +		 * Should always succeed - after a tasklist got on the
-> +		 * list (after getting the SCHED bit set from 0 to 1),
-> +		 * nothing but the tasklet softirq it got queued to can
-> +		 * lock it:
-> +		 */
-> +		if (!tasklet_trylock(t)) {
-> +			WARN_ON(1);
-> +			continue;
-> +		}
-> +
-> +		t->next = NULL;
-> +
-> +		/*
-> +		 * If we cannot handle the tasklet because it's disabled,
-> +		 * mark it as pending. tasklet_enable() will later
-> +		 * re-schedule the tasklet.
-> +		 */
-> +		if (unlikely(atomic_read(&t->count))) {
-> +out_disabled:
-> +			/* implicit unlock: */
-> +			wmb();
-> +			t->state = TASKLET_STATEF_PENDING;
-> +			continue;
-> +		}
-> 
-> -		if (tasklet_trylock(t)) {
-> -			if (!atomic_read(&t->count)) {
-> -				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
-> -					BUG();
-> -				t->func(t->data);
-> +		/*
-> +		 * After this point on the tasklet might be rescheduled
-> +		 * on another CPU, but it can only be added to another
-> +		 * CPU's tasklet list if we unlock the tasklet (which we
-> +		 * dont do yet).
-> +		 */
-> +		if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
-> +			WARN_ON(1);
-> +
-> +again:
-> +		t->func(t->data);
-> +
-> +		/*
-> +		 * Try to unlock the tasklet. We must use cmpxchg, because
-> +		 * another CPU might have scheduled or disabled the tasklet.
-> +		 * We only allow the STATE_RUN -> 0 transition here.
-> +		 */
-> +		while (!tasklet_tryunlock(t)) {
-> +			/*
-> +			 * If it got disabled meanwhile, bail out:
-> +			 */
-> +			if (atomic_read(&t->count))
-> +				goto out_disabled;
-> +			/*
-> +			 * If it got scheduled meanwhile, re-execute
-> +			 * the tasklet function:
-> +			 */
-> +			if (test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
-> +				goto again;
-> +			if (!--loops) {
-> +				printk("hm, tasklet state: %08lx\n", t->state);
-> +				WARN_ON(1);
->  				tasklet_unlock(t);
-> -				continue;
-> +				break;
->  			}
-> -			tasklet_unlock(t);
->  		}
-> -
-> -		local_irq_disable();
-> -		t->next = __get_cpu_var(tasklet_vec).list;
-> -		__get_cpu_var(tasklet_vec).list = t;
-> -		__do_raise_softirq_irqoff(TASKLET_SOFTIRQ);
-> -		local_irq_enable();
->  	}
->  }
-> 
-> -static void tasklet_hi_action(struct softirq_action *a)
-> +static void tasklet_action(struct softirq_action *a)
->  {
->  	struct tasklet_struct *list;
-> 
->  	local_irq_disable();
-> -	list = __get_cpu_var(tasklet_hi_vec).list;
-> -	__get_cpu_var(tasklet_hi_vec).list = NULL;
-> +	list = __get_cpu_var(tasklet_vec).list;
-> +	__get_cpu_var(tasklet_vec).list = NULL;
->  	local_irq_enable();
-> 
-> -	while (list) {
-> -		struct tasklet_struct *t = list;
-> +	__tasklet_action(a, list);
-> +}
-> 
-> -		list = list->next;
-> +static void tasklet_hi_action(struct softirq_action *a)
-> +{
-> +	struct tasklet_struct *list;
-> 
-> -		if (tasklet_trylock(t)) {
-> -			if (!atomic_read(&t->count)) {
-> -				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
-> -					BUG();
-> -				t->func(t->data);
-> -				tasklet_unlock(t);
-> -				continue;
-> -			}
-> -			tasklet_unlock(t);
-> -		}
-> +	local_irq_disable();
-> +	list = __get_cpu_var(tasklet_hi_vec).list;
-> +	__get_cpu_var(tasklet_hi_vec).list = NULL;
-> +	local_irq_enable();
-> 
-> -		local_irq_disable();
-> -		t->next = __get_cpu_var(tasklet_hi_vec).list;
-> -		__get_cpu_var(tasklet_hi_vec).list = t;
-> -		__do_raise_softirq_irqoff(HI_SOFTIRQ);
-> -		local_irq_enable();
-> -	}
-> +	__tasklet_action(a, list);
->  }
-> 
-> -
->  void tasklet_init(struct tasklet_struct *t,
->  		  void (*func)(unsigned long), unsigned long data)
->  {
+		
+___________________________________________________________ 
+All New Yahoo! Mail – Tired of unwanted email come-ons? Let our SpamGuard protect you. http://uk.docs.yahoo.com/nowyoucan.html
