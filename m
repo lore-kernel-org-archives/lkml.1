@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751040AbXBZBxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751037AbXBZBzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751040AbXBZBxP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 20:53:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbXBZBxP
+	id S1751037AbXBZBzN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 20:55:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751052AbXBZBzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 20:53:15 -0500
-Received: from pool-71-111-73-6.ptldor.dsl-w.verizon.net ([71.111.73.6]:27964
-	"EHLO IBM-8EC8B5596CA.beaverton.ibm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751037AbXBZBxO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 20:53:14 -0500
-Date: Sun, 25 Feb 2007 17:53:22 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Hugh Dickins <hugh@veritas.com>, dipankar@in.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: PREEMPT_RCU breaks anon_vma locking ?
-Message-ID: <20070226015322.GO5049@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070223212303.GA423@tv-sign.ru> <Pine.LNX.4.64.0702242203080.4370@blonde.wat.veritas.com> <20070225200550.GA497@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 25 Feb 2007 20:55:13 -0500
+Received: from keil-draco.com ([216.193.185.50]:50789 "EHLO mail"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751051AbXBZBzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 20:55:11 -0500
+From: "D. Hazelton" <dhazelton@enter.net>
+To: pavel@ucw.cz
+Subject: Re: GPL vs non-GPL device drivers
+User-Agent: KMail/1.9.5
+References: <MDEHLPKNGKAHNMBLJOLKKEGHBNAC.davids@webmaster.com>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKKEGHBNAC.davids@webmaster.com>
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20070225200550.GA497@tv-sign.ru>
-User-Agent: Mutt/1.5.9i
+Date: Sun, 25 Feb 2007 20:54:50 -0500
+Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200702252054.50396.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 25, 2007 at 11:05:50PM +0300, Oleg Nesterov wrote:
-> On 02/24, Hugh Dickins wrote:
-> >
-> > On Sat, 24 Feb 2007, Oleg Nesterov wrote:
-> > 
-> > > So page_lock_anon_vma() works correctly due to SLAB_DESTROY_BY_RCU even if
-> > > anon_vma_unlink() has already freed anon_vma. In that case we should see
-> > > list_empty(&anon_vma->head), we are safe.
-> > 
-> > (It doesn't affect your argument, but we won't necessarily see list_empty
-> > there: the anon_vma slot may already have got reused for a different
-> > bundle of vmas completely; but its lock remains a lock and its list
-> > remains a list of vmas, and the worst that happens is that
-> > page_referenced_anon or try_to_unmap_anon wanders through an irrelevant
-> > bundle of vmas, looking for a page that cannot be found there.)
-> 
-> Yes, but in that case we are safe, right? We hold the lock, anon_vma can't be
-> freed. But thanks for clarification! Somehow I missed that not only unlock()
-> is unsafe (in theory). If anon_vma's memory was re-used for something else, we
-> can't assume that we will see list_empty(&anon_vma->head).
-> 
-> > > 	static inline void page_lock_anon_vma(struct anon_vma *anon_vma)
-> > 
-> > It might be wiser to call that one page_unlock_anon_vma ;)
-> 
-> Congratulations, you passed the test! Paul didn't :)
+On Sunday 25 February 2007 19:47, David Schwartz wrote:
+<snip>
+>
+> > Similary, there are many ways to write inline functions present in
+> > headers, and no, embedded developer being lazy does not mean they can
+> > copy those functions into their proprietary module.
+>
+> Yes, it does. Have you read Lexmark v. Static Controls? You can take what
+> you need to interoperate.
 
-What is in a name?  ;-)
+This is apples and oranges, to use your idiom. In that case Lexmark had the 
+code in the toner cartridges had to have a specific SHA1 hash in order for 
+the printer to recognize them. Because the only way, then, to produce a 
+functional toner cartridge for the printer was to *copy* that code *exactly*. 
+In the case of a system where this is not the case, then you are free to 
+write your own interface functions. If Lexmark had *not* been using a SHA1 
+hash to validate that the cartridge was produced by them (and that is the 
+real reason - Lexmark wanted to lock users of their printers into buying new 
+toner cartridges from them) the case would have gone against Static Controls. 
+The Lexmark v Static Controls decision applies only to interfaces where there 
+is only, literally, one way to do it. What this means is that, yes, any use 
+of the code in a GPL'd product that could be written in another manner is not 
+covered by the "interoperability standard" that Lexmark v Static Controls 
+describes. (No argument here, people: Lexmark v. Static Controls basically 
+says "Since the only way for this replacement toner cartridge to work was to 
+have the 'Toner Loading Program' exactly copied from one of the cartridges 
+produced by Lexmark doing such is fair use." All application of this 
+precedent to other things must show the exact same thing - namely that the 
+*one* and *only* way for something you have designed/written to fulfill its 
+purpose is to rely on a copy of a copyrighted work.  This ruling *only* 
+applies to making computers, peripherals or parts of those peripherals and 
+the copyrighted item that makes it interoperable.
 
-						Thanx, Paul
+Lexmark v. Static Controls does not give people carte blanche to use 
+interfaces to programs that could be re-implemented by them without causing 
+the output to stop functioning. In the given example the work including the 
+GPL'd header file and using its functions is in violation of the GPL if not 
+released under the GPL but is distributed. Why? Because unless there was some 
+form of lock-in making those functions a requirement for interoperability 
+the "Evil Hacker" could have written and used his own versions and his 
+plugin/program would still have been interoperable.
 
-> > (I'm slightly disgruntled that page_lock_anon_vma takes a struct page *,
-> > but page_unlock_anon_vma no struct page *.  But it would be silly to do
-> > it differently, or mess with the naming: besides, it's a static function
-> > and the prototype guards against error anyway.)
-> 
-> OK. I thought about "unlock_anon_vma", but symmetry is good indeed.
-> 
-> Oleg.
-> 
+DRH
