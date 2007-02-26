@@ -1,110 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030265AbXBZORA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030268AbXBZOWK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030265AbXBZORA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 09:17:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030266AbXBZORA
+	id S1030268AbXBZOWK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 09:22:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030275AbXBZOWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 09:17:00 -0500
-Received: from smtp4-g19.free.fr ([212.27.42.30]:52967 "EHLO smtp4-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030265AbXBZOQ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 09:16:59 -0500
-Message-ID: <45E2EBE4.7080202@free.fr>
-Date: Mon, 26 Feb 2007 15:17:08 +0100
-From: John <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+	Mon, 26 Feb 2007 09:22:09 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:56989 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030268AbXBZOWI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 09:22:08 -0500
+X-Sasl-enc: GRLIZm3URsGXZ7G21VfH4pHzOhLQOmFgTGN79whQfWhY 1172499727
+Date: Mon, 26 Feb 2007 11:21:57 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc1 dims my LCD
+Message-ID: <20070226142157.GA2909@khazad-dum.debian.net>
+References: <Pine.LNX.4.64.0702260154460.10496@twin.jikos.cz> <1172490091.5824.30.camel@localhost.localdomain> <Pine.LNX.4.64.0702261329270.10496@twin.jikos.cz>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: linux-kernel@vger.kernel.org, johnstul@us.ibm.com, mingo@elte.hu,
-       zippel@linux-m68k.org, tglx@timesys.com, akpm@linux-foundation.org,
-       jbohac@suse.cz, linux.kernel@free.fr
-Subject: Re: CLOCK_MONOTONIC datagram timestamps by the kernel
-References: <45E1FFCC.50201@free.fr> <45E2B5E4.7020208@free.fr> <200702261320.57726.ak@suse.de>
-In-Reply-To: <200702261320.57726.ak@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702261329270.10496@twin.jikos.cz>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-
-> John wrote:
+On Mon, 26 Feb 2007, Jiri Kosina wrote:
+> On Mon, 26 Feb 2007, Richard Purdie wrote:
+> > > When I hit the keyboard, the brightness stays low (it's 50% of light 
+> > > or so, so I could read what's on the screen, but it's uncomfortably 
+> > > dim), and I have to manually raise the brightness on the LCD. Quite 
+> > > annoying :) I have bisected this to your commit 
+> > > 994efacdf9a087b52f71e620b58dfa526b0cf928
+> > Which framebuffer driver and backlight driver are you using?
+> > ("ls /sys/class/backlight/" will show which backlight it is)
 > 
->> My app expects a stream of UDP datagrams containing compressed video.
->> These datagrams have been time stamped by the source using a high
->> resolution clock.
+> It's IBM:
+
+Please add me to the CC, then.  I noticed this thread by accident.
+
+> $ ll /sys/class/backlight/
+> drwxr-xr-x 2 root root 0 Feb 26 13:28 ibm
 > 
-> Why do you need another time stamp then?
+> At the time the brightness goes low, there is '0' in 
+> /sys/class/backlight/ibm/actual_brightness and 
+> /sys/class/backlight/ibm/brightness
 
-Source and receiver do not share a common clock. Thus, I have to monitor 
-clock skew. If I simply use the time stamps produced by the source, my 
-buffer will eventually underflow or overflow.
+ibm-acpi does not implement display poweroff, so if a screen-saving function
+on the kernel is trying to use it to shut the display off, it will either
+fail to do anything, or if it ALSO sets brightness to zero, it will just dim
+the display.
 
-As far as I have seen, clock skew is on the order of ±10^-5, i.e. when 
-the source thinks 100000 seconds have elapsed, the receiver thinks 
-100001 seconds have elapsed.
+Richard, would you like a patch to -ENOSYS if a display power management
+event reaches ibm-acpi?
 
->> The video stream is played out in real-time. I buffer several packets,
->> then repeatedly arm a one-shot timer (with TIMER_ABSTIME set) to wait
->> until it's time to send the oldest packet.
->>
->> AFAIU, if I use the CLOCK_REALTIME clock in my app, and if the sysadmin 
->> changes the date, hell will break loose in my app.
-> 
-> Only if your app cannot handle time going backwards.
-
-My app cannot handle time going backwards.
-
-The algorithm looks like:
-
-/* Start transmission, record start date */
-NEXT_DEADLINE = now;
-
-while ( 1 )
-{
-   send(oldest_packet);
-   recv_available_packets();
-   /* compute next deadline */
-   NEXT_DEADLINE += time_to_wait_until_next_packet();
-   sleep_until(NEXT_DEADLINE);
-}
-
-If the clock changes under me, I'm toast.
-
->> I suppose that if I change sock_get_timestamp() in core/sock.c to call 
->> __get_realtime_clock_ts() instead of do_gettimeofday() I'll break 50 
->> billion applications (ping? traceroute?) that expect a struct timeval?
-> 
-> Not that many, but some probably.
-
-Another option would be to change sock_get_timestamp() to call 
-ktime_get_ts() instead of do_gettimeofday() and convert ns to us.
-
-i.e. I still return a struct timeval, but using CLOCK_MONOTONIC.
-
-> Letting the kernel do the time stamping is usually quite useless anyways. 
-> You can as well do it in your application when you receive it. After all
-> you're interested in when you can read the packet in your app, 
-> not when the driver processes it.
-
-I use clock_nanosleep() to sleep until it's time to send the next 
-packet. I check for packets when I wake up. I need the kernel to time 
-stamp the packets because I was sleeping when they reached the system.
-
-I try to do it this way because I read this:
-
-http://rt.wiki.kernel.org/index.php/High_resolution_timers
-
-"Note that (clock_)nanosleep functions do not suffer from this problem 
-as the wakeup function at timer expiry is executed in the context of the 
-high resolution timer interrupt. If an application is not using 
-asynchronous signal handlers, it is recommended to use the 
-clock_nanosleep() function with the TIMER_ABSTIME flag set instead of 
-waiting for the periodic timer signal delivery. The application has to 
-maintain the absolute expiry time for the next interval itself, but this 
-is a lightweight operation of adding and normalizing two struct timespec 
-values. The benefit is significantly lower maximum latencies (~50us) and 
-less OS overhead in general."
-
-Regards.
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
