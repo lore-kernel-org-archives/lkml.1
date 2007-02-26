@@ -1,63 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751244AbXBZKff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030181AbXBZKgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751244AbXBZKff (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 05:35:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbXBZKff
+	id S1030181AbXBZKgp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 05:36:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965085AbXBZKgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 05:35:35 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:34625 "EHLO 2ka.mipt.ru"
+	Mon, 26 Feb 2007 05:36:45 -0500
+Received: from smtp3-g19.free.fr ([212.27.42.29]:45833 "EHLO smtp3-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751243AbXBZKfd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 05:35:33 -0500
-Date: Mon, 26 Feb 2007 13:33:19 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070226103319.GA24284@2ka.mipt.ru>
-References: <20070225182135.GB29821@2ka.mipt.ru> <20070225182230.GA3622@elte.hu> <20070225183743.GD29821@2ka.mipt.ru> <20070225192112.GA15681@elte.hu> <20070225194645.GB1353@2ka.mipt.ru> <20070225195308.GC15681@elte.hu> <Pine.LNX.4.64.0702251232350.6011@alien.or.mcafeemobile.com> <20070226081655.GA25280@elte.hu> <20070226092545.GA4110@2ka.mipt.ru> <20070226095547.GA9485@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <20070226095547.GA9485@elte.hu>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Mon, 26 Feb 2007 13:34:37 +0300 (MSK)
+	id S965062AbXBZKgn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 05:36:43 -0500
+Message-ID: <45E2B837.3060501@ruault.com>
+Date: Mon, 26 Feb 2007 11:36:39 +0100
+From: Charles-Edouard Ruault <ce@ruault.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Joy Latten <latten@austin.ibm.com>
+CC: davem@davemloft.net, herbert@gondor.apana.org.au,
+       linux-kernel@vger.kernel.org, linux-net@vger.kernel.org
+Subject: Re: [BUG] 2.6.20 Oopses in xfrm_audit_log
+References: <200702121744.l1CHiUD2026684@faith.austin.ibm.com>
+In-Reply-To: <200702121744.l1CHiUD2026684@faith.austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 26, 2007 at 10:55:47AM +0100, Ingo Molnar (mingo@elte.hu) wrote:
-> > I will use Ingo's evserver_threadlet server as plong as evserver_epoll 
-> > (with fixed closing) and evserver_kevent.c.
-> 
-> please also try evserver_epoll_threadlet.c that i've attached below - it 
-> uses epoll as the main event mechanism but does threadlets for request 
-> handling.
-> 
-> This is a one step more intelligent threadlet queueing model than 
-> 'thousands of threads' - although obviously epoll alone should do well 
-> too with this trivial workload.
+Joy Latten wrote:
+>> i upgraded to vanilla kernel 2.6.20 and while i was using strongswan 
+>> 2.8.2 to setup an IPSEC VPN i got the following kernel Ooops.
+>> I had successfully established the same tunnel a few times, but key 
+>> renegotiation caused a problem ( both ends did not renegotiate at the 
+>> same time so the tunnel was frozen ), i decided to kill the tunnel and 
+>> start a new one ( using ipsec auto --down tunnel & ipsec auto --up 
+>> tunnel ), while i was doing so, i got the oops.
+>>
+>> BUG: unable to handle kernel NULL pointer dereference at virtual address 
+>> 00000188
+>> printing eip:
+>> c02fb85c
+>> *pde = 00000000
+>> Oops: 0000 [#1]
+>> PREEMPT
+>> Modules linked in: xfrm4_mode_tunnel usblp deflate zlib_deflate twofish 
+>> twofish_common serpent blowfish des cbc ecb blkcipher xcbc sha256 sha1 
+>> crypto_null xfrm4_tunnel tunnel4 ipcomp esp4 ah4 af_key autofs4 asb100 
+>> hwmon_vid hidp rfcomm l2cap bluetooth sunrpc nf_conntrack_netbios_ns 
+>> ipt_LOG xt_limit xt_mark xt_state xt_tcpudp iptable_filter 
+>> ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 xt_MARK 
+>> iptable_mangle ip_tables x_tables binfmt_misc sd_mod ipv6 sg hfsplus 
+>> video button ac lp parport_pc parport floppy nvram usb_storage scsi_mod 
+>> libusual usbhid hid ehci_hcd snd_via82xx snd_ac97_codec ac97_bus 
+>> ohci1394 snd_seq_dummy uhci_hcd ieee1394 snd_seq_oss snd_seq_midi_event 
+>> snd_seq snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd_page_alloc 
+>> snd_mpu401_uart snd_rawmidi snd_seq_device snd via_agp agpgart 
+>> i2c_viapro soundcore eepro100 i2c_core b44 pcspkr mii shpchp usbcore dm_mod
+>> CPU:    0
+>> EIP:    0060:[<c02fb85c>]    Not tainted VLI
+>> EFLAGS: 00010246   (2.6.20 #1)
+>> EIP is at xfrm_audit_log+0x4cc/0x580
+>> eax: ecb71061   ebx: c039d160   ecx: 00000000   edx: 00000021
+>> esi: 000001f4   edi: 00000255   ebp: 00000000   esp: e8cd5a18
+>> ds: 007b   es: 007b   ss: 0068
+>> Process pluto (pid: 27486, ti=e8cd4000 task=d3557070 task.ti=e8cd4000)
+>> Stack: c17d2ea0 c0354bf1 e183f9c0 00000003 c03ac59c e1399800 00000001 
+>> 00000003
+>>       f8d0a450 00000000 00000001 00000286 e8cd5a6c c011506b 00000000 
+>> 00000286
+>>       f73cb8c0 00000246 c17d2ea0 00000000 00000000 f73cb8c0 f8d03c67 
+>> 00000000
+>> Call Trace:
+>> [<c011506b>] __wake_up+0x4b/0x80
+>> [<f8d03c67>] pfkey_broadcast+0x137/0x1b0 [af_key]
+>> [<f8d03e5f>] pfkey_send_policy_notify+0xef/0x1a0 [af_key]
+>> [<c011d90e>] local_bh_enable+0x2e/0xa0
+>> [<c0306107>] xfrm_get_policy+0x2b7/0x2f0
+>> [<c0305e50>] xfrm_get_policy+0x0/0x2f0
+>> [<c0304702>] xfrm_user_rcv_msg+0x102/0x1b0
+>> [<c0304600>] xfrm_user_rcv_msg+0x0/0x1b0
+>> [<c02b3782>] netlink_run_queue+0x82/0x120
+>> [<c03045e8>] xfrm_netlink_rcv+0x28/0x40
+>> [<c02b3d42>] netlink_data_ready+0x12/0x50
+>> [<c02b2931>] netlink_sendskb+0x21/0x40
+>> [<c02b3c50>] netlink_sendmsg+0x230/0x310
+>> [<c02993cd>] sock_aio_write+0x11d/0x130
+>> [<c01d538a>] avc_has_perm+0x5a/0x70
+>> [<c0163ed5>] do_sync_write+0xd5/0x120
+>> [<c012c960>] autoremove_wake_function+0x0/0x50
+>> [<c01648c7>] vfs_write+0x177/0x180
+>> [<c0164ea1>] sys_write+0x41/0x70
+>> [<c0102f14>] syscall_call+0x7/0xb
+>> =======================
+>> Code: 8b 44 24 70 c1 e2 08 c1 e8 08 09 c2 0f b7 c2 89 44 24 08 8b 44 24 
+>> 48 89 04 24 e8 10 eb e3 ff e9 bc fc ff ff 8b 8c 24 c0 00 00 00 <8b> 91 
+>> 88 01 00 00 0f b7 99 82 00 00 00 85 d2 0f 85 64 fc ff ff
+>> EIP: [<c02fb85c>] xfrm_audit_log+0x4cc/0x580 SS:ESP 0068:e8cd5a18
+>>
+>>
+>>     
+>
+> This is similar to another bug reported last month.
+> Here is the patch I sent out then. Please let me know
+> how it goes.
+>
+> Regards,
+> Joy
+>
+> Signed-off-by: Joy Latten <latten@austin.ibm.com>
+>
+>
+> diff -urpN linux-2.6.19.orig/net/xfrm/xfrm_policy.c linux-2.6.19/net/xfrm/xfrm_policy.c
+> --- linux-2.6.19.orig/net/xfrm/xfrm_policy.c	2007-01-02 14:24:14.000000000 -0600
+> +++ linux-2.6.19/net/xfrm/xfrm_policy.c	2007-01-02 14:28:24.000000000 -0600
+> @@ -2003,6 +2003,9 @@ void xfrm_audit_log(uid_t auid, u32 sid,
+>  	if (audit_enabled == 0)
+>  		return;
+>  
+> +	if ((x == NULL) && (xp == NULL))
+> +		return;
+> +
+>  	audit_buf = audit_log_start(current->audit_context, GFP_ATOMIC, type);
+>  	if (audit_buf == NULL)
+>  	return;
+> diff -urpN linux-2.6.19.orig/net/xfrm/xfrm_user.c linux-2.6.19/net/xfrm/xfrm_user.c
+> --- linux-2.6.19.orig/net/xfrm/xfrm_user.c	2007-01-02 14:24:14.000000000 -0600
+> +++ linux-2.6.19/net/xfrm/xfrm_user.c	2007-01-02 14:28:14.000000000 -0600
+> @@ -1268,10 +1268,6 @@ static int xfrm_get_policy(struct sk_buf
+>  		xp = xfrm_policy_bysel_ctx(type, p->dir, &p->sel, tmp.security, delete);
+>  		security_xfrm_policy_free(&tmp);
+>  	}
+> -	if (delete)
+> -		xfrm_audit_log(NETLINK_CB(skb).loginuid, NETLINK_CB(skb).sid,
+> -			       AUDIT_MAC_IPSEC_DELSPD, (xp) ? 1 : 0, xp, NULL);
+> -
+>  	if (xp == NULL)
+>  		return -ENOENT;
+>  
+> @@ -1289,6 +1285,10 @@ static int xfrm_get_policy(struct sk_buf
+>  	} else {
+>  		if ((err = security_xfrm_policy_delete(xp)) != 0)
+>  			goto out;
+> +
+> +		xfrm_audit_log(NETLINK_CB(skb).loginuid, NETLINK_CB(skb).sid,
+> +			       AUDIT_MAC_IPSEC_DELSPD, (xp) ? 1 : 0, xp, NULL);
+> +
+>  		c.data.byid = p->index;
+>  		c.event = nlh->nlmsg_type;
+>  		c.seq = nlh->nlmsg_seq;
+>   
+Joy,
+a quick email to let you know that i got the oops again this morning 
+with a 2.6.20 patched with the above fix.
+I'm going to rebuild a vanilla kernel patched with the patched sent by 
+David Miller in follow up to your previous conversation.
 
-No problem.
-If I will complete setup today before I go climbing (I need to do some 
-paid job too), I will post results here and in my blog (without
-political correctness).
+Here's the dump:
 
-Btw, 'evserver' in the name means 'event server', so you might think
-about changing the name :)
+BUG: unable to handle kernel NULL pointer dereference at virtual address 
+00000188
+ printing eip:
+c02fb85c
+*pde = 00000000
+Oops: 0000 [#1]
+PREEMPT
+Modules linked in: stir4200 irda crc_ccitt ppdev vmnet(P) vmmon(P) loop 
+usblp nls_iso8859_1 nls_cp437 vfat fat xfrm4_mode_tunnel deflate 
+zlib_deflate twofish twofish_common serpent blowfish des cbc ecb 
+blkcipher xcbc sha256 sha1 crypto_null xfrm4_tunnel tunnel4 ipcomp esp4 
+ah4 af_key autofs4 asb100 hwmon_vid hidp rfcomm l2cap bluetooth sunrpc 
+nf_conntrack_netbios_ns ipt_LOG xt_limit xt_mark xt_state xt_tcpudp 
+iptable_filter ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 
+xt_MARK iptable_mangle ip_tables x_tables binfmt_misc ipv6 sd_mod sg 
+hfsplus video button ac lp parport_pc parport floppy nvram usb_storage 
+scsi_mod libusual usbhid hid ehci_hcd snd_via82xx snd_ac97_codec 
+uhci_hcd ac97_bus ohci1394 snd_seq_dummy ieee1394 snd_seq_oss 
+snd_seq_midi_event snd_seq snd_pcm_oss snd_mixer_oss snd_pcm snd_timer 
+snd_page_alloc snd_mpu401_uart snd_rawmidi snd_seq_device snd shpchp 
+i2c_viapro b44 soundcore pcspkr i2c_core eepro100 mii via_agp agpgart 
+usbcore dm_mod
+CPU:    0
+EIP:    0060:[<c02fb85c>]    Tainted: P   M  VLI
+EFLAGS: 00010246   (2.6.20 #1)
+EIP is at xfrm_audit_log+0x4cc/0x580
+eax: c4f3a86b   ebx: c039d160   ecx: 00000000   edx: 00000023
+esi: ffffffff   edi: 00000031   ebp: 00000000   esp: deb71a18
+ds: 007b   es: 007b   ss: 0068
+Process pluto (pid: 3847, ti=deb70000 task=e1b82050 task.ti=deb70000)
+Stack: c17d2e60 c0354bf1 ecce48e0 00000003 c03ac59c e18b2400 00000001 
+00000003
+       f8ce1450 00000000 00000001 00000286 deb71a6c c011506b 00000000 
+00000286
+       efdde780 00000246 c17d2e60 00000000 00000000 efdde780 f8cdac67 
+00000000
+Call Trace:
+ [<c011506b>] __wake_up+0x4b/0x80
+ [<f8cdac67>] pfkey_broadcast+0x137/0x1b0 [af_key]
+ [<f8cdae5f>] pfkey_send_policy_notify+0xef/0x1a0 [af_key]
+ [<c011d90e>] local_bh_enable+0x2e/0xa0
+ [<c0306107>] xfrm_get_policy+0x2b7/0x2f0
+ [<c0305e50>] xfrm_get_policy+0x0/0x2f0
+ [<c0304702>] xfrm_user_rcv_msg+0x102/0x1b0
+ [<c0304600>] xfrm_user_rcv_msg+0x0/0x1b0
+ [<c02b3782>] netlink_run_queue+0x82/0x120
+ [<c03045e8>] xfrm_netlink_rcv+0x28/0x40
+ [<c02b3d42>] netlink_data_ready+0x12/0x50
+ [<c02b2931>] netlink_sendskb+0x21/0x40
+ [<c02b3c50>] netlink_sendmsg+0x230/0x310
+ [<c02993cd>] sock_aio_write+0x11d/0x130
+ [<c01d538a>] avc_has_perm+0x5a/0x70
+ [<c0163ed5>] do_sync_write+0xd5/0x120
+ [<c012c960>] autoremove_wake_function+0x0/0x50
+ [<c01648c7>] vfs_write+0x177/0x180
+ [<c0164ea1>] sys_write+0x41/0x70
+ [<c0102f14>] syscall_call+0x7/0xb
+ =======================
+Code: 8b 44 24 70 c1 e2 08 c1 e8 08 09 c2 0f b7 c2 89 44 24 08 8b 44 24 
+48 89 04 24 e8 10 eb e3 ff e9 bc fc ff ff 8b 8c 24 c0 00 00 00 <8b> 91 
+88 01 00 00 0f b7 99 82 00 00 00 85 d2 0f 85 64 fc ff ff
+EIP: [<c02fb85c>] xfrm_audit_log+0x4cc/0x580 SS:ESP 0068:deb71a18
 
-Stay tuned.
 
-> 	Ingo
 
 -- 
-	Evgeniy Polyakov
+Charles-Edouard Ruault
+GPG key Id E4D2B80C
+
