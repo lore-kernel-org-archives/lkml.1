@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030449AbXBZSyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030455AbXBZS5L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030449AbXBZSyR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 13:54:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030452AbXBZSyR
+	id S1030455AbXBZS5L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 13:57:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030456AbXBZS5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 13:54:17 -0500
-Received: from aun.it.uu.se ([130.238.12.36]:49882 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030449AbXBZSyQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 13:54:16 -0500
-Date: Mon, 26 Feb 2007 19:54:08 +0100 (MET)
-Message-Id: <200702261854.l1QIs8D9013016@alkaid.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: davem@davemloft.net
-Subject: [PATCH 2.6.21-rc1] sparc64: fix CONFIG_PCI_MSI=n compile failure
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+	Mon, 26 Feb 2007 13:57:10 -0500
+Received: from zcars04f.nortel.com ([47.129.242.57]:55647 "EHLO
+	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030455AbXBZS5J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 13:57:09 -0500
+Message-ID: <45E32D61.7060403@nortel.com>
+Date: Mon, 26 Feb 2007 12:56:33 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+CC: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+References: <20070221211355.GA7302@elte.hu> <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com> <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com> <20070222074044.GA4158@elte.hu> <20070222113148.GA3781@2ka.mipt.ru> <Pine.LNX.4.64.0702251428490.12485@woody.linux-foundation.org> <20070226131133.GA11777@elte.hu> <20070226173701.GD22454@2ka.mipt.ru> <1172513950.3280.388.camel@laptopd505.fenrus.org> <20070226183856.GF22454@2ka.mipt.ru>
+In-Reply-To: <20070226183856.GF22454@2ka.mipt.ru>
+Content-Type: text/plain; charset=koi8-r; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Feb 2007 18:56:39.0385 (UTC) FILETIME=[D8D24C90:01C759D7]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.21-rc1 fails to build on sparc64 when CONFIG_PCI_MSI=n:
+Evgeniy Polyakov wrote:
 
-  gcc -Wp,-MD,arch/sparc64/kernel/.irq.o.d  -nostdinc -isystem /home/mikpe/pkgs/linux-sparc64/gcc-4.1.2/lib/gcc/sparc64-unknown-linux-gnu/4.1.2/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Os -m64 -pipe -mno-fpu -mcpu=ultrasparc -mcmodel=medlow -ffixed-g4 -ffixed-g5 -fcall-used-g7 -Wno-sign-compare -Wa,--undeclared-regs -fomit-frame-pointer  -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign -Werror   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(irq)"  -D"KBUILD_MODNAME=KBUILD_STR(irq)" -c -o arch/sparc64/kernel/irq.o arch/sparc64/kernel/irq.c
-cc1: warnings being treated as errors
-arch/sparc64/kernel/irq.c:113: warning: 'virt_irq_free' defined but not used
-make[1]: *** [arch/sparc64/kernel/irq.o] Error 1
-make: *** [arch/sparc64/kernel] Error 2
+> I never ever tried to say _everything_ must be driven by events.
+> IO must be driven, it is a must IMO.
 
-Most other MSI stuff in irq.c is #ifdef CONFIG_PCI_MSI.
-So do the same for virt_irq_free() to fix this problem.
+Do you disagree with Linus' post about the difficulty of treating 
+open(), fstat(), page faults, etc. as events?  Or do you not consider 
+them to be IO?
 
-Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
-
---- linux-2.6.21-rc1/arch/sparc64/kernel/irq.c.~1~	2007-02-26 17:47:54.000000000 +0100
-+++ linux-2.6.21-rc1/arch/sparc64/kernel/irq.c	2007-02-26 18:01:55.000000000 +0100
-@@ -109,6 +109,7 @@ static unsigned char virt_irq_alloc(unsi
- 	return ent;
- }
- 
-+#ifdef CONFIG_PCI_MSI
- static void virt_irq_free(unsigned int virt_irq)
- {
- 	unsigned int real_irq;
-@@ -121,6 +122,7 @@ static void virt_irq_free(unsigned int v
- 
- 	__bucket(real_irq)->virt_irq = 0;
- }
-+#endif
- 
- static unsigned int virt_to_real_irq(unsigned char virt_irq)
- {
+Chris
