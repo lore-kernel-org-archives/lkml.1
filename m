@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161428AbXBZXwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161433AbXBZXzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161428AbXBZXwj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 18:52:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161421AbXBZXwi
+	id S1161433AbXBZXzm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 18:55:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161436AbXBZXzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 18:52:38 -0500
-Received: from gundega.hpl.hp.com ([192.6.19.190]:64923 "EHLO
-	gundega.hpl.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161428AbXBZXwh (ORCPT
+	Mon, 26 Feb 2007 18:55:42 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:36085 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161433AbXBZXzl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 18:52:37 -0500
-Date: Mon, 26 Feb 2007 15:51:54 -0800
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-ia64@vger.kernel.org, Stephane Eranian <eranian@hpl.hp.com>,
-       ak@suse.de, akpm@linux-foundation.org, tony.luck@intel.com
-Subject: debug registers and fork
-Message-ID: <20070226235154.GB19630@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+	Mon, 26 Feb 2007 18:55:41 -0500
+Message-ID: <45E372CA.9020709@zytor.com>
+Date: Mon, 26 Feb 2007 15:52:42 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: a.gruenbacher@computer.org, nathans@sgi.com, bunk@stusta.de,
+       linux-kernel@vger.kernel.org, jmorris@redhat.com, dwmw2@infradead.org
+Subject: Re: include/linux/xattr.h: how much userpace visible?
+References: <20060724085701.B2083275@wobbly.melbourne.sgi.com>	<200607242031.11815.a.gruenbacher@computer.org>	<45E36D39.2030605@zytor.com> <20070226.154308.112620497.davem@davemloft.net>
+In-Reply-To: <20070226.154308.112620497.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+David Miller wrote:
+>>>
+>> However, it would be better if the ABI constants were exported, or at 
+>> least *exportable* (using a __KERNEL_XATTR_MACROS test macro or 
+>> something like that.)
+> 
+> This is the same situation as the socket.h issue we're trying
+> to figure out what to do about.
+> 
+> wrt. the socket.h case I think I'm going to revert the guilty
+> changeset for now until a better scheme is implemented
 
-I have come across an issue with a monitoring using the
-hardware debug registers on ia64/i386/x86-64.
+Indeed it is (as well as <linux/stat.h>).
 
-It seems that the way debug registers are inherited across fork
-differs between ia-64 and i386/x86-64. On ia-64, the debug registers
-are NEVER inherited in the child. The copy_thread() routine clears
-the necessary thread flags to avoid reloading the debug registers in
-the child.
+I believe the use of feature macros is probably the way to go; that way 
+userspace can request subsets, which can vary from libc to libc.
 
-Now, on x86-64, it appears that the TIF_DEBUG flag is inherited via
-setup_thread_stack(). By virtue of dup_task_struct() the debug registers
-get copied into the child task on fork. So the child has active breakpoints,
-unless I am mistaken somewhere.
+There is, of course, the "ABI language" variant, but I don't see that 
+happening unless someone has a lot of time to spend on it.
 
-Given the way the ptrace() interface works, I would tend to
-think that the ia-64 way is the correct one. Any comment?
-
-Furthermore, on i386/x86-64, when switching out from a task with TIF_DEBUG
-enabled to another which does not, it seems we do not clear the debug
-registers (at least dr7) so they become inactive.
-
--- 
--Stephane
+	-hpa
