@@ -1,108 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933785AbXBZHWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933788AbXBZHZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933785AbXBZHWa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 02:22:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964841AbXBZHVs
+	id S933788AbXBZHZS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 02:25:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933793AbXBZHZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 02:21:48 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:57887 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933787AbXBZHVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 02:21:13 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH -mm 3/6] Freezer: Close theoretical race between refrigerator and thaw_tasks
-Date: Mon, 26 Feb 2007 08:06:54 +0100
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Aneesh Kumar <aneesh.kumar@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-References: <200702260800.49603.rjw@sisk.pl>
-In-Reply-To: <200702260800.49603.rjw@sisk.pl>
+	Mon, 26 Feb 2007 02:25:17 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:14578 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933783AbXBZHZP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 02:25:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=mV9WrJbDDIzYA7Icx7W9zYPL3ImrrcY6T5OiUWwR6To5eZCeb+Vf6J3Fl+y4gbJcEt4XgkqAyn/vZes/TpPS1uZS+0fAgfFzn4MqqDfJ3x90AK+T5Z6elXdWXU3mGV2OhcjLDLDETst8M1vz9AhtAt50ww8C2pLiqXErw/K/n9A=
+Message-ID: <84144f020702252325j29da2819i50c99477cce89359@mail.gmail.com>
+Date: Mon, 26 Feb 2007 09:25:13 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [RFC/PATCH] revokeat/frevoke system calls V5
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, hch@lst.de
+In-Reply-To: <20070226003307.6f38d2ee@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702260806.55223.rjw@sisk.pl>
+References: <Pine.LNX.4.64.0701282200450.17167@sbz-30.cs.Helsinki.FI>
+	 <20070226003307.6f38d2ee@lxorguk.ukuu.org.uk>
+X-Google-Sender-Auth: 935ea1a97a43ae39
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi Alan,
 
-If the freezing of tasks fails and a task is preempted in refrigerator() before
-calling frozen_process(), then thaw_tasks() may run before this task is frozen.
-In that case the task will freeze and no one will thaw it.
+On 2/26/07, Alan <alan@lxorguk.ukuu.org.uk> wrote:
+> Whats the status on this, I was suprised to see something so important
+> just go dead ?
 
-To fix this race we can call freezing(current) in refrigerator() along with
-frozen_process(current) under the task_lock() which also should be taken in
-the error path of try_to_freeze_tasks() as well as in thaw_process().  Moreover,
-if thaw_process() additionally clears TIF_FREEZE for tasks that are not frozen,
-we can be sure that all tasks are thawed and there are no pending "freeze"
-requests after thaw_tasks() has run.
+It's not dead. You can find the latest patches here:
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- include/linux/freezer.h |    4 ++++
- kernel/power/process.c  |   12 +++++++++++-
- 2 files changed, 15 insertions(+), 1 deletion(-)
+http://www.cs.helsinki.fi/u/penberg/linux/revoke/patches/
 
-Index: linux-2.6.20-mm2/include/linux/freezer.h
-===================================================================
---- linux-2.6.20-mm2.orig/include/linux/freezer.h
-+++ linux-2.6.20-mm2/include/linux/freezer.h
-@@ -40,11 +40,15 @@ static inline void do_not_freeze(struct 
-  */
- static inline int thaw_process(struct task_struct *p)
- {
-+	task_lock(p);
- 	if (frozen(p)) {
- 		p->flags &= ~PF_FROZEN;
-+		task_unlock(p);
- 		wake_up_process(p);
- 		return 1;
- 	}
-+	clear_tsk_thread_flag(p, TIF_FREEZE);
-+	task_unlock(p);
- 	return 0;
- }
- 
-Index: linux-2.6.20-mm2/kernel/power/process.c
-===================================================================
---- linux-2.6.20-mm2.orig/kernel/power/process.c
-+++ linux-2.6.20-mm2/kernel/power/process.c
-@@ -39,10 +39,18 @@ void refrigerator(void)
- 	/* Hmm, should we be allowed to suspend when there are realtime
- 	   processes around? */
- 	long save;
-+
-+	task_lock(current);
-+	if (freezing(current)) {
-+		frozen_process(current);
-+		task_unlock(current);
-+	} else {
-+		task_unlock(current);
-+		return;
-+	}
- 	save = current->state;
- 	pr_debug("%s entered refrigerator\n", current->comm);
- 
--	frozen_process(current);
- 	spin_lock_irq(&current->sighand->siglock);
- 	recalc_sigpending(); /* We sent fake signal, clean it up */
- 	spin_unlock_irq(&current->sighand->siglock);
-@@ -159,10 +167,12 @@ static unsigned int try_to_freeze_tasks(
- 			if (is_user_space(p) == !freeze_user_space)
- 				continue;
- 
-+			task_lock(p);
- 			if (freezeable(p) && !frozen(p))
- 				printk(KERN_ERR " %s\n", p->comm);
- 
- 			cancel_freezing(p);
-+			task_unlock(p);
- 		} while_each_thread(g, p);
- 		read_unlock(&tasklist_lock);
- 	}
+and user-space tests here:
 
+http://www.cs.helsinki.fi/u/penberg/linux/revoke/utils/
+
+What they are lacking is review so I am not sure how to proceed with
+the patches.
+
+                                 Pekka
