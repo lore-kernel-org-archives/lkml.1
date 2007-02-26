@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751038AbXBZBwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751040AbXBZBxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751038AbXBZBwY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 20:52:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751036AbXBZBwY
+	id S1751040AbXBZBxP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 20:53:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbXBZBxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 20:52:24 -0500
-Received: from pool-71-111-73-6.ptldor.dsl-w.verizon.net ([71.111.73.6]:27960
+	Sun, 25 Feb 2007 20:53:15 -0500
+Received: from pool-71-111-73-6.ptldor.dsl-w.verizon.net ([71.111.73.6]:27964
 	"EHLO IBM-8EC8B5596CA.beaverton.ibm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751029AbXBZBwX (ORCPT
+	by vger.kernel.org with ESMTP id S1751037AbXBZBxO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 20:52:23 -0500
-Date: Sun, 25 Feb 2007 17:52:30 -0800
+	Sun, 25 Feb 2007 20:53:14 -0500
+Date: Sun, 25 Feb 2007 17:53:22 -0800
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: BUG in 2.6.20-rt8
-Message-ID: <20070226015230.GN5049@linux.vnet.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Hugh Dickins <hugh@veritas.com>, dipankar@in.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: PREEMPT_RCU breaks anon_vma locking ?
+Message-ID: <20070226015322.GO5049@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070225050212.GA17258@linux.vnet.ibm.com> <20070225062747.GA13432@elte.hu> <20070224.223744.59470086.davem@davemloft.net>
+References: <20070223212303.GA423@tv-sign.ru> <Pine.LNX.4.64.0702242203080.4370@blonde.wat.veritas.com> <20070225200550.GA497@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070224.223744.59470086.davem@davemloft.net>
+In-Reply-To: <20070225200550.GA497@tv-sign.ru>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 24, 2007 at 10:37:44PM -0800, David Miller wrote:
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Sun, 25 Feb 2007 07:27:47 +0100
+On Sun, Feb 25, 2007 at 11:05:50PM +0300, Oleg Nesterov wrote:
+> On 02/24, Hugh Dickins wrote:
+> >
+> > On Sat, 24 Feb 2007, Oleg Nesterov wrote:
+> > 
+> > > So page_lock_anon_vma() works correctly due to SLAB_DESTROY_BY_RCU even if
+> > > anon_vma_unlink() has already freed anon_vma. In that case we should see
+> > > list_empty(&anon_vma->head), we are safe.
+> > 
+> > (It doesn't affect your argument, but we won't necessarily see list_empty
+> > there: the anon_vma slot may already have got reused for a different
+> > bundle of vmas completely; but its lock remains a lock and its list
+> > remains a list of vmas, and the worst that happens is that
+> > page_referenced_anon or try_to_unmap_anon wanders through an irrelevant
+> > bundle of vmas, looking for a page that cannot be found there.)
 > 
-> > 
-> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > 
-> > > I got the following running stock 2.6.20-rt8 on an 4-CPU 1.8GHz 
-> > > Opteron box.  The machine continued to run a few rounds of kernbench 
-> > > and LTP. Looks a bit scary -- a tasklet was "stolen" from 
-> > > __tasklet_action().
-> > > 
-> > > Thoughts?  In the meantime, kicking it off again to see if it repeats.
-> > 
-> > > BUG: at kernel/softirq.c:559 __tasklet_action()
-> > 
-> > this seems to happen very sporadically. Seems to happen more likely on 
-> > hyperthreading CPUs. It is very likely caused by the 
-> > redesign-tasklet-locking-to-be-sane patch below - which is a quick hack 
-> > of mine from early -rt days. Can you see any obvious bug in it? The 
-> > cmpxchg logic is certainly a bit ... tricky, locking-wise.
+> Yes, but in that case we are safe, right? We hold the lock, anon_vma can't be
+> freed. But thanks for clarification! Somehow I missed that not only unlock()
+> is unsafe (in theory). If anon_vma's memory was re-used for something else, we
+> can't assume that we will see list_empty(&anon_vma->head).
 > 
-> Ingo, please don't use cmpxchg() in generic code, we support several
-> processors that simply cannot do it.
+> > > 	static inline void page_lock_anon_vma(struct anon_vma *anon_vma)
+> > 
+> > It might be wiser to call that one page_unlock_anon_vma ;)
+> 
+> Congratulations, you passed the test! Paul didn't :)
 
-OK, I will bite...
-
-Why doesn't the traditional hash table of locks work here?  Use the
-cache-line address as input to the hash function, take the corresponding
-lock, do the compare-and-exchange by hand, and then release the lock.
-What am I missing here?  Address aliasing do to memory being mapped into
-multiple locations or something?  (In that case, use only the portion
-of the address within the page, right?)
-
-I will agree that cmpxchg() has been abused pretty thoroughly in
-some venues, but it does have legitimate uses.
+What is in a name?  ;-)
 
 						Thanx, Paul
 
-> Instead of saying "it's just something special in -rt for now", take
-> it out now so that what you do eventually push upstream does get
-> tested.
+> > (I'm slightly disgruntled that page_lock_anon_vma takes a struct page *,
+> > but page_unlock_anon_vma no struct page *.  But it would be silly to do
+> > it differently, or mess with the naming: besides, it's a static function
+> > and the prototype guards against error anyway.)
+> 
+> OK. I thought about "unlock_anon_vma", but symmetry is good indeed.
+> 
+> Oleg.
+> 
