@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161408AbXBZXnM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161411AbXBZXns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161408AbXBZXnM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 18:43:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161410AbXBZXnM
+	id S1161411AbXBZXns (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 18:43:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161412AbXBZXns
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 18:43:12 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40601
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1161408AbXBZXnK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 18:43:10 -0500
-Date: Mon, 26 Feb 2007 15:43:08 -0800 (PST)
-Message-Id: <20070226.154308.112620497.davem@davemloft.net>
-To: hpa@zytor.com
-Cc: a.gruenbacher@computer.org, nathans@sgi.com, bunk@stusta.de,
-       linux-kernel@vger.kernel.org, jmorris@redhat.com, dwmw2@infradead.org
-Subject: Re: include/linux/xattr.h: how much userpace visible?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <45E36D39.2030605@zytor.com>
-References: <20060724085701.B2083275@wobbly.melbourne.sgi.com>
-	<200607242031.11815.a.gruenbacher@computer.org>
-	<45E36D39.2030605@zytor.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Mon, 26 Feb 2007 18:43:48 -0500
+Received: from ozlabs.org ([203.10.76.45]:56287 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161411AbXBZXnr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 18:43:47 -0500
+Subject: Re: [-mm patch] LGUEST must depend on NET
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070226222336.GC29575@stusta.de>
+References: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
+	 <20070226222336.GC29575@stusta.de>
+Content-Type: text/plain
+Date: Tue, 27 Feb 2007 10:42:57 +1100
+Message-Id: <1172533377.13541.61.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "H. Peter Anvin" <hpa@zytor.com>
-Date: Mon, 26 Feb 2007 15:28:57 -0800
-
-> Andreas Gruenbacher wrote:
-> > On Monday, 24 July 2006 00:57, Nathan Scott wrote:
-> >> On Sun, Jul 23, 2006 at 08:43:43PM +0200, Adrian Bunk wrote:
-> >>> Hi,
-> >>>
-> >>> how much of include/linux/xattr.h has to be part of the userspace kernel
-> >>> headers?
-> >> None, I think.
-> > 
-> > None, indeed. The attr package comes with it own version of xattr.h that also 
-> > includes definitions of XATTR_CREATE and XATTR_REPLACE.
-> > 
+On Mon, 2007-02-26 at 23:23 +0100, Adrian Bunk wrote:
+> CONFIG_LGUEST=y, CONFIG_NET=n results in the following compile error:
 > 
-> However, it would be better if the ABI constants were exported, or at 
-> least *exportable* (using a __KERNEL_XATTR_MACROS test macro or 
-> something like that.)
+> <--  snip  -->
+> 
+> ...
+>   LD      .tmp_vmlinux1
+> drivers/built-in.o: In function `lguestnet_close':
+> lguest_net.c:(.text+0x3b8de): undefined reference to `kfree_skb'
+> drivers/built-in.o: In function `fill_slot':
+> lguest_net.c:(.text+0x3ba08): undefined reference to `__alloc_skb'
+> drivers/built-in.o: In function `lguestnet_open':
+> lguest_net.c:(.text+0x3bada): undefined reference to `kfree_skb'
+> drivers/built-in.o: In function `lguestnet_start_xmit':
+> lguest_net.c:(.text+0x3bc03): undefined reference to `kfree_skb'
+> drivers/built-in.o: In function `lguestnet_rcv':
+> lguest_net.c:(.text+0x3bc61): undefined reference to `kfree_skb'
+> lguest_net.c:(.text+0x3bc6c): undefined reference to `skb_put'
+> lguest_net.c:(.text+0x3bc76): undefined reference to `eth_type_trans'
+> lguest_net.c:(.text+0x3bc94): undefined reference to `netif_rx'
+> drivers/built-in.o: In function `lguestnet_probe':
+> lguest_net.c:(.text+0x3bcdb): undefined reference to `alloc_etherdev'
+> lguest_net.c:(.text+0x3bcea): undefined reference to `ether_setup'
+> lguest_net.c:(.text+0x3bdc1): undefined reference to `register_netdev'
+> lguest_net.c:(.text+0x3be10): undefined reference to `unregister_netdev'
+> lguest_net.c:(.text+0x3be17): undefined reference to `free_netdev'
+> make[1]: *** [.tmp_vmlinux1] Error 1
+> 
+> <--  snip  -->
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-This is the same situation as the socket.h issue we're trying
-to figure out what to do about.
+Thanks Adrian, good catch!
 
-wrt. the socket.h case I think I'm going to revert the guilty
-changeset for now until a better scheme is implemented
+Rusty.
+
+
