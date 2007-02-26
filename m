@@ -1,89 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030254AbXBZOHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030241AbXBZOI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030254AbXBZOHr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 09:07:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030241AbXBZOHr
+	id S1030241AbXBZOI4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 09:08:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030260AbXBZOI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 09:07:47 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:43306 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030254AbXBZOHq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 09:07:46 -0500
-Date: Mon, 26 Feb 2007 19:43:15 +0530
-From: Suparna Bhattacharya <suparna@in.ibm.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: A quick fio test (was Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3)
-Message-ID: <20070226141315.GA15631@in.ibm.com>
-Reply-To: suparna@in.ibm.com
-References: <20070221211355.GA7302@elte.hu> <20070223125247.GO5737@kernel.dk> <20070223135525.GA31569@in.ibm.com> <20070223145826.GA32465@elte.hu> <20070223151515.GA12960@in.ibm.com> <20070223162508.GA16782@kernel.dk> <20070223171348.GA27838@in.ibm.com> <20070226135736.GF3822@kernel.dk>
+	Mon, 26 Feb 2007 09:08:56 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:55459 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030241AbXBZOIz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 09:08:55 -0500
+Date: Mon, 26 Feb 2007 15:09:09 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: second thoughts about DEPRECATED and OBSOLETE maturity levels
+Message-ID: <20070226140909.GA14131@uranus.ravnborg.org>
+References: <Pine.LNX.4.64.0702251650580.29271@CPE00045a9c397f-CM001225dbafb6>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070226135736.GF3822@kernel.dk>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <Pine.LNX.4.64.0702251650580.29271@CPE00045a9c397f-CM001225dbafb6>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 26, 2007 at 02:57:36PM +0100, Jens Axboe wrote:
+On Sun, Feb 25, 2007 at 05:07:24PM -0500, Robert P. J. Day wrote:
 > 
-> Some more results, using a larger number of processes and io depths. A
-> repeat of the tests from friday, with added depth 20000 for syslet and
-> libaio:
+>   having championed the cause of adding those two code maturity levels
+> to init/Kconfig, i just realized that implementing them as simple
+> dependencies has a *really* annoying shortcoming.
 > 
-> Engine          Depth   Processes       Bw (MiB/sec)
-> ----------------------------------------------------
-> libaio            1         1            602
-> syslet            1         1            759
-> sync              1         1            776
-> libaio           32         1            832
-> syslet           32         1            898
-> libaio        20000         1            581
-> syslet        20000         1            609
+>   in order to display that a kernel config feature is experimental,
+> developers have not only made that feature depend on EXPERIMENTAL, but
+> they've also had to *explicitly* add the trailer "(EXPERIMENTAL)" to
+> the prompt line in the Kconfig file, to make it visually obvious.
 > 
-> syslet still on top. Measuring O_DIRECT reads (of 4kb size) on ramfs
-> with 100 processes each with a depth of 200, reading a per-process
-> private file of 10mb (need to fit in my ram...) 10 times each. IOW,
-> doing 10,000MiB of IO in total:
+>   obviously, it would be *way* nicer if that trailer were produced on
+> the fly for any "EXPERIMENTAL" feature, just as it would be for
+> OBSOLETE or DEPRECATED (or any other maturity levels people can dream
+> up).
 
-But, why ramfs ? Don't we want to exercise the case where O_DIRECT actually
-blocks ? Or am I missing something here ?
+I have envisioned that this tag could be added by Kconfig automatically for
+all symbols that are dependent on EXPERIMENTAL.
+To do so the new option syntax could be extended.
+So we had something like:
+config EXPERIMENTAL
+	bool "Bla bla"
+	option adddisplay=(EXPERIMENTAL)
 
-Regards
-Suparna
+This would cause all symbols selected by EXPERIMENTAL to have
+the string "(EXPERIMENTAL)" added to the prompt when displayed.
 
-> 
-> Engine          Depth   Processes       Bw (MiB/sec)
-> ----------------------------------------------------
-> libaio           200       100            1488
-> syslet           200       100            1714
-> 
-> Results are stable to within approx +/- 10MiB/sec. The syslet case
-> completes a whole second faster than libaio (~6 vs ~7 seconds). Testing
-> was done with fio HEAD eb7c8ae27bc301b77490b3586dd5ccab7c95880a, and it
-> uses the v4 patch series.
-> 
-> Engine          Depth   Processes       Bw (MiB/sec)
-> ----------------------------------------------------
-> libaio            200       100            1488
-> syslet            200       100            1714
-> sync              200       100            1843
-> 
-> -- 
-> Jens Axboe
+Same could be used for DEPRECATED and OBSOLETE.
 
--- 
-Suparna Bhattacharya (suparna@in.ibm.com)
-Linux Technology Center
-IBM Software Lab, India
+I have not looked into the feasability to implement this - other
+Kconfig items needs to be fixed first.
 
+	Sam
