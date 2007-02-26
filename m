@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751243AbXBZKmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030189AbXBZKnE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751243AbXBZKmf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 05:42:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbXBZKmf
+	id S1030189AbXBZKnE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 05:43:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030194AbXBZKnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 05:42:35 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55166 "EHLO mx2.mail.elte.hu"
+	Mon, 26 Feb 2007 05:43:04 -0500
+Received: from comtv.ru ([217.10.32.17]:46510 "EHLO comtv.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751243AbXBZKme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 05:42:34 -0500
-Date: Mon, 26 Feb 2007 11:35:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070226103517.GA17195@elte.hu>
-References: <20070225182230.GA3622@elte.hu> <20070225183743.GD29821@2ka.mipt.ru> <20070225192112.GA15681@elte.hu> <20070225194645.GB1353@2ka.mipt.ru> <20070225195308.GC15681@elte.hu> <Pine.LNX.4.64.0702251232350.6011@alien.or.mcafeemobile.com> <20070226081655.GA25280@elte.hu> <20070226092545.GA4110@2ka.mipt.ru> <20070226095547.GA9485@elte.hu> <20070226103319.GA24284@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070226103319.GA24284@2ka.mipt.ru>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1030189AbXBZKnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 05:43:01 -0500
+X-UCL: actv
+Date: Mon, 26 Feb 2007 13:42:50 +0300 (MSK)
+From: malc <av1474@comtv.ru>
+X-X-Sender: malc@linmac.oyster.ru
+To: Pavel Machek <pavel@ucw.cz>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: CPU load
+In-Reply-To: <20070226092837.GB3790@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.64.0702261338520.2356@linmac.oyster.ru>
+References: <loom.20070212T063225-663@post.gmane.org> <20070212143219.GB5226@ucw.cz>
+ <Pine.LNX.4.64.0702140059390.727@home.oyster.ru> <200702140908.44934.kernel@kolivas.org>
+ <Pine.LNX.4.64.0702141023000.672@home.oyster.ru> <20070214204515.GA26153@elf.ucw.cz>
+ <Pine.LNX.4.64.0702251334200.17241@linmac.oyster.ru> <20070226092837.GB3790@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 26 Feb 2007, Pavel Machek wrote:
 
-* Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+> Hi!
+>
+>> [..snip..]
+>>
+>>>> The current situation ought to be documented. Better yet some flag
+>>>> can
+>>>
+>>> It probably _is_ documented, somewhere :-). If you find nice place
+>>> where to document it (top manpage?) go ahead with the patch.
+>>
+>>
+>> How about this:
+>
+> Looks okay to me. (You should probably add your name to it, and I do
+> not like html-like markup... plus please don't add extra spaces
+> between words)...
 
-> Btw, 'evserver' in the name means 'event server', so you might think 
-> about changing the name :)
+Thanks. html-like markup was added to clearly mark the boundaries of
+the message and the text. Extra-spaces courtesy emacs' C-0 M-q.
 
-why should i change the name? The 'outer' loop, which feeds requests to 
-threadlets, is an epoll based event loop. The inner loop, where all the 
-application complexity resides, is a threadlet. This is the "more 
-intelligent queueing" model i talked about in my reply to David 4 days 
-ago:
+>
+> You probably want to send it to akpm?
 
-  http://lkml.org/lkml/2007/2/22/180
-  http://lkml.org/lkml/2007/2/22/191
+Any pointers on how to do that and perhaps preferred submission
+format?
 
-	Ingo
+[..snip..]
+
+-- 
+vale
