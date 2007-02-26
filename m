@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751221AbXBZLc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751247AbXBZLlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751221AbXBZLc2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 06:32:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbXBZLc2
+	id S1751247AbXBZLlk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 06:41:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbXBZLlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 06:32:28 -0500
-Received: from mail.screens.ru ([213.234.233.54]:56289 "EHLO mail.screens.ru"
+	Mon, 26 Feb 2007 06:41:40 -0500
+Received: from tim.rpsys.net ([194.106.48.114]:54072 "EHLO tim.rpsys.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751221AbXBZLc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 06:32:27 -0500
-Date: Mon, 26 Feb 2007 14:32:20 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@osdl.org>, Pavel Machek <pavel@ucw.cz>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Aneesh Kumar <aneesh.kumar@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Subject: Re: [PATCH -mm 2/6] Freezer: Fix memory ordering in refrigerator
-Message-ID: <20070226113220.GC164@tv-sign.ru>
-References: <200702260800.49603.rjw@sisk.pl> <200702260805.14870.rjw@sisk.pl>
+	id S1751247AbXBZLlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 06:41:39 -0500
+Subject: Re: 2.6.21-rc1 dims my LCD
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0702260154460.10496@twin.jikos.cz>
+References: <Pine.LNX.4.64.0702260154460.10496@twin.jikos.cz>
+Content-Type: text/plain
+Date: Mon, 26 Feb 2007 11:41:30 +0000
+Message-Id: <1172490091.5824.30.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200702260805.14870.rjw@sisk.pl>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/26, Rafael J. Wysocki wrote:
+Hi,
+
+On Mon, 2007-02-26 at 01:59 +0100, Jiri Kosina wrote:
+> 2.6.21-rc1 on my ibm t42p dims a LCD after some time (I guess it happens 
+> at the time the console should normally be blanked). 
+> 
+> When I hit the keyboard, the brightness stays low (it's 50% of light or 
+> so, so I could read what's on the screen, but it's uncomfortably dim), and 
+> I have to manually raise the brightness on the LCD. Quite annoying :)
 >
-> From: Oleg Nesterov <oleg@tv-sign.ru>
-> 
-> refrigerator() can miss a wakeup, "wait event" loop needs a proper memory
-> ordering.
-> 
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Acked-by: Pavel Machek <pavel@ucw.cz>
-> ---
->  kernel/power/process.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6.20-mm2/kernel/power/process.c
-> ===================================================================
-> --- linux-2.6.20-mm2.orig/kernel/power/process.c
-> +++ linux-2.6.20-mm2/kernel/power/process.c
-> @@ -47,8 +47,10 @@ void refrigerator(void)
->  	recalc_sigpending(); /* We sent fake signal, clean it up */
->  	spin_unlock_irq(&current->sighand->siglock);
->  
-> -	while (frozen(current)) {
-> -		current->state = TASK_UNINTERRUPTIBLE;
-> +	for (;;) {
-> +		set_current_state(TASK_UNINTERRUPTIBLE);
-> +		if (!frozen(current))
-> +			break;
->  		schedule();
->  	}
->  	pr_debug("%s left refrigerator\n", current->comm);
+> I have bisected this to your commit 
+> 994efacdf9a087b52f71e620b58dfa526b0cf928
 
-This one is already in -mm tree.
+Which framebuffer driver and backlight driver are you using?
+("ls /sys/class/backlight/" will show which backlight it is)
 
-Oleg.
+Is the machine in active use when it dims or at idle and does the screen
+blank at the same time it dims? If so, does the keypress unblank the
+screen (but not change the brightness)? 
+
+Also, is this on a console or under something like X? 
+
+Thanks,
+
+Richard
 
