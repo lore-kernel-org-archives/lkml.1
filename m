@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030201AbXBZKwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932421AbXBZLTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030201AbXBZKwb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 05:52:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030205AbXBZKwV
+	id S932421AbXBZLTb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 06:19:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932733AbXBZLTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 05:52:21 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59258 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030199AbXBZKwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 05:52:00 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC][PATCH 2/3] Freezer: Take kernel_execve into consideration
-Date: Mon, 26 Feb 2007 11:49:09 +0100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Pavel Machek <pavel@ucw.cz>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Aneesh Kumar <aneesh.kumar@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>
-References: <200702261139.59130.rjw@sisk.pl>
-In-Reply-To: <200702261139.59130.rjw@sisk.pl>
+	Mon, 26 Feb 2007 06:19:31 -0500
+Received: from mail.gmx.net ([213.165.64.20]:43533 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932421AbXBZLTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 06:19:30 -0500
+X-Provags-ID: V01U2FsdGVkX18+4MxjH38+cAlQmZTnr5n4vRqP5rw7A7V7WA6FdV
+	cc0A==
+Date: Mon, 26 Feb 2007 12:19:28 +0100 (CET)
+From: Johannes Schindelin <Johannes.Schindelin@gmx.de>
+X-X-Sender: gene099@wbgn013.biozentrum.uni-wuerzburg.de
+To: Marco Costalba <mcostalba@gmail.com>
+cc: Martin Langhoff <martin.langhoff@gmail.com>,
+       Git Mailing List <git@vger.kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] qgit-1.5.5
+In-Reply-To: <e5bfff550702252219m352c03ady2d810e051bd62a37@mail.gmail.com>
+Message-ID: <Pine.LNX.4.63.0702261218430.22628@wbgn013.biozentrum.uni-wuerzburg.de>
+References: <e5bfff550702250958n6cddc5b5lec4badf1f7fc8231@mail.gmail.com> 
+ <46a038f90702251623h5944a085m514418cb5f530e7f@mail.gmail.com>
+ <e5bfff550702252219m352c03ady2d810e051bd62a37@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702261149.10579.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi,
 
-Kernel threads can become userland processes by calling kernel_execve().  In
-particular, this may happen right after try_to_freeze_tasks(FREEZER_USER_SPACE)
-has returned, so try_to_freeze_tasks() needs to take userspace processes
-into consideration even if it is called with FREEZER_KERNEL_THREADS.
+On Mon, 26 Feb 2007, Marco Costalba wrote:
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/process.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> On 2/26/07, Martin Langhoff <martin.langhoff@gmail.com> wrote:
+> > On 2/26/07, Marco Costalba <mcostalba@gmail.com> wrote:
+> > > P.S: There is also a Qt4 version (works under Windows) downloadable
+> > > from git://repo.or.cz/qgit4.git  it is a little bit experimental
+> > > tough.
+> > 
+> > Is the QT4 Windows port working against the MinGW port of GIT?
+> > 
+> 
+> Yes, Qt4Windows does not need cygwin at all and is compiled itself with
+> MinGW.
 
-Index: linux-2.6.20-mm2/kernel/power/process.c
-===================================================================
---- linux-2.6.20-mm2.orig/kernel/power/process.c	2007-02-26 08:41:18.000000000 +0100
-+++ linux-2.6.20-mm2/kernel/power/process.c	2007-02-26 08:41:57.000000000 +0100
-@@ -117,7 +117,7 @@ static unsigned int try_to_freeze_tasks(
- 				cancel_freezing(p);
- 				continue;
- 			}
--			if (is_user_space(p) == !freeze_user_space)
-+			if (freeze_user_space && !is_user_space(p))
- 				continue;
- 
- 			freeze_process(p);
-@@ -144,7 +144,7 @@ static unsigned int try_to_freeze_tasks(
- 				TIMEOUT / HZ, todo);
- 		read_lock(&tasklist_lock);
- 		do_each_thread(g, p) {
--			if (is_user_space(p) == !freeze_user_space)
-+			if (freeze_user_space && !is_user_space(p))
- 				continue;
- 
- 			task_lock(p);
+I think what Martin was getting at is if you can use the MinGW port of 
+_Git_, not if Qt4Windows or qgit needs cygwin.
+
+Ciao,
+Dscho
 
