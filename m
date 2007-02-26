@@ -1,90 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030378AbXBZS0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030403AbXBZS07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030378AbXBZS0c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 13:26:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030397AbXBZS0b
+	id S1030403AbXBZS07 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 13:26:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030407AbXBZS07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 13:26:31 -0500
-Received: from avexch1.qlogic.com ([198.70.193.115]:6301 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030378AbXBZS0Y (ORCPT
+	Mon, 26 Feb 2007 13:26:59 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:54028 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030400AbXBZS0q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 13:26:24 -0500
-Date: Mon, 26 Feb 2007 10:26:17 -0800
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: Andre Noll <maan@systemlinux.org>
-Cc: Andrew Vasquez <linux-driver@qlogic.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@SteelEye.com>
-Subject: Re: qla2xxx BUG: workqueue leaked lock or atomic
-Message-ID: <20070226182617.GC9968@andrew-vasquezs-computer.local>
-References: <20070226133153.GC4095@skl-net.de>
+	Mon, 26 Feb 2007 13:26:46 -0500
+X-Sasl-enc: w+OWY547hLPHNZJGiHgKcLF1uUWN/wrrtGQVXtaRwZXO 1172514376
+Date: Mon, 26 Feb 2007 15:26:04 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: Jiri Kosina <jikos@jikos.cz>, linux-kernel@vger.kernel.org
+Subject: [PATCH] ACPI: ibm-acpi: improve backlight power handling (v2)
+Message-ID: <20070226182604.GJ2909@khazad-dum.debian.net>
+References: <Pine.LNX.4.64.0702260154460.10496@twin.jikos.cz> <1172490091.5824.30.camel@localhost.localdomain> <Pine.LNX.4.64.0702261329270.10496@twin.jikos.cz> <20070226142157.GA2909@khazad-dum.debian.net> <1172501357.5824.91.camel@localhost.localdomain> <20070226152035.GB2909@khazad-dum.debian.net> <20070226161203.GD2909@khazad-dum.debian.net> <1172507907.5824.105.camel@localhost.localdomain> <20070226181202.GH2909@khazad-dum.debian.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070226133153.GC4095@skl-net.de>
-Organization: QLogic Corporation
+In-Reply-To: <20070226181202.GH2909@khazad-dum.debian.net>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
 User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 26 Feb 2007 18:26:23.0932 (UTC) FILETIME=[9EBA27C0:01C759D3]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Feb 2007, Andre Noll wrote:
+Improve the backlight code to emulate as much as possible the power
+management events, as we are unable to really power on or power off the
+backlight.
 
-> On linux-2.6.20.1, we're seeing hard lockups with 2 raid systems
-> connected to a qla2xxx card and used as a single volume via lvm.
-> The system seems to lock up only if data gets written to both raid
-> systems at the same time.
-> 
-> On a standard kernel nothing makes it to the log, the system just
-> freezes. So we tried a lockdep kernel which reports two BUGs during
-> boot, see below.
-> 
-> Could this be related to our problem?
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Richard Purdie <rpurdie@rpsys.net>
+---
 
-Before we proceed further, could you retrieve the latest firmware
-release for 24xx type HBAs:
+ Waiting ACK from Richard Purdie <rpurdie@rpsys.net>
 
-> [   64.151096] QLogic Fibre Channel HBA Driver
-> [   64.151405] ACPI: PCI Interrupt 0000:05:08.0[A] -> GSI 32 (level, low) -> IRQ 32
-> [   64.151821] qla2xxx 0000:05:08.0: Found an ISP2422, irq 32, iobase 0xffffc20000006000
-> [   64.152231] qla2xxx 0000:05:08.0: Configuring PCI space...
-> [   64.152498] qla2xxx 0000:05:08.0: Configure NVRAM parameters...
-> [   64.159088] qla2xxx 0000:05:08.0: Verifying loaded RISC code...
-> [   74.169623] qla2xxx 0000:05:08.0: Firmware image unavailable.
-> [   74.169737] qla2xxx 0000:05:08.0: Firmware images can be retrieved from: ftp://ftp.qlogic.com/outgoing/linux/firmware/.
-> [   74.169902] qla2xxx 0000:05:08.0: Attempting to load (potentially outdated) firmware from flash.
-> [   74.760935] qla2xxx 0000:05:08.0: Allocated (64 KB) for EFT...
-> [   74.761186] qla2xxx 0000:05:08.0: Allocated (1413 KB) for firmware dump...
-> [   74.776988] scsi0 : qla2xxx
-> [   74.961451] qla2xxx 0000:05:08.0: 
-> [   74.961452]  QLogic Fibre Channel HBA Driver: 8.01.07-k4
-> [   74.961453]   QLogic HP AE369-60001 - QLA2340
-> [   74.961454]   ISP2422: PCI-X Mode 1 (133 MHz) @ 0000:05:08.0 hdma+, host#=0, fw=4.00.70 [IP] 
+ drivers/acpi/ibm_acpi.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-You are loading some stale firmware that's left over on the card --
-I'm not even sure what 4.00.70 is, as the latest release firmware is
-4.00.27.  You can retrieve the image here:
+diff --git a/drivers/acpi/ibm_acpi.c b/drivers/acpi/ibm_acpi.c
+index e7309a6..3690136 100644
+--- a/drivers/acpi/ibm_acpi.c
++++ b/drivers/acpi/ibm_acpi.c
+@@ -86,6 +86,7 @@
+ 
+ #include <linux/proc_fs.h>
+ #include <linux/backlight.h>
++#include <linux/fb.h>
+ #include <asm/uaccess.h>
+ 
+ #include <linux/dmi.h>
+@@ -1707,7 +1708,10 @@ static int brightness_write(char *buf)
+ 
+ static int brightness_update_status(struct backlight_device *bd)
+ {
+-	return brightness_set(bd->props.brightness);
++	return brightness_set(
++		(bd->props.fb_blank == FB_BLANK_UNBLANK &&
++		 bd->props.power == FB_BLANK_UNBLANK) ?
++				bd->props.brightness : 0);
+ }
+ 
+ static struct backlight_ops ibm_backlight_data = {
+-- 
+1.5.0.1
 
-	ftp://ftp.qlogic.com/outgoing/linux/firmware/ql2400_fw.bin
-
-Let's start there... before we move on to this:
-
-> [   75.778656] BUG: at kernel/lockdep.c:1860 trace_hardirqs_on()
-> [   75.778771] 
-> [   75.778772] Call Trace:
-> [   75.778967]  <IRQ>  [<ffffffff8024b877>] trace_hardirqs_on+0xd7/0x180
-> [   75.779154]  [<ffffffff8052bc1b>] _spin_unlock_irq+0x2b/0x40
-> [   75.779271]  [<ffffffff804605d7>] qla2x00_process_completed_request+0x137/0x1d0
-> [   75.779424]  [<ffffffff804606f2>] qla2x00_status_entry+0x82/0xa40
-> [   75.779541]  [<ffffffff8024b17f>] __lock_acquire+0xcdf/0xd90
-> [   75.779657]  [<ffffffff8052bcb2>] _spin_unlock_irqrestore+0x42/0x60
-> [   75.779775]  [<ffffffff8046228e>] qla24xx_intr_handler+0x4e/0x2b0
-> [   75.779892]  [<ffffffff804613e1>] qla24xx_process_response_queue+0xc1/0x1c0
-> [   75.780012]  [<ffffffff80462414>] qla24xx_intr_handler+0x1d4/0x2b0
-> [   75.780131]  [<ffffffff8025e950>] handle_IRQ_event+0x20/0x60
-
-Hmm....
-
-Regards,
-Andrew Vasquez
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
