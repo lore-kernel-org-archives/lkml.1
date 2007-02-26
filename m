@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161290AbXBZWTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161282AbXBZWXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161290AbXBZWTu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 17:19:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161293AbXBZWTu
+	id S1161282AbXBZWXg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 17:23:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161286AbXBZWXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 17:19:50 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47621 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161290AbXBZWTs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 17:19:48 -0500
-Date: Mon, 26 Feb 2007 23:00:01 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       george@mvista.com
-Subject: 2.6.21-rc1: beeps get longer after suspend
-Message-ID: <20070226220001.GA2200@elf.ucw.cz>
+	Mon, 26 Feb 2007 17:23:36 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:45105 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161282AbXBZWXg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 17:23:36 -0500
+Date: Mon, 26 Feb 2007 23:23:36 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org
+Subject: [-mm patch] LGUEST must depend on NET
+Message-ID: <20070226222336.GC29575@stusta.de>
+References: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+CONFIG_LGUEST=y, CONFIG_NET=n results in the following compile error:
 
-Yes, it is strange, and it is also regression from 2.6.20.
+<--  snip  -->
 
-pavel@amd:/data/l/linux$ cat .config | grep HZ
-# CONFIG_NO_HZ is not set
-CONFIG_HZ_100=y
-# CONFIG_HZ_250 is not set
-# CONFIG_HZ_300 is not set
-# CONFIG_HZ_1000 is not set
-CONFIG_HZ=100
-pavel@amd:/data/l/linux$ cat .config | grep HIRES
-pavel@amd:/data/l/linux$ cat .config | grep HIGH
-# CONFIG_HIGH_RES_TIMERS is not set
-# CONFIG_NOHIGHMEM is not set
-CONFIG_HIGHMEM4G=y
-# CONFIG_HIGHMEM64G is not set
-CONFIG_HIGHMEM=y
-# CONFIG_HIGHPTE is not set
-CONFIG_DEBUG_HIGHMEM=y
-pavel@amd:/data/l/linux$
+...
+  LD      .tmp_vmlinux1
+drivers/built-in.o: In function `lguestnet_close':
+lguest_net.c:(.text+0x3b8de): undefined reference to `kfree_skb'
+drivers/built-in.o: In function `fill_slot':
+lguest_net.c:(.text+0x3ba08): undefined reference to `__alloc_skb'
+drivers/built-in.o: In function `lguestnet_open':
+lguest_net.c:(.text+0x3bada): undefined reference to `kfree_skb'
+drivers/built-in.o: In function `lguestnet_start_xmit':
+lguest_net.c:(.text+0x3bc03): undefined reference to `kfree_skb'
+drivers/built-in.o: In function `lguestnet_rcv':
+lguest_net.c:(.text+0x3bc61): undefined reference to `kfree_skb'
+lguest_net.c:(.text+0x3bc6c): undefined reference to `skb_put'
+lguest_net.c:(.text+0x3bc76): undefined reference to `eth_type_trans'
+lguest_net.c:(.text+0x3bc94): undefined reference to `netif_rx'
+drivers/built-in.o: In function `lguestnet_probe':
+lguest_net.c:(.text+0x3bcdb): undefined reference to `alloc_etherdev'
+lguest_net.c:(.text+0x3bcea): undefined reference to `ether_setup'
+lguest_net.c:(.text+0x3bdc1): undefined reference to `register_netdev'
+lguest_net.c:(.text+0x3be10): undefined reference to `unregister_netdev'
+lguest_net.c:(.text+0x3be17): undefined reference to `free_netdev'
+make[1]: *** [.tmp_vmlinux1] Error 1
 
-pavel@amd:~$ date; sleep 1; date
-Mon Feb 26 22:56:23 CET 2007
-Mon Feb 26 22:56:24 CET 2007
-pavel@amd:~$
+<--  snip  -->
 
-....seems to work well...
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-Also, we need timer subsystem entry into MAINTAINERS file :-)
+---
+--- linux-2.6.20-mm2/arch/i386/Kconfig.old	2007-02-26 22:14:48.000000000 +0100
++++ linux-2.6.20-mm2/arch/i386/Kconfig	2007-02-26 22:15:51.000000000 +0100
+@@ -258,7 +258,7 @@
+ 
+ config LGUEST
+ 	tristate "Linux hypervisor example code"
+-	depends on X86 && PARAVIRT && EXPERIMENTAL && !X86_PAE
++	depends on X86 && PARAVIRT && NET && EXPERIMENTAL && !X86_PAE
+ 	select LGUEST_GUEST
+ 	select HVC_DRIVER
+ 	---help---
 
-									Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
