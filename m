@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965085AbXBZMfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965241AbXBZMjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965085AbXBZMfx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 07:35:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965235AbXBZMfx
+	id S965241AbXBZMjS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 07:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965243AbXBZMjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 07:35:53 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:60701 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965085AbXBZMfw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 07:35:52 -0500
-Date: Mon, 26 Feb 2007 13:35:48 +0100 (CET)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Richard Purdie <rpurdie@rpsys.net>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc1 dims my LCD
-In-Reply-To: <1172490091.5824.30.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0702261329270.10496@twin.jikos.cz>
-References: <Pine.LNX.4.64.0702260154460.10496@twin.jikos.cz>
- <1172490091.5824.30.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 26 Feb 2007 07:39:17 -0500
+Received: from nz-out-0506.google.com ([64.233.162.227]:42676 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965242AbXBZMjQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 07:39:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=cfwcjZwiFdbbkR20+PBbzeZdjbC+Eh70TYAv3Jay/7yZA8LgZiclt/cfc1ilXYa64H+gUYJSR6EtFxeitbMxM8EXNbts5Bo0hx51X4M8DaMffIMWiZ9anTCBI9pyJ5mLVY8cpKFJQEA3doiw0CuQBqr0IsgSNbdRahTuIlvrWtw=
+Subject: Re: 2.6.21-rc1: framebuffer/console boot failure
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Andrew Nelless <andrew@nelless.net>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+In-Reply-To: <34578.86.7.220.119.1172401665.squirrel@wmbeta.mxes.net>
+References: <35472.86.7.220.119.1172237750.squirrel@wmbeta.mxes.net>
+	 <20070224030950.074f88d4.akpm@linux-foundation.org>
+	 <33525.86.7.220.119.1172358010.squirrel@wmbeta.mxes.net>
+	 <1172359843.4415.8.camel@daplas>
+	 <34578.86.7.220.119.1172401665.squirrel@wmbeta.mxes.net>
+Content-Type: text/plain
+Date: Mon, 26 Feb 2007 20:41:37 +0800
+Message-Id: <1172493697.20842.6.camel@daplas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Feb 2007, Richard Purdie wrote:
+On Sun, 2007-02-25 at 11:07 +0000, Andrew Nelless wrote:
+> On Sat, February 24, 2007 11:30 pm, Antonino A. Daplas wrote:
+> >
+> > How about booting with just vga=normal?
+> >
+> >
+> > Tony
+> >
+> 
+> That seems to work too. I've rebooted about 20 times in a row
+> and it hasn't done it again yet. Why would this only occur
+> at higher modes?
+> 
+> In the 2.6.20 dmesg log it reads "Nvidia board detected.
+> Ignoring ACPI timer override." whereas in 2.6.21-rc1 it doesn't.
+> Could this be the culprit?
+> 
 
-> > When I hit the keyboard, the brightness stays low (it's 50% of light 
-> > or so, so I could read what's on the screen, but it's uncomfortably 
-> > dim), and I have to manually raise the brightness on the LCD. Quite 
-> > annoying :) I have bisected this to your commit 
-> > 994efacdf9a087b52f71e620b58dfa526b0cf928
-> Which framebuffer driver and backlight driver are you using?
-> ("ls /sys/class/backlight/" will show which backlight it is)
+I don't know, probably the ACPI code can now probably detect the
+presence or absence of the HPET timer.
 
-It's IBM:
+Can you remove CONFIG_FB_VESA support from your kernel config but boot
+as if you have vesafb (ie with vga=<VESA mode number>). Your machine may
+boot to completion but you will have a blank screen.  But you should be
+able to have an output in netconsole and you can start X. I wanted to
+know if the lockup is related to the framebuffer.
 
-$ ll /sys/class/backlight/
-drwxr-xr-x 2 root root 0 Feb 26 13:28 ibm
+Tony
 
-At the time the brightness goes low, there is '0' in 
-/sys/class/backlight/ibm/actual_brightness and 
-/sys/class/backlight/ibm/brightness
 
-Echoing '7' into /sys/class/backlight/ibm/brightness gets the brightness 
-back again to normal.
-
-> Is the machine in active use when it dims or at idle and does the screen 
-> blank at the same time it dims? If so, does the keypress unblank the 
-> screen (but not change the brightness)?
-
-It doesn't blank at the time it dims - it just decreases brightness. I 
-will do some more tests, but it seemed on a first sight that it happens 
-only when the machine is idle.
-
-> Also, is this on a console or under something like X? 
-
-I observed it only on console, but didn't experiment with it too much yet.
-
--- 
-Jiri Kosina
