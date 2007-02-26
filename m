@@ -1,69 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161015AbXBZUbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161016AbXBZUbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161015AbXBZUbA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 15:31:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbXBZUbA
+	id S1161016AbXBZUbd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 15:31:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161022AbXBZUbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 15:31:00 -0500
-Received: from smtp01.cdmon.com ([86.109.99.230]:60863 "EHLO smtp01.cdmon.com"
+	Mon, 26 Feb 2007 15:31:33 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39317 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751335AbXBZUa7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 15:30:59 -0500
-Date: Mon, 26 Feb 2007 21:32:23 +0100
-From: DervishD <lkml@dervishd.net>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Linux-kernel <linux-kernel@vger.kernel.org>,
-       Linux Fbdev development list 
-	<linux-fbdev-devel@lists.sourceforge.net>
-Subject: Re: tdfx framebuffer garbles display in 2.6.19.5
-Message-ID: <20070226203223.GA161@DervishD>
-Mail-Followup-To: "Antonino A. Daplas" <adaplas@gmail.com>,
-	Linux-kernel <linux-kernel@vger.kernel.org>,
-	Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-References: <20070226144744.GA3615@DervishD> <1172503471.20842.14.camel@daplas> <20070226171334.GB13496@DervishD> <1172510654.7101.11.camel@daplas>
+	id S1161016AbXBZUbc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 15:31:32 -0500
+Date: Mon, 26 Feb 2007 21:23:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: threadlets as 'naive pool of threads', epoll, some measurements
+Message-ID: <20070226202338.GA23357@elte.hu>
+References: <20070225192112.GA15681@elte.hu> <20070225194645.GB1353@2ka.mipt.ru> <20070225195308.GC15681@elte.hu> <Pine.LNX.4.64.0702251232350.6011@alien.or.mcafeemobile.com> <20070225213420.GA10195@elte.hu> <20070226104507.GA18470@elte.hu> <20070226114858.GA28836@elte.hu> <20070226122521.GA19039@2ka.mipt.ru> <20070226125054.GA6997@elte.hu> <20070226143201.GB31629@2ka.mipt.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1172510654.7101.11.camel@daplas>
+In-Reply-To: <20070226143201.GB31629@2ka.mipt.ru>
 User-Agent: Mutt/1.4.2.2i
-Organization: DervishD
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    Hi Antonino :)
 
- * Antonino A. Daplas <adaplas@gmail.com> dixit:
-> On Mon, 2007-02-26 at 18:13 +0100, DervishD wrote:
-> > > Try fbset -a -vyres 600 first and let us know of the result.
-> > 
-> > After doing this, I no longer can garble the display (before, just a
-> > "ls -lR /" was enough to do it, in fact, any big output garbled the
-> > display). The only problem with this solution is that the scroll
-> > speed has decreased a bit. In fact, the scroll speed is affected by
-> > the vyres parameter a lot! The highter the vyres, the faster the
-> > scroll, and I cannot reproduce the problem anymore after changing it
-> > once!
+* Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+
+> > no. Please read the evserver_threadlet.c code. There's no kevent in 
+> > there. There's no epoll() in there. All that you can see there is 
+> > the natural behavior of pure threadlets. And it's not a workload /I/ 
+> > picked for threadlets - it is a workload, filesize, parallelism 
+> > level and request handling function /you/ picked for 
+> > "event-servers".
 > 
-> Display panning is what makes scrolling fast which is the default
-> scroll method if vyres > yres.  Unfortunately, tdfxfb occasionally
-> have problems with this method, the higher the vyres, the greater the
-> likelihood of screen corruption.
+> I know that there is no kevents there, that would be really strange if 
+> you would test it in your environment after all that empty kevent 
+> releases.
 
-    Then I'll try with 4096 and will diminish the number until the
-display is stable.
+i havent got around figuring out the last v2.6.20 based kevent release, 
+and your git tree is v2.6.21-rc1 based. Do you have some easy URL for me 
+to fetch the last v2.6.20 kevent release?
 
-> That's why tdfxb limits the vyres to a maximum of 4096. As to why the
-> problem disappeared just by changing this parameter, that I too don't
-> know.
+> Enough, you say micro-thread design is superior - ok, that is your 
+> point.
 
-    Probably setting it back to 4096 will make the problem reappear.
-Right now I cannot test, but I'll make some experiments.
+note that threadlets are not 'micro-threads'. A threadlet is more of an 
+'optional thread' (as i mentioned it earlier): whenever it does anything 
+that makes it distinct from a plain function call, it's converted into a 
+separate thread by the kernel. Otherwise it behaves like a plain 
+function call and returns.
 
-    Thanks a lot!
-
-    Raúl Núñez de Arenas Coronado
-
--- 
-Linux Registered User 88736 | http://www.dervishd.net
-It's my PC and I'll cry if I want to... RAmen!
+	Ingo
