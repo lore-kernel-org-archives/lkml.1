@@ -1,72 +1,368 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161282AbXBZWXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161286AbXBZWZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161282AbXBZWXg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 17:23:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161286AbXBZWXg
+	id S1161286AbXBZWZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 17:25:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161287AbXBZWZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 17:23:36 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:45105 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161282AbXBZWXg (ORCPT
+	Mon, 26 Feb 2007 17:25:26 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:56843 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161286AbXBZWZZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 17:23:36 -0500
-Date: Mon, 26 Feb 2007 23:23:36 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org
-Subject: [-mm patch] LGUEST must depend on NET
-Message-ID: <20070226222336.GC29575@stusta.de>
-References: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 26 Feb 2007 17:25:25 -0500
+Date: Mon, 26 Feb 2007 14:22:03 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>
+Subject: [PATCH] scripts: kernel-doc whitespace cleanup
+Message-Id: <20070226142203.a61aedee.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CONFIG_LGUEST=y, CONFIG_NET=n results in the following compile error:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-<--  snip  -->
+Whitespace cleanup only:  convert some series of spaces to tabs.
 
-...
-  LD      .tmp_vmlinux1
-drivers/built-in.o: In function `lguestnet_close':
-lguest_net.c:(.text+0x3b8de): undefined reference to `kfree_skb'
-drivers/built-in.o: In function `fill_slot':
-lguest_net.c:(.text+0x3ba08): undefined reference to `__alloc_skb'
-drivers/built-in.o: In function `lguestnet_open':
-lguest_net.c:(.text+0x3bada): undefined reference to `kfree_skb'
-drivers/built-in.o: In function `lguestnet_start_xmit':
-lguest_net.c:(.text+0x3bc03): undefined reference to `kfree_skb'
-drivers/built-in.o: In function `lguestnet_rcv':
-lguest_net.c:(.text+0x3bc61): undefined reference to `kfree_skb'
-lguest_net.c:(.text+0x3bc6c): undefined reference to `skb_put'
-lguest_net.c:(.text+0x3bc76): undefined reference to `eth_type_trans'
-lguest_net.c:(.text+0x3bc94): undefined reference to `netif_rx'
-drivers/built-in.o: In function `lguestnet_probe':
-lguest_net.c:(.text+0x3bcdb): undefined reference to `alloc_etherdev'
-lguest_net.c:(.text+0x3bcea): undefined reference to `ether_setup'
-lguest_net.c:(.text+0x3bdc1): undefined reference to `register_netdev'
-lguest_net.c:(.text+0x3be10): undefined reference to `unregister_netdev'
-lguest_net.c:(.text+0x3be17): undefined reference to `free_netdev'
-make[1]: *** [.tmp_vmlinux1] Error 1
-
-<--  snip  -->
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
---- linux-2.6.20-mm2/arch/i386/Kconfig.old	2007-02-26 22:14:48.000000000 +0100
-+++ linux-2.6.20-mm2/arch/i386/Kconfig	2007-02-26 22:15:51.000000000 +0100
-@@ -258,7 +258,7 @@
- 
- config LGUEST
- 	tristate "Linux hypervisor example code"
--	depends on X86 && PARAVIRT && EXPERIMENTAL && !X86_PAE
-+	depends on X86 && PARAVIRT && NET && EXPERIMENTAL && !X86_PAE
- 	select LGUEST_GUEST
- 	select HVC_DRIVER
- 	---help---
+ scripts/kernel-doc |   96 ++++++++++++++++++++++++++---------------------------
+ 1 file changed, 48 insertions(+), 48 deletions(-)
 
+--- linux-2621-rc1.orig/scripts/kernel-doc
++++ linux-2621-rc1/scripts/kernel-doc
+@@ -381,10 +381,10 @@ sub output_highlight {
+     eval $dohighlight;
+     die $@ if $@;
+     foreach $line (split "\n", $contents) {
+-      if ($line eq ""){
++	if ($line eq ""){
+ 	    print $lineprefix, $blankline;
+ 	} else {
+-            $line =~ s/\\\\\\/\&/g;
++	    $line =~ s/\\\\\\/\&/g;
+ 	    print $lineprefix, $line;
+ 	}
+ 	print "\n";
+@@ -414,7 +414,7 @@ sub output_enum_html(%) {
+     print "<b>enum ".$args{'enum'}."</b> {<br>\n";
+     $count = 0;
+     foreach $parameter (@{$args{'parameterlist'}}) {
+-        print " <b>".$parameter."</b>";
++	print " <b>".$parameter."</b>";
+ 	if ($count != $#{$args{'parameterlist'}}) {
+ 	    $count++;
+ 	    print ",\n";
+@@ -462,7 +462,7 @@ sub output_struct_html(%) {
+ 	my $parameter_name = $parameter;
+ 	$parameter_name =~ s/\[.*//;
+ 
+-        ($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
++	($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
+ 	$type = $args{'parametertypes'}{$parameter};
+ 	if ($type =~ m/([^\(]*\(\*)\s*\)\s*\(([^\)]*)\)/) {
+ 	    # pointer-to-function
+@@ -483,7 +483,7 @@ sub output_struct_html(%) {
+ 	my $parameter_name = $parameter;
+ 	$parameter_name =~ s/\[.*//;
+ 
+-        ($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
++	($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
+ 	print "<dt><b>".$parameter."</b>\n";
+ 	print "<dd>";
+ 	output_highlight($args{'parameterdescs'}{$parameter_name});
+@@ -525,7 +525,7 @@ sub output_function_html(%) {
+ 	my $parameter_name = $parameter;
+ 	$parameter_name =~ s/\[.*//;
+ 
+-        ($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
++	($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
+ 	print "<dt><b>".$parameter."</b>\n";
+ 	print "<dd>";
+ 	output_highlight($args{'parameterdescs'}{$parameter_name});
+@@ -691,7 +691,7 @@ sub output_struct_xml(%) {
+ 	$parameter_name =~ s/\[.*//;
+ 
+ 	defined($args{'parameterdescs'}{$parameter_name}) || next;
+-        ($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
++	($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
+ 	$type = $args{'parametertypes'}{$parameter};
+ 	if ($type =~ m/([^\(]*\(\*)\s*\)\s*\(([^\)]*)\)/) {
+ 	    # pointer-to-function
+@@ -767,11 +767,11 @@ sub output_enum_xml(%) {
+     print "enum ".$args{'enum'}." {\n";
+     $count = 0;
+     foreach $parameter (@{$args{'parameterlist'}}) {
+-        print "  $parameter";
+-        if ($count != $#{$args{'parameterlist'}}) {
++	print "  $parameter";
++	if ($count != $#{$args{'parameterlist'}}) {
+ 	    $count++;
+ 	    print ",";
+-        }
++	}
+ 	print "\n";
+     }
+     print "};";
+@@ -1007,7 +1007,7 @@ sub output_enum_man(%) {
+     print "enum ".$args{'enum'}." {\n";
+     $count = 0;
+     foreach my $parameter (@{$args{'parameterlist'}}) {
+-        print ".br\n.BI \"    $parameter\"\n";
++	print ".br\n.BI \"    $parameter\"\n";
+ 	if ($count == $#{$args{'parameterlist'}}) {
+ 	    print "\n};\n";
+ 	    last;
+@@ -1054,7 +1054,7 @@ sub output_struct_man(%) {
+ 	my $parameter_name = $parameter;
+ 	$parameter_name =~ s/\[.*//;
+ 
+-        ($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
++	($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
+ 	$type = $args{'parametertypes'}{$parameter};
+ 	if ($type =~ m/([^\(]*\(\*)\s*\)\s*\(([^\)]*)\)/) {
+ 	    # pointer-to-function
+@@ -1077,7 +1077,7 @@ sub output_struct_man(%) {
+ 	my $parameter_name = $parameter;
+ 	$parameter_name =~ s/\[.*//;
+ 
+-        ($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
++	($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
+ 	print ".IP \"".$parameter."\" 12\n";
+ 	output_highlight($args{'parameterdescs'}{$parameter_name});
+     }
+@@ -1187,7 +1187,7 @@ sub output_enum_text(%) {
+     print "enum ".$args{'enum'}." {\n";
+     $count = 0;
+     foreach $parameter (@{$args{'parameterlist'}}) {
+-        print "\t$parameter";
++	print "\t$parameter";
+ 	if ($count != $#{$args{'parameterlist'}}) {
+ 	    $count++;
+ 	    print ",";
+@@ -1232,7 +1232,7 @@ sub output_struct_text(%) {
+ 	my $parameter_name = $parameter;
+ 	$parameter_name =~ s/\[.*//;
+ 
+-        ($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
++	($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
+ 	$type = $args{'parametertypes'}{$parameter};
+ 	if ($type =~ m/([^\(]*\(\*)\s*\)\s*\(([^\)]*)\)/) {
+ 	    # pointer-to-function
+@@ -1252,7 +1252,7 @@ sub output_struct_text(%) {
+ 	my $parameter_name = $parameter;
+ 	$parameter_name =~ s/\[.*//;
+ 
+-        ($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
++	($args{'parameterdescs'}{$parameter_name} ne $undescribed) || next;
+ 	print "$parameter\n\t";
+ 	print $args{'parameterdescs'}{$parameter_name}."\n";
+     }
+@@ -1284,7 +1284,7 @@ sub output_declaration {
+ 	( $function_only == 1 && defined($function_table{$name})) ||
+ 	( $function_only == 2 && !defined($function_table{$name})))
+     {
+-        &$func(@_);
++	&$func(@_);
+ 	$section_counter++;
+     }
+ }
+@@ -1317,8 +1317,8 @@ sub dump_struct($$) {
+     my $file = shift;
+ 
+     if ($x =~/(struct|union)\s+(\w+)\s*{(.*)}/) {
+-        $declaration_name = $2;
+-        my $members = $3;
++	$declaration_name = $2;
++	my $members = $3;
+ 
+ 	# ignore embedded structs or unions
+ 	$members =~ s/{.*?}//g;
+@@ -1345,7 +1345,7 @@ sub dump_struct($$) {
+ 			   });
+     }
+     else {
+-        print STDERR "Error(${file}:$.): Cannot parse struct or union!\n";
++	print STDERR "Error(${file}:$.): Cannot parse struct or union!\n";
+ 	++$errors;
+     }
+ }
+@@ -1356,15 +1356,15 @@ sub dump_enum($$) {
+ 
+     $x =~ s@/\*.*?\*/@@gos;	# strip comments.
+     if ($x =~ /enum\s+(\w+)\s*{(.*)}/) {
+-        $declaration_name = $1;
+-        my $members = $2;
++	$declaration_name = $1;
++	my $members = $2;
+ 
+ 	foreach my $arg (split ',', $members) {
+ 	    $arg =~ s/^\s*(\w+).*/$1/;
+ 	    push @parameterlist, $arg;
+ 	    if (!$parameterdescs{$arg}) {
+-	        $parameterdescs{$arg} = $undescribed;
+-	        print STDERR "Warning(${file}:$.): Enum value '$arg' ".
++		$parameterdescs{$arg} = $undescribed;
++		print STDERR "Warning(${file}:$.): Enum value '$arg' ".
+ 		    "not described in enum '$declaration_name'\n";
+ 	    }
+ 
+@@ -1382,7 +1382,7 @@ sub dump_enum($$) {
+ 			   });
+     }
+     else {
+-        print STDERR "Error(${file}:$.): Cannot parse enum!\n";
++	print STDERR "Error(${file}:$.): Cannot parse enum!\n";
+ 	++$errors;
+     }
+ }
+@@ -1393,12 +1393,12 @@ sub dump_typedef($$) {
+ 
+     $x =~ s@/\*.*?\*/@@gos;	# strip comments.
+     while (($x =~ /\(*.\)\s*;$/) || ($x =~ /\[*.\]\s*;$/)) {
+-        $x =~ s/\(*.\)\s*;$/;/;
++	$x =~ s/\(*.\)\s*;$/;/;
+ 	$x =~ s/\[*.\]\s*;$/;/;
+     }
+ 
+     if ($x =~ /typedef.*\s+(\w+)\s*;/) {
+-        $declaration_name = $1;
++	$declaration_name = $1;
+ 
+ 	output_declaration($declaration_name,
+ 			   'typedef',
+@@ -1410,7 +1410,7 @@ sub dump_typedef($$) {
+ 			   });
+     }
+     else {
+-        print STDERR "Error(${file}:$.): Cannot parse typedef!\n";
++	print STDERR "Error(${file}:$.): Cannot parse typedef!\n";
+ 	++$errors;
+     }
+ }
+@@ -1424,14 +1424,14 @@ sub create_parameterlist($$$) {
+ 
+     # temporarily replace commas inside function pointer definition
+     while ($args =~ /(\([^\),]+),/) {
+-        $args =~ s/(\([^\),]+),/$1#/g;
++	$args =~ s/(\([^\),]+),/$1#/g;
+     }
+ 
+     foreach my $arg (split($splitter, $args)) {
+ 	# strip comments
+ 	$arg =~ s/\/\*.*\*\///;
+-        # strip leading/trailing spaces
+-        $arg =~ s/^\s*//;
++	# strip leading/trailing spaces
++	$arg =~ s/^\s*//;
+ 	$arg =~ s/\s*$//;
+ 	$arg =~ s/\s+/ /;
+ 
+@@ -1514,15 +1514,15 @@ sub push_parameter($$$) {
+ 	    $parameterdescs{$param_name} = $undescribed;
+ 
+ 	    if (($type eq 'function') || ($type eq 'enum')) {
+-	        print STDERR "Warning(${file}:$.): Function parameter ".
++		print STDERR "Warning(${file}:$.): Function parameter ".
+ 		    "or member '$param' not " .
+ 		    "described in '$declaration_name'\n";
+ 	    }
+ 	    print STDERR "Warning(${file}:$.):".
+-	                 " No description found for parameter '$param'\n";
++			 " No description found for parameter '$param'\n";
+ 	    ++$warnings;
+-        }
+-        }
++	}
++	}
+ 
+ 	push @parameterlist, $param;
+ 	$parametertypes{$param} = $type;
+@@ -1664,10 +1664,10 @@ sub process_state3_function($$) {
+ 	# do nothing
+     }
+     elsif ($x =~ /([^\{]*)/) {
+-        $prototype .= $1;
++	$prototype .= $1;
+     }
+     if (($x =~ /\{/) || ($x =~ /\#define/) || ($x =~ /;/)) {
+-        $prototype =~ s@/\*.*?\*/@@gos;	# strip comments.
++	$prototype =~ s@/\*.*?\*/@@gos;	# strip comments.
+ 	$prototype =~ s@[\r\n]+@ @gos; # strip newlines/cr's.
+ 	$prototype =~ s@^\s+@@gos; # strip leading spaces
+ 	dump_function($prototype,$file);
+@@ -1688,17 +1688,17 @@ sub process_state3_type($$) {
+     }
+ 
+     while (1) {
+-        if ( $x =~ /([^{};]*)([{};])(.*)/ ) {
++	if ( $x =~ /([^{};]*)([{};])(.*)/ ) {
+ 	    $prototype .= $1 . $2;
+ 	    ($2 eq '{') && $brcount++;
+ 	    ($2 eq '}') && $brcount--;
+ 	    if (($2 eq ';') && ($brcount == 0)) {
+-	        dump_declaration($prototype,$file);
++		dump_declaration($prototype,$file);
+ 		reset_state();
+-	        last;
++		last;
+ 	    }
+ 	    $x = $3;
+-        } else {
++	} else {
+ 	    $prototype .= $x;
+ 	    last;
+ 	}
+@@ -1756,7 +1756,7 @@ sub process_file($) {
+ 		} else {
+ 			$section = $1;
+ 		}
+-            }
++	    }
+ 	    elsif (/$doc_decl/o) {
+ 		$identifier = $1;
+ 		if (/\s*([\w\s]+?)\s*-/) {
+@@ -1849,13 +1849,13 @@ sub process_file($) {
+ 	    }
+ 	} elsif ($state == 3) {	# scanning for function '{' (end of prototype)
+ 	    if ($decl_type eq 'function') {
+-	        process_state3_function($_, $file);
++		process_state3_function($_, $file);
+ 	    } else {
+-	        process_state3_type($_, $file);
++		process_state3_type($_, $file);
+ 	    }
+ 	} elsif ($state == 4) {
+ 		# Documentation block
+-	        if (/$doc_block/) {
++		if (/$doc_block/) {
+ 			dump_section($section, $contents);
+ 			output_intro({'sectionlist' => \@sectionlist,
+ 				      'sections' => \%sections });
+@@ -1873,7 +1873,7 @@ sub process_file($) {
+ 			} else {
+ 				$section = $1;
+ 			}
+-                }
++		}
+ 		elsif (/$doc_end/)
+ 		{
+ 			dump_section($section, $contents);
+@@ -1900,8 +1900,8 @@ sub process_file($) {
+ 			{
+ 				$contents .= $1 . "\n";
+ 			}
+-        	}
+-          }
++		}
++	}
+     }
+     if ($initial_section_counter == $section_counter) {
+ 	print STDERR "Warning(${file}): no structured comments found\n";
