@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932338AbXBYX6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932367AbXBZAAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932338AbXBYX6v (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 18:58:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932765AbXBYX6v
+	id S932367AbXBZAAZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 19:00:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933701AbXBZAAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 18:58:51 -0500
-Received: from marmot.shef.ac.uk ([143.167.1.4]:50903 "EHLO marmot.shef.ac.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932338AbXBYX6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 18:58:51 -0500
-Date: Sun, 25 Feb 2007 23:58:48 +0000 (GMT)
-From: "J.J.Green" <j.j.green@sheffield.ac.uk>
-X-X-Sender: jjg@parallax.ddns.shef.ac.uk
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: sparc64 / bbc_i2c.c
-In-Reply-To: <20070225044754.1d849a8d.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0702252352310.32309@parallax.ddns.shef.ac.uk>
-References: <1171978032.18442.11.camel@lax.shef.ac.uk>
- <20070225044754.1d849a8d.akpm@linux-foundation.org>
+	Sun, 25 Feb 2007 19:00:24 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:44245 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932367AbXBZAAY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 19:00:24 -0500
+Date: Mon, 26 Feb 2007 01:00:23 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Greg KH <greg@kroah.com>
+Cc: "S.??a??lar Onur" <caglar@pardus.org.tr>, "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
+       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Dave Jones <davej@redhat.com>,
+       akpm@linux-foundation.org, Chuck Wolber <chuckw@quantumlinux.com>,
+       stable@kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 00/18] 2.6.18-stable review
+Message-ID: <20070226000023.GH29575@stusta.de>
+References: <20070221014927.GA3684@kroah.com> <200702211355.05539.caglar@pardus.org.tr> <20070221173445.GA16071@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-S0phie-Scan: no
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070221173445.GA16071@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew
+On Wed, Feb 21, 2007 at 09:34:45AM -0800, Greg KH wrote:
+> On Wed, Feb 21, 2007 at 01:55:04PM +0200, S.??a??lar Onur wrote:
+> > 21 ??ub 2007 ??ar tarihinde, Greg KH ??unlar?? yazm????t??: 
+> > > Responses should be made by Friday February 23 00:00 UTC.  Anything
+> > > received after that time might be too late.
+> > 
+> > We have still some CVEish patches in our package which maybe you want to 
+> > consider adding into -stable.
+> > 
+> > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-4814
+> > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-5749
+> > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-5753
+> > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-5823
+> > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-6053
+> > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-6054
+> > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-6333
+> > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-0006
+> 
+> Do you have a pointer to the patches for these fixes anywhere?
+> 
+> And are you sure they are all for 2.6.18?  The first one above is for
+> the 2.4 kernel tree :)
 
-> The code around there looks relatively unbuggy to me.  Removing that
-> remove_wait_queue() would be very bad - it would cause later stack
-> corruption.
->
-> msleep_interruptible() certainly shouldn't consume CPU like that.  Do we
-> know where the CPU time is being spent?  The output of:
->
-> readprofile -r
-> sleep 10
-> readprofile -n -v -m /boot/System.map | sort -n -k 3 | tail -40
->
-> would tell us.
+Fixed in 2.6.19.2 and 2.6.18.8 (the latter contains a
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>  ;-) ).
 
-As was mentioned in another reply, this message by
-Joerg Friedrich
+> thanks,
+> 
+> greg k-h
 
-   http://lists.debian.org/debian-sparc/2007/02/msg00045.html
+cu
+Adrian
 
-gives a possible explanantion of where the time is going.
-I applied the patch to the debian kernel sources for 2.6.18,
-it applied cleanly and fixed the problem.
-
-I have the upatched kernel in /boot so I can run the tests
-you mentioned fairly easily -- please let me know if you'd
-still like me to do that.
-
-Jim
 -- 
-J.J. Green, Dept. Applied Mathematics, Hicks Bld.,
-University of Sheffield, UK.   +44 (0114) 222 3742
-http://pdfb.wiredworkplace.net/pub/jjg
 
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
