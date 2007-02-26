@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030395AbXBZSNp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030391AbXBZSTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030395AbXBZSNp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 13:13:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030397AbXBZSNp
+	id S1030391AbXBZSTy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 13:19:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030397AbXBZSTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 13:13:45 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:57224 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030395AbXBZSNn (ORCPT
+	Mon, 26 Feb 2007 13:19:54 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:43406 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030391AbXBZSTx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 13:13:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=qokY9BMCojabmsxDdZARkaVJTUc8s2pueC265WAVPyPP/5CfPJyBXF1inBZOewBYvFOCAZl3UoqcDMcGi7W0H0ivJ9aPP+0ZEiabaBBl3tP75gRjbm9kMMyRLSiZiXJHwPC8tRuKba4mqPf0QAckHAjuESpxuP/r7Al88wbRwhs=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [git patches] more IDE updates
-Date: Mon, 26 Feb 2007 19:19:12 +0100
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200702170325.02337.bzolnier@gmail.com> <45D9C0DD.6070500@ru.mvista.com> <45E31D0E.6070906@ru.mvista.com>
-In-Reply-To: <45E31D0E.6070906@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 26 Feb 2007 13:19:53 -0500
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+From: Arjan van de Ven <arjan@infradead.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20070226173701.GD22454@2ka.mipt.ru>
+References: <20070221211355.GA7302@elte.hu>
+	 <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
+	 <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com>
+	 <20070222074044.GA4158@elte.hu> <20070222113148.GA3781@2ka.mipt.ru>
+	 <Pine.LNX.4.64.0702251428490.12485@woody.linux-foundation.org>
+	 <20070226131133.GA11777@elte.hu>  <20070226173701.GD22454@2ka.mipt.ru>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Mon, 26 Feb 2007 10:19:03 -0800
+Message-Id: <1172513950.3280.388.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702261919.12944.bzolnier@gmail.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-02-26 at 20:37 +0300, Evgeniy Polyakov wrote:
 
-On Monday 26 February 2007, Sergei Shtylyov wrote:
-> Hello, I wrote:
-> 
-> >>> Contains: IRQ-ack fix for ICH chipsets (Albert Lee), ide-floppy 
-> >>> unformatted
-> >>> media fix (Alan Cox), more fixes for IDE PCI drivers (Sergei Shtylyov),
-> >>> new driver for Toshiba Cell Reference Board (Kou Ishizaki <kou.ishizaki
-> >>> at toshiba.co.jp>) and a bunch of rather obvious 
-> >>> cleanups/improvements (me).
-> 
-> >>> There are still some bugfix patches in my tree which should go into 
-> >>> 2.6.21
-> >>> but since they are quite fresh and there have already been a lot of IDE
-> >>> changes since the merge window was opened I will wait for -rc1 to push
-> >>> them upstream.
-> 
-> >>> [ Andrew, IDE quilt tree has already been updated wrt to this update ]
-> 
-> >>    Which quilt tree do you mean? I've noticed that in 
-> >> http://kernel.org/pub/linux/kernel/people/bart/pata-2.6/ the series 
-> >> file itself hasn't been updated, so this tree appears broken currently.
-> 
-> >    Begging your pardon, it's all browser caching. :-<
-> 
->    Now it's *actually* borken since rtying to read 
-> delkin_cb-pci_module_init-to-pci_register_driver.patch gets you "403 Forbidden"...
+> I tend to agree.
+> Yes, some loads require event driven model, other can be done using
+> threads.
 
-Doh, wrong permission (600 instead of 644) - I've fixed this once already but
-only in the public tree and not in my private mirror so during last re-sync it
-got broken again.   I corrected this in both trees this time :) but it will
-take some time for the change to propagate to kernel.org mirrors.
+event driven model is really complex though. For event driven to work
+well you basically can't tolerate blocking calls at all ...
+open() blocks on files. read() may block on metadata reads (say indirect
+blockgroups) not just on datareads etc etc. It gets really hairy really
+quick that way.
 
-[ Thankfully this patch is the last one in the series. ]
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
 
-Thanks,
-Bart
