@@ -1,76 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030247AbXBZN7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030262AbXBZOA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030247AbXBZN7l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 08:59:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030246AbXBZN7l
+	id S1030262AbXBZOA0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 09:00:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030254AbXBZOA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 08:59:41 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:41449 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030247AbXBZN7j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 08:59:39 -0500
-Date: Mon, 26 Feb 2007 14:57:36 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Suparna Bhattacharya <suparna@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: A quick fio test (was Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3)
-Message-ID: <20070226135736.GF3822@kernel.dk>
-References: <20070221211355.GA7302@elte.hu> <20070223125247.GO5737@kernel.dk> <20070223135525.GA31569@in.ibm.com> <20070223145826.GA32465@elte.hu> <20070223151515.GA12960@in.ibm.com> <20070223162508.GA16782@kernel.dk> <20070223171348.GA27838@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 26 Feb 2007 09:00:26 -0500
+Received: from systemlinux.org ([83.151.29.59]:37297 "EHLO m18s25.vlinux.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030246AbXBZOAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 09:00:24 -0500
+X-Greylist: delayed 1688 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 Feb 2007 09:00:23 EST
+Date: Mon, 26 Feb 2007 14:31:53 +0100
+From: Andre Noll <maan@systemlinux.org>
+To: Andrew Vasquez <linux-driver@qlogic.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@SteelEye.com>
+Subject: qla2xxx BUG: workqueue leaked lock or atomic
+Message-ID: <20070226133153.GC4095@skl-net.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="WplhKdTI2c8ulnbP"
 Content-Disposition: inline
-In-Reply-To: <20070223171348.GA27838@in.ibm.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Some more results, using a larger number of processes and io depths. A
-repeat of the tests from friday, with added depth 20000 for syslet and
-libaio:
+--WplhKdTI2c8ulnbP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Engine          Depth   Processes       Bw (MiB/sec)
-----------------------------------------------------
-libaio            1         1            602
-syslet            1         1            759
-sync              1         1            776
-libaio           32         1            832
-syslet           32         1            898
-libaio        20000         1            581
-syslet        20000         1            609
+Hi
 
-syslet still on top. Measuring O_DIRECT reads (of 4kb size) on ramfs
-with 100 processes each with a depth of 200, reading a per-process
-private file of 10mb (need to fit in my ram...) 10 times each. IOW,
-doing 10,000MiB of IO in total:
+On linux-2.6.20.1, we're seeing hard lockups with 2 raid systems
+connected to a qla2xxx card and used as a single volume via lvm.
+The system seems to lock up only if data gets written to both raid
+systems at the same time.
 
-Engine          Depth   Processes       Bw (MiB/sec)
-----------------------------------------------------
-libaio           200       100            1488
-syslet           200       100            1714
+On a standard kernel nothing makes it to the log, the system just
+freezes. So we tried a lockdep kernel which reports two BUGs during
+boot, see below.
 
-Results are stable to within approx +/- 10MiB/sec. The syslet case
-completes a whole second faster than libaio (~6 vs ~7 seconds). Testing
-was done with fio HEAD eb7c8ae27bc301b77490b3586dd5ccab7c95880a, and it
-uses the v4 patch series.
+Could this be related to our problem?
 
-Engine          Depth   Processes       Bw (MiB/sec)
-----------------------------------------------------
-libaio            200       100            1488
-syslet            200       100            1714
-sync              200       100            1843
+Thanks
+Andre
 
--- 
-Jens Axboe
 
+[   64.150773] Loading iSCSI transport class v2.0-724.
+[   64.151096] QLogic Fibre Channel HBA Driver
+[   64.151405] ACPI: PCI Interrupt 0000:05:08.0[A] -> GSI 32 (level, low) -=
+> IRQ 32
+[   64.151821] qla2xxx 0000:05:08.0: Found an ISP2422, irq 32, iobase 0xfff=
+fc20000006000
+[   64.152231] qla2xxx 0000:05:08.0: Configuring PCI space...
+[   64.152498] qla2xxx 0000:05:08.0: Configure NVRAM parameters...
+[   64.159088] qla2xxx 0000:05:08.0: Verifying loaded RISC code...
+[   74.169623] qla2xxx 0000:05:08.0: Firmware image unavailable.
+[   74.169737] qla2xxx 0000:05:08.0: Firmware images can be retrieved from:=
+ ftp://ftp.qlogic.com/outgoing/linux/firmware/.
+[   74.169902] qla2xxx 0000:05:08.0: Attempting to load (potentially outdat=
+ed) firmware from flash.
+[   74.760935] qla2xxx 0000:05:08.0: Allocated (64 KB) for EFT...
+[   74.761186] qla2xxx 0000:05:08.0: Allocated (1413 KB) for firmware dump.=
+=2E.
+[   74.776988] scsi0 : qla2xxx
+[   74.961451] qla2xxx 0000:05:08.0:=20
+[   74.961452]  QLogic Fibre Channel HBA Driver: 8.01.07-k4
+[   74.961453]   QLogic HP AE369-60001 - QLA2340
+[   74.961454]   ISP2422: PCI-X Mode 1 (133 MHz) @ 0000:05:08.0 hdma+, host=
+#=3D0, fw=3D4.00.70 [IP]=20
+[   74.961970] ACPI: PCI Interrupt 0000:05:08.1[B] -> GSI 33 (level, low) -=
+> IRQ 33
+[   74.962296] qla2xxx 0000:05:08.1: Found an ISP2422, irq 33, iobase 0xfff=
+fc20000172000
+[   74.962662] qla2xxx 0000:05:08.1: Configuring PCI space...
+[   74.962914] qla2xxx 0000:05:08.1: Configure NVRAM parameters...
+[   74.969494] qla2xxx 0000:05:08.1: Verifying loaded RISC code...
+[   75.353426] qla2xxx 0000:05:08.0: LIP reset occured (f7f7).
+[   75.385670] qla2xxx 0000:05:08.0: LIP occured (f7f7).
+[   75.388282] qla2xxx 0000:05:08.0: LOOP UP detected (2 Gbps).
+[   75.778656] BUG: at kernel/lockdep.c:1860 trace_hardirqs_on()
+[   75.778771]=20
+[   75.778772] Call Trace:
+[   75.778967]  <IRQ>  [<ffffffff8024b877>] trace_hardirqs_on+0xd7/0x180
+[   75.779154]  [<ffffffff8052bc1b>] _spin_unlock_irq+0x2b/0x40
+[   75.779271]  [<ffffffff804605d7>] qla2x00_process_completed_request+0x13=
+7/0x1d0
+[   75.779424]  [<ffffffff804606f2>] qla2x00_status_entry+0x82/0xa40
+[   75.779541]  [<ffffffff8024b17f>] __lock_acquire+0xcdf/0xd90
+[   75.779657]  [<ffffffff8052bcb2>] _spin_unlock_irqrestore+0x42/0x60
+[   75.779775]  [<ffffffff8046228e>] qla24xx_intr_handler+0x4e/0x2b0
+[   75.779892]  [<ffffffff804613e1>] qla24xx_process_response_queue+0xc1/0x=
+1c0
+[   75.780012]  [<ffffffff80462414>] qla24xx_intr_handler+0x1d4/0x2b0
+[   75.780131]  [<ffffffff8025e950>] handle_IRQ_event+0x20/0x60
+[   75.780270]  [<ffffffff802604ad>] handle_fasteoi_irq+0xbd/0x110
+[   75.780411]  [<ffffffff8020cf62>] do_IRQ+0x132/0x1a0
+[   75.780545]  [<ffffffff80208430>] default_idle+0x0/0x60
+[   75.780682]  [<ffffffff8020a236>] ret_from_intr+0x0/0xf
+[   75.780818]  <EOI>  [<ffffffff80208467>] default_idle+0x37/0x60
+[   75.781021]  [<ffffffff80208469>] default_idle+0x39/0x60
+[   75.781156]  [<ffffffff80208467>] default_idle+0x37/0x60
+[   75.781294]  [<ffffffff802084f1>] cpu_idle+0x61/0x90
+[   75.781429]  [<ffffffff806d6f8b>] start_secondary+0x51b/0x530
+[   75.781569]=20
+[   75.781873] scsi 0:0:0:0: Direct-Access     transtec T6100F16R1-E     34=
+2I PQ: 0 ANSI: 5
+[   75.782532] BUG: workqueue leaked lock or atomic: scsi_wq_0/0x00000000/3=
+62
+[   75.782678]     last function: fc_scsi_scan_rport+0x0/0x90
+[   75.782878] 1 lock held by scsi_wq_0/362:
+[   75.783008]  #0:  (&shost->scan_mutex){--..}, at: [<ffffffff80529fe5>] m=
+utex_lock+0x25/0x30
+[   75.783517]=20
+[   75.783518] Call Trace:
+[   75.783754]  [<ffffffff80248319>] debug_show_held_locks+0x9/0x10
+[   75.783896]  [<ffffffff8023eb49>] run_workqueue+0x149/0x1a0
+[   75.784036]  [<ffffffff802427c0>] keventd_create_kthread+0x0/0x90
+[   75.784180]  [<ffffffff8023edc1>] worker_thread+0x151/0x190
+[   75.784322]  [<ffffffff80227e80>] default_wake_function+0x0/0x10
+[   75.784463]  [<ffffffff8023ec70>] worker_thread+0x0/0x190
+[   75.784600]  [<ffffffff80242a2a>] kthread+0xda/0x110
+[   75.784737]  [<ffffffff8020ab08>] child_rip+0xa/0x12
+[   75.784875]  [<ffffffff8052bc1b>] _spin_unlock_irq+0x2b/0x40
+[   75.785014]  [<ffffffff8020a28c>] restore_args+0x0/0x30
+[   75.785149]  [<ffffffff80242950>] kthread+0x0/0x110
+[   75.785285]  [<ffffffff8020aafe>] child_rip+0x0/0x12
+[   75.785417]=20
+[   84.980341] qla2xxx 0000:05:08.1: Firmware image unavailable.
+[   84.980455] qla2xxx 0000:05:08.1: Firmware images can be retrieved from:=
+ ftp://ftp.qlogic.com/outgoing/linux/firmware/.
+[   84.980620] qla2xxx 0000:05:08.1: Attempting to load (potentially outdat=
+ed) firmware from flash.
+[   85.571726] qla2xxx 0000:05:08.1: Allocated (64 KB) for EFT...
+[   85.571956] qla2xxx 0000:05:08.1: Allocated (1413 KB) for firmware dump.=
+=2E.
+[   85.587766] scsi1 : qla2xxx
+[   85.718476] qla2xxx 0000:05:08.1:=20
+[   85.718478]  QLogic Fibre Channel HBA Driver: 8.01.07-k4
+[   85.718479]   QLogic HP AE369-60001 - QLA2340
+[   85.718480]   ISP2422: PCI-X Mode 1 (133 MHz) @ 0000:05:08.1 hdma+, host=
+#=3D1, fw=3D4.00.70 [IP]=20
+[   85.719505] sda : very big device. try to use READ CAPACITY(16).
+[   85.719727] SCSI device sda: 11714863104 512-byte hdwr sectors (5998010 =
+MB)
+[   85.720114] sda: Write Protect is off
+[   85.720219] sda: Mode Sense: 9b 00 00 08
+[   85.720608] SCSI device sda: write cache: disabled, read cache: enabled,=
+ doesn't support DPO or FUA
+[   85.721008] sda : very big device. try to use READ CAPACITY(16).
+[   85.721206] SCSI device sda: 11714863104 512-byte hdwr sectors (5998010 =
+MB)
+[   85.721552] sda: Write Protect is off
+[   85.721680] sda: Mode Sense: 9b 00 00 08
+[   85.722088] SCSI device sda: write cache: disabled, read cache: enabled,=
+ doesn't support DPO or FUA
+[   85.722298]  sda: unknown partition table
+[   85.722897] sd 0:0:0:0: Attached scsi disk sda
+[   85.723205] sd 0:0:0:0: Attached scsi generic sg0 type 0
+
+--WplhKdTI2c8ulnbP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFF4uFIWto1QDEAkw8RApQFAJ95spAIkenXJ1P8go+fw0X95yVUGQCfVhyT
+Z8PhdKYLysDdGTqIrWqt14U=
+=SNzL
+-----END PGP SIGNATURE-----
+
+--WplhKdTI2c8ulnbP--
