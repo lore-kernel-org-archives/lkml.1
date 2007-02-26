@@ -1,59 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030241AbXBZOI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030265AbXBZORA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030241AbXBZOI4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 09:08:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030260AbXBZOI4
+	id S1030265AbXBZORA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 09:17:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030266AbXBZORA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 09:08:56 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:55459 "EHLO pasmtpA.tele.dk"
+	Mon, 26 Feb 2007 09:17:00 -0500
+Received: from smtp4-g19.free.fr ([212.27.42.30]:52967 "EHLO smtp4-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030241AbXBZOIz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 09:08:55 -0500
-Date: Mon, 26 Feb 2007 15:09:09 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: second thoughts about DEPRECATED and OBSOLETE maturity levels
-Message-ID: <20070226140909.GA14131@uranus.ravnborg.org>
-References: <Pine.LNX.4.64.0702251650580.29271@CPE00045a9c397f-CM001225dbafb6>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702251650580.29271@CPE00045a9c397f-CM001225dbafb6>
-User-Agent: Mutt/1.4.2.1i
+	id S1030265AbXBZOQ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 09:16:59 -0500
+Message-ID: <45E2EBE4.7080202@free.fr>
+Date: Mon, 26 Feb 2007 15:17:08 +0100
+From: John <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: linux-kernel@vger.kernel.org, johnstul@us.ibm.com, mingo@elte.hu,
+       zippel@linux-m68k.org, tglx@timesys.com, akpm@linux-foundation.org,
+       jbohac@suse.cz, linux.kernel@free.fr
+Subject: Re: CLOCK_MONOTONIC datagram timestamps by the kernel
+References: <45E1FFCC.50201@free.fr> <45E2B5E4.7020208@free.fr> <200702261320.57726.ak@suse.de>
+In-Reply-To: <200702261320.57726.ak@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 25, 2007 at 05:07:24PM -0500, Robert P. J. Day wrote:
+Andi Kleen wrote:
+
+> John wrote:
 > 
->   having championed the cause of adding those two code maturity levels
-> to init/Kconfig, i just realized that implementing them as simple
-> dependencies has a *really* annoying shortcoming.
+>> My app expects a stream of UDP datagrams containing compressed video.
+>> These datagrams have been time stamped by the source using a high
+>> resolution clock.
 > 
->   in order to display that a kernel config feature is experimental,
-> developers have not only made that feature depend on EXPERIMENTAL, but
-> they've also had to *explicitly* add the trailer "(EXPERIMENTAL)" to
-> the prompt line in the Kconfig file, to make it visually obvious.
+> Why do you need another time stamp then?
+
+Source and receiver do not share a common clock. Thus, I have to monitor 
+clock skew. If I simply use the time stamps produced by the source, my 
+buffer will eventually underflow or overflow.
+
+As far as I have seen, clock skew is on the order of ±10^-5, i.e. when 
+the source thinks 100000 seconds have elapsed, the receiver thinks 
+100001 seconds have elapsed.
+
+>> The video stream is played out in real-time. I buffer several packets,
+>> then repeatedly arm a one-shot timer (with TIMER_ABSTIME set) to wait
+>> until it's time to send the oldest packet.
+>>
+>> AFAIU, if I use the CLOCK_REALTIME clock in my app, and if the sysadmin 
+>> changes the date, hell will break loose in my app.
 > 
->   obviously, it would be *way* nicer if that trailer were produced on
-> the fly for any "EXPERIMENTAL" feature, just as it would be for
-> OBSOLETE or DEPRECATED (or any other maturity levels people can dream
-> up).
+> Only if your app cannot handle time going backwards.
 
-I have envisioned that this tag could be added by Kconfig automatically for
-all symbols that are dependent on EXPERIMENTAL.
-To do so the new option syntax could be extended.
-So we had something like:
-config EXPERIMENTAL
-	bool "Bla bla"
-	option adddisplay=(EXPERIMENTAL)
+My app cannot handle time going backwards.
 
-This would cause all symbols selected by EXPERIMENTAL to have
-the string "(EXPERIMENTAL)" added to the prompt when displayed.
+The algorithm looks like:
 
-Same could be used for DEPRECATED and OBSOLETE.
+/* Start transmission, record start date */
+NEXT_DEADLINE = now;
 
-I have not looked into the feasability to implement this - other
-Kconfig items needs to be fixed first.
+while ( 1 )
+{
+   send(oldest_packet);
+   recv_available_packets();
+   /* compute next deadline */
+   NEXT_DEADLINE += time_to_wait_until_next_packet();
+   sleep_until(NEXT_DEADLINE);
+}
 
-	Sam
+If the clock changes under me, I'm toast.
+
+>> I suppose that if I change sock_get_timestamp() in core/sock.c to call 
+>> __get_realtime_clock_ts() instead of do_gettimeofday() I'll break 50 
+>> billion applications (ping? traceroute?) that expect a struct timeval?
+> 
+> Not that many, but some probably.
+
+Another option would be to change sock_get_timestamp() to call 
+ktime_get_ts() instead of do_gettimeofday() and convert ns to us.
+
+i.e. I still return a struct timeval, but using CLOCK_MONOTONIC.
+
+> Letting the kernel do the time stamping is usually quite useless anyways. 
+> You can as well do it in your application when you receive it. After all
+> you're interested in when you can read the packet in your app, 
+> not when the driver processes it.
+
+I use clock_nanosleep() to sleep until it's time to send the next 
+packet. I check for packets when I wake up. I need the kernel to time 
+stamp the packets because I was sleeping when they reached the system.
+
+I try to do it this way because I read this:
+
+http://rt.wiki.kernel.org/index.php/High_resolution_timers
+
+"Note that (clock_)nanosleep functions do not suffer from this problem 
+as the wakeup function at timer expiry is executed in the context of the 
+high resolution timer interrupt. If an application is not using 
+asynchronous signal handlers, it is recommended to use the 
+clock_nanosleep() function with the TIMER_ABSTIME flag set instead of 
+waiting for the periodic timer signal delivery. The application has to 
+maintain the absolute expiry time for the next interval itself, but this 
+is a lightweight operation of adding and normalizing two struct timespec 
+values. The benefit is significantly lower maximum latencies (~50us) and 
+less OS overhead in general."
+
+Regards.
+
