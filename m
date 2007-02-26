@@ -1,42 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161285AbXBZWQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161290AbXBZWTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161285AbXBZWQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 17:16:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161290AbXBZWQ4
+	id S1161290AbXBZWTu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 17:19:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161293AbXBZWTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 17:16:56 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:59101 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161285AbXBZWQ4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 17:16:56 -0500
-X-Sasl-enc: pdq+qyZmm71/z8TkIvFUlzW2KSDOC8/s5IZV7jBmrwBa 1172526426
-Date: Mon, 26 Feb 2007 18:46:58 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Jiri Kosina <jikos@jikos.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ACPI: ibm-acpi: improve backlight power handling (v2)
-Message-ID: <20070226214658.GA26487@khazad-dum.debian.net>
-References: <Pine.LNX.4.64.0702261329270.10496@twin.jikos.cz> <20070226142157.GA2909@khazad-dum.debian.net> <1172501357.5824.91.camel@localhost.localdomain> <20070226152035.GB2909@khazad-dum.debian.net> <20070226161203.GD2909@khazad-dum.debian.net> <1172507907.5824.105.camel@localhost.localdomain> <20070226181202.GH2909@khazad-dum.debian.net> <20070226182604.GJ2909@khazad-dum.debian.net> <Pine.LNX.4.64.0702262217490.10496@twin.jikos.cz> <1172526121.24429.15.camel@localhost.localdomain>
+	Mon, 26 Feb 2007 17:19:50 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47621 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161290AbXBZWTs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 17:19:48 -0500
+Date: Mon, 26 Feb 2007 23:00:01 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       george@mvista.com
+Subject: 2.6.21-rc1: beeps get longer after suspend
+Message-ID: <20070226220001.GA2200@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1172526121.24429.15.camel@localhost.localdomain>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Feb 2007, Richard Purdie wrote:
-> We want to blank (set to 0) if either fb_blank or power isn't set to
-> FB_BLANK_UNBLANK. This is the same as setting to brightness if both
-> fb_blank and power are set to FB_BLANK_UNBLANK. This is what the above
-> expression does.
+Hi!
 
-Is that an ACK, then?
+Yes, it is strange, and it is also regression from 2.6.20.
+
+pavel@amd:/data/l/linux$ cat .config | grep HZ
+# CONFIG_NO_HZ is not set
+CONFIG_HZ_100=y
+# CONFIG_HZ_250 is not set
+# CONFIG_HZ_300 is not set
+# CONFIG_HZ_1000 is not set
+CONFIG_HZ=100
+pavel@amd:/data/l/linux$ cat .config | grep HIRES
+pavel@amd:/data/l/linux$ cat .config | grep HIGH
+# CONFIG_HIGH_RES_TIMERS is not set
+# CONFIG_NOHIGHMEM is not set
+CONFIG_HIGHMEM4G=y
+# CONFIG_HIGHMEM64G is not set
+CONFIG_HIGHMEM=y
+# CONFIG_HIGHPTE is not set
+CONFIG_DEBUG_HIGHMEM=y
+pavel@amd:/data/l/linux$
+
+pavel@amd:~$ date; sleep 1; date
+Mon Feb 26 22:56:23 CET 2007
+Mon Feb 26 22:56:24 CET 2007
+pavel@amd:~$
+
+....seems to work well...
+
+Also, we need timer subsystem entry into MAINTAINERS file :-)
+
+									Pavel
 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
