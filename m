@@ -1,43 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030280AbXBZOZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030284AbXBZOeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030280AbXBZOZT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 09:25:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030281AbXBZOZT
+	id S1030284AbXBZOeV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 09:34:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030285AbXBZOeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 09:25:19 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:58302 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030280AbXBZOZR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 09:25:17 -0500
-Date: Mon, 26 Feb 2007 08:25:15 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: list.h , list_head and C++
-In-reply-to: <1172493644.311389.243780@8g2000cwh.googlegroups.com>
-To: "remi.chateauneu@gmail.com" <remi.chateauneu@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Message-id: <45E2EDCB.8070008@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <1172493644.311389.243780@8g2000cwh.googlegroups.com>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Mon, 26 Feb 2007 09:34:21 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:47672 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030284AbXBZOeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 09:34:19 -0500
+Date: Mon, 26 Feb 2007 17:32:01 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: threadlets as 'naive pool of threads', epoll, some measurements
+Message-ID: <20070226143201.GB31629@2ka.mipt.ru>
+References: <20070225183743.GD29821@2ka.mipt.ru> <20070225192112.GA15681@elte.hu> <20070225194645.GB1353@2ka.mipt.ru> <20070225195308.GC15681@elte.hu> <Pine.LNX.4.64.0702251232350.6011@alien.or.mcafeemobile.com> <20070225213420.GA10195@elte.hu> <20070226104507.GA18470@elte.hu> <20070226114858.GA28836@elte.hu> <20070226122521.GA19039@2ka.mipt.ru> <20070226125054.GA6997@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <20070226125054.GA6997@elte.hu>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Mon, 26 Feb 2007 17:32:43 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-remi.chateauneu@gmail.com wrote:
-> My C++ program needs an intrusive list, possibly with RCU
-> capabilities.The data structure list_head, defined in /usr/include/
-> linux/list.h , fits perfectly these needs.
+On Mon, Feb 26, 2007 at 01:50:54PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
+> > I feared _ONLY_ situation when thousands of thereads are eating my 
+> > brain - so case when 161 threads are running simultanesoulsy is not 
+> > that bad compared to what micro-design can do (of its best/worst) at 
+> > all!
+> 
+> even with ten thousand threads it is still pretty fast. Certainly not 
+> '10 times slower' as you claimed. And it takes only a single, trivial 
+> outer event loop to lift it up to the performance levels of a pure event 
+> based server.
 
-You really shouldn't use kernel data structures in userspace. The 
-locking and other primitives they depend on are not guaranteed to work. 
-Also keep in mind that using these structures probably makes your 
-program a derivative of the kernel and would require your software to be 
-released under the GPL.
+I did not claim that it will be 10 times slower, I said that it will be
+slower, my '10 times slower', which are actually '15% of hte total time'
+is a reply to your 'fast as sync' model, no need to repaing the picture :)
+
+> conclusion: currently i dont see a compelling need for the kevents 
+> subsystem. epoll is a pretty nice API and it covers most of the event 
+> sources and nicely builds upon our existing poll() infrastructure.
+>
+> furthermore, i very much contest your claim that a high-performance, 
+> highly scalable webserver needs a kevent+nonblock design. Even if i 
+> ignore all the obvious usability and maintainance-cost advantages of 
+> threadlets.
+
+Ok, I see your point, you insult something you did not ever try to
+understand, that is your right.
+
+> > So, caching is good - threadlets do not spawn a new thread, kevent 
+> > returns immediately, but in case of things are not that shine - 
+> > threadlets spawnd a new thread, while kevent process next request or 
+> > waits for all completed.
+> 
+> no. Please read the evserver_threadlet.c code. There's no kevent in 
+> there. There's no epoll() in there. All that you can see there is the 
+> natural behavior of pure threadlets. And it's not a workload /I/ picked 
+> for threadlets - it is a workload, filesize, parallelism level and 
+> request handling function /you/ picked for "event-servers".
+
+I know that there is no kevents there, that would be really strange if
+you would test it in your environment after all that empty kevent
+releases.
+
+Enough, you say micro-thread design is superior - ok, that is your
+point.
+
+> 	Ingo
 
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+	Evgeniy Polyakov
