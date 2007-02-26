@@ -1,72 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751328AbXBZQMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752448AbXBZQYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751328AbXBZQMf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 11:12:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbXBZQMf
+	id S1752448AbXBZQYc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 11:24:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030312AbXBZQYb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 11:12:35 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:60118 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751328AbXBZQMe (ORCPT
+	Mon, 26 Feb 2007 11:24:31 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:39606 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030303AbXBZQY2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 11:12:34 -0500
-X-Sasl-enc: W7WlQ5qe1697BezYwCUpZy8FBxP1c8zWyVHG4MdLQ4Vc 1172506337
-Date: Mon, 26 Feb 2007 13:12:03 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Jiri Kosina <jikos@jikos.cz>, linux-kernel@vger.kernel.org
-Subject: [PATCH] ACPI: ibm-acpi: improve backlight power handling
-Message-ID: <20070226161203.GD2909@khazad-dum.debian.net>
-References: <Pine.LNX.4.64.0702260154460.10496@twin.jikos.cz> <1172490091.5824.30.camel@localhost.localdomain> <Pine.LNX.4.64.0702261329270.10496@twin.jikos.cz> <20070226142157.GA2909@khazad-dum.debian.net> <1172501357.5824.91.camel@localhost.localdomain> <20070226152035.GB2909@khazad-dum.debian.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070226152035.GB2909@khazad-dum.debian.net>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 26 Feb 2007 11:24:28 -0500
+Subject: Re: Make sure we populate the initroot filesystem late enough
+From: David Woodhouse <dwmw2@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, john stultz <johnstul@us.ibm.com>
+In-Reply-To: <Pine.LNX.4.64.0702252009110.12485@woody.linux-foundation.org>
+References: <200612112059.kBBKx1j7022473@hera.kernel.org>
+	 <1172448057.3971.9.camel@shinybook.infradead.org>
+	 <Pine.LNX.4.64.0702251614420.12485@woody.linux-foundation.org>
+	 <1172452660.3971.33.camel@shinybook.infradead.org>
+	 <Pine.LNX.4.64.0702251940500.12485@woody.linux-foundation.org>
+	 <1172462466.3971.46.camel@shinybook.infradead.org>
+	 <Pine.LNX.4.64.0702252009110.12485@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 26 Feb 2007 11:24:57 -0500
+Message-Id: <1172507097.3971.62.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Improve the backlight code to emulate as much as possible the power
-management events, as we are unable to really power on or power off the
-backlight.
+On Sun, 2007-02-25 at 20:13 -0800, Linus Torvalds wrote:
+> 
+> On Sun, 25 Feb 2007, David Woodhouse wrote:
+> >
+> > > Can you try adding something like
+> > > 
+> > >         memset(start, 0xf0, end - start);
+> > 
+> > Yeah, I did that before giving up on it for the day and going in search
+> > of dinner. It changes the failure mode to a BUG() in
+> > cache_free_debugcheck(), at line 2876 of mm/slab.c
+>
+> Ok, that's just strange. 
 
-Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Richard Purdie <rpurdie@rpsys.net>
----
+In this case I hadn't left the 'return' in free_initrd_mem(). I was
+poisoning the pages and then returning them to the pool as usual.
 
- Status: waiting ACK from Richard Purdie <rpurdie@rpsys.net>
+If I poison the pages and _don't_ return them to the pool, it boots
+fine. PageReserved is set on every page in the initrd region; total
+page_count() is equal to the number of pages (which doesn't
+_necessarily_ mean that page_count() for every page is equal to 1 but
+it's a strong hint that that's the case).
 
- drivers/acpi/ibm_acpi.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+Looking in /dev/mem after it boots, I see that my poison is still
+present throughout the whole region.
 
-diff --git a/drivers/acpi/ibm_acpi.c b/drivers/acpi/ibm_acpi.c
-index e7309a6..cb5885e 100644
---- a/drivers/acpi/ibm_acpi.c
-+++ b/drivers/acpi/ibm_acpi.c
-@@ -86,6 +86,7 @@
- 
- #include <linux/proc_fs.h>
- #include <linux/backlight.h>
-+#include <linux/fb.h>
- #include <asm/uaccess.h>
- 
- #include <linux/dmi.h>
-@@ -1707,7 +1708,8 @@ static int brightness_write(char *buf)
- 
- static int brightness_update_status(struct backlight_device *bd)
- {
--	return brightness_set(bd->props.brightness);
-+	return brightness_set((bd->props.fb_blank == FB_BLANK_UNBLANK)? 
-+				bd->props.brightness : 0);
- }
- 
- static struct backlight_ops ibm_backlight_data = {
+> One obvious thing to do would be to remove all the "__initdata" entries in 
+> mm/slab.c..
+
+This is biting us long before we call free_initmem().
+
+>  But I'd also like to see the full backtrace for the  BUG_ON(), 
+> in case that gives any clues at all.
+
+I'll see if I can find a camera. 
+
+> > It smells like the pages weren't actually reserved in the first place
+> > and we were blithely allocating them. The only problem with that theory
+> > is that the initrd doesn't seem to be getting corrupted -- and if we
+> > were handing out its pages like that then surely _something_ would have
+> > scribbled on it before we tried to read it.
+> 
+> Yeah, I don't think it's necessarily initrd itself, I'd be more inclined 
+> to think that the reason you see this change with the initrd unpacking is 
+> simply that it does a lot of allocations for the initrd files, so I think 
+> it is only indirectly involved - just because it ends up being a slab 
+> user.
+
+Whatever happens, initrd as a 'slab user' is fine. The crashes happen
+_later_, when someone else is using the memory which used to belong to
+the initrd. In that 'BUG at slab.c:2876' I mentioned above, r3 was
+within the initrd region. As I said, I'll try to find a camera.
+
 -- 
-1.5.0.1
+dwmw2
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
