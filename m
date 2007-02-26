@@ -1,73 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751262AbXBZLwP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751275AbXBZLw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751262AbXBZLwP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 06:52:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbXBZLwP
+	id S1751275AbXBZLw1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 06:52:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbXBZLw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 06:52:15 -0500
-Received: from mail.screens.ru ([213.234.233.54]:51055 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751262AbXBZLwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 06:52:14 -0500
-Date: Mon, 26 Feb 2007 14:52:16 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Pavel Machek <pavel@ucw.cz>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Aneesh Kumar <aneesh.kumar@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [RFC][PATCH 3/3] Freezer: Prevent ___call_usermodehelper from missing freezing requests
-Message-ID: <20070226115216.GA234@tv-sign.ru>
-References: <200702261139.59130.rjw@sisk.pl> <200702261152.18379.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200702261152.18379.rjw@sisk.pl>
-User-Agent: Mutt/1.5.11
+	Mon, 26 Feb 2007 06:52:27 -0500
+Received: from web26903.mail.ukl.yahoo.com ([217.146.176.92]:20439 "HELO
+	web26903.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751275AbXBZLw0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 06:52:26 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.fr;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=RY4q+9rVEnt6QzbmlJDjrv0OXcjSAdLAFESCEWLBv03tmMTg5bZc894lECBIoYeAcxuqdMha5/iKH+gxMw9FC49F921DX+JYWi4KA6XTxZrq/2x3lExqCoj3yXQH0Y2Kifw2h5fHcWt9mXnJjqlHLWvtGYM/Ct4uWRc5LroAUx8=;
+X-YMail-OSG: 3w6AbNgVM1lcASRcHiH1RQq1_ZsPxjK9WBByh1gtxJLTfd.ezwzkKRtmiZ1MPkIWClG_r911MG7uMAOGWbPYivH7M_zEXfTlzn674KdLcz.UQo6x_Ls041YhHlcrUVM1RJ5aaxeqiIR7
+Date: Mon, 26 Feb 2007 12:52:21 +0100 (CET)
+From: Etienne Lorrain <etienne_lorrain@yahoo.fr>
+Subject: Re: bug in kernel 2.6.21-rc1-git1: conventional floppy drive cannot
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Message-ID: <828425.46562.qm@web26903.mail.ukl.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/26, Rafael J. Wysocki wrote:
->
-> NOTE: Alternatively, we can just drop flush_signals() from there, but I'm not
-> sure that's the right thing to do.
+> a. Can someone please confirm the described problem?
 
-We should drop it, I believe. I forgot to send a patch.
+  I can confirm that "mdir a:" without a floppy in the driver does not crash.
+  If there is a floppy, it crashes immediately (do "sync; sync" before to
+ limit file corruption). Tried with and without tickless, not related (no change).
+ If lock related, this system is UP Athlon XP 1.4 GHz.
 
-Oleg.
+ Etienne.
 
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Since ____call_usermodehelper() calls flush_signals(current), the task that
-> enters it may miss a freezing request.  However, if ____call_usermodehelper()
-> clears TIF_FREEZE for the current task after flush_signals(current) returns, the
-> freezer will generate one more freezing request for this task.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  kernel/kmod.c |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> Index: linux-2.6.20-mm2/kernel/kmod.c
-> ===================================================================
-> --- linux-2.6.20-mm2.orig/kernel/kmod.c	2007-02-25 12:07:15.000000000 +0100
-> +++ linux-2.6.20-mm2/kernel/kmod.c	2007-02-25 12:49:16.000000000 +0100
-> @@ -34,6 +34,7 @@
->  #include <linux/kernel.h>
->  #include <linux/init.h>
->  #include <linux/resource.h>
-> +#include <linux/freezer.h>
->  #include <asm/uaccess.h>
->  
->  extern int delete_module(const char *name, unsigned int flags);
-> @@ -258,6 +259,7 @@ static int ____call_usermodehelper(void 
->  	new_session = key_get(sub_info->ring);
->  	flush_signals(current);
->  	spin_lock_irq(&current->sighand->siglock);
-> +	do_not_freeze(current);
->  	old_session = __install_session_keyring(current, new_session);
->  	flush_signal_handlers(current, 1);
->  	sigemptyset(&current->blocked);
 
+	
+
+	
+		
+___________________________________________________________________________ 
+Découvrez une nouvelle façon d'obtenir des réponses à toutes vos questions ! 
+Profitez des connaissances, des opinions et des expériences des internautes sur Yahoo! Questions/Réponses 
+http://fr.answers.yahoo.com
