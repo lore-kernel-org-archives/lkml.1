@@ -1,93 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751129AbXBZGgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751257AbXBZGhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751129AbXBZGgy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 01:36:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbXBZGgy
+	id S1751257AbXBZGhn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 01:37:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbXBZGhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 01:36:54 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:32857 "EHLO relay.sw.ru"
+	Mon, 26 Feb 2007 01:37:43 -0500
+Received: from mga02.intel.com ([134.134.136.20]:17450 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751129AbXBZGgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 01:36:53 -0500
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Dmitriy Monakhov <dmonakhov@openvz.org>, linux-kernel@vger.kernel.org,
-       jgarzik@pobox.com
-Subject: [PATCH] libata: handle ata_pci_device_do_resume() failure while resuming (v2)
-References: <87abz4ble1.fsf@sw.ru>
-	<20070225220114.c449ef95.randy.dunlap@oracle.com>
-From: Dmitriy Monakhov <dmonakhov@sw.ru>
-Date: Mon, 26 Feb 2007 09:35:50 +0300
-In-Reply-To: <20070225220114.c449ef95.randy.dunlap@oracle.com> (Randy Dunlap's message of "Sun, 25 Feb 2007 22:01:14 -0800")
-Message-ID: <87vehp4e9l.fsf_-_@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	id S1751141AbXBZGhm convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 01:37:42 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,218,1170662400"; 
+   d="scan'208"; a="201239555:sNHT19315226"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-=-="
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: RFC/patch: down_timeout_interruptible()
+Date: Sun, 25 Feb 2007 22:37:40 -0800
+Message-ID: <C72DEB015BA7724783363DE1AF6B0F98016FF09B@orsmsx417.amr.corp.intel.com>
+In-Reply-To: <1172385954.3265.14.camel@laptopd505.fenrus.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: RFC/patch: down_timeout_interruptible()
+Thread-Index: AcdYqJsPvkbWuDbCSYWLHik/yeDJ7AAx9x9w
+From: "Perez-Gonzalez, Inaky" <inaky.perez-gonzalez@intel.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 26 Feb 2007 06:37:41.0427 (UTC) FILETIME=[9D56D030:01C75970]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
-
-Randy Dunlap <randy.dunlap@oracle.com> writes:
-
-> On Sat, 24 Feb 2007 00:43:18 +0300 Dmitriy Monakhov wrote:
+>From: Arjan van de Ven [mailto:arjan@infradead.org]
 >
->> Since commit:553c4aa630af7bc885e056d0436e4eb7f238579b
->> ata_pci_device_do_resume() can return error code, all callers was updated
->> except this one.
->> 
->> Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
->> ---
->>  drivers/ata/sata_inic162x.c |    5 ++++-
->>  1 files changed, 4 insertions(+), 1 deletions(-)
->> 
->> diff --git a/drivers/ata/sata_inic162x.c b/drivers/ata/sata_inic162x.c
->> index 31b636f..7933043 100644
->> --- a/drivers/ata/sata_inic162x.c
->> +++ b/drivers/ata/sata_inic162x.c
->> @@ -639,7 +639,10 @@ static int inic_pci_device_resume(struct pci_dev *pdev)
->>  	void __iomem *mmio_base = host->iomap[MMIO_BAR];
->>  	int rc;
->>  
->> -	ata_pci_device_do_resume(pdev);
->> +	rc = ata_pci_device_do_resume(pdev);
->> +	if (rc) {
->> +		return rc;
+>> I gave it a quick try (must admit, not too tested) and it seems that
+>> the setting of TIF_SIGPENDING without really having a signal queued
+>> is not having easily visible ugly consequences.
 >
-> Either (a) don't use the braces when they are not needed, or
-> (b) is it possible to add a meaningful message there, or is that
-> done elsewhere?
-True. Thanks for correcting me here.
-It is't realy necessary print err message because ata_pci_device_do_resume()
-already done this. So just remove braces.
+>what happens if you get a signal around the time the timeout fires?
 
+Depends of what around means.
 
- Since commit:553c4aa630af7bc885e056d0436e4eb7f238579b
- ata_pci_device_do_resume() can return error code, all callers was updated
- except this one.
++	result = down_interruptible(sem);
++	del_timer(&dit_timer);
++	if (result < 0 && data.result < 0)
++		result = data.result;
 
-Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
+This piece of code will catch the 'timeout arrived right before a 
+signal' case. 'data.result' is set by the timeout handler, so it 
+doesn't interfere.
 
+Now, if the timeout arrives right after a signal was delivered
+but before the thread returns from down_interruptible, then it
+will also look like a timeout (as that code in the if statement
+will kick in) -- to some extent, it is 'right' theoretically, as
+it didn't get the sem before the time expired. TIF_SIGPENDING is 
+still set, so the signal is not lost (unless I miss something else
+about the signal delivery engine).
 
---=-=-=
-Content-Disposition: inline;
- filename*0*=us-ascii''diff-ms-libata-handle-ata_pci_device_do_resume-fail;
- filename*1*=ure-while-resuming
+The last case, if the timeout arrives after the signal and after
+down_interruptible returns, nothing in theory. There is a window
+where the timer could still execute before it is deleted and it
+would look like a timeout [which theoretically could be right too].
+Maybe the result < 0 && data.result < 0 check should be done 
+before del_timer(). 
 
-diff --git a/drivers/ata/sata_inic162x.c b/drivers/ata/sata_inic162x.c
-index 31b636f..18ac665 100644
---- a/drivers/ata/sata_inic162x.c
-+++ b/drivers/ata/sata_inic162x.c
-@@ -639,7 +639,9 @@ static int inic_pci_device_resume(struct pci_dev *pdev)
- 	void __iomem *mmio_base = host->iomap[MMIO_BAR];
- 	int rc;
- 
--	ata_pci_device_do_resume(pdev);
-+	rc = ata_pci_device_do_resume(pdev);
-+	if (rc)
-+		return rc;
- 
- 	if (pdev->dev.power.power_state.event == PM_EVENT_SUSPEND) {
- 		printk("XXX\n");
+Suggestions? 
 
---=-=-=--
-
+-- Inaky
