@@ -1,43 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751178AbXBZAYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933724AbXBZAeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751178AbXBZAYl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 19:24:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbXBZAYl
+	id S933724AbXBZAeO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 19:34:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933723AbXBZAeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 19:24:41 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:55408 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751178AbXBZAYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 19:24:40 -0500
-Date: Sun, 25 Feb 2007 16:24:41 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Woodhouse <dwmw2@infradead.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, john stultz <johnstul@us.ibm.com>
-Subject: Re: Make sure we populate the initroot filesystem late enough
-In-Reply-To: <1172448057.3971.9.camel@shinybook.infradead.org>
-Message-ID: <Pine.LNX.4.64.0702251614420.12485@woody.linux-foundation.org>
-References: <200612112059.kBBKx1j7022473@hera.kernel.org>
- <1172448057.3971.9.camel@shinybook.infradead.org>
+	Sun, 25 Feb 2007 19:34:14 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:7649 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933721AbXBZAeN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 19:34:13 -0500
+From: divy@chelsio.com
+Subject: [PATCH 3/7] cxgb3 - FW version update
+To: jeff@garzik.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Date: Sun, 25 Feb 2007 16:32:37 -0800
+Message-ID: <20070226003237.25670.76606.stgit@localhost.localdomain>
+User-Agent: StGIT/0.12
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Divy Le Ray <divy@chelsio.com>
 
+Update FW version to 3.2
 
-On Sun, 25 Feb 2007, David Woodhouse wrote:
-> 
-> One side-effect of this patch is to move the call to free_initrd() much
-> later in the init sequence, potentially after other memory management
-> code is assuming it's already been freed.
+Signed-off-by: Divy Le Ray <divy@chelsio.com>
+---
 
-Hmm. No, I don't think that should be a problem. free_initmem() only 
-happens at the very, after do_basic_setup() has been run, which includes 
-all the initcall stuff.
+ drivers/net/cxgb3/t3_hw.c   |    6 ++++--
+ drivers/net/cxgb3/version.h |    2 ++
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
-However, it's an interesting observation. How sure are you that it's this 
-commit that triggers it. You say "This seems to be what's triggering ..", 
-I'm wondering how firm that is..
-
-		Linus
+diff --git a/drivers/net/cxgb3/t3_hw.c b/drivers/net/cxgb3/t3_hw.c
+index 365a7f5..eaa7a2e 100644
+--- a/drivers/net/cxgb3/t3_hw.c
++++ b/drivers/net/cxgb3/t3_hw.c
+@@ -884,11 +884,13 @@ int t3_check_fw_version(struct adapter *
+ 	major = G_FW_VERSION_MAJOR(vers);
+ 	minor = G_FW_VERSION_MINOR(vers);
+ 
+-	if (type == FW_VERSION_T3 && major == 3 && minor == 1)
++	if (type == FW_VERSION_T3 && major == FW_VERSION_MAJOR &&
++	    minor == FW_VERSION_MINOR)
+ 		return 0;
+ 
+ 	CH_ERR(adapter, "found wrong FW version(%u.%u), "
+-	       "driver needs version 3.1\n", major, minor);
++	       "driver needs version %u.%u\n", major, minor,
++	       FW_VERSION_MAJOR, FW_VERSION_MINOR);
+ 	return -EINVAL;
+ }
+ 
+diff --git a/drivers/net/cxgb3/version.h b/drivers/net/cxgb3/version.h
+index 2b67dd5..782a6cf 100644
+--- a/drivers/net/cxgb3/version.h
++++ b/drivers/net/cxgb3/version.h
+@@ -36,4 +36,6 @@
+ #define DRV_NAME "cxgb3"
+ /* Driver version */
+ #define DRV_VERSION "1.0"
++#define FW_VERSION_MAJOR 3
++#define FW_VERSION_MINOR 2
+ #endif				/* __CHELSIO_VERSION_H */
