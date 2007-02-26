@@ -1,55 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030505AbXBZVU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933803AbXBZVVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030505AbXBZVU3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 16:20:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933803AbXBZVU3
+	id S933803AbXBZVVm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 16:21:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030522AbXBZVVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 16:20:29 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:34593 "EHLO smtp.osdl.org"
+	Mon, 26 Feb 2007 16:21:42 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:33429 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933800AbXBZVU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 16:20:28 -0500
-Date: Mon, 26 Feb 2007 13:14:07 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Rene Herman <rene.herman@gmail.com>
-cc: Oleg Nesterov <oleg@tv-sign.ru>, Stephane Eranian <eranian@hpl.hp.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: bug in kernel 2.6.21-rc1-git1: conventional floppy drive cannot
- be mounted without hanging up the whole system
-In-Reply-To: <45E3493C.1040706@gmail.com>
-Message-ID: <Pine.LNX.4.64.0702261308490.12485@woody.linux-foundation.org>
-References: <20070226180635.GA644@tv-sign.ru>
- <Pine.LNX.4.64.0702261006440.12485@woody.linux-foundation.org>
- <45E3493C.1040706@gmail.com>
+	id S933803AbXBZVVl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 16:21:41 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: 2.6.19: ACPI reports AC not present after resume from STD
+Date: Mon, 26 Feb 2007 22:23:14 +0100
+User-Agent: KMail/1.9.5
+Cc: "Lebedev, Vladimir P" <vladimir.p.lebedev@intel.com>,
+       "Karasyov, Konstantin A" <konstantin.a.karasyov@intel.com>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-pm@lists.osdl.org, Andrew Morton <akpm@osdl.org>
+References: <8E389A5F2FEABA4CB1DEC35A25CB39CE82FE9F@mssmsx411> <200702251958.37315.rjw@sisk.pl> <200702262335.47874.arvidjaar@mail.ru>
+In-Reply-To: <200702262335.47874.arvidjaar@mail.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200702262223.14974.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 26 Feb 2007, Rene Herman wrote:
+On Monday, 26 February 2007 21:35, Andrey Borzenkov wrote:
+> On Воскресенье 25 февраля 2007, Rafael J. Wysocki wrote:
+> >
+> > The patch looks good, but the changelog does not.  First, AFAICT, the
+> > x86_64 code doesn't touch anything outside the e820 map.  Why do you think
+> > it does?
+> >
 > 
-> Other than these two, ECP parallel ports are the other remaining users.
-> Now, even though on a machine that still has a parallel port it might usually
-> indeed be set to ECP in its BIOS; having anything attached to the port also
-> use it as such seems quite seldom.
+> the following code:
+> 
+>        paddr = round_down(e820.map[0].addr + e820.map[0].size, PAGE_SIZE);
+>         for (i = 1; i < e820.nr_map; i++) {
+>                 struct e820entry *ei = &e820.map[i];
+> 
+>                 if (paddr < ei->addr)
+>                         e820_mark_nosave_range(paddr,
+>                                         round_up(ei->addr, PAGE_SIZE));
+> 
+> obviously will mark region *between* two e820 regions if they are not
+> adjacent. I do not say that it is wrong (I have no idea); but exactly because
+> I have no idea I tried to avoid it.
 
-Well, if it's some kind of cache coherency problem (the same way much more 
-modern CPU's have cache coherency issues with DMA during C3 sleep), then 
-it's entirely possible that the normal ECP parallel port behaviour would 
-never show it, since most people tend to use it for output only (yeah, I 
-realize you can use it bidirectionally, but at least on old hardware it 
-tends to be "talk AT printer" rather than "talk WITH printer".
+Yes, you are right, sorry.  We have to do this for x86_64, because there are
+such holes in there on machines with more than 2 GB of RAM and swsusp chokes
+on them if they are not marked.
 
-I frankly forget what hardware platforms had problems with the DMA thing, 
-and what the exact behaviour even was (I think there was some possibility 
-of corrupt data on the floppy). We also used to have the "nohlt" flag to 
-turn off hlt entirely, and that was due to some other legacy issues, iirc.
+On i386 we shouldn't really mark reserved areas in the highmem zone(s) as
+nosave, because they are handled in a different way.
 
-I seriously doubt we will ever see anybody who has this problem ever 
-again, but on the other hand, I also seriously doubt that most modern 
-machines even *have* a floppy drive any more, so I'd rather not even 
-change it. It's just not worth even a miniscule risk..
+> > Second, it is not true that the region in question is at 0xee00 on x86_64.
+> > At least on my box it's above the end of RAM.
+> >
+> 
+> On my box the problem region starts at ee800 :) But you are right, it does not
+> belong here.
+> 
+> > I think the x86_64 version is correct too.
+> >
+> 
+> I do not say it is not. I just say that it does something I cannot verify so I
+> better avoid it (i.e. I better change existing behaviour as little as
+> possible).
 
-		Linus
+OK
+
+Can you please test your patch with the loop in e820_mark_nosave_regions()
+restricted to the zones below highmem?
+
+Rafael
