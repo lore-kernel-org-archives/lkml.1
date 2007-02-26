@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161288AbXBZWZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161293AbXBZW3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161288AbXBZWZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 17:25:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161287AbXBZWZ1
+	id S1161293AbXBZW3Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 17:29:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161294AbXBZW3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 17:25:27 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:11093 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161288AbXBZWZZ (ORCPT
+	Mon, 26 Feb 2007 17:29:24 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:56096 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161293AbXBZW3Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 17:25:25 -0500
-Date: Mon, 26 Feb 2007 14:21:56 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>
-Subject: [PATCH] add -mm testing in SubmitChecklist
-Message-Id: <20070226142156.1372f5ed.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 26 Feb 2007 17:29:24 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: MSI entry unlinked before arch_teardown_msi_irq().
+References: <m17iu6r4eg.fsf@ebiederm.dsl.xmission.com>
+	<20070225.154637.70478886.davem@davemloft.net>
+	<m18xelpyfg.fsf@ebiederm.dsl.xmission.com>
+	<20070226.094747.59657430.davem@davemloft.net>
+Date: Mon, 26 Feb 2007 15:29:17 -0700
+In-Reply-To: <20070226.094747.59657430.davem@davemloft.net> (David Miller's
+	message of "Mon, 26 Feb 2007 09:47:47 -0800 (PST)")
+Message-ID: <m1irdoo8n6.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+David Miller <davem@davemloft.net> writes:
 
-Add -mm testing to SubmitChecklist.
+> From: ebiederm@xmission.com (Eric W. Biederman)
+> Date: Sun, 25 Feb 2007 17:14:43 -0700
+>
+>> David Miller <davem@davemloft.net> writes:
+>> 
+>> > From: ebiederm@xmission.com (Eric W. Biederman)
+>> > Date: Sun, 25 Feb 2007 02:08:07 -0700
+>> >
+>> >> If that isn't the issue holler and I will look into it a little more.
+>> >
+>> > Talking in code is always more effective :-)
+>> >
+>> > This patch fixes the OOPS I was talking about:
+>> 
+>> Ok.  That is clearly reasonable.  Why do you need to traverse
+>> the list here?  I just want to understand the requirements.
+>
+> The real problem turned out to be my using get_irq_data() instead
+> of get_irq_msi() :-)
+>
+> Sorry for the noise.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- Documentation/SubmitChecklist |    4 ++++
- 1 file changed, 4 insertions(+)
+No problem I helped cause the confusion...
 
---- linux-2621-rc1.orig/Documentation/SubmitChecklist
-+++ linux-2621-rc1/Documentation/SubmitChecklist
-@@ -76,3 +76,7 @@ kernel patches.
- 22: Newly-added code has been compiled with `gcc -W'.  This will generate
-     lots of noise, but is good for finding bugs like "warning: comparison
-     between signed and unsigned".
-+
-+23: Tested after it has been merged into the -mm patchset to make sure
-+    that it still works with all of the other queued patches and various
-+    changes in the VM, VFS, and other subsystems.
+Eric
