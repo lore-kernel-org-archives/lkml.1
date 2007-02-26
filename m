@@ -1,86 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030284AbXBZOeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030288AbXBZOff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030284AbXBZOeV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 09:34:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030285AbXBZOeV
+	id S1030288AbXBZOff (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 09:35:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030285AbXBZOff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 09:34:21 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:47672 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030284AbXBZOeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 09:34:19 -0500
-Date: Mon, 26 Feb 2007 17:32:01 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: threadlets as 'naive pool of threads', epoll, some measurements
-Message-ID: <20070226143201.GB31629@2ka.mipt.ru>
-References: <20070225183743.GD29821@2ka.mipt.ru> <20070225192112.GA15681@elte.hu> <20070225194645.GB1353@2ka.mipt.ru> <20070225195308.GC15681@elte.hu> <Pine.LNX.4.64.0702251232350.6011@alien.or.mcafeemobile.com> <20070225213420.GA10195@elte.hu> <20070226104507.GA18470@elte.hu> <20070226114858.GA28836@elte.hu> <20070226122521.GA19039@2ka.mipt.ru> <20070226125054.GA6997@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+	Mon, 26 Feb 2007 09:35:35 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:44656 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030288AbXBZOfe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 09:35:34 -0500
+Date: Mon, 26 Feb 2007 15:35:34 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Michael Krufky <mkrufky@linuxtv.org>
+Cc: Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>,
+       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
+       stable@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       Marcel Siegert <mws@linuxtv.org>
+Subject: Re: [v4l-dvb-maintainer] Re: [stable] [patch 00/50] -stable review
+Message-ID: <20070226143534.GJ29575@stusta.de>
+References: <45C624D2.9030403@linuxtv.org> <20070205214332.GB18230@kroah.com> <45C7ACAB.6060408@linuxtv.org> <20070205223304.GA19793@kroah.com> <45CA3FBD.70407@linuxtv.org> <45CCCE51.8090103@linuxtv.org> <20070209195156.GA27018@kroah.com> <20070220231223.GA22746@kroah.com> <45DBAE91.8040804@linuxtv.org> <45DCB30F.2090001@linuxtv.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070226125054.GA6997@elte.hu>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Mon, 26 Feb 2007 17:32:43 +0300 (MSK)
+In-Reply-To: <45DCB30F.2090001@linuxtv.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 26, 2007 at 01:50:54PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
-> > I feared _ONLY_ situation when thousands of thereads are eating my 
-> > brain - so case when 161 threads are running simultanesoulsy is not 
-> > that bad compared to what micro-design can do (of its best/worst) at 
-> > all!
+On Wed, Feb 21, 2007 at 04:01:03PM -0500, Michael Krufky wrote:
+>...
+> Adrian, this should also apply against 2.6.16.y
+
+Thanks, applied.
+
+> Thank you,
 > 
-> even with ten thousand threads it is still pretty fast. Certainly not 
-> '10 times slower' as you claimed. And it takes only a single, trivial 
-> outer event loop to lift it up to the performance levels of a pure event 
-> based server.
+> Michael Krufky
+>...
 
-I did not claim that it will be 10 times slower, I said that it will be
-slower, my '10 times slower', which are actually '15% of hte total time'
-is a reply to your 'fast as sync' model, no need to repaing the picture :)
-
-> conclusion: currently i dont see a compelling need for the kevents 
-> subsystem. epoll is a pretty nice API and it covers most of the event 
-> sources and nicely builds upon our existing poll() infrastructure.
->
-> furthermore, i very much contest your claim that a high-performance, 
-> highly scalable webserver needs a kevent+nonblock design. Even if i 
-> ignore all the obvious usability and maintainance-cost advantages of 
-> threadlets.
-
-Ok, I see your point, you insult something you did not ever try to
-understand, that is your right.
-
-> > So, caching is good - threadlets do not spawn a new thread, kevent 
-> > returns immediately, but in case of things are not that shine - 
-> > threadlets spawnd a new thread, while kevent process next request or 
-> > waits for all completed.
-> 
-> no. Please read the evserver_threadlet.c code. There's no kevent in 
-> there. There's no epoll() in there. All that you can see there is the 
-> natural behavior of pure threadlets. And it's not a workload /I/ picked 
-> for threadlets - it is a workload, filesize, parallelism level and 
-> request handling function /you/ picked for "event-servers".
-
-I know that there is no kevents there, that would be really strange if
-you would test it in your environment after all that empty kevent
-releases.
-
-Enough, you say micro-thread design is superior - ok, that is your
-point.
-
-> 	Ingo
+cu
+Adrian
 
 -- 
-	Evgeniy Polyakov
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
