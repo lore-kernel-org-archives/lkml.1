@@ -1,75 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030426AbXBZStB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030449AbXBZSyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030426AbXBZStB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 13:49:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030431AbXBZStB
+	id S1030449AbXBZSyR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 13:54:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030452AbXBZSyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 13:49:01 -0500
-Received: from mxout-03.mxes.net ([216.86.168.178]:2068 "EHLO
-	mxout-03.mxes.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030426AbXBZStA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 13:49:00 -0500
-Message-ID: <36488.86.7.220.119.1172515738.squirrel@wmbeta.mxes.net>
-In-Reply-To: <1172493697.20842.6.camel@daplas>
-References: <35472.86.7.220.119.1172237750.squirrel@wmbeta.mxes.net> 
-    <20070224030950.074f88d4.akpm@linux-foundation.org> 
-    <33525.86.7.220.119.1172358010.squirrel@wmbeta.mxes.net> 
-    <1172359843.4415.8.camel@daplas> 
-    <34578.86.7.220.119.1172401665.squirrel@wmbeta.mxes.net>
-    <1172493697.20842.6.camel@daplas>
-Date: Mon, 26 Feb 2007 18:48:58 -0000 (GMT)
-Subject: Re: 2.6.21-rc1: framebuffer/console boot failure
-From: "Andrew Nelless" <andrew@nelless.net>
-To: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>
-Reply-To: "Andrew Nelless" <andrew@nelless.net>
-User-Agent: SquirrelMail/1.5.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Mon, 26 Feb 2007 13:54:17 -0500
+Received: from aun.it.uu.se ([130.238.12.36]:49882 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030449AbXBZSyQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 13:54:16 -0500
+Date: Mon, 26 Feb 2007 19:54:08 +0100 (MET)
+Message-Id: <200702261854.l1QIs8D9013016@alkaid.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: davem@davemloft.net
+Subject: [PATCH 2.6.21-rc1] sparc64: fix CONFIG_PCI_MSI=n compile failure
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, February 26, 2007 12:41 pm, Antonino A. Daplas wrote:
->
-> I don't know, probably the ACPI code can now probably detect the
-> presence or absence of the HPET timer.
->
-> Can you remove CONFIG_FB_VESA support from your kernel config but boot
-> as if you have vesafb (ie with vga=<VESA mode number>). Your machine may boot to completion but
-> you will have a blank screen.  But you should be able to have an output in netconsole and you
-> can start X. I wanted to know if the lockup is related to the framebuffer.
->
-> Tony
->
->
+2.6.21-rc1 fails to build on sparc64 when CONFIG_PCI_MSI=n:
 
-I disabled CONFIG_FB_VESA but it is still happening because
-intermittent boots don't pump out anything over NetConsole.
+  gcc -Wp,-MD,arch/sparc64/kernel/.irq.o.d  -nostdinc -isystem /home/mikpe/pkgs/linux-sparc64/gcc-4.1.2/lib/gcc/sparc64-unknown-linux-gnu/4.1.2/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Os -m64 -pipe -mno-fpu -mcpu=ultrasparc -mcmodel=medlow -ffixed-g4 -ffixed-g5 -fcall-used-g7 -Wno-sign-compare -Wa,--undeclared-regs -fomit-frame-pointer  -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign -Werror   -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(irq)"  -D"KBUILD_MODNAME=KBUILD_STR(irq)" -c -o arch/sparc64/kernel/irq.o arch/sparc64/kernel/irq.c
+cc1: warnings being treated as errors
+arch/sparc64/kernel/irq.c:113: warning: 'virt_irq_free' defined but not used
+make[1]: *** [arch/sparc64/kernel/irq.o] Error 1
+make: *** [arch/sparc64/kernel] Error 2
 
-It's tempting to think this is a hardware issue but I've been
-booting 2.6.20 daily since -rc3 and this hasn't happened before
-and still doesn't. I've even installed Asus's latest "beta bios"
-(which convenient doesn't come with a changelog) but it had
-no effect.
+Most other MSI stuff in irq.c is #ifdef CONFIG_PCI_MSI.
+So do the same for virt_irq_free() to fix this problem.
 
-The only thing I can think to do now is another git bisect.
-Now I know this occurs on average about every third boot I
-could do half a dozen reboots between bisections and hopefully
-find out what caused the problem..
+Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
 
-Unfortunately I won't have the time for such a time consuming
-adventure much the weekend..
-
-Any further ideas?
-
- -- Andrew
-
-P.S. You mentioned HPET, is this HPET config normal?
-andrew@ziggy ~ $ fgrep -i hpet /usr/src/linux-2.6.21-rc1/.config
-CONFIG_HPET_TIMER=y
-CONFIG_HPET_EMULATE_RTC=y
-# CONFIG_HPET is not set
-
-
+--- linux-2.6.21-rc1/arch/sparc64/kernel/irq.c.~1~	2007-02-26 17:47:54.000000000 +0100
++++ linux-2.6.21-rc1/arch/sparc64/kernel/irq.c	2007-02-26 18:01:55.000000000 +0100
+@@ -109,6 +109,7 @@ static unsigned char virt_irq_alloc(unsi
+ 	return ent;
+ }
+ 
++#ifdef CONFIG_PCI_MSI
+ static void virt_irq_free(unsigned int virt_irq)
+ {
+ 	unsigned int real_irq;
+@@ -121,6 +122,7 @@ static void virt_irq_free(unsigned int v
+ 
+ 	__bucket(real_irq)->virt_irq = 0;
+ }
++#endif
+ 
+ static unsigned int virt_to_real_irq(unsigned char virt_irq)
+ {
