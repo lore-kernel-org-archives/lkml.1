@@ -1,177 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030262AbXBZOA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030253AbXBZOBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030262AbXBZOA0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 09:00:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030254AbXBZOA0
+	id S1030253AbXBZOBt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 09:01:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030241AbXBZOBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 09:00:26 -0500
-Received: from systemlinux.org ([83.151.29.59]:37297 "EHLO m18s25.vlinux.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030246AbXBZOAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 09:00:24 -0500
-X-Greylist: delayed 1688 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 Feb 2007 09:00:23 EST
-Date: Mon, 26 Feb 2007 14:31:53 +0100
-From: Andre Noll <maan@systemlinux.org>
-To: Andrew Vasquez <linux-driver@qlogic.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@SteelEye.com>
-Subject: qla2xxx BUG: workqueue leaked lock or atomic
-Message-ID: <20070226133153.GC4095@skl-net.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="WplhKdTI2c8ulnbP"
+	Mon, 26 Feb 2007 09:01:48 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50367 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030253AbXBZOBr convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 09:01:47 -0500
+From: Vincent ROQUETA <Vincent.roqueta@bull.net>
+To: nfsv4@linux-nfs.org
+Subject: Re: [Patch][NFSv4]: Kernel panic (handle kernel NULL pointer) occurred in NFSv4 by the nfs_update_inode()
+Date: Mon, 26 Feb 2007 15:05:35 +0100
+User-Agent: KMail/1.9.5
+Cc: patrice.martinez@bull.net, linux-kernel@vger.kernel.org,
+       "fj-shic" <shic@np.css.fujitsu.com>
+References: <012701c7433f$98321c50$adb1220a@shic> <200702261402.41953.Vincent.roqueta@bull.net>
+In-Reply-To: <200702261402.41953.Vincent.roqueta@bull.net>
+MIME-Version: 1.0
+Message-Id: <200702261505.35701.Vincent.roqueta@bull.net>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 26/02/2007 15:03:15,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 26/02/2007 15:03:16,
+	Serialize complete at 26/02/2007 15:03:16
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Le lundi 26 février 2007 14:02, Vincent ROQUETA a écrit :
+> Le lundi 29 janvier 2007 01:51, fj-shic a écrit :
+> > Hi, all
+> >
+> >    Is there any good idea about this issue?
+> >    I really think this is a problem in the NFSv4, which should be
+> > resolved in the latest kernel.
+>
+> I have applied this patch to fix the bug I have seen in the same function
+> (See mail : "Client freeze with 64K pages" in the NFSv4 mailing list )
+>
+> As result, it seems to have an other unfixed bug forward in the NFSv4
+> stack. (in function nfs4_free_client, at unmount time), but at least the
+> kernel does not crash at the same point.
+>
+> Since I am using a few used 64K pages configuration, I may "activate"
+> unknown bugs on wildly used NFS code.
 
---WplhKdTI2c8ulnbP
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+More over, 
+The patch seems to introduce a delay between two mounts.
+During this delay, it is not possible to umount/mount a nfsv4.
+Here are the traces I have got doing a long serie of mount/umount :
+.............
+.............
+mount: ns2:/: can't read superblock
+umount: /mnt/nfs/: not mounted
+mount: ns2:/: can't read superblock
+umount: /mnt/nfs/: not mounted
+mount: ns2:/: can't read superblock
+umount: /mnt/nfs/: not mounted
+mount: ns2:/: can't read superblock
+..........
+.........
+--------------------------------------------------------------------------------------------------------------- 
 
-Hi
-
-On linux-2.6.20.1, we're seeing hard lockups with 2 raid systems
-connected to a qla2xxx card and used as a single volume via lvm.
-The system seems to lock up only if data gets written to both raid
-systems at the same time.
-
-On a standard kernel nothing makes it to the log, the system just
-freezes. So we tried a lockdep kernel which reports two BUGs during
-boot, see below.
-
-Could this be related to our problem?
-
-Thanks
-Andre
-
-
-[   64.150773] Loading iSCSI transport class v2.0-724.
-[   64.151096] QLogic Fibre Channel HBA Driver
-[   64.151405] ACPI: PCI Interrupt 0000:05:08.0[A] -> GSI 32 (level, low) -=
-> IRQ 32
-[   64.151821] qla2xxx 0000:05:08.0: Found an ISP2422, irq 32, iobase 0xfff=
-fc20000006000
-[   64.152231] qla2xxx 0000:05:08.0: Configuring PCI space...
-[   64.152498] qla2xxx 0000:05:08.0: Configure NVRAM parameters...
-[   64.159088] qla2xxx 0000:05:08.0: Verifying loaded RISC code...
-[   74.169623] qla2xxx 0000:05:08.0: Firmware image unavailable.
-[   74.169737] qla2xxx 0000:05:08.0: Firmware images can be retrieved from:=
- ftp://ftp.qlogic.com/outgoing/linux/firmware/.
-[   74.169902] qla2xxx 0000:05:08.0: Attempting to load (potentially outdat=
-ed) firmware from flash.
-[   74.760935] qla2xxx 0000:05:08.0: Allocated (64 KB) for EFT...
-[   74.761186] qla2xxx 0000:05:08.0: Allocated (1413 KB) for firmware dump.=
-=2E.
-[   74.776988] scsi0 : qla2xxx
-[   74.961451] qla2xxx 0000:05:08.0:=20
-[   74.961452]  QLogic Fibre Channel HBA Driver: 8.01.07-k4
-[   74.961453]   QLogic HP AE369-60001 - QLA2340
-[   74.961454]   ISP2422: PCI-X Mode 1 (133 MHz) @ 0000:05:08.0 hdma+, host=
-#=3D0, fw=3D4.00.70 [IP]=20
-[   74.961970] ACPI: PCI Interrupt 0000:05:08.1[B] -> GSI 33 (level, low) -=
-> IRQ 33
-[   74.962296] qla2xxx 0000:05:08.1: Found an ISP2422, irq 33, iobase 0xfff=
-fc20000172000
-[   74.962662] qla2xxx 0000:05:08.1: Configuring PCI space...
-[   74.962914] qla2xxx 0000:05:08.1: Configure NVRAM parameters...
-[   74.969494] qla2xxx 0000:05:08.1: Verifying loaded RISC code...
-[   75.353426] qla2xxx 0000:05:08.0: LIP reset occured (f7f7).
-[   75.385670] qla2xxx 0000:05:08.0: LIP occured (f7f7).
-[   75.388282] qla2xxx 0000:05:08.0: LOOP UP detected (2 Gbps).
-[   75.778656] BUG: at kernel/lockdep.c:1860 trace_hardirqs_on()
-[   75.778771]=20
-[   75.778772] Call Trace:
-[   75.778967]  <IRQ>  [<ffffffff8024b877>] trace_hardirqs_on+0xd7/0x180
-[   75.779154]  [<ffffffff8052bc1b>] _spin_unlock_irq+0x2b/0x40
-[   75.779271]  [<ffffffff804605d7>] qla2x00_process_completed_request+0x13=
-7/0x1d0
-[   75.779424]  [<ffffffff804606f2>] qla2x00_status_entry+0x82/0xa40
-[   75.779541]  [<ffffffff8024b17f>] __lock_acquire+0xcdf/0xd90
-[   75.779657]  [<ffffffff8052bcb2>] _spin_unlock_irqrestore+0x42/0x60
-[   75.779775]  [<ffffffff8046228e>] qla24xx_intr_handler+0x4e/0x2b0
-[   75.779892]  [<ffffffff804613e1>] qla24xx_process_response_queue+0xc1/0x=
-1c0
-[   75.780012]  [<ffffffff80462414>] qla24xx_intr_handler+0x1d4/0x2b0
-[   75.780131]  [<ffffffff8025e950>] handle_IRQ_event+0x20/0x60
-[   75.780270]  [<ffffffff802604ad>] handle_fasteoi_irq+0xbd/0x110
-[   75.780411]  [<ffffffff8020cf62>] do_IRQ+0x132/0x1a0
-[   75.780545]  [<ffffffff80208430>] default_idle+0x0/0x60
-[   75.780682]  [<ffffffff8020a236>] ret_from_intr+0x0/0xf
-[   75.780818]  <EOI>  [<ffffffff80208467>] default_idle+0x37/0x60
-[   75.781021]  [<ffffffff80208469>] default_idle+0x39/0x60
-[   75.781156]  [<ffffffff80208467>] default_idle+0x37/0x60
-[   75.781294]  [<ffffffff802084f1>] cpu_idle+0x61/0x90
-[   75.781429]  [<ffffffff806d6f8b>] start_secondary+0x51b/0x530
-[   75.781569]=20
-[   75.781873] scsi 0:0:0:0: Direct-Access     transtec T6100F16R1-E     34=
-2I PQ: 0 ANSI: 5
-[   75.782532] BUG: workqueue leaked lock or atomic: scsi_wq_0/0x00000000/3=
-62
-[   75.782678]     last function: fc_scsi_scan_rport+0x0/0x90
-[   75.782878] 1 lock held by scsi_wq_0/362:
-[   75.783008]  #0:  (&shost->scan_mutex){--..}, at: [<ffffffff80529fe5>] m=
-utex_lock+0x25/0x30
-[   75.783517]=20
-[   75.783518] Call Trace:
-[   75.783754]  [<ffffffff80248319>] debug_show_held_locks+0x9/0x10
-[   75.783896]  [<ffffffff8023eb49>] run_workqueue+0x149/0x1a0
-[   75.784036]  [<ffffffff802427c0>] keventd_create_kthread+0x0/0x90
-[   75.784180]  [<ffffffff8023edc1>] worker_thread+0x151/0x190
-[   75.784322]  [<ffffffff80227e80>] default_wake_function+0x0/0x10
-[   75.784463]  [<ffffffff8023ec70>] worker_thread+0x0/0x190
-[   75.784600]  [<ffffffff80242a2a>] kthread+0xda/0x110
-[   75.784737]  [<ffffffff8020ab08>] child_rip+0xa/0x12
-[   75.784875]  [<ffffffff8052bc1b>] _spin_unlock_irq+0x2b/0x40
-[   75.785014]  [<ffffffff8020a28c>] restore_args+0x0/0x30
-[   75.785149]  [<ffffffff80242950>] kthread+0x0/0x110
-[   75.785285]  [<ffffffff8020aafe>] child_rip+0x0/0x12
-[   75.785417]=20
-[   84.980341] qla2xxx 0000:05:08.1: Firmware image unavailable.
-[   84.980455] qla2xxx 0000:05:08.1: Firmware images can be retrieved from:=
- ftp://ftp.qlogic.com/outgoing/linux/firmware/.
-[   84.980620] qla2xxx 0000:05:08.1: Attempting to load (potentially outdat=
-ed) firmware from flash.
-[   85.571726] qla2xxx 0000:05:08.1: Allocated (64 KB) for EFT...
-[   85.571956] qla2xxx 0000:05:08.1: Allocated (1413 KB) for firmware dump.=
-=2E.
-[   85.587766] scsi1 : qla2xxx
-[   85.718476] qla2xxx 0000:05:08.1:=20
-[   85.718478]  QLogic Fibre Channel HBA Driver: 8.01.07-k4
-[   85.718479]   QLogic HP AE369-60001 - QLA2340
-[   85.718480]   ISP2422: PCI-X Mode 1 (133 MHz) @ 0000:05:08.1 hdma+, host=
-#=3D1, fw=3D4.00.70 [IP]=20
-[   85.719505] sda : very big device. try to use READ CAPACITY(16).
-[   85.719727] SCSI device sda: 11714863104 512-byte hdwr sectors (5998010 =
-MB)
-[   85.720114] sda: Write Protect is off
-[   85.720219] sda: Mode Sense: 9b 00 00 08
-[   85.720608] SCSI device sda: write cache: disabled, read cache: enabled,=
- doesn't support DPO or FUA
-[   85.721008] sda : very big device. try to use READ CAPACITY(16).
-[   85.721206] SCSI device sda: 11714863104 512-byte hdwr sectors (5998010 =
-MB)
-[   85.721552] sda: Write Protect is off
-[   85.721680] sda: Mode Sense: 9b 00 00 08
-[   85.722088] SCSI device sda: write cache: disabled, read cache: enabled,=
- doesn't support DPO or FUA
-[   85.722298]  sda: unknown partition table
-[   85.722897] sd 0:0:0:0: Attached scsi disk sda
-[   85.723205] sd 0:0:0:0: Attached scsi generic sg0 type 0
-
---WplhKdTI2c8ulnbP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQFF4uFIWto1QDEAkw8RApQFAJ95spAIkenXJ1P8go+fw0X95yVUGQCfVhyT
-Z8PhdKYLysDdGTqIrWqt14U=
-=SNzL
------END PGP SIGNATURE-----
-
---WplhKdTI2c8ulnbP--
+NFS: nfs_update_inode(0:15/7946242 ct=1
+info=0xe)
+VFS: Busy inodes after unmount of 0:15. Self-destruct in 5 seconds.  Have a
+nice day...
+kernel BUG at fs/nfs/nfs4state.c:125!
+umount[11087]: bugcheck! 0 [1]
+Modules linked in: nfs sg scsi_dump perfbull mdm nfsd exportfs lockd eip ep
+rms elan4 elan3 sunrpc elan qsnet ide_cd cdrom vfat fat dm_mod thermal
+processor fan button uhci_hcd ehci_hcd e100 e1000 ext3 jbd aic7xxx
+scsi_transport_spi sd_mod scsi_mod
+>
+Pid: 11087, CPU 3, comm:               umount
+psr : 00001010081a6018 ifs : 800000000000038a ip  : [<a0000002083189e0>]
+Not tainted
+ip is at nfs4_free_client+0x1e0/0x200 [nfs]
+unat: 0000000000000000 pfs : 000000000000038a rsc : 0000000000000003
+rnat: 0000000000000073 bsps: 0000000000000073 pr  : 0000000005552959
+ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c8a70033f
+csd : 0000000000000000 ssd : 0000000000000000
+b0  : a0000002083189e0 b6  : a000000100065220 b7  : a0000001003781a0
+f6  : 1003e0000000000000028 f7  : 1003e28f5c28f5c28f5c3
+f8  : 1003e00000000000000fa f9  : 1003e0000000032000000
+f10 : 1003e000000003b9aca00 f11 : 1003ed6bf94d5e57a42bd
+r1  : a000000100a6e140 r2  : 0000000000004000 r3  : e000000004a20000
+r8  : 0000000000000029 r9  : 0000000000000001 r10 : a0000001008884c0
+r11 : 0000000000000000 r12 : e00000010f06fd60 r13 : e00000010f060000
+r14 : 0000000000004000 r15 : a0000001008884c0 r16 : 0000000000004000
+r17 : 0000000000000003 r18 : 0000000000000000 r19 : 0000000000000000
+r20 : 0000000000000004 r21 : 0000000000000000 r22 : e00000010f060f54
+r23 : 0000000000000001 r24 : e000000103140f5c r25 : e000000103140f40
+r26 : e000000103140008 r27 : 0000000000000073 r28 : 0000000000000073
+r29 : 6666666666666667 r30 : 00000000000000c8 r31 : 00000000000004b0
+>
+Call Trace:
+ [<a000000100010f60>] show_stack+0x80/0xa0
+                                sp=e00000010f06f8b0 bsp=e00000010f0612e8
+ [<a000000100011870>] show_regs+0x890/0x8c0
+                                sp=e00000010f06fa80 bsp=e00000010f0612a0
+    r32 : e00000010f06fce8 r33 : e00000010f06fa90 r34 : e00000010f06fbe0
+    r35 : e00000010f06fc18 r36 : e00000010f06fc30 r37 : e00000010f06fbf0
+    r38 : a000000100037b20 r39 : 0000000000000510 r40 : e00000010f06fab0
+ [<a000000100037b20>] die+0x1a0/0x4c0
+                                sp=e00000010f06faa0 bsp=e00000010f061250
+    r32 : a0000001005e5c78 r33 : e00000010f06fba0 r34 : 0000000000000000
+    r35 : 0000000000000003 r36 : a000000100736ae0 r37 : a000000100736ad8
+    r38 : a000000100736adc r39 : a000000100037e80 r40 : 0000000000000309
+    r41 : a000000100a6e140
+ [<a000000100037e80>] die_if_kernel+0x40/0x60
+                                sp=e00000010f06fac0 bsp=e00000010f061220
+    r32 : a0000001005e5c78 r33 : e00000010f06fba0 r34 : 0000000000000000
+    r35 : a000000100038550 r36 : 0000000000000289 r37 : e00000010f06fd38
+ [<a000000100038550>] ia64_bad_break+0x6b0/0x820
+                                sp=e00000010f06fac0 bsp=e00000010f0611f0
+    r32 : 0000000000000000 r33 : e00000010f06fba0 r34 : a00000010000b780
+    r35 : 0000000000000002 r36 : a0000001000a2550
+ [<a00000010000b780>] ia64_leave_kernel+0x0/0x280
+                                sp=e00000010f06fb90 bsp=e00000010f0611f0
+ [<a0000002083189e0>] nfs4_free_client+0x1e0/0x200 [nfs]
+                                sp=e00000010f06fd60 bsp=e00000010f0611a0
+    r32 : e00000016f83a180 r33 : e00000016f83a1f8 r34 : 0000000000200200
+    r35 : 0000000000100100 r36 : a0000002083190b0 r37 : 0000000000000288
+    r38 : a0000002083041a0 r39 : a000000208332dc0 r40 : a000000208332dd8
+    r41 : 000000000000007d
+ [<a0000002083190b0>] nfs4_put_client+0x110/0x180 [nfs]
+                                sp=e00000010f06fd60 bsp=e00000010f061178
+    r32 : e00000016f83a180 r33 : a0000002083482e8 r34 : a0000002083191a0
+    r35 : 0000000000000286 r36 : a0000002083041a0
+ [<a0000002083191a0>] destroy_nfsv4_state+0x80/0xa0 [nfs]
+                                  sp=e00000010f06fd60 bsp=e00000010f061150
+     r32 : e0000001017ffbf0 r33 : e0000001017ffbf8 r34 : a0000002082d7350
+     r35 : 0000000000000286 r36 : a0000002083041a0
+  [<a0000002082d7350>] nfs4_kill_super+0x90/0x160 [nfs]
+                                 sp=e00000010f06fd60 bsp=e00000010f061128
+     r32 : e000000103154200 r33 : e0000001017ffa80 r34 : a00000010014b900
+     r35 : 0000000000000308 r36 : a0000002083041a0
+  [<a00000010014b900>] deactivate_super+0x140/0x220
+                                 sp=e00000010f06fd60 bsp=e00000010f0610f8
+     r32 : e000000103154200 r33 : a000000100880cd0 r34 : a0000002083429c0
+     r35 : a000000100185060 r36 : 0000000000000389 r37 : a000000100a6e140
+  [<a000000100185060>] mntput_no_expire+0x160/0x260
+                                 sp=e00000010f06fd60 bsp=e00000010f0610c0
+     r32 : e000000103154200 r33 : e0000001040e4c80 r34 : a0000001006e9200
+     r35 : a0000001006e9300 r36 : a00000010015df20 r37 : 0000000000000205
+     r38 : a000000100a6e140
+  [<a00000010015df20>] path_release_on_umount+0x40/0x60
+                                 sp=e00000010f06fd60 bsp=e00000010f0610a0
+     r32 : e00000010f06fd78 r33 : a000000100186670 r34 : 0000000000000916
+     r35 : e0000001040e4c90
+  [<a000000100186670>] sys_umount+0x450/0x800
+                                 sp=e00000010f06fd60 bsp=e00000010f061010
+     r32 : 6000000000012db0 r33 : 0000000000000000 r34 : 600ffffffffef270
+     r35 : 600ffffffffef2f0 r36 : 4000000000006f10 r37 : c000000000000309
+     r38 : c000000000000611 r39 : 4000000000004650 r40 : 0000000000000000
+     r41 : 0000000000000000 r42 : 0000000000000000 r43 : e00000010f06fe30
+     r44 : a0000001006e9300 r45 : a000000208342a80 r46 : a000000100881e48
+     r47 : a00000010000b600 r48 : 0000000000000008 r49 : a000000100a6e140
+  [<a00000010000b600>] ia64_ret_from_syscall+0x0/0x20
+                                 sp=e00000010f06fe30 bsp=e00000010f061010
+  [<a000000000010640>] __kernel_syscall_via_break+0x0/0x20
+                                 sp=e00000010f070000 bsp=e00000010f061010
+ LKCD: CPU : 3 Reconfiguring memory bank information....
+ LKCD: This may take a while....
+ First cpu will configure dump header
+ LKCD: smp_num_cpus in header 16
+ CPU 3, 15 cpus remaining
+ Last cpu
+ LKCD: Dumping to block device (8,17) on CPU 3 ...
+ LKCD: Writing dump header
+ ....LKCD:
+  18030 dump pages saved of 65536 each in pass 0
+ LKCD:
+  29090 dump pages skipped of 65536 each in pass 1
+ LKCD:
+  1000319 dump pages skipped of 65536 each in pass 2
+ LKCD:
+  0 dump pages skipped of 65536 each in pass 3
+ LKCD: CPU : 3 dumped 257 blocks of 262144 bytes each
+ LKCD: Dump Complete; 18030 dump pages saved.
+ The system will automatically reboot now !
