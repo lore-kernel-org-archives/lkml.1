@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030401AbXBZSUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030373AbXBZS0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030401AbXBZSUc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 13:20:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030403AbXBZSUc
+	id S1030373AbXBZS0M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 13:26:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030378AbXBZS0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 13:20:32 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:55852 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030401AbXBZSUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 13:20:31 -0500
-Date: Mon, 26 Feb 2007 10:13:49 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Stephane Eranian <eranian@hpl.hp.com>, linux-kernel@vger.kernel.org
-Subject: Re: bug in kernel 2.6.21-rc1-git1: conventional floppy drive cannot
- be mounted without hanging up the whole system
-In-Reply-To: <20070226180635.GA644@tv-sign.ru>
-Message-ID: <Pine.LNX.4.64.0702261006440.12485@woody.linux-foundation.org>
-References: <20070226180635.GA644@tv-sign.ru>
+	Mon, 26 Feb 2007 13:26:12 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:47956 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030373AbXBZS0L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 13:26:11 -0500
+X-Sasl-enc: bV82+OEXUFYhOqhFEjLh6VFcugGJ1TMwzTGzHeFZAOMj 1172513826
+Date: Mon, 26 Feb 2007 15:17:03 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ACPI: ibm-acpi: improve backlight power handling
+Message-ID: <20070226181703.GI2909@khazad-dum.debian.net>
+References: <Pine.LNX.4.64.0702260154460.10496@twin.jikos.cz> <1172490091.5824.30.camel@localhost.localdomain> <Pine.LNX.4.64.0702261329270.10496@twin.jikos.cz> <20070226142157.GA2909@khazad-dum.debian.net> <1172501357.5824.91.camel@localhost.localdomain> <20070226152035.GB2909@khazad-dum.debian.net> <20070226161203.GD2909@khazad-dum.debian.net> <Pine.LNX.4.64.0702261752050.10496@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702261752050.10496@twin.jikos.cz>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 26 Feb 2007, Oleg Nesterov wrote:
+On Mon, 26 Feb 2007, Jiri Kosina wrote:
+> On Mon, 26 Feb 2007, Henrique de Moraes Holschuh wrote:
+> > Improve the backlight code to emulate as much as possible the power
+> > management events, as we are unable to really power on or power off the
+> > backlight.
 > 
-> I know nothing about floppy, but I guess the reason is floppy_disable_hlt().
-> 
-> Sorry for the offtopic question, is it really needed? According to grep, floppy
-> is the only one user of disable_hlt().
+> This still easily leads to confusing behavior, doesn't it? As there are 
+> power-related calls from backlight driver, which won't get handled 
 
-I suspect you'd have a hard time finding a machine where it was broken any 
-more.
+I failed to notice the power thing, I will update the patch to handle it.
+Thanks.
 
-But it used to be that the native (aka "braindamaged and idiotic") DMA by 
-the motherboard southbridge chipset (and apparently _only_ that) had 
-problems with the CPU being halted on some motherboards, and would corrupt 
-data if the CPU was halted while the DMA took place.
-
-We never bothered to even figure out why it happened, though. It was 
-undeniable that there were people who had trouble with "hlt" and the 
-floppy driver, but it is not clear what the cause was.
-
-That's a _loong_ time ago, though, and it *probably* hasn't been an issue 
-on any recent machine. People just don't care enough to test, especially 
-since the upside is negligible, and the downside for when it would trigger 
-is huge.
-
-The floppy is still pretty much the only user of native motherboard (aka 
-i8237) DMA'ing for most people. Some old ISA sound-cards may do it, of 
-course. But any PCI device will do its own DMA rather than rely on the 
-broken 8237 DMA engine, so for all I know, the bug - whatever it ever 
-ended up being - could still be there.
-
-			Linus
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
