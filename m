@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751327AbXBZQId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751311AbXBZQIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751327AbXBZQId (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 11:08:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbXBZQId
+	id S1751311AbXBZQIg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 11:08:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbXBZQIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 11:08:33 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:34699 "EHLO 2ka.mipt.ru"
+	Mon, 26 Feb 2007 11:08:36 -0500
+Received: from mail.screens.ru ([213.234.233.54]:52978 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751327AbXBZQIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 11:08:32 -0500
-To: linux-kernel@vger.kernel.org
-CC: devel@openvz.org
-From: Monakhov Dmitriy <dmonakhov@openvz.org>
-Subject: [PATCH 1/3] IRQ: add __must_check to request_irq
-Date: Mon, 26 Feb 2007 19:08:52 +0300
-Message-ID: <871wkcrje3.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	id S1751311AbXBZQIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 11:08:35 -0500
+Date: Mon, 26 Feb 2007 19:11:29 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Pavel Machek <pavel@ucw.cz>,
+       Aneesh Kumar <aneesh.kumar@gmail.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>
+Subject: Re: [RFC][PATCH 1/3] Freezer: Fix vfork problem
+Message-ID: <20070226161129.GA527@tv-sign.ru>
+References: <200702261139.59130.rjw@sisk.pl> <200702261147.12274.rjw@sisk.pl> <20070226120043.GB234@tv-sign.ru> <20070226151442.GA29869@in.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [194.85.82.65]); Mon, 26 Feb 2007 19:08:34 +0300 (MSK)
+Content-Disposition: inline
+In-Reply-To: <20070226151442.GA29869@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 02/26, Srivatsa Vaddagiri wrote:
+>
+> On Mon, Feb 26, 2007 at 03:00:43PM +0300, Oleg Nesterov wrote:
+> > In that case we should also modify ____call_usermodehelper(), otherwise we have
+> > the same "deadlock" if it is frozen. But this is not so easy to do as I thought
+> > before.
+> 
+> Before ____call_usermodehelper can freeze, it should have entered userspace 
+> right? By that time, its vfork parent should have definitely woken up,
+> which should avoid the deadlock you point out?
 
-This could help to find buggy drivers where request_irq return value wasn't
-checked. There's just no reason to ignore errors which can and do occur.
-Anyone who got warning during compilation have to realise what it is't realy
-safe code.
+Ah, yes, thanks for correcting me.
 
-Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
----
- include/linux/interrupt.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+We are doing flush_old_exec() a way before entering userspace of course.
 
-diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-index 8c52a56..c71f056 100644
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -83,11 +83,11 @@ struct irqaction {
- };
- 
- extern irqreturn_t no_action(int cpl, void *dev_id);
--extern int request_irq(unsigned int, irq_handler_t handler,
-+extern int __must_check request_irq(unsigned int, irq_handler_t handler,
- 		       unsigned long, const char *, void *);
- extern void free_irq(unsigned int, void *);
- 
--extern int devm_request_irq(struct device *dev, unsigned int irq,
-+extern int __must_check devm_request_irq(struct device *dev, unsigned int irq,
- 			    irq_handler_t handler, unsigned long irqflags,
- 			    const char *devname, void *dev_id);
- extern void devm_free_irq(struct device *dev, unsigned int irq, void *dev_id);
--- 
-1.5.0.1
-
+Oleg.
 
