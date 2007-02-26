@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964835AbXBZJvI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964843AbXBZJ7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964835AbXBZJvI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 04:51:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933800AbXBZJvI
+	id S964843AbXBZJ7o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 04:59:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964845AbXBZJ7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 04:51:08 -0500
-Received: from nic.NetDirect.CA ([216.16.235.2]:43831 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932608AbXBZJvH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 04:51:07 -0500
-X-Originating-Ip: 74.109.98.130
-Date: Mon, 26 Feb 2007 04:44:25 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       trivial@kernel.org
-Subject: Re: [PATCH] Remove redundant #ifdef __KERNEL__ checks.
-In-Reply-To: <45E2926C.40009@zytor.com>
-Message-ID: <Pine.LNX.4.64.0702260442160.15535@CPE00045a9c397f-CM001225dbafb6>
-References: <Pine.LNX.4.64.0702251509440.27758@CPE00045a9c397f-CM001225dbafb6>
- <45E2926C.40009@zytor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Mon, 26 Feb 2007 04:59:44 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56775 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964843AbXBZJ7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 04:59:43 -0500
+Subject: Re: [Cluster-devel] [2.6 patch] fs/dlm/user.c should #include
+	"user.h"
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: pcaulfie@redhat.com, teigland@redhat.com, cluster-devel@redhat.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070225231842.GD29575@stusta.de>
+References: <20070225231842.GD29575@stusta.de>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd
+Date: Mon, 26 Feb 2007 10:13:28 +0000
+Message-Id: <1172484808.11001.594.camel@quoit.chygwyn.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.2.2 (2.2.2-5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Feb 2007, H. Peter Anvin wrote:
+Hi,
 
-> Robert P. J. Day wrote:
-> >   Remove the redundant intermediate checks for __KERNEL__ since, as
-> > soon as one ends, the next one starts.
-> >
-> > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-> >
->
-> However, what's much worse is that this already has put series of
-> constants which are part of the ABI under __KERNEL__.  This is a
-> very bad thing.
+Now applied to the git tree. Thanks,
 
-i'm sure i'm just being dense but i have no clue what you're referring
-to.  AFAICT, that patch simply removed some redundant preprocessor
-directives.  am i missing something?
+Steve.
 
-rday
+On Mon, 2007-02-26 at 00:18 +0100, Adrian Bunk wrote:
+> Every file should include the headers containing the prototypes for
+> it's global functions.
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> 
+> ---
+> --- linux-2.6.20-mm2/fs/dlm/user.c.old	2007-02-25 19:40:16.000000000 +0100
+> +++ linux-2.6.20-mm2/fs/dlm/user.c	2007-02-25 19:40:29.000000000 +0100
+> @@ -22,6 +22,7 @@
+>  #include "lockspace.h"
+>  #include "lock.h"
+>  #include "lvb_table.h"
+> +#include "user.h"
+>  
+>  static const char *name_prefix="dlm";
+>  static struct miscdevice ctl_device;
+> 
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
