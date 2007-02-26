@@ -1,122 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030390AbXBZSIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030382AbXBZSKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030390AbXBZSIJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 13:08:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030391AbXBZSII
+	id S1030382AbXBZSKZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 13:10:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030389AbXBZSKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 13:08:08 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:58861 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030390AbXBZSIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 13:08:07 -0500
-To: Monakhov Dmitriy <dmonakhov@openvz.org>
-Cc: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       devel@openvz.org
-Subject: Re: [PATCH 2/3] pcmcia:  Handle request_irq() failure while opening device
-References: <87zm70q4sy.fsf@sw.ru>
-From: Dmitriy Monakhov <dmonakhov@openvz.org>
-Date: Mon, 26 Feb 2007 21:07:38 +0300
-In-Reply-To: <87zm70q4sy.fsf@sw.ru> (Monakhov Dmitriy's message of "Mon, 26 Feb 2007 19:09:17 +0300")
-Message-ID: <87649oaj2t.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Mon, 26 Feb 2007 13:10:25 -0500
+Received: from ftp.linux-mips.org ([194.74.144.162]:45237 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030382AbXBZSKZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 13:10:25 -0500
+Date: Mon, 26 Feb 2007 18:10:15 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [USB] goku_udc: Remove crude cache coherency code
+Message-ID: <20070226181015.GA7796@linux-mips.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [194.85.82.65]); Mon, 26 Feb 2007 21:07:56 +0300 (MSK)
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Monakhov Dmitriy <dmonakhov@openvz.org> writes:
+This is deep architecture specific magic and does should not to exist
+in a driver.
 
-> Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
-> ---
->  drivers/net/pcmcia/axnet_cs.c |    8 +++++++-
->  drivers/net/pcmcia/pcnet_cs.c |    8 +++++++-
->  2 files changed, 14 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/net/pcmcia/axnet_cs.c b/drivers/net/pcmcia/axnet_cs.c
-> index 6139048..9b57bab 100644
-> --- a/drivers/net/pcmcia/axnet_cs.c
-> +++ b/drivers/net/pcmcia/axnet_cs.c
-> @@ -523,6 +523,7 @@ static int axnet_open(struct net_device *dev)
->  {
->      axnet_dev_t *info = PRIV(dev);
->      struct pcmcia_device *link = info->p_dev;
-> +    int err = 0;
->      
->      DEBUG(2, "axnet_open('%s')\n", dev->name);
->  
-> @@ -531,7 +532,12 @@ static int axnet_open(struct net_device *dev)
->  
->      link->open++;
->  
-> -    request_irq(dev->irq, ei_irq_wrapper, IRQF_SHARED, "axnet_cs", dev);
-> +    err = request_irq(dev->irq, ei_irq_wrapper, IRQF_SHARED, "axnet_cs", dev);
-> +    if (err) {
-> +		printk("axnet_cs: request_irq() failed  %s\n", dev->name);
-> +		link->open--;
-> +		return -EBUSY;
-As David Miller noted it is better to return exact error code from request_irq(),
-truly most net_device->open() functions return error code without changing.  
-The updated patch version following:
+Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 
-Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
----
- drivers/net/pcmcia/axnet_cs.c |    8 +++++++-
- drivers/net/pcmcia/pcnet_cs.c |    8 +++++++-
- 2 files changed, 14 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/pcmcia/axnet_cs.c b/drivers/net/pcmcia/axnet_cs.c
-index 6139048..9b57bab 100644
---- a/drivers/net/pcmcia/axnet_cs.c
-+++ b/drivers/net/pcmcia/axnet_cs.c
-@@ -523,6 +523,7 @@ static int axnet_open(struct net_device *dev)
+diff --git a/drivers/usb/gadget/goku_udc.c b/drivers/usb/gadget/goku_udc.c
+index 7b3a326..65c91d3 100644
+--- a/drivers/usb/gadget/goku_udc.c
++++ b/drivers/usb/gadget/goku_udc.c
+@@ -297,27 +297,6 @@ goku_free_request(struct usb_ep *_ep, struct usb_request *_req)
+ 
+ /*-------------------------------------------------------------------------*/
+ 
+-#undef USE_KMALLOC
+-
+-/* many common platforms have dma-coherent caches, which means that it's
+- * safe to use kmalloc() memory for all i/o buffers without using any
+- * cache flushing calls.  (unless you're trying to share cache lines
+- * between dma and non-dma activities, which is a slow idea in any case.)
+- *
+- * other platforms need more care, with 2.6 having a moderately general
+- * solution except for the common "buffer is smaller than a page" case.
+- */
+-#if	defined(CONFIG_X86)
+-#define USE_KMALLOC
+-
+-#elif	defined(CONFIG_MIPS) && !defined(CONFIG_DMA_NONCOHERENT)
+-#define USE_KMALLOC
+-
+-#elif	defined(CONFIG_PPC) && !defined(CONFIG_NOT_COHERENT_CACHE)
+-#define USE_KMALLOC
+-
+-#endif
+-
+ /* allocating buffers this way eliminates dma mapping overhead, which
+  * on some platforms will mean eliminating a per-io buffer copy.  with
+  * some kinds of system caches, further tweaks may still be needed.
+@@ -334,11 +313,6 @@ goku_alloc_buffer(struct usb_ep *_ep, unsigned bytes,
+ 		return NULL;
+ 	*dma = DMA_ADDR_INVALID;
+ 
+-#if	defined(USE_KMALLOC)
+-	retval = kmalloc(bytes, gfp_flags);
+-	if (retval)
+-		*dma = virt_to_phys(retval);
+-#else
+ 	if (ep->dma) {
+ 		/* the main problem with this call is that it wastes memory
+ 		 * on typical 1/N page allocations: it allocates 1-N pages.
+@@ -348,7 +322,6 @@ goku_alloc_buffer(struct usb_ep *_ep, unsigned bytes,
+ 				bytes, dma, gfp_flags);
+ 	} else
+ 		retval = kmalloc(bytes, gfp_flags);
+-#endif
+ 	return retval;
+ }
+ 
+@@ -356,7 +329,6 @@ static void
+ goku_free_buffer(struct usb_ep *_ep, void *buf, dma_addr_t dma, unsigned bytes)
  {
-     axnet_dev_t *info = PRIV(dev);
-     struct pcmcia_device *link = info->p_dev;
-+    int err = 0;
-     
-     DEBUG(2, "axnet_open('%s')\n", dev->name);
+ 	/* free memory into the right allocator */
+-#ifndef	USE_KMALLOC
+ 	if (dma != DMA_ADDR_INVALID) {
+ 		struct goku_ep	*ep;
  
-@@ -531,7 +532,12 @@ static int axnet_open(struct net_device *dev)
+@@ -365,7 +337,6 @@ goku_free_buffer(struct usb_ep *_ep, void *buf, dma_addr_t dma, unsigned bytes)
+ 			return;
+ 		dma_free_coherent(&ep->dev->pdev->dev, bytes, buf, dma);
+ 	} else
+-#endif
+ 		kfree (buf);
+ }
  
-     link->open++;
- 
--    request_irq(dev->irq, ei_irq_wrapper, IRQF_SHARED, "axnet_cs", dev);
-+    err = request_irq(dev->irq, ei_irq_wrapper, IRQF_SHARED, "axnet_cs", dev);
-+    if (err) {
-+		printk("axnet_cs: request_irq() failed  %s\n", dev->name);
-+		link->open--;
-+		return err;
-+    }
- 
-     info->link_status = 0x00;
-     init_timer(&info->watchdog);
-diff --git a/drivers/net/pcmcia/pcnet_cs.c b/drivers/net/pcmcia/pcnet_cs.c
-index d88e9b2..13923ea 100644
---- a/drivers/net/pcmcia/pcnet_cs.c
-+++ b/drivers/net/pcmcia/pcnet_cs.c
-@@ -962,6 +962,7 @@ static int pcnet_open(struct net_device *dev)
- {
-     pcnet_dev_t *info = PRIV(dev);
-     struct pcmcia_device *link = info->p_dev;
-+    int err = 0;
- 
-     DEBUG(2, "pcnet_open('%s')\n", dev->name);
- 
-@@ -971,7 +972,12 @@ static int pcnet_open(struct net_device *dev)
-     link->open++;
- 
-     set_misc_reg(dev);
--    request_irq(dev->irq, ei_irq_wrapper, IRQF_SHARED, dev_info, dev);
-+    err = request_irq(dev->irq, ei_irq_wrapper, IRQF_SHARED, dev_info, dev);
-+    if (err) {
-+		printk("pcnet_open: request_irq() failed  %s\n", dev->name);
-+		link->open--;
-+		return err;
-+    }
- 
-     info->phy_id = info->eth_phy;
-     info->link_status = 0x00;
--- 
-1.5.0.1
-
