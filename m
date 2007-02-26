@@ -1,44 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933765AbXBZEfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751019AbXBZFNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933765AbXBZEfe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 23:35:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933766AbXBZEfe
+	id S1751019AbXBZFNW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 00:13:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751098AbXBZFNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 23:35:34 -0500
-Received: from fall-curlleaf.atl.sa.earthlink.net ([207.69.195.105]:58131 "EHLO
-	fall-curlleaf.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933765AbXBZEfd (ORCPT
+	Mon, 26 Feb 2007 00:13:22 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:41991 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751019AbXBZFNV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 23:35:33 -0500
-X-Greylist: delayed 451 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 Feb 2007 23:35:33 EST
-Subject: Re: [kvm-devel] PIO port width on various archs?
-From: Hollis Blanchard <hollis@penguinppc.org>
-To: Avi Kivity <avi@qumranet.com>
-Cc: kvm-devel <kvm-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <45E14F9D.3050502@qumranet.com>
-References: <45E14F9D.3050502@qumranet.com>
-Content-Type: text/plain
-Date: Sun, 25 Feb 2007 22:27:47 -0600
-Message-Id: <1172464067.12245.4.camel@diesel>
+	Mon, 26 Feb 2007 00:13:21 -0500
+Date: Mon, 26 Feb 2007 05:13:04 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: divy@chelsio.com
+Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Subject: Re: [PATCH 7/7] cxgb3 - Add SW LRO support
+Message-ID: <20070226051304.GA13626@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>, divy@chelsio.com,
+	jeff@garzik.org, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, swise@opengridcomputing.com
+References: <20070225004423.20903.17036.stgit@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070225004423.20903.17036.stgit@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-02-25 at 10:58 +0200, Avi Kivity wrote:
-> I'm changing the kvm userspace interface to be more friendly to other 
-> archs.  One issue is the PIO port size.  x86 uses 16 bits to hold the 
-> port size (64K ports).  Is that an issue for other archs?
+On Sat, Feb 24, 2007 at 04:44:23PM -0800, divy@chelsio.com wrote:
+> From: Divy Le Ray <divy@chelsio.com>
 > 
-> I guess I could change it to __u32, but it's better to know what various 
-> architectures actually require.
+> Add all-in-sw lro support.
 
-PowerPC doesn't have any such concept; access to ISA PIO is done by
-having the bridge translate a particular range of MMIO accesses as PIO.
-I'm no expert, but I don't know of any mainstream processor other than
-x86 that supports PIO.
-
--Hollis
-
+Doing this in a LLDD doesn't sound like a good idea.  Have you
+tried doing this in the core networking code instead?
