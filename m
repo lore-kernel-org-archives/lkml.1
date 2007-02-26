@@ -1,189 +1,272 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030253AbXBZOBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030230AbXBZOGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030253AbXBZOBt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 09:01:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030241AbXBZOBs
+	id S1030230AbXBZOGY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 09:06:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030241AbXBZOGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 09:01:48 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50367 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030253AbXBZOBr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 09:01:47 -0500
-From: Vincent ROQUETA <Vincent.roqueta@bull.net>
-To: nfsv4@linux-nfs.org
-Subject: Re: [Patch][NFSv4]: Kernel panic (handle kernel NULL pointer) occurred in NFSv4 by the nfs_update_inode()
-Date: Mon, 26 Feb 2007 15:05:35 +0100
-User-Agent: KMail/1.9.5
-Cc: patrice.martinez@bull.net, linux-kernel@vger.kernel.org,
-       "fj-shic" <shic@np.css.fujitsu.com>
-References: <012701c7433f$98321c50$adb1220a@shic> <200702261402.41953.Vincent.roqueta@bull.net>
-In-Reply-To: <200702261402.41953.Vincent.roqueta@bull.net>
-MIME-Version: 1.0
-Message-Id: <200702261505.35701.Vincent.roqueta@bull.net>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 26/02/2007 15:03:15,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 26/02/2007 15:03:16,
-	Serialize complete at 26/02/2007 15:03:16
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 26 Feb 2007 09:06:24 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:53765 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030230AbXBZOGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 09:06:23 -0500
+Date: Mon, 26 Feb 2007 17:05:00 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070226140500.GA31629@2ka.mipt.ru>
+References: <20070222113148.GA3781@2ka.mipt.ru> <20070222125931.GB25788@elte.hu> <20070222133201.GB5208@2ka.mipt.ru> <20070223115152.GA2565@elte.hu> <20070223122224.GB5392@2ka.mipt.ru> <20070225174505.GA7048@elte.hu> <20070225180910.GA29821@2ka.mipt.ru> <20070225190414.GB6460@elte.hu> <20070225194250.GA1353@2ka.mipt.ru> <20070226123922.GA1370@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
+In-Reply-To: <20070226123922.GA1370@elte.hu>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Mon, 26 Feb 2007 17:05:17 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le lundi 26 février 2007 14:02, Vincent ROQUETA a écrit :
-> Le lundi 29 janvier 2007 01:51, fj-shic a écrit :
-> > Hi, all
-> >
-> >    Is there any good idea about this issue?
-> >    I really think this is a problem in the NFSv4, which should be
-> > resolved in the latest kernel.
->
-> I have applied this patch to fix the bug I have seen in the same function
-> (See mail : "Client freeze with 64K pages" in the NFSv4 mailing list )
->
-> As result, it seems to have an other unfixed bug forward in the NFSv4
-> stack. (in function nfs4_free_client, at unmount time), but at least the
-> kernel does not crash at the same point.
->
-> Since I am using a few used 64K pages configuration, I may "activate"
-> unknown bugs on wildly used NFS code.
+On Mon, Feb 26, 2007 at 01:39:23PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
+> 
+> * Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+> 
+> > > > Kevent is a _very_ small entity and there is _no_ cost of 
+> > > > requeueing (well, there is list_add guarded by lock) - after it is 
+> > > > done, process can start real work. With rescheduling there are 
+> > > > _too_ many things to be done before we can start new work. [...]
+> > > 
+> > > actually, no. For example a wakeup too is fundamentally a list_add 
+> > > guarded by a lock. Take a look at try_to_wake_up(). The rest you see 
+> > > there is just extra frills that relate to things like 
+> > > 'load-balancing the requests over multiple CPUs [which i'm sure 
+> > > kevent users would request in the future too]'.
+> > 
+> > wake_up() as a call is pretty simple and fast, but its result - it is 
+> > slow. [...]
+> 
+> You are still very much wrong, and now you refuse to even /read/ what i 
+> wrote. Your only reply to my detailed analysis is: "it is slow, because 
+> it is slow and heavy". I told you how fast it is, i told you what 
+> happens on a context switch and why, i told you that you can measure if 
+> you want.
 
-More over, 
-The patch seems to introduce a delay between two mounts.
-During this delay, it is not possible to umount/mount a nfsv4.
-Here are the traces I have got doing a long serie of mount/umount :
-.............
-.............
-mount: ns2:/: can't read superblock
-umount: /mnt/nfs/: not mounted
-mount: ns2:/: can't read superblock
-umount: /mnt/nfs/: not mounted
-mount: ns2:/: can't read superblock
-umount: /mnt/nfs/: not mounted
-mount: ns2:/: can't read superblock
-..........
-.........
---------------------------------------------------------------------------------------------------------------- 
+Ingo, you likely will not believe, but your mails are ones of the
+several which I always read several times to get every bit of it :)
 
-NFS: nfs_update_inode(0:15/7946242 ct=1
-info=0xe)
-VFS: Busy inodes after unmount of 0:15. Self-destruct in 5 seconds.  Have a
-nice day...
-kernel BUG at fs/nfs/nfs4state.c:125!
-umount[11087]: bugcheck! 0 [1]
-Modules linked in: nfs sg scsi_dump perfbull mdm nfsd exportfs lockd eip ep
-rms elan4 elan3 sunrpc elan qsnet ide_cd cdrom vfat fat dm_mod thermal
-processor fan button uhci_hcd ehci_hcd e100 e1000 ext3 jbd aic7xxx
-scsi_transport_spi sd_mod scsi_mod
+I clearly understand your point of view, it is absoutely clear and shine
+for me. But... I can not agree with it.
+
+Because of theoretical point of view and practical one concerned my
+measurements. It is not pure speculation, which one can expect, but real
+life comparison of kernel/user scheduling with pure userspace one (like
+in own M:N threading lib or concurrent prgramming language like erlang).
+For me (and probably _only_ for me), it is enough to show that some lib
+shows 10 times faster rescheduling to start developing own, so I pointed
+to it in a discussion.
+
+> > [...] I did not run reschedulingtests with kernel thread, but posix 
+> > threads (they do look like a kernel thread) have significant overhead 
+> > there.
+> 
+> You are wrong. Let me show you some more numbers. This is a 
+> hackbench_pth.c run:
+> 
+>   $ ./hackbench_pth 500
+>   Time: 14.371
+> 
+> this uses 20,000 real threads and during this test the runqueue length 
+> is extreme - up to over a ten thousand threads. (hackbench_pth.c was 
+> posted to lkml recently.
+> 
+> The same run with hackbench.c (20,000 forked processes):
+> 
+>   $ ./hackbench 500
+>   Time: 14.632
+> 
+> so the TLB overhead from using processes is 1.8%.
+> 
+> > [...] In early developemnt days of M:N threading library I tested 
+> > rescheduling performance of the POSIX threads - I created pool of 
+> > threads and 'sent' a message using futex wait/wake - such performance 
+> > of the userspace threading library (I tested erlang) was 10 times 
+> > slower.
+> 
+> how much would it take for you to actually re-measure it and interpet 
+> the results you are seeing? You've apparently built a whole mental house 
+> of cards on the flawed proposition that tasks are 'super-heavy' and that 
+> context-switching them is 'slow'. You are unwilling to explain /how/ 
+> they are slow, and all the numbers i post are contrary to that 
+> proposition of yours.
+> 
+> your whole reasoning seems to be faith-based:
+> 
+> [...] Anyway, kevents are very small, threads are very big, [...]
+> 
+> How about following the scientific method instead?
+
+That are only rethorical words as you have understood I bet, I meant that the
+whole process of getting readiness notification from kevent is way tooo
+much faster than resheduling of the new process/thread to handle that IO.
+
+The whole process of switching from one process to another can be as fast
+as bloody hell, but all other details just kill the thing.
+
+I do not know, what exact line ends up with problem, but having thousands
+of threads, rescheduling itself, results in slower performance than
+userspace rescheduling. Then I interpolate it to our IO test case.
+
+> > [...] and both are the way they are exactly on purpose - threads serve 
+> > for processing of any generic code, kevents are used for event waiting 
+> > - IO is such an event, it does not require a lot of infrastructure to 
+> > handle, it only nees some simple bits, so it can be optimized to be 
+> > extremely fast, with huge infrastructure behind each IO (like in case 
+> > when it is a separated thread) it can not be done effectively.
+> 
+> you are wrong, and i have pointed it out to you in my previous replies 
+> why you are wrong. Your only coherent specific thought on this topic was 
+> your incorrect assumption is that the scheduler somehow saves registers 
+> and that this makes it heavy. I pointed it out to you in the mail you 
+> reply to that /every/ system call that saves user registers. You've not 
+> even replied to that point of mine, you are ignoring it completely and 
+> you are still repeating your same old, incorrect argument. If it is 
+> heavy, /why/ do you think it is heavy? Where is that magic pixie dust 
+> piece of scheduler code that miraculously turns the runqueue into a 
+> molass slow, heavy piece of thing?
+
+I do not arue that I'm absolutely right.
+I just point that I tested some cases and that tests ends up with
+completely broken behaviour for micro-thread design (even besides the
+case of thousand of new thread creation/reuse per second, which itself
+does not look perfect).
+
+I do not even ever try to say that threadlets suck (although I do believe
+that it is in some cases, at leat for now :) ), I just point that
+rescheduling overhead happens to be tooo big when it comes to
+benchmarks I ran (where you never replied too, but that does not matter
+after all :).
+
+It can end up with (handwaving) broken syscall wrapper implementation,
+or with anything else. Absolutely.
+
+I never ever tried to say that scheduler's code is broken - I just show
+my own tests which resulted in the situation, when many working threads
+can end up with timings worse than some other case.
+
+Register/tlb/whatever is just a speculation about _possible _ root of
+the problem. I did not investigate problem enough - I just decided to
+implement different library. Shame on me for that, since I never showed 
+what exactly is a root of the problem, but for _me_ it is enough, so I'm
+trying to share it with you and other developers.
+
+> Or put in another way: your test-code does ~6 syscalls per every event. 
+> So if what you said would be true (which it isnt), a kevent based 
+> request would have be just as slow as thread based request ...
+
+I can neither confirm nor object against this sentence.
+
+> > > i think you are really, really mistaken if you believe that the fact 
+> > > that whole tasks/threads or processes can be 'monster structures', 
+> > > somehow has any relevance to scheduling/task-queueing performance 
+> > > and scalability. It does not matter how large a task's address space 
+> > > is - scheduling only relates to the minimal context that is in the 
+> > > CPU. And most of that context we save upon /every system call 
+> > > entry/, and restore it upon every system call return. If it's so 
+> > > expensive to manipulate, why can the Linux kernel do a full system 
+> > > call in ~150 cycles? That's cheaper than the access latency to a 
+> > > single DRAM page.
+> > 
+> > I meant not its size, but the whole infrastructure, which surrounds 
+> > task. [...]
+> 
+> /what/ infrastructure do you mean? sched.c? Most of that never runs in 
+> the scheduler hotpath.
 >
-Pid: 11087, CPU 3, comm:               umount
-psr : 00001010081a6018 ifs : 800000000000038a ip  : [<a0000002083189e0>]
-Not tainted
-ip is at nfs4_free_client+0x1e0/0x200 [nfs]
-unat: 0000000000000000 pfs : 000000000000038a rsc : 0000000000000003
-rnat: 0000000000000073 bsps: 0000000000000073 pr  : 0000000005552959
-ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c8a70033f
-csd : 0000000000000000 ssd : 0000000000000000
-b0  : a0000002083189e0 b6  : a000000100065220 b7  : a0000001003781a0
-f6  : 1003e0000000000000028 f7  : 1003e28f5c28f5c28f5c3
-f8  : 1003e00000000000000fa f9  : 1003e0000000032000000
-f10 : 1003e000000003b9aca00 f11 : 1003ed6bf94d5e57a42bd
-r1  : a000000100a6e140 r2  : 0000000000004000 r3  : e000000004a20000
-r8  : 0000000000000029 r9  : 0000000000000001 r10 : a0000001008884c0
-r11 : 0000000000000000 r12 : e00000010f06fd60 r13 : e00000010f060000
-r14 : 0000000000004000 r15 : a0000001008884c0 r16 : 0000000000004000
-r17 : 0000000000000003 r18 : 0000000000000000 r19 : 0000000000000000
-r20 : 0000000000000004 r21 : 0000000000000000 r22 : e00000010f060f54
-r23 : 0000000000000001 r24 : e000000103140f5c r25 : e000000103140f40
-r26 : e000000103140008 r27 : 0000000000000073 r28 : 0000000000000073
-r29 : 6666666666666667 r30 : 00000000000000c8 r31 : 00000000000004b0
->
-Call Trace:
- [<a000000100010f60>] show_stack+0x80/0xa0
-                                sp=e00000010f06f8b0 bsp=e00000010f0612e8
- [<a000000100011870>] show_regs+0x890/0x8c0
-                                sp=e00000010f06fa80 bsp=e00000010f0612a0
-    r32 : e00000010f06fce8 r33 : e00000010f06fa90 r34 : e00000010f06fbe0
-    r35 : e00000010f06fc18 r36 : e00000010f06fc30 r37 : e00000010f06fbf0
-    r38 : a000000100037b20 r39 : 0000000000000510 r40 : e00000010f06fab0
- [<a000000100037b20>] die+0x1a0/0x4c0
-                                sp=e00000010f06faa0 bsp=e00000010f061250
-    r32 : a0000001005e5c78 r33 : e00000010f06fba0 r34 : 0000000000000000
-    r35 : 0000000000000003 r36 : a000000100736ae0 r37 : a000000100736ad8
-    r38 : a000000100736adc r39 : a000000100037e80 r40 : 0000000000000309
-    r41 : a000000100a6e140
- [<a000000100037e80>] die_if_kernel+0x40/0x60
-                                sp=e00000010f06fac0 bsp=e00000010f061220
-    r32 : a0000001005e5c78 r33 : e00000010f06fba0 r34 : 0000000000000000
-    r35 : a000000100038550 r36 : 0000000000000289 r37 : e00000010f06fd38
- [<a000000100038550>] ia64_bad_break+0x6b0/0x820
-                                sp=e00000010f06fac0 bsp=e00000010f0611f0
-    r32 : 0000000000000000 r33 : e00000010f06fba0 r34 : a00000010000b780
-    r35 : 0000000000000002 r36 : a0000001000a2550
- [<a00000010000b780>] ia64_leave_kernel+0x0/0x280
-                                sp=e00000010f06fb90 bsp=e00000010f0611f0
- [<a0000002083189e0>] nfs4_free_client+0x1e0/0x200 [nfs]
-                                sp=e00000010f06fd60 bsp=e00000010f0611a0
-    r32 : e00000016f83a180 r33 : e00000016f83a1f8 r34 : 0000000000200200
-    r35 : 0000000000100100 r36 : a0000002083190b0 r37 : 0000000000000288
-    r38 : a0000002083041a0 r39 : a000000208332dc0 r40 : a000000208332dd8
-    r41 : 000000000000007d
- [<a0000002083190b0>] nfs4_put_client+0x110/0x180 [nfs]
-                                sp=e00000010f06fd60 bsp=e00000010f061178
-    r32 : e00000016f83a180 r33 : a0000002083482e8 r34 : a0000002083191a0
-    r35 : 0000000000000286 r36 : a0000002083041a0
- [<a0000002083191a0>] destroy_nfsv4_state+0x80/0xa0 [nfs]
-                                  sp=e00000010f06fd60 bsp=e00000010f061150
-     r32 : e0000001017ffbf0 r33 : e0000001017ffbf8 r34 : a0000002082d7350
-     r35 : 0000000000000286 r36 : a0000002083041a0
-  [<a0000002082d7350>] nfs4_kill_super+0x90/0x160 [nfs]
-                                 sp=e00000010f06fd60 bsp=e00000010f061128
-     r32 : e000000103154200 r33 : e0000001017ffa80 r34 : a00000010014b900
-     r35 : 0000000000000308 r36 : a0000002083041a0
-  [<a00000010014b900>] deactivate_super+0x140/0x220
-                                 sp=e00000010f06fd60 bsp=e00000010f0610f8
-     r32 : e000000103154200 r33 : a000000100880cd0 r34 : a0000002083429c0
-     r35 : a000000100185060 r36 : 0000000000000389 r37 : a000000100a6e140
-  [<a000000100185060>] mntput_no_expire+0x160/0x260
-                                 sp=e00000010f06fd60 bsp=e00000010f0610c0
-     r32 : e000000103154200 r33 : e0000001040e4c80 r34 : a0000001006e9200
-     r35 : a0000001006e9300 r36 : a00000010015df20 r37 : 0000000000000205
-     r38 : a000000100a6e140
-  [<a00000010015df20>] path_release_on_umount+0x40/0x60
-                                 sp=e00000010f06fd60 bsp=e00000010f0610a0
-     r32 : e00000010f06fd78 r33 : a000000100186670 r34 : 0000000000000916
-     r35 : e0000001040e4c90
-  [<a000000100186670>] sys_umount+0x450/0x800
-                                 sp=e00000010f06fd60 bsp=e00000010f061010
-     r32 : 6000000000012db0 r33 : 0000000000000000 r34 : 600ffffffffef270
-     r35 : 600ffffffffef2f0 r36 : 4000000000006f10 r37 : c000000000000309
-     r38 : c000000000000611 r39 : 4000000000004650 r40 : 0000000000000000
-     r41 : 0000000000000000 r42 : 0000000000000000 r43 : e00000010f06fe30
-     r44 : a0000001006e9300 r45 : a000000208342a80 r46 : a000000100881e48
-     r47 : a00000010000b600 r48 : 0000000000000008 r49 : a000000100a6e140
-  [<a00000010000b600>] ia64_ret_from_syscall+0x0/0x20
-                                 sp=e00000010f06fe30 bsp=e00000010f061010
-  [<a000000000010640>] __kernel_syscall_via_break+0x0/0x20
-                                 sp=e00000010f070000 bsp=e00000010f061010
- LKCD: CPU : 3 Reconfiguring memory bank information....
- LKCD: This may take a while....
- First cpu will configure dump header
- LKCD: smp_num_cpus in header 16
- CPU 3, 15 cpus remaining
- Last cpu
- LKCD: Dumping to block device (8,17) on CPU 3 ...
- LKCD: Writing dump header
- ....LKCD:
-  18030 dump pages saved of 65536 each in pass 0
- LKCD:
-  29090 dump pages skipped of 65536 each in pass 1
- LKCD:
-  1000319 dump pages skipped of 65536 each in pass 2
- LKCD:
-  0 dump pages skipped of 65536 each in pass 3
- LKCD: CPU : 3 dumped 257 blocks of 262144 bytes each
- LKCD: Dump Complete; 18030 dump pages saved.
- The system will automatically reboot now !
+> > [...] If it is that lightweight, why don't we have posix thread per 
+> > IO? [...]
+> 
+> because it would be pretty stupid to do that?
+> 
+> But more importantly: because many people still believe 'the scheduler 
+> is slow and context-switching is evil'? The FIO AIO syslet code from 
+> Jens is an intelligent mix of queueing combined with async execution. I 
+> expect that model to prevail.
+
+Suparna showed its problems - although on an older version. 
+Let's see another tests.
+
+> > [...] One question is that mmap/allocation of the stack is too slow 
+> > (and it is very slow indeed, that is why glibc and M:N threading lib 
+> > caches allocated stacks), another one is kernel/userspace boundary 
+> > crossing, next one are tlb flushes, then copies.
+> 
+> now you come up again with creation overhead but nobody is talking about 
+> context creation overhead. (btw., you are also wrong if you think that 
+> mmap() is all that slow - try measuring it one day) We were talking 
+> about context /switching/.
+
+Ugh, Ingo, do not think absolutely...
+I did it. And it is slow.
+http://tservice.net.ru/~s0mbre/blog/2007/01/15#2007_01_15
+
+> > Why userspace rescheduling is in order of tens times faster than 
+> > kernel/user?
+> 
+> what on earth does this have to do with the topic of whether context 
+> switches are fast enough? Or if you like random info, just let me throw 
+> in a random piece of information as well:
+> 
+> user-space function calls are more than /two/ orders of magnitude faster 
+> than system calls. Still you are using 6 ... SIX system calls in the 
+> sample kevent request handling hotpath.
+
+I can only laugh on that, Ingo :)
+If you will be in Moscow, I will buy you a beer, just drop me a mail.
+
+What we are talking about, Ingo, kevent and IO in thread contexts, 
+or userspace vs. kernelspace scheduling?
+
+Kevent can be broken as hell, it can be stupid application, which does
+not work at all - it is one of the possible theories.
+Practice however shows that it is not true.
+
+Anyway, if we are talking about kevents and micro-threads, that is one
+point, if we are talking about possible overhead of rescheduling - it is
+another topic.
+
+> > > for the same reason has it no relevance that the full kevent-based 
+> > > webserver is a 'monster structure' - still a single request's basic 
+> > > queueing operation is cheap. The same is true to tasks/threads.
+> > 
+> > To move that tasks there must be done too may steps, and although each 
+> > one can be quite fast, the whole process of rescheduling in the case 
+> > of thousands running threads creates too big overhead per task to drop 
+> > performance.
+> 
+> again, please come up with specifics! I certainly came up with enough 
+> specifics.
+
+I thought I showed it several times already.
+Anyway: http://tservice.net.ru/~s0mbre/blog/2006/11/09#2006_11_09
+
+That is an initial step, which shows that rescheduling of threads (
+I DO NOT say about problems in sched.c, Ingo, that would be somehow
+stupid, althogh can be right) has some overhead comapred to userspace
+rescheduling. If so, it can be eliminated or reduced.
+
+Second (COMPELTELY DIFFERENT STARTING POINT).
+If rescheduling has some overhead, is it possible to reduce it using
+different model for IO? So I created kevent (as you likely do not know,
+original idea was a bit differnet - network AIO, but results is quite good).
+
+> 	Ingo
+
+-- 
+	Evgeniy Polyakov
