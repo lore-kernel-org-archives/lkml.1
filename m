@@ -1,38 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751325AbXBZTjt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752456AbXBZTrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751325AbXBZTjt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 14:39:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030494AbXBZTjs
+	id S1752456AbXBZTrW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 14:47:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbXBZTrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 14:39:48 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35160
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1030491AbXBZTjq (ORCPT
+	Mon, 26 Feb 2007 14:47:22 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:4965 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752456AbXBZTrV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 14:39:46 -0500
-Date: Mon, 26 Feb 2007 11:39:45 -0800 (PST)
-Message-Id: <20070226.113945.112853183.davem@davemloft.net>
-To: shemminger@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] div64_64 support
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070226112818.1babf22a@freekitty>
-References: <20070223170527.4ca695b2@freekitty>
-	<20070224161916.GL3982@m.safari.iki.fi>
-	<20070226112818.1babf22a@freekitty>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Feb 2007 14:47:21 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Mon, 26 Feb 2007 11:47:18 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+cc: Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+In-Reply-To: <20070225194250.GA1353@2ka.mipt.ru>
+Message-ID: <Pine.LNX.4.64.0702261145360.1881@alien.or.mcafeemobile.com>
+References: <45DCD9E5.2010106@redhat.com> <20070222074044.GA4158@elte.hu>
+ <20070222113148.GA3781@2ka.mipt.ru> <20070222125931.GB25788@elte.hu>
+ <20070222133201.GB5208@2ka.mipt.ru> <20070223115152.GA2565@elte.hu>
+ <20070223122224.GB5392@2ka.mipt.ru> <20070225174505.GA7048@elte.hu>
+ <20070225180910.GA29821@2ka.mipt.ru> <20070225190414.GB6460@elte.hu>
+ <20070225194250.GA1353@2ka.mipt.ru>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Date: Mon, 26 Feb 2007 11:28:18 -0800
+On Sun, 25 Feb 2007, Evgeniy Polyakov wrote:
 
-> asm-i386.h/div64 and div64.o needs to move in Makefile to get this to work
-> on i386.
+> Why userspace rescheduling is in order of tens times faster than
+> kernel/user?
 
-This looks great to me:
+About 50 times in my Opteron 254 actually. That's libpcl's (swapcontext 
+based) cobench against lat_ctx.
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
+
+
+- Davide
+
+
