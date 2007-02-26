@@ -1,83 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030520AbXBZVS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932526AbXBZVTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030520AbXBZVS0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 16:18:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030523AbXBZVS0
+	id S932526AbXBZVTi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 16:19:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933803AbXBZVTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 16:18:26 -0500
-Received: from mail.kroah.org ([69.55.234.183]:56395 "EHLO perch.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030520AbXBZVSY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 16:18:24 -0500
-Date: Mon, 26 Feb 2007 13:14:01 -0800
-From: Greg KH <greg@kroah.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@osdl.org>, Jeff Garzik <jgarzik@pobox.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.20-rc4-mm1: PCI=n: drivers/net/3c59x.c compile error
-Message-ID: <20070226211401.GC3810@kroah.com>
-References: <20070111222627.66bb75ab.akpm@osdl.org> <20070124135354.GI17836@stusta.de> <45B76946.1070009@ru.mvista.com> <45D756D7.4060106@ru.mvista.com> <45D75853.1060607@ru.mvista.com> <45E2DF13.9010200@ru.mvista.com> <20070226092644.aea76b37.randy.dunlap@oracle.com>
+	Mon, 26 Feb 2007 16:19:38 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:36390 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932526AbXBZVTh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 16:19:37 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Mon, 26 Feb 2007 16:16:08 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       trivial@kernel.org
+Subject: Re: [PATCH] Remove redundant #ifdef __KERNEL__ checks.
+In-Reply-To: <45E332A1.6080504@zytor.com>
+Message-ID: <Pine.LNX.4.64.0702261615030.26687@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0702251509440.27758@CPE00045a9c397f-CM001225dbafb6>
+ <45E2926C.40009@zytor.com> <Pine.LNX.4.64.0702260442160.15535@CPE00045a9c397f-CM001225dbafb6>
+ <45E332A1.6080504@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070226092644.aea76b37.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 26, 2007 at 09:26:44AM -0800, Randy Dunlap wrote:
-> On Mon, 26 Feb 2007 16:22:27 +0300 Sergei Shtylyov wrote:
-> 
-> > Hello, I wrote:
-> > 
-> > >>>> 3x59x-fix-pci-resource-management.patch causes the following compile 
-> > >>>> error with CONFIG_PCI=n:
-> > 
-> > >>>> <--  snip  -->
-> > 
-> > >>>> ...
-> > >>>>   CC      drivers/net/3c59x.o
-> > >>>> /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c: 
-> > >>>> In function 'vortex_init_one':
-> > >>>> /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c:961: 
-> > >>>> error: implicit declaration of function 'pci_request_regions'
-> > >>>> /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c:985: 
-> > >>>> error: implicit declaration of function 'pci_release_regions'
-> > >>>> make[3]: *** [drivers/net/3c59x.o] Error 1
-> > 
-> > >>>    Grr, at at the same time it's happy with pci_enable_device().
-> > >>>    I'd say the problem is in <linux/pci.h>,  not in the patch.
-> > 
-> > >>    Has there been any patch to fix the "unbalanced" 
-> > >> pci_{request|release}_regions() declarations? Am I suposed to create 
-> > >> such?
-> > 
-> > >    Alternatively, vortex_{init|remove_one() and struct pci_driver there 
-> > > could have been put under #ifdef CONFIG_PCI (good idea anyway -- should 
-> > > reduce driver size on non-PCI systems)...
-> > 
-> >     I wonder if I may count on any feedback on this -- asking linux-pci now...
-> >     The issue is as follows: with my patch pci_{request|release}_regions() may 
-> > be called with CONFIG_PCI=n (probably, this never has been a issue before) but 
-> > <linux/pci.h> don't have them declared in this case -- unlike 
-> > pci_enable_device() which is just empty for CONFIG_PCI=n.
-> >     Now, what kind of approach do I take:
-> > 
-> > - a "fair one", so that pci_{request|release}_regions() get "balanced"
-> >    declarations in the header like pci_enable_device();
-> > 
-> > - a "local one" (and even saving non-PCI kernel from needless bloat), i.e.
-> >    #ifdef out functions that are only meaningful with CONFIG_PCI=y)?
-> > 
-> >     I'm leaning to the second now...
-> 
-> I'd prefer the fair one -- add stubs to include/linux/pci.h.
+On Mon, 26 Feb 2007, H. Peter Anvin wrote:
 
-Me too, please just send me a patch adding them to pci.h so you don't
-have to have #ifdefs in your .c code.
+> Robert P. J. Day wrote:
+> > On Sun, 25 Feb 2007, H. Peter Anvin wrote:
+> >
+> > > Robert P. J. Day wrote:
+> > > >   Remove the redundant intermediate checks for __KERNEL__ since, as
+> > > > soon as one ends, the next one starts.
+> > > >
+> > > > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> > > >
+> > > However, what's much worse is that this already has put series of
+> > > constants which are part of the ABI under __KERNEL__.  This is a
+> > > very bad thing.
+> >
+> > i'm sure i'm just being dense but i have no clue what you're
+> > referring to.  AFAICT, that patch simply removed some redundant
+> > preprocessor directives.  am i missing something?
 
-thanks,
+> I'm referring to the the patch that caused the redundant ifdefs,
+> which was a recent change which among other things broke klibc.
 
-greg k-h
+ah, i didn't realize that the redundant ifdef's themselves were a
+symptom of another problem.
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
