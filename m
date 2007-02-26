@@ -1,73 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751077AbXBZChW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932321AbXBZDpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751077AbXBZChW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 21:37:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbXBZChW
+	id S932321AbXBZDpz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 22:45:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933747AbXBZDpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 21:37:22 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:52272 "EHLO mx2.suse.de"
+	Sun, 25 Feb 2007 22:45:55 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:59911 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751058AbXBZChV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 21:37:21 -0500
-Date: Mon, 26 Feb 2007 03:37:12 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 3/3] mm: fix PageUptodate memorder
-Message-ID: <20070226023712.GA23985@wotan.suse.de>
-References: <20070215051822.7443.30110.sendpatchset@linux.site> <20070215051851.7443.65811.sendpatchset@linux.site> <20070225040657.eb4fc159.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070225040657.eb4fc159.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+	id S932321AbXBZDpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 22:45:54 -0500
+Date: Sun, 25 Feb 2007 19:45:50 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, john stultz <johnstul@us.ibm.com>
+Subject: Re: Make sure we populate the initroot filesystem late enough
+In-Reply-To: <1172452660.3971.33.camel@shinybook.infradead.org>
+Message-ID: <Pine.LNX.4.64.0702251940500.12485@woody.linux-foundation.org>
+References: <200612112059.kBBKx1j7022473@hera.kernel.org> 
+ <1172448057.3971.9.camel@shinybook.infradead.org> 
+ <Pine.LNX.4.64.0702251614420.12485@woody.linux-foundation.org>
+ <1172452660.3971.33.camel@shinybook.infradead.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 25, 2007 at 04:06:57AM -0800, Andrew Morton wrote:
+
+
+On Sun, 25 Feb 2007, David Woodhouse wrote:
 > 
-> What an unpleasing patchset.  I really really hope we really have a bug in
-> there, and that all this crap isn't pointless uglification.
+> I'm inclined to agree that it _shouldn't_ be a problem. Nevertheless,
+> even this hack seems sufficient to 'fix' it:
 
-It's the same bug for file pages as we had for anonymous pages, which
-the POWER guys actually hit. Do you disagree? I like this patch much
-better than the smp_wmb that we currently do just for anon pages.
+Ok. Clearly something is using that memory. That said, I *suspect* that 
+the commit that you bisected to is just showing the problem indirectly. 
+The ordering shouldn't make any difference, but it can obviously make a 
+huge difference in various allocation patterns etc, thus just showing a 
+pre-existing problem more clearly..
 
-> We _do_ need a flush_dcaceh_page() in all cases which you're concerned
-> about.  Perhaps we should stick the appropriate barriers in there.
+Can you try adding something like
 
-I think the memorder problem is conceptually a page data vs PG_uptodate
-one, because the read-side assumes that the data will be initialised before
-PG_uptodate is set.
+	memset(start, 0xf0, end - start);
 
-After the page is uptodate, you don't need subsequent barriers (that you
-would get via flush_dcache_page), because we've never really tried to
-impose any synchronisation on parallel read vs write.
+to before the return? That might give a better idea of exactly what is 
+using it after it's free'd, hopefully by having the user trigger some more 
+spectacular oops..
 
-A memory barrier in flush_dcache_page would do the trick as well, I think,
-but it is not really any better. It is misleading because it is not the
-canonical fix. And we'd still need the smp_rmb in the PageUptodate read-side.
+It is, of course, also entirely possible that the rootfs unpacking change 
+really *was* buggy, and I am just missing something totally obvious. The 
+memset() might still make it more obvious, though. Maybe.
 
-> > On Thu, 15 Feb 2007 08:31:31 +0100 (CET) Nick Piggin <npiggin@suse.de> wrote:
-> > +static inline void SetNewPageUptodate(struct page *page)
-> > +{
-> > +	/*
-> > +	 * S390 sets page dirty bit on IO operations, which is why it is
-> > +	 * cleared in SetPageUptodate. This is not an issue for newly
-> > +	 * allocated pages that are brought uptodate by zeroing memory.
-> > +	 */
-> > +	smp_wmb();
-> > +	__set_bit(PG_uptodate, &(page)->flags);
-> > +}
-> 
-> __SetPageUptodate() might be more conventional.
 
-I guess so. I guess that the __ variants *can* only be used on new pages
-anyway. I wanted to make it clear that it wasn't a non-atomic version of
-exactly the same operation, but __SetPageUptodate probably would be fine.
+>         if (start < end)
+> -               printk ("Freeing initrd memory: %ldk freed\n", (end - start) >> 10);
+> +               printk ("NOT Freeing initrd memory: %ldKiB would be freed\n", (end - start) >> 10);
 
-> Boy we'd better get the callers of this little handgrenade right.
+.. so adding the "memset()" here would be what I'm suggesting ..
 
-Newly initialised pages, before they become visible to anyone else. We
-could put a BUG_ON(page_count(page) != 1); in there?
+> +       return;
 
+.. and you might as well leave the return there, so that nobody else comes 
+along and re-uses the memory. That should just improve on the chances of 
+the memset() hopefully catching the problem..
+
+		Linus "I don't see anything wrong" Torvalds
