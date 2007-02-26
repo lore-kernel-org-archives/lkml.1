@@ -1,55 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161310AbXBZWxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161346AbXBZW7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161310AbXBZWxW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 17:53:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161297AbXBZWxV
+	id S1161346AbXBZW7X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 17:59:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161351AbXBZW7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 17:53:21 -0500
-Received: from mga01.intel.com ([192.55.52.88]:35796 "EHLO mga01.intel.com"
+	Mon, 26 Feb 2007 17:59:22 -0500
+Received: from proxima.lp0.eu ([85.158.45.36]:40652 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161312AbXBZWxU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 17:53:20 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,221,1170662400"; 
-   d="scan'208"; a="204313330:sNHT18949602"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1161346AbXBZW7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 17:59:21 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=thunder.lp0.eu;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:X-Enigmail-Version:OpenPGP:Content-Type:Sender:Reply-To;
+	b=TXdb/M/IM+kLm2PNWmSvDhvruvizPvElMbbCRGiIV1TFdnwOg6DEjHOCkQNWwyWW+2NJGJjR7oD6PuCb4bBOstw5c45bbJwxyv+bkWKSe0LebO4/3wPu7kxW6zvrQCp+;
+Message-ID: <45E3663B.4000701@simon.arlott.org.uk>
+Date: Mon, 26 Feb 2007 22:59:07 +0000
+From: Simon Arlott <simon@arlott.org>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [2.6 patch] drivers/dma/: no "static inline" in C files
-Date: Mon, 26 Feb 2007 15:53:29 -0700
-Message-ID: <0C7297FA1D2D244A9C7F6959C0BF1E5201709637@azsmsx413.amr.corp.intel.com>
-In-Reply-To: <1172515344.5504.4.camel@localhost.localdomain>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [2.6 patch] drivers/dma/: no "static inline" in C files
-Thread-Index: AcdZ1dwYlXF6G1QBRYi17S9DEvTTbwAItNxA
-From: "Williams, Dan J" <dan.j.williams@intel.com>
-To: "Leech, Christopher" <christopher.leech@intel.com>,
-       "Adrian Bunk" <bunk@stusta.de>
-Cc: "David S. Miller" <davem@davemloft.net>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 26 Feb 2007 22:53:20.0139 (UTC) FILETIME=[E92165B0:01C759F8]
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: ebiederm@xmission.com
+Subject: [irq: Remove set_native_irq_info] !CONFIG_SMP regression
+X-Enigmail-Version: 0.94.1.2
+OpenPGP: id=89C93563
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature";
+ boundary="------------enigB0E55D193ABA17A22B76B856"
+Reply-To: Simon Arlott <58022e3be4e86309571hlooq00057abw@thunder.lp0.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Thanks Adrian,
-> 
-> Dan, this applies to your code.  Mind adding it to your tree?
-> 
-> - Chris
-> 
-> 
-> On Sun, 2007-02-25 at 15:16 -0800, Adrian Bunk wrote:
-> 
-> This patch changes "static inline"s in C files to "static":
-> gcc should know best whether or not to inline a static function.
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
-> 
-Applied.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigB0E55D193ABA17A22B76B856
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
---
-Dan
+9f0a5ba5508143731dc63235de19659be20d26dc is first bad commit
+commit 9f0a5ba5508143731dc63235de19659be20d26dc
+Author: Eric W. Biederman <ebiederm@xmission.com>
+Date:   Fri Feb 23 04:13:55 2007 -0700
+
+    [PATCH] irq: Remove set_native_irq_info
+
+    This patch replaces all instances of "set_native_irq_info(irq, mask)"=
+
+    with "irq_desc[irq].affinity =3D mask".  The latter form is clearer
+    uses fewer abstractions, and makes access to this field uniform
+    accross different architectures.
+
+
+
+arch/i386/kernel/io_apic.c: In function `setup_IO_APIC_irqs':
+arch/i386/kernel/io_apic.c:1357: error: structure has no member named `af=
+finity'
+arch/i386/kernel/io_apic.c: In function `io_apic_set_pci_routing':
+arch/i386/kernel/io_apic.c:2878: error: structure has no member named `af=
+finity'
+
+
+The original version was an empty function if !CONFIG_SMP, struct irq_des=
+c only has 'affinity' on SMP.
+
+--=20
+Simon Arlott
+
+
+--------------enigB0E55D193ABA17A22B76B856
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iQIVAwUBReNmQqRtx1WjQ8ihAQpWHhAAhDiVAXHGvoQTIbT9ouPaGaPVktb9Sfwt
+/nhHZW2i2KFmRI/jHaZU2BzbKMVhHLL3X/McNpqX1fb2X31gDFuldUnKPZKqW94p
+nGPq+2o4FvryRuImstyaLw599LSxi/1miWUNaWRW63qV/xTr1/rjqRb9XfFi/UFt
+f5Qj3K+NpS2M1fRybnXsel8PVGgUJrK8KY3ie0HF1pKdu1hkwmGdVVaaeRoEG4Nd
+apAaPjZzfMdaZ5KUnPs8Itls5U5M7Zrd6k9roqcfQt/6mHwMf6v6SbJuQXkB1ITo
+u2ZjBMGWqB/X6nFeU5zva29i8tWneHDmT3kcDUvTgV91tobHttGuZ9oeKtPbKE4V
+sX4uN3y7qttqAZJS0Mk+EROlm3pnJViDm4BLgA9Y8VGDFSwkUVYqI3PNzoXF7NVM
+dJOLGSxHmm8hZ0G9ufn0ggwgAUANAqEZ6EtSGc9sWMj5b/w1JXurMY1cv8b5crEL
+O8/qnXaGfljfcdtpEpno4/yFSZNFfqOs9QHpYGzpryBLghHbZffq9NPsz2YKXkrs
+WnBN6WutNxfqqRGsPCFopLZHvDJIxSMOKduVoZHpfBTygc99ThpQVppVkEsBdWLI
+lN/rKE+yg0tMnUW0Ioa/7HI/vm4SuwDd+ZyV0kTNo/3OCMvgAyGpmsWflSIe/ukf
+xqri52jnFVE=
+=6nlW
+-----END PGP SIGNATURE-----
+
+--------------enigB0E55D193ABA17A22B76B856--
