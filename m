@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030374AbXBZRrZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030380AbXBZRrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030374AbXBZRrZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 12:47:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030375AbXBZRrZ
+	id S1030380AbXBZRrt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 12:47:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030382AbXBZRrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 12:47:25 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:54977 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030374AbXBZRrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 12:47:23 -0500
-Date: Mon, 26 Feb 2007 09:37:27 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Stephane Eranian <eranian@hpl.hp.com>
-cc: Jiri Slaby <jirislaby@gmail.com>, Uwe Bugla <uwe.bugla@gmx.de>,
-       akpm@linux-foundation.org, bunk@stusta.de, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>, venkatesh.pallipadi@intel.com
-Subject: Re: bug in kernel 2.6.21-rc1-git1: conventional floppy drive cannot
- be mounted without hanging up the whole system
-In-Reply-To: <20070226172855.GB19403@frankl.hpl.hp.com>
-Message-ID: <Pine.LNX.4.64.0702260935010.12485@woody.linux-foundation.org>
-References: <20070224175424.176030@gmx.net> <45E2B88B.1090706@gmail.com>
- <45E2F8C5.3080905@gmail.com> <Pine.LNX.4.64.0702260741040.12485@woody.linux-foundation.org>
- <20070226172855.GB19403@frankl.hpl.hp.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 26 Feb 2007 12:47:48 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58939
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1030381AbXBZRrr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 12:47:47 -0500
+Date: Mon, 26 Feb 2007 09:47:47 -0800 (PST)
+Message-Id: <20070226.094747.59657430.davem@davemloft.net>
+To: ebiederm@xmission.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: MSI entry unlinked before arch_teardown_msi_irq().
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <m18xelpyfg.fsf@ebiederm.dsl.xmission.com>
+References: <m17iu6r4eg.fsf@ebiederm.dsl.xmission.com>
+	<20070225.154637.70478886.davem@davemloft.net>
+	<m18xelpyfg.fsf@ebiederm.dsl.xmission.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Sun, 25 Feb 2007 17:14:43 -0700
 
-
-On Mon, 26 Feb 2007, Stephane Eranian wrote:
+> David Miller <davem@davemloft.net> writes:
 > 
-> The same code was used for i386 but I think for both architectures, the patch
-> is missing default_idle(). I believe deault idle should look as follows:
+> > From: ebiederm@xmission.com (Eric W. Biederman)
+> > Date: Sun, 25 Feb 2007 02:08:07 -0700
+> >
+> >> If that isn't the issue holler and I will look into it a little more.
+> >
+> > Talking in code is always more effective :-)
+> >
+> > This patch fixes the OOPS I was talking about:
+> 
+> Ok.  That is clearly reasonable.  Why do you need to traverse
+> the list here?  I just want to understand the requirements.
 
-Side note - I'll revert it regardless.
+The real problem turned out to be my using get_irq_data() instead
+of get_irq_msi() :-)
 
-We can re-merge it later after
-
- - it has been tested better
-
- - people have added code to make all the expensive stuff go away if there 
-   are no idle notifiers registered (ie "enter_idle" should NOT set the 
-   idle-notify bit unconditionally in the idle loop, it should set if only 
-   if there are people who care.
-
-As it is, that patch was not only apparently buggy, but even if you fix 
-the actual bug, it's still broken from a performance angle.
-
-		Linus
+Sorry for the noise.
