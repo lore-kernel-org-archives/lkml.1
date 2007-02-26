@@ -1,50 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161238AbXBZWEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161255AbXBZWFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161238AbXBZWEL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 17:04:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161255AbXBZWEL
+	id S1161255AbXBZWFY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 17:05:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161268AbXBZWFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 17:04:11 -0500
-Received: from peacekeeper.artselect.com ([69.18.47.2]:41771 "EHLO
-	wyeth.artselect.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161238AbXBZWEK (ORCPT
+	Mon, 26 Feb 2007 17:05:23 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:45079 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161255AbXBZWFW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 17:04:10 -0500
-Date: Mon, 26 Feb 2007 16:04:01 -0600
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Rik van Riel <riel@redhat.com>, Lorenzo Allegrucci <l_allegrucci@yahoo.it>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: SMP performance degradation with sysbench
-Message-ID: <20070226220401.GA22363@artselect.com>
-References: <1172425476.5489.11.camel@odyssey.lan> <45E21FEC.9060605@redhat.com> <45E2E244.8040009@yahoo.com.au>
+	Mon, 26 Feb 2007 17:05:22 -0500
+Date: Mon, 26 Feb 2007 23:05:21 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David P. Reed" <dpreed@reed.com>, Ayaz Abdulla <aabdulla@nvidia.com>,
+       jgarzik@pobox.com, netdev@vger.kernel.org,
+       Albert Hopkins <kernel@marduk.letterboxes.org>,
+       Bob Tracy <rct@gherkin.frus.com>, Mark Brown <broonie@sirena.org.uk>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: 2.6.21-rc1: known regressions (v2) (part 2)
+Message-ID: <20070226220521.GB29575@stusta.de>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <45E2E244.8040009@yahoo.com.au>
+In-Reply-To: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Pete Harlan <harlan@artselect.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 27, 2007 at 12:36:04AM +1100, Nick Piggin wrote:
-> I found a couple of interesting issues so far. Firstly, the MySQL
-> version that I'm using (5.0.26-Max) is making lots of calls to
+This email lists some known regressions in 2.6.21-rc1 compared to 2.6.20
+that are not yet fixed in Linus' tree.
 
-FYI, MySQL fixed some scalability problems in version 5.0.30, as
-mentioned here:
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way possibly
+involved with one or more of these issues.
 
-http://www.mysqlperformanceblog.com/2007/01/03/innodb-benchmarks/
+Due to the huge amount of recipients, please trim the Cc when answering.
 
-It may be worth using more recent sources than 5.0.26 if tracking down
-scaling problems in MySQL.
 
---Pete
+Subject    : forcedeth no longer works
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8090
+Submitter  : David P. Reed <dpreed@reed.com>
+Caused-By  : Ayaz Abdulla <aabdulla@nvidia.com>
+Status     : unknown
 
-----------------------------------
-Pete Harlan
-ArtSelect, Inc.
-harlan@artselect.com
-http://www.artselect.com
-ArtSelect is a subsidiary of a21, Inc.
+
+Subject    : forcedeth: skb_over_panic
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8058
+Submitter  : Albert Hopkins <kernel@marduk.letterboxes.org>
+Status     : unknown
+
+
+Subject    : natsemi ethernet card not detected correctly
+References : http://lkml.org/lkml/2007/2/23/4
+             http://lkml.org/lkml/2007/2/23/7
+Submitter  : Bob Tracy <rct@gherkin.frus.com>
+Caused-By  : Mark Brown <broonie@sirena.org.uk>
+Handled-By : Mark Brown <broonie@sirena.org.uk>
+Patch      : http://lkml.org/lkml/2007/2/23/142
+Status     : patch available
+
+
+Subject    : ThinkPad T60: system doesn't come out of suspend to RAM
+             (CONFIG_NO_HZ)
+References : http://lkml.org/lkml/2007/2/22/391
+Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
+Handled-By : Thomas Gleixner <tglx@linutronix.de>
+             Ingo Molnar <mingo@elte.hu>
+Status     : unknown
+
+
+Subject    : kernel BUG at kernel/time/tick-sched.c:168  (CONFIG_NO_HZ)
+References : http://lkml.org/lkml/2007/2/16/346
+Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Handled-By : Thomas Gleixner <tglx@linutronix.de>
+Status     : problem is being debugged
+
+
+Subject    : BUG: soft lockup detected on CPU#0
+             NOHZ: local_softirq_pending 20  (SMT scheduler)
+References : http://lkml.org/lkml/2007/2/20/257
+Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Handled-By : Thomas Gleixner <tglx@linutronix.de>
+             Ingo Molnar <mingo@elte.hu>
+Status     : problem is being debugged
+
+
+Subject    : i386: no boot with nmi_watchdog=1  (clockevents)
+References : http://lkml.org/lkml/2007/2/21/208
+Submitter  : Daniel Walker <dwalker@mvista.com>
+Caused-By  : Thomas Gleixner <tglx@linutronix.de>
+             commit e9e2cdb412412326c4827fc78ba27f410d837e6e
+Handled-By : Thomas Gleixner <tglx@linutronix.de>
+Status     : problem is being debugged
+
