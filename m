@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030371AbXBZRrK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030374AbXBZRrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030371AbXBZRrK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 12:47:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030375AbXBZRrJ
+	id S1030374AbXBZRrZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 12:47:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030375AbXBZRrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 12:47:09 -0500
-Received: from h155.mvista.com ([63.81.120.155]:59154 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030371AbXBZRrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 12:47:08 -0500
-Message-ID: <45E31D0E.6070906@ru.mvista.com>
-Date: Mon, 26 Feb 2007 20:46:54 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Mon, 26 Feb 2007 12:47:25 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:54977 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030374AbXBZRrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 12:47:23 -0500
+Date: Mon, 26 Feb 2007 09:37:27 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Stephane Eranian <eranian@hpl.hp.com>
+cc: Jiri Slaby <jirislaby@gmail.com>, Uwe Bugla <uwe.bugla@gmx.de>,
+       akpm@linux-foundation.org, bunk@stusta.de, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>, venkatesh.pallipadi@intel.com
+Subject: Re: bug in kernel 2.6.21-rc1-git1: conventional floppy drive cannot
+ be mounted without hanging up the whole system
+In-Reply-To: <20070226172855.GB19403@frankl.hpl.hp.com>
+Message-ID: <Pine.LNX.4.64.0702260935010.12485@woody.linux-foundation.org>
+References: <20070224175424.176030@gmx.net> <45E2B88B.1090706@gmail.com>
+ <45E2F8C5.3080905@gmail.com> <Pine.LNX.4.64.0702260741040.12485@woody.linux-foundation.org>
+ <20070226172855.GB19403@frankl.hpl.hp.com>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [git patches] more IDE updates
-References: <200702170325.02337.bzolnier@gmail.com> <45D9BFD2.6030509@ru.mvista.com> <45D9C0DD.6070500@ru.mvista.com>
-In-Reply-To: <45D9C0DD.6070500@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
 
->>> Contains: IRQ-ack fix for ICH chipsets (Albert Lee), ide-floppy 
->>> unformatted
->>> media fix (Alan Cox), more fixes for IDE PCI drivers (Sergei Shtylyov),
->>> new driver for Toshiba Cell Reference Board (Kou Ishizaki <kou.ishizaki
->>> at toshiba.co.jp>) and a bunch of rather obvious 
->>> cleanups/improvements (me).
 
->>> There are still some bugfix patches in my tree which should go into 
->>> 2.6.21
->>> but since they are quite fresh and there have already been a lot of IDE
->>> changes since the merge window was opened I will wait for -rc1 to push
->>> them upstream.
+On Mon, 26 Feb 2007, Stephane Eranian wrote:
+> 
+> The same code was used for i386 but I think for both architectures, the patch
+> is missing default_idle(). I believe deault idle should look as follows:
 
->>> [ Andrew, IDE quilt tree has already been updated wrt to this update ]
+Side note - I'll revert it regardless.
 
->>    Which quilt tree do you mean? I've noticed that in 
->> http://kernel.org/pub/linux/kernel/people/bart/pata-2.6/ the series 
->> file itself hasn't been updated, so this tree appears broken currently.
+We can re-merge it later after
 
->    Begging your pardon, it's all browser caching. :-<
+ - it has been tested better
 
-   Now it's *actually* borken since rtying to read 
-delkin_cb-pci_module_init-to-pci_register_driver.patch gets you "403 Forbidden"...
+ - people have added code to make all the expensive stuff go away if there 
+   are no idle notifiers registered (ie "enter_idle" should NOT set the 
+   idle-notify bit unconditionally in the idle loop, it should set if only 
+   if there are people who care.
 
-WBR, Sergei
+As it is, that patch was not only apparently buggy, but even if you fix 
+the actual bug, it's still broken from a performance angle.
+
+		Linus
