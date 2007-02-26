@@ -1,88 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752437AbXBZQKJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751328AbXBZQMf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752437AbXBZQKJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 11:10:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbXBZQKJ
+	id S1751328AbXBZQMf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 11:12:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbXBZQMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 11:10:09 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:34706 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752437AbXBZQKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 11:10:07 -0500
-To: linux-kernel@vger.kernel.org
-CC: linux-pcmcia@lists.infradead.org, devel@openvz.org
-From: Monakhov Dmitriy <dmonakhov@openvz.org>
-Subject: [PATCH 2/3] pcmcia:  Handle request_irq() failure while opening device
-Date: Mon, 26 Feb 2007 19:09:17 +0300
-Message-ID: <87zm70q4sy.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	Mon, 26 Feb 2007 11:12:35 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:60118 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751328AbXBZQMe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 11:12:34 -0500
+X-Sasl-enc: W7WlQ5qe1697BezYwCUpZy8FBxP1c8zWyVHG4MdLQ4Vc 1172506337
+Date: Mon, 26 Feb 2007 13:12:03 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: Jiri Kosina <jikos@jikos.cz>, linux-kernel@vger.kernel.org
+Subject: [PATCH] ACPI: ibm-acpi: improve backlight power handling
+Message-ID: <20070226161203.GD2909@khazad-dum.debian.net>
+References: <Pine.LNX.4.64.0702260154460.10496@twin.jikos.cz> <1172490091.5824.30.camel@localhost.localdomain> <Pine.LNX.4.64.0702261329270.10496@twin.jikos.cz> <20070226142157.GA2909@khazad-dum.debian.net> <1172501357.5824.91.camel@localhost.localdomain> <20070226152035.GB2909@khazad-dum.debian.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [194.85.82.65]); Mon, 26 Feb 2007 19:08:57 +0300 (MSK)
+Content-Disposition: inline
+In-Reply-To: <20070226152035.GB2909@khazad-dum.debian.net>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Improve the backlight code to emulate as much as possible the power
+management events, as we are unable to really power on or power off the
+backlight.
 
-
-Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Richard Purdie <rpurdie@rpsys.net>
 ---
- drivers/net/pcmcia/axnet_cs.c |    8 +++++++-
- drivers/net/pcmcia/pcnet_cs.c |    8 +++++++-
- 2 files changed, 14 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/pcmcia/axnet_cs.c b/drivers/net/pcmcia/axnet_cs.c
-index 6139048..9b57bab 100644
---- a/drivers/net/pcmcia/axnet_cs.c
-+++ b/drivers/net/pcmcia/axnet_cs.c
-@@ -523,6 +523,7 @@ static int axnet_open(struct net_device *dev)
+ Status: waiting ACK from Richard Purdie <rpurdie@rpsys.net>
+
+ drivers/acpi/ibm_acpi.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/acpi/ibm_acpi.c b/drivers/acpi/ibm_acpi.c
+index e7309a6..cb5885e 100644
+--- a/drivers/acpi/ibm_acpi.c
++++ b/drivers/acpi/ibm_acpi.c
+@@ -86,6 +86,7 @@
+ 
+ #include <linux/proc_fs.h>
+ #include <linux/backlight.h>
++#include <linux/fb.h>
+ #include <asm/uaccess.h>
+ 
+ #include <linux/dmi.h>
+@@ -1707,7 +1708,8 @@ static int brightness_write(char *buf)
+ 
+ static int brightness_update_status(struct backlight_device *bd)
  {
-     axnet_dev_t *info = PRIV(dev);
-     struct pcmcia_device *link = info->p_dev;
-+    int err = 0;
-     
-     DEBUG(2, "axnet_open('%s')\n", dev->name);
+-	return brightness_set(bd->props.brightness);
++	return brightness_set((bd->props.fb_blank == FB_BLANK_UNBLANK)? 
++				bd->props.brightness : 0);
+ }
  
-@@ -531,7 +532,12 @@ static int axnet_open(struct net_device *dev)
- 
-     link->open++;
- 
--    request_irq(dev->irq, ei_irq_wrapper, IRQF_SHARED, "axnet_cs", dev);
-+    err = request_irq(dev->irq, ei_irq_wrapper, IRQF_SHARED, "axnet_cs", dev);
-+    if (err) {
-+		printk("axnet_cs: request_irq() failed  %s\n", dev->name);
-+		link->open--;
-+		return -EBUSY;
-+    }
- 
-     info->link_status = 0x00;
-     init_timer(&info->watchdog);
-diff --git a/drivers/net/pcmcia/pcnet_cs.c b/drivers/net/pcmcia/pcnet_cs.c
-index d88e9b2..13923ea 100644
---- a/drivers/net/pcmcia/pcnet_cs.c
-+++ b/drivers/net/pcmcia/pcnet_cs.c
-@@ -962,6 +962,7 @@ static int pcnet_open(struct net_device *dev)
- {
-     pcnet_dev_t *info = PRIV(dev);
-     struct pcmcia_device *link = info->p_dev;
-+    int err = 0;
- 
-     DEBUG(2, "pcnet_open('%s')\n", dev->name);
- 
-@@ -971,7 +972,12 @@ static int pcnet_open(struct net_device *dev)
-     link->open++;
- 
-     set_misc_reg(dev);
--    request_irq(dev->irq, ei_irq_wrapper, IRQF_SHARED, dev_info, dev);
-+    err = request_irq(dev->irq, ei_irq_wrapper, IRQF_SHARED, dev_info, dev);
-+    if (err) {
-+		printk("pcnet_open: request_irq() failed  %s\n", dev->name);
-+		link->open--;
-+		return -EBUSY;
-+    }
- 
-     info->phy_id = info->eth_phy;
-     info->link_status = 0x00;
+ static struct backlight_ops ibm_backlight_data = {
 -- 
 1.5.0.1
 
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
