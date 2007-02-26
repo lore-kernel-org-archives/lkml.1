@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030199AbXBZNBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030208AbXBZNIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030199AbXBZNBg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 08:01:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030205AbXBZNBg
+	id S1030208AbXBZNIr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 08:08:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030214AbXBZNIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 08:01:36 -0500
-Received: from an-out-0708.google.com ([209.85.132.249]:20689 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030199AbXBZNBe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 08:01:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JoHcAxsHSk7GWbYCVU6NHtsL0Sh6f64b/t58sI2nxa2kfWqkX5FaRao3xRLGt/rZsJ+2lcF8q5UmAQLT6o8jIS5CVL2JjEYaF6aOj9r26hQVNC8r1EabnaLAUXNEzKgz1QkckHOpU87g2EqJWgGBOfXGxPt3m+Zz5xktjGkwC9U=
-Message-ID: <6bffcb0e0702260501q214c3ac8xedee578e4e29a5be@mail.gmail.com>
-Date: Mon, 26 Feb 2007 14:01:33 +0100
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: tglx@linutronix.de
-Subject: Re: 2.6.20-git15 BUG: soft lockup detected on CPU#0! - timers?
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@googlemail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1172397209.25076.365.camel@localhost.localdomain>
+	Mon, 26 Feb 2007 08:08:47 -0500
+Received: from enyo.dsw2k3.info ([195.71.86.239]:32853 "EHLO enyo.dsw2k3.info"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030208AbXBZNIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 08:08:46 -0500
+Message-ID: <45E2DBCD.5020006@citd.de>
+Date: Mon, 26 Feb 2007 14:08:29 +0100
+From: Matthias Schniedermeyer <ms@citd.de>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Yakov Lerner <iler.ml@gmail.com>
+Cc: sfaibish <sfaibish@emc.com>, kernel list <linux-kernel@vger.kernel.org>,
+       "piernas@ditec.um.es" <piernas@ditec.um.es>
+Subject: Re: [ANNOUNCE] DualFS: File System with Meta-data and Data Separation
+References: <op.tnkdlbgsrwwil4@brcsmondepl2c.corp.emc.com>	 <op.tnrbrocsunckof@usensfaibisl2e.eng.emc.com> <f36b08ee0702260349p284f0886n7a1987cfdd43bf55@mail.gmail.com>
+In-Reply-To: <f36b08ee0702260349p284f0886n7a1987cfdd43bf55@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6bffcb0e0702201054rb839bb2m11ef8d33bacffdb8@mail.gmail.com>
-	 <6bffcb0e0702201437o66db38d5j3066eb3c9951a270@mail.gmail.com>
-	 <1172072023.25076.64.camel@localhost.localdomain>
-	 <6bffcb0e0702210738p687ca1bdt2c568d7ed5904fff@mail.gmail.com>
-	 <1172088044.25076.125.camel@localhost.localdomain>
-	 <45DCF644.9040009@googlemail.com> <45DD756D.3040006@googlemail.com>
-	 <20070223060802.GA8562@elte.hu>
-	 <6bffcb0e0702241445v562be44y5ddac6d6abdb5131@mail.gmail.com>
-	 <1172397209.25076.365.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 25/02/07, Thomas Gleixner <tglx@linutronix.de> wrote:
-> Michal,
->
-> On Sat, 2007-02-24 at 23:45 +0100, Michal Piotrowski wrote:
-> > Here is a dmesg after over 25 hours of uptime
-> > http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc1/git-dmesg3
-> > nothing new.
->
-> can you please turn off CONFIG_SCHED_SMT ? It seems all reports have one
-> thing in common:
->
-> CPU == P4 and CONFIG_SCHED_SMT turned on.
->
->         tglx
->
->
->
+Yakov Lerner wrote:
+> On 2/14/07, sfaibish <sfaibish@emc.com> wrote:
+>> On Sat, 10 Feb 2007 22:06:37 -0500, Sorin Faibish <sfaibish@emc.com>
+>> wrote:
+>>
+>> > Introducing DualFS
+>> >
+>> > File System developers played with the idea of separation of
+>> > meta-data from data in file systems for a while. The idea was
+>> > lately revived by a small group of file system enthusiasts
+>> >  from Spain (from the little known University of Murcia) and
+>> > it is called DualFS. We believe that the separation idea
+>> > will bring to Linux file systems great value.
+>> >
+>> > We see DualFS as a next-generation journaling file system which
+>> > has the same consistency guaranties as traditional journaling
+>> > file systems but better performance characteristics. The new file
+>> > system puts data and meta-data on different devices (usually, two
+>> > partitions on the same disk or different disks)
+> 
+> Do you guys have an option of using just one partiton, and
+> divide it into two fixed parts at mkfs-time , one part X% (for metadata)
+> and  2nd part at (100-X)% (file file  blocks) ? Would not this option
+> be easier-to-administer choice for naive users ? Or, you do not
+> view your FS as an option for naive users in the first place ?
 
-Ok, I think that this is a SMT scheduler problem.
+Personally i would prefer to put the metadata-part as a file inside another filesystem.
+- The files can shrink and grow as needed
+- If you have several Partitions like that you don't have that much overhead because of fixed size metadata
 
-System works fine for fifteen hours.
+For e.g. I have 41 external HDDs (11TB, currently with XFS), when i could split the metadata from the actual data.
+And when it would be possible to mount the metadata without it's data i would gain the following niceties.
+- I could gather all metadata in one place
+- No "overhead" for filesystem on the external HDDs just "pure" data.
+- They would be searchable, at least on the metadata level, so i could search something and then connect the needed HDD for full access.
 
-Regards,
-Michal
+In my case the metadata overhead should be quite small as the smallest file is about 400MB and range up to 5GB. For e.g. i have HDDs which are full by only about 90 files.
+The file are mostly write-once, so the current overhead for dualfs would be 'extreme' for my case.
+AFAIR the overhead of XFS (with log reduced to near minimum) was about 4-5MB in total for a 200GB HDD. But i'm currently at work so i can't verify that.
+
+
 
 -- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+Real Programmers consider "what you see is what you get" to be just as
+bad a concept in Text Editors as it is in women. No, the Real Programmer
+wants a "you asked for it, you got it" text editor -- complicated,
+cryptic, powerful, unforgiving, dangerous.
+
