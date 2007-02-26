@@ -1,39 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030412AbXBZShf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbXBZSht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030412AbXBZShf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 13:37:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030405AbXBZShf
+	id S1752463AbXBZSht (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 13:37:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbXBZShs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 13:37:35 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42142 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751291AbXBZShe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 13:37:34 -0500
-Date: Mon, 26 Feb 2007 19:41:31 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Zach Brown <zab@zabbo.net>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, hch@lst.de
-Subject: Re: [RFC/PATCH] revokeat/frevoke system calls V5
-Message-ID: <20070226194131.2c4e4a47@lxorguk.ukuu.org.uk>
-In-Reply-To: <79B7BBDC-E953-4EAE-8D32-E510DE0981FF@zabbo.net>
-References: <Pine.LNX.4.64.0701282200450.17167@sbz-30.cs.Helsinki.FI>
-	<20070226003307.6f38d2ee@lxorguk.ukuu.org.uk>
-	<84144f020702252325j29da2819i50c99477cce89359@mail.gmail.com>
-	<45E291F7.6060508@zytor.com>
-	<79B7BBDC-E953-4EAE-8D32-E510DE0981FF@zabbo.net>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Mon, 26 Feb 2007 13:37:48 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:48602 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752463AbXBZShr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 13:37:47 -0500
+Date: Mon, 26 Feb 2007 19:38:00 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH,RFC] fix section mismatch warning in lib/swiotlb.c
+Message-ID: <20070226183800.GA15669@uranus.ravnborg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm not sure.  Turning, for example, the statat(dir_fd, name == NULL)  
-> error case into fstat(dir_fd) sounds like a way for apps, admittedly  
-> buggy ones, to be surprised.  Maybe libc would be exptected to catch  
-> the error before performing the shared system call?
+kbuild spits outs following warning on a 
+defconfig x86_64 build:
+WARNING: swiotlb.o - Section mismatch: reference to .init.text:swiotlb_init from __ksymtab between '__ksymtab_swiotlb_init' (at offset 0xa0) and '__ksymtab_swiotlb_free_coherent'
 
-At that point would it not be cheaper to have two system calls, the table
-cost isn't very large.
+This warning happens because the function 
+swiotlb_init is marked __init and EXPORT_SYMBOL().
+A 'git grep swiotlb_init' showed no users in drivers/
+so maybe the EXPORT_SYMBOL can be deleted which would cure the warning?
+
+I took the pragmatic approach and made it non-__init.
+
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index 623a68a..3133495 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -160,7 +160,7 @@ __setup("swiotlb=", setup_io_tlb_npages);
+  * Statically reserve bounce buffer space and initialize bounce buffer data
+  * structures for the software IO TLB used to implement the DMA API.
+  */
+-void __init
++void
+ swiotlb_init_with_default_size(size_t default_size)
+ {
+ 	unsigned long i, bytes;
+@@ -211,7 +211,7 @@ swiotlb_init_with_default_size(size_t default_size)
+ #define __swiotlb_init_with_default_size swiotlb_init_with_default_size
+ #endif
+ 
+-void __init
++void
+ swiotlb_init(void)
+ {
+ 	__swiotlb_init_with_default_size(64 * (1<<20)); /* default to 64MB */
