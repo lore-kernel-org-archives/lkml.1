@@ -1,96 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030333AbXBZQpN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030319AbXBZQso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030333AbXBZQpN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 11:45:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030340AbXBZQpE
+	id S1030319AbXBZQso (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 11:48:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030324AbXBZQso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 11:45:04 -0500
-Received: from mercury.realtime.net ([205.238.132.86]:56548 "EHLO
-	ruth.realtime.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030333AbXBZQo4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 11:44:56 -0500
-In-Reply-To: <1172462466.3971.46.camel@shinybook.infradead.org>
-References: <1172462466.3971.46.camel@shinybook.infradead.org>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <35684e789e5c2447eab393c8946efcb9@bga.com>
-Content-Transfer-Encoding: 7bit
-Cc: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: Make sure we populate the initroot filesystem late enough
-Date: Mon, 26 Feb 2007 10:44:20 -0600
-To: David Woodhouse <dwmw2@infradead.org>
-X-Mailer: Apple Mail (2.624)
+	Mon, 26 Feb 2007 11:48:44 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:45572 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030319AbXBZQsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 11:48:43 -0500
+Date: Mon, 26 Feb 2007 19:46:18 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070226164618.GA22454@2ka.mipt.ru>
+References: <20070225194645.GB1353@2ka.mipt.ru> <20070225195308.GC15681@elte.hu> <Pine.LNX.4.64.0702251232350.6011@alien.or.mcafeemobile.com> <20070226081655.GA25280@elte.hu> <20070226092545.GA4110@2ka.mipt.ru> <20070226095547.GA9485@elte.hu> <20070226103319.GA24284@2ka.mipt.ru> <20070226103517.GA17195@elte.hu> <20070226104748.GC24284@2ka.mipt.ru> <20070226125123.GA31357@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070226125123.GA31357@elte.hu>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Mon, 26 Feb 2007 19:46:59 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 27, 2007, at 2:24 AM, David Woodhouse wrote:
-> On Sun, 2007-02-25 at 20:13 -0800, Linus Torvalds wrote:
->> On Sun, 25 Feb 2007, David Woodhouse wrote:
->>>> Can you try adding something like
->>>>
->>>>         memset(start, 0xf0, end - start);
->>>
->>> Yeah, I did that before giving up on it for the day and going in 
->>> search
->>> of dinner. It changes the failure mode to a BUG() in
->>> cache_free_debugcheck(), at line 2876 of mm/slab.c
->>
->> Ok, that's just strange.
->
-> In this case I hadn't left the 'return' in free_initrd_mem(). I was
-> poisoning the pages and then returning them to the pool as usual.
->
-> If I poison the pages and _don't_ return them to the pool, it boots
-> fine. PageReserved is set on every page in the initrd region; total
-> page_count() is equal to the number of pages (which doesn't
-> _necessarily_ mean that page_count() for every page is equal to 1 but
-> it's a strong hint that that's the case).
->
-> Looking in /dev/mem after it boots, I see that my poison is still
-> present throughout the whole region.
->
->> One obvious thing to do would be to remove all the "__initdata" 
->> entries in
->> mm/slab.c..
->
-> This is biting us long before we call free_initmem().
->
->>  But I'd also like to see the full backtrace for the  BUG_ON(),
->> in case that gives any clues at all.
->
-> I'll see if I can find a camera.
->
->>> It smells like the pages weren't actually reserved in the first place
->>> and we were blithely allocating them. The only problem with that 
->>> theory
->>> is that the initrd doesn't seem to be getting corrupted -- and if we
->>> were handing out its pages like that then surely _something_ would 
->>> have
->>> scribbled on it before we tried to read it.
->>
->> Yeah, I don't think it's necessarily initrd itself, I'd be more 
->> inclined
->> to think that the reason you see this change with the initrd 
->> unpacking is
->> simply that it does a lot of allocations for the initrd files, so I 
->> think
->> it is only indirectly involved - just because it ends up being a slab
->> user.
->
-> Whatever happens, initrd as a 'slab user' is fine. The crashes happen
-> _later_, when someone else is using the memory which used to belong to
-> the initrd. In that 'BUG at slab.c:2876' I mentioned above, r3 was
-> within the initrd region. As I said, I'll try to find a camera.
+On Mon, Feb 26, 2007 at 01:51:23PM +0100, Ingo Molnar (mingo@elte.hu) wrote:
+> 
+> * Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+> 
+> > Even having main dispatcher as epoll/kevent loop, the _whole_ 
+> > threadlet model is absolutely micro-thread in nature and not state 
+> > machine/event.
+> 
+> Evgeniy, i'm not sure how many different ways to tell this to you, but 
+> you are not listening, you are not learning and you are still not 
+> getting it at all.
+> 
+> The scheduler /IS/ a generic work/event queue. And it's pretty damn 
+> fast. No amount of badmouthing will change that basic fact. Not exactly 
+> as fast as a special-purpose queueing system (for all the reasons i 
+> outlined to you, and which you ignored), but it gets pretty damn close 
+> even for the web workload /you/ identified, and offers a user-space 
+> programming model that is about 1000 times more useful than 
+> state-machines.
 
+Meanwhile on practiceal side:
+via epia kevent/epoll/threadlet:
 
-Just a thought,
+client: ab -c500 -n5000 $url
 
-Any chance you are using one of the unusal code paths, like the 
-bootloader
-moving the initrd or using a kernel-crash region?
+kevent:		849.72
+epoll:		538.16
+threadlet:
+ gcc ./evserver_epoll_threadlet.c -o ./evserver_epoll_threadlet
+ In file included from ./evserver_epoll_threadlet.c:30:
+ ./threadlet.h: In function ‘threadlet_exec’:
+ ./threadlet.h:46: error: can't find a register in class ‘GENERAL_REGS’
+ while reloading ‘asm’
 
+That particular asm optimization fails to compile.
 
-milton
+> 	Ingo
 
+-- 
+	Evgeniy Polyakov
