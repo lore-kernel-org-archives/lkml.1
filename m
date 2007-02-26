@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932367AbXBZAAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933705AbXBZAAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932367AbXBZAAZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 19:00:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933701AbXBZAAY
+	id S933705AbXBZAAc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 19:00:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933703AbXBZAAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 19:00:24 -0500
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:44245 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932367AbXBZAAY (ORCPT
+	Sun, 25 Feb 2007 19:00:31 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:33037 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933701AbXBZAAa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 19:00:24 -0500
-Date: Mon, 26 Feb 2007 01:00:23 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Greg KH <greg@kroah.com>
-Cc: "S.??a??lar Onur" <caglar@pardus.org.tr>, "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
-       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Dave Jones <davej@redhat.com>,
-       akpm@linux-foundation.org, Chuck Wolber <chuckw@quantumlinux.com>,
-       stable@kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 00/18] 2.6.18-stable review
-Message-ID: <20070226000023.GH29575@stusta.de>
-References: <20070221014927.GA3684@kroah.com> <200702211355.05539.caglar@pardus.org.tr> <20070221173445.GA16071@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070221173445.GA16071@kroah.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 25 Feb 2007 19:00:30 -0500
+Subject: Re: Make sure we populate the initroot filesystem late enough
+From: David Woodhouse <dwmw2@infradead.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: torvalds@linux-foundation.org, linuxppc-dev@ozlabs.org,
+       john stultz <johnstul@us.ibm.com>
+In-Reply-To: <200612112059.kBBKx1j7022473@hera.kernel.org>
+References: <200612112059.kBBKx1j7022473@hera.kernel.org>
+Content-Type: text/plain
+Date: Sun, 25 Feb 2007 19:00:57 -0500
+Message-Id: <1172448057.3971.9.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 21, 2007 at 09:34:45AM -0800, Greg KH wrote:
-> On Wed, Feb 21, 2007 at 01:55:04PM +0200, S.??a??lar Onur wrote:
-> > 21 ??ub 2007 ??ar tarihinde, Greg KH ??unlar?? yazm????t??: 
-> > > Responses should be made by Friday February 23 00:00 UTC.  Anything
-> > > received after that time might be too late.
-> > 
-> > We have still some CVEish patches in our package which maybe you want to 
-> > consider adding into -stable.
-> > 
-> > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-4814
-> > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-5749
-> > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-5753
-> > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-5823
-> > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-6053
-> > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-6054
-> > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-6333
-> > * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-0006
+On Mon, 2006-12-11 at 20:59 +0000, Linux Kernel Mailing List wrote:
+> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8d610dd52dd1da696e199e4b4545f33a2a5de5c6
+> Commit:     8d610dd52dd1da696e199e4b4545f33a2a5de5c6
+> Parent:     8993780a6e44fb4e7ed34e33458506a775356c6e
+> Author:     Linus Torvalds <torvalds@woody.osdl.org>
+> AuthorDate: Mon Dec 11 12:12:04 2006 -0800
+> Committer:  Linus Torvalds <torvalds@woody.osdl.org>
+> CommitDate: Mon Dec 11 12:12:04 2006 -0800
 > 
-> Do you have a pointer to the patches for these fixes anywhere?
-> 
-> And are you sure they are all for 2.6.18?  The first one above is for
-> the 2.4 kernel tree :)
+>     Make sure we populate the initroot filesystem late enough
+>     
+>     We should not initialize rootfs before all the core initializers have
+>     run.  So do it as a separate stage just before starting the regular
+>     driver initializers.
+>     
+>     Signed-off-by: Linus Torvalds <torvalds@osdl.org>
 
-Fixed in 2.6.19.2 and 2.6.18.8 (the latter contains a
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>  ;-) ).
+This seems to be what's triggering the apparent memory corruption we've
+been seeing recently -- in the case of the Fedora kernel it manifests
+itself as a BUG() in cache_alloc_refill() when the pmac ide driver
+initialises.
 
-> thanks,
-> 
-> greg k-h
+Another report was at http://lkml.org/lkml/2006/12/17/4
 
-cu
-Adrian
+We've been seeing it on a Mac Mini too, and I managed to reproduce it on
+my shinybook this evening by booting with 'mem=512M'.
+
+One side-effect of this patch is to move the call to free_initrd() much
+later in the init sequence, potentially after other memory management
+code is assuming it's already been freed.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+dwmw2
 
