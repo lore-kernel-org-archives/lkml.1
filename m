@@ -1,44 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030292AbXBZPO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030293AbXBZPWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030292AbXBZPO6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 10:14:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbXBZPO6
+	id S1030293AbXBZPWI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 10:22:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030294AbXBZPWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 10:14:58 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:43985 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751245AbXBZPO5 (ORCPT
+	Mon, 26 Feb 2007 10:22:08 -0500
+Received: from nic.NetDirect.CA ([216.16.235.2]:38767 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030293AbXBZPWH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 10:14:57 -0500
-Date: Mon, 26 Feb 2007 20:44:42 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Pavel Machek <pavel@ucw.cz>,
-       Aneesh Kumar <aneesh.kumar@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [RFC][PATCH 1/3] Freezer: Fix vfork problem
-Message-ID: <20070226151442.GA29869@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <200702261139.59130.rjw@sisk.pl> <200702261147.12274.rjw@sisk.pl> <20070226120043.GB234@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070226120043.GB234@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+	Mon, 26 Feb 2007 10:22:07 -0500
+X-Originating-Ip: 74.109.98.130
+Date: Mon, 26 Feb 2007 10:19:30 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: second thoughts about DEPRECATED and OBSOLETE maturity levels
+In-Reply-To: <20070226140909.GA14131@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0702261019020.20358@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0702251650580.29271@CPE00045a9c397f-CM001225dbafb6>
+ <20070226140909.GA14131@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, TW_VN 0.08)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 26, 2007 at 03:00:43PM +0300, Oleg Nesterov wrote:
-> In that case we should also modify ____call_usermodehelper(), otherwise we have
-> the same "deadlock" if it is frozen. But this is not so easy to do as I thought
-> before.
+On Mon, 26 Feb 2007, Sam Ravnborg wrote:
 
-Before ____call_usermodehelper can freeze, it should have entered userspace 
-right? By that time, its vfork parent should have definitely woken up,
-which should avoid the deadlock you point out?
+> On Sun, Feb 25, 2007 at 05:07:24PM -0500, Robert P. J. Day wrote:
+> >
+> >   having championed the cause of adding those two code maturity levels
+> > to init/Kconfig, i just realized that implementing them as simple
+> > dependencies has a *really* annoying shortcoming.
+> >
+> >   in order to display that a kernel config feature is experimental,
+> > developers have not only made that feature depend on EXPERIMENTAL, but
+> > they've also had to *explicitly* add the trailer "(EXPERIMENTAL)" to
+> > the prompt line in the Kconfig file, to make it visually obvious.
+> >
+> >   obviously, it would be *way* nicer if that trailer were produced on
+> > the fly for any "EXPERIMENTAL" feature, just as it would be for
+> > OBSOLETE or DEPRECATED (or any other maturity levels people can dream
+> > up).
+>
+> I have envisioned that this tag could be added by Kconfig automatically for
+> all symbols that are dependent on EXPERIMENTAL.
+> To do so the new option syntax could be extended.
+> So we had something like:
+> config EXPERIMENTAL
+> 	bool "Bla bla"
+> 	option adddisplay=(EXPERIMENTAL)
+>
+> This would cause all symbols selected by EXPERIMENTAL to have
+> the string "(EXPERIMENTAL)" added to the prompt when displayed.
+>
+> Same could be used for DEPRECATED and OBSOLETE.
+
+yup, that makes much more sense than my original idea of just
+introducing simple dependencies.
+
+rday
 
 -- 
-Regards,
-vatsa
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
