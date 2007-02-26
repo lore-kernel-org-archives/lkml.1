@@ -1,87 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030410AbXBZS2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030419AbXBZSaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030410AbXBZS2m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 13:28:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030393AbXBZS2m
+	id S1030419AbXBZSaZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 13:30:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030417AbXBZSaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 13:28:42 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:32920 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030408AbXBZS2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 13:28:41 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Aneesh Kumar" <aneesh.kumar@gmail.com>
-Subject: Re: [RFC][PATCH 3/3] Freezer: Prevent ___call_usermodehelper from missing freezing requests
-Date: Mon, 26 Feb 2007 19:30:55 +0100
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>, "Andrew Morton" <akpm@osdl.org>,
-       "Oleg Nesterov" <oleg@tv-sign.ru>, "Pavel Machek" <pavel@ucw.cz>,
-       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "Gautham R Shenoy" <ego@in.ibm.com>
-References: <200702261139.59130.rjw@sisk.pl> <200702261152.18379.rjw@sisk.pl> <cc723f590702260358u7b9da770v42964d534182ee4d@mail.gmail.com>
-In-Reply-To: <cc723f590702260358u7b9da770v42964d534182ee4d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 26 Feb 2007 13:30:25 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:36825 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030419AbXBZSaY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 13:30:24 -0500
+Date: Mon, 26 Feb 2007 09:26:44 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@osdl.org>, Jeff Garzik <jgarzik@pobox.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.20-rc4-mm1: PCI=n: drivers/net/3c59x.c compile error
+Message-Id: <20070226092644.aea76b37.randy.dunlap@oracle.com>
+In-Reply-To: <45E2DF13.9010200@ru.mvista.com>
+References: <20070111222627.66bb75ab.akpm@osdl.org>
+	<20070124135354.GI17836@stusta.de>
+	<45B76946.1070009@ru.mvista.com>
+	<45D756D7.4060106@ru.mvista.com>
+	<45D75853.1060607@ru.mvista.com>
+	<45E2DF13.9010200@ru.mvista.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702261930.56550.rjw@sisk.pl>
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 26 February 2007 12:58, Aneesh Kumar wrote:
-> On 2/26/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > NOTE: Alternatively, we can just drop flush_signals() from there, but I'm not
-> > sure that's the right thing to do.
-> >
-> > ---
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> >
-> > Since ____call_usermodehelper() calls flush_signals(current), the task that
-> > enters it may miss a freezing request.  However, if ____call_usermodehelper()
-> > clears TIF_FREEZE for the current task after flush_signals(current) returns, the
-> > freezer will generate one more freezing request for this task.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  kernel/kmod.c |    2 ++
-> >  1 file changed, 2 insertions(+)
-> >
-> > Index: linux-2.6.20-mm2/kernel/kmod.c
-> > ===================================================================
-> > --- linux-2.6.20-mm2.orig/kernel/kmod.c 2007-02-25 12:07:15.000000000 +0100
-> > +++ linux-2.6.20-mm2/kernel/kmod.c      2007-02-25 12:49:16.000000000 +0100
-> > @@ -34,6 +34,7 @@
-> >  #include <linux/kernel.h>
-> >  #include <linux/init.h>
-> >  #include <linux/resource.h>
-> > +#include <linux/freezer.h>
-> >  #include <asm/uaccess.h>
-> >
-> >  extern int delete_module(const char *name, unsigned int flags);
-> > @@ -258,6 +259,7 @@ static int ____call_usermodehelper(void
-> >         new_session = key_get(sub_info->ring);
-> >         flush_signals(current);
-> >         spin_lock_irq(&current->sighand->siglock);
-> > +       do_not_freeze(current);
-> >         old_session = __install_session_keyring(current, new_session);
-> >         flush_signal_handlers(current, 1);
-> >         sigemptyset(&current->blocked);
-> >
-> 
-> 
-> this need a comment . Otherwise one reading will read it as we don't
-> want it to freeze.
-> 
-> How about
-> /*
-> clears TIF_FREEZE for the current task after flush_signals(current)
-> returns, so that the
-> freezer will generate one more freezing request for this task.
-> 
-> */
+On Mon, 26 Feb 2007 16:22:27 +0300 Sergei Shtylyov wrote:
 
-Looks reasonable, but Oleg wants to drop the flush_signals(current) ...
+> Hello, I wrote:
+> 
+> >>>> 3x59x-fix-pci-resource-management.patch causes the following compile 
+> >>>> error with CONFIG_PCI=n:
+> 
+> >>>> <--  snip  -->
+> 
+> >>>> ...
+> >>>>   CC      drivers/net/3c59x.o
+> >>>> /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c: 
+> >>>> In function 'vortex_init_one':
+> >>>> /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c:961: 
+> >>>> error: implicit declaration of function 'pci_request_regions'
+> >>>> /home/bunk/linux/kernel-2.6/linux-2.6.20-rc4-mm1/drivers/net/3c59x.c:985: 
+> >>>> error: implicit declaration of function 'pci_release_regions'
+> >>>> make[3]: *** [drivers/net/3c59x.o] Error 1
+> 
+> >>>    Grr, at at the same time it's happy with pci_enable_device().
+> >>>    I'd say the problem is in <linux/pci.h>,  not in the patch.
+> 
+> >>    Has there been any patch to fix the "unbalanced" 
+> >> pci_{request|release}_regions() declarations? Am I suposed to create 
+> >> such?
+> 
+> >    Alternatively, vortex_{init|remove_one() and struct pci_driver there 
+> > could have been put under #ifdef CONFIG_PCI (good idea anyway -- should 
+> > reduce driver size on non-PCI systems)...
+> 
+>     I wonder if I may count on any feedback on this -- asking linux-pci now...
+>     The issue is as follows: with my patch pci_{request|release}_regions() may 
+> be called with CONFIG_PCI=n (probably, this never has been a issue before) but 
+> <linux/pci.h> don't have them declared in this case -- unlike 
+> pci_enable_device() which is just empty for CONFIG_PCI=n.
+>     Now, what kind of approach do I take:
+> 
+> - a "fair one", so that pci_{request|release}_regions() get "balanced"
+>    declarations in the header like pci_enable_device();
+> 
+> - a "local one" (and even saving non-PCI kernel from needless bloat), i.e.
+>    #ifdef out functions that are only meaningful with CONFIG_PCI=y)?
+> 
+>     I'm leaning to the second now...
 
-Rafael
+I'd prefer the fair one -- add stubs to include/linux/pci.h.
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
