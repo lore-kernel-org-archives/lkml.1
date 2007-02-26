@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933727AbXBZAiN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933725AbXBZAoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933727AbXBZAiN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 19:38:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933728AbXBZAiN
+	id S933725AbXBZAoh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 19:44:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933733AbXBZAoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 19:38:13 -0500
-Received: from stargate.chelsio.com ([12.22.49.110]:18145 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933727AbXBZAiM (ORCPT
+	Sun, 25 Feb 2007 19:44:37 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55919 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933725AbXBZAog (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 19:38:12 -0500
-Message-ID: <45E22B91.1060702@chelsio.com>
-Date: Sun, 25 Feb 2007 16:36:33 -0800
-From: Divy Le Ray <divy@chelsio.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Steve Wise <swise@opengridcomputing.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/7] cxgb3 - FW version update
-References: <20070225004401.20831.3292.stgit@localhost.localdomain>	 <1172431719.4717.8.camel@stevo-laptop>  <45E1E810.2000706@garzik.org> <1172440758.4717.17.camel@stevo-laptop> <45E21009.6040706@garzik.org>
-In-Reply-To: <45E21009.6040706@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 25 Feb 2007 19:44:36 -0500
+Subject: Re: Make sure we populate the initroot filesystem late enough
+From: David Woodhouse <dwmw2@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, john stultz <johnstul@us.ibm.com>
+In-Reply-To: <Pine.LNX.4.64.0702251614420.12485@woody.linux-foundation.org>
+References: <200612112059.kBBKx1j7022473@hera.kernel.org>
+	 <1172448057.3971.9.camel@shinybook.infradead.org>
+	 <Pine.LNX.4.64.0702251614420.12485@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Sun, 25 Feb 2007 19:45:04 -0500
+Message-Id: <1172450704.3971.30.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Feb 2007 00:36:35.0898 (UTC) FILETIME=[2BAD71A0:01C7593E]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Steve Wise wrote:
->>> I would rather fix the code to use constants, and thus avoid this 
->>> problem ever happening again.
->>>
->>>     Jeff
->>>
->>
->> How's this (not tested)?
->
-> seems OK to me
->
->
-I tested it and resubmitted. Thanks fro the fix suggestion and the patch!
+On Sun, 2007-02-25 at 16:24 -0800, Linus Torvalds wrote:
+> Hmm. No, I don't think that should be a problem. free_initmem() only 
+> happens at the very, after do_basic_setup() has been run, which includes 
+> all the initcall stuff.
 
-Cheers,
-Divy
+> However, it's an interesting observation. How sure are you that it's this 
+> commit that triggers it. You say "This seems to be what's triggering ..", 
+> I'm wondering how firm that is.. 
+
+I found it with git-bisect. The Fedora kernel has been broken on this
+particular 512MiB Mac Mini for a while, and now I've reverted the patch
+it seems to be fine again. So I'm fairly sure. I'll be surer in a few
+minutes once the full RPM build has finished with the patch reverted.
+
+Of course, it could easily be an entirely separate bug which by some
+bizarre coincidence is just triggered by this.
+
+-- 
+dwmw2
+
