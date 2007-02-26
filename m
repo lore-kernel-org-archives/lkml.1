@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751330AbXBZMAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932733AbXBZMCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751330AbXBZMAl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 07:00:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbXBZMAl
+	id S932733AbXBZMCI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 07:02:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbXBZMCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 07:00:41 -0500
-Received: from mail.screens.ru ([213.234.233.54]:39553 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751330AbXBZMAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 07:00:40 -0500
-Date: Mon, 26 Feb 2007 15:00:43 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Pavel Machek <pavel@ucw.cz>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Aneesh Kumar <aneesh.kumar@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [RFC][PATCH 1/3] Freezer: Fix vfork problem
-Message-ID: <20070226120043.GB234@tv-sign.ru>
-References: <200702261139.59130.rjw@sisk.pl> <200702261147.12274.rjw@sisk.pl>
-Mime-Version: 1.0
+	Mon, 26 Feb 2007 07:02:08 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41120 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752437AbXBZMCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 07:02:06 -0500
+Date: Mon, 26 Feb 2007 13:01:54 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: David Howells <dhowells@redhat.com>
+Cc: Markus Gutschke <markus@google.com>,
+       "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
+       Andrew Morton <akpm@osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>, Robin Holt <holt@sgi.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <soshima@redhat.com>
+Subject: Re: [PATCH 0/4] coredump: core dump masking support v3
+Message-ID: <20070226120154.GD3386@elf.ucw.cz>
+References: <45E09989.5070604@google.com> <45DFB1C7.1030205@google.com> <45D5B2E3.3030607@hitachi.com> <17044.1172311335@redhat.com> <2910.1172490554@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200702261147.12274.rjw@sisk.pl>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <2910.1172490554@redhat.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/26, Rafael J. Wysocki wrote:
->
-> The changelog explains it pretty well, I hope, but I have one more comment to
-> start with.  Namely, in this version of the patch I've added
+
+> > While I am sure you could construct scenarios where this would happen,
+> > realistically the only one I have run into were stack overflows, and they can
+> > be handled by carefully setting up an alternate stack for signal handlers --
+> > just make sure the entire stack is already dirtied before you run out of
+> > memory (or, turn of overcommitting).
 > 
-> +	if (is_user_space(current))
-> +		try_to_freeze();
+> Duff SIGSEGV or SIGBUS signal handlers are just as realistic.  All that takes
+> is for someone to make a programming error.  Remember: error paths are the
+> least frequently tested.
 > 
-> to freezer_count() instead of just try_to_freeze().  This way kernel threads
-> can avoid being frozen where they don't want to.
+> And any time you say "by carefully setting up" you can guarantee someone's
+> going to do it wrong.
 
-In that case we should also modify ____call_usermodehelper(), otherwise we have
-the same "deadlock" if it is frozen. But this is not so easy to do as I thought
-before.
+By same argument, we should just give up the coredumping in kernel. It
+is rarely tested, so someone will just get it wrong.
 
-Oleg.
+Remember: we are having people with huge apps, and therefore huge
+coredumps. They want to hack a kernel in ugly way to make their dumps
+smaller.
 
+...but there's better solution for them, create (& debug) userland
+coredumping library. No need to hack a kernel.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
