@@ -1,40 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751019AbXBZFNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751113AbXBZFw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751019AbXBZFNW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 00:13:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751098AbXBZFNW
+	id S1751113AbXBZFw0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 00:52:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbXBZFw0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 00:13:22 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:41991 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751019AbXBZFNV (ORCPT
+	Mon, 26 Feb 2007 00:52:26 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33190 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751113AbXBZFwZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 00:13:21 -0500
-Date: Mon, 26 Feb 2007 05:13:04 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: divy@chelsio.com
-Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Subject: Re: [PATCH 7/7] cxgb3 - Add SW LRO support
-Message-ID: <20070226051304.GA13626@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>, divy@chelsio.com,
-	jeff@garzik.org, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, swise@opengridcomputing.com
-References: <20070225004423.20903.17036.stgit@localhost.localdomain>
-Mime-Version: 1.0
+	Mon, 26 Feb 2007 00:52:25 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: MSI entry unlinked before arch_teardown_msi_irq().
+References: <m17iu6r4eg.fsf@ebiederm.dsl.xmission.com>
+	<20070225.154637.70478886.davem@davemloft.net>
+	<m18xelpyfg.fsf@ebiederm.dsl.xmission.com>
+	<20070225.180303.78711157.davem@davemloft.net>
+Date: Sun, 25 Feb 2007 22:51:59 -0700
+In-Reply-To: <20070225.180303.78711157.davem@davemloft.net> (David Miller's
+	message of "Sun, 25 Feb 2007 18:03:03 -0800 (PST)")
+Message-ID: <m1y7mlo48w.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070225004423.20903.17036.stgit@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 24, 2007 at 04:44:23PM -0800, divy@chelsio.com wrote:
-> From: Divy Le Ray <divy@chelsio.com>
-> 
-> Add all-in-sw lro support.
+David Miller <davem@davemloft.net> writes:
 
-Doing this in a LLDD doesn't sound like a good idea.  Have you
-tried doing this in the core networking code instead?
+> Nevermind, something strange is going on here.  I think my
+> patch is bogus and the thing is still crashing, let me get
+> back to you.
+
+Sure.  
+
+Eric
