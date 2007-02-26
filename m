@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030196AbXBZKwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030201AbXBZKwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030196AbXBZKwU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 05:52:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030201AbXBZKwT
+	id S1030201AbXBZKwb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 05:52:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030205AbXBZKwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 05:52:19 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59263 "EHLO ogre.sisk.pl"
+	Mon, 26 Feb 2007 05:52:21 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:59258 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030200AbXBZKwB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 05:52:01 -0500
+	id S1030199AbXBZKwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 05:52:00 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC][PATCH 3/3] Freezer: Prevent ___call_usermodehelper from missing freezing requests
-Date: Mon, 26 Feb 2007 11:52:17 +0100
+Subject: [RFC][PATCH 2/3] Freezer: Take kernel_execve into consideration
+Date: Mon, 26 Feb 2007 11:49:09 +0100
 User-Agent: KMail/1.9.5
 Cc: Andrew Morton <akpm@osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Pavel Machek <pavel@ucw.cz>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
@@ -26,43 +26,42 @@ Content-Type: text/plain;
   charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702261152.18379.rjw@sisk.pl>
+Message-Id: <200702261149.10579.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-NOTE: Alternatively, we can just drop flush_signals() from there, but I'm not
-sure that's the right thing to do.
-
----
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Since ____call_usermodehelper() calls flush_signals(current), the task that
-enters it may miss a freezing request.  However, if ____call_usermodehelper()
-clears TIF_FREEZE for the current task after flush_signals(current) returns, the
-freezer will generate one more freezing request for this task.
+Kernel threads can become userland processes by calling kernel_execve().  In
+particular, this may happen right after try_to_freeze_tasks(FREEZER_USER_SPACE)
+has returned, so try_to_freeze_tasks() needs to take userspace processes
+into consideration even if it is called with FREEZER_KERNEL_THREADS.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- kernel/kmod.c |    2 ++
- 1 file changed, 2 insertions(+)
+ kernel/power/process.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6.20-mm2/kernel/kmod.c
+Index: linux-2.6.20-mm2/kernel/power/process.c
 ===================================================================
---- linux-2.6.20-mm2.orig/kernel/kmod.c	2007-02-25 12:07:15.000000000 +0100
-+++ linux-2.6.20-mm2/kernel/kmod.c	2007-02-25 12:49:16.000000000 +0100
-@@ -34,6 +34,7 @@
- #include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/resource.h>
-+#include <linux/freezer.h>
- #include <asm/uaccess.h>
+--- linux-2.6.20-mm2.orig/kernel/power/process.c	2007-02-26 08:41:18.000000000 +0100
++++ linux-2.6.20-mm2/kernel/power/process.c	2007-02-26 08:41:57.000000000 +0100
+@@ -117,7 +117,7 @@ static unsigned int try_to_freeze_tasks(
+ 				cancel_freezing(p);
+ 				continue;
+ 			}
+-			if (is_user_space(p) == !freeze_user_space)
++			if (freeze_user_space && !is_user_space(p))
+ 				continue;
  
- extern int delete_module(const char *name, unsigned int flags);
-@@ -258,6 +259,7 @@ static int ____call_usermodehelper(void 
- 	new_session = key_get(sub_info->ring);
- 	flush_signals(current);
- 	spin_lock_irq(&current->sighand->siglock);
-+	do_not_freeze(current);
- 	old_session = __install_session_keyring(current, new_session);
- 	flush_signal_handlers(current, 1);
- 	sigemptyset(&current->blocked);
+ 			freeze_process(p);
+@@ -144,7 +144,7 @@ static unsigned int try_to_freeze_tasks(
+ 				TIMEOUT / HZ, todo);
+ 		read_lock(&tasklist_lock);
+ 		do_each_thread(g, p) {
+-			if (is_user_space(p) == !freeze_user_space)
++			if (freeze_user_space && !is_user_space(p))
+ 				continue;
+ 
+ 			task_lock(p);
+
