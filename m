@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030624AbXBZUGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030626AbXBZUHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030624AbXBZUGS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 15:06:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030626AbXBZUGS
+	id S1030626AbXBZUHc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 15:07:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030632AbXBZUHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 15:06:18 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:59972 "EHLO smtp.osdl.org"
+	Mon, 26 Feb 2007 15:07:32 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40290 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030624AbXBZUGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 15:06:17 -0500
-Date: Mon, 26 Feb 2007 12:04:51 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-cc: Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+	id S1030626AbXBZUHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 15:07:30 -0500
+Date: Mon, 26 Feb 2007 20:54:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
        Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
        "David S. Miller" <davem@davemloft.net>,
@@ -22,56 +23,71 @@ cc: Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
        Jens Axboe <jens.axboe@oracle.com>,
        Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-In-Reply-To: <20070226193054.GB17892@2ka.mipt.ru>
-Message-ID: <Pine.LNX.4.64.0702261159470.12485@woody.linux-foundation.org>
-References: <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
- <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com>
- <20070222074044.GA4158@elte.hu> <20070222113148.GA3781@2ka.mipt.ru>
- <Pine.LNX.4.64.0702251428490.12485@woody.linux-foundation.org>
- <20070226172812.GC22454@2ka.mipt.ru> <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org>
- <20070226183227.GE22454@2ka.mipt.ru> <Pine.LNX.4.64.0702261112020.12485@woody.linux-foundation.org>
- <20070226193054.GB17892@2ka.mipt.ru>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <20070226195416.GA11188@elte.hu>
+References: <20070221211355.GA7302@elte.hu> <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com> <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com> <20070222074044.GA4158@elte.hu> <20070222113148.GA3781@2ka.mipt.ru> <Pine.LNX.4.64.0702251428490.12485@woody.linux-foundation.org> <20070226172812.GC22454@2ka.mipt.ru> <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-On Mon, 26 Feb 2007, Evgeniy Polyakov wrote:
+> > Reading from the disk is _exactly_ the same - the same waiting for 
+> > buffer_heads/pages, and (since it is bigger) it can be easily 
+> > transferred to event driven model. Ugh, wait, it not only _can_ be 
+> > transferred, it is already done in kevent AIO, and it shows faster 
+> > speeds (though I only tested sending them over the net).
 > 
-> Will you argue that people do things like
-> num = epoll_wait()
-> for (i=0; i<num; ++i) {
-> 	process(event[i])?
-> }
+> It would be absolutely horrible to program for. Try anything more 
+> complex than read/write (which is the simplest case, but even that is 
+> nasty).
 
-I have several times told you that I argue for a *combination* of 
-event-bassed interfaces and thread-like code. And that the choice depends 
-on which is more natural. Sometimes you might have just one or the other. 
-Sometimes you have both. And sometimes you have neither (although, 
-strictly speaking, normal single-threaded code is certainly "thread-like" 
-- it's a serial execution, the same way threadlets are serial executions - 
-it's just not running in parallel with anything else).
+note that even for something as 'simple and straightforward' as TCP 
+sockets, the 25-50 lines of evserver code i worked on today had 3 
+separate bugs, is known to be fundamentally incorrect and one of the 
+bugs (the lost event problem) showed up as a subtle epoll performance 
+problem and it took me more than an hour to track down. And that matches 
+my Tux experience as well: event based models are horribly hard to debug 
+BECAUSE there is /no procedural state associated with requests/. Hence 
+there is no real /proof of progress/. Not much to use for debugging - 
+except huge logs of execution, which, if one is unlucky (which i often 
+was with Tux) would just make the problem go away.
 
-> Will you spawn thread per IO?
+Furthermore, with a 'retry' model, who guarantees that the retry wont be 
+an infinite retry where none of the retries ever progresses the state of 
+the system enough to return the data we are interested in? The moment we 
+have to /retry/, depending on the 'depth' of how deep the retry kicked 
+in, we've got to reach that 'depth' of code again and execute it.
 
-Depending on what the IO is, yes. 
+plus, 'there is not much state' is not even completely true to begin 
+with, even in the most simple, TCP socket case! There /is/ quite a bit 
+of state constructed on the kernel stack: user parameters have been 
+evaluated/converted, the socket has been looked up, its state has been 
+validated, etc. With a 'retry' model - but even with a pure 'event 
+queueing' model we redo all those things /both/ at request submission 
+and at event generation time, again and again - while with a synchronous 
+syscall you do it just once and upon event completion a piece of that 
+data is already on the kernel stack. I'd much rather spend time and 
+effort on simplifying the scheduler and reducing the cache footprint of 
+the kernel thread context switch path, etc., to make it more useful even 
+in more extreme, highly prallel '100% context-switching' case, because i 
+have first-hand experience about how fragile and inflexible event based 
+servers are. I do think that event interfaces for raw, external physical 
+events make sense in some circumstances, but for any more complex 
+'derived' event type it's less and less clear whether we want a direct 
+interface to it. For something like the VFS it's outright horrible to 
+even think about.
 
-Is that _really_ so hard to understand? There is no "yes" or "no". There's 
-a "depends on what the problem is, and what the solution looks like".
-
-Sometimes the best way to do parallelism is through explicit threads. 
-Sometimes it is through whatever "threadlets" or other that gets out of 
-this whole development discussion. Sometimes it's an event loop.
-
-So get over it. The world is not a black and white, either-or kind of 
-place. It's full of grayscales, and colors, and mixing things 
-appropriately. And the choices are often done on whims and on whatever 
-feels most comfortable to the person doing the choice. Not on some strict 
-"you must always use things in an event-driven main loop" or "you must 
-always use threads for parallelism".
-
-The world is simply _richer_ than that kind of either-or thing.
-
-		Linus
+	Ingo
