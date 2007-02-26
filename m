@@ -1,35 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030476AbXBZTMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030461AbXBZTTJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030476AbXBZTMW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 14:12:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030475AbXBZTMW
+	id S1030461AbXBZTTJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 14:19:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030474AbXBZTTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 14:12:22 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33308
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1030472AbXBZTMV (ORCPT
+	Mon, 26 Feb 2007 14:19:09 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:36419 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030461AbXBZTTI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 14:12:21 -0500
-Date: Mon, 26 Feb 2007 11:12:19 -0800 (PST)
-Message-Id: <20070226.111219.41878241.davem@davemloft.net>
-To: mikpe@it.uu.se
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: [PATCH 2.6.21-rc1] sparc64: fix CONFIG_PCI_MSI=n compile
- failure
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200702261854.l1QIs8D9013016@alkaid.it.uu.se>
-References: <200702261854.l1QIs8D9013016@alkaid.it.uu.se>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 26 Feb 2007 14:19:08 -0500
+Message-ID: <45E332A1.6080504@zytor.com>
+Date: Mon, 26 Feb 2007 11:18:57 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+MIME-Version: 1.0
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       trivial@kernel.org
+Subject: Re: [PATCH] Remove redundant #ifdef __KERNEL__ checks.
+References: <Pine.LNX.4.64.0702251509440.27758@CPE00045a9c397f-CM001225dbafb6> <45E2926C.40009@zytor.com> <Pine.LNX.4.64.0702260442160.15535@CPE00045a9c397f-CM001225dbafb6>
+In-Reply-To: <Pine.LNX.4.64.0702260442160.15535@CPE00045a9c397f-CM001225dbafb6>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mikael Pettersson <mikpe@it.uu.se>
-Date: Mon, 26 Feb 2007 19:54:08 +0100 (MET)
+Robert P. J. Day wrote:
+> On Sun, 25 Feb 2007, H. Peter Anvin wrote:
+> 
+>> Robert P. J. Day wrote:
+>>>   Remove the redundant intermediate checks for __KERNEL__ since, as
+>>> soon as one ends, the next one starts.
+>>>
+>>> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+>>>
+>> However, what's much worse is that this already has put series of
+>> constants which are part of the ABI under __KERNEL__.  This is a
+>> very bad thing.
+> 
+> i'm sure i'm just being dense but i have no clue what you're referring
+> to.  AFAICT, that patch simply removed some redundant preprocessor
+> directives.  am i missing something?
+> 
 
-> 2.6.21-rc1 fails to build on sparc64 when CONFIG_PCI_MSI=n:
+I'm referring to the the patch that caused the redundant ifdefs, which 
+was a recent change which among other things broke klibc.
 
-This is already fixed in my sparc-2.6 GIT tree as of a few
-days ago, I'll push the fix to Linus later today.
+	-hpa
