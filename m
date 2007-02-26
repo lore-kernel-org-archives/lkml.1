@@ -1,398 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751310AbXBZLzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751267AbXBZL6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751310AbXBZLzm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 06:55:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbXBZLzm
+	id S1751267AbXBZL6S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 06:58:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbXBZL6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 06:55:42 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40952 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751310AbXBZLzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 06:55:40 -0500
-Date: Mon, 26 Feb 2007 12:48:58 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: threadlets as 'naive pool of threads', epoll, some measurements
-Message-ID: <20070226114858.GA28836@elte.hu>
-References: <20070225175437.GA9480@elte.hu> <20070225182135.GB29821@2ka.mipt.ru> <20070225182230.GA3622@elte.hu> <20070225183743.GD29821@2ka.mipt.ru> <20070225192112.GA15681@elte.hu> <20070225194645.GB1353@2ka.mipt.ru> <20070225195308.GC15681@elte.hu> <Pine.LNX.4.64.0702251232350.6011@alien.or.mcafeemobile.com> <20070225213420.GA10195@elte.hu> <20070226104507.GA18470@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 26 Feb 2007 06:58:18 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:18981 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751267AbXBZL6R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 06:58:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jVUbU2adTi98lhwMk0UjboqSa3gPBUApuUlmTAuwR7PRle3JbLSMvHIktSk9PzNk1m04EwRjhM6LqqIi7DWhizhh3tJUx6jH5xirjdEGi7DnLQ+MSng4zv+bWEqkVGwkI6oEkvGMpm4p0dfdl+CkC1AQPHb+485XuZYZvUtq1vw=
+Message-ID: <cc723f590702260358u7b9da770v42964d534182ee4d@mail.gmail.com>
+Date: Mon, 26 Feb 2007 17:28:16 +0530
+From: "Aneesh Kumar" <aneesh.kumar@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 3/3] Freezer: Prevent ___call_usermodehelper from missing freezing requests
+Cc: LKML <linux-kernel@vger.kernel.org>, "Andrew Morton" <akpm@osdl.org>,
+       "Oleg Nesterov" <oleg@tv-sign.ru>, "Pavel Machek" <pavel@ucw.cz>,
+       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "Gautham R Shenoy" <ego@in.ibm.com>
+In-Reply-To: <200702261152.18379.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070226104507.GA18470@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <200702261139.59130.rjw@sisk.pl> <200702261152.18379.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 2/26/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> NOTE: Alternatively, we can just drop flush_signals() from there, but I'm not
+> sure that's the right thing to do.
+>
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> Since ____call_usermodehelper() calls flush_signals(current), the task that
+> enters it may miss a freezing request.  However, if ____call_usermodehelper()
+> clears TIF_FREEZE for the current task after flush_signals(current) returns, the
+> freezer will generate one more freezing request for this task.
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  kernel/kmod.c |    2 ++
+>  1 file changed, 2 insertions(+)
+>
+> Index: linux-2.6.20-mm2/kernel/kmod.c
+> ===================================================================
+> --- linux-2.6.20-mm2.orig/kernel/kmod.c 2007-02-25 12:07:15.000000000 +0100
+> +++ linux-2.6.20-mm2/kernel/kmod.c      2007-02-25 12:49:16.000000000 +0100
+> @@ -34,6 +34,7 @@
+>  #include <linux/kernel.h>
+>  #include <linux/init.h>
+>  #include <linux/resource.h>
+> +#include <linux/freezer.h>
+>  #include <asm/uaccess.h>
+>
+>  extern int delete_module(const char *name, unsigned int flags);
+> @@ -258,6 +259,7 @@ static int ____call_usermodehelper(void
+>         new_session = key_get(sub_info->ring);
+>         flush_signals(current);
+>         spin_lock_irq(&current->sighand->siglock);
+> +       do_not_freeze(current);
+>         old_session = __install_session_keyring(current, new_session);
+>         flush_signal_handlers(current, 1);
+>         sigemptyset(&current->blocked);
+>
 
-yet another performance update - with the fixed 'heaps of stupid 
-threads' evserver_threadlet.c code attached below i got:
 
->    evserver_epoll:             9400 reqs/sec
->    evserver_epoll_threadlet:   9400 reqs/sec
+this need a comment . Otherwise one reading will read it as we don't
+want it to freeze.
 
-     evserver_threadlet:         9000 reqs/sec
-
-so the overhead, instead of the 10x slowdown Evgeniy predicted/feared, 
-is 4% for this particular, very event-centric workload.
-
-why? because Evgeniy still overlooks what i've mentioned so many times: 
-that there is lots of inherent 'caching' possible even in this 
-particular '8000 clients' workload, which even the most stupid threadlet 
-queueing model is able to take advantage of. The maximum level of 
-parallelism that i've measured during this test was 161 threads.
-
-	Ingo
-
------------{ evserver_threadlet.c }--------------->
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <sys/wait.h>
-#include <linux/futex.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <linux/unistd.h>
-#include <netinet/tcp.h>
-#include <stdio.h>
-#include <netinet/in.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sched.h>
-#include <sys/time.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <errno.h>
-
-#include <sys/poll.h>
-#include <sys/sendfile.h>
-#include <sys/epoll.h>
-
-#define DEBUG           0
-
-#include "syslet.h"
-#include "sys.h"
-#include "threadlet.h"
-
-struct request {
-	struct request *next_free;
-	/*
-	 * The threadlet stack is part of the request structure
-	 * and is thus reused as threadlets complete:
-	 */
-	unsigned long threadlet_stack;
-
-	/*
-	 * These are all the request-specific parameters:
-	 */
-	long sock;
-};
-
-//#define ulog(f, a...) fprintf(stderr, f, ##a)
-#define ulog(f, a...)
-#define ulog_err(f, a...) printf(f ": %s [%d].\n", ##a, strerror(errno), errno)
-
-static long handle_request(void *__req)
-{
-	struct request *req = __req;
-	int s = req->sock, err, fd;
-	off_t offset;
-	int count;
-	char path[] = "/tmp/index.html";
-	char buf[4096];
-	struct timeval tm;
-
-	count = 40960;
-	offset = 0;
-
-	err = recv(s, buf, sizeof(buf), 0);
-	if (err < 0) {
-		ulog_err("Failed to read data from s=%d", s);
-		goto err_out_remove;
-	}
-	if (err == 0) {
-		gettimeofday(&tm, NULL);
-		ulog("%08lu:%06lu: Client exited: fd=%d.\n", tm.tv_sec, tm.tv_usec, s);
-		goto err_out_remove;
-	}
-
-	fd = open(path, O_RDONLY);
-	if (fd == -1) {
-		ulog_err("Failed to open '%s'", path);
-		err = -1;
-		goto err_out_remove;
-	}
-#if 0
-	do {
-		err = read(fd, buf, sizeof(buf));
-		if (err <= 0)
-			break;
-		err = send(s, buf, err, 0);
-		if (err <= 0)
-			break;
-	} while (1);
-#endif
-	err = sendfile(s, fd, &offset, count);
-	{
-		int on = 0;
-		setsockopt(s, SOL_TCP, TCP_CORK, &on, sizeof(on));
-	}
-
-	close(fd);
-	if (err < 0) {
-		ulog_err("Failed send %d bytes: fd=%d.\n", count, s);
-		goto err_out_remove;
-	}
-	close(s);
-
-	gettimeofday(&tm, NULL);
-	ulog("%08lu:%06lu: %d bytes has been sent to client fd=%d.\n", tm.tv_sec, tm.tv_usec, err, s);
-
-	return complete_threadlet_fn(req, &async_head);
-
-err_out_remove:
-	printf("blah\n");
-	close(s);
-	return complete_threadlet_fn(req, &async_head);
-}
-
+How about
 /*
- * Freelist to recycle requests:
- */
-static struct request *freelist;
+clears TIF_FREEZE for the current task after flush_signals(current)
+returns, so that the
+freezer will generate one more freezing request for this task.
 
-/*
- * Allocate a request and set up its syslet atoms:
- */
-static struct request *alloc_req(void)
-{
-	struct request *req;
+*/
 
-	/*
-	 * Occasionally we have to refill the new-thread stack
-	 * entry:
-	 */
-	if (!async_head.new_thread_stack) {
-		async_head.new_thread_stack = thread_stack_alloc();
-		pr("allocated new thread stack: %08lx\n",
-			async_head.new_thread_stack);
-	}
-
-	if (freelist) {
-		req = freelist;
-		pr("reusing req %p, threadlet stack %08lx\n",
-			req, req->threadlet_stack);
-		freelist = freelist->next_free;
-		req->next_free = NULL;
-		return req;
-	}
-
-	req = calloc(1, sizeof(struct request));
-	pr("allocated req %p\n", req);
-	req->threadlet_stack = thread_stack_alloc();
-	pr("allocated thread stack %08lx\n", req->threadlet_stack);
-
-	return req;
-}
-
-/*
- * Check whether there are any completions queued for user-space
- * to finish up:
- */
-static unsigned long complete(void)
-{
-	unsigned long completed = 0;
-	struct request *req;
-
-	for (;;) {
-		req = (void *)completion_ring[async_head.user_ring_idx];
-		if (!req)
-			return completed;
-		completed++;
-		pr("completed req %p (threadlet stack %08lx)\n",
-			req, req->threadlet_stack);
-
-		req->next_free = freelist;
-		freelist = req;
-
-		/*
-		 * Clear the completion pointer. To make sure the
-		 * kernel never stomps upon still unhandled completions
-		 * in the ring the kernel only writes to a NULL entry,
-		 * so user-space has to clear it explicitly:
-		 */
-		completion_ring[async_head.user_ring_idx] = NULL;
-		async_head.user_ring_idx++;
-		if (async_head.user_ring_idx == MAX_PENDING)
-			async_head.user_ring_idx = 0;
-	}
-}
-
-static unsigned int pending_requests;
-
-/*
- * Handle a request that has just been submitted (either it has
- * already been executed, or we have to account it as pending):
- */
-static void handle_submitted_request(struct request *req, long done)
-{
-	unsigned int nr;
-
-	if (done) {
-		/*
-		 * This is the cached case - free the request:
-		 */
-		pr("cache completed req %p (threadlet stack %08lx)\n",
-			req, req->threadlet_stack);
-		req->next_free = freelist;
-		freelist = req;
-		return;
-	}
-	/*
-	 * 'cachemiss' case - the syslet is not finished
-	 * yet. We will be notified about its completion
-	 * via the completion ring:
-	 */
-	assert(pending_requests < MAX_PENDING-1);
-
-	pending_requests++;
-	pr("req %p is pending. %d reqs pending.\n", req, pending_requests);
-	/*
-	 * Attempt to complete requests - this is a fast
-	 * check if there's no completions:
-	 */
-	nr = complete();
-	pending_requests -= nr;
-
-	/*
-	 * If the ring is full then wait a bit:
-	 */
-	while (pending_requests == MAX_PENDING-1) {
-		pr("sys_async_wait()");
-		/*
-		 * Wait for 4 events - to batch things a bit:
-		 */
-		sys_async_wait(4, async_head.user_ring_idx, &async_head);
-		nr = complete();
-		pending_requests -= nr;
-		pr("after wait: completed %d requests - still pending: %d\n",
-			nr, pending_requests);
-	}
-}
-
-static void webserver(int l_sock)
-{
-        struct sockaddr addr;
-	struct request *req;
-        socklen_t addrlen;
-	long done;
-	int sock;
-
-	async_head_init();
-
-	/*
-	 * We dont use syslets for the first request (or for oversized
-	 * and/or erroneous requests):
-	 */
-	for (;;) {
-		req = alloc_req();
-		if (!req)
-			break;
-
-		sock = accept(l_sock, &addr, &addrlen);
-
-		if (sock < 0)
-			break;
-
-		req->sock = sock;
-		done = threadlet_exec(handle_request, req,
-				req->threadlet_stack, &async_head);
-
-		handle_submitted_request(req, done);
-	}
-}
-
-static int tcp_listen_socket(int *l_socket)
-{
-	int ret;
-	int one = 1;
-	struct sockaddr_in ad;
-
-	/*
-	 * Setup for server socket
-	 */
-	memset(&ad, 0, sizeof(ad));
-	ad.sin_family = AF_INET;
-	ad.sin_addr.s_addr = htonl(INADDR_ANY);
-	ad.sin_port = htons(2222);
-
-	*l_socket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (*l_socket < 0) {
-		perror("socket (server)");
-		return *l_socket;
-	}
-
-	ret = setsockopt(*l_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&one,
-			sizeof(int));
-	if (ret < 0) {
-		perror("setsockopt");
-		return ret;
-	}
-
-	ret = bind(*l_socket, (struct sockaddr *)&ad, sizeof(ad));
-	if (ret < 0) {
-		perror("bind");
-		return ret;
-	}
-
-	ret = listen(*l_socket, 1000);
-	if (ret < 0) {
-		perror("listen");
-		return ret;
-	}
-
-	return 0;
-}
-
-int main(int argc, char *argv[])
-{
-	int ret;
-	int l_sock;
-	struct sched_param p = { sched_priority: 0 };
-
-	sched_setscheduler(getpid(), 3 /* SCHED_BATCH */, &p);
-
-	ret = tcp_listen_socket(&l_sock);
-	if (ret)
-		exit(ret);
-	printf("listening on port 2222\n");
-	printf("using threadlets\n");
-
-	webserver(l_sock);
-	async_head_exit();
-
-	exit(0);
-}
+-aneesh
