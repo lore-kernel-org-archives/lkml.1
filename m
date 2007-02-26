@@ -1,95 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965236AbXBYX0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965248AbXBYX3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965236AbXBYX0T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 18:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965235AbXBYX0T
+	id S965248AbXBYX3T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 18:29:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965243AbXBYX3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 18:26:19 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:44227 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965236AbXBYX0L (ORCPT
+	Sun, 25 Feb 2007 18:29:19 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51133 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965238AbXBYX3S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 18:26:11 -0500
-Date: Mon, 26 Feb 2007 00:26:11 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.6.16.42
-Message-ID: <20070225232611.GG29575@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 25 Feb 2007 18:29:18 -0500
+Date: Mon, 26 Feb 2007 00:33:07 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, hch@lst.de
+Subject: Re: [RFC/PATCH] revokeat/frevoke system calls V5
+Message-ID: <20070226003307.6f38d2ee@lxorguk.ukuu.org.uk>
+In-Reply-To: <Pine.LNX.4.64.0701282200450.17167@sbz-30.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0701282200450.17167@sbz-30.cs.Helsinki.FI>
+X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Security fixes since 2.6.16.41:
-- CVE-2006-5753: fix bad_inode_ops memory corruption
-- CVE-2007-0006: Keys: Fix key serial number collision handling
-- CVE-2007-0772: Fix a free-wrong-pointer bug in nfsd/acl
-
-Location:
-ftp://ftp.kernel.org/pub/linux/kernel/v2.6/
-
-git tree:
-git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+Whats the status on this, I was suprised to see something so important
+just go dead ?
 
 
-Changes since 2.6.16.41:
-
-Adrian Bunk (2):
-      Linux 2.6.16.42-rc1
-      Linux 2.6.16.42
-
-Al Viro (2):
-      ATM horizon.c: missing __devinit
-      fix rtl8150
-
-Alexey Dobriyan (1):
-      [ATM] ambassador, firestream: "-1 >>" is implementation defined
-
-Dan Streetman (1):
-      USB: add ZyXEL vendor/product ID to rtl8150 driver
-
-David Howells (1):
-      Keys: Fix key serial number collision handling (CVE-2007-0006)
-
-David S. Miller (1):
-      [ATM] horizon: read_bia() needs to be __devinit
-
-Eric Sandeen (1):
-      fix bad_inode_ops memory corruption (CVE-2006-5753)
-
-Greg Banks (1):
-      Fix a free-wrong-pointer bug in nfs/acl server (CVE-2007-0772)
-
-Jeff Garzik (1):
-      [ATM] firestream: handle thrown error
-
-Marcel Holtmann (2):
-      [Bluetooth] Missing endian swapping for L2CAP socket list
-      [Bluetooth] Restrict well known PSM to privileged users
-
-Oleg Nesterov (1):
-      V4L/DVB: Buf_qbuf: fix: videobuf_queue->stream corruption and lockup
-
-Petko Manolov (1):
-      USB: rtl8150 new device id
-
-Stephen Hemminger (2):
-      sky2: fix for NAPI with dual port boards
-      sky2: dual-port pci-x checksum fix
-
-
- Makefile                        |    2 
- drivers/atm/ambassador.c        |    2 
- drivers/atm/firestream.c        |    6 
- drivers/atm/horizon.c           |    4 
- drivers/media/video/video-buf.c |    1 
- drivers/net/sky2.c              |   27 ++
- drivers/usb/net/rtl8150.c       |   12 -
- fs/bad_inode.c                  |  330 +++++++++++++++++++++++++++-----
- fs/nfsd/nfs2acl.c               |   17 +
- net/bluetooth/l2cap.c           |   10 
- security/keys/key.c             |   33 +--
- 11 files changed, 366 insertions(+), 78 deletions(-)
-
+Alan
