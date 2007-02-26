@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932284AbXBZGsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933777AbXBZHAH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932284AbXBZGsd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 01:48:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933778AbXBZGsd
+	id S933777AbXBZHAH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 02:00:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933778AbXBZHAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 01:48:33 -0500
-Received: from iucha.net ([209.98.146.184]:33878 "EHLO mail.iucha.net"
+	Mon, 26 Feb 2007 02:00:07 -0500
+Received: from holomorphy.com ([66.93.40.71]:50623 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932284AbXBZGsc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 01:48:32 -0500
-Date: Mon, 26 Feb 2007 00:48:32 -0600
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Correction 2.6.21-rc1 Was: 2.6.20-rc1: CIFS cheers, NFS4 jeers
-Message-ID: <20070226064832.GA29073@iucha.net>
-References: <20070226064500.GZ29073@iucha.net>
+	id S933777AbXBZHAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 02:00:05 -0500
+Date: Sun, 25 Feb 2007 22:59:43 -0800
+From: William Lee Irwin III <wli@holomorphy.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, john stultz <johnstul@us.ibm.com>
+Subject: Re: Make sure we populate the initroot filesystem late enough
+Message-ID: <20070226065943.GA3037@holomorphy.com>
+References: <200612112059.kBBKx1j7022473@hera.kernel.org> <1172448057.3971.9.camel@shinybook.infradead.org> <Pine.LNX.4.64.0702251614420.12485@woody.linux-foundation.org> <1172452660.3971.33.camel@shinybook.infradead.org> <Pine.LNX.4.64.0702251940500.12485@woody.linux-foundation.org> <1172462466.3971.46.camel@shinybook.infradead.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="aDj5WtVma0yWCzS8"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070226064500.GZ29073@iucha.net>
-X-GPG-Key: http://iucha.net/florin_iucha.gpg
-X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
+In-Reply-To: <1172462466.3971.46.camel@shinybook.infradead.org>
+Organization: The Domain of Holomorphy
 User-Agent: Mutt/1.5.13 (2006-08-11)
-From: florin@iucha.net (Florin Iucha)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Feb 25, 2007 at 11:01:06PM -0500, David Woodhouse wrote:
+> Yeah, I did that before giving up on it for the day and going in search
+> of dinner. It changes the failure mode to a BUG() in
+> cache_free_debugcheck(), at line 2876 of mm/slab.c
+> It smells like the pages weren't actually reserved in the first place
+> and we were blithely allocating them. The only problem with that theory
+> is that the initrd doesn't seem to be getting corrupted -- and if we
+> were handing out its pages like that then surely _something_ would have
+> scribbled on it before we tried to read it.
+> When I head back in tomorrow morning I'll instrument free_initrd_mem()
+> to check that the PageReserved bit was actually set on each page, before
+> clearing it. And I'll make the page allocation routines check whether
+> they're giving out pages between initrd_start and initrd_end, etc.
 
---aDj5WtVma0yWCzS8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Another few things to try would be inserting checks in page_alloc.c for
+pages in that specific range before some flag set in free_initrd_mem()
+is set, and (conflicting with that, though easily reconciled) unmapping
+initrd memory in free_initrd_mem() instead of freeing it.
 
-On Mon, Feb 26, 2007 at 12:45:00AM -0600, Florin wrote:
-> After the writing stalls, I have echoed 't' into /proc/sysrq-trigger
-> and got a trace, which is at http://iucha.net/20-rc1/after.1.  There was
-> no oops before the trace request; the 'before' dmesg is at
-> http://iucha.net/20-rc1/before.1 .
 
-The kernel on the client is 2.6.21-rc1 (but it echoes problems I
-reported in December with 2.6.20 series as well) as can be seen from
-the kernel logs.
-
-I have corrected the links:
-
-   http://iucha.net/21-rc1/before.1
-   http://iucha.net/21-rc1/after.1
-   http://iucha.net/21-rc1/config-2.6.21-rc1
-
-florin
-
---=20
-Bruce Schneier expects the Spanish Inquisition.
-      http://geekz.co.uk/schneierfacts/fact/163
-
---aDj5WtVma0yWCzS8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFF4oLAND0rFCN2b1sRAtW3AJ40cK+vuVv4bIahZJKFL9CdLTORXQCfTaAf
-r7+7HQ+aZg3gsopDReenBx8=
-=qFAA
------END PGP SIGNATURE-----
-
---aDj5WtVma0yWCzS8--
+-- wli
