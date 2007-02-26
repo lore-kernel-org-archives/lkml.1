@@ -1,63 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030487AbXBZTek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030489AbXBZTh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030487AbXBZTek (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 14:34:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030489AbXBZTek
+	id S1030489AbXBZTh0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 14:37:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030494AbXBZTh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 14:34:40 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:40956 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030487AbXBZTej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 14:34:39 -0500
-Date: Mon, 26 Feb 2007 22:30:59 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070226193054.GB17892@2ka.mipt.ru>
-References: <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com> <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com> <20070222074044.GA4158@elte.hu> <20070222113148.GA3781@2ka.mipt.ru> <Pine.LNX.4.64.0702251428490.12485@woody.linux-foundation.org> <20070226172812.GC22454@2ka.mipt.ru> <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org> <20070226183227.GE22454@2ka.mipt.ru> <Pine.LNX.4.64.0702261112020.12485@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702261112020.12485@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Mon, 26 Feb 2007 22:32:15 +0300 (MSK)
+	Mon, 26 Feb 2007 14:37:26 -0500
+Received: from mail.gmx.net ([213.165.64.20]:48501 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1030489AbXBZThZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 14:37:25 -0500
+X-Provags-ID: V01U2FsdGVkX18pEk4TYzIpwo5pABFWCdchZ9BtRVKu4PPvpBZ0xo
+	pDfQ==
+Date: Mon, 26 Feb 2007 20:37:24 +0100 (CET)
+From: Johannes Schindelin <Johannes.Schindelin@gmx.de>
+X-X-Sender: gene099@wbgn013.biozentrum.uni-wuerzburg.de
+To: Marco Costalba <mcostalba@gmail.com>
+cc: Martin Langhoff <martin.langhoff@gmail.com>,
+       Git Mailing List <git@vger.kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] qgit-1.5.5
+In-Reply-To: <e5bfff550702261129p5085bd22gae11c81b401d3591@mail.gmail.com>
+Message-ID: <Pine.LNX.4.63.0702262035480.22628@wbgn013.biozentrum.uni-wuerzburg.de>
+References: <e5bfff550702250958n6cddc5b5lec4badf1f7fc8231@mail.gmail.com> 
+ <46a038f90702251623h5944a085m514418cb5f530e7f@mail.gmail.com> 
+ <e5bfff550702252219m352c03ady2d810e051bd62a37@mail.gmail.com> 
+ <Pine.LNX.4.63.0702261218430.22628@wbgn013.biozentrum.uni-wuerzburg.de> 
+ <e5bfff550702260939t4a071d34o6bbf3dcd4ad5b67c@mail.gmail.com> 
+ <Pine.LNX.4.63.0702261846010.22628@wbgn013.biozentrum.uni-wuerzburg.de>
+ <e5bfff550702261129p5085bd22gae11c81b401d3591@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 26, 2007 at 11:22:46AM -0800, Linus Torvalds (torvalds@linux-foundation.org) wrote:
-> See? Stop blathering about how everything is an event. THAT'S NOT 
-> RELEVANT. I've told you a hundred times - they may be "logically 
-> equivalent", but that doesn't change ANYTHING. Event-based programming 
-> simply isn't suitable for 99% of all stuff, and for the 1% where it *is* 
-> suitable, it actually tends to be a very specific subset of the code that 
-> you actually use events for (ie accept and read/write on pure streams).
+Hi,
 
-Will you argue that people do things like
-num = epoll_wait()
-for (i=0; i<num; ++i) {
-	process(event[i])?
-}
+On Mon, 26 Feb 2007, Marco Costalba wrote:
 
-Will you spawn thread per IO?
+> On 2/26/07, Johannes Schindelin <Johannes.Schindelin@gmx.de> wrote:
+> > Hi,
+> > 
+> > On Mon, 26 Feb 2007, Marco Costalba wrote:
+> > 
+> > > Actually, I didn't test with MinGW port of Git but I would be surprised
+> > > if it doesn't work (famous last words ;-)  )
+> > 
+> > You don't use cygpath to translate between Windows <-> POSIX filenames?
+> > 
+> > AFAICT this is the single most important user-visible difference 
+> > between Cygwin Git and MinGW Git.
+> > 
+> 
+> I call git programs as if they were native windows programs. I run git 
+> programs without requiring cygwin shell or something similar.
 
-Stop writing the same again and again - I perfectly understand that not
-everything can be easily covered by events, but covering everything with
-threads is more stupid idea.
+Actually, what I was getting at is the silly "Drive:\bla" filename syntax 
+on Windows boxen. But
 
-High-performance IO requires as small as possible overhead, dispatching
-events from ring buffer or queue from each cpu is the smallest one, but
-not spawning a thread per read.
+- you have to cd to the working directory in order to start the git 
+  programs, and
+- AFAIK Windows is not stupid enough to forbid "dir/name" syntax.
 
-> 		Linus
+So, all my objections are invalid.
 
--- 
-	Evgeniy Polyakov
+> I hope I have understood correctly your answer.
+
+Yes ;-)
+
+Ciao,
+Dscho
+
