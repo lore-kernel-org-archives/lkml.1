@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752474AbXBZXfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161408AbXBZXnM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752474AbXBZXfG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 18:35:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbXBZXfF
+	id S1161408AbXBZXnM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 18:43:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161410AbXBZXnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 18:35:05 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:40856 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752474AbXBZXfD (ORCPT
+	Mon, 26 Feb 2007 18:43:12 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40601
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1161408AbXBZXnK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 18:35:03 -0500
-Message-ID: <45E36D76.5030507@zytor.com>
-Date: Mon, 26 Feb 2007 15:29:58 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Andreas Gruenbacher <a.gruenbacher@computer.org>,
-       Nathan Scott <nathans@sgi.com>, Adrian Bunk <bunk@stusta.de>,
-       linux-kernel@vger.kernel.org, James Morris <jmorris@redhat.com>,
-       David Woodhouse <dwmw2@infradead.org>
+	Mon, 26 Feb 2007 18:43:10 -0500
+Date: Mon, 26 Feb 2007 15:43:08 -0800 (PST)
+Message-Id: <20070226.154308.112620497.davem@davemloft.net>
+To: hpa@zytor.com
+Cc: a.gruenbacher@computer.org, nathans@sgi.com, bunk@stusta.de,
+       linux-kernel@vger.kernel.org, jmorris@redhat.com, dwmw2@infradead.org
 Subject: Re: include/linux/xattr.h: how much userpace visible?
-References: <20060723184343.GA25367@stusta.de> <20060724085701.B2083275@wobbly.melbourne.sgi.com> <200607242031.11815.a.gruenbacher@computer.org> <20060724184534.GA26842@mars.ravnborg.org>
-In-Reply-To: <20060724184534.GA26842@mars.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <45E36D39.2030605@zytor.com>
+References: <20060724085701.B2083275@wobbly.melbourne.sgi.com>
+	<200607242031.11815.a.gruenbacher@computer.org>
+	<45E36D39.2030605@zytor.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> The userspace headers are supposed to hold the part of the kernel
-> definitions that glibc (and mayby the attr package) uses. If they happen
-> to have their own copy now should not impct the decision what is part of
-> the userspace interface for the kernel. So actual usage does not decide
-> what is part of the userspace kernel headers but what definitionas are
-> definitions the userspace <-> kernel interface.
+From: "H. Peter Anvin" <hpa@zytor.com>
+Date: Mon, 26 Feb 2007 15:28:57 -0800
 
-glibc, or another libc.
+> Andreas Gruenbacher wrote:
+> > On Monday, 24 July 2006 00:57, Nathan Scott wrote:
+> >> On Sun, Jul 23, 2006 at 08:43:43PM +0200, Adrian Bunk wrote:
+> >>> Hi,
+> >>>
+> >>> how much of include/linux/xattr.h has to be part of the userspace kernel
+> >>> headers?
+> >> None, I think.
+> > 
+> > None, indeed. The attr package comes with it own version of xattr.h that also 
+> > includes definitions of XATTR_CREATE and XATTR_REPLACE.
+> > 
+> 
+> However, it would be better if the ABI constants were exported, or at 
+> least *exportable* (using a __KERNEL_XATTR_MACROS test macro or 
+> something like that.)
 
-Basically, the kernel should be able to export the things that userspace 
-needs to be able to correctly speak the ABI.
+This is the same situation as the socket.h issue we're trying
+to figure out what to do about.
 
-	-hpa
+wrt. the socket.h case I think I'm going to revert the guilty
+changeset for now until a better scheme is implemented
