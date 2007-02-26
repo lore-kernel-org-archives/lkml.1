@@ -1,70 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932899AbXBZXoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161412AbXBZXq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932899AbXBZXoV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 18:44:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932974AbXBZXoV
+	id S1161412AbXBZXq3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 18:46:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161415AbXBZXq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 18:44:21 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:38533 "EHLO smtp.osdl.org"
+	Mon, 26 Feb 2007 18:46:29 -0500
+Received: from ozlabs.org ([203.10.76.45]:56313 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932899AbXBZXoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 18:44:19 -0500
-Date: Mon, 26 Feb 2007 15:44:13 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [RFC] div64_64 support
-Message-ID: <20070226154413.4ead571a@freekitty>
-In-Reply-To: <Pine.LNX.4.61.0702262348140.23355@yvahk01.tjqt.qr>
-References: <20070223170527.4ca695b2@freekitty>
-	<Pine.LNX.4.61.0702262108010.23355@yvahk01.tjqt.qr>
-	<20070226143127.5c74bec9@freekitty>
-	<Pine.LNX.4.61.0702262348140.23355@yvahk01.tjqt.qr>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
+	id S1161410AbXBZXq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 18:46:28 -0500
+Subject: Re: [PATCH] ____call_usermodehelper: don't flush_signals()
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070226215330.GA403@tv-sign.ru>
+References: <20070226215330.GA403@tv-sign.ru>
+Content-Type: text/plain
+Date: Tue, 27 Feb 2007 10:45:36 +1100
+Message-Id: <1172533536.13541.64.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Feb 2007 00:02:50 +0100 (MET)
-Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
+On Tue, 2007-02-27 at 00:53 +0300, Oleg Nesterov wrote:
+> ____call_usermodehelper() has no reason for flush_signals(). It is a fresh
+> forked process which is going to exec a user-space application or exit on
+> failure.
 
-> 
-> On Feb 26 2007 13:28, Stephen Hemminger wrote:
-> >> 
-> >> ./arch/arm26/lib/udivdi3.c
-> >> ./arch/sh/lib/udivdi3.c
-> >> ./arch/sparc/lib/udivdi3.S
-> >> 
-> >> should not this be consolidated too?
-> >
-> >Hmm. Those are the GCC internal versions, that are picked up but
-> >doing divide in place. Do we want to allow general 64 bit in kernel to
-> >be easily used? It could cause sloppy slow code, but it would look
-> >cleaner.
-> 
-> Then our reviewers should catch it, and if not, the janitors will
-> (/me winks at R.P.J.Day and trivial@).
-> 
-> >@@ -134,7 +112,7 @@
-> > 	 */
-> > 	do {
-> > 		x1 = x;
-> >-		x = (2 * x + (uint32_t) div64_64(a, x*x)) / 3;
-> >+		x = (2 * x + (u32) (a / x*x)) / 3;
-> 
-> Eye see a bug.
-> 
-> Previously there was div64_64(a, x*x) which is equivalent to
-> (a)/(x*x), or just: a/(x^2). But now you do a/x*x, which is
-> equivalent to a*x/x (in the domain of real numbers). Furthermore,
-> a/x*x is a-(a%x), which does not even remotely match a/(x^2).
-> 
-> Please keep the math intact, thank you ;-)
+And the flush_signal_handlers() call?
 
-Been there, done that, don't want to repeat it...
+Your patch looks correct; this code was presumably lying around from
+before someone (I?) adapted this code to use kthread.
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+Thanks,
+Rusty.
+
+
