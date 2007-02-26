@@ -1,43 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751071AbXBZCW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751077AbXBZChW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751071AbXBZCW5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Feb 2007 21:22:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbXBZCW5
+	id S1751077AbXBZChW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Feb 2007 21:37:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbXBZChW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Feb 2007 21:22:57 -0500
-Received: from firewall.rowland.harvard.edu ([140.247.233.35]:58207 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1751069AbXBZCW4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Feb 2007 21:22:56 -0500
-Date: Sun, 25 Feb 2007 21:22:54 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Greg KH <greg@kroah.com>
-cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       Sarah Bailey <saharabeara@gmail.com>, <usb-hacking@svcs.cs.pdx.edu>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] usbfs2: Why asynchronous I/O?
-In-Reply-To: <20070225235556.GA28748@kroah.com>
-Message-ID: <Pine.LNX.4.44L0.0702252119520.29377-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 25 Feb 2007 21:37:22 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:52272 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751058AbXBZChV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Feb 2007 21:37:21 -0500
+Date: Mon, 26 Feb 2007 03:37:12 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 3/3] mm: fix PageUptodate memorder
+Message-ID: <20070226023712.GA23985@wotan.suse.de>
+References: <20070215051822.7443.30110.sendpatchset@linux.site> <20070215051851.7443.65811.sendpatchset@linux.site> <20070225040657.eb4fc159.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070225040657.eb4fc159.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Feb 2007, Greg KH wrote:
-
-> On Sun, Feb 25, 2007 at 11:51:46AM -0500, Alan Stern wrote:
-> > This deserves to be discussed on LKML.
+On Sun, Feb 25, 2007 at 04:06:57AM -0800, Andrew Morton wrote:
 > 
-> Are you sure?  I thought it already got pretty well answered on the USB
-> mailing list (see David's response for one such response.)
+> What an unpleasing patchset.  I really really hope we really have a bug in
+> there, and that all this crap isn't pointless uglification.
 
-Well, I was sure at the time I forwarded the message, which was hours 
-before David's response arrived.
+It's the same bug for file pages as we had for anonymous pages, which
+the POWER guys actually hit. Do you disagree? I like this patch much
+better than the smp_wmb that we currently do just for anon pages.
 
-Besides, Sarah's message did bring up issues of interest to the kernel 
-community at large, such as why AIO is supported by so few drivers.
+> We _do_ need a flush_dcaceh_page() in all cases which you're concerned
+> about.  Perhaps we should stick the appropriate barriers in there.
 
-Alan Stern
+I think the memorder problem is conceptually a page data vs PG_uptodate
+one, because the read-side assumes that the data will be initialised before
+PG_uptodate is set.
+
+After the page is uptodate, you don't need subsequent barriers (that you
+would get via flush_dcache_page), because we've never really tried to
+impose any synchronisation on parallel read vs write.
+
+A memory barrier in flush_dcache_page would do the trick as well, I think,
+but it is not really any better. It is misleading because it is not the
+canonical fix. And we'd still need the smp_rmb in the PageUptodate read-side.
+
+> > On Thu, 15 Feb 2007 08:31:31 +0100 (CET) Nick Piggin <npiggin@suse.de> wrote:
+> > +static inline void SetNewPageUptodate(struct page *page)
+> > +{
+> > +	/*
+> > +	 * S390 sets page dirty bit on IO operations, which is why it is
+> > +	 * cleared in SetPageUptodate. This is not an issue for newly
+> > +	 * allocated pages that are brought uptodate by zeroing memory.
+> > +	 */
+> > +	smp_wmb();
+> > +	__set_bit(PG_uptodate, &(page)->flags);
+> > +}
+> 
+> __SetPageUptodate() might be more conventional.
+
+I guess so. I guess that the __ variants *can* only be used on new pages
+anyway. I wanted to make it clear that it wasn't a non-atomic version of
+exactly the same operation, but __SetPageUptodate probably would be fine.
+
+> Boy we'd better get the callers of this little handgrenade right.
+
+Newly initialised pages, before they become visible to anyone else. We
+could put a BUG_ON(page_count(page) != 1); in there?
 
