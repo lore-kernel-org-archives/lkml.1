@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030383AbXBZSDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030386AbXBZSGN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030383AbXBZSDg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 13:03:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030384AbXBZSDf
+	id S1030386AbXBZSGN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 13:06:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030387AbXBZSGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 13:03:35 -0500
-Received: from mail.screens.ru ([213.234.233.54]:34126 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030383AbXBZSDf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 13:03:35 -0500
-Date: Mon, 26 Feb 2007 21:06:35 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Stephane Eranian <eranian@hpl.hp.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: bug in kernel 2.6.21-rc1-git1: conventional floppy drive cannot be mounted without hanging up the whole system
-Message-ID: <20070226180635.GA644@tv-sign.ru>
+	Mon, 26 Feb 2007 13:06:13 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2133 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030386AbXBZSGM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 13:06:12 -0500
+Date: Mon, 26 Feb 2007 18:05:54 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Rob Prowel <prowel@kuchera.com>
+Cc: Stuart MacDonald <stuartm@connecttech.com>, linux-kernel@vger.kernel.org
+Subject: Re: questions about 8250 uart support for adhoc boards
+Message-ID: <20070226180554.GA16857@flint.arm.linux.org.uk>
+Mail-Followup-To: Rob Prowel <prowel@kuchera.com>,
+	Stuart MacDonald <stuartm@connecttech.com>,
+	linux-kernel@vger.kernel.org
+References: <000001c75853$3e9599f0$294b82ce@stuartm> <45E312C1.5050802@kuchera.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <45E312C1.5050802@kuchera.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephane Eranian wrote:
->
-> On Mon, Feb 26, 2007 at 09:10:22AM -0800, Linus Torvalds wrote:
-> >
-> > It is in fact possible that the floppy failure might just be from some
-> > timing-dependent thing, and the slowdown itself is the problem.
-> >
-> > Although I do find that a bit unlikely, since machines these days are
-> > about a million times faster than they used to be, so even if it's
-> > unnecessarily slow, it shouldn't be noticeable for a floppy drive.
-> >
-> I don't know enough about the floppy driver to comment on this but I would
-> agree with you here.
+On Mon, Feb 26, 2007 at 12:02:57PM -0500, Rob Prowel wrote:
+> See below for a (script) dump of that demonstrates the behavior I 
+> describe.  Additional ports are not configurable until a driver such as 
+> fourport is loaded.  This is in 2.6.20.1 and 2.6.17 (those versions I 
+> have tested).
 
-I know nothing about floppy, but I guess the reason is floppy_disable_hlt().
+Check what /proc/tty/driver/serial contains, rather than relying on
+setserial.  setserial distributed by distros hasn't kept up with the
+changes in the serial layer.
 
-Sorry for the offtopic question, is it really needed? According to grep, floppy
-is the only one user of disable_hlt().
-
-Oleg.
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
