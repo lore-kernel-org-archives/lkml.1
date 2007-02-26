@@ -1,268 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030490AbXBZT3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030487AbXBZTek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030490AbXBZT3i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 14:29:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030486AbXBZT3i
+	id S1030487AbXBZTek (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 14:34:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030489AbXBZTek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 14:29:38 -0500
-Received: from hera.kernel.org ([140.211.167.34]:32786 "EHLO hera.kernel.org"
+	Mon, 26 Feb 2007 14:34:40 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:40956 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030490AbXBZT3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 14:29:37 -0500
-To: linux-kernel@vger.kernel.org
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: [RFC] div64_64 support
-Date: Mon, 26 Feb 2007 11:28:18 -0800
-Organization: OSDL
-Message-ID: <20070226112818.1babf22a@freekitty>
-References: <20070223170527.4ca695b2@freekitty>
-	<20070224161916.GL3982@m.safari.iki.fi>
+	id S1030487AbXBZTej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 14:34:39 -0500
+Date: Mon, 26 Feb 2007 22:30:59 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070226193054.GB17892@2ka.mipt.ru>
+References: <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com> <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com> <20070222074044.GA4158@elte.hu> <20070222113148.GA3781@2ka.mipt.ru> <Pine.LNX.4.64.0702251428490.12485@woody.linux-foundation.org> <20070226172812.GC22454@2ka.mipt.ru> <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org> <20070226183227.GE22454@2ka.mipt.ru> <Pine.LNX.4.64.0702261112020.12485@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Trace: build.pdx.osdl.net 1172518099 10200 10.8.0.54 (26 Feb 2007 19:28:19 GMT)
-X-Complaints-To: abuse@osdl.org
-NNTP-Posting-Date: Mon, 26 Feb 2007 19:28:19 +0000 (UTC)
-X-Newsreader: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702261112020.12485@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Mon, 26 Feb 2007 22:32:15 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-asm-i386.h/div64 and div64.o needs to move in Makefile to get this to work
-on i386.
+On Mon, Feb 26, 2007 at 11:22:46AM -0800, Linus Torvalds (torvalds@linux-foundation.org) wrote:
+> See? Stop blathering about how everything is an event. THAT'S NOT 
+> RELEVANT. I've told you a hundred times - they may be "logically 
+> equivalent", but that doesn't change ANYTHING. Event-based programming 
+> simply isn't suitable for 99% of all stuff, and for the 1% where it *is* 
+> suitable, it actually tends to be a very specific subset of the code that 
+> you actually use events for (ie accept and read/write on pure streams).
 
+Will you argue that people do things like
+num = epoll_wait()
+for (i=0; i<num; ++i) {
+	process(event[i])?
+}
 
+Will you spawn thread per IO?
 
----
- include/asm-arm/div64.h      |    2 ++
- include/asm-generic/div64.h  |    8 ++++++++
- include/asm-i386/div64.h     |    5 +++++
- include/asm-m68k/div64.h     |    2 ++
- include/asm-mips/div64.h     |    8 ++++++++
- include/asm-um/div64.h       |    1 +
- include/asm-xtensa/div64.h   |    1 +
- lib/Makefile                 |    5 +++--
- lib/div64.c                  |   23 +++++++++++++++++++++++
- net/ipv4/tcp_cubic.c         |   22 ----------------------
- net/netfilter/xt_connbytes.c |   16 ----------------
- 11 files changed, 53 insertions(+), 40 deletions(-)
+Stop writing the same again and again - I perfectly understand that not
+everything can be easily covered by events, but covering everything with
+threads is more stupid idea.
 
---- sky2.orig/include/asm-arm/div64.h	2007-02-26 10:17:33.000000000 -0800
-+++ sky2/include/asm-arm/div64.h	2007-02-26 10:17:50.000000000 -0800
-@@ -221,6 +221,8 @@
- 	__nr;								\
- })
- 
-+extern uint64_t div64_64(uint64_t dividend, uint64_t divisor);
-+
- #endif
- 
- #endif
---- sky2.orig/include/asm-generic/div64.h	2007-02-26 10:17:33.000000000 -0800
-+++ sky2/include/asm-generic/div64.h	2007-02-26 10:17:50.000000000 -0800
-@@ -30,9 +30,17 @@
- 	__rem;							\
-  })
- 
-+/*
-+ * div64_64 - Divide two 64 bit numbers
-+ */
-+static inline uint64_t div64_64(uint64_t dividend, uint64_t divisor)
-+{
-+	return dividend / divisor;
-+}
- #elif BITS_PER_LONG == 32
- 
- extern uint32_t __div64_32(uint64_t *dividend, uint32_t divisor);
-+extern uint64_t div64_64(uint64_t dividend, uint64_t divisor);
- 
- /* The unnecessary pointer compare is there
-  * to check for type safety (n must be 64bit)
---- sky2.orig/include/asm-m68k/div64.h	2007-02-26 10:17:33.000000000 -0800
-+++ sky2/include/asm-m68k/div64.h	2007-02-26 10:17:50.000000000 -0800
-@@ -23,4 +23,6 @@
- 	__rem;							\
- })
- 
-+extern uint64_t div64_64(uint64_t dividend, uint64_t divisor);
-+
- #endif /* _M68K_DIV64_H */
---- sky2.orig/include/asm-mips/div64.h	2007-02-26 10:17:33.000000000 -0800
-+++ sky2/include/asm-mips/div64.h	2007-02-26 10:17:50.000000000 -0800
-@@ -78,6 +78,9 @@
- 	__quot = __quot << 32 | __low; \
- 	(n) = __quot; \
- 	__mod; })
-+
-+extern uint64_t div64_64(uint64_t dividend, uint64_t divisor);
-+
- #endif /* (_MIPS_SZLONG == 32) */
- 
- #if (_MIPS_SZLONG == 64)
-@@ -101,6 +104,11 @@
- 	(n) = __quot; \
- 	__mod; })
- 
-+static inline uint64_t div64_64(uint64_t dividend, uint64_t divisor)
-+{
-+	return dividend / divisor;
-+}
-+
- #endif /* (_MIPS_SZLONG == 64) */
- 
- #endif /* _ASM_DIV64_H */
---- sky2.orig/include/asm-um/div64.h	2007-02-26 10:17:33.000000000 -0800
-+++ sky2/include/asm-um/div64.h	2007-02-26 10:17:50.000000000 -0800
-@@ -3,4 +3,5 @@
- 
- #include "asm/arch/div64.h"
- 
-+extern uint64_t div64_64(uint64_t dividend, uint64_t divisor);
- #endif
---- sky2.orig/include/asm-xtensa/div64.h	2007-02-26 10:17:33.000000000 -0800
-+++ sky2/include/asm-xtensa/div64.h	2007-02-26 10:17:50.000000000 -0800
-@@ -16,4 +16,5 @@
- 	n /= (unsigned int) base; \
- 	__res; })
- 
-+extern uint64_t div64_64(uint64_t dividend, uint64_t divisor);
- #endif
---- sky2.orig/lib/div64.c	2007-02-26 10:17:33.000000000 -0800
-+++ sky2/lib/div64.c	2007-02-26 10:31:49.000000000 -0800
-@@ -18,6 +18,7 @@
- 
- #include <linux/types.h>
- #include <linux/module.h>
-+#include <asm/bitops.h>
- #include <asm/div64.h>
- 
- /* Not needed on 64bit architectures */
-@@ -58,4 +59,26 @@
- 
- EXPORT_SYMBOL(__div64_32);
- 
-+/* Use scaling to do a full 64 bit division  */
-+uint64_t div64_64(uint64_t dividend, uint64_t divisor)
-+{
-+	uint32_t d = divisor;
-+
-+	if (divisor > 0xffffffffULL) {
-+		unsigned int shift = fls(divisor >> 32);
-+
-+		d = divisor >> shift;
-+		dividend >>= shift;
-+	}
-+
-+	/* avoid 64 bit division if possible */
-+	if (dividend >> 32)
-+		do_div(dividend, d);
-+	else
-+		dividend = (uint32_t) dividend / d;
-+
-+	return dividend;
-+}
-+EXPORT_SYMBOL(div64_64);
-+
- #endif /* BITS_PER_LONG == 32 */
---- sky2.orig/net/ipv4/tcp_cubic.c	2007-02-26 10:17:33.000000000 -0800
-+++ sky2/net/ipv4/tcp_cubic.c	2007-02-26 10:17:50.000000000 -0800
-@@ -51,7 +51,6 @@
- module_param(tcp_friendliness, int, 0644);
- MODULE_PARM_DESC(tcp_friendliness, "turn on/off tcp friendliness");
- 
--#include <asm/div64.h>
- 
- /* BIC TCP Parameters */
- struct bictcp {
-@@ -93,27 +92,6 @@
- 		tcp_sk(sk)->snd_ssthresh = initial_ssthresh;
- }
- 
--/* 64bit divisor, dividend and result. dynamic precision */
--static inline u_int64_t div64_64(u_int64_t dividend, u_int64_t divisor)
--{
--	u_int32_t d = divisor;
--
--	if (divisor > 0xffffffffULL) {
--		unsigned int shift = fls(divisor >> 32);
--
--		d = divisor >> shift;
--		dividend >>= shift;
--	}
--
--	/* avoid 64 bit division if possible */
--	if (dividend >> 32)
--		do_div(dividend, d);
--	else
--		dividend = (uint32_t) dividend / d;
--
--	return dividend;
--}
--
- /*
-  * calculate the cubic root of x using Newton-Raphson
-  */
---- sky2.orig/net/netfilter/xt_connbytes.c	2007-02-26 10:17:33.000000000 -0800
-+++ sky2/net/netfilter/xt_connbytes.c	2007-02-26 10:17:50.000000000 -0800
-@@ -24,22 +24,6 @@
- MODULE_DESCRIPTION("iptables match for matching number of pkts/bytes per connection");
- MODULE_ALIAS("ipt_connbytes");
- 
--/* 64bit divisor, dividend and result. dynamic precision */
--static u_int64_t div64_64(u_int64_t dividend, u_int64_t divisor)
--{
--	u_int32_t d = divisor;
--
--	if (divisor > 0xffffffffULL) {
--		unsigned int shift = fls(divisor >> 32);
--
--		d = divisor >> shift;
--		dividend >>= shift;
--	}
--
--	do_div(dividend, d);
--	return dividend;
--}
--
- static int
- match(const struct sk_buff *skb,
-       const struct net_device *in,
---- sky2.orig/include/asm-i386/div64.h	2007-02-26 10:36:29.000000000 -0800
-+++ sky2/include/asm-i386/div64.h	2007-02-26 11:07:47.000000000 -0800
-@@ -1,6 +1,8 @@
- #ifndef __I386_DIV64
- #define __I386_DIV64
- 
-+#include <linux/types.h>
-+
- /*
-  * do_div() is NOT a C function. It wants to return
-  * two values (the quotient and the remainder), but
-@@ -45,4 +47,7 @@
- 	return dum2;
- 
- }
-+
-+extern uint64_t div64_64(uint64_t dividend, uint64_t divisor);
-+
- #endif
---- sky2.orig/lib/Makefile	2007-02-26 11:24:48.000000000 -0800
-+++ sky2/lib/Makefile	2007-02-26 11:26:57.000000000 -0800
-@@ -4,7 +4,7 @@
- 
- lib-y := ctype.o string.o vsprintf.o cmdline.o \
- 	 rbtree.o radix-tree.o dump_stack.o \
--	 idr.o div64.o int_sqrt.o bitmap.o extable.o prio_tree.o \
-+	 idr.o int_sqrt.o bitmap.o extable.o prio_tree.o \
- 	 sha1.o irq_regs.o reciprocal_div.o
- 
- lib-$(CONFIG_MMU) += ioremap.o
-@@ -12,7 +12,8 @@
- 
- lib-y	+= kobject.o kref.o kobject_uevent.o klist.o
- 
--obj-y += sort.o parser.o halfmd4.o debug_locks.o random32.o bust_spinlocks.o
-+obj-y += sort.o parser.o div64.o halfmd4.o debug_locks.o random32.o \
-+	 bust_spinlocks.o
- 
- ifeq ($(CONFIG_DEBUG_KOBJECT),y)
- CFLAGS_kobject.o += -DDEBUG
+High-performance IO requires as small as possible overhead, dispatching
+events from ring buffer or queue from each cpu is the smallest one, but
+not spawning a thread per read.
+
+> 		Linus
+
+-- 
+	Evgeniy Polyakov
