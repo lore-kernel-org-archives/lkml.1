@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030403AbXBZS07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030397AbXBZS0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030403AbXBZS07 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 13:26:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030407AbXBZS07
+	id S1030397AbXBZS0h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 13:26:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030403AbXBZS0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 13:26:59 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:54028 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030400AbXBZS0q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 13:26:46 -0500
-X-Sasl-enc: w+OWY547hLPHNZJGiHgKcLF1uUWN/wrrtGQVXtaRwZXO 1172514376
-Date: Mon, 26 Feb 2007 15:26:04 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Jiri Kosina <jikos@jikos.cz>, linux-kernel@vger.kernel.org
-Subject: [PATCH] ACPI: ibm-acpi: improve backlight power handling (v2)
-Message-ID: <20070226182604.GJ2909@khazad-dum.debian.net>
-References: <Pine.LNX.4.64.0702260154460.10496@twin.jikos.cz> <1172490091.5824.30.camel@localhost.localdomain> <Pine.LNX.4.64.0702261329270.10496@twin.jikos.cz> <20070226142157.GA2909@khazad-dum.debian.net> <1172501357.5824.91.camel@localhost.localdomain> <20070226152035.GB2909@khazad-dum.debian.net> <20070226161203.GD2909@khazad-dum.debian.net> <1172507907.5824.105.camel@localhost.localdomain> <20070226181202.GH2909@khazad-dum.debian.net>
+	Mon, 26 Feb 2007 13:26:37 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:32897 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030400AbXBZS0f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 13:26:35 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>, Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Subject: Re: [RFC][PATCH 1/3] Freezer: Fix vfork problem
+Date: Mon, 26 Feb 2007 19:28:18 +0100
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Pavel Machek <pavel@ucw.cz>, Aneesh Kumar <aneesh.kumar@gmail.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>
+References: <200702261139.59130.rjw@sisk.pl> <20070226151442.GA29869@in.ibm.com> <20070226161129.GA527@tv-sign.ru>
+In-Reply-To: <20070226161129.GA527@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070226181202.GH2909@khazad-dum.debian.net>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200702261928.19274.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Improve the backlight code to emulate as much as possible the power
-management events, as we are unable to really power on or power off the
-backlight.
+On Monday, 26 February 2007 17:11, Oleg Nesterov wrote:
+> On 02/26, Srivatsa Vaddagiri wrote:
+> >
+> > On Mon, Feb 26, 2007 at 03:00:43PM +0300, Oleg Nesterov wrote:
+> > > In that case we should also modify ____call_usermodehelper(), otherwise we have
+> > > the same "deadlock" if it is frozen. But this is not so easy to do as I thought
+> > > before.
+> > 
+> > Before ____call_usermodehelper can freeze, it should have entered userspace 
+> > right? By that time, its vfork parent should have definitely woken up,
+> > which should avoid the deadlock you point out?
+> 
+> Ah, yes, thanks for correcting me.
+> 
+> We are doing flush_old_exec() a way before entering userspace of course.
 
-Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Richard Purdie <rpurdie@rpsys.net>
----
+Well, does it mean the patch is acceptable or should I modify it somehow?
 
- Waiting ACK from Richard Purdie <rpurdie@rpsys.net>
-
- drivers/acpi/ibm_acpi.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/acpi/ibm_acpi.c b/drivers/acpi/ibm_acpi.c
-index e7309a6..3690136 100644
---- a/drivers/acpi/ibm_acpi.c
-+++ b/drivers/acpi/ibm_acpi.c
-@@ -86,6 +86,7 @@
- 
- #include <linux/proc_fs.h>
- #include <linux/backlight.h>
-+#include <linux/fb.h>
- #include <asm/uaccess.h>
- 
- #include <linux/dmi.h>
-@@ -1707,7 +1708,10 @@ static int brightness_write(char *buf)
- 
- static int brightness_update_status(struct backlight_device *bd)
- {
--	return brightness_set(bd->props.brightness);
-+	return brightness_set(
-+		(bd->props.fb_blank == FB_BLANK_UNBLANK &&
-+		 bd->props.power == FB_BLANK_UNBLANK) ?
-+				bd->props.brightness : 0);
- }
- 
- static struct backlight_ops ibm_backlight_data = {
--- 
-1.5.0.1
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Rafael
