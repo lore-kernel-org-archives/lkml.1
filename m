@@ -1,42 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161412AbXBZXq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161416AbXBZXre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161412AbXBZXq3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 18:46:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161415AbXBZXq3
+	id S1161416AbXBZXre (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 18:47:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161410AbXBZXre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 18:46:29 -0500
-Received: from ozlabs.org ([203.10.76.45]:56313 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161410AbXBZXq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 18:46:28 -0500
-Subject: Re: [PATCH] ____call_usermodehelper: don't flush_signals()
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070226215330.GA403@tv-sign.ru>
-References: <20070226215330.GA403@tv-sign.ru>
-Content-Type: text/plain
-Date: Tue, 27 Feb 2007 10:45:36 +1100
-Message-Id: <1172533536.13541.64.camel@localhost.localdomain>
+	Mon, 26 Feb 2007 18:47:34 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57412
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1161404AbXBZXrd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 18:47:33 -0500
+Date: Mon, 26 Feb 2007 15:47:31 -0800 (PST)
+Message-Id: <20070226.154731.18302736.davem@davemloft.net>
+To: eike-kernel@sf-tec.de
+Cc: akpm@linux-foundation.org, trivial@kernel.org,
+       linux-kernel@vger.kernel.org, acme@conectiva.com.br,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 1/2][IPX] Remove outdated information from Kconfig
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200702201958.09312.eike-kernel@sf-tec.de>
+References: <200702201957.13531.eike-kernel@sf-tec.de>
+	<200702201958.09312.eike-kernel@sf-tec.de>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-27 at 00:53 +0300, Oleg Nesterov wrote:
-> ____call_usermodehelper() has no reason for flush_signals(). It is a fresh
-> forked process which is going to exec a user-space application or exit on
-> failure.
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+Date: Tue, 20 Feb 2007 19:58:08 +0100
 
-And the flush_signal_handlers() call?
+> SPX was removed in early 2.5. How to connect to a Mac or the other OS isn't
+> hard to find out these days.
+> 
+> Signed-off-by: Rolf Eike Beer <eike-kernel@sf-tec.de>
 
-Your patch looks correct; this code was presumably lying around from
-before someone (I?) adapted this code to use kthread.
-
-Thanks,
-Rusty.
-
-
+Patch applied, thanks Rolf.
