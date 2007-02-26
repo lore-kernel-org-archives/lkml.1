@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933777AbXBZHAH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933784AbXBZHVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933777AbXBZHAH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 02:00:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933778AbXBZHAH
+	id S933784AbXBZHVN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 02:21:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933786AbXBZHVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 02:00:07 -0500
-Received: from holomorphy.com ([66.93.40.71]:50623 "EHLO holomorphy.com"
+	Mon, 26 Feb 2007 02:21:13 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:57879 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933777AbXBZHAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 02:00:05 -0500
-Date: Sun, 25 Feb 2007 22:59:43 -0800
-From: William Lee Irwin III <wli@holomorphy.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, john stultz <johnstul@us.ibm.com>
-Subject: Re: Make sure we populate the initroot filesystem late enough
-Message-ID: <20070226065943.GA3037@holomorphy.com>
-References: <200612112059.kBBKx1j7022473@hera.kernel.org> <1172448057.3971.9.camel@shinybook.infradead.org> <Pine.LNX.4.64.0702251614420.12485@woody.linux-foundation.org> <1172452660.3971.33.camel@shinybook.infradead.org> <Pine.LNX.4.64.0702251940500.12485@woody.linux-foundation.org> <1172462466.3971.46.camel@shinybook.infradead.org>
+	id S933784AbXBZHVM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 02:21:12 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH -mm 4/6] Freezer: Remove PF_NOFREEZE from rcutorture thread
+Date: Mon, 26 Feb 2007 08:08:51 +0100
+User-Agent: KMail/1.9.5
+Cc: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Aneesh Kumar <aneesh.kumar@gmail.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>
+References: <200702260800.49603.rjw@sisk.pl>
+In-Reply-To: <200702260800.49603.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1172462466.3971.46.camel@shinybook.infradead.org>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200702260808.52465.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 25, 2007 at 11:01:06PM -0500, David Woodhouse wrote:
-> Yeah, I did that before giving up on it for the day and going in search
-> of dinner. It changes the failure mode to a BUG() in
-> cache_free_debugcheck(), at line 2876 of mm/slab.c
-> It smells like the pages weren't actually reserved in the first place
-> and we were blithely allocating them. The only problem with that theory
-> is that the initrd doesn't seem to be getting corrupted -- and if we
-> were handing out its pages like that then surely _something_ would have
-> scribbled on it before we tried to read it.
-> When I head back in tomorrow morning I'll instrument free_initrd_mem()
-> to check that the PageReserved bit was actually set on each page, before
-> clearing it. And I'll make the page allocation routines check whether
-> they're giving out pages between initrd_start and initrd_end, etc.
+From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Another few things to try would be inserting checks in page_alloc.c for
-pages in that specific range before some flag set in free_initrd_mem()
-is set, and (conflicting with that, though easily reconciled) unmapping
-initrd memory in free_initrd_mem() instead of freeing it.
+Remove PF_NOFREEZE from the rcutorture thread, adding a try_to_freeze() call as
+required.
 
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+---
+ kernel/rcutorture.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
--- wli
+Index: linux-2.6.20-mm2/kernel/rcutorture.c
+===================================================================
+--- linux-2.6.20-mm2.orig/kernel/rcutorture.c	2007-02-22 23:51:54.000000000 +0100
++++ linux-2.6.20-mm2/kernel/rcutorture.c	2007-02-22 23:55:12.000000000 +0100
+@@ -46,6 +46,7 @@
+ #include <linux/byteorder/swabb.h>
+ #include <linux/stat.h>
+ #include <linux/srcu.h>
++#include <linux/freezer.h>
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Paul E. McKenney <paulmck@us.ibm.com> and "
+@@ -585,7 +586,6 @@ rcu_torture_writer(void *arg)
+ 
+ 	VERBOSE_PRINTK_STRING("rcu_torture_writer task started");
+ 	set_user_nice(current, 19);
+-	current->flags |= PF_NOFREEZE;
+ 
+ 	do {
+ 		schedule_timeout_uninterruptible(1);
+@@ -607,6 +607,7 @@ rcu_torture_writer(void *arg)
+ 		}
+ 		rcu_torture_current_version++;
+ 		oldbatch = cur_ops->completed();
++		try_to_freeze();
+ 	} while (!kthread_should_stop() && !fullstop);
+ 	VERBOSE_PRINTK_STRING("rcu_torture_writer task stopping");
+ 	while (!kthread_should_stop())
+
