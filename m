@@ -1,38 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030387AbXBZSIH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030390AbXBZSIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030387AbXBZSIH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 13:08:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030391AbXBZSIH
+	id S1030390AbXBZSIJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 13:08:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030391AbXBZSII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 26 Feb 2007 13:08:08 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:58861 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030390AbXBZSIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 26 Feb 2007 13:08:07 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:5151 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030387AbXBZSIE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 13:08:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LkaaRy0an4QCy6yW7szxyQFLBnh4HbNzf7ZyPH0euLOLsc3FDlUCfsfws59EU826nzwmcCMPM06ib7ShFT/4Rnc1BgG4v3QS3HxupF45gp40vrIt02rx/ZV1+Shai5F3K4vPKck4xcAq9zuCc1FVREjZZnamBrGdO2DnurSfvFI=
-Message-ID: <da612e190702261007n6aabe651n3c8144dc89842f23@mail.gmail.com>
-Date: Mon, 26 Feb 2007 19:07:54 +0100
-From: "Mark Stier" <markstier@gmail.com>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: latencies due to disk writes
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <y0m649phzag.fsf@ton.toronto.redhat.com>
+To: Monakhov Dmitriy <dmonakhov@openvz.org>
+Cc: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org,
+       devel@openvz.org
+Subject: Re: [PATCH 2/3] pcmcia:  Handle request_irq() failure while opening device
+References: <87zm70q4sy.fsf@sw.ru>
+From: Dmitriy Monakhov <dmonakhov@openvz.org>
+Date: Mon, 26 Feb 2007 21:07:38 +0300
+In-Reply-To: <87zm70q4sy.fsf@sw.ru> (Monakhov Dmitriy's message of "Mon, 26 Feb 2007 19:09:17 +0300")
+Message-ID: <87649oaj2t.fsf@sw.ru>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070226015439.97500@gmx.net>
-	 <y0m649phzag.fsf@ton.toronto.redhat.com>
+Content-Type: text/plain; charset=us-ascii
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [194.85.82.65]); Mon, 26 Feb 2007 21:07:56 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I'm experiencing extreme lags during disk writes. [...]
->
-> Wacky idea: "ionice -n 7 -c 2" down the pdflush/swapd kernel threads.
+Monakhov Dmitriy <dmonakhov@openvz.org> writes:
 
-As I already wrote in my post, no disk IO scheduler cares for disk
-writes. So even CFQ is only a disk *IN* scheduler...
+> Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
+> ---
+>  drivers/net/pcmcia/axnet_cs.c |    8 +++++++-
+>  drivers/net/pcmcia/pcnet_cs.c |    8 +++++++-
+>  2 files changed, 14 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/net/pcmcia/axnet_cs.c b/drivers/net/pcmcia/axnet_cs.c
+> index 6139048..9b57bab 100644
+> --- a/drivers/net/pcmcia/axnet_cs.c
+> +++ b/drivers/net/pcmcia/axnet_cs.c
+> @@ -523,6 +523,7 @@ static int axnet_open(struct net_device *dev)
+>  {
+>      axnet_dev_t *info = PRIV(dev);
+>      struct pcmcia_device *link = info->p_dev;
+> +    int err = 0;
+>      
+>      DEBUG(2, "axnet_open('%s')\n", dev->name);
+>  
+> @@ -531,7 +532,12 @@ static int axnet_open(struct net_device *dev)
+>  
+>      link->open++;
+>  
+> -    request_irq(dev->irq, ei_irq_wrapper, IRQF_SHARED, "axnet_cs", dev);
+> +    err = request_irq(dev->irq, ei_irq_wrapper, IRQF_SHARED, "axnet_cs", dev);
+> +    if (err) {
+> +		printk("axnet_cs: request_irq() failed  %s\n", dev->name);
+> +		link->open--;
+> +		return -EBUSY;
+As David Miller noted it is better to return exact error code from request_irq(),
+truly most net_device->open() functions return error code without changing.  
+The updated patch version following:
+
+Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
+---
+ drivers/net/pcmcia/axnet_cs.c |    8 +++++++-
+ drivers/net/pcmcia/pcnet_cs.c |    8 +++++++-
+ 2 files changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/pcmcia/axnet_cs.c b/drivers/net/pcmcia/axnet_cs.c
+index 6139048..9b57bab 100644
+--- a/drivers/net/pcmcia/axnet_cs.c
++++ b/drivers/net/pcmcia/axnet_cs.c
+@@ -523,6 +523,7 @@ static int axnet_open(struct net_device *dev)
+ {
+     axnet_dev_t *info = PRIV(dev);
+     struct pcmcia_device *link = info->p_dev;
++    int err = 0;
+     
+     DEBUG(2, "axnet_open('%s')\n", dev->name);
+ 
+@@ -531,7 +532,12 @@ static int axnet_open(struct net_device *dev)
+ 
+     link->open++;
+ 
+-    request_irq(dev->irq, ei_irq_wrapper, IRQF_SHARED, "axnet_cs", dev);
++    err = request_irq(dev->irq, ei_irq_wrapper, IRQF_SHARED, "axnet_cs", dev);
++    if (err) {
++		printk("axnet_cs: request_irq() failed  %s\n", dev->name);
++		link->open--;
++		return err;
++    }
+ 
+     info->link_status = 0x00;
+     init_timer(&info->watchdog);
+diff --git a/drivers/net/pcmcia/pcnet_cs.c b/drivers/net/pcmcia/pcnet_cs.c
+index d88e9b2..13923ea 100644
+--- a/drivers/net/pcmcia/pcnet_cs.c
++++ b/drivers/net/pcmcia/pcnet_cs.c
+@@ -962,6 +962,7 @@ static int pcnet_open(struct net_device *dev)
+ {
+     pcnet_dev_t *info = PRIV(dev);
+     struct pcmcia_device *link = info->p_dev;
++    int err = 0;
+ 
+     DEBUG(2, "pcnet_open('%s')\n", dev->name);
+ 
+@@ -971,7 +972,12 @@ static int pcnet_open(struct net_device *dev)
+     link->open++;
+ 
+     set_misc_reg(dev);
+-    request_irq(dev->irq, ei_irq_wrapper, IRQF_SHARED, dev_info, dev);
++    err = request_irq(dev->irq, ei_irq_wrapper, IRQF_SHARED, dev_info, dev);
++    if (err) {
++		printk("pcnet_open: request_irq() failed  %s\n", dev->name);
++		link->open--;
++		return err;
++    }
+ 
+     info->phy_id = info->eth_phy;
+     info->link_status = 0x00;
+-- 
+1.5.0.1
+
