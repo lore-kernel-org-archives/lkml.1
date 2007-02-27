@@ -1,126 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751690AbXB0Qwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751693AbXB0Qxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751690AbXB0Qwe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 11:52:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbXB0Qwe
+	id S1751693AbXB0Qxc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 11:53:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbXB0Qxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 11:52:34 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:33749 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751689AbXB0Qwd (ORCPT
+	Tue, 27 Feb 2007 11:53:32 -0500
+Received: from stinky.trash.net ([213.144.137.162]:35527 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751693AbXB0Qxb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 11:52:33 -0500
-Message-ID: <45E461D4.6050807@us.ibm.com>
-Date: Tue, 27 Feb 2007 10:52:36 -0600
-From: Maynard Johnson <maynardj@us.ibm.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.3) Gecko/20040910
+	Tue, 27 Feb 2007 11:53:31 -0500
+Message-ID: <45E46208.3000003@trash.net>
+Date: Tue, 27 Feb 2007 17:53:28 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
 X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       cbe-oss-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
-       Gerhard Stenzel <gerhard.stenzel@de.ibm.com>,
-       Mike Perks <mperks@us.ibm.com>
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH] CELL Oprofile SPU profiling updated
- patch
-References: <1172102523.5233.31.camel@dyn9047021078.beaverton.ibm.com> <200702270051.00393.arnd@arndb.de>
-In-Reply-To: <200702270051.00393.arnd@arndb.de>
-Content-Type: multipart/mixed;
- boundary="------------030502020404010505020204"
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+CC: Jeff Garzik <jeff@garzik.org>, netdev <netdev@vger.kernel.org>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: [PATCH 2/2] ehea: NAPI multi queue TX/RX path for SMP
+References: <200702271732.51829.ossthema@de.ibm.com>
+In-Reply-To: <200702271732.51829.ossthema@de.ibm.com>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030502020404010505020204
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-I have applied the "cleanup" patch that Arnd sent, but had to fix up a 
-few things:
-   -  Bug fix:  Initialize retval in spu_task_sync.c, line 95, otherwise 
-OProfile this function returns non-zero and OProfile fails.
-   -  Remove unused codes in include/linux/oprofile.h
-   -  Compile warnings:  Initialize offset and spu_cookie at lines 283 
-and 284 in spu_task_sync.c
-
-With these changes and some userspace changes that were necessary to 
-correspond with Arnd's changes, our testing was successful.
-
-A fixup patch is attached.
-
-P.S.  We have a single patch with all these changes applied if anyone 
-would like us to post it.
-
--Maynard
-
-
-Arnd Bergmann wrote:
-
->On Thursday 22 February 2007, Carl Love wrote:
+Jan-Bernd Themann wrote:
+> This patch provides a functionality that allows parallel 
+> RX processing on multiple RX queues by using dummy netdevices.
+> 
 >  
->
->>This patch updates the existing arch/powerpc/oprofile/op_model_cell.c
->>to add in the SPU profiling capabilities.  In addition, a 'cell' subdirectory
->>was added to arch/powerpc/oprofile to hold Cell-specific SPU profiling
->>code.
->>    
->>
->
->There was a significant amount of whitespace breakage in this patch,
->which I cleaned up. The patch below consists of the other things
->I changed as a further cleanup. Note that I changed the format
->of the context switch record, which I found too complicated, as
->I described on IRC last week.
->
->	Arnd <><
->
->  
->
+> +static inline int ehea_hash_skb(struct sk_buff *skb, int num_qps)
+> +{
+> +	u32 tmp;
+> +	if ((skb->nh.iph->protocol == IPPROTO_TCP)
+> +	    && skb->protocol == ETH_P_IP) {
 
+skb->protocol has network byte order. The ETH_P_IP test should also
+logically come before checking the IP protocol.
 
---------------030502020404010505020204
-Content-Type: text/x-diff;
- name="fixups-to-arnd-oprof_spu.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="fixups-to-arnd-oprof_spu.patch"
+> +		tmp = (skb->h.th->source + (skb->h.th->dest << 16)) % 31;
 
-diff -paur linux-orig/arch/powerpc/oprofile/cell/spu_task_sync.c linux-new/arch/powerpc/oprofile/cell/spu_task_sync.c
---- linux-orig/arch/powerpc/oprofile/cell/spu_task_sync.c	2007-02-27 17:10:24.000000000 -0600
-+++ linux-new/arch/powerpc/oprofile/cell/spu_task_sync.c	2007-02-27 17:08:57.000000000 -0600
-@@ -92,7 +92,7 @@ prepare_cached_spu_info(struct spu * spu
- {
- 	unsigned long flags;
- 	struct vma_to_fileoffset_map * new_map;
--	int retval;
-+	int retval = 0;
- 	struct cached_info * info;
- 
-         /* We won't bother getting cache_lock here since
-@@ -280,8 +280,8 @@ static int process_context_switch(struct
- {
- 	unsigned long flags;
- 	int retval;
--	unsigned int offset;
--	unsigned long spu_cookie, app_dcookie;
-+	unsigned int offset = 0;
-+	unsigned long spu_cookie = 0, app_dcookie;
- 	retval = prepare_cached_spu_info(spu, objectId);
- 	if (retval)
- 		goto out;
-diff -paur linux-orig/include/linux/oprofile.h linux-new/include/linux/oprofile.h
---- linux-orig/include/linux/oprofile.h	2007-02-27 14:41:29.000000000 -0600
-+++ linux-new/include/linux/oprofile.h	2007-02-27 14:43:18.000000000 -0600
-@@ -36,9 +36,6 @@
- #define XEN_ENTER_SWITCH_CODE          10
- #define SPU_PROFILING_CODE             11
- #define SPU_CTX_SWITCH_CODE            12
--#define SPU_OFFSET_CODE                13
--#define SPU_COOKIE_CODE                14
--#define SPU_SHLIB_COOKIE_CODE          15
- 
- struct super_block;
- struct dentry;
+Only locally generated packets have a valid h.th pointer.
 
---------------030502020404010505020204--
+> +		tmp += skb->nh.iph->daddr % 31;
+> +		return tmp % num_qps;
+> +	}
+> +	else
+> +		return 0;
+> +}
+> +
+>  static int ehea_start_xmit(struct sk_buff *skb, struct net_device *dev)
+>  {
+>  	struct ehea_port *port = netdev_priv(dev);
+> @@ -1796,9 +1818,18 @@ static int ehea_start_xmit(struct sk_buf
+>  	unsigned long flags;
+>  	u32 lkey;
+>  	int swqe_index;
+> -	struct ehea_port_res *pr = &port->port_res[0];
+> +	struct ehea_port_res *pr;
+> +
+> +	pr = &port->port_res[ehea_hash_skb(skb, port->num_tx_qps)];
+> +
 
