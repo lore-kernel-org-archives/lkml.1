@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752029AbXB0XNo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752031AbXB0XNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752029AbXB0XNo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 18:13:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbXB0XNo
+	id S1752031AbXB0XNW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 18:13:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbXB0XNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 18:13:44 -0500
-Received: from mailin1.k-net.dk ([82.211.192.11]:3429 "EHLO mailin1.k-net.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752029AbXB0XNn convert rfc822-to-8bit (ORCPT
+	Tue, 27 Feb 2007 18:13:22 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:53210 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752027AbXB0XNU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 18:13:43 -0500
-Subject: Re: PROBLEM: "BUG:" when resuming from suspend-to-ram
-From: Kristian =?ISO-8859-1?Q?Gr=F8nfeldt_S=F8rensen?= <kriller@vkr.dk>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-In-Reply-To: <200702272334.07985.rjw@sisk.pl>
-References: <1172601905.5428.28.camel@localhost.localdomain>
-	 <200702272304.01756.rjw@sisk.pl>
-	 <1172615029.4865.7.camel@localhost.localdomain>
-	 <200702272334.07985.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
-Date: Wed, 28 Feb 2007 00:12:40 +0100
-Message-Id: <1172617960.4587.3.camel@localhost.localdomain>
+	Tue, 27 Feb 2007 18:13:20 -0500
+Date: Tue, 27 Feb 2007 15:13:15 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, hugh@veritas.com, clameter@sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] adapt page_lock_anon_vma() to PREEMPT_RCU
+Message-ID: <20070227231315.GC1919@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070225200621.GA2259@tv-sign.ru> <20070227122517.c8bceaf5.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070227122517.c8bceaf5.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-27 at 23:34 +0100, Rafael J. Wysocki wrote:
-> On Tuesday, 27 February 2007 23:23, Kristian Grønfeldt Sørensen wrote:
-> > On Tue, 2007-02-27 at 23:04 +0100, Rafael J. Wysocki wrote:
-> > > Hi,
-> > > 
-> > > On Tuesday, 27 February 2007 19:45, Kristian Grønfeldt Sørensen wrote:
-> > > > Hi.
-> > > > 
-> > > > PROBLEM: "BUG:" when resumimg from suspend-to-ram 
-> > > > 	
-> > > > My laptop have a problem with resuming from suspend-to-ram. 
-> > > > It does not occur every time - most of the time, resume works without
-> > > > any problem.at all.
-> > > > 
-> > > > After it occurs, the laptop refuses to go into suspend-to-ram mode until
-> > > > next reboot.
-> > > 
-> > > What do you mean by "refuses"?  
+On Tue, Feb 27, 2007 at 12:25:17PM -0800, Andrew Morton wrote:
+> > On Sun, 25 Feb 2007 23:06:21 +0300 Oleg Nesterov <oleg@tv-sign.ru> wrote:
+> > page_lock_anon_vma() uses spin_lock() to block RCU. This doesn't work with
+> > PREEMPT_RCU, we have to do rcu_read_lock() explicitely. Otherwise, it is
+> > theoretically possible that slab returns anon_vma's memory to the system
+> > before we do spin_unlock(&anon_vma->lock).
 > > 
-> > As in it does not suspend when i close the lid. It just stays on.
+> > ...
+> >
+> > +static void page_unlock_anon_vma(struct anon_vma *anon_vma)
+> > +{
+> > +	spin_unlock(&anon_vma->lock);
+> > +	rcu_read_unlock();
+> >  }
 > 
-> Hm, it doesn't seem to attempt to suspend.  Can you just do
-> "echo mem > /sys/power/state" when it's in that state and see what happens?
+> It's a bit sad doing a double preempt_disable() for non-PREEMPT_RCU builds.
+> 
+> Perhaps we would benefit from a new rcu_read_lock_preempt_rcu() which is a
+> no-op if !PREEMPT_RCU.
 
-Hmmm. That works. (except for video restore - forgot to save
-vbe-state :-( )
-Resume also worked. 
+We were doing double preempt_disable() before as well.  The only
+difference is that we moved RCU preempt_enable() (it used to be inside the
+critical section, and now it is after the corresponding spin_unlock()).
 
-/Kristian
+I hope to keep RCU API proliferation down to a dull roar, but if we
+need more APIs, we need more APIs.  This example does not demonstrate
+that need to me, however.
+
+						Thanx, Paul
