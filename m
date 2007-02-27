@@ -1,201 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752666AbXB0XUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752571AbXB0XRK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752666AbXB0XUJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 18:20:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbXB0XSM
+	id S1752571AbXB0XRK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 18:17:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbXB0XRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 18:18:12 -0500
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:51120 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752597AbXB0XSF (ORCPT
+	Tue, 27 Feb 2007 18:17:10 -0500
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:46375 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752179AbXB0XQp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 18:18:05 -0500
-Message-Id: <20070227231705.094358171@szeredi.hu>
+	Tue, 27 Feb 2007 18:16:45 -0500
+Message-Id: <20070227231553.047834932@szeredi.hu>
 References: <20070227231442.627972152@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Wed, 28 Feb 2007 00:14:58 +0100
+Date: Wed, 28 Feb 2007 00:14:46 +0100
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [patch 16/22] fuse: add fuse_writepage() function
-Content-Disposition: inline; filename=fuse_writepage.patch
+Subject: [patch 04/22] fix deadlock in throttle_vm_writeout
+Content-Disposition: inline; filename=throttle_vm_writeout_fix.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Implement the ->writepage address space operation.  Be careful not to
-block if the wbc->nonblocking flag is set.
+This deadlock is similar to the one in balance_dirty_pages, but
+instead of waiting in balance_dirty_pages after submitting a write
+request, it happens during a memory allocation for filesystem B before
+submitting a write request.
 
-Acquire the read-write truncation semaphore for read when allocating
-the request.  Use the _non_owner variants, since the semaphore is held
-until the asynchronous request is completed.
+It is easy to reproduce on a machine with not too much memory.
+E.g. try this on 2.6.21-rc1 UML with 32MB (works on physical hw as
+well):
 
-When allocating the request, use GFP_NOFS, since there's a danger of
-recursion via direct page reclaim.
+  dd if=/dev/zero of=/tmp/tmp.img bs=1048576 count=40
+  mke2fs -j -F /tmp/tmp.img
+  mkdir /tmp/img
+  mount -oloop /tmp/tmp.img /tmp/img
+  bash-shared-mapping /tmp/img/foo 30000000
+
+The deadlock doesn't happen immediately, sometimes only after a few
+minutes.
+
+Simplified stack trace for bash-shared-mapping after the deadlock:
+
+  io_schedule_timeout
+  congestion_wait
+  balance_dirty_pages
+  balance_dirty_pages_ratelimited_nr
+  generic_file_buffered_write
+  __generic_file_aio_write_nolock
+  generic_file_aio_write
+  ext3_file_write
+  do_sync_write
+  vfs_write
+  sys_pwrite64
+
+and for [loop0]:
+
+  io_schedule_timeout
+  congestion_wait
+  throttle_vm_writeout
+  shrink_zone
+  shrink_zones
+  try_to_free_pages
+  __alloc_pages
+  find_or_create_page
+  do_lo_send_aops
+  lo_send
+  do_bio_filebacked
+  loop_thread
+
+The requirement for the deadlock is that
+
+  nr_writeback > dirty_thresh * 1.1 + margin
+
+Again margin seems to be in the 100 page range.
+
+The task of throttle_vm_writeout is to limit the rate at which
+under-writeback pages are created due to swapping.  There's no other
+way direct reclaim can increase the nr_writeback + nr_file_dirty.
+
+So when there are few or no under-swap pages, it is safe for this
+function to return.  This ensures, that there's progress with writing
+back dirty pages.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
 
-Index: linux/fs/fuse/dev.c
+Index: linux/include/linux/swap.h
 ===================================================================
---- linux.orig/fs/fuse/dev.c	2007-02-27 14:41:10.000000000 +0100
-+++ linux/fs/fuse/dev.c	2007-02-27 14:41:12.000000000 +0100
-@@ -41,7 +41,7 @@ static void fuse_request_init(struct fus
- 
- struct fuse_req *fuse_request_alloc(void)
- {
--	struct fuse_req *req = kmem_cache_alloc(fuse_req_cachep, GFP_KERNEL);
-+	struct fuse_req *req = kmem_cache_alloc(fuse_req_cachep, GFP_NOFS);
- 	if (req)
- 		fuse_request_init(req);
- 	return req;
-Index: linux/fs/fuse/file.c
-===================================================================
---- linux.orig/fs/fuse/file.c	2007-02-27 14:41:11.000000000 +0100
-+++ linux/fs/fuse/file.c	2007-02-27 14:41:12.000000000 +0100
-@@ -11,6 +11,7 @@
- #include <linux/pagemap.h>
- #include <linux/slab.h>
- #include <linux/kernel.h>
-+#include <linux/writeback.h>
- 
- static const struct file_operations fuse_direct_io_file_operations;
- 
-@@ -644,6 +645,125 @@ static ssize_t fuse_direct_write(struct 
- 	return res;
+--- linux.orig/include/linux/swap.h	2007-02-27 14:40:55.000000000 +0100
++++ linux/include/linux/swap.h	2007-02-27 14:41:08.000000000 +0100
+@@ -279,10 +279,14 @@ static inline void disable_swap_token(vo
+ 	put_swap_token(swap_token_mm);
  }
  
-+static void fuse_writepage_end(struct fuse_conn *fc, struct fuse_req *req)
-+{
-+	struct address_space *mapping = req->pages[0]->mapping;
-+	struct fuse_inode *fi = get_fuse_inode(mapping->host);
-+	int err = req->out.h.error;
-+	if (!err && req->misc.write.out.size != req->misc.write.in.size)
-+		err = -EIO;
-+	mapping_set_error(mapping, err);
-+	end_page_writeback(req->pages[0]);
-+	up_read_non_owner(&fi->truncate_sem);
-+	fuse_file_put(req->ff);
-+	fuse_put_request(fc, req);
-+}
++#define nr_swap_writeback \
++	atomic_long_read(&swapper_space.backing_dev_info->nr_writeback)
 +
-+static struct fuse_req *fuse_get_req_wp(struct inode *inode,
-+					struct writeback_control *wbc,
-+					int *blocked)
-+{
-+	struct fuse_conn *fc = get_fuse_conn(inode);
-+	struct fuse_inode *fi = get_fuse_inode(inode);
-+	struct fuse_req *req;
-+
-+	*blocked = 0;
-+	if (wbc->nonblocking && fc->blocked)
-+		goto blocked;
-+
-+	atomic_inc(&fc->num_waiting);
-+	if (!wbc->nonblocking)
-+		wait_event(fc->blocked_waitq, !fc->blocked);
-+
-+	req = fuse_request_alloc();
-+	if (!req) {
-+		atomic_dec(&fc->num_waiting);
-+		return NULL;
-+	}
-+	req->waiting = 1;
-+
-+	if (!wbc->nonblocking)
-+		down_read_non_owner(&fi->truncate_sem);
-+	else if (!down_read_trylock_non_owner(&fi->truncate_sem)) {
-+		fuse_put_request(fc, req);
-+		goto blocked;
-+	}
-+	spin_lock(&fc->lock);
-+	BUG_ON(list_empty(&fi->write_files));
-+	req->ff = fuse_file_get(list_entry(fi->write_files.next,
-+					   struct fuse_file, write_entry));
-+	spin_unlock(&fc->lock);
-+	return req;
-+
-+ blocked:
-+	*blocked = 1;
-+	return NULL;
-+}
-+
-+static int fuse_writepage_locked(struct page *page,
-+				 struct writeback_control *wbc)
-+{
-+	struct inode *inode = page->mapping->host;
-+	struct fuse_conn *fc = get_fuse_conn(inode);
-+	struct fuse_req *req;
-+	size_t count;
-+	loff_t size;
-+	unsigned long end_index;
-+	int blocked;
-+
-+	req = fuse_get_req_wp(inode, wbc, &blocked);
-+	if (!req) {
-+		if (!blocked)
-+			return -ENOMEM;
-+		redirty_page_for_writepage(wbc, page);
-+		return 0;
-+	}
-+
-+	size = i_size_read(inode);
-+	end_index = size >> PAGE_CACHE_SHIFT;
-+
-+	if (page->index < end_index)
-+		count = PAGE_CACHE_SIZE;
-+	else if (page->index == end_index)
-+		count = size & (PAGE_CACHE_SIZE - 1);
-+	else {
-+		/*
-+		 * It is possible that while waiting for the
-+		 * truncation semaphore, the file was truncated.
-+		 */
-+		fuse_put_request(fc, req);
-+		return 0;
-+	}
-+
-+	req->num_pages = 1;
-+	req->pages[0] = page;
-+	req->page_offset = 0;
-+	req->end = fuse_writepage_end;
-+	fuse_write_fill(req, req->ff, inode, page_offset(page), count, 1);
-+	set_page_writeback(page);
-+	request_send_background(fc, req);
-+	return 0;
-+}
-+
-+static int fuse_writepage(struct page *page, struct writeback_control *wbc)
-+{
-+	int err = fuse_writepage_locked(page, wbc);
-+	unlock_page(page);
-+	return err;
-+}
-+
-+static int fuse_launder_page(struct page *page)
-+{
-+	int err = 0;
-+	if (clear_page_dirty_for_io(page)) {
-+		struct writeback_control wbc = { .nonblocking = 0 };
-+		err = fuse_writepage_locked(page, &wbc);
-+		if (!err)
-+			wait_on_page_writeback(page);
-+	}
-+	return err;
-+}
-+
- static int fuse_file_mmap(struct file *file, struct vm_area_struct *vma)
- {
- 	if ((vma->vm_flags & VM_SHARED)) {
-@@ -847,6 +967,8 @@ static const struct file_operations fuse
+ #else /* CONFIG_SWAP */
  
- static const struct address_space_operations fuse_file_aops  = {
- 	.readpage	= fuse_readpage,
-+	.writepage	= fuse_writepage,
-+	.launder_page	= fuse_launder_page,
- 	.prepare_write	= fuse_prepare_write,
- 	.commit_write	= fuse_commit_write,
- 	.readpages	= fuse_readpages,
+ #define total_swap_pages			0
+ #define total_swapcache_pages			0UL
++#define nr_swap_writeback			0UL
+ 
+ #define si_swapinfo(val) \
+ 	do { (val)->freeswap = (val)->totalswap = 0; } while (0)
+Index: linux/mm/page-writeback.c
+===================================================================
+--- linux.orig/mm/page-writeback.c	2007-02-27 14:41:07.000000000 +0100
++++ linux/mm/page-writeback.c	2007-02-27 14:41:08.000000000 +0100
+@@ -33,6 +33,7 @@
+ #include <linux/syscalls.h>
+ #include <linux/buffer_head.h>
+ #include <linux/pagevec.h>
++#include <linux/swap.h>
+ 
+ /*
+  * The maximum number of pages to writeout in a single bdflush/kupdate
+@@ -303,6 +304,21 @@ void throttle_vm_writeout(void)
+ 	long dirty_thresh;
+ 
+         for ( ; ; ) {
++		/*
++		 * If there's no swapping going on, don't throttle.
++		 *
++		 * Starting writeback against mapped pages shouldn't
++		 * be a problem, as that doesn't increase the
++		 * sum of dirty + writeback.
++		 *
++		 * Without this, a deadlock is possible (also see
++		 * comment in balance_dirty_pages).  This has been
++		 * observed with running bash-shared-mapping on a
++		 * loopback mount.
++		 */
++		if (nr_swap_writeback < 16)
++			break;
++
+ 		get_dirty_limits(&background_thresh, &dirty_thresh, NULL);
+ 
+                 /*
+@@ -314,6 +330,7 @@ void throttle_vm_writeout(void)
+                 if (global_page_state(NR_UNSTABLE_NFS) +
+ 			global_page_state(NR_WRITEBACK) <= dirty_thresh)
+                         	break;
++
+                 congestion_wait(WRITE, HZ/10);
+         }
+ }
+Index: linux/mm/page_io.c
+===================================================================
+--- linux.orig/mm/page_io.c	2007-02-27 14:40:55.000000000 +0100
++++ linux/mm/page_io.c	2007-02-27 14:41:08.000000000 +0100
+@@ -70,6 +70,7 @@ static int end_swap_bio_write(struct bio
+ 		ClearPageReclaim(page);
+ 	}
+ 	end_page_writeback(page);
++	atomic_long_dec(&swapper_space.backing_dev_info->nr_writeback);
+ 	bio_put(bio);
+ 	return 0;
+ }
+@@ -121,6 +122,7 @@ int swap_writepage(struct page *page, st
+ 	if (wbc->sync_mode == WB_SYNC_ALL)
+ 		rw |= (1 << BIO_RW_SYNC);
+ 	count_vm_event(PSWPOUT);
++	atomic_long_inc(&swapper_space.backing_dev_info->nr_writeback);
+ 	set_page_writeback(page);
+ 	unlock_page(page);
+ 	submit_bio(rw, bio);
 
 --
