@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751338AbXB0AuI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751340AbXB0AuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751338AbXB0AuI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 19:50:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbXB0AuI
+	id S1751340AbXB0AuL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 19:50:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbXB0AuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 19:50:08 -0500
-Received: from nz-out-0506.google.com ([64.233.162.228]:13568 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751338AbXB0AuG (ORCPT
+	Mon, 26 Feb 2007 19:50:11 -0500
+Received: from mga07.intel.com ([143.182.124.22]:44307 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751340AbXB0AuJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 19:50:06 -0500
-Message-ID: <45E38032.3020704@codemonkey.ws>
-Date: Mon, 26 Feb 2007 18:49:54 -0600
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
+	Mon, 26 Feb 2007 19:50:09 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,222,1170662400"; 
+   d="scan'208"; a="187458263:sNHT106453333"
+From: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+Organization: Intel Corporation
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch 0/2] semaphores: add down_interruptible_timeout() and asm-generic/semaphore.h
+Date: Mon, 26 Feb 2007 16:54:17 -0800
+User-Agent: KMail/1.9.5
+Cc: Arjan van de Ven <arjan@infradead.org>, mingo@redhat.com, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+References: <20070227001338.344233745@sodium.jf.intel.com> <20070227003313.GA7360@infradead.org>
+In-Reply-To: <20070227003313.GA7360@infradead.org>
 MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [RFC] Use para_fill instead of vmi_get_function for APIC ops
-References: <45E37617.6050107@codemonkey.ws> <45E37EB5.7070100@vmware.com>
-In-Reply-To: <45E37EB5.7070100@vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702261654.18005.inaky@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> Anthony Liguori wrote:
->> Hi Zach,
->>
->> It seems to me that the APIC paravirt_ops should be filled by 
->> para_fill() instead of vmi_get_function().  vmi_get_function() 
->> returns a nop when the relocation type is NONE.  para_fill() leaves 
->> the native code in place.
->>
->> The native version of the apic write ops is more or less *(APIC_BASE 
->> + reg) = value.  APIC_BASE is unknown to the ROM so it's impossible 
->> to simulate this in the ROM.
->>
->> This means that a ROM has no choice but to do APIC emulation (or jump 
->> through seriously hairy loops to get the APIC mapped in it's address 
->> space).  Was this the intention?
+On Monday 26 February 2007 16:33, Christoph Hellwig wrote:
+> On Mon, Feb 26, 2007 at 04:13:38PM -0800, inaky@linux.intel.com wrote:
+> > Introduce down_interruptible_timeout() using timers to make the waiter
+> > stop waiting by simulating a signal (see first patch for more
+> > details). As well introduce asm-generic/semaphore.h and make other
+> > architectures use it too.
 >
-> No, but certainly the effect.  Actually, it is very easy to get the 
-> APIC mapped in the ROM address space without jumping through seriously 
-> hairy loops - we do it today in our hypervisor.
->
->>
->> N.B. attached patch is just to illustrate the point.  Has not even 
->> been compile tested.
->
->
-> Patch looks good, thanks.   But the whole para_fill / vmi_get_function 
-> stuff could probably be done even cleaner.  It was just a helper at 
-> first to work around the awkward syntax, and it is still a bit ugly, 
-> but I haven't come up with a better solution yet, mostly because with 
-> the new inlining work Jeremy is doing, we might want to start doing 
-> selective inlining, in which case I'll have to go back over the code 
-> anyway to clean everything to get the logic right in all cases.
+> What do you want this for?  Do you really need a full counting semaphore
+> or do you actually want a mutex?
 
-It would be really great if one could write a ROM by just specifying a 
-GetRelocationInfo function that always returns rel.type == NONE.  Right 
-now, there are a half a dozen or so ops that have to be implemented b/c 
-of the vmi_get_function stuff.
+Yeah, I need semaphore. This is a hw register that says when the hw
+is ready to accept a new command. Code that wants to send commands has
+to down the semaphore and then send it. When hw is ready to get a new
+command, it sends and IRQ and the IRQ up()s the semaphore. 
 
-> I assume this patch is signed-off-by you?  If so, I'll add it to my 
-> patch queue.
+Now, we don't want to hang on that down() forever if the hw spaces out.
+If we get a timeout, we can try recovery actions (like resetting it,
+for sake of being polite). 
 
-Yeah, but please make sure to test it.  I haven't at all.
+I use this in the WHCI Ultra Wide Band radio controller code (coming soon
+to a hw store near you).
 
-Signed-off-by: Anthony Liguori <anthony@codemonkey.ws>
+Cristoph, I still wonder how the hell you do it to spot every message
+that comes into lkml -- I bet you have a cluster of employees using your
+name doing it... :)
 
-Thanks,
-
-Anthony Liguori
-
-> Zach
->
-
+-- Inaky
