@@ -1,141 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751451AbXB0Bll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752477AbXB0Buu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751451AbXB0Bll (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 20:41:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbXB0Bll
+	id S1752477AbXB0Buu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 20:50:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbXB0Buu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 20:41:41 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:59050 "EHLO e5.ny.us.ibm.com"
+	Mon, 26 Feb 2007 20:50:50 -0500
+Received: from smtpout.mac.com ([17.250.248.171]:49274 "EHLO smtpout.mac.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751451AbXB0Blk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 20:41:40 -0500
-Subject: [RFC][PATCH] v850 generic timekeeping conversion
-From: john stultz <johnstul@us.ibm.com>
-To: uclinux-v850@lsi.nec.co.jp
-Cc: Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 26 Feb 2007 17:41:35 -0800
-Message-Id: <1172540495.15970.35.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	id S1752477AbXB0But (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 20:50:49 -0500
+In-Reply-To: <45E376E8.8020901@zytor.com>
+References: <20060724085701.B2083275@wobbly.melbourne.sgi.com> <200607242031.11815.a.gruenbacher@computer.org> <45E36D39.2030605@zytor.com> <20070226.154308.112620497.davem@davemloft.net> <45E372CA.9020709@zytor.com> <20070227000318.GA3448@infradead.org> <45E376E8.8020901@zytor.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3E0E2D98-5FEC-403E-831F-2B5BE6A3281A@mac.com>
+Cc: Christoph Hellwig <hch@infradead.org>, David Miller <davem@davemloft.net>,
+       a.gruenbacher@computer.org, bunk@stusta.de,
+       linux-kernel@vger.kernel.org, jmorris@redhat.com, dwmw2@infradead.org
 Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: include/linux/xattr.h: how much userpace visible?
+Date: Mon, 26 Feb 2007 20:49:00 -0500
+To: "H. Peter Anvin" <hpa@zytor.com>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is similar to the h8/300 patch I just sent out, in that it converts
-a arch that does not currently implement sub-jiffy timekeeping to use
-the generic timekeeping code.
+On Feb 26, 2007, at 19:10:16, H. Peter Anvin wrote:
+> Christoph Hellwig wrote:
+>> What's the problem of exposing all these APIs unconditionally?   
+>> glibcs should either use all information from the linux/ headers  
+>> or nothing at all, but not depend on hiding some bits.
+>
+> It's not always that simple.  In particular, in some files there  
+> might be typedefs or structure tags that step on libc's namespace  
+> (but are useful to other libcs), but ABI constants that are  
+> universally useful.
+>
+> One way to deal with the particular issue of structure tags which  
+> is probably even more useful is:
+>
+> #if defined(__KERNEL__) || defined(__KERNEL_EXPORT_STRUCTURES)
+> # define __kstruct_stat stat
+> #endif
+>
+> struct __kstruct_stat {
+> 	/* ...foo... */
+> };
+>
+> ... which lets the libc export it into whatever namespace it wants  
+> by #defining __kstruct macros accordingly.
 
-v850 however looks like it has some intent to implement sub-jiffy
-timekeeping, so it may not yet be appropriate to try to convert, but I
-figured I'd get the maintainer's input and submit the patch for comment.
+Not a bad idea, but it could use some extra error checking to make  
+sure that somebody remembers to "#define __kstruct_foo" before  
+"#include <linux/foo.h>" (perhaps indirectly through linux/bar.h).   
+Maybe something like this (plays nice with the very-basic unifdef  
+parsing too):
 
-And again, I do not have hardware, so this is completely untested.
+#ifdef __KERNEL__
+# define __kstruct_stat stat
+# define __kstruct_foo foo
+# define __kstruct_bar bar
+#endif
 
-thanks
--john
+#ifdef __LINUX_KERNEL_EXPORT
+# define __kstruct_stat stat
+# define __kstruct_foo foo
+# define __kstruct_bar bar
+#endif
 
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
+#ifndef __kstruct_stat
+# error "Missing definition of __kstruct_stat, please insert:"
+# error "  #define __kstruct_stat <name-for-stat-struct>"
+# error "into your C file before '#include <linux/foo.h>'"
+#endif
+struct __kstruct_stat {
+}
 
-diff --git a/arch/v850/Kconfig b/arch/v850/Kconfig
-index 50ccc7f..5f54c12 100644
---- a/arch/v850/Kconfig
-+++ b/arch/v850/Kconfig
-@@ -37,6 +37,10 @@ config GENERIC_IRQ_PROBE
- 	bool
- 	default y
- 
-+config GENERIC_TIME
-+	bool
-+	default y
-+
- config TIME_LOW_RES
- 	bool
- 	default y
-diff --git a/arch/v850/kernel/time.c b/arch/v850/kernel/time.c
-index 486e3a4..f0905b0 100644
---- a/arch/v850/kernel/time.c
-+++ b/arch/v850/kernel/time.c
-@@ -90,81 +90,6 @@ #endif /* 0 */
- 	return IRQ_HANDLED;
- }
- 
--/*
-- * This version of gettimeofday has near microsecond resolution.
-- */
--void do_gettimeofday (struct timeval *tv)
--{
--#if 0 /* DAVIDM later if possible */
--	extern volatile unsigned long lost_ticks;
--	unsigned long lost;
--#endif
--	unsigned long flags;
--	unsigned long usec, sec;
--	unsigned long seq;
--
--	do {
--		seq = read_seqbegin_irqsave(&xtime_lock, flags);
--
--#if 0
--		usec = mach_gettimeoffset ? mach_gettimeoffset () : 0;
--#else
--		usec = 0;
--#endif
--#if 0 /* DAVIDM later if possible */
--		lost = lost_ticks;
--		if (lost)
--			usec += lost * (1000000/HZ);
--#endif
--		sec = xtime.tv_sec;
--		usec += xtime.tv_nsec / 1000;
--	} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
--
--	while (usec >= 1000000) {
--		usec -= 1000000;
--		sec++;
--	}
--
--	tv->tv_sec = sec;
--	tv->tv_usec = usec;
--}
--
--EXPORT_SYMBOL(do_gettimeofday);
--
--int do_settimeofday(struct timespec *tv)
--{
--	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
--		return -EINVAL;
--
--	write_seqlock_irq (&xtime_lock);
--
--	/* This is revolting. We need to set the xtime.tv_nsec
--	 * correctly. However, the value in this location is
--	 * is value at the last tick.
--	 * Discover what correction gettimeofday
--	 * would have done, and then undo it!
--	 */
--#if 0
--	tv->tv_nsec -= mach_gettimeoffset() * 1000;
--#endif
--
--	while (tv->tv_nsec < 0) {
--		tv->tv_nsec += NSEC_PER_SEC;
--		tv->tv_sec--;
--	}
--
--	xtime.tv_sec = tv->tv_sec;
--	xtime.tv_nsec = tv->tv_nsec;
--
--	ntp_clear();
--
--	write_sequnlock_irq (&xtime_lock);
--	clock_was_set();
--	return 0;
--}
--
--EXPORT_SYMBOL(do_settimeofday);
--
- static int timer_dev_id;
- static struct irqaction timer_irqaction = {
- 	timer_interrupt,
+Someone who wanted to keep the name __kstruct_stat could of course  
+"#define __kstruct_stat __kstruct_stat" easily.
+
+Cheers,
+Kyle Moffett
 
