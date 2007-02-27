@@ -1,76 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751558AbXB0IhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932622AbXB0Ihx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751558AbXB0IhM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 03:37:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbXB0IhL
+	id S932622AbXB0Ihx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 03:37:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932780AbXB0Ihx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 03:37:11 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:9498 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751553AbXB0IhI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 03:37:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=qatRPnPUVwF5ETvofHMTyUDFftc/FF9hmMmeXUAUks/JZk0VqiBPQQGGgYCcvTYg9QVBn4cu3xoK44mx13BtrTGb1xmSJYAIg0qi+siZSx6Um8fobYi5D++Mmmxw+x2jBBPHs04H/+UO49pi1iQ10krrIQQV3dRRsX+49TOLhX8=
-Message-ID: <45E3ED6F.8090205@googlemail.com>
-Date: Tue, 27 Feb 2007 09:35:59 +0100
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@googlemail.com>
-CC: Thomas Gleixner <tglx@linutronix.de>, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David P. Reed" <dpreed@reed.com>, Ayaz Abdulla <aabdulla@nvidia.com>,
-       jgarzik@pobox.com, netdev@vger.kernel.org,
-       Albert Hopkins <kernel@marduk.letterboxes.org>,
-       Bob Tracy <rct@gherkin.frus.com>, Mark Brown <broonie@sirena.org.uk>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: 2.6.21-rc1: known regressions (v2) (part 2)
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>	 <20070226220521.GB29575@stusta.de> <1172564491.3709.5.camel@chaos> <45E3ECF1.4040906@googlemail.com>
-In-Reply-To: <45E3ECF1.4040906@googlemail.com>
-X-Enigmail-Version: 0.94.1.1
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+	Tue, 27 Feb 2007 03:37:53 -0500
+Received: from mail.screens.ru ([213.234.233.54]:47801 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932622AbXB0Ihv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 03:37:51 -0500
+Date: Tue, 27 Feb 2007 11:37:41 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Aneesh Kumar <aneesh.kumar@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>
+Subject: Re: [RFC][PATCH 1/3] Freezer: Fix vfork problem
+Message-ID: <20070227083741.GA85@tv-sign.ru>
+References: <200702261139.59130.rjw@sisk.pl> <200702261928.19274.rjw@sisk.pl> <20070226212554.GA93@tv-sign.ru> <200702270131.25656.rjw@sisk.pl> <cc723f590702262033k4fa6cbe0n8e327b8339c7a0e4@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cc723f590702262033k4fa6cbe0n8e327b8339c7a0e4@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Piotrowski napisa³(a):
-> Thomas Gleixner napisa³(a):
->> Adrian,
->>
->> On Mon, 2007-02-26 at 23:05 +0100, Adrian Bunk wrote:
->>> Subject    : kernel BUG at kernel/time/tick-sched.c:168  (CONFIG_NO_HZ)
->>> References : http://lkml.org/lkml/2007/2/16/346
->>> Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
->>> Handled-By : Thomas Gleixner <tglx@linutronix.de>
->>> Status     : problem is being debugged
->> The BUG_ON() was replaced by a warning printk(). The BUG_ON() exposed a
->> problem with the SMT scheduler. See below.
->>
->>> Subject    : BUG: soft lockup detected on CPU#0
->>>              NOHZ: local_softirq_pending 20  (SMT scheduler)
->>> References : http://lkml.org/lkml/2007/2/20/257
->>> Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
->>> Handled-By : Thomas Gleixner <tglx@linutronix.de>
->>>              Ingo Molnar <mingo@elte.hu>
->>> Status     : problem is being debugged
->> Patch available, not confirmed yet.
->>
+On 02/27, Aneesh Kumar wrote:
+>
+> >+static inline void freezer_do_not_count(void)
+> >+{
+> >+       current->flags |= PF_FREEZER_SKIP;
+> >+}
+> >+
+> >+/*
+> >+ * Tell the freezer to count this task as freezeable again and if it's a 
+> >user
+> >+ * space one, try to freeze it
+> >+ */
+> >+static inline void freezer_count(void)
+> >+{
+> >+       current->flags &= ~PF_FREEZER_SKIP;
+> >+       if (current->mm)
+> >+               try_to_freeze();
+> >+}
+> >+
 > 
-> I can confirm that the bug is fixed (over 20 hours of testing should be enough).
-                                       ^^^^ almost ;)
+> 
+> This means that we are not going to wait for the kernel thread
+> (Parent) to freeze. I guess what vatsa suggested in previous mail is
+> better.
 
-Regards,
-Michal
+Not only better, but correct. This is very simple: if we set PF_FREEZER_SKIP,
+we must call try_to_freeze(), otherwise we confuse the freezer.
 
---
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+Oleg.
+
