@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751835AbXB0Vt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751872AbXB0Vvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751835AbXB0Vt4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 16:49:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750916AbXB0Vt4
+	id S1751872AbXB0Vvj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 16:51:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbXB0Vvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 16:49:56 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:36891 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751835AbXB0Vty (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 16:49:54 -0500
-Message-ID: <45E4A775.4020206@zytor.com>
-Date: Tue, 27 Feb 2007 13:49:41 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: "Petri T. Koistinen" <petri.koistinen@iki.fi>
-CC: netdev@vger.kernel.org, ShuChen <shuchen@realtek.com.tw>,
-       linux-kernel@vger.kernel.org
-Subject: Re: D-Link DGE-528T (r8159) autonegotation of 1000 Mbps link does
- not work
-References: <Pine.LNX.4.64.0702242214120.1830@qfy-uxvtj8-sro4so00-137.qupc.varg.sv>
-In-Reply-To: <Pine.LNX.4.64.0702242214120.1830@qfy-uxvtj8-sro4so00-137.qupc.varg.sv>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 27 Feb 2007 16:51:39 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46069 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750916AbXB0Vvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 16:51:38 -0500
+Date: Tue, 27 Feb 2007 13:49:40 -0800
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: ebuddington@wesleyan.edu
+Cc: Eric Buddington <ebuddington@verizon.net>, linux-kernel@vger.kernel.org,
+       zaitcev@redhat.com
+Subject: Re: USB misbehavior causes system hang
+Message-Id: <20070227134940.63736039.zaitcev@redhat.com>
+In-Reply-To: <20070227140610.GC6850@pool-71-123-99-133.spfdma.east.verizon.net>
+References: <20070227140610.GC6850@pool-71-123-99-133.spfdma.east.verizon.net>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Petri T. Koistinen wrote:
-> Hi!
-> 
-> I just brought two D-Link DGE-528T (uses r8159 driver) network adapters
-> to have nice 1 Gbps home network between two computers.
-> 
-> I have gigabit crossover cable that is connected like this...
-> 
-> Pin  Connector #1  Connector #2
-> 1    white/orange  white/green
-> 2    orange        green
-> 3    white/green   white/orange
-> 4    blue          white/brown
-> 5    white/blue    brown
-> 6    green         orange
-> 7    white/brown   blue
-> 8    brown         white/blue
-> (from: http://logout.sh/computers/net/gigabit/)
+On Tue, 27 Feb 2007 09:06:21 -0500, Eric Buddington <ebuddington@verizon.net> wrote:
 
-That's just plain screwy.  Gigabit doesn't use crossover cables *AT 
-ALL*, although some of them *tolerate* the green and orange pairs being 
-crossed for compatibility with older crossover cables.  However, the 
-cable above is just plain weird.  There is absolutely no reason to cross 
-the blue and brown pair.
+> sd 1:0:0:0: rejecting I/O to offline device
+> ...
+> SoftDog: Initiating system reboot.
 
-If you know both ends are gigabit, always use a straight-through cable. 
-  If you know at least one end is gigabit (or auto MDI/MDIX), you can 
-almost always use a straight-through cable as well.  Use crossover 
-cables for 10/100 equipment only.
+> Now, the USB problem may well be a device or cabling issue, but I
+> don't think that this drive failure should trigger a reboot - I assume
+> the drive failure is somehow constipating the entire disk I/O system,
+> and preventing my softdog-patting script from running.
 
-	-hpa
+Have you tried ub? In theory, its threadless design is supposed to
+help with just this kind of a problem. Please let me know, I'm very
+curous.
+
+However, the main issue here is the OOM with all the dirty data.
+We saw that before. For some weird reason, ext3 is especially good
+at producing the immense amounts of write-out. Are you on ext3 or
+VFAT on that drive?
+
+Please try to find the CPU traces by hitting SysRq-w, SysRq-p. CPU
+is looping under a lock somewhere and eventually it cases the watchdog
+to trigger. It may be a USB issue, maybe a VM issue. I can't tell
+until we get stack traces.
+
+This does not help you to deal with the unreliable drive, I'm afraid,
+but it would be a great service if you pinned down the reason of looping.
+
+-- Pete
