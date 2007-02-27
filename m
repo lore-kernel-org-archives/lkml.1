@@ -1,81 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751878AbXB0WJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750867AbXB0WLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751878AbXB0WJs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 17:09:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbXB0WJr
+	id S1750867AbXB0WLq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 17:11:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbXB0WLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 17:09:47 -0500
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:46244 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751878AbXB0WJq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 17:09:46 -0500
-Date: Tue, 27 Feb 2007 23:09:44 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       pavel@suse.cz, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: 2.6.21-rc1: known regressions (part 2)
-Message-ID: <20070227220943.GP29575@stusta.de>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <20070225175559.GC12392@stusta.de> <20070227100202.GV3822@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Tue, 27 Feb 2007 17:11:45 -0500
+Received: from WWW.CS.ubishops.ca ([206.167.194.132]:48433 "EHLO
+	cs.ubishops.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750867AbXB0WLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 17:11:45 -0500
+X-Greylist: delayed 1408 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Feb 2007 17:11:45 EST
+Date: Tue, 27 Feb 2007 16:48:16 -0500
+From: Patrick McLean <chutzpah@linuxfreak.ca>
+To: linux-kernel@vger.kernel.org
+Subject: BUG: at fs/inotify.c:182 set_dentry_child_flags()
+Message-ID: <20070227214816.GA3331@odin.ubishops.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070227100202.GV3822@kernel.dk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 27, 2007 at 11:02:02AM +0100, Jens Axboe wrote:
-> On Sun, Feb 25 2007, Adrian Bunk wrote:
-> > This email lists some known regressions in 2.6.21-rc1 compared to 2.6.20
-> > that are not yet fixed in Linus' tree.
-> > 
-> > If you find your name in the Cc header, you are either submitter of one
-> > of the bugs, maintainer of an affectected subsystem or driver, a patch
-> > of you caused a breakage or I'm considering you in any other way possibly
-> > involved with one or more of these issues.
-> > 
-> > Due to the huge amount of recipients, please trim the Cc when answering.
-> > 
-> > 
-> > Subject    : ThinkPad T60: system doesn't come out of suspend to RAM
-> >              (CONFIG_NO_HZ)
-> > References : http://lkml.org/lkml/2007/2/22/391
-> > Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
-> >              Thomas Gleixner <tglx@linutronix.de>
-> > Handled-By : Ingo Molnar <mingo@elte.hu>
-> > Status     : unknown
-> 
-> x60 doesn't resume from S2R either, it doesn't matter if CONFIG_NO_HZ is
-> set or not though. 2.6.20 worked fine.
+I have this message in the dmesg on a mail server running on an xfs
+filesystem. It appears to have happened at some point when nfsd was
+restarted, but I can't seem to convince it to reproduce.
 
-Is this
+The machine is running Gentoo's 2.6.20 kernel.
 
-Subject    : ThinkPad T60: no screen after suspend to RAM
-References : http://lkml.org/lkml/2007/2/22/391
-Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
-             Ingo Molnar <mingo@elte.hu>
-Handled-By : Ingo Molnar <mingo@elte.hu>
-Status     : unknown
+BUG: at fs/inotify.c:182 set_dentry_child_flags()
 
-or doesn't it resume at all?
-
-> Jens Axboe
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Call Trace:
+ [<ffffffff802b7e2a>] set_dentry_child_flags+0xd4/0x132
+ [<ffffffff802b7eef>] remove_watch_no_event+0x67/0x76
+ [<ffffffff802b7f16>] inotify_remove_watch_locked+0x18/0x3b
+ [<ffffffff802b8004>] inotify_rm_wd+0x7e/0xa1
+ [<ffffffff802b8519>] sys_inotify_rm_watch+0x46/0x62
+ [<ffffffff80253e6e>] system_call+0x7e/0x83
 
