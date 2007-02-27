@@ -1,46 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933084AbXB0Tga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933080AbXB0Tit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933084AbXB0Tga (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 14:36:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933081AbXB0Tga
+	id S933080AbXB0Tit (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 14:38:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933079AbXB0Tit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 14:36:30 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:41101 "EHLO e1.ny.us.ibm.com"
+	Tue, 27 Feb 2007 14:38:49 -0500
+Received: from mga03.intel.com ([143.182.124.21]:29501 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933084AbXB0Tg3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 14:36:29 -0500
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>, Mel Gorman <mel@csn.ul.ie>
-Subject: [PATCH 5/5] lumpy: only check for valid pages when holes are present
-References: <exportbomb.1172604830@kernel>
-InReply-To: <exportbomb.1172604830@kernel>
-Message-ID: <297d400448043264b3e5afe21291485e@kernel>
-Date: Tue, 27 Feb 2007 11:36:24 -0800
+	id S933054AbXB0Tir convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 14:38:47 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,226,1170662400"; 
+   d="scan'208"; a="187897735:sNHT25226677"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/2] NET: Multiple queue network device support
+Date: Tue, 27 Feb 2007 11:38:36 -0800
+Message-ID: <D5C1322C3E673F459512FB59E0DDC329025C211F@orsmsx414.amr.corp.intel.com>
+In-Reply-To: <20070226.170317.41636240.davem@davemloft.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/2] NET: Multiple queue network device support
+thread-index: AcdaCxczF6Uzg8uTSEiuKJLasL2gbAAmVjkg
+From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+To: "David Miller" <davem@davemloft.net>
+Cc: <jgarzik@pobox.com>, <netdev@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       <auke@foo-projects.org>, "Ronciak, John" <john.ronciak@intel.com>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
+X-OriginalArrivalTime: 27 Feb 2007 19:38:37.0537 (UTC) FILETIME=[E02B8D10:01C75AA6]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dave,
+	Thanks for the feedback.  Please see below for my comments /
+questions.
 
-We only need to check that each page is valid with pfn_valid when
-we are on an architecture which had holes within zones.  Make this
-check conditional.
+PJ Waskiewicz
+Intel Corporation
 
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
----
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index bef7e92..f249ad7 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -725,9 +725,11 @@ static unsigned long isolate_lru_pages(unsigned long nr_to_scan,
- 			/* The target page is in the block, ignore it. */
- 			if (unlikely(pfn == page_pfn))
- 				continue;
-+#ifdef CONFIG_HOLES_IN_ZONE
- 			/* Avoid holes within the zone. */
- 			if (unlikely(!pfn_valid(pfn)))
- 				break;
-+#endif
- 
- 			cursor_page = pfn_to_page(pfn);
- 			/* Check that we have not crossed a zone boundary. */
+> > From: Peter Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+> > 
+> > Added an API and associated supporting routines for 
+> multiqueue network 
+> > devices.  This allows network devices supporting multiple 
+> TX queues to 
+> > configure each queue within the netdevice and manage each queue 
+> > independantly.  Changes to the PRIO Qdisc also allow a user to map 
+> > multiple flows to individual TX queues, taking advantage of 
+> each queue 
+> > on the device.
+> > 
+> > Signed-off-by: Peter Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+> > Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
+> 
+> Thanks for posting this.
+> 
+> I was wonding if it would be better to have the ->enqueue() 
+> perform the mapping operation, store the queue index selected 
+> inside of the skb, and just use the normal 
+> ->hard_start_xmit() to send the packet out?
+
+One of the reasons I chose to add more functions is for the queue
+management itself.  Specifically, I needed the ability to lock queues,
+stop queues (netif_stop_queue), and wake them up, independent of the
+global queue_lock in the netdevice.  At first I did think about storing
+the queue index in the skb, but that won't help with the queue locking,
+since only netdevice is passed to them outside of the context of the
+skb.  As for adding the additional multiqueue version of
+hard_start_subqueue_xmit(), I did that so non-MQ devices would have a
+clean, untouched path in dev_queue_xmit(), and only MQ devices would
+touch a new codepath.  This also removes the need for the device driver
+to inspect the queue index in the skb for which Tx ring to place the
+packet in, which is good for performance.
+
+For having ->enqueue() take care of the mapping, I thought for awhile
+about this.  Originally, I had ->enqueue() doing just that, until I
+realized I was not locking the individual subqueues correctly.  The
+thought process was once I receive an skb for Tx, I need to lock a
+queue, enqueue the skb, call qdisc_run(), then unlock.  That grew into
+lock a queue, enqueue, unlock the queue, have dequeue decide which queue
+to pull an skb from (since the queue an skb comes from can be different
+than the one just enqueued to), lock it, dequeue, unlock, and return the
+skb.  The whole issue came down to needing to know what queue to lock
+before enqueuing.  If I called enqueue, I would be going in unlocked.  I
+suppose this would be ok if the lock is done inside the ->enqueue(), and
+unlock is done before exiting; let me look at that possibility.
+
+> 
+> The only thing to take care of is the per-queue locking, but 
+> that should be easily doable.
+> 
+> We might be able to do this even without making sk_buff any larger.
+> For example, I suppose skb->priority might be deducable down 
+> to a u16.  After a quick audit I really cannot see any 
+> legitimate use of anything larger than 16-bit values, but a 
+> more thorough audit would be necessary to validate this.
+
+The skb->priority field right now is used to determine the PRIO /
+pfifo_fast band to place the skb in on enqueue.  I still need to think
+about if storing the queue index in the skb would help, due to the queue
+management functions outside of the skb context.
+
+Again, thanks for the feedback.  I'll respond once I've looked at moving
+locks into ->enqueue() and removing ->map_queue().  Please note that the
+PRIO band to queue mapping in this patch has a problem when the number
+of bands is <= the number of Tx queues on the NIC.  I have a fix, and
+will include that in a repost.
