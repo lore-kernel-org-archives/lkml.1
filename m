@@ -1,40 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751467AbXB0I5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751600AbXB0I6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751467AbXB0I5t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 03:57:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161052AbXB0I5t
+	id S1751600AbXB0I6Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 03:58:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbXB0I6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 03:57:49 -0500
-Received: from mx2.go2.pl ([193.17.41.42]:43902 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751467AbXB0I5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 03:57:48 -0500
-Date: Tue, 27 Feb 2007 10:01:27 +0100
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Luca Tettamanti <kronos.it@gmail.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG][2.6.21] af_key: kernel BUG at net/core/skbuff.c:93
-Message-ID: <20070227090127.GA1625@ff.dom.local>
-Mime-Version: 1.0
+	Tue, 27 Feb 2007 03:58:25 -0500
+Received: from fed1rmmtao104.cox.net ([68.230.241.42]:33423 "EHLO
+	fed1rmmtao104.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751501AbXB0I6X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 03:58:23 -0500
+From: Junio C Hamano <junkio@cox.net>
+To: git@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.5.0.2
+References: <7vwt2ec32p.fsf@assigned-by-dhcp.cox.net>
+Date: Tue, 27 Feb 2007 00:58:22 -0800
+In-Reply-To: <7vwt2ec32p.fsf@assigned-by-dhcp.cox.net> (Junio C. Hamano's
+	message of "Sun, 18 Feb 2007 18:07:42 -0800")
+Message-ID: <7vabz0j7td.fsf@assigned-by-dhcp.cox.net>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070226220841.GA7727@dreamland.darkstar.lan>
-User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 26-02-2007 23:08, Luca Tettamanti wrote:
-> Hello,
-> I'm running 2.6.21 (current git, at 9654640d0af). kernel blows up at
-> startup, when running setkey. Kernel 2.6.20 runs fine. A couple of words
-...
-> ------------[ cut here ]------------
-> kernel BUG at /home/kronos/src/linux-2.6.git/net/core/skbuff.c:93!
-> invalid opcode: 0000 [#1]
+The latest maintenance release GIT 1.5.0.2 is available at the
+usual places:
 
-Hi!
+  http://www.kernel.org/pub/software/scm/git/
 
-Could you repeat this with: CONFIG_4KSTACKS=n ?
+  git-1.5.0.2.tar.{gz,bz2}			(tarball)
+  git-htmldocs-1.5.0.2.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.5.0.2.tar.{gz,bz2}		(preformatted docs)
+  RPMS/$arch/git-*-1.5.0.2-1.$arch.rpm	(RPM)
 
-Regards,
-Jarek P.
+
+GIT v1.5.0.2 Release Notes
+==========================
+
+Fixes since v1.5.0.1
+--------------------
+
+* Bugfixes
+
+  - Automated merge conflict handling when changes to symbolic
+    links conflicted were completely broken.  The merge-resolve
+    strategy created a regular file with conflict markers in it
+    in place of the symbolic link.  The default strategy,
+    merge-recursive was even more broken.  It removed the path
+    that was pointed at by the symbolic link.  Both of these
+    problems have been fixed.
+
+  - 'git diff maint master next' did not correctly give combined
+    diff across three trees.
+
+  - 'git fast-import' portability fix for Solaris.
+
+  - 'git show-ref --verify' without arguments did not error out
+    but segfaulted.
+
+  - 'git diff :tracked-file `pwd`/an-untracked-file' gave an extra
+    slashes after a/ and b/.
+
+  - 'git format-patch' produced too long filenames if the commit
+    message had too long line at the beginning.
+
+  - Running 'make all' and then without changing anything
+    running 'make install' still rebuilt some files.  This
+    was inconvenient when building as yourself and then
+    installing as root (especially problematic when the source
+    directory is on NFS and root is mapped to nobody).
+
+  - 'git-rerere' failed to deal with two unconflicted paths that
+    sorted next to each other.
+
+  - 'git-rerere' attempted to open(2) a symlink and failed if
+    there was a conflict.  Since a conflicting change to a
+    symlink would not benefit from rerere anyway, the command
+    now ignores conflicting changes to symlinks.
+
+  - 'git-repack' did not like to pass more than 64 arguments
+    internally to underlying 'rev-list' logic, which made it
+    impossible to repack after accumulating many (small) packs
+    in the repository.
+
+  - 'git-diff' to review the combined diff during a conflicted
+    merge were not reading the working tree version correctly
+    when changes to a symbolic link conflicted.  It should have
+    read the data using readlink(2) but read from the regular
+    file the symbolic link pointed at.
+
+  - 'git-remote' did not like period in a remote's name.
+
+* Documentation updates
+
+  - added and clarified core.bare, core.legacyheaders configurations.
+
+  - updated "git-clone --depth" documentation.
+
+
+* Assorted git-gui fixes.
+
