@@ -1,113 +1,447 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751341AbXB0Bde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751376AbXB0BfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751341AbXB0Bde (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 20:33:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbXB0Bde
+	id S1751376AbXB0BfV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 20:35:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbXB0BfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 20:33:34 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:34102 "EHLO e2.ny.us.ibm.com"
+	Mon, 26 Feb 2007 20:35:21 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:42290 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751341AbXB0Bdd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 20:33:33 -0500
-Subject: [PATCH] Convert h8/300 to generic timekeeping
-From: john stultz <johnstul@us.ibm.com>
-To: ysato@users.sourceforge.jp
-Cc: Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 26 Feb 2007 17:33:29 -0800
-Message-Id: <1172540009.15970.30.camel@localhost>
+	id S1751376AbXB0BfT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 20:35:19 -0500
+Date: Mon, 26 Feb 2007 17:35:17 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] udivdi3: 64 bit divide
+Message-ID: <20070226173517.66bf0fec@freekitty>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently h8/300 does not implement sub-jiffy timekeeping, so there is
-no benefit to having arch specific timekeeping code.
+The kernel already has several implmentations and usages of 64 by 64 
+bit divide.
 
-This patch simply removes those functions and enables the generic
-timekeeping code.
+Although it is significantly slower, there are places that need it so
+provide one generic version using scaling, and allow existing platform
+versions to continue.
 
-I don't have the hardware, so this is completely untested.
+This looks like good -mm material. Tested on x86_64 and i386.
 
-thanks
--john
+Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
+---
+ arch/alpha/Kconfig           |    4 ++++
+ arch/arm/Kconfig             |    4 ++++
+ arch/arm26/Kconfig           |    4 ++++
+ arch/avr32/Kconfig           |    4 ++++
+ arch/cris/Kconfig            |    4 ++++
+ arch/frv/Kconfig             |    4 ++++
+ arch/h8300/Kconfig           |    4 ++++
+ arch/i386/Kconfig            |    4 ++++
+ arch/m32r/Kconfig            |    4 ++++
+ arch/m68k/Kconfig            |    4 ++++
+ arch/m68knommu/Kconfig       |    4 ++++
+ arch/mips/Kconfig            |    4 ++++
+ arch/parisc/Kconfig          |    4 ++++
+ arch/powerpc/Kconfig         |    4 ++++
+ arch/ppc/Kconfig             |    4 ++++
+ arch/s390/Kconfig            |    4 ++++
+ arch/sh64/Kconfig            |    4 ++++
+ arch/v850/Kconfig            |    3 +++
+ arch/xtensa/Kconfig          |    4 ++++
+ lib/Makefile                 |    1 +
+ lib/udivdi3.c                |   37 +++++++++++++++++++++++++++++++++++++
+ net/ipv4/tcp_cubic.c         |   24 +-----------------------
+ net/netfilter/xt_connbytes.c |   19 +------------------
+ 23 files changed, 115 insertions(+), 41 deletions(-)
 
-diff --git a/arch/h8300/Kconfig b/arch/h8300/Kconfig
-index 1734d96..86f6ca3 100644
---- a/arch/h8300/Kconfig
-+++ b/arch/h8300/Kconfig
-@@ -53,6 +53,10 @@ config GENERIC_CALIBRATE_DELAY
- 	bool
- 	default y
+--- pktgen.orig/net/ipv4/tcp_cubic.c	2007-02-26 13:40:08.000000000 -0800
++++ pktgen/net/ipv4/tcp_cubic.c	2007-02-26 14:31:41.000000000 -0800
+@@ -51,7 +51,6 @@
+ module_param(tcp_friendliness, int, 0644);
+ MODULE_PARM_DESC(tcp_friendliness, "turn on/off tcp friendliness");
  
-+config GENERIC_TIME
+-#include <asm/div64.h>
+ 
+ /* BIC TCP Parameters */
+ struct bictcp {
+@@ -93,27 +92,6 @@
+ 		tcp_sk(sk)->snd_ssthresh = initial_ssthresh;
+ }
+ 
+-/* 64bit divisor, dividend and result. dynamic precision */
+-static inline u_int64_t div64_64(u_int64_t dividend, u_int64_t divisor)
+-{
+-	u_int32_t d = divisor;
+-
+-	if (divisor > 0xffffffffULL) {
+-		unsigned int shift = fls(divisor >> 32);
+-
+-		d = divisor >> shift;
+-		dividend >>= shift;
+-	}
+-
+-	/* avoid 64 bit division if possible */
+-	if (dividend >> 32)
+-		do_div(dividend, d);
+-	else
+-		dividend = (uint32_t) dividend / d;
+-
+-	return dividend;
+-}
+-
+ /*
+  * calculate the cubic root of x using Newton-Raphson
+  */
+@@ -134,7 +112,7 @@
+ 	 */
+ 	do {
+ 		x1 = x;
+-		x = (2 * x + (uint32_t) div64_64(a, x*x)) / 3;
++		x = (2 * x + (u32) (a / (x*x))) / 3;
+ 	} while (abs(x1 - x) > 1);
+ 
+ 	return x;
+--- pktgen.orig/net/netfilter/xt_connbytes.c	2007-02-26 13:40:08.000000000 -0800
++++ pktgen/net/netfilter/xt_connbytes.c	2007-02-26 14:29:13.000000000 -0800
+@@ -16,7 +16,6 @@
+ #include <linux/netfilter/x_tables.h>
+ #include <linux/netfilter/xt_connbytes.h>
+ 
+-#include <asm/div64.h>
+ #include <asm/bitops.h>
+ 
+ MODULE_LICENSE("GPL");
+@@ -24,22 +23,6 @@
+ MODULE_DESCRIPTION("iptables match for matching number of pkts/bytes per connection");
+ MODULE_ALIAS("ipt_connbytes");
+ 
+-/* 64bit divisor, dividend and result. dynamic precision */
+-static u_int64_t div64_64(u_int64_t dividend, u_int64_t divisor)
+-{
+-	u_int32_t d = divisor;
+-
+-	if (divisor > 0xffffffffULL) {
+-		unsigned int shift = fls(divisor >> 32);
+-
+-		d = divisor >> shift;
+-		dividend >>= shift;
+-	}
+-
+-	do_div(dividend, d);
+-	return dividend;
+-}
+-
+ static int
+ match(const struct sk_buff *skb,
+       const struct net_device *in,
+@@ -106,7 +89,7 @@
+ 			break;
+ 		}
+ 		if (pkts != 0)
+-			what = div64_64(bytes, pkts);
++			what = bytes / pkts;
+ 		break;
+ 	}
+ 
+--- pktgen.orig/lib/Makefile	2007-02-26 13:40:08.000000000 -0800
++++ pktgen/lib/Makefile	2007-02-26 14:17:31.000000000 -0800
+@@ -28,6 +28,7 @@
+ lib-$(CONFIG_SEMAPHORE_SLEEPERS) += semaphore-sleepers.o
+ lib-$(CONFIG_GENERIC_FIND_NEXT_BIT) += find_next_bit.o
+ obj-$(CONFIG_GENERIC_HWEIGHT) += hweight.o
++obj-$(CONFIG_GENERIC_UDIVDI3) += udivdi3.o
+ obj-$(CONFIG_LOCK_KERNEL) += kernel_lock.o
+ obj-$(CONFIG_PLIST) += plist.o
+ obj-$(CONFIG_DEBUG_PREEMPT) += smp_processor_id.o
+--- pktgen.orig/arch/alpha/Kconfig	2007-02-26 13:51:29.000000000 -0800
++++ pktgen/arch/alpha/Kconfig	2007-02-26 13:54:35.000000000 -0800
+@@ -33,6 +33,10 @@
+ 	bool
+ 	default n
+ 
++config GENERIC_UDIVDI3
 +	bool
 +	default y
 +
- config TIME_LOW_RES
+ config GENERIC_FIND_NEXT_BIT
  	bool
  	default y
-diff --git a/arch/h8300/kernel/time.c b/arch/h8300/kernel/time.c
-index d1ef615..91d3b56 100644
---- a/arch/h8300/kernel/time.c
-+++ b/arch/h8300/kernel/time.c
-@@ -66,55 +66,3 @@ void time_init(void)
+--- pktgen.orig/arch/arm/Kconfig	2007-02-26 13:51:29.000000000 -0800
++++ pktgen/arch/arm/Kconfig	2007-02-26 13:54:57.000000000 -0800
+@@ -90,6 +90,10 @@
+ 	bool
+ 	default n
  
- 	platform_timer_setup(timer_interrupt);
- }
--
--/*
-- * This version of gettimeofday has near microsecond resolution.
-- */
--void do_gettimeofday(struct timeval *tv)
--{
--	unsigned long flags;
--	unsigned long usec, sec;
--
--	read_lock_irqsave(&xtime_lock, flags);
--	usec = 0;
--	sec = xtime.tv_sec;
--	usec += (xtime.tv_nsec / 1000);
--	read_unlock_irqrestore(&xtime_lock, flags);
--
--	while (usec >= 1000000) {
--		usec -= 1000000;
--		sec++;
--	}
--
--	tv->tv_sec = sec;
--	tv->tv_usec = usec;
--}
--
--EXPORT_SYMBOL(do_gettimeofday);
--
--int do_settimeofday(struct timespec *tv)
--{
--	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
--		return -EINVAL;
--
--	write_lock_irq(&xtime_lock);
--	/* This is revolting. We need to set the xtime.tv_usec
--	 * correctly. However, the value in this location is
--	 * is value at the last tick.
--	 * Discover what correction gettimeofday
--	 * would have done, and then undo it!
--	 */
--	while (tv->tv_nsec < 0) {
--		tv->tv_nsec += NSEC_PER_SEC;
--		tv->tv_sec--;
--	}
--
--	xtime.tv_sec = tv->tv_sec;
--	xtime.tv_nsec = tv->tv_nsec;
--	ntp_clear();
--	write_sequnlock_irq(&xtime_lock);
--	clock_was_set();
--	return 0;
--}
--
--EXPORT_SYMBOL(do_settimeofday);
-
++config GENERIC_UDIVDI3
++	bool
++	default y
++
+ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+--- pktgen.orig/arch/arm26/Kconfig	2007-02-26 13:48:46.000000000 -0800
++++ pktgen/arch/arm26/Kconfig	2007-02-26 13:55:24.000000000 -0800
+@@ -49,6 +49,10 @@
+ 	bool
+ 	default n
+ 
++config GENERIC_UDIVDI3
++	bool
++	default y
++
+ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+--- pktgen.orig/arch/avr32/Kconfig	2007-02-26 13:51:29.000000000 -0800
++++ pktgen/arch/avr32/Kconfig	2007-02-26 13:55:39.000000000 -0800
+@@ -53,6 +53,10 @@
+ 	bool
+ 	default n
+ 
++config GENERIC_UDIVDI3
++	bool
++	default y
++
+ config GENERIC_BUST_SPINLOCK
+ 	bool
+ 
+--- pktgen.orig/arch/cris/Kconfig	2007-02-26 13:51:29.000000000 -0800
++++ pktgen/arch/cris/Kconfig	2007-02-26 13:55:53.000000000 -0800
+@@ -28,6 +28,10 @@
+ 	bool
+ 	default n
+ 
++config GENERIC_UDIVDI3
++	bool
++	default y
++
+ config GENERIC_FIND_NEXT_BIT
+ 	bool
+ 	default y
+--- pktgen.orig/arch/frv/Kconfig	2007-02-26 13:51:29.000000000 -0800
++++ pktgen/arch/frv/Kconfig	2007-02-26 13:56:09.000000000 -0800
+@@ -53,6 +53,10 @@
+ 	bool
+ 	default y
+ 
++config GENERIC_UDIVDI3
++	bool
++	default y
++
+ mainmenu "Fujitsu FR-V Kernel Configuration"
+ 
+ source "init/Kconfig"
+--- pktgen.orig/arch/h8300/Kconfig	2007-02-26 13:51:29.000000000 -0800
++++ pktgen/arch/h8300/Kconfig	2007-02-26 13:56:20.000000000 -0800
+@@ -41,6 +41,10 @@
+ 	bool
+ 	default n
+ 
++config GENERIC_UDIVDI3
++	bool
++	default y
++
+ config GENERIC_FIND_NEXT_BIT
+ 	bool
+ 	default y
+--- pktgen.orig/arch/i386/Kconfig	2007-02-26 14:01:59.000000000 -0800
++++ pktgen/arch/i386/Kconfig	2007-02-26 14:02:28.000000000 -0800
+@@ -75,6 +75,10 @@
+ 	bool
+ 	default y
+ 
++config GENERIC_UDIVDI3
++	bool
++	default y
++
+ config ARCH_MAY_HAVE_PC_FDC
+ 	bool
+ 	default y
+--- pktgen.orig/arch/m32r/Kconfig	2007-02-26 13:51:29.000000000 -0800
++++ pktgen/arch/m32r/Kconfig	2007-02-26 13:56:43.000000000 -0800
+@@ -229,6 +229,10 @@
+ 	bool
+ 	default n
+ 
++config GENERIC_UDIVDI3
++	bool
++	default y
++
+ config GENERIC_FIND_NEXT_BIT
+ 	bool
+ 	default y
+--- pktgen.orig/arch/m68k/Kconfig	2007-02-26 13:51:29.000000000 -0800
++++ pktgen/arch/m68k/Kconfig	2007-02-26 13:56:56.000000000 -0800
+@@ -25,6 +25,10 @@
+ 	bool
+ 	default n
+ 
++config GENERIC_UDIVDI3
++	bool
++	default y
++
+ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+--- pktgen.orig/arch/m68knommu/Kconfig	2007-02-26 13:51:29.000000000 -0800
++++ pktgen/arch/m68knommu/Kconfig	2007-02-26 13:57:05.000000000 -0800
+@@ -37,6 +37,10 @@
+ 	bool
+ 	default n
+ 
++config GENERIC_UDIVDI3
++	bool
++	default y
++
+ config GENERIC_FIND_NEXT_BIT
+ 	bool
+ 	default y
+--- pktgen.orig/arch/mips/Kconfig	2007-02-26 13:51:29.000000000 -0800
++++ pktgen/arch/mips/Kconfig	2007-02-26 13:57:13.000000000 -0800
+@@ -843,6 +843,10 @@
+ 	bool
+ 	default n
+ 
++config GENERIC_UDIVDI3
++	bool
++	default y
++
+ config GENERIC_FIND_NEXT_BIT
+ 	bool
+ 	default y
+--- pktgen.orig/arch/parisc/Kconfig	2007-02-26 13:51:29.000000000 -0800
++++ pktgen/arch/parisc/Kconfig	2007-02-26 13:57:21.000000000 -0800
+@@ -33,6 +33,10 @@
+ 	bool
+ 	default n
+ 
++config GENERIC_UDIVDI3
++	bool
++	default y
++
+ config GENERIC_FIND_NEXT_BIT
+ 	bool
+ 	default y
+--- pktgen.orig/arch/powerpc/Kconfig	2007-02-26 13:51:29.000000000 -0800
++++ pktgen/arch/powerpc/Kconfig	2007-02-26 13:57:31.000000000 -0800
+@@ -49,6 +49,10 @@
+ 	bool
+ 	default y if 64BIT
+ 
++config GENERIC_UDIVDI3
++	bool
++	default y
++
+ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+--- pktgen.orig/arch/ppc/Kconfig	2007-02-26 13:51:29.000000000 -0800
++++ pktgen/arch/ppc/Kconfig	2007-02-26 13:57:44.000000000 -0800
+@@ -27,6 +27,10 @@
+ 	bool
+ 	default n
+ 
++config GENERIC_UDIVDI3
++	bool
++	default y
++
+ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+--- pktgen.orig/arch/s390/Kconfig	2007-02-26 13:51:29.000000000 -0800
++++ pktgen/arch/s390/Kconfig	2007-02-26 13:57:53.000000000 -0800
+@@ -34,6 +34,10 @@
+ 	bool
+ 	default n
+ 
++config GENERIC_UDIVDI3
++	bool
++	default y
++
+ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+--- pktgen.orig/arch/sh64/Kconfig	2007-02-26 13:51:29.000000000 -0800
++++ pktgen/arch/sh64/Kconfig	2007-02-26 14:00:32.000000000 -0800
+@@ -21,6 +21,10 @@
+ 	bool
+ 	default y
+ 
++config GENERIC_UDIVDI3
++	bool
++	default y
++
+ config GENERIC_FIND_NEXT_BIT
+ 	bool
+ 	default y
+--- pktgen.orig/arch/v850/Kconfig	2007-02-26 13:51:29.000000000 -0800
++++ pktgen/arch/v850/Kconfig	2007-02-26 13:59:29.000000000 -0800
+@@ -19,6 +19,9 @@
+ config RWSEM_XCHGADD_ALGORITHM
+ 	bool
+ 	default n
++config GENERIC_UDIVDI3
++	bool
++	default y
+ config GENERIC_FIND_NEXT_BIT
+ 	bool
+ 	default y
+--- pktgen.orig/arch/xtensa/Kconfig	2007-02-26 13:51:29.000000000 -0800
++++ pktgen/arch/xtensa/Kconfig	2007-02-26 13:59:45.000000000 -0800
+@@ -26,6 +26,10 @@
+ 	bool
+ 	default y
+ 
++config GENERIC_UDIVDI3
++	bool
++	default y
++
+ config GENERIC_FIND_NEXT_BIT
+ 	bool
+ 	default y
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ pktgen/lib/udivdi3.c	2007-02-26 14:14:13.000000000 -0800
+@@ -0,0 +1,37 @@
++/*
++ * Generic C  version of full 64 bit by 64 bit division
++ * Extracted from version used by netfilter connection tracking
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * version 2 as published by the Free Software Foundation.
++ *
++ * Code generated for this function might be very inefficient
++ * for some CPUs, can be overridden by linking arch-specific
++ * assembly versions such as arch/sparc/lib/udivdi.S
++ */
++#include <linux/types.h>
++#include <linux/module.h>
++#include <asm/div64.h>
++
++uint64_t __udivdi3(uint64_t dividend, uint64_t divisor)
++{
++	uint32_t d = divisor;
++
++	/* Scale divisor to 32 bits */
++	if (divisor > 0xffffffffULL) {
++		unsigned int shift = fls(divisor >> 32);
++
++		d = divisor >> shift;
++		dividend >>= shift;
++	}
++
++	/* avoid 64 bit division if possible */
++	if (dividend >> 32)
++		do_div(dividend, d);
++	else
++		dividend = (uint32_t) dividend / d;
++
++	return dividend;
++}
++EXPORT_SYMBOL(__udivdi3);
