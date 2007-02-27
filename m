@@ -1,96 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030578AbXB0InL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030586AbXB0Io7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030578AbXB0InL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 03:43:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933023AbXB0InK
+	id S1030586AbXB0Io7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 03:44:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932862AbXB0IoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 03:43:10 -0500
-Received: from gw.goop.org ([64.81.55.164]:46893 "EHLO mail.goop.org"
+	Tue, 27 Feb 2007 03:44:24 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52006 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933010AbXB0Iiu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 03:38:50 -0500
-Message-Id: <20070227081637.324223166@goop.org>
-References: <20070227081337.434798469@goop.org>
-User-Agent: quilt/0.46-1
-Date: Tue, 27 Feb 2007 00:13:59 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Andi Kleen <ak@muc.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: [patch 22/26] Xen-paravirt_ops: Add early printk support via hvc console
-Content-Disposition: inline; filename=xen-hvc-earlyprintk.patch
+	id S1030583AbXB0IoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 03:44:19 -0500
+Date: Tue, 27 Feb 2007 09:33:49 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David P. Reed" <dpreed@reed.com>, Ayaz Abdulla <aabdulla@nvidia.com>,
+       jgarzik@pobox.com, netdev@vger.kernel.org,
+       Albert Hopkins <kernel@marduk.letterboxes.org>,
+       Bob Tracy <rct@gherkin.frus.com>, Mark Brown <broonie@sirena.org.uk>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: 2.6.21-rc1: known regressions (v2) (part 2)
+Message-ID: <20070227083349.GB30376@elte.hu>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <20070226220521.GB29575@stusta.de> <1172564491.3709.5.camel@chaos> <45E3ECF1.4040906@googlemail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <45E3ECF1.4040906@googlemail.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add early printk support via hvc console, enable using
-"earlyprintk=xen" on the kernel command line.
 
-From: Gerd Hoffmann <kraxel@suse.de>
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+* Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
 
----
- arch/x86_64/kernel/early_printk.c |    8 ++++++++
- drivers/xen/hvc-console.c         |   24 ++++++++++++++++++++++++
- 2 files changed, 32 insertions(+)
+> Thomas Gleixner napisał(a):
+> > Adrian,
+> > 
+> > On Mon, 2007-02-26 at 23:05 +0100, Adrian Bunk wrote:
+> >> Subject    : kernel BUG at kernel/time/tick-sched.c:168  (CONFIG_NO_HZ)
+> >> References : http://lkml.org/lkml/2007/2/16/346
+> >> Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+> >> Handled-By : Thomas Gleixner <tglx@linutronix.de>
+> >> Status     : problem is being debugged
+> > 
+> > The BUG_ON() was replaced by a warning printk(). The BUG_ON() exposed a
+> > problem with the SMT scheduler. See below.
+> > 
+> >> Subject    : BUG: soft lockup detected on CPU#0
+> >>              NOHZ: local_softirq_pending 20  (SMT scheduler)
+> >> References : http://lkml.org/lkml/2007/2/20/257
+> >> Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+> >> Handled-By : Thomas Gleixner <tglx@linutronix.de>
+> >>              Ingo Molnar <mingo@elte.hu>
+> >> Status     : problem is being debugged
+> > 
+> > Patch available, not confirmed yet.
+> > 
+> 
+> I can confirm that the bug is fixed (over 20 hours of testing should 
+> be enough).
 
-===================================================================
---- a/arch/x86_64/kernel/early_printk.c
-+++ b/arch/x86_64/kernel/early_printk.c
-@@ -196,6 +196,10 @@ static struct console simnow_console = {
- 	.flags =	CON_PRINTBUFFER,
- 	.index =	-1,
- };
-+
-+#ifdef CONFIG_XEN
-+extern struct console xenboot_console;
-+#endif
- 
- /* Direct interface for emergencies */
- struct console *early_console = &early_vga_console;
-@@ -243,6 +247,10 @@ static int __init setup_early_printk(cha
-  		simnow_init(buf + 6);
-  		early_console = &simnow_console;
-  		keep_early = 1;
-+#ifdef CONFIG_XEN
-+	} else if (!strncmp(buf, "xen", 3)) {
-+ 		early_console = &xenboot_console;
-+#endif
- 	}
- 
- 	if (keep_early)
-===================================================================
---- a/drivers/xen/hvc-console.c
-+++ b/drivers/xen/hvc-console.c
-@@ -133,3 +133,27 @@ module_init(xen_init);
- module_init(xen_init);
- module_exit(xen_fini);
- console_initcall(xen_cons_init);
-+
-+static void xenboot_write_console(struct console *console, const char *string,
-+				  unsigned len)
-+{
-+	unsigned int linelen, off = 0;
-+	const char *pos;
-+
-+	while (off < len && NULL != (pos = strchr(string+off, '\n'))) {
-+		linelen = pos-string+off;
-+		if (off + linelen > len)
-+			break;
-+		write_console(0, string+off, linelen);
-+		write_console(0, "\r\n", 2);
-+		off += linelen + 1;
-+	}
-+	if (off < len)
-+		write_console(0, string+off, len-off);
-+}
-+
-+struct console xenboot_console = {
-+	.name		= "xenboot",
-+	.write		= xenboot_write_console,
-+	.flags		= CON_PRINTBUFFER | CON_BOOT,
-+};
+thanks alot! I think this thing was a long-term performance/latency 
+regression in HT scheduling as well.
 
--- 
-
+	Ingo
