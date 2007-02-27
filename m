@@ -1,184 +1,530 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751909AbXB0Vhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751917AbXB0Viz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751909AbXB0Vhp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 16:37:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbXB0Vhp
+	id S1751917AbXB0Viz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 16:38:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752566AbXB0Viz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 16:37:45 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:53083 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751912AbXB0Vh0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 16:37:26 -0500
-Date: Tue, 27 Feb 2007 22:29:39 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Oliver Neukum <oneukum@suse.de>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-Subject: Re: 2.6.21-rc1: mmc reader no longer works, usb oops
-Message-ID: <20070227212939.GB1717@elf.ucw.cz>
-References: <20070227103620.GA8205@elf.ucw.cz> <200702271146.53414.oneukum@suse.de>
+	Tue, 27 Feb 2007 16:38:55 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:3244 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751917AbXB0Vix (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 16:38:53 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 27 Feb 2007 13:38:34 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [patch - v2] epoll ready set loops diet ...
+Message-ID: <Pine.LNX.4.64.0702271328500.3692@alien.or.mcafeemobile.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200702271146.53414.oneukum@suse.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> > MMC card reader in x60 no longer works in -rc1. (Will have to check if
-> > it worked before s2ram).
-> > 
-> > When playing with usb-serial, I got this oops (upon trying to start
-> > minicom /dev/ttyUSB0 while linux gadget on the other end was
-> > crashing).
-> 
-> Does this help?
+ChangeLog:
 
-Not sure... two new oopsen why trying to use it... (But this time at
-least I connected; I _hope_ I applied the patch _before_ loading the module...)
-
-PM: Adding info for No Bus:usbdev2.11_ep83
-PM: Adding info for usb:2-2:1.1
-PM: Adding info for No Bus:usbdev2.11_ep81
-PM: Adding info for No Bus:usbdev2.11_ep02
-PM: Adding info for No Bus:usbdev2.11
-usb 2-2: USB disconnect, address 11
-PM: Removing info for No Bus:usbdev2.11_ep83
-usb0: unregister 'cdc_ether' usb-0000:00:1d.0-2, CDC Ethernet Device
-PM: Removing info for No Bus:usb0
-PM: Removing info for usb:2-2:1.0
-PM: Removing info for No Bus:usbdev2.11_ep81
-PM: Removing info for No Bus:usbdev2.11_ep02
-PM: Removing info for usb:2-2:1.1
-PM: Removing info for No Bus:usbdev2.11
-PM: Removing info for No Bus:usbdev2.11_ep00
-PM: Removing info for usb:2-2
-usb 2-2: new full speed USB device using uhci_hcd and address 12
-PM: Adding info for usb:2-2
-PM: Adding info for No Bus:usbdev2.12_ep00
-usb 2-2: configuration #1 chosen from 1 choice
-PM: Adding info for usb:2-2:1.0
-usbserial_generic 2-2:1.0: generic converter detected
-PM: Adding info for usb-serial:ttyUSB0
-PM: Removing info for usb-serial:ttyUSB0
-usb-serial ttyUSB0: Error registering port device, continuing
-PM: Adding info for No Bus:usbdev2.12_ep01
-PM: Adding info for No Bus:usbdev2.12_ep82
-PM: Adding info for No Bus:usbdev2.12_ep83
-PM: Adding info for No Bus:usbdev2.12
-PM: Removing info for No Bus:ttyUSB0
-generic ttyUSB0: generic converter now disconnected from ttyUSB0
-PM: Removing info for usb-serial:ttyUSB0
-usb 2-2: USB disconnect, address 12
-PM: Removing info for No Bus:usbdev2.12_ep01
-PM: Removing info for No Bus:usbdev2.12_ep82
-PM: Removing info for No Bus:usbdev2.12_ep83
-BUG: unable to handle kernel NULL pointer dereference at virtual address 00000010
- printing eip:
-c061eca4
-*pde = 00000000
-BUG: soft lockup detected on CPU#1!
- [<c014fe19>] softlockup_tick+0xa9/0xd0
- [<c0131e83>] update_process_times+0x33/0x80
- [<c0143062>] tick_periodic+0x22/0x70
- [<c01430c7>] tick_handle_periodic+0x17/0x70
- [<c011b99e>] smp_apic_timer_interrupt+0x4e/0x80
- [<c0104b68>] apic_timer_interrupt+0x28/0x30
- [<c061007b>] _copy_to_pages+0x5b/0xc0
- [<c0258784>] delay_tsc+0x14/0x20
- [<c02587c6>] __delay+0x6/0x10
- [<c0120c4b>] do_page_fault+0x35b/0x600
- [<c01208f0>] do_page_fault+0x0/0x600
- [<c0621a4c>] error_code+0x7c/0x84
- [<c061eca4>] klist_del+0x14/0x50
- [<c032af5b>] device_del+0x1b/0x1d0
- [<c032b118>] device_unregister+0x8/0x10
- [<f8cc20a7>] destroy_serial+0x87/0x110 [usbserial]
- [<f8cc2020>] destroy_serial+0x0/0x110 [usbserial]
- [<c0254f1b>] kref_put+0x2b/0x80
- [<c013242e>] del_timer_sync+0xe/0x20
- [<f8cc1a60>] usb_serial_disconnect+0x70/0xd0 [usbserial]
- [<c0254f1b>] kref_put+0x2b/0x80
- [<c0458be0>] usb_unbind_interface+0x50/0xa0
- [<c032cea8>] __device_release_driver+0x68/0xb0
- [<c032d24e>] device_release_driver+0x1e/0x40
- [<c032c77b>] bus_remove_device+0x8b/0xa0
- [<c032b0a9>] device_del+0x169/0x1d0
- [<c0456b5d>] usb_disable_device+0x4d/0x100
- [<c0450baa>] usb_disconnect+0x9a/0x120
- [<c0453575>] hub_thread+0x3d5/0xe20
- [<c0121b61>] __activate_task+0x21/0x40
- [<c012494f>] try_to_wake_up+0x3f/0x420
- [<c013d170>] autoremove_wake_function+0x0/0x50
- [<c04531a0>] hub_thread+0x0/0xe20
- [<c013d0bc>] kthread+0xec/0xf0
- [<c013cfd0>] kthread+0x0/0xf0
- [<c0104cab>] kernel_thread_helper+0x7/0x1c
- =======================
-Oops: 0000 [#1]
-SMP 
-Modules linked in: usbserial
-CPU:    1
-EIP:    0060:[<c061eca4>]    Not tainted VLI
-EFLAGS: 00010296   (2.6.21-rc1 #404)
-EIP is at klist_del+0x14/0x50
-eax: 00000000   ebx: 00000000   ecx: f522d678   edx: 00000001
-esi: f53a0510   edi: f52e0da8   ebp: f53a0510   esp: c22d5dd8
-ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
-Process khubd (pid: 271, ti=c22d4000 task=c2205a30 task.ti=c22d4000)
-Stack: f52e0d94 f53a0510 f52e0d94 c032af5b f522d678 f52e0d94 f53a0510 00000000 
-       f53a0510 c032b118 00000001 f8cc20a7 f7f6134c f7f61350 f53a0510 f53a0510 
-       f53a0544 f8cc2020 f53a0514 f53a0510 c0254f1b c013242e f52e0d04 00000000 
-Call Trace:
- [<c032af5b>] device_del+0x1b/0x1d0
- [<c032b118>] device_unregister+0x8/0x10
- [<f8cc20a7>] destroy_serial+0x87/0x110 [usbserial]
- [<f8cc2020>] destroy_serial+0x0/0x110 [usbserial]
- [<c0254f1b>] kref_put+0x2b/0x80
- [<c013242e>] del_timer_sync+0xe/0x20
- [<f8cc1a60>] usb_serial_disconnect+0x70/0xd0 [usbserial]
- [<c0254f1b>] kref_put+0x2b/0x80
- [<c0458be0>] usb_unbind_interface+0x50/0xa0
- [<c032cea8>] __device_release_driver+0x68/0xb0
- [<c032d24e>] device_release_driver+0x1e/0x40
- [<c032c77b>] bus_remove_device+0x8b/0xa0
- [<c032b0a9>] device_del+0x169/0x1d0
- [<c0456b5d>] usb_disable_device+0x4d/0x100
- [<c0450baa>] usb_disconnect+0x9a/0x120
- [<c0453575>] hub_thread+0x3d5/0xe20
- [<c0121b61>] __activate_task+0x21/0x40
- [<c012494f>] try_to_wake_up+0x3f/0x420
- [<c013d170>] autoremove_wake_function+0x0/0x50
- [<c04531a0>] hub_thread+0x0/0xe20
- [<c013d0bc>] kthread+0xec/0xf0
- [<c013cfd0>] kthread+0x0/0xf0
- [<c0104cab>] kernel_thread_helper+0x7/0x1c
- =======================
-Code: 04 89 46 04 89 4a 04 89 11 c6 03 01 8b 1c 24 8b 74 24 04 83 c4 08 c3 83 ec 0c 89 7c 24 08 89 c7 89 1c 24 89 74 24 04 8b 18 89 d8 <8b> 73 10 e8 f4 29 00 00 89 f8 e8 ad fe ff ff 85 c0 b8 00 00 00 
-EIP: [<c061eca4>] klist_del+0x14/0x50 SS:ESP 0068:c22d5dd8
+v2) In v1, I was trying to avoid to get the spinlock twice WRT yesterday 
+    patch, but it turns out I can't since the ready list will be travelling 
+    through a path w/out the ep->sem held. Oh well...
 
 
-> --- a/drivers/usb/serial/usb-serial.c	2007-02-21 05:32:30.000000000 +0100
-> +++ b/drivers/usb/serial/usb-serial.c	2007-02-26 15:32:50.000000000 +0100
-> @@ -826,7 +826,6 @@
->  			num_ports = type->num_ports;
->  	}
->  
-> -	serial->minor = minor;
->  	serial->num_ports = num_ports;
->  	serial->num_bulk_in = num_bulk_in;
->  	serial->num_bulk_out = num_bulk_out;
-> @@ -980,6 +979,7 @@
->  		dev_err(&interface->dev, "No more free serial devices\n");
->  		goto probe_error;
->  	}
-> +	serial->minor = minor;
->  
->  	/* register all of the individual ports with the driver core */
->  	for (i = 0; i < num_ports; ++i) {
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Epoll is doing multiple passes over the ready set at the moment, because 
+of the constraints over the f_op->poll() call. Looking at the code again, 
+I noticed that we already hold the epoll semaphore in read, and this 
+(together with other locking conditions that hold while doing an 
+epoll_wait()) can lead to a smarter way [1] to "ship" events to userspace 
+(in a single pass).
+This is a stress application that can be used to test the new code. It 
+spwans multiple thread and call epoll_wait() and epoll_ctl() from many 
+threads. Stress tested on my dual Opteron 254 w/out any problems.
+
+http://www.xmailserver.org/totalmess.c
+
+This is not a benchmark, just something that tries to stress and exploit 
+possible problems with the new code.
+Also, I made a stupid micro-benchmark:
+
+http://www.xmailserver.org/epwbench.c
+
+
+
+[1] Considering that epoll must be thread-safe, there are five ways we can 
+    be hit during an epoll_wait() transfer loop (ep_send_events()):
+
+    1) The epoll fd going away and calling ep_free
+       This just can't happen, since we did an fget() in sys_epoll_wait
+
+    2) An epoll_ctl(EPOLL_CTL_DEL)
+       This can't happen because epoll_ctl() gets ep->sem in write, and 
+       we're holding it in read during ep_send_events()
+
+    3) An fd stored inside the epoll fd going away
+       This can't happen because in eventpoll_release_file() we get 
+       ep->sem in write, and we're holding it in read during 
+       ep_send_events()
+
+    4) Another epoll_wait() happening on another thread
+       They both can be inside ep_send_events() at the same time, we get 
+       (splice) the ready-list under the spinlock, so each one will get 
+       its own ready list. Note that an fd cannot be at the same time 
+       inside more than one ready list, because ep_poll_callback() will 
+       not re-queue it if it sees it already linked:
+
+       if (ep_is_linked(&epi->rdllink))
+                goto is_linked;
+
+       Another case that can happen, is two concurrent epoll_wait(), 
+       coming in with a userspace event buffer of size, say, ten.
+       Suppose there are 50 event ready in the list. The first 
+       epoll_wait() will "steal" the whole list, while the second, seeing 
+       no events, will go to sleep. But at the end of ep_send_events() in 
+       the first epoll_wait(), we will re-inject surplus ready fds, and we 
+       will trigger the proper wake_up to the second epoll_wait().
+
+    5) ep_poll_callback() hitting us asyncronously
+       This is the tricky part. As I said above, the ep_is_linked() test 
+       done inside ep_poll_callback(), will guarantee us that until the 
+       item will result linked to a list, ep_poll_callback() will not try 
+       to re-queue it again (read, write data on any of its members). When 
+       we do a list_del() in ep_send_events(), the item will still satisfy 
+       the ep_is_linked() test (whatever data is written in prev/next, 
+       it'll never be its own pointer), so ep_poll_callback() will still 
+       leave us alone. It's only after the eventual smp_mb()+INIT_LIST_HEAD(&epi->rdllink)
+       that it'll become visible to ep_poll_callback(), but at the point 
+       we're already past it.
+
+
+
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+
+
+
+- Davide
+
+
+
+eventpoll.c |  217 +++++++++++++++++++++++-------------------------------------
+1 file changed, 85 insertions(+), 132 deletions(-)
+
+
+
+
+diff -Nru linux-2.6.20/fs/eventpoll.c linux-2.6.20.mod/fs/eventpoll.c
+--- linux-2.6.20/fs/eventpoll.c	2007-02-04 10:44:54.000000000 -0800
++++ linux-2.6.20.mod/fs/eventpoll.c	2007-02-27 13:37:34.000000000 -0800
+@@ -185,7 +185,7 @@
+ 
+ /*
+  * Each file descriptor added to the eventpoll interface will
+- * have an entry of this type linked to the hash.
++ * have an entry of this type linked to the "rbr" RB tree.
+  */
+ struct epitem {
+ 	/* RB-Tree node used to link this structure to the eventpoll rb-tree */
+@@ -218,9 +218,6 @@
+ 	/* List header used to link this item to the "struct file" items list */
+ 	struct list_head fllink;
+ 
+-	/* List header used to link the item to the transfer list */
+-	struct list_head txlink;
+-
+ 	/*
+ 	 * This is used during the collection/transfer of events to userspace
+ 	 * to pin items empty events set.
+@@ -258,11 +255,8 @@
+ static int ep_poll_callback(wait_queue_t *wait, unsigned mode, int sync, void *key);
+ static int ep_eventpoll_close(struct inode *inode, struct file *file);
+ static unsigned int ep_eventpoll_poll(struct file *file, poll_table *wait);
+-static int ep_collect_ready_items(struct eventpoll *ep,
+-				  struct list_head *txlist, int maxevents);
+ static int ep_send_events(struct eventpoll *ep, struct list_head *txlist,
+-			  struct epoll_event __user *events);
+-static void ep_reinject_items(struct eventpoll *ep, struct list_head *txlist);
++			  struct epoll_event __user *events, int maxevents);
+ static int ep_events_transfer(struct eventpoll *ep,
+ 			      struct epoll_event __user *events,
+ 			      int maxevents);
+@@ -355,17 +349,6 @@
+ 	return rb_parent(n) != n;
+ }
+ 
+-/*
+- * Remove the item from the list and perform its initialization.
+- * This is useful for us because we can test if the item is linked
+- * using "ep_is_linked(p)".
+- */
+-static inline void ep_list_del(struct list_head *p)
+-{
+-	list_del(p);
+-	INIT_LIST_HEAD(p);
+-}
+-
+ /* Tells us if the item is currently linked */
+ static inline int ep_is_linked(struct list_head *p)
+ {
+@@ -385,7 +368,7 @@
+ }
+ 
+ /* Tells if the epoll_ctl(2) operation needs an event copy from userspace */
+-static inline int ep_op_hash_event(int op)
++static inline int ep_op_has_event(int op)
+ {
+ 	return op != EPOLL_CTL_DEL;
+ }
+@@ -480,7 +463,7 @@
+ 		epi = list_entry(lsthead->next, struct epitem, fllink);
+ 
+ 		ep = epi->ep;
+-		ep_list_del(&epi->fllink);
++		list_del_init(&epi->fllink);
+ 		down_write(&ep->sem);
+ 		ep_remove(ep, epi);
+ 		up_write(&ep->sem);
+@@ -557,7 +540,7 @@
+ 		     current, epfd, op, fd, event));
+ 
+ 	error = -EFAULT;
+-	if (ep_op_hash_event(op) &&
++	if (ep_op_has_event(op) &&
+ 	    copy_from_user(&epds, event, sizeof(struct epoll_event)))
+ 		goto eexit_1;
+ 
+@@ -594,7 +577,7 @@
+ 
+ 	down_write(&ep->sem);
+ 
+-	/* Try to lookup the file inside our hash table */
++	/* Try to lookup the file inside our RB tree */
+ 	epi = ep_find(ep, tfile, fd);
+ 
+ 	error = -EINVAL;
+@@ -876,7 +859,7 @@
+ 	}
+ 
+ 	/*
+-	 * Walks through the whole hash by freeing each "struct epitem". At this
++	 * Walks through the whole tree by freeing each "struct epitem". At this
+ 	 * point we are sure no poll callbacks will be lingering around, and also by
+ 	 * write-holding "sem" we can be sure that no file cleanup code will hit
+ 	 * us during this operation. So we can avoid the lock on "ep->lock".
+@@ -891,7 +874,7 @@
+ 
+ 
+ /*
+- * Search the file inside the eventpoll hash. It add usage count to
++ * Search the file inside the eventpoll tree. It add usage count to
+  * the returned item, so the caller must call ep_release_epitem()
+  * after finished using the "struct epitem".
+  */
+@@ -1011,7 +994,6 @@
+ 	ep_rb_initnode(&epi->rbn);
+ 	INIT_LIST_HEAD(&epi->rdllink);
+ 	INIT_LIST_HEAD(&epi->fllink);
+-	INIT_LIST_HEAD(&epi->txlink);
+ 	INIT_LIST_HEAD(&epi->pwqlist);
+ 	epi->ep = ep;
+ 	ep_set_ffd(&epi->ffd, tfile, fd);
+@@ -1080,7 +1062,7 @@
+ 	 */
+ 	write_lock_irqsave(&ep->lock, flags);
+ 	if (ep_is_linked(&epi->rdllink))
+-		ep_list_del(&epi->rdllink);
++		list_del_init(&epi->rdllink);
+ 	write_unlock_irqrestore(&ep->lock, flags);
+ 
+ 	kmem_cache_free(epi_cache, epi);
+@@ -1119,7 +1101,7 @@
+ 	epi->event.data = event->data;
+ 
+ 	/*
+-	 * If the item is not linked to the hash it means that it's on its
++	 * If the item is not linked to the RB tree it means that it's on its
+ 	 * way toward the removal. Do nothing in this case.
+ 	 */
+ 	if (ep_rb_linked(&epi->rbn)) {
+@@ -1170,7 +1152,7 @@
+ 		while (!list_empty(lsthead)) {
+ 			pwq = list_entry(lsthead->next, struct eppoll_entry, llink);
+ 
+-			ep_list_del(&pwq->llink);
++			list_del_init(&pwq->llink);
+ 			remove_wait_queue(pwq->whead, &pwq->wait);
+ 			kmem_cache_free(pwq_cache, pwq);
+ 		}
+@@ -1213,7 +1195,7 @@
+ 	 * we want to remove it from this list to avoid stale events.
+ 	 */
+ 	if (ep_is_linked(&epi->rdllink))
+-		ep_list_del(&epi->rdllink);
++		list_del_init(&epi->rdllink);
+ 
+ 	error = 0;
+ eexit_1:
+@@ -1226,7 +1208,7 @@
+ 
+ 
+ /*
+- * Removes a "struct epitem" from the eventpoll hash and deallocates
++ * Removes a "struct epitem" from the eventpoll RB tree and deallocates
+  * all the associated resources.
+  */
+ static int ep_remove(struct eventpoll *ep, struct epitem *epi)
+@@ -1248,13 +1230,13 @@
+ 	/* Remove the current item from the list of epoll hooks */
+ 	spin_lock(&file->f_ep_lock);
+ 	if (ep_is_linked(&epi->fllink))
+-		ep_list_del(&epi->fllink);
++		list_del_init(&epi->fllink);
+ 	spin_unlock(&file->f_ep_lock);
+ 
+ 	/* We need to acquire the write IRQ lock before calling ep_unlink() */
+ 	write_lock_irqsave(&ep->lock, flags);
+ 
+-	/* Really unlink the item from the hash */
++	/* Really unlink the item from the RB tree */
+ 	error = ep_unlink(ep, epi);
+ 
+ 	write_unlock_irqrestore(&ep->lock, flags);
+@@ -1362,71 +1344,29 @@
+ 
+ 
+ /*
+- * Since we have to release the lock during the __copy_to_user() operation and
+- * during the f_op->poll() call, we try to collect the maximum number of items
+- * by reducing the irqlock/irqunlock switching rate.
+- */
+-static int ep_collect_ready_items(struct eventpoll *ep, struct list_head *txlist, int maxevents)
+-{
+-	int nepi;
+-	unsigned long flags;
+-	struct list_head *lsthead = &ep->rdllist, *lnk;
+-	struct epitem *epi;
+-
+-	write_lock_irqsave(&ep->lock, flags);
+-
+-	for (nepi = 0, lnk = lsthead->next; lnk != lsthead && nepi < maxevents;) {
+-		epi = list_entry(lnk, struct epitem, rdllink);
+-
+-		lnk = lnk->next;
+-
+-		/* If this file is already in the ready list we exit soon */
+-		if (!ep_is_linked(&epi->txlink)) {
+-			/*
+-			 * This is initialized in this way so that the default
+-			 * behaviour of the reinjecting code will be to push back
+-			 * the item inside the ready list.
+-			 */
+-			epi->revents = epi->event.events;
+-
+-			/* Link the ready item into the transfer list */
+-			list_add(&epi->txlink, txlist);
+-			nepi++;
+-
+-			/*
+-			 * Unlink the item from the ready list.
+-			 */
+-			ep_list_del(&epi->rdllink);
+-		}
+-	}
+-
+-	write_unlock_irqrestore(&ep->lock, flags);
+-
+-	return nepi;
+-}
+-
+-
+-/*
+  * This function is called without holding the "ep->lock" since the call to
+  * __copy_to_user() might sleep, and also f_op->poll() might reenable the IRQ
+  * because of the way poll() is traditionally implemented in Linux.
+  */
+ static int ep_send_events(struct eventpoll *ep, struct list_head *txlist,
+-			  struct epoll_event __user *events)
++			  struct epoll_event __user *events, int maxevents)
+ {
+-	int eventcnt = 0;
++	int eventcnt, error = -EFAULT, pwake = 0;
+ 	unsigned int revents;
+-	struct list_head *lnk;
++	unsigned long flags;
+ 	struct epitem *epi;
++	struct list_head injlist;
++
++	INIT_LIST_HEAD(&injlist);
+ 
+ 	/*
+ 	 * We can loop without lock because this is a task private list.
+-	 * The test done during the collection loop will guarantee us that
+-	 * another task will not try to collect this file. Also, items
+-	 * cannot vanish during the loop because we are holding "sem".
++	 * We just splice'd out the ep->rdllist in ep_collect_ready_items().
++	 * Items cannot vanish during the loop because we are holding "sem" in read.
+ 	 */
+-	list_for_each(lnk, txlist) {
+-		epi = list_entry(lnk, struct epitem, txlink);
++	for (eventcnt = 0; !list_empty(txlist) && eventcnt < maxevents;) {
++		epi = list_entry(txlist->next, struct epitem, rdllink);
++		prefetch(epi->rdllink.next);
+ 
+ 		/*
+ 		 * Get the ready file event set. We can safely use the file
+@@ -1442,56 +1382,63 @@
+ 		 */
+ 		epi->revents = revents & epi->event.events;
+ 
++		/*
++		 * Is the event mask intersect the caller-requested one,
++		 * deliver the event to userspace. Again, we are holding
++		 * "sem" in read, so no operations coming from userspace
++		 * can change the item.
++		 */
+ 		if (epi->revents) {
+ 			if (__put_user(epi->revents,
+ 				       &events[eventcnt].events) ||
+ 			    __put_user(epi->event.data,
+ 				       &events[eventcnt].data))
+-				return -EFAULT;
++				goto errxit;
+ 			if (epi->event.events & EPOLLONESHOT)
+ 				epi->event.events &= EP_PRIVATE_BITS;
+ 			eventcnt++;
+ 		}
+-	}
+-	return eventcnt;
+-}
+-
+-
+-/*
+- * Walk through the transfer list we collected with ep_collect_ready_items()
+- * and, if 1) the item is still "alive" 2) its event set is not empty 3) it's
+- * not already linked, links it to the ready list. Same as above, we are holding
+- * "sem" so items cannot vanish underneath our nose.
+- */
+-static void ep_reinject_items(struct eventpoll *ep, struct list_head *txlist)
+-{
+-	int ricnt = 0, pwake = 0;
+-	unsigned long flags;
+-	struct epitem *epi;
+-
+-	write_lock_irqsave(&ep->lock, flags);
+-
+-	while (!list_empty(txlist)) {
+-		epi = list_entry(txlist->next, struct epitem, txlink);
+-
+-		/* Unlink the current item from the transfer list */
+-		ep_list_del(&epi->txlink);
+ 
+ 		/*
+-		 * If the item is no more linked to the interest set, we don't
+-		 * have to push it inside the ready list because the following
+-		 * ep_release_epitem() is going to drop it. Also, if the current
+-		 * item is set to have an Edge Triggered behaviour, we don't have
+-		 * to push it back either.
++		 * This is tricky. We are holding the "sem" in read, and this
++		 * means that the operations that can change the "linked" status
++		 * of the epoll item (epi->rbn and epi->rdllink), cannot touch them.
++		 * Also, since we are "linked" from a epi->rdllink POV (the item
++		 * is linked to our transmission list, we just splice'd), the
++		 * ep_poll_callback() cannot touch us either, because of the check
++		 * present in there. Another parallel epoll_wait() will not
++		 * get the same result set, since we spliced the ready list before.
++		 * Note that list_del() still shows the item as linked to the test
++		 * in ep_poll_callback().
+ 		 */
+-		if (ep_rb_linked(&epi->rbn) && !(epi->event.events & EPOLLET) &&
+-		    (epi->revents & epi->event.events) && !ep_is_linked(&epi->rdllink)) {
+-			list_add_tail(&epi->rdllink, &ep->rdllist);
+-			ricnt++;
+-		}
++		list_del(&epi->rdllink);
++		if (!(epi->event.events & EPOLLET) &&
++		    (epi->revents & epi->event.events))
++			list_add_tail(&epi->rdllink, &injlist);
++		else {
++			/*
++			 * Be sure the item is totally detached before re-init the
++			 * list_head. After INIT_LIST_HEAD() is committed, the
++			 * ep_poll_callback() can requeue the item again, but we
++			 * don't care since we are already past it.
++			 */
++			smp_mb();
++			INIT_LIST_HEAD(&epi->rdllink);
++		}		
+ 	}
++	error = 0;
++
++	errxit:
++
++	/*
++	 * If the re-injection list or the txlist are not empty, re-splice
++	 * them to the ready list and do proper wakeups.
++	 */
++	if (!list_empty(&injlist) || !list_empty(txlist)) {
++		write_lock_irqsave(&ep->lock, flags);
+ 
+-	if (ricnt) {
++		list_splice(txlist, &ep->rdllist);
++		list_splice(&injlist, &ep->rdllist);
+ 		/*
+ 		 * Wake up ( if active ) both the eventpoll wait list and the ->poll()
+ 		 * wait list.
+@@ -1501,13 +1448,15 @@
+ 					 TASK_INTERRUPTIBLE);
+ 		if (waitqueue_active(&ep->poll_wait))
+ 			pwake++;
+-	}
+ 
+-	write_unlock_irqrestore(&ep->lock, flags);
++		write_unlock_irqrestore(&ep->lock, flags);
++	}
+ 
+ 	/* We have to call this outside the lock */
+ 	if (pwake)
+ 		ep_poll_safewake(&psw, &ep->poll_wait);
++	
++	return eventcnt == 0 ? error: eventcnt;
+ }
+ 
+ 
+@@ -1517,7 +1466,8 @@
+ static int ep_events_transfer(struct eventpoll *ep,
+ 			      struct epoll_event __user *events, int maxevents)
+ {
+-	int eventcnt = 0;
++	int eventcnt;
++	unsigned long flags;
+ 	struct list_head txlist;
+ 
+ 	INIT_LIST_HEAD(&txlist);
+@@ -1528,14 +1478,17 @@
+ 	 */
+ 	down_read(&ep->sem);
+ 
+-	/* Collect/extract ready items */
+-	if (ep_collect_ready_items(ep, &txlist, maxevents) > 0) {
+-		/* Build result set in userspace */
+-		eventcnt = ep_send_events(ep, &txlist, events);
++	/*
++	 * Steal the ready list, and re-init the original one to the
++	 * empty list.
++	 */
++	write_lock_irqsave(&ep->lock, flags);
++	list_splice(&ep->rdllist, &txlist);
++	INIT_LIST_HEAD(&ep->rdllist);
++	write_unlock_irqrestore(&ep->lock, flags);
+ 
+-		/* Reinject ready items into the ready list */
+-		ep_reinject_items(ep, &txlist);
+-	}
++	/* Build result set in userspace */
++	eventcnt = ep_send_events(ep, &txlist, events, maxevents);
+ 
+ 	up_read(&ep->sem);
+ 
