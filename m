@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932950AbXB0LKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932922AbXB0LQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932950AbXB0LKO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 06:10:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932997AbXB0LKO
+	id S932922AbXB0LQR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 06:16:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932997AbXB0LQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 06:10:14 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42435 "EHLO mx2.mail.elte.hu"
+	Tue, 27 Feb 2007 06:16:17 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:47089 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932950AbXB0LKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 06:10:12 -0500
-Date: Tue, 27 Feb 2007 12:03:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       bunk@stusta.de, pavel@suse.cz, linux-pm@linux-foundation.org,
-       linux-acpi@vger.kernel.org, len.brown@intel.com, mingo@redhat.com
-Subject: Re: 2.6.21-rc1: T60 resume from suspend to RAM issues
-Message-ID: <20070227110306.GE20927@elte.hu>
-References: <20070223020904.c8fc8a3e.akpm@linux-foundation.org> <20070224211141.GA4425@mellanox.co.il> <20070227101451.GA11981@elte.hu> <20070227102809.GD10548@mellanox.co.il>
+	id S932922AbXB0LQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 06:16:17 -0500
+Date: Tue, 27 Feb 2007 14:12:59 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Suparna Bhattacharya <suparna@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: A quick fio test (was Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3)
+Message-ID: <20070227111258.GA19125@2ka.mipt.ru>
+References: <20070223135525.GA31569@in.ibm.com> <20070223145826.GA32465@elte.hu> <20070223151515.GA12960@in.ibm.com> <20070223162508.GA16782@kernel.dk> <20070223171348.GA27838@in.ibm.com> <20070226135736.GF3822@kernel.dk> <20070226141315.GA15631@in.ibm.com> <20070226144548.GH3822@kernel.dk> <20070227043331.GA29942@in.ibm.com> <20070227094211.GR3822@kernel.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-In-Reply-To: <20070227102809.GD10548@mellanox.co.il>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070227094211.GR3822@kernel.dk>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Tue, 27 Feb 2007 14:13:46 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+My two coins:
+# cat job
+[global]
+bs=8k
+size=1g
+direct=0
+ioengine=sync
+iodepth=32
+rw=read
 
-* Michael S. Tsirkin <mst@mellanox.co.il> wrote:
+[file]
+filename=/home/user/test
 
-> > > > Do you believe that the second problem was caused by dynticks?
-> > > 
-> > > Assuming these are 2 different problems, yes, the second one seems 
-> > > to be caused by dyntics.
-> > 
-> > on my T60 current -git does not resume even without dynticks. 
-> > v2.6.20 with the same .config resumes fine (except for the display).
-> > 
-> > after pressing Fn/F4 the disk light flashes briefly, which suggests 
-> > that action is probably back to the Linux kernel at that point, and 
-> > that we hung somewhere there. Will try a bisection thing.
-> 
-> That's exactly the behaviour I have with DynTicks: the disk light 
-> flashes briefly.
+sync: 
+READ: io=1,024MiB, aggrb=39,329KiB/s, minb=39,329KiB/s,
+maxb=39,329KiB/s, mint=27301msec, maxt=27301msec
 
-it flashes here briefly even if suspend works fine.
+libaio:
+READ: io=1,024MiB, aggrb=39,435KiB/s, minb=39,435KiB/s,
+maxb=39,435KiB/s, mint=27228msec, maxt=27228msec
 
-	Ingo
+syslet-rw:
+READ: io=1,024MiB, aggrb=29,567KiB/s, minb=29,567KiB/s,
+maxb=29,567KiB/s, mint=36315msec, maxt=36315msec
+
+During syslet-rw test about 9500 async schduledes happend.
+I use fio-git-20070226150114.tar.gz
+
+P.S. Jens, fio_latest.tar.gz has wrong permissions, it can not be
+opened.
+
+-- 
+	Evgeniy Polyakov
