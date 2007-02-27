@@ -1,59 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751838AbXB0WBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751878AbXB0WJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751838AbXB0WBq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 17:01:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbXB0WBq
+	id S1751878AbXB0WJs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 17:09:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbXB0WJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 17:01:46 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38374 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751838AbXB0WBp convert rfc822-to-8bit (ORCPT
+	Tue, 27 Feb 2007 17:09:47 -0500
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:46244 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751878AbXB0WJq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 17:01:45 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Kristian =?iso-8859-15?q?Gr=F8nfeldt_S=F8rensen?= <kriller@vkr.dk>
-Subject: Re: PROBLEM: "BUG:" when resuming from suspend-to-ram
-Date: Tue, 27 Feb 2007 23:04:01 +0100
-User-Agent: KMail/1.9.5
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <1172601905.5428.28.camel@localhost.localdomain>
-In-Reply-To: <1172601905.5428.28.camel@localhost.localdomain>
+	Tue, 27 Feb 2007 17:09:46 -0500
+Date: Tue, 27 Feb 2007 23:09:44 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       pavel@suse.cz, linux-pm@lists.osdl.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: 2.6.21-rc1: known regressions (part 2)
+Message-ID: <20070227220943.GP29575@stusta.de>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <20070225175559.GC12392@stusta.de> <20070227100202.GV3822@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200702272304.01756.rjw@sisk.pl>
+In-Reply-To: <20070227100202.GV3822@kernel.dk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Tuesday, 27 February 2007 19:45, Kristian Grønfeldt Sørensen wrote:
-> Hi.
+On Tue, Feb 27, 2007 at 11:02:02AM +0100, Jens Axboe wrote:
+> On Sun, Feb 25 2007, Adrian Bunk wrote:
+> > This email lists some known regressions in 2.6.21-rc1 compared to 2.6.20
+> > that are not yet fixed in Linus' tree.
+> > 
+> > If you find your name in the Cc header, you are either submitter of one
+> > of the bugs, maintainer of an affectected subsystem or driver, a patch
+> > of you caused a breakage or I'm considering you in any other way possibly
+> > involved with one or more of these issues.
+> > 
+> > Due to the huge amount of recipients, please trim the Cc when answering.
+> > 
+> > 
+> > Subject    : ThinkPad T60: system doesn't come out of suspend to RAM
+> >              (CONFIG_NO_HZ)
+> > References : http://lkml.org/lkml/2007/2/22/391
+> > Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
+> >              Thomas Gleixner <tglx@linutronix.de>
+> > Handled-By : Ingo Molnar <mingo@elte.hu>
+> > Status     : unknown
 > 
-> PROBLEM: "BUG:" when resumimg from suspend-to-ram 
-> 	
-> My laptop have a problem with resuming from suspend-to-ram. 
-> It does not occur every time - most of the time, resume works without
-> any problem.at all.
-> 
-> After it occurs, the laptop refuses to go into suspend-to-ram mode until
-> next reboot.
+> x60 doesn't resume from S2R either, it doesn't matter if CONFIG_NO_HZ is
+> set or not though. 2.6.20 worked fine.
 
-What do you mean by "refuses"?  Are there any suspicious messages in
-dmesg?
+Is this
 
-> The system is a Debian unstable running with a self-compiled 2.6.20
-> kernel downloaded from kernel.org. 
-> 
-> I've only tried suspend-to-ram on 2.6.20 so I don't know whether or not
-> other versions might have the same problem.
-> 
-> I'm not subscribed to the list. Please CC me.
+Subject    : ThinkPad T60: no screen after suspend to RAM
+References : http://lkml.org/lkml/2007/2/22/391
+Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
+             Ingo Molnar <mingo@elte.hu>
+Handled-By : Ingo Molnar <mingo@elte.hu>
+Status     : unknown
 
-I guess one of the drivers you use goes awry at some point.  Please provide
-us with more information (like dmesg output after a failing resume).
+or doesn't it resume at all?
 
-Greetings,
-Rafael
+> Jens Axboe
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
