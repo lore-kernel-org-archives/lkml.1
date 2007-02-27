@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751357AbXB0AVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751400AbXB0A3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751357AbXB0AVl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 19:21:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbXB0AVl
+	id S1751400AbXB0A3A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 19:29:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbXB0A3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 19:21:41 -0500
-Received: from ns.suse.de ([195.135.220.2]:32995 "EHLO mx1.suse.de"
+	Mon, 26 Feb 2007 19:29:00 -0500
+Received: from ns2.suse.de ([195.135.220.15]:59062 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751357AbXB0AVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 19:21:40 -0500
-Date: Mon, 26 Feb 2007 16:20:23 -0800
-From: Greg KH <greg@kroah.com>
-To: Sarah Bailey <saharabeara@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       usb-hacking@svcs.cs.pdx.edu,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] usbfs2: Why asynchronous I/O?
-Message-ID: <20070227002023.GA13099@kroah.com>
-References: <20070225085755.GA4886@localdomain> <200702250853.03851.david-b@pacbell.net> <20070225173302.GA12190@comsec.com> <20070225085755.GA4886@localdomain> <200702250853.03851.david-b@pacbell.net> <Pine.LNX.4.44L0.0702251147500.25265-100000@netrider.rowland.org> <20070226085431.GA16499@localdomain>
+	id S1751400AbXB0A27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 19:28:59 -0500
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SuSE Labs, Novell
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [patch 1/9] fix umask when noACL kernel meets extN tuned for ACLs
+Date: Mon, 26 Feb 2007 16:28:10 -0800
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Chris Wright <chrisw@sous-sol.org>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       Hugh Dickins <hugh@veritas.com>
+References: <20070226235248.438556696@mini.kroah.org> <20070227000614.GB6283@kroah.com>
+In-Reply-To: <20070227000614.GB6283@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070226085431.GA16499@localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200702261628.11732.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 26, 2007 at 12:54:31AM -0800, Sarah Bailey wrote:
-> Yes, a sane interface to the USRP was one of the main motivations for
-> the new USB filesystem.  It remains to be seen whether we need a
-> non-standard interface like io_submit, or whether threads with blocking
-> I/O is fast enough and has the right semantics.
+On Monday 26 February 2007 16:06, Greg KH wrote:
+> -stable review patch.  If anyone has any objections, please let us know.
 
-So, just for the sake of argument, how would one submit multiple urbs to
-a single endpoint to ensure that the pipe is full with blocking I/O?
-Would they have to:
+Should be fine.
 
-  - open endpoint
-  - create thread 1
-  - create thread 2
-  - create thread 3
-  - create thread 4
-  - send first packet to thread 1 to have it write to the endpoint.
-  - send next packet to thread 2 to have it write to the endpoint.
-  ...  and so on?
-
-This seems very "hard" on userspace for something as simple as "I want
-to send this data stream to the USB device as fast as is possible".
-
-With async I/O you can just:
-  - open endpoint
-  - send first packet to endpoint with async write
-  - send second packet to endpoint
-  ... and so on
-
-
-I'm all for using threads in userspace, as they are good ideas and very
-powerful, but for a single data stream, they really seem like a complex
-solution.
-
-thanks,
-
-greg k-h
+Thanks,
+Andreas
