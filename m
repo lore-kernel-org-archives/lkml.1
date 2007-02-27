@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751571AbXB0NOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751212AbXB0NPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751571AbXB0NOx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 08:14:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbXB0NOw
+	id S1751212AbXB0NPV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 08:15:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbXB0NPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 08:14:52 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47928 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750872AbXB0NOv (ORCPT
+	Tue, 27 Feb 2007 08:15:21 -0500
+Received: from stout.engsoc.carleton.ca ([134.117.69.22]:46809 "EHLO
+	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751212AbXB0NPS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 08:14:51 -0500
-Date: Tue, 27 Feb 2007 14:16:33 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Meelis Roos <mroos@linux.ee>
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: 2.6.21-rc1: known regressions (v2) (part 1)
-Message-ID: <20070227141633.5453982c@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.SOC.4.64.0702271459040.8348@math>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
-	<20070226220152.GA29575@stusta.de>
-	<Pine.SOC.4.64.0702271459040.8348@math>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Feb 2007 08:15:18 -0500
+Date: Tue, 27 Feb 2007 08:15:06 -0500
+From: Kyle McMartin <kyle@parisc-linux.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Kyle McMartin <kyle@parisc-linux.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: resource_size_t printk whinging
+Message-ID: <20070227131506.GA3545@athena.road.mcmartin.ca>
+References: <20070227041648.GB13669@athena.road.mcmartin.ca> <Pine.LNX.4.62.0702271201330.21803@pademelon.sonytel.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.62.0702271201330.21803@pademelon.sonytel.be>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Feb 2007 15:00:29 +0200 (EET)
-Meelis Roos <mroos@linux.ee> wrote:
-
-> > Subject    : ata-piix ACPI errors (40/80 pin cable mix)
-> > References : http://lkml.org/lkml/2007/2/22/159
-> > Submitter  : Meelis Roos <mroos@linux.ee>
-> > Status     : unknown
+On Tue, Feb 27, 2007 at 12:02:50PM +0100, Geert Uytterhoeven wrote:
+> But we don't run sparse on every build. We do run gcc (a lot).
 > 
-> Still appears, but this does not seem to be 40/80 pin cable problem to 
-> be but rather ata-piix calling some acpi methods and this rulsts in acpi 
-> errors.
 
-There are two separate problems showing up in the one trace - broken ACPI
-spew and wrong cable detect. I don't think they are related
+We probably could, in theory...
+
+> > --- a/lib/vsprintf.c
+> > +++ b/lib/vsprintf.c
+> > @@ -477,6 +478,8 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
+> >  			num = (unsigned short) va_arg(args, int);
+> >  			if (flags & SIGN)
+> >  				num = (signed short) num;
+> > +		} else if (qualifier == 'R' || qualifier == 'R') {
+>                                          ^                   ^
+> One of them must be lowercase `r'.
+> 
+
+Duh. I'm a muppet.
