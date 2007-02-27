@@ -1,80 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751988AbXB0TFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752022AbXB0THw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751988AbXB0TFv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 14:05:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbXB0TFv
+	id S1752022AbXB0THw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 14:07:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbXB0THv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 14:05:51 -0500
-Received: from smtp004.mail.ukl.yahoo.com ([217.12.11.35]:40379 "HELO
-	smtp004.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752518AbXB0TFt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 14:05:49 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=Received:X-YMail-OSG:Subject:From:To:Cc:In-Reply-To:References:Content-Type:Organization:Date:Message-Id:Mime-Version:X-Mailer:Content-Transfer-Encoding;
-  b=TkkCr599kzAZ+Olck2kzfurpBDfquUDs2ImDV9aldUPiYNA0FKeiwh6ujnPnPSConLBTL8wufz4qs2i5t3mKfCyN+KIJ988ikjWoGcsJemtvuiXuiquNVXln9ewEj8jq7q2Gv2+8xIhK+IjHrirqa48TX/90rmoi2JKsVLzghOE=  ;
-X-YMail-OSG: KUdK3SMVM1lB85kihPm3oY9aEtTDhuT11HG74b4w5fXJYqpWKitCsSP5Knd2FRBGO.1_NvdooCIwboKbKC4JuI30kKA8fccKAfblENMbsOiE478BNQs4qJVLoPo51xj8ZVo8uEQnzRxF
-Subject: Re: SMP performance degradation with sysbench
-From: Lorenzo Allegrucci <l_allegrucci@yahoo.it>
-To: Rik van Riel <riel@redhat.com>
-Cc: "\"J.A." =?ISO-8859-1?Q?Magall=F3n=22?= <jamagallon@ono.com>,
-       Hiro Yoshioka <hyoshiok@miraclelinux.com>, davej@redhat.com,
-       harlan@artselect.com, nickpiggin@yahoo.com.au,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, suparna@in.ibm.com,
-       jens.axboe@oracle.com
-In-Reply-To: <45E439E4.5030703@redhat.com>
-References: <20070226223645.GA24174@redhat.com>
-	 <98df96d30702261632u7479c9b2sce93f80f68bbc8d0@mail.gmail.com>
-	 <45E37EA3.3060101@redhat.com>
-	 <20070227.130305.424251739.hyoshiok@miraclelinux.com>
-	 <45E3B421.603@redhat.com> <20070227091409.6f3d12f9@werewolf-wl>
-	 <45E439E4.5030703@redhat.com>
-Content-Type: text/plain; charset=utf-8
-Organization: -ENOENT
-Date: Tue, 27 Feb 2007 20:05:27 +0100
-Message-Id: <1172603127.5482.35.camel@odyssey.lan>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 8bit
+	Tue, 27 Feb 2007 14:07:51 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:52869 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751768AbXB0THu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 14:07:50 -0500
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: "Fabio Comolli" <fabio.comolli@gmail.com>
+Subject: Re: 2.6.21-rc1: known regressions (v2) (part 1)
+Date: Tue, 27 Feb 2007 21:08:08 +0200
+User-Agent: KMail/1.9.6
+Cc: "Ismail =?utf-8?q?D=C3=B6nmez?=" <ismail@pardus.org.tr>,
+       "Adrian Bunk" <bunk@stusta.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       lenb@kernel.org, linux-acpi@vger.kernel.org, luming.yu@intel.com,
+       "Konstantin Karasyov" <konstantin.a.karasyov@intel.com>,
+       vladimir.p.lebedev@intel.com, hal@lists.freedesktop.org
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <b637ec0b0702270614i25b6be9fmfb4b12ddd789a467@mail.gmail.com> <200702272044.56544.caglar@pardus.org.tr>
+In-Reply-To: <200702272044.56544.caglar@pardus.org.tr>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart3557153.YNuL0NWIy2";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200702272108.09665.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-27 at 09:02 -0500, Rik van Riel wrote:
-> J.A. Magallón wrote:
-> > On Mon, 26 Feb 2007 23:31:29 -0500, Rik van Riel <riel@redhat.com> wrote:
-> > 
-> >> Hiro Yoshioka wrote:
-> 
-> >>> Another question. When the number of threads exceeds the number of
-> >>> CPU cores, we may get a lot of idle time. Then a workaround of
-> >>> MySQL is that do not creat threads which exceeds the number
-> >>> of CPU cores. Is it right?
-> >> Not really, that would make it impossible for MySQL to
-> >> handle more simultaneous database queries than the system
-> >> has CPUs.
-> >>
-> > 
-> > I don't know myqsl internals, but you assume one thread per query.
-> > If its more like Apache, one long living thread for several connections ?
-> 
-> Yes, they are longer lived client connections.  One thread
-> per connection, just like Apache.
-> 
-> > Its the same to answer 4+4 queries than 8 at half the speed, isn't it ?
-> 
-> That still doesn't fix the potential Linux problem that this
-> benchmark identified.
-> 
-> To clarify: I don't care as much about MySQL performance as
-> I care about identifying and fixing this potential bug in
-> Linux.
+--nextPart3557153.YNuL0NWIy2
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Here http://people.freebsd.org/~kris/scaling/mysql.html Kris Kennaway
-talks about a patch for FreeBSD 7 which addresses poor scalability
-of file descriptor locking and that it's responsible for almost all
-of the performance and scaling improvements.
+27 =C5=9Eub 2007 Sal tarihinde, S.=C3=87a=C4=9Flar Onur =C5=9Funlar=C4=B1 y=
+azm=C4=B1=C5=9Ft=C4=B1:=20
+> 27 =C5=9Eub 2007 Sal tarihinde, Fabio Comolli =C5=9Funlar=C4=B1 yazm=C4=
+=B1=C5=9Ft=C4=B1:
+> > Confirmed, although the problem I see is probably different from
+> > Ismael's one: in my case /proc/acpi/adapter/AC is present but
+> > kpowersave does not work (it works in 2.6.20).
+> >
+> > The only file I seem to be missing is /proc/acpi/info, but I don't
+> > know it is important or not.
+>
+> Then these problems are not same, =C4=B0smail's problem was an ACPI one a=
+nd im
+> sure that solved but yours seems a userspace problem (hal checks
+> /proc/acpi/info and kpowersave uses hal) introduced by "/proc/acpi/info
+> deprecated by /sys/firmware/acpi/info" [1]. You can try untested attached
+> patch against hal-git tree, so i'm adding hal list into CC also.
+>
+> [1] http://www.mail-archive.com/linux-acpi@vger.kernel.org/msg04285.html
 
+Try that one (thas one at least compiles :P) [1] instead of previous one=20
+please...
 
-Chiacchiera con i tuoi amici in tempo reale! 
- http://it.yahoo.com/mail_it/foot/*http://it.messenger.yahoo.com 
+[1] http://cekirdek.pardus.org.tr/~caglar/hal_acpi.patch
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
+
+--nextPart3557153.YNuL0NWIy2
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.1 (GNU/Linux)
+
+iD8DBQBF5IGZy7E6i0LKo6YRAvYsAJ0QMKs4QC71LObGs3Dwa7N6c+FfDACfTydh
+JUZxOcWvIrVGthdL94dGliA=
+=zKlk
+-----END PGP SIGNATURE-----
+
+--nextPart3557153.YNuL0NWIy2--
