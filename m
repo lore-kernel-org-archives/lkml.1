@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751707AbXB0REQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751874AbXB0RKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751707AbXB0REQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 12:04:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbXB0REP
+	id S1751874AbXB0RKW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 12:10:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbXB0RKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 12:04:15 -0500
-Received: from web52907.mail.yahoo.com ([206.190.49.17]:32287 "HELO
-	web52907.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751701AbXB0REO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 12:04:14 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=FS9/skGyKgfRVN3PPFw4FtuwWNg8Lb5H3Dh0J/KgFg2YnwPmDWJJ7yljAqBIvDUFcA2EEjsElZBlU/DZg6QbKkw5UntWt0+OBIYcGoR8spP0Mu1FuriNaHKk5LMB7rtxCoGYFKxfZfb+lHO0M9hBt/ftIKXbKyayWhsOB5z5EYM=;
-X-YMail-OSG: cO608V0VM1n8MXm.MGg5clLNKpbtdCBT90IsNdAm
-Date: Tue, 27 Feb 2007 17:04:12 +0000 (GMT)
-From: Chris Rankin <rankincj@yahoo.com>
-Subject: Re: [BUG] Linux 2.6.20.1 - unable to handle kernel paging request - accessing freed memory?
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <84144f020702270642q4e371175y2a6c922e030e1f3b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <714641.9150.qm@web52907.mail.yahoo.com>
+	Tue, 27 Feb 2007 12:10:22 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:41504 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751874AbXB0RKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 12:10:21 -0500
+Date: Tue, 27 Feb 2007 20:06:10 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070227170609.GA509@2ka.mipt.ru>
+References: <20070225180910.GA29821@2ka.mipt.ru> <Pine.LNX.4.64.0702270751120.5315@alien.or.mcafeemobile.com> <20070227162109.GA22844@2ka.mipt.ru> <200702271758.15004.dada1@cosmosbay.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <200702271758.15004.dada1@cosmosbay.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Tue, 27 Feb 2007 20:07:15 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> > Call Trace:
-> >  [<c01839fe>] sysfs_release+0x2d/0x4c
-> >  [<c015124b>] __fput+0x96/0x13c
+On Tue, Feb 27, 2007 at 05:58:14PM +0100, Eric Dumazet (dada1@cosmosbay.com) wrote:
+> I believe one advantage of epoll is it uses standard mechanism (mandated for 
+> poll()/select() ), while kevent adds some glue and kevent_storage in some 
+> structures (struct inode, struct file, ...), thus adding some extra code and 
+> extra storage in hot paths. Yes there might be a gain IF most users of these 
+> path want kevent. But other users pay the price (larger kernel code and 
+> data), that you cannot easily bench.
 > 
-> So udevd is closing a sysfs attribute file but the pointer passed to
-> module_put is bogus. Looks like the sysfs dentry was already taken
-> down by release_sysfs_dirent(). Can you reproduce this at will? Does
-> the oops happen in older kernels?
+> Using or not epoll has nearly zero cost over standard kernel (only struct file 
+> has some extra storage)
 
-No, unfortunately I can't. Last night was the first time this ever happened (while I was starting
-up World of Warcraft/Wine), so I have no idea which sysfs attribute it is talking about here.
+Well, that's a price - any event which wants to be supported needs to
+store for events - kevent_storage is a list_head plus spinlock and
+pointer to itself (with all current users that pointer can be removed and
+access transferred to container_of()) - it is exactly as in epoll storage - 
+both were created with the smallest possible overhead in mind.
 
-Cheers,
-Chris
-
-
-
-		
-___________________________________________________________ 
-Inbox full of unwanted email? Get leading protection and 1GB storage with All New Yahoo! Mail. http://uk.docs.yahoo.com/nowyoucan.html
+-- 
+	Evgeniy Polyakov
