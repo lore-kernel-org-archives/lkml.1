@@ -1,160 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752593AbXB0XUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752604AbXB0XVG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752593AbXB0XUK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 18:20:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbXB0XSI
+	id S1752604AbXB0XVG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 18:21:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbXB0XR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 18:18:08 -0500
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:54941 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752577AbXB0XSF (ORCPT
+	Tue, 27 Feb 2007 18:17:59 -0500
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:51040 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752577AbXB0XRk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 18:18:05 -0500
-Message-Id: <20070227231721.680015005@szeredi.hu>
+	Tue, 27 Feb 2007 18:17:40 -0500
+Message-Id: <20070227231644.084963200@szeredi.hu>
 References: <20070227231442.627972152@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Wed, 28 Feb 2007 00:15:00 +0100
+Date: Wed, 28 Feb 2007 00:14:54 +0100
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [patch 18/22] fuse: add fuse_writepages() function
-Content-Disposition: inline; filename=fuse_writepages.patch
+Subject: [patch 12/22] fuse: fix page invalidation
+Content-Disposition: inline; filename=fuse_invalidate_fix.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Implement the ->writepages address space operation.  This is very
-similar to fuse_writepage(), but batches multiple pages into a single
-request.
+Other than truncate, there are two cases, when fuse tries to get rid
+of cached pages:
 
-It reuses the fuse_fill_data structure currently used by
-fuse_readpages().
+ a) in open, if KEEP_CACHE flag is not set)
+ b) in getattr, if file size changed spontaneously
+
+Until now invalidate_mapping_pages() were used, which didn't get rid
+of mapped pages.  This is wrong, and becomes more wrong as dirty pages
+are introduced.  So instead properly invalidate all pages with
+invalidate_inode_pages2().  If the size of the file shrunk, truncate
+pages outside the new size beforehand.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
 
 Index: linux/fs/fuse/file.c
 ===================================================================
---- linux.orig/fs/fuse/file.c	2007-02-27 14:41:12.000000000 +0100
-+++ linux/fs/fuse/file.c	2007-02-27 14:41:12.000000000 +0100
-@@ -650,15 +650,17 @@ static ssize_t fuse_direct_write(struct 
- 	return res;
+--- linux.orig/fs/fuse/file.c	2007-02-27 14:41:10.000000000 +0100
++++ linux/fs/fuse/file.c	2007-02-27 14:41:11.000000000 +0100
+@@ -86,7 +86,7 @@ void fuse_finish_open(struct inode *inod
+ 	if (outarg->open_flags & FOPEN_DIRECT_IO)
+ 		file->f_op = &fuse_direct_io_file_operations;
+ 	if (!(outarg->open_flags & FOPEN_KEEP_CACHE))
+-		invalidate_mapping_pages(inode->i_mapping, 0, -1);
++		invalidate_inode_pages2(inode->i_mapping);
+ 	ff->fh = outarg->fh;
+ 	file->private_data = fuse_file_get(ff);
+ }
+Index: linux/fs/fuse/inode.c
+===================================================================
+--- linux.orig/fs/fuse/inode.c	2007-02-27 14:41:10.000000000 +0100
++++ linux/fs/fuse/inode.c	2007-02-27 14:41:11.000000000 +0100
+@@ -112,17 +112,22 @@ static int fuse_remount_fs(struct super_
+ void fuse_change_attributes(struct inode *inode, struct fuse_attr *attr)
+ {
+ 	struct fuse_conn *fc = get_fuse_conn(inode);
+-	if (S_ISREG(inode->i_mode) && i_size_read(inode) != attr->size)
+-		invalidate_mapping_pages(inode->i_mapping, 0, -1);
++	loff_t oldsize = i_size_read(inode);
++
++	spin_lock(&fc->lock);
++	i_size_write(inode, attr->size);
++	spin_unlock(&fc->lock);
++	if (S_ISREG(inode->i_mode)) {
++		if (oldsize > attr->size)
++			fuse_vmtruncate(inode, attr->size);
++		invalidate_inode_pages2(inode->i_mapping);
++	}
+ 
+ 	inode->i_ino     = attr->ino;
+ 	inode->i_mode    = (inode->i_mode & S_IFMT) + (attr->mode & 07777);
+ 	inode->i_nlink   = attr->nlink;
+ 	inode->i_uid     = attr->uid;
+ 	inode->i_gid     = attr->gid;
+-	spin_lock(&fc->lock);
+-	i_size_write(inode, attr->size);
+-	spin_unlock(&fc->lock);
+ 	inode->i_blocks  = attr->blocks;
+ 	inode->i_atime.tv_sec   = attr->atime;
+ 	inode->i_atime.tv_nsec  = attr->atimensec;
+Index: linux/fs/fuse/dir.c
+===================================================================
+--- linux.orig/fs/fuse/dir.c	2007-02-27 14:41:10.000000000 +0100
++++ linux/fs/fuse/dir.c	2007-02-27 14:41:11.000000000 +0100
+@@ -979,7 +979,7 @@ static void iattr_to_fattr(struct iattr 
+ 	}
  }
  
--static void fuse_writepage_end(struct fuse_conn *fc, struct fuse_req *req)
-+static void fuse_writepages_end(struct fuse_conn *fc, struct fuse_req *req)
+-static void fuse_vmtruncate(struct inode *inode, loff_t offset)
++void fuse_vmtruncate(struct inode *inode, loff_t offset)
  {
-+	int i;
- 	struct address_space *mapping = req->pages[0]->mapping;
- 	struct fuse_inode *fi = get_fuse_inode(mapping->host);
- 	int err = req->out.h.error;
- 	if (!err && req->misc.write.out.size != req->misc.write.in.size)
- 		err = -EIO;
- 	mapping_set_error(mapping, err);
--	end_page_writeback(req->pages[0]);
-+	for (i = 0; i < req->num_pages; i++)
-+		end_page_writeback(req->pages[i]);
- 	up_read_non_owner(&fi->truncate_sem);
- 	fuse_file_put(req->ff);
- 	fuse_put_request(fc, req);
-@@ -743,7 +745,7 @@ static int fuse_writepage_locked(struct 
- 	req->num_pages = 1;
- 	req->pages[0] = page;
- 	req->page_offset = 0;
--	req->end = fuse_writepage_end;
-+	req->end = fuse_writepages_end;
- 	fuse_write_fill(req, req->ff, inode, page_offset(page), count, 1);
- 	set_page_writeback(page);
- 	request_send_background(fc, req);
-@@ -784,6 +786,80 @@ static struct vm_operations_struct fuse_
- 	.populate	= filemap_populate,
- };
- 
-+static void fuse_send_writepages(struct fuse_req *req, struct inode *inode)
-+{
-+	struct fuse_conn *fc = get_fuse_conn(inode);
-+	loff_t pos = page_offset(req->pages[0]);
-+	loff_t size = i_size_read(inode);
+ 	struct address_space *mapping = inode->i_mapping;
+ 	unmap_mapping_range(mapping, offset + PAGE_SIZE - 1, 0, 1);
+Index: linux/fs/fuse/fuse_i.h
+===================================================================
+--- linux.orig/fs/fuse/fuse_i.h	2007-02-27 14:41:10.000000000 +0100
++++ linux/fs/fuse/fuse_i.h	2007-02-27 14:41:11.000000000 +0100
+@@ -565,3 +565,8 @@ int fuse_ctl_add_conn(struct fuse_conn *
+  * Remove connection from control filesystem
+  */
+ void fuse_ctl_remove_conn(struct fuse_conn *fc);
 +
-+	/* File truncated from under us? */
-+	if (size <= pos)
-+		fuse_writepages_end(fc, req);
-+	else {
-+		size_t count = req->num_pages << PAGE_CACHE_SHIFT;
-+		if (pos + count > size)
-+			count = size - pos;
-+		fuse_write_fill(req, req->ff, inode, pos, count, 1);
-+		req->end = fuse_writepages_end;
-+		request_send_background(fc, req);
-+	}
-+}
-+
-+static int fuse_writepages_fill(struct page *page,
-+				struct writeback_control *wbc, void *_data)
-+{
-+	struct fuse_fill_data *data = _data;
-+	struct fuse_req *req = data->req;
-+	struct inode *inode = data->inode;
-+	struct fuse_conn *fc = get_fuse_conn(inode);
-+
-+	if (req &&
-+	    (req->num_pages == FUSE_MAX_PAGES_PER_REQ ||
-+	     (req->num_pages + 1) * PAGE_CACHE_SIZE > fc->max_write ||
-+	     req->pages[req->num_pages - 1]->index + 1 != page->index)) {
-+		fuse_send_writepages(req, inode);
-+		req = NULL;
-+	}
-+	if (!req) {
-+		int blocked;
-+		data->req = req = fuse_get_req_wp(inode, wbc, &blocked);
-+		if (!req) {
-+			int err = 0;
-+			if (blocked)
-+				redirty_page_for_writepage(wbc, page);
-+			else
-+				err = -ENOMEM;
-+			unlock_page(page);
-+			return err;
-+		}
-+	}
-+	req->pages[req->num_pages] = page;
-+	req->num_pages ++;
-+	set_page_writeback(page);
-+	unlock_page(page);
-+	return 0;
-+}
-+
-+static int fuse_writepages(struct address_space *mapping,
-+			   struct writeback_control *wbc)
-+{
-+	struct inode *inode = mapping->host;
-+	struct fuse_fill_data data;
-+	int err;
-+
-+	if (is_bad_inode(inode))
-+		return -EIO;
-+
-+	data.inode = inode;
-+	data.req = NULL;
-+
-+	err = write_cache_pages(mapping, wbc, fuse_writepages_fill, &data);
-+	if (data.req)
-+		fuse_send_writepages(data.req, inode);
-+
-+	return err;
-+}
-+
- static int fuse_file_mmap(struct file *file, struct vm_area_struct *vma)
- {
- 	if ((vma->vm_flags & VM_SHARED) && (vma->vm_flags & VM_MAYWRITE)) {
-@@ -995,6 +1071,7 @@ static const struct address_space_operat
- 	.prepare_write	= fuse_prepare_write,
- 	.commit_write	= fuse_commit_write,
- 	.readpages	= fuse_readpages,
-+	.writepages	= fuse_writepages,
- 	.set_page_dirty	= __set_page_dirty_nobuffers,
- 	.bmap		= fuse_bmap,
- };
++/**
++ * Truncate inode
++ */
++void fuse_vmtruncate(struct inode *inode, loff_t offset);
 
 --
