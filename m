@@ -1,136 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751594AbXB0OFG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750898AbXB0OGq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751594AbXB0OFG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 09:05:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbXB0OFG
+	id S1750898AbXB0OGq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 09:06:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751614AbXB0OGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 09:05:06 -0500
-Received: from wr-out-0506.google.com ([64.233.184.226]:26100 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751604AbXB0OFE (ORCPT
+	Tue, 27 Feb 2007 09:06:45 -0500
+Received: from vms044pub.verizon.net ([206.46.252.44]:47874 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750898AbXB0OGp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 09:05:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=chUikRVPmsAofarDjEpkxD5KU83Bj68tmzb2bD07qM56eev1T2WV6WHWlx7on5z7CtImLyffR/4F0U4g5FaNFqefXIzxr0H2wEfg8Z6ahmYkXYAkaBjh0hDrK/+t417IhJmkqos3ujdE1U2KvjhjrfwvUejDmNcgcQpf1OogK58=
-Message-ID: <961aa3350702270604q53df742dvda40c47efdfd1044@mail.gmail.com>
-Date: Tue, 27 Feb 2007 23:04:59 +0900
-From: "Akinobu Mita" <akinobu.mita@gmail.com>
-To: "Linux Kernel List" <linux-kernel@vger.kernel.org>,
-       "Greg KH" <greg@kroah.com>, "Russell King" <rmk+lkml@arm.linux.org.uk>
-Subject: [PATCH 3/3] driver core: check sysfs_create_link() errors
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Tue, 27 Feb 2007 09:06:45 -0500
+Date: Tue, 27 Feb 2007 09:06:21 -0500
+From: Eric Buddington <ebuddington@verizon.net>
+Subject: USB misbehavior causes system hang
+To: linux-kernel@vger.kernel.org
+Reply-to: ebuddington@wesleyan.edu
+Message-id: <20070227140610.GC6850@pool-71-123-99-133.spfdma.east.verizon.net>
+Organization: ECS Labs
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
+X-Eric-conspiracy: there is no conspiracy
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch kills __must_check warnings for missing sysfs_create_link().
+2.6.20-mm2 #1 Mon Feb 26 13:16:04 EST 2007 i686 unknown
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
+I have an external USB drive (WD MyBook 5000YS), which I use for backups.
 
----
- drivers/base/core.c |   59 +++++++++++++++++++++++++++++++++++++++-------------
- 1 file changed, 45 insertions(+), 14 deletions(-)
+When I try to back up to it, it works for a while, but inevitably
+starts resetting like mad, gives I/O errors, and then (here's the
+problem), the softdog module reboots the system.
 
-Index: 2.6-mm/drivers/base/core.c
-===================================================================
---- 2.6-mm.orig/drivers/base/core.c
-+++ 2.6-mm/drivers/base/core.c
-@@ -487,31 +487,61 @@ static int setup_parent(struct device *d
- 	return 0;
- }
+---------------------------
+scsi1 : SCSI emulation for USB Mass Storage devices
+input: Western Digital External HDD as /class/input/input8
+input: USB HID v1.11 Device [Western Digital External HDD] on usb-0000:00:03.2-6
+.2
+scsi 1:0:0:0: Direct-Access     WD       5000YS External  106a PQ: 0 ANSI: 4
+SCSI device sda: 976773168 512-byte hdwr sectors (500108 MB)
+sda: Write Protect is off
+sda: assuming drive cache: write through
+SCSI device sda: 976773168 512-byte hdwr sectors (500108 MB)
+sda: Write Protect is off
+sda: assuming drive cache: write through
+ sda: sda1 sda2
+sd 1:0:0:0: Attached scsi disk sda
+sd 1:0:0:0: Attached scsi generic sg0 type 0
+reiser4[pdflush(194)]: disable_write_barrier (fs/reiser4/wander.c:234)[zam-1055]
+:
+NOTICE: md1 does not support write barriers, using synchronous write instead.
+reiser4: sda2: found disk format 4.0.0.
 
--static void device_add_links(struct device *dev, struct device *parent)
-+static int device_add_links(struct device *dev, struct device *parent)
- {
-+	int err;
-+
- 	if (dev->class) {
--		sysfs_create_link(&dev->kobj, &dev->class->subsys.kset.kobj,
--				  "subsystem");
-+		err = sysfs_create_link(&dev->kobj,
-+					&dev->class->subsys.kset.kobj,
-+					"subsystem");
-+		if (err)
-+			return err;
-+
- 		/* If this is not a "fake" compatible device, then create the
- 		 * symlink from the class to the device. */
--		if (dev->kobj.parent != &dev->class->subsys.kset.kobj)
--			sysfs_create_link(&dev->class->subsys.kset.kobj,
--					  &dev->kobj, dev->bus_id);
-+		if (dev->kobj.parent != &dev->class->subsys.kset.kobj) {
-+			err = sysfs_create_link(&dev->class->subsys.kset.kobj,
-+						&dev->kobj, dev->bus_id);
-+			if (err)
-+				goto out1;
-+		}
- #ifdef CONFIG_SYSFS_DEPRECATED
- 		if (parent) {
- 			char *class_name = NULL;
+---- (works fine here for a while, then:) ----------
 
--			sysfs_create_link(&dev->kobj, &dev->parent->kobj,
--							"device");
-+			err = sysfs_create_link(&dev->kobj, &dev->parent->kobj,
-+						"device");
-+			if (err)
-+				goto out2;
- 			class_name = make_class_name(dev->class->name,
- 							&dev->kobj);
--			if (class_name)
--				sysfs_create_link(&dev->parent->kobj,
--						  &dev->kobj, class_name);
-+			if (class_name) {
-+				err = sysfs_create_link(&dev->parent->kobj,
-+							&dev->kobj, class_name);
-+				if (err) {
-+					kfree(class_name);
-+					goto out3;
-+				}
-+
-+			}
- 			kfree(class_name);
- 		}
- #endif
- 	}
-+
-+	return 0;
-+
-+#ifdef CONFIG_SYSFS_DEPRECATED
-+out3:
-+	sysfs_remove_link(&dev->kobj, "device");
-+out2:
-+#endif
-+	sysfs_remove_link(&dev->class->subsys.kset.kobj, dev->bus_id);
-+out1:
-+	sysfs_remove_link(&dev->kobj, "subsystem");
-+
-+	return err;
- }
+usb 1-6.2: reset high speed USB device using ehci_hcd and address 36
+usb 1-6.2: device descriptor read/64, error -110
+usb 1-6.2: device descriptor read/64, error -110
+usb 1-6.2: reset high speed USB device using ehci_hcd and address 36
+usb 1-6.2: device descriptor read/64, error -110
+usb 1-6.2: device descriptor read/64, error -110
+usb 1-6.2: reset high speed USB device using ehci_hcd and address 36
+usb 1-6.2: device descriptor read/8, error -110
+usb 1-6.2: device descriptor read/8, error -110
+usb 1-6.2: reset high speed USB device using ehci_hcd and address 36
+usb 1-6.2: device descriptor read/8, error -110
+usb 1-6.2: device descriptor read/8, error -110
+sd 1:0:0:0: scsi: Device offlined - not ready after error recovery
+sd 1:0:0:0: SCSI error: return code = 0x00050000
+end_request: I/O error, dev sda, sector 919931588
+sd 1:0:0:0: rejecting I/O to offline device
+sd 1:0:0:0: SCSI error: return code = 0x00010000
+end_request: I/O error, dev sda, sector 919931828
+sd 1:0:0:0: rejecting I/O to offline device
+sd 1:0:0:0: rejecting I/O to offline device
+sd 1:0:0:0: rejecting I/O to offline device
+...
+SoftDog: Initiating system reboot.
 
- static void device_remove_links(struct device *dev, struct device *parent)
-@@ -611,8 +641,9 @@ int device_add(struct device *dev)
- 		dev->devt_attr = attr;
- 	}
+-----------------------------------------------------
 
--	device_add_links(dev, parent);
--
-+	error = device_add_links(dev, parent);
-+	if (error)
-+		goto LinksError;
- 	if ((error = device_add_attrs(dev)))
- 		goto AttrsError;
- 	if ((error = device_add_groups(dev)))
-@@ -652,7 +683,7 @@ int device_add(struct device *dev)
- 	device_remove_attrs(dev);
-  AttrsError:
- 	device_remove_links(dev, parent);
--
-+ LinksError:
- 	if (dev->devt_attr) {
- 		device_remove_file(dev, dev->devt_attr);
- 		kfree(dev->devt_attr);
+Now, the USB problem may well be a device or cabling issue, but I
+don't think that this drive failure should trigger a reboot - I assume
+the drive failure is somehow constipating the entire disk I/O system,
+and preventing my softdog-patting script from running.
+
+My softdog script loops 'date >/tmp/$logfile;echo 1 > /dev/watchdog; sleep
+30'. Nothing in it accesses the USB disk. /tmp is tmpfs.
+
+Should the USB failure cause this problem?
+
+-Eric
+
+
