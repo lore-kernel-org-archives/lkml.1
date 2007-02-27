@@ -1,143 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752024AbXB0XY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752036AbXB0X3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752024AbXB0XY2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 18:24:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbXB0XQg
+	id S1752036AbXB0X3Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 18:29:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbXB0X3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 18:16:36 -0500
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:46315 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752043AbXB0XQb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 18:16:31 -0500
-Message-Id: <20070227231549.597468815@szeredi.hu>
-References: <20070227231442.627972152@szeredi.hu>
-User-Agent: quilt/0.45-1
-Date: Wed, 28 Feb 2007 00:14:45 +0100
-From: Miklos Szeredi <miklos@szeredi.hu>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [patch 03/22] fix deadlock in balance_dirty_pages
-Content-Disposition: inline; filename=dirty_balancing_fix.patch
+	Tue, 27 Feb 2007 18:29:24 -0500
+Received: from mail.screens.ru ([213.234.233.54]:49785 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752036AbXB0X3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 18:29:23 -0500
+Date: Wed, 28 Feb 2007 02:28:55 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, Gautham R Shenoy <ego@in.ibm.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Subject: Re: Problem with freezable workqueues
+Message-ID: <20070227232855.GA457@tv-sign.ru>
+References: <200702272251.28844.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702272251.28844.rjw@sisk.pl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+On 02/27, Rafael J. Wysocki wrote:
+>
+> We have a problem with freezable workqueues in 2.6.21-rc1 and in -mm
+> (there are only two of them, in XFS, but still).  Namely, their worker threads
+> deadlock with workqueue_cpu_callback() that gets called during the CPU hotplug,
+> becuase workqueue_cpu_callback() tries to stop these threads while they are
+> frozen (disable_nonboot_cpus() happens after we've frozen tasks).
 
-This deadlock happens, when dirty pages from one filesystem are
-written back through another filesystem.  It easiest to demonstrate
-with fuse although it could affect looback mounts as well (see
-following patches).
+Ugh. I know nothing, nothing, nothing about suspend. I'll try to guess.
 
-Let's call the filesystems A(bove) and B(elow).  Process Pr_a is
-writing to A, and process Pr_b is writing to B.
+   Commit: ed746e3b18f4df18afa3763155972c5835f284c5
 
-Pr_a is bash-shared-mapping.  Pr_b is the fuse filesystem daemon
-(fusexmp_fh), for simplicity let's assume that Pr_b is single
-threaded.
+   [PATCH] swsusp: Change code ordering in disk.c
 
-These are the simplified stack traces of these processes after the
-deadlock:
+   Change the ordering of code in kernel/power/disk.c so that device_suspend() is
+   called before disable_nonboot_cpus() and platform_finish() is called after
+   enable_nonboot_cpus() and before device_resume(), as indicated by the recent
+   discussion on Linux-PM (cf.
+   http://lists.osdl.org/pipermail/linux-pm/2006-November/004164.html).
 
-Pr_a (bash-shared-mapping):
+   The changes here only affect the built-in swsusp.
 
-  (block on queue)
-  fuse_writepage
-  generic_writepages
-  writeback_inodes
-  balance_dirty_pages
-  balance_dirty_pages_ratelimited_nr
-  set_page_dirty_mapping_balance
-  do_no_page
+Yes? with the patch above, _cpu_down() called _after_ freeze_processes() ???
+Honestly, I can't understand this (yes, I know nothing, nothing, nothing...).
 
+> For 2.6.21-rc1 I've invented the appended workaround (works for me, waiting for
+> Johannes to confirm it works for him too), but I think we need something better
+> for -mm and future kernels.
 
-Pr_b (fusexmp_fh):
+How about other kthread_stop()s ? For example, kernel/softirq.c:cpu_callback() ?
 
-  io_schedule_timeout
-  congestion_wait
-  balance_dirty_pages
-  balance_dirty_pages_ratelimited_nr
-  generic_file_buffered_write
-  generic_file_aio_write
-  ext3_file_write
-  do_sync_write
-  vfs_write
-  sys_pwrite64
+I think we need a general "cpu_down() after freeze" implementation, this is what
+Gautham and Srivatsa are working on, right?
 
+> --- linux-2.6.21-rc1.orig/kernel/workqueue.c	2007-02-24 10:17:57.000000000 +0100
+> +++ linux-2.6.21-rc1/kernel/workqueue.c	2007-02-24 20:00:22.000000000 +0100
+> @@ -376,8 +376,19 @@ static int worker_thread(void *__cwq)
+>  
+>  	set_current_state(TASK_INTERRUPTIBLE);
+>  	while (!kthread_should_stop()) {
+> -		if (cwq->freezeable)
+> -			try_to_freeze();
+> +		if (try_to_freeze()) {
+> +			/* We've just left the refrigerator.  If our CPU is
+> +			 * a nonboot one, we might have been replaced.
+> +			 * The lock is taken to prevent the race with
+> +			 * cleanup_workqueue_thread() from happening
+> +			 */
+> +			spin_lock_irq(&cwq->lock);
 
-Thanks to the aggressive nature of Pr_a, it can happen, that
+I'm afraid this is racy. We can't touch *cwq, it may be freed. Suppose
+that another thread does destroy_workqueue(), and we thaw that thread
+before cwq->thread.
 
-  nr_file_dirty > dirty_thresh + margin
+Oleg.
 
-This is due to both nr_dirty growing and dirty_thresh shrinking, which
-in turn is due to nr_file_mapped rapidly growing.  The exact size of
-the margin at which the deadlock happens is not known, but it's around
-100 pages.
-
-At this point Pr_a enters balance_dirty_pages and starts to write back
-some if it's dirty pages.  After submitting some requests, it blocks
-on the request queue.
-
-The first write request will trigger Pr_b to perform a write()
-syscall.  This will submit a write request to the block device and
-then may enter balance_dirty_pages().
-
-The condition for exiting balance_dirty_pages() is
-
- - either that write_chunk pages have been written
-
- - or nr_file_dirty + nr_writeback < dirty_thresh
-
-It is entirely possible that less than write_chunk pages were written,
-in which case balance_dirty_pages() will not exit even after all the
-submitted requests have been succesfully completed.
-
-Which means that the write() syscall does not return.
-
-Which means, that no more dirty pages from A will be written back, and
-neither nr_writeback nor nr_file_dirty will decrease.
-
-Which means, that balance_dirty_pages() will loop forever.
-
-Q.E.D.
-
-The solution is to exit balance_dirty_pages() on the condition, that
-there are only a few dirty + writeback pages for this backing dev.  This
-makes sure, that there is always some progress with this setup.
-
-The number of outstanding dirty + written pages is limited to 8, which
-means that when over the threshold (dirty_exceeded == 1), each
-filesystem may only effectively pin a maximum of 16 (+8 because of
-ratelimiting) extra pages.
-
-Note: a similar safety vent is always needed if there's a global limit
-for the dirty+writeback pages, even if in the future there will be
-some per-queue (or other) soft limit.
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
-
-Index: linux/mm/page-writeback.c
-===================================================================
---- linux.orig/mm/page-writeback.c	2007-02-27 14:41:07.000000000 +0100
-+++ linux/mm/page-writeback.c	2007-02-27 14:41:07.000000000 +0100
-@@ -201,6 +201,17 @@ static void balance_dirty_pages(struct a
- 		if (!dirty_exceeded)
- 			dirty_exceeded = 1;
- 
-+		/*
-+		 * Acquit producer of dirty pages if there's little or
-+		 * nothing to write back to this particular queue.
-+		 *
-+		 * Without this check a deadlock is possible for if
-+		 * one filesystem is writing data through another.
-+		 */
-+		if (atomic_long_read(&bdi->nr_dirty) +
-+		    atomic_long_read(&bdi->nr_writeback) < 8)
-+			break;
-+
- 		/* Note: nr_reclaimable denotes nr_dirty + nr_unstable.
- 		 * Unstable writes are a feature of certain networked
- 		 * filesystems (i.e. NFS) in which data may have been
-
---
