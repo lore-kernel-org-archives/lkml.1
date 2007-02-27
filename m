@@ -1,40 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750867AbXB0WLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751951AbXB0WYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750867AbXB0WLq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 17:11:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbXB0WLp
+	id S1751951AbXB0WYl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 17:24:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbXB0WYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 17:11:45 -0500
-Received: from WWW.CS.ubishops.ca ([206.167.194.132]:48433 "EHLO
-	cs.ubishops.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750867AbXB0WLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 17:11:45 -0500
-X-Greylist: delayed 1408 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Feb 2007 17:11:45 EST
-Date: Tue, 27 Feb 2007 16:48:16 -0500
-From: Patrick McLean <chutzpah@linuxfreak.ca>
-To: linux-kernel@vger.kernel.org
-Subject: BUG: at fs/inotify.c:182 set_dentry_child_flags()
-Message-ID: <20070227214816.GA3331@odin.ubishops.ca>
+	Tue, 27 Feb 2007 17:24:41 -0500
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2776 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751951AbXB0WYk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 17:24:40 -0500
+Date: Tue, 27 Feb 2007 22:24:30 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>, Ian Molton <spyro@f2s.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] udivdi3: 64 bit divide
+Message-ID: <20070227222430.GC10380@flint.arm.linux.org.uk>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Ian Molton <spyro@f2s.com>,
+	Stephen Hemminger <shemminger@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <20070226173517.66bf0fec@freekitty> <20070227122437.da27c3cd.akpm@linux-foundation.org> <20070227131840.672d6932@localhost> <20070227133656.c452fbb4.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070227133656.c452fbb4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have this message in the dmesg on a mail server running on an xfs
-filesystem. It appears to have happened at some point when nfsd was
-restarted, but I can't seem to convince it to reproduce.
+On Tue, Feb 27, 2007 at 01:36:56PM -0800, Andrew Morton wrote:
+> On Tue, 27 Feb 2007 13:18:40 -0800 Stephen Hemminger <shemminger@linux-foundation.org> wrote:
+> > Then we should pull the existing udivdi3 implementations?
+> 
+> Not much point really.  Some architectures have gone and done that, but x86
+> has not.  x86 has enough coverage for us to pick up most problems, and any
+> remaining problems are obviously in scruffy architectures which don't care
+> about performance ;)
 
-The machine is running Gentoo's 2.6.20 kernel.
+I doubt arm26 uses udivdi3, but that's something Ian would have to
+confirm.
 
-BUG: at fs/inotify.c:182 set_dentry_child_flags()
-
-Call Trace:
- [<ffffffff802b7e2a>] set_dentry_child_flags+0xd4/0x132
- [<ffffffff802b7eef>] remove_watch_no_event+0x67/0x76
- [<ffffffff802b7f16>] inotify_remove_watch_locked+0x18/0x3b
- [<ffffffff802b8004>] inotify_rm_wd+0x7e/0xa1
- [<ffffffff802b8519>] sys_inotify_rm_watch+0x46/0x62
- [<ffffffff80253e6e>] system_call+0x7e/0x83
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
