@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030190AbXB0Imb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933015AbXB0InD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030190AbXB0Imb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 03:42:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932974AbXB0Il5
+	id S933015AbXB0InD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 03:43:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933030AbXB0Iiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 03:41:57 -0500
-Received: from gw.goop.org ([64.81.55.164]:46863 "EHLO mail.goop.org"
+	Tue, 27 Feb 2007 03:38:51 -0500
+Received: from gw.goop.org ([64.81.55.164]:46814 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932580AbXB0Iiw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 03:38:52 -0500
-Message-Id: <20070227081631.431816385@goop.org>
+	id S932893AbXB0Iir (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 03:38:47 -0500
+Message-Id: <20070227081630.650554241@goop.org>
 References: <20070227081337.434798469@goop.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 27 Feb 2007 00:13:44 -0800
+Date: Tue, 27 Feb 2007 00:13:42 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@muc.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
@@ -20,369 +20,366 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
        Rusty Russell <rusty@rustcorp.com.au>,
        William Lee Irwin III <wli@holomorphy.com>
-Subject: [patch 07/26] Xen-paravirt_ops: Allow paravirt backend to choose kernel PMD sharing
-Content-Disposition: inline; filename=shared-kernel-pmd.patch
+Subject: [patch 05/26] Xen-paravirt_ops: paravirt_ops: hooks to set up initial pagetable
+Content-Disposition: inline; filename=paravirt-memory-init.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Normally when running in PAE mode, the 4th PMD maps the kernel address
-space, which can be shared among all processes (since they all need
-the same kernel mappings.
+This patch introduces paravirt_ops hooks to control how the kernel's
+initial pagetable is set up.
 
-Xen, however, does not allow guests to have the kernel pmd shared
-between page tables, so parameterize pgtable.c to allow both modes of
-operation.
+In the case of a native boot, the very early bootstrap code creates a
+simple non-PAE pagetable to map the kernel and physical memory.  When
+the VM subsystem is initialized, it creates a proper pagetable which
+respects the PAE mode, large pages, etc.
 
-There are several side-effects of this.  One is that vmalloc will
-update the kernel address space mappings, and those updates need to be
-propagated into all processes if the kernel mapping are not
-intrinsically shared.  In the non-PAE case, this is done by
-maintaining a pgd_list of all processes; this list is used when all
-process pagetables must be updated.  pgd_list is threaded via
-otherwise unused entries in the page structure for the pgd, which
-means that the pgd must be page-sized for this to work.
+When booting under a hypervisor, there are many possibilities for what
+paging environment the hypervisor establishes for the guest kernel, so
+the constructon of the kernel's pagetable depends on the hypervisor.
 
-Normally the PAE pgd is only 4x64 byte entries large, but Xen requires
-the PAE pgd to page aligned anyway, so this patch forces the pgd to be
-page aligned+sized when the kernel pmd is unshared, to accomodate both
-these requirements.
+In the case of Xen, the hypervisor boots the kernel with a fully
+constructed pagetable, which is already using PAE if necessary.  Also,
+Xen requires particular care when constructing pagetables to make sure
+all pagetables are always mapped read-only.
 
-Also, since there may be several distinct kernel pmds (if the
-user/kernel split is below 3G), there's no point in allocating them
-from a slab cache; they're just allocated with get_free_page and
-initialized appropriately.  (Of course the could be cached if there is
-just a single kernel pmd - which is the default with a 3G user/kernel
-split - but it doesn't seem worthwhile to add yet another case into
-this code).
+In order to make this easier, kernel's initial pagetable construction
+has been changed to only allocate and initialize a pagetable page if
+there's no page already present in the pagetable.  This allows the Xen
+paravirt backend to make a copy of the hypervisor-provided pagetable,
+allowing the kernel to establish any more mappings it needs while
+keeping the existing ones.
 
-[ Many thanks to wli for review comments. ]
+A slightly subtle point which is worth highlighting here is that Xen
+requires all kernel mappings to share the same pte_t pages between all
+pagetables, so that updating a kernel page's mapping in one pagetable
+is reflected in all other pagetables.  This makes it possible to
+allocate a page and attach it to a pagetable without having to
+explicitly enumerate that page's mapping in all pagetables.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Signed-off-by: William Lee Irwin III <wli@holomorphy.com>
-Cc: Zachary Amsden <zach@vmware.com>
+Cc: William Lee Irwin III <wli@holomorphy.com>
+
 ---
- arch/i386/kernel/paravirt.c            |    1 
- arch/i386/mm/fault.c                   |    6 +-
- arch/i386/mm/init.c                    |   18 +++++-
- arch/i386/mm/pageattr.c                |    2 
- arch/i386/mm/pgtable.c                 |   84 ++++++++++++++++++++++++++------
- include/asm-i386/paravirt.h            |    1 
- include/asm-i386/pgtable-2level-defs.h |    2 
- include/asm-i386/pgtable-2level.h      |    2 
- include/asm-i386/pgtable-3level-defs.h |    6 ++
- include/asm-i386/pgtable-3level.h      |    2 
- include/asm-i386/pgtable.h             |    7 ++
- 11 files changed, 105 insertions(+), 26 deletions(-)
+ arch/i386/kernel/paravirt.c |   40 +++++++++++++++++++
+ arch/i386/mm/init.c         |   87 +++++++++++++++++++++++++------------------
+ include/asm-i386/paravirt.h |   54 ++++++++++++++++++++++++++
+ include/asm-i386/pgtable.h  |    3 +
+ 4 files changed, 148 insertions(+), 36 deletions(-)
 
 ===================================================================
 --- a/arch/i386/kernel/paravirt.c
 +++ b/arch/i386/kernel/paravirt.c
-@@ -604,6 +604,7 @@ struct paravirt_ops paravirt_ops = {
- 	.name = "bare hardware",
- 	.paravirt_enabled = 0,
- 	.kernel_rpl = 0,
-+	.shared_kernel_pmd = 1,	/* Only used when CONFIG_X86_PAE is set */
- 
-  	.patch = native_patch,
- 	.banner = default_banner,
-===================================================================
---- a/arch/i386/mm/fault.c
-+++ b/arch/i386/mm/fault.c
-@@ -588,8 +588,7 @@ do_sigbus:
- 	force_sig_info_fault(SIGBUS, BUS_ADRERR, address, tsk);
- }
- 
--#ifndef CONFIG_X86_PAE
--void vmalloc_sync_all(void)
-+void _vmalloc_sync_all(void)
+@@ -379,6 +379,43 @@ static void native_io_delay(void)
  {
- 	/*
- 	 * Note that races in the updates of insync and start aren't
-@@ -600,6 +599,8 @@ void vmalloc_sync_all(void)
- 	static DECLARE_BITMAP(insync, PTRS_PER_PGD);
- 	static unsigned long start = TASK_SIZE;
- 	unsigned long address;
-+
-+	BUG_ON(SHARED_KERNEL_PMD);
- 
- 	BUILD_BUG_ON(TASK_SIZE & ~PGDIR_MASK);
- 	for (address = start; address >= TASK_SIZE; address += PGDIR_SIZE) {
-@@ -623,4 +624,3 @@ void vmalloc_sync_all(void)
- 			start = address + PGDIR_SIZE;
- 	}
+ 	asm volatile("outb %al,$0x80");
  }
--#endif
++
++void native_pagetable_setup_start(pgd_t *base)
++{
++#ifdef CONFIG_X86_PAE
++	int i;
++
++	/*
++	 * Init entries of the first-level page table to the
++	 * zero page, if they haven't already been set up.
++	 *
++	 * In a normal native boot, we'll be running on a
++	 * pagetable rooted in swapper_pg_dir, but not in PAE
++	 * mode, so this will end up clobbering the mappings
++	 * for the lower 24Mbytes of the address space,
++	 * without affecting the kernel address space.
++	 */
++	for (i = 0; i < USER_PTRS_PER_PGD; i++)
++		set_pgd(&base[i],
++			__pgd(__pa(empty_zero_page) | _PAGE_PRESENT));
++	memset(&base[USER_PTRS_PER_PGD], 0, sizeof(pgd_t));
++#endif
++}
++
++void native_pagetable_setup_done(pgd_t *base)
++{
++#ifdef CONFIG_X86_PAE
++	/*
++	 * Add low memory identity-mappings - SMP needs it when
++	 * starting up on an AP from real-mode. In the non-PAE
++	 * case we already have these mappings through head.S.
++	 * All user-space mappings are explicitly cleared after
++	 * SMP startup.
++	 */
++	set_pgd(&base[0], base[USER_PTRS_PER_PGD]);
++#endif
++}
++
+ 
+ static void native_flush_tlb(void)
+ {
+@@ -627,6 +664,9 @@ struct paravirt_ops paravirt_ops = {
+ #endif
+ 	.set_lazy_mode = (void *)native_nop,
+ 
++	.pagetable_setup_start = native_pagetable_setup_start,
++	.pagetable_setup_done = native_pagetable_setup_done,
++
+ 	.flush_tlb_user = native_flush_tlb,
+ 	.flush_tlb_kernel = native_flush_tlb_global,
+ 	.flush_tlb_single = native_flush_tlb_single,
 ===================================================================
 --- a/arch/i386/mm/init.c
 +++ b/arch/i386/mm/init.c
-@@ -715,6 +715,8 @@ struct kmem_cache *pmd_cache;
+@@ -42,6 +42,7 @@
+ #include <asm/tlb.h>
+ #include <asm/tlbflush.h>
+ #include <asm/sections.h>
++#include <asm/paravirt.h>
  
- void __init pgtable_cache_init(void)
- {
-+	size_t pgd_size = PTRS_PER_PGD*sizeof(pgd_t);
+ unsigned int __VMALLOC_RESERVE = 128 << 20;
+ 
+@@ -62,6 +63,7 @@ static pmd_t * __init one_md_table_init(
+ 		
+ #ifdef CONFIG_X86_PAE
+ 	pmd_table = (pmd_t *) alloc_bootmem_low_pages(PAGE_SIZE);
 +
- 	if (PTRS_PER_PMD > 1) {
- 		pmd_cache = kmem_cache_create("pmd",
- 					PTRS_PER_PMD*sizeof(pmd_t),
-@@ -724,13 +726,23 @@ void __init pgtable_cache_init(void)
- 					NULL);
- 		if (!pmd_cache)
- 			panic("pgtable_cache_init(): cannot create pmd cache");
-+
-+		if (!SHARED_KERNEL_PMD) {
-+			/* If we're in PAE mode and have a non-shared
-+			   kernel pmd, then the pgd size must be a
-+			   page size.  This is because the pgd_list
-+			   links through the page structure, so there
-+			   can only be one pgd per page for this to
-+			   work. */
-+			pgd_size = PAGE_SIZE;
-+		}
- 	}
- 	pgd_cache = kmem_cache_create("pgd",
--				PTRS_PER_PGD*sizeof(pgd_t),
--				PTRS_PER_PGD*sizeof(pgd_t),
-+				pgd_size,
-+				pgd_size,
- 				0,
- 				pgd_ctor,
--				PTRS_PER_PMD == 1 ? pgd_dtor : NULL);
-+				(!SHARED_KERNEL_PMD) ? pgd_dtor : NULL);
- 	if (!pgd_cache)
- 		panic("pgtable_cache_init(): Cannot create pgd cache");
- }
-===================================================================
---- a/arch/i386/mm/pageattr.c
-+++ b/arch/i386/mm/pageattr.c
-@@ -91,7 +91,7 @@ static void set_pmd_pte(pte_t *kpte, uns
- 	unsigned long flags;
- 
- 	set_pte_atomic(kpte, pte); 	/* change init_mm */
--	if (PTRS_PER_PMD > 1)
-+	if (SHARED_KERNEL_PMD)
- 		return;
- 
- 	spin_lock_irqsave(&pgd_lock, flags);
-===================================================================
---- a/arch/i386/mm/pgtable.c
-+++ b/arch/i386/mm/pgtable.c
-@@ -238,35 +238,56 @@ static inline void pgd_list_del(pgd_t *p
- 		set_page_private(next, (unsigned long)pprev);
- }
- 
-+#if (PTRS_PER_PMD == 1)
-+/* Non-PAE pgd constructor */
- void pgd_ctor(void *pgd, struct kmem_cache *cache, unsigned long unused)
+ 	paravirt_alloc_pd(__pa(pmd_table) >> PAGE_SHIFT);
+ 	set_pgd(pgd, __pgd(__pa(pmd_table) | _PAGE_PRESENT));
+ 	pud = pud_offset(pgd, 0);
+@@ -83,12 +85,10 @@ static pte_t * __init one_page_table_ini
  {
- 	unsigned long flags;
- 
--	if (PTRS_PER_PMD == 1) {
--		memset(pgd, 0, USER_PTRS_PER_PGD*sizeof(pgd_t));
--		spin_lock_irqsave(&pgd_lock, flags);
--	}
-+	/* !PAE, no pagetable sharing */
-+	memset(pgd, 0, USER_PTRS_PER_PGD*sizeof(pgd_t));
- 
- 	clone_pgd_range((pgd_t *)pgd + USER_PTRS_PER_PGD,
- 			swapper_pg_dir + USER_PTRS_PER_PGD,
- 			KERNEL_PGD_PTRS);
- 
--	if (PTRS_PER_PMD > 1)
--		return;
-+	spin_lock_irqsave(&pgd_lock, flags);
- 
- 	/* must happen under lock */
- 	paravirt_alloc_pd_clone(__pa(pgd) >> PAGE_SHIFT,
--			__pa(swapper_pg_dir) >> PAGE_SHIFT,
--			USER_PTRS_PER_PGD, PTRS_PER_PGD - USER_PTRS_PER_PGD);
-+				__pa(swapper_pg_dir) >> PAGE_SHIFT,
-+				USER_PTRS_PER_PGD,
-+				KERNEL_PGD_PTRS);
- 
- 	pgd_list_add(pgd);
- 	spin_unlock_irqrestore(&pgd_lock, flags);
- }
+ 	if (pmd_none(*pmd)) {
+ 		pte_t *page_table = (pte_t *) alloc_bootmem_low_pages(PAGE_SIZE);
++
+ 		paravirt_alloc_pt(__pa(page_table) >> PAGE_SHIFT);
+ 		set_pmd(pmd, __pmd(__pa(page_table) | _PAGE_TABLE));
+-		if (page_table != pte_offset_kernel(pmd, 0))
+-			BUG();	
 -
--/* never called when PTRS_PER_PMD > 1 */
-+#else  /* PTRS_PER_PMD > 1 */
-+/* PAE pgd constructor */
-+void pgd_ctor(void *pgd, struct kmem_cache *cache, unsigned long unused)
-+{
-+	/* PAE, kernel PMD may be shared */
-+
-+	if (SHARED_KERNEL_PMD) {
-+		clone_pgd_range((pgd_t *)pgd + USER_PTRS_PER_PGD,
-+				swapper_pg_dir + USER_PTRS_PER_PGD,
-+				KERNEL_PGD_PTRS);
-+	} else {
-+		unsigned long flags;
-+
-+		memset(pgd, 0, USER_PTRS_PER_PGD*sizeof(pgd_t));
-+		spin_lock_irqsave(&pgd_lock, flags);
-+		pgd_list_add(pgd);
-+		spin_unlock_irqrestore(&pgd_lock, flags);
-+	}
-+}
-+#endif	/* PTRS_PER_PMD */
-+
- void pgd_dtor(void *pgd, struct kmem_cache *cache, unsigned long unused)
- {
- 	unsigned long flags; /* can be called from interrupt context */
-+
-+	BUG_ON(SHARED_KERNEL_PMD);
+-		return page_table;
++		BUG_ON(page_table != pte_offset_kernel(pmd, 0));
+ 	}
+ 	
+ 	return pte_offset_kernel(pmd, 0);
+@@ -119,7 +119,7 @@ static void __init page_table_range_init
+ 	pgd = pgd_base + pgd_idx;
  
- 	paravirt_release_pd(__pa(pgd) >> PAGE_SHIFT);
- 	spin_lock_irqsave(&pgd_lock, flags);
-@@ -274,6 +295,37 @@ void pgd_dtor(void *pgd, struct kmem_cac
- 	spin_unlock_irqrestore(&pgd_lock, flags);
+ 	for ( ; (pgd_idx < PTRS_PER_PGD) && (vaddr != end); pgd++, pgd_idx++) {
+-		if (pgd_none(*pgd)) 
++		if (!(pgd_val(*pgd) & _PAGE_PRESENT))
+ 			one_md_table_init(pgd);
+ 		pud = pud_offset(pgd, vaddr);
+ 		pmd = pmd_offset(pud, vaddr);
+@@ -158,7 +158,11 @@ static void __init kernel_physical_mappi
+ 	pfn = 0;
+ 
+ 	for (; pgd_idx < PTRS_PER_PGD; pgd++, pgd_idx++) {
+-		pmd = one_md_table_init(pgd);
++		if (!(pgd_val(*pgd) & _PAGE_PRESENT))
++			pmd = one_md_table_init(pgd);
++		else
++			pmd = pmd_offset(pud_offset(pgd, PAGE_OFFSET), PAGE_OFFSET);
++
+ 		if (pfn >= max_low_pfn)
+ 			continue;
+ 		for (pmd_idx = 0; pmd_idx < PTRS_PER_PMD && pfn < max_low_pfn; pmd++, pmd_idx++) {
+@@ -167,20 +171,26 @@ static void __init kernel_physical_mappi
+ 			/* Map with big pages if possible, otherwise create normal page tables. */
+ 			if (cpu_has_pse) {
+ 				unsigned int address2 = (pfn + PTRS_PER_PTE - 1) * PAGE_SIZE + PAGE_OFFSET + PAGE_SIZE-1;
+-
+-				if (is_kernel_text(address) || is_kernel_text(address2))
+-					set_pmd(pmd, pfn_pmd(pfn, PAGE_KERNEL_LARGE_EXEC));
+-				else
+-					set_pmd(pmd, pfn_pmd(pfn, PAGE_KERNEL_LARGE));
++				if (!pmd_present(*pmd)) {
++					if (is_kernel_text(address) || is_kernel_text(address2))
++						set_pmd(pmd, pfn_pmd(pfn, PAGE_KERNEL_LARGE_EXEC));
++					else
++						set_pmd(pmd, pfn_pmd(pfn, PAGE_KERNEL_LARGE));
++				}
+ 				pfn += PTRS_PER_PTE;
+ 			} else {
+ 				pte = one_page_table_init(pmd);
+ 
+-				for (pte_ofs = 0; pte_ofs < PTRS_PER_PTE && pfn < max_low_pfn; pte++, pfn++, pte_ofs++) {
+-						if (is_kernel_text(address))
+-							set_pte(pte, pfn_pte(pfn, PAGE_KERNEL_EXEC));
+-						else
+-							set_pte(pte, pfn_pte(pfn, PAGE_KERNEL));
++				for (pte_ofs = 0;
++				     pte_ofs < PTRS_PER_PTE && pfn < max_low_pfn;
++				     pte++, pfn++, pte_ofs++, address += PAGE_SIZE) {
++					if (pte_present(*pte))
++						continue;
++
++					if (is_kernel_text(address))
++						set_pte(pte, pfn_pte(pfn, PAGE_KERNEL_EXEC));
++					else
++						set_pte(pte, pfn_pte(pfn, PAGE_KERNEL));
+ 				}
+ 			}
+ 		}
+@@ -337,19 +347,32 @@ extern void __init remap_numa_kva(void);
+ #define remap_numa_kva() do {} while (0)
+ #endif
+ 
++/*
++ * Build a proper pagetable for the kernel mappings.  Up until this
++ * point, we've been running on some set of pagetables constructed by
++ * the boot process.
++ *
++ * If we're booting on native hardware, this will be a pagetable
++ * constructed in arch/i386/kernel/head.S, and not running in PAE mode
++ * (even if we'll end up running in PAE).  The root of the pagetable
++ * will be swapper_pg_dir.
++ *
++ * If we're booting paravirtualized under a hypervisor, then there are
++ * more options: we may already be running PAE, and the pagetable may
++ * or may not be based in swapper_pg_dir.  In any case,
++ * paravirt_pagetable_setup_start() will set up swapper_pg_dir
++ * appropriately for the rest of the initialization to work.
++ *
++ * In general, pagetable_init() assumes that the pagetable may already
++ * be partially populated, and so it avoids stomping on any existing
++ * mappings.
++ */
+ static void __init pagetable_init (void)
+ {
+-	unsigned long vaddr;
++	unsigned long vaddr, end;
+ 	pgd_t *pgd_base = swapper_pg_dir;
+ 
+-#ifdef CONFIG_X86_PAE
+-	int i;
+-	/* Init entries of the first-level page table to the zero page */
+-	for (i = 0; i < PTRS_PER_PGD; i++)
+-		set_pgd(pgd_base + i, __pgd(__pa(empty_zero_page) | _PAGE_PRESENT));
+-#else
+-	paravirt_alloc_pd(__pa(swapper_pg_dir) >> PAGE_SHIFT);
+-#endif
++	paravirt_pagetable_setup_start(pgd_base);
+ 
+ 	/* Enable PSE if available */
+ 	if (cpu_has_pse) {
+@@ -371,20 +394,12 @@ static void __init pagetable_init (void)
+ 	 * created - mappings will be set by set_fixmap():
+ 	 */
+ 	vaddr = __fix_to_virt(__end_of_fixed_addresses - 1) & PMD_MASK;
+-	page_table_range_init(vaddr, 0, pgd_base);
++	end = (FIXADDR_TOP + PMD_SIZE - 1) & PMD_MASK;
++	page_table_range_init(vaddr, end, pgd_base);
+ 
+ 	permanent_kmaps_init(pgd_base);
+ 
+-#ifdef CONFIG_X86_PAE
+-	/*
+-	 * Add low memory identity-mappings - SMP needs it when
+-	 * starting up on an AP from real-mode. In the non-PAE
+-	 * case we already have these mappings through head.S.
+-	 * All user-space mappings are explicitly cleared after
+-	 * SMP startup.
+-	 */
+-	set_pgd(&pgd_base[0], pgd_base[USER_PTRS_PER_PGD]);
+-#endif
++	paravirt_pagetable_setup_done(pgd_base);
  }
  
-+#define UNSHARED_PTRS_PER_PGD				\
-+	(SHARED_KERNEL_PMD ? USER_PTRS_PER_PGD : PTRS_PER_PGD)
-+
-+/* If we allocate a pmd for part of the kernel address space, then
-+   make sure its initialized with the appropriate kernel mappings.
-+   Otherwise use a cached zeroed pmd.  */
-+static pmd_t *pmd_cache_alloc(int idx)
-+{
-+	pmd_t *pmd;
-+
-+	if (idx >= USER_PTRS_PER_PGD) {
-+		pmd = (pmd_t *)__get_free_page(GFP_KERNEL);
-+
-+		if (pmd)
-+			memcpy(pmd,
-+			       (void *)pgd_page_vaddr(swapper_pg_dir[idx]),
-+			       sizeof(pmd_t) * PTRS_PER_PMD);
-+	} else
-+		pmd = kmem_cache_alloc(pmd_cache, GFP_KERNEL);
-+
-+	return pmd;
-+}
-+
-+static void pmd_cache_free(pmd_t *pmd, int idx)
-+{
-+	if (idx >= USER_PTRS_PER_PGD)
-+		free_page((unsigned long)pmd);
-+	else
-+		kmem_cache_free(pmd_cache, pmd);
-+}
-+
- pgd_t *pgd_alloc(struct mm_struct *mm)
- {
- 	int i;
-@@ -282,10 +334,12 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
- 	if (PTRS_PER_PMD == 1 || !pgd)
- 		return pgd;
- 
--	for (i = 0; i < USER_PTRS_PER_PGD; ++i) {
--		pmd_t *pmd = kmem_cache_alloc(pmd_cache, GFP_KERNEL);
-+ 	for (i = 0; i < UNSHARED_PTRS_PER_PGD; ++i) {
-+		pmd_t *pmd = pmd_cache_alloc(i);
-+
- 		if (!pmd)
- 			goto out_oom;
-+
- 		paravirt_alloc_pd(__pa(pmd) >> PAGE_SHIFT);
- 		set_pgd(&pgd[i], __pgd(1 + __pa(pmd)));
- 	}
-@@ -296,7 +350,7 @@ out_oom:
- 		pgd_t pgdent = pgd[i];
- 		void* pmd = (void *)__va(pgd_val(pgdent)-1);
- 		paravirt_release_pd(__pa(pmd) >> PAGE_SHIFT);
--		kmem_cache_free(pmd_cache, pmd);
-+		pmd_cache_free(pmd, i);
- 	}
- 	kmem_cache_free(pgd_cache, pgd);
- 	return NULL;
-@@ -308,11 +362,11 @@ void pgd_free(pgd_t *pgd)
- 
- 	/* in the PAE case user pgd entries are overwritten before usage */
- 	if (PTRS_PER_PMD > 1)
--		for (i = 0; i < USER_PTRS_PER_PGD; ++i) {
-+		for (i = 0; i < UNSHARED_PTRS_PER_PGD; ++i) {
- 			pgd_t pgdent = pgd[i];
- 			void* pmd = (void *)__va(pgd_val(pgdent)-1);
- 			paravirt_release_pd(__pa(pmd) >> PAGE_SHIFT);
--			kmem_cache_free(pmd_cache, pmd);
-+			pmd_cache_free(pmd, i);
- 		}
- 	/* in the non-PAE case, free_pgtables() clears user pgd entries */
- 	kmem_cache_free(pgd_cache, pgd);
+ #if defined(CONFIG_SOFTWARE_SUSPEND) || defined(CONFIG_ACPI_SLEEP)
 ===================================================================
 --- a/include/asm-i386/paravirt.h
 +++ b/include/asm-i386/paravirt.h
-@@ -34,6 +34,7 @@ struct paravirt_ops
- struct paravirt_ops
- {
- 	unsigned int kernel_rpl;
-+	int shared_kernel_pmd;
-  	int paravirt_enabled;
- 	const char *name;
- 
-===================================================================
---- a/include/asm-i386/pgtable-2level-defs.h
-+++ b/include/asm-i386/pgtable-2level-defs.h
-@@ -1,5 +1,7 @@
- #ifndef _I386_PGTABLE_2LEVEL_DEFS_H
- #define _I386_PGTABLE_2LEVEL_DEFS_H
+@@ -49,6 +49,9 @@ struct paravirt_ops
+ 	void (*arch_setup)(void);
+ 	char *(*memory_setup)(void);
+ 	void (*init_IRQ)(void);
 +
-+#define SHARED_KERNEL_PMD	0
++	void (*pagetable_setup_start)(pgd_t *pgd_base);
++	void (*pagetable_setup_done)(pgd_t *pgd_base);
  
- /*
-  * traditional i386 two-level paging structure:
-===================================================================
---- a/include/asm-i386/pgtable-2level.h
-+++ b/include/asm-i386/pgtable-2level.h
-@@ -65,6 +65,4 @@ static inline int pte_exec_kernel(pte_t 
- #define __pte_to_swp_entry(pte)		((swp_entry_t) { (pte).pte_low })
- #define __swp_entry_to_pte(x)		((pte_t) { (x).val })
+ 	void (*banner)(void);
  
--void vmalloc_sync_all(void);
--
- #endif /* _I386_PGTABLE_2LEVEL_H */
-===================================================================
---- a/include/asm-i386/pgtable-3level-defs.h
-+++ b/include/asm-i386/pgtable-3level-defs.h
-@@ -1,5 +1,11 @@
- #ifndef _I386_PGTABLE_3LEVEL_DEFS_H
- #define _I386_PGTABLE_3LEVEL_DEFS_H
+@@ -185,6 +188,8 @@ struct paravirt_ops
+ 
+ extern struct paravirt_ops paravirt_ops;
+ 
++void native_pagetable_setup_start(pgd_t *pgd);
 +
-+#ifdef CONFIG_PARAVIRT
-+#define SHARED_KERNEL_PMD	(paravirt_ops.shared_kernel_pmd)
-+#else
-+#define SHARED_KERNEL_PMD	1
+ #ifdef CONFIG_X86_PAE
+ unsigned long long native_pte_val(pte_t);
+ unsigned long long native_pmd_val(pmd_t);
+@@ -389,6 +394,17 @@ static inline void setup_secondary_clock
+ }
+ #endif
+ 
++static inline void paravirt_pagetable_setup_start(pgd_t *base)
++{
++	if (paravirt_ops.pagetable_setup_start)
++		(*paravirt_ops.pagetable_setup_start)(base);
++}
++
++static inline void paravirt_pagetable_setup_done(pgd_t *base)
++{
++	if (paravirt_ops.pagetable_setup_done)
++		(*paravirt_ops.pagetable_setup_done)(base);
++}
+ 
+ void native_set_pte(pte_t *ptep, pte_t pteval);
+ void native_set_pte_at(struct mm_struct *mm, u32 addr, pte_t *ptep, pte_t pteval);
+@@ -615,5 +631,43 @@ 772:;						\
+ 	call *paravirt_ops+PARAVIRT_read_cr0
+ 
+ #endif /* __ASSEMBLY__ */
++#else  /* !CONFIG_PARAVIRT */
++#include <asm/pgtable.h>
++
++static inline void paravirt_pagetable_setup_start(pgd_t *base)
++{
++#ifdef CONFIG_X86_PAE
++	int i;
++
++	/*
++	 * Init entries of the first-level page table to the
++	 * zero page, if they haven't already been set up.
++	 *
++	 * In a normal native boot, we'll be running on a
++	 * pagetable rooted in swapper_pg_dir, but not in PAE
++	 * mode, so this will end up clobbering the mappings
++	 * for the lower 24Mbytes of the address space,
++	 * without affecting the kernel address space.
++	 */
++	for (i = 0; i < USER_PTRS_PER_PGD; i++)
++		set_pgd(&base[i],
++			__pgd(__pa(empty_zero_page) | _PAGE_PRESENT));
++	memset(&base[USER_PTRS_PER_PGD], 0, sizeof(pgd_t));
 +#endif
- 
- /*
-  * PGDIR_SHIFT determines what a top-level page table entry can map
-===================================================================
---- a/include/asm-i386/pgtable-3level.h
-+++ b/include/asm-i386/pgtable-3level.h
-@@ -180,6 +180,4 @@ static inline pmd_t pfn_pmd(unsigned lon
- 
- #define __pmd_free_tlb(tlb, x)		do { } while (0)
- 
--#define vmalloc_sync_all() ((void)0)
--
- #endif /* _I386_PGTABLE_3LEVEL_H */
++}
++
++static inline void paravirt_pagetable_setup_done(pgd_t *base)
++{
++#ifdef CONFIG_X86_PAE
++	/*
++	 * Add low memory identity-mappings - SMP needs it when
++	 * starting up on an AP from real-mode. In the non-PAE
++	 * case we already have these mappings through head.S.
++	 * All user-space mappings are explicitly cleared after
++	 * SMP startup.
++	 */
++	set_pgd(&base[0], base[USER_PTRS_PER_PGD]);
++#endif
++}
+ #endif /* CONFIG_PARAVIRT */
+ #endif	/* __ASM_PARAVIRT_H */
 ===================================================================
 --- a/include/asm-i386/pgtable.h
 +++ b/include/asm-i386/pgtable.h
-@@ -244,6 +244,13 @@ static inline pte_t pte_mkwrite(pte_t pt
- static inline pte_t pte_mkwrite(pte_t pte)	{ (pte).pte_low |= _PAGE_RW; return pte; }
- static inline pte_t pte_mkhuge(pte_t pte)	{ (pte).pte_low |= _PAGE_PSE; return pte; }
- 
-+extern void _vmalloc_sync_all(void);
-+static inline void vmalloc_sync_all(void)
-+{
-+	if (!SHARED_KERNEL_PMD)
-+		_vmalloc_sync_all();
-+}
+@@ -15,7 +15,10 @@
+ #include <asm/processor.h>
+ #include <asm/fixmap.h>
+ #include <linux/threads.h>
 +
- #ifdef CONFIG_X86_PAE
- # include <asm/pgtable-3level.h>
- #else
++#ifdef CONFIG_PARAVIRT		/* guarded to prevent cyclic dependency */
+ #include <asm/paravirt.h>
++#endif
+ 
+ #ifndef _I386_BITOPS_H
+ #include <asm/bitops.h>
 
 -- 
 
