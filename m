@@ -1,69 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751850AbXB0Upl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752572AbXB0Utu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751850AbXB0Upl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 15:45:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbXB0Upl
+	id S1752572AbXB0Utu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 15:49:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbXB0Utu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 15:45:41 -0500
-Received: from smtprelay02.ispgateway.de ([80.67.18.14]:54424 "EHLO
-	smtprelay02.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751850AbXB0Upk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 15:45:40 -0500
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: Inaky Perez-Gonzalez <inaky@linux.intel.com>
-Subject: Re: [patch 0/2] semaphores: add down_interruptible_timeout() and asm-generic/semaphore.h
-Date: Tue, 27 Feb 2007 21:45:26 +0100
-User-Agent: KMail/1.9.6
-Cc: Alan <alan@lxorguk.ukuu.org.uk>, Christoph Hellwig <hch@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>, mingo@redhat.com, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-References: <20070227001338.344233745@sodium.jf.intel.com> <20070227021803.38c8591f@lxorguk.ukuu.org.uk> <200702261757.11968.inaky@linux.intel.com>
-In-Reply-To: <200702261757.11968.inaky@linux.intel.com>
+	Tue, 27 Feb 2007 15:49:50 -0500
+Received: from smtp1.it.da.ut.ee ([193.40.5.66]:35403 "EHLO smtp1.it.da.ut.ee"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752573AbXB0Uts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 15:49:48 -0500
+Date: Tue, 27 Feb 2007 22:49:45 +0200 (EET)
+From: Meelis Roos <mroos@linux.ee>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: 2.6.21-rc1: more ACPI errors (EC__)
+Message-ID: <Pine.SOC.4.64.0702260842260.9705@math>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702272145.28803.ioe-lkml@rameria.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Inaky,
+I tested 2.6.21-rc1 on my laptop (IBM X20 with 440BX) and found two 
+problems:
 
-On Tuesday, 27. February 2007, Inaky Perez-Gonzalez wrote:
-> On Monday 26 February 2007 18:18, Alan wrote:
-> > > Yeah, I need semaphore. This is a hw register that says when the hw
-> > > is ready to accept a new command. Code that wants to send commands has
-> > > to down the semaphore and then send it. When hw is ready to get a new
-> > > command, it sends and IRQ and the IRQ up()s the semaphore.
-> >
-> > So you need a mutex not a semaphore
-> 
-> Theoretically I could use a mutex. Practically it would trigger ugly
-> complications. Only the owner can unlock a mutex (for example), so
-> I could not unlock from an IRQ handler -- not to mention that the
-> semantic rules outlined in Documentation/mutex-design.txt explicitly
-> forbid IRQ usage. 
-> 
-> And then, this is what semaphores where designed for, as gates :)
-> for once that I get to use a semaphore properly...
+First, a seemingly harmless one - ACPI error messages during bootup:
 
-But they are not required for that :-)
+ACPI Exception (evregion-0420): AE_NOT_FOUND, Returned by Handler for [EmbeddedControl] [20070126]
+ACPI Exception (dswexec-0462): AE_NOT_FOUND, While resolving operands for [OpcodeName unavailable] [20070126]
+ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.ISA_.EC__.BAT0._STA] (Node d3c435e0), AE_NOT_FOUND
+ACPI Exception (evregion-0420): AE_NOT_FOUND, Returned by Handler for [EmbeddedControl] [20070126]
+ACPI Error (psparse-0537): Method parse/execution failed [\_SB_.PCI0.ISA_.EC__.AC__._PSR] (Node d3c43540), AE_NOT_FOUND
+ACPI Exception (ac-0095): AE_NOT_FOUND, Error reading AC Adapter state [20070126]
 
-I would suggest to use an irq-safe spinlock for the hardware access
-and a status indicator (ready for command), if this is really just a command register. 
-If the status indicator is updated (in IRQ) and read under spinlock, that is safe.
+And second, there were ACPI error messages about EC__ during shutdown. 
+These messages appeared, then the "acpi_power_off called" message 
+appeared, then it waited for about 5 seconds (this does not happen 
+normally) and then it succeeded shutting down. Captured a screenshot of 
+these messages, temporarily available at 
+http://www.cs.ut.ee/~mroos/x20-shutdown-acpi-errors.jpg
 
-If that command sending is speed critical, please try a FIFO and batch that stuff.
-
-Timeout based locking mechanisms are flawed, because they introduce the hard to find
-timing sensitive bugs.
-
-Please try sth. different (e.g. like suggested above).
-
-Semaphores aren't good "busy/ready flags", as you might have already noticed.
-
-Many Thanks and Best Regards
-
-Ingo Oeser, the down{_interruptible,}_timeout() implementation of Linux :-)
+-- 
+Meelis Roos (mroos@linux.ee)
