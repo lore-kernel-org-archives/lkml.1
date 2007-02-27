@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751779AbXB0Om0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751800AbXB0Osh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751779AbXB0Om0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 09:42:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbXB0Om0
+	id S1751800AbXB0Osh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 09:48:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbXB0Osh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 09:42:26 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:32386 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751779AbXB0OmZ (ORCPT
+	Tue, 27 Feb 2007 09:48:37 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:57478 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751800AbXB0Osg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 09:42:25 -0500
+	Tue, 27 Feb 2007 09:48:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=QhhoH4A0zP9NLzySiXWTeoThed/Ha5DMeup89zkq3oWm2vBgXTQC9xWiHK2DKgHBUP1v/XvTGKG3xvJwzTeJN89uX5zeQwyARvOqs7+thoZ7nCXI55RF/0B04t/phJfy2Lz3AfxLLcYFYBtf6EwngH0SHTI67e3C44WaiCncE08=
-Message-ID: <84144f020702270642q4e371175y2a6c922e030e1f3b@mail.gmail.com>
-Date: Tue, 27 Feb 2007 16:42:22 +0200
+        b=kh10VWd1K+o+4g7/LfBd51lsN0eo5Ld1xQJ6pwJQ+1NJXe53sydT5nn7jUUonF+l/fH/PJEfLmSXVuJUa3D8tEys8ogvlr++3CXP5vQwbsxj1ni0Ph+hm9fGDmaHpbno6NH/nWPMPNbflViY9/lby/ZqmCtFto+9MoHAgpTrjJ4=
+Message-ID: <84144f020702270648o32fb15dfg4267f0cb5b50454a@mail.gmail.com>
+Date: Tue, 27 Feb 2007 16:48:25 +0200
 From: "Pekka Enberg" <penberg@cs.helsinki.fi>
 To: "Chris Rankin" <rankincj@yahoo.com>
-Subject: Re: [BUG] Linux 2.6.20.1 - unable to handle kernel paging request - accessing freed memory?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <689096.76239.qm@web52904.mail.yahoo.com>
+Subject: Re: [Alsa-devel] [BUG] Linux 2.6.20.1 - unable to handle kernel paging request - accessing freed memory?
+Cc: "Takashi Iwai" <tiwai@suse.de>, "Randy Dunlap" <randy.dunlap@oracle.com>,
+       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
+In-Reply-To: <797678.74613.qm@web52901.mail.yahoo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <689096.76239.qm@web52904.mail.yahoo.com>
-X-Google-Sender-Auth: c55b878cd3109b75
+References: <s5h7iu4heun.wl%tiwai@suse.de>
+	 <797678.74613.qm@web52901.mail.yahoo.com>
+X-Google-Sender-Auth: 13940f6be2862811
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 2/27/07, Chris Rankin <rankincj@yahoo.com> wrote:
+> Hmm, this bug looks interesting:
+>
+> http://www.ussg.iu.edu/hypermail/linux/kernel/0702.3/0514.html
+>
+> Yes, my machine *is* a dual P4 with HT enabled...
 
-On 2/26/07, Chris Rankin <rankincj@yahoo.com> wrote:
-> BUG: unable to handle kernel paging request at virtual address 6b6b6ceb
-
-[snip]
-
-> EIP is at module_put+0x20/0x52
-> eax: 6b6b6ceb   ebx: 6b6b6b6b   ecx: 00000001   edx: e5bf0000
-> esi: e9040b08   edi: 6b6b6b6b   ebp: eae0bb3c   esp: e5bf0f58
-> ds: 007b   es: 007b   ss: 0068
-> Process udevd (pid: 18662, ti=e5bf0000 task=e6aaa030 task.ti=e5bf0000)
-> Stack: eb3ff7bc c01839fe 00000010 ed009b7c ed9291d0 c015124b 00000000 00000000
->        f7ff2208 ed009b7c f7bd0678 00000000 ed009b7c c014ed88 00000003 00000003
->        f7bd0678 f7bd06f8 c014fd81 00000003 00000007 00000003 e5bf0000 c0102bce
-> Call Trace:
->  [<c01839fe>] sysfs_release+0x2d/0x4c
->  [<c015124b>] __fput+0x96/0x13c
-
-So udevd is closing a sysfs attribute file but the pointer passed to
-module_put is bogus. Looks like the sysfs dentry was already taken
-down by release_sysfs_dirent(). Can you reproduce this at will? Does
-the oops happen in older kernels?
-
-                                        Pekka
+Yeah, but the oops looks more like a reference counting problem with
+sysfs dentries. No harm in trying out the patch or reproducing without
+CONFIG_SCHED_SMT though.
