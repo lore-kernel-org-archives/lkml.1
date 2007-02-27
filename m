@@ -1,82 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751427AbXB0BlF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751451AbXB0Bll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751427AbXB0BlF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 20:41:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbXB0BlF
+	id S1751451AbXB0Bll (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 20:41:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbXB0Bll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 20:41:05 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48338 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751427AbXB0BlD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 20:41:03 -0500
-Date: Tue, 27 Feb 2007 10:39:52 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, miklos@szeredi.hu,
-       yumiko.sugita.yf@hitachi.com, masami.hiramatsu.pt@hitachi.com,
-       hidehiro.kawai.ez@hitachi.com, yuji.kakutani.uw@hitachi.com,
-       soshima@redhat.com, haoki@redhat.com, nikita@clusterfs.com
-Subject: Re: [RFC][PATCH 0/3] VM throttling: avoid blocking occasional
- writers
-Message-Id: <20070227103952.4fc236bd.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <45E38048.3020705@hitachi.com>
-References: <45DED819.9040404@hitachi.com>
-	<20070224134646.0f4edeae.kamezawa.hiroyu@jp.fujitsu.com>
-	<45E38048.3020705@hitachi.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+	Mon, 26 Feb 2007 20:41:41 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:59050 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751451AbXB0Blk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 20:41:40 -0500
+Subject: [RFC][PATCH] v850 generic timekeeping conversion
+From: john stultz <johnstul@us.ibm.com>
+To: uclinux-v850@lsi.nec.co.jp
+Cc: Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 26 Feb 2007 17:41:35 -0800
+Message-Id: <1172540495.15970.35.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Feb 2007 09:50:16 +0900
-Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com> wrote:
+This is similar to the h8/300 patch I just sent out, in that it converts
+a arch that does not currently implement sub-jiffy timekeeping to use
+the generic timekeeping code.
 
-> Hi Kamezawa-san,
-> 
-> thanks for your reply.
-> 
-> KAMEZAWA Hiroyuki wrote:
-> > Interesting, but how about adjust this parameter like below instead of
-> > adding new control knob ?(this kind of knob is not easy to use.)
-> >
-> > ==
-> >                 struct writeback_control wbc = {
-> >                         .bdi            = bdi,
-> >                         .sync_mode      = WB_SYNC_NONE,
-> >                         .older_than_this = NULL,
-> >                         .nr_to_write    = 0,
-> >                         .range_cyclic   = 1,
-> >                 };
-> > <snip>
-> >                 if (nr_reclaimable) {
-> > 			/* Just do what I can do */
-> > 			dirty_pages_on_device = count_dirty_pages_on_device_limited(bdi, writechunk);
-> > 			wbc.nr_to_write = dirty_pages_on_device.
-> > 			writeback_inodes(&wbc);
-> >
-> > ==
-> >
-> > count_dirty_pages_on_device_limited(bdi, writechunk) above returns
-> > dirty pages on bdi. if # of dirty_pages on bdi is larger than writechunk,
-> > just returns writechunk.
-> 
-> 
-> I think that way is not enough to control the total amount of
-> Dirty+Writeback.
-> 
-> In that way, while writeback_inodes() scans for dirty pages and writes
-> them back, the caller will be blocked only if the length of the write-
-> requests queue is longer than nr_requests.
-What nr_request means ?
-But Ok, maybe I'm not understanding. What I want to ask you is do 
-per-device-write-throttling rather than adding a new parameter.
+v850 however looks like it has some intent to implement sub-jiffy
+timekeeping, so it may not yet be appropriate to try to convert, but I
+figured I'd get the maintainer's input and submit the patch for comment.
 
-Bye.
--Kame
+And again, I do not have hardware, so this is completely untested.
 
+thanks
+-john
 
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+
+diff --git a/arch/v850/Kconfig b/arch/v850/Kconfig
+index 50ccc7f..5f54c12 100644
+--- a/arch/v850/Kconfig
++++ b/arch/v850/Kconfig
+@@ -37,6 +37,10 @@ config GENERIC_IRQ_PROBE
+ 	bool
+ 	default y
+ 
++config GENERIC_TIME
++	bool
++	default y
++
+ config TIME_LOW_RES
+ 	bool
+ 	default y
+diff --git a/arch/v850/kernel/time.c b/arch/v850/kernel/time.c
+index 486e3a4..f0905b0 100644
+--- a/arch/v850/kernel/time.c
++++ b/arch/v850/kernel/time.c
+@@ -90,81 +90,6 @@ #endif /* 0 */
+ 	return IRQ_HANDLED;
+ }
+ 
+-/*
+- * This version of gettimeofday has near microsecond resolution.
+- */
+-void do_gettimeofday (struct timeval *tv)
+-{
+-#if 0 /* DAVIDM later if possible */
+-	extern volatile unsigned long lost_ticks;
+-	unsigned long lost;
+-#endif
+-	unsigned long flags;
+-	unsigned long usec, sec;
+-	unsigned long seq;
+-
+-	do {
+-		seq = read_seqbegin_irqsave(&xtime_lock, flags);
+-
+-#if 0
+-		usec = mach_gettimeoffset ? mach_gettimeoffset () : 0;
+-#else
+-		usec = 0;
+-#endif
+-#if 0 /* DAVIDM later if possible */
+-		lost = lost_ticks;
+-		if (lost)
+-			usec += lost * (1000000/HZ);
+-#endif
+-		sec = xtime.tv_sec;
+-		usec += xtime.tv_nsec / 1000;
+-	} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
+-
+-	while (usec >= 1000000) {
+-		usec -= 1000000;
+-		sec++;
+-	}
+-
+-	tv->tv_sec = sec;
+-	tv->tv_usec = usec;
+-}
+-
+-EXPORT_SYMBOL(do_gettimeofday);
+-
+-int do_settimeofday(struct timespec *tv)
+-{
+-	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
+-		return -EINVAL;
+-
+-	write_seqlock_irq (&xtime_lock);
+-
+-	/* This is revolting. We need to set the xtime.tv_nsec
+-	 * correctly. However, the value in this location is
+-	 * is value at the last tick.
+-	 * Discover what correction gettimeofday
+-	 * would have done, and then undo it!
+-	 */
+-#if 0
+-	tv->tv_nsec -= mach_gettimeoffset() * 1000;
+-#endif
+-
+-	while (tv->tv_nsec < 0) {
+-		tv->tv_nsec += NSEC_PER_SEC;
+-		tv->tv_sec--;
+-	}
+-
+-	xtime.tv_sec = tv->tv_sec;
+-	xtime.tv_nsec = tv->tv_nsec;
+-
+-	ntp_clear();
+-
+-	write_sequnlock_irq (&xtime_lock);
+-	clock_was_set();
+-	return 0;
+-}
+-
+-EXPORT_SYMBOL(do_settimeofday);
+-
+ static int timer_dev_id;
+ static struct irqaction timer_irqaction = {
+ 	timer_interrupt,
 
