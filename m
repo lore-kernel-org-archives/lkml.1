@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751280AbXB0Anz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751354AbXB0AoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751280AbXB0Anz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 19:43:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbXB0Anz
+	id S1751354AbXB0AoX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 19:44:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbXB0AoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 19:43:55 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:59892 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751280AbXB0Any (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 19:43:54 -0500
-Message-ID: <45E37EB5.7070100@vmware.com>
-Date: Mon, 26 Feb 2007 16:43:33 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+	Mon, 26 Feb 2007 19:44:23 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49936 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751354AbXB0AoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 19:44:22 -0500
+Message-ID: <45E37EA3.3060101@redhat.com>
+Date: Mon, 26 Feb 2007 19:43:15 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-To: Anthony Liguori <anthony@codemonkey.ws>
-CC: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [RFC] Use para_fill instead of vmi_get_function for APIC ops
-References: <45E37617.6050107@codemonkey.ws>
-In-Reply-To: <45E37617.6050107@codemonkey.ws>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: hyoshiok@miraclelinux.com
+CC: Dave Jones <davej@redhat.com>, Pete Harlan <harlan@artselect.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Lorenzo Allegrucci <l_allegrucci@yahoo.it>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: SMP performance degradation with sysbench
+References: <1172425476.5489.11.camel@odyssey.lan>	 <45E21FEC.9060605@redhat.com> <45E2E244.8040009@yahoo.com.au>	 <20070226220401.GA22363@artselect.com>	 <20070226223645.GA24174@redhat.com> <98df96d30702261632u7479c9b2sce93f80f68bbc8d0@mail.gmail.com>
+In-Reply-To: <98df96d30702261632u7479c9b2sce93f80f68bbc8d0@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
-> Hi Zach,
->
-> It seems to me that the APIC paravirt_ops should be filled by 
-> para_fill() instead of vmi_get_function().  vmi_get_function() returns 
-> a nop when the relocation type is NONE.  para_fill() leaves the native 
-> code in place.
->
-> The native version of the apic write ops is more or less *(APIC_BASE + 
-> reg) = value.  APIC_BASE is unknown to the ROM so it's impossible to 
-> simulate this in the ROM.
->
-> This means that a ROM has no choice but to do APIC emulation (or jump 
-> through seriously hairy loops to get the APIC mapped in it's address 
-> space).  Was this the intention?
+Hiro Yoshioka wrote:
+> Howdy,
+> 
+> MySQL 5.0.26 had some scalability issues and it solved since 5.0.32
+> http://ossipedia.ipa.go.jp/capacity/EV0612260303/
+> (written in Japanese but you may read the graph. We compared
+> 5.0.24 vs 5.0.32)
+> 
+> The following is oprofile data
+> ==> 
+> cpu=8-mysql=5.0.32-gcc=3.4/oprofile-eu=2200-op=default-none/opreport-l.txt
+> <==
+> CPU: Core Solo / Duo, speed 2666.76 MHz (estimated)
+> Counted CPU_CLK_UNHALTED events (Unhalted clock cycles) with a unit
+> mask of 0x00 (Unhalted core cycles) count 100000
+> samples  %        app name                 symbol name
+> 47097502 16.8391  libpthread-2.3.4.so      pthread_mutex_trylock
+> 19636300  7.0207  libpthread-2.3.4.so      pthread_mutex_unlock
+> 18600010  6.6502  mysqld                   rec_get_offsets_func
+> 18121328  6.4790  mysqld                   btr_search_guess_on_hash
+> 11453095  4.0949  mysqld                   row_search_for_mysql
+> 
+> MySQL tries to get a mutex but it spends about 16.8% of CPU on 8 core
+> machine.
+> 
+> I think there are a lot of room to be inproved in MySQL implementation.
 
-No, but certainly the effect.  Actually, it is very easy to get the APIC 
-mapped in the ROM address space without jumping through seriously hairy 
-loops - we do it today in our hypervisor.
+That's one aspect.
 
->
-> N.B. attached patch is just to illustrate the point.  Has not even 
-> been compile tested.
+The other aspect of the problem is that when the number of
+threads exceeds the number of CPU cores, Linux no longer
+manages to keep the CPUs busy and we get a lot of idle time.
 
+On the other hand, with the number of threads being equal to
+the number of CPU cores, we are 100% CPU bound...
 
-Patch looks good, thanks.   But the whole para_fill / vmi_get_function 
-stuff could probably be done even cleaner.  It was just a helper at 
-first to work around the awkward syntax, and it is still a bit ugly, but 
-I haven't come up with a better solution yet, mostly because with the 
-new inlining work Jeremy is doing, we might want to start doing 
-selective inlining, in which case I'll have to go back over the code 
-anyway to clean everything to get the logic right in all cases.
-
-I assume this patch is signed-off-by you?  If so, I'll add it to my 
-patch queue.
-
-Zach
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
