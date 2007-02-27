@@ -1,143 +1,433 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752581AbXB0XXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752522AbXB0XRF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752581AbXB0XXh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 18:23:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbXB0XXe
+	id S1752522AbXB0XRF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 18:17:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbXB0XRE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 18:23:34 -0500
-Received: from mail18.syd.optusnet.com.au ([211.29.132.199]:59456 "EHLO
-	mail18.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752581AbXB0XXF convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 18:23:05 -0500
-From: Con Kolivas <kernel@kolivas.org>
-To: Mike Galbraith <efault@gmx.de>
-Subject: Re: 2.6.21-rc1: known regressions (v2) (part 2)
-Date: Wed, 28 Feb 2007 10:07:15 +1100
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <20070227083349.GB30376@elte.hu> <1172566453.7009.28.camel@Homer.simpson.net>
-In-Reply-To: <1172566453.7009.28.camel@Homer.simpson.net>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200702281007.16316.kernel@kolivas.org>
-X-Length: 7577
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
+	Tue, 27 Feb 2007 18:17:04 -0500
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:54779 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752522AbXB0XQw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 18:16:52 -0500
+Message-Id: <20070227231602.684804815@szeredi.hu>
+References: <20070227231442.627972152@szeredi.hu>
+User-Agent: quilt/0.45-1
+Date: Wed, 28 Feb 2007 00:14:48 +0100
+From: Miklos Szeredi <miklos@szeredi.hu>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [patch 06/22] consolidate generic_writepages and mpage_writepages
+Content-Disposition: inline; filename=writepages_consolidate.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Apologies for the resend, lkml address got mangled...
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-On Tuesday 27 February 2007 19:54, Mike Galbraith wrote:
-> On Tue, 2007-02-27 at 09:33 +0100, Ingo Molnar wrote:
-> > * Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> > > Thomas Gleixner napisa³(a):
-> > > > Adrian,
-> > > >
-> > > > On Mon, 2007-02-26 at 23:05 +0100, Adrian Bunk wrote:
-> > > >> Subject    : kernel BUG at kernel/time/tick-sched.c:168 
-> > > >> (CONFIG_NO_HZ) References : http://lkml.org/lkml/2007/2/16/346
-> > > >> Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-> > > I can confirm that the bug is fixed (over 20 hours of testing should
-> > > be enough).
-> >
-> > thanks alot! I think this thing was a long-term performance/latency
-> > regression in HT scheduling as well.
+Changes:
+ o fix theoretical NULL pointer dereference in __mpage_writepage
+ o merge Andrew Morton's cleanups
 
-Ingo I'm going to have to partially disagree with you on this. 
 
-This has only become a problem because of what happens with dynticks now when 
-rq->curr == rq->idle. Prior to this, that particular SMT code only leads to 
-relative delays in scheduling for lower priority tasks. Whether or not that 
-task is ksoftirqd should not matter because it is not like they are starved 
-indefinitely, it is only that nice 19 tasks are relatively delayed, which by 
-definition is implied with the usage of nice as a scheduler hint wouldn't you 
-say? I know it has been discussed many times before as to whether 'nice' 
-means less cpu and/or more latency, but in our current implementation, nice 
-means both less cpu and more latency. So to me, the kernels without dynticks 
-do not have a regression. This seems to only be a problem in the setting of 
-the new dynticks code IMHO. That's not to say it isn't a bug! Nor am I saying 
-that dynticks is a problem! Please don't misinterpret that.
+Clean up code duplication between mpage_writepages() and
+generic_writepages().
 
-The second issue is that this is a problem because of the fuzzy definition of 
-what idle is for a runqueue in the setting of this SMT code. Normally, 
-rq->curr==rq->idle means the runqueue is idle, but not with this code since 
-there are still rq->nr_running on that runqueue. What dynticks in this 
-implementation is doing is trying to idle a hyperthread sibling on a cpu 
-whose logical partner is busy. I did not find that added any power saving on 
-my earlier dynticks implementation, and found it easier to keep that sibling 
-ticking at the same rate as its partner. Of course you may have found 
-something different, and I definitely agree with what you are likely to say 
-in response to this- we shouldn't have to special case logical siblings as 
-having a different definition of idle than any other smp case. Ultimately, 
-that leaves us with your simple patch as a reasonable solution for the 
-dynticks case even though it does change the behaviour dramatically for a 
-more loaded cpu. I don't see this code as presenting a problem without or 
-prior to the dynticks implementation. You being the scheduler maintainer 
-means you get to choose what is the best way to tackle this problem. 
+The new generic function, write_cache_pages() takes a function pointer
+argument, which will be called for each page to be written.
 
-> Agreed.
->
-> I was recently looking at that spot because I found that niced tasks
-> were taking latency hits, and disabled it, which helped a bunch.
+Maybe cifs_writepages() too can use this infrastructure, but I'm not
+touching that with a ten-foot pole.
 
-Ok... as I said above to Ingo, nice means more latency too, and there is no 
-doubt that if we disable nice as a working feature then the niced tasks will 
-have less latency. Of course, this ends up meaning that un-niced tasks no 
-longer receive their better cpu performance..  You're basically saying that 
-you prefer nice not to work in the setting of HT.
+The upcoming page writeback support in fuse will also want this.
 
-> I also 
-> can't understand why it would be OK to interleave a normal task with an
-> RT task sometimes, but not others.. that's meaningless to the RT task.
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
 
-Clearly there would be a reason that code is there... The whole problem with 
-HT is that as soon as you load up a sibling, you slow down the logical 
-sibling, hence why this code is there in the first place. Since I know you're 
-one to test things for yourself, I will put it to you this way:
+Index: linux/fs/mpage.c
+===================================================================
+--- linux.orig/fs/mpage.c	2007-02-27 14:41:06.000000000 +0100
++++ linux/fs/mpage.c	2007-02-27 14:41:08.000000000 +0100
+@@ -456,11 +456,18 @@ EXPORT_SYMBOL(mpage_readpage);
+  * written, so it can intelligently allocate a suitably-sized BIO.  For now,
+  * just allocate full-size (16-page) BIOs.
+  */
+-static struct bio *
+-__mpage_writepage(struct bio *bio, struct page *page, get_block_t get_block,
+-	sector_t *last_block_in_bio, int *ret, struct writeback_control *wbc,
+-	writepage_t writepage_fn)
++struct mpage_data {
++	struct bio *bio;
++	sector_t last_block_in_bio;
++	get_block_t *get_block;
++	unsigned use_writepage;
++};
++
++static int __mpage_writepage(struct page *page, struct writeback_control *wbc,
++			     void *data)
+ {
++	struct mpage_data *mpd = data;
++	struct bio *bio = mpd->bio;
+ 	struct address_space *mapping = page->mapping;
+ 	struct inode *inode = page->mapping->host;
+ 	const unsigned blkbits = inode->i_blkbits;
+@@ -478,6 +485,7 @@ __mpage_writepage(struct bio *bio, struc
+ 	int length;
+ 	struct buffer_head map_bh;
+ 	loff_t i_size = i_size_read(inode);
++	int ret = 0;
+ 
+ 	if (page_has_buffers(page)) {
+ 		struct buffer_head *head = page_buffers(page);
+@@ -540,7 +548,7 @@ __mpage_writepage(struct bio *bio, struc
+ 
+ 		map_bh.b_state = 0;
+ 		map_bh.b_size = 1 << blkbits;
+-		if (get_block(inode, block_in_file, &map_bh, 1))
++		if (mpd->get_block(inode, block_in_file, &map_bh, 1))
+ 			goto confused;
+ 		if (buffer_new(&map_bh))
+ 			unmap_underlying_metadata(map_bh.b_bdev,
+@@ -589,7 +597,7 @@ page_is_mapped:
+ 	/*
+ 	 * This page will go to BIO.  Do we need to send this BIO off first?
+ 	 */
+-	if (bio && *last_block_in_bio != blocks[0] - 1)
++	if (bio && mpd->last_block_in_bio != blocks[0] - 1)
+ 		bio = mpage_bio_submit(WRITE, bio);
+ 
+ alloc_new:
+@@ -646,7 +654,7 @@ alloc_new:
+ 					boundary_block, 1 << blkbits);
+ 		}
+ 	} else {
+-		*last_block_in_bio = blocks[blocks_per_page - 1];
++		mpd->last_block_in_bio = blocks[blocks_per_page - 1];
+ 	}
+ 	goto out;
+ 
+@@ -654,18 +662,19 @@ confused:
+ 	if (bio)
+ 		bio = mpage_bio_submit(WRITE, bio);
+ 
+-	if (writepage_fn) {
+-		*ret = (*writepage_fn)(page, wbc);
++	if (mpd->use_writepage && mapping->a_ops->writepage) {
++		ret = mapping->a_ops->writepage(page, wbc);
+ 	} else {
+-		*ret = -EAGAIN;
++		ret = -EAGAIN;
+ 		goto out;
+ 	}
+ 	/*
+ 	 * The caller has a ref on the inode, so *mapping is stable
+ 	 */
+-	mapping_set_error(mapping, *ret);
++	mapping_set_error(mapping, ret);
+ out:
+-	return bio;
++	mpd->bio = bio;
++	return ret;
+ }
+ 
+ /**
+@@ -688,120 +697,27 @@ out:
+  * the call was made get new I/O started against them.  If wbc->sync_mode is
+  * WB_SYNC_ALL then we were called for data integrity and we must wait for
+  * existing IO to complete.
+- *
+- * If you fix this you should check generic_writepages() also!
+  */
+ int
+ mpage_writepages(struct address_space *mapping,
+ 		struct writeback_control *wbc, get_block_t get_block)
+ {
+-	struct backing_dev_info *bdi = mapping->backing_dev_info;
+-	struct bio *bio = NULL;
+-	sector_t last_block_in_bio = 0;
+-	int ret = 0;
+-	int done = 0;
+-	int (*writepage)(struct page *page, struct writeback_control *wbc);
+-	struct pagevec pvec;
+-	int nr_pages;
+-	pgoff_t index;
+-	pgoff_t end;		/* Inclusive */
+-	int scanned = 0;
+-	int range_whole = 0;
+-
+-	if (wbc->nonblocking && bdi_write_congested(bdi)) {
+-		wbc->encountered_congestion = 1;
+-		return 0;
+-	}
++	int ret;
+ 
+-	writepage = NULL;
+-	if (get_block == NULL)
+-		writepage = mapping->a_ops->writepage;
+-
+-	pagevec_init(&pvec, 0);
+-	if (wbc->range_cyclic) {
+-		index = mapping->writeback_index; /* Start from prev offset */
+-		end = -1;
+-	} else {
+-		index = wbc->range_start >> PAGE_CACHE_SHIFT;
+-		end = wbc->range_end >> PAGE_CACHE_SHIFT;
+-		if (wbc->range_start == 0 && wbc->range_end == LLONG_MAX)
+-			range_whole = 1;
+-		scanned = 1;
++	if (!get_block)
++		ret = generic_writepages(mapping, wbc);
++	else {
++		struct mpage_data mpd = {
++			.bio = NULL,
++			.last_block_in_bio = 0,
++			.get_block = get_block,
++			.use_writepage = 1,
++		};
++
++		ret = write_cache_pages(mapping, wbc, __mpage_writepage, &mpd);
++		if (mpd.bio)
++			mpage_bio_submit(WRITE, mpd.bio);
+ 	}
+-retry:
+-	while (!done && (index <= end) &&
+-			(nr_pages = pagevec_lookup_tag(&pvec, mapping, &index,
+-			PAGECACHE_TAG_DIRTY,
+-			min(end - index, (pgoff_t)PAGEVEC_SIZE-1) + 1))) {
+-		unsigned i;
+-
+-		scanned = 1;
+-		for (i = 0; i < nr_pages; i++) {
+-			struct page *page = pvec.pages[i];
+-
+-			/*
+-			 * At this point we hold neither mapping->tree_lock nor
+-			 * lock on the page itself: the page may be truncated or
+-			 * invalidated (changing page->mapping to NULL), or even
+-			 * swizzled back from swapper_space to tmpfs file
+-			 * mapping
+-			 */
+-
+-			lock_page(page);
+-
+-			if (unlikely(page->mapping != mapping)) {
+-				unlock_page(page);
+-				continue;
+-			}
+-
+-			if (!wbc->range_cyclic && page->index > end) {
+-				done = 1;
+-				unlock_page(page);
+-				continue;
+-			}
+-
+-			if (wbc->sync_mode != WB_SYNC_NONE)
+-				wait_on_page_writeback(page);
+-
+-			if (PageWriteback(page) ||
+-					!clear_page_dirty_for_io(page)) {
+-				unlock_page(page);
+-				continue;
+-			}
+-
+-			if (writepage) {
+-				ret = (*writepage)(page, wbc);
+-				mapping_set_error(mapping, ret);
+-			} else {
+-				bio = __mpage_writepage(bio, page, get_block,
+-						&last_block_in_bio, &ret, wbc,
+-						page->mapping->a_ops->writepage);
+-			}
+-			if (unlikely(ret == AOP_WRITEPAGE_ACTIVATE))
+-				unlock_page(page);
+-			if (ret || (--(wbc->nr_to_write) <= 0))
+-				done = 1;
+-			if (wbc->nonblocking && bdi_write_congested(bdi)) {
+-				wbc->encountered_congestion = 1;
+-				done = 1;
+-			}
+-		}
+-		pagevec_release(&pvec);
+-		cond_resched();
+-	}
+-	if (!scanned && !done) {
+-		/*
+-		 * We hit the last page and there is more work to be done: wrap
+-		 * back to the start of the file
+-		 */
+-		scanned = 1;
+-		index = 0;
+-		goto retry;
+-	}
+-	if (wbc->range_cyclic || (range_whole && wbc->nr_to_write > 0))
+-		mapping->writeback_index = index;
+-	if (bio)
+-		mpage_bio_submit(WRITE, bio);
+ 	return ret;
+ }
+ EXPORT_SYMBOL(mpage_writepages);
+@@ -809,15 +725,15 @@ EXPORT_SYMBOL(mpage_writepages);
+ int mpage_writepage(struct page *page, get_block_t get_block,
+ 	struct writeback_control *wbc)
+ {
+-	int ret = 0;
+-	struct bio *bio;
+-	sector_t last_block_in_bio = 0;
+-
+-	bio = __mpage_writepage(NULL, page, get_block,
+-			&last_block_in_bio, &ret, wbc, NULL);
+-	if (bio)
+-		mpage_bio_submit(WRITE, bio);
+-
++	struct mpage_data mpd = {
++		.bio = NULL,
++		.last_block_in_bio = 0,
++		.get_block = get_block,
++		.use_writepage = 0,
++	};
++	int ret = __mpage_writepage(page, wbc, &mpd);
++	if (mpd.bio)
++		mpage_bio_submit(WRITE, mpd.bio);
+ 	return ret;
+ }
+ EXPORT_SYMBOL(mpage_writepage);
+Index: linux/include/linux/mpage.h
+===================================================================
+--- linux.orig/include/linux/mpage.h	2007-02-27 14:40:55.000000000 +0100
++++ linux/include/linux/mpage.h	2007-02-27 14:41:08.000000000 +0100
+@@ -12,7 +12,6 @@
+ #ifdef CONFIG_BLOCK
+ 
+ struct writeback_control;
+-typedef int (writepage_t)(struct page *page, struct writeback_control *wbc);
+ 
+ int mpage_readpages(struct address_space *mapping, struct list_head *pages,
+ 				unsigned nr_pages, get_block_t get_block);
+Index: linux/include/linux/writeback.h
+===================================================================
+--- linux.orig/include/linux/writeback.h	2007-02-27 14:41:07.000000000 +0100
++++ linux/include/linux/writeback.h	2007-02-27 14:41:08.000000000 +0100
+@@ -109,9 +109,15 @@ balance_dirty_pages_ratelimited(struct a
+ 	balance_dirty_pages_ratelimited_nr(mapping, 1);
+ }
+ 
++typedef int (*writepage_t)(struct page *page, struct writeback_control *wbc,
++				void *data);
++
+ int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0);
+-extern int generic_writepages(struct address_space *mapping,
+-			      struct writeback_control *wbc);
++int generic_writepages(struct address_space *mapping,
++		       struct writeback_control *wbc);
++int write_cache_pages(struct address_space *mapping,
++		      struct writeback_control *wbc, writepage_t writepage,
++		      void *data);
+ int do_writepages(struct address_space *mapping, struct writeback_control *wbc);
+ int sync_page_range(struct inode *inode, struct address_space *mapping,
+ 			loff_t pos, loff_t count);
+Index: linux/mm/page-writeback.c
+===================================================================
+--- linux.orig/mm/page-writeback.c	2007-02-27 14:41:08.000000000 +0100
++++ linux/mm/page-writeback.c	2007-02-27 14:41:08.000000000 +0100
+@@ -567,31 +567,27 @@ void __init page_writeback_init(void)
+ }
+ 
+ /**
+- * generic_writepages - walk the list of dirty pages of the given address space and writepage() all of them.
++ * write_cache_pages - walk the list of dirty pages of the given address space and write all of them.
+  * @mapping: address space structure to write
+  * @wbc: subtract the number of written pages from *@wbc->nr_to_write
++ * @writepage: function called for each page
++ * @data: data passed to writepage function
+  *
+- * This is a library function, which implements the writepages()
+- * address_space_operation.
+- *
+- * If a page is already under I/O, generic_writepages() skips it, even
++ * If a page is already under I/O, write_cache_pages() skips it, even
+  * if it's dirty.  This is desirable behaviour for memory-cleaning writeback,
+  * but it is INCORRECT for data-integrity system calls such as fsync().  fsync()
+  * and msync() need to guarantee that all the data which was dirty at the time
+  * the call was made get new I/O started against them.  If wbc->sync_mode is
+  * WB_SYNC_ALL then we were called for data integrity and we must wait for
+  * existing IO to complete.
+- *
+- * Derived from mpage_writepages() - if you fix this you should check that
+- * also!
+  */
+-int generic_writepages(struct address_space *mapping,
+-		       struct writeback_control *wbc)
++int write_cache_pages(struct address_space *mapping,
++		      struct writeback_control *wbc, writepage_t writepage,
++		      void *data)
+ {
+ 	struct backing_dev_info *bdi = mapping->backing_dev_info;
+ 	int ret = 0;
+ 	int done = 0;
+-	int (*writepage)(struct page *page, struct writeback_control *wbc);
+ 	struct pagevec pvec;
+ 	int nr_pages;
+ 	pgoff_t index;
+@@ -604,12 +600,6 @@ int generic_writepages(struct address_sp
+ 		return 0;
+ 	}
+ 
+-	writepage = mapping->a_ops->writepage;
+-
+-	/* deal with chardevs and other special file */
+-	if (!writepage)
+-		return 0;
+-
+ 	pagevec_init(&pvec, 0);
+ 	if (wbc->range_cyclic) {
+ 		index = mapping->writeback_index; /* Start from prev offset */
+@@ -661,8 +651,7 @@ retry:
+ 				continue;
+ 			}
+ 
+-			ret = (*writepage)(page, wbc);
+-			mapping_set_error(mapping, ret);
++			ret = (*writepage)(page, wbc, data);
+ 
+ 			if (unlikely(ret == AOP_WRITEPAGE_ACTIVATE))
+ 				unlock_page(page);
+@@ -689,6 +678,38 @@ retry:
+ 		mapping->writeback_index = index;
+ 	return ret;
+ }
++EXPORT_SYMBOL(write_cache_pages);
++
++/*
++ * Function used by generic_writepages to call the real writepage
++ * function and set the mapping flags on error
++ */
++static int __writepage(struct page *page, struct writeback_control *wbc,
++		       void *data)
++{
++	struct address_space *mapping = data;
++	int ret = mapping->a_ops->writepage(page, wbc);
++	mapping_set_error(mapping, ret);
++	return ret;
++}
++
++/**
++ * generic_writepages - walk the list of dirty pages of the given address space and writepage() all of them.
++ * @mapping: address space structure to write
++ * @wbc: subtract the number of written pages from *@wbc->nr_to_write
++ *
++ * This is a library function, which implements the writepages()
++ * address_space_operation.
++ */
++int generic_writepages(struct address_space *mapping,
++		       struct writeback_control *wbc)
++{
++	/* deal with chardevs and other special file */
++	if (!mapping->a_ops->writepage)
++		return 0;
++
++	return write_cache_pages(mapping, wbc, __writepage, mapping);
++}
+ 
+ EXPORT_SYMBOL(generic_writepages);
+ 
 
-Boot into UP. Time how long it takes to do a million of these in a real time 
-task:
- asm volatile("" : : : "memory");
-
-Then start up a SCHED_NORMAL task fully cpu bound such as "yes > /dev/null" 
-and time that again. Obviously the former being a realtime task will take the 
-same amount of time and the SCHED_NORMAL task will be starved until the 
-realtime task finishes.
-
-Now try the same experiment with hyperthreading enabled and an ordinary SMP 
-kernel. You'll find the realtime task runs at only ~60% performance. That's a 
-serious performance hit for realtime tasks considering you're running a 
-SCHED_NORMAL task. The SMT code that you seem to dislike fixes this problem. 
-The reason for interleaving is that there are a few cycles to be gained by 
-using the second core for a separate SCHED_NORMAL task, and you don't want to 
-disable access to the second core entirely for the duration the realtime task 
-is running. Since there is no simple relationship between SCHED_NORMAL 
-timeslices and realtime timeslices, we have to use some form of interleaving 
-based on the expected extra cycles and HZ is the obvious choice.
-
-> IMHO, SMT scheduling should be a buyer beware thing.  Maximizing your
-> core utilization comes at a price, but so does disabling it, so I think
-> letting the user decide what he wants is the right thing to do.
-
-To me this is like arguing that we should not implement 'nice' within the cpu 
-scheduler at all and only allow nice to work on the few architectures that 
-support hardware priorities in the cpu (like power5). Now there is no doubt 
-that if we do away with nice entirely everywhere in the scheduler we'll gain 
-some throughput. However, nice is a basic unix/linux function and if hardware 
-comes along that breaks it working we should be working to make sure that it 
-keeps working in software. That is why smt nice and smp nice was implemented. 
-Of course it is our duty to ensure we do that at minimal overhead at all 
-times. That's a different argument to what you are debating here. The 
-throughput should not be adversely affected by this SMT priority code because 
-although the nice 19 task gets less throughput, the higher priority task gets 
-more as a result, which is essentially what nice is meant to do.
-
--- 
--ck
+--
