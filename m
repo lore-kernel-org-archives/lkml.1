@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751818AbXB0Pue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751652AbXB0Pyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751818AbXB0Pue (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 10:50:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbXB0Pue
+	id S1751652AbXB0Pyp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 10:54:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbXB0Pyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 10:50:34 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51120 "EHLO mx1.redhat.com"
+	Tue, 27 Feb 2007 10:54:45 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:34759 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751818AbXB0Pue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 10:50:34 -0500
-Date: Tue, 27 Feb 2007 10:50:24 -0500
-From: Dave Jones <davej@redhat.com>
-To: Olaf Hering <olaf@aepfle.de>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
-Subject: Re: cpufreq build regression added today
-Message-ID: <20070227155024.GA24343@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Olaf Hering <olaf@aepfle.de>, David Miller <davem@davemloft.net>,
-	linux-kernel@vger.kernel.org
-References: <20070226.144134.95506510.davem@davemloft.net> <20070226224648.GB24976@redhat.com> <20070227075937.GA27409@aepfle.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070227075937.GA27409@aepfle.de>
-User-Agent: Mutt/1.4.2.2i
+	id S1751652AbXB0Pyo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 10:54:44 -0500
+Date: Tue, 27 Feb 2007 16:54:27 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Marcel Holtmann <marcel@holtmann.org>
+cc: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Boot time Bluetooth BUG: warning: (value > m) at hid-core.c:793
+In-Reply-To: <1171844733.2488.33.camel@violet>
+Message-ID: <Pine.LNX.4.64.0702271648190.10496@twin.jikos.cz>
+References: <1171627435.6127.0.camel@wriver-t81fb058.linuxcoe> 
+ <45D5C789.1090607@student.ltu.se>  <8E8F647D7835334B985D069AE964A4F7028FE550@ECQCMTLMAIL1.quebec.int.ec.gc.ca>
+  <Pine.LNX.4.64.0702182216060.25686@twin.jikos.cz> <1171844733.2488.33.camel@violet>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 27, 2007 at 08:59:37AM +0100, Olaf Hering wrote:
- > On Mon, Feb 26, Dave Jones wrote:
- > 
- > > On Mon, Feb 26, 2007 at 02:41:34PM -0800, David Miller wrote:
- > >  > 
- > >  > Dave, please test your const'ification changes, else you'll
- > >  > leave some of us const'ipated :-)
- > >  > 
- > >  > drivers/cpufreq/cpufreq.c: In function 'cpufreq_register_driver'
- > >  > drivers/cpufreq/cpufreq.c:1767: error: assignment of read-only location
- > > 
- > > Damn you're fast.
- > > That stuff wasn't near ready to go to mainline, I've asked Linus
- > > to revert.  Mea Culpa.
- > 
- > e5524f355a0d272ba5233537a896a668db1f3008 is partly broken as well.
+On Mon, 19 Feb 2007, Marcel Holtmann wrote:
 
-It's not my week.
-Fixed in agpgart.git, and asked Linus to pull.
+> we understand the original CSR HID proxy dongles, but for the Logitech 
+> ones, it is wild guesses. The current support in hid2hci has been tested 
+> on Logitech diNovo first generation and I have no other Logitech 
+> hardware to verify it with. We might simply need the full HID report 
+> descriptor to see who is at fault.
 
-		Dave
+As far as I can see from a quick look, the device IDs are unchanged 
+(0x046d/0xc70e for the keyboard), but the report descriptor seems to 
+differ from the one you have at 
+http://www.holtmann.org/linux/bluetooth/logitech.html - that seems pretty 
+sad.
+
+What puzzles me a bit is a fact that both the bugreporters seem to state 
+pretty clearly that this started happening after some update, am I right?
+
+Or did the hardware before work all the time in the HID mode, without even 
+being attempted to switch to HCI (which seems to cause the bug)?
 
 -- 
-http://www.codemonkey.org.uk
+Jiri Kosina
