@@ -1,626 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932598AbXB0Ilt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932837AbXB0Ily@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932598AbXB0Ilt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 03:41:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933023AbXB0Ii6
+	id S932837AbXB0Ily (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 03:41:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932964AbXB0Ilx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 03:38:58 -0500
-Received: from gw.goop.org ([64.81.55.164]:46813 "EHLO mail.goop.org"
+	Tue, 27 Feb 2007 03:41:53 -0500
+Received: from gw.goop.org ([64.81.55.164]:46892 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932996AbXB0Iir (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 03:38:47 -0500
-Message-Id: <20070227081637.676460726@goop.org>
+	id S932987AbXB0Ii5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 03:38:57 -0500
+Message-Id: <20070227081637.053780197@goop.org>
 References: <20070227081337.434798469@goop.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 27 Feb 2007 00:14:00 -0800
+Date: Tue, 27 Feb 2007 00:13:58 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@muc.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
        Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-Subject: [patch 23/26] Xen-paravirt_ops: Add Xen grant table support
-Content-Disposition: inline; filename=xen-grant-table.patch
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [patch 21/26] Xen-paravirt_ops: Use the hvc console infrastructure for Xen console
+Content-Disposition: inline; filename=xen-hvc-console.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add Xen 'grant table' driver which allows granting of access to
-selected local memory pages by other virtual machines and,
-symmetrically, the mapping of remote memory pages which other virtual
-machines have granted access to.
+Implement a Xen back-end for hvc console.
 
-This driver is a prerequisite for many of the Xen virtual device
-drivers, which grant the 'device driver domain' restricted and
-temporary access to only those memory pages that are currently
-involved in I/O operations.
-
+From: Gerd Hoffmann <kraxel@suse.de>
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
-Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+
 ---
+ arch/i386/xen/Kconfig     |    1 
+ arch/i386/xen/events.c    |    3 -
+ drivers/Makefile          |    3 +
  drivers/xen/Makefile      |    1 
- drivers/xen/grant-table.c |  454 +++++++++++++++++++++++++++++++++++++++++++++
- include/xen/grant_table.h |  107 ++++++++++
- 3 files changed, 562 insertions(+)
+ drivers/xen/hvc-console.c |  134 +++++++++++++++++++++++++++++++++++++++++++++
+ include/xen/events.h      |    1 
+ 6 files changed, 142 insertions(+), 1 deletion(-)
 
 ===================================================================
---- a/drivers/xen/Makefile
+--- a/arch/i386/xen/Kconfig
++++ b/arch/i386/xen/Kconfig
+@@ -5,6 +5,7 @@ config XEN
+ config XEN
+ 	bool "Enable support for Xen hypervisor"
+ 	depends on PARAVIRT && HZ_100 && !PREEMPT && !NO_HZ
++	select HVC_DRIVER
+ 	default y
+ 	help
+ 	  This is the Linux Xen port.
+===================================================================
+--- a/arch/i386/xen/events.c
++++ b/arch/i386/xen/events.c
+@@ -209,7 +209,7 @@ static int find_unbound_irq(void)
+ 	return irq;
+ }
+ 
+-static int bind_evtchn_to_irq(unsigned int evtchn)
++int bind_evtchn_to_irq(unsigned int evtchn)
+ {
+ 	int irq;
+ 
+@@ -233,6 +233,7 @@ static int bind_evtchn_to_irq(unsigned i
+ 
+ 	return irq;
+ }
++EXPORT_SYMBOL_GPL(bind_evtchn_to_irq);
+ 
+ static int bind_virq_to_irq(unsigned int virq, unsigned int cpu)
+ {
+===================================================================
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -14,6 +14,9 @@ obj-$(CONFIG_ACPI)		+= acpi/
+ # was used and do nothing if so
+ obj-$(CONFIG_PNP)		+= pnp/
+ obj-$(CONFIG_ARM_AMBA)		+= amba/
++
++# Xen is the default console when running as a guest
++obj-$(CONFIG_XEN)		+= xen/
+ 
+ # char/ comes before serial/ etc so that the VT console is the boot-time
+ # default.
+===================================================================
+--- /dev/null
 +++ b/drivers/xen/Makefile
-@@ -1,1 +1,2 @@ obj-y	+= hvc-console.o
-+obj-y	+= grant-table.o
- obj-y	+= hvc-console.o
+@@ -0,0 +1,1 @@
++obj-y	+= hvc-console.o
 ===================================================================
 --- /dev/null
-+++ b/drivers/xen/grant-table.c
-@@ -0,0 +1,454 @@
-+/******************************************************************************
-+ * grant_table.c
-+ *
-+ * Granting foreign access to our memory reservation.
-+ *
-+ * Copyright (c) 2005, Christopher Clark
-+ * Copyright (c) 2004-2005, K A Fraser
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation; or, when distributed
-+ * separately from the Linux kernel or incorporated into other
-+ * software packages, subject to the following license:
-+ *
-+ * Permission is hereby granted, free of charge, to any person obtaining a copy
-+ * of this source file (the "Software"), to deal in the Software without
-+ * restriction, including without limitation the rights to use, copy, modify,
-+ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
-+ * and to permit persons to whom the Software is furnished to do so, subject to
-+ * the following conditions:
-+ *
-+ * The above copyright notice and this permission notice shall be included in
-+ * all copies or substantial portions of the Software.
-+ *
-+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-+ * IN THE SOFTWARE.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/sched.h>
-+#include <linux/mm.h>
-+#include <linux/vmalloc.h>
-+#include <xen/interface/xen.h>
-+#include <xen/page.h>
-+#include <xen/grant_table.h>
-+
-+#include <asm/pgtable.h>
-+#include <asm/uaccess.h>
-+#include <asm/sync_bitops.h>
-+
-+
-+/* External tools reserve first few grant table entries. */
-+#define NR_RESERVED_ENTRIES 8
-+
-+#define NR_GRANT_ENTRIES \
-+	(NR_GRANT_FRAMES * PAGE_SIZE / sizeof(struct grant_entry))
-+#define GNTTAB_LIST_END (NR_GRANT_ENTRIES + 1)
-+
-+static grant_ref_t gnttab_list[NR_GRANT_ENTRIES];
-+static int gnttab_free_count;
-+static grant_ref_t gnttab_free_head;
-+static DEFINE_SPINLOCK(gnttab_list_lock);
-+
-+static struct grant_entry *shared;
-+
-+static struct gnttab_free_callback *gnttab_free_callback_list;
-+
-+static int get_free_entries(int count)
-+{
-+	unsigned long flags;
-+	int ref;
-+	grant_ref_t head;
-+	spin_lock_irqsave(&gnttab_list_lock, flags);
-+	if (gnttab_free_count < count) {
-+		spin_unlock_irqrestore(&gnttab_list_lock, flags);
-+		return -1;
-+	}
-+	ref = head = gnttab_free_head;
-+	gnttab_free_count -= count;
-+	while (count-- > 1)
-+		head = gnttab_list[head];
-+	gnttab_free_head = gnttab_list[head];
-+	gnttab_list[head] = GNTTAB_LIST_END;
-+	spin_unlock_irqrestore(&gnttab_list_lock, flags);
-+	return ref;
-+}
-+
-+#define get_free_entry() get_free_entries(1)
-+
-+static void do_free_callbacks(void)
-+{
-+	struct gnttab_free_callback *callback, *next;
-+
-+	callback = gnttab_free_callback_list;
-+	gnttab_free_callback_list = NULL;
-+
-+	while (callback != NULL) {
-+		next = callback->next;
-+		if (gnttab_free_count >= callback->count) {
-+			callback->next = NULL;
-+			callback->fn(callback->arg);
-+		} else {
-+			callback->next = gnttab_free_callback_list;
-+			gnttab_free_callback_list = callback;
-+		}
-+		callback = next;
-+	}
-+}
-+
-+static inline void check_free_callbacks(void)
-+{
-+	if (unlikely(gnttab_free_callback_list))
-+		do_free_callbacks();
-+}
-+
-+static void put_free_entry(grant_ref_t ref)
-+{
-+	unsigned long flags;
-+	spin_lock_irqsave(&gnttab_list_lock, flags);
-+	gnttab_list[ref] = gnttab_free_head;
-+	gnttab_free_head = ref;
-+	gnttab_free_count++;
-+	check_free_callbacks();
-+	spin_unlock_irqrestore(&gnttab_list_lock, flags);
-+}
-+
-+static void update_grant_entry(grant_ref_t ref, domid_t domid,
-+			       unsigned long frame, unsigned flags)
-+{
-+	/*
-+	 * Introducing a valid entry into the grant table:
-+	 *  1. Write ent->domid.
-+	 *  2. Write ent->frame:
-+	 *      GTF_permit_access:   Frame to which access is permitted.
-+	 *      GTF_accept_transfer: Pseudo-phys frame slot being filled by new
-+	 *                           frame, or zero if none.
-+	 *  3. Write memory barrier (WMB).
-+	 *  4. Write ent->flags, inc. valid type.
-+	 */
-+	shared[ref].frame = frame;
-+	shared[ref].domid = domid;
-+	wmb();
-+	shared[ref].flags = flags;
-+}
-+
++++ b/drivers/xen/hvc-console.c
+@@ -0,0 +1,134 @@
 +/*
-+ * Public grant-issuing interface functions
-+ */
-+void gnttab_grant_foreign_access_ref(grant_ref_t ref, domid_t domid,
-+				     unsigned long frame, int readonly)
-+{
-+	update_grant_entry(ref, domid, frame,
-+			   GTF_permit_access | (readonly ? GTF_readonly : 0));
-+}
-+EXPORT_SYMBOL_GPL(gnttab_grant_foreign_access_ref);
-+
-+int gnttab_grant_foreign_access(domid_t domid, unsigned long frame,
-+				int readonly)
-+{
-+	int ref;
-+
-+	if (unlikely((ref = get_free_entry()) == -1))
-+		return -ENOSPC;
-+
-+	gnttab_grant_foreign_access_ref(ref, domid, frame, readonly);
-+
-+	return ref;
-+}
-+EXPORT_SYMBOL_GPL(gnttab_grant_foreign_access);
-+
-+int gnttab_query_foreign_access(grant_ref_t ref)
-+{
-+	u16 nflags;
-+
-+	nflags = shared[ref].flags;
-+
-+	return (nflags & (GTF_reading|GTF_writing));
-+}
-+EXPORT_SYMBOL_GPL(gnttab_query_foreign_access);
-+
-+int gnttab_end_foreign_access_ref(grant_ref_t ref, int readonly)
-+{
-+	u16 flags, nflags;
-+
-+	nflags = shared[ref].flags;
-+	do {
-+		if ((flags = nflags) & (GTF_reading|GTF_writing)) {
-+			printk(KERN_ALERT "WARNING: g.e. still in use!\n");
-+			return 0;
-+		}
-+	} while ((nflags = sync_cmpxchg(&shared[ref].flags, flags, 0)) !=
-+		 flags);
-+
-+	return 1;
-+}
-+EXPORT_SYMBOL_GPL(gnttab_end_foreign_access_ref);
-+
-+void gnttab_end_foreign_access(grant_ref_t ref, int readonly,
-+			       unsigned long page)
-+{
-+	if (gnttab_end_foreign_access_ref(ref, readonly)) {
-+		put_free_entry(ref);
-+		if (page != 0)
-+			free_page(page);
-+	} else {
-+		/* XXX This needs to be fixed so that the ref and page are
-+		   placed on a list to be freed up later. */
-+		printk(KERN_WARNING
-+		       "WARNING: leaking g.e. and page still in use!\n");
-+	}
-+}
-+EXPORT_SYMBOL_GPL(gnttab_end_foreign_access);
-+
-+int gnttab_grant_foreign_transfer(domid_t domid, unsigned long pfn)
-+{
-+	int ref;
-+
-+	if (unlikely((ref = get_free_entry()) == -1))
-+		return -ENOSPC;
-+	gnttab_grant_foreign_transfer_ref(ref, domid, pfn);
-+
-+	return ref;
-+}
-+EXPORT_SYMBOL_GPL(gnttab_grant_foreign_transfer);
-+
-+void gnttab_grant_foreign_transfer_ref(grant_ref_t ref, domid_t domid,
-+				       unsigned long pfn)
-+{
-+	update_grant_entry(ref, domid, pfn, GTF_accept_transfer);
-+}
-+EXPORT_SYMBOL_GPL(gnttab_grant_foreign_transfer_ref);
-+
-+unsigned long gnttab_end_foreign_transfer_ref(grant_ref_t ref)
-+{
-+	unsigned long frame;
-+	u16           flags;
-+
-+	/*
-+	 * If a transfer is not even yet started, try to reclaim the grant
-+	 * reference and return failure (== 0).
-+	 */
-+	while (!((flags = shared[ref].flags) & GTF_transfer_committed)) {
-+		if (sync_cmpxchg(&shared[ref].flags, flags, 0) == flags)
-+			return 0;
-+		cpu_relax();
-+	}
-+
-+	/* If a transfer is in progress then wait until it is completed. */
-+	while (!(flags & GTF_transfer_completed)) {
-+		flags = shared[ref].flags;
-+		cpu_relax();
-+	}
-+
-+	rmb();	/* Read the frame number /after/ reading completion status. */
-+	frame = shared[ref].frame;
-+	BUG_ON(frame == 0);
-+
-+	return frame;
-+}
-+EXPORT_SYMBOL_GPL(gnttab_end_foreign_transfer_ref);
-+
-+unsigned long gnttab_end_foreign_transfer(grant_ref_t ref)
-+{
-+	unsigned long frame = gnttab_end_foreign_transfer_ref(ref);
-+	put_free_entry(ref);
-+	return frame;
-+}
-+EXPORT_SYMBOL_GPL(gnttab_end_foreign_transfer);
-+
-+void gnttab_free_grant_reference(grant_ref_t ref)
-+{
-+	put_free_entry(ref);
-+}
-+EXPORT_SYMBOL_GPL(gnttab_free_grant_reference);
-+
-+void gnttab_free_grant_references(grant_ref_t head)
-+{
-+	grant_ref_t ref;
-+	unsigned long flags;
-+	int count = 1;
-+	if (head == GNTTAB_LIST_END)
-+		return;
-+	spin_lock_irqsave(&gnttab_list_lock, flags);
-+	ref = head;
-+	while (gnttab_list[ref] != GNTTAB_LIST_END) {
-+		ref = gnttab_list[ref];
-+		count++;
-+	}
-+	gnttab_list[ref] = gnttab_free_head;
-+	gnttab_free_head = head;
-+	gnttab_free_count += count;
-+	check_free_callbacks();
-+	spin_unlock_irqrestore(&gnttab_list_lock, flags);
-+}
-+EXPORT_SYMBOL_GPL(gnttab_free_grant_references);
-+
-+int gnttab_alloc_grant_references(u16 count, grant_ref_t *head)
-+{
-+	int h = get_free_entries(count);
-+
-+	if (h == -1)
-+		return -ENOSPC;
-+
-+	*head = h;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(gnttab_alloc_grant_references);
-+
-+int gnttab_empty_grant_references(const grant_ref_t *private_head)
-+{
-+	return (*private_head == GNTTAB_LIST_END);
-+}
-+EXPORT_SYMBOL_GPL(gnttab_empty_grant_references);
-+
-+int gnttab_claim_grant_reference(grant_ref_t *private_head)
-+{
-+	grant_ref_t g = *private_head;
-+	if (unlikely(g == GNTTAB_LIST_END))
-+		return -ENOSPC;
-+	*private_head = gnttab_list[g];
-+	return g;
-+}
-+EXPORT_SYMBOL_GPL(gnttab_claim_grant_reference);
-+
-+void gnttab_release_grant_reference(grant_ref_t *private_head,
-+				    grant_ref_t release)
-+{
-+	gnttab_list[release] = *private_head;
-+	*private_head = release;
-+}
-+EXPORT_SYMBOL_GPL(gnttab_release_grant_reference);
-+
-+void gnttab_request_free_callback(struct gnttab_free_callback *callback,
-+				  void (*fn)(void *), void *arg, u16 count)
-+{
-+	unsigned long flags;
-+	spin_lock_irqsave(&gnttab_list_lock, flags);
-+	if (callback->next)
-+		goto out;
-+	callback->fn = fn;
-+	callback->arg = arg;
-+	callback->count = count;
-+	callback->next = gnttab_free_callback_list;
-+	gnttab_free_callback_list = callback;
-+	check_free_callbacks();
-+out:
-+	spin_unlock_irqrestore(&gnttab_list_lock, flags);
-+}
-+EXPORT_SYMBOL_GPL(gnttab_request_free_callback);
-+
-+void gnttab_cancel_free_callback(struct gnttab_free_callback *callback)
-+{
-+	struct gnttab_free_callback **pcb;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&gnttab_list_lock, flags);
-+	for (pcb = &gnttab_free_callback_list; *pcb; pcb = &(*pcb)->next) {
-+		if (*pcb == callback) {
-+			*pcb = callback->next;
-+			break;
-+		}
-+	}
-+	spin_unlock_irqrestore(&gnttab_list_lock, flags);
-+}
-+EXPORT_SYMBOL_GPL(gnttab_cancel_free_callback);
-+
-+#ifndef __ia64__
-+static int map_pte_fn(pte_t *pte, struct page *pmd_page,
-+		      unsigned long addr, void *data)
-+{
-+	unsigned long **frames = (unsigned long **)data;
-+
-+	set_pte_at(&init_mm, addr, pte, mfn_pte((*frames)[0], PAGE_KERNEL));
-+	(*frames)++;
-+	return 0;
-+}
-+
-+static int unmap_pte_fn(pte_t *pte, struct page *pmd_page,
-+			unsigned long addr, void *data)
-+{
-+
-+	set_pte_at(&init_mm, addr, pte, __pte(0));
-+	return 0;
-+}
-+#endif
-+
-+int gnttab_resume(void)
-+{
-+	struct gnttab_setup_table setup;
-+	unsigned long frames[NR_GRANT_FRAMES];
-+	int rc;
-+
-+	setup.dom        = DOMID_SELF;
-+	setup.nr_frames  = NR_GRANT_FRAMES;
-+	setup.frame_list = frames;
-+
-+	rc = HYPERVISOR_grant_table_op(GNTTABOP_setup_table, &setup, 1);
-+	if (rc == -ENOSYS)
-+		return -ENOSYS;
-+
-+	BUG_ON(rc || setup.status);
-+
-+#ifndef __ia64__
-+	{
-+		void *pframes = frames;
-+		struct vm_struct *area;
-+
-+		if (shared == NULL) {
-+			area = get_vm_area(PAGE_SIZE * NR_GRANT_FRAMES,
-+					   VM_IOREMAP);
-+			BUG_ON(area == NULL);
-+			shared = area->addr;
-+		}
-+		rc = apply_to_page_range(&init_mm, (unsigned long)shared,
-+					 PAGE_SIZE * NR_GRANT_FRAMES,
-+					 map_pte_fn, &pframes);
-+		BUG_ON(rc);
-+	}
-+#else
-+	shared = __va(frames[0] << PAGE_SHIFT);
-+	printk("grant table at %p\n", shared);
-+#endif
-+
-+	return 0;
-+}
-+
-+int gnttab_suspend(void)
-+{
-+
-+#ifndef __ia64__
-+	apply_to_page_range(&init_mm, (unsigned long)shared,
-+			    PAGE_SIZE * NR_GRANT_FRAMES,
-+			    unmap_pte_fn, NULL);
-+#endif
-+
-+	return 0;
-+}
-+
-+static int __init gnttab_init(void)
-+{
-+	int i;
-+
-+	if (!is_running_on_xen())
-+		return -ENODEV;
-+
-+	if (gnttab_resume() < 0)
-+		return -ENODEV;
-+
-+	for (i = NR_RESERVED_ENTRIES; i < NR_GRANT_ENTRIES; i++)
-+		gnttab_list[i] = i + 1;
-+	gnttab_free_count = NR_GRANT_ENTRIES - NR_RESERVED_ENTRIES;
-+	gnttab_free_head  = NR_RESERVED_ENTRIES;
-+
-+	printk("Grant table initialized\n");
-+	return 0;
-+}
-+
-+core_initcall(gnttab_init);
-===================================================================
---- /dev/null
-+++ b/include/xen/grant_table.h
-@@ -0,0 +1,107 @@
-+/******************************************************************************
-+ * grant_table.h
++ * xen console driver interface to hvc_console.c
 + *
-+ * Two sets of functionality:
-+ * 1. Granting foreign access to our memory reservation.
-+ * 2. Accessing others' memory reservations via grant references.
-+ * (i.e., mechanisms for both sender and recipient of grant references)
++ * (c) 2007 Gerd Hoffmann <kraxel@suse.de>
 + *
-+ * Copyright (c) 2004-2005, K A Fraser
-+ * Copyright (c) 2005, Christopher Clark
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
 + *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation; or, when distributed
-+ * separately from the Linux kernel or incorporated into other
-+ * software packages, subject to the following license:
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
 + *
-+ * Permission is hereby granted, free of charge, to any person obtaining a copy
-+ * of this source file (the "Software"), to deal in the Software without
-+ * restriction, including without limitation the rights to use, copy, modify,
-+ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
-+ * and to permit persons to whom the Software is furnished to do so, subject to
-+ * the following conditions:
-+ *
-+ * The above copyright notice and this permission notice shall be included in
-+ * all copies or substantial portions of the Software.
-+ *
-+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-+ * IN THE SOFTWARE.
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 + */
 +
-+#ifndef __ASM_GNTTAB_H__
-+#define __ASM_GNTTAB_H__
++#include <linux/console.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/init.h>
++#include <linux/types.h>
 +
 +#include <asm/xen/hypervisor.h>
-+#include <xen/interface/grant_table.h>
++#include <xen/page.h>
++#include <xen/events.h>
++#include <xen/interface/io/console.h>
 +
-+/* NR_GRANT_FRAMES must be less than or equal to that configured in Xen */
-+#define NR_GRANT_FRAMES 4
++#include "../char/hvc_console.h"
 +
-+struct gnttab_free_callback {
-+	struct gnttab_free_callback *next;
-+	void (*fn)(void *);
-+	void *arg;
-+	u16 count;
++#define HVC_COOKIE   0x58656e /* "Xen" in hex */
++
++static struct hvc_struct *hvc;
++static int xencons_irq;
++
++/* ------------------------------------------------------------------ */
++
++static inline struct xencons_interface *xencons_interface(void)
++{
++	return mfn_to_virt(xen_start_info->console.domU.mfn);
++}
++
++static inline void notify_daemon(void)
++{
++	/* Use evtchn: this is called early, before irq is set up. */
++	notify_remote_via_evtchn(xen_start_info->console.domU.evtchn);
++}
++
++static int write_console(uint32_t vtermno, const char *data, int len)
++{
++	struct xencons_interface *intf = xencons_interface();
++	XENCONS_RING_IDX cons, prod;
++	int sent = 0;
++
++	cons = intf->out_cons;
++	prod = intf->out_prod;
++	mb();
++	BUG_ON((prod - cons) > sizeof(intf->out));
++
++	while ((sent < len) && ((prod - cons) < sizeof(intf->out)))
++		intf->out[MASK_XENCONS_IDX(prod++, intf->out)] = data[sent++];
++
++	wmb();
++	intf->out_prod = prod;
++
++	notify_daemon();
++	return sent;
++}
++
++static int read_console(uint32_t vtermno, char *buf, int len)
++{
++	struct xencons_interface *intf = xencons_interface();
++	XENCONS_RING_IDX cons, prod;
++	int recv = 0;
++
++	cons = intf->in_cons;
++	prod = intf->in_prod;
++	mb();
++	BUG_ON((prod - cons) > sizeof(intf->in));
++
++	while (cons != prod && recv < len)
++		buf[recv++] = intf->in[MASK_XENCONS_IDX(cons++,intf->in)];
++
++	mb();
++	intf->in_cons = cons;
++
++	notify_daemon();
++	return recv;
++}
++
++static struct hv_ops hvc_ops = {
++	.get_chars = read_console,
++	.put_chars = write_console,
 +};
 +
-+int gnttab_grant_foreign_access(domid_t domid, unsigned long frame,
-+				int readonly);
++static int __init xen_init(void)
++{
++	struct hvc_struct *hp;
 +
-+/*
-+ * End access through the given grant reference, iff the grant entry is no
-+ * longer in use.  Return 1 if the grant entry was freed, 0 if it is still in
-+ * use.
-+ */
-+int gnttab_end_foreign_access_ref(grant_ref_t ref, int readonly);
++	if (!is_running_on_xen())
++		return 0;
 +
-+/*
-+ * Eventually end access through the given grant reference, and once that
-+ * access has been ended, free the given page too.  Access will be ended
-+ * immediately iff the grant entry is not in use, otherwise it will happen
-+ * some time later.  page may be 0, in which case no freeing will occur.
-+ */
-+void gnttab_end_foreign_access(grant_ref_t ref, int readonly,
-+			       unsigned long page);
++	xencons_irq = bind_evtchn_to_irq(xen_start_info->console.domU.evtchn);
++	if (xencons_irq < 0)
++		xencons_irq = 0 /* NO_IRQ */;
++	hp = hvc_alloc(HVC_COOKIE, xencons_irq, &hvc_ops, 256);
++	if (IS_ERR(hp))
++		return PTR_ERR(hp);
 +
-+int gnttab_grant_foreign_transfer(domid_t domid, unsigned long pfn);
++	hvc = hp;
++	return 0;
++}
 +
-+unsigned long gnttab_end_foreign_transfer_ref(grant_ref_t ref);
-+unsigned long gnttab_end_foreign_transfer(grant_ref_t ref);
++static void __exit xen_fini(void)
++{
++	if (hvc)
++		hvc_remove(hvc);
++}
 +
-+int gnttab_query_foreign_access(grant_ref_t ref);
++static int xen_cons_init(void)
++{
++	if (!is_running_on_xen())
++		return 0;
 +
-+/*
-+ * operations on reserved batches of grant references
-+ */
-+int gnttab_alloc_grant_references(u16 count, grant_ref_t *pprivate_head);
++	hvc_instantiate(HVC_COOKIE, 0, &hvc_ops);
++	return 0;
++}
 +
-+void gnttab_free_grant_reference(grant_ref_t ref);
-+
-+void gnttab_free_grant_references(grant_ref_t head);
-+
-+int gnttab_empty_grant_references(const grant_ref_t *pprivate_head);
-+
-+int gnttab_claim_grant_reference(grant_ref_t *pprivate_head);
-+
-+void gnttab_release_grant_reference(grant_ref_t *private_head,
-+				    grant_ref_t release);
-+
-+void gnttab_request_free_callback(struct gnttab_free_callback *callback,
-+				  void (*fn)(void *), void *arg, u16 count);
-+void gnttab_cancel_free_callback(struct gnttab_free_callback *callback);
-+
-+void gnttab_grant_foreign_access_ref(grant_ref_t ref, domid_t domid,
-+				     unsigned long frame, int readonly);
-+
-+void gnttab_grant_foreign_transfer_ref(grant_ref_t, domid_t domid,
-+				       unsigned long pfn);
-+
-+#define gnttab_map_vaddr(map) ((void *)(map.host_virt_addr))
-+
-+#endif /* __ASM_GNTTAB_H__ */
++module_init(xen_init);
++module_exit(xen_fini);
++console_initcall(xen_cons_init);
+===================================================================
+--- a/include/xen/events.h
++++ b/include/xen/events.h
+@@ -3,6 +3,7 @@
+ 
+ #include <linux/irq.h>
+ 
++int bind_evtchn_to_irq(unsigned int evtchn);
+ int bind_evtchn_to_irqhandler(unsigned int evtchn,
+ 			      irqreturn_t (*handler)(int, void *),
+ 			      unsigned long irqflags, const char *devname,
 
 -- 
 
