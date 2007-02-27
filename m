@@ -1,122 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932699AbXB0IpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932964AbXB0IpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932699AbXB0IpX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 03:45:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161049AbXB0InO
+	id S932964AbXB0IpY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 03:45:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161037AbXB0InM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 03:43:14 -0500
-Received: from gw.goop.org ([64.81.55.164]:46865 "EHLO mail.goop.org"
+	Tue, 27 Feb 2007 03:43:12 -0500
+Received: from gw.goop.org ([64.81.55.164]:46844 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932991AbXB0Iih (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 03:38:37 -0500
-Message-Id: <20070227081632.823864420@goop.org>
+	id S932948AbXB0Iii (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 03:38:38 -0500
+Message-Id: <20070227081631.921696519@goop.org>
 References: <20070227081337.434798469@goop.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 27 Feb 2007 00:13:47 -0800
+Date: Tue, 27 Feb 2007 00:13:45 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@muc.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
        Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: [patch 10/26] Xen-paravirt_ops: rename struct paravirt_patch to paravirt_patch_site for clarity
-Content-Disposition: inline; filename=paravirt-patch-rename-paravirt_patch.patch
+       Rusty Russell <rusty@rustcorp.com.au>, linux-arch@vger.kernel.org
+Subject: [patch 08/26] Xen-paravirt_ops: add hooks to intercept mm creation and destruction
+Content-Disposition: inline; filename=mm-lifetime-hooks.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rename struct paravirt_patch to paravirt_patch_site, so that it
-clearly refers to a callsite, and not the patch which may be applied
-to that callsite.
+Add hooks to allow a paravirt implementation to track the lifetime of
+an mm.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Zachary Amsden <zach@vmware.com>
-
+Cc: linux-arch@vger.kernel.org
 ---
- arch/i386/kernel/alternative.c |    8 +++-----
- arch/i386/kernel/vmi.c         |    4 ----
- include/asm-i386/alternative.h |    6 +++---
- include/asm-i386/paravirt.h    |    5 ++++-
- 4 files changed, 10 insertions(+), 13 deletions(-)
+ arch/i386/kernel/paravirt.c    |    4 ++++
+ include/asm-i386/mmu_context.h |    8 ++++++--
+ include/asm-i386/paravirt.h    |   25 +++++++++++++++++++++++++
+ include/linux/sched.h          |    6 ++++++
+ kernel/fork.c                  |    2 ++
+ mm/mmap.c                      |    3 +++
+ 6 files changed, 46 insertions(+), 2 deletions(-)
 
 ===================================================================
---- a/arch/i386/kernel/alternative.c
-+++ b/arch/i386/kernel/alternative.c
-@@ -350,9 +350,9 @@ void alternatives_smp_switch(int smp)
- #endif
+--- a/arch/i386/kernel/paravirt.c
++++ b/arch/i386/kernel/paravirt.c
+@@ -700,6 +700,10 @@ struct paravirt_ops paravirt_ops = {
+ 	.irq_enable_sysexit = native_irq_enable_sysexit,
+ 	.iret = native_iret,
  
- #ifdef CONFIG_PARAVIRT
--void apply_paravirt(struct paravirt_patch *start, struct paravirt_patch *end)
--{
--	struct paravirt_patch *p;
-+void apply_paravirt(struct paravirt_patch_site *start, struct paravirt_patch_site *end)
-+{
-+	struct paravirt_patch_site *p;
++	.dup_mmap = paravirt_nop,
++	.exit_mmap = paravirt_nop,
++	.activate_mm = paravirt_nop,
++
+ 	.startup_ipi_hook = paravirt_nop,
+ };
  
- 	for (p = start; p < end; p++) {
- 		unsigned int used;
-@@ -379,8 +379,6 @@ void apply_paravirt(struct paravirt_patc
- 	/* Sync to be conservative, in case we patched following instructions */
- 	sync_core();
- }
--extern struct paravirt_patch __start_parainstructions[],
--	__stop_parainstructions[];
- #endif	/* CONFIG_PARAVIRT */
- 
- void __init alternative_instructions(void)
 ===================================================================
---- a/arch/i386/kernel/vmi.c
-+++ b/arch/i386/kernel/vmi.c
-@@ -70,10 +70,6 @@ struct {
- 	void (*set_initial_ap_state)(int, int);
- 	void (*halt)(void);
- } vmi_ops;
--
--/* XXX move this to alternative.h */
--extern struct paravirt_patch __start_parainstructions[],
--	__stop_parainstructions[];
+--- a/include/asm-i386/mmu_context.h
++++ b/include/asm-i386/mmu_context.h
+@@ -5,6 +5,7 @@
+ #include <asm/atomic.h>
+ #include <asm/pgalloc.h>
+ #include <asm/tlbflush.h>
++#include <asm/paravirt.h>
  
  /*
-  * VMI patching routines.
-===================================================================
---- a/include/asm-i386/alternative.h
-+++ b/include/asm-i386/alternative.h
-@@ -118,12 +118,12 @@ static inline void alternatives_smp_swit
- #define LOCK_PREFIX ""
- #endif
+  * Used for LDT copy/destruction.
+@@ -65,7 +66,10 @@ static inline void switch_mm(struct mm_s
+ #define deactivate_mm(tsk, mm)			\
+ 	asm("movl %0,%%gs": :"r" (0));
  
--struct paravirt_patch;
-+struct paravirt_patch_site;
- #ifdef CONFIG_PARAVIRT
--void apply_paravirt(struct paravirt_patch *start, struct paravirt_patch *end);
-+void apply_paravirt(struct paravirt_patch_site *start, struct paravirt_patch_site *end);
- #else
- static inline void
--apply_paravirt(struct paravirt_patch *start, struct paravirt_patch *end)
-+apply_paravirt(struct paravirt_patch_site *start, struct paravirt_patch_site *end)
- {}
- #define __start_parainstructions NULL
- #define __stop_parainstructions NULL
+-#define activate_mm(prev, next) \
+-	switch_mm((prev),(next),NULL)
++#define activate_mm(prev, next)				\
++	do {						\
++		arch_activate_mm(prev, next);		\
++		switch_mm((prev),(next),NULL);		\
++	} while(0);
+ 
+ #endif
 ===================================================================
 --- a/include/asm-i386/paravirt.h
 +++ b/include/asm-i386/paravirt.h
-@@ -561,12 +561,15 @@ static inline void pmd_clear(pmd_t *pmdp
- #define arch_leave_lazy_mmu_mode() paravirt_ops.set_lazy_mode(PARAVIRT_LAZY_NONE)
+@@ -123,6 +123,12 @@ struct paravirt_ops
+ 	void (*io_delay)(void);
+ 	void (*const_udelay)(unsigned long loops);
  
- /* These all sit in the .parainstructions section to tell us what to patch. */
--struct paravirt_patch {
-+struct paravirt_patch_site {
- 	u8 *instr; 		/* original instructions */
- 	u8 instrtype;		/* type of this instruction */
- 	u8 len;			/* length of original instruction */
- 	u16 clobbers;		/* what registers you may clobber */
++	void (*activate_mm)(struct mm_struct *prev,
++			    struct mm_struct *next);
++	void (*dup_mmap)(struct mm_struct *oldmm,
++			 struct mm_struct *mm);
++	void (*exit_mmap)(struct mm_struct *mm);
++
+ #ifdef CONFIG_X86_LOCAL_APIC
+ 	void (*apic_write)(unsigned long reg, unsigned long v);
+ 	void (*apic_write_atomic)(unsigned long reg, unsigned long v);
+@@ -426,6 +432,24 @@ static inline void startup_ipi_hook(int 
+ }
+ #endif
+ 
++#define __HAVE_ARCH_MM_LIFETIME
++static inline void arch_activate_mm(struct mm_struct *prev,
++				    struct mm_struct *next)
++{
++	paravirt_ops.activate_mm(prev, next);
++}
++
++static inline void arch_dup_mmap(struct mm_struct *oldmm,
++				 struct mm_struct *mm)
++{
++	paravirt_ops.dup_mmap(oldmm, mm);
++}
++
++static inline void arch_exit_mmap(struct mm_struct *mm)
++{
++	paravirt_ops.exit_mmap(mm);
++}
++
+ #define __flush_tlb() paravirt_ops.flush_tlb_user()
+ #define __flush_tlb_global() paravirt_ops.flush_tlb_kernel()
+ #define __flush_tlb_single(addr) paravirt_ops.flush_tlb_single(addr)
+@@ -673,5 +697,6 @@ static inline void paravirt_pagetable_se
+ 	set_pgd(&base[0], base[USER_PTRS_PER_PGD]);
+ #endif
+ }
++
+ #endif /* CONFIG_PARAVIRT */
+ #endif	/* __ASM_PARAVIRT_H */
+===================================================================
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -374,6 +374,12 @@ struct mm_struct {
+ 	rwlock_t		ioctx_list_lock;
+ 	struct kioctx		*ioctx_list;
  };
 +
-+extern struct paravirt_patch_site __start_parainstructions[],
-+	__stop_parainstructions[];
++#ifndef __HAVE_ARCH_MM_LIFETIME
++#define arch_activate_mm(prev, next)	do {} while(0)
++#define arch_dup_mmap(oldmm, mm)	do {} while(0)
++#define arch_exit_mmap(mm)		do {} while(0)
++#endif
  
- #define paravirt_alt(insn_string, typenum, clobber)	\
- 	"771:\n\t" insn_string "\n" "772:\n"		\
+ struct sighand_struct {
+ 	atomic_t		count;
+===================================================================
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -286,6 +286,8 @@ static inline int dup_mmap(struct mm_str
+ 		if (retval)
+ 			goto out;
+ 	}
++	/* a new mm has just been created */
++	arch_dup_mmap(oldmm, mm);
+ 	retval = 0;
+ out:
+ 	up_write(&mm->mmap_sem);
+===================================================================
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -1976,6 +1976,9 @@ void exit_mmap(struct mm_struct *mm)
+ 	struct vm_area_struct *vma = mm->mmap;
+ 	unsigned long nr_accounted = 0;
+ 	unsigned long end;
++
++	/* mm's last user has gone, and its about to be pulled down */
++	arch_exit_mmap(mm);
+ 
+ 	lru_add_drain();
+ 	flush_cache_mm(mm);
 
 -- 
 
