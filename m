@@ -1,107 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932646AbXB0GQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932798AbXB0GVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932646AbXB0GQa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 01:16:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932775AbXB0GQa
+	id S932798AbXB0GVW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 01:21:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932817AbXB0GVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 01:16:30 -0500
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:38216 "EHLO
-	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932646AbXB0GQ3 (ORCPT
+	Tue, 27 Feb 2007 01:21:22 -0500
+Received: from mu-out-0910.google.com ([209.85.134.184]:19966 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932798AbXB0GVV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 01:16:29 -0500
-X-Greylist: delayed 1255 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Feb 2007 01:16:28 EST
-Date: Tue, 27 Feb 2007 16:55:29 +1100
-To: Jens Axboe <axboe@kernel.dk>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>
-Subject: Fix soft lockup with iSeries viocd driver
-Message-ID: <20070227055529.GO4575@bakeyournoodle.com>
-Mail-Followup-To: Jens Axboe <axboe@kernel.dk>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Linux Kernel ML <linux-kernel@vger.kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 27 Feb 2007 01:21:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=GyaxNnUlqQrTqYvtlNDsRqpVbifxEld8t53ypaXBZGbg9h3ls2LhOVuaqp0/1Z6+QB+2fm6sbGWaC+teq0hpLWsybdeLO6cw45DU7Li90Lf82wiwps3k/R3lW7/h6WkliYF6XJhCYHdqkE6wLeavfWygrpqwbKh8ef7KZRwx1eI=
+Message-ID: <e9c3a7c20702262221i4ce5d2c8r4f55ee70d04c7a70@mail.gmail.com>
+Date: Mon, 26 Feb 2007 23:21:19 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Stephen Hemminger" <shemminger@linux-foundation.org>
+Subject: Re: [RFC] div64_64 support
+Cc: "Jan Engelhardt" <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, "Nicolas Pitre" <nico@cam.org>,
+       "Russell King - ARM Linux" <linux@arm.linux.org.uk>
+In-Reply-To: <20070226143127.5c74bec9@freekitty>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
-From: tony@bakeyournoodle.com (Tony Breeds)
+References: <20070223170527.4ca695b2@freekitty>
+	 <Pine.LNX.4.61.0702262108010.23355@yvahk01.tjqt.qr>
+	 <20070226143127.5c74bec9@freekitty>
+X-Google-Sender-Auth: 5640421ebc786cd3
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tony Breeds <tony@bakeyournoodle.com>
+On 2/26/07, Stephen Hemminger <shemminger@linux-foundation.org> wrote:
+> Here is another way to handle the 64 bit divide case.
+> It allows full 64 bit divide by adding the support routine
+> GCC needs.
+>
+<snip>
 
-Fix soft lockup with iSeries viocd driver, caused by eventually calling
-end_that_request_first() with nr_bytes 0.
+I know ARM already went through the process of removing __udivdi3 support:
+http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=2723/2
 
-The lockup is triggered by hald, interrogating the device.
+Copying Russell and Nicolas as a heads up.
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
-
----
-Implementation based on drivers/ide/ide-io.c:ide_end_request()
-
- viocd.c |   24 ++++++++++++++++++++----
- 1 file changed, 20 insertions(+), 4 deletions(-)
-
-Index: linux-2.6.20-rc5/drivers/cdrom/viocd.c
-===================================================================
---- linux-2.6.20-rc5.orig/drivers/cdrom/viocd.c
-+++ linux-2.6.20-rc5/drivers/cdrom/viocd.c
-@@ -376,6 +376,22 @@ static int send_request(struct request *
-        return 0;
- }
- 
-+static void viocd_end_request(struct request *req, int uptodate)
-+{
-+       int nsectors = req->hard_cur_sectors;
-+
-+       /* Make sure it's fully ended */
-+       if (blk_pc_request(req))
-+               nsectors = (req->data_len + 511) >> 9;
-+       if (!nsectors)
-+               nsectors = 1;
-+
-+       if (!end_that_request_first(req, uptodate, nsectors)) {
-+               add_disk_randomness(req->rq_disk);
-+               blkdev_dequeue_request(req);
-+               end_that_request_last(req, uptodate);
-+       }
-+}
- 
- static int rwreq;
- 
-@@ -385,11 +401,11 @@ static void do_viocd_request(request_que
- 
-        while ((rwreq == 0) && ((req = elv_next_request(q)) != NULL)) {
-                if (!blk_fs_request(req))
--                       end_request(req, 0);
-+                       viocd_end_request(req, 0);
-                else if (send_request(req) < 0) {
-                        printk(VIOCD_KERN_WARNING
-                                        "unable to send message to OS/400!");
--                       end_request(req, 0);
-+                       viocd_end_request(req, 0);
-                } else
-                        rwreq++;
-        }
-@@ -601,9 +617,9 @@ return_complete:
-                                        "with rc %d:0x%04X: %s\n",
-                                        req, event->xRc,
-                                        bevent->sub_result, err->msg);
--                       end_request(req, 0);
-+                       viocd_end_request(req, 0);
-                } else
--                       end_request(req, 1);
-+                       viocd_end_request(req, 1);
- 
-                /* restart handling of incoming requests */
-                spin_unlock_irqrestore(&viocd_reqlock, flags);
-
-
-
-
-Yours Tony
-
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
-
+--
+Dan
