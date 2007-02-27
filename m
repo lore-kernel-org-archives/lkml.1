@@ -1,82 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750760AbXB0LT5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750767AbXB0L1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750760AbXB0LT5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 06:19:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750741AbXB0LT5
+	id S1750767AbXB0L1t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 06:27:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750810AbXB0L1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 06:19:57 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:63208 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750767AbXB0LT4 (ORCPT
+	Tue, 27 Feb 2007 06:27:48 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:33708 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750767AbXB0L1s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 06:19:56 -0500
-Date: Tue, 27 Feb 2007 12:15:15 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pavel Machek <pavel@ucw.cz>, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: 2.6.21-rc1: known regressions (part 2)
-Message-ID: <20070227111515.GA4271@kernel.dk>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <20070225175559.GC12392@stusta.de> <20070227100202.GV3822@kernel.dk> <20070227102109.GG6745@elf.ucw.cz> <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu> <20070227105922.GD2250@kernel.dk>
+	Tue, 27 Feb 2007 06:27:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=BXOcOker2o4ddWMCKTAKP/Zteef4VaJUKXWDT2m4T8Gq3BEUINL42UL5cUnb/+IbNTa0gfHDc6jGL/P/xa2UdUK8as4hWG7JUL26SVUcXA4hEH7amiPccR9Jrzgqn4G8cE0zfmPn74tvbvyJuXhCDZKBUBFdyGUqrhogDYJtbWU=
+Message-ID: <9a8748490702270327y513bc4e8ua4c7494d0beacfc4@mail.gmail.com>
+Date: Tue, 27 Feb 2007 12:27:42 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Chuck Ebbert" <cebbert@redhat.com>
+Subject: Re: Hang when shutting down - seems umount and NFS related - kernel version 2.6.18.1
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       nfs@lists.sourceforge.net
+In-Reply-To: <45E36AEB.7030800@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070227105922.GD2250@kernel.dk>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+References: <9a8748490702261504n147aa444y779153c03a2d44a2@mail.gmail.com>
+	 <45E36AEB.7030800@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 27 2007, Jens Axboe wrote:
-> On Tue, Feb 27 2007, Ingo Molnar wrote:
-> > 
-> > * Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > > > x60 doesn't resume from S2R either, it doesn't matter if 
-> > > > > CONFIG_NO_HZ is set or not though. 2.6.20 worked fine.
-> > > > 
-> > > > It somehow works for me. As long as I do not play with bluetooth and 
-> > > > suspend to disk...
-> > > 
-> > > It locks solid here on resume, going back to 2.6.20 makes it work 
-> > > perfectly again. In between 2.6.20 and 2.6.21-rc1 some ACPI change 
-> > > broke resume, but that got fixed. Some other change later snuck in 
-> > > that broke it AGAIN for me, sigh.
-> > > 
-> > > I don't use bluetooth nor suspend to disk.
-> > 
-> > resume is stock on my T60 too. So you mean v2.6.21-rc1 vanilla works 
-> > fine? Do you know a commit ID that works for sure? I'd like to bisect 
-> 
-> Nope, 2.6.21-rc1 vanilla does not work. 2.6.20 works. 2.6.20-gitX worked
-> until some acpi change broke it, the below patch fixed that for me. That
-> got merged in a later 2.6.20-gitY, but then some other patch broke it
-> again so that 2.6.21-rc1 is broken. Not much luck there :-)
-> 
-> So it looks like:
-> 
-> - c5a7156959e89b32260ad6072bbf5077bcdfbeee broke 2.6.20-git
-> - f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 should fix that.
-> - Something later than f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 broke it
->   again.
-> 
-> > this, but this way i might just find that ACPI change that got already 
-> > fixed later on (and then got re-broken).
-> 
-> Yeah, it gets trickier. I'll try
-> f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 now and see if that works, then
-> bisect to 2.6.21-rc1 to find the other offender. I hope the other
-> offender didn't get added before
-> f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38, we'll see :-)
-
-f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 works for me, starting bisect.
+On 27/02/07, Chuck Ebbert <cebbert@redhat.com> wrote:
+> Jesper Juhl wrote:
+> > I have a server that has the sole job of serving up a bunch of NFS
+> > filesystems to webservers. The server is running kernel 2.6.18.1
+> >
+> > A few days ago when attempting to reboot the server, the shutdown
+> > process hung with a backtrace on the console. A photo was taken and is
+> > available here:
+> >  http://www.kernel.org/pub/linux/kernel/people/juhl/images/DSC00504.jpg
+> >
+> > A quick (incomplete) text transcript of the photo is here:
+> >
+> > EIP: [<c01a51a0>] nfs_clear_inode+0x61/0x6b SS:ESP 0068:eb476ee4
+> > BUG: warning at kernel/exit.c:855/do_exit()
+>
+> The real oops has scrolled off the screen.
+>
+I feared that might be the case, but still wanted to report the data I
+had just in case something useful could be gleaned from it.
+Ohh well, can't win 'em all...  Thanks for replying.
 
 -- 
-Jens Axboe
-
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
