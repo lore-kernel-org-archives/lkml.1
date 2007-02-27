@@ -1,58 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750763AbXB0LTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750760AbXB0LT5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750763AbXB0LTy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 06:19:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750760AbXB0LTy
+	id S1750760AbXB0LT5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 06:19:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750741AbXB0LT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 06:19:54 -0500
-Received: from dev.mellanox.co.il ([194.90.237.44]:34558 "EHLO
-	dev.mellanox.co.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750699AbXB0LTx (ORCPT
+	Tue, 27 Feb 2007 06:19:57 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:63208 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750767AbXB0LT4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 06:19:53 -0500
-X-Greylist: delayed 3015 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Feb 2007 06:19:53 EST
-Date: Tue, 27 Feb 2007 12:28:09 +0200
-From: "Michael S. Tsirkin" <mst@mellanox.co.il>
+	Tue, 27 Feb 2007 06:19:56 -0500
+Date: Tue, 27 Feb 2007 12:15:15 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       bunk@stusta.de, pavel@suse.cz, linux-pm@linux-foundation.org,
-       linux-acpi@vger.kernel.org, len.brown@intel.com, mingo@redhat.com
-Subject: Re: 2.6.21-rc1: T60 resume from suspend to RAM issues
-Message-ID: <20070227102809.GD10548@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-References: <20070223020904.c8fc8a3e.akpm@linux-foundation.org> <20070224211141.GA4425@mellanox.co.il> <20070227101451.GA11981@elte.hu>
+Cc: Pavel Machek <pavel@ucw.cz>, Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: 2.6.21-rc1: known regressions (part 2)
+Message-ID: <20070227111515.GA4271@kernel.dk>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <20070225175559.GC12392@stusta.de> <20070227100202.GV3822@kernel.dk> <20070227102109.GG6745@elf.ucw.cz> <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu> <20070227105922.GD2250@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070227101451.GA11981@elte.hu>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070227105922.GD2250@kernel.dk>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Ingo Molnar <mingo@elte.hu>:
-> Subject: Re: 2.6.21-rc1: T60 resume from suspend to RAM issues
-> 
-> 
-> * Michael S. Tsirkin <mst@mellanox.co.il> wrote:
-> 
-> > > > 2. As a separate test, I enabled DynTicks in .config. Seems to 
-> > > > work fine but won't come out of suspend to memory at all: pressing 
-> > > > Fn/F4 seems to have no effect.
-> > > 
-> > > Do you believe that the second problem was caused by dynticks?
+On Tue, Feb 27 2007, Jens Axboe wrote:
+> On Tue, Feb 27 2007, Ingo Molnar wrote:
 > > 
-> > Assuming these are 2 different problems, yes, the second one seems to 
-> > be caused by dyntics.
+> > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > > > x60 doesn't resume from S2R either, it doesn't matter if 
+> > > > > CONFIG_NO_HZ is set or not though. 2.6.20 worked fine.
+> > > > 
+> > > > It somehow works for me. As long as I do not play with bluetooth and 
+> > > > suspend to disk...
+> > > 
+> > > It locks solid here on resume, going back to 2.6.20 makes it work 
+> > > perfectly again. In between 2.6.20 and 2.6.21-rc1 some ACPI change 
+> > > broke resume, but that got fixed. Some other change later snuck in 
+> > > that broke it AGAIN for me, sigh.
+> > > 
+> > > I don't use bluetooth nor suspend to disk.
+> > 
+> > resume is stock on my T60 too. So you mean v2.6.21-rc1 vanilla works 
+> > fine? Do you know a commit ID that works for sure? I'd like to bisect 
 > 
-> on my T60 current -git does not resume even without dynticks. v2.6.20 
-> with the same .config resumes fine (except for the display).
+> Nope, 2.6.21-rc1 vanilla does not work. 2.6.20 works. 2.6.20-gitX worked
+> until some acpi change broke it, the below patch fixed that for me. That
+> got merged in a later 2.6.20-gitY, but then some other patch broke it
+> again so that 2.6.21-rc1 is broken. Not much luck there :-)
 > 
-> after pressing Fn/F4 the disk light flashes briefly, which suggests that 
-> action is probably back to the Linux kernel at that point, and that we 
-> hung somewhere there. Will try a bisection thing.
+> So it looks like:
+> 
+> - c5a7156959e89b32260ad6072bbf5077bcdfbeee broke 2.6.20-git
+> - f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 should fix that.
+> - Something later than f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 broke it
+>   again.
+> 
+> > this, but this way i might just find that ACPI change that got already 
+> > fixed later on (and then got re-broken).
+> 
+> Yeah, it gets trickier. I'll try
+> f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 now and see if that works, then
+> bisect to 2.6.21-rc1 to find the other offender. I hope the other
+> offender didn't get added before
+> f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38, we'll see :-)
 
-That's exactly the behaviour I have with DynTicks: the disk light flashes
-briefly.
+f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 works for me, starting bisect.
 
 -- 
-MST
+Jens Axboe
+
