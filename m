@@ -1,55 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030581AbXB0ItE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161049AbXB0Iuf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030581AbXB0ItE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 03:49:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030584AbXB0ItB
+	id S1161049AbXB0Iuf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 03:50:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161051AbXB0Iuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 03:49:01 -0500
-Received: from www.osadl.org ([213.239.205.134]:54285 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030581AbXB0Is7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 03:48:59 -0500
-Subject: Re: [RFC] Fast assurate clock readable from user space and NMI
-	handler
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, Daniel Walker <dwalker@mvista.com>,
-       mbligh@google.com, linux-kernel@vger.kernel.org, johnstul@us.ibm.com
-In-Reply-To: <20070227073815.GA25894@Krystal>
-References: <1164585589.16871.52.camel@localhost.localdomain>
-	 <20070224161906.GA9497@Krystal> <1172340369.24216.31.camel@imap.mvista.com>
-	 <20070226205304.GA30800@Krystal> <1172525261.5517.69.camel@imap.mvista.com>
-	 <20070226221423.GA2286@Krystal> <1172531521.5517.138.camel@imap.mvista.com>
-	 <20070227035456.GA15444@Krystal>
-	 <1172550161.5517.210.camel@imap.mvista.com> <20070227062913.GC1259@elte.hu>
-	 <20070227073815.GA25894@Krystal>
-Content-Type: text/plain
-Date: Tue, 27 Feb 2007 09:48:41 +0100
-Message-Id: <1172566121.3656.2.camel@chaos>
+	Tue, 27 Feb 2007 03:50:35 -0500
+Received: from mail.suse.de ([195.135.220.2]:59424 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161037AbXB0Iud (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 03:50:33 -0500
+Date: Tue, 27 Feb 2007 09:50:25 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dave Airlie <airlied@gmail.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, benh@kernel.crashing.org
+Subject: Re: [patch 0/6] fault vs truncate/invalidate race fix
+Message-ID: <20070227085025.GA2710@wotan.suse.de>
+References: <20070221023656.6306.246.sendpatchset@linux.site> <21d7e9970702262036h3575229ex3bf3cd4474a57068@mail.gmail.com> <20070226213204.14f8b584.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070226213204.14f8b584.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-27 at 02:38 -0500, Mathieu Desnoyers wrote:
-> > > The pit clocksource could be dropped pretty easy with my clocksource 
-> > > update patches, which I'm still working on but you could easily drop 
-> > > clock sources that aren't atomic like the pit .. Also the pit is 
-> > > generally undesirable, so it's not going to be missed.
+On Mon, Feb 26, 2007 at 09:32:04PM -0800, Andrew Morton wrote:
+> > On Tue, 27 Feb 2007 15:36:03 +1100 "Dave Airlie" <airlied@gmail.com> wrote:
+> > >
+> > > I've also got rid of the horrible populate API, and integrated nonlinear pages
+> > > properly with the page fault path.
+> > >
+> > > Downside is that this adds one more vector through which the buffered write
+> > > deadlock can occur. However this is just a very tiny one (pte being unmapped
+> > > for reclaim), compared to all the other ways that deadlock can occur (unmap,
+> > > reclaim, truncate, invalidate). I doubt it will be noticable. At any rate, it
+> > > is better than data corruption.
+> > >
+> > > I hope these can get merged (at least into -mm) soon.
 > > 
-> > that's totally unacceptable, and i'm amazed you are even suggesting it - 
-> > often the PIT ends up being the most reliable hardware clock in a PC. 
-> > Btw., what's wrong with the spinlock that is protecting PIT access? It 
-> > expresses the non-atomic property of the PIT just fine.
-> > 
+> > Have these been put into mm?
 > 
-> I am concerned about the automatic fallback to the PIT when no other
-> clock source is available. 
+> Not yet - I need to get back on the correct continent, review the code,
+> stuff like that.  It still hurts that this work makes the write() deadlock
+> harder to hit,
 
-And what are you going to use then ? Just kill the box, when nothing
-else than PIT is there ? 
+s/harder/easier of course...
 
-	tglx
+I think there is good reason to assume the buffered write page lock
+deadlocks would not occur in "normal" programs (or very very few),
+because it would require writing from the same page you are writing to,
+or 2 processes writing from the page the other is writing to. If any
+innocent users do hit this, at least it is not data corrupting, and is
+relatively easy to trace back to the kernel.
 
+In the case of local DoS exploits, the deadlocks already present in the
+buffered write path are already trivial to exploit...  locking the page
+in the fault path doesn't make the deadlock exploit any more possible.
 
+So the downside to merging is that we _may_ get some additional deadlocks.
+
+What is being fixed is silent data corruption that has been reported by
+several different users of the SLES kernel (because we have assertions
+there to catch it), and can be triggered by DIO or NFS, or anything using
+vmtruncate_range or invalidate_inode_pages2 on regular files. Or even a
+regular truncate with nonlinear pages. These are known problems on
+production workloads.
+
+That's my argument for merging these. I think it's reasonable, but I'm
+open to debate.
+
+I did get some page fault performance numbers at one stage. Nothing
+really exciting seemed to happen IIRC, but I can do another set of tests
+if you want?
+
+> and we haven't worked out how to fix that.
+
+To be fair, I have 2 ways to fix it. Unfortunately one is slow and the
+other requires cooperation from filesystem developers. perform_write() is
+still on track, but it is going to take a reasonable amount of time and
+effort to convert filesystems. I just can't see any gain in holding these
+patches back until that all happens.
+
+Thanks,
+Nick
