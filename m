@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751845AbXB0UbO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752095AbXB0UcE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751845AbXB0UbO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 15:31:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbXB0UbN
+	id S1752095AbXB0UcE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 15:32:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbXB0UcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 15:31:13 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:50551 "EHLO smtp.osdl.org"
+	Tue, 27 Feb 2007 15:32:04 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:50579 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751830AbXB0UbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 15:31:10 -0500
-Date: Tue, 27 Feb 2007 12:24:27 -0800
+	id S1752095AbXB0UcB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 15:32:01 -0500
+Date: Tue, 27 Feb 2007 12:25:17 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: eranian@hpl.hp.com
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org, ak@suse.de,
-       tony.luck@intel.com, Roland McGrath <roland@redhat.com>
-Subject: Re: debug registers and fork
-Message-Id: <20070227122427.bf23af2f.akpm@linux-foundation.org>
-In-Reply-To: <20070226235154.GB19630@frankl.hpl.hp.com>
-References: <20070226235154.GB19630@frankl.hpl.hp.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: hugh@veritas.com, paulmck@linux.vnet.ibm.com, clameter@sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] adapt page_lock_anon_vma() to PREEMPT_RCU
+Message-Id: <20070227122517.c8bceaf5.akpm@linux-foundation.org>
+In-Reply-To: <20070225200621.GA2259@tv-sign.ru>
+References: <20070225200621.GA2259@tv-sign.ru>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -25,30 +25,22 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, 26 Feb 2007 15:51:54 -0800 Stephane Eranian <eranian@hpl.hp.com> wrote:
-> Hello,
+> On Sun, 25 Feb 2007 23:06:21 +0300 Oleg Nesterov <oleg@tv-sign.ru> wrote:
+> page_lock_anon_vma() uses spin_lock() to block RCU. This doesn't work with
+> PREEMPT_RCU, we have to do rcu_read_lock() explicitely. Otherwise, it is
+> theoretically possible that slab returns anon_vma's memory to the system
+> before we do spin_unlock(&anon_vma->lock).
 > 
-> I have come across an issue with a monitoring using the
-> hardware debug registers on ia64/i386/x86-64.
-> 
-> It seems that the way debug registers are inherited across fork
-> differs between ia-64 and i386/x86-64. On ia-64, the debug registers
-> are NEVER inherited in the child. The copy_thread() routine clears
-> the necessary thread flags to avoid reloading the debug registers in
-> the child.
-> 
-> Now, on x86-64, it appears that the TIF_DEBUG flag is inherited via
-> setup_thread_stack(). By virtue of dup_task_struct() the debug registers
-> get copied into the child task on fork. So the child has active breakpoints,
-> unless I am mistaken somewhere.
-> 
-> Given the way the ptrace() interface works, I would tend to
-> think that the ia-64 way is the correct one. Any comment?
-> 
-> Furthermore, on i386/x86-64, when switching out from a task with TIF_DEBUG
-> enabled to another which does not, it seems we do not clear the debug
-> registers (at least dr7) so they become inactive.
-> 
+> ...
+>
+> +static void page_unlock_anon_vma(struct anon_vma *anon_vma)
+> +{
+> +	spin_unlock(&anon_vma->lock);
+> +	rcu_read_unlock();
+>  }
 
-Let's cc Roland - he's totally rewritten ptrace and probably knows this
-stuff.
+It's a bit sad doing a double preempt_disable() for non-PREEMPT_RCU builds.
+
+Perhaps we would benefit from a new rcu_read_lock_preempt_rcu() which is a
+no-op if !PREEMPT_RCU.
+
