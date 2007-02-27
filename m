@@ -1,124 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751441AbXB0ERH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751486AbXB0EZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751441AbXB0ERH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 23:17:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbXB0ERH
+	id S1751486AbXB0EZA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 23:25:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbXB0EZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 23:17:07 -0500
-Received: from stout.engsoc.carleton.ca ([134.117.69.22]:58290 "EHLO
-	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751441AbXB0ERF (ORCPT
+	Mon, 26 Feb 2007 23:25:00 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:10120 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751486AbXB0EY7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 23:17:05 -0500
-Date: Mon, 26 Feb 2007 23:16:48 -0500
-From: Kyle McMartin <kyle@parisc-linux.org>
-To: linux-kernel@vger.kernel.org
-Subject: resource_size_t printk whinging
-Message-ID: <20070227041648.GB13669@athena.road.mcmartin.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 26 Feb 2007 23:24:59 -0500
+Subject: Re: [RFC] Fast assurate clock readable from user space and NMI
+	handler
+From: Daniel Walker <dwalker@mvista.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: mbligh@google.com, linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
+       mingo@elte.hu
+In-Reply-To: <20070227035456.GA15444@Krystal>
+References: <20061126170542.GA30771@Krystal>
+	 <1164561427.16871.14.camel@localhost.localdomain>
+	 <20061126231833.GA22241@Krystal>
+	 <1164585589.16871.52.camel@localhost.localdomain>
+	 <20070224161906.GA9497@Krystal> <1172340369.24216.31.camel@imap.mvista.com>
+	 <20070226205304.GA30800@Krystal> <1172525261.5517.69.camel@imap.mvista.com>
+	 <20070226221423.GA2286@Krystal> <1172531521.5517.138.camel@imap.mvista.com>
+	 <20070227035456.GA15444@Krystal>
+Content-Type: text/plain
+Date: Mon, 26 Feb 2007 20:22:41 -0800
+Message-Id: <1172550161.5517.210.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I submitted this patch a while ago, but nobody commented on it.
-All these casts of resource_size_t to (unsigned long long) seem horribly
-wasteful to me...
+On Mon, 2007-02-26 at 22:54 -0500, Mathieu Desnoyers wrote:
+> If an NMI nests over the spinlock, we have a deadlock.
 
-Of course, to add a new format qualifier, we lose out on checking the format
-string by gcc... Nowadays, this role can be done by sparse.
+Maybe not completely safe ...
 
-(Or perhaps gcc can be extended such that a string of allowable qualifiers
- can be passed along in kernel.h, that would just be super...)
+> In addition, clock->cycle_last is a cycle_t, defined as a 64 bits on
+> x86. If is therefore not updated atomically by change_clocksource,
+> timekeeping_init, timekeeping_resume and update_wall_time. If an NMI
+> fires right on top of the update, especially around the 32 bits wrap
+> around, the time will be really fuzzy.
 
-This is mostly just to provoke a little bit of further discussion.
+I'm not sure that is particularly significant considering that it's just
+a possible bad timestamp, and the probability of that happening seems
+rather low .. You could also modify NMI calls so they use a different
+time stamping method, like reading the clocksource directly .
 
-Signed-off-by-but-not-really-much-point: Kyle McMartin
-	<kyle@parisc-linux.org>
+The pit clocksource could be dropped pretty easy with my clocksource
+update patches, which I'm still working on but you could easily drop
+clock sources that aren't atomic like the pit .. Also the pit is
+generally undesirable, so it's not going to be missed.
 
----
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 9ddf25c..a79985d 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -107,25 +107,16 @@ extern unsigned long simple_strtoul(const char *,char **,unsigned int);
- extern long simple_strtol(const char *,char **,unsigned int);
- extern unsigned long long simple_strtoull(const char *,char **,unsigned int);
- extern long long simple_strtoll(const char *,char **,unsigned int);
--extern int sprintf(char * buf, const char * fmt, ...)
--	__attribute__ ((format (printf, 2, 3)));
--extern int vsprintf(char *buf, const char *, va_list)
--	__attribute__ ((format (printf, 2, 0)));
--extern int snprintf(char * buf, size_t size, const char * fmt, ...)
--	__attribute__ ((format (printf, 3, 4)));
--extern int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
--	__attribute__ ((format (printf, 3, 0)));
--extern int scnprintf(char * buf, size_t size, const char * fmt, ...)
--	__attribute__ ((format (printf, 3, 4)));
--extern int vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
--	__attribute__ ((format (printf, 3, 0)));
--extern char *kasprintf(gfp_t gfp, const char *fmt, ...)
--	__attribute__ ((format (printf, 2, 3)));
--
--extern int sscanf(const char *, const char *, ...)
--	__attribute__ ((format (scanf, 2, 3)));
--extern int vsscanf(const char *, const char *, va_list)
--	__attribute__ ((format (scanf, 2, 0)));
-+extern int sprintf(char * buf, const char * fmt, ...);
-+extern int vsprintf(char *buf, const char *, va_list);
-+extern int snprintf(char * buf, size_t size, const char * fmt, ...);
-+extern int vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
-+extern int scnprintf(char * buf, size_t size, const char * fmt, ...);
-+extern int vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
-+extern char *kasprintf(gfp_t gfp, const char *fmt, ...);
-+
-+extern int sscanf(const char *, const char *, ...);
-+extern int vsscanf(const char *, const char *, va_list);
- 
- extern int get_option(char **str, int *pint);
- extern char *get_options(const char *str, int nints, int *ints);
-@@ -140,16 +131,12 @@ extern struct pid *session_of_pgrp(struct pid *pgrp);
- extern void dump_thread(struct pt_regs *regs, struct user *dump);
- 
- #ifdef CONFIG_PRINTK
--asmlinkage int vprintk(const char *fmt, va_list args)
--	__attribute__ ((format (printf, 1, 0)));
--asmlinkage int printk(const char * fmt, ...)
--	__attribute__ ((format (printf, 1, 2)));
-+asmlinkage int vprintk(const char *fmt, va_list args);
-+asmlinkage int printk(const char * fmt, ...);
- #else
--static inline int vprintk(const char *s, va_list args)
--	__attribute__ ((format (printf, 1, 0)));
-+static inline int vprintk(const char *s, va_list args);
- static inline int vprintk(const char *s, va_list args) { return 0; }
--static inline int printk(const char *s, ...)
--	__attribute__ ((format (printf, 1, 2)));
-+static inline int printk(const char *s, ...);
- static inline int printk(const char *s, ...) { return 0; }
- #endif
- 
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index b025864..7a0fd29 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -343,7 +343,8 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
- 		/* get the conversion qualifier */
- 		qualifier = -1;
- 		if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L' ||
--		    *fmt =='Z' || *fmt == 'z' || *fmt == 't') {
-+		    *fmt == 'Z' || *fmt == 'z' || *fmt == 't' ||
-+		    *fmt == 'r' || *fmt == 'R') {
- 			qualifier = *fmt;
- 			++fmt;
- 			if (qualifier == 'l' && *fmt == 'l') {
-@@ -477,6 +478,8 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
- 			num = (unsigned short) va_arg(args, int);
- 			if (flags & SIGN)
- 				num = (signed short) num;
-+		} else if (qualifier == 'R' || qualifier == 'R') {
-+			num = va_arg(args, resource_size_t);
- 		} else {
- 			num = va_arg(args, unsigned int);
- 			if (flags & SIGN)
+Daniel
+
