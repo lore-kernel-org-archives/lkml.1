@@ -1,79 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751549AbXB0LGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932950AbXB0LKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751549AbXB0LGc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 06:06:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbXB0LGc
+	id S932950AbXB0LKO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 06:10:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932997AbXB0LKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 06:06:32 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:51185 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751549AbXB0LGb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 06:06:31 -0500
-Date: Tue, 27 Feb 2007 11:59:22 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pavel Machek <pavel@ucw.cz>, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: 2.6.21-rc1: known regressions (part 2)
-Message-ID: <20070227105922.GD2250@kernel.dk>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <20070225175559.GC12392@stusta.de> <20070227100202.GV3822@kernel.dk> <20070227102109.GG6745@elf.ucw.cz> <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu>
-MIME-Version: 1.0
+	Tue, 27 Feb 2007 06:10:14 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42435 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932950AbXB0LKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 06:10:12 -0500
+Date: Tue, 27 Feb 2007 12:03:06 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       bunk@stusta.de, pavel@suse.cz, linux-pm@linux-foundation.org,
+       linux-acpi@vger.kernel.org, len.brown@intel.com, mingo@redhat.com
+Subject: Re: 2.6.21-rc1: T60 resume from suspend to RAM issues
+Message-ID: <20070227110306.GE20927@elte.hu>
+References: <20070223020904.c8fc8a3e.akpm@linux-foundation.org> <20070224211141.GA4425@mellanox.co.il> <20070227101451.GA11981@elte.hu> <20070227102809.GD10548@mellanox.co.il>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070227103407.GA17819@elte.hu>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+In-Reply-To: <20070227102809.GD10548@mellanox.co.il>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 27 2007, Ingo Molnar wrote:
-> 
-> * Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > > > x60 doesn't resume from S2R either, it doesn't matter if 
-> > > > CONFIG_NO_HZ is set or not though. 2.6.20 worked fine.
+
+* Michael S. Tsirkin <mst@mellanox.co.il> wrote:
+
+> > > > Do you believe that the second problem was caused by dynticks?
 > > > 
-> > > It somehow works for me. As long as I do not play with bluetooth and 
-> > > suspend to disk...
+> > > Assuming these are 2 different problems, yes, the second one seems 
+> > > to be caused by dyntics.
 > > 
-> > It locks solid here on resume, going back to 2.6.20 makes it work 
-> > perfectly again. In between 2.6.20 and 2.6.21-rc1 some ACPI change 
-> > broke resume, but that got fixed. Some other change later snuck in 
-> > that broke it AGAIN for me, sigh.
+> > on my T60 current -git does not resume even without dynticks. 
+> > v2.6.20 with the same .config resumes fine (except for the display).
 > > 
-> > I don't use bluetooth nor suspend to disk.
+> > after pressing Fn/F4 the disk light flashes briefly, which suggests 
+> > that action is probably back to the Linux kernel at that point, and 
+> > that we hung somewhere there. Will try a bisection thing.
 > 
-> resume is stock on my T60 too. So you mean v2.6.21-rc1 vanilla works 
-> fine? Do you know a commit ID that works for sure? I'd like to bisect 
+> That's exactly the behaviour I have with DynTicks: the disk light 
+> flashes briefly.
 
-Nope, 2.6.21-rc1 vanilla does not work. 2.6.20 works. 2.6.20-gitX worked
-until some acpi change broke it, the below patch fixed that for me. That
-got merged in a later 2.6.20-gitY, but then some other patch broke it
-again so that 2.6.21-rc1 is broken. Not much luck there :-)
+it flashes here briefly even if suspend works fine.
 
-So it looks like:
-
-- c5a7156959e89b32260ad6072bbf5077bcdfbeee broke 2.6.20-git
-- f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 should fix that.
-- Something later than f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 broke it
-  again.
-
-> this, but this way i might just find that ACPI change that got already 
-> fixed later on (and then got re-broken).
-
-Yeah, it gets trickier. I'll try
-f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 now and see if that works, then
-bisect to 2.6.21-rc1 to find the other offender. I hope the other
-offender didn't get added before
-f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38, we'll see :-)
-
--- 
-Jens Axboe
-
+	Ingo
