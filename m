@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751633AbXB0N4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751657AbXB0N66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751633AbXB0N4v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 08:56:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751639AbXB0N4v
+	id S1751657AbXB0N66 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 08:58:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbXB0N66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 08:56:51 -0500
-Received: from il.qumranet.com ([82.166.9.18]:35375 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751630AbXB0N4u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 08:56:50 -0500
-Message-ID: <45E43827.4000102@argo.co.il>
-Date: Tue, 27 Feb 2007 15:54:47 +0200
-From: Avi Kivity <avi@argo.co.il>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Tue, 27 Feb 2007 08:58:58 -0500
+Received: from stout.engsoc.carleton.ca ([134.117.69.22]:50766 "EHLO
+	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751657AbXB0N65 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 08:58:57 -0500
+Date: Tue, 27 Feb 2007 08:55:35 -0500
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Kyle McMartin <kyle@mcmartin.ca>
+Cc: Alexey Zaytsev <alexey.zaytsev@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: ioread32 endianess.
+Message-ID: <20070227135535.GD3545@athena.road.mcmartin.ca>
+References: <f19298770702260736i51622584r1979a202bdc64c1d@mail.gmail.com> <20070226160450.GB3787@athena.road.mcmartin.ca> <f19298770702270431i198e032fhe025e221a625140f@mail.gmail.com> <20070227132021.GC3545@athena.road.mcmartin.ca>
 MIME-Version: 1.0
-To: suparna@in.ibm.com
-CC: Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: A quick fio test (was Re: [patch 00/13] Syslets, "Threadlets",
- generic AIO support, v3)
-References: <20070221211355.GA7302@elte.hu> <20070223125247.GO5737@kernel.dk> <20070223135525.GA31569@in.ibm.com> <20070223145826.GA32465@elte.hu> <20070223151515.GA12960@in.ibm.com> <20070223162508.GA16782@kernel.dk> <20070223171348.GA27838@in.ibm.com> <20070226135736.GF3822@kernel.dk> <20070226141315.GA15631@in.ibm.com> <20070226144548.GH3822@kernel.dk> <20070227043331.GA29942@in.ibm.com>
-In-Reply-To: <20070227043331.GA29942@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070227132021.GC3545@athena.road.mcmartin.ca>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suparna Bhattacharya wrote:
-> I tried the latest fio code with syslet v4, and my results are a little
-> different - have yet to figure out why or what to make of it.
-> I hope I have all the right pieces now.
->
-> This is an ext2 filesystem, SCSI AIC7xxx.
->
-> I used an iodepth_batch size of 8 to limit the number of ios in a single
-> io_submit (thanks for adding that parameter to fio !), like we did in
-> aio-stress.
->
-> Engine          Depth      Batch	Bw (KiB/sec)
-> ----------------------------------------------------
-> libaio		64	   8		17,226
-> syslet		64	   8		17,620
-> libaio		20000	   8		18,552
-> syslet		20000	   8		14,935
->
->
-> Which is not bad, actually.
->
-> If I do not specify the iodepth_batch (i.e. default to depth), then the
-> difference becomes more pronounced at higher depths. However, I doubt
-> whether anyone would be using such high batch sizes in practice ...
->
-> Engine          Depth      Batch	Bw (KiB/sec)
-> ----------------------------------------------------
-> libaio		64	   default	17,429
-> syslet		64	   default	16,155
-> libaio		20000	   default	15,494
-> syslet		20000	   default	7,971
->   
+On Tue, Feb 27, 2007 at 08:20:21AM -0500, Kyle McMartin wrote:
+> PCI is always little endian, unless it's not. In which case you're probably
+> dealing with a graphics card which likely has some kind of palindromic
+> register which you can read and write to set the endianness of the host
+> interface. Whoo. Run on sentence.
+> 
 
-But what about cpu usage?  At these low levels, the cpu is probably 
-underutilized.  It would be interesting to measure cpu time per I/O 
-request (or, alternatively, use an I/O subsystem that can saturate the 
-processors).
+Perhaps we should have a Documentation/ entry for this...
 
+io(read|write){8,16,32} are the "pci iomap" functions (see
+asm-generic/iomap.h) they always byteswap so the value is little endian.
 
--- 
-error compiling committee.c: too many arguments to function
+io(read|write){8,16,32}be are sister functions added to deal with big
+endian busses. They always byteswap so the value is in big endian.
 
+Both these previous functions can handle using a cookie based on an IO port
+range, or an MMIO region.
+
+(read|write){b,w,l} are the old style MMIO-mapped accessors. They also always
+byteswap so the value is in little endian. There is no big endian equivalent
+for the generic case.
+
+__raw_(read|write){b,w,l} are also old style accessors. They always operate
+in host endianness.
+
+The above are (AFAIK) the only functions guaranteed to exist for MMIO.
+
+Of course, most platforms either provide (in|out){b,w,l} or don't support
+Port IO as well, but MMIO is the really complicated case.
+
+In any event, <asm-generic/iomap.h> should shed a bit more light on using
+these.
+
+Cheers,
+	Kyle M.
