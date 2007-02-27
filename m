@@ -1,50 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752482AbXB0BxF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbXB0By3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752482AbXB0BxF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 20:53:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbXB0BxF
+	id S1752483AbXB0By3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 20:54:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbXB0By3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 20:53:05 -0500
-Received: from mga09.intel.com ([134.134.136.24]:18410 "EHLO mga09.intel.com"
+	Mon, 26 Feb 2007 20:54:29 -0500
+Received: from gw.goop.org ([64.81.55.164]:45319 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752482AbXB0BxE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 20:53:04 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,222,1170662400"; 
-   d="scan'208"; a="50910913:sNHT20990583"
-From: Inaky Perez-Gonzalez <inaky@linux.intel.com>
-Organization: Intel Corporation
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [patch 0/2] semaphores: add down_interruptible_timeout() and asm-generic/semaphore.h
-Date: Mon, 26 Feb 2007 17:57:11 -0800
-User-Agent: KMail/1.9.5
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>, mingo@redhat.com, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-References: <20070227001338.344233745@sodium.jf.intel.com> <200702261654.18005.inaky@linux.intel.com> <20070227021803.38c8591f@lxorguk.ukuu.org.uk>
-In-Reply-To: <20070227021803.38c8591f@lxorguk.ukuu.org.uk>
+	id S1752485AbXB0By2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 20:54:28 -0500
+Message-ID: <45E38F4C.7040305@goop.org>
+Date: Mon, 26 Feb 2007 17:54:20 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       William Lee Irwin III <wli@holomorphy.com>
+Subject: [PATCH] rename PG_checked page flag to PG_owner_priv_1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702261757.11968.inaky@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 26 February 2007 18:18, Alan wrote:
-> > Yeah, I need semaphore. This is a hw register that says when the hw
-> > is ready to accept a new command. Code that wants to send commands has
-> > to down the semaphore and then send it. When hw is ready to get a new
-> > command, it sends and IRQ and the IRQ up()s the semaphore.
->
-> So you need a mutex not a semaphore
+Rename PG_checked to PG_owner_priv_1 to reflect its availablilty as a
+subsystem/filesystem private flag.  A subsystem which "owns" a page
+(for example, a pagecache page belonging to a filesystem) may use this
+flag for whatever it wants.
 
-Theoretically I could use a mutex. Practically it would trigger ugly
-complications. Only the owner can unlock a mutex (for example), so
-I could not unlock from an IRQ handler -- not to mention that the
-semantic rules outlined in Documentation/mutex-design.txt explicitly
-forbid IRQ usage. 
+ext3 is the only current in-tree user of this flag.
 
-And then, this is what semaphores where designed for, as gates :)
-for once that I get to use a semaphore properly...
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: William Lee Irwin III <wli@holomorphy.com>
+
+---
+ fs/ext3/inode.c            |   10 +++++-----
+ include/linux/page-flags.h |    8 ++++----
+ mm/page_alloc.c            |    2 +-
+ 3 files changed, 10 insertions(+), 10 deletions(-)
+
+===================================================================
+--- a/fs/ext3/inode.c
++++ b/fs/ext3/inode.c
+@@ -1596,12 +1596,12 @@ static int ext3_journalled_writepage(str
+ 		goto no_write;
+ 	}
+ 
+-	if (!page_has_buffers(page) || PageChecked(page)) {
++	if (!page_has_buffers(page) || PageOwnerPriv(page)) {
+ 		/*
+ 		 * It's mmapped pagecache.  Add buffers and journal it.  There
+ 		 * doesn't seem much point in redirtying the page here.
+ 		 */
+-		ClearPageChecked(page);
++		ClearPageOwnerPriv(page);
+ 		ret = block_prepare_write(page, 0, PAGE_CACHE_SIZE,
+ 					ext3_get_block);
+ 		if (ret != 0) {
+@@ -1658,7 +1658,7 @@ static void ext3_invalidatepage(struct p
+ 	 * If it's a full truncate we just forget about the pending dirtying
+ 	 */
+ 	if (offset == 0)
+-		ClearPageChecked(page);
++		ClearPageOwnerPriv(page);
+ 
+ 	journal_invalidatepage(journal, page, offset);
+ }
+@@ -1667,7 +1667,7 @@ static int ext3_releasepage(struct page 
+ {
+ 	journal_t *journal = EXT3_JOURNAL(page->mapping->host);
+ 
+-	WARN_ON(PageChecked(page));
++	WARN_ON(PageOwnerPriv(page));
+ 	if (!page_has_buffers(page))
+ 		return 0;
+ 	return journal_try_to_free_buffers(journal, page, wait);
+@@ -1763,7 +1763,7 @@ out:
+  */
+ static int ext3_journalled_set_page_dirty(struct page *page)
+ {
+-	SetPageChecked(page);
++	SetPageOwnerPriv(page);
+ 	return __set_page_dirty_nobuffers(page);
+ }
+ 
+===================================================================
+--- a/include/linux/page-flags.h
++++ b/include/linux/page-flags.h
+@@ -76,7 +76,7 @@
+ #define PG_active		 6
+ #define PG_slab			 7	/* slab debug (Suparna wants this) */
+ 
+-#define PG_checked		 8	/* kill me in 2.5.<early>. */
++#define PG_owner_priv_1		 8	/* subsystem/owner-private flag*/
+ #define PG_arch_1		 9
+ #define PG_reserved		10
+ #define PG_private		11	/* If pagecache, has fs-private data */
+@@ -165,9 +165,9 @@ static inline void SetPageUptodate(struc
+ #define PageHighMem(page)	0 /* needed to optimize away at compile time */
+ #endif
+ 
+-#define PageChecked(page)	test_bit(PG_checked, &(page)->flags)
+-#define SetPageChecked(page)	set_bit(PG_checked, &(page)->flags)
+-#define ClearPageChecked(page)	clear_bit(PG_checked, &(page)->flags)
++#define PageOwnerPriv(page)	test_bit(PG_owner_priv_1, &(page)->flags)
++#define SetPageOwnerPriv(page)	set_bit(PG_owner_priv_1, &(page)->flags)
++#define ClearPageOwnerPriv(page)	clear_bit(PG_owner_priv_1, &(page)->flags)
+ 
+ #define PageReserved(page)	test_bit(PG_reserved, &(page)->flags)
+ #define SetPageReserved(page)	set_bit(PG_reserved, &(page)->flags)
+===================================================================
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -600,7 +600,7 @@ static int prep_new_page(struct page *pa
+ 
+ 	page->flags &= ~(1 << PG_uptodate | 1 << PG_error |
+ 			1 << PG_referenced | 1 << PG_arch_1 |
+-			1 << PG_checked | 1 << PG_mappedtodisk);
++			1 << PG_owner_priv_1 | 1 << PG_mappedtodisk);
+ 	set_page_private(page, 0);
+ 	set_page_refcounted(page);
+ 
+
+
