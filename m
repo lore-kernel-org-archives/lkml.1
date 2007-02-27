@@ -1,87 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750944AbXB0NNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751571AbXB0NOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750944AbXB0NNz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 08:13:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750900AbXB0NNy
+	id S1751571AbXB0NOx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 08:14:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbXB0NOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 08:13:54 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:62933 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750820AbXB0NNy (ORCPT
+	Tue, 27 Feb 2007 08:14:52 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47928 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750872AbXB0NOv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 08:13:54 -0500
-Date: Tue, 27 Feb 2007 14:09:13 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pavel Machek <pavel@ucw.cz>, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Tue, 27 Feb 2007 08:14:51 -0500
+Date: Tue, 27 Feb 2007 14:16:33 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Meelis Roos <mroos@linux.ee>
+Cc: Adrian Bunk <bunk@stusta.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Michael S. Tsirkin" <mst@mellanox.co.il>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: 2.6.21-rc1: known regressions (part 2)
-Message-ID: <20070227130913.GA6035@kernel.dk>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <20070225175559.GC12392@stusta.de> <20070227100202.GV3822@kernel.dk> <20070227102109.GG6745@elf.ucw.cz> <20070227103021.GA2250@kernel.dk> <20070227103407.GA17819@elte.hu> <20070227105922.GD2250@kernel.dk> <20070227111515.GA4271@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070227111515.GA4271@kernel.dk>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+       linux-acpi@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: 2.6.21-rc1: known regressions (v2) (part 1)
+Message-ID: <20070227141633.5453982c@lxorguk.ukuu.org.uk>
+In-Reply-To: <Pine.SOC.4.64.0702271459040.8348@math>
+References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org>
+	<20070226220152.GA29575@stusta.de>
+	<Pine.SOC.4.64.0702271459040.8348@math>
+X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 27 2007, Jens Axboe wrote:
-> On Tue, Feb 27 2007, Jens Axboe wrote:
-> > On Tue, Feb 27 2007, Ingo Molnar wrote:
-> > > 
-> > > * Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > 
-> > > > > > x60 doesn't resume from S2R either, it doesn't matter if 
-> > > > > > CONFIG_NO_HZ is set or not though. 2.6.20 worked fine.
-> > > > > 
-> > > > > It somehow works for me. As long as I do not play with bluetooth and 
-> > > > > suspend to disk...
-> > > > 
-> > > > It locks solid here on resume, going back to 2.6.20 makes it work 
-> > > > perfectly again. In between 2.6.20 and 2.6.21-rc1 some ACPI change 
-> > > > broke resume, but that got fixed. Some other change later snuck in 
-> > > > that broke it AGAIN for me, sigh.
-> > > > 
-> > > > I don't use bluetooth nor suspend to disk.
-> > > 
-> > > resume is stock on my T60 too. So you mean v2.6.21-rc1 vanilla works 
-> > > fine? Do you know a commit ID that works for sure? I'd like to bisect 
-> > 
-> > Nope, 2.6.21-rc1 vanilla does not work. 2.6.20 works. 2.6.20-gitX worked
-> > until some acpi change broke it, the below patch fixed that for me. That
-> > got merged in a later 2.6.20-gitY, but then some other patch broke it
-> > again so that 2.6.21-rc1 is broken. Not much luck there :-)
-> > 
-> > So it looks like:
-> > 
-> > - c5a7156959e89b32260ad6072bbf5077bcdfbeee broke 2.6.20-git
-> > - f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 should fix that.
-> > - Something later than f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 broke it
-> >   again.
-> > 
-> > > this, but this way i might just find that ACPI change that got already 
-> > > fixed later on (and then got re-broken).
-> > 
-> > Yeah, it gets trickier. I'll try
-> > f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 now and see if that works, then
-> > bisect to 2.6.21-rc1 to find the other offender. I hope the other
-> > offender didn't get added before
-> > f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38, we'll see :-)
+On Tue, 27 Feb 2007 15:00:29 +0200 (EET)
+Meelis Roos <mroos@linux.ee> wrote:
+
+> > Subject    : ata-piix ACPI errors (40/80 pin cable mix)
+> > References : http://lkml.org/lkml/2007/2/22/159
+> > Submitter  : Meelis Roos <mroos@linux.ee>
+> > Status     : unknown
 > 
-> f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 works for me, starting bisect.
+> Still appears, but this does not seem to be 40/80 pin cable problem to 
+> be but rather ata-piix calling some acpi methods and this rulsts in acpi 
+> errors.
 
-Which got me nowhere, after bisecting down from 1213 revisions to
-nothing. f3ccb06f3b8e0cf42b579db21f3ca7f17fcc3f38 certainly works, just
-verified again. Trying only acpi related changes now...
-
--- 
-Jens Axboe
-
+There are two separate problems showing up in the one trace - broken ACPI
+spew and wrong cable detect. I don't think they are related
