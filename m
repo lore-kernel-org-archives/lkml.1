@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752501AbXB0Syd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752009AbXB0SzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752501AbXB0Syd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 13:54:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbXB0Syd
+	id S1752009AbXB0SzW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 13:55:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbXB0SzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 13:54:33 -0500
-Received: from hancock.steeleye.com ([71.30.118.248]:59752 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752501AbXB0Syc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 13:54:32 -0500
-Subject: Re: [patch 09/26] Xen-paravirt_ops: remove HAVE_ARCH_MM_LIFETIME,
-	define no-op architecture implementations
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
+	Tue, 27 Feb 2007 13:55:22 -0500
+Received: from gw.goop.org ([64.81.55.164]:58629 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752009AbXB0SzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 13:55:20 -0500
+Message-ID: <45E47E95.2060803@goop.org>
+Date: Tue, 27 Feb 2007 10:55:17 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
        xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
-       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-arch@vger.kernel.org
-In-Reply-To: <45E47D08.5020802@goop.org>
-References: <20070227081337.434798469@goop.org>
-	 <20070227081632.356636957@goop.org>
-	 <1172589358.3408.2.camel@mulgrave.il.steeleye.com>
-	 <45E46889.9090801@goop.org>
-	 <1172597726.3408.25.camel@mulgrave.il.steeleye.com>
-	 <45E470D6.7050401@goop.org>
-	 <1172599480.3408.28.camel@mulgrave.il.steeleye.com>
-	 <45E47D08.5020802@goop.org>
-Content-Type: text/plain
-Date: Tue, 27 Feb 2007 12:53:14 -0600
-Message-Id: <1172602394.3408.30.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [patch 06/26] Xen-paravirt_ops: paravirt_ops: allocate a fixmap
+ slot
+References: <20070227081337.434798469@goop.org> <20070227081631.122933982@goop.org> <20070227101143.GC10827@elte.hu>
+In-Reply-To: <20070227101143.GC10827@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-27 at 10:48 -0800, Jeremy Fitzhardinge wrote:
-> Well, I'm happy to create asm-generic/mm_hooks.h or something, and
-> reduce all the changes to asm-*/mmu_context.h to a one-liner.
+Ingo Molnar wrote:
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>
+>   
+>> Allocate a fixmap slot for use by a paravirt_ops implementation.  Xen 
+>> uses this to map the hypervisor's shared info page, which doesn't have 
+>> a pseudo-physical page number, and therefore can't be mapped 
+>> ordinarily.
+>>     
+>
+> why not vmalloc it on the guest side? fixmaps are bad for this purpose 
+> for a general paravirt implementation, it limits the size of the shared 
+> info page, etc.
 
-If no-one else objects, that will certainly make my life easier, thanks!
+Yes.  vmalloc would have the annoying side-effect of actually allocating
+some pages which would be shadowed by the remapping, but I guess
+get_vm_area would do the job.  I'll give it a go.
 
-James
-
-
+    J
