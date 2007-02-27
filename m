@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933064AbXB0QMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751668AbXB0QRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933064AbXB0QMj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 11:12:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933073AbXB0QMj
+	id S1751668AbXB0QRU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 11:17:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750941AbXB0QRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 11:12:39 -0500
-Received: from fwstl1-1.wul.qc.ec.gc.ca ([205.211.132.24]:55372 "EHLO
-	ecqcmtlbh.quebec.int.ec.gc.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933064AbXB0QMi convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 11:12:38 -0500
-content-class: urn:content-classes:message
+	Tue, 27 Feb 2007 11:17:20 -0500
+Received: from il.qumranet.com ([82.166.9.18]:49076 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750827AbXB0QRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 11:17:19 -0500
+Message-ID: <45E45915.20204@argo.co.il>
+Date: Tue, 27 Feb 2007 18:15:17 +0200
+From: Avi Kivity <avi@argo.co.il>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6603.0
-Subject: RE: Boot time Bluetooth BUG: warning: (value > m) at hid-core.c:793
-Date: Tue, 27 Feb 2007 11:12:06 -0500
-Message-ID: <8E8F647D7835334B985D069AE964A4F7028FE5B0@ECQCMTLMAIL1.quebec.int.ec.gc.ca>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Boot time Bluetooth BUG: warning: (value > m) at hid-core.c:793
-Thread-Index: Acdah5tPzrWigVzIRNy/Qve1qcG3DAAAc6Lw
-References: <1171627435.6127.0.camel@wriver-t81fb058.linuxcoe>  <45D5C789.1090607@student.ltu.se>  <8E8F647D7835334B985D069AE964A4F7028FE550@ECQCMTLMAIL1.quebec.int.ec.gc.ca>  <Pine.LNX.4.64.0702182216060.25686@twin.jikos.cz> <1171844733.2488.33.camel@violet> <Pine.LNX.4.64.0702271648190.10496@twin.jikos.cz>
-From: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-To: "Jiri Kosina" <jikos@jikos.cz>, "Marcel Holtmann" <marcel@holtmann.org>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 27 Feb 2007 16:12:07.0246 (UTC) FILETIME=[06FB2EE0:01C75A8A]
+To: Ingo Molnar <mingo@elte.hu>
+CC: suparna@in.ibm.com, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: A quick fio test (was Re: [patch 00/13] Syslets, "Threadlets",
+ generic AIO support, v3)
+References: <20070223135525.GA31569@in.ibm.com> <20070223145826.GA32465@elte.hu> <20070223151515.GA12960@in.ibm.com> <20070223162508.GA16782@kernel.dk> <20070223171348.GA27838@in.ibm.com> <20070226135736.GF3822@kernel.dk> <20070226141315.GA15631@in.ibm.com> <20070226144548.GH3822@kernel.dk> <20070227043331.GA29942@in.ibm.com> <45E43827.4000102@argo.co.il> <20070227152507.GA8294@elte.hu>
+In-Reply-To: <20070227152507.GA8294@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> we understand the original CSR HID proxy dongles, but for the Logitech
+Ingo Molnar wrote:
+> * Avi Kivity <avi@argo.co.il> wrote:
+>
+>   
+>> But what about cpu usage?  At these low levels, the cpu is probably 
+>> underutilized.  It would be interesting to measure cpu time per I/O 
+>> request (or, alternatively, use an I/O subsystem that can saturate the 
+>> processors).
+>>     
+>
+> yeah - that's what testing on ramdisk (Jens') or on a loopback block 
+> device (mine) approximates to a certain degree.
+>
+>   
 
-> ones, it is wild guesses. The current support in hid2hci has been 
-> tested on Logitech diNovo first generation and I have no other 
-> Logitech hardware to verify it with. We might simply need 
-> the full HID report descriptor to see who is at fault.
-> 
-> As far as I can see from a quick look, the device IDs are 
-> unchanged (0x046d/0xc70e for the keyboard), but the report 
-> descriptor seems to differ from the one you have at 
-> http://www.holtmann.org/linux/bluetooth/logitech.html - that 
-> seems pretty sad.
-> 
-> What puzzles me a bit is a fact that both the bugreporters 
-> seem to state pretty clearly that this started happening 
-> after some update, am I right?
-> 
-> Or did the hardware before work all the time in the HID mode, 
-> without even being attempted to switch to HCI (which seems to 
-> cause the bug)?
-> 
+Ramdisks or fully cached loopback return immediately, so cache thrashing 
+effects don't show up.
 
-Actually it's the first time I'm trying this keyboard and mouse.
+Maybe a device mapper delay target or nbd + O_DIRECT can insert delays 
+to make the workload more disk-like.
 
-- vin
+
+
+
+-- 
+error compiling committee.c: too many arguments to function
+
