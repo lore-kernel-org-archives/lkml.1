@@ -1,73 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751693AbXB0Qxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751827AbXB0QzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751693AbXB0Qxc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 11:53:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbXB0Qxc
+	id S1751827AbXB0QzK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 11:55:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbXB0QzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 11:53:32 -0500
-Received: from stinky.trash.net ([213.144.137.162]:35527 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751693AbXB0Qxb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 11:53:31 -0500
-Message-ID: <45E46208.3000003@trash.net>
-Date: Tue, 27 Feb 2007 17:53:28 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
+	Tue, 27 Feb 2007 11:55:09 -0500
+Received: from dsl.myri.com ([64.172.73.26]:1929 "EHLO myri.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751827AbXB0QzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 11:55:08 -0500
+X-Greylist: delayed 1338 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Feb 2007 11:55:08 EST
+Message-ID: <45E45C6E.3000504@myri.com>
+Date: Tue, 27 Feb 2007 17:29:34 +0100
+From: Brice Goglin <brice@myri.com>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-CC: Jeff Garzik <jeff@garzik.org>, netdev <netdev@vger.kernel.org>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-Subject: Re: [PATCH 2/2] ehea: NAPI multi queue TX/RX path for SMP
-References: <200702271732.51829.ossthema@de.ibm.com>
-In-Reply-To: <200702271732.51829.ossthema@de.ibm.com>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
+To: Jeff Garzik <jeff@garzik.org>, Christoph Hellwig <hch@infradead.org>
+CC: Steve Wise <swise@opengridcomputing.com>, divy@chelsio.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/7] cxgb3 - Add SW LRO support
+References: <20070225004423.20903.17036.stgit@localhost.localdomain>	 <20070226051304.GA13626@infradead.org>	 <1172585835.11870.13.camel@stevo-desktop>  <45E445D2.2090900@garzik.org> <1172588246.11870.24.camel@stevo-desktop>
+In-Reply-To: <1172588246.11870.24.camel@stevo-desktop>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan-Bernd Themann wrote:
-> This patch provides a functionality that allows parallel 
-> RX processing on multiple RX queues by using dummy netdevices.
-> 
->  
-> +static inline int ehea_hash_skb(struct sk_buff *skb, int num_qps)
-> +{
-> +	u32 tmp;
-> +	if ((skb->nh.iph->protocol == IPPROTO_TCP)
-> +	    && skb->protocol == ETH_P_IP) {
+Steve Wise wrote:
+> You're right.  But cxgb3 has it now in the driver (tested and working).
+> Shouldn't it be pulled in?  When the network stack design gets done
+> (which could take a few releases to finalize), all the drivers can be
+> updated to use it.  It doesn't seem reasonable to allow some drivers to
+> support LRO and others to not support it...
+>   
 
-skb->protocol has network byte order. The ETH_P_IP test should also
-logically come before checking the IP protocol.
+I have to agree with Steve here. We have been requesting the inclusion
+of myri10ge LRO for 5 months now (before 2.6.19). I could understand
+that duplicating LRO code between s2io and myri10ge was not a good idea
+at this point. But, I now see that Netxen got merged way later (in
+2.6.20) but it got its LRO merged immediately. I guess the LRO is
+already duplicated between s2io and netxen then. It does not look fair
+to me at all.
 
-> +		tmp = (skb->h.th->source + (skb->h.th->dest << 16)) % 31;
-
-Only locally generated packets have a valid h.th pointer.
-
-> +		tmp += skb->nh.iph->daddr % 31;
-> +		return tmp % num_qps;
-> +	}
-> +	else
-> +		return 0;
-> +}
-> +
->  static int ehea_start_xmit(struct sk_buff *skb, struct net_device *dev)
->  {
->  	struct ehea_port *port = netdev_priv(dev);
-> @@ -1796,9 +1818,18 @@ static int ehea_start_xmit(struct sk_buf
->  	unsigned long flags;
->  	u32 lkey;
->  	int swqe_index;
-> -	struct ehea_port_res *pr = &port->port_res[0];
-> +	struct ehea_port_res *pr;
-> +
-> +	pr = &port->port_res[ehea_hash_skb(skb, port->num_tx_qps)];
-> +
+Thank you for understanding our concerns.
+Brice
 
