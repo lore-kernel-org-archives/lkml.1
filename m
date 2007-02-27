@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161075AbXB0JQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964978AbXB0JSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161075AbXB0JQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 04:16:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161070AbXB0JQ4
+	id S964978AbXB0JSp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 04:18:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965010AbXB0JSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 04:16:56 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:47387 "EHLO mail.dvmed.net"
+	Tue, 27 Feb 2007 04:18:45 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:40460 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161075AbXB0JQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 04:16:54 -0500
-Message-ID: <45E3F6F3.7010909@garzik.org>
-Date: Tue, 27 Feb 2007 04:16:35 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: Linas Vepstas <linas@austin.ibm.com>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       kou.ishizaki@toshiba.co.jp, arnd@arndb.de,
-       Jens Osterkamp <jens@de.ibm.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/12]: sungem_phy: support bcm5461 phy, autoneg.
-References: <20070220221314.GU923@austin.ibm.com> <20070220223050.GA28895@austin.ibm.com>
-In-Reply-To: <20070220223050.GA28895@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+	id S964978AbXB0JSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 04:18:44 -0500
+Date: Tue, 27 Feb 2007 10:19:17 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Greg KH <greg@kroah.com>
+Cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] pcie: fix section mismatch warning
+Message-ID: <20070227091917.GA21721@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linas Vepstas wrote:
-> From: Jens Osterkamp <jens@de.ibm.com>
-> 
-> This version moves the medium variable to the card specific structure and
-> changes the GMII_* to BCM54XX_* #defines.
-> 
-> This patch adds improved version of enable_fiber for both the 5421 and
-> the 5461 phy. It is now possible to specify with these wether you want
-> autonegotiation or not. This is needed for bladecenter switches where
-> some expect autonegotiation and some dont seem to like this at all.
-> Depending on this flag it sets phy->autoneg accordingly for the fiber mode.
-> 
-> More importantly it implements proper read_link and poll_link functions
-> for both phys which can handle both copper and fiber mode by determining
-> the medium first and then branching to the required functions. For fiber
-> they all work fine, for copper they are not tested but return the result
-> of the genmii_* function anyway which is supposed to work.
-> 
-> The patch moves the genmii_* functions around to avoid foreward declarations.
-> 
-> Signed-off-by: Jens Osterkamp <jens@de.ibm.com>
-> Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-> 
-> ----
->  drivers/net/sungem_phy.c |  389 ++++++++++++++++++++++++++++++-----------------
->  drivers/net/sungem_phy.h |   10 +
->  2 files changed, 263 insertions(+), 136 deletions(-)
+Fix following section mismatch warning (when compiled with CONFIG_HOTPLUG=n):
+WARNING: drivers/pci/built-in.o - Section mismatch: reference to .init.text:pcie_portdrv_probe from .data between 'pcie_portdrv' (at offset 0xe40) and 'pcie_portdrv_err_handler'
 
-applied 1-12
-
-
-
-
+This warning was fixed by renaming pcie_portdrv to pcie_portdriver so we pass
+the whitelist.
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
+index f17e7ed..0be5a0b 100644
+--- a/drivers/pci/pcie/portdrv_pci.c
++++ b/drivers/pci/pcie/portdrv_pci.c
+@@ -276,7 +276,7 @@ static struct pci_error_handlers pcie_portdrv_err_handler = {
+ 		.resume = pcie_portdrv_err_resume,
+ };
+ 
+-static struct pci_driver pcie_portdrv = {
++static struct pci_driver pcie_portdriver = {
+ 	.name		= (char *)device_name,
+ 	.id_table	= &port_pci_ids[0],
+ 
+@@ -298,7 +298,7 @@ static int __init pcie_portdrv_init(void)
+ 		printk(KERN_WARNING "PCIE: bus_register error: %d\n", retval);
+ 		goto out;
+ 	}
+-	retval = pci_register_driver(&pcie_portdrv);
++	retval = pci_register_driver(&pcie_portdriver);
+ 	if (retval)
+ 		pcie_port_bus_unregister();
+  out:
+@@ -307,7 +307,7 @@ static int __init pcie_portdrv_init(void)
+ 
+ static void __exit pcie_portdrv_exit(void) 
+ {
+-	pci_unregister_driver(&pcie_portdrv);
++	pci_unregister_driver(&pcie_portdriver);
+ 	pcie_port_bus_unregister();
+ }
+ 
