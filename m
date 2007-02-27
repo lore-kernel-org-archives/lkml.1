@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030515AbXB0A6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965029AbXB0BAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030515AbXB0A6m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 19:58:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965150AbXB0A6m
+	id S965029AbXB0BAn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 20:00:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965150AbXB0BAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 19:58:42 -0500
-Received: from [12.22.49.110] ([12.22.49.110]:29448 "EHLO stargate.chelsio.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S965045AbXB0A6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 19:58:41 -0500
-Message-ID: <45E38181.5030409@chelsio.com>
-Date: Mon, 26 Feb 2007 16:55:29 -0800
-From: Divy Le Ray <divy@chelsio.com>
+	Mon, 26 Feb 2007 20:00:42 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:46427 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965029AbXB0BAm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 20:00:42 -0500
+Message-ID: <45E382B8.8040207@vmware.com>
+Date: Mon, 26 Feb 2007 17:00:40 -0800
+From: Zachary Amsden <zach@vmware.com>
 User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>, divy@chelsio.com, jeff@garzik.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Subject: Re: [PATCH 7/7] cxgb3 - Add SW LRO support
-References: <20070225004423.20903.17036.stgit@localhost.localdomain> <20070226051304.GA13626@infradead.org>
-In-Reply-To: <20070226051304.GA13626@infradead.org>
+To: Anthony Liguori <anthony@codemonkey.ws>
+CC: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [RFC] Use para_fill instead of vmi_get_function for APIC ops
+References: <45E37617.6050107@codemonkey.ws> <45E37EB5.7070100@vmware.com> <45E38032.3020704@codemonkey.ws>
+In-Reply-To: <45E38032.3020704@codemonkey.ws>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 Feb 2007 00:55:32.0183 (UTC) FILETIME=[FB5E8670:01C75A09]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Sat, Feb 24, 2007 at 04:44:23PM -0800, divy@chelsio.com wrote:
->   
->> From: Divy Le Ray <divy@chelsio.com>
->>
->> Add all-in-sw lro support.
->>     
+Anthony Liguori wrote:
 >
-> Doing this in a LLDD doesn't sound like a good idea.  Have you
-> tried doing this in the core networking code instead?
->   
+> It would be really great if one could write a ROM by just specifying a 
+> GetRelocationInfo function that always returns rel.type == NONE.  
+> Right now, there are a half a dozen or so ops that have to be 
+> implemented b/c of the vmi_get_function stuff.
 
-We have not tried to implement LRO in the core networking code.
-Today, the available API for a driver to pass packets up is 
-netif_receive_skb/netif_rx.
-Our implementation coalesces pages, then gets a skb to point at the 
-pages and passes it up to the stack.
-LRO in the core networking code would require adding methods to pass up 
-data segments in addition to skbs.
-HW might also be able to assist LRO by identifying the session an 
-incoming packet belongs to,
-thus avoiding the session lookup. The API should also allow for the 
-driver to indicate such info.
+Yes, I need to clean this up.  There are a couple other places where I 
+took liberties and just did things that way because this was how our 
+VMware ROM was implemented.  Just be sure, if you are going to implement 
+a ROM, it has to be GPL'd now, otherwise the VMI code won't accept it.
 
-Cheers,
-Divy
+>
+>> I assume this patch is signed-off-by you?  If so, I'll add it to my 
+>> patch queue.
+>
+> Yeah, but please make sure to test it.  I haven't at all.
+
+It passes test level 1, which is good enough to make it into my patchset.
+
+Zach
