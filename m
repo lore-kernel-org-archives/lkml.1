@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933053AbXB0LcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933046AbXB0Lf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933053AbXB0LcR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 06:32:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933044AbXB0LcR
+	id S933046AbXB0Lf1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 06:35:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933044AbXB0Lf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 06:32:17 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55963 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030589AbXB0LcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 06:32:15 -0500
-Date: Tue, 27 Feb 2007 12:25:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ayaz Abdulla <aabdulla@nvidia.com>, Jeff Garzik <jeff@garzik.org>
-Subject: Re: regression: forcedeth.c hang
-Message-ID: <20070227112521.GA9440@elte.hu>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <20070225175247.GB12392@stusta.de> <20070227083918.GC30376@elte.hu> <20070227090106.GA2749@elte.hu> <20070227093817.GA5007@elte.hu>
-Mime-Version: 1.0
+	Tue, 27 Feb 2007 06:35:27 -0500
+Received: from dev.mellanox.co.il ([194.90.237.44]:34569 "EHLO
+	dev.mellanox.co.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933024AbXB0Lf0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 06:35:26 -0500
+Date: Tue, 27 Feb 2007 13:33:08 +0200
+From: "Michael S. Tsirkin" <mst@mellanox.co.il>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       bunk@stusta.de, pavel@suse.cz, linux-pm@linux-foundation.org,
+       linux-acpi@vger.kernel.org, len.brown@intel.com, mingo@redhat.com
+Subject: Re: 2.6.21-rc1: T60 resume from suspend to RAM issues
+Message-ID: <20070227113308.GE10548@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+References: <20070223020904.c8fc8a3e.akpm@linux-foundation.org> <20070224211141.GA4425@mellanox.co.il> <20070227101451.GA11981@elte.hu> <20070227102809.GD10548@mellanox.co.il> <20070227110306.GE20927@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070227093817.GA5007@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.1.7
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4575]
+In-Reply-To: <20070227110306.GE20927@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Quoting Ingo Molnar <mingo@elte.hu>:
+> Subject: Re: 2.6.21-rc1: T60 resume from suspend to RAM issues
+> 
+> 
+> * Michael S. Tsirkin <mst@mellanox.co.il> wrote:
+> 
+> > > > > Do you believe that the second problem was caused by dynticks?
+> > > > 
+> > > > Assuming these are 2 different problems, yes, the second one seems 
+> > > > to be caused by dyntics.
+> > > 
+> > > on my T60 current -git does not resume even without dynticks. 
+> > > v2.6.20 with the same .config resumes fine (except for the display).
+> > > 
+> > > after pressing Fn/F4 the disk light flashes briefly, which suggests 
+> > > that action is probably back to the Linux kernel at that point, and 
+> > > that we hung somewhere there. Will try a bisection thing.
+> > 
+> > That's exactly the behaviour I have with DynTicks: the disk light 
+> > flashes briefly.
+> 
+> it flashes here briefly even if suspend works fine.
 
-update: Jeff sent me 3 pending forcedeth.c fixes, and they indeed fix 
-the regression. The one that fixed it is:
+Yes of course. The difference with 2.6.21-rc1 is that flashing the LED
+is all it does :)
 
------------------>
-The napi poll routine was missing the call to the optimized rx process 
-routine. This patch adds the missing call for the optimized path.
 
-Signed-Off-By: Ayaz Abdulla <aabdulla@nvidia.com>
-
---- orig/drivers/net/forcedeth.c	2007-02-20 03:17:21.000000000 -0500
-+++ new/drivers/net/forcedeth.c	2007-02-20 03:28:31.000000000 -0500
-@@ -3104,13 +3104,17 @@
- 	struct fe_priv *np = netdev_priv(dev);
- 	u8 __iomem *base = get_hwbase(dev);
- 	unsigned long flags;
-+	int retcode;
- 
--	if (np->desc_ver == DESC_VER_1 || np->desc_ver == DESC_VER_2)
-+	if (np->desc_ver == DESC_VER_1 || np->desc_ver == DESC_VER_2) {
- 		pkts = nv_rx_process(dev, limit);
--	else
-+		retcode = nv_alloc_rx(dev);
-+	} else {
- 		pkts = nv_rx_process_optimized(dev, limit);
-+		retcode = nv_alloc_rx_optimized(dev);
-+	}
- 
--	if (nv_alloc_rx(dev)) {
-+	if (retcode) {
- 		spin_lock_irqsave(&np->lock, flags);
- 		if (!np->in_shutdown)
- 			mod_timer(&np->oom_kick, jiffies + OOM_REFILL);
-
+-- 
+MST
