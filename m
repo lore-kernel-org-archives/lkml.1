@@ -1,59 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933046AbXB0Lf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932893AbXB0LrH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933046AbXB0Lf1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 06:35:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933044AbXB0Lf1
+	id S932893AbXB0LrH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 06:47:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933044AbXB0LrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 06:35:27 -0500
-Received: from dev.mellanox.co.il ([194.90.237.44]:34569 "EHLO
-	dev.mellanox.co.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933024AbXB0Lf0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 06:35:26 -0500
-Date: Tue, 27 Feb 2007 13:33:08 +0200
-From: "Michael S. Tsirkin" <mst@mellanox.co.il>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       bunk@stusta.de, pavel@suse.cz, linux-pm@linux-foundation.org,
-       linux-acpi@vger.kernel.org, len.brown@intel.com, mingo@redhat.com
-Subject: Re: 2.6.21-rc1: T60 resume from suspend to RAM issues
-Message-ID: <20070227113308.GE10548@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
-References: <20070223020904.c8fc8a3e.akpm@linux-foundation.org> <20070224211141.GA4425@mellanox.co.il> <20070227101451.GA11981@elte.hu> <20070227102809.GD10548@mellanox.co.il> <20070227110306.GE20927@elte.hu>
+	Tue, 27 Feb 2007 06:47:07 -0500
+Received: from sslsrv.de ([62.75.159.123]:34056 "EHLO sslsrv.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932893AbXB0LrF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 06:47:05 -0500
+X-Greylist: delayed 597 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Feb 2007 06:47:05 EST
+Message-ID: <37295.193.171.152.61.1172576225.squirrel@webmail.marek.priv.at>
+Date: Tue, 27 Feb 2007 12:37:05 +0100 (CET)
+Subject: Using dm-crypt for encrypting files
+From: "Ph. Marek" <philipp@marek.priv.at>
+To: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6-4.fc1.1.legacy
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070227110306.GE20927@elte.hu>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain;charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Ingo Molnar <mingo@elte.hu>:
-> Subject: Re: 2.6.21-rc1: T60 resume from suspend to RAM issues
-> 
-> 
-> * Michael S. Tsirkin <mst@mellanox.co.il> wrote:
-> 
-> > > > > Do you believe that the second problem was caused by dynticks?
-> > > > 
-> > > > Assuming these are 2 different problems, yes, the second one seems 
-> > > > to be caused by dyntics.
-> > > 
-> > > on my T60 current -git does not resume even without dynticks. 
-> > > v2.6.20 with the same .config resumes fine (except for the display).
-> > > 
-> > > after pressing Fn/F4 the disk light flashes briefly, which suggests 
-> > > that action is probably back to the Linux kernel at that point, and 
-> > > that we hung somewhere there. Will try a bisection thing.
-> > 
-> > That's exactly the behaviour I have with DynTicks: the disk light 
-> > flashes briefly.
-> 
-> it flashes here briefly even if suspend works fine.
+Hello everybody!
 
-Yes of course. The difference with 2.6.21-rc1 is that flashing the LED
-is all it does :)
+I'm aware of some implementations for file system encryption - dm-crypt,
+loopback with encryption, truecrypt, and fuse.
+
+Now I'd like to ask if it's easily possible to write a (preloaded)
+user-space library or a kernel module, that
+- overlays an existing directory tree,
+- decrypts all encrypted files therein,
+- encrypts new files depending on their filename, and generally
+- allows transparent access, as to normal files.
+
+Why? I'd need to achieve a file-encryption, that works on files whose
+filenames match certain criteria.
+
+
+How to do that? I'm thinking along the lines
+- create an anonymous dm-crypt-device,
+- attach that (with an offset) to the "base" file,
+- on close detach and cleanup the dm-crypt-device.
+
+
+I don't like the block-device-encryption *in this case*, because
+- the amount of encrypted data varies a lot (some use none, others many
+  GB), which makes the sizing a bit difficult,
+- and I'd like to do incremental backups - which is easier if you just
+  look at the files' meta-data.
+
+The advantage I see over fuse is that the context switches are eliminated
+- and the infrastructure for encryption is present in the kernel.
+(The only difference between a file and a block device is, AFAIK, the
+sparseness - which might make a problem for dm-crypt (?).)
+
+(The kernel module would probably be better, because it works on static
+binaries too, can hide the keys better [even against the user], and is
+easier regarding access to the devices - how many should exist, and who
+may use them?)
+
+
+The main problems I see are:
+- In order to know which key to use the full path may have to be created.
+  How do we know how long that can be?
+- The files should get decrypted *only* for the user-process-hierarchy.
+  With other filesystems it's possible to use a clone() with CLONE_NEWNS
+  on logon, and no other processes apart from that processtree can access
+  clear-text data - not even the administrator (until he *really* wants
+  to, then nothing can stop him, of course).
+  I don't see how that could be done here, too.
+
+
+I'm afraid that this is more a brainstorming than a complete wish list or
+question table - but I'd like to hear others' opinions before thinking to
+much ahead.
+
+
+Thank you for all ideas, answers, other feedback.
+
+
+
+Regards,
+
+Phil
+
 
 
 -- 
-MST
+Versioning your /etc, /home or even your whole installation?
+             Try fsvs (fsvs.tigris.org)!
+
