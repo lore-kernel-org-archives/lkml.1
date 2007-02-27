@@ -1,801 +1,1333 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933038AbXB0Ii6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964832AbXB0Ijp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933038AbXB0Ii6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 03:38:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933036AbXB0Iiy
+	id S964832AbXB0Ijp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 03:39:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933036AbXB0Ijm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 03:38:54 -0500
-Received: from gw.goop.org ([64.81.55.164]:46823 "EHLO mail.goop.org"
+	Tue, 27 Feb 2007 03:39:42 -0500
+Received: from gw.goop.org ([64.81.55.164]:46865 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932807AbXB0Iik (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 03:38:40 -0500
-Message-Id: <20070227081634.284941488@goop.org>
+	id S933015AbXB0IjR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 03:39:17 -0500
+Message-Id: <20070227081638.102995461@goop.org>
 References: <20070227081337.434798469@goop.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 27 Feb 2007 00:13:50 -0800
+Date: Tue, 27 Feb 2007 00:14:02 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@muc.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
        Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
        Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <anthony@codemonkey.ws>
-Subject: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops callsites to make them patchable
-Content-Disposition: inline; filename=paravirt-patchable-call-wrappers.patch
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+       Jens Axboe <axboe@kernel.dk>
+Subject: [patch 25/26] Xen-paravirt_ops: Add Xen virtual block device driver.
+Content-Disposition: inline; filename=xen-blockfront.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wrap a set of interesting paravirt_ops calls in a wrapper which makes
-the callsites available for patching.  Unfortunately this is pretty
-ugly because there's no way to get gcc to generate a function call,
-but also wrap just the callsite itself with the necessary labels.
+The block device frontend driver allows the kernel to access block
+devices exported exported by a virtual machine containing a physical
+block device driver.
 
-This patch supports functions with 0-4 arguments, and either void or
-returning a value.  64-bit arguments must be split into a pair of
-32-bit arguments (lower word first).  Functions which return
-structures do so via the stack, with the first hidden argument being
-the pointer to the returned structure; this is explicitly visible in
-the wrapped calls.
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Zachary Amsden <zach@vmware.com>
-Cc: Anthony Liguori <anthony@codemonkey.ws>
-
+Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
+Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Cc: Arjan van de Ven <arjan@infradead.org>
+Cc: Greg KH <greg@kroah.com>
+Cc: Jens Axboe <axboe@kernel.dk>
 ---
- include/asm-i386/paravirt.h |  576 ++++++++++++++++++++++++++++++++-----------
- 1 file changed, 441 insertions(+), 135 deletions(-)
+ drivers/block/Kconfig        |    1 
+ drivers/block/Makefile       |    1 
+ drivers/block/xen/Kconfig    |   14 
+ drivers/block/xen/Makefile   |    5 
+ drivers/block/xen/blkfront.c |  844 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/block/xen/block.h    |  135 ++++++
+ drivers/block/xen/vbd.c      |  230 +++++++++++
+ include/linux/major.h        |    2 
+ 8 files changed, 1232 insertions(+)
 
 ===================================================================
---- a/include/asm-i386/paravirt.h
-+++ b/include/asm-i386/paravirt.h
-@@ -37,6 +37,222 @@
- #define paravirt_alt(insn_string)				\
- 	_paravirt_alt(insn_string, "%c[paravirt_typenum]", "%c[paravirt_clobber]")
+--- a/drivers/block/Kconfig
++++ b/drivers/block/Kconfig
+@@ -461,6 +461,7 @@ config CDROM_PKTCDVD_WCACHE
+ 	  don't do deferred write error handling yet.
  
-+#define PVOP_CALL0(__rettype, __op)					\
-+	({								\
-+		__rettype __ret;					\
-+		if (sizeof(__rettype) > sizeof(unsigned long)) {	\
-+			unsigned long long __tmp;			\
-+			unsigned long __ecx;				\
-+			asm volatile(paravirt_alt("call *%[op]")	\
-+				     : "=A" (__tmp), "=c" (__ecx)	\
-+				     : [op] "m" (paravirt_ops.__op),	\
-+				       paravirt_type(PARAVIRT_PATCH(__op)), \
-+				       paravirt_clobber(CLBR_ANY)	\
-+				     : "memory", "cc");			\
-+			__ret = (__rettype)__tmp;			\
-+		} else {						\
-+			unsigned long __tmp, __edx, __ecx;	\
-+			asm volatile(paravirt_alt("call *%[op]")	\
-+				     : "=a" (__tmp), "=d" (__edx), "=c" (__ecx) \
-+				     : [op] "m" (paravirt_ops.__op),	\
-+				       paravirt_type(PARAVIRT_PATCH(__op)), \
-+				       paravirt_clobber(CLBR_ANY)	\
-+				     : "memory", "cc");			\
-+			__ret = (__rettype)__tmp;			\
-+		}							\
-+		__ret;							\
-+	})
-+#define PVOP_VCALL0(__op)						\
-+	({								\
-+		unsigned long __eax, __edx, __ecx;			\
-+		asm volatile(paravirt_alt("call *%[op]")		\
-+			     : "=a" (__eax), "=d" (__edx), "=c" (__ecx) \
-+			     : [op] "m" (paravirt_ops.__op),		\
-+			       paravirt_type(PARAVIRT_PATCH(__op)),	\
-+			       paravirt_clobber(CLBR_ANY)		\
-+			     : "memory", "cc");				\
-+	})
-+
-+#define PVOP_CALL1(__rettype, __op, arg1)				\
-+	({								\
-+		__rettype __ret;					\
-+		if (sizeof(__rettype) > sizeof(unsigned long)) {	\
-+			unsigned long long __tmp;			\
-+			unsigned long __ecx;				\
-+			asm volatile(paravirt_alt("call *%[op]")	\
-+				     : "=A" (__tmp), "=c" (__ecx)	\
-+				     : [op] "m" (paravirt_ops.__op),	\
-+				       "a" ((u32)(arg1)),		\
-+				       paravirt_type(PARAVIRT_PATCH(__op)), \
-+				       paravirt_clobber(CLBR_ANY)	\
-+				     : "memory", "cc");			\
-+			__ret = (__rettype)__tmp;			\
-+		} else {						\
-+			unsigned long __tmp, __edx, __ecx;	\
-+			asm volatile(paravirt_alt("call *%[op]")	\
-+				     : "=a" (__tmp), "=d" (__edx), "=c" (__ecx) \
-+				     : [op] "m" (paravirt_ops.__op),	\
-+				       "0" ((u32)(arg1)),		\
-+				       paravirt_type(PARAVIRT_PATCH(__op)), \
-+				       paravirt_clobber(CLBR_ANY)	\
-+				     : "memory", "cc");			\
-+			__ret = (__rettype)__tmp;			\
-+		}							\
-+		__ret;							\
-+	})
-+#define PVOP_VCALL1(__op, arg1)						\
-+	({								\
-+		unsigned long __eax, __edx, __ecx;			\
-+		asm volatile(paravirt_alt("call *%[op]")		\
-+			     : "=a" (__eax), "=d" (__edx), "=c" (__ecx) \
-+			     : [op] "m" (paravirt_ops.__op),		\
-+			       "0" ((u32)(arg1)),			\
-+			       paravirt_type(PARAVIRT_PATCH(__op)),	\
-+			       paravirt_clobber(CLBR_ANY)		\
-+			     : "memory", "cc");				\
-+	})
-+
-+#define PVOP_CALL2(__rettype, __op, arg1, arg2)				\
-+	({								\
-+		__rettype __ret;					\
-+		if (sizeof(__rettype) > sizeof(unsigned long)) {	\
-+			unsigned long long __tmp;			\
-+			unsigned long __ecx;				\
-+			asm volatile(paravirt_alt("call *%[op]")	\
-+				     : "=A" (__tmp), "=c" (__ecx)	\
-+				     : [op] "m" (paravirt_ops.__op),	\
-+				       "a" ((u32)(arg1)),		\
-+				       "d" ((u32)(arg2)),		\
-+				       paravirt_type(PARAVIRT_PATCH(__op)), \
-+				       paravirt_clobber(CLBR_ANY)	\
-+				     : "memory", "cc");			\
-+			__ret = (__rettype)__tmp;			\
-+		} else {						\
-+			unsigned long __tmp, __edx, __ecx;	\
-+			asm volatile(paravirt_alt("call *%[op]")	\
-+				     : "=a" (__tmp), "=d" (__edx), "=c" (__ecx) \
-+				     : [op] "m" (paravirt_ops.__op),	\
-+				       "0" ((u32)(arg1)),		\
-+				       "1" ((u32)(arg2)),		\
-+				       paravirt_type(PARAVIRT_PATCH(__op)), \
-+				       paravirt_clobber(CLBR_ANY)	\
-+				     : "memory", "cc");			\
-+			__ret = (__rettype)__tmp;			\
-+		}							\
-+		__ret;							\
-+	})
-+#define PVOP_VCALL2(__op, arg1, arg2)					\
-+	({								\
-+		unsigned long __eax, __edx, __ecx;			\
-+		asm volatile(paravirt_alt("call *%[op]")		\
-+			     : "=a" (__eax), "=d" (__edx), "=c" (__ecx) \
-+			     : [op] "m" (paravirt_ops.__op),		\
-+			       "0" ((u32)(arg1)),			\
-+			       "1" ((u32)(arg2)),			\
-+			       paravirt_type(PARAVIRT_PATCH(__op)),	\
-+			       paravirt_clobber(CLBR_ANY)		\
-+			     : "memory", "cc");				\
-+	})
-+
-+#define PVOP_CALL3(__rettype, __op, arg1, arg2, arg3)			\
-+	({								\
-+		__rettype __ret;					\
-+		if (sizeof(__rettype) > sizeof(unsigned long)) {	\
-+			unsigned long long __tmp;			\
-+			unsigned long __ecx;				\
-+			asm volatile(paravirt_alt("call *%[op]")	\
-+				     : "=A" (__tmp), "=c" (__ecx)	\
-+				     : [op] "m" (paravirt_ops.__op),	\
-+				       "a" ((u32)(arg1)),		\
-+				       "d" ((u32)(arg2)),		\
-+				       "1" ((u32)(arg3)),		\
-+				       paravirt_type(PARAVIRT_PATCH(__op)), \
-+				       paravirt_clobber(CLBR_ANY)	\
-+				     : "memory", "cc");			\
-+			__ret = (__rettype)__tmp;			\
-+		} else {						\
-+			unsigned long __tmp, __edx, __ecx;	\
-+			asm volatile(paravirt_alt("call *%[op]")	\
-+				     : "=a" (__tmp), "=d" (__edx), "=c" (__ecx) \
-+				     : [op] "m" (paravirt_ops.__op),	\
-+				       "0" ((u32)(arg1)),		\
-+				       "1" ((u32)(arg2)),		\
-+				       "2" ((u32)(arg3)),		\
-+				       paravirt_type(PARAVIRT_PATCH(__op)), \
-+				       paravirt_clobber(CLBR_ANY)	\
-+				     : "memory", "cc");			\
-+			__ret = (__rettype)__tmp;			\
-+		}							\
-+		__ret;							\
-+	})
-+#define PVOP_VCALL3(__op, arg1, arg2, arg3)				\
-+	({								\
-+		unsigned long __eax, __edx, __ecx;			\
-+		asm volatile(paravirt_alt("call *%[op]")		\
-+			     : "=a" (__eax), "=d" (__edx), "=c" (__ecx) \
-+			     : [op] "m" (paravirt_ops.__op),		\
-+			       "0" ((u32)(arg1)),			\
-+			       "1" ((u32)(arg2)),			\
-+			       "2" ((u32)(arg3)),			\
-+			       paravirt_type(PARAVIRT_PATCH(__op)),	\
-+			       paravirt_clobber(CLBR_ANY)		\
-+			     : "memory", "cc");				\
-+	})
-+
-+#define PVOP_CALL4(__rettype, __op, arg1, arg2, arg3, arg4)		\
-+	({								\
-+		__rettype __ret;					\
-+		if (sizeof(__rettype) > sizeof(unsigned long)) {	\
-+			unsigned long long __tmp;			\
-+			unsigned long __ecx;				\
-+			asm volatile("push %[_arg4]; "			\
-+				     paravirt_alt("call *%[op]")	\
-+				     "lea 4(%%esp),%%esp"		\
-+				     : "=A" (__tmp), "=c" (__ecx)	\
-+				     : [op] "m" (paravirt_ops.__op),	\
-+				       "a" ((u32)(arg1)),		\
-+				       "d" ((u32)(arg2)),		\
-+				       "1" ((u32)(arg3)),		\
-+				       [_arg4] "mr" ((u32)(arg4)),	\
-+				       paravirt_type(PARAVIRT_PATCH(__op)), \
-+				       paravirt_clobber(CLBR_ANY)	\
-+				     : "memory", "cc",);		\
-+			__ret = (__rettype)__tmp;			\
-+		} else {						\
-+			unsigned long __tmp, __edx, __ecx;		\
-+			asm volatile("push %[_arg4]; "			\
-+				     paravirt_alt("call *%[op]")	\
-+				     "lea 4(%%esp),%%esp"		\
-+				     : "=a" (__tmp), "=d" (__edx), "=c" (__ecx) \
-+				     : [op] "m" (paravirt_ops.__op),	\
-+				       "0" ((u32)(arg1)),		\
-+				       "1" ((u32)(arg2)),		\
-+				       "2" ((u32)(arg3)),		\
-+				       [_arg4]"mr" ((u32)(arg4)),	\
-+				       paravirt_type(PARAVIRT_PATCH(__op)), \
-+				       paravirt_clobber(CLBR_ANY)	\
-+				     : "memory", "cc");			\
-+			__ret = (__rettype)__tmp;			\
-+		}							\
-+		__ret;							\
-+	})
-+#define PVOP_VCALL4(__op, arg1, arg2, arg3, arg4)			\
-+	({								\
-+		unsigned long __eax, __edx, __ecx;			\
-+		asm volatile("push %[_arg4]; "				\
-+			     paravirt_alt("call *%[op]")		\
-+			     "lea 4(%%esp),%%esp"			\
-+			     : "=a" (__eax), "=d" (__edx), "=c" (__ecx) \
-+			     : [op] "m" (paravirt_ops.__op),		\
-+			       "0" ((u32)(arg1)),			\
-+			       "1" ((u32)(arg2)),			\
-+			       "2" ((u32)(arg3)),			\
-+			       [_arg4]"mr" ((u32)(arg4)),		\
-+			       paravirt_type(PARAVIRT_PATCH(__op)),	\
-+			       paravirt_clobber(CLBR_ANY)		\
-+			     : "memory", "cc");				\
-+	})
-+
- struct thread_struct;
- struct Xgt_desc_struct;
- struct tss_struct;
-@@ -119,14 +335,10 @@ struct paravirt_ops
- 	void (*set_ldt)(const void *desc, unsigned entries);
- 	unsigned long (*store_tr)(void);
- 	void (*load_tls)(struct thread_struct *t, unsigned int cpu);
--	void (*write_ldt_entry)(void *dt, int entrynum,
--					 u32 low, u32 high);
--	void (*write_gdt_entry)(void *dt, int entrynum,
--					 u32 low, u32 high);
--	void (*write_idt_entry)(void *dt, int entrynum,
--					 u32 low, u32 high);
--	void (*load_esp0)(struct tss_struct *tss,
--				   struct thread_struct *thread);
-+	void (*write_ldt_entry)(void *dt, int entrynum, u32 low, u32 high);
-+	void (*write_gdt_entry)(void *dt, int entrynum, u32 low, u32 high);
-+	void (*write_idt_entry)(void *dt, int entrynum, u32 low, u32 high);
-+	void (*load_esp0)(struct tss_struct *tss, struct thread_struct *thread);
+ source "drivers/s390/block/Kconfig"
++source "drivers/block/xen/Kconfig"
  
- 	void (*set_iopl_mask)(unsigned mask);
+ config ATA_OVER_ETH
+ 	tristate "ATA over Ethernet support"
+===================================================================
+--- a/drivers/block/Makefile
++++ b/drivers/block/Makefile
+@@ -29,3 +29,4 @@ obj-$(CONFIG_BLK_DEV_SX8)	+= sx8.o
+ obj-$(CONFIG_BLK_DEV_SX8)	+= sx8.o
+ obj-$(CONFIG_BLK_DEV_UB)	+= ub.o
  
-@@ -225,151 +437,165 @@ pgd_t native_make_pgd(unsigned long pgd)
- pgd_t native_make_pgd(unsigned long pgd);
- #endif
- 
--#define paravirt_enabled() (paravirt_ops.paravirt_enabled)
-+static inline int paravirt_enabled(void)
++obj-$(CONFIG_XEN)		+= xen/
+===================================================================
+--- /dev/null
++++ b/drivers/block/xen/Kconfig
+@@ -0,0 +1,14 @@
++menu "Xen block device drivers"
++        depends on XEN
++
++config XEN_BLKDEV_FRONTEND
++	tristate "Block device frontend driver"
++	depends on XEN
++	default y
++	help
++	  The block device frontend driver allows the kernel to access block
++	  devices exported from a device driver virtual machine. Unless you
++	  are building a dedicated device driver virtual machine, then you
++	  almost certainly want to say Y here.
++
++endmenu
+===================================================================
+--- /dev/null
++++ b/drivers/block/xen/Makefile
+@@ -0,0 +1,5 @@
++
++obj-$(CONFIG_XEN_BLKDEV_FRONTEND)	:= xenblk.o
++
++xenblk-objs := blkfront.o vbd.o
++
+===================================================================
+--- /dev/null
++++ b/drivers/block/xen/blkfront.c
+@@ -0,0 +1,844 @@
++/******************************************************************************
++ * blkfront.c
++ *
++ * XenLinux virtual block device driver.
++ *
++ * Copyright (c) 2003-2004, Keir Fraser & Steve Hand
++ * Modifications by Mark A. Williamson are (c) Intel Research Cambridge
++ * Copyright (c) 2004, Christian Limpach
++ * Copyright (c) 2004, Andrew Warfield
++ * Copyright (c) 2005, Christopher Clark
++ * Copyright (c) 2005, XenSource Ltd
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation; or, when distributed
++ * separately from the Linux kernel or incorporated into other
++ * software packages, subject to the following license:
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this source file (the "Software"), to deal in the Software without
++ * restriction, including without limitation the rights to use, copy, modify,
++ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
++ * and to permit persons to whom the Software is furnished to do so, subject to
++ * the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++ * IN THE SOFTWARE.
++ */
++
++#include <linux/version.h>
++#include "block.h"
++#include <linux/cdrom.h>
++#include <linux/sched.h>
++#include <linux/interrupt.h>
++#include <scsi/scsi.h>
++#include <xen/xenbus.h>
++#include <xen/interface/grant_table.h>
++#include <xen/grant_table.h>
++#include <xen/events.h>
++#include <xen/page.h>
++#include <asm/xen/hypervisor.h>
++
++#define BLKIF_STATE_DISCONNECTED 0
++#define BLKIF_STATE_CONNECTED    1
++#define BLKIF_STATE_SUSPENDED    2
++
++#define MAXIMUM_OUTSTANDING_BLOCK_REQS \
++    (BLKIF_MAX_SEGMENTS_PER_REQUEST * BLK_RING_SIZE)
++#define GRANT_INVALID_REF	0
++
++static void connect(struct blkfront_info *);
++static void blkfront_closing(struct xenbus_device *);
++static int blkfront_remove(struct xenbus_device *);
++static int talk_to_backend(struct xenbus_device *, struct blkfront_info *);
++static int setup_blkring(struct xenbus_device *, struct blkfront_info *);
++
++static void kick_pending_request_queues(struct blkfront_info *);
++
++static irqreturn_t blkif_int(int irq, void *dev_id);
++static void blkif_restart_queue(struct work_struct *work);
++static void blkif_recover(struct blkfront_info *);
++static void blkif_completion(struct blk_shadow *);
++static void blkif_free(struct blkfront_info *, int);
++
++
++/**
++ * Entry point to this code when a new device is created.  Allocate the basic
++ * structures and the ring buffer for communication with the backend, and
++ * inform the backend of the appropriate details for those.  Switch to
++ * Initialised state.
++ */
++static int blkfront_probe(struct xenbus_device *dev,
++			  const struct xenbus_device_id *id)
 +{
-+	return paravirt_ops.paravirt_enabled;
-+}
- 
- static inline void load_esp0(struct tss_struct *tss,
- 			     struct thread_struct *thread)
- {
--	paravirt_ops.load_esp0(tss, thread);
--}
--
--#define ARCH_SETUP			paravirt_ops.arch_setup();
-+	PVOP_VCALL2(load_esp0, tss, thread);
++	int err, vdevice, i;
++	struct blkfront_info *info;
++
++	/* FIXME: Use dynamic device id if this is not set. */
++	err = xenbus_scanf(XBT_NIL, dev->nodename,
++			   "virtual-device", "%i", &vdevice);
++	if (err != 1) {
++		xenbus_dev_fatal(dev, err, "reading virtual-device");
++		return err;
++	}
++
++	info = kzalloc(sizeof(*info), GFP_KERNEL);
++	if (!info) {
++		xenbus_dev_fatal(dev, -ENOMEM, "allocating info structure");
++		return -ENOMEM;
++	}
++
++	info->xbdev = dev;
++	info->vdevice = vdevice;
++	info->connected = BLKIF_STATE_DISCONNECTED;
++	INIT_WORK(&info->work, blkif_restart_queue);
++
++	for (i = 0; i < BLK_RING_SIZE; i++)
++		info->shadow[i].req.id = i+1;
++	info->shadow[BLK_RING_SIZE-1].req.id = 0x0fffffff;
++
++	/* Front end dir is a number, which is used as the id. */
++	info->handle = simple_strtoul(strrchr(dev->nodename,'/')+1, NULL, 0);
++	dev->dev.driver_data = info;
++
++	err = talk_to_backend(dev, info);
++	if (err) {
++		kfree(info);
++		dev->dev.driver_data = NULL;
++		return err;
++	}
++
++	return 0;
 +}
 +
-+#define ARCH_SETUP			PVOP_VCALL0(arch_setup);
- static inline unsigned long get_wallclock(void)
- {
--	return paravirt_ops.get_wallclock();
-+	return PVOP_CALL0(unsigned long, get_wallclock);
- }
- 
- static inline int set_wallclock(unsigned long nowtime)
- {
--	return paravirt_ops.set_wallclock(nowtime);
-+	return PVOP_CALL1(int, set_wallclock, nowtime);
- }
- 
- static inline void do_time_init(void)
- {
--	return paravirt_ops.time_init();
-+	PVOP_VCALL0(time_init);
- }
- 
- /* The paravirtualized CPUID instruction. */
- static inline void __cpuid(unsigned int *eax, unsigned int *ebx,
- 			   unsigned int *ecx, unsigned int *edx)
- {
--	paravirt_ops.cpuid(eax, ebx, ecx, edx);
-+	PVOP_VCALL4(cpuid, eax, ebx, ecx, edx);
- }
- 
- /*
-  * These special macros can be used to get or set a debugging register
-  */
--#define get_debugreg(var, reg) var = paravirt_ops.get_debugreg(reg)
--#define set_debugreg(val, reg) paravirt_ops.set_debugreg(reg, val)
--
--#define clts() paravirt_ops.clts()
--
--#define read_cr0() paravirt_ops.read_cr0()
--#define write_cr0(x) paravirt_ops.write_cr0(x)
--
--#define read_cr2() paravirt_ops.read_cr2()
--#define write_cr2(x) paravirt_ops.write_cr2(x)
--
--#define read_cr3() paravirt_ops.read_cr3()
--#define write_cr3(x) paravirt_ops.write_cr3(x)
--
--#define read_cr4() paravirt_ops.read_cr4()
--#define read_cr4_safe(x) paravirt_ops.read_cr4_safe()
--#define write_cr4(x) paravirt_ops.write_cr4(x)
--
--#define raw_ptep_get_and_clear(xp)	(paravirt_ops.ptep_get_and_clear(xp))
-+#define get_debugreg(var, reg) var = PVOP_CALL1(unsigned long, get_debugreg, reg)
-+#define set_debugreg(val, reg) PVOP_VCALL2(set_debugreg, reg, val)
 +
-+#define clts()		PVOP_VCALL0(clts)
++/**
++ * We are reconnecting to the backend, due to a suspend/resume, or a backend
++ * driver restart.  We tear down our blkif structure and recreate it, but
++ * leave the device-layer structures intact so that this is transparent to the
++ * rest of the kernel.
++ */
++static int blkfront_resume(struct xenbus_device *dev)
++{
++	struct blkfront_info *info = dev->dev.driver_data;
++	int err;
 +
-+#define read_cr0()	PVOP_CALL0(unsigned long, read_cr0)
-+#define write_cr0(x)	PVOP_VCALL1(write_cr0, x)
++	dev_dbg(&dev->dev, "blkfront_resume: %s\n", dev->nodename);
 +
-+#define read_cr2()	PVOP_CALL0(unsigned long, read_cr2)
-+#define write_cr2(x)	PVOP_VCALL1(write_cr2, x)
++	blkif_free(info, info->connected == BLKIF_STATE_CONNECTED);
 +
-+#define read_cr3()	PVOP_CALL0(unsigned long, read_cr3)
-+#define write_cr3(x)	PVOP_VCALL1(write_cr3, x)
++	err = talk_to_backend(dev, info);
++	if (info->connected == BLKIF_STATE_SUSPENDED && !err)
++		blkif_recover(info);
 +
-+#define read_cr4()	PVOP_CALL0(unsigned long, read_cr4)
-+#define read_cr4_safe(x) PVOP_CALL0(unsigned long, read_cr4_safe)
-+#define write_cr4(x)	PVOP_VCALL1(write_cr4, x)
- 
- static inline void raw_safe_halt(void)
- {
--	paravirt_ops.safe_halt();
-+	PVOP_VCALL0(safe_halt);
- }
- 
- static inline void halt(void)
- {
--	paravirt_ops.safe_halt();
--}
--#define wbinvd() paravirt_ops.wbinvd()
-+	PVOP_VCALL0(safe_halt);
-+}
-+#define wbinvd()	PVOP_VCALL0(wbinvd)
- 
- #define get_kernel_rpl()  (paravirt_ops.kernel_rpl)
- 
- #define rdmsr(msr,val1,val2) do {				\
- 	int _err;						\
--	u64 _l = paravirt_ops.read_msr(msr,&_err);		\
-+	u64 _l = PVOP_CALL2(u64, read_msr, msr, &_err);		\
- 	val1 = (u32)_l;						\
- 	val2 = _l >> 32;					\
- } while(0)
- 
--#define wrmsr(msr,val1,val2) do {				\
--	u64 _l = ((u64)(val2) << 32) | (val1);			\
--	paravirt_ops.write_msr((msr), _l);			\
--} while(0)
-+#define wrmsr(msr,val1,val2) PVOP_VCALL3(write_msr, msr, val1, val2)
- 
- #define rdmsrl(msr,val) do {					\
- 	int _err;						\
--	val = paravirt_ops.read_msr((msr),&_err);		\
-+	val = PVOP_CALL2(u64, read_msr, msr, &_err);		\
- } while(0)
- 
--#define wrmsrl(msr,val) (paravirt_ops.write_msr((msr),(val)))
--#define wrmsr_safe(msr,a,b) ({					\
--	u64 _l = ((u64)(b) << 32) | (a);			\
--	paravirt_ops.write_msr((msr),_l);			\
--})
-+#define wrmsrl(msr,val)		PVOP_CALL3(int, write_msr, msr, val, 0)
-+#define wrmsr_safe(msr,a,b)	PVOP_CALL3(int, write_msr, msr, a, b)
- 
- /* rdmsr with exception handling */
- #define rdmsr_safe(msr,a,b) ({					\
- 	int _err;						\
--	u64 _l = paravirt_ops.read_msr(msr,&_err);		\
-+	u64 _l = PVOP_CALL2(u64, read_msr, msr, &_err);		\
- 	(*a) = (u32)_l;						\
- 	(*b) = _l >> 32;					\
- 	_err; })
- 
- #define rdtsc(low,high) do {					\
--	u64 _l = paravirt_ops.read_tsc();			\
-+	u64 _l = PVOP_CALL0(u64, read_tsc);			\
- 	low = (u32)_l;						\
- 	high = _l >> 32;					\
- } while(0)
- 
- #define rdtscl(low) do {					\
--	u64 _l = paravirt_ops.read_tsc();			\
-+	u64 _l = PVOP_CALL0(u64, read_tsc);			\
- 	low = (int)_l;						\
- } while(0)
- 
--#define rdtscll(val) (val = paravirt_ops.read_tsc())
-+#define rdtscll(val) (val = PVOP_CALL0(u64, read_tsc))
- 
- #define write_tsc(val1,val2) wrmsr(0x10, val1, val2)
- 
- #define rdpmc(counter,low,high) do {				\
--	u64 _l = paravirt_ops.read_pmc();			\
-+	u64 _l = PVOP_CALL0(u64, read_pmc);			\
- 	low = (u32)_l;						\
- 	high = _l >> 32;					\
- } while(0)
- 
--#define load_TR_desc() (paravirt_ops.load_tr_desc())
--#define load_gdt(dtr) (paravirt_ops.load_gdt(dtr))
--#define load_idt(dtr) (paravirt_ops.load_idt(dtr))
--#define set_ldt(addr, entries) (paravirt_ops.set_ldt((addr), (entries)))
--#define store_gdt(dtr) (paravirt_ops.store_gdt(dtr))
--#define store_idt(dtr) (paravirt_ops.store_idt(dtr))
--#define store_tr(tr) ((tr) = paravirt_ops.store_tr())
--#define load_TLS(t,cpu) (paravirt_ops.load_tls((t),(cpu)))
--#define write_ldt_entry(dt, entry, low, high)				\
--	(paravirt_ops.write_ldt_entry((dt), (entry), (low), (high)))
--#define write_gdt_entry(dt, entry, low, high)				\
--	(paravirt_ops.write_gdt_entry((dt), (entry), (low), (high)))
--#define write_idt_entry(dt, entry, low, high)				\
--	(paravirt_ops.write_idt_entry((dt), (entry), (low), (high)))
--#define set_iopl_mask(mask) (paravirt_ops.set_iopl_mask(mask))
--
--#define __pte(x)	paravirt_ops.make_pte(x)
--#define __pgd(x)	paravirt_ops.make_pgd(x)
--
--#define pte_val(x)	paravirt_ops.pte_val(x)
--#define pgd_val(x)	paravirt_ops.pgd_val(x)
--
--#ifdef CONFIG_X86_PAE
--#define __pmd(x)	paravirt_ops.make_pmd(x)
--#define pmd_val(x)	paravirt_ops.pmd_val(x)
--#endif
-+static inline void load_TR_desc(void)
-+{
-+	PVOP_VCALL0(load_tr_desc);
-+}
-+static inline void load_gdt(const struct Xgt_desc_struct *dtr)
-+{
-+	PVOP_VCALL1(load_gdt, dtr);
-+}
-+static inline void load_idt(const struct Xgt_desc_struct *dtr)
-+{
-+	PVOP_VCALL1(load_idt, dtr);
-+}
-+static inline void set_ldt(const void *addr, unsigned entries)
-+{
-+	PVOP_VCALL2(set_ldt, addr, entries);
-+}
-+static inline void store_gdt(struct Xgt_desc_struct *dtr)
-+{
-+	PVOP_VCALL1(store_gdt, dtr);
-+}
-+static inline void store_idt(struct Xgt_desc_struct *dtr)
-+{
-+	PVOP_VCALL1(store_idt, dtr);
-+}
-+#define store_tr(tr)	((tr) = PVOP_CALL0(unsigned long, store_tr))
-+static inline void load_TLS(struct thread_struct *t, unsigned cpu)
-+{
-+	PVOP_VCALL2(load_tls, t, cpu);
-+}
-+static inline void write_ldt_entry(void *dt, int entry, u32 low, u32 high)
-+{
-+	PVOP_VCALL4(write_ldt_entry, dt, entry, low, high);
-+}
-+static inline void write_gdt_entry(void *dt, int entry, u32 low, u32 high)
-+{
-+	PVOP_VCALL4(write_gdt_entry, dt, entry, low, high);
-+}
-+static inline void write_idt_entry(void *dt, int entry, u32 low, u32 high)
-+{
-+	PVOP_VCALL4(write_idt_entry, dt, entry, low, high);
-+}
-+static inline void set_iopl_mask(unsigned mask)
-+{
-+	PVOP_VCALL1(set_iopl_mask, mask);
-+}
- 
- /* The paravirtualized I/O functions */
- static inline void slow_down_io(void) {
-@@ -387,27 +613,27 @@ static inline void slow_down_io(void) {
-  */
- static inline void apic_write(unsigned long reg, unsigned long v)
- {
--	paravirt_ops.apic_write(reg,v);
-+	PVOP_VCALL2(apic_write, reg, v);
- }
- 
- static inline void apic_write_atomic(unsigned long reg, unsigned long v)
- {
--	paravirt_ops.apic_write_atomic(reg,v);
-+	PVOP_VCALL2(apic_write_atomic, reg, v);
- }
- 
- static inline unsigned long apic_read(unsigned long reg)
- {
--	return paravirt_ops.apic_read(reg);
-+	return PVOP_CALL1(unsigned long, apic_read, reg);
- }
- 
- static inline void setup_boot_clock(void)
- {
--	paravirt_ops.setup_boot_clock();
-+	PVOP_VCALL0(setup_boot_clock);
- }
- 
- static inline void setup_secondary_clock(void)
- {
--	paravirt_ops.setup_secondary_clock();
-+	PVOP_VCALL0(setup_secondary_clock);
- }
- #endif
- 
-@@ -438,90 +664,170 @@ static inline void startup_ipi_hook(int 
- static inline void startup_ipi_hook(int phys_apicid, unsigned long start_eip,
- 				    unsigned long start_esp)
- {
--	return paravirt_ops.startup_ipi_hook(phys_apicid, start_eip, start_esp);
-+	PVOP_VCALL3(startup_ipi_hook, phys_apicid, start_eip, start_esp);
- }
- #endif
- 
- static inline void paravirt_activate_mm(struct mm_struct *prev,
- 					struct mm_struct *next)
- {
--	paravirt_ops.activate_mm(prev, next);
-+	PVOP_VCALL2(activate_mm, prev, next);
- }
- 
- static inline void arch_dup_mmap(struct mm_struct *oldmm,
- 				 struct mm_struct *mm)
- {
--	paravirt_ops.dup_mmap(oldmm, mm);
-+	PVOP_VCALL2(dup_mmap, oldmm, mm);
- }
- 
- static inline void arch_exit_mmap(struct mm_struct *mm)
- {
--	paravirt_ops.exit_mmap(mm);
--}
--
--#define __flush_tlb() paravirt_ops.flush_tlb_user()
--#define __flush_tlb_global() paravirt_ops.flush_tlb_kernel()
--#define __flush_tlb_single(addr) paravirt_ops.flush_tlb_single(addr)
--
--#define paravirt_alloc_pt(pfn) paravirt_ops.alloc_pt(pfn)
--#define paravirt_release_pt(pfn) paravirt_ops.release_pt(pfn)
--
--#define paravirt_alloc_pd(pfn) paravirt_ops.alloc_pd(pfn)
-+	PVOP_VCALL1(exit_mmap, mm);
++	return err;
 +}
 +
-+#define __flush_tlb()		PVOP_VCALL0(flush_tlb_user)
-+#define __flush_tlb_global()	PVOP_VCALL0(flush_tlb_kernel)
-+#define __flush_tlb_single(addr) PVOP_VCALL1(flush_tlb_single, addr)
 +
-+#define paravirt_alloc_pt(pfn)	PVOP_VCALL1(alloc_pt, pfn)
-+#define paravirt_release_pt(pfn) PVOP_VCALL1(release_pt, pfn)
-+
-+#define paravirt_alloc_pd(pfn)	PVOP_VCALL1(alloc_pd, pfn)
- #define paravirt_alloc_pd_clone(pfn, clonepfn, start, count) \
--	paravirt_ops.alloc_pd_clone(pfn, clonepfn, start, count)
--#define paravirt_release_pd(pfn) paravirt_ops.release_pd(pfn)
-+	PVOP_VCALL4(alloc_pd_clone, pfn, clonepfn, start, count)
-+#define paravirt_release_pd(pfn) PVOP_VCALL1(release_pd, pfn)
-+
-+static inline void pte_update(struct mm_struct *mm, u32 addr, pte_t *ptep)
++/* Common code used when first setting up, and when resuming. */
++static int talk_to_backend(struct xenbus_device *dev,
++			   struct blkfront_info *info)
 +{
-+	PVOP_VCALL3(pte_update, mm, addr, ptep);
++	const char *message = NULL;
++	struct xenbus_transaction xbt;
++	int err;
++
++	/* Create shared ring, alloc event channel. */
++	err = setup_blkring(dev, info);
++	if (err)
++		goto out;
++
++again:
++	err = xenbus_transaction_start(&xbt);
++	if (err) {
++		xenbus_dev_fatal(dev, err, "starting transaction");
++		goto destroy_blkring;
++	}
++
++	err = xenbus_printf(xbt, dev->nodename,
++			    "ring-ref","%u", info->ring_ref);
++	if (err) {
++		message = "writing ring-ref";
++		goto abort_transaction;
++	}
++	err = xenbus_printf(xbt, dev->nodename,
++			    "event-channel", "%u", info->evtchn);
++	if (err) {
++		message = "writing event-channel";
++		goto abort_transaction;
++	}
++
++	err = xenbus_transaction_end(xbt, 0);
++	if (err) {
++		if (err == -EAGAIN)
++			goto again;
++		xenbus_dev_fatal(dev, err, "completing transaction");
++		goto destroy_blkring;
++	}
++
++	xenbus_switch_state(dev, XenbusStateInitialised);
++
++	return 0;
++
++ abort_transaction:
++	xenbus_transaction_end(xbt, 1);
++	if (message)
++		xenbus_dev_fatal(dev, err, "%s", message);
++ destroy_blkring:
++	blkif_free(info, 0);
++ out:
++	return err;
 +}
 +
-+static inline void pte_update_defer(struct mm_struct *mm, u32 addr, pte_t *ptep)
++
++static int setup_blkring(struct xenbus_device *dev,
++			 struct blkfront_info *info)
 +{
-+	PVOP_VCALL3(pte_update_defer, mm, addr, ptep);
++	struct blkif_sring *sring;
++	int err;
++
++	info->ring_ref = GRANT_INVALID_REF;
++
++	sring = (struct blkif_sring *)__get_free_page(GFP_KERNEL);
++	if (!sring) {
++		xenbus_dev_fatal(dev, -ENOMEM, "allocating shared ring");
++		return -ENOMEM;
++	}
++	SHARED_RING_INIT(sring);
++	FRONT_RING_INIT(&info->ring, sring, PAGE_SIZE);
++
++	err = xenbus_grant_ring(dev, virt_to_mfn(info->ring.sring));
++	if (err < 0) {
++		free_page((unsigned long)sring);
++		info->ring.sring = NULL;
++		goto fail;
++	}
++	info->ring_ref = err;
++
++	err = xenbus_alloc_evtchn(dev, &info->evtchn);
++	if (err)
++		goto fail;
++
++	err = bind_evtchn_to_irqhandler(
++		info->evtchn, blkif_int, SA_SAMPLE_RANDOM, "blkif", info);
++	if (err <= 0) {
++		xenbus_dev_fatal(dev, err,
++				 "bind_evtchn_to_irqhandler failed");
++		goto fail;
++	}
++	info->irq = err;
++
++	return 0;
++fail:
++	blkif_free(info, 0);
++	return err;
 +}
 +
-+#ifdef CONFIG_X86_PAE
-+static inline pte_t __pte(unsigned long long val)
++
++/**
++ * Callback received when the backend's state changes.
++ */
++static void backend_changed(struct xenbus_device *dev,
++			    enum xenbus_state backend_state)
 +{
-+	unsigned long long ret = PVOP_CALL2(unsigned long long, make_pte, val, val >> 32);
-+	return (pte_t) { ret, ret >> 32 };
++	struct blkfront_info *info = dev->dev.driver_data;
++	struct block_device *bd;
++
++	dev_dbg(&dev->dev, "blkfront:backend_changed.\n");
++
++	switch (backend_state) {
++	case XenbusStateInitialising:
++	case XenbusStateInitWait:
++	case XenbusStateInitialised:
++	case XenbusStateUnknown:
++	case XenbusStateClosed:
++		break;
++
++	case XenbusStateConnected:
++		connect(info);
++		break;
++
++	case XenbusStateClosing:
++		bd = bdget(info->dev);
++		if (bd == NULL)
++			xenbus_dev_fatal(dev, -ENODEV, "bdget failed");
++
++		mutex_lock(&bd->bd_mutex);
++		if (info->users > 0)
++			xenbus_dev_error(dev, -EBUSY,
++					 "Device in use; refusing to close");
++		else
++			blkfront_closing(dev);
++		mutex_unlock(&bd->bd_mutex);
++		bdput(bd);
++		break;
++	}
 +}
 +
-+static inline pmd_t __pmd(unsigned long long val)
++
++/* ** Connection ** */
++
++
++/*
++ * Invoked when the backend is finally 'ready' (and has told produced
++ * the details about the physical device - #sectors, size, etc).
++ */
++static void connect(struct blkfront_info *info)
 +{
-+	return (pmd_t) { PVOP_CALL2(unsigned long long, make_pmd, val, val >> 32) };
++	unsigned long long sectors;
++	unsigned long sector_size;
++	unsigned int binfo;
++	int err;
++
++	if ((info->connected == BLKIF_STATE_CONNECTED) ||
++	    (info->connected == BLKIF_STATE_SUSPENDED) )
++		return;
++
++	dev_dbg(&info->dev, "blkfront.c:connect:%s.\n", info->xbdev->otherend);
++
++	err = xenbus_gather(XBT_NIL, info->xbdev->otherend,
++			    "sectors", "%llu", &sectors,
++			    "info", "%u", &binfo,
++			    "sector-size", "%lu", &sector_size,
++			    NULL);
++	if (err) {
++		xenbus_dev_fatal(info->xbdev, err,
++				 "reading backend fields at %s",
++				 info->xbdev->otherend);
++		return;
++	}
++
++	err = xenbus_gather(XBT_NIL, info->xbdev->otherend,
++			    "feature-barrier", "%lu", &info->feature_barrier,
++			    NULL);
++	if (err)
++		info->feature_barrier = 0;
++
++	err = xlvbd_add(sectors, info->vdevice, binfo, sector_size, info);
++	if (err) {
++		xenbus_dev_fatal(info->xbdev, err, "xlvbd_add at %s",
++				 info->xbdev->otherend);
++		return;
++	}
++
++	xenbus_switch_state(info->xbdev, XenbusStateConnected);
++
++	/* Kick pending requests. */
++	spin_lock_irq(&blkif_io_lock);
++	info->connected = BLKIF_STATE_CONNECTED;
++	kick_pending_request_queues(info);
++	spin_unlock_irq(&blkif_io_lock);
++
++	add_disk(info->gd);
 +}
 +
-+static inline pgd_t __pgd(unsigned long long val)
++/**
++ * Handle the change of state of the backend to Closing.  We must delete our
++ * device-layer structures now, to ensure that writes are flushed through to
++ * the backend.  Once is this done, we can switch to Closed in
++ * acknowledgement.
++ */
++static void blkfront_closing(struct xenbus_device *dev)
 +{
-+	return (pgd_t) { PVOP_CALL2(unsigned long long, make_pgd, val, val >> 32) };
++	struct blkfront_info *info = dev->dev.driver_data;
++	unsigned long flags;
++
++	dev_dbg(&dev->dev, "blkfront_closing: %s removed\n", dev->nodename);
++
++	if (info->rq == NULL)
++		goto out;
++
++	spin_lock_irqsave(&blkif_io_lock, flags);
++	/* No more blkif_request(). */
++	blk_stop_queue(info->rq);
++	/* No more gnttab callback work. */
++	gnttab_cancel_free_callback(&info->callback);
++	spin_unlock_irqrestore(&blkif_io_lock, flags);
++
++	/* Flush gnttab callback work. Must be done with no locks held. */
++	flush_scheduled_work();
++
++	xlvbd_del(info);
++
++ out:
++	xenbus_frontend_closed(dev);
 +}
 +
-+static inline unsigned long long pte_val(pte_t x)
++
++static int blkfront_remove(struct xenbus_device *dev)
 +{
-+	return PVOP_CALL2(unsigned long long, pte_val, x.pte_low, x.pte_high);
++	struct blkfront_info *info = dev->dev.driver_data;
++
++	dev_dbg(&dev->dev, "blkfront_remove: %s removed\n", dev->nodename);
++
++	blkif_free(info, 0);
++
++	kfree(info);
++
++	return 0;
 +}
 +
-+static inline unsigned long long pmd_val(pmd_t x)
++
++static inline int GET_ID_FROM_FREELIST(
++	struct blkfront_info *info)
 +{
-+	return PVOP_CALL2(unsigned long long, pmd_val, x.pmd, x.pmd >> 32);
++	unsigned long free = info->shadow_free;
++	BUG_ON(free > BLK_RING_SIZE);
++	info->shadow_free = info->shadow[free].req.id;
++	info->shadow[free].req.id = 0x0fffffee; /* debug */
++	return free;
 +}
 +
-+static inline unsigned long long pgd_val(pgd_t x)
++static inline void ADD_ID_TO_FREELIST(
++	struct blkfront_info *info, unsigned long id)
 +{
-+	return PVOP_CALL2(unsigned long long, pgd_val, x.pgd, x.pgd >> 32);
++	info->shadow[id].req.id  = info->shadow_free;
++	info->shadow[id].request = 0;
++	info->shadow_free = id;
 +}
++
++static inline void flush_requests(struct blkfront_info *info)
++{
++	int notify;
++
++	RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&info->ring, notify);
++
++	if (notify)
++		notify_remote_via_irq(info->irq);
++}
++
++static void kick_pending_request_queues(struct blkfront_info *info)
++{
++	if (!RING_FULL(&info->ring)) {
++		/* Re-enable calldowns. */
++		blk_start_queue(info->rq);
++		/* Kick things off immediately. */
++		do_blkif_request(info->rq);
++	}
++}
++
++static void blkif_restart_queue(struct work_struct *work)
++{
++	struct blkfront_info *info = container_of(work, struct blkfront_info, work);
++
++	spin_lock_irq(&blkif_io_lock);
++	if (info->connected == BLKIF_STATE_CONNECTED)
++		kick_pending_request_queues(info);
++	spin_unlock_irq(&blkif_io_lock);
++}
++
++static void blkif_restart_queue_callback(void *arg)
++{
++	struct blkfront_info *info = (struct blkfront_info *)arg;
++	schedule_work(&info->work);
++}
++
++int blkif_open(struct inode *inode, struct file *filep)
++{
++	struct blkfront_info *info = inode->i_bdev->bd_disk->private_data;
++	info->users++;
++	return 0;
++}
++
++
++int blkif_release(struct inode *inode, struct file *filep)
++{
++	struct blkfront_info *info = inode->i_bdev->bd_disk->private_data;
++	info->users--;
++	if (info->users == 0) {
++		/* Check whether we have been instructed to close.  We will
++		   have ignored this request initially, as the device was
++		   still mounted. */
++		struct xenbus_device * dev = info->xbdev;
++		enum xenbus_state state = xenbus_read_driver_state(dev->otherend);
++
++		if (state == XenbusStateClosing)
++			blkfront_closing(dev);
++	}
++	return 0;
++}
++
++
++int blkif_getgeo(struct block_device *bd, struct hd_geometry *hg)
++{
++	/* We don't have real geometry info, but let's at least return
++	   values consistent with the size of the device */
++	sector_t nsect = get_capacity(bd->bd_disk);
++	sector_t cylinders = nsect;
++
++	hg->heads = 0xff;
++	hg->sectors = 0x3f;
++	sector_div(cylinders, hg->heads * hg->sectors);
++	hg->cylinders = cylinders;
++	if ((sector_t)(hg->cylinders + 1) * hg->heads * hg->sectors < nsect)
++		hg->cylinders = 0xffff;
++	return 0;
++}
++
++/*
++ * blkif_queue_request
++ *
++ * request block io
++ *
++ * id: for guest use only.
++ * operation: BLKIF_OP_{READ,WRITE,PROBE}
++ * buffer: buffer to read/write into. this should be a
++ *   virtual address in the guest os.
++ */
++static int blkif_queue_request(struct request *req)
++{
++	struct blkfront_info *info = req->rq_disk->private_data;
++	unsigned long buffer_mfn;
++	struct blkif_request *ring_req;
++	struct bio *bio;
++	struct bio_vec *bvec;
++	int idx;
++	unsigned long id;
++	unsigned int fsect, lsect;
++	int ref;
++	grant_ref_t gref_head;
++
++	if (unlikely(info->connected != BLKIF_STATE_CONNECTED))
++		return 1;
++
++	if (gnttab_alloc_grant_references(
++		BLKIF_MAX_SEGMENTS_PER_REQUEST, &gref_head) < 0) {
++		gnttab_request_free_callback(
++			&info->callback,
++			blkif_restart_queue_callback,
++			info,
++			BLKIF_MAX_SEGMENTS_PER_REQUEST);
++		return 1;
++	}
++
++	/* Fill out a communications ring structure. */
++	ring_req = RING_GET_REQUEST(&info->ring, info->ring.req_prod_pvt);
++	id = GET_ID_FROM_FREELIST(info);
++	info->shadow[id].request = (unsigned long)req;
++
++	ring_req->id = id;
++	ring_req->sector_number = (blkif_sector_t)req->sector;
++	ring_req->handle = info->handle;
++
++	ring_req->operation = rq_data_dir(req) ?
++		BLKIF_OP_WRITE : BLKIF_OP_READ;
++	if (blk_barrier_rq(req))
++		ring_req->operation = BLKIF_OP_WRITE_BARRIER;
++
++	ring_req->nr_segments = 0;
++	rq_for_each_bio (bio, req) {
++		bio_for_each_segment (bvec, bio, idx) {
++			BUG_ON(ring_req->nr_segments
++			       == BLKIF_MAX_SEGMENTS_PER_REQUEST);
++			buffer_mfn = pfn_to_mfn(page_to_pfn(bvec->bv_page));
++			fsect = bvec->bv_offset >> 9;
++			lsect = fsect + (bvec->bv_len >> 9) - 1;
++			/* install a grant reference. */
++			ref = gnttab_claim_grant_reference(&gref_head);
++			BUG_ON(ref == -ENOSPC);
++
++			gnttab_grant_foreign_access_ref(
++				ref,
++				info->xbdev->otherend_id,
++				buffer_mfn,
++				rq_data_dir(req) );
++
++			info->shadow[id].frame[ring_req->nr_segments] =
++				mfn_to_pfn(buffer_mfn);
++
++			ring_req->seg[ring_req->nr_segments] =
++				(struct blkif_request_segment) {
++					.gref       = ref,
++					.first_sect = fsect,
++					.last_sect  = lsect };
++
++			ring_req->nr_segments++;
++		}
++	}
++
++	info->ring.req_prod_pvt++;
++
++	/* Keep a private copy so we can reissue requests when recovering. */
++	info->shadow[id].req = *ring_req;
++
++	gnttab_free_grant_references(gref_head);
++
++	return 0;
++}
++
++/*
++ * do_blkif_request
++ *  read a block; request is in a request queue
++ */
++void do_blkif_request(request_queue_t *rq)
++{
++	struct blkfront_info *info = NULL;
++	struct request *req;
++	int queued;
++
++	pr_debug("Entered do_blkif_request\n");
++
++	queued = 0;
++
++	while ((req = elv_next_request(rq)) != NULL) {
++		info = req->rq_disk->private_data;
++		if (!blk_fs_request(req)) {
++			end_request(req, 0);
++			continue;
++		}
++
++		if (RING_FULL(&info->ring))
++			goto wait;
++
++		pr_debug("do_blk_req %p: cmd %p, sec %lx, "
++			 "(%u/%li) buffer:%p [%s]\n",
++			 req, req->cmd, (unsigned long)req->sector,
++			 req->current_nr_sectors,
++			 req->nr_sectors, req->buffer,
++			 rq_data_dir(req) ? "write" : "read");
++
++
++		blkdev_dequeue_request(req);
++		if (blkif_queue_request(req)) {
++			blk_requeue_request(rq, req);
++		wait:
++			/* Avoid pointless unplugs. */
++			blk_stop_queue(rq);
++			break;
++		}
++
++		queued++;
++	}
++
++	if (queued != 0)
++		flush_requests(info);
++}
++
++
++static irqreturn_t blkif_int(int irq, void *dev_id)
++{
++	struct request *req;
++	struct blkif_response *bret;
++	RING_IDX i, rp;
++	unsigned long flags;
++	struct blkfront_info *info = (struct blkfront_info *)dev_id;
++	int uptodate;
++
++	spin_lock_irqsave(&blkif_io_lock, flags);
++
++	if (unlikely(info->connected != BLKIF_STATE_CONNECTED)) {
++		spin_unlock_irqrestore(&blkif_io_lock, flags);
++		return IRQ_HANDLED;
++	}
++
++ again:
++	rp = info->ring.sring->rsp_prod;
++	rmb(); /* Ensure we see queued responses up to 'rp'. */
++
++	for (i = info->ring.rsp_cons; i != rp; i++) {
++		unsigned long id;
++		int ret;
++
++		bret = RING_GET_RESPONSE(&info->ring, i);
++		id   = bret->id;
++		req  = (struct request *)info->shadow[id].request;
++
++		blkif_completion(&info->shadow[id]);
++
++		ADD_ID_TO_FREELIST(info, id);
++
++		uptodate = (bret->status == BLKIF_RSP_OKAY);
++		switch (bret->operation) {
++		case BLKIF_OP_WRITE_BARRIER:
++			if (unlikely(bret->status == BLKIF_RSP_EOPNOTSUPP)) {
++				printk("blkfront: %s: write barrier op failed\n",
++				       info->gd->disk_name);
++				uptodate = -EOPNOTSUPP;
++				info->feature_barrier = 0;
++			        xlvbd_barrier(info);
++			}
++			/* fall through */
++		case BLKIF_OP_READ:
++		case BLKIF_OP_WRITE:
++			if (unlikely(bret->status != BLKIF_RSP_OKAY))
++				dev_dbg(&info->dev, "Bad return from blkdev data "
++					"request: %x\n", bret->status);
++
++			ret = end_that_request_first(req, uptodate,
++				req->hard_nr_sectors);
++			BUG_ON(ret);
++			end_that_request_last(req, uptodate);
++			break;
++		default:
++			BUG();
++		}
++	}
++
++	info->ring.rsp_cons = i;
++
++	if (i != info->ring.req_prod_pvt) {
++		int more_to_do;
++		RING_FINAL_CHECK_FOR_RESPONSES(&info->ring, more_to_do);
++		if (more_to_do)
++			goto again;
++	} else
++		info->ring.sring->rsp_event = i + 1;
++
++	kick_pending_request_queues(info);
++
++	spin_unlock_irqrestore(&blkif_io_lock, flags);
++
++	return IRQ_HANDLED;
++}
++
++static void blkif_free(struct blkfront_info *info, int suspend)
++{
++	/* Prevent new requests being issued until we fix things up. */
++	spin_lock_irq(&blkif_io_lock);
++	info->connected = suspend ?
++		BLKIF_STATE_SUSPENDED : BLKIF_STATE_DISCONNECTED;
++	/* No more blkif_request(). */
++	if (info->rq)
++		blk_stop_queue(info->rq);
++	/* No more gnttab callback work. */
++	gnttab_cancel_free_callback(&info->callback);
++	spin_unlock_irq(&blkif_io_lock);
++
++	/* Flush gnttab callback work. Must be done with no locks held. */
++	flush_scheduled_work();
++
++	/* Free resources associated with old device channel. */
++	if (info->ring_ref != GRANT_INVALID_REF) {
++		gnttab_end_foreign_access(info->ring_ref, 0,
++					  (unsigned long)info->ring.sring);
++		info->ring_ref = GRANT_INVALID_REF;
++		info->ring.sring = NULL;
++	}
++	if (info->irq)
++		unbind_from_irqhandler(info->irq, info);
++	info->evtchn = info->irq = 0;
++
++}
++
++static void blkif_completion(struct blk_shadow *s)
++{
++	int i;
++	for (i = 0; i < s->req.nr_segments; i++)
++		gnttab_end_foreign_access(s->req.seg[i].gref, 0, 0UL);
++}
++
++static void blkif_recover(struct blkfront_info *info)
++{
++	int i;
++	struct blkif_request *req;
++	struct blk_shadow *copy;
++	int j;
++
++	/* Stage 1: Make a safe copy of the shadow state. */
++	copy = kmalloc(sizeof(info->shadow), GFP_KERNEL | __GFP_NOFAIL);
++	memcpy(copy, info->shadow, sizeof(info->shadow));
++
++	/* Stage 2: Set up free list. */
++	memset(&info->shadow, 0, sizeof(info->shadow));
++	for (i = 0; i < BLK_RING_SIZE; i++)
++		info->shadow[i].req.id = i+1;
++	info->shadow_free = info->ring.req_prod_pvt;
++	info->shadow[BLK_RING_SIZE-1].req.id = 0x0fffffff;
++
++	/* Stage 3: Find pending requests and requeue them. */
++	for (i = 0; i < BLK_RING_SIZE; i++) {
++		/* Not in use? */
++		if (copy[i].request == 0)
++			continue;
++
++		/* Grab a request slot and copy shadow state into it. */
++		req = RING_GET_REQUEST(
++			&info->ring, info->ring.req_prod_pvt);
++		*req = copy[i].req;
++
++		/* We get a new request id, and must reset the shadow state. */
++		req->id = GET_ID_FROM_FREELIST(info);
++		memcpy(&info->shadow[req->id], &copy[i], sizeof(copy[i]));
++
++		/* Rewrite any grant references invalidated by susp/resume. */
++		for (j = 0; j < req->nr_segments; j++)
++			gnttab_grant_foreign_access_ref(
++				req->seg[j].gref,
++				info->xbdev->otherend_id,
++				pfn_to_mfn(info->shadow[req->id].frame[j]),
++				rq_data_dir(
++					(struct request *)
++					info->shadow[req->id].request));
++		info->shadow[req->id].req = *req;
++
++		info->ring.req_prod_pvt++;
++	}
++
++	kfree(copy);
++
++	xenbus_switch_state(info->xbdev, XenbusStateConnected);
++
++	spin_lock_irq(&blkif_io_lock);
++
++	/* Now safe for us to use the shared ring */
++	info->connected = BLKIF_STATE_CONNECTED;
++
++	/* Send off requeued requests */
++	flush_requests(info);
++
++	/* Kick any other new requests queued since we resumed */
++	kick_pending_request_queues(info);
++
++	spin_unlock_irq(&blkif_io_lock);
++}
++
++
++/* ** Driver Registration ** */
++
++
++static struct xenbus_device_id blkfront_ids[] = {
++	{ "vbd" },
++	{ "" }
++};
++
++
++static struct xenbus_driver blkfront = {
++	.name = "vbd",
++	.owner = THIS_MODULE,
++	.ids = blkfront_ids,
++	.probe = blkfront_probe,
++	.remove = blkfront_remove,
++	.resume = blkfront_resume,
++	.otherend_changed = backend_changed,
++};
++
++
++static int __init xlblk_init(void)
++{
++	if (!is_running_on_xen())
++		return -ENODEV;
++
++	if (xlvbd_alloc_major() < 0)
++		return -ENODEV;
++
++	return xenbus_register_frontend(&blkfront);
++}
++module_init(xlblk_init);
++
++
++static void xlblk_exit(void)
++{
++	return xenbus_unregister_driver(&blkfront);
++}
++module_exit(xlblk_exit);
++
++MODULE_LICENSE("Dual BSD/GPL");
+===================================================================
+--- /dev/null
++++ b/drivers/block/xen/block.h
+@@ -0,0 +1,135 @@
++/******************************************************************************
++ * block.h
++ *
++ * Shared definitions between all levels of XenLinux Virtual block devices.
++ *
++ * Copyright (c) 2003-2004, Keir Fraser & Steve Hand
++ * Modifications by Mark A. Williamson are (c) Intel Research Cambridge
++ * Copyright (c) 2004-2005, Christian Limpach
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation; or, when distributed
++ * separately from the Linux kernel or incorporated into other
++ * software packages, subject to the following license:
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this source file (the "Software"), to deal in the Software without
++ * restriction, including without limitation the rights to use, copy, modify,
++ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
++ * and to permit persons to whom the Software is furnished to do so, subject to
++ * the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++ * IN THE SOFTWARE.
++ */
++
++#ifndef __XEN_DRIVERS_BLOCK_H__
++#define __XEN_DRIVERS_BLOCK_H__
++
++#include <linux/version.h>
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/sched.h>
++#include <linux/slab.h>
++#include <linux/string.h>
++#include <linux/errno.h>
++#include <linux/fs.h>
++#include <linux/hdreg.h>
++#include <linux/blkdev.h>
++#include <linux/major.h>
++#include <asm/xen/hypervisor.h>
++#include <xen/xenbus.h>
++#include <xen/grant_table.h>
++#include <xen/interface/xen.h>
++#include <xen/interface/io/blkif.h>
++#include <xen/interface/io/ring.h>
++#include <asm/io.h>
++#include <asm/atomic.h>
++#include <asm/uaccess.h>
++
++struct xlbd_type_info
++{
++	int partn_shift;
++	int disks_per_major;
++	char *devname;
++	char *diskname;
++};
++
++struct xlbd_major_info
++{
++	int major;
++	int index;
++	int usage;
++	struct xlbd_type_info *type;
++};
++
++struct blk_shadow {
++	struct blkif_request req;
++	unsigned long request;
++	unsigned long frame[BLKIF_MAX_SEGMENTS_PER_REQUEST];
++};
++
++#define BLK_RING_SIZE __RING_SIZE((struct blkif_sring *)0, PAGE_SIZE)
++
++/*
++ * We have one of these per vbd, whether ide, scsi or 'other'.  They
++ * hang in private_data off the gendisk structure. We may end up
++ * putting all kinds of interesting stuff here :-)
++ */
++struct blkfront_info
++{
++	struct xenbus_device *xbdev;
++	dev_t dev;
++ 	struct gendisk *gd;
++	int vdevice;
++	blkif_vdev_t handle;
++	int connected;
++	int ring_ref;
++	struct blkif_front_ring ring;
++	unsigned int evtchn, irq;
++	struct xlbd_major_info *mi;
++	request_queue_t *rq;
++	struct work_struct work;
++	struct gnttab_free_callback callback;
++	struct blk_shadow shadow[BLK_RING_SIZE];
++	unsigned long shadow_free;
++	int feature_barrier;
++
++	/**
++	 * The number of people holding this device open.  We won't allow a
++	 * hot-unplug unless this is 0.
++	 */
++	int users;
++};
++
++extern spinlock_t blkif_io_lock;
++
++extern int blkif_open(struct inode *inode, struct file *filep);
++extern int blkif_release(struct inode *inode, struct file *filep);
++extern int blkif_ioctl(struct inode *inode, struct file *filep,
++		       unsigned command, unsigned long argument);
++extern int blkif_getgeo(struct block_device *, struct hd_geometry *);
++extern int blkif_check(dev_t dev);
++extern int blkif_revalidate(dev_t dev);
++extern void do_blkif_request (request_queue_t *rq);
++
++/* Virtual block device subsystem. */
++int xlvbd_alloc_major(void);
++/* Note that xlvbd_add doesn't call add_disk for you: you're expected
++   to call add_disk on info->gd once the disk is properly connected
++   up. */
++int xlvbd_add(blkif_sector_t capacity, int device,
++	      u16 vdisk_info, u16 sector_size, struct blkfront_info *info);
++void xlvbd_del(struct blkfront_info *info);
++int xlvbd_barrier(struct blkfront_info *info);
++
++#endif /* __XEN_DRIVERS_BLOCK_H__ */
+===================================================================
+--- /dev/null
++++ b/drivers/block/xen/vbd.c
+@@ -0,0 +1,230 @@
++/******************************************************************************
++ * vbd.c
++ *
++ * XenLinux virtual block device driver (xvd).
++ *
++ * Copyright (c) 2003-2004, Keir Fraser & Steve Hand
++ * Modifications by Mark A. Williamson are (c) Intel Research Cambridge
++ * Copyright (c) 2004-2005, Christian Limpach
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation; or, when distributed
++ * separately from the Linux kernel or incorporated into other
++ * software packages, subject to the following license:
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this source file (the "Software"), to deal in the Software without
++ * restriction, including without limitation the rights to use, copy, modify,
++ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
++ * and to permit persons to whom the Software is furnished to do so, subject to
++ * the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++ * IN THE SOFTWARE.
++ */
++
++#include "block.h"
++#include <linux/blkdev.h>
++#include <linux/list.h>
++
++#define BLKIF_MAJOR(dev) ((dev)>>8)
++#define BLKIF_MINOR(dev) ((dev) & 0xff)
++
++static struct xlbd_type_info xvd_type_info = {
++	.partn_shift = 4,
++	.disks_per_major = 16,
++	.devname = "xvd",
++	.diskname = "xvd"
++};
++
++static struct xlbd_major_info xvd_major_info = {
++	.major = XENVBD_MAJOR,
++	.type = &xvd_type_info
++};
++
++/* Information about our VBDs. */
++#define MAX_VBDS 64
++static LIST_HEAD(vbds_list);
++
++static struct block_device_operations xlvbd_block_fops =
++{
++	.owner = THIS_MODULE,
++	.open = blkif_open,
++	.release = blkif_release,
++	.getgeo = blkif_getgeo
++};
++
++DEFINE_SPINLOCK(blkif_io_lock);
++
++int
++xlvbd_alloc_major(void)
++{
++	printk("Registering block device major %i\n", xvd_major_info.major);
++	if (register_blkdev(xvd_major_info.major,
++			    xvd_major_info.type->devname)) {
++		printk(KERN_WARNING "xen_blk: can't get major %d with name %s\n",
++		       xvd_major_info.major, xvd_major_info.type->devname);
++		return -1;
++	}
++	return 0;
++}
++
++static int
++xlvbd_init_blk_queue(struct gendisk *gd, u16 sector_size)
++{
++	request_queue_t *rq;
++
++	rq = blk_init_queue(do_blkif_request, &blkif_io_lock);
++	if (rq == NULL)
++		return -1;
++
++	elevator_init(rq, "noop");
++
++	/* Hard sector size and max sectors impersonate the equiv. hardware. */
++	blk_queue_hardsect_size(rq, sector_size);
++	blk_queue_max_sectors(rq, 512);
++
++	/* Each segment in a request is up to an aligned page in size. */
++	blk_queue_segment_boundary(rq, PAGE_SIZE - 1);
++	blk_queue_max_segment_size(rq, PAGE_SIZE);
++
++	/* Ensure a merged request will fit in a single I/O ring slot. */
++	blk_queue_max_phys_segments(rq, BLKIF_MAX_SEGMENTS_PER_REQUEST);
++	blk_queue_max_hw_segments(rq, BLKIF_MAX_SEGMENTS_PER_REQUEST);
++
++	/* Make sure buffer addresses are sector-aligned. */
++	blk_queue_dma_alignment(rq, 511);
++
++	gd->queue = rq;
++
++	return 0;
++}
++
++static int
++xlvbd_alloc_gendisk(int minor, blkif_sector_t capacity, int vdevice,
++		    u16 vdisk_info, u16 sector_size,
++		    struct blkfront_info *info)
++{
++	struct gendisk *gd;
++	struct xlbd_major_info *mi;
++	int nr_minors = 1;
++	int err = -ENODEV;
++
++	BUG_ON(info->gd != NULL);
++	BUG_ON(info->mi != NULL);
++	BUG_ON(info->rq != NULL);
++
++	mi = &xvd_major_info;
++	info->mi = mi;
++
++	if ((minor & ((1 << mi->type->partn_shift) - 1)) == 0)
++		nr_minors = 1 << mi->type->partn_shift;
++
++	gd = alloc_disk(nr_minors);
++	if (gd == NULL)
++		goto out;
++
++	if (nr_minors > 1)
++		sprintf(gd->disk_name, "%s%c", mi->type->diskname,
++			'a' + mi->index * mi->type->disks_per_major +
++			(minor >> mi->type->partn_shift));
++	else
++		sprintf(gd->disk_name, "%s%c%d", mi->type->diskname,
++			'a' + mi->index * mi->type->disks_per_major +
++			(minor >> mi->type->partn_shift),
++			minor & ((1 << mi->type->partn_shift) - 1));
++
++	gd->major = mi->major;
++	gd->first_minor = minor;
++	gd->fops = &xlvbd_block_fops;
++	gd->private_data = info;
++	gd->driverfs_dev = &(info->xbdev->dev);
++	set_capacity(gd, capacity);
++
++	if (xlvbd_init_blk_queue(gd, sector_size)) {
++		del_gendisk(gd);
++		goto out;
++	}
++
++	info->rq = gd->queue;
++	info->gd = gd;
++
++	if (info->feature_barrier)
++		xlvbd_barrier(info);
++
++	if (vdisk_info & VDISK_READONLY)
++		set_disk_ro(gd, 1);
++
++	if (vdisk_info & VDISK_REMOVABLE)
++		gd->flags |= GENHD_FL_REMOVABLE;
++
++	if (vdisk_info & VDISK_CDROM)
++		gd->flags |= GENHD_FL_CD;
++
++	return 0;
++
++ out:
++	info->mi = NULL;
++	return err;
++}
++
++int
++xlvbd_add(blkif_sector_t capacity, int vdevice, u16 vdisk_info,
++	  u16 sector_size, struct blkfront_info *info)
++{
++	struct block_device *bd;
++	int err = 0;
++
++	info->dev = MKDEV(BLKIF_MAJOR(vdevice), BLKIF_MINOR(vdevice));
++
++	bd = bdget(info->dev);
++	if (bd == NULL)
++		return -ENODEV;
++
++	err = xlvbd_alloc_gendisk(BLKIF_MINOR(vdevice), capacity, vdevice,
++				  vdisk_info, sector_size, info);
++
++	bdput(bd);
++	return err;
++}
++
++void
++xlvbd_del(struct blkfront_info *info)
++{
++	if (info->mi == NULL)
++		return;
++
++	BUG_ON(info->gd == NULL);
++	del_gendisk(info->gd);
++	put_disk(info->gd);
++	info->gd = NULL;
++
++	info->mi = NULL;
++
++	BUG_ON(info->rq == NULL);
++	blk_cleanup_queue(info->rq);
++	info->rq = NULL;
++}
++
++int
++xlvbd_barrier(struct blkfront_info *info)
++{
++	int err;
++
++	err = blk_queue_ordered(info->rq,
++		info->feature_barrier ? QUEUE_ORDERED_DRAIN : QUEUE_ORDERED_NONE, NULL);
++	if (err)
++		return err;
++	printk("blkfront: %s: barriers %s\n",
++	       info->gd->disk_name, info->feature_barrier ? "enabled" : "disabled");
++	return 0;
++}
+===================================================================
+--- a/include/linux/major.h
++++ b/include/linux/major.h
+@@ -156,6 +156,8 @@
+ #define VXSPEC_MAJOR		200	/* VERITAS volume config driver */
+ #define VXDMP_MAJOR		201	/* VERITAS volume multipath driver */
  
- static inline void set_pte(pte_t *ptep, pte_t pteval)
- {
--	paravirt_ops.set_pte(ptep, pteval);
-+	PVOP_VCALL3(set_pte, ptep, pteval.pte_low, pteval.pte_high);
- }
++#define XENVBD_MAJOR		202	/* Xen virtual block device */
++
+ #define MSR_MAJOR		202
+ #define CPUID_MAJOR		203
  
- static inline void set_pte_at(struct mm_struct *mm, u32 addr, pte_t *ptep, pte_t pteval)
- {
-+	/* 5 arg words */
- 	paravirt_ops.set_pte_at(mm, addr, ptep, pteval);
- }
- 
-+static inline void set_pte_atomic(pte_t *ptep, pte_t pteval)
-+{
-+	PVOP_VCALL3(set_pte_atomic, ptep, pteval.pte_low, pteval.pte_high);
-+}
-+
-+static inline void set_pte_present(struct mm_struct *mm, unsigned long addr,
-+				   pte_t *ptep, pte_t pte)
-+{
-+	/* 5 arg words */
-+	paravirt_ops.set_pte_present(mm, addr, ptep, pte);
-+}
-+
- static inline void set_pmd(pmd_t *pmdp, pmd_t pmdval)
- {
--	paravirt_ops.set_pmd(pmdp, pmdval);
--}
--
--static inline void pte_update(struct mm_struct *mm, u32 addr, pte_t *ptep)
--{
--	paravirt_ops.pte_update(mm, addr, ptep);
--}
--
--static inline void pte_update_defer(struct mm_struct *mm, u32 addr, pte_t *ptep)
--{
--	paravirt_ops.pte_update_defer(mm, addr, ptep);
--}
--
--#ifdef CONFIG_X86_PAE
--static inline void set_pte_atomic(pte_t *ptep, pte_t pteval)
--{
--	paravirt_ops.set_pte_atomic(ptep, pteval);
--}
--
--static inline void set_pte_present(struct mm_struct *mm, unsigned long addr, pte_t *ptep, pte_t pte)
--{
--	paravirt_ops.set_pte_present(mm, addr, ptep, pte);
-+	PVOP_VCALL3(set_pmd, pmdp, pmdval.pmd, pmdval.pmd >> 32);
- }
- 
- static inline void set_pud(pud_t *pudp, pud_t pudval)
- {
--	paravirt_ops.set_pud(pudp, pudval);
-+	PVOP_VCALL3(set_pud, pudp, pudval.pgd.pgd, pudval.pgd.pgd >> 32);
- }
- 
- static inline void pte_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
- {
--	paravirt_ops.pte_clear(mm, addr, ptep);
-+	PVOP_VCALL3(pte_clear, mm, addr, ptep);
- }
- 
- static inline void pmd_clear(pmd_t *pmdp)
- {
--	paravirt_ops.pmd_clear(pmdp);
--}
--#endif
-+	PVOP_VCALL1(pmd_clear, pmdp);
-+}
-+
-+static inline pte_t raw_ptep_get_and_clear(pte_t *p)
-+{
-+	unsigned long long val = PVOP_CALL1(unsigned long long, ptep_get_and_clear, p);
-+	return (pte_t) { val, val >> 32 };
-+}
-+#else  /* !CONFIG_X86_PAE */
-+static inline pte_t __pte(unsigned long val)
-+{
-+	return (pte_t) { PVOP_CALL1(unsigned long, make_pte, val) };
-+}
-+
-+static inline pgd_t __pgd(unsigned long val)
-+{
-+	return (pgd_t) { PVOP_CALL1(unsigned long, make_pgd, val) };
-+}
-+
-+static inline unsigned long pte_val(pte_t x)
-+{
-+	return PVOP_CALL1(unsigned long, pte_val, x.pte_low);
-+}
-+
-+static inline unsigned long pgd_val(pgd_t x)
-+{
-+	return PVOP_CALL1(unsigned long, pgd_val, x.pgd);
-+}
-+
-+static inline void set_pte(pte_t *ptep, pte_t pteval)
-+{
-+	PVOP_VCALL2(set_pte, ptep, pteval.pte_low);
-+}
-+
-+static inline void set_pte_at(struct mm_struct *mm, u32 addr, pte_t *ptep, pte_t pteval)
-+{
-+	PVOP_VCALL4(set_pte_at, mm, addr, ptep, pteval.pte_low);
-+}
-+
-+static inline void set_pmd(pmd_t *pmdp, pmd_t pmdval)
-+{
-+	PVOP_VCALL2(set_pmd, pmdp, pmdval.pud.pgd.pgd);
-+}
-+
-+static inline pte_t raw_ptep_get_and_clear(pte_t *p)
-+{
-+	return (pte_t) { PVOP_CALL1(unsigned long, ptep_get_and_clear, p) };
-+}
-+#endif	/* CONFIG_X86_PAE */
- 
- /* Lazy mode for batching updates / context switch */
- #define PARAVIRT_LAZY_NONE 0
-@@ -529,12 +835,12 @@ static inline void pmd_clear(pmd_t *pmdp
- #define PARAVIRT_LAZY_CPU  2
- 
- #define  __HAVE_ARCH_ENTER_LAZY_CPU_MODE
--#define arch_enter_lazy_cpu_mode() paravirt_ops.set_lazy_mode(PARAVIRT_LAZY_CPU)
--#define arch_leave_lazy_cpu_mode() paravirt_ops.set_lazy_mode(PARAVIRT_LAZY_NONE)
-+#define arch_enter_lazy_cpu_mode() PVOP_VCALL1(set_lazy_mode, PARAVIRT_LAZY_CPU)
-+#define arch_leave_lazy_cpu_mode() PVOP_VCALL1(set_lazy_mode, PARAVIRT_LAZY_NONE)
- 
- #define  __HAVE_ARCH_ENTER_LAZY_MMU_MODE
--#define arch_enter_lazy_mmu_mode() paravirt_ops.set_lazy_mode(PARAVIRT_LAZY_MMU)
--#define arch_leave_lazy_mmu_mode() paravirt_ops.set_lazy_mode(PARAVIRT_LAZY_NONE)
-+#define arch_enter_lazy_mmu_mode() PVOP_VCALL1(set_lazy_mode, PARAVIRT_LAZY_MMU)
-+#define arch_leave_lazy_mmu_mode() PVOP_VCALL1(set_lazy_mode, PARAVIRT_LAZY_NONE)
- 
- void _paravirt_nop(void);
- #define paravirt_nop	((void *)_paravirt_nop)
 
 -- 
 
