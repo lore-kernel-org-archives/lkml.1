@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751605AbXB0JPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161075AbXB0JQ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751605AbXB0JPp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 04:15:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161068AbXB0JPp
+	id S1161075AbXB0JQ4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 04:16:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161070AbXB0JQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 04:15:45 -0500
-Received: from pfx2.jmh.fr ([194.153.89.55]:38221 "EHLO pfx2.jmh.fr"
+	Tue, 27 Feb 2007 04:16:56 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:47387 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751605AbXB0JPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 04:15:43 -0500
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Subject: Re: [patch] epoll reduced (to 1) number of passes over the ready set ...
-Date: Tue, 27 Feb 2007 10:15:33 +0100
-User-Agent: KMail/1.9.5
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <Pine.LNX.4.64.0702261819250.4949@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0702261819250.4949@alien.or.mcafeemobile.com>
+	id S1161075AbXB0JQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 04:16:54 -0500
+Message-ID: <45E3F6F3.7010909@garzik.org>
+Date: Tue, 27 Feb 2007 04:16:35 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200702271015.33123.dada1@cosmosbay.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Linas Vepstas <linas@austin.ibm.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       kou.ishizaki@toshiba.co.jp, arnd@arndb.de,
+       Jens Osterkamp <jens@de.ibm.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/12]: sungem_phy: support bcm5461 phy, autoneg.
+References: <20070220221314.GU923@austin.ibm.com> <20070220223050.GA28895@austin.ibm.com>
+In-Reply-To: <20070220223050.GA28895@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 February 2007 03:32, Davide Libenzi wrote:
-> Epoll is doing multiple passes over the ready set at the moment, because
-> of the constraints over the f_op->poll() call. Looking at the code again,
-> I noticed that we already hold the epoll semaphore in read, and this
-> (together with other locking conditions that hold while doing an
-> epoll_wait()) can lead to a smarter way to "ship" events to userspace (in
-> a single pass). I added more (even) more comments to the code to explain
-> the conditions why certain operations are safe.
-> This is a stress application that can be used to test the new code. It
-> spwans multiple thread and call epoll_wait() and epoll_ctl() from many
-> threads. Stress tested on my dual Opteron 254 w/out any problems.
+Linas Vepstas wrote:
+> From: Jens Osterkamp <jens@de.ibm.com>
+> 
+> This version moves the medium variable to the card specific structure and
+> changes the GMII_* to BCM54XX_* #defines.
+> 
+> This patch adds improved version of enable_fiber for both the 5421 and
+> the 5461 phy. It is now possible to specify with these wether you want
+> autonegotiation or not. This is needed for bladecenter switches where
+> some expect autonegotiation and some dont seem to like this at all.
+> Depending on this flag it sets phy->autoneg accordingly for the fiber mode.
+> 
+> More importantly it implements proper read_link and poll_link functions
+> for both phys which can handle both copper and fiber mode by determining
+> the medium first and then branching to the required functions. For fiber
+> they all work fine, for copper they are not tested but return the result
+> of the genmii_* function anyway which is supposed to work.
+> 
+> The patch moves the genmii_* functions around to avoid foreward declarations.
+> 
+> Signed-off-by: Jens Osterkamp <jens@de.ibm.com>
+> Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+> 
+> ----
+>  drivers/net/sungem_phy.c |  389 ++++++++++++++++++++++++++++++-----------------
+>  drivers/net/sungem_phy.h |   10 +
+>  2 files changed, 263 insertions(+), 136 deletions(-)
 
-Davide,
+applied 1-12
 
-This is really cool, because the size of epitem would fit now in 128 bytes 
-instead of 192 (on x86_64 platforms). So we also reduce memory usage.
 
-I have one comment :
 
->  	 */
-> -	list_for_each(lnk, txlist) {
-> -		epi = list_entry(lnk, struct epitem, txlink);
-> +	for (eventcnt = 0; !list_empty(txlist) && eventcnt < maxevents;) {
-> +		epi = list_entry(txlist->next, struct epitem, rdllink);
 
-Now that we scan the rdllist list once, it may be usefull to use a prefetch() 
-hint. 
-
-list_for_each() has one prefetch(pos->next) automatically included, but not 
-your open coded loop.
-
-I suggest adding after epi = list_entry(txlist->next, struct epitem, rdllink);
-prefetch(epi->rdllink.next);
-
-Thank you
