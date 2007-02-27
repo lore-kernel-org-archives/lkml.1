@@ -1,78 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752508AbXB0PQN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932149AbXB0PZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752508AbXB0PQN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 10:16:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbXB0PQN
+	id S932149AbXB0PZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 10:25:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932151AbXB0PZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 10:16:13 -0500
-Received: from hancock.steeleye.com ([71.30.118.248]:57146 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752506AbXB0PQM (ORCPT
+	Tue, 27 Feb 2007 10:25:29 -0500
+Received: from web51006.mail.yahoo.com ([206.190.38.137]:26916 "HELO
+	web51006.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932149AbXB0PZ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 10:16:12 -0500
-Subject: Re: [patch 09/26] Xen-paravirt_ops: remove HAVE_ARCH_MM_LIFETIME,
-	define no-op architecture implementations
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
-       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-arch@vger.kernel.org
-In-Reply-To: <20070227081632.356636957@goop.org>
-References: <20070227081337.434798469@goop.org>
-	 <20070227081632.356636957@goop.org>
-Content-Type: text/plain
-Date: Tue, 27 Feb 2007 09:15:58 -0600
-Message-Id: <1172589358.3408.2.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Feb 2007 10:25:28 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Feb 2007 10:25:28 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=Luwd8Ajfo7exkm2ux9dMQWNd7ACg5i988WjFKhvLcOFFN+Iju5NGb1l9LJPOSWvRhcgCj3CfxrfCevFPdeKqWirC7npKG16MArsUcGnrHkawRHuBIXvqkvDgVun9SQ8os6RBpcQXsm5xRcwPiSurtyijYOIf7wthecurhDNURsc=;
+X-YMail-OSG: rZps1owVM1kIkz6vV1P3y44kFawmkjFYH8lgFND0SQdQP4eCaUNScHbD3gyyC9Syi_sVPQy97bdK_qyJrkUFrEVlpHLM2gpGwYwUdwgBsKLdsRHUWknJPk0bxVggBYCWrAmukSYiFAWWLbA-
+Date: Tue, 27 Feb 2007 07:18:45 -0800 (PST)
+From: Matthew L Foster <mfoster167@yahoo.com>
+Subject: BUG 2.6.20-git14
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <773330.46432.qm@web51006.mail.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-27 at 00:13 -0800, Jeremy Fitzhardinge wrote:
-> plain text document attachment (kill-HAVE_ARCH_MM_LIFETIME.patch)
-> akpm:
-> > Can we lose __HAVE_ARCH_MM_LIFETIME?  Just define these (preferably in C,
-> > not in cpp) in the appropriate include/asm-foo/ files?
-> 
-> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-> Cc: linux-arch@vger.kernel.org
-> 
-> ---
->  include/asm-alpha/mmu_context.h     |    9 +++++++++
->  include/asm-arm/mmu_context.h       |    9 +++++++++
->  include/asm-arm26/mmu_context.h     |    9 +++++++++
->  include/asm-avr32/mmu_context.h     |    9 +++++++++
->  include/asm-cris/mmu_context.h      |    8 ++++++++
->  include/asm-frv/mmu_context.h       |    8 ++++++++
->  include/asm-h8300/mmu_context.h     |    8 ++++++++
->  include/asm-i386/mmu_context.h      |    2 +-
->  include/asm-i386/paravirt.h         |   18 +++++++++++++++---
->  include/asm-ia64/mmu_context.h      |    8 ++++++++
->  include/asm-m32r/mmu_context.h      |    8 ++++++++
->  include/asm-m68k/mmu_context.h      |    8 ++++++++
->  include/asm-m68knommu/mmu_context.h |    8 ++++++++
->  include/asm-mips/mmu_context.h      |    8 ++++++++
->  include/asm-parisc/mmu_context.h    |    9 +++++++++
->  include/asm-powerpc/mmu_context.h   |   10 ++++++++++
->  include/asm-ppc/mmu_context.h       |    9 +++++++++
->  include/asm-s390/mmu_context.h      |    8 ++++++++
->  include/asm-sh/mmu_context.h        |    8 ++++++++
->  include/asm-sh64/mmu_context.h      |    8 ++++++++
->  include/asm-sparc/mmu_context.h     |    8 ++++++++
->  include/asm-sparc64/mmu_context.h   |    8 ++++++++
->  include/asm-um/mmu_context.h        |    8 ++++++++
->  include/asm-v850/mmu_context.h      |    8 ++++++++
->  include/asm-x86_64/mmu_context.h    |    8 ++++++++
->  include/asm-xtensa/mmu_context.h    |    9 +++++++++
->  include/linux/sched.h               |    6 ------
->  mm/mmap.c                           |    1 +
->  28 files changed, 218 insertions(+), 10 deletions(-)
 
-Wouldn't it be a lot easier to do this via asm-generic?
+Hi, is this a single bit error or something else? FYI this is with 2.6.20-git14
 
-James
+BUG: unable to handle kernel paging request at virtual address 04000000
+ printing eip:
+c0137464
+*pde = 00000000
+Oops: 0000 [#1]
+PREEMPT 
+Modules linked in:
+CPU:    0
+EIP:    0060:[<c0137464>]    Not tainted VLI
+EFLAGS: 00210006   (2.6.20-git14 #1)
+EIP is at find_lock_page+0x27/0x85
+eax: 04000000   ebx: 00000000   ecx: d9bf4a00   edx: 00000000
+esi: 04000000   edi: d8c1bd1c   ebp: c22f5d50   esp: c22f5d40
+ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+Process gconftool-2 (pid: 2917, ti=c22f5000 task=d1018030 task.ti=c22f5000)
+Stack: 0000012e 00000000 0000012e 00001000 c22f5dec c013856f 00001000 00000001 
+       c22f5ed8 00000001 00001000 018b9800 d1070280 d8c1bd1c c02c8760 d8c1bbec 
+       00001000 00000000 b7d54000 00000000 c22f5f5c 00000000 c1032960 00000000 
+Call Trace:
+ [<c01044f5>] show_trace_log_lvl+0x1a/0x2f
+ [<c01045a5>] show_stack_log_lvl+0x9b/0xa3
+ [<c0104771>] show_registers+0x1c4/0x2da
+ [<c010498e>] die+0x107/0x206
+ [<c01107fe>] do_page_fault+0x43a/0x50c
+ [<c02c1fac>] error_code+0x74/0x7c
+ [<c013856f>] generic_file_buffered_write+0x134/0x575
+ [<c0138e16>] __generic_file_aio_write_nolock+0x466/0x4d3
+ [<c0138ed9>] generic_file_aio_write+0x56/0xb4
+ [<c0182453>] ext3_file_write+0x27/0x99
+ [<c014ceae>] do_sync_write+0xc2/0xff
+ [<c014d604>] vfs_write+0x90/0x119
+ [<c014dae3>] sys_write+0x3d/0x61
+ [<c0103e28>] sysenter_past_esp+0x5d/0x99
+ =======================
+Code: ff 5b c9 c3 55 89 e5 57 89 c7 8d 40 10 56 53 83 ec 04 89 55 f0 e8 12 a3 18 00 8b 55 f0 8d 47
+04 e8 24 cc 08 00 85 c0 89 c6 74 4e <
+0 89 f2 f6 c4 40 74 03 8b 56 0c ff 42 04 0f ba 2e 00 19 c0 
+EIP: [<c0137464>] find_lock_page+0x27/0x85 SS:ESP 0068:c22f5d40
+note: gconftool-2[2917] exited with preempt_count 1
+BUG: scheduling while atomic: gconftool-2/0x10000001/2917
+2 locks held by gconftool-2/2917:
+ #0:  (&inode->i_mutex){--..}, at: [<c02c06a5>] mutex_lock+0x8/0xa
+ #1:  (&inode->i_data.tree_lock){++..}, at: [<c0137453>] find_lock_page+0x16/0x85
+irq event stamp: 171864
+hardirqs last  enabled at (171863): [<c02c0678>] __mutex_lock_slowpath+0x241/0x266
+hardirqs last disabled at (171864): [<c02c1774>] _read_lock_irq+0xf/0x48
+softirqs last  enabled at (171818): [<c0118f91>] __do_softirq+0x91/0x96
+softirqs last disabled at (171807): [<c0105b94>] do_softirq+0x50/0xb6
+ [<c01044f5>] show_trace_log_lvl+0x1a/0x2f
+ [<c0104b5f>] show_trace+0x12/0x14
+ [<c0104bfc>] dump_stack+0x16/0x18
+ [<c02bf0e1>] __sched_text_start+0x71/0x584
+ [<c0112191>] __cond_resched+0x16/0x34
+ [<c02bfbd9>] cond_resched+0x26/0x31
+ [<c0140c8c>] unmap_vmas+0x310/0x3e3
+ [<c0143275>] exit_mmap+0x68/0xe5
+ [<c0113023>] mmput+0x25/0x75
+ [<c01160d0>] exit_mm+0xbb/0xc1
+ [<c01173e0>] do_exit+0x1bb/0x6b4
+ [<c0104a67>] die+0x1e0/0x206
+ [<c01107fe>] do_page_fault+0x43a/0x50c
+ [<c02c1fac>] error_code+0x74/0x7c
+ [<c013856f>] generic_file_buffered_write+0x134/0x575
+ [<c0138e16>] __generic_file_aio_write_nolock+0x466/0x4d3
+ [<c0138ed9>] generic_file_aio_write+0x56/0xb4
+ [<c0182453>] ext3_file_write+0x27/0x99
+ [<c014ceae>] do_sync_write+0xc2/0xff
+ [<c014d604>] vfs_write+0x90/0x119
+ [<c014dae3>] sys_write+0x3d/0x61
+ [<c0103e28>] sysenter_past_esp+0x5d/0x99
+ =======================
 
 
+ 
+____________________________________________________________________________________
+Now that's room service!  Choose from over 150,000 hotels
+in 45,000 destinations on Yahoo! Travel to find your fit.
+http://farechase.yahoo.com/promo-generic-14795097
