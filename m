@@ -1,83 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751883AbXB0RVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751904AbXB0RZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751883AbXB0RVR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 12:21:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932691AbXB0RVR
+	id S1751904AbXB0RZO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 12:25:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbXB0RZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 12:21:17 -0500
-Received: from gw.goop.org ([64.81.55.164]:38947 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751692AbXB0RVQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 12:21:16 -0500
-Message-ID: <45E46889.9090801@goop.org>
-Date: Tue, 27 Feb 2007 09:21:13 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Tue, 27 Feb 2007 12:25:14 -0500
+Received: from de01egw02.freescale.net ([192.88.165.103]:54230 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751904AbXB0RZN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 12:25:13 -0500
+Message-ID: <45E46976.6060600@freescale.com>
+Date: Tue, 27 Feb 2007 11:25:10 -0600
+From: Timur Tabi <timur@freescale.com>
+Organization: Freescale
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.2pre) Gecko/20070111 SeaMonkey/1.1
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@SteelEye.com>
-CC: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
-       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-arch@vger.kernel.org
-Subject: Re: [patch 09/26] Xen-paravirt_ops: remove HAVE_ARCH_MM_LIFETIME,
- define no-op architecture implementations
-References: <20070227081337.434798469@goop.org>	 <20070227081632.356636957@goop.org> <1172589358.3408.2.camel@mulgrave.il.steeleye.com>
-In-Reply-To: <1172589358.3408.2.camel@mulgrave.il.steeleye.com>
-Content-Type: text/plain; charset=ISO-8859-15
+To: linux-kernel@vger.kernel.org
+Subject: lanana: Add major/minor entries for PPC QE UART devices
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Tue, 2007-02-27 at 00:13 -0800, Jeremy Fitzhardinge wrote:
->   
->> plain text document attachment (kill-HAVE_ARCH_MM_LIFETIME.patch)
->> akpm:
->>     
->>> Can we lose __HAVE_ARCH_MM_LIFETIME?  Just define these (preferably in C,
->>> not in cpp) in the appropriate include/asm-foo/ files?
->>>       
->> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
->> Cc: linux-arch@vger.kernel.org
->>
->> ---
->>  include/asm-alpha/mmu_context.h     |    9 +++++++++
->>  include/asm-arm/mmu_context.h       |    9 +++++++++
->>  include/asm-arm26/mmu_context.h     |    9 +++++++++
->>  include/asm-avr32/mmu_context.h     |    9 +++++++++
->>  include/asm-cris/mmu_context.h      |    8 ++++++++
->>  include/asm-frv/mmu_context.h       |    8 ++++++++
->>  include/asm-h8300/mmu_context.h     |    8 ++++++++
->>  include/asm-i386/mmu_context.h      |    2 +-
->>  include/asm-i386/paravirt.h         |   18 +++++++++++++++---
->>  include/asm-ia64/mmu_context.h      |    8 ++++++++
->>  include/asm-m32r/mmu_context.h      |    8 ++++++++
->>  include/asm-m68k/mmu_context.h      |    8 ++++++++
->>  include/asm-m68knommu/mmu_context.h |    8 ++++++++
->>  include/asm-mips/mmu_context.h      |    8 ++++++++
->>  include/asm-parisc/mmu_context.h    |    9 +++++++++
->>  include/asm-powerpc/mmu_context.h   |   10 ++++++++++
->>  include/asm-ppc/mmu_context.h       |    9 +++++++++
->>  include/asm-s390/mmu_context.h      |    8 ++++++++
->>  include/asm-sh/mmu_context.h        |    8 ++++++++
->>  include/asm-sh64/mmu_context.h      |    8 ++++++++
->>  include/asm-sparc/mmu_context.h     |    8 ++++++++
->>  include/asm-sparc64/mmu_context.h   |    8 ++++++++
->>  include/asm-um/mmu_context.h        |    8 ++++++++
->>  include/asm-v850/mmu_context.h      |    8 ++++++++
->>  include/asm-x86_64/mmu_context.h    |    8 ++++++++
->>  include/asm-xtensa/mmu_context.h    |    9 +++++++++
->>  include/linux/sched.h               |    6 ------
->>  mm/mmap.c                           |    1 +
->>  28 files changed, 218 insertions(+), 10 deletions(-)
->>     
->
-> Wouldn't it be a lot easier to do this via asm-generic?
->   
+Hi,
 
-You mean add the two stubs to asm-generic/mmu_context.h, and then
-include that in all these files?  That would be cleaner, but it wouldn't
-remove the need to touch all these files, would it?
+(Email to device@lanana.org bounces, so I'm sending this to lkml instead.)
 
-    J
+I'm working on a UART device driver for the Freescale PowerPC QUICCEngine, which
+is a replacement for the CPM.  Since the QE is basically "CPM v3", and you can't
+have a CPM and a QE on the same board, I figure that they can share the same
+minor numbers.
+
+I've attached a patch that adds these entries to major number 204.  Please not
+that there's a small typo for /dev/ttyCPM5, and I've fixed that in the patch as
+well.
+
+Please let me know if my proposal/patch is acceptable, and if not, what changes
+you want me to make.  Thanks.
+
+patch:
+
+Fixed a typo with /dev/ttyCPM5.  Added entries for /dev/ttyQE0-3.  The QE
+is a replacement for the CPM, so they can share the same minor numbers.
+
+--- devices-2.6+.txt	2007-02-22 13:37:18.000000000 -0600
++++ devices-2.6+.new	2007-02-22 13:42:50.000000000 -0600
+@@ -2770,7 +2770,10 @@
+  		 45 = /dev/ttyMM1		Marvell MPSC - port 1
+  		 46 = /dev/ttyCPM0		PPC CPM (SCC or SMC) - port 0
+  		    ...
+-		 47 = /dev/ttyCPM5		PPC CPM (SCC or SMC) - port 5
++		 49 = /dev/ttyCPM5		PPC CPM (SCC or SMC) - port 5
++		 46 = /dev/ttyQE0		PPC QE (UCC) - port 0
++		    ...
++		 49 = /dev/ttyQE3		PPC QE (UCC) - port 3
+  		 50 = /dev/ttyIOC0		Altix serial card
+  		    ...
+  		 81 = /dev/ttyIOC31		Altix serial card
+
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
+
