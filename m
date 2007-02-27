@@ -1,66 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751697AbXB0Riy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751704AbXB0RjH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751697AbXB0Riy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 12:38:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbXB0Rix
+	id S1751704AbXB0RjH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 12:39:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbXB0RjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 12:38:53 -0500
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4935 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751697AbXB0Rix (ORCPT
+	Tue, 27 Feb 2007 12:39:07 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:14492 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751367AbXB0RjF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 12:38:53 -0500
-Date: Tue, 27 Feb 2007 17:38:45 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Rob Prowel <prowel@kuchera.com>
-Cc: Stuart MacDonald <stuartm@connecttech.com>, linux-kernel@vger.kernel.org
-Subject: Re: questions about 8250 uart support for adhoc boards
-Message-ID: <20070227173844.GA10380@flint.arm.linux.org.uk>
-Mail-Followup-To: Rob Prowel <prowel@kuchera.com>,
-	Stuart MacDonald <stuartm@connecttech.com>,
-	linux-kernel@vger.kernel.org
-References: <000001c75853$3e9599f0$294b82ce@stuartm> <45E312C1.5050802@kuchera.com> <20070226180554.GA16857@flint.arm.linux.org.uk> <45E43F20.9060300@kuchera.com>
+	Tue, 27 Feb 2007 12:39:05 -0500
+Date: Tue, 27 Feb 2007 09:36:23 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: linux-kernel@vger.kernel.org, Torben.Mathiasen@hp.com
+Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
+Message-Id: <20070227093623.9c54f1d3.randy.dunlap@oracle.com>
+In-Reply-To: <45E46976.6060600@freescale.com>
+References: <45E46976.6060600@freescale.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45E43F20.9060300@kuchera.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 27, 2007 at 09:24:32AM -0500, Rob Prowel wrote:
-> Russell King wrote:
-> >On Mon, Feb 26, 2007 at 12:02:57PM -0500, Rob Prowel wrote:
-> >  
-> >>See below for a (script) dump of that demonstrates the behavior I 
-> >>describe.  Additional ports are not configurable until a driver such as 
-> >>fourport is loaded.  This is in 2.6.20.1 and 2.6.17 (those versions I 
-> >>have tested).
-> >>    
-> >
-> >Check what /proc/tty/driver/serial contains, rather than relying on
-> >setserial.  setserial distributed by distros hasn't kept up with the
-> >changes in the serial layer.
-> >
-> >  
-> The setserial being used is the latest one from sourceforge.  Its 
-> relevant output matches the /proc entries.  The problem still remains 
-> though.  Entries for ttyS4 and up seem to be read-only until I add a 
-> supplemental driver such as fourport.
+On Tue, 27 Feb 2007 11:25:10 -0600 Timur Tabi wrote:
 
-After experimenting here, it turns out the reason is you're trying to
-configure a port with a zero base baud.  Unfortunately, it starts off
-as zero.
+> Hi,
+> 
+> (Email to device@lanana.org bounces, so I'm sending this to lkml instead.)
 
-However, when you try to change a port without specifying the base baud,
-it is possible for the port to become "usable" and unless we enforce
-the "must not have zero base baud" rule we have the possibility to oops
-the kernel via a divide by zero.
+cc: to Torben
 
-So, the answer is to specify the base baud when using setserial to
-configure new ports.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+> I'm working on a UART device driver for the Freescale PowerPC QUICCEngine, which
+> is a replacement for the CPM.  Since the QE is basically "CPM v3", and you can't
+> have a CPM and a QE on the same board, I figure that they can share the same
+> minor numbers.
+> 
+> I've attached a patch that adds these entries to major number 204.  Please not
+> that there's a small typo for /dev/ttyCPM5, and I've fixed that in the patch as
+> well.
+> 
+> Please let me know if my proposal/patch is acceptable, and if not, what changes
+> you want me to make.  Thanks.
+> 
+> patch:
+> 
+> Fixed a typo with /dev/ttyCPM5.  Added entries for /dev/ttyQE0-3.  The QE
+> is a replacement for the CPM, so they can share the same minor numbers.
+> 
+> --- devices-2.6+.txt	2007-02-22 13:37:18.000000000 -0600
+> +++ devices-2.6+.new	2007-02-22 13:42:50.000000000 -0600
+> @@ -2770,7 +2770,10 @@
+>   		 45 = /dev/ttyMM1		Marvell MPSC - port 1
+>   		 46 = /dev/ttyCPM0		PPC CPM (SCC or SMC) - port 0
+>   		    ...
+> -		 47 = /dev/ttyCPM5		PPC CPM (SCC or SMC) - port 5
+> +		 49 = /dev/ttyCPM5		PPC CPM (SCC or SMC) - port 5
+> +		 46 = /dev/ttyQE0		PPC QE (UCC) - port 0
+> +		    ...
+> +		 49 = /dev/ttyQE3		PPC QE (UCC) - port 3
+>   		 50 = /dev/ttyIOC0		Altix serial card
+>   		    ...
+>   		 81 = /dev/ttyIOC31		Altix serial card
+> 
+> 
+> -- 
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
