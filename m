@@ -1,163 +1,234 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752546AbXB0XWJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752580AbXB0XW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752546AbXB0XWJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 18:22:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbXB0XWA
+	id S1752580AbXB0XW4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 18:22:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbXB0XRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 18:22:00 -0500
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:50975 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752028AbXB0XRY (ORCPT
+	Tue, 27 Feb 2007 18:17:07 -0500
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:54796 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752548AbXB0XRB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 18:17:24 -0500
-Message-Id: <20070227231639.540732468@szeredi.hu>
+	Tue, 27 Feb 2007 18:17:01 -0500
+Message-Id: <20070227231616.534001801@szeredi.hu>
 References: <20070227231442.627972152@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Wed, 28 Feb 2007 00:14:53 +0100
+Date: Wed, 28 Feb 2007 00:14:49 +0100
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [patch 11/22] fuse: add truncation semaphore
-Content-Disposition: inline; filename=fuse_truncate_sem.patch
+Subject: [patch 07/22] add filesystem subtype support
+Content-Disposition: inline; filename=filesystem_subtypes.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Add a new semaphore to prevent asynchronous page writeback during the
-TRUNCATE request.
+There's a slight problem with filesystem type representation in fuse
+based filesystems.
 
-Using i_alloc_sem would almost work, but it has to be released before
-invalidating the truncated pages, so it's easier to define a separate
-one.
+>From the kernel's view, there are just two filesystem types: fuse and
+fuseblk.  From the user's view there are lots of different filesystem
+types.  The user is not even much concerned if the filesystem is fuse
+based or not.  So there's a conflict of interest in how this should be
+represented in fstab, mtab and /proc/mounts.
+
+The current scheme is to encode the real filesystem type in the mount
+source.  So an sshfs mount looks like this:
+
+  sshfs#user@server:/   /mnt/server    fuse   rw,nosuid,nodev,...
+
+This url-ish syntax works OK for sshfs and similar filesystems.
+However for block device based filesystems (ntfs-3g, zfs) it doesn't
+work, since the kernel expects the mount source to be a real device
+name.
+
+A possibly better scheme would be to encode the real type in the type
+field as "type.subtype".  So fuse mounts would look like this:
+
+  /dev/hda1       /mnt/windows   fuseblk.ntfs-3g   rw,...
+  user@server:/   /mnt/server    fuse.sshfs        rw,nosuid,nodev,...
+
+This patch adds the necessary code to the kernel so that this can be
+correctly displayed in /proc/mounts.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
 
-Index: linux/fs/fuse/dir.c
+Index: linux/fs/filesystems.c
 ===================================================================
---- linux.orig/fs/fuse/dir.c	2007-02-27 14:41:10.000000000 +0100
-+++ linux/fs/fuse/dir.c	2007-02-27 14:41:10.000000000 +0100
-@@ -981,19 +981,9 @@ static void iattr_to_fattr(struct iattr 
+--- linux.orig/fs/filesystems.c	2007-02-27 14:40:55.000000000 +0100
++++ linux/fs/filesystems.c	2007-02-27 14:41:09.000000000 +0100
+@@ -41,11 +41,12 @@ void put_filesystem(struct file_system_t
+ 	module_put(fs->owner);
+ }
  
- static void fuse_vmtruncate(struct inode *inode, loff_t offset)
+-static struct file_system_type **find_filesystem(const char *name)
++static struct file_system_type **find_filesystem(const char *name, unsigned len)
  {
--	struct fuse_conn *fc = get_fuse_conn(inode);
--	int need_trunc;
--
--	spin_lock(&fc->lock);
--	need_trunc = inode->i_size > offset;
--	i_size_write(inode, offset);
--	spin_unlock(&fc->lock);
--
--	if (need_trunc) {
--		struct address_space *mapping = inode->i_mapping;
--		unmap_mapping_range(mapping, offset + PAGE_SIZE - 1, 0, 1);
--		truncate_inode_pages(mapping, offset);
--	}
-+	struct address_space *mapping = inode->i_mapping;
-+	unmap_mapping_range(mapping, offset + PAGE_SIZE - 1, 0, 1);
-+	truncate_inode_pages(mapping, offset);
+ 	struct file_system_type **p;
+ 	for (p=&file_systems; *p; p=&(*p)->next)
+-		if (strcmp((*p)->name,name) == 0)
++		if (strlen((*p)->name) == len &&
++		    strncmp((*p)->name, name, len) == 0)
+ 			break;
+ 	return p;
+ }
+@@ -68,11 +69,12 @@ int register_filesystem(struct file_syst
+ 	int res = 0;
+ 	struct file_system_type ** p;
+ 
++	BUG_ON(strchr(fs->name, '.'));
+ 	if (fs->next)
+ 		return -EBUSY;
+ 	INIT_LIST_HEAD(&fs->fs_supers);
+ 	write_lock(&file_systems_lock);
+-	p = find_filesystem(fs->name);
++	p = find_filesystem(fs->name, strlen(fs->name));
+ 	if (*p)
+ 		res = -EBUSY;
+ 	else
+@@ -215,19 +217,26 @@ int get_filesystem_list(char * buf)
+ struct file_system_type *get_fs_type(const char *name)
+ {
+ 	struct file_system_type *fs;
++	const char *dot = strchr(name, '.');
++	unsigned len = dot ? dot - name : strlen(name);
+ 
+ 	read_lock(&file_systems_lock);
+-	fs = *(find_filesystem(name));
++	fs = *(find_filesystem(name, len));
+ 	if (fs && !try_module_get(fs->owner))
+ 		fs = NULL;
+ 	read_unlock(&file_systems_lock);
+-	if (!fs && (request_module("%s", name) == 0)) {
++	if (!fs && (request_module("%.*s", len, name) == 0)) {
+ 		read_lock(&file_systems_lock);
+-		fs = *(find_filesystem(name));
++		fs = *(find_filesystem(name, len));
+ 		if (fs && !try_module_get(fs->owner))
+ 			fs = NULL;
+ 		read_unlock(&file_systems_lock);
+ 	}
++
++	if (dot && fs && !(fs->fs_flags & FS_HAS_SUBTYPE)) {
++		put_filesystem(fs);
++		fs = NULL;
++	}
+ 	return fs;
  }
  
- /*
-@@ -1037,6 +1027,9 @@ static int fuse_setattr(struct dentry *e
- 	if (IS_ERR(req))
- 		return PTR_ERR(req);
- 
-+	if (is_truncate)
-+		down_write(&fi->truncate_sem);
-+
- 	memset(&inarg, 0, sizeof(inarg));
- 	iattr_to_fattr(attr, &inarg);
- 	req->in.h.opcode = FUSE_SETATTR;
-@@ -1050,20 +1043,41 @@ static int fuse_setattr(struct dentry *e
- 	request_send(fc, req);
- 	err = req->out.h.error;
- 	fuse_put_request(fc, req);
--	if (!err) {
--		if ((inode->i_mode ^ outarg.attr.mode) & S_IFMT) {
--			make_bad_inode(inode);
--			err = -EIO;
--		} else {
--			if (is_truncate)
--				fuse_vmtruncate(inode, outarg.attr.size);
--			fuse_change_attributes(inode, &outarg.attr);
--			fi->i_time = time_to_jiffies(outarg.attr_valid,
--						     outarg.attr_valid_nsec);
--		}
--	} else if (err == -EINTR)
-+	if (err == -EINTR)
- 		fuse_invalidate_attr(inode);
-+	if (err)
-+		goto out_err;
- 
-+	err = -EIO;
-+	if ((inode->i_mode ^ outarg.attr.mode) & S_IFMT) {
-+		make_bad_inode(inode);
-+		goto out_err;
-+	}
-+
-+	if (is_truncate) {
-+		int need_trunc;
-+
-+		spin_lock(&fc->lock);
-+		need_trunc = inode->i_size > outarg.attr.size;
-+		i_size_write(inode, outarg.attr.size);
-+		spin_unlock(&fc->lock);
-+
-+		/*
-+		 * Lock ordering is: page-lock -> truncate_sem, because
-+		 * writepage is called with a locked page.  So release
-+		 * truncate_sem before truncating the mapping
-+		 */
-+		up_write(&fi->truncate_sem);
-+		if (need_trunc)
-+			fuse_vmtruncate(inode, outarg.attr.size);
-+	}
-+	fuse_change_attributes(inode, &outarg.attr);
-+	fi->i_time = time_to_jiffies(outarg.attr_valid, outarg.attr_valid_nsec);
-+	return 0;
-+
-+ out_err:
-+	if (is_truncate)
-+		up_write(&fi->truncate_sem);
- 	return err;
- }
- 
-Index: linux/fs/fuse/fuse_i.h
-===================================================================
---- linux.orig/fs/fuse/fuse_i.h	2007-02-27 14:41:10.000000000 +0100
-+++ linux/fs/fuse/fuse_i.h	2007-02-27 14:41:10.000000000 +0100
-@@ -15,6 +15,7 @@
- #include <linux/mm.h>
- #include <linux/backing-dev.h>
- #include <linux/mutex.h>
-+#include <linux/rwsem.h>
- 
- /** Max number of pages that can be used in a single read request */
- #define FUSE_MAX_PAGES_PER_REQ 32
-@@ -63,6 +64,9 @@ struct fuse_inode {
- 
- 	/** Time in jiffies until the file attributes are valid */
- 	u64 i_time;
-+
-+	/** Semaphore for synchronizing writes with truncate */
-+	struct rw_semaphore truncate_sem;
- };
- 
- /** FUSE specific file data */
 Index: linux/fs/fuse/inode.c
 ===================================================================
---- linux.orig/fs/fuse/inode.c	2007-02-27 14:41:10.000000000 +0100
-+++ linux/fs/fuse/inode.c	2007-02-27 14:41:10.000000000 +0100
-@@ -55,6 +55,7 @@ static struct inode *fuse_alloc_inode(st
- 	fi->i_time = 0;
- 	fi->nodeid = 0;
- 	fi->nlookup = 0;
-+	init_rwsem(&fi->truncate_sem);
- 	fi->forget_req = fuse_request_alloc();
- 	if (!fi->forget_req) {
- 		kmem_cache_free(fuse_inode_cachep, inode);
+--- linux.orig/fs/fuse/inode.c	2007-02-27 14:40:55.000000000 +0100
++++ linux/fs/fuse/inode.c	2007-02-27 14:41:09.000000000 +0100
+@@ -634,6 +634,7 @@ static int fuse_get_sb(struct file_syste
+ static struct file_system_type fuse_fs_type = {
+ 	.owner		= THIS_MODULE,
+ 	.name		= "fuse",
++	.fs_flags	= FS_HAS_SUBTYPE,
+ 	.get_sb		= fuse_get_sb,
+ 	.kill_sb	= kill_anon_super,
+ };
+@@ -650,6 +651,7 @@ static int fuse_get_sb_blk(struct file_s
+ static struct file_system_type fuseblk_fs_type = {
+ 	.owner		= THIS_MODULE,
+ 	.name		= "fuseblk",
++	.fs_flags	= FS_HAS_SUBTYPE,
+ 	.get_sb		= fuse_get_sb_blk,
+ 	.kill_sb	= kill_block_super,
+ 	.fs_flags	= FS_REQUIRES_DEV,
+Index: linux/fs/namespace.c
+===================================================================
+--- linux.orig/fs/namespace.c	2007-02-27 14:40:55.000000000 +0100
++++ linux/fs/namespace.c	2007-02-27 14:41:09.000000000 +0100
+@@ -377,6 +377,10 @@ static int show_vfsmnt(struct seq_file *
+ 	seq_path(m, mnt, mnt->mnt_root, " \t\n\\");
+ 	seq_putc(m, ' ');
+ 	mangle(m, mnt->mnt_sb->s_type->name);
++	if (mnt->mnt_sb->s_subtype && mnt->mnt_sb->s_subtype[0]) {
++		seq_putc(m, '.');
++		mangle(m, mnt->mnt_sb->s_subtype);
++	}
+ 	seq_puts(m, mnt->mnt_sb->s_flags & MS_RDONLY ? " ro" : " rw");
+ 	for (fs_infop = fs_info; fs_infop->flag; fs_infop++) {
+ 		if (mnt->mnt_sb->s_flags & fs_infop->flag)
+Index: linux/fs/super.c
+===================================================================
+--- linux.orig/fs/super.c	2007-02-27 14:40:55.000000000 +0100
++++ linux/fs/super.c	2007-02-27 14:41:09.000000000 +0100
+@@ -107,6 +107,7 @@ out:
+ static inline void destroy_super(struct super_block *s)
+ {
+ 	security_sb_free(s);
++	kfree(s->s_subtype);
+ 	kfree(s);
+ }
+ 
+@@ -919,6 +920,29 @@ out:
+ 
+ EXPORT_SYMBOL_GPL(vfs_kern_mount);
+ 
++static struct vfsmount *fs_set_subtype(struct vfsmount *mnt, const char *fstype)
++{
++	int err;
++	const char *subtype = strchr(fstype, '.');
++	if (subtype) {
++		subtype++;
++		err = -EINVAL;
++		if (!subtype[0])
++			goto err;
++	} else
++		subtype = "";
++
++	mnt->mnt_sb->s_subtype = kstrdup(subtype, GFP_KERNEL);
++	err = -ENOMEM;
++	if (!mnt->mnt_sb->s_subtype)
++		goto err;
++	return mnt;
++
++ err:
++	mntput(mnt);
++	return ERR_PTR(err);
++}
++
+ struct vfsmount *
+ do_kern_mount(const char *fstype, int flags, const char *name, void *data)
+ {
+@@ -927,6 +951,9 @@ do_kern_mount(const char *fstype, int fl
+ 	if (!type)
+ 		return ERR_PTR(-ENODEV);
+ 	mnt = vfs_kern_mount(type, flags, name, data);
++	if (!IS_ERR(mnt) && (type->fs_flags & FS_HAS_SUBTYPE) &&
++	    !mnt->mnt_sb->s_subtype)
++		mnt = fs_set_subtype(mnt, fstype);
+ 	put_filesystem(type);
+ 	return mnt;
+ }
+Index: linux/include/linux/fs.h
+===================================================================
+--- linux.orig/include/linux/fs.h	2007-02-27 14:41:07.000000000 +0100
++++ linux/include/linux/fs.h	2007-02-27 14:41:09.000000000 +0100
+@@ -91,6 +91,7 @@ extern int dir_notify_enable;
+ /* public flags for file_system_type */
+ #define FS_REQUIRES_DEV 1 
+ #define FS_BINARY_MOUNTDATA 2
++#define FS_HAS_SUBTYPE 4
+ #define FS_REVAL_DOT	16384	/* Check the paths ".", ".." for staleness */
+ #define FS_RENAME_DOES_D_MOVE	32768	/* FS will handle d_move()
+ 					 * during rename() internally.
+@@ -951,6 +952,12 @@ struct super_block {
+ 	/* Granularity of c/m/atime in ns.
+ 	   Cannot be worse than a second */
+ 	u32		   s_time_gran;
++
++	/*
++	 * Filesystem subtype.  If non-empty the filesystem type field
++	 * in /proc/mounts will be "type.subtype"
++	 */
++	char *s_subtype;
+ };
+ 
+ extern struct timespec current_fs_time(struct super_block *sb);
 
 --
