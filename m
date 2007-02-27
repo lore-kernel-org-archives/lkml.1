@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752099AbXB0U0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752101AbXB0U07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752099AbXB0U0V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 15:26:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbXB0U0U
+	id S1752101AbXB0U07 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 15:26:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbXB0U07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 15:26:20 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:50392 "EHLO smtp.osdl.org"
+	Tue, 27 Feb 2007 15:26:59 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:50416 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752099AbXB0U0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 15:26:09 -0500
-Date: Tue, 27 Feb 2007 12:25:51 -0800
+	id S1751829AbXB0U06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 15:26:58 -0500
+Date: Tue, 27 Feb 2007 12:26:44 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-mm2
-Message-Id: <20070227122551.7f3143a8.akpm@linux-foundation.org>
-In-Reply-To: <20070225141530.ba99c357.khali@linux-fr.org>
-References: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
-	<20070225141530.ba99c357.khali@linux-fr.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@gmail.com>
+Cc: andi@firstfloor.org, linux-kernel@vger.kernel.org, aneesh.kumar@gmail.com
+Subject: Re: [PATCH] init_new_context: Use the passed task argument
+Message-Id: <20070227122644.d2616dc3.akpm@linux-foundation.org>
+In-Reply-To: <11722452452225-git-send-email-aneesh.kumar@gmail.com>
+References: <11722452363488-git-send-email-aneesh.kumar@gmail.com>
+	<11722452452225-git-send-email-aneesh.kumar@gmail.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -25,52 +25,56 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sun, 25 Feb 2007 14:15:30 +0100 Jean Delvare <khali@linux-fr.org> wrote:
-> Hi Andrew, all,
+> On Fri, 23 Feb 2007 21:10:36 +0530 "Aneesh Kumar K.V" <aneesh.kumar@gmail.com> wrote:
+> From: Aneesh Kumar K.V <aneesh.kumar@gmail.com>
 > 
-> I appear to need the following fix to be able to build 2.6.20-mm2 on
-> x86_64. Without the fix, my build attempt dies on:
-> 
-> In file included from drivers/pci/quirks.c:532:
-> include/asm/io_apic.h:61: error: "MAX_IO_APICS" undeclared here (not in a function)
-> 
-> Not sure how nobody else was bitten by this one yet... i386 seems to
-> need the same so I've fixed it as well.
-> 
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@gmail.com>
 > ---
->  include/asm-i386/io_apic.h   |    1 +
->  include/asm-x86_64/io_apic.h |    1 +
->  2 files changed, 2 insertions(+)
+>  arch/i386/kernel/ldt.c   |    2 +-
+>  arch/x86_64/kernel/ldt.c |    2 +-
+>  kernel/fork.c            |    2 +-
+>  3 files changed, 3 insertions(+), 3 deletions(-)
 > 
-> --- linux-2.6.20.orig/include/asm-i386/io_apic.h	2007-02-25 13:01:40.000000000 +0100
-> +++ linux-2.6.20/include/asm-i386/io_apic.h	2007-02-25 14:01:33.000000000 +0100
-> @@ -3,6 +3,7 @@
+> diff --git a/arch/i386/kernel/ldt.c b/arch/i386/kernel/ldt.c
+> index b410e5f..925354c 100644
+> --- a/arch/i386/kernel/ldt.c
+> +++ b/arch/i386/kernel/ldt.c
+> @@ -97,7 +97,7 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
 >  
->  #include <asm/types.h>
->  #include <asm/mpspec.h>
-> +#include <asm/apicdef.h>
+>  	init_MUTEX(&mm->context.sem);
+>  	mm->context.size = 0;
+> -	old_mm = current->mm;
+> +	old_mm = tsk->mm;
+>  	if (old_mm && old_mm->context.size > 0) {
+>  		down(&old_mm->context.sem);
+>  		retval = copy_ldt(&mm->context, &old_mm->context);
+> diff --git a/arch/x86_64/kernel/ldt.c b/arch/x86_64/kernel/ldt.c
+> index d7e5d0c..16ae79d 100644
+> --- a/arch/x86_64/kernel/ldt.c
+> +++ b/arch/x86_64/kernel/ldt.c
+> @@ -101,7 +101,7 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
 >  
->  /*
->   * Intel IO-APIC support for SMP and UP systems.
-> --- linux-2.6.20.orig/include/asm-x86_64/io_apic.h	2007-02-25 13:01:43.000000000 +0100
-> +++ linux-2.6.20/include/asm-x86_64/io_apic.h	2007-02-25 13:54:31.000000000 +0100
-> @@ -3,6 +3,7 @@
+>  	init_MUTEX(&mm->context.sem);
+>  	mm->context.size = 0;
+> -	old_mm = current->mm;
+> +	old_mm = tsk->mm;
+>  	if (old_mm && old_mm->context.size > 0) {
+>  		down(&old_mm->context.sem);
+>  		retval = copy_ldt(&mm->context, &old_mm->context);
+> diff --git a/kernel/fork.c b/kernel/fork.c
+> index d154cc7..2423d83 100644
+> --- a/kernel/fork.c
+> +++ b/kernel/fork.c
+> @@ -496,7 +496,7 @@ static struct mm_struct *dup_mm(struct task_struct *tsk)
+>  	if (!mm_init(mm))
+>  		goto fail_nomem;
 >  
->  #include <asm/types.h>
->  #include <asm/mpspec.h>
-> +#include <asm/apicdef.h>
->  
->  /*
->   * Intel IO-APIC support for SMP and UP systems.
-> 
+> -	if (init_new_context(tsk, mm))
+> +	if (init_new_context(current, mm))
+>  		goto fail_nocontext;
 
-erk.
+This last change makes the comment over dup_mm() wrong.  It also generally
+makes dup_mm() less useful, although that migt be OK.  It also makes the
+argument to dup_mm() unused and potentially removable.
 
-My problem is that I need to work out which patch in -mm broke the build so
-that I can insert this patch in the appropriate position.
-
-Can you please send the offending .config so I can do that?
-
-Thanks.
 
