@@ -1,115 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933080AbXB0Tit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933083AbXB0TjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933080AbXB0Tit (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 14:38:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933079AbXB0Tit
+	id S933083AbXB0TjQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 14:39:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933081AbXB0TjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 14:38:49 -0500
-Received: from mga03.intel.com ([143.182.124.21]:29501 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933054AbXB0Tir convert rfc822-to-8bit (ORCPT
+	Tue, 27 Feb 2007 14:39:15 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:12667 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933083AbXB0TjN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 14:38:47 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,226,1170662400"; 
-   d="scan'208"; a="187897735:sNHT25226677"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 1/2] NET: Multiple queue network device support
-Date: Tue, 27 Feb 2007 11:38:36 -0800
-Message-ID: <D5C1322C3E673F459512FB59E0DDC329025C211F@orsmsx414.amr.corp.intel.com>
-In-Reply-To: <20070226.170317.41636240.davem@davemloft.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/2] NET: Multiple queue network device support
-thread-index: AcdaCxczF6Uzg8uTSEiuKJLasL2gbAAmVjkg
-From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-To: "David Miller" <davem@davemloft.net>
-Cc: <jgarzik@pobox.com>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       <auke@foo-projects.org>, "Ronciak, John" <john.ronciak@intel.com>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
-X-OriginalArrivalTime: 27 Feb 2007 19:38:37.0537 (UTC) FILETIME=[E02B8D10:01C75AA6]
+	Tue, 27 Feb 2007 14:39:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=fYqBwstgchx3m4hUG3c1flwWPg9SO4LY8Ku7t8pIX6oQLWwmvUNIikGk79IHXaZ3xy2218NUsMcqo2MyE9osAoBkQHoMlwdS3WbwJdVQHtn6dqXb7gRAeRO09sR6P2+FfuAhpkOYeQyyVsAki/iXG8oJIo5D9Bs3LjP6S37D/Pg=
+Date: Tue, 27 Feb 2007 22:39:18 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Kyle McMartin <kyle@parisc-linux.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: resource_size_t printk whinging
+Message-ID: <20070227193918.GA5594@martell.zuzino.mipt.ru>
+References: <20070227041648.GB13669@athena.road.mcmartin.ca> <Pine.LNX.4.62.0702271201330.21803@pademelon.sonytel.be> <20070227131506.GA3545@athena.road.mcmartin.ca> <45E44914.4010407@imap.cc>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45E44914.4010407@imap.cc>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave,
-	Thanks for the feedback.  Please see below for my comments /
-questions.
-
-PJ Waskiewicz
-Intel Corporation
-
-> > From: Peter Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+On Tue, Feb 27, 2007 at 04:07:00PM +0100, Tilman Schmidt wrote:
+> Kyle McMartin schrieb:
+> > On Tue, Feb 27, 2007 at 12:02:50PM +0100, Geert Uytterhoeven wrote:
+> >> But we don't run sparse on every build. We do run gcc (a lot).
 > > 
-> > Added an API and associated supporting routines for 
-> multiqueue network 
-> > devices.  This allows network devices supporting multiple 
-> TX queues to 
-> > configure each queue within the netdevice and manage each queue 
-> > independantly.  Changes to the PRIO Qdisc also allow a user to map 
-> > multiple flows to individual TX queues, taking advantage of 
-> each queue 
-> > on the device.
-> > 
-> > Signed-off-by: Peter Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-> > Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
+> > We probably could, in theory...
 > 
-> Thanks for posting this.
-> 
-> I was wonding if it would be better to have the ->enqueue() 
-> perform the mapping operation, store the queue index selected 
-> inside of the skb, and just use the normal 
-> ->hard_start_xmit() to send the packet out?
+> Not usefully. I try it occasionally, but there's way too much spewage,
+> in particular of the "symbol was not declared. Should it be static?"
+> and "symbol shadows an earlier one" varieties.
 
-One of the reasons I chose to add more functions is for the queue
-management itself.  Specifically, I needed the ability to lock queues,
-stop queues (netif_stop_queue), and wake them up, independent of the
-global queue_lock in the netdevice.  At first I did think about storing
-the queue index in the skb, but that won't help with the queue locking,
-since only netdevice is passed to them outside of the context of the
-skb.  As for adding the additional multiqueue version of
-hard_start_subqueue_xmit(), I did that so non-MQ devices would have a
-clean, untouched path in dev_queue_xmit(), and only MQ devices would
-touch a new codepath.  This also removes the need for the device driver
-to inspect the queue index in the skb for which Tx ring to place the
-packet in, which is good for performance.
+	make C=2 CF="-Wno-decl -Wno-shadow [-Wno-context]"
 
-For having ->enqueue() take care of the mapping, I thought for awhile
-about this.  Originally, I had ->enqueue() doing just that, until I
-realized I was not locking the individual subqueues correctly.  The
-thought process was once I receive an skb for Tx, I need to lock a
-queue, enqueue the skb, call qdisc_run(), then unlock.  That grew into
-lock a queue, enqueue, unlock the queue, have dequeue decide which queue
-to pull an skb from (since the queue an skb comes from can be different
-than the one just enqueued to), lock it, dequeue, unlock, and return the
-skb.  The whole issue came down to needing to know what queue to lock
-before enqueuing.  If I called enqueue, I would be going in unlocked.  I
-suppose this would be ok if the lock is done inside the ->enqueue(), and
-unlock is done before exiting; let me look at that possibility.
-
-> 
-> The only thing to take care of is the per-queue locking, but 
-> that should be easily doable.
-> 
-> We might be able to do this even without making sk_buff any larger.
-> For example, I suppose skb->priority might be deducable down 
-> to a u16.  After a quick audit I really cannot see any 
-> legitimate use of anything larger than 16-bit values, but a 
-> more thorough audit would be necessary to validate this.
-
-The skb->priority field right now is used to determine the PRIO /
-pfifo_fast band to place the skb in on enqueue.  I still need to think
-about if storing the queue index in the skb would help, due to the queue
-management functions outside of the skb context.
-
-Again, thanks for the feedback.  I'll respond once I've looked at moving
-locks into ->enqueue() and removing ->map_queue().  Please note that the
-PRIO band to queue mapping in this patch has a problem when the number
-of bands is <= the number of Tx queues on the NIC.  I have a fix, and
-will include that in a repost.
