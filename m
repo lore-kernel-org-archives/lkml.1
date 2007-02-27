@@ -1,294 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752645AbXB0XSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbXB0XSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752645AbXB0XSp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 18:18:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbXB0XSp
+	id S1752641AbXB0XSt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 18:18:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbXB0XSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 18:18:45 -0500
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:51161 "EHLO
+	Tue, 27 Feb 2007 18:18:46 -0500
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:51148 "EHLO
 	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752603AbXB0XSU (ORCPT
+	with ESMTP id S1752611AbXB0XSQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 18:18:20 -0500
-Message-Id: <20070227231744.371044552@szeredi.hu>
+	Tue, 27 Feb 2007 18:18:16 -0500
+Message-Id: <20070227231733.804160667@szeredi.hu>
 References: <20070227231442.627972152@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Wed, 28 Feb 2007 00:15:04 +0100
+Date: Wed, 28 Feb 2007 00:15:02 +0100
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [patch 22/22] fuse: allow big write requests
-Content-Disposition: inline; filename=fuse_bigwrite.patch
+Subject: [patch 20/22] fuse: make dirty stats available
+Content-Disposition: inline; filename=fuse_queue_stats.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Up to now, file writes were split into page size WRITE requests.  This
-is inefficient, since there are two context switches per request.
-
-So allow bigger writes, but still do it synchronously.  Asynchronous
-writeback would be even better, but is very difficult, because of the
-way file attributes are handled in fuse.
-
-Pages to be written back are collected in a per-file request.  When no
-more pages fit in the request or the size of the write would exceed
-the maximum write count, send the request and start a new.  The write,
-and hence the per-file request is protected by i_mutex.
-
-Pages are not dirtied, but changed to write-back state immediately.
-If page is already being written back, then wait for writeback to
-finish.
-
-Change s_blocksize and s_blocksize_bits to the number of bytes that
-fit in a single write request, so that userspace tools utilize the big
-write requests.
+Make per-filesystem statistics about dirty and under-writeback pages
+available through the fuse control filesystem.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
 
-Index: linux/fs/fuse/file.c
+Index: linux/fs/fuse/control.c
 ===================================================================
---- linux.orig/fs/fuse/file.c	2007-02-27 20:45:07.000000000 +0100
-+++ linux/fs/fuse/file.c	2007-02-27 21:58:06.000000000 +0100
-@@ -56,6 +56,7 @@ struct fuse_file *fuse_file_alloc(void)
- 		}
- 		INIT_LIST_HEAD(&ff->write_entry);
- 		atomic_set(&ff->count, 0);
-+		ff->write_req = NULL;
- 	}
- 	return ff;
- }
-@@ -91,6 +92,12 @@ void fuse_finish_open(struct inode *inod
- 		invalidate_inode_pages2(inode->i_mapping);
- 	ff->fh = outarg->fh;
- 	file->private_data = fuse_file_get(ff);
-+	/*
-+	 * Writes are synchronous anyway, and the page syncing in
-+	 * generic_file_aio_write_nolock() interferes with our special
-+	 * batched write thingy
-+	 */
-+	file->f_flags &= ~O_SYNC;
+--- linux.orig/fs/fuse/control.c	2007-02-27 14:40:54.000000000 +0100
++++ linux/fs/fuse/control.c	2007-02-27 14:41:13.000000000 +0100
+@@ -41,24 +41,60 @@ static ssize_t fuse_conn_abort_write(str
+ 	return count;
  }
  
- int fuse_open_common(struct inode *inode, struct file *file, int isdir)
-@@ -486,44 +493,135 @@ static int fuse_prepare_write(struct fil
- 	return 0;
- }
- 
-+static int fuse_send_write_chunk(struct fuse_file *ff, struct inode *inode)
-+{
-+	struct fuse_conn *fc = get_fuse_conn(inode);
-+	struct fuse_req *req = ff->write_req;
-+	struct fuse_write_in *inarg = &req->misc.write.in;
-+	struct fuse_write_out *outarg = &req->misc.write.out;
-+	loff_t pos = inarg->offset + inarg->size;
-+	int err;
-+	int i;
+-static ssize_t fuse_conn_waiting_read(struct file *file, char __user *buf,
+-				      size_t len, loff_t *ppos)
++enum fusectl_type {
++	FUSECTL_WAITING,
++	FUSECTL_NR_DIRTY,
++	FUSECTL_NR_WRITEBACK
++};
 +
-+	req->in.args[1].size = inarg->size;
-+	request_send(fc, req);
-+	err = req->out.h.error;
-+	if (!err && outarg->size != inarg->size)
-+		err = -EIO;
-+	for (i = 0; i < req->num_pages; i++) {
-+		struct page *page = req->pages[i];
-+		if (err)
-+			ClearPageUptodate(page);
-+		end_page_writeback(page);
-+	}
-+	fuse_put_request(fc, req);
-+	ff->write_req = NULL;
-+	if (!err) {
-+		spin_lock(&fc->lock);
-+		if (pos > inode->i_size)
-+			i_size_write(inode, pos);
-+		spin_unlock(&fc->lock);
-+	}
-+	fuse_invalidate_attr(inode);
-+	return err;
-+}
-+
-+static int fuse_alloc_write_chunk(struct fuse_file *ff, struct inode *inode,
-+				  struct page *page, unsigned offset)
-+{
-+	struct fuse_conn *fc = get_fuse_conn(inode);
-+	struct fuse_req *req = fuse_get_req(fc);
-+	if (IS_ERR(req)) {
-+		ClearPageUptodate(page);
-+		return PTR_ERR(req);
-+	}
-+	fuse_write_fill(req, ff, inode, page_offset(page) + offset, 0, 0);
-+	req->page_offset = offset;
-+	ff->write_req = req;
-+	return 0;
-+}
-+
-+/*
-+ * Fuse wants synchronous, interruptible writes, so this is slightly
-+ * unconventional.
-+ *
-+ * Instead of just dirtying pages, they are accumulated in
-+ * ff->write_req, in WriteBack state.  When the request is full or the
-+ * number of bytes exceeds max_write, then the request is sent and a
-+ * new one is started.
-+ */
- static int fuse_commit_write(struct file *file, struct page *page,
- 			     unsigned offset, unsigned to)
++static ssize_t fuse_conn_read(struct file *file, char __user *buf,
++			      size_t len, loff_t *ppos, enum fusectl_type sel)
  {
- 	int err;
--	size_t nres;
- 	unsigned count = to - offset;
- 	struct inode *inode = page->mapping->host;
- 	struct fuse_conn *fc = get_fuse_conn(inode);
--	loff_t pos = page_offset(page) + offset;
--	struct fuse_req *req;
-+	struct fuse_file *ff = file->private_data;
-+	struct fuse_req *req = ff->write_req;
+ 	char tmp[32];
+ 	size_t size;
  
- 	if (is_bad_inode(inode))
- 		return -EIO;
+ 	if (!*ppos) {
++		long val = 0;
+ 		struct fuse_conn *fc = fuse_ctl_file_conn_get(file);
+ 		if (!fc)
+ 			return 0;
  
--	req = fuse_get_req(fc);
--	if (IS_ERR(req))
--		return PTR_ERR(req);
-+	BUG_ON(!count);
-+	if (req) {
-+		struct fuse_write_in *inarg = &req->misc.write.in;
-+
-+		/* Writes are always contiguous */
-+		BUG_ON(inarg->offset+inarg->size != page_offset(page)+offset);
-+
-+		if ((!offset && req->num_pages == FUSE_MAX_PAGES_PER_REQ) ||
-+		    inarg->size + count > fc->max_write) {
-+			err = fuse_send_write_chunk(ff, inode);
-+			if (err)
-+				return err;
+-		file->private_data=(void *)(long)atomic_read(&fc->num_waiting);
++		switch (sel) {
++		case FUSECTL_WAITING:
++			val = atomic_read(&fc->num_waiting);
++			break;
++		case FUSECTL_NR_DIRTY:
++			val = atomic_long_read(&fc->bdi.nr_dirty);
++			break;
++		case FUSECTL_NR_WRITEBACK:
++			val = atomic_long_read(&fc->bdi.nr_writeback);
++			break;
 +		}
-+	}
-+	if (!ff->write_req) {
-+		err = fuse_alloc_write_chunk(ff, inode, page, offset);
-+		if (err)
-+			return err;
-+	}
-+	req = ff->write_req;
- 
--	req->num_pages = 1;
--	req->pages[0] = page;
--	req->page_offset = offset;
--	nres = fuse_send_write(req, file, inode, pos, count);
--	err = req->out.h.error;
--	fuse_put_request(fc, req);
--	if (!err && nres != count)
--		err = -EIO;
--	if (!err) {
--		pos += count;
--		spin_lock(&fc->lock);
--		if (pos > inode->i_size)
--			i_size_write(inode, pos);
--		spin_unlock(&fc->lock);
-+	/* Whole page has been overwritten, it's now clean and up-to-date */
-+	if (to == PAGE_CACHE_SIZE &&
-+	    (!req->page_offset || req->num_pages > 1)) {
-+		clear_page_dirty_for_io(page);
-+		SetPageUptodate(page);
-+	}
- 
--		if (offset == 0 && to == PAGE_CACHE_SIZE)
--			SetPageUptodate(page);
-+	if (!req->num_pages || req->pages[req->num_pages - 1] != page) {
-+		req->pages[req->num_pages] = page;
-+		req->num_pages++;
-+		wait_on_page_writeback(page);
-+		set_page_writeback(page);
++		file->private_data = (void *) val;
+ 		fuse_conn_put(fc);
  	}
--	fuse_invalidate_attr(inode);
--	return err;
-+	req->misc.write.in.size += count;
-+	return 0;
-+}
-+
-+static ssize_t fuse_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
-+				   unsigned long nr_segs, loff_t pos)
-+{
-+	ssize_t ret;
-+	struct file *file = iocb->ki_filp;
-+	struct inode *inode = file->f_mapping->host;
-+	struct fuse_file *ff = file->private_data;
-+	BUG_ON(iocb->ki_pos != pos);
-+
-+	mutex_lock(&inode->i_mutex);
-+	BUG_ON(ff->write_req);
-+	ret = generic_file_aio_write_nolock(iocb, iov, nr_segs, iocb->ki_pos);
-+	if (ff->write_req) {
-+		ssize_t written = ff->write_req->misc.write.in.offset - pos;
-+		int err = fuse_send_write_chunk(ff, inode);
-+		if (err)
-+			ret = written ? written : err;
-+	}
-+	mutex_unlock(&inode->i_mutex);
-+
-+	return ret;
+ 	size = sprintf(tmp, "%ld\n", (long)file->private_data);
+ 	return simple_read_from_buffer(buf, len, ppos, tmp, size);
  }
  
- static void fuse_release_user_pages(struct fuse_req *req, int write)
-@@ -1067,7 +1165,7 @@ static const struct file_operations fuse
- 	.read		= do_sync_read,
- 	.aio_read	= generic_file_aio_read,
- 	.write		= do_sync_write,
--	.aio_write	= generic_file_aio_write,
-+	.aio_write	= fuse_file_aio_write,
- 	.mmap		= fuse_file_mmap,
- 	.open		= fuse_open,
- 	.flush		= fuse_flush,
-Index: linux/fs/fuse/fuse_i.h
-===================================================================
---- linux.orig/fs/fuse/fuse_i.h	2007-02-27 20:45:07.000000000 +0100
-+++ linux/fs/fuse/fuse_i.h	2007-02-27 20:46:51.000000000 +0100
-@@ -85,6 +85,9 @@ struct fuse_file {
- 
- 	/** Entry on inode's write_files list */
- 	struct list_head write_entry;
++static ssize_t fuse_conn_waiting_read(struct file *file, char __user *buf,
++				      size_t len, loff_t *ppos)
++{
++	return fuse_conn_read(file, buf, len, ppos, FUSECTL_WAITING);
++}
 +
-+	/** Request used in synchronous writes */
-+	struct fuse_req *write_req;
++static ssize_t fuse_conn_nr_dirty_read(struct file *file, char __user *buf,
++				       size_t len, loff_t *ppos)
++{
++	return fuse_conn_read(file, buf, len, ppos, FUSECTL_NR_DIRTY);
++}
++
++static ssize_t fuse_conn_nr_writeback_read(struct file *file, char __user *buf,
++					   size_t len, loff_t *ppos)
++{
++	return fuse_conn_read(file, buf, len, ppos, FUSECTL_NR_WRITEBACK);
++}
++
+ static const struct file_operations fuse_ctl_abort_ops = {
+ 	.open = nonseekable_open,
+ 	.write = fuse_conn_abort_write,
+@@ -69,6 +105,16 @@ static const struct file_operations fuse
+ 	.read = fuse_conn_waiting_read,
  };
  
- /** One input argument of a request */
-Index: linux/fs/fuse/inode.c
-===================================================================
---- linux.orig/fs/fuse/inode.c	2007-02-27 20:45:07.000000000 +0100
-+++ linux/fs/fuse/inode.c	2007-02-27 21:57:19.000000000 +0100
-@@ -108,6 +108,9 @@ static int fuse_remount_fs(struct super_
- 	if (*flags & MS_MANDLOCK)
- 		return -EINVAL;
- 
-+	/* Writes are synchronous anyway, also see O_SYNC */
-+	*flags &= ~MS_SYNCHRONOUS;
++static const struct file_operations fuse_ctl_nr_dirty_ops = {
++	.open = nonseekable_open,
++	.read = fuse_conn_nr_dirty_read,
++};
 +
++static const struct file_operations fuse_ctl_nr_writeback_ops = {
++	.open = nonseekable_open,
++	.read = fuse_conn_nr_writeback_read,
++};
++
+ static struct dentry *fuse_ctl_add_dentry(struct dentry *parent,
+ 					  struct fuse_conn *fc,
+ 					  const char *name,
+@@ -127,7 +173,11 @@ int fuse_ctl_add_conn(struct fuse_conn *
+ 	if (!fuse_ctl_add_dentry(parent, fc, "waiting", S_IFREG | 0400, 1,
+ 				NULL, &fuse_ctl_waiting_ops) ||
+ 	    !fuse_ctl_add_dentry(parent, fc, "abort", S_IFREG | 0200, 1,
+-				 NULL, &fuse_ctl_abort_ops))
++				 NULL, &fuse_ctl_abort_ops) ||
++	    !fuse_ctl_add_dentry(parent, fc, "nr_dirty", S_IFREG | 0444, 1,
++				 NULL, &fuse_ctl_nr_dirty_ops) ||
++	    !fuse_ctl_add_dentry(parent, fc, "nr_writeback", S_IFREG | 0444, 1,
++				 NULL, &fuse_ctl_nr_writeback_ops))
+ 		goto err;
+ 
  	return 0;
- }
+Index: linux/fs/fuse/fuse_i.h
+===================================================================
+--- linux.orig/fs/fuse/fuse_i.h	2007-02-27 14:41:11.000000000 +0100
++++ linux/fs/fuse/fuse_i.h	2007-02-27 14:41:13.000000000 +0100
+@@ -30,7 +30,7 @@
+ #define FUSE_NAME_MAX 1024
  
-@@ -542,6 +545,9 @@ static int fuse_fill_super(struct super_
- 	if (sb->s_flags & MS_MANDLOCK)
- 		return -EINVAL;
+ /** Number of dentries for each connection in the control filesystem */
+-#define FUSE_CTL_NUM_DENTRIES 3
++#define FUSE_CTL_NUM_DENTRIES 5
  
-+	/* Writes are synchronous anyway, also see O_SYNC */
-+	sb->s_flags &= ~MS_SYNCHRONOUS;
-+
- 	if (!parse_fuse_opt((char *) data, &d, is_bdev))
- 		return -EINVAL;
- 
-@@ -551,8 +557,8 @@ static int fuse_fill_super(struct super_
- 			return -EINVAL;
- #endif
- 	} else {
--		sb->s_blocksize = PAGE_CACHE_SIZE;
--		sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
-+		sb->s_blocksize = PAGE_CACHE_SIZE * FUSE_MAX_PAGES_PER_REQ;
-+		sb->s_blocksize_bits = ilog2(sb->s_blocksize);
- 	}
- 	sb->s_magic = FUSE_SUPER_MAGIC;
- 	sb->s_op = &fuse_super_operations;
+ /** If the FUSE_DEFAULT_PERMISSIONS flag is given, the filesystem
+     module will check permissions based on the file mode.  Otherwise no
 
 --
