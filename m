@@ -1,54 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161454AbXB0AI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161473AbXB0AHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161454AbXB0AI2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 19:08:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161457AbXB0AIB
+	id S1161473AbXB0AHy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 19:07:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161461AbXB0AHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 19:08:01 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:39211 "EHLO smtp.osdl.org"
+	Mon, 26 Feb 2007 19:07:51 -0500
+Received: from mail.kroah.org ([69.55.234.183]:44860 "EHLO perch.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161454AbXB0AHP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 19:07:15 -0500
-Date: Mon, 26 Feb 2007 16:07:08 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [RFC] div64_64 support
-Message-ID: <20070226160708.3c7a8d29@freekitty>
-In-Reply-To: <Pine.LNX.4.61.0702270103060.23355@yvahk01.tjqt.qr>
-References: <20070223170527.4ca695b2@freekitty>
-	<Pine.LNX.4.61.0702262108010.23355@yvahk01.tjqt.qr>
-	<20070226143127.5c74bec9@freekitty>
-	<Pine.LNX.4.61.0702262348140.23355@yvahk01.tjqt.qr>
-	<20070226154413.4ead571a@freekitty>
-	<Pine.LNX.4.61.0702270103060.23355@yvahk01.tjqt.qr>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1161460AbXB0AHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 19:07:32 -0500
+Date: Mon, 26 Feb 2007 16:06:39 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, David Brownell <david-b@pacbell.net>
+Subject: [patch 7/9] USB: usbnet driver bugfix
+Message-ID: <20070227000639.GH6283@kroah.com>
+References: <20070226235248.438556696@mini.kroah.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="usb-usbnet-driver-bugfix.patch"
+In-Reply-To: <20070227000538.GA6283@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Feb 2007 01:05:26 +0100 (MET)
-Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
+-stable review patch.  If anyone has any objections, please let us know.
 
-> 
-> On Feb 26 2007 15:44, Stephen Hemminger wrote:
-> >> >-		x = (2 * x + (uint32_t) div64_64(a, x*x)) / 3;
-> >> >+		x = (2 * x + (u32) (a / x*x)) / 3;
-> >> 
-> >> Previously there was div64_64(a, x*x) which is equivalent to
-> >> (a)/(x*x), or just: a/(x^2). But now you do a/x*x, which is
-> >> equivalent to a*x/x (in the domain of real numbers). Furthermore,
-> >> a/x*x is a-(a%x), which does not even remotely match a/(x^2).
-> >> 
-> >Been there, done that, don't want to repeat it...
-> 
-> I am sorry I don't quite follow.
+------------------
+From: David Brownell <david-b@pacbell.net>
 
-Once before a missed paren's caused a TCP congestion window bug that
-took 6 months before it was found...
+The attached fixes an oops in the usbnet driver. The same patch is
+in 2.6.21-rc1, but that one has many whitespace changes. This is much
+smaller.
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+
+Signed-off-by: David Brownell <david-b@pacbell.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/usb/net/usbnet.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+--- linux-2.6.19.5.orig/drivers/usb/net/usbnet.c
++++ linux-2.6.19.5/drivers/usb/net/usbnet.c
+@@ -1181,6 +1181,9 @@ usbnet_probe (struct usb_interface *udev
+ 	// NOTE net->name still not usable ...
+ 	if (info->bind) {
+ 		status = info->bind (dev, udev);
++		if (status < 0)
++			goto out1;
++
+ 		// heuristic:  "usb%d" for links we know are two-host,
+ 		// else "eth%d" when there's reasonable doubt.  userspace
+ 		// can rename the link if it knows better.
+@@ -1207,12 +1210,12 @@ usbnet_probe (struct usb_interface *udev
+ 	if (status == 0 && dev->status)
+ 		status = init_status (dev, udev);
+ 	if (status < 0)
+-		goto out1;
++		goto out3;
+ 
+ 	if (!dev->rx_urb_size)
+ 		dev->rx_urb_size = dev->hard_mtu;
+ 	dev->maxpacket = usb_maxpacket (dev->udev, dev->out, 1);
+-	
++
+ 	SET_NETDEV_DEV(net, &udev->dev);
+ 	status = register_netdev (net);
+ 	if (status)
+
+--
