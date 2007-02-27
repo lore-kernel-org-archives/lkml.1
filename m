@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965029AbXB0BAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030555AbXB0BDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965029AbXB0BAn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 20:00:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965150AbXB0BAm
+	id S1030555AbXB0BDU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 20:03:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965263AbXB0BDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 20:00:42 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:46427 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965029AbXB0BAm (ORCPT
+	Mon, 26 Feb 2007 20:03:20 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35409
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S965150AbXB0BDT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 20:00:42 -0500
-Message-ID: <45E382B8.8040207@vmware.com>
-Date: Mon, 26 Feb 2007 17:00:40 -0800
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
-MIME-Version: 1.0
-To: Anthony Liguori <anthony@codemonkey.ws>
-CC: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [RFC] Use para_fill instead of vmi_get_function for APIC ops
-References: <45E37617.6050107@codemonkey.ws> <45E37EB5.7070100@vmware.com> <45E38032.3020704@codemonkey.ws>
-In-Reply-To: <45E38032.3020704@codemonkey.ws>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 26 Feb 2007 20:03:19 -0500
+Date: Mon, 26 Feb 2007 17:03:17 -0800 (PST)
+Message-Id: <20070226.170317.41636240.davem@davemloft.net>
+To: auke-jan.h.kok@intel.com
+Cc: jgarzik@pobox.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       peter.p.waskiewicz.jr@intel.com, jesse.brandeburg@intel.com,
+       auke@foo-projects.org, john.ronciak@intel.com
+Subject: Re: [PATCH 1/2] NET: Multiple queue network device support
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070209000950.5155.24763.stgit@gitlost.site>
+References: <20070209000942.5155.78998.stgit@gitlost.site>
+	<20070209000950.5155.24763.stgit@gitlost.site>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
->
-> It would be really great if one could write a ROM by just specifying a 
-> GetRelocationInfo function that always returns rel.type == NONE.  
-> Right now, there are a half a dozen or so ops that have to be 
-> implemented b/c of the vmi_get_function stuff.
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Date: Thu, 08 Feb 2007 16:09:50 -0800
 
-Yes, I need to clean this up.  There are a couple other places where I 
-took liberties and just did things that way because this was how our 
-VMware ROM was implemented.  Just be sure, if you are going to implement 
-a ROM, it has to be GPL'd now, otherwise the VMI code won't accept it.
+> From: Peter Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+> 
+> Added an API and associated supporting routines for multiqueue network
+> devices.  This allows network devices supporting multiple TX queues to
+> configure each queue within the netdevice and manage each queue
+> independantly.  Changes to the PRIO Qdisc also allow a user to map
+> multiple flows to individual TX queues, taking advantage of each queue
+> on the device.
+> 
+> Signed-off-by: Peter Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+> Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
 
->
->> I assume this patch is signed-off-by you?  If so, I'll add it to my 
->> patch queue.
->
-> Yeah, but please make sure to test it.  I haven't at all.
+Thanks for posting this.
 
-It passes test level 1, which is good enough to make it into my patchset.
+I was wonding if it would be better to have the ->enqueue() perform
+the mapping operation, store the queue index selected inside of the
+skb, and just use the normal ->hard_start_xmit() to send the packet
+out?
 
-Zach
+The only thing to take care of is the per-queue locking, but that
+should be easily doable.
+
+We might be able to do this even without making sk_buff any larger.
+For example, I suppose skb->priority might be deducable down to
+a u16.  After a quick audit I really cannot see any legitimate use
+of anything larger than 16-bit values, but a more thorough audit
+would be necessary to validate this.
+
