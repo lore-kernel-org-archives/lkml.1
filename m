@@ -1,87 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752477AbXB0Buu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752482AbXB0BxF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752477AbXB0Buu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 20:50:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbXB0Buu
+	id S1752482AbXB0BxF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 20:53:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbXB0BxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 20:50:50 -0500
-Received: from smtpout.mac.com ([17.250.248.171]:49274 "EHLO smtpout.mac.com"
+	Mon, 26 Feb 2007 20:53:05 -0500
+Received: from mga09.intel.com ([134.134.136.24]:18410 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752477AbXB0But (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 20:50:49 -0500
-In-Reply-To: <45E376E8.8020901@zytor.com>
-References: <20060724085701.B2083275@wobbly.melbourne.sgi.com> <200607242031.11815.a.gruenbacher@computer.org> <45E36D39.2030605@zytor.com> <20070226.154308.112620497.davem@davemloft.net> <45E372CA.9020709@zytor.com> <20070227000318.GA3448@infradead.org> <45E376E8.8020901@zytor.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3E0E2D98-5FEC-403E-831F-2B5BE6A3281A@mac.com>
-Cc: Christoph Hellwig <hch@infradead.org>, David Miller <davem@davemloft.net>,
-       a.gruenbacher@computer.org, bunk@stusta.de,
-       linux-kernel@vger.kernel.org, jmorris@redhat.com, dwmw2@infradead.org
+	id S1752482AbXB0BxE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 20:53:04 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,222,1170662400"; 
+   d="scan'208"; a="50910913:sNHT20990583"
+From: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+Organization: Intel Corporation
+To: Alan <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [patch 0/2] semaphores: add down_interruptible_timeout() and asm-generic/semaphore.h
+Date: Mon, 26 Feb 2007 17:57:11 -0800
+User-Agent: KMail/1.9.5
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>, mingo@redhat.com, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+References: <20070227001338.344233745@sodium.jf.intel.com> <200702261654.18005.inaky@linux.intel.com> <20070227021803.38c8591f@lxorguk.ukuu.org.uk>
+In-Reply-To: <20070227021803.38c8591f@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: include/linux/xattr.h: how much userpace visible?
-Date: Mon, 26 Feb 2007 20:49:00 -0500
-To: "H. Peter Anvin" <hpa@zytor.com>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+Content-Disposition: inline
+Message-Id: <200702261757.11968.inaky@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 26, 2007, at 19:10:16, H. Peter Anvin wrote:
-> Christoph Hellwig wrote:
->> What's the problem of exposing all these APIs unconditionally?   
->> glibcs should either use all information from the linux/ headers  
->> or nothing at all, but not depend on hiding some bits.
+On Monday 26 February 2007 18:18, Alan wrote:
+> > Yeah, I need semaphore. This is a hw register that says when the hw
+> > is ready to accept a new command. Code that wants to send commands has
+> > to down the semaphore and then send it. When hw is ready to get a new
+> > command, it sends and IRQ and the IRQ up()s the semaphore.
 >
-> It's not always that simple.  In particular, in some files there  
-> might be typedefs or structure tags that step on libc's namespace  
-> (but are useful to other libcs), but ABI constants that are  
-> universally useful.
->
-> One way to deal with the particular issue of structure tags which  
-> is probably even more useful is:
->
-> #if defined(__KERNEL__) || defined(__KERNEL_EXPORT_STRUCTURES)
-> # define __kstruct_stat stat
-> #endif
->
-> struct __kstruct_stat {
-> 	/* ...foo... */
-> };
->
-> ... which lets the libc export it into whatever namespace it wants  
-> by #defining __kstruct macros accordingly.
+> So you need a mutex not a semaphore
 
-Not a bad idea, but it could use some extra error checking to make  
-sure that somebody remembers to "#define __kstruct_foo" before  
-"#include <linux/foo.h>" (perhaps indirectly through linux/bar.h).   
-Maybe something like this (plays nice with the very-basic unifdef  
-parsing too):
+Theoretically I could use a mutex. Practically it would trigger ugly
+complications. Only the owner can unlock a mutex (for example), so
+I could not unlock from an IRQ handler -- not to mention that the
+semantic rules outlined in Documentation/mutex-design.txt explicitly
+forbid IRQ usage. 
 
-#ifdef __KERNEL__
-# define __kstruct_stat stat
-# define __kstruct_foo foo
-# define __kstruct_bar bar
-#endif
-
-#ifdef __LINUX_KERNEL_EXPORT
-# define __kstruct_stat stat
-# define __kstruct_foo foo
-# define __kstruct_bar bar
-#endif
-
-#ifndef __kstruct_stat
-# error "Missing definition of __kstruct_stat, please insert:"
-# error "  #define __kstruct_stat <name-for-stat-struct>"
-# error "into your C file before '#include <linux/foo.h>'"
-#endif
-struct __kstruct_stat {
-}
-
-Someone who wanted to keep the name __kstruct_stat could of course  
-"#define __kstruct_stat __kstruct_stat" easily.
-
-Cheers,
-Kyle Moffett
-
+And then, this is what semaphores where designed for, as gates :)
+for once that I get to use a semaphore properly...
