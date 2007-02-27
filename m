@@ -1,98 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751574AbXB0Nd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751582AbXB0NeH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751574AbXB0Nd1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 08:33:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbXB0Nd0
+	id S1751582AbXB0NeH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 08:34:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbXB0NeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 08:33:26 -0500
-Received: from wx-out-0506.google.com ([66.249.82.229]:23870 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751568AbXB0NdZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 08:33:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Upl8cxwuMQH3TM+yELQia+eET063hsjGOpW51Jt0iH//nhHa+iUpIm9mlvEfZm0d+drhRZduwGDjpHMMkRnp/mFVT6Vvxgg6hN6SmcBjRW7pLzE65I384LJSOnTnU8dJr6tYXx2oM1sP7vAH38nysY/6SFZNeP5aZ3W93g1Nw6U=
-Date: Tue, 27 Feb 2007 22:33:21 +0900
-From: Tejun Heo <htejun@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Komuro <komurojun-mbn@nifty.com>
-Subject: [PATCH] libata: clear drvdata in ata_host_release(), take#2
-Message-ID: <20070227133321.GH20322@htj.dyndns.org>
-References: <20070224074823.GA20322@htj.dyndns.org> <45E0EB9F.3050001@garzik.org>
+	Tue, 27 Feb 2007 08:34:07 -0500
+Received: from il.qumranet.com ([82.166.9.18]:51950 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751588AbXB0NeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 08:34:05 -0500
+Message-ID: <45E432D3.8060208@argo.co.il>
+Date: Tue, 27 Feb 2007 15:32:03 +0200
+From: Avi Kivity <avi@argo.co.il>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45E0EB9F.3050001@garzik.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Theodore Tso <tytso@mit.edu>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+References: <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com> <20070222074044.GA4158@elte.hu> <20070222113148.GA3781@2ka.mipt.ru> <Pine.LNX.4.64.0702251428490.12485@woody.linux-foundation.org> <20070226172812.GC22454@2ka.mipt.ru> <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org> <20070226195416.GA11188@elte.hu> <20070227102832.GC23170@2ka.mipt.ru> <20070227115221.GJ8154@thunk.org> <20070227123421.GA21616@elte.hu>
+In-Reply-To: <20070227123421.GA21616@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clearing drvdata in ->remove_one causes NULL pointer deference.  Clear
-drvdata only in ata_host_release() after all resources are freed.
+Ingo Molnar wrote:
+> * Theodore Tso <tytso@mit.edu> wrote:
+>
+>   
+>> I think what you are not hearing, and what everyone else is saying 
+>> (INCLUDING Linus), is that for most programmers, state machines are 
+>> much, much harder to program, understand, and debug compared to 
+>> multi-threaded code. [...]
+>>     
+>
+> btw., another crutial thing that i think Evgeniy is missing is that 
+> threadlets /enable/ event loops to be used in practice! Right now the 
+> epoll/kevent programming model requires a total 100% avoidance of all 
+> context-switching in the 'main' event handler context while handling a 
+> request. If just 1% of all requests happen to block it might cause a 
+> /complete/ breakdown of an event loop's performance - it can easily 
+> cause a 10x drop in performance or worse!
+>
+> So context-switching has to be avoided in 100% of the code that runs 
+> while handling requests, file descriptors have to be set to nonblocking 
+> (causing extra system calls), and all the syscalls that might return 
+> incomplete with either -EINVAL or with a short read/write have to be 
+> converted into a state machine. (or in the alternative, user-space 
+> threading has to be used, which opens up another hornet's nest)
+>
+> /That/ is the main inhibiting factor of the measured use of event loops 
+> within Linux! It has zero integration capabilities with 'usual' coding 
+> techniques - driving the costs of its application up in the sky, and 
+> pushing event based servers into niches.
+>
+>   
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
----
-pata_pcmcia is fixed by Alan's patch.  This fixes other drivers and
-make libata always clear drvdata after detach.
+Having written such a niche event based server, I can 100% confirm what 
+Ingo is saying here.  We had a single process drive I/O to the kernel 
+through an event model (based on kernel aio extended with IO_CMD_POLL), 
+and user level threads managed by a custom scheduler that managed I/O, 
+timeouts, and thread scheduling.
 
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index bdde327..3bdb509 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -5680,6 +5680,8 @@ static void ata_host_release(struct device *gendev, void *res)
- 
- 	if (host->ops->host_stop)
- 		host->ops->host_stop(host);
-+
-+	dev_set_drvdata(gendev, NULL);
- }
- 
- /**
-@@ -5902,7 +5904,6 @@ int ata_device_add(const struct ata_probe_ent *ent)
- 
-  err_out:
- 	devres_release_group(dev, ata_device_add);
--	dev_set_drvdata(dev, NULL);
- 	VPRINTK("EXIT, returning %d\n", rc);
- 	return 0;
- }
-diff --git a/drivers/ata/pata_cs5520.c b/drivers/ata/pata_cs5520.c
-index c1334c6..8ff2d58 100644
---- a/drivers/ata/pata_cs5520.c
-+++ b/drivers/ata/pata_cs5520.c
-@@ -306,7 +306,6 @@ static void __devexit cs5520_remove_one(struct pci_dev *pdev)
- 	struct ata_host *host = dev_get_drvdata(dev);
- 
- 	ata_host_detach(host);
--	dev_set_drvdata(dev, NULL);
- }
- 
- /**
-diff --git a/drivers/ata/pata_isapnp.c b/drivers/ata/pata_isapnp.c
-index d5f2e85..1a61cc8 100644
---- a/drivers/ata/pata_isapnp.c
-+++ b/drivers/ata/pata_isapnp.c
-@@ -128,7 +128,6 @@ static void isapnp_remove_one(struct pnp_dev *idev)
- 	struct ata_host *host = dev_get_drvdata(dev);
- 
- 	ata_host_detach(host);
--	dev_set_drvdata(dev, NULL);
- }
- 
- static struct pnp_device_id isapnp_devices[] = {
-diff --git a/drivers/ata/pata_platform.c b/drivers/ata/pata_platform.c
-index 02ea95f..4b82a54 100644
---- a/drivers/ata/pata_platform.c
-+++ b/drivers/ata/pata_platform.c
-@@ -228,7 +228,6 @@ static int __devexit pata_platform_remove(struct platform_device *pdev)
- 	struct ata_host *host = dev_get_drvdata(dev);
- 
- 	ata_host_detach(host);
--	dev_set_drvdata(dev, NULL);
- 
- 	return 0;
- }
+We once considered dropping from a user-level thread model to a state 
+machine model, but the effort was astronomical and we wouldn't see the 
+rewards until it was all done, so naturally we didn't do it.
+
+> With threadlets the picture changes dramatically: all we have to 
+> concentrate on to get the performance of "100% event based servers" is 
+> to handle 'most' rescheduling events in the event loop. A 10-20% context 
+> switching ratio does not hurt at all. (it causes ~1% of throughput 
+> loss.)
+>
+> Furthermore, even if a particular configuration or module of the server 
+> (say Apache) happens to trigger a high rate of scheduling, the 
+> performance breakdown model of threadlets is /vastly/ superior to event 
+> based servers. The measurements so far have shown that the absolute 
+> worst-case threading server performance is at around 60% of that of 
+> non-context-switching servers - and even that level is reached 
+> gradually, leaving time for action for the server owner. While with 
+> fully event based servers there are mostly only two modes of 
+> performance: 100% performance and near-0% performance: total breakdown.
+>   
+
+Yes.  Threadlets as the default aio solution (easy to use, acceptable 
+performance even in worst cases), with specialized solutions where 
+applicable (epoll for networking, aio for O_DIRECT disk) look like a 
+good mix of performance and sanity.
+
+
+
+-- 
+error compiling committee.c: too many arguments to function
+
