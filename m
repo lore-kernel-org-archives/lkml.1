@@ -1,145 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbXB0XSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752611AbXB0XTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752641AbXB0XSt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 18:18:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbXB0XSq
+	id S1752611AbXB0XTe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 18:19:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbXB0XSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 18:18:46 -0500
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:51148 "EHLO
+	Tue, 27 Feb 2007 18:18:14 -0500
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:51122 "EHLO
 	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752611AbXB0XSQ (ORCPT
+	with ESMTP id S1752604AbXB0XSG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 18:18:16 -0500
-Message-Id: <20070227231733.804160667@szeredi.hu>
+	Tue, 27 Feb 2007 18:18:06 -0500
+Message-Id: <20070227231713.209106582@szeredi.hu>
 References: <20070227231442.627972152@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Wed, 28 Feb 2007 00:15:02 +0100
+Date: Wed, 28 Feb 2007 00:14:59 +0100
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [patch 20/22] fuse: make dirty stats available
-Content-Disposition: inline; filename=fuse_queue_stats.patch
+Subject: [patch 17/22] fuse: writable shared mmap support
+Content-Disposition: inline; filename=fuse_writable_mmap.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Make per-filesystem statistics about dirty and under-writeback pages
-available through the fuse control filesystem.
+Change fuse_file_mmap() to allow shared writable mappings.  Change the
+->set_page_dirty address space operation to __set_page_dirty_nobuffers.
+
+In fuse_fsync() sync the inode's dirty data.
+
+It is important, that after all writable file are closed, no more
+dirty pages remain for the inode.  So write back dirty pages from
+munmap().
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
 
-Index: linux/fs/fuse/control.c
+Index: linux/fs/fuse/file.c
 ===================================================================
---- linux.orig/fs/fuse/control.c	2007-02-27 14:40:54.000000000 +0100
-+++ linux/fs/fuse/control.c	2007-02-27 14:41:13.000000000 +0100
-@@ -41,24 +41,60 @@ static ssize_t fuse_conn_abort_write(str
- 	return count;
+--- linux.orig/fs/fuse/file.c	2007-02-27 14:41:12.000000000 +0100
++++ linux/fs/fuse/file.c	2007-02-27 14:41:12.000000000 +0100
+@@ -253,6 +253,11 @@ int fuse_fsync_common(struct file *file,
+ 	if (is_bad_inode(inode))
+ 		return -EIO;
+ 
++	/* Wait for all outstanding writes, before sending the FSYNC request */
++	err = write_inode_now(de->d_inode, 0);
++	if (err)
++		return err;
++
+ 	if ((!isdir && fc->no_fsync) || (isdir && fc->no_fsyncdir))
+ 		return 0;
+ 
+@@ -764,21 +769,39 @@ static int fuse_launder_page(struct page
+ 	return err;
  }
  
--static ssize_t fuse_conn_waiting_read(struct file *file, char __user *buf,
--				      size_t len, loff_t *ppos)
-+enum fusectl_type {
-+	FUSECTL_WAITING,
-+	FUSECTL_NR_DIRTY,
-+	FUSECTL_NR_WRITEBACK
+-static int fuse_file_mmap(struct file *file, struct vm_area_struct *vma)
++static void fuse_vma_close(struct vm_area_struct *vma)
+ {
+-	if ((vma->vm_flags & VM_SHARED)) {
+-		if ((vma->vm_flags & VM_WRITE))
+-			return -ENODEV;
+-		else
+-			vma->vm_flags &= ~VM_MAYWRITE;
+-	}
+-	return generic_file_mmap(file, vma);
++	/*
++	 * Write back dirty pages now, because there may not
++	 * be any suitable open files later
++	 */
++	filemap_write_and_wait(vma->vm_file->f_mapping);
+ }
+ 
+-static int fuse_set_page_dirty(struct page *page)
++static struct vm_operations_struct fuse_file_vm_ops = {
++	.close		= fuse_vma_close,
++	.nopage		= filemap_nopage,
++	.populate	= filemap_populate,
 +};
 +
-+static ssize_t fuse_conn_read(struct file *file, char __user *buf,
-+			      size_t len, loff_t *ppos, enum fusectl_type sel)
++static int fuse_file_mmap(struct file *file, struct vm_area_struct *vma)
  {
- 	char tmp[32];
- 	size_t size;
- 
- 	if (!*ppos) {
-+		long val = 0;
- 		struct fuse_conn *fc = fuse_ctl_file_conn_get(file);
- 		if (!fc)
- 			return 0;
- 
--		file->private_data=(void *)(long)atomic_read(&fc->num_waiting);
-+		switch (sel) {
-+		case FUSECTL_WAITING:
-+			val = atomic_read(&fc->num_waiting);
-+			break;
-+		case FUSECTL_NR_DIRTY:
-+			val = atomic_long_read(&fc->bdi.nr_dirty);
-+			break;
-+		case FUSECTL_NR_WRITEBACK:
-+			val = atomic_long_read(&fc->bdi.nr_writeback);
-+			break;
-+		}
-+		file->private_data = (void *) val;
- 		fuse_conn_put(fc);
- 	}
- 	size = sprintf(tmp, "%ld\n", (long)file->private_data);
- 	return simple_read_from_buffer(buf, len, ppos, tmp, size);
+-	printk("fuse_set_page_dirty: should not happen\n");
+-	dump_stack();
++	if ((vma->vm_flags & VM_SHARED) && (vma->vm_flags & VM_MAYWRITE)) {
++		struct inode *inode = file->f_dentry->d_inode;
++		struct fuse_conn *fc = get_fuse_conn(inode);
++		struct fuse_inode *fi = get_fuse_inode(inode);
++		struct fuse_file *ff = file->private_data;
++		/*
++		 * file may be written through mmap, so chain it onto the
++		 * inodes's write_file list
++		 */
++		spin_lock(&fc->lock);
++		if (list_empty(&ff->write_entry))
++			list_add(&ff->write_entry, &fi->write_files);
++		spin_unlock(&fc->lock);
++	}
++	file_accessed(file);
++	vma->vm_ops = &fuse_file_vm_ops;
+ 	return 0;
  }
  
-+static ssize_t fuse_conn_waiting_read(struct file *file, char __user *buf,
-+				      size_t len, loff_t *ppos)
-+{
-+	return fuse_conn_read(file, buf, len, ppos, FUSECTL_WAITING);
-+}
-+
-+static ssize_t fuse_conn_nr_dirty_read(struct file *file, char __user *buf,
-+				       size_t len, loff_t *ppos)
-+{
-+	return fuse_conn_read(file, buf, len, ppos, FUSECTL_NR_DIRTY);
-+}
-+
-+static ssize_t fuse_conn_nr_writeback_read(struct file *file, char __user *buf,
-+					   size_t len, loff_t *ppos)
-+{
-+	return fuse_conn_read(file, buf, len, ppos, FUSECTL_NR_WRITEBACK);
-+}
-+
- static const struct file_operations fuse_ctl_abort_ops = {
- 	.open = nonseekable_open,
- 	.write = fuse_conn_abort_write,
-@@ -69,6 +105,16 @@ static const struct file_operations fuse
- 	.read = fuse_conn_waiting_read,
+@@ -972,7 +995,7 @@ static const struct address_space_operat
+ 	.prepare_write	= fuse_prepare_write,
+ 	.commit_write	= fuse_commit_write,
+ 	.readpages	= fuse_readpages,
+-	.set_page_dirty	= fuse_set_page_dirty,
++	.set_page_dirty	= __set_page_dirty_nobuffers,
+ 	.bmap		= fuse_bmap,
  };
  
-+static const struct file_operations fuse_ctl_nr_dirty_ops = {
-+	.open = nonseekable_open,
-+	.read = fuse_conn_nr_dirty_read,
-+};
-+
-+static const struct file_operations fuse_ctl_nr_writeback_ops = {
-+	.open = nonseekable_open,
-+	.read = fuse_conn_nr_writeback_read,
-+};
-+
- static struct dentry *fuse_ctl_add_dentry(struct dentry *parent,
- 					  struct fuse_conn *fc,
- 					  const char *name,
-@@ -127,7 +173,11 @@ int fuse_ctl_add_conn(struct fuse_conn *
- 	if (!fuse_ctl_add_dentry(parent, fc, "waiting", S_IFREG | 0400, 1,
- 				NULL, &fuse_ctl_waiting_ops) ||
- 	    !fuse_ctl_add_dentry(parent, fc, "abort", S_IFREG | 0200, 1,
--				 NULL, &fuse_ctl_abort_ops))
-+				 NULL, &fuse_ctl_abort_ops) ||
-+	    !fuse_ctl_add_dentry(parent, fc, "nr_dirty", S_IFREG | 0444, 1,
-+				 NULL, &fuse_ctl_nr_dirty_ops) ||
-+	    !fuse_ctl_add_dentry(parent, fc, "nr_writeback", S_IFREG | 0444, 1,
-+				 NULL, &fuse_ctl_nr_writeback_ops))
- 		goto err;
- 
- 	return 0;
-Index: linux/fs/fuse/fuse_i.h
-===================================================================
---- linux.orig/fs/fuse/fuse_i.h	2007-02-27 14:41:11.000000000 +0100
-+++ linux/fs/fuse/fuse_i.h	2007-02-27 14:41:13.000000000 +0100
-@@ -30,7 +30,7 @@
- #define FUSE_NAME_MAX 1024
- 
- /** Number of dentries for each connection in the control filesystem */
--#define FUSE_CTL_NUM_DENTRIES 3
-+#define FUSE_CTL_NUM_DENTRIES 5
- 
- /** If the FUSE_DEFAULT_PERMISSIONS flag is given, the filesystem
-     module will check permissions based on the file mode.  Otherwise no
 
 --
