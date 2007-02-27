@@ -1,75 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933069AbXB0QCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933063AbXB0QDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933069AbXB0QCO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 11:02:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933063AbXB0QCO
+	id S933063AbXB0QDz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 11:03:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933070AbXB0QDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 11:02:14 -0500
-Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:58615 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933070AbXB0QCN (ORCPT
+	Tue, 27 Feb 2007 11:03:55 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:2419 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933063AbXB0QDy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 11:02:13 -0500
-Date: Tue, 27 Feb 2007 11:02:06 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Ingo Molnar <mingo@elte.hu>, mbligh@google.com,
-       linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC] Fast assurate clock readable from user space and NMI handler
-Message-ID: <20070227160206.GA2391@Krystal>
-References: <1172340369.24216.31.camel@imap.mvista.com> <20070226205304.GA30800@Krystal> <1172525261.5517.69.camel@imap.mvista.com> <20070226221423.GA2286@Krystal> <1172531521.5517.138.camel@imap.mvista.com> <20070227035456.GA15444@Krystal> <1172550161.5517.210.camel@imap.mvista.com> <20070227062913.GC1259@elte.hu> <20070227073815.GA25894@Krystal> <1172571535.5517.222.camel@imap.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1172571535.5517.222.camel@imap.mvista.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 10:44:06 up 25 days,  5:52,  3 users,  load average: 1.31, 1.69, 1.66
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 27 Feb 2007 11:03:54 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 27 Feb 2007 08:03:53 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] epoll reduced (to 1) number of passes over the ready
+ set ...
+In-Reply-To: <200702271015.33123.dada1@cosmosbay.com>
+Message-ID: <Pine.LNX.4.64.0702270802140.5315@alien.or.mcafeemobile.com>
+References: <Pine.LNX.4.64.0702261819250.4949@alien.or.mcafeemobile.com>
+ <200702271015.33123.dada1@cosmosbay.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Daniel Walker (dwalker@mvista.com) wrote:
-> On Tue, 2007-02-27 at 02:38 -0500, Mathieu Desnoyers wrote:
+On Tue, 27 Feb 2007, Eric Dumazet wrote:
+
+> On Tuesday 27 February 2007 03:32, Davide Libenzi wrote:
+> > Epoll is doing multiple passes over the ready set at the moment, because
+> > of the constraints over the f_op->poll() call. Looking at the code again,
+> > I noticed that we already hold the epoll semaphore in read, and this
+> > (together with other locking conditions that hold while doing an
+> > epoll_wait()) can lead to a smarter way to "ship" events to userspace (in
+> > a single pass). I added more (even) more comments to the code to explain
+> > the conditions why certain operations are safe.
+> > This is a stress application that can be used to test the new code. It
+> > spwans multiple thread and call epoll_wait() and epoll_ctl() from many
+> > threads. Stress tested on my dual Opteron 254 w/out any problems.
 > 
-> > 
-> > I am concerned about the automatic fallback to the PIT when no other
-> > clock source is available. A clocksource read would be atomic when TSC
-> > or HPET are available, but would fall back on PIT otherwise. There
-> > should be some way to specify that a caller is only interested in atomic
-> > clock sources (if none are available, the call should simply return an
-> > error, or 0).
-> > 
-> I'm not sure what you mean by using the RCU
-
-The original proposal of this thread uses a RCU (read-copy-update) style
-update of the previous 64 bits counter : it swaps a pointer (atomically)
-upon update by incrementing a word-sized counter that is used, by the
-reader, to get the offest in the array (with a modulo operation) for the
-current readable data and as a way to detect incorrect reads of
-overwritten information (we re-read the word-sized counter after having
-read the data structure to make sure is has not been incremented. If we
-detect an increment, we redo the whole operation).
-
-> > I still think that an RCU style update mechanism would be a good way  to
-> > fix the current clocksource read issue. Another, slower and non NMI
-> > safe way to do this would be with a read seqlock and with IRQ disabling.
+> Davide,
 > 
-> , but the pit clocksource
-> does disable interrupts with a spin_lock_irqsave().
+> This is really cool, because the size of epitem would fit now in 128 bytes 
+> instead of 192 (on x86_64 platforms). So we also reduce memory usage.
+
+Yeah, I forgot to mention that I removed the txlink member.
+
+
+
+> I have one comment :
 > 
+> >  	 */
+> > -	list_for_each(lnk, txlist) {
+> > -		epi = list_entry(lnk, struct epitem, txlink);
+> > +	for (eventcnt = 0; !list_empty(txlist) && eventcnt < maxevents;) {
+> > +		epi = list_entry(txlist->next, struct epitem, rdllink);
+> 
+> Now that we scan the rdllist list once, it may be usefull to use a prefetch() 
+> hint. 
+> 
+> list_for_each() has one prefetch(pos->next) automatically included, but not 
+> your open coded loop.
+> 
+> I suggest adding after epi = list_entry(txlist->next, struct epitem, rdllink);
+> prefetch(epi->rdllink.next);
 
-When I say "clocksource read issue", I am talking about
-race between the function you proposed earlier, which you say is used in
--rt kernels for latency tracing (get_monotonic_cycles), and HPET and TSC
-"last cycles" updates.
+Will do in the next version, thx!
 
-Mathieu
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
+- Davide
+
+
