@@ -1,348 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933026AbXB0MIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933012AbXB0MNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933026AbXB0MIk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 07:08:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933027AbXB0MIk
+	id S933012AbXB0MNj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 07:13:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932132AbXB0MNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 07:08:40 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:60034 "EHLO mx1.redhat.com"
+	Tue, 27 Feb 2007 07:13:39 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:56839 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933026AbXB0MIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 07:08:38 -0500
-Date: Tue, 27 Feb 2007 07:08:35 -0500
-From: Prarit Bhargava <prarit@redhat.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       jbeulich@novell.com, anil.s.keshavamurthy@intel.com,
-       amul.shah@unisys.com
-Cc: Prarit Bhargava <prarit@redhat.com>
-Message-Id: <20070227120835.14880.38530.sendpatchset@prarit.boston.redhat.com>
-Subject: [PATCH]: Use stop_machine_run in the Intel RNG driver
+	id S933040AbXB0MNi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 07:13:38 -0500
+Date: Tue, 27 Feb 2007 15:11:16 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070227121116.GA31597@2ka.mipt.ru>
+References: <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com> <20070222074044.GA4158@elte.hu> <20070222113148.GA3781@2ka.mipt.ru> <Pine.LNX.4.64.0702251428490.12485@woody.linux-foundation.org> <20070226172812.GC22454@2ka.mipt.ru> <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org> <20070226195416.GA11188@elte.hu> <20070227102832.GC23170@2ka.mipt.ru> <20070227115221.GJ8154@thunk.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <20070227115221.GJ8154@thunk.org>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Tue, 27 Feb 2007 15:12:00 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replace call_smp_function with stop_machine_run in the Intel RNG driver.
+On Tue, Feb 27, 2007 at 06:52:22AM -0500, Theodore Tso (tytso@mit.edu) wrote:
+> On Tue, Feb 27, 2007 at 01:28:32PM +0300, Evgeniy Polyakov wrote:
+> > Obviously there are bugs, it is simply how things work.
+> > And debugging state machine code has exactly the same complexity as
+> > debugging multi-threading code - if not less...
+> 
+> Evgeniy,
 
-CPU A has done read_lock(&lock)
-CPU B has done write_lock_irq(&lock) and is waiting for A to release the lock.
+Hi Ted.
 
-A third CPU calls call_smp_function and issues the IPI.  CPU A takes CPU C's
-IPI.  CPU B is waiting with interrupts disabled and does not see the IPI.
-CPU C is stuck waiting for CPU B to respond to the IPI.
+> I think what you are not hearing, and what everyone else is saying
+> (INCLUDING Linus), is that for most programmers, state machines are
+> much, much harder to program, understand, and debug compared to
+> multi-threaded code.  You may disagree (were you a MacOS 9 programmer
+> in another life?), and it may not even be true for you if you happen
+> to be one of those folks more at home with Scheme continuations, for
+> example.  But it is true that for most kernel programmers, threaded
+> programming is much easier to understand, and we need to engineer the
+> kernel for what will be maintainable for the majority of the kernel
+> development community.
 
-Deadlock.
+I understand that - and I totally agree.
+But when more complex, more bug-prone code results in higher performance
+- that must be used. We have linked lists and binary trees - the latter
+are quite complex structures, but they allow to have higher performance
+in searching operatins, so we use them.
 
-The solution is to use stop_machine_run instead of call_smp_function
-(call_smp_function should not be called in situations where the CPUs may
-be suspended).
+The same applies to state machines - yes, in some cases it is hard to
+program, but when things are already implemented and are wrapped into
+nice (no posix) aio_read(), there is absolutely no usage complexity.
 
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+Even if it is up to programmer to programm state machine based on
+generated events, that higher-layer state machines are not complex.
 
---- linux-2.6.18.x86_64.orig/drivers/char/hw_random/intel-rng.c	2007-02-23 06:55:34.000000000 -0500
-+++ linux-2.6.18.x86_64/drivers/char/hw_random/intel-rng.c	2007-02-26 04:59:36.000000000 -0500
-@@ -24,10 +24,11 @@
-  * warranty of any kind, whether express or implied.
-  */
- 
--#include <linux/module.h>
-+#include <linux/hw_random.h>
- #include <linux/kernel.h>
-+#include <linux/module.h>
- #include <linux/pci.h>
--#include <linux/hw_random.h>
-+#include <linux/stop_machine.h>
- #include <asm/io.h>
- 
- 
-@@ -217,30 +218,117 @@ static struct hwrng intel_rng = {
- 	.data_read	= intel_rng_data_read,
- };
- 
-+struct intel_rng_hw {
-+	struct pci_dev *dev;
-+	void __iomem *mem;
-+	u8 bios_cntl_off;
-+	u8 bios_cntl_val;
-+	u8 fwh_dec_en1_off;
-+	u8 fwh_dec_en1_val;
-+};
-+
-+static int __init intel_rng_hw_init(void *_intel_rng_hw)
-+{
-+	struct intel_rng_hw *intel_rng_hw = _intel_rng_hw;
-+	u8 mfc, dvc;
-+
-+	/* interrupts disabled in stop_machine_run call */
-+
-+	if (!(intel_rng_hw->fwh_dec_en1_val & FWH_F8_EN_MASK))
-+		pci_write_config_byte(intel_rng_hw->dev,
-+		                      intel_rng_hw->fwh_dec_en1_off,
-+		                      intel_rng_hw->fwh_dec_en1_val |
-+				      FWH_F8_EN_MASK);
-+	if (!(intel_rng_hw->bios_cntl_val & BIOS_CNTL_WRITE_ENABLE_MASK))
-+		pci_write_config_byte(intel_rng_hw->dev,
-+		                      intel_rng_hw->bios_cntl_off,
-+		                      intel_rng_hw->bios_cntl_val |
-+				      BIOS_CNTL_WRITE_ENABLE_MASK);
-+
-+	writeb(INTEL_FWH_RESET_CMD, intel_rng_hw->mem);
-+	writeb(INTEL_FWH_READ_ID_CMD, intel_rng_hw->mem);
-+	mfc = readb(intel_rng_hw->mem + INTEL_FWH_MANUFACTURER_CODE_ADDRESS);
-+	dvc = readb(intel_rng_hw->mem + INTEL_FWH_DEVICE_CODE_ADDRESS);
-+	writeb(INTEL_FWH_RESET_CMD, intel_rng_hw->mem);
-+
-+	if (!(intel_rng_hw->bios_cntl_val &
-+	      (BIOS_CNTL_LOCK_ENABLE_MASK|BIOS_CNTL_WRITE_ENABLE_MASK)))
-+		pci_write_config_byte(intel_rng_hw->dev,
-+				      intel_rng_hw->bios_cntl_off,
-+				      intel_rng_hw->bios_cntl_val);
-+	if (!(intel_rng_hw->fwh_dec_en1_val & FWH_F8_EN_MASK))
-+		pci_write_config_byte(intel_rng_hw->dev,
-+				      intel_rng_hw->fwh_dec_en1_off,
-+				      intel_rng_hw->fwh_dec_en1_val);
-+
-+	if (mfc != INTEL_FWH_MANUFACTURER_CODE ||
-+	    (dvc != INTEL_FWH_DEVICE_CODE_8M &&
-+	     dvc != INTEL_FWH_DEVICE_CODE_4M)) {
-+		printk(KERN_ERR PFX "FWH not detected\n");
-+		return -ENODEV;
-+	}
- 
--#ifdef CONFIG_SMP
--static char __initdata waitflag;
-+	return 0;
-+}
- 
--static void __init intel_init_wait(void *unused)
-+static int __init intel_init_hw_struct(struct intel_rng_hw *intel_rng_hw,
-+					struct pci_dev *dev)
- {
--	while (waitflag)
--		cpu_relax();
-+	intel_rng_hw->bios_cntl_val = 0xff;
-+	intel_rng_hw->fwh_dec_en1_val = 0xff;
-+	intel_rng_hw->dev = dev;
-+
-+	/* Check for Intel 82802 */
-+	if (dev->device < 0x2640) {
-+		intel_rng_hw->fwh_dec_en1_off = FWH_DEC_EN1_REG_OLD;
-+		intel_rng_hw->bios_cntl_off = BIOS_CNTL_REG_OLD;
-+	} else {
-+		intel_rng_hw->fwh_dec_en1_off = FWH_DEC_EN1_REG_NEW;
-+		intel_rng_hw->bios_cntl_off = BIOS_CNTL_REG_NEW;
-+	}
-+
-+	pci_read_config_byte(dev, intel_rng_hw->fwh_dec_en1_off,
-+			     &intel_rng_hw->fwh_dec_en1_val);
-+	pci_read_config_byte(dev, intel_rng_hw->bios_cntl_off,
-+			     &intel_rng_hw->bios_cntl_val);
-+
-+	if ((intel_rng_hw->bios_cntl_val &
-+	     (BIOS_CNTL_LOCK_ENABLE_MASK|BIOS_CNTL_WRITE_ENABLE_MASK))
-+	    == BIOS_CNTL_LOCK_ENABLE_MASK) {
-+		static __initdata /*const*/ char warning[] =
-+			KERN_WARNING PFX "Firmware space is locked read-only. "
-+			KERN_WARNING PFX "If you can't or\n don't want to "
-+			KERN_WARNING PFX "disable this in firmware setup, and "
-+			KERN_WARNING PFX "if\n you are certain that your "
-+			KERN_WARNING PFX "system has a functional\n RNG, try"
-+			KERN_WARNING PFX "using the 'no_fwh_detect' option.\n";
-+
-+		if (no_fwh_detect)
-+			return -ENODEV;
-+		printk(warning);
-+		return -EBUSY;
-+	}
-+
-+	intel_rng_hw->mem = ioremap_nocache(INTEL_FWH_ADDR, INTEL_FWH_ADDR_LEN);
-+	if (intel_rng_hw->mem == NULL)
-+		return -EBUSY;
-+
-+	return 0;
- }
--#endif
-+
- 
- static int __init mod_init(void)
- {
- 	int err = -ENODEV;
--	unsigned i;
-+	int i;
- 	struct pci_dev *dev = NULL;
--	void __iomem *mem;
--	unsigned long flags;
--	u8 bios_cntl_off, fwh_dec_en1_off;
--	u8 bios_cntl_val = 0xff, fwh_dec_en1_val = 0xff;
--	u8 hw_status, mfc, dvc;
-+	void __iomem *mem = mem;
-+	u8 hw_status;
-+	struct intel_rng_hw *intel_rng_hw;
- 
- 	for (i = 0; !dev && pci_tbl[i].vendor; ++i)
--		dev = pci_get_device(pci_tbl[i].vendor, pci_tbl[i].device, NULL);
-+		dev = pci_get_device(pci_tbl[i].vendor, pci_tbl[i].device,
-+				     NULL);
- 
- 	if (!dev)
- 		goto out; /* Device not found. */
-@@ -250,39 +338,18 @@ static int __init mod_init(void)
- 		goto fwh_done;
- 	}
- 
--	/* Check for Intel 82802 */
--	if (dev->device < 0x2640) {
--		fwh_dec_en1_off = FWH_DEC_EN1_REG_OLD;
--		bios_cntl_off = BIOS_CNTL_REG_OLD;
--	} else {
--		fwh_dec_en1_off = FWH_DEC_EN1_REG_NEW;
--		bios_cntl_off = BIOS_CNTL_REG_NEW;
--	}
--
--	pci_read_config_byte(dev, fwh_dec_en1_off, &fwh_dec_en1_val);
--	pci_read_config_byte(dev, bios_cntl_off, &bios_cntl_val);
--
--	if ((bios_cntl_val &
--	     (BIOS_CNTL_LOCK_ENABLE_MASK|BIOS_CNTL_WRITE_ENABLE_MASK))
--	    == BIOS_CNTL_LOCK_ENABLE_MASK) {
--		static __initdata /*const*/ char warning[] =
--			KERN_WARNING PFX "Firmware space is locked read-only. If you can't or\n"
--			KERN_WARNING PFX "don't want to disable this in firmware setup, and if\n"
--			KERN_WARNING PFX "you are certain that your system has a functional\n"
--			KERN_WARNING PFX "RNG, try using the 'no_fwh_detect' option.\n";
--
-+	intel_rng_hw = kmalloc(sizeof(*intel_rng_hw), GFP_KERNEL);
-+	if (!intel_rng_hw) {
- 		pci_dev_put(dev);
--		if (no_fwh_detect)
--			goto fwh_done;
--		printk(warning);
--		err = -EBUSY;
- 		goto out;
- 	}
- 
--	mem = ioremap_nocache(INTEL_FWH_ADDR, INTEL_FWH_ADDR_LEN);
--	if (mem == NULL) {
-+	err = intel_init_hw_struct(intel_rng_hw, dev);
-+	if (err == -ENODEV) {
-+		pci_dev_put(dev);
-+		goto fwh_done;
-+	} else if (err < 0) {
- 		pci_dev_put(dev);
--		err = -EBUSY;
- 		goto out;
- 	}
- 
-@@ -290,59 +357,17 @@ static int __init mod_init(void)
- 	 * Since the BIOS code/data is going to disappear from its normal
- 	 * location with the Read ID command, all activity on the system
- 	 * must be stopped until the state is back to normal.
-+	 *
-+	 * Use stop_machine_run because IPIs can be blocked by disabling
-+	 * interrupts.
- 	 */
--#ifdef CONFIG_SMP
--	set_mb(waitflag, 1);
--	if (smp_call_function(intel_init_wait, NULL, 1, 0) != 0) {
--		set_mb(waitflag, 0);
--		pci_dev_put(dev);
--		printk(KERN_ERR PFX "cannot run on all processors\n");
--		err = -EAGAIN;
--		goto err_unmap;
--	}
--#endif
--	local_irq_save(flags);
--
--	if (!(fwh_dec_en1_val & FWH_F8_EN_MASK))
--		pci_write_config_byte(dev,
--		                      fwh_dec_en1_off,
--		                      fwh_dec_en1_val | FWH_F8_EN_MASK);
--	if (!(bios_cntl_val & BIOS_CNTL_WRITE_ENABLE_MASK))
--		pci_write_config_byte(dev,
--		                      bios_cntl_off,
--		                      bios_cntl_val | BIOS_CNTL_WRITE_ENABLE_MASK);
--
--	writeb(INTEL_FWH_RESET_CMD, mem);
--	writeb(INTEL_FWH_READ_ID_CMD, mem);
--	mfc = readb(mem + INTEL_FWH_MANUFACTURER_CODE_ADDRESS);
--	dvc = readb(mem + INTEL_FWH_DEVICE_CODE_ADDRESS);
--	writeb(INTEL_FWH_RESET_CMD, mem);
--
--	if (!(bios_cntl_val &
--	      (BIOS_CNTL_LOCK_ENABLE_MASK|BIOS_CNTL_WRITE_ENABLE_MASK)))
--		pci_write_config_byte(dev, bios_cntl_off, bios_cntl_val);
--	if (!(fwh_dec_en1_val & FWH_F8_EN_MASK))
--		pci_write_config_byte(dev, fwh_dec_en1_off, fwh_dec_en1_val);
--
--	local_irq_restore(flags);
--#ifdef CONFIG_SMP
--	/* Tell other CPUs to resume. */
--	set_mb(waitflag, 0);
--#endif
--
--	iounmap(mem);
-+	err = stop_machine_run(intel_rng_hw_init, intel_rng_hw, NR_CPUS);
- 	pci_dev_put(dev);
--
--	if (mfc != INTEL_FWH_MANUFACTURER_CODE ||
--	    (dvc != INTEL_FWH_DEVICE_CODE_8M &&
--	     dvc != INTEL_FWH_DEVICE_CODE_4M)) {
--		printk(KERN_ERR PFX "FWH not detected\n");
--		err = -ENODEV;
--		goto out;
--	}
-+	iounmap(intel_rng_hw->mem);
-+	kfree(intel_rng_hw);
-+	goto out;
- 
- fwh_done:
--
- 	err = -ENOMEM;
- 	mem = ioremap(INTEL_RNG_ADDR, INTEL_RNG_ADDR_LEN);
- 	if (!mem)
-@@ -352,22 +377,21 @@ fwh_done:
- 	/* Check for Random Number Generator */
- 	err = -ENODEV;
- 	hw_status = hwstatus_get(mem);
--	if ((hw_status & INTEL_RNG_PRESENT) == 0)
--		goto err_unmap;
-+	if ((hw_status & INTEL_RNG_PRESENT) == 0) {
-+		iounmap(mem);
-+		goto out;
-+	}
- 
- 	printk(KERN_INFO "Intel 82802 RNG detected\n");
- 	err = hwrng_register(&intel_rng);
- 	if (err) {
- 		printk(KERN_ERR PFX "RNG registering failed (%d)\n",
- 		       err);
--		goto err_unmap;
-+		iounmap(mem);
- 	}
- out:
- 	return err;
- 
--err_unmap:
--	iounmap(mem);
--	goto out;
- }
- 
- static void __exit mod_exit(void)
---- linux-2.6.18.x86_64.orig/kernel/stop_machine.c	2006-09-19 23:42:06.000000000 -0400
-+++ linux-2.6.18.x86_64/kernel/stop_machine.c	2007-02-23 07:16:29.000000000 -0500
-@@ -1,8 +1,9 @@
--#include <linux/stop_machine.h>
--#include <linux/kthread.h>
--#include <linux/sched.h>
- #include <linux/cpu.h>
- #include <linux/err.h>
-+#include <linux/kthread.h>
-+#include <linux/module.h>
-+#include <linux/sched.h>
-+#include <linux/stop_machine.h>
- #include <linux/syscalls.h>
- #include <asm/atomic.h>
- #include <asm/semaphore.h>
-@@ -205,3 +206,4 @@ int stop_machine_run(int (*fn)(void *), 
- 
- 	return ret;
- }
-+EXPORT_SYMBOL_GPL(stop_machine_run);
+Let's get simple case of (aio_)read() from file descriptor - if page is in the
+cache, no readpage() method will be called, so we do not need to create
+some kind of events - just copy data, if there is no page or page is not
+uptodate, we allocate a bio and do not wait until buffers are read - we
+return to userspace and start another reading, when bio is completed and
+its end_io callback is called, we mark pages as uptodate, copy data to userspace,
+and mark event bound to above (aio_)read() as completed.
+(that is how kevent aio works, btw).
+Userspace programmer just calls 
+cookie = aio_read();
+aio_wait(cookie);
+or something like that.
+
+It is simple, it is straightforward, especially if data read must then
+be used somewhere else - in that case processing thread will need to operate
+with main one, which is simple in event model, since there is a place,
+where events of _all_ types are gathered.
+
+> Regards,
+> 
+> 						- Ted
+
+-- 
+	Evgeniy Polyakov
