@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932080AbXB0KVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932942AbXB0KWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932080AbXB0KVu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 05:21:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932951AbXB0KVu
+	id S932942AbXB0KWT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 05:22:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932948AbXB0KWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 05:21:50 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:55358 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932948AbXB0KVt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 05:21:49 -0500
-Subject: Re: [RFC] Fast assurate clock readable from user space and NMI
-	handler
-From: Daniel Walker <dwalker@mvista.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, mbligh@google.com,
-       linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20070227073815.GA25894@Krystal>
-References: <1164585589.16871.52.camel@localhost.localdomain>
-	 <20070224161906.GA9497@Krystal> <1172340369.24216.31.camel@imap.mvista.com>
-	 <20070226205304.GA30800@Krystal> <1172525261.5517.69.camel@imap.mvista.com>
-	 <20070226221423.GA2286@Krystal> <1172531521.5517.138.camel@imap.mvista.com>
-	 <20070227035456.GA15444@Krystal>
-	 <1172550161.5517.210.camel@imap.mvista.com> <20070227062913.GC1259@elte.hu>
-	 <20070227073815.GA25894@Krystal>
-Content-Type: text/plain
-Date: Tue, 27 Feb 2007 02:18:55 -0800
-Message-Id: <1172571535.5517.222.camel@imap.mvista.com>
+	Tue, 27 Feb 2007 05:22:19 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44702 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932078AbXB0KWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 05:22:17 -0500
+Date: Tue, 27 Feb 2007 11:14:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       bunk@stusta.de, pavel@suse.cz, linux-pm@linux-foundation.org,
+       linux-acpi@vger.kernel.org, len.brown@intel.com, mingo@redhat.com
+Subject: Re: 2.6.21-rc1: T60 resume from suspend to RAM issues
+Message-ID: <20070227101451.GA11981@elte.hu>
+References: <20070223020904.c8fc8a3e.akpm@linux-foundation.org> <20070224211141.GA4425@mellanox.co.il>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070224211141.GA4425@mellanox.co.il>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.1.7
+	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.2424]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-27 at 02:38 -0500, Mathieu Desnoyers wrote:
 
+* Michael S. Tsirkin <mst@mellanox.co.il> wrote:
+
+> > > 2. As a separate test, I enabled DynTicks in .config. Seems to 
+> > > work fine but won't come out of suspend to memory at all: pressing 
+> > > Fn/F4 seems to have no effect.
+> > 
+> > Do you believe that the second problem was caused by dynticks?
 > 
-> I am concerned about the automatic fallback to the PIT when no other
-> clock source is available. A clocksource read would be atomic when TSC
-> or HPET are available, but would fall back on PIT otherwise. There
-> should be some way to specify that a caller is only interested in atomic
-> clock sources (if none are available, the call should simply return an
-> error, or 0).
-> 
-> I still think that an RCU style update mechanism would be a good way  to
-> fix the current clocksource read issue. Another, slower and non NMI
-> safe way to do this would be with a read seqlock and with IRQ disabling.
+> Assuming these are 2 different problems, yes, the second one seems to 
+> be caused by dyntics.
 
-I'm not sure what you mean by using the RCU, but the pit clocksource
-does disable interrupts with a spin_lock_irqsave().
+on my T60 current -git does not resume even without dynticks. v2.6.20 
+with the same .config resumes fine (except for the display).
 
-Daniel
+after pressing Fn/F4 the disk light flashes briefly, which suggests that 
+action is probably back to the Linux kernel at that point, and that we 
+hung somewhere there. Will try a bisection thing.
 
+	Ingo
