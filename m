@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932817AbXB0Gft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932932AbXB0Gmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932817AbXB0Gft (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 01:35:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932851AbXB0Gft
+	id S932932AbXB0Gmb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 01:42:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932893AbXB0Gmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 01:35:49 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60759 "EHLO mx2.mail.elte.hu"
+	Tue, 27 Feb 2007 01:42:31 -0500
+Received: from gate.crashing.org ([63.228.1.57]:52697 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932817AbXB0Gfs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 01:35:48 -0500
-Date: Tue, 27 Feb 2007 07:29:14 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, mbligh@google.com,
-       linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC] Fast assurate clock readable from user space and NMI handler
-Message-ID: <20070227062913.GC1259@elte.hu>
-References: <20061126231833.GA22241@Krystal> <1164585589.16871.52.camel@localhost.localdomain> <20070224161906.GA9497@Krystal> <1172340369.24216.31.camel@imap.mvista.com> <20070226205304.GA30800@Krystal> <1172525261.5517.69.camel@imap.mvista.com> <20070226221423.GA2286@Krystal> <1172531521.5517.138.camel@imap.mvista.com> <20070227035456.GA15444@Krystal> <1172550161.5517.210.camel@imap.mvista.com>
+	id S932889AbXB0Gma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 01:42:30 -0500
+Subject: Re: [PATCH] ehea: NAPI multi queue TX/RX path for SMP
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Cc: netdev <netdev@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>,
+       Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+In-Reply-To: <200702261700.51220.ossthema@de.ibm.com>
+References: <200702261700.51220.ossthema@de.ibm.com>
+Content-Type: text/plain
+Date: Tue, 27 Feb 2007 07:42:13 +0100
+Message-Id: <1172558533.11949.38.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1172550161.5517.210.camel@imap.mvista.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-02-26 at 17:00 +0100, Jan-Bernd Themann wrote:
+> Hi!
+> 
+> This patch replaces the former posted patch
+> ([PATCH] ehea: Optional TX/RX path optimized for SMP) and provides
+> a functionality that allows parallel RX processing on multiple RX
+> queues by using dummy netdevices as proposed by Roland Dreier.
+> The fairness amongst this net devices and other network devices 
+> is thus better than in our first approach.
+> 
+> Is there a way to avoid overloading a single CPU with multiple netdev
+> receive processes using NAPI? A distribution based on CPU load might
+> help to improve the throughput. Pinning interrupts shows there is 
+> still some room for improvements.
 
-* Daniel Walker <dwalker@mvista.com> wrote:
+You may also want to look at the patches proposed by Dave Miller for
+splitting NAPI from netdevice so you can actually instanciate multiple
+NAPI "pollers"
 
-> The pit clocksource could be dropped pretty easy with my clocksource 
-> update patches, which I'm still working on but you could easily drop 
-> clock sources that aren't atomic like the pit .. Also the pit is 
-> generally undesirable, so it's not going to be missed.
+Ben.
 
-that's totally unacceptable, and i'm amazed you are even suggesting it - 
-often the PIT ends up being the most reliable hardware clock in a PC. 
-Btw., what's wrong with the spinlock that is protecting PIT access? It 
-expresses the non-atomic property of the PIT just fine.
 
-	Ingo
