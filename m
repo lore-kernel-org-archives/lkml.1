@@ -1,40 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751943AbXB0TRL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752064AbXB0TTE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751943AbXB0TRL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 14:17:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbXB0TRL
+	id S1752064AbXB0TTE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 14:19:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbXB0TTD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 14:17:11 -0500
-Received: from terminus.zytor.com ([192.83.249.54]:45168 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751943AbXB0TRK (ORCPT
+	Tue, 27 Feb 2007 14:19:03 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50766
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751774AbXB0TTB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 14:17:10 -0500
-Message-ID: <45E4838D.2050006@zytor.com>
-Date: Tue, 27 Feb 2007 11:16:29 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Florin Malita <fmalita@gmail.com>
-CC: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] devpts: add fsnotify create event
-References: <45DBD56B.30104@gmail.com>
-In-Reply-To: <45DBD56B.30104@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 27 Feb 2007 14:19:01 -0500
+Date: Tue, 27 Feb 2007 11:19:00 -0800 (PST)
+Message-Id: <20070227.111900.68039270.davem@davemloft.net>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH]: Bug in MM_RB debugging?
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Florin Malita wrote:
-> Currently, devpts doesn't generate an fsnotify event upon pts creation 
-> because the regular vfs paths aren't involved. Deallocation, on the 
-> other hand, correctly generates a nameremove event thanks to the 
-> d_delete() invocation in devpts_pty_kill().
-> 
-> This patch adds the missing fsnotify_create() trigger in devpts_pty_new().
-> 
-> Signed-off-by: Florin Malita <fmalita@gmail.com>
 
-Acked-by: H. Peter Anvin <hpa@zytor.com>
+The code is seemingly trying to make sure that rb_next()
+brings us to successive increasing vma entries.
 
-	-hpa
+But the two variables, prev and pend, used to perform these
+checks, are never advanced.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/mm/mmap.c b/mm/mmap.c
+index eb509ae..84f997d 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -299,6 +299,8 @@ static int browse_rb(struct rb_root *root)
+ 			printk("vm_end %lx < vm_start %lx\n", vma->vm_end, vma->vm_start);
+ 		i++;
+ 		pn = nd;
++		prev = vma->vm_start;
++		pend = vma->vm_end;
+ 	}
+ 	j = 0;
+ 	for (nd = pn; nd; nd = rb_prev(nd)) {
