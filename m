@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751382AbXB0R4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751713AbXB0R4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751382AbXB0R4m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 12:56:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbXB0R4l
+	id S1751713AbXB0R4v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 12:56:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbXB0R4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 12:56:41 -0500
-Received: from gw.goop.org ([64.81.55.164]:45916 "EHLO mail.goop.org"
+	Tue, 27 Feb 2007 12:56:50 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:42944 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751382AbXB0R4k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 12:56:40 -0500
-Message-ID: <45E470D6.7050401@goop.org>
-Date: Tue, 27 Feb 2007 09:56:38 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@SteelEye.com>
-CC: Andi Kleen <ak@muc.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
-       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-arch@vger.kernel.org
-Subject: Re: [patch 09/26] Xen-paravirt_ops: remove HAVE_ARCH_MM_LIFETIME,
- define no-op architecture implementations
-References: <20070227081337.434798469@goop.org>	 <20070227081632.356636957@goop.org>	 <1172589358.3408.2.camel@mulgrave.il.steeleye.com>	 <45E46889.9090801@goop.org> <1172597726.3408.25.camel@mulgrave.il.steeleye.com>
-In-Reply-To: <1172597726.3408.25.camel@mulgrave.il.steeleye.com>
-Content-Type: text/plain; charset=ISO-8859-15
+	id S1751710AbXB0R4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 12:56:49 -0500
+Date: Tue, 27 Feb 2007 09:56:44 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: "Daniel J Blueman" <daniel.blueman@gmail.com>
+Cc: "Linux Netdev" <netdev@vger.kernel.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Linux Networking" <linux-net@vger.kernel.org>
+Subject: Re: sky2 stable in 2.6.12-rc1 (but still performance problem)...
+Message-ID: <20070227095644.46d24054@freekitty>
+In-Reply-To: <6278d2220702270331k7b91017ds4c0eb0be4e4e9697@mail.gmail.com>
+References: <6278d2220702270331k7b91017ds4c0eb0be4e4e9697@mail.gmail.com>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Tue, 2007-02-27 at 09:21 -0800, Jeremy Fitzhardinge wrote:
->   
->> You mean add the two stubs to asm-generic/mmu_context.h, and then
->> include that in all these files?  That would be cleaner, but it
->> wouldn't
->> remove the need to touch all these files, would it?
->>     
->
-> it would if you added asm-generic/mmu_context_paravirt.h
->   
+On Tue, 27 Feb 2007 11:31:58 +0000
+"Daniel J Blueman" <daniel.blueman@gmail.com> wrote:
 
-include/asm-generic isn't in the compile include path; its contents are
-only ever used if they're explicitly included by some other asm/
-header.  I seem to remember there was some debate about this, but I
-don't really understand the rationale for the current arrangement; it
-makes sense to me to have asm-generic as a set of fallback default includes.
+> Hi Stephen,
+> 
+> 2.6.21-rc1 is the first kernel where my SysKonnect Yukon 2 hardware
+> with the sky2 v1.13 driver is stable under moderate load. Before a few
+> GBs of data going over my GigE network quickly with NFSv4 would cause
+> transmit timeouts previously, but now fine.
+> 
+> I am still observing a performance problem - feels like a wmb() or
+> some buffer flushing is missing somewhere - disabling processor clock
+> scaling reduces the problem a bit, but does not eliminate it.
 
-> and only included that in the main kernel files that need the three
-> operations (that's just fork.c and mmap.c, isn't it)?
->   
+That seems odd, if it was a missing barrier you would see data corruption.
+Are there checksum errors?
 
-Yeah, it's really only two operations.  activate_mm happens in arch code
-anyway, so there's no need to make a fuss about it.
+You might be seeing hardware flow control. Look at ethtool -S eth0 output.
+Previously, transmit flow control was broken
 
-    J
+> What are your preferred way of checking performance? I think that the
+> TCP send window can grow enough even if ACKs are delayed due to this
+> problem, such that TCP does not immediately demonstrate this issue. I
+> could restrict the window scaling factor, so it would be bound by the
+> data->ACK round-trip latency, which /should/ be low, but I've been
+> observing it higher. Maybe I try this.
+
+iperf is easiest.
+
+> I'll see what I get with iperf UDP also, since this shows min, max,
+> avg UDP packet latency IIRC.
+> 
+> Thanks for your great work so far though!
+>   Dan
+
+
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
