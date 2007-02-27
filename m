@@ -1,50 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751494AbXB0EgG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751517AbXB0Emu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751494AbXB0EgG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 23:36:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbXB0EgG
+	id S1751517AbXB0Emu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 23:42:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbXB0Emu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 23:36:06 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:15190 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751494AbXB0EgF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 23:36:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ERKjh1OUDI9K0XLn50w3vrh2DtBkxQuX+uR6UYmyk87teFuNPVsUqavxm6BACl6HYaKQzJYOSAGKu/jpUVemldG9mCcRM326zG3/E4DYwDudicTxuGDGYqqL1WXqndfJTCin5RRvEUvIIGM+UvQ2UMOADkzJjA7Kq0wPvDy7zBI=
-Message-ID: <21d7e9970702262036h3575229ex3bf3cd4474a57068@mail.gmail.com>
-Date: Tue, 27 Feb 2007 15:36:03 +1100
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Nick Piggin" <npiggin@suse.de>
-Subject: Re: [patch 0/6] fault vs truncate/invalidate race fix
-Cc: "Linux Memory Management" <linux-mm@kvack.org>,
-       "Andrew Morton" <akpm@osdl.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-In-Reply-To: <20070221023656.6306.246.sendpatchset@linux.site>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Feb 2007 23:42:50 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:60583 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751496AbXB0Emt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 23:42:49 -0500
+Date: Tue, 27 Feb 2007 10:12:46 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Aneesh Kumar" <aneesh.kumar@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Oleg Nesterov" <oleg@tv-sign.ru>,
+       LKML <linux-kernel@vger.kernel.org>, "Andrew Morton" <akpm@osdl.org>,
+       "Pavel Machek" <pavel@ucw.cz>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "Gautham R Shenoy" <ego@in.ibm.com>
+Subject: Re: [RFC][PATCH 1/3] Freezer: Fix vfork problem
+Message-ID: <20070227044246.GA20419@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <200702261139.59130.rjw@sisk.pl> <200702261928.19274.rjw@sisk.pl> <20070226212554.GA93@tv-sign.ru> <200702270131.25656.rjw@sisk.pl> <cc723f590702262033k4fa6cbe0n8e327b8339c7a0e4@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070221023656.6306.246.sendpatchset@linux.site>
+In-Reply-To: <cc723f590702262033k4fa6cbe0n8e327b8339c7a0e4@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
-> I've also got rid of the horrible populate API, and integrated nonlinear pages
-> properly with the page fault path.
->
-> Downside is that this adds one more vector through which the buffered write
-> deadlock can occur. However this is just a very tiny one (pte being unmapped
-> for reclaim), compared to all the other ways that deadlock can occur (unmap,
-> reclaim, truncate, invalidate). I doubt it will be noticable. At any rate, it
-> is better than data corruption.
->
-> I hope these can get merged (at least into -mm) soon.
+On Tue, Feb 27, 2007 at 10:03:53AM +0530, Aneesh Kumar wrote:
+> This means that we are not going to wait for the kernel thread
+> (Parent) to freeze. I guess what vatsa suggested in previous mail is
+> better.
+> 
+> freeezer_do_not_count(void)
+> {
+>   if (current->mm) {
+> 
+>       current->flags |= PF_FREEZER_SKIP;
+>   }
+> 
+> }
+> 
+> 
+> freezer_count(void)
+> {
+> if (current->mm) {
+> current->flags &= ~PF_FREEZER_SKIP;
+> try_to_freeze();
+>   }
+> 
+> }
+> 
+> 
+> Now if do_fork is called from kernel_thread with CLONE_VFORK we make
+> the freezer wait till that kernel thread is also frozen. I think this
+> is important.  with khelper thread it is okey because it is a single
+> threaded workqueue.
 
-Have these been put into mm? can I expect them in the next -mm so I
-can start merging up the drm memory manager code to my -mm tree..
+Yes, this assumes that vfork called by a kernel thread will usually wait
+only until the vfork child exec's (and not until the child exit's).
+That wait should be very short and hence we can wait for vfork parent as
+well.
 
-Dave.
+The advanatge of this is we let kernel threads get to freeze at a place of 
+their choice (rather than in some common code like do_fork).
+
+> If do_fork is called via a user process we can skip the Parent if the
+> child got frozen before calling execve.
+
+Yes, agreed.
+
+-- 
+Regards,
+vatsa
