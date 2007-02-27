@@ -1,83 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751377AbXB0Ewi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751523AbXB0F3F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751377AbXB0Ewi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 23:52:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbXB0Ewi
+	id S1751523AbXB0F3F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 00:29:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbXB0F3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 23:52:38 -0500
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:39061 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751377AbXB0Ewh (ORCPT
+	Tue, 27 Feb 2007 00:29:05 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32836
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751523AbXB0F3D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 23:52:37 -0500
-Date: Mon, 26 Feb 2007 23:47:24 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: mbligh@google.com, linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
-       mingo@elte.hu
-Subject: Re: [RFC] Fast assurate clock readable from user space and NMI handler
-Message-ID: <20070227044724.GB17546@Krystal>
-References: <20061126231833.GA22241@Krystal> <1164585589.16871.52.camel@localhost.localdomain> <20070224161906.GA9497@Krystal> <1172340369.24216.31.camel@imap.mvista.com> <20070226205304.GA30800@Krystal> <1172525261.5517.69.camel@imap.mvista.com> <20070226221423.GA2286@Krystal> <1172531521.5517.138.camel@imap.mvista.com> <20070227035456.GA15444@Krystal> <1172550161.5517.210.camel@imap.mvista.com>
+	Tue, 27 Feb 2007 00:29:03 -0500
+Date: Mon, 26 Feb 2007 21:29:02 -0800 (PST)
+Message-Id: <20070226.212902.78711266.davem@davemloft.net>
+To: Joerg.Friedrich@friedrich-kn.de
+Cc: j.j.green@sheffield.ac.uk, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: sparc64 / bbc_i2c.c
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070227052239.GA30083@stardust.friedrich-kn.de>
+References: <Pine.LNX.4.64.0702252352310.32309@parallax.ddns.shef.ac.uk>
+	<20070226.101219.18306730.davem@davemloft.net>
+	<20070227052239.GA30083@stardust.friedrich-kn.de>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1172550161.5517.210.camel@imap.mvista.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 23:40:19 up 24 days, 18:48,  3 users,  load average: 1.18, 1.11, 1.12
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Daniel Walker (dwalker@mvista.com) wrote:
-> On Mon, 2007-02-26 at 22:54 -0500, Mathieu Desnoyers wrote:
-> > If an NMI nests over the spinlock, we have a deadlock.
-> 
-> Maybe not completely safe ...
-> 
-> > In addition, clock->cycle_last is a cycle_t, defined as a 64 bits on
-> > x86. If is therefore not updated atomically by change_clocksource,
-> > timekeeping_init, timekeeping_resume and update_wall_time. If an NMI
-> > fires right on top of the update, especially around the 32 bits wrap
-> > around, the time will be really fuzzy.
-> 
-> I'm not sure that is particularly significant considering that it's just
-> a possible bad timestamp, and the probability of that happening seems
-> rather low .. You could also modify NMI calls so they use a different
-> time stamping method, like reading the clocksource directly .
-> 
+From: Joerg Friedrich <Joerg.Friedrich@friedrich-kn.de>
+Date: Tue, 27 Feb 2007 06:22:39 +0100
 
-Since you do not disable interrupts around the clocksource read, the
-same problem applies to interrupt handlers of higher priority than the
-cycle_last updating code.
+> Can you just tell me if it's sufficient to check for  a return value >0
+> of wait_event_interruptible_timeout? I was not sure so I extended the
+> check to 
+> if ((val != -ERESTARTSYS) && (val > 0))
 
-A bad timestamp can make a trace quite hard to follow and more
-error-prone. When someone is looking for _the_ failing case in a system,
-the infrastructure used to debug must be reliable. Sometimes error cases
-takes days before showing up : we can't afford to be unsure about the
-precision of the tracer.
+I changed the check to just "val > 0".
 
-Also, the goal is to have a generic monotonic timestamp readable from
-everywhere. Excluding execution contexts doesn't seem like such a great
-idea (it just replicates the same problem somewhere else).
+The comments in the kernel around the implementation and
+declaration of the function wait_event_interruptible()
+VERY CLEARLY state that the possible return values are:
 
-> The pit clocksource could be dropped pretty easy with my clocksource
-> update patches, which I'm still working on but you could easily drop
-> clock sources that aren't atomic like the pit .. Also the pit is
-> generally undesirable, so it's not going to be missed.
-> 
+1) Negative error code on interrupt
+2) Zero if timeout expired
+3) Positive non-zero value if condition became true before
+   timeout expired
 
-Still important for old architectures where PIT is the only available
-clock source I guess. However, the clocksource struct should at least 
-tell if the time can be read atomically and offer a different API for
-atomic vs non atomic read of time source, returning an error if no
-atomic time source is available.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+So there is no doubt that "val > 0" is sufficient.
