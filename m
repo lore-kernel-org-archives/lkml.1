@@ -1,62 +1,276 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751044AbXB0Tdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752057AbXB0TeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751044AbXB0Tdk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 14:33:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbXB0Tdk
+	id S1752057AbXB0TeZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 14:34:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbXB0TeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 14:33:40 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39682 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751044AbXB0Tdj (ORCPT
+	Tue, 27 Feb 2007 14:34:25 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:54728 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752057AbXB0TeY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 14:33:39 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>, <linux-pci@atrey.karlin.mff.cuni.cz>,
-       Michael Ellerman <michael@ellerman.id.au>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 3/3] msi: Support masking msi irqs without a mask bit
-References: <m1tzx7l7z2.fsf@ebiederm.dsl.xmission.com>
-	<m1ps7vl7rr.fsf@ebiederm.dsl.xmission.com>
-	<m1lkijl7ms.fsf_-_@ebiederm.dsl.xmission.com>
-Date: Tue, 27 Feb 2007 12:33:20 -0700
-In-Reply-To: <m1lkijl7ms.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Tue, 27 Feb 2007 12:31:39 -0700")
-Message-ID: <m1hct7l7jz.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 27 Feb 2007 14:34:24 -0500
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>, Mel Gorman <mel@csn.ul.ie>
+Subject: [PATCH 1/5] Lumpy Reclaim V3
+References: <exportbomb.1172604830@kernel>
+InReply-To: <exportbomb.1172604830@kernel>
+Message-ID: <96f80944962593738d72a803797dbddc@kernel>
+Date: Tue, 27 Feb 2007 11:34:21 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-For devices that do not support msi-x we only support 1 interrupt.  Therefore
-we can disable that one interrupt by disabling the msi capability itself.  If
-we leave the intx interrupts disabled while we have the msi capability disabled
-no interrupts should be delivered from that device.
+When we are out of memory of a suitable size we enter reclaim.
+The current reclaim algorithm targets pages in LRU order, which
+is great for fairness but highly unsuitable if you desire pages at
+higher orders.  To get pages of higher order we must shoot down a
+very high proportion of memory; >95% in a lot of cases.
 
-Devices with just the minimal msi support (and thus hitting this code path)
-include things like the intel e1000 nic, so it looks like is going to be
-a fairly common case and thus important to get right.
+This patch set adds a lumpy reclaim algorithm to the allocator.
+It targets groups of pages at the specified order anchored at the
+end of the active and inactive lists.  This encourages groups of
+pages at the requested orders to move from active to inactive,
+and active to free lists.  This behaviour is only triggered out of
+direct reclaim when higher order pages have been requested.
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+This patch set is particularly effective when utilised with
+an anti-fragmentation scheme which groups pages of similar
+reclaimability together.
+
+This patch set is based on Peter Zijlstra's lumpy reclaim V2 patch
+which forms the foundation.
+
+[akpm@osdl.org: ia64 pfn_to_nid fixes and loop cleanup]
+[bunk@stusta.de: static declarations for internal functions]
+
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
- drivers/pci/msi.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index c43e7d2..01869b1 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -85,6 +85,8 @@ static void msi_set_mask_bit(unsigned int irq, int flag)
- 			mask_bits &= ~(1);
- 			mask_bits |= flag;
- 			pci_write_config_dword(entry->dev, pos, mask_bits);
-+		} else {
-+			msi_set_enable(entry->dev, !flag);
- 		}
- 		break;
- 	case PCI_CAP_ID_MSIX:
--- 
-1.5.0.g53756
-
+diff --git a/fs/buffer.c b/fs/buffer.c
+index 1b69d61..19d1d2c 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -363,7 +363,7 @@ static void free_more_memory(void)
+ 	for_each_online_pgdat(pgdat) {
+ 		zones = pgdat->node_zonelists[gfp_zone(GFP_NOFS)].zones;
+ 		if (*zones)
+-			try_to_free_pages(zones, GFP_NOFS);
++			try_to_free_pages(zones, 0, GFP_NOFS);
+ 	}
+ }
+ 
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index eae023a..382a30b 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -190,7 +190,8 @@ extern int rotate_reclaimable_page(struct page *page);
+ extern void swap_setup(void);
+ 
+ /* linux/mm/vmscan.c */
+-extern unsigned long try_to_free_pages(struct zone **, gfp_t);
++extern unsigned long try_to_free_pages(struct zone **zones, int order,
++					gfp_t gfp_mask);
+ extern unsigned long shrink_all_memory(unsigned long nr_pages);
+ extern int vm_swappiness;
+ extern int remove_mapping(struct address_space *mapping, struct page *page);
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 96451c5..887e435 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1415,7 +1415,7 @@ nofail_alloc:
+ 	reclaim_state.reclaimed_slab = 0;
+ 	p->reclaim_state = &reclaim_state;
+ 
+-	did_some_progress = try_to_free_pages(zonelist->zones, gfp_mask);
++	did_some_progress = try_to_free_pages(zonelist->zones, order, gfp_mask);
+ 
+ 	p->reclaim_state = NULL;
+ 	p->flags &= ~PF_MEMALLOC;
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 2c8f197..f15ffcb 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -68,6 +68,8 @@ struct scan_control {
+ 	int swappiness;
+ 
+ 	int all_unreclaimable;
++
++	int order;
+ };
+ 
+ /*
+@@ -617,6 +619,36 @@ keep:
+ }
+ 
+ /*
++ * Attempt to remove the specified page from its LRU.  Only take this page
++ * if it is of the appropriate PageActive status.  Pages which are being
++ * freed elsewhere are also ignored.
++ *
++ * page:	page to consider
++ * active:	active/inactive flag only take pages of this type
++ *
++ * returns 0 on success, -ve errno on failure.
++ */
++static int __isolate_lru_page(struct page *page, int active)
++{
++	int ret = -EINVAL;
++
++	if (PageLRU(page) && (PageActive(page) == active)) {
++		ret = -EBUSY;
++		if (likely(get_page_unless_zero(page))) {
++			/*
++			 * Be careful not to clear PageLRU until after we're
++			 * sure the page is not being freed elsewhere -- the
++			 * page release code relies on it.
++			 */
++			ClearPageLRU(page);
++			ret = 0;
++		}
++	}
++
++	return ret;
++}
++
++/*
+  * zone->lru_lock is heavily contended.  Some of the functions that
+  * shrink the lists perform better by taking out a batch of pages
+  * and working on them outside the LRU lock.
+@@ -630,38 +662,83 @@ keep:
+  * @src:	The LRU list to pull pages off.
+  * @dst:	The temp list to put pages on to.
+  * @scanned:	The number of pages that were scanned.
++ * @order:	The caller's attempted allocation order
+  *
+  * returns how many pages were moved onto *@dst.
+  */
+ static unsigned long isolate_lru_pages(unsigned long nr_to_scan,
+ 		struct list_head *src, struct list_head *dst,
+-		unsigned long *scanned)
++		unsigned long *scanned, int order)
+ {
+ 	unsigned long nr_taken = 0;
+-	struct page *page;
+ 	unsigned long scan;
+ 
+ 	for (scan = 0; scan < nr_to_scan && !list_empty(src); scan++) {
+-		struct list_head *target;
++		struct page *page;
++		unsigned long pfn;
++		unsigned long end_pfn;
++		unsigned long page_pfn;
++		int active;
++		int zone_id;
++
+ 		page = lru_to_page(src);
+ 		prefetchw_prev_lru_page(page, src, flags);
+ 
+ 		VM_BUG_ON(!PageLRU(page));
+ 
+-		list_del(&page->lru);
+-		target = src;
+-		if (likely(get_page_unless_zero(page))) {
+-			/*
+-			 * Be careful not to clear PageLRU until after we're
+-			 * sure the page is not being freed elsewhere -- the
+-			 * page release code relies on it.
+-			 */
+-			ClearPageLRU(page);
+-			target = dst;
++		active = PageActive(page);
++		switch (__isolate_lru_page(page, active)) {
++		case 0:
++			list_move(&page->lru, dst);
+ 			nr_taken++;
+-		} /* else it is being freed elsewhere */
++			break;
++
++		case -EBUSY:
++			/* else it is being freed elsewhere */
++			list_move(&page->lru, src);
++			continue;
++
++		default:
++			BUG();
++		}
++
++		if (!order)
++			continue;
++
++		/*
++		 * Attempt to take all pages in the order aligned region
++		 * surrounding the tag page.  Only take those pages of
++		 * the same active state as that tag page.
++		 */
++		zone_id = page_zone_id(page);
++		page_pfn = page_to_pfn(page);
++		pfn = page_pfn & ~((1 << order) - 1);
++		end_pfn = pfn + (1 << order);
++		for (; pfn < end_pfn; pfn++) {
++			struct page *cursor_page;
++
++			if (unlikely(pfn == page_pfn))
++				continue;
++			if (unlikely(!pfn_valid(pfn)))
++				break;
+ 
+-		list_add(&page->lru, target);
++			cursor_page = pfn_to_page(pfn);
++			if (unlikely(page_zone_id(cursor_page) != zone_id))
++				continue;
++			scan++;
++			switch (__isolate_lru_page(cursor_page, active)) {
++			case 0:
++				list_move(&cursor_page->lru, dst);
++				nr_taken++;
++				break;
++
++			case -EBUSY:
++				/* else it is being freed elsewhere */
++				list_move(&cursor_page->lru, src);
++			default:
++				break;
++			}
++		}
+ 	}
+ 
+ 	*scanned = scan;
+@@ -692,7 +769,7 @@ static unsigned long shrink_inactive_list(unsigned long max_scan,
+ 
+ 		nr_taken = isolate_lru_pages(sc->swap_cluster_max,
+ 					     &zone->inactive_list,
+-					     &page_list, &nr_scan);
++					     &page_list, &nr_scan, sc->order);
+ 		__mod_zone_page_state(zone, NR_INACTIVE, -nr_taken);
+ 		zone->pages_scanned += nr_scan;
+ 		zone->total_scanned += nr_scan;
+@@ -839,7 +916,7 @@ force_reclaim_mapped:
+ 	lru_add_drain();
+ 	spin_lock_irq(&zone->lru_lock);
+ 	pgmoved = isolate_lru_pages(nr_pages, &zone->active_list,
+-				    &l_hold, &pgscanned);
++				    &l_hold, &pgscanned, sc->order);
+ 	zone->pages_scanned += pgscanned;
+ 	__mod_zone_page_state(zone, NR_ACTIVE, -pgmoved);
+ 	spin_unlock_irq(&zone->lru_lock);
+@@ -1030,7 +1107,7 @@ static unsigned long shrink_zones(int priority, struct zone **zones,
+  * holds filesystem locks which prevent writeout this might not work, and the
+  * allocation attempt will fail.
+  */
+-unsigned long try_to_free_pages(struct zone **zones, gfp_t gfp_mask)
++unsigned long try_to_free_pages(struct zone **zones, int order, gfp_t gfp_mask)
+ {
+ 	int plugdepth;
+ 	int priority;
+@@ -1046,6 +1123,7 @@ unsigned long try_to_free_pages(struct zone **zones, gfp_t gfp_mask)
+ 		.swap_cluster_max = SWAP_CLUSTER_MAX,
+ 		.may_swap = 1,
+ 		.swappiness = vm_swappiness,
++		.order = order,
+ 	};
+ 
+ 	delay_swap_prefetch();
