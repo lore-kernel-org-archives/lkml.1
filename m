@@ -1,44 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751998AbXB0WrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752164AbXB0W4j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751998AbXB0WrY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 17:47:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbXB0WrY
+	id S1752164AbXB0W4j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 17:56:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbXB0W4j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 17:47:24 -0500
-Received: from outmail1.freedom2surf.net ([194.106.33.237]:48121 "EHLO
-	outmail1.freedom2surf.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751998AbXB0WrY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 17:47:24 -0500
-Message-ID: <45E4B33D.8080705@f2s.com>
-Date: Tue, 27 Feb 2007 22:39:57 +0000
-From: Ian Molton <spyro@f2s.com>
-Organization: The Dragon Roost
-User-Agent: Thunderbird 2.0a1 (X11/20061107)
+	Tue, 27 Feb 2007 17:56:39 -0500
+Received: from ns2.suse.de ([195.135.220.15]:43707 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752164AbXB0W4i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 17:56:38 -0500
+Date: Tue, 27 Feb 2007 14:55:25 -0800
+From: Greg KH <greg@kroah.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, marcel@holtmann.org
+Subject: Re: 2.6.20-almost-rc1: usb oops during resume
+Message-ID: <20070227225525.GB26071@kroah.com>
+References: <20070224115137.GA8658@elf.ucw.cz> <20070225053746.GA25058@kroah.com> <20070227215846.GD4519@elf.ucw.cz>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, Ian Molton <spyro@f2s.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] udivdi3: 64 bit divide
-References: <20070226173517.66bf0fec@freekitty> <20070227122437.da27c3cd.akpm@linux-foundation.org> <20070227131840.672d6932@localhost> <20070227133656.c452fbb4.akpm@linux-foundation.org> <20070227222430.GC10380@flint.arm.linux.org.uk>
-In-Reply-To: <20070227222430.GC10380@flint.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070227215846.GD4519@elf.ucw.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King wrote:
-> On Tue, Feb 27, 2007 at 01:36:56PM -0800, Andrew Morton wrote:
->> On Tue, 27 Feb 2007 13:18:40 -0800 Stephen Hemminger <shemminger@linux-foundation.org> wrote:
->>> Then we should pull the existing udivdi3 implementations?
->> Not much point really.  Some architectures have gone and done that, but x86
->> has not.  x86 has enough coverage for us to pick up most problems, and any
->> remaining problems are obviously in scruffy architectures which don't care
->> about performance ;)
+On Tue, Feb 27, 2007 at 10:58:46PM +0100, Pavel Machek wrote:
+> Hi!
 > 
-> I doubt arm26 uses udivdi3, but that's something Ian would have to
-> confirm.
+> > > ...is it "use after free"?
+> > > 
+> > > Greg, could we reduce verbosity of driver model? "PM: Adding info for
+> > > No Bus:vcs*" is not very useful.
+> > 
+> > Maybe for you it isn't, but then again, you did enable
+> > CONFIG_DEBUG_DRIVER to see that, so you will get a lot of stuff in your
+> > logs :)
+> 
+> I went on to disable that config option, but...
+> 
+> CONFIG_FW_LOADER=y
+> # CONFIG_DEBUG_DRIVER is not set
+> # CONFIG_DEBUG_DEVRES is not set
+> # CONFIG_SYS_HYPERVISOR is not set
+> 
+> ...it was disabled.
+> 
+> Feb 27 22:54:23 amd kernel: PM: Adding info for No Bus:usbdev2.17_ep01
+> Feb 27 22:54:23 amd kernel: PM: Adding info for No Bus:usbdev2.17_ep82
+> Feb 27 22:54:23 amd kernel: PM: Adding info for No Bus:usbdev2.17_ep83
+> Feb 27 22:54:23 amd kernel: PM: Adding info for No Bus:usbdev2.17
+> 
+> What is going on?
 
-I doubt it is used also, however I am not in a position to test this 
-until at least after I have moved house. Please leave alone for now.
+CONFIG_PM_DEBUG  ?
 
+thanks,
+
+greg k-h
