@@ -1,76 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751489AbXB0Ec2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750788AbXB0Ed4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751489AbXB0Ec2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 23:32:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbXB0Ec1
+	id S1750788AbXB0Ed4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 23:33:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbXB0Ed4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 23:32:27 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36642 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751489AbXB0Ec1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 23:32:27 -0500
-Message-ID: <45E3B421.603@redhat.com>
-Date: Mon, 26 Feb 2007 23:31:29 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Mon, 26 Feb 2007 23:33:56 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:12896 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750788AbXB0Edz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 23:33:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lp+WbhVKUSDJfk3MEj6/A9tZh54ELA//I7NYzXXPG3ZPlsvBDQU2QrlcD8s/aybAdTSxdwcoR60NmR4OXavvzCaKSZY9GdsnSApMViAXl6/7agpJaIhkU5UrwWfQWDHmqK8qww0HG1KsEiVPOklOCnGAIwu/jQpTUQ4yUVpFIDg=
+Message-ID: <cc723f590702262033k4fa6cbe0n8e327b8339c7a0e4@mail.gmail.com>
+Date: Tue, 27 Feb 2007 10:03:53 +0530
+From: "Aneesh Kumar" <aneesh.kumar@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 1/3] Freezer: Fix vfork problem
+Cc: "Oleg Nesterov" <oleg@tv-sign.ru>, "Srivatsa Vaddagiri" <vatsa@in.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, "Andrew Morton" <akpm@osdl.org>,
+       "Pavel Machek" <pavel@ucw.cz>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "Gautham R Shenoy" <ego@in.ibm.com>
+In-Reply-To: <200702270131.25656.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Hiro Yoshioka <hyoshiok@miraclelinux.com>
-CC: davej@redhat.com, harlan@artselect.com, nickpiggin@yahoo.com.au,
-       l_allegrucci@yahoo.it, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       suparna@in.ibm.com, jens.axboe@oracle.com
-Subject: Re: SMP performance degradation with sysbench
-References: <20070226223645.GA24174@redhat.com>	<98df96d30702261632u7479c9b2sce93f80f68bbc8d0@mail.gmail.com>	<45E37EA3.3060101@redhat.com> <20070227.130305.424251739.hyoshiok@miraclelinux.com>
-In-Reply-To: <20070227.130305.424251739.hyoshiok@miraclelinux.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200702261139.59130.rjw@sisk.pl> <200702261928.19274.rjw@sisk.pl>
+	 <20070226212554.GA93@tv-sign.ru> <200702270131.25656.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hiro Yoshioka wrote:
-> Hi,
-> 
-> From: Rik van Riel <riel@redhat.com>
->> Hiro Yoshioka wrote:
->>> Howdy,
->>>
->>> MySQL 5.0.26 had some scalability issues and it solved since 5.0.32
->>> http://ossipedia.ipa.go.jp/capacity/EV0612260303/
->>> (written in Japanese but you may read the graph. We compared
->>> 5.0.24 vs 5.0.32)
-> snip
->>> MySQL tries to get a mutex but it spends about 16.8% of CPU on 8 core
->>> machine.
->>>
->>> I think there are a lot of room to be inproved in MySQL implementation.
->> That's one aspect.
->>
->> The other aspect of the problem is that when the number of
->> threads exceeds the number of CPU cores, Linux no longer
->> manages to keep the CPUs busy and we get a lot of idle time.
->>
->> On the other hand, with the number of threads being equal to
->> the number of CPU cores, we are 100% CPU bound...
-> 
-> I have a question. If so, what is the difference of kernel's
-> view between SMP and CPU cores?
+>   * Only the _current_ task can read/write to tsk->flags, but other
+> Index: linux-2.6.20-mm2/include/linux/freezer.h
+> ===================================================================
+> --- linux-2.6.20-mm2.orig/include/linux/freezer.h       2007-02-26 08:40:22.000000000 +0100
+> +++ linux-2.6.20-mm2/include/linux/freezer.h    2007-02-27 00:51:44.000000000 +0100
+> @@ -75,7 +75,32 @@ static inline int try_to_freeze(void)
+>                 return 0;
+>  }
+>
+> -extern void thaw_some_processes(int all);
+> +/*
+> + * Tell the freezer not to count current task as freezeable
+> + */
+> +static inline void freezer_do_not_count(void)
+> +{
+> +       current->flags |= PF_FREEZER_SKIP;
+> +}
+> +
+> +/*
+> + * Tell the freezer to count this task as freezeable again and if it's a user
+> + * space one, try to freeze it
+> + */
+> +static inline void freezer_count(void)
+> +{
+> +       current->flags &= ~PF_FREEZER_SKIP;
+> +       if (current->mm)
+> +               try_to_freeze();
+> +}
+> +
 
-None.  Each schedulable entity (whether a fully fledged
-CPU core or an SMT/HT thread) is treated the same.
 
-> Another question. When the number of threads exceeds the number of
-> CPU cores, we may get a lot of idle time. Then a workaround of
-> MySQL is that do not creat threads which exceeds the number
-> of CPU cores. Is it right?
+This means that we are not going to wait for the kernel thread
+(Parent) to freeze. I guess what vatsa suggested in previous mail is
+better.
 
-Not really, that would make it impossible for MySQL to
-handle more simultaneous database queries than the system
-has CPUs.
+freeezer_do_not_count(void)
+{
+   if (current->mm) {
 
-Besides, it looks like this is not a problem in MySQL
-per se (it works on FreeBSD) but some bug in Linux.
+       current->flags |= PF_FREEZER_SKIP;
+   }
 
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+}
+
+
+freezer_count(void)
+{
+ if (current->mm) {
+current->flags &= ~PF_FREEZER_SKIP;
+try_to_freeze();
+   }
+
+}
+
+
+Now if do_fork is called from kernel_thread with CLONE_VFORK we make
+the freezer wait till that kernel thread is also frozen. I think this
+is important.  with khelper thread it is okey because it is a single
+threaded workqueue.
+
+If do_fork is called via a user process we can skip the Parent if the
+child got frozen before calling execve.
+
+-aneesh
