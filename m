@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752568AbXB0Xh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752649AbXB0Xji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752568AbXB0Xh2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 18:37:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbXB0Xh2
+	id S1752649AbXB0Xji (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 18:39:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbXB0Xji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 18:37:28 -0500
-Received: from crystal.sipsolutions.net ([195.210.38.204]:60876 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752568AbXB0Xh1 (ORCPT
+	Tue, 27 Feb 2007 18:39:38 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:35193 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752649AbXB0Xjh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 18:37:27 -0500
-Subject: Re: Problem with freezable workqueues
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       Gautham R Shenoy <ego@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-In-Reply-To: <20070227232855.GA457@tv-sign.ru>
-References: <200702272251.28844.rjw@sisk.pl>
-	 <20070227232855.GA457@tv-sign.ru>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-M19pFw2T1iBjdc5XusLF"
-Date: Wed, 28 Feb 2007 00:36:52 +0100
-Message-Id: <1172619412.3681.11.camel@johannes.berg>
+	Tue, 27 Feb 2007 18:39:37 -0500
+Date: Tue, 27 Feb 2007 15:36:16 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Rob Landley <rob@landley.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Menuconfig has butterfly effects?
+Message-Id: <20070227153616.712508c6.randy.dunlap@oracle.com>
+In-Reply-To: <200702271812.42616.rob@landley.net>
+References: <200702271812.42616.rob@landley.net>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 27 Feb 2007 18:12:42 -0500 Rob Landley wrote:
 
---=-M19pFw2T1iBjdc5XusLF
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> I ran "make ARCH=x86_64 menuconfig", did a lot of editing, and saved 
+> the .config.  Then I copied that to a backup, ran "make oldconfig" on the 
+> config I'd just saved, and compared it with the backup:
+> 
+> --- .config     2007-02-27 18:10:01.000000000 -0500
+> +++ tryit       2007-02-27 18:09:09.000000000 -0500
+> @@ -1,7 +1,7 @@
+>  #
+>  # Automatically generated make config: don't edit
+>  # Linux kernel version: 2.6.20
+> -# Tue Feb 27 18:10:01 2007
+> +# Tue Feb 27 18:08:41 2007
+>  #
+>  CONFIG_X86_64=y
+>  CONFIG_64BIT=y
+> @@ -120,6 +120,9 @@
+>  # CONFIG_PREEMPT_VOLUNTARY is not set
+>  # CONFIG_PREEMPT is not set
+>  CONFIG_ARCH_FLATMEM_ENABLE=y
+> +# CONFIG_FLATMEM_MANUAL is not set
+> +# CONFIG_DISCONTIGMEM_MANUAL is not set
+> +# CONFIG_SPARSEMEM_MANUAL is not set
+>  CONFIG_FLATMEM=y
+>  CONFIG_FLAT_NODE_MEM_MAP=y
+>  # CONFIG_SPARSEMEM_STATIC is not set
+> 
+> The first hunk I expect, the second I did not.  Anybody care to venture a 
+> guess why the visibility logic is unstable?
 
-On Wed, 2007-02-28 at 02:28 +0300, Oleg Nesterov wrote:
+can we get .config^Wtryit ?  (version 0, not version 1)
 
-> Ugh. I know nothing, nothing, nothing about suspend. I'll try to guess.
->=20
->    Commit: ed746e3b18f4df18afa3763155972c5835f284c5
-
-> Yes? with the patch above, _cpu_down() called _after_ freeze_processes() =
-???
-
-perfect :)
-See also my original mail and the thread:
-http://thread.gmane.org/gmane.linux.power-management.general/4314
-
-> How about other kthread_stop()s ? For example, kernel/softirq.c:cpu_callb=
-ack() ?
-
-I'd they should be affected as well. For me, I guess I haven't run into
-them because xfs is enough to freeze the box ;) As for Rafael, I don't
-know why he isn't seeing that... I haven't been able to test this patch
-on my quad powermac so far unfortunately, been sick and away from the
-machine. I'll probably be able to test tomorrow.
-
-> I think we need a general "cpu_down() after freeze" implementation,
-
-Yeah, I'd think so.
-
->  this is what
-> Gautham and Srivatsa are working on, right?
-
-That I don't know.
-
-johannes
-
---=-M19pFw2T1iBjdc5XusLF
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBF5MCU/ETPhpq3jKURAlssAJ9DTSZS4ryU8tX/epyMqul6ykkv1ACglgya
-2FSpYH+Jsc2Snmy/kqBhxJU=
-=qEJ8
------END PGP SIGNATURE-----
-
---=-M19pFw2T1iBjdc5XusLF--
-
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
