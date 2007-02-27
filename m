@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161079AbXB0JWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161080AbXB0JWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161079AbXB0JWR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 04:22:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161080AbXB0JWR
+	id S1161080AbXB0JWb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 04:22:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161084AbXB0JWb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 04:22:17 -0500
-Received: from mail.screens.ru ([213.234.233.54]:45625 "EHLO mail.screens.ru"
+	Tue, 27 Feb 2007 04:22:31 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:47471 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161079AbXB0JWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 04:22:15 -0500
-Date: Tue, 27 Feb 2007 12:22:04 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ____call_usermodehelper: don't flush_signals()
-Message-ID: <20070227092204.GA315@tv-sign.ru>
-References: <20070226215330.GA403@tv-sign.ru> <1172533536.13541.64.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1172533536.13541.64.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.11
+	id S1161080AbXB0JW3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 04:22:29 -0500
+Message-ID: <45E3F853.3010302@garzik.org>
+Date: Tue, 27 Feb 2007 04:22:27 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Prarit Bhargava <prarit@redhat.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH]: Fix __devinit & __devexit declarations in de2104x driver
+References: <20070226183611.11886.61545.sendpatchset@prarit.boston.redhat.com>
+In-Reply-To: <20070226183611.11886.61545.sendpatchset@prarit.boston.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/27, Rusty Russell wrote:
->
-> On Tue, 2007-02-27 at 00:53 +0300, Oleg Nesterov wrote:
-> > ____call_usermodehelper() has no reason for flush_signals(). It is a fresh
-> > forked process which is going to exec a user-space application or exit on
-> > failure.
+Prarit Bhargava wrote:
+> Resending (originally sent 2007-02-14).
 > 
-> And the flush_signal_handlers() call?
+> __devinit & __devexit cleanups for de2104x driver.
+> 
+> Fixes MODPOST warnings similar to:
+> 
+> WARNING: drivers/net/tulip/de2104x.o - Section mismatch: reference to
+> .init.text:de_init_one from .data.rel.local after 'de_driver' (at offset 0x20)
+> WARNING: drivers/net/tulip/de2104x.o - Section mismatch: reference to
+> .exit.text:de_remove_one from .data.rel.local after 'de_driver' (at offset 0x28)
+> 
+> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
 
-Well... flush_old_exec() calls flush_signal_handlers(force_default = 0),
-this is not enough. We don't want to start user-space application with
-SIGKILL ignored (yes, parent doesn't ignores it currently).
+doesn't apply to current kernel
 
-> Your patch looks correct; this code was presumably lying around from
-> before someone (I?) adapted this code to use kthread.
-
-Thanks! What I can't understand is why kthread/daemonize block all signals.
-This doesn't look good to me. This can't prevent signal delivery, this only
-blocks signal_wake_up(). We can even set SIGNAL_GROUP_EXIT for the kernel
-thread. Of course, only root can do that, but isn't it better to just ignore
-all signals instead of blocking them?
-
-Note that we can't free the memory if we send a signal to (for example)
-khelper.
-
-Oleg.
 
