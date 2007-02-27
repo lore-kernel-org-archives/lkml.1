@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030555AbXB0BDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751364AbXB0BPG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030555AbXB0BDU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 20:03:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965263AbXB0BDU
+	id S1751364AbXB0BPG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 20:15:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751370AbXB0BPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 20:03:20 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35409
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S965150AbXB0BDT (ORCPT
+	Mon, 26 Feb 2007 20:15:06 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56361 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751364AbXB0BPE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 20:03:19 -0500
-Date: Mon, 26 Feb 2007 17:03:17 -0800 (PST)
-Message-Id: <20070226.170317.41636240.davem@davemloft.net>
-To: auke-jan.h.kok@intel.com
-Cc: jgarzik@pobox.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       peter.p.waskiewicz.jr@intel.com, jesse.brandeburg@intel.com,
-       auke@foo-projects.org, john.ronciak@intel.com
-Subject: Re: [PATCH 1/2] NET: Multiple queue network device support
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070209000950.5155.24763.stgit@gitlost.site>
-References: <20070209000942.5155.78998.stgit@gitlost.site>
-	<20070209000950.5155.24763.stgit@gitlost.site>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Mon, 26 Feb 2007 20:15:04 -0500
+Date: Tue, 27 Feb 2007 02:18:03 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>, mingo@redhat.com, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/2] semaphores: add down_interruptible_timeout() and
+ asm-generic/semaphore.h
+Message-ID: <20070227021803.38c8591f@lxorguk.ukuu.org.uk>
+In-Reply-To: <200702261654.18005.inaky@linux.intel.com>
+References: <20070227001338.344233745@sodium.jf.intel.com>
+	<20070227003313.GA7360@infradead.org>
+	<200702261654.18005.inaky@linux.intel.com>
+X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Date: Thu, 08 Feb 2007 16:09:50 -0800
+> Yeah, I need semaphore. This is a hw register that says when the hw
+> is ready to accept a new command. Code that wants to send commands has
+> to down the semaphore and then send it. When hw is ready to get a new
+> command, it sends and IRQ and the IRQ up()s the semaphore. 
 
-> From: Peter Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+So you need a mutex not a semaphore
 > 
-> Added an API and associated supporting routines for multiqueue network
-> devices.  This allows network devices supporting multiple TX queues to
-> configure each queue within the netdevice and manage each queue
-> independantly.  Changes to the PRIO Qdisc also allow a user to map
-> multiple flows to individual TX queues, taking advantage of each queue
-> on the device.
-> 
-> Signed-off-by: Peter Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-> Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
+> Now, we don't want to hang on that down() forever if the hw spaces out.
+> If we get a timeout, we can try recovery actions (like resetting it,
+> for sake of being polite). 
 
-Thanks for posting this.
+Makes sense but you can also do that with mutexes, and its
+mutex_interruptible_timeout() you need I suspect ?
 
-I was wonding if it would be better to have the ->enqueue() perform
-the mapping operation, store the queue index selected inside of the
-skb, and just use the normal ->hard_start_xmit() to send the packet
-out?
-
-The only thing to take care of is the per-queue locking, but that
-should be easily doable.
-
-We might be able to do this even without making sk_buff any larger.
-For example, I suppose skb->priority might be deducable down to
-a u16.  After a quick audit I really cannot see any legitimate use
-of anything larger than 16-bit values, but a more thorough audit
-would be necessary to validate this.
-
+Alan
