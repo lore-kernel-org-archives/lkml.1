@@ -1,77 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752608AbXB0U4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751870AbXB0VSm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752608AbXB0U4j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 15:56:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbXB0U4j
+	id S1751870AbXB0VSm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 16:18:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbXB0VSm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 15:56:39 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:47212 "EHLO relay.sw.ru"
+	Tue, 27 Feb 2007 16:18:42 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:52611 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752608AbXB0U4j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 15:56:39 -0500
-To: linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@osdl.org>, netdev@vger.kernel.org
-Subject: [PATCH] sk98lin: handle pci_enable_device() return value in skge_resume() [resend]
-From: Dmitriy Monakhov <dmonakhov@openvz.org>
-Date: Tue, 27 Feb 2007 23:57:00 +0300
-Message-ID: <87fy8r9v4z.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751870AbXB0VSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 16:18:41 -0500
+Date: Tue, 27 Feb 2007 13:18:40 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] udivdi3: 64 bit divide
+Message-ID: <20070227131840.672d6932@localhost>
+In-Reply-To: <20070227122437.da27c3cd.akpm@linux-foundation.org>
+References: <20070226173517.66bf0fec@freekitty>
+	<20070227122437.da27c3cd.akpm@linux-foundation.org>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 27 Feb 2007 12:24:37 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
----
- drivers/net/sk98lin/skge.c |   20 +++++++++++++++-----
- 1 files changed, 15 insertions(+), 5 deletions(-)
+> > On Mon, 26 Feb 2007 17:35:17 -0800 Stephen Hemminger <shemminger@linux-foundation.org> wrote:
+> > The kernel already has several implmentations and usages of 64 by 64 
+> > bit divide.
+> > 
+> > Although it is significantly slower, there are places that need it so
+> > provide one generic version using scaling, and allow existing platform
+> > versions to continue.
+> 
+> The reason we implement 64/32 via do_div() is, for better or for worse, to
+> make people think before they use it.  And to make it stand out, and so
+> that we discover places that are using it by accident, where they could use
+> something cheaper.
+> 
+> However your implementation of the presumably even more expensive 64/64
+> allows us to do 64/64 with a plain old "/" operator.
+> 
+> If the do_div() philosophy is any good then we should surely repeat it for
+> 64/64, no?
+> 
 
-diff --git a/drivers/net/sk98lin/skge.c b/drivers/net/sk98lin/skge.c
-index e94ab25..eea753a 100644
---- a/drivers/net/sk98lin/skge.c
-+++ b/drivers/net/sk98lin/skge.c
-@@ -5125,7 +5125,12 @@ static int skge_resume(struct pci_dev *pdev)
- 
- 	pci_set_power_state(pdev, PCI_D0);
- 	pci_restore_state(pdev);
--	pci_enable_device(pdev);
-+	ret = pci_enable_device(pdev);
-+	if (ret) {
-+		printk(KERN_WARNING "sk98lin: unable to enable device %s "
-+				"in resume\n", dev->name);
-+		goto err_out;
-+	}	
- 	pci_set_master(pdev);
- 	if (pAC->GIni.GIMacsFound == 2)
- 		ret = request_irq(dev->irq, SkGeIsr, IRQF_SHARED, "sk98lin", dev);
-@@ -5133,10 +5138,8 @@ static int skge_resume(struct pci_dev *pdev)
- 		ret = request_irq(dev->irq, SkGeIsrOnePort, IRQF_SHARED, "sk98lin", dev);
- 	if (ret) {
- 		printk(KERN_WARNING "sk98lin: unable to acquire IRQ %d\n", dev->irq);
--		pAC->AllocFlag &= ~SK_ALLOC_IRQ;
--		dev->irq = 0;
--		pci_disable_device(pdev);
--		return -EBUSY;
-+		ret = -EBUSY;
-+		goto err_out_disable_pdev;
- 	}
- 
- 	netif_device_attach(dev);
-@@ -5153,6 +5156,13 @@ static int skge_resume(struct pci_dev *pdev)
- 	}
- 
- 	return 0;
-+
-+err_out_disable_pdev:
-+	pci_disable_device(pdev);
-+err_out:
-+	pAC->AllocFlag &= ~SK_ALLOC_IRQ;
-+	dev->irq = 0;
-+	return ret;
- }
- #else
- #define skge_suspend NULL
--- 
-1.4.4.4
-
+Then we should pull the existing udivdi3 implementations?
