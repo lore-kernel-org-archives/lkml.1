@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965010AbXB0JVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161079AbXB0JWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965010AbXB0JVw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 04:21:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965014AbXB0JVw
+	id S1161079AbXB0JWR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 04:22:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161080AbXB0JWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 04:21:52 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:48570 "EHLO pasmtpA.tele.dk"
+	Tue, 27 Feb 2007 04:22:17 -0500
+Received: from mail.screens.ru ([213.234.233.54]:45625 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965010AbXB0JVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 04:21:51 -0500
-Date: Tue, 27 Feb 2007 10:22:00 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] aer: fix section mismatch warning
-Message-ID: <20070227092200.GB21721@uranus.ravnborg.org>
+	id S1161079AbXB0JWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 04:22:15 -0500
+Date: Tue, 27 Feb 2007 12:22:04 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ____call_usermodehelper: don't flush_signals()
+Message-ID: <20070227092204.GA315@tv-sign.ru>
+References: <20070226215330.GA403@tv-sign.ru> <1172533536.13541.64.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1172533536.13541.64.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix following section mismatch warning (when compiled with CONFIG_HOTPLUG=n):
-WARNING: drivers/pci/built-in.o - Section mismatch: reference to .init.text:aer_probe from .data between 'aerdrv' (at offset 0x1608) and 'aer_error_handlers'
+On 02/27, Rusty Russell wrote:
+>
+> On Tue, 2007-02-27 at 00:53 +0300, Oleg Nesterov wrote:
+> > ____call_usermodehelper() has no reason for flush_signals(). It is a fresh
+> > forked process which is going to exec a user-space application or exit on
+> > failure.
+> 
+> And the flush_signal_handlers() call?
 
-Warning was fixed by renaming aerdrv to aerdriver so we pass the whitelist.
+Well... flush_old_exec() calls flush_signal_handlers(force_default = 0),
+this is not enough. We don't want to start user-space application with
+SIGKILL ignored (yes, parent doesn't ignores it currently).
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
-diff --git a/drivers/pci/pcie/aer/aerdrv.c b/drivers/pci/pcie/aer/aerdrv.c
-index b164de0..db6ad8e 100644
---- a/drivers/pci/pcie/aer/aerdrv.c
-+++ b/drivers/pci/pcie/aer/aerdrv.c
-@@ -66,7 +66,7 @@ static struct pci_error_handlers aer_error_handlers = {
- 	.resume = aer_error_resume,
- };
- 
--static struct pcie_port_service_driver aerdrv = {
-+static struct pcie_port_service_driver aerdriver = {
- 	.name		= "aer",
- 	.id_table	= &aer_id[0],
- 
-@@ -328,7 +328,7 @@ static void aer_error_resume(struct pci_dev *dev)
-  **/
- static int __init aer_service_init(void)
- {
--	return pcie_port_service_register(&aerdrv);
-+	return pcie_port_service_register(&aerdriver);
- }
- 
- /**
-@@ -338,7 +338,7 @@ static int __init aer_service_init(void)
-  **/
- static void __exit aer_service_exit(void)
- {
--	pcie_port_service_unregister(&aerdrv);
-+	pcie_port_service_unregister(&aerdriver);
- }
- 
- module_init(aer_service_init);
+> Your patch looks correct; this code was presumably lying around from
+> before someone (I?) adapted this code to use kthread.
+
+Thanks! What I can't understand is why kthread/daemonize block all signals.
+This doesn't look good to me. This can't prevent signal delivery, this only
+blocks signal_wake_up(). We can even set SIGNAL_GROUP_EXIT for the kernel
+thread. Of course, only root can do that, but isn't it better to just ignore
+all signals instead of blocking them?
+
+Note that we can't free the memory if we send a signal to (for example)
+khelper.
+
+Oleg.
+
