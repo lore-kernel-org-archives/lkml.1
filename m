@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965072AbXB0A5I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030515AbXB0A6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965072AbXB0A5I (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 19:57:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965045AbXB0A5I
+	id S1030515AbXB0A6m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 19:58:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965150AbXB0A6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 19:57:08 -0500
-Received: from mailx.hitachi.co.jp ([133.145.228.49]:36955 "EHLO
-	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965025AbXB0A5H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 19:57:07 -0500
-Message-ID: <45E380DA.6090509@hitachi.com>
-Date: Tue, 27 Feb 2007 09:52:42 +0900
-From: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Mon, 26 Feb 2007 19:58:42 -0500
+Received: from [12.22.49.110] ([12.22.49.110]:29448 "EHLO stargate.chelsio.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S965045AbXB0A6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 19:58:41 -0500
+Message-ID: <45E38181.5030409@chelsio.com>
+Date: Mon, 26 Feb 2007 16:55:29 -0800
+From: Divy Le Ray <divy@chelsio.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
 MIME-Version: 1.0
-To: Nikita Danilov <nikita@clusterfs.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, miklos@szeredi.hu,
-       yumiko.sugita.yf@hitachi.com, masami.hiramatsu.pt@hitachi.com,
-       hidehiro.kawai.ez@hitachi.com, yuji.kakutani.uw@hitachi.com,
-       soshima@redhat.com, haoki@redhat.com
-Subject: Re: [RFC][PATCH 0/3] VM throttling: avoid blocking occasional writers
-References: <45DED819.9040404@hitachi.com> <17888.14958.85897.289141@gargle.gargle.HOWL>
-In-Reply-To: <17888.14958.85897.289141@gargle.gargle.HOWL>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Christoph Hellwig <hch@infradead.org>, divy@chelsio.com, jeff@garzik.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Subject: Re: [PATCH 7/7] cxgb3 - Add SW LRO support
+References: <20070225004423.20903.17036.stgit@localhost.localdomain> <20070226051304.GA13626@infradead.org>
+In-Reply-To: <20070226051304.GA13626@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Feb 2007 00:55:32.0183 (UTC) FILETIME=[FB5E8670:01C75A09]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nikita,
-
-thanks for your comments.
-
-Nikita Danilov wrote:
->> While Dirty+Writeback pages get more than 40% of memory, process-B is
->> blocked in balance_dirty_pages() until writeback of some (`write_chunk',
->> typically = 1536) dirty pages on disk-b is started.
+Christoph Hellwig wrote:
+> On Sat, Feb 24, 2007 at 04:44:23PM -0800, divy@chelsio.com wrote:
+>   
+>> From: Divy Le Ray <divy@chelsio.com>
+>>
+>> Add all-in-sw lro support.
+>>     
 >
-> May be the simpler solution is to use separate variables to control
-> ratelimit and write chunk?
+> Doing this in a LLDD doesn't sound like a good idea.  Have you
+> tried doing this in the core networking code instead?
+>   
 
-No, I think it's difficult to throttle total Dirty+Writeback only with
-write_chunk, because write_chunk just affects Dirty and Writeback of
-each device (in this case, throttling is done in write-requests queue of
-the each backing device, as I said in another mail).
+We have not tried to implement LRO in the core networking code.
+Today, the available API for a driver to pass packets up is 
+netif_receive_skb/netif_rx.
+Our implementation coalesces pages, then gets a skb to point at the 
+pages and passes it up to the stack.
+LRO in the core networking code would require adding methods to pass up 
+data segments in addition to skbs.
+HW might also be able to assist LRO by identifying the session an 
+incoming packet belongs to,
+thus avoiding the session lookup. The API should also allow for the 
+driver to indicate such info.
 
-Throttling of the total Dirty+Writeback should be also done in VM itself,
-and to control that, I added `dirty_limit_ratio.'
-
-
-> writeback_set_ratelimit() adjusts ratelimit_pages to avoid too frequent
-> calls to balance_dirty_pages(), but once we are inside of
-> writeback_inodes(), there is no need to write especially many pages in
-> one go: overhead of any additional looping is negligible, when compared
-> with the cost of writing.
->
-> Speaking of which, now that expensive get_writeback_state() is gone from
-> page-writeback.c why do we need adjustable ratelimiting at all? It looks
-> like writeback_set_ratelimit() can be dropped, and fixed ratelimit used
-> instead.
-
-As far as I can see, adjustable ratelimiting is the actual cause of the
-long wait on writing to disk with light load.
-I think removing adjustable ratelimiting should be done in another patch...
-
-
-Regards
---
-Tomoki Sekiyama
-Hitachi, Ltd., Systems Development Laboratory
+Cheers,
+Divy
