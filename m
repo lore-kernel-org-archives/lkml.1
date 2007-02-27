@@ -1,116 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932502AbXB0AwL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965073AbXB0Ayr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932502AbXB0AwL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 19:52:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932560AbXB0AwL
+	id S965073AbXB0Ayr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 19:54:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965045AbXB0Ayp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 19:52:11 -0500
-Received: from ns.suse.de ([195.135.220.2]:34387 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932502AbXB0AwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 19:52:09 -0500
-Subject: patch platform-reorder-platform_device_del.patch added to gregkh-2.6 tree
-To: khali@linux-fr.org, dmitry.torokhov@gmail.com, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-From: <gregkh@suse.de>
-Date: Mon, 26 Feb 2007 16:50:48 -0800
-In-Reply-To: <20070220225506.ab3c66aa.khali@linux-fr.org>
-Message-Id: <20070227005200.48F67C3598B@imap.suse.de>
+	Mon, 26 Feb 2007 19:54:45 -0500
+Received: from mailx.hitachi.co.jp ([133.145.228.49]:36155 "EHLO
+	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965025AbXB0Ayo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 19:54:44 -0500
+Message-ID: <45E38048.3020705@hitachi.com>
+Date: Tue, 27 Feb 2007 09:50:16 +0900
+From: Tomoki Sekiyama <tomoki.sekiyama.qu@hitachi.com>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, miklos@szeredi.hu,
+       yumiko.sugita.yf@hitachi.com, masami.hiramatsu.pt@hitachi.com,
+       hidehiro.kawai.ez@hitachi.com, yuji.kakutani.uw@hitachi.com,
+       soshima@redhat.com, haoki@redhat.com, nikita@clusterfs.com
+Subject: Re: [RFC][PATCH 0/3] VM throttling: avoid blocking occasional writers
+References: <45DED819.9040404@hitachi.com> <20070224134646.0f4edeae.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070224134646.0f4edeae.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Kamezawa-san,
 
-This is a note to let you know that I've just added the patch titled
+thanks for your reply.
 
-     Subject: platform: reorder platform_device_del
-
-to my gregkh-2.6 tree.  Its filename is
-
-     platform-reorder-platform_device_del.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From khali@linux-fr.org Tue Feb 20 13:55:29 2007
-From: Jean Delvare <khali@linux-fr.org>
-Date: Tue, 20 Feb 2007 22:55:06 +0100
-Subject: platform: reorder platform_device_del
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Cc: "Greg Kroah-Hartman" <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
-Message-ID: <20070220225506.ab3c66aa.khali@linux-fr.org>
-
-
-In platform_device_del(), we currently delete the device resources
-first, then we delete the device itself. This causes a (minor) bug to
-occur when one unregisters a platform device before unregistering its
-platform driver, and the driver is requesting (in .probe()) and
-releasing (in .remove()) a resource of the device. The device
-resources are already gone by the time the driver gets the chance to
-release the resources it had been requesting, causing an error like:
-Trying to free nonexistent resource <0000000000000295-0000000000000296>
-
-If the platform driver is unregistered first, the problem doesn't
-occur, as the driver will have the opportunity to release the
-resources it had requested before the device resources themselves are
-released. It's a bit odd that unregistering the driver first or the
-device first doesn't lead to the same result.
-
-So I believe that we should delete the device first in
-platform_device_del(). I've searched the git history and found that it
-used to be the case before 2.6.8, but was changed here:
-
-http://www.kernel.org/git/?p=linux/kernel/git/torvalds/old-2.6-bkcvs.git;a=commitdiff;h=96ef7b3689936ee1e64b711511342026a8ce459c
-
-> 2004/07/14 16:09:44-07:00 dtor_core
-> [PATCH] Driver core: Fix OOPS in device_platform_unregister
-> 
-> Driver core: platform_device_unregister should release resources first
->              and only then call device_unregister, otherwise if there
->              are no more references to the device it will be freed and
->              the fucntion will try to access freed memory.
-
-However we now have an explicit call to put_device() at the end of
-platform_device_unregister() so I guess the original problem no longer
-exists and it is safe to revert that change.
-
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/base/platform.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
---- gregkh-2.6.orig/drivers/base/platform.c
-+++ gregkh-2.6/drivers/base/platform.c
-@@ -292,20 +292,22 @@ EXPORT_SYMBOL_GPL(platform_device_add);
-  *	@pdev:	platform device we're removing
-  *
-  *	Note that this function will also release all memory- and port-based
-- *	resources owned by the device (@dev->resource).
-+ *	resources owned by the device (@dev->resource).  This function
-+ *	must _only_ be externally called in error cases.  All other usage
-+ *	is a bug.
-  */
- void platform_device_del(struct platform_device *pdev)
- {
- 	int i;
- 
- 	if (pdev) {
-+		device_del(&pdev->dev);
-+
- 		for (i = 0; i < pdev->num_resources; i++) {
- 			struct resource *r = &pdev->resource[i];
- 			if (r->flags & (IORESOURCE_MEM|IORESOURCE_IO))
- 				release_resource(r);
- 		}
--
--		device_del(&pdev->dev);
- 	}
- }
- EXPORT_SYMBOL_GPL(platform_device_del);
+KAMEZAWA Hiroyuki wrote:
+> Interesting, but how about adjust this parameter like below instead of
+> adding new control knob ?(this kind of knob is not easy to use.)
+>
+> ==
+>                 struct writeback_control wbc = {
+>                         .bdi            = bdi,
+>                         .sync_mode      = WB_SYNC_NONE,
+>                         .older_than_this = NULL,
+>                         .nr_to_write    = 0,
+>                         .range_cyclic   = 1,
+>                 };
+> <snip>
+>                 if (nr_reclaimable) {
+> 			/* Just do what I can do */
+> 			dirty_pages_on_device = count_dirty_pages_on_device_limited(bdi, writechunk);
+> 			wbc.nr_to_write = dirty_pages_on_device.
+> 			writeback_inodes(&wbc);
+>
+> ==
+>
+> count_dirty_pages_on_device_limited(bdi, writechunk) above returns
+> dirty pages on bdi. if # of dirty_pages on bdi is larger than writechunk,
+> just returns writechunk.
 
 
-Patches currently in gregkh-2.6 which might be from khali@linux-fr.org are
+I think that way is not enough to control the total amount of
+Dirty+Writeback.
 
+In that way, while writeback_inodes() scans for dirty pages and writes
+them back, the caller will be blocked only if the length of the write-
+requests queue is longer than nr_requests. If so, Writeback may consume
+tens MB memory for each queue, because nr_requests is 128 and the
+maximum size of a request is 512KB. If you have several devices, it can
+consume more than hundred MB memory.
+
+I concerned about that, so I introduced dirty_limit_ratio to limit the
+total amount of Dirty+Writeback pages.
+
+
+Regards
+--
+Tomoki Sekiyama
+Hitachi, Ltd., Systems Development Laboratory
