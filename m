@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751823AbXB0QRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751667AbXB0QXM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751823AbXB0QRl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 11:17:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbXB0QRl
+	id S1751667AbXB0QXM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 11:23:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbXB0QXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 11:17:41 -0500
-Received: from an-out-0708.google.com ([209.85.132.243]:27150 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751823AbXB0QRj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 11:17:39 -0500
-Message-ID: <45E4598F.506@codemonkey.ws>
-Date: Tue, 27 Feb 2007 10:17:19 -0600
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
-MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [RFC] Use para_fill instead of vmi_get_function for APIC ops
-References: <45E37617.6050107@codemonkey.ws> <45E37EB5.7070100@vmware.com>
-In-Reply-To: <45E37EB5.7070100@vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Feb 2007 11:23:11 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33259 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751667AbXB0QXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 11:23:10 -0500
+Date: Tue, 27 Feb 2007 17:16:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Avi Kivity <avi@argo.co.il>
+Cc: suparna@in.ibm.com, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: A quick fio test (was Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3)
+Message-ID: <20070227161617.GA16774@elte.hu>
+References: <20070223151515.GA12960@in.ibm.com> <20070223162508.GA16782@kernel.dk> <20070223171348.GA27838@in.ibm.com> <20070226135736.GF3822@kernel.dk> <20070226141315.GA15631@in.ibm.com> <20070226144548.GH3822@kernel.dk> <20070227043331.GA29942@in.ibm.com> <45E43827.4000102@argo.co.il> <20070227152507.GA8294@elte.hu> <45E45915.20204@argo.co.il>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45E45915.20204@argo.co.il>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> Anthony Liguori wrote:
->> Hi Zach,
->>
->> It seems to me that the APIC paravirt_ops should be filled by 
->> para_fill() instead of vmi_get_function().  vmi_get_function() 
->> returns a nop when the relocation type is NONE.  para_fill() leaves 
->> the native code in place.
->>
->> The native version of the apic write ops is more or less *(APIC_BASE 
->> + reg) = value.  APIC_BASE is unknown to the ROM so it's impossible 
->> to simulate this in the ROM.
->>
->> This means that a ROM has no choice but to do APIC emulation (or jump 
->> through seriously hairy loops to get the APIC mapped in it's address 
->> space).  Was this the intention?
->
-> No, but certainly the effect.  Actually, it is very easy to get the 
-> APIC mapped in the ROM address space without jumping through seriously 
-> hairy loops - we do it today in our hypervisor.
 
-I neglected to mention that I didn't want to use a memory hole.  One 
-could allocate a small one to map the APIC but that seems to defeat the 
-purpose of having a native ROM.
+* Avi Kivity <avi@argo.co.il> wrote:
 
-Regards,
+> > yeah - that's what testing on ramdisk (Jens') or on a loopback block 
+> > device (mine) approximates to a certain degree.
+> 
+> Ramdisks or fully cached loopback return immediately, so cache 
+> thrashing effects don't show up.
 
-Anthony Liguori
+even fully cached loopback schedules the loopback kernel thread - but i 
+agree that it's inaccurate: hence the 'approximates to a certain 
+degree'.
 
->>
->> N.B. attached patch is just to illustrate the point.  Has not even 
->> been compile tested.
->
->
-> Patch looks good, thanks.   But the whole para_fill / vmi_get_function 
-> stuff could probably be done even cleaner.  It was just a helper at 
-> first to work around the awkward syntax, and it is still a bit ugly, 
-> but I haven't come up with a better solution yet, mostly because with 
-> the new inlining work Jeremy is doing, we might want to start doing 
-> selective inlining, in which case I'll have to go back over the code 
-> anyway to clean everything to get the logic right in all cases.
->
-> I assume this patch is signed-off-by you?  If so, I'll add it to my 
-> patch queue.
->
-> Zach
->
+> Maybe a device mapper delay target or nbd + O_DIRECT can insert delays 
+> to make the workload more disk-like.
 
+yeah. I'll hack a small timeout into loopback requests i think. But then 
+real disk-platter effects are left out ... so it all comes down to 
+eventually having to try it on real disks too :)
+
+	Ingo
