@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751523AbXB0F3F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750923AbXB0FcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751523AbXB0F3F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 00:29:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbXB0F3F
+	id S1750923AbXB0FcR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 00:32:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbXB0FcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 00:29:05 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32836
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751523AbXB0F3D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 00:29:03 -0500
-Date: Mon, 26 Feb 2007 21:29:02 -0800 (PST)
-Message-Id: <20070226.212902.78711266.davem@davemloft.net>
-To: Joerg.Friedrich@friedrich-kn.de
-Cc: j.j.green@sheffield.ac.uk, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: sparc64 / bbc_i2c.c
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070227052239.GA30083@stardust.friedrich-kn.de>
-References: <Pine.LNX.4.64.0702252352310.32309@parallax.ddns.shef.ac.uk>
-	<20070226.101219.18306730.davem@davemloft.net>
-	<20070227052239.GA30083@stardust.friedrich-kn.de>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Tue, 27 Feb 2007 00:32:17 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:47334 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750870AbXB0FcR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 00:32:17 -0500
+Date: Mon, 26 Feb 2007 21:32:04 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Dave Airlie" <airlied@gmail.com>
+Cc: npiggin@suse.de, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [patch 0/6] fault vs truncate/invalidate race fix
+Message-Id: <20070226213204.14f8b584.akpm@linux-foundation.org>
+In-Reply-To: <21d7e9970702262036h3575229ex3bf3cd4474a57068@mail.gmail.com>
+References: <20070221023656.6306.246.sendpatchset@linux.site>
+	<21d7e9970702262036h3575229ex3bf3cd4474a57068@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joerg Friedrich <Joerg.Friedrich@friedrich-kn.de>
-Date: Tue, 27 Feb 2007 06:22:39 +0100
+> On Tue, 27 Feb 2007 15:36:03 +1100 "Dave Airlie" <airlied@gmail.com> wrote:
+> >
+> > I've also got rid of the horrible populate API, and integrated nonlinear pages
+> > properly with the page fault path.
+> >
+> > Downside is that this adds one more vector through which the buffered write
+> > deadlock can occur. However this is just a very tiny one (pte being unmapped
+> > for reclaim), compared to all the other ways that deadlock can occur (unmap,
+> > reclaim, truncate, invalidate). I doubt it will be noticable. At any rate, it
+> > is better than data corruption.
+> >
+> > I hope these can get merged (at least into -mm) soon.
+> 
+> Have these been put into mm?
 
-> Can you just tell me if it's sufficient to check for  a return value >0
-> of wait_event_interruptible_timeout? I was not sure so I extended the
-> check to 
-> if ((val != -ERESTARTSYS) && (val > 0))
+Not yet - I need to get back on the correct continent, review the code,
+stuff like that.  It still hurts that this work makes the write() deadlock
+harder to hit, and we haven't worked out how to fix that.
 
-I changed the check to just "val > 0".
+> can I expect them in the next -mm so I
+> can start merging up the drm memory manager code to my -mm tree..
 
-The comments in the kernel around the implementation and
-declaration of the function wait_event_interruptible()
-VERY CLEARLY state that the possible return values are:
-
-1) Negative error code on interrupt
-2) Zero if timeout expired
-3) Positive non-zero value if condition became true before
-   timeout expired
-
-So there is no doubt that "val > 0" is sufficient.
+What is the linkage between these patches and DRM?
