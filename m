@@ -1,92 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750850AbXB0Bbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751341AbXB0Bde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750850AbXB0Bbv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 20:31:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbXB0Bbu
+	id S1751341AbXB0Bde (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 20:33:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbXB0Bde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 20:31:50 -0500
-Received: from ozlabs.org ([203.10.76.45]:60131 "EHLO ozlabs.org"
+	Mon, 26 Feb 2007 20:33:34 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:34102 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750850AbXB0Bbu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 20:31:50 -0500
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH] CELL Oprofile SPU profiling updated
-	patch
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       cbe-oss-dev@ozlabs.org, oprofile-list@lists.sourceforge.net
-In-Reply-To: <200702270051.00393.arnd@arndb.de>
-References: <1172102523.5233.31.camel@dyn9047021078.beaverton.ibm.com>
-	 <200702270051.00393.arnd@arndb.de>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-NXpwvAIj5UyJc5dBBuIX"
-Date: Tue, 27 Feb 2007 10:31:46 +0900
-Message-Id: <1172539906.15967.36.camel@concordia.ozlabs.ibm.com>
+	id S1751341AbXB0Bdd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 20:33:33 -0500
+Subject: [PATCH] Convert h8/300 to generic timekeeping
+From: john stultz <johnstul@us.ibm.com>
+To: ysato@users.sourceforge.jp
+Cc: Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 26 Feb 2007 17:33:29 -0800
+Message-Id: <1172540009.15970.30.camel@localhost>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Currently h8/300 does not implement sub-jiffy timekeeping, so there is
+no benefit to having arch specific timekeeping code.
 
---=-NXpwvAIj5UyJc5dBBuIX
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This patch simply removes those functions and enables the generic
+timekeeping code.
 
-On Tue, 2007-02-27 at 00:50 +0100, Arnd Bergmann wrote:
-> On Thursday 22 February 2007, Carl Love wrote:
-> > This patch updates the existing arch/powerpc/oprofile/op_model_cell.c
-> > to add in the SPU profiling capabilities.  In addition, a 'cell' subdir=
-ectory
-> > was added to arch/powerpc/oprofile to hold Cell-specific SPU profiling
-> > code.
->=20
-> There was a significant amount of whitespace breakage in this patch,
-> which I cleaned up. The patch below consists of the other things
-> I changed as a further cleanup. Note that I changed the format
-> of the context switch record, which I found too complicated, as
-> I described on IRC last week.
->=20
-> 	Arnd <><
->=20
-> --
-> Subject: cleanup spu oprofile code
->=20
-> From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-> This cleans up some of the new oprofile code. It's mostly
-> cosmetic changes, like way multi-line comments are formatted.
-> The most significant change is a simplification of the
-> context-switch record format.
->=20
-> It does mean the oprofile report tool needs to be adapted,
-> but I'm sure that it pays off in the end.
+I don't have the hardware, so this is completely untested.
 
-I hate to be a stickler, but this patch is quite large, contains
-multiple changes, and mixes formatting changes with functional
-changes ... makes it a little hard to review :/
+thanks
+-john
 
-cheers
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-NXpwvAIj5UyJc5dBBuIX
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBF44oCdSjSd0sB4dIRAgFIAKCJuAhgkS7NjyVo+hilSLYAfdNj1QCdH6Do
-gM7ZRT1LJWSYm+h0JkyyjC8=
-=nQ/o
------END PGP SIGNATURE-----
-
---=-NXpwvAIj5UyJc5dBBuIX--
+diff --git a/arch/h8300/Kconfig b/arch/h8300/Kconfig
+index 1734d96..86f6ca3 100644
+--- a/arch/h8300/Kconfig
++++ b/arch/h8300/Kconfig
+@@ -53,6 +53,10 @@ config GENERIC_CALIBRATE_DELAY
+ 	bool
+ 	default y
+ 
++config GENERIC_TIME
++	bool
++	default y
++
+ config TIME_LOW_RES
+ 	bool
+ 	default y
+diff --git a/arch/h8300/kernel/time.c b/arch/h8300/kernel/time.c
+index d1ef615..91d3b56 100644
+--- a/arch/h8300/kernel/time.c
++++ b/arch/h8300/kernel/time.c
+@@ -66,55 +66,3 @@ void time_init(void)
+ 
+ 	platform_timer_setup(timer_interrupt);
+ }
+-
+-/*
+- * This version of gettimeofday has near microsecond resolution.
+- */
+-void do_gettimeofday(struct timeval *tv)
+-{
+-	unsigned long flags;
+-	unsigned long usec, sec;
+-
+-	read_lock_irqsave(&xtime_lock, flags);
+-	usec = 0;
+-	sec = xtime.tv_sec;
+-	usec += (xtime.tv_nsec / 1000);
+-	read_unlock_irqrestore(&xtime_lock, flags);
+-
+-	while (usec >= 1000000) {
+-		usec -= 1000000;
+-		sec++;
+-	}
+-
+-	tv->tv_sec = sec;
+-	tv->tv_usec = usec;
+-}
+-
+-EXPORT_SYMBOL(do_gettimeofday);
+-
+-int do_settimeofday(struct timespec *tv)
+-{
+-	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
+-		return -EINVAL;
+-
+-	write_lock_irq(&xtime_lock);
+-	/* This is revolting. We need to set the xtime.tv_usec
+-	 * correctly. However, the value in this location is
+-	 * is value at the last tick.
+-	 * Discover what correction gettimeofday
+-	 * would have done, and then undo it!
+-	 */
+-	while (tv->tv_nsec < 0) {
+-		tv->tv_nsec += NSEC_PER_SEC;
+-		tv->tv_sec--;
+-	}
+-
+-	xtime.tv_sec = tv->tv_sec;
+-	xtime.tv_nsec = tv->tv_nsec;
+-	ntp_clear();
+-	write_sequnlock_irq(&xtime_lock);
+-	clock_was_set();
+-	return 0;
+-}
+-
+-EXPORT_SYMBOL(do_settimeofday);
 
