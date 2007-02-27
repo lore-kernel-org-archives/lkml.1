@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751597AbXB0ODW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751580AbXB0OEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751597AbXB0ODW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 09:03:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbXB0ODW
+	id S1751580AbXB0OEA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 09:04:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbXB0OEA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 09:03:22 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:52604 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750914AbXB0ODV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 09:03:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=nnuuEYGMIOypGOVRIxoXL7kju+hS6f+KJmg7G5TCnCnjg6OW416Zki6ENQhdCHgShPVv97Fl8i32KOvI+Egc9sqMS3S09LFy5MBOezfGSvp/cgJ6PWgB+TCaMDKU4Ez6Y0ZqLoSTMF0V4i/T9LSguIVe/42cduhzsbLL7NrnZ+c=
-Message-ID: <961aa3350702270603j476c68c0x1c7177ca0581ddef@mail.gmail.com>
-Date: Tue, 27 Feb 2007 23:03:18 +0900
-From: "Akinobu Mita" <akinobu.mita@gmail.com>
-To: "Linux Kernel List" <linux-kernel@vger.kernel.org>,
-       "Greg KH" <greg@kroah.com>, "Russell King" <rmk+lkml@arm.linux.org.uk>
-Subject: [PATCH 2/3] driver core: add missing symlinks error handling
+	Tue, 27 Feb 2007 09:04:00 -0500
+Received: from neon.samage.net ([83.149.67.130]:39639 "EHLO neon.samage.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751579AbXB0OD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 09:03:59 -0500
+Message-ID: <4771.81.207.0.53.1172585004.squirrel@secure.samage.net>
+Date: Tue, 27 Feb 2007 15:03:24 +0100 (CET)
+Subject: Re: A quick fio test (was Re: [patch 00/13] Syslets, "Threadlets",
+      generic AIO support, v3)
+From: "Indan Zupancic" <indan@nul.nu>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Cc: "Suparna Bhattacharya" <suparna@in.ibm.com>, "Ingo Molnar" <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Andrew Morton" <akpm@zip.com.au>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.7
+X-Scan-Signature: 523f42b60907f92a5b98f162865e3e4b
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH 2/3] driver core: add missing symlinks error handling
+On Mon, February 26, 2007 15:45, Jens Axboe wrote:
+> Test case is doing random reads from /dev/sdb, in chunks of 64kb:
+>
+> Engine          Depth   Processes       Bw (KiB/sec)
+> ----------------------------------------------------
+> libaio           200       100            2813
+> syslet           200       100            3944
+> libaio         20000         1            2793
+> syslet         20000         1            3854
+> sync (*)       20000         1            2866
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
+If you have time, could you please add Threadlet results?
 
----
- drivers/base/core.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Considering how awful the syslet API is, and how nice the threadlet
+one, it would be great if it turned out that Syslets aren't worth it.
+If they are, a better API/ABI should be thought of.
 
-Index: 2.6-mm/drivers/base/core.c
-===================================================================
---- 2.6-mm.orig/drivers/base/core.c
-+++ 2.6-mm/drivers/base/core.c
-@@ -649,8 +649,10 @@ int device_add(struct device *dev)
- 					     BUS_NOTIFY_DEL_DEVICE, dev);
- 	device_remove_groups(dev);
-  GroupError:
-- 	device_remove_attrs(dev);
-+	device_remove_attrs(dev);
-  AttrsError:
-+	device_remove_links(dev, parent);
-+
- 	if (dev->devt_attr) {
- 		device_remove_file(dev, dev->devt_attr);
- 		kfree(dev->devt_attr);
+Greetings,
+
+Indan
+
+
