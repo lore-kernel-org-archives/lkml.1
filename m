@@ -1,87 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751547AbXB0KiO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932160AbXB0KjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751547AbXB0KiO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 05:38:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbXB0KiO
+	id S932160AbXB0KjP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 05:39:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932948AbXB0KjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 05:38:14 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:36530 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751542AbXB0KiM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 05:38:12 -0500
-Date: Tue, 27 Feb 2007 13:37:12 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+	Tue, 27 Feb 2007 05:39:14 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58215 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932160AbXB0KjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 05:39:13 -0500
+Date: Tue, 27 Feb 2007 11:38:53 +0100
+From: Pavel Machek <pavel@ucw.cz>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: threadlets as 'naive pool of threads', epoll, some measurements
-Message-ID: <20070227103711.GD23170@2ka.mipt.ru>
-References: <Pine.LNX.4.64.0702251232350.6011@alien.or.mcafeemobile.com> <20070225213420.GA10195@elte.hu> <20070226104507.GA18470@elte.hu> <20070226114858.GA28836@elte.hu> <20070226122521.GA19039@2ka.mipt.ru> <20070226125054.GA6997@elte.hu> <20070226143201.GB31629@2ka.mipt.ru> <20070226202338.GA23357@elte.hu> <20070227081611.GB16295@2ka.mipt.ru> <20070227082757.GA23617@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+Cc: "Michael S. Tsirkin" <mst@mellanox.co.il>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       bunk@stusta.de, linux-pm@linux-foundation.org,
+       linux-acpi@vger.kernel.org, len.brown@intel.com, mingo@redhat.com
+Subject: Re: 2.6.21-rc1: T60 resume from suspend to RAM issues
+Message-ID: <20070227103853.GH6745@elf.ucw.cz>
+References: <20070223020904.c8fc8a3e.akpm@linux-foundation.org> <20070224211141.GA4425@mellanox.co.il> <20070227101451.GA11981@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070227082757.GA23617@elte.hu>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Tue, 27 Feb 2007 13:37:27 +0300 (MSK)
+In-Reply-To: <20070227101451.GA11981@elte.hu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 27, 2007 at 09:27:57AM +0100, Ingo Molnar (mingo@elte.hu) wrote:
+Hi!
+
+> * Michael S. Tsirkin <mst@mellanox.co.il> wrote:
 > 
-> * Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
-> 
-> > > > Enough, you say micro-thread design is superior - ok, that is your 
-> > > > point.
+> > > > 2. As a separate test, I enabled DynTicks in .config. Seems to 
+> > > > work fine but won't come out of suspend to memory at all: pressing 
+> > > > Fn/F4 seems to have no effect.
 > > > 
-> > > note that threadlets are not 'micro-threads'. A threadlet is more of 
-> > > an 'optional thread' (as i mentioned it earlier): whenever it does 
-> > > anything that makes it distinct from a plain function call, it's 
-> > > converted into a separate thread by the kernel. Otherwise it behaves 
-> > > like a plain function call and returns.
+> > > Do you believe that the second problem was caused by dynticks?
 > > 
-> > I know.
-> > But it is rare case for the most situations, when things do not block, 
-> > so I called it micro-thread, since it spawns a new thread (get from 
-> > preallocated pool) for parallel processing.
+> > Assuming these are 2 different problems, yes, the second one seems to 
+> > be caused by dyntics.
 > 
-> ugh. Because 'it spawns a new thread from a preallocated pool' you are 
-> arbitrarily renaming threadlets to 'micro-threads'?? The kernel could be 
-> using a transparent thread pool for ordinary pthread recycling itself 
-> (and will possibly do so in the future) - that does not make them a 
-> micro-thread one iota. So please stop calling them micro-threads, 
-> threadlets are a distinctly separate concept ...
-> 
-> ( And i guess you should know it perfectly well from my past mails in
->   this thread that i dont like micro-thread concepts at all, so are you
->   perhaps calling threadlets 'micro-threads' intentionally, just to 
->   force a predictably negative reaction from me? Maybe i should start 
->   renaming your code too and refer to kevents as 'kpoll'? That too makes
->   absolutely zero sense. This is getting really silly. )
+> on my T60 current -git does not resume even without dynticks. v2.6.20 
+> with the same .config resumes fine (except for the display).
 
-I already think about renaming kevent aio, since it uses kaio name,
-which you frequently reference too, but you definitely did not think
-about kevent.
-
-And out of curiosity, how masichistic I would look if I intentinally
-want to receive negative reaction from you :)
-
-As far as you can recall, in all syslet related threads I was always for
-them, and definitely against micro-threads, but when we come to the land
-of IO processing using event driven model - here I can not agree with
-you.
-
-So, ok, no micro-thread name.
-
-> 	Ingo
-
+See suspend.sf.net. s2ram is able to resume display for you, too.. as
+should some command line parameter.
+								Pavel
 -- 
-	Evgeniy Polyakov
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
