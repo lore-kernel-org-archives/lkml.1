@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751905AbXB0Wbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751998AbXB0WrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751905AbXB0Wbh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 17:31:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbXB0Wbh
+	id S1751998AbXB0WrY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 17:47:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbXB0WrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 17:31:37 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38486 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751905AbXB0Wbg convert rfc822-to-8bit (ORCPT
+	Tue, 27 Feb 2007 17:47:24 -0500
+Received: from outmail1.freedom2surf.net ([194.106.33.237]:48121 "EHLO
+	outmail1.freedom2surf.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751998AbXB0WrY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 17:31:36 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Kristian =?iso-8859-15?q?Gr=F8nfeldt_S=F8rensen?= <kriller@vkr.dk>
-Subject: Re: PROBLEM: "BUG:" when resuming from suspend-to-ram
-Date: Tue, 27 Feb 2007 23:34:07 +0100
-User-Agent: KMail/1.9.5
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <1172601905.5428.28.camel@localhost.localdomain> <200702272304.01756.rjw@sisk.pl> <1172615029.4865.7.camel@localhost.localdomain>
-In-Reply-To: <1172615029.4865.7.camel@localhost.localdomain>
+	Tue, 27 Feb 2007 17:47:24 -0500
+Message-ID: <45E4B33D.8080705@f2s.com>
+Date: Tue, 27 Feb 2007 22:39:57 +0000
+From: Ian Molton <spyro@f2s.com>
+Organization: The Dragon Roost
+User-Agent: Thunderbird 2.0a1 (X11/20061107)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200702272334.07985.rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>, Ian Molton <spyro@f2s.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] udivdi3: 64 bit divide
+References: <20070226173517.66bf0fec@freekitty> <20070227122437.da27c3cd.akpm@linux-foundation.org> <20070227131840.672d6932@localhost> <20070227133656.c452fbb4.akpm@linux-foundation.org> <20070227222430.GC10380@flint.arm.linux.org.uk>
+In-Reply-To: <20070227222430.GC10380@flint.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 27 February 2007 23:23, Kristian Grønfeldt Sørensen wrote:
-> On Tue, 2007-02-27 at 23:04 +0100, Rafael J. Wysocki wrote:
-> > Hi,
-> > 
-> > On Tuesday, 27 February 2007 19:45, Kristian Grønfeldt Sørensen wrote:
-> > > Hi.
-> > > 
-> > > PROBLEM: "BUG:" when resumimg from suspend-to-ram 
-> > > 	
-> > > My laptop have a problem with resuming from suspend-to-ram. 
-> > > It does not occur every time - most of the time, resume works without
-> > > any problem.at all.
-> > > 
-> > > After it occurs, the laptop refuses to go into suspend-to-ram mode until
-> > > next reboot.
-> > 
-> > What do you mean by "refuses"?  
+Russell King wrote:
+> On Tue, Feb 27, 2007 at 01:36:56PM -0800, Andrew Morton wrote:
+>> On Tue, 27 Feb 2007 13:18:40 -0800 Stephen Hemminger <shemminger@linux-foundation.org> wrote:
+>>> Then we should pull the existing udivdi3 implementations?
+>> Not much point really.  Some architectures have gone and done that, but x86
+>> has not.  x86 has enough coverage for us to pick up most problems, and any
+>> remaining problems are obviously in scruffy architectures which don't care
+>> about performance ;)
 > 
-> As in it does not suspend when i close the lid. It just stays on.
+> I doubt arm26 uses udivdi3, but that's something Ian would have to
+> confirm.
 
-Hm, it doesn't seem to attempt to suspend.  Can you just do
-"echo mem > /sys/power/state" when it's in that state and see what happens?
+I doubt it is used also, however I am not in a position to test this 
+until at least after I have moved house. Please leave alone for now.
 
-Rafael
