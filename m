@@ -1,61 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751340AbXB0AuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932502AbXB0AwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751340AbXB0AuL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Feb 2007 19:50:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbXB0AuL
+	id S932502AbXB0AwL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Feb 2007 19:52:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932560AbXB0AwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Feb 2007 19:50:11 -0500
-Received: from mga07.intel.com ([143.182.124.22]:44307 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751340AbXB0AuJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Feb 2007 19:50:09 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,222,1170662400"; 
-   d="scan'208"; a="187458263:sNHT106453333"
-From: Inaky Perez-Gonzalez <inaky@linux.intel.com>
-Organization: Intel Corporation
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: [patch 0/2] semaphores: add down_interruptible_timeout() and asm-generic/semaphore.h
-Date: Mon, 26 Feb 2007 16:54:17 -0800
-User-Agent: KMail/1.9.5
-Cc: Arjan van de Ven <arjan@infradead.org>, mingo@redhat.com, akpm@osdl.org,
+	Mon, 26 Feb 2007 19:52:11 -0500
+Received: from ns.suse.de ([195.135.220.2]:34387 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932502AbXB0AwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Feb 2007 19:52:09 -0500
+Subject: patch platform-reorder-platform_device_del.patch added to gregkh-2.6 tree
+To: khali@linux-fr.org, dmitry.torokhov@gmail.com, gregkh@suse.de,
        linux-kernel@vger.kernel.org
-References: <20070227001338.344233745@sodium.jf.intel.com> <20070227003313.GA7360@infradead.org>
-In-Reply-To: <20070227003313.GA7360@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702261654.18005.inaky@linux.intel.com>
+From: <gregkh@suse.de>
+Date: Mon, 26 Feb 2007 16:50:48 -0800
+In-Reply-To: <20070220225506.ab3c66aa.khali@linux-fr.org>
+Message-Id: <20070227005200.48F67C3598B@imap.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 26 February 2007 16:33, Christoph Hellwig wrote:
-> On Mon, Feb 26, 2007 at 04:13:38PM -0800, inaky@linux.intel.com wrote:
-> > Introduce down_interruptible_timeout() using timers to make the waiter
-> > stop waiting by simulating a signal (see first patch for more
-> > details). As well introduce asm-generic/semaphore.h and make other
-> > architectures use it too.
->
-> What do you want this for?  Do you really need a full counting semaphore
-> or do you actually want a mutex?
 
-Yeah, I need semaphore. This is a hw register that says when the hw
-is ready to accept a new command. Code that wants to send commands has
-to down the semaphore and then send it. When hw is ready to get a new
-command, it sends and IRQ and the IRQ up()s the semaphore. 
+This is a note to let you know that I've just added the patch titled
 
-Now, we don't want to hang on that down() forever if the hw spaces out.
-If we get a timeout, we can try recovery actions (like resetting it,
-for sake of being polite). 
+     Subject: platform: reorder platform_device_del
 
-I use this in the WHCI Ultra Wide Band radio controller code (coming soon
-to a hw store near you).
+to my gregkh-2.6 tree.  Its filename is
 
-Cristoph, I still wonder how the hell you do it to spot every message
-that comes into lkml -- I bet you have a cluster of employees using your
-name doing it... :)
+     platform-reorder-platform_device_del.patch
 
--- Inaky
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+
+
+>From khali@linux-fr.org Tue Feb 20 13:55:29 2007
+From: Jean Delvare <khali@linux-fr.org>
+Date: Tue, 20 Feb 2007 22:55:06 +0100
+Subject: platform: reorder platform_device_del
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Cc: "Greg Kroah-Hartman" <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Message-ID: <20070220225506.ab3c66aa.khali@linux-fr.org>
+
+
+In platform_device_del(), we currently delete the device resources
+first, then we delete the device itself. This causes a (minor) bug to
+occur when one unregisters a platform device before unregistering its
+platform driver, and the driver is requesting (in .probe()) and
+releasing (in .remove()) a resource of the device. The device
+resources are already gone by the time the driver gets the chance to
+release the resources it had been requesting, causing an error like:
+Trying to free nonexistent resource <0000000000000295-0000000000000296>
+
+If the platform driver is unregistered first, the problem doesn't
+occur, as the driver will have the opportunity to release the
+resources it had requested before the device resources themselves are
+released. It's a bit odd that unregistering the driver first or the
+device first doesn't lead to the same result.
+
+So I believe that we should delete the device first in
+platform_device_del(). I've searched the git history and found that it
+used to be the case before 2.6.8, but was changed here:
+
+http://www.kernel.org/git/?p=linux/kernel/git/torvalds/old-2.6-bkcvs.git;a=commitdiff;h=96ef7b3689936ee1e64b711511342026a8ce459c
+
+> 2004/07/14 16:09:44-07:00 dtor_core
+> [PATCH] Driver core: Fix OOPS in device_platform_unregister
+> 
+> Driver core: platform_device_unregister should release resources first
+>              and only then call device_unregister, otherwise if there
+>              are no more references to the device it will be freed and
+>              the fucntion will try to access freed memory.
+
+However we now have an explicit call to put_device() at the end of
+platform_device_unregister() so I guess the original problem no longer
+exists and it is safe to revert that change.
+
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/base/platform.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+--- gregkh-2.6.orig/drivers/base/platform.c
++++ gregkh-2.6/drivers/base/platform.c
+@@ -292,20 +292,22 @@ EXPORT_SYMBOL_GPL(platform_device_add);
+  *	@pdev:	platform device we're removing
+  *
+  *	Note that this function will also release all memory- and port-based
+- *	resources owned by the device (@dev->resource).
++ *	resources owned by the device (@dev->resource).  This function
++ *	must _only_ be externally called in error cases.  All other usage
++ *	is a bug.
+  */
+ void platform_device_del(struct platform_device *pdev)
+ {
+ 	int i;
+ 
+ 	if (pdev) {
++		device_del(&pdev->dev);
++
+ 		for (i = 0; i < pdev->num_resources; i++) {
+ 			struct resource *r = &pdev->resource[i];
+ 			if (r->flags & (IORESOURCE_MEM|IORESOURCE_IO))
+ 				release_resource(r);
+ 		}
+-
+-		device_del(&pdev->dev);
+ 	}
+ }
+ EXPORT_SYMBOL_GPL(platform_device_del);
+
+
+Patches currently in gregkh-2.6 which might be from khali@linux-fr.org are
+
