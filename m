@@ -1,433 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752522AbXB0XRF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752024AbXB0XY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752522AbXB0XRF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 18:17:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbXB0XRE
+	id S1752024AbXB0XY2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 18:24:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbXB0XQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 18:17:04 -0500
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:54779 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752522AbXB0XQw (ORCPT
+	Tue, 27 Feb 2007 18:16:36 -0500
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:46315 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752043AbXB0XQb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 18:16:52 -0500
-Message-Id: <20070227231602.684804815@szeredi.hu>
+	Tue, 27 Feb 2007 18:16:31 -0500
+Message-Id: <20070227231549.597468815@szeredi.hu>
 References: <20070227231442.627972152@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Wed, 28 Feb 2007 00:14:48 +0100
+Date: Wed, 28 Feb 2007 00:14:45 +0100
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [patch 06/22] consolidate generic_writepages and mpage_writepages
-Content-Disposition: inline; filename=writepages_consolidate.patch
+Subject: [patch 03/22] fix deadlock in balance_dirty_pages
+Content-Disposition: inline; filename=dirty_balancing_fix.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Changes:
- o fix theoretical NULL pointer dereference in __mpage_writepage
- o merge Andrew Morton's cleanups
+This deadlock happens, when dirty pages from one filesystem are
+written back through another filesystem.  It easiest to demonstrate
+with fuse although it could affect looback mounts as well (see
+following patches).
+
+Let's call the filesystems A(bove) and B(elow).  Process Pr_a is
+writing to A, and process Pr_b is writing to B.
+
+Pr_a is bash-shared-mapping.  Pr_b is the fuse filesystem daemon
+(fusexmp_fh), for simplicity let's assume that Pr_b is single
+threaded.
+
+These are the simplified stack traces of these processes after the
+deadlock:
+
+Pr_a (bash-shared-mapping):
+
+  (block on queue)
+  fuse_writepage
+  generic_writepages
+  writeback_inodes
+  balance_dirty_pages
+  balance_dirty_pages_ratelimited_nr
+  set_page_dirty_mapping_balance
+  do_no_page
 
 
-Clean up code duplication between mpage_writepages() and
-generic_writepages().
+Pr_b (fusexmp_fh):
 
-The new generic function, write_cache_pages() takes a function pointer
-argument, which will be called for each page to be written.
+  io_schedule_timeout
+  congestion_wait
+  balance_dirty_pages
+  balance_dirty_pages_ratelimited_nr
+  generic_file_buffered_write
+  generic_file_aio_write
+  ext3_file_write
+  do_sync_write
+  vfs_write
+  sys_pwrite64
 
-Maybe cifs_writepages() too can use this infrastructure, but I'm not
-touching that with a ten-foot pole.
 
-The upcoming page writeback support in fuse will also want this.
+Thanks to the aggressive nature of Pr_a, it can happen, that
+
+  nr_file_dirty > dirty_thresh + margin
+
+This is due to both nr_dirty growing and dirty_thresh shrinking, which
+in turn is due to nr_file_mapped rapidly growing.  The exact size of
+the margin at which the deadlock happens is not known, but it's around
+100 pages.
+
+At this point Pr_a enters balance_dirty_pages and starts to write back
+some if it's dirty pages.  After submitting some requests, it blocks
+on the request queue.
+
+The first write request will trigger Pr_b to perform a write()
+syscall.  This will submit a write request to the block device and
+then may enter balance_dirty_pages().
+
+The condition for exiting balance_dirty_pages() is
+
+ - either that write_chunk pages have been written
+
+ - or nr_file_dirty + nr_writeback < dirty_thresh
+
+It is entirely possible that less than write_chunk pages were written,
+in which case balance_dirty_pages() will not exit even after all the
+submitted requests have been succesfully completed.
+
+Which means that the write() syscall does not return.
+
+Which means, that no more dirty pages from A will be written back, and
+neither nr_writeback nor nr_file_dirty will decrease.
+
+Which means, that balance_dirty_pages() will loop forever.
+
+Q.E.D.
+
+The solution is to exit balance_dirty_pages() on the condition, that
+there are only a few dirty + writeback pages for this backing dev.  This
+makes sure, that there is always some progress with this setup.
+
+The number of outstanding dirty + written pages is limited to 8, which
+means that when over the threshold (dirty_exceeded == 1), each
+filesystem may only effectively pin a maximum of 16 (+8 because of
+ratelimiting) extra pages.
+
+Note: a similar safety vent is always needed if there's a global limit
+for the dirty+writeback pages, even if in the future there will be
+some per-queue (or other) soft limit.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
 
-Index: linux/fs/mpage.c
-===================================================================
---- linux.orig/fs/mpage.c	2007-02-27 14:41:06.000000000 +0100
-+++ linux/fs/mpage.c	2007-02-27 14:41:08.000000000 +0100
-@@ -456,11 +456,18 @@ EXPORT_SYMBOL(mpage_readpage);
-  * written, so it can intelligently allocate a suitably-sized BIO.  For now,
-  * just allocate full-size (16-page) BIOs.
-  */
--static struct bio *
--__mpage_writepage(struct bio *bio, struct page *page, get_block_t get_block,
--	sector_t *last_block_in_bio, int *ret, struct writeback_control *wbc,
--	writepage_t writepage_fn)
-+struct mpage_data {
-+	struct bio *bio;
-+	sector_t last_block_in_bio;
-+	get_block_t *get_block;
-+	unsigned use_writepage;
-+};
-+
-+static int __mpage_writepage(struct page *page, struct writeback_control *wbc,
-+			     void *data)
- {
-+	struct mpage_data *mpd = data;
-+	struct bio *bio = mpd->bio;
- 	struct address_space *mapping = page->mapping;
- 	struct inode *inode = page->mapping->host;
- 	const unsigned blkbits = inode->i_blkbits;
-@@ -478,6 +485,7 @@ __mpage_writepage(struct bio *bio, struc
- 	int length;
- 	struct buffer_head map_bh;
- 	loff_t i_size = i_size_read(inode);
-+	int ret = 0;
- 
- 	if (page_has_buffers(page)) {
- 		struct buffer_head *head = page_buffers(page);
-@@ -540,7 +548,7 @@ __mpage_writepage(struct bio *bio, struc
- 
- 		map_bh.b_state = 0;
- 		map_bh.b_size = 1 << blkbits;
--		if (get_block(inode, block_in_file, &map_bh, 1))
-+		if (mpd->get_block(inode, block_in_file, &map_bh, 1))
- 			goto confused;
- 		if (buffer_new(&map_bh))
- 			unmap_underlying_metadata(map_bh.b_bdev,
-@@ -589,7 +597,7 @@ page_is_mapped:
- 	/*
- 	 * This page will go to BIO.  Do we need to send this BIO off first?
- 	 */
--	if (bio && *last_block_in_bio != blocks[0] - 1)
-+	if (bio && mpd->last_block_in_bio != blocks[0] - 1)
- 		bio = mpage_bio_submit(WRITE, bio);
- 
- alloc_new:
-@@ -646,7 +654,7 @@ alloc_new:
- 					boundary_block, 1 << blkbits);
- 		}
- 	} else {
--		*last_block_in_bio = blocks[blocks_per_page - 1];
-+		mpd->last_block_in_bio = blocks[blocks_per_page - 1];
- 	}
- 	goto out;
- 
-@@ -654,18 +662,19 @@ confused:
- 	if (bio)
- 		bio = mpage_bio_submit(WRITE, bio);
- 
--	if (writepage_fn) {
--		*ret = (*writepage_fn)(page, wbc);
-+	if (mpd->use_writepage && mapping->a_ops->writepage) {
-+		ret = mapping->a_ops->writepage(page, wbc);
- 	} else {
--		*ret = -EAGAIN;
-+		ret = -EAGAIN;
- 		goto out;
- 	}
- 	/*
- 	 * The caller has a ref on the inode, so *mapping is stable
- 	 */
--	mapping_set_error(mapping, *ret);
-+	mapping_set_error(mapping, ret);
- out:
--	return bio;
-+	mpd->bio = bio;
-+	return ret;
- }
- 
- /**
-@@ -688,120 +697,27 @@ out:
-  * the call was made get new I/O started against them.  If wbc->sync_mode is
-  * WB_SYNC_ALL then we were called for data integrity and we must wait for
-  * existing IO to complete.
-- *
-- * If you fix this you should check generic_writepages() also!
-  */
- int
- mpage_writepages(struct address_space *mapping,
- 		struct writeback_control *wbc, get_block_t get_block)
- {
--	struct backing_dev_info *bdi = mapping->backing_dev_info;
--	struct bio *bio = NULL;
--	sector_t last_block_in_bio = 0;
--	int ret = 0;
--	int done = 0;
--	int (*writepage)(struct page *page, struct writeback_control *wbc);
--	struct pagevec pvec;
--	int nr_pages;
--	pgoff_t index;
--	pgoff_t end;		/* Inclusive */
--	int scanned = 0;
--	int range_whole = 0;
--
--	if (wbc->nonblocking && bdi_write_congested(bdi)) {
--		wbc->encountered_congestion = 1;
--		return 0;
--	}
-+	int ret;
- 
--	writepage = NULL;
--	if (get_block == NULL)
--		writepage = mapping->a_ops->writepage;
--
--	pagevec_init(&pvec, 0);
--	if (wbc->range_cyclic) {
--		index = mapping->writeback_index; /* Start from prev offset */
--		end = -1;
--	} else {
--		index = wbc->range_start >> PAGE_CACHE_SHIFT;
--		end = wbc->range_end >> PAGE_CACHE_SHIFT;
--		if (wbc->range_start == 0 && wbc->range_end == LLONG_MAX)
--			range_whole = 1;
--		scanned = 1;
-+	if (!get_block)
-+		ret = generic_writepages(mapping, wbc);
-+	else {
-+		struct mpage_data mpd = {
-+			.bio = NULL,
-+			.last_block_in_bio = 0,
-+			.get_block = get_block,
-+			.use_writepage = 1,
-+		};
-+
-+		ret = write_cache_pages(mapping, wbc, __mpage_writepage, &mpd);
-+		if (mpd.bio)
-+			mpage_bio_submit(WRITE, mpd.bio);
- 	}
--retry:
--	while (!done && (index <= end) &&
--			(nr_pages = pagevec_lookup_tag(&pvec, mapping, &index,
--			PAGECACHE_TAG_DIRTY,
--			min(end - index, (pgoff_t)PAGEVEC_SIZE-1) + 1))) {
--		unsigned i;
--
--		scanned = 1;
--		for (i = 0; i < nr_pages; i++) {
--			struct page *page = pvec.pages[i];
--
--			/*
--			 * At this point we hold neither mapping->tree_lock nor
--			 * lock on the page itself: the page may be truncated or
--			 * invalidated (changing page->mapping to NULL), or even
--			 * swizzled back from swapper_space to tmpfs file
--			 * mapping
--			 */
--
--			lock_page(page);
--
--			if (unlikely(page->mapping != mapping)) {
--				unlock_page(page);
--				continue;
--			}
--
--			if (!wbc->range_cyclic && page->index > end) {
--				done = 1;
--				unlock_page(page);
--				continue;
--			}
--
--			if (wbc->sync_mode != WB_SYNC_NONE)
--				wait_on_page_writeback(page);
--
--			if (PageWriteback(page) ||
--					!clear_page_dirty_for_io(page)) {
--				unlock_page(page);
--				continue;
--			}
--
--			if (writepage) {
--				ret = (*writepage)(page, wbc);
--				mapping_set_error(mapping, ret);
--			} else {
--				bio = __mpage_writepage(bio, page, get_block,
--						&last_block_in_bio, &ret, wbc,
--						page->mapping->a_ops->writepage);
--			}
--			if (unlikely(ret == AOP_WRITEPAGE_ACTIVATE))
--				unlock_page(page);
--			if (ret || (--(wbc->nr_to_write) <= 0))
--				done = 1;
--			if (wbc->nonblocking && bdi_write_congested(bdi)) {
--				wbc->encountered_congestion = 1;
--				done = 1;
--			}
--		}
--		pagevec_release(&pvec);
--		cond_resched();
--	}
--	if (!scanned && !done) {
--		/*
--		 * We hit the last page and there is more work to be done: wrap
--		 * back to the start of the file
--		 */
--		scanned = 1;
--		index = 0;
--		goto retry;
--	}
--	if (wbc->range_cyclic || (range_whole && wbc->nr_to_write > 0))
--		mapping->writeback_index = index;
--	if (bio)
--		mpage_bio_submit(WRITE, bio);
- 	return ret;
- }
- EXPORT_SYMBOL(mpage_writepages);
-@@ -809,15 +725,15 @@ EXPORT_SYMBOL(mpage_writepages);
- int mpage_writepage(struct page *page, get_block_t get_block,
- 	struct writeback_control *wbc)
- {
--	int ret = 0;
--	struct bio *bio;
--	sector_t last_block_in_bio = 0;
--
--	bio = __mpage_writepage(NULL, page, get_block,
--			&last_block_in_bio, &ret, wbc, NULL);
--	if (bio)
--		mpage_bio_submit(WRITE, bio);
--
-+	struct mpage_data mpd = {
-+		.bio = NULL,
-+		.last_block_in_bio = 0,
-+		.get_block = get_block,
-+		.use_writepage = 0,
-+	};
-+	int ret = __mpage_writepage(page, wbc, &mpd);
-+	if (mpd.bio)
-+		mpage_bio_submit(WRITE, mpd.bio);
- 	return ret;
- }
- EXPORT_SYMBOL(mpage_writepage);
-Index: linux/include/linux/mpage.h
-===================================================================
---- linux.orig/include/linux/mpage.h	2007-02-27 14:40:55.000000000 +0100
-+++ linux/include/linux/mpage.h	2007-02-27 14:41:08.000000000 +0100
-@@ -12,7 +12,6 @@
- #ifdef CONFIG_BLOCK
- 
- struct writeback_control;
--typedef int (writepage_t)(struct page *page, struct writeback_control *wbc);
- 
- int mpage_readpages(struct address_space *mapping, struct list_head *pages,
- 				unsigned nr_pages, get_block_t get_block);
-Index: linux/include/linux/writeback.h
-===================================================================
---- linux.orig/include/linux/writeback.h	2007-02-27 14:41:07.000000000 +0100
-+++ linux/include/linux/writeback.h	2007-02-27 14:41:08.000000000 +0100
-@@ -109,9 +109,15 @@ balance_dirty_pages_ratelimited(struct a
- 	balance_dirty_pages_ratelimited_nr(mapping, 1);
- }
- 
-+typedef int (*writepage_t)(struct page *page, struct writeback_control *wbc,
-+				void *data);
-+
- int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0);
--extern int generic_writepages(struct address_space *mapping,
--			      struct writeback_control *wbc);
-+int generic_writepages(struct address_space *mapping,
-+		       struct writeback_control *wbc);
-+int write_cache_pages(struct address_space *mapping,
-+		      struct writeback_control *wbc, writepage_t writepage,
-+		      void *data);
- int do_writepages(struct address_space *mapping, struct writeback_control *wbc);
- int sync_page_range(struct inode *inode, struct address_space *mapping,
- 			loff_t pos, loff_t count);
 Index: linux/mm/page-writeback.c
 ===================================================================
---- linux.orig/mm/page-writeback.c	2007-02-27 14:41:08.000000000 +0100
-+++ linux/mm/page-writeback.c	2007-02-27 14:41:08.000000000 +0100
-@@ -567,31 +567,27 @@ void __init page_writeback_init(void)
- }
+--- linux.orig/mm/page-writeback.c	2007-02-27 14:41:07.000000000 +0100
++++ linux/mm/page-writeback.c	2007-02-27 14:41:07.000000000 +0100
+@@ -201,6 +201,17 @@ static void balance_dirty_pages(struct a
+ 		if (!dirty_exceeded)
+ 			dirty_exceeded = 1;
  
- /**
-- * generic_writepages - walk the list of dirty pages of the given address space and writepage() all of them.
-+ * write_cache_pages - walk the list of dirty pages of the given address space and write all of them.
-  * @mapping: address space structure to write
-  * @wbc: subtract the number of written pages from *@wbc->nr_to_write
-+ * @writepage: function called for each page
-+ * @data: data passed to writepage function
-  *
-- * This is a library function, which implements the writepages()
-- * address_space_operation.
-- *
-- * If a page is already under I/O, generic_writepages() skips it, even
-+ * If a page is already under I/O, write_cache_pages() skips it, even
-  * if it's dirty.  This is desirable behaviour for memory-cleaning writeback,
-  * but it is INCORRECT for data-integrity system calls such as fsync().  fsync()
-  * and msync() need to guarantee that all the data which was dirty at the time
-  * the call was made get new I/O started against them.  If wbc->sync_mode is
-  * WB_SYNC_ALL then we were called for data integrity and we must wait for
-  * existing IO to complete.
-- *
-- * Derived from mpage_writepages() - if you fix this you should check that
-- * also!
-  */
--int generic_writepages(struct address_space *mapping,
--		       struct writeback_control *wbc)
-+int write_cache_pages(struct address_space *mapping,
-+		      struct writeback_control *wbc, writepage_t writepage,
-+		      void *data)
- {
- 	struct backing_dev_info *bdi = mapping->backing_dev_info;
- 	int ret = 0;
- 	int done = 0;
--	int (*writepage)(struct page *page, struct writeback_control *wbc);
- 	struct pagevec pvec;
- 	int nr_pages;
- 	pgoff_t index;
-@@ -604,12 +600,6 @@ int generic_writepages(struct address_sp
- 		return 0;
- 	}
- 
--	writepage = mapping->a_ops->writepage;
--
--	/* deal with chardevs and other special file */
--	if (!writepage)
--		return 0;
--
- 	pagevec_init(&pvec, 0);
- 	if (wbc->range_cyclic) {
- 		index = mapping->writeback_index; /* Start from prev offset */
-@@ -661,8 +651,7 @@ retry:
- 				continue;
- 			}
- 
--			ret = (*writepage)(page, wbc);
--			mapping_set_error(mapping, ret);
-+			ret = (*writepage)(page, wbc, data);
- 
- 			if (unlikely(ret == AOP_WRITEPAGE_ACTIVATE))
- 				unlock_page(page);
-@@ -689,6 +678,38 @@ retry:
- 		mapping->writeback_index = index;
- 	return ret;
- }
-+EXPORT_SYMBOL(write_cache_pages);
++		/*
++		 * Acquit producer of dirty pages if there's little or
++		 * nothing to write back to this particular queue.
++		 *
++		 * Without this check a deadlock is possible for if
++		 * one filesystem is writing data through another.
++		 */
++		if (atomic_long_read(&bdi->nr_dirty) +
++		    atomic_long_read(&bdi->nr_writeback) < 8)
++			break;
 +
-+/*
-+ * Function used by generic_writepages to call the real writepage
-+ * function and set the mapping flags on error
-+ */
-+static int __writepage(struct page *page, struct writeback_control *wbc,
-+		       void *data)
-+{
-+	struct address_space *mapping = data;
-+	int ret = mapping->a_ops->writepage(page, wbc);
-+	mapping_set_error(mapping, ret);
-+	return ret;
-+}
-+
-+/**
-+ * generic_writepages - walk the list of dirty pages of the given address space and writepage() all of them.
-+ * @mapping: address space structure to write
-+ * @wbc: subtract the number of written pages from *@wbc->nr_to_write
-+ *
-+ * This is a library function, which implements the writepages()
-+ * address_space_operation.
-+ */
-+int generic_writepages(struct address_space *mapping,
-+		       struct writeback_control *wbc)
-+{
-+	/* deal with chardevs and other special file */
-+	if (!mapping->a_ops->writepage)
-+		return 0;
-+
-+	return write_cache_pages(mapping, wbc, __writepage, mapping);
-+}
- 
- EXPORT_SYMBOL(generic_writepages);
- 
+ 		/* Note: nr_reclaimable denotes nr_dirty + nr_unstable.
+ 		 * Unstable writes are a feature of certain networked
+ 		 * filesystems (i.e. NFS) in which data may have been
 
 --
