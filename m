@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752109AbXB1KsN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752103AbXB1KzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752109AbXB1KsN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 05:48:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbXB1KsN
+	id S1752103AbXB1KzM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 05:55:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbXB1KzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 05:48:13 -0500
-Received: from smtp01.cdmon.com ([86.109.99.230]:54782 "EHLO smtp01.cdmon.com"
+	Wed, 28 Feb 2007 05:55:12 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:40554 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752109AbXB1KsN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 05:48:13 -0500
-Date: Wed, 28 Feb 2007 11:49:36 +0100
-From: DervishD <lkml@dervishd.net>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Linux-kernel <linux-kernel@vger.kernel.org>,
-       Linux Fbdev development list 
-	<linux-fbdev-devel@lists.sourceforge.net>
-Subject: Re: tdfx framebuffer garbles display in 2.6.19.5
-Message-ID: <20070228104936.GA4523@DervishD>
-Mail-Followup-To: "Antonino A. Daplas" <adaplas@gmail.com>,
-	Linux-kernel <linux-kernel@vger.kernel.org>,
-	Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-References: <20070226144744.GA3615@DervishD> <1172503471.20842.14.camel@daplas> <20070226171334.GB13496@DervishD> <1172510654.7101.11.camel@daplas> <20070226203223.GA161@DervishD> <1172617755.13422.0.camel@daplas>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	id S1752103AbXB1KzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 05:55:10 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: vatsa@in.ibm.com
+Subject: Re: [RFC][PATCH 1/3] Freezer: Fix vfork problem
+Date: Wed, 28 Feb 2007 11:57:27 +0100
+User-Agent: KMail/1.9.5
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Aneesh Kumar <aneesh.kumar@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>
+References: <200702261139.59130.rjw@sisk.pl> <20070227215314.GA427@tv-sign.ru> <20070228012301.GH29179@in.ibm.com>
+In-Reply-To: <20070228012301.GH29179@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1172617755.13422.0.camel@daplas>
-User-Agent: Mutt/1.4.2.2i
-Organization: DervishD
+Message-Id: <200702281157.28381.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    Hi Antonino :)
-
- * Antonino A. Daplas <adaplas@gmail.com> dixit:
-> On Mon, 2007-02-26 at 21:32 +0100, DervishD wrote:
-> >     Probably setting it back to 4096 will make the problem reappear.
-> > Right now I cannot test, but I'll make some experiments.
+On Wednesday, 28 February 2007 02:23, Srivatsa Vaddagiri wrote:
+> On Wed, Feb 28, 2007 at 12:53:14AM +0300, Oleg Nesterov wrote:
+> > I think it is good. Srivatsa?
 > 
-> Can you try this patch?  It might help with the screen corruption.
+> Maybe additional comments on why we don't skip vfork kernel tasks may be good. 
 
-    I'm doing system maintenance now, and won't have spare time until
-friday, probably, but as soon as possible I'll test the patch. Thanks a
-lot for your invaluable help :)
+Which is because we don't want the kernel threads to be frozen in unexpected
+places, so we allow them to block freeze_processes() instead or to set
+PF_NOFREEZE?
 
-    If you want me to test more patches, feel free. I'll test them ASAP,
-probably this weekend if I can afford the time.
+> Otherwise looks ok to me. Thanks Rafael for making the changes!
 
-    Raúl Núñez de Arenas Coronado
+You're welcome. :-)
 
--- 
-Linux Registered User 88736 | http://www.dervishd.net
-It's my PC and I'll cry if I want to... RAmen!
+Greetings,
+Rafael
