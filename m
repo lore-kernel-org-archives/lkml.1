@@ -1,76 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751236AbXB1UXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751282AbXB1U2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751236AbXB1UXb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 15:23:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbXB1UXa
+	id S1751282AbXB1U2w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 15:28:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbXB1U2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 15:23:30 -0500
-Received: from tossu.ebaana.net ([62.121.33.10]:4206 "EHLO tossu.ebaana.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751236AbXB1UXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 15:23:30 -0500
-X-Greylist: delayed 347 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Feb 2007 15:23:29 EST
-From: Lasse Collin <lasse.collin@tukaani.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] i386: Fix usage of -mtune when X86_GENERIC=y or CONFIG_MCORE2=y
-Date: Wed, 28 Feb 2007 22:17:21 +0200
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@osdl.org>
+	Wed, 28 Feb 2007 15:28:52 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:32722 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751282AbXB1U2v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 15:28:51 -0500
+X-AuditID: d80ac287-9eb9bbb000002978-58-45e5e60234a7 
+Date: Wed, 28 Feb 2007 19:48:23 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Oleg Nesterov <oleg@tv-sign.ru>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] adapt page_lock_anon_vma() to PREEMPT_RCU
+In-Reply-To: <20070225200621.GA2259@tv-sign.ru>
+Message-ID: <Pine.LNX.4.64.0702281946140.5568@blonde.wat.veritas.com>
+References: <20070225200621.GA2259@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702282217.21910.lasse.collin@tukaani.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 28 Feb 2007 20:28:29.0507 (UTC) FILETIME=[01EFB130:01C75B77]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Two fixes to arch/i386/Makefile.cpu:
+On Sun, 25 Feb 2007, Oleg Nesterov wrote:
 
-1) When X86_GENERIC=y is set, use -mtune=i686 if $(CC) doesn't
-   support -mtune=generic. GCC 4.1.2 and earlier don't support
-   -mtune=generic. When building a generic kernel for a distro
-   that runs on i586 and better, it is nice to use
-   -march=i586 -mtune=i686 instead of plain -march=i586.
+> page_lock_anon_vma() uses spin_lock() to block RCU. This doesn't work with
+> PREEMPT_RCU, we have to do rcu_read_lock() explicitely. Otherwise, it is
+> theoretically possible that slab returns anon_vma's memory to the system
+> before we do spin_unlock(&anon_vma->lock).
+> 
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-2) Use $(call tune) instead of hardcoded -mtune when CONFIG_MCORE2=y.
-   This makes it possible to have CONFIG_MCORE2=y when using GCC 3.3,
-   which uses -mcpu instead of -mtune. Also dropped fallback to
-   -mtune=generic and -mtune=i686, because -march=i686 already
-   implies -mtune=i686.
+Acked-by: Hugh Dickins <hugh@veritas.com>
 
-The patch is against 2.6.20, but Makefile.cpu hasn't changed recently.
+Thanks for doing this, and sorry for my delay.
 
---- linux-2.6.20/arch/i386/Makefile.cpu.orig	2007-02-04 20:44:54.000000000 +0200
-+++ linux-2.6.20/arch/i386/Makefile.cpu	2007-02-28 21:22:47.000000000 +0200
-@@ -4,9 +4,9 @@
- #-mtune exists since gcc 3.4
- HAS_MTUNE	:= $(call cc-option-yn, -mtune=i386)
- ifeq ($(HAS_MTUNE),y)
--tune		= $(call cc-option,-mtune=$(1),)
-+tune		= $(call cc-option,-mtune=$(1),$(2))
- else
--tune		= $(call cc-option,-mcpu=$(1),)
-+tune		= $(call cc-option,-mcpu=$(1),$(2))
- endif
- 
- align := $(cc-option-align)
-@@ -32,7 +32,7 @@
- cflags-$(CONFIG_MWINCHIP3D)	+= $(call cc-option,-march=winchip2,-march=i586)
- cflags-$(CONFIG_MCYRIXIII)	+= $(call cc-option,-march=c3,-march=i486) $(align)-functions=0 $(align)-jumps=0 $(align)-loops=0
- cflags-$(CONFIG_MVIAC3_2)	+= $(call cc-option,-march=c3-2,-march=i686)
--cflags-$(CONFIG_MCORE2)		+= -march=i686 $(call cc-option,-mtune=core2,$(call cc-option,-mtune=generic,-mtune=i686))
-+cflags-$(CONFIG_MCORE2)		+= -march=i686 $(call tune,core2)
- 
- # AMD Elan support
- cflags-$(CONFIG_X86_ELAN)	+= -march=i486
-@@ -42,5 +42,5 @@
- 
- # add at the end to overwrite eventual tuning options from earlier
- # cpu entries
--cflags-$(CONFIG_X86_GENERIC) 	+= $(call tune,generic)
-+cflags-$(CONFIG_X86_GENERIC) 	+= $(call tune,generic,$(call tune,i686))
- 
+Hugh
 
--- 
-Lasse Collin  |  IRC: Larhzu @ IRCnet & Freenode
+> 
+> --- WQ/mm/rmap.c~	2007-02-18 22:56:49.000000000 +0300
+> +++ WQ/mm/rmap.c	2007-02-25 22:43:00.000000000 +0300
+> @@ -183,7 +183,7 @@ void __init anon_vma_init(void)
+>   */
+>  static struct anon_vma *page_lock_anon_vma(struct page *page)
+>  {
+> -	struct anon_vma *anon_vma = NULL;
+> +	struct anon_vma *anon_vma;
+>  	unsigned long anon_mapping;
+>  
+>  	rcu_read_lock();
+> @@ -195,9 +195,16 @@ static struct anon_vma *page_lock_anon_v
+>  
+>  	anon_vma = (struct anon_vma *) (anon_mapping - PAGE_MAPPING_ANON);
+>  	spin_lock(&anon_vma->lock);
+> +	return anon_vma;
+>  out:
+>  	rcu_read_unlock();
+> -	return anon_vma;
+> +	return NULL;
+> +}
+> +
+> +static void page_unlock_anon_vma(struct anon_vma *anon_vma)
+> +{
+> +	spin_unlock(&anon_vma->lock);
+> +	rcu_read_unlock();
+>  }
+>  
+>  /*
+> @@ -333,7 +340,8 @@ static int page_referenced_anon(struct p
+>  		if (!mapcount)
+>  			break;
+>  	}
+> -	spin_unlock(&anon_vma->lock);
+> +
+> +	page_unlock_anon_vma(anon_vma);
+>  	return referenced;
+>  }
+>  
+> @@ -809,7 +817,8 @@ static int try_to_unmap_anon(struct page
+>  				!page_mapped(page))
+>  			break;
+>  	}
+> -	spin_unlock(&anon_vma->lock);
+> +
+> +	page_unlock_anon_vma(anon_vma);
+>  	return ret;
+>  }
+>  
+> 
