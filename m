@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750905AbXB1FwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751824AbXB1GLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750905AbXB1FwS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 00:52:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750917AbXB1FwR
+	id S1751824AbXB1GLf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 01:11:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751829AbXB1GLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 00:52:17 -0500
-Received: from wx-out-0506.google.com ([66.249.82.236]:5553 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750905AbXB1FwR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 00:52:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=k/7FCcx7QCTHRmdAH4t+i2fXd2JFDJDXSVZGvah7TSQt7R4x2CtK0rnpI6+pWXmnYkMRb2Z3T+TLEUVfSza1k8okyS9yY6PtOGwhjwwUgJlMyphWGA6TyjmHzefbQw+wTB0ADj+Un2W9tx3U6G9s7dHGF35R/EM0MytIOsT34Mc=
-Message-ID: <45E5183B.6020108@googlemail.com>
-Date: Wed, 28 Feb 2007 06:50:51 +0100
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070207)
+	Wed, 28 Feb 2007 01:11:35 -0500
+Received: from sslsrv.de ([62.75.159.123]:39327 "EHLO sslsrv.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751824AbXB1GLe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 01:11:34 -0500
+Message-ID: <26291.193.171.152.33.1172643093.squirrel@webmail.marek.priv.at>
+In-Reply-To: <054301c75a66$e78bc790$4b00a8c0@donald>
+References: <37295.193.171.152.61.1172576225.squirrel@webmail.marek.priv.at>
+    <054301c75a66$e78bc790$4b00a8c0@donald>
+Date: Wed, 28 Feb 2007 07:11:33 +0100 (CET)
+Subject: RE: Using dm-crypt for encrypting files
+From: "Ph. Marek" <philipp@marek.priv.at>
+To: rol@as2917.net
+Cc: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6-4.fc1.1.legacy
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21-rc2
-References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> Oh well.. I'm not very proud of this, because quite frankly, -rc2 has way 
-> more changes than I really like.
+> Hello,
+>> - encrypts new files depending on their filename, and generally
 >
->   
+> What about renaming a file ???
+Well, that's a small (but known!) problem with this scheme.
+If you say that everything below a directory "_crypt_" should be
+encrypted, and just move files in there, you've got no problems - the
+encryption settings stay the same.
 
+If you move in/out of encrypted storage, there's two options:
+- if it's a separate filesystem, ie. mounted, you cannot move - you
+  have to copy & delete, which means the data gets correct settings.
+- if its not the same filesystem, you might get a wrongly en/decrypted
+  file.
 
-I got this warning so far :)
-
-drivers/video/Kconfig:1622:warning: 'select' used by config symbol 
-'FB_PS3' refer to undefined symbol 'PS3_PS3AV'
+But I just saw ecryptfs (http://ecryptfs.sourceforge.net/) - that seems to
+do more or less what I need. I'll take a look.
 
 
 Regards,
 
-Gabriel
+Phil
 
+
+
+-- 
+Versioning your /etc, /home or even your whole installation?
+             Try fsvs (fsvs.tigris.org)!
