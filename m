@@ -1,120 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932083AbXB1A21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751059AbXB1AeL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932083AbXB1A21 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 19:28:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932099AbXB1A21
+	id S1751059AbXB1AeL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 19:34:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbXB1AeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 19:28:27 -0500
-Received: from mailin1.k-net.dk ([82.211.192.11]:3272 "EHLO mailin1.k-net.dk"
+	Tue, 27 Feb 2007 19:34:11 -0500
+Received: from mailin1.k-net.dk ([82.211.192.11]:2793 "EHLO mailin1.k-net.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932083AbXB1A20 convert rfc822-to-8bit (ORCPT
+	id S1751059AbXB1AeK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 19:28:26 -0500
+	Tue, 27 Feb 2007 19:34:10 -0500
 Subject: Re: PROBLEM: "BUG:" when resuming from suspend-to-ram
 From: Kristian =?ISO-8859-1?Q?Gr=F8nfeldt_S=F8rensen?= <kriller@vkr.dk>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <200702272330.22968.rjw@sisk.pl>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+In-Reply-To: <200702280105.35015.rjw@sisk.pl>
 References: <1172601905.5428.28.camel@localhost.localdomain>
-	 <200702272304.01756.rjw@sisk.pl>  <200702272330.22968.rjw@sisk.pl>
+	 <200702272334.07985.rjw@sisk.pl>
+	 <1172617960.4587.3.camel@localhost.localdomain>
+	 <200702280105.35015.rjw@sisk.pl>
 Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 8BIT
-Date: Wed, 28 Feb 2007 01:27:21 +0100
-Message-Id: <1172622441.4587.14.camel@localhost.localdomain>
+Date: Wed, 28 Feb 2007 01:33:13 +0100
+Message-Id: <1172622793.4587.18.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.2.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-02-27 at 23:30 +0100, Rafael J. Wysocki wrote:
-> On Tuesday, 27 February 2007 23:04, Rafael J. Wysocki wrote:
-> > Hi,
-> > 
-> > On Tuesday, 27 February 2007 19:45, Kristian Grønfeldt Sørensen wrote:
-> > > Hi.
+On Wed, 2007-02-28 at 01:05 +0100, Rafael J. Wysocki wrote:
+> On Wednesday, 28 February 2007 00:12, Kristian Grønfeldt Sørensen wrote:
+> > On Tue, 2007-02-27 at 23:34 +0100, Rafael J. Wysocki wrote:
+> > > On Tuesday, 27 February 2007 23:23, Kristian Grønfeldt Sørensen wrote:
+> > > > On Tue, 2007-02-27 at 23:04 +0100, Rafael J. Wysocki wrote:
+> > > > > Hi,
+> > > > > 
+> > > > > On Tuesday, 27 February 2007 19:45, Kristian Grønfeldt Sørensen wrote:
+> > > > > > Hi.
+> > > > > > 
+> > > > > > PROBLEM: "BUG:" when resumimg from suspend-to-ram 
+> > > > > > 	
+> > > > > > My laptop have a problem with resuming from suspend-to-ram. 
+> > > > > > It does not occur every time - most of the time, resume works without
+> > > > > > any problem.at all.
+> > > > > > 
+> > > > > > After it occurs, the laptop refuses to go into suspend-to-ram mode until
+> > > > > > next reboot.
+> > > > >  I'm 
+> > > > > What do you mean by "refuses"?  
+> > > > 
+> > > > As in it does not suspend when i close the lid. It just stays on.
 > > > 
-> > > PROBLEM: "BUG:" when resumimg from suspend-to-ram 
-> > > 	
-> > > My laptop have a problem with resuming from suspend-to-ram. 
-> > > It does not occur every time - most of the time, resume works without
-> > > any problem.at all.
-> > > 
-> > > After it occurs, the laptop refuses to go into suspend-to-ram mode until
-> > > next reboot.
+> > > Hm, it doesn't seem to attempt to suspend.  Can you just do
+> > > "echo mem > /sys/power/state" when it's in that state and see what happens?
 > > 
-> > What do you mean by "refuses"?  Are there any suspicious messages in
-> > dmesg?
-> > 
-> > > The system is a Debian unstable running with a self-compiled 2.6.20
-> > > kernel downloaded from kernel.org. 
-> > > 
-> > > I've only tried suspend-to-ram on 2.6.20 so I don't know whether or not
-> > > other versions might have the same problem.
-> > > 
-> > > I'm not subscribed to the list. Please CC me.
-> > 
-> > I guess one of the drivers you use goes awry at some point.  Please provide
-> > us with more information (like dmesg output after a failing resume).
+> > Hmmm. That works. (except for video restore - forgot to save
+> > vbe-state :-( )
 > 
-> I'm sorry, I've just been told you sent it. :-)
-> 
-> > CLASS: Unregistering class device. ID = 'event3'
-> > class_uevent - name = event3
-> > class_device_create_uevent called for event3
-> > device class 'event3': release.
-> > class_device_create_release called for event3
-> > BUG: unable to handle kernel paging request at virtual address 6b6b6b6b
-> >  printing eip:
-> > f8825a81
-> > *pde = 00000000
-> > Oops: 0000 [#1]
-> > PREEMPT
-> > Modules linked in: tg3 battery ac thermal fan button i915 drm binfmt_misc
-> > rfcomm l2cap ipv6 fuse capability commoncap cpufreq_performance aoe
-> > af_packet nls_utf8 ntfs nls_iso8859_1 nls_cp437 vfat fat dm_snapshot
-> > dm_mirror dm_mod ieee80211_cr ypt_tkip ieee80211_crypt pd6729 snd_seq_dummy
-> > snd_seq_oss snd_seq_midi snd_rawmi di snd_seq_midi_event snd_seq
-> > snd_seq_device sermouse hci_vhci hci_uart wbsd mmc _block mmc_core tun msr
-> > cpuid cpufreq_stats container video speedstep_lib speeds tep_centrino
-> > processor sr_mod sbp2 scsi_mod ide_cd cdrom eth1394 hci_usb bluetoo th
-> > pcmcia firmware_class irda snd_intel8x0m snd_intel8x0 snd_ac97_codec
-> > crc_ccit t ac97_bus snd_pcm_oss snd_mixer_oss rtc i2c_i801 snd_pcm
-> > snd_timer ohci1394 iee e1394 i2c_core serio_raw intel_agp iTCO_wdt snd
-> > soundcore snd_page_alloc ehci_hc d pcspkr uhci_hcd yenta_socket
-> > rsrc_nonstatic pcmcia_core usbcore agpgart moused ev evdev
-> > CPU:    0
-> > EIP:    0060:[<f8825a81>]    Not tainted VLI
-> > EFLAGS: 00010202   (2.6.20-x300 #1)
-> > EIP is at evdev_disconnect+0xb1/0xe0 [evdev]
-> 
-> This points us to a suspect.  Can you please run "gdb vmlinux" against the
-> vmlinux in your kernel sources directory and then
-> 
-> gdb> l *evdev_disconnect+0xb1
+> Please see: http://en.opensuse.org/s2ram
 
-OK. Recopiled the kernel with CONFIG_DEBUG_INFO=y
-
-This gives: 
-
-(gdb) l *evdev_disconnect+0xb1
-No symbol "evdev_disconnect" in current context.
-
-I guess you meant gdb drivers/input/evdev.ko
-
-This gives:
-
-(gdb) l *evdev_disconnect+0xb1
-0xa81 is in evdev_disconnect (include/asm/processor.h:716).
-711        However we don't do prefetches for pre XP Athlons currently
-712        That should be fixed. */
-713     #define ARCH_HAS_PREFETCH
-714     static inline void prefetch(const void *x)
-715     {
-716             alternative_input(ASM_NOP4,
-717                               "prefetchnta (%1)",
-718                               X86_FEATURE_XMM,
-719                               "r" (x));
-720     }
+Looks interesting. I'll give it a try.
+Thanks.
 
 /Kristian
