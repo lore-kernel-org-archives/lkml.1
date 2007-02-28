@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751734AbXB1P3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751796AbXB1PfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751734AbXB1P3I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 10:29:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbXB1P3H
+	id S1751796AbXB1PfJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 10:35:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbXB1PfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 10:29:07 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:4677 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751729AbXB1P3G (ORCPT
+	Wed, 28 Feb 2007 10:35:09 -0500
+Received: from mail.cse.ohio-state.edu ([164.107.123.5]:57063 "EHLO
+	cse.ohio-state.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751796AbXB1PfI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 10:29:06 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 28 Feb 2007 07:29:03 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] epoll reduced (to 1) number of passes over the ready
- set ...
-In-Reply-To: <200702281213.59695.dada1@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0702280727590.5935@alien.or.mcafeemobile.com>
-References: <Pine.LNX.4.64.0702261819250.4949@alien.or.mcafeemobile.com>
- <200702271015.33123.dada1@cosmosbay.com> <Pine.LNX.4.64.0702270802140.5315@alien.or.mcafeemobile.com>
- <200702281213.59695.dada1@cosmosbay.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 28 Feb 2007 10:35:08 -0500
+Message-ID: <45E5A0E4.2000301@cse.ohio-state.edu>
+Date: Wed, 28 Feb 2007 10:33:56 -0500
+From: Xiaoning Ding <dingxn@cse.ohio-state.edu>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061215)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Benoit Boissinot <bboissin@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: a bug in AS scheduler?
+References: <45E5038F.1090200@cse.ohio-state.edu> <20070228121040.GW3733@kernel.dk> <40f323d00702280525g3d898a9bm1297dc32b8f7fda2@mail.gmail.com> <20070228133458.GC3733@kernel.dk>
+In-Reply-To: <20070228133458.GC3733@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Feb 2007, Eric Dumazet wrote:
-
-> On Tuesday 27 February 2007 17:03, Davide Libenzi wrote:
-> > On Tue, 27 Feb 2007, Eric Dumazet wrote:
-> > > On Tuesday 27 February 2007 03:32, Davide Libenzi wrote:
-> > > > Epoll is doing multiple passes over the ready set at the moment,
-> > > > because of the constraints over the f_op->poll() call. Looking at the
-> > > > code again, I noticed that we already hold the epoll semaphore in read,
-> > > > and this (together with other locking conditions that hold while doing
-> > > > an epoll_wait()) can lead to a smarter way to "ship" events to
-> > > > userspace (in a single pass). I added more (even) more comments to the
-> > > > code to explain the conditions why certain operations are safe.
-> > > > This is a stress application that can be used to test the new code. It
-> > > > spwans multiple thread and call epoll_wait() and epoll_ctl() from many
-> > > > threads. Stress tested on my dual Opteron 254 w/out any problems.
-> > >
-> > > Davide,
-> > >
-> > > This is really cool, because the size of epitem would fit now in 128
-> > > bytes instead of 192 (on x86_64 platforms). So we also reduce memory
-> > > usage.
-> >
-> > Yeah, I forgot to mention that I removed the txlink member.
+Jens Axboe wrote:
+> On Wed, Feb 28 2007, Benoit Boissinot wrote:
+>> On 2/28/07, Jens Axboe <jens.axboe@oracle.com> wrote:
+>>> On Tue, Feb 27 2007, Xiaoning Ding wrote:
+>>>> Hi,
+>>>>
+>>>> I am reading the source code AS scheduler in 2.6.18(as-ioscheduler.c).
+>>>> In function as_close_req, variable delay is in millisecond, while
+>>>> ad->antic_expire is in jiffies. Doesn't the comparison of delay and
+>>>> ad->antic_expire make any problem?
+>>>> The related source code is quoted blow:
+>>>>
+>>>>       if (ad->antic_status == ANTIC_OFF || !ad->ioc_finished)
+>>>>               delay = 0;
+>>>>       else
+>>>>               delay = ((jiffies - ad->antic_start) * 1000) / HZ;
+>>> antic_start is in jiffies, the difference is here multiplied by 1000 and
+>>> divided by HZ to turn it into msecs. so delay is in msecs.
+>>>
+>> I am pretty sure Xiaoning was talking about antic_expire, particularly
+>> this comparison:
+>>
+>>     else if (delay <= 20 && delay <= ad->antic_expire)
 > 
-> I am pretty sure you can also remove revents member from epitem.
-> 
-> It would greatly benefit to 32bits platforms, because resulting size would be 
-> 64 bytes instead of 68 (so a 50 % reduction because of 64 bytes alignment)
+> Ah, I misread the name. That does look like a bug, antic_expire is in
+> jiffies.
 
-Yes indee. That does not need to exist anymore, once the de-coupled loop 
-is gone. Thx, I'll make a new patch later today.
+You got it.
 
-
-- Davide
-
+Xiaoning
 
