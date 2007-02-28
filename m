@@ -1,51 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932765AbXB1Xz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932794AbXB1X7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932765AbXB1Xz2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 18:55:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932768AbXB1Xz2
+	id S932794AbXB1X7c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 18:59:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932796AbXB1X7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 18:55:28 -0500
-Received: from fmmailgate01.web.de ([217.72.192.221]:53164 "EHLO
-	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932764AbXB1Xz0 (ORCPT
+	Wed, 28 Feb 2007 18:59:31 -0500
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:47262 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932794AbXB1X7b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 18:55:26 -0500
-X-Greylist: delayed 1855 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Feb 2007 18:55:26 EST
-Message-ID: <45E60EBD.2090806@web.de>
-Date: Thu, 01 Mar 2007 00:22:37 +0100
-From: Jan Kiszka <jan.kiszka@web.de>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+	Wed, 28 Feb 2007 18:59:31 -0500
+Date: Thu, 1 Mar 2007 00:59:28 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.16.43-rc1
+Message-ID: <20070228235928.GA10921@stusta.de>
 MIME-Version: 1.0
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-CC: linux-kernel@vger.kernel.org, bernhard.walle@gmx.de,
-       gernot.hillier@siemens.com
-Subject: Re: MOST(Media Oriented Systems Transport) Interface?
-References: <200702231826.30395.rgetz@blackfin.uclinux.org>
-In-Reply-To: <200702231826.30395.rgetz@blackfin.uclinux.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robin Getz wrote:
-> Does anyone have a pointer for a MOST (Media Oriented Systems Transport) driver?
-> 
-> http://en.wikipedia.org/wiki/Media_Oriented_Systems_Transport
-> 
-> I have seen announcements of Linux systems that support MOST:
-> 
-> http://linuxdevices.com/news/NS2586090082.html
-> 
-> But I have not seen the driver architecture, or the protocol that people are running on them...
-> 
-> Any pointers? 
+New hwmon drivers since 2.6.16.42 for the following hardware:
+- National Semiconductor pc87427
+- SMSC lpc47m192 and lpc47m997
+- Winbond w83791d
 
-The were some rumours earlier, but now I actually stumbled over the
-release - and recalled this thread.
 
-This might be what you are looking for:
+Location:
+ftp://ftp.kernel.org/pub/linux/kernel/people/bunk/linux-2.6.16.y/testing/
 
-http://most4linux.sourceforge.net/
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
 
-Jan
+
+Changes since 2.6.16.42:
+
+Adrian Bunk (1):
+      Linux 2.6.16.43-rc1
+
+Alexey Dobriyan (1):
+      [IPV4/IPV6] multicast: Check add_grhead() return value
+
+Charles Spirakis (2):
+      HWMON: w83791d: New hardware monitoring driver for the Winbond W83791D
+      w83791d: Documentation update
+
+Francois Romieu (1):
+      sis190: failure to set the MAC address from EEPROM
+
+Hartmut Rick (1):
+      smsc47m192: New hwmon driver for SMSC LPC47M192/997
+
+Ilpo Järvinen (1):
+      [TCP]: Prevent pseudo garbage in SYN's advertized window
+
+Jean Delvare (3):
+      hwmon: New PC87427 hardware monitoring driver
+      hwmon: Add support for the Winbond W83687THF
+      i2c-isa: Restore driver owner
+
+Jim Cromie (2):
+      hwmon: Allow sensor attributes arrays
+      hwmon: Refactor SENSOR_DEVICE_ATTR_2
+
+Jordan Crouse (1):
+      hwmon lm83: Add LM82 support
+
+Kirill Korotaev (1):
+      fix ext3 block bitmap leakage
+
+Marcel Siegert (1):
+      V4L/DVB: Dvbdev: fix illegal re-usage of fileoperations struct
+
+Martin Devera (1):
+      I2C: i2c-piix4: Add Broadcom HT-1000 support
+
+Patrick McHardy (1):
+      [DECNET]: Fix sfuzz hanging on 2.6.18
+
+Rudolf Marek (1):
+      i2c-piix4: Add ATI IXP200/300/400 support
+
+Stephen Hemminger (6):
+      sky2: fix ram buffer allocation settings
+      sky2: allow multicast pause frames
+      sky2: fix for use on big endian
+      sky2: more stats
+      sky2: add more pci ids
+      sky2: email and version change.
+
+
+ Documentation/hwmon/lm83            |   16 
+ Documentation/hwmon/pc87427         |   38 
+ Documentation/hwmon/smsc47m192      |  102 ++
+ Documentation/hwmon/sysfs-interface |    6 
+ Documentation/hwmon/w83627hf        |    4 
+ Documentation/hwmon/w83791d         |  120 ++
+ Documentation/i2c/busses/i2c-piix4  |    4 
+ Makefile                            |    2 
+ drivers/hwmon/Kconfig               |   57 +
+ drivers/hwmon/Makefile              |    3 
+ drivers/hwmon/it87.c                |    1 
+ drivers/hwmon/lm78.c                |    1 
+ drivers/hwmon/lm83.c                |   50 -
+ drivers/hwmon/pc87360.c             |    1 
+ drivers/hwmon/pc87427.c             |  627 +++++++++++++
+ drivers/hwmon/sis5595.c             |    1 
+ drivers/hwmon/smsc47b397.c          |    1 
+ drivers/hwmon/smsc47m1.c            |    1 
+ drivers/hwmon/smsc47m192.c          |  648 ++++++++++++++
+ drivers/hwmon/via686a.c             |    1 
+ drivers/hwmon/vt8231.c              |    1 
+ drivers/hwmon/w83627ehf.c           |    1 
+ drivers/hwmon/w83627hf.c            |   73 +
+ drivers/hwmon/w83781d.c             |    1 
+ drivers/hwmon/w83791d.c             | 1256 ++++++++++++++++++++++++++++
+ drivers/i2c/busses/Kconfig          |    9 
+ drivers/i2c/busses/i2c-piix4.c      |   10 
+ drivers/media/dvb/dvb-core/dvbdev.c |   13 
+ drivers/net/sis190.c                |    2 
+ drivers/net/sky2.c                  |  146 ++-
+ fs/ext3/inode.c                     |    1 
+ include/linux/hwmon-sysfs.h         |   24 
+ include/linux/pci_ids.h             |    4 
+ net/decnet/af_decnet.c              |    4 
+ net/ipv4/igmp.c                     |    2 
+ net/ipv4/tcp_output.c               |    4 
+ net/ipv6/mcast.c                    |    2 
+ 37 files changed, 3126 insertions(+), 111 deletions(-)
+
