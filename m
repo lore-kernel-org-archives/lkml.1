@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752176AbXB1Qej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752229AbXB1Qlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752176AbXB1Qej (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 11:34:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbXB1Qej
+	id S1752229AbXB1Qlb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 11:41:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbXB1Qlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 11:34:39 -0500
-Received: from nz-out-0506.google.com ([64.233.162.239]:54823 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752176AbXB1Qei (ORCPT
+	Wed, 28 Feb 2007 11:41:31 -0500
+Received: from suite3.10tohost.com ([69.90.40.118]:42701 "EHLO
+	suite3.10tohost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751968AbXB1Qla (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 11:34:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VaMxcJs34KoitLdJP7KWSHxTJrnISEhuSYa/IfXNkGcI/7Z1fqMKoweXvx8gWsYZ4TpNtEKqScx4LbzOgrpjyKaT2iEZ2KugoCmUEet1itg2Ed0DKpsFOsz4Q/zHrexHSbBi0y17ddIZ20xv3vAIlokJsNSvQxu+7nTgDufUiQc=
-Message-ID: <d120d5000702280834v64748e9fj485642735866b994@mail.gmail.com>
-Date: Wed, 28 Feb 2007 11:34:31 -0500
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Fausto Carvalho" <faustocarva@gmail.com>
-Subject: Re: Fwd: Using serio_register_driver
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <abe01d5c0702270241s75f70301y6e1cddacf65e8829@mail.gmail.com>
+	Wed, 28 Feb 2007 11:41:30 -0500
+X-Greylist: delayed 3059 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Feb 2007 11:41:30 EST
+Date: Wed, 28 Feb 2007 07:36:17 -0800
+From: Greg KH <gregkh@suse.de>
+To: Jean Tourrilhes <jt@hpl.hp.com>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 2.6.20] kobject net ifindex + rename
+Message-ID: <20070228153617.GA5670@suse.de>
+References: <20070228012741.GA3988@bougret.hpl.hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <abe01d5c0702261503p3212d7dcg925588bb325a4460@mail.gmail.com>
-	 <abe01d5c0702261732k6634ff02u69e07562a39b9a8d@mail.gmail.com>
-	 <200702270034.09603.dtor@insightbb.com>
-	 <abe01d5c0702270241s75f70301y6e1cddacf65e8829@mail.gmail.com>
+In-Reply-To: <20070228012741.GA3988@bougret.hpl.hp.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Spam-Score: -2.6 (--)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/27/07, Fausto Carvalho <faustocarva@gmail.com> wrote:
-> Well, i have a 8042 controller "connected" to the keyboard controller
-> that send information about battery and others to the keyboard
-> interrupt and io ports in the format of keystrokes. I want a way to
-> not alter atkbd but to create another driver that lives together with
-> atkbd. Is there a way?
->
+On Tue, Feb 27, 2007 at 05:27:41PM -0800, Jean Tourrilhes wrote:
+> diff -u -p linux/drivers/base/class.j1.c linux/drivers/base/class.c
+> --- linux/drivers/base/class.j1.c	2007-02-26 18:38:10.000000000 -0800
+> +++ linux/drivers/base/class.c	2007-02-27 15:52:37.000000000 -0800
+> @@ -841,6 +841,8 @@ int class_device_rename(struct class_dev
 
-Depending on how big and box-specific the code is we could either add
-it to i8042
-or you need to imaplement a pass-through serio port in your driver.
-You would filter out "interesting" bytes and pass the rest to the new
-serio port that your driver shoudl register. Tnen atkbd would bind to
-that new port and function as usual. The only problem is that you
-woudl need to bind you driver to the keyboard port from userspace (via
-sysfs - /sys/bus/devices/serioX/drvctl)
+This function is not in the 2.6.21-rc2 kernel, so you might want to
+rework this patch a bit :)
 
--- 
-Dmitry
+Also, it's userspace that causes the rename to happen, so it knows it
+did it, why should the kernel have to emit a message to tell userspace
+again what just happened?
+
+thanks,
+
+greg k-h
