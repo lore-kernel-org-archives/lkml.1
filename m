@@ -1,74 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751926AbXB1XOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751930AbXB1XOZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751926AbXB1XOY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 18:14:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbXB1XOY
+	id S1751930AbXB1XOZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 18:14:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbXB1XOZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 18:14:24 -0500
-Received: from smtp105.sbc.mail.re2.yahoo.com ([68.142.229.100]:25046 "HELO
+	Wed, 28 Feb 2007 18:14:25 -0500
+Received: from smtp105.sbc.mail.re2.yahoo.com ([68.142.229.100]:25063 "HELO
 	smtp105.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751926AbXB1XOX (ORCPT
+	by vger.kernel.org with SMTP id S1751930AbXB1XOY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 18:14:23 -0500
+	Wed, 28 Feb 2007 18:14:24 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:MIME-Version:Content-Disposition:Message-Id:Cc:Content-Type:Content-Transfer-Encoding;
-  b=m4KTTqH39Cy6KP9pylAiy2HGNZKsTR/rk9gzUP5sSTYBIReM5F+iuUKx2jpU5tY+pkVLtLJlpFSiCbC90tplW4rvvp8h4BPUu+su6oaaNuTWADJDZUmbv9yuk8v17tViPvXzLZEVWGl4MiUtUdbNRKIRWDngRpgd39Leq1yonjQ=  ;
-X-YMail-OSG: zBsT2QoVM1lSrJ0EkHI39.nvGVt.SLwI.BCTE0_VuCmjD3TqJM3d1o1AJ8CDBf1nF6pDHKl4nOR7nhzRNooe_qq_nevUITBx_9RhHuDOVl4k8MuJhRCdAJBC6EnHXrhbdxtmdhYJgm1O.g--
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=aTg5lLJU6XJFHmXGP/1RaFdQWG4xfeeaDOBoqLJ7hqPY+Cw6JxGarmXFgUanygA12AZZovQqmXWzOq9FoSqmYBUfqkb0j0x//vcPeXkekXz2vaAdYXdNRzOrAz/zqYfD0JDBtqK/IDS+ZHQPs8IYzm8bcgIUDGKRBxrx5eqZN9c=  ;
+X-YMail-OSG: Ki1.JRMVM1nZjI39rg6Sh2Od5ok8R8N08TGuH2o746tUP8cZXzmJMrMB_WV2hFRHrr2gQhe8Ah5QHI5IHQMUzsK0.VaO8v1lLLwZIdg7tLua6NUj_vIgVhEvjh_5xUeCWc_yZbCtnNILg_0-
 From: David Brownell <david-b@pacbell.net>
 To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: [patch 2.6.21-rc2] init dma masks in pnp_dev
-Date: Wed, 28 Feb 2007 15:14:01 -0800
+Subject: [patch 2.6.21-rc2] parport is an orphan
+Date: Wed, 28 Feb 2007 15:14:20 -0800
 User-Agent: KMail/1.7.1
+Cc: Andrea Arcangeli <andrea@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jean Delvare <khali@linux-fr.org>, philb@gnu.org, tim@cyberelk.net
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200702281514.01521.david-b@pacbell.net>
-Cc: Adam Belay <abelay@novell.com>, perex@suse.cz
+Message-Id: <200702281514.21402.david-b@pacbell.net>
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PNP now initializes device dma masks, which prevents oopses when generic
-dma calls are made using pnp device nodes.
-
-This assumes PNP only uses ISA DMA, with 24 bit addresses; and that it's
-safe to init those masks for all devices (rather than finding out which
-devices have been assigned DMA channels, and handling only those).
+The writing on the wall seem to be that the parport stack is orphaned,
+rather than maintained by four folk ... and having a webpage that says
+the latest patches are based on a 2.5 kernel.
 
 Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 
-Index: g26/include/linux/pnp.h
+Index: g26/MAINTAINERS
 ===================================================================
---- g26.orig/include/linux/pnp.h	2007-02-12 00:31:26.000000000 -0800
-+++ g26/include/linux/pnp.h	2007-02-18 20:18:55.000000000 -0800
-@@ -177,6 +177,7 @@ static inline void pnp_set_card_drvdata 
+--- g26.orig/MAINTAINERS	2007-02-28 12:46:00.000000000 -0800
++++ g26/MAINTAINERS	2007-02-28 12:47:58.000000000 -0800
+@@ -2552,16 +2552,8 @@ L:	i2c@lm-sensors.org
+ S:	Maintained
  
- struct pnp_dev {
- 	struct device dev;		/* Driver Model device interface */
-+	u64 dma_mask;
- 	unsigned char number;		/* used as an index, must be unique */
- 	int status;
+ PARALLEL PORT SUPPORT
+-P:	Phil Blundell
+-M:	philb@gnu.org
+-P:	Tim Waugh
+-M:	tim@cyberelk.net
+-P:	David Campbell
+-P:	Andrea Arcangeli
+-M:	andrea@suse.de
+ L:	linux-parport@lists.infradead.org
+-W:	http://people.redhat.com/twaugh/parport/
+-S:	Maintained
++S:	Orphan
  
-Index: g26/drivers/pnp/core.c
-===================================================================
---- g26.orig/drivers/pnp/core.c	2005-11-12 22:24:18.000000000 -0800
-+++ g26/drivers/pnp/core.c	2007-02-18 20:42:17.000000000 -0800
-@@ -14,6 +14,7 @@
- #include <linux/string.h>
- #include <linux/slab.h>
- #include <linux/errno.h>
-+#include <linux/dma-mapping.h>
- 
- #include "base.h"
- 
-@@ -114,6 +115,8 @@ int __pnp_add_device(struct pnp_dev *dev
- 	int ret;
- 	pnp_fixup_device(dev);
- 	dev->dev.bus = &pnp_bus_type;
-+	dev->dev.dma_mask = &dev->dma_mask;
-+	dev->dma_mask = dev->dev.coherent_dma_mask = DMA_24BIT_MASK;
- 	dev->dev.release = &pnp_release_device;
- 	dev->status = PNP_READY;
- 	spin_lock(&pnp_lock);
+ PARIDE DRIVERS FOR PARALLEL PORT IDE DEVICES
+ P:	Tim Waugh
