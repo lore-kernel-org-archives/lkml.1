@@ -1,52 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752072AbXB1Iyg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752080AbXB1IzG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752072AbXB1Iyg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 03:54:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752076AbXB1Iyg
+	id S1752080AbXB1IzG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 03:55:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbXB1IzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 03:54:36 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:33480 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752072AbXB1Iyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 03:54:35 -0500
-Date: Wed, 28 Feb 2007 09:54:24 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Gautham R Shenoy <ego@in.ibm.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Subject: Re: Problem with freezable workqueues
-Message-ID: <20070228085424.GA8442@elf.ucw.cz>
-References: <200702272251.28844.rjw@sisk.pl> <20070227232855.GA457@tv-sign.ru> <200702280057.36198.rjw@sisk.pl>
+	Wed, 28 Feb 2007 03:55:06 -0500
+Received: from mailhub.sw.ru ([195.214.233.200]:32790 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752080AbXB1IzE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 03:55:04 -0500
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+CC: Linux Memory Management <linux-mm@kvack.org>, devel@openvz.org
+Subject: [PATCH] mm: be sure to trim blocks after direct_io has failed 
+From: Dmitriy Monakhov <dmonakhov@openvz.org>
+Date: Wed, 28 Feb 2007 11:55:23 +0300
+Message-ID: <87wt22irus.fsf@sw.ru>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200702280057.36198.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+This is updated version of patch aimed to fix direct_io error handling issue
+i've previously sent 2 wheeks ago. If you don't like anything in this patch
+plese let me know.
 
-> > I'm afraid this is racy. We can't touch *cwq, it may be freed. Suppose
-> > that another thread does destroy_workqueue(), and we thaw that thread
-> > before cwq->thread.
-> 
-> Okay, in that case I'd suggest removing create_freezeable_workqueue() and
-> make all workqueues nonfreezable once again for 2.6.21 (as far as I know, only
-> the two XFS workqueues are affected).
-> 
-> Pavel, would that be acceptable?
+Changes:
+  - comments added. I think now it is clearly describe things.
+  - patch prepared against 2.6.20-mm2
 
-Not sure... I really dislike XFS running while we are doing
-swsusp. I'd like to move in direction of freezeable workqueues in the
-future.
+How this patch tested:
+  - LTP test, and other readv/writev op tests.
+  - fsstress test.
+  - manual direct_io tests.
 
-Anyway, if it gets us out of current trouble... yes I guess we can do
-it.
-									Pavel
+Log:
+ - Move common segment checks to separate helper function.
+ - Trim off blocks after generic_file_direct_write() has failed.
+ - Update out of date comments about direct_io locking rules.
+
+Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
+---
+ mm/filemap.c |  107 +++++++++++++++++++++++++++++++++++----------------------
+ 1 files changed, 66 insertions(+), 41 deletions(-)
+
+diff --git a/mm/filemap.c b/mm/filemap.c
+index a9284c2..c81184c 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1147,6 +1147,38 @@ success:
+ 	return size;
+ }
+ 
++/*
++ * Performs necessary checks before doing a write
++ *
++ * Adjust number of segments and amount of bytes to write.
++ * Returns appropriate error code that caller should return or
++ * zero in case that write should be allowed.
++ */
++int generic_segment_checks(const struct iovec *iov, unsigned long *nr_segs,
++		size_t *count, unsigned long access_flags)
++{
++	unsigned long   seg;
++	for (seg = 0; seg < *nr_segs; seg++) {
++		const struct iovec *iv = &iov[seg];
++
++		/*
++		 * If any segment has a negative length, or the cumulative
++		 * length ever wraps negative then return -EINVAL.
++		 */
++		*count += iv->iov_len;
++		if (unlikely((ssize_t)(*count|iv->iov_len) < 0))
++			return -EINVAL;
++		if (access_ok(access_flags, iv->iov_base, iv->iov_len))
++			continue;
++		if (seg == 0)
++			return -EFAULT;
++		*nr_segs = seg;
++		*count -= iv->iov_len;	/* This segment is no good */
++		break;
++	}
++	return 0;
++}
++
+ /**
+  * generic_file_aio_read - generic filesystem read routine
+  * @iocb:	kernel I/O control block
+@@ -1168,24 +1200,9 @@ generic_file_aio_read(struct kiocb *iocb, const struct iovec *iov,
+ 	loff_t *ppos = &iocb->ki_pos;
+ 
+ 	count = 0;
+-	for (seg = 0; seg < nr_segs; seg++) {
+-		const struct iovec *iv = &iov[seg];
+-
+-		/*
+-		 * If any segment has a negative length, or the cumulative
+-		 * length ever wraps negative then return -EINVAL.
+-		 */
+-		count += iv->iov_len;
+-		if (unlikely((ssize_t)(count|iv->iov_len) < 0))
+-			return -EINVAL;
+-		if (access_ok(VERIFY_WRITE, iv->iov_base, iv->iov_len))
+-			continue;
+-		if (seg == 0)
+-			return -EFAULT;
+-		nr_segs = seg;
+-		count -= iv->iov_len;	/* This segment is no good */
+-		break;
+-	}
++	retval = generic_segment_checks(iov, &nr_segs, &count, VERIFY_WRITE);
++	if (retval)
++		return retval;
+ 
+ 	/* coalesce the iovecs and go direct-to-BIO for O_DIRECT */
+ 	if (filp->f_flags & O_DIRECT) {
+@@ -2080,8 +2097,9 @@ generic_file_direct_write(struct kiocb *iocb, const struct iovec *iov,
+ 	/*
+ 	 * Sync the fs metadata but not the minor inode changes and
+ 	 * of course not the data as we did direct DMA for the IO.
+-	 * i_mutex is held, which protects generic_osync_inode() from
+-	 * livelocking.  AIO O_DIRECT ops attempt to sync metadata here.
++	 * i_mutex may not being held, if so some specific locking
++	 * ordering must protect generic_osync_inode() from livelocking.
++	 * AIO O_DIRECT ops attempt to sync metadata here.
+ 	 */
+ 	if ((written >= 0 || written == -EIOCBQUEUED) &&
+ 	    ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
+@@ -2271,30 +2289,14 @@ __generic_file_aio_write_nolock(struct kiocb *iocb, const struct iovec *iov,
+ 	size_t ocount;		/* original count */
+ 	size_t count;		/* after file limit checks */
+ 	struct inode 	*inode = mapping->host;
+-	unsigned long	seg;
+ 	loff_t		pos;
+ 	ssize_t		written;
+ 	ssize_t		err;
+ 
+ 	ocount = 0;
+-	for (seg = 0; seg < nr_segs; seg++) {
+-		const struct iovec *iv = &iov[seg];
+-
+-		/*
+-		 * If any segment has a negative length, or the cumulative
+-		 * length ever wraps negative then return -EINVAL.
+-		 */
+-		ocount += iv->iov_len;
+-		if (unlikely((ssize_t)(ocount|iv->iov_len) < 0))
+-			return -EINVAL;
+-		if (access_ok(VERIFY_READ, iv->iov_base, iv->iov_len))
+-			continue;
+-		if (seg == 0)
+-			return -EFAULT;
+-		nr_segs = seg;
+-		ocount -= iv->iov_len;	/* This segment is no good */
+-		break;
+-	}
++	err = generic_segment_checks(iov, &nr_segs, &ocount, VERIFY_READ);
++	if (err)
++		return err;
+ 	if (unlikely(aio_restarted())) {
+ 		/* nothing to transfer, may just need to sync data */
+ 		return ocount;
+@@ -2420,6 +2422,29 @@ ssize_t generic_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
+ 	mutex_lock(&inode->i_mutex);
+ 	ret = __generic_file_aio_write_nolock(iocb, iov, nr_segs,
+ 			&iocb->ki_pos);
++	/* 
++	 * If __generic_file_aio_write_nolock has failed.
++	 * This may happen because of:
++	 * 1) Bad segment found (failed before actual write attempt)
++	 * 2) Segments are good, but actual write operation failed
++	 *    and may have instantiated a few blocks outside i_size.
++	 *   a) in case of buffered write these blocks was already
++	 *   	trimmed by generic_file_buffered_write()
++	 *   b) in case of O_DIRECT these blocks weren't trimmed yet.
++	 *
++	 * In case of (2b) these blocks have to be trimmed off again.
++	 */
++	if (unlikely( ret < 0 && file->f_flags & O_DIRECT)) {
++		unsigned long nr_segs_avail = nr_segs;
++		size_t count = 0;
++		if (!generic_segment_checks(iov, &nr_segs_avail, &count,
++				VERIFY_READ)) {
++			/*It is (2b) case, because segments are good*/
++			loff_t isize = i_size_read(inode);
++			if (pos + count > isize)
++				vmtruncate(inode, isize);
++		}
++	}
+ 	mutex_unlock(&inode->i_mutex);
+ 
+ 	if (ret > 0 && ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
+@@ -2436,8 +2461,8 @@ ssize_t generic_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
+ EXPORT_SYMBOL(generic_file_aio_write);
+ 
+ /*
+- * Called under i_mutex for writes to S_ISREG files.   Returns -EIO if something
+- * went wrong during pagecache shootdown.
++ * May be called without i_mutex for writes to S_ISREG files.
++ * Returns -EIO if something went wrong during pagecache shootdown.
+  */
+ static ssize_t
+ generic_file_direct_IO(int rw, struct kiocb *iocb, const struct iovec *iov,
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.5.0.1
+
