@@ -1,99 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750939AbXB1HWJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750951AbXB1HYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750939AbXB1HWJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 02:22:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbXB1HWJ
+	id S1750951AbXB1HYV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 02:24:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbXB1HYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 02:22:09 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38188 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750937AbXB1HWG (ORCPT
+	Wed, 28 Feb 2007 02:24:21 -0500
+Received: from an-out-0708.google.com ([209.85.132.249]:31270 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750951AbXB1HYU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 02:22:06 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC] killing the NR_IRQS arrays.
-References: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com>
-	<1171844753.5644.174.camel@localhost.localdomain>
-	<m1abyzl4yw.fsf@ebiederm.dsl.xmission.com>
-	<200702280141.51420.arnd@arndb.de>
-Date: Wed, 28 Feb 2007 00:20:34 -0700
-In-Reply-To: <200702280141.51420.arnd@arndb.de> (Arnd Bergmann's message of
-	"Wed, 28 Feb 2007 01:41:50 +0100")
-Message-ID: <m14pp6kat9.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 28 Feb 2007 02:24:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Z29XB02zywAHA8bwZSoewakCFQ+P97YE20KMgr/y941WD7wR7+4QxLpVS+YSkRAws5TL5Zd2uoEIpSwYsyElTSNtVHa35QiZ55BmY9/M7OgM0WSLGw+oPFjtktXUWPwWkhKfQeTN5cw0dOIa0D4qYEVhd1E5/HZZ53l4ZbKmBfI=
+Message-ID: <9c21eeae0702272323x73ad593lf6b99ea7dd23056@mail.gmail.com>
+Date: Tue, 27 Feb 2007 23:23:57 -0800
+From: "David Brown" <dmlb2000@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.21-rc2
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0702272105220.12485@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann <arnd@arndb.de> writes:
-
+On 2/27/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
 >
-> Introducing the irq_request() etc. functions that take a struct irq*
-> instead of an int sounds good, but I'd hope we can avoid using those
-> in device drivers and do a separate abstraction for each bus_type
-> that deals with interrupts. I'm not sure if that's possible for
-> each bus_type, but the ones I have worked with in the past should
-> allow that:
+> Oh well.. I'm not very proud of this, because quite frankly, -rc2 has way
+> more changes than I really like.
 >
-> pci: each device/function has a unique irq, drivers need not know
->      about it afaics.
-Then there is msi and with msi-x you can have up to 4K irqs.
+> And yeah, it's largely my fault, because I simply missed a V4L/DVB merge
+> that came in before the merge window closed, but since I didn't notice it
+> didn't make -rc1, and as such it got merged late and is in -rc2 instead.
+>
+> But because I'll flail around wildly and rather blame anything else than
+> my own incompetence, I'll just claim that all the other kernel developers
+> have been irresponsible, and caused -rc2 to be bigger than needed. In some
+> areas (you know who you are) it may even be true..
+>
+> Apart from the V4L/DVB merge, we've got a late PARISC update, and a number
+> of driver updates (ata, networking, usb) changes. Along with the normal
+> smattering of random stuff (core networking, selinux, infiniband, agp,
+> mips, arm).
+>
+> Anyway, I really hope the thing starts calming down now, and everybody
+> should take a hard look at the regressions lists that Adrian has started
+> sending out. We already fixed some of them, but there is more to go..
+>
+> Thanks,
+>
+>                 Linus
 
-> isa/pnp: numbers from 1 to 15 are the right abstraction here, that
->      how isa has worked for ages.
+I got this compile error:
 
-There is some truth there yes.  But for ISA the numbers are really
-0 to 15.  
+  CC      arch/i386/kernel/io_apic.o
+arch/i386/kernel/io_apic.c: In function 'setup_IO_APIC_irqs':
+arch/i386/kernel/io_apic.c:1357: error: 'struct irq_desc' has no
+member named 'affinity'
+arch/i386/kernel/io_apic.c: In function 'io_apic_set_pci_routing':
+arch/i386/kernel/io_apic.c:2878: error: 'struct irq_desc' has no
+member named 'affinity'
+make[1]: *** [arch/i386/kernel/io_apic.o] Error 1
+make: *** [arch/i386/kernel] Error 2
 
-> s390: got rid of irq numbers already
+didn't happen with rc1
 
-Yes.  I should really look at that more and see if I could bring
-s390 into the generic irq code with my planned changes.
-
-> ofw: an open firmware device can have a number of interrupts, but
->      like PCI, the driver only needs to know things like 'first
->      irq of this device', not how it's connected
-Yes.
-
-> ps3: irqs are requested from the firmware for each device, this
->      can happen under the covers.
-> mmc, usb, phy, ieee1394: these already have a higl-level abstraction
->      for interrupt events
-> platform: dunno, probably these really should use the struct irq
->      directly
-> eisa, mca, pcmcia, zorro, ...: no idea, but possibly similar to PCI.
-
-Largely for pci we already have dev->irq and the device just calls
-request_irq to get things going.  The challenge is that the token
-in dev->irq get's looked at.
-
-> Note that we can even start converting device drivers first, before
-> moving away from irq numbers. A typical PCI driver should get
-> somewhat simpler by the conversion, and when they are all converted,
-> we can replace pci_dev->irq with a struct irq* under the covers.
-
-Reasonable if it is easy and straight forward.
-Something like pci_request_irq(dev,....) and the helper looks at
-dev->irq under the covers and calls request_irq or whatever makes
-sense.  Is this what you are thinking.  Examples would help me here.
-
-
-What I really object to is not the irq numbers.  As an arbitrary number
-does not impose limits.  What I object to is drivers that can't handle the
-full range of numbers, and the limits imposed upon those numbers when
-you require them to be indexes into an array.
-
-For talking to user space I expect we will have numbers for a long time
-to come yet.
-
-Eric
-
+- David Brown
