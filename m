@@ -1,41 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751161AbXB1Q3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751694AbXB1Qbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751161AbXB1Q3K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 11:29:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbXB1Q3J
+	id S1751694AbXB1Qbm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 11:31:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbXB1Qbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 11:29:09 -0500
-Received: from de01egw02.freescale.net ([192.88.165.103]:45179 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751161AbXB1Q3I (ORCPT
+	Wed, 28 Feb 2007 11:31:42 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:34286 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbXB1Qbl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 11:29:08 -0500
-Message-ID: <45E5ADCF.5050406@freescale.com>
-Date: Wed, 28 Feb 2007 10:29:03 -0600
-From: Timur Tabi <timur@freescale.com>
-Organization: Freescale
-User-Agent: Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; it; rv:1.8.1) Gecko/20061010 Firefox/2.0 
+	Wed, 28 Feb 2007 11:31:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SffSeIYUxUspzLSk5sT5uG/MYbIsKhdDV/snEUpjr3g/s51cUr5+WQGmHAaf3fWG1OTW6N+2qKhC5jJqDvxhrUNb54kPQ3p0SDXrFRf4E1q38rmpZnWBHssdhBVk+oX+I8kevDw7mlR5W+nIwuG0KXAZImqw0eiZvc96tDgLfOY=
+Message-ID: <82ecf08e0702280831s55f404f2w26257f6061bb5239@mail.gmail.com>
+Date: Wed, 28 Feb 2007 13:31:40 -0300
+From: "Thiago Galesi" <thiagogalesi@gmail.com>
+To: "Chuck Ebbert" <cebbert@redhat.com>
+Subject: Re: Wanted: simple, safe x86 stack overflow detection
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       "Andi Kleen" <andi@firstfloor.org>
+In-Reply-To: <45E5913D.3080505@redhat.com>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Kumar Gala <galak@kernel.crashing.org>,
-       "Mathiasen, Torben" <Torben.Mathiasen@hp.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
-References: <45E46976.6060600@freescale.com> <93C4769E3BED6B42B7203BD6F065654C08C5D6E8@dmoexc01.emea.cpqcorp.net> <45E57CE5.5010003@zytor.com> <93C4769E3BED6B42B7203BD6F065654C08C5D7FF@dmoexc01.emea.cpqcorp.net> <45E593C2.6020004@freescale.com> <93C4769E3BED6B42B7203BD6F065654C08C5D8FD@dmoexc01.emea.cpqcorp.net> <0DA3FFD2-CFB8-44FB-872B-00D85B11213B@kernel.crashing.org> <45E59BFC.8020206@zytor.com>
-In-Reply-To: <45E59BFC.8020206@zytor.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <45E5913D.3080505@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
+I guess most stack corruptions touch only a small part of the stack.
+These kinds of corruptions can only be detected from inside the
+program.
 
-> It sounds like the QE driver should be moved to a separate minor range, 
-> and given 8 minors.
+Anyway, going beyond the program's stack boundaries  would fault the program.
 
-I just had a thought - since udev doesn't care about major/minor number assignments, can 
-we say that the limit is 4 devices if you're not using udev, and 8 otherwise?
+Checking the threadinfo constantly it'll be (IMHO) mostly useless...
+
+On 2/28/07, Chuck Ebbert <cebbert@redhat.com> wrote:
+> Can we just put a canary in the threadinfo and check it on every
+> task switch? What are the drawbacks?
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+
 
 -- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+-
+Thiago Galesi
