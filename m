@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751372AbXB1DHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750796AbXB1DaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751372AbXB1DHW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 22:07:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbXB1DHW
+	id S1750796AbXB1DaL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 22:30:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751284AbXB1DaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 22:07:22 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:58414 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751349AbXB1DHU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 22:07:20 -0500
-Date: Wed, 28 Feb 2007 08:37:26 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Pavel Machek <pavel@ucw.cz>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Problem with freezable workqueues
-Message-ID: <20070228030726.GK29179@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <200702272251.28844.rjw@sisk.pl> <20070227232855.GA457@tv-sign.ru> <200702280057.36198.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200702280057.36198.rjw@sisk.pl>
-User-Agent: Mutt/1.5.11
+	Tue, 27 Feb 2007 22:30:11 -0500
+Received: from [12.22.49.110] ([12.22.49.110]:14411 "EHLO stargate.chelsio.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750796AbXB1DaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 22:30:09 -0500
+From: divy@chelsio.com
+Subject: [PATCH] cxgb3 - Tag driver version
+To: jeff@garzik.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Date: Tue, 27 Feb 2007 19:28:14 -0800
+Message-ID: <20070228032814.29900.92439.stgit@localhost.localdomain>
+User-Agent: StGIT/0.12
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 28, 2007 at 12:57:35AM +0100, Rafael J. Wysocki wrote:
-> > How about other kthread_stop()s ? For example, kernel/softirq.c:cpu_callback() ?
-> 
-> They all are PF_NOFREEZE, I suppose.  If we make all workqueues nonfreezable
-> (as they were before), the problem won't appear.
+From: Divy Le Ray <divy@chelsio.com>
 
-We can just thaw the worker thread selectively before kthread_stopping
-them. This will let us freeze all worker threads (which we want to for
-hotplug anyway).
+This patch adds a "-ko" tag to the driver version.
 
-> > I think we need a general "cpu_down() after freeze" implementation, this is what
-> > Gautham and Srivatsa are working on, right?
-> 
-> Yes, certainly.
+Signed-off-by: Divy Le Ray <divy@chelsio.com>
+---
 
-Hmm ..good point. So can we assume that disable/enable_nonboot_cpus() are called
-with processes frozen already?
+ drivers/net/cxgb3/version.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Gautham, you need to take this into account in your patchset!
-
-> > I'm afraid this is racy. We can't touch *cwq, it may be freed. Suppose
-> > that another thread does destroy_workqueue(), and we thaw that thread
-> > before cwq->thread.
-> 
-> Okay, in that case I'd suggest removing create_freezeable_workqueue() and
-> make all workqueues nonfreezable once again for 2.6.21 (as far as I know, only
-> the two XFS workqueues are affected).
-
-See above suggestion of thawing worker thread before kthread_stopping
-it.
-
--- 
-Regards,
-vatsa
+diff --git a/drivers/net/cxgb3/version.h b/drivers/net/cxgb3/version.h
+index 782a6cf..82278f8 100644
+--- a/drivers/net/cxgb3/version.h
++++ b/drivers/net/cxgb3/version.h
+@@ -35,7 +35,7 @@
+ #define DRV_DESC "Chelsio T3 Network Driver"
+ #define DRV_NAME "cxgb3"
+ /* Driver version */
+-#define DRV_VERSION "1.0"
++#define DRV_VERSION "1.0-ko"
+ #define FW_VERSION_MAJOR 3
+ #define FW_VERSION_MINOR 2
+ #endif				/* __CHELSIO_VERSION_H */
