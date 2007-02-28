@@ -1,60 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932390AbXB1TYF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932401AbXB1TZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932390AbXB1TYF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 14:24:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932401AbXB1TYE
+	id S932401AbXB1TZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 14:25:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932402AbXB1TZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 14:24:04 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50763 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932390AbXB1TYC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 14:24:02 -0500
-Date: Wed, 28 Feb 2007 14:24:00 -0500
-From: Prarit Bhargava <prarit@redhat.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mike.miller@hp.com, chirag.kantharia@hp.com
-Cc: Prarit Bhargava <prarit@redhat.com>
-Message-Id: <20070228192400.21367.2923.sendpatchset@prarit.boston.redhat.com>
-Subject: [PATCH]: Fix __init declarations in Compaq SMART2 Controller driver
+	Wed, 28 Feb 2007 14:25:58 -0500
+Received: from mail-in-06.arcor-online.net ([151.189.21.46]:55167 "EHLO
+	mail-in-06.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932401AbXB1TZ5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 14:25:57 -0500
+In-Reply-To: <ED6BD6F0-827F-4ADC-9D66-F9C3DD7FC470@embeddedalley.com>
+References: <45E46976.6060600@freescale.com>	<29c13109971547687159078eacdea008@kernel.crashing.org>	<45E592DC.9060700@freescale.com>	<511cacb7bbe8a65ff72738c84ec9ece4@kernel.crashing.org>	<BD465924-7387-47EF-B90F-606F215819C2@embeddedalley.com>	<45E5B604.904@freescale.com> <46F6BF70-2922-4E05-8DAB-6B0830B0AB47@embeddedalley.com> <45E5BD6B.1010509@freescale.com> <F2D0230C-CA22-4DEF-917E-6982FA0C6171@embeddedalley.com> <45E5C128.7020204@freescale.com> <45E5C333.2060100@zytor.com> <ED6BD6F0-827F-4ADC-9D66-F9C3DD7FC470@embeddedalley.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <ce5df0c760f6b5ab896b31d1ce2839ee@kernel.crashing.org>
+Content-Transfer-Encoding: 7bit
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>,
+       Timur Tabi <timur@freescale.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Torben.Mathiasen@hp.com
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
+Date: Wed, 28 Feb 2007 20:25:51 +0100
+To: Dan Malek <dan@embeddedalley.com>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix __init declarations in Compaq SMART2 Controller driver.
+> Just allocate the four slots and we'll deal with
+> anything above this in custom products.
 
-Resolves MODPOST warnings similar to:
+Another option is to use 46..49 for UARTs #0..3,
+and 192..195 for UARTs #4..7.
 
-WARNING: drivers/block/cpqarray.o - Section mismatch: reference to
-.init.text:cpqarray_init_one from .data.rel.local between 'cpqarray_pci_driver'
-(at offset 0x20) and 'smart1_access'
+Or, perhaps better, use 46..49 for #0..3, and
+192..199 for #0..7, handling the duplication in
+the driver; and deprecate the old range.
 
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
 
---- linux-2.6.18.ia64.orig/drivers/block/cpqarray.c	2007-02-14 11:36:20.000000000 -0500
-+++ linux-2.6.18.ia64/drivers/block/cpqarray.c	2007-02-14 13:08:57.000000000 -0500
-@@ -212,7 +212,7 @@ static struct proc_dir_entry *proc_array
-  * Get us a file in /proc/array that says something about each controller.
-  * Create /proc/array if it doesn't exist yet.
-  */
--static void __init ida_procinit(int i)
-+static void __devinit ida_procinit(int i)
- {
- 	if (proc_array == NULL) {
- 		proc_array = proc_mkdir("cpqarray", proc_root_driver);
-@@ -390,7 +390,7 @@ static void __devexit cpqarray_remove_on
- }
- 
- /* pdev is NULL for eisa */
--static int __init cpqarray_register_ctlr( int i, struct pci_dev *pdev)
-+static int __devinit cpqarray_register_ctlr( int i, struct pci_dev *pdev)
- {
- 	request_queue_t *q;
- 	int j;
-@@ -511,7 +511,7 @@ Enomem4:
- 	return -1;
- }
- 
--static int __init cpqarray_init_one( struct pci_dev *pdev,
-+static int __devinit cpqarray_init_one( struct pci_dev *pdev,
- 	const struct pci_device_id *ent)
- {
- 	int i;
+Segher
+
