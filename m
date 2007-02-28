@@ -1,58 +1,507 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752104AbXB1JKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752097AbXB1JMK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752104AbXB1JKz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 04:10:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbXB1JKz
+	id S1752097AbXB1JMK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 04:12:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbXB1JMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 04:10:55 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:36141 "EHLO e5.ny.us.ibm.com"
+	Wed, 28 Feb 2007 04:12:09 -0500
+Received: from gate.perex.cz ([212.20.107.50]:36097 "EHLO gate.perex.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752104AbXB1JKx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 04:10:53 -0500
-Date: Wed, 28 Feb 2007 14:40:53 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Problem with freezable workqueues
-Message-ID: <20070228091053.GA15509@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <200702272251.28844.rjw@sisk.pl> <20070227232855.GA457@tv-sign.ru> <200702280057.36198.rjw@sisk.pl> <20070228030726.GK29179@in.ibm.com> <20070228084859.GB104@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070228084859.GB104@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+	id S1752106AbXB1JMG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 04:12:06 -0500
+Date: Wed, 28 Feb 2007 10:12:01 +0100 (CET)
+From: Jaroslav Kysela <perex@suse.cz>
+X-X-Sender: perex@tm8103-a.perex-int.cz
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] bonding: replace system timer with work queue
+Message-ID: <Pine.LNX.4.61.0702281000050.9439@tm8103-a.perex-int.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 28, 2007 at 11:48:59AM +0300, Oleg Nesterov wrote:
-> On 02/28, Srivatsa Vaddagiri wrote:
-> > We can just thaw the worker thread selectively before kthread_stopping
-> > them. This will let us freeze all worker threads (which we want to for
-> > hotplug anyway).
-> 
-> I am not sure this is a good change for 2.6.21.
+Hi,
 
-So we make that change when merging the freezer-based hotplug patchset?
+	please, review and apply to mm tree for further testing. The patch 
+is also available at 
+ftp://ftp.alsa-project.org/pub/kernel-patches/bonding-workqueue.patch .
 
-> I strongly believe it is better to change XFS so that it doesn't use
-> create_freezeable_workqueue() as Rafael suggested. 
+					Thank you,
+						Jaroslav
 
-Ok no issues. But when we enable freezer-based hotplug, we expect all
-non-singlethreaded worker threads to be frozen (for hotplug atleast).
+==================
+bonding: replace system timer with work queue
 
-> Besides, freezeable workqueues are buggy anyway in 2.6.21-rc,
-> 
-> 	http://marc.theaimsgroup.com/?l=linux-kernel&m=116855740612755
->
-> This means that workqueues become non-freezeable after suspend/resume
-> anyway (if I understand disable_nonboot_cpus() correctly).
+This patch replaces system timer with work queue in monitor functions.
+The reason for this change is that bonding handlers calls various
+sleeping functions from the timer handler which is not allowed.
+Because we cannot share the main workqueue threads (rtnl_lock is used
+also in linkwatch_event) - new bond workqueue thread is created.
 
-Ah ok. When is the above patch expected to be merged?
+Signed-off-by: Jaroslav Kysela <perex@suse.cz>
 
--- 
-Regards,
-vatsa
+diff -rupN linux-2.6.20.orig/drivers/net/bonding/bond_3ad.c linux-2.6.20/drivers/net/bonding/bond_3ad.c
+--- linux-2.6.20.orig/drivers/net/bonding/bond_3ad.c	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.20/drivers/net/bonding/bond_3ad.c	2007-02-28 09:19:43.831369202 +0100
+@@ -2097,8 +2097,10 @@ void bond_3ad_unbind_slave(struct slave 
+  * times out, and it selects an aggregator for the ports that are yet not
+  * related to any aggregator, and selects the active aggregator for a bond.
+  */
+-void bond_3ad_state_machine_handler(struct bonding *bond)
++void bond_3ad_state_machine_handler(struct work_struct *work)
+ {
++	struct ad_bond_info *ad_info = container_of(work, struct ad_bond_info, ad_work.work);
++	struct bonding *bond = (struct bonding *)((char *)ad_info - offsetof(struct bonding, ad_info));
+ 	struct port *port;
+ 	struct aggregator *aggregator;
+ 
+@@ -2149,7 +2151,7 @@ void bond_3ad_state_machine_handler(stru
+ 	}
+ 
+ re_arm:
+-	mod_timer(&(BOND_AD_INFO(bond).ad_timer), jiffies + ad_delta_in_ticks);
++	queue_delayed_work(bond_wq, &(BOND_AD_INFO(bond).ad_work), ad_delta_in_ticks);
+ out:
+ 	read_unlock(&bond->lock);
+ }
+diff -rupN linux-2.6.20.orig/drivers/net/bonding/bond_3ad.h linux-2.6.20/drivers/net/bonding/bond_3ad.h
+--- linux-2.6.20.orig/drivers/net/bonding/bond_3ad.h	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.20/drivers/net/bonding/bond_3ad.h	2007-02-28 09:25:21.921287093 +0100
+@@ -261,7 +261,7 @@ struct ad_bond_info {
+ 	int lacp_fast;		/* whether fast periodic tx should be
+ 				 * requested
+ 				 */
+-	struct timer_list ad_timer;
++	struct delayed_work ad_work;
+ 	struct packet_type ad_pkt_type;
+ };
+ 
+@@ -276,7 +276,7 @@ struct ad_slave_info {
+ void bond_3ad_initialize(struct bonding *bond, u16 tick_resolution, int lacp_fast);
+ int  bond_3ad_bind_slave(struct slave *slave);
+ void bond_3ad_unbind_slave(struct slave *slave);
+-void bond_3ad_state_machine_handler(struct bonding *bond);
++void bond_3ad_state_machine_handler(struct work_struct *work);
+ void bond_3ad_adapter_speed_changed(struct slave *slave);
+ void bond_3ad_adapter_duplex_changed(struct slave *slave);
+ void bond_3ad_handle_link_change(struct slave *slave, char link);
+diff -rupN linux-2.6.20.orig/drivers/net/bonding/bond_alb.c linux-2.6.20/drivers/net/bonding/bond_alb.c
+--- linux-2.6.20.orig/drivers/net/bonding/bond_alb.c	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.20/drivers/net/bonding/bond_alb.c	2007-02-28 09:26:10.857038588 +0100
+@@ -28,7 +28,7 @@
+ #include <linux/pkt_sched.h>
+ #include <linux/spinlock.h>
+ #include <linux/slab.h>
+-#include <linux/timer.h>
++#include <linux/workqueue.h>
+ #include <linux/ip.h>
+ #include <linux/ipv6.h>
+ #include <linux/if_arp.h>
+@@ -1367,9 +1367,10 @@ out:
+ 	return 0;
+ }
+ 
+-void bond_alb_monitor(struct bonding *bond)
++void bond_alb_monitor(struct work_struct *work)
+ {
+-	struct alb_bond_info *bond_info = &(BOND_ALB_INFO(bond));
++	struct alb_bond_info *bond_info = container_of(work, struct alb_bond_info, alb_work.work);
++	struct bonding *bond = (struct bonding *)((char *)bond_info - offsetof(struct bonding, alb_info));
+ 	struct slave *slave;
+ 	int i;
+ 
+@@ -1471,7 +1472,7 @@ void bond_alb_monitor(struct bonding *bo
+ 	}
+ 
+ re_arm:
+-	mod_timer(&(bond_info->alb_timer), jiffies + alb_delta_in_ticks);
++	queue_delayed_work(bond_wq, &(bond_info->alb_work), alb_delta_in_ticks);
+ out:
+ 	read_unlock(&bond->lock);
+ }
+diff -rupN linux-2.6.20.orig/drivers/net/bonding/bond_alb.h linux-2.6.20/drivers/net/bonding/bond_alb.h
+--- linux-2.6.20.orig/drivers/net/bonding/bond_alb.h	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.20/drivers/net/bonding/bond_alb.h	2007-02-28 09:25:50.607486221 +0100
+@@ -84,7 +84,7 @@ struct tlb_slave_info {
+ };
+ 
+ struct alb_bond_info {
+-	struct timer_list	alb_timer;
++	struct delayed_work	alb_work;
+ 	struct tlb_client_info	*tx_hashtbl; /* Dynamically allocated */
+ 	spinlock_t		tx_hashtbl_lock;
+ 	u32			unbalanced_load;
+@@ -125,7 +125,7 @@ void bond_alb_deinit_slave(struct bondin
+ void bond_alb_handle_link_change(struct bonding *bond, struct slave *slave, char link);
+ void bond_alb_handle_active_change(struct bonding *bond, struct slave *new_slave);
+ int bond_alb_xmit(struct sk_buff *skb, struct net_device *bond_dev);
+-void bond_alb_monitor(struct bonding *bond);
++void bond_alb_monitor(struct work_struct *work);
+ int bond_alb_set_mac_address(struct net_device *bond_dev, void *addr);
+ void bond_alb_clear_vlan(struct bonding *bond, unsigned short vlan_id);
+ #endif /* __BOND_ALB_H__ */
+diff -rupN linux-2.6.20.orig/drivers/net/bonding/bond_main.c linux-2.6.20/drivers/net/bonding/bond_main.c
+--- linux-2.6.20.orig/drivers/net/bonding/bond_main.c	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.20/drivers/net/bonding/bond_main.c	2007-02-28 09:24:54.255166172 +0100
+@@ -49,7 +49,7 @@
+ #include <linux/slab.h>
+ #include <linux/string.h>
+ #include <linux/init.h>
+-#include <linux/timer.h>
++#include <linux/workqueue.h>
+ #include <linux/socket.h>
+ #include <linux/ctype.h>
+ #include <linux/inet.h>
+@@ -137,6 +137,7 @@ static const char * const version =
+ 	DRV_DESCRIPTION ": v" DRV_VERSION " (" DRV_RELDATE ")\n";
+ 
+ LIST_HEAD(bond_dev_list);
++struct workqueue_struct *bond_wq;
+ 
+ #ifdef CONFIG_PROC_FS
+ static struct proc_dir_entry *bond_proc_dir = NULL;
+@@ -2016,9 +2017,10 @@ static int bond_slave_info_query(struct 
+ /*-------------------------------- Monitoring -------------------------------*/
+ 
+ /* this function is called regularly to monitor each slave's link. */
+-void bond_mii_monitor(struct net_device *bond_dev)
++void bond_mii_monitor(struct work_struct *work)
+ {
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = container_of(work, struct bonding, mii_work.work);
++	struct net_device *bond_dev = bond->dev;
+ 	struct slave *slave, *oldcurrent;
+ 	int do_failover = 0;
+ 	int delta_in_ticks;
+@@ -2248,7 +2250,7 @@ void bond_mii_monitor(struct net_device 
+ 
+ re_arm:
+ 	if (bond->params.miimon) {
+-		mod_timer(&bond->mii_timer, jiffies + delta_in_ticks);
++		queue_delayed_work(bond_wq, &bond->mii_work, delta_in_ticks);
+ 	}
+ out:
+ 	read_unlock(&bond->lock);
+@@ -2549,9 +2551,10 @@ out:
+  * arp is transmitted to generate traffic. see activebackup_arp_monitor for
+  * arp monitoring in active backup mode.
+  */
+-void bond_loadbalance_arp_mon(struct net_device *bond_dev)
++void bond_loadbalance_arp_mon(struct work_struct *work)
+ {
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = container_of(work, struct bonding, arp_work.work);
++	struct net_device *bond_dev = bond->dev;
+ 	struct slave *slave, *oldcurrent;
+ 	int do_failover = 0;
+ 	int delta_in_ticks;
+@@ -2659,7 +2662,7 @@ void bond_loadbalance_arp_mon(struct net
+ 
+ re_arm:
+ 	if (bond->params.arp_interval) {
+-		mod_timer(&bond->arp_timer, jiffies + delta_in_ticks);
++		queue_delayed_work(bond_wq, &bond->arp_work, delta_in_ticks);
+ 	}
+ out:
+ 	read_unlock(&bond->lock);
+@@ -2680,9 +2683,10 @@ out:
+  * may have received.
+  * see loadbalance_arp_monitor for arp monitoring in load balancing mode
+  */
+-void bond_activebackup_arp_mon(struct net_device *bond_dev)
++void bond_activebackup_arp_mon(struct work_struct *work)
+ {
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = container_of(work, struct bonding, arp_work.work);
++	struct net_device *bond_dev = bond->dev;
+ 	struct slave *slave;
+ 	int delta_in_ticks;
+ 	int i;
+@@ -2907,7 +2911,7 @@ void bond_activebackup_arp_mon(struct ne
+ 
+ re_arm:
+ 	if (bond->params.arp_interval) {
+-		mod_timer(&bond->arp_timer, jiffies + delta_in_ticks);
++		queue_delayed_work(bond_wq, &bond->arp_work, delta_in_ticks);
+ 	}
+ out:
+ 	read_unlock(&bond->lock);
+@@ -3482,14 +3486,12 @@ static int bond_xmit_hash_policy_l2(stru
+ static int bond_open(struct net_device *bond_dev)
+ {
+ 	struct bonding *bond = bond_dev->priv;
+-	struct timer_list *mii_timer = &bond->mii_timer;
+-	struct timer_list *arp_timer = &bond->arp_timer;
+ 
+ 	bond->kill_timers = 0;
+ 
+ 	if ((bond->params.mode == BOND_MODE_TLB) ||
+ 	    (bond->params.mode == BOND_MODE_ALB)) {
+-		struct timer_list *alb_timer = &(BOND_ALB_INFO(bond).alb_timer);
++		struct delayed_work *alb_work = &(BOND_ALB_INFO(bond).alb_work);
+ 
+ 		/* bond_alb_initialize must be called before the timer
+ 		 * is started.
+@@ -3499,43 +3501,24 @@ static int bond_open(struct net_device *
+ 			return -1;
+ 		}
+ 
+-		init_timer(alb_timer);
+-		alb_timer->expires  = jiffies + 1;
+-		alb_timer->data     = (unsigned long)bond;
+-		alb_timer->function = (void *)&bond_alb_monitor;
+-		add_timer(alb_timer);
++		INIT_DELAYED_WORK(alb_work, (void *)&bond_alb_monitor);
++		queue_delayed_work(bond_wq, alb_work, 1);
+ 	}
+ 
+ 	if (bond->params.miimon) {  /* link check interval, in milliseconds. */
+-		init_timer(mii_timer);
+-		mii_timer->expires  = jiffies + 1;
+-		mii_timer->data     = (unsigned long)bond_dev;
+-		mii_timer->function = (void *)&bond_mii_monitor;
+-		add_timer(mii_timer);
++		queue_delayed_work(bond_wq, &bond->mii_work, 1);
+ 	}
+ 
+ 	if (bond->params.arp_interval) {  /* arp interval, in milliseconds. */
+-		init_timer(arp_timer);
+-		arp_timer->expires  = jiffies + 1;
+-		arp_timer->data     = (unsigned long)bond_dev;
+-		if (bond->params.mode == BOND_MODE_ACTIVEBACKUP) {
+-			arp_timer->function = (void *)&bond_activebackup_arp_mon;
+-		} else {
+-			arp_timer->function = (void *)&bond_loadbalance_arp_mon;
+-		}
+ 		if (bond->params.arp_validate)
+ 			bond_register_arp(bond);
+-
+-		add_timer(arp_timer);
++		queue_delayed_work(bond_wq, &bond->arp_work, 1);
+ 	}
+ 
+ 	if (bond->params.mode == BOND_MODE_8023AD) {
+-		struct timer_list *ad_timer = &(BOND_AD_INFO(bond).ad_timer);
+-		init_timer(ad_timer);
+-		ad_timer->expires  = jiffies + 1;
+-		ad_timer->data     = (unsigned long)bond;
+-		ad_timer->function = (void *)&bond_3ad_state_machine_handler;
+-		add_timer(ad_timer);
++		struct delayed_work *ad_work = &(BOND_AD_INFO(bond).ad_work);
++		INIT_DELAYED_WORK(ad_work, (void *)&bond_3ad_state_machine_handler);
++		queue_delayed_work(bond_wq, ad_work, 1);
+ 
+ 		/* register to receive LACPDUs */
+ 		bond_register_lacpdu(bond);
+@@ -3569,20 +3552,20 @@ static int bond_close(struct net_device 
+ 	 */
+ 
+ 	if (bond->params.miimon) {  /* link check interval, in milliseconds. */
+-		del_timer_sync(&bond->mii_timer);
++		cancel_rearming_delayed_workqueue(bond_wq, &bond->mii_work);
+ 	}
+ 
+ 	if (bond->params.arp_interval) {  /* arp interval, in milliseconds. */
+-		del_timer_sync(&bond->arp_timer);
++		cancel_rearming_delayed_workqueue(bond_wq, &bond->arp_work);
+ 	}
+ 
+ 	switch (bond->params.mode) {
+ 	case BOND_MODE_8023AD:
+-		del_timer_sync(&(BOND_AD_INFO(bond).ad_timer));
++		cancel_rearming_delayed_workqueue(bond_wq, &(BOND_AD_INFO(bond).ad_work));
+ 		break;
+ 	case BOND_MODE_TLB:
+ 	case BOND_MODE_ALB:
+-		del_timer_sync(&(BOND_ALB_INFO(bond).alb_timer));
++		cancel_rearming_delayed_workqueue(bond_wq, &(BOND_ALB_INFO(bond).alb_work));
+ 		break;
+ 	default:
+ 		break;
+@@ -4289,6 +4272,14 @@ static int bond_init(struct net_device *
+ 	rwlock_init(&bond->lock);
+ 	rwlock_init(&bond->curr_slave_lock);
+ 
++	/* initialize work */
++	INIT_DELAYED_WORK(&bond->mii_work, (void *)&bond_mii_monitor);
++	if (params->mode == BOND_MODE_ACTIVEBACKUP) {
++	        INIT_DELAYED_WORK(&bond->arp_work, (void *)&bond_activebackup_arp_mon);
++	} else {
++		INIT_DELAYED_WORK(&bond->arp_work, (void *)&bond_loadbalance_arp_mon);
++	}
++
+ 	bond->params = *params; /* copy params struct */
+ 
+ 	/* Initialize pointers */
+@@ -4782,6 +4773,12 @@ static int __init bonding_init(void)
+ 			goto err;
+ 	}
+ 
++	bond_wq = create_singlethread_workqueue("bond");
++	if (bond_wq == NULL) {
++		res = -ENOMEM;
++		goto err;
++	}
++
+ 	res = bond_create_sysfs();
+ 	if (res)
+ 		goto err;
+@@ -4807,6 +4804,7 @@ static void __exit bonding_exit(void)
+ 
+ 	rtnl_lock();
+ 	bond_free_all();
++	destroy_workqueue(bond_wq);
+ 	bond_destroy_sysfs();
+ 	rtnl_unlock();
+ }
+diff -rupN linux-2.6.20.orig/drivers/net/bonding/bond_sysfs.c linux-2.6.20/drivers/net/bonding/bond_sysfs.c
+--- linux-2.6.20.orig/drivers/net/bonding/bond_sysfs.c	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.20/drivers/net/bonding/bond_sysfs.c	2007-02-28 09:20:27.642727705 +0100
+@@ -1,4 +1,3 @@
+-
+ /*
+  * Copyright(c) 2004-2005 Intel Corporation. All rights reserved.
+  *
+@@ -430,6 +429,12 @@ static ssize_t bonding_store_mode(struct
+ 		if (bond->params.mode == BOND_MODE_ALB)
+ 			bond_unset_master_alb_flags(bond);
+ 
++		if (new_value == BOND_MODE_ACTIVEBACKUP) {
++			INIT_DELAYED_WORK(&bond->arp_work, (void *)&bond_activebackup_arp_mon);
++		} else {
++			INIT_DELAYED_WORK(&bond->arp_work, (void *)&bond_loadbalance_arp_mon);
++		}
++
+ 		bond->params.mode = new_value;
+ 		bond_set_mode_ops(bond, bond->params.mode);
+ 		printk(KERN_INFO DRV_NAME ": %s: setting mode to %s (%d).\n",
+@@ -593,13 +598,7 @@ static ssize_t bonding_store_arp_interva
+ 		       "%s Disabling MII monitoring.\n",
+ 		       bond->dev->name, bond->dev->name);
+ 		bond->params.miimon = 0;
+-		/* Kill MII timer, else it brings bond's link down */
+-		if (bond->arp_timer.function) {
+-			printk(KERN_INFO DRV_NAME
+-			": %s: Kill MII timer, else it brings bond's link down...\n",
+-		       bond->dev->name);
+-			del_timer_sync(&bond->mii_timer);
+-		}
++		cancel_rearming_delayed_workqueue(bond_wq, &bond->mii_work);
+ 	}
+ 	if (!bond->params.arp_targets[0]) {
+ 		printk(KERN_INFO DRV_NAME
+@@ -613,26 +612,8 @@ static ssize_t bonding_store_arp_interva
+ 		 * timer will get fired off when the open function
+ 		 * is called.
+ 		 */
+-		if (bond->arp_timer.function) {
+-			/* The timer's already set up, so fire it off */
+-			mod_timer(&bond->arp_timer, jiffies + 1);
+-		} else {
+-			/* Set up the timer. */
+-			init_timer(&bond->arp_timer);
+-			bond->arp_timer.expires = jiffies + 1;
+-			bond->arp_timer.data =
+-				(unsigned long) bond->dev;
+-			if (bond->params.mode == BOND_MODE_ACTIVEBACKUP) {
+-				bond->arp_timer.function =
+-					(void *)
+-					&bond_activebackup_arp_mon;
+-			} else {
+-				bond->arp_timer.function =
+-					(void *)
+-					&bond_loadbalance_arp_mon;
+-			}
+-			add_timer(&bond->arp_timer);
+-		}
++		cancel_rearming_delayed_workqueue(bond_wq, &bond->arp_work);
++		queue_delayed_work(bond_wq, &bond->arp_work, 1);
+ 	}
+ 
+ out:
+@@ -968,12 +949,7 @@ static ssize_t bonding_store_miimon(stru
+ 					BOND_ARP_VALIDATE_NONE;
+ 			}
+ 			/* Kill ARP timer, else it brings bond's link down */
+-			if (bond->mii_timer.function) {
+-				printk(KERN_INFO DRV_NAME
+-				": %s: Kill ARP timer, else it brings bond's link down...\n",
+-			       bond->dev->name);
+-				del_timer_sync(&bond->arp_timer);
+-			}
++			cancel_rearming_delayed_workqueue(bond_wq, &bond->arp_work);
+ 		}
+ 
+ 		if (bond->dev->flags & IFF_UP) {
+@@ -982,19 +958,8 @@ static ssize_t bonding_store_miimon(stru
+ 			 * timer will get fired off when the open function
+ 			 * is called.
+ 			 */
+-			if (bond->mii_timer.function) {
+-				/* The timer's already set up, so fire it off */
+-				mod_timer(&bond->mii_timer, jiffies + 1);
+-			} else {
+-				/* Set up the timer. */
+-				init_timer(&bond->mii_timer);
+-				bond->mii_timer.expires = jiffies + 1;
+-				bond->mii_timer.data =
+-					(unsigned long) bond->dev;
+-				bond->mii_timer.function =
+-					(void *) &bond_mii_monitor;
+-				add_timer(&bond->mii_timer);
+-			}
++			cancel_rearming_delayed_workqueue(bond_wq, &bond->mii_work);
++			queue_delayed_work(bond_wq, &bond->mii_work, 1);
+ 		}
+ 	}
+ out:
+diff -rupN linux-2.6.20.orig/drivers/net/bonding/bonding.h linux-2.6.20/drivers/net/bonding/bonding.h
+--- linux-2.6.20.orig/drivers/net/bonding/bonding.h	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.20/drivers/net/bonding/bonding.h	2007-02-28 09:22:16.939106263 +0100
+@@ -15,7 +15,7 @@
+ #ifndef _LINUX_BONDING_H
+ #define _LINUX_BONDING_H
+ 
+-#include <linux/timer.h>
++#include <linux/workqueue.h>
+ #include <linux/proc_fs.h>
+ #include <linux/if_bonding.h>
+ #include <linux/kobject.h>
+@@ -182,8 +182,8 @@ struct bonding {
+ 	s32      slave_cnt; /* never change this value outside the attach/detach wrappers */
+ 	rwlock_t lock;
+ 	rwlock_t curr_slave_lock;
+-	struct   timer_list mii_timer;
+-	struct   timer_list arp_timer;
++	struct   delayed_work mii_work;
++	struct   delayed_work arp_work;
+ 	s8       kill_timers;
+ 	struct   net_device_stats stats;
+ #ifdef CONFIG_PROC_FS
+@@ -301,9 +301,9 @@ void bond_destroy_slave_symlinks(struct 
+ int bond_enslave(struct net_device *bond_dev, struct net_device *slave_dev);
+ int bond_release(struct net_device *bond_dev, struct net_device *slave_dev);
+ int bond_sethwaddr(struct net_device *bond_dev, struct net_device *slave_dev);
+-void bond_mii_monitor(struct net_device *bond_dev);
+-void bond_loadbalance_arp_mon(struct net_device *bond_dev);
+-void bond_activebackup_arp_mon(struct net_device *bond_dev);
++void bond_mii_monitor(struct work_struct *work);
++void bond_loadbalance_arp_mon(struct work_struct *work);
++void bond_activebackup_arp_mon(struct work_struct *work);
+ void bond_set_mode_ops(struct bonding *bond, int mode);
+ int bond_parse_parm(char *mode_arg, struct bond_parm_tbl *tbl);
+ const char *bond_mode_name(int mode);
+@@ -312,5 +312,6 @@ void bond_change_active_slave(struct bon
+ void bond_register_arp(struct bonding *);
+ void bond_unregister_arp(struct bonding *);
+ 
+-#endif /* _LINUX_BONDING_H */
++extern struct workqueue_struct *bond_wq;
+ 
++#endif /* _LINUX_BONDING_H */
+
+-----
+Jaroslav Kysela <perex@suse.cz>
+Linux Kernel Sound Maintainer
+ALSA Project, SUSE Labs
