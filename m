@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933167AbXB1RHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933175AbXB1RHO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933167AbXB1RHA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 12:07:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933168AbXB1RG7
+	id S933175AbXB1RHO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 12:07:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933168AbXB1RHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 12:06:59 -0500
-Received: from mailhub.sw.ru ([195.214.233.200]:24277 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933167AbXB1RG7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 12:06:59 -0500
-To: LKML <linux-kernel@vger.kernel.org>
-CC: mhalcrow@us.ibm.com
-Subject: [PATCH] ecryptfs: check xattr operation support fix 
-From: Dmitriy Monakhov <dmonakhov@sw.ru>
-Date: Wed, 28 Feb 2007 20:05:16 +0300
-Message-ID: <871wkaxlf7.fsf@sw.ru>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 28 Feb 2007 12:07:14 -0500
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:45723 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933173AbXB1RHM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 12:07:12 -0500
+To: staubach@redhat.com
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-reply-to: <45E58EB8.6030502@redhat.com> (message from Peter Staubach on
+	Wed, 28 Feb 2007 09:16:24 -0500)
+Subject: Re: [patch 01/22] update ctime and mtime for mmaped write
+References: <20070227231442.627972152@szeredi.hu> <20070227231544.519463073@szeredi.hu> <45E58EB8.6030502@redhat.com>
+Message-Id: <E1HMSGE-000886-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 28 Feb 2007 18:06:38 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> These change still have the undesirable property that although the
+> modified pages may be flushed to stable storage, the metadata on
+> the file will not be updated until the application takes positive
+> action.  This is permissible given the current wording in the
+> specifications, but it would be much more desirable if sync(2),
+> fsync(P), or the inode being written out due to normal system
+> activity would also cause the metadata to be updated.
+> 
+> Perhaps the setting of the flag could be checked in some places
+> like __sync_single_inode() and do_fsync()?
 
-  - ecryptfs_write_inode_size_to_metadata() error code was ignored.
-  - i_op->setxattr() must be supported by lower fs because used below.
+I don't see the point in updating the timestamp from these functions.
 
-Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
----
- fs/ecryptfs/inode.c |    6 +++---
- fs/ecryptfs/mmap.c  |    3 ++-
- 2 files changed, 5 insertions(+), 4 deletions(-)
+The file isn't _modified_ by sync() or fsync().  Just as it's not
+modified by stat().
 
-diff --git a/fs/ecryptfs/inode.c b/fs/ecryptfs/inode.c
-index 27fd14a..9ccefad 100644
---- a/fs/ecryptfs/inode.c
-+++ b/fs/ecryptfs/inode.c
-@@ -168,9 +168,9 @@ static int grow_file(struct dentry *ecryptfs_dentry, struct file *lower_file,
- 		goto out;
- 	}
- 	i_size_write(inode, 0);
--	ecryptfs_write_inode_size_to_metadata(lower_file, lower_inode, inode,
--					      ecryptfs_dentry,
--					      ECRYPTFS_LOWER_I_MUTEX_NOT_HELD);
-+	rc = ecryptfs_write_inode_size_to_metadata(lower_file, lower_inode,
-+			inode, ecryptfs_dentry,
-+			ECRYPTFS_LOWER_I_MUTEX_NOT_HELD);
- 	ecryptfs_inode_to_private(inode)->crypt_stat.flags |= ECRYPTFS_NEW_FILE;
- out:
- 	return rc;
-diff --git a/fs/ecryptfs/mmap.c b/fs/ecryptfs/mmap.c
-index 1e5d2ba..416985f 100644
---- a/fs/ecryptfs/mmap.c
-+++ b/fs/ecryptfs/mmap.c
-@@ -491,7 +491,8 @@ static int ecryptfs_write_inode_size_to_xattr(struct inode *lower_inode,
- 		goto out;
- 	}
- 	lower_dentry = ecryptfs_dentry_to_lower(ecryptfs_dentry);
--	if (!lower_dentry->d_inode->i_op->getxattr) {
-+	if (!lower_dentry->d_inode->i_op->getxattr ||
-+			!lower_dentry->d_inode->i_op->setxattr) {
- 		printk(KERN_WARNING
- 		       "No support for setting xattr in lower filesystem\n");
- 		rc = -ENOSYS;
--- 
-1.5.0.1
+sync() and fsync() do cache->disk, while the file itself stays the
+same.
 
+OTOH msync(MS_ASYNC) does memory->file, which is a conceptually file
+modifying operation.  OK, msync(MS_ASYNC) is actually a no-op on
+2.6.18+, but that's purely an implementation detail and no application
+should be relying on it.
 
+Before 2.6.18 sync() or fsync() acually didn't flush data written
+through a shared mapping to disk, only msync(MS_SYNC), because the
+dirty state was only available in the page tables, not in the page or
+the inode.
+
+Miklos
