@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932468AbXB1Vui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932470AbXB1VuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932468AbXB1Vui (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 16:50:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932473AbXB1Vuc
+	id S932470AbXB1VuS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 16:50:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932481AbXB1Vtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 16:50:32 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37911 "EHLO mx2.mail.elte.hu"
+	Wed, 28 Feb 2007 16:49:53 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37883 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932468AbXB1VuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 16:50:00 -0500
-Date: Wed, 28 Feb 2007 22:42:15 +0100
+	id S932470AbXB1Vtp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 16:49:45 -0500
+Date: Wed, 28 Feb 2007 22:42:07 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -23,8 +23,8 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Davide Libenzi <davidel@xmailserver.org>,
        Jens Axboe <jens.axboe@oracle.com>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 11/12] syslets: x86, wire up the syslet system calls
-Message-ID: <20070228214215.GK2305@elte.hu>
+Subject: [patch 09/12] syslets: x86, mark async unsafe syscalls
+Message-ID: <20070228214207.GI2305@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -43,49 +43,101 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ingo Molnar <mingo@elte.hu>
 
-wire up the new syslet / async system call syscalls and make it
-thus available to user-space.
+mark clone() and fork() as not available for async execution.
+Both need an intact user context beneath them to work.
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- arch/i386/kernel/syscall_table.S |    6 ++++++
- include/asm-i386/unistd.h        |    8 +++++++-
- 2 files changed, 13 insertions(+), 1 deletion(-)
+ arch/i386/kernel/ioport.c  |    6 ++++++
+ arch/i386/kernel/ldt.c     |    3 +++
+ arch/i386/kernel/process.c |    6 ++++++
+ arch/i386/kernel/vm86.c    |    6 ++++++
+ 4 files changed, 21 insertions(+)
 
-Index: linux/arch/i386/kernel/syscall_table.S
+Index: linux/arch/i386/kernel/ioport.c
 ===================================================================
---- linux.orig/arch/i386/kernel/syscall_table.S
-+++ linux/arch/i386/kernel/syscall_table.S
-@@ -319,3 +319,9 @@ ENTRY(sys_call_table)
- 	.long sys_move_pages
- 	.long sys_getcpu
- 	.long sys_epoll_pwait
-+	.long sys_async_exec		/* 320 */
-+	.long sys_async_wait
-+	.long sys_umem_add
-+	.long sys_async_thread
-+	.long sys_threadlet_on
-+	.long sys_threadlet_off		/* 325 */
-Index: linux/include/asm-i386/unistd.h
+--- linux.orig/arch/i386/kernel/ioport.c
++++ linux/arch/i386/kernel/ioport.c
+@@ -62,6 +62,9 @@ asmlinkage long sys_ioperm(unsigned long
+ 	struct tss_struct * tss;
+ 	unsigned long *bitmap;
+ 
++	if (async_syscall(current))
++		return -ENOSYS;
++
+ 	if ((from + num <= from) || (from + num > IO_BITMAP_BITS))
+ 		return -EINVAL;
+ 	if (turn_on && !capable(CAP_SYS_RAWIO))
+@@ -139,6 +142,9 @@ asmlinkage long sys_iopl(unsigned long u
+ 	unsigned int old = (regs->eflags >> 12) & 3;
+ 	struct thread_struct *t = &current->thread;
+ 
++	if (async_syscall(current))
++		return -ENOSYS;
++
+ 	if (level > 3)
+ 		return -EINVAL;
+ 	/* Trying to gain more privileges? */
+Index: linux/arch/i386/kernel/ldt.c
 ===================================================================
---- linux.orig/include/asm-i386/unistd.h
-+++ linux/include/asm-i386/unistd.h
-@@ -327,10 +327,16 @@
- #define __NR_move_pages		317
- #define __NR_getcpu		318
- #define __NR_epoll_pwait	319
-+#define __NR_async_exec		320
-+#define __NR_async_wait		321
-+#define __NR_umem_add		322
-+#define __NR_async_thread	323
-+#define __NR_threadlet_on	324
-+#define __NR_threadlet_off	325
+--- linux.orig/arch/i386/kernel/ldt.c
++++ linux/arch/i386/kernel/ldt.c
+@@ -233,6 +233,9 @@ asmlinkage int sys_modify_ldt(int func, 
+ {
+ 	int ret = -ENOSYS;
  
- #ifdef __KERNEL__
++	if (async_syscall(current))
++		return -ENOSYS;
++
+ 	switch (func) {
+ 	case 0:
+ 		ret = read_ldt(ptr, bytecount);
+Index: linux/arch/i386/kernel/process.c
+===================================================================
+--- linux.orig/arch/i386/kernel/process.c
++++ linux/arch/i386/kernel/process.c
+@@ -750,6 +750,9 @@ struct task_struct fastcall * __switch_t
  
--#define NR_syscalls 320
-+#define NR_syscalls 326
+ asmlinkage int sys_fork(struct pt_regs regs)
+ {
++	if (async_syscall(current))
++		return -ENOSYS;
++
+ 	return do_fork(SIGCHLD, regs.esp, &regs, 0, NULL, NULL);
+ }
  
- #ifndef __ASSEMBLY__
+@@ -759,6 +762,9 @@ asmlinkage int sys_clone(struct pt_regs 
+ 	unsigned long newsp;
+ 	int __user *parent_tidptr, *child_tidptr;
  
++	if (async_syscall(current))
++		return -ENOSYS;
++
+ 	clone_flags = regs.ebx;
+ 	newsp = regs.ecx;
+ 	parent_tidptr = (int __user *)regs.edx;
+Index: linux/arch/i386/kernel/vm86.c
+===================================================================
+--- linux.orig/arch/i386/kernel/vm86.c
++++ linux/arch/i386/kernel/vm86.c
+@@ -209,6 +209,9 @@ asmlinkage int sys_vm86old(struct pt_reg
+ 	struct task_struct *tsk;
+ 	int tmp, ret = -EPERM;
+ 
++	if (async_syscall(current))
++		return -ENOSYS;
++
+ 	tsk = current;
+ 	if (tsk->thread.saved_esp0)
+ 		goto out;
+@@ -239,6 +242,9 @@ asmlinkage int sys_vm86(struct pt_regs r
+ 	int tmp, ret;
+ 	struct vm86plus_struct __user *v86;
+ 
++	if (async_syscall(current))
++		return -ENOSYS;
++
+ 	tsk = current;
+ 	switch (regs.ebx) {
+ 		case VM86_REQUEST_IRQ:
