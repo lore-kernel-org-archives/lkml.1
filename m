@@ -1,41 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751643AbXB1QVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752002AbXB1QYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751643AbXB1QVQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 11:21:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbXB1QVQ
+	id S1752002AbXB1QYg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 11:24:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbXB1QYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 11:21:16 -0500
-Received: from de01egw01.freescale.net ([192.88.165.102]:58306 "EHLO
-	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751643AbXB1QVQ (ORCPT
+	Wed, 28 Feb 2007 11:24:36 -0500
+Received: from smtp-out5.blueyonder.co.uk ([195.188.213.8]:53091 "EHLO
+	smtp-out5.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752002AbXB1QYf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 11:21:16 -0500
-Message-ID: <45E5ABE7.5030900@freescale.com>
-Date: Wed, 28 Feb 2007 10:20:55 -0600
-From: Timur Tabi <timur@freescale.com>
-Organization: Freescale
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.2pre) Gecko/20070111 SeaMonkey/1.1
+	Wed, 28 Feb 2007 11:24:35 -0500
+X-Greylist: delayed 129332 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Feb 2007 11:24:35 EST
+Message-ID: <45E5ACBC.2050800@blueyonder.co.uk>
+Date: Wed, 28 Feb 2007 16:24:28 +0000
+From: Sid Boyce <g3vbv@blueyonder.co.uk>
+Reply-To: g3vbv@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-CC: "Mathiasen, Torben" <Torben.Mathiasen@hp.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
-References: <45E46976.6060600@freescale.com> <93C4769E3BED6B42B7203BD6F065654C08C5D6E8@dmoexc01.emea.cpqcorp.net> <45E57CE5.5010003@zytor.com> <93C4769E3BED6B42B7203BD6F065654C08C5D7FF@dmoexc01.emea.cpqcorp.net> <45E593C2.6020004@freescale.com> <93C4769E3BED6B42B7203BD6F065654C08C5D8FD@dmoexc01.emea.cpqcorp.net> <0DA3FFD2-CFB8-44FB-872B-00D85B11213B@kernel.crashing.org>
-In-Reply-To: <0DA3FFD2-CFB8-44FB-872B-00D85B11213B@kernel.crashing.org>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc1 and 2.6.21-rc2 kwin dies silently
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kumar Gala wrote:
+ >>/ openSUSE 10.3 Alpha and KDE-3.5.6, xorg-x11-7.2. KDE is setup not to/
+ >>/ require a password to unlock, but it asks for password. When the 
+screen/
+ >>/ unlocks, kwin is gone with no errors logged in /var/log/kdm or/
+ >>/ /var/log/messages. No problems with 2.6.20./
+ >>
+ >>/ Same problem on openSUSE 10.2 x86_64, KDE-3.5.5 and 2.6.21-rc2./
+ >>/ Regards/
+ >>/ Sid./
 
->> Its your choice if you want to limit it to 4 or have it moved into a
->> different minor range. I can live with both.
-> 
-> I'd rather we support 8 now.
-
-Ok, a different minor range it is, then.  192-199?
+ > This is the linux kernel mailing list. Perhaps you should post your 
+problem to
+ > the opensuse mailing list.
+ >
+ > Regards
+That's very much appreciated. The point is that all vanilla kernels up 
+to 2.6.20+ have not had the problems now seen on 2.6.20-rc1 and 
+2.6.20-rc2 and like other problems reported, sic framebuffer, etc., 
+there is a distinct likelihood that it's related to those kernels and 
+worth reporting here where it will also be seen by the openSUSE kernel 
+developers.
+Regards
+Sid.
 
 -- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
+
+
