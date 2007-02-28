@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933175AbXB1RHO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932989AbXB1RJE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933175AbXB1RHO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 12:07:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933168AbXB1RHO
+	id S932989AbXB1RJE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 12:09:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933180AbXB1RJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 12:07:14 -0500
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:45723 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933173AbXB1RHM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 12:07:12 -0500
-To: staubach@redhat.com
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-reply-to: <45E58EB8.6030502@redhat.com> (message from Peter Staubach on
-	Wed, 28 Feb 2007 09:16:24 -0500)
-Subject: Re: [patch 01/22] update ctime and mtime for mmaped write
-References: <20070227231442.627972152@szeredi.hu> <20070227231544.519463073@szeredi.hu> <45E58EB8.6030502@redhat.com>
-Message-Id: <E1HMSGE-000886-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 28 Feb 2007 18:06:38 +0100
+	Wed, 28 Feb 2007 12:09:04 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:34311 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932989AbXB1RJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 12:09:03 -0500
+Date: Wed, 28 Feb 2007 09:09:13 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jiri Kosina <jkosina@suse.cz>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] HID and USB HID update for 2.6.21-rc2
+In-Reply-To: <Pine.LNX.4.64.0702281114420.4255@jikos.suse.cz>
+Message-ID: <Pine.LNX.4.64.0702280903010.12485@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0702281114420.4255@jikos.suse.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> These change still have the undesirable property that although the
-> modified pages may be flushed to stable storage, the metadata on
-> the file will not be updated until the application takes positive
-> action.  This is permissible given the current wording in the
-> specifications, but it would be much more desirable if sync(2),
-> fsync(P), or the inode being written out due to normal system
-> activity would also cause the metadata to be updated.
-> 
-> Perhaps the setting of the flag could be checked in some places
-> like __sync_single_inode() and do_fsync()?
 
-I don't see the point in updating the timestamp from these functions.
 
-The file isn't _modified_ by sync() or fsync().  Just as it's not
-modified by stat().
+On Wed, 28 Feb 2007, Jiri Kosina wrote:
+>
+> The diffstat looks larger because the usbhid code is moved from 
+> USB-specific directory to HID-specific directory
 
-sync() and fsync() do cache->disk, while the file itself stays the
-same.
+No. The diffstat looks huge because you moved "hid_blacklist" into a 
+header file, and that is a big enough change that git won't consider the 
+rename to be just a rename any more (you basically moved the old 
+usbdrivers/usb/input/hid-core.c file into *two* files: hid-core.c and 
+usbhid.h).
 
-OTOH msync(MS_ASYNC) does memory->file, which is a conceptually file
-modifying operation.  OK, msync(MS_ASYNC) is actually a no-op on
-2.6.18+, but that's purely an implementation detail and no application
-should be relying on it.
+Why do that? It now gets included INTO EVERY DAMN FILE that includes 
+<usbhid.h>, since that one now has that
 
-Before 2.6.18 sync() or fsync() acually didn't flush data written
-through a shared mapping to disk, only msync(MS_SYNC), because the
-dirty state was only available in the page tables, not in the page or
-the inode.
+	static const struct hid_blacklist
 
-Miklos
+definition in it. Yet *nothing* wants it, except for the one C file that 
+it used to be in.
+
+No way in hell will I include this kind of crap without major explanations 
+for why the "crap" is not crap. And quite frankly, I don't think such 
+explanations exist.
+
+I'm also not going to pull it if you just add a new commit to undo the 
+idiocy. That thing needs to be totally re-done, as far as I'm concerned. I 
+don't want to touch anything that has EVER even *seen* anything that 
+stupid.
+
+Yes, I'm grumpy. I don't like big changes at this stage, and if they are 
+also STUPID big changes, as this seems to be, I refuse to pull them 
+entirely.
+
+		Linus
