@@ -1,98 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750799AbXB1CvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751205AbXB1Cwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750799AbXB1CvK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 21:51:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750759AbXB1CvK
+	id S1751205AbXB1Cwd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 21:52:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbXB1Cwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 21:51:10 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:20294 "EHLO
+	Tue, 27 Feb 2007 21:52:33 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:21722 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750799AbXB1CvJ (ORCPT
+	with ESMTP id S1751205AbXB1Cwc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 21:51:09 -0500
+	Tue, 27 Feb 2007 21:52:32 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mAG0CsW3271k81Gj1ewZouUzOmgKoN1vI6LUikXM5Fa95xAXXNFlsHXet0mruQSFFlwEcoFoDkK3RTH0ZrmX8Xj7TFGZOUu1Mkq8e3iiUkTgIHEABhYXZyW2tVNusku9Z07MtK+OzK+0dbTMZ1Vc4TLC3jvKuhbS64Z+0uo6D4g=
-Message-ID: <29495f1d0702271851k30d2bf68qf3e23ca4c9d9153d@mail.gmail.com>
-Date: Tue, 27 Feb 2007 18:51:06 -0800
+        b=JVnVFKyeUok3pHdY6kOUjBlPt+Rec9Vwcydq0kvSBKoi5SVr3ykWaSA57+vo7tBsoaur4cDem+Q3W0di6mTnRiRAfBcwMk299e9izytA6HyzOp+A7AuGZyjnYrjpFLmRKEPc2XZi1rIqVgC2OLl3UrUrxk6rgK1+2RL6TeDvtK4=
+Message-ID: <29495f1d0702271852y5aab9d53mbd4b45931a393534@mail.gmail.com>
+Date: Tue, 27 Feb 2007 18:52:30 -0800
 From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+To: "Bill Davidsen" <davidsen@tmr.com>
 Subject: Re: SMP performance degradation with sysbench
-Cc: "Rik van Riel" <riel@redhat.com>,
-       "Lorenzo Allegrucci" <l_allegrucci@yahoo.it>,
-       linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
-       "Suparna Bhattacharya" <suparna@in.ibm.com>,
-       "Jens Axboe" <jens.axboe@oracle.com>
-In-Reply-To: <45E4E780.8010109@yahoo.com.au>
+Cc: "Paulo Marques" <pmarques@grupopie.com>, "Rik van Riel" <riel@redhat.com>,
+       "=?ISO-8859-1?Q?\"J.A._Magall=F3n\"?=" <jamagallon@ono.com>,
+       "Hiro Yoshioka" <hyoshiok@miraclelinux.com>, davej@redhat.com,
+       harlan@artselect.com, nickpiggin@yahoo.com.au, l_allegrucci@yahoo.it,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, suparna@in.ibm.com,
+       jens.axboe@oracle.com
+In-Reply-To: <45E4E736.2050505@tmr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <1172425476.5489.11.camel@odyssey.lan>
-	 <45E21FEC.9060605@redhat.com> <45E2E244.8040009@yahoo.com.au>
-	 <29495f1d0702271727w358cc9o644c4017d50634a9@mail.gmail.com>
-	 <45E4E780.8010109@yahoo.com.au>
+References: <20070226223645.GA24174@redhat.com>
+	 <98df96d30702261632u7479c9b2sce93f80f68bbc8d0@mail.gmail.com>
+	 <45E37EA3.3060101@redhat.com>
+	 <20070227.130305.424251739.hyoshiok@miraclelinux.com>
+	 <45E3B421.603@redhat.com> <20070227091409.6f3d12f9@werewolf-wl>
+	 <45E439E4.5030703@redhat.com> <45E4469C.8000505@grupopie.com>
+	 <45E4E736.2050505@tmr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/27/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> Nish Aravamudan wrote:
-> > On 2/26/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> >
-> >> Rik van Riel wrote:
-> >> > Lorenzo Allegrucci wrote:
-> >> >
-> >> >> Hi lkml,
-> >> >>
-> >> >> according to the test below (sysbench) Linux seems to have scalability
-> >> >> problems beyond 8 client threads:
-> >> >> http://jeffr-tech.livejournal.com/6268.html#cutid1
-> >> >> http://jeffr-tech.livejournal.com/5705.html
-> >> >> Hardware is an 8-core amd64 system and jeffr seems willing to try more
-> >> >> Linux versions on that machine.
-> >> >> Anyway, is there anyone who can reproduce this?
-> >> >
-> >> >
-> >> > I have reproduced it on a quad core test system.
-> >> >
-> >> > With 4 threads (on 4 cores) I get a high throughput, with
-> >> > approximately 58% user time and 42% system time.
-> >> >
-> >> > With 8 threads (on 4 cores) I get way lower throughput,
-> >> > with 37% user time, 29% system time 35% idle time!
-> >> >
-> >> > The maximum time taken per query also increases from
-> >> > 0.0096s to 0.5273s. Ouch!
-> >> >
-> >> > I don't know if this is MySQL, glibc or Linux kernel,
-> >> > but something strange is going on...
+On 2/27/07, Bill Davidsen <davidsen@tmr.com> wrote:
+> Paulo Marques wrote:
+> > Rik van Riel wrote:
+> >> J.A. Magallón wrote:
+> >>> [...]
+> >>> Its the same to answer 4+4 queries than 8 at half the speed, isn't it ?
 > >>
-> >> Like you, I'm also seeing idle time start going up as threads increase.
+> >> That still doesn't fix the potential Linux problem that this
+> >> benchmark identified.
 > >>
-> >> I initially thought this was a problem with the multiprocessor scheduler,
-> >> because the pattern is exactly like some artificat in the load balancing.
-> >>
-> >> However, after looking at the stats, and testing a couple of things, I
-> >> think it may not be after all.
-> >>
-> >> I've reproduced this on a 8-socket/16-way dual core Opteron. So far what
-> >> I am seeing is that MySQL is having trouble putting enough load into the
-> >> scheduler.
+> >> To clarify: I don't care as much about MySQL performance as
+> >> I care about identifying and fixing this potential bug in
+> >> Linux.
 > >
+> > IIRC a long time ago there was a change in the scheduler to prevent a
+> > low prio task running on a sibling of a hyperthreaded processor to slow
+> > down a higher prio task on another sibling of the same processor.
 > >
-> > Here are some graphs from the 4-socket/8-way Xeon box (no SMT, no MC
-> > in .config) I posted about earlier.
+> > Basically the scheduler would put the low prio task to sleep during an
+> > adequate task slice to allow the other sibling to run at full speed for
+> > a while.
 > >
-> > transactions.png resembles Nick's results pretty closely, in that a
-> > drop-off occurs, at the same # of threads, too. That seems weird to
-> > me, but I haven't thought about it too closely. Shouldn't Nick's be
-> > dropping off closer to 16 threads (that would be 1 per core, then,
-> > right?)
+> > I don't know the scheduler code well enough, but comments like this one
+> > make me think that the change is still in place:
+> >
+> >>     /*
+> >>      * If an SMT sibling task has been put to sleep for priority
+> >>      * reasons reschedule the idle task to see if it can now run.
+> >>      */
+> >>     if (rq->nr_running) {
+> >>         resched_task(rq->idle);
+> >>         ret = 1;
+> >>     }
+> >
+> > If that is the case, turning off CONFIG_SCHED_SMT would solve the problem.
+> >
+> That may be the case, but in my opinion if this helps it doesn't "solve"
+> the problem, because the real problem is that a process which is not on
+> a HT is being treated as if it were.
 >
-> I don't think it is exactly a matter of processes >= cores, but rather
-> just a general problem at higher concurrency.
+> Note that Intel does make multicore HT processors, and hopefully when
+> this code works as intended it will result in more total throughput. My
+> supposition is that it currently is NOT working as intended, since
+> disabling SMT scheduling is reported to help.
 
-Ok, thanks for the clarification.
+It does help, but we still drop off, clearly. Also, that's my
+baseline, so I'm not able to reproduce the *sharp* dropoff from the
+blog post yet.
 
--Nish
+> A test with MC on and SMT off would be informative for where to look next.
+
+I'm rebooting my box with 2.6.20.1 and exactly this setup now.
+
+Thanks,
+Nish
