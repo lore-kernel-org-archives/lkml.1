@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751110AbXB1C3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751133AbXB1CfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751110AbXB1C3i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 21:29:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbXB1C3i
+	id S1751133AbXB1CfS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 21:35:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbXB1CfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 21:29:38 -0500
-Received: from mail.tmr.com ([64.65.253.246]:53342 "EHLO gaimboi.tmr.com"
+	Tue, 27 Feb 2007 21:35:18 -0500
+Received: from mail.tmr.com ([64.65.253.246]:53346 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751110AbXB1C3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 21:29:37 -0500
-Message-ID: <45E4E953.7060501@tmr.com>
-Date: Tue, 27 Feb 2007 21:30:43 -0500
+	id S1751133AbXB1CfR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 21:35:17 -0500
+Message-ID: <45E4EAA7.2090007@tmr.com>
+Date: Tue, 27 Feb 2007 21:36:23 -0500
 From: Bill Davidsen <davidsen@tmr.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: kalium@gmx.de
-CC: linux-kernel@vger.kernel.org
-Subject: Re: latencies due to disk writes
-References: <20070226015439.97500@gmx.net>
-In-Reply-To: <20070226015439.97500@gmx.net>
+To: Florin Iucha <florin@iucha.net>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.20-rc1: CIFS cheers, NFS4 jeers
+References: <20070226064500.GZ29073@iucha.net>
+In-Reply-To: <20070226064500.GZ29073@iucha.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kalium@gmx.de wrote:
-> Hello!
+Florin Iucha wrote:
+> Hello, it's me and my 70 GB of photos again.
 > 
-> I'm experiencing extreme lags during disk writes. I have read somewhere (didn't save the URI, sigh) that this is actually related to bad (non-existing) write io priorities (CFQ only manages file reads).
+> I have tested both CIFS and NFSv4 clients in kernel 2.6.20-rc1 . CIFS
+> passed with flying colors and NFSv4 stalled after 7 GB.
 > 
-> I could imagine two quick, easy and probably quite effective ways to prevent such lags:
+> Configuration:
 > 
-> 1.) don't flush buffers to disk at once more than necessary.
+>    Server: PIII/1GHz, 512 MB RAM, Debian testing,
+>       distro kernel 2.6.18-3-vserver-686, Intel E1000 NIC, 
+>       filesystem 170 GB ext3 with default mkfs values on a SATA disk
+>       
+>    Client: AMD x2 4200+, 2 GB RAM, Debian testing/unstable
+>       kernel 2.6.20-rc1, Marvell SKGE onboard,
+>       filesystem 120 GB ext3 with default mkfs values on a SATA disk
 > 
-Actually, in many cases this is just what you do want, to avoid filling 
-memory with buffered writes and then flushing them on time or memory runout.
+Neil has been diddling NFS, I did some light testing with 2.6.20-git14 
+with 190GB of mp3 and mpg files (library of congress folk music) without 
+hangs. Just "did it work" tests, copy 20-30GB to server, do md5 on the 
+data pulled back from the server.
 
-Investigate the /proc/sys/vm/dirty_* values.
-
-> 2.) relate CPU niceness to max write buffer fill level (ie. the point where it gets forced to be flushed to disk -- a conservative estimate would be much better than nothing): (100-5*nicelevel)%, ie. writes for processes having nice level 19 are blocked/delayed until the write buffer is below 5%. That way, the accounting is done at a higher and probably easier to access level.
-> 
-> Maybe I'm just talking nonsense, but nonetheless, here are my 2 cents.
-> 
-> Best regards,
-> Mark
-> 
-> p.s. please CC me as I'm not subscribed to this list.
+Didn't hang, performance testing later.
 
 -- 
 Bill Davidsen <davidsen@tmr.com>
