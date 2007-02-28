@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751608AbXB1Tku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751545AbXB1Tky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751608AbXB1Tku (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 14:40:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbXB1Tku
+	id S1751545AbXB1Tky (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 14:40:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbXB1Tkx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 14:40:50 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:44167 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751545AbXB1Tkt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 14:40:49 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: Problem with freezable workqueues
-Date: Wed, 28 Feb 2007 20:43:23 +0100
-User-Agent: KMail/1.9.5
-Cc: vatsa@in.ibm.com, Pavel Machek <pavel@ucw.cz>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200702272251.28844.rjw@sisk.pl> <200702282017.39752.rjw@sisk.pl> <20070228193234.GA86@tv-sign.ru>
-In-Reply-To: <20070228193234.GA86@tv-sign.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702282043.24779.rjw@sisk.pl>
+	Wed, 28 Feb 2007 14:40:53 -0500
+Received: from smtp.nokia.com ([131.228.20.171]:47715 "EHLO
+	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751545AbXB1Tkv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 14:40:51 -0500
+Subject: Re: [PATCH 5/5] jffs2: Allow selection of compression mode via a
+	sysfs attribute
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Richard Purdie <rpurdie@openedhand.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>,
+       herbert@gondor.apana.org.au, linux-mtd <linux-mtd@lists.infradead.org>,
+       linux-crypto@vger.kernel.org
+In-Reply-To: <1172690034.16062.144.camel@localhost.localdomain>
+References: <1172690034.16062.144.camel@localhost.localdomain>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 28 Feb 2007 21:39:43 +0200
+Message-Id: <1172691583.17031.35.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 28 Feb 2007 19:39:48.0374 (UTC) FILETIME=[34CE2B60:01C75B70]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 28 February 2007 20:32, Oleg Nesterov wrote:
-> On 02/28, Rafael J. Wysocki wrote:
-> >
-> > > --- workqueue.c.org	2007-02-28 18:32:48.000000000 +0530
-> > > +++ workqueue.c	2007-02-28 18:44:23.000000000 +0530
-> > > @@ -718,6 +718,8 @@ static void cleanup_workqueue_thread(str
-> > >  		insert_wq_barrier(cwq, &barr, 1);
-> > >  		cwq->should_stop = 1;
-> > >  		alive = 1;
-> > > +		if (frozen(cwq->thread))
-> > > +			thaw(cwq->thread);
-> > >  	}
-> > >  	spin_unlock_irq(&cwq->lock);
-> >
-> > Unfortunately, the above code is mm-only.  Is the analogous fix for 2.6.21-rc2
-> > viable?
-> 
-> I am sorry, I lost track of this problem. As for 2.6.21, create_freezeable_workqueue
-> doesn't work and conflict with suspend. Why can't we remove it from XFS as you
-> suggested before?
+Hi Richard,
 
-Yes, we can (preparing a patch).  I was just curious. :-)
+On Wed, 2007-02-28 at 19:13 +0000, Richard Purdie wrote:
+> +/* gives us jffs2_subsys */
+> +static decl_subsys(jffs2, NULL, NULL);
 
-Rafael
+There is actually a file-system subsys - look up for fs_subsys. It is
+declared at fs/namespace.c.
+
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
