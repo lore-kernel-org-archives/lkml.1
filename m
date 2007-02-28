@@ -1,140 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932354AbXB1TIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932368AbXB1TJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932354AbXB1TIq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 14:08:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932359AbXB1TIq
+	id S932368AbXB1TJl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 14:09:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932374AbXB1TJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 14:08:46 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45735 "EHLO mx1.redhat.com"
+	Wed, 28 Feb 2007 14:09:41 -0500
+Received: from pfx2.jmh.fr ([194.153.89.55]:45517 "EHLO pfx2.jmh.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932354AbXB1TIp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 14:08:45 -0500
-Date: Wed, 28 Feb 2007 14:08:41 -0500
-From: Prarit Bhargava <prarit@redhat.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rgooch@atnf.csiro.au
-Cc: Prarit Bhargava <prarit@redhat.com>
-Message-Id: <20070228190841.21204.81660.sendpatchset@prarit.boston.redhat.com>
-Subject: [PATCH]: __init to __cpuinit in mtrr code
+	id S932368AbXB1TJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 14:09:40 -0500
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Davide Libenzi <davidel@xmailserver.org>
+Subject: Re: [patch - v3] epoll ready set loops diet ...
+Date: Wed, 28 Feb 2007 20:09:29 +0100
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <Pine.LNX.4.64.0702281034050.6806@alien.or.mcafeemobile.com>
+In-Reply-To: <Pine.LNX.4.64.0702281034050.6806@alien.or.mcafeemobile.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702282009.29527.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Resending to wider audience)
+On Wednesday 28 February 2007 19:37, Davide Libenzi wrote:
 
-__init to __cpuinit in mtrr code.
+> +		list_del(&epi->rdllink);
+> +		if (!(epi->event.events & EPOLLET) && (revents & epi->event.events))
+> +			list_add_tail(&epi->rdllink, &injlist);
+> +		else {
 
-Resolves warnings similar to:
+Is the ( ... & epi->event.events) really necessary ? (It seems already done)
 
-WARNING: vmlinux - Section mismatch: reference to .init.text:mtrr_bp_init from .text between 'identify_cpu' (at offset 0xc040b38e) and 'detect_ht'
+I was wrong about the size of epitem : it is now 68 bytes instead of 72.
+At least we now use/dirty one cache line instead of two per epitem.
 
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+Do you have another brilliant idea to shrink 4 more bytes ? :)
 
-diff --git a/arch/i386/kernel/cpu/mtrr/amd.c b/arch/i386/kernel/cpu/mtrr/amd.c
-index 0949cdb..375752a 100644
---- a/arch/i386/kernel/cpu/mtrr/amd.c
-+++ b/arch/i386/kernel/cpu/mtrr/amd.c
-@@ -112,7 +112,7 @@ static struct mtrr_ops amd_mtrr_ops = {
- 	.have_wrcomb       = positive_have_wrcomb,
- };
- 
--int __init amd_init_mtrr(void)
-+int __cpuinit amd_init_mtrr(void)
- {
- 	set_mtrr_ops(&amd_mtrr_ops);
- 	return 0;
-diff --git a/arch/i386/kernel/cpu/mtrr/centaur.c b/arch/i386/kernel/cpu/mtrr/centaur.c
-index cb9aa3a..8b61016 100644
---- a/arch/i386/kernel/cpu/mtrr/centaur.c
-+++ b/arch/i386/kernel/cpu/mtrr/centaur.c
-@@ -215,7 +215,7 @@ static struct mtrr_ops centaur_mtrr_ops = {
- 	.have_wrcomb       = positive_have_wrcomb,
- };
- 
--int __init centaur_init_mtrr(void)
-+int __cpuinit centaur_init_mtrr(void)
- {
- 	set_mtrr_ops(&centaur_mtrr_ops);
- 	return 0;
-diff --git a/arch/i386/kernel/cpu/mtrr/cyrix.c b/arch/i386/kernel/cpu/mtrr/cyrix.c
-index 0737a59..df38d8c 100644
---- a/arch/i386/kernel/cpu/mtrr/cyrix.c
-+++ b/arch/i386/kernel/cpu/mtrr/cyrix.c
-@@ -370,7 +370,7 @@ static struct mtrr_ops cyrix_mtrr_ops = {
- 	.have_wrcomb       = positive_have_wrcomb,
- };
- 
--int __init cyrix_init_mtrr(void)
-+int __cpuinit cyrix_init_mtrr(void)
- {
- 	set_mtrr_ops(&cyrix_mtrr_ops);
- 	return 0;
-diff --git a/arch/i386/kernel/cpu/mtrr/generic.c b/arch/i386/kernel/cpu/mtrr/generic.c
-index f77fc53..fd97f84 100644
---- a/arch/i386/kernel/cpu/mtrr/generic.c
-+++ b/arch/i386/kernel/cpu/mtrr/generic.c
-@@ -30,14 +30,14 @@ static __initdata int mtrr_show;
- module_param_named(show, mtrr_show, bool, 0);
- 
- /*  Get the MSR pair relating to a var range  */
--static void __init
-+static void __cpuinit
- get_mtrr_var_range(unsigned int index, struct mtrr_var_range *vr)
- {
- 	rdmsr(MTRRphysBase_MSR(index), vr->base_lo, vr->base_hi);
- 	rdmsr(MTRRphysMask_MSR(index), vr->mask_lo, vr->mask_hi);
- }
- 
--static void __init
-+static void __cpuinit
- get_fixed_ranges(mtrr_type * frs)
- {
- 	unsigned int *p = (unsigned int *) frs;
-@@ -60,7 +60,7 @@ static void __init print_fixed(unsigned base, unsigned step, const mtrr_type*typ
- }
- 
- /*  Grab all of the MTRR state for this CPU into *state  */
--void __init get_mtrr_state(void)
-+void __cpuinit get_mtrr_state(void)
- {
- 	unsigned int i;
- 	struct mtrr_var_range *vrs;
-diff --git a/arch/i386/kernel/cpu/mtrr/main.c b/arch/i386/kernel/cpu/mtrr/main.c
-index 0acfb6a..cdbca55 100644
---- a/arch/i386/kernel/cpu/mtrr/main.c
-+++ b/arch/i386/kernel/cpu/mtrr/main.c
-@@ -103,7 +103,7 @@ static int have_wrcomb(void)
- }
- 
- /*  This function returns the number of variable MTRRs  */
--static void __init set_num_var_ranges(void)
-+static void __cpuinit set_num_var_ranges(void)
- {
- 	unsigned long config = 0, dummy;
- 
-@@ -116,7 +116,7 @@ static void __init set_num_var_ranges(void)
- 	num_var_ranges = config & 0xff;
- }
- 
--static void __init init_table(void)
-+static void __cpuinit init_table(void)
- {
- 	int i, max;
- 
-@@ -571,7 +571,7 @@ extern void amd_init_mtrr(void);
- extern void cyrix_init_mtrr(void);
- extern void centaur_init_mtrr(void);
- 
--static void __init init_ifs(void)
-+static void __cpuinit init_ifs(void)
- {
- #ifndef CONFIG_X86_64
- 	amd_init_mtrr();
-@@ -639,7 +639,7 @@ static struct sysdev_driver mtrr_sysdev_driver = {
-  * initialized (i.e. before smp_init()).
-  * 
-  */
--void __init mtrr_bp_init(void)
-+void __cpuinit mtrr_bp_init(void)
- {
- 	init_ifs();
- 
+It seems to me 'nwait' is only used at init time (so that 
+ep_ptable_queue_proc() can signal an error occured).
+
+Maybe another mechanism could let us delete nwait from epitem ?
+
+We could use a field in task_struct for example (see usage of total_link_count 
+for example)
+
+Thank you
