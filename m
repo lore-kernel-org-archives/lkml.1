@@ -1,178 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751889AbXB1UNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751183AbXB1UXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751889AbXB1UNe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 15:13:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbXB1UNd
+	id S1751183AbXB1UXg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 15:23:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbXB1UXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 15:13:33 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:45239 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751282AbXB1UNc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 15:13:32 -0500
-Subject: Kernel Oops with shm namespace cleanups
-From: Adam Litke <agl@us.ibm.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, aglitke <agl@us.ibm.com>,
-       akpm@linux-foundation.org
-Content-Type: text/plain
-Organization: IBM
-Date: Wed, 28 Feb 2007 14:13:29 -0600
-Message-Id: <1172693610.12805.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Wed, 28 Feb 2007 15:23:36 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44332 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751183AbXB1UXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 15:23:34 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: Problem with freezable workqueues
+Date: Wed, 28 Feb 2007 21:25:52 +0100
+User-Agent: KMail/1.9.5
+Cc: vatsa@in.ibm.com, Pavel Machek <pavel@ucw.cz>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200702272251.28844.rjw@sisk.pl> <200702282043.24779.rjw@sisk.pl> <20070228200853.GA122@tv-sign.ru>
+In-Reply-To: <20070228200853.GA122@tv-sign.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702282125.53318.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey.  While testing 2.6.21-rc2 with libhugetlbfs, the shm-fork test case
-causes the kernel to oops.  To reproduce:  Execute 'make check' in the
-latest libhugetlbfs source on a 2.6.21-rc2 kernel with 100 huge pages
-allocated.  Using fewer huge pages will likely also trigger the oops.
-Libhugetlbfs can be downloaded from:
-http://libhugetlbfs.ozlabs.org/snapshots/libhugetlbfs-dev-20070228.tar.gz
+On Wednesday, 28 February 2007 21:08, Oleg Nesterov wrote:
+> On 02/28, Rafael J. Wysocki wrote:
+> >
+> > On Wednesday, 28 February 2007 20:32, Oleg Nesterov wrote:
+> > > 
+> > > I am sorry, I lost track of this problem. As for 2.6.21, create_freezeable_workqueue
+> > > doesn't work and conflict with suspend. Why can't we remove it from XFS as you
+> > > suggested before?
+> > 
+> > Yes, we can (preparing a patch).  I was just curious. :-)
+> 
+> OK, thanks.
+> 
+> We can (I think) do pretty much the same with some additional complications
+> in worker_thread() (check !cpu_online() after try_to_freeze() and break).
 
-I have collected the following information:
+Okay, but I've just finished the patch that removes the freezability of
+workqueues (appended), so can we please do this in a separate one?
 
-bc56bba8f31bd99f350a5ebfd43d50f411b620c7 is first bad commit
-commit bc56bba8f31bd99f350a5ebfd43d50f411b620c7
-Author: Eric W. Biederman <ebiederm@xmission.com>
-Date:   Tue Feb 20 13:57:53 2007 -0800
+Rafael
 
-    [PATCH] shm: make sysv ipc shared memory use stacked files
+---
+Since freezable workqueues are broken in 2.6.21-rc
+(cf. http://marc.theaimsgroup.com/?l=linux-kernel&m=116855740612755,
+http://marc.theaimsgroup.com/?l=linux-kernel&m=117261312523921&w=2)
+it's better to remove them altogether for 2.6.21 and change the only user of
+them (XFS) accordingly.
 
- ------------[ cut here ]------------
-Oops: Exception in kernel mode, sig: 5 [#1]
-SMP NR_CPUS=32 NUMA 
-Modules linked in:
-NIP: C00000000002EA80 LR: C0000000000A3F70 CTR: 0000000064000000
-REGS: c00000077967b770 TRAP: 0700   Not tainted  (2.6.20-g1df49008)
-MSR: 8000000000029032 <EE,ME,IR,DR>  CR: 28000448  XER: 00000000
-TASK = c00000002f6737d0[3042] 'shm-fork' THREAD: c000000779678000 CPU: 1
-GPR00: 0000000000000000 C00000077967B9F0 C0000000006725A0 C00000002F94EC00 
-GPR04: 0000000093FD1000 0000000093FD1000 0000000002000000 0000000093FD1000 
-GPR08: 0000000000000001 0000000000000000 0000000000000001 0000000000000001 
-GPR12: 0000000048000444 C00000000058BE00 00000000FFEE8094 0000000000000000 
-GPR16: 0000000002000000 00000000100AC5E8 00000000100A0000 0000000010080000 
-GPR20: 0000000000000000 0000000093FD1000 C00000077FDBD088 C00000002F94EC00 
-GPR24: C00000077FDBD088 0000000002000000 C00000002F94EC00 0000000093FD1000 
-GPR28: C00000077967BEA0 0000000093FD1000 C0000000005A2F58 C00000077FDBD088 
-NIP [C00000000002EA80] .huge_pte_alloc+0x7c/0x1dc
-LR [C0000000000A3F70] .hugetlb_fault+0x48/0x150
-Call Trace:
-[C00000077967B9F0] [C00000077967BA80] 0xc00000077967ba80 (unreliable)
-[C00000077967BAA0] [C0000000000A3F70] .hugetlb_fault+0x48/0x150
-[C00000077967BB50] [C000000000094254] .__handle_mm_fault+0xa8/0x119c
-[C00000077967BC50] [C00000000002A1E0] .do_page_fault+0x3a8/0x57c
-[C00000077967BE30] [C000000000004AFC] handle_page_fault+0x20/0x58
-Instruction dump:
-78000020 7fa40040 409d0010 a00302be 7889c220 4800000c a00302bc 78892702 
-7c004e30 780907e1 40820008 39600001 <0b0b0000> e922adb8 3800ffff ebda0048 
-------------[ cut here ]------------
-kernel BUG at /home/aglitke/git/linux-2.6/mm/hugetlb.c:375!
-Oops: Exception in kernel mode, sig: 5 [#2]
-SMP NR_CPUS=32 NUMA 
-Modules linked in:
-NIP: C0000000000A3518 LR: C0000000000A376C CTR: C00000000006B348
-REGS: c00000077967ace0 TRAP: 0700   Not tainted  (2.6.20-g1df49008)
-MSR: 8000000000029032 <EE,ME,IR,DR>  CR: 42022442  XER: 00000000
-TASK = c00000002f6737d0[3042] 'shm-fork' THREAD: c000000779678000 CPU: 1
-GPR00: 0000000000000018 C00000077967AF60 C0000000006725A0 C00000077FDBD088 
-GPR04: 0000000093FD1000 00000000F7FD1000 C00000077FFA5A83 C00000077FFEF6E0 
-GPR08: 0000000010013000 0000000000FD1000 0000000010013000 C000000000697EB0 
-GPR12: 0000000022004444 C00000000058BE00 0000000010013000 0000000010013000 
-GPR16: 0000000010013000 FFFFFFFFFFFFFFFF 0000000000000000 C00000077967B120 
-GPR20: 00000000F7FD1000 0000000000000000 C0000000040DBDD0 C00000077FDBD088 
-GPR24: 000000EF9C340793 0000000010013000 C00000002F94EC00 C00000077967AFD0 
-GPR28: 00000000F7FD1000 0000000093FD1000 C0000000005A2F58 C00000002F94EC00 
-NIP [C0000000000A3518] .__unmap_hugepage_range+0x68/0x264
-LR [C0000000000A376C] .unmap_hugepage_range+0x58/0xa0
-Call Trace:
-[C00000077967AF60] [0000000000000001] 0x1 (unreliable)
-[C00000077967B020] [C0000000000A376C] .unmap_hugepage_range+0x58/0xa0
-[C00000077967B0B0] [C000000000091464] .unmap_vmas+0x17c/0x954
-[C00000077967B210] [C000000000099488] .exit_mmap+0xa4/0x17c
-[C00000077967B2C0] [C00000000004CB08] .mmput+0x60/0x160
-[C00000077967B360] [C000000000052E4C] .exit_mm+0x130/0x154
-[C00000077967B400] [C0000000000535D8] .do_exit+0x238/0x964
-[C00000077967B4C0] [C000000000022AC4] .die+0x150/0x154
-[C00000077967B550] [C000000000022B10] ._exception+0x48/0x138
-[C00000077967B660] [C000000000023634] .program_check_exception+0x5cc/0x5e4
-[C00000077967B700] [C0000000000046F4] program_check_common+0xf4/0x100
---- Exception: 700 at .huge_pte_alloc+0x7c/0x1dc
-    LR = .hugetlb_fault+0x48/0x150
-[C00000077967B9F0] [C00000077967BA80] 0xc00000077967ba80 (unreliable)
-[C00000077967BAA0] [C0000000000A3F70] .hugetlb_fault+0x48/0x150
-[C00000077967BB50] [C000000000094254] .__handle_mm_fault+0xa8/0x119c
-[C00000077967BC50] [C00000000002A1E0] .do_page_fault+0x3a8/0x57c
-[C00000077967BE30] [C000000000004AFC] handle_page_fault+0x20/0x58
-Instruction dump:
-fb610078 780957e3 ebe30000 7c000026 54001ffe 0b000000 e97e8030 39200001 
-800b0000 7d290036 3929ffff 7c894838 <0b090000> 800b0000 39200001 7d290036 
-Fixing recursive fault but reboot is needed!
-BUG: soft lockup detected on CPU#0!
-Call Trace:
-[C000000779AD74C0] [C00000000000F588] .show_stack+0x68/0x1b4 (unreliable)
-[C000000779AD7570] [C00000000007C5E0] .softlockup_tick+0xec/0x140
-[C000000779AD7630] [C00000000005C68C] .run_local_timers+0x1c/0x30
-[C000000779AD76B0] [C000000000021358] .timer_interrupt+0x80/0x498
-[C000000779AD7790] [C000000000003580] decrementer_common+0x100/0x180
---- Exception: 901 at ._spin_lock+0x30/0x44
-    LR = .vma_link+0x6c/0x1d4
-[C000000779AD7A80] [C0000000005C8C08] 0xc0000000005c8c08 (unreliable)
-[C000000779AD7B30] [C000000000098D18] .do_mmap_pgoff+0x650/0x818
-[C000000779AD7C40] [C00000000028F204] .do_shmat+0x304/0x454
-[C000000779AD7D30] [C000000000289660] .compat_sys_shmat+0x34/0x94
-[C000000779AD7DC0] [C000000000014A20] .compat_sys_ipc+0x18c/0x1e8
-[C000000779AD7E30] [C00000000000872C] syscall_exit+0x0/0x40
-BUG: soft lockup detected on CPU#2!
-Call Trace:
-[C000000779B934C0] [C00000000000F588] .show_stack+0x68/0x1b4 (unreliable)
-[C000000779B93570] [C00000000007C5E0] .softlockup_tick+0xec/0x140
-[C000000779B93630] [C00000000005C68C] .run_local_timers+0x1c/0x30
-[C000000779B936B0] [C000000000021358] .timer_interrupt+0x80/0x498
-[C000000779B93790] [C000000000003580] decrementer_common+0x100/0x180
---- Exception: 901 at ._spin_lock+0x2c/0x44
-    LR = .vma_link+0x6c/0x1d4
-[C000000779B93A80] [C0000000005C8C08] 0xc0000000005c8c08 (unreliable)
-[C000000779B93B30] [C000000000098D18] .do_mmap_pgoff+0x650/0x818
-[C000000779B93C40] [C00000000028F204] .do_shmat+0x304/0x454
-[C000000779B93D30] [C000000000289660] .compat_sys_shmat+0x34/0x94
-[C000000779B93DC0] [C000000000014A20] .compat_sys_ipc+0x18c/0x1e8
-[C000000779B93E30] [C00000000000872C] syscall_exit+0x0/0x40
-BUG: soft lockup detected on CPU#3!
-Call Trace:
-[C000000779AD34C0] [C00000000000F588] .show_stack+0x68/0x1b4 (unreliable)
-[C000000779AD3570] [C00000000007C5E0] .softlockup_tick+0xec/0x140
-[C000000779AD3630] [C00000000005C68C] .run_local_timers+0x1c/0x30
-[C000000779AD36B0] [C000000000021358] .timer_interrupt+0x80/0x498
-[C000000779AD3790] [C000000000003580] decrementer_common+0x100/0x180
---- Exception: 901 at ._spin_lock+0x2c/0x44
-    LR = .vma_link+0x6c/0x1d4
-[C000000779AD3A80] [C0000000005C8C08] 0xc0000000005c8c08 (unreliable)
-[C000000779AD3B30] [C000000000098D18] .do_mmap_pgoff+0x650/0x818
-[C000000779AD3C40] [C00000000028F204] .do_shmat+0x304/0x454
-[C000000779AD3D30] [C000000000289660] .compat_sys_shmat+0x34/0x94
-[C000000779AD3DC0] [C000000000014A20] .compat_sys_ipc+0x18c/0x1e8
-[C000000779AD3E30] [C00000000000872C] syscall_exit+0x0/0x40
-BUG: soft lockup detected on CPU#1!
-Call Trace:
-[C000000779BB34C0] [C00000000000F588] .show_stack+0x68/0x1b4 (unreliable)
-[C000000779BB3570] [C00000000007C5E0] .softlockup_tick+0xec/0x140
-[C000000779BB3630] [C00000000005C68C] .run_local_timers+0x1c/0x30
-[C000000779BB36B0] [C000000000021358] .timer_interrupt+0x80/0x498
-[C000000779BB3790] [C000000000003580] decrementer_common+0x100/0x180
---- Exception: 901 at ._spin_lock+0x2c/0x44
-    LR = .vma_link+0x6c/0x1d4
-[C000000779BB3A80] [C0000000005C8C08] 0xc0000000005c8c08 (unreliable)
-[C000000779BB3B30] [C000000000098D18] .do_mmap_pgoff+0x650/0x818
-[C000000779BB3C40] [C00000000028F204] .do_shmat+0x304/0x454
-[C000000779BB3D30] [C000000000289660] .compat_sys_shmat+0x34/0x94
-[C000000779BB3DC0] [C000000000014A20] .compat_sys_ipc+0x18c/0x1e8
-[C000000779BB3E30] [C00000000000872C] syscall_exit+0x0/0x40
+---
+ fs/xfs/linux-2.6/xfs_buf.c |    4 ++--
+ include/linux/workqueue.h  |    8 +++-----
+ kernel/workqueue.c         |   21 +++++++--------------
+ 3 files changed, 12 insertions(+), 21 deletions(-)
 
-
--- 
-Adam Litke - (agl at us.ibm.com)
-IBM Linux Technology Center
+Index: linux-2.6.21-rc2/kernel/workqueue.c
+===================================================================
+--- linux-2.6.21-rc2.orig/kernel/workqueue.c
++++ linux-2.6.21-rc2/kernel/workqueue.c
+@@ -59,7 +59,6 @@ struct cpu_workqueue_struct {
+ 
+ 	int run_depth;		/* Detect run_workqueue() recursion depth */
+ 
+-	int freezeable;		/* Freeze the thread during suspend */
+ } ____cacheline_aligned;
+ 
+ /*
+@@ -352,8 +351,7 @@ static int worker_thread(void *__cwq)
+ 	struct k_sigaction sa;
+ 	sigset_t blocked;
+ 
+-	if (!cwq->freezeable)
+-		current->flags |= PF_NOFREEZE;
++	current->flags |= PF_NOFREEZE;
+ 
+ 	set_user_nice(current, -5);
+ 
+@@ -376,9 +374,6 @@ static int worker_thread(void *__cwq)
+ 
+ 	set_current_state(TASK_INTERRUPTIBLE);
+ 	while (!kthread_should_stop()) {
+-		if (cwq->freezeable)
+-			try_to_freeze();
+-
+ 		add_wait_queue(&cwq->more_work, &wait);
+ 		if (list_empty(&cwq->worklist))
+ 			schedule();
+@@ -454,8 +449,8 @@ void fastcall flush_workqueue(struct wor
+ }
+ EXPORT_SYMBOL_GPL(flush_workqueue);
+ 
+-static struct task_struct *create_workqueue_thread(struct workqueue_struct *wq,
+-						   int cpu, int freezeable)
++static struct task_struct
++*create_workqueue_thread(struct workqueue_struct *wq, int cpu)
+ {
+ 	struct cpu_workqueue_struct *cwq = per_cpu_ptr(wq->cpu_wq, cpu);
+ 	struct task_struct *p;
+@@ -465,7 +460,6 @@ static struct task_struct *create_workqu
+ 	cwq->thread = NULL;
+ 	cwq->insert_sequence = 0;
+ 	cwq->remove_sequence = 0;
+-	cwq->freezeable = freezeable;
+ 	INIT_LIST_HEAD(&cwq->worklist);
+ 	init_waitqueue_head(&cwq->more_work);
+ 	init_waitqueue_head(&cwq->work_done);
+@@ -480,8 +474,7 @@ static struct task_struct *create_workqu
+ 	return p;
+ }
+ 
+-struct workqueue_struct *__create_workqueue(const char *name,
+-					    int singlethread, int freezeable)
++struct workqueue_struct *__create_workqueue(const char *name, int singlethread)
+ {
+ 	int cpu, destroy = 0;
+ 	struct workqueue_struct *wq;
+@@ -501,7 +494,7 @@ struct workqueue_struct *__create_workqu
+ 	mutex_lock(&workqueue_mutex);
+ 	if (singlethread) {
+ 		INIT_LIST_HEAD(&wq->list);
+-		p = create_workqueue_thread(wq, singlethread_cpu, freezeable);
++		p = create_workqueue_thread(wq, singlethread_cpu);
+ 		if (!p)
+ 			destroy = 1;
+ 		else
+@@ -509,7 +502,7 @@ struct workqueue_struct *__create_workqu
+ 	} else {
+ 		list_add(&wq->list, &workqueues);
+ 		for_each_online_cpu(cpu) {
+-			p = create_workqueue_thread(wq, cpu, freezeable);
++			p = create_workqueue_thread(wq, cpu);
+ 			if (p) {
+ 				kthread_bind(p, cpu);
+ 				wake_up_process(p);
+@@ -760,7 +753,7 @@ static int __devinit workqueue_cpu_callb
+ 		mutex_lock(&workqueue_mutex);
+ 		/* Create a new workqueue thread for it. */
+ 		list_for_each_entry(wq, &workqueues, list) {
+-			if (!create_workqueue_thread(wq, hotcpu, 0)) {
++			if (!create_workqueue_thread(wq, hotcpu)) {
+ 				printk("workqueue for %i failed\n", hotcpu);
+ 				return NOTIFY_BAD;
+ 			}
+Index: linux-2.6.21-rc2/include/linux/workqueue.h
+===================================================================
+--- linux-2.6.21-rc2.orig/include/linux/workqueue.h
++++ linux-2.6.21-rc2/include/linux/workqueue.h
+@@ -159,11 +159,9 @@ struct execute_work {
+ 
+ 
+ extern struct workqueue_struct *__create_workqueue(const char *name,
+-						    int singlethread,
+-						    int freezeable);
+-#define create_workqueue(name) __create_workqueue((name), 0, 0)
+-#define create_freezeable_workqueue(name) __create_workqueue((name), 0, 1)
+-#define create_singlethread_workqueue(name) __create_workqueue((name), 1, 0)
++						    int singlethread);
++#define create_workqueue(name) __create_workqueue((name), 0)
++#define create_singlethread_workqueue(name) __create_workqueue((name), 1)
+ 
+ extern void destroy_workqueue(struct workqueue_struct *wq);
+ 
+Index: linux-2.6.21-rc2/fs/xfs/linux-2.6/xfs_buf.c
+===================================================================
+--- linux-2.6.21-rc2.orig/fs/xfs/linux-2.6/xfs_buf.c
++++ linux-2.6.21-rc2/fs/xfs/linux-2.6/xfs_buf.c
+@@ -1829,11 +1829,11 @@ xfs_buf_init(void)
+ 	if (!xfs_buf_zone)
+ 		goto out_free_trace_buf;
+ 
+-	xfslogd_workqueue = create_freezeable_workqueue("xfslogd");
++	xfslogd_workqueue = create_workqueue("xfslogd");
+ 	if (!xfslogd_workqueue)
+ 		goto out_free_buf_zone;
+ 
+-	xfsdatad_workqueue = create_freezeable_workqueue("xfsdatad");
++	xfsdatad_workqueue = create_workqueue("xfsdatad");
+ 	if (!xfsdatad_workqueue)
+ 		goto out_destroy_xfslogd_workqueue;
+ 
 
