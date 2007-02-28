@@ -1,75 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752403AbXB1Xjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752454AbXB1XkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752403AbXB1Xjn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 18:39:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbXB1Xjn
+	id S1752454AbXB1XkA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 18:40:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbXB1XkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 18:39:43 -0500
-Received: from odyssey.analogic.com ([204.178.40.5]:3818 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752403AbXB1Xjm convert rfc822-to-8bit (ORCPT
+	Wed, 28 Feb 2007 18:40:00 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47160 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752454AbXB1Xj7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 18:39:42 -0500
+	Wed, 28 Feb 2007 18:39:59 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Albert Cahalan <acahalan@gmail.com>
+Subject: Re: PID entries in /proc sorted by number, not start time in 2.6.19
+References: <45E601D9.1050503@redhat.com>
+Date: Wed, 28 Feb 2007 16:39:43 -0700
+In-Reply-To: <45E601D9.1050503@redhat.com> (Chuck Ebbert's message of "Wed, 28
+	Feb 2007 17:27:37 -0500")
+Message-ID: <m1irdlg8cg.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 28 Feb 2007 23:39:39.0479 (UTC) FILETIME=[B6928670:01C75B91]
-Content-class: urn:content-classes:message
-Subject: Ramdisk size
-Date: Wed, 28 Feb 2007 18:39:39 -0500
-Message-ID: <Pine.LNX.4.61.0702281837020.4181@chaos.analogic.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Ramdisk size
-Thread-Index: Acdbkba2lP4jErnEQhqRYzadX736GQ==
-From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-To: "Linux kernel" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Chuck Ebbert <cebbert@redhat.com> writes:
 
-Hello,
-On an embedded system, I use two ramdisks. They are both
-16 megabytes in size. I can create them interactively in
-the normal way with mke2fs. However, when the system is
-booted using isolinux, the RAM disks become corrupted.
-Apparently isolinux.cfg's ramdisk_size (not documented,
-only referenced, BYW) is not in 1k increments. That value
-seems to affect all ramdisks, not just the `initrd` one.
-I can prevent corruption by setting the value to 200000
-(way too much). However I won't have any RAM left for
-applications! I need to know how much RAM a ramdisk of
-16386 bytes takes, and how to set it in isolinux.cfg
-(what the multiplier is).
+> Starting with kernel 2.6.19, the process directories in
+> /proc are sorted by number. They were sorted by process
+> start time in 2.6.18 and earlier. This makes the output
+> of procps come out in that order too, pissing off users
+> who are used to the old way.
+>
+> To reproduce:
+> 	1. Wrap your PID numbers.
+> 	2. Do ls -fl /proc
+> 	3. Look at output of ps command.
+>
+> Compare 2.6.18 to 2.6.19.
+>
+> See also:
+> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=230227
 
-The file-system mounts properly, but a write of one byte
-causes the following error:
+Apologies, but this was a bug fix for a more serious issue.  The code
+to report the directory entries by start time was fundamentally broken.
+In particular the sequence:
+opendir
+readdir
+readdir
+readdir
+....
+closedir
 
-EXT-FS error (Device ram2);
-ext2_new_block: Allocation block in system zone block = 129
+can miss processes that exist for the entire duration of that
+sequence.  Which is non-posix, non-intuitive, and has no reasonable
+work around.
 
-e2fsck reports:
- 	+(129--256) + (8321--8448)
- 	block bitmap differences
+The sorting by pid happened as a side effect of finding a stable token
+we can come back to so we can at least guarantee normal readdir
+semantics.  That objects that exist for the entire readdir are
+guaranteed to be displayed.  That objects that come into existence or
+are deleted during the readdir may be missed.  That isn't perfect but
+it is a useable semantic. 
 
-It's difficult to find out what is being corrupted because
-`mke2fs` never creates the same thing twice!! There is some
-time-stuff in it, therefore I can't find out what actually
-is getting trashed. Currently, it doesn't look like anything
-at the ends of the raw disk get trashed. Instead, it looks
-like the ramdisk size when booted using isolinux is simply
-not the same size as when the ramdisk contents were created.
-
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.16.24 on an i686 machine (5592.65 BogoMips).
-New book: http://www.AbominableFirebug.com/
-_
-
-
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
+Eric
