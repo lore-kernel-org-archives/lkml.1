@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751452AbXB1BOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751677AbXB1BTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751452AbXB1BOU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 20:14:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbXB1BOU
+	id S1751677AbXB1BTo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 20:19:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbXB1BTn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 20:14:20 -0500
-Received: from nigel.suspend2.net ([203.171.70.205]:33421 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751452AbXB1BOT (ORCPT
+	Tue, 27 Feb 2007 20:19:43 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:45066 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751677AbXB1BTn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 20:14:19 -0500
-Subject: Re: Problem with freezable workqueues
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Johannes Berg <johannes@sipsolutions.net>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Pavel Machek <pavel@ucw.cz>, Gautham R Shenoy <ego@in.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-In-Reply-To: <200702280108.57988.rjw@sisk.pl>
-References: <200702272251.28844.rjw@sisk.pl>
-	 <200702280057.36198.rjw@sisk.pl> <1172620896.3681.19.camel@johannes.berg>
-	 <200702280108.57988.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Wed, 28 Feb 2007 12:14:14 +1100
-Message-Id: <1172625254.8580.37.camel@nigel.suspend2.net>
+	Tue, 27 Feb 2007 20:19:43 -0500
+Date: Tue, 27 Feb 2007 17:15:32 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Seetharam Dharmosoth <seetharam_kernel@yahoo.co.in>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: Need Help on Crash Dump in Kernel-2.6.20
+Message-Id: <20070227171532.e3f7ab3c.randy.dunlap@oracle.com>
+In-Reply-To: <979286.59445.qm@web7703.mail.in.yahoo.com>
+References: <979286.59445.qm@web7703.mail.in.yahoo.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.9.91 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Tue, 27 Feb 2007 13:22:56 +0000 (GMT) Seetharam Dharmosoth wrote:
 
-On Wed, 2007-02-28 at 01:08 +0100, Rafael J. Wysocki wrote:
-> On Wednesday, 28 February 2007 01:01, Johannes Berg wrote:
-> > On Wed, 2007-02-28 at 00:57 +0100, Rafael J. Wysocki wrote:
-> > 
-> > > Okay, in that case I'd suggest removing create_freezeable_workqueue() and
-> > > make all workqueues nonfreezable once again for 2.6.21 (as far as I know, only
-> > > the two XFS workqueues are affected).
-> > 
-> > I think Nigel might object but I forgot what specific trouble XFS was
-> > causing him.
+> Hi,
 > 
-> We suspected that the XFS' worker threads might commit I/O after
-> freeze_processes() has returned, but that hasn't been supported by evidence,
-> as far as I can recall.
+> I have one question regarding Crash Dump.
 > 
-> Also, making them freezable was controversial ...
+> Is Kernel-2.6.20 having the default Crash dump in main
+> tree?
 
-Controversy is no reason to give in! Nevertheless, I think you're right
-- I believe the XFS guys said they fixed the issue that had caused I/O
-to be submitted post-freeze. Well, we'll see if it appears again, won't
-we?
+2.6.20 has a CRASH_DUMP config option for some processor
+architectures, such as ia64, i386, x86_64, powerpc.
 
-Regards,
+You should read the help text for that config option as well
+as the file Documentation/kdump/kdump.txt .
 
-Nigel
+> As I know, LKCD is one of the Crash dump utility 
+> software which can be used with Linux Kernel (it is a
+> third party s/w).
+> 
+> can any one please tell me the right thing about Crash
+> dump?
 
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
