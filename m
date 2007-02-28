@@ -1,97 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751282AbXB1U2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751315AbXB1U3E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751282AbXB1U2w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 15:28:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbXB1U2w
+	id S1751315AbXB1U3E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 15:29:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbXB1U3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 15:28:52 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:32722 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751282AbXB1U2v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 15:28:51 -0500
-X-AuditID: d80ac287-9eb9bbb000002978-58-45e5e60234a7 
-Date: Wed, 28 Feb 2007 19:48:23 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] adapt page_lock_anon_vma() to PREEMPT_RCU
-In-Reply-To: <20070225200621.GA2259@tv-sign.ru>
-Message-ID: <Pine.LNX.4.64.0702281946140.5568@blonde.wat.veritas.com>
-References: <20070225200621.GA2259@tv-sign.ru>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 28 Feb 2007 20:28:29.0507 (UTC) FILETIME=[01EFB130:01C75B77]
-X-Brightmail-Tracker: AAAAAA==
+	Wed, 28 Feb 2007 15:29:04 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52297 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751315AbXB1U3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 15:29:00 -0500
+Date: Wed, 28 Feb 2007 21:21:56 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070228202156.GA15846@elte.hu>
+References: <20070221211355.GA7302@elte.hu> <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com> <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com> <20070222074044.GA4158@elte.hu> <Pine.LNX.4.64.0702221130050.1356@alien.or.mcafeemobile.com> <20070228094522.GA17716@elte.hu> <Pine.LNX.4.64.0702280740250.5935@alien.or.mcafeemobile.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702280740250.5935@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Feb 2007, Oleg Nesterov wrote:
 
-> page_lock_anon_vma() uses spin_lock() to block RCU. This doesn't work with
-> PREEMPT_RCU, we have to do rcu_read_lock() explicitely. Otherwise, it is
-> theoretically possible that slab returns anon_vma's memory to the system
-> before we do spin_unlock(&anon_vma->lock).
-> 
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+* Davide Libenzi <davidel@xmailserver.org> wrote:
 
-Acked-by: Hugh Dickins <hugh@veritas.com>
+> My point is, the syslet infrastructure is expensive for the kernel in 
+> terms of compat, [...]
 
-Thanks for doing this, and sorry for my delay.
+it is not. Today i've implemented 64-bit syslets on x86_64 and 
+32-bit-on-64-bit compat syslets. Both the 64-bit and the 32-bit syslet 
+(and threadlet) binaries work just fine on a 64-bit kernel, and they 
+share 99% of the infrastructure. There's only a single #ifdef 
+CONFIG_COMPAT in kernel/async.c:
 
-Hugh
+#ifdef CONFIG_COMPAT
 
-> 
-> --- WQ/mm/rmap.c~	2007-02-18 22:56:49.000000000 +0300
-> +++ WQ/mm/rmap.c	2007-02-25 22:43:00.000000000 +0300
-> @@ -183,7 +183,7 @@ void __init anon_vma_init(void)
->   */
->  static struct anon_vma *page_lock_anon_vma(struct page *page)
->  {
-> -	struct anon_vma *anon_vma = NULL;
-> +	struct anon_vma *anon_vma;
->  	unsigned long anon_mapping;
->  
->  	rcu_read_lock();
-> @@ -195,9 +195,16 @@ static struct anon_vma *page_lock_anon_v
->  
->  	anon_vma = (struct anon_vma *) (anon_mapping - PAGE_MAPPING_ANON);
->  	spin_lock(&anon_vma->lock);
-> +	return anon_vma;
->  out:
->  	rcu_read_unlock();
-> -	return anon_vma;
-> +	return NULL;
-> +}
-> +
-> +static void page_unlock_anon_vma(struct anon_vma *anon_vma)
-> +{
-> +	spin_unlock(&anon_vma->lock);
-> +	rcu_read_unlock();
->  }
->  
->  /*
-> @@ -333,7 +340,8 @@ static int page_referenced_anon(struct p
->  		if (!mapcount)
->  			break;
->  	}
-> -	spin_unlock(&anon_vma->lock);
-> +
-> +	page_unlock_anon_vma(anon_vma);
->  	return referenced;
->  }
->  
-> @@ -809,7 +817,8 @@ static int try_to_unmap_anon(struct page
->  				!page_mapped(page))
->  			break;
->  	}
-> -	spin_unlock(&anon_vma->lock);
-> +
-> +	page_unlock_anon_vma(anon_vma);
->  	return ret;
->  }
->  
-> 
+asmlinkage struct syslet_uatom __user *
+compat_sys_async_exec(struct syslet_uatom __user *uatom,
+                      struct async_head_user __user *ahu)
+{
+        return __sys_async_exec(uatom, ahu, &compat_sys_call_table,
+                                compat_NR_syscalls);
+}
+
+#endif
+
+Even mixed-mode syslets should work (although i havent specifically 
+tested them), where the head switches between 64-bit and 32-bit mode and 
+submits syslets from both 64-bit and from 32-bit mode, and at the same 
+time there might be both 64-bit and 32-bit syslets 'in flight'.
+
+But i'm happy to change the syslet API in any sane way, and did so based 
+on feedback from Jens who is actually using them.
+
+	Ingo
