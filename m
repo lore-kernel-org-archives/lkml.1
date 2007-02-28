@@ -1,48 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932409AbXB1Tab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932402AbXB1TdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932409AbXB1Tab (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 14:30:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932431AbXB1Tab
+	id S932402AbXB1TdL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 14:33:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932418AbXB1TdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 14:30:31 -0500
-Received: from de01egw01.freescale.net ([192.88.165.102]:37840 "EHLO
-	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932409AbXB1Taa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 14:30:30 -0500
-Message-ID: <45E5D84A.5000502@freescale.com>
-Date: Wed, 28 Feb 2007 13:30:18 -0600
-From: Timur Tabi <timur@freescale.com>
-Organization: Freescale
-User-Agent: Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; it; rv:1.8.1) Gecko/20061010 Firefox/2.0 
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Kumar Gala <galak@kernel.crashing.org>, Dan Malek <dan@embeddedalley.com>,
-       Torben.Mathiasen@hp.com,
-       linux-ppc-embedded <linuxppc-embedded@ozlabs.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
-References: <45E46976.6060600@freescale.com>	<29c13109971547687159078eacdea008@kernel.crashing.org>	<45E592DC.9060700@freescale.com>	<511cacb7bbe8a65ff72738c84ec9ece4@kernel.crashing.org>	<BD465924-7387-47EF-B90F-606F215819C2@embeddedalley.com>	<45E5B604.904@freescale.com> <46F6BF70-2922-4E05-8DAB-6B0830B0AB47@embeddedalley.com> <45E5BD6B.1010509@freescale.com> <F2D0230C-CA22-4DEF-917E-6982FA0C6171@embeddedalley.com> <45E5C128.7020204@freescale.com> <45E5C333.2060100@zytor.com> <ED6BD6F0-827F-4ADC-9D66-F9C3DD7FC470@embeddedalley.com> <E919B903-0890-4725-81CF-005003A1A2F6@kernel.crashing.org> <45E5D627.6030707@zytor.com>
-In-Reply-To: <45E5D627.6030707@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Feb 2007 14:33:11 -0500
+Received: from mail.screens.ru ([213.234.233.54]:52026 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932402AbXB1TdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 14:33:10 -0500
+Date: Wed, 28 Feb 2007 22:32:34 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: vatsa@in.ibm.com, Pavel Machek <pavel@ucw.cz>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Problem with freezable workqueues
+Message-ID: <20070228193234.GA86@tv-sign.ru>
+References: <200702272251.28844.rjw@sisk.pl> <200702281211.04515.rjw@sisk.pl> <20070228131721.GD15509@in.ibm.com> <200702282017.39752.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702282017.39752.rjw@sisk.pl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Kumar Gala wrote:
->>
->> Why don't we allocate the 2nd group of four as well, just at a new 
->> location.  They'll be discontinuous, but at least we'll have support 
->> for all 8.
->>
-> 
-> Right, it means two tty driver structures, but that's not a problem.
+On 02/28, Rafael J. Wysocki wrote:
+>
+> > --- workqueue.c.org	2007-02-28 18:32:48.000000000 +0530
+> > +++ workqueue.c	2007-02-28 18:44:23.000000000 +0530
+> > @@ -718,6 +718,8 @@ static void cleanup_workqueue_thread(str
+> >  		insert_wq_barrier(cwq, &barr, 1);
+> >  		cwq->should_stop = 1;
+> >  		alive = 1;
+> > +		if (frozen(cwq->thread))
+> > +			thaw(cwq->thread);
+> >  	}
+> >  	spin_unlock_irq(&cwq->lock);
+>
+> Unfortunately, the above code is mm-only.  Is the analogous fix for 2.6.21-rc2
+> viable?
 
-Eh, I'm not crazy about that.  That means that I have to complicate my driver because 
-someone else screwed up a long time ago.
+I am sorry, I lost track of this problem. As for 2.6.21, create_freezeable_workqueue
+doesn't work and conflict with suspend. Why can't we remove it from XFS as you
+suggested before?
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+Iirc,
+	On 02/28, Nigel Cunningham wrote:
+	>
+	> On Wed, 2007-02-28 at 01:08 +0100, Rafael J. Wysocki wrote:
+	> > On Wednesday, 28 February 2007 01:01, Johannes Berg wrote:
+	> > > On Wed, 2007-02-28 at 00:57 +0100, Rafael J. Wysocki wrote:
+	> > >
+	> > > > Okay, in that case I'd suggest removing create_freezeable_workqueue() and
+	> > > > make all workqueues nonfreezable once again for 2.6.21 (as far as I know, only
+	> > > > the two XFS workqueues are affected).
+	> > >
+	> > > I think Nigel might object but I forgot what specific trouble XFS was
+	> > > causing him.
+	> >
+	> > We suspected that the XFS' worker threads might commit I/O after
+	> > freeze_processes() has returned, but that hasn't been supported by evidence,
+	> > as far as I can recall.
+	> >
+	> > Also, making them freezable was controversial ...
+	>
+	> Controversy is no reason to give in! Nevertheless, I think you're right
+	> - I believe the XFS guys said they fixed the issue that had caused I/O
+	> to be submitted post-freeze. Well, we'll see if it appears again, won't
+	> we?
+
+Oleg.
+
