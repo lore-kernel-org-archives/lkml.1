@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932130AbXB1KN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932131AbXB1KQJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932130AbXB1KN3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 05:13:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932133AbXB1KN3
+	id S932131AbXB1KQJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 05:16:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932134AbXB1KQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 05:13:29 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:46030 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932130AbXB1KN2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 05:13:28 -0500
-Subject: Re: Make sure we populate the initroot filesystem late enough
-From: David Woodhouse <dwmw2@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>,
-       torvalds@linux-foundation.org, john stultz <johnstul@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, Paul TBBle Hampson <Paul.Hampson@Pobox.com>
-In-Reply-To: <1172644987.11949.90.camel@localhost.localdomain>
-References: <200612112059.kBBKx1j7022473@hera.kernel.org>
-	 <1172448057.3971.9.camel@shinybook.infradead.org>
-	 <1172518068.15970.6.camel@localhost> <20070226222724.GA13182@keitarou>
-	 <1172558897.11949.43.camel@localhost.localdomain>
-	 <3ac1a55a11baddefb903f24b988566fe@kernel.crashing.org>
-	 <1172644987.11949.90.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 28 Feb 2007 10:13:04 +0000
-Message-Id: <1172657584.3452.51.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6.dwmw2.1) 
+	Wed, 28 Feb 2007 05:16:08 -0500
+Received: from relay00.pair.com ([209.68.5.9]:3356 "HELO relay00.pair.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932133AbXB1KQH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 05:16:07 -0500
+X-pair-Authenticated: 24.241.238.207
+Message-ID: <45E55664.90407@cybsft.com>
+Date: Wed, 28 Feb 2007 04:16:04 -0600
+From: "K.R. Foley" <kr@cybsft.com>
+Organization: Cybersoft Solutions, Inc.
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: v2.6.20-rt1, yum/rpm
+References: <20070205065636.GA1652@elte.hu> <45E46CB4.1080009@cybsft.com> <20070228081132.GA32405@elte.hu>
+In-Reply-To: <20070228081132.GA32405@elte.hu>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-28 at 07:43 +0100, Benjamin Herrenschmidt wrote:
-> I wouldn't be that sure ... I've had problems in the past with PMU based
-> cpufreq... looks like flushing all caches and hard-resetting the
-> processor on the fly when there can be pending DMAs might be a source of
-> trouble... especially on CPUs that don't have working cache flush HW
-> assist. 
+Ingo Molnar wrote:
+> * K.R. Foley <kr@cybsft.com> wrote:
+> 
+>> Ingo Molnar wrote:
+>>> i have released the v2.6.20-rt1 kernel, which can be downloaded from the 
+>>> usual place:
+>>>
+>> I have a couple of questions regarding priorities of the softirqs, IRQ 
+>> handlers, etc.
+>>
+>> With some exceptions, back in 2.6.18 and prior patches the IRQ threads 
+>> were prioritized between 50 and 25 and the most of the softirqs were 
+>> prioritized at 1? In newer patches it looks like they are all 
+>> prioritized at 50?
+>>
+>> I was just curious what went into making these choices? I am just 
+>> trying to better understand these decisions.
+> 
+> The basically random order-of-request_irq() prioritization was causing 
+> problems (it worked for some but didnt work for others), so i got rid of 
+> trying to auto-guess some priority order. Also, now that we've got 
+> tools/scripts like set_kthread_prio and rtprio it seemed more consistent 
+> to just not attempt to prioritize interrupts and softirqs at all, but to 
+> keep them all 'in the middle' of the RT priority range.
+> 
+> 	Ingo
+> 
 
-I've seen it on a PowerMac3,1 (400MHz G4) where we don't have cpufreq.
-I've also seen it on the latest 1.5GHz Mac Mini, and on my shinybook.
-They all fall over with the latest kernel, although the shinybook only
-does so immediately when booted with mem=512M. The shinybook does crash
-later with new kernels though; I don't yet know why. It could be the
-same thing, or it could be something different. That one seemed to
-appear between Fedora's 2.6.19-1.2913 and 2.6.19-1.2914 kernels, where
-we did nothing but turned CONFIG_SYSFS_DEPRECATED on.
-
-I don't blame cpufreq. At various times I've been equally convinced that
-it was due to CONFIG_KPROBES, and Linus' initrd-moving patch.
+Thanks.
 
 -- 
-dwmw2
-
+	kr
