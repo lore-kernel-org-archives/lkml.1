@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965287AbXBLVVD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751926AbXB1XOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965287AbXBLVVD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Feb 2007 16:21:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965299AbXBLVVC
+	id S1751926AbXB1XOY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 18:14:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbXB1XOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Feb 2007 16:21:02 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:34483 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965287AbXBLVU6 (ORCPT
+	Wed, 28 Feb 2007 18:14:24 -0500
+Received: from smtp105.sbc.mail.re2.yahoo.com ([68.142.229.100]:25046 "HELO
+	smtp105.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751926AbXB1XOX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Feb 2007 16:20:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=SSXUENL1zxvVg6yIvZLlUe69CiWPYHG0Y98hT+g/GrKYTpEoUhxWmU0wF/hg1m5eQghK9S/WwKUWUaXJPGLoGQXzI+hpMvBvztMnTLiIavqNBBRGz4CbqIvfnptOcWfdFkSIL78XjNUlz6DZYB4QhxpPf+0259BMWZsf70YLT8A=
-Date: Fri, 12 Jan 2007 23:19:25 +0000
-From: Frederik Deweerdt <deweerdt@free.fr>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-       arjan@infradead.org
-Subject: Re: -mm merge plans for 2.6.21
-Message-ID: <20070112231925.GA7273@slug>
-References: <fa.7Z67qjqJwFP7+8QiVtu5tq6CZyU@ifi.uio.no> <fa.4Y/nCUol/tGEodoOl/Jm9nf2AEA@ifi.uio.no> <fa.TgZy4z2lRhwhAWCUE8IuGvMVUCU@ifi.uio.no> <fa.HINMjdGzCuxlEiWtVvmNz7Pv9Pc@ifi.uio.no> <fa.2ClW7C4ZyCP9QlT4vg7CbzjSqwg@ifi.uio.no> <45CDFB30.5090102@shaw.ca>
+	Wed, 28 Feb 2007 18:14:23 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:MIME-Version:Content-Disposition:Message-Id:Cc:Content-Type:Content-Transfer-Encoding;
+  b=m4KTTqH39Cy6KP9pylAiy2HGNZKsTR/rk9gzUP5sSTYBIReM5F+iuUKx2jpU5tY+pkVLtLJlpFSiCbC90tplW4rvvp8h4BPUu+su6oaaNuTWADJDZUmbv9yuk8v17tViPvXzLZEVWGl4MiUtUdbNRKIRWDngRpgd39Leq1yonjQ=  ;
+X-YMail-OSG: zBsT2QoVM1lSrJ0EkHI39.nvGVt.SLwI.BCTE0_VuCmjD3TqJM3d1o1AJ8CDBf1nF6pDHKl4nOR7nhzRNooe_qq_nevUITBx_9RhHuDOVl4k8MuJhRCdAJBC6EnHXrhbdxtmdhYJgm1O.g--
+From: David Brownell <david-b@pacbell.net>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: [patch 2.6.21-rc2] init dma masks in pnp_dev
+Date: Wed, 28 Feb 2007 15:14:01 -0800
+User-Agent: KMail/1.7.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <45CDFB30.5090102@shaw.ca>
-User-Agent: mutt-ng/devel-r804 (Linux)
+Message-Id: <200702281514.01521.david-b@pacbell.net>
+Cc: Adam Belay <abelay@novell.com>, perex@suse.cz
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 10, 2007 at 11:04:48AM -0600, Robert Hancock wrote:
-> Frederik Deweerdt wrote:
-> >>How about this one instead then:
-> >Well, the warning you get is not that obvious:
-> >test.c: In function 'main':
-> >test.c:11: warning: 'deprecated_irqf' is deprecated
-> >And as far as I could test 
-... which apparently was not enough :)
-> >(gcc 4.1.1 and gcc 3.4.3), Arjan's comment is
-> >not true, the "static const int" don't use extra space, they get
-> >optimized away by the compiler (see http://lkml.org/lkml/2007/2/9/106).
-> 
-> gcc 3.2 should be tested as well, that is still supported by the kernel, and versions before 3.4 did not have unit-at-a-time optimizations.
-Sorry for the delay. I've setup a 3.2.3 gcc and, indeed, the symbols
-make their way in the binary...
+PNP now initializes device dma masks, which prevents oopses when generic
+dma calls are made using pnp device nodes.
 
-$ gcc-3.2.3 -O2 -c dont_use_flag.c
-$ nm dont_use_flag.o
-00000000 r SA_INTERRUPT
-00000000 T main
-         U printf
+This assumes PNP only uses ISA DMA, with 24 bit addresses; and that it's
+safe to init those masks for all devices (rather than finding out which
+devices have been assigned DMA channels, and handling only those).
 
-Regards,
-Frederik
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+
+Index: g26/include/linux/pnp.h
+===================================================================
+--- g26.orig/include/linux/pnp.h	2007-02-12 00:31:26.000000000 -0800
++++ g26/include/linux/pnp.h	2007-02-18 20:18:55.000000000 -0800
+@@ -177,6 +177,7 @@ static inline void pnp_set_card_drvdata 
+ 
+ struct pnp_dev {
+ 	struct device dev;		/* Driver Model device interface */
++	u64 dma_mask;
+ 	unsigned char number;		/* used as an index, must be unique */
+ 	int status;
+ 
+Index: g26/drivers/pnp/core.c
+===================================================================
+--- g26.orig/drivers/pnp/core.c	2005-11-12 22:24:18.000000000 -0800
++++ g26/drivers/pnp/core.c	2007-02-18 20:42:17.000000000 -0800
+@@ -14,6 +14,7 @@
+ #include <linux/string.h>
+ #include <linux/slab.h>
+ #include <linux/errno.h>
++#include <linux/dma-mapping.h>
+ 
+ #include "base.h"
+ 
+@@ -114,6 +115,8 @@ int __pnp_add_device(struct pnp_dev *dev
+ 	int ret;
+ 	pnp_fixup_device(dev);
+ 	dev->dev.bus = &pnp_bus_type;
++	dev->dev.dma_mask = &dev->dma_mask;
++	dev->dma_mask = dev->dev.coherent_dma_mask = DMA_24BIT_MASK;
+ 	dev->dev.release = &pnp_release_device;
+ 	dev->status = PNP_READY;
+ 	spin_lock(&pnp_lock);
