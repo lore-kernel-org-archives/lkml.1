@@ -1,95 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752083AbXB1JJN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752089AbXB1JJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752083AbXB1JJN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 04:09:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbXB1JJM
+	id S1752089AbXB1JJW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 04:09:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbXB1JJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 04:09:12 -0500
-Received: from smtp-103-wednesday.nerim.net ([62.4.16.103]:4909 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752083AbXB1JJL (ORCPT
+	Wed, 28 Feb 2007 04:09:22 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:52261 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752089AbXB1JJU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 04:09:11 -0500
-Date: Wed, 28 Feb 2007 10:07:26 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20-mm2
-Message-Id: <20070228100726.b99381b5.khali@linux-fr.org>
-In-Reply-To: <20070227122551.7f3143a8.akpm@linux-foundation.org>
-References: <20070217215146.30e7ffa3.akpm@linux-foundation.org>
-	<20070225141530.ba99c357.khali@linux-fr.org>
-	<20070227122551.7f3143a8.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Feb 2007 04:09:20 -0500
+Date: Wed, 28 Feb 2007 10:07:50 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Suparna Bhattacharya <suparna@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: A quick fio test (was Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3)
+Message-ID: <20070228090750.GQ3733@kernel.dk>
+References: <20070223162508.GA16782@kernel.dk> <20070223171348.GA27838@in.ibm.com> <20070226135736.GF3822@kernel.dk> <20070226141315.GA15631@in.ibm.com> <20070226144548.GH3822@kernel.dk> <20070227043331.GA29942@in.ibm.com> <20070227094211.GR3822@kernel.dk> <20070227123932.GA8720@in.ibm.com> <20070228083100.GM3733@kernel.dk> <20070228083805.GB9705@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070228083805.GB9705@elte.hu>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
-
-On Tue, 27 Feb 2007 12:25:51 -0800, Andrew Morton wrote:
-> > On Sun, 25 Feb 2007 14:15:30 +0100 Jean Delvare <khali@linux-fr.org> wrote:
-> > Hi Andrew, all,
-> > 
-> > I appear to need the following fix to be able to build 2.6.20-mm2 on
-> > x86_64. Without the fix, my build attempt dies on:
-> > 
-> > In file included from drivers/pci/quirks.c:532:
-> > include/asm/io_apic.h:61: error: "MAX_IO_APICS" undeclared here (not in a function)
-> > 
-> > Not sure how nobody else was bitten by this one yet... i386 seems to
-> > need the same so I've fixed it as well.
-> > 
-> > Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> > ---
-> >  include/asm-i386/io_apic.h   |    1 +
-> >  include/asm-x86_64/io_apic.h |    1 +
-> >  2 files changed, 2 insertions(+)
-> > 
-> > --- linux-2.6.20.orig/include/asm-i386/io_apic.h	2007-02-25 13:01:40.000000000 +0100
-> > +++ linux-2.6.20/include/asm-i386/io_apic.h	2007-02-25 14:01:33.000000000 +0100
-> > @@ -3,6 +3,7 @@
-> >  
-> >  #include <asm/types.h>
-> >  #include <asm/mpspec.h>
-> > +#include <asm/apicdef.h>
-> >  
-> >  /*
-> >   * Intel IO-APIC support for SMP and UP systems.
-> > --- linux-2.6.20.orig/include/asm-x86_64/io_apic.h	2007-02-25 13:01:43.000000000 +0100
-> > +++ linux-2.6.20/include/asm-x86_64/io_apic.h	2007-02-25 13:54:31.000000000 +0100
-> > @@ -3,6 +3,7 @@
-> >  
-> >  #include <asm/types.h>
-> >  #include <asm/mpspec.h>
-> > +#include <asm/apicdef.h>
-> >  
-> >  /*
-> >   * Intel IO-APIC support for SMP and UP systems.
-> > 
+On Wed, Feb 28 2007, Ingo Molnar wrote:
 > 
-> erk.
+> * Jens Axboe <jens.axboe@oracle.com> wrote:
 > 
-> My problem is that I need to work out which patch in -mm broke the build so
-> that I can insert this patch in the appropriate position.
+> > Engine                Depth      Batch	Bw (KiB/sec)
+> > libaio		20000	   8		21,125
+> > syslet		20000	   8		19,610
 > 
-> Can you please send the offending .config so I can do that?
+> i'd like to do something more about this to be more in line with libaio 
+> - if nothing else then for the bragging rights ;-) It seems to me that a 
+> drop of ~7% in throughput cannot be explained with any CPU overhead, it 
+> must be some sort of queueing + IO scheduling effect - right?
 
-I've bisected myself 2.6.20-mm2 instead. And the winners are:
-x86_64-mm-adjust-inclusion-of-asm-fixmap_h.patch
-x86_64-mm-adjust-inclusion-of-asm-vsyscall32_h.patch
+syslet shows a slightly higher overhead, but nothing that will account
+for any bandwidth change in this test. The box is obviously mostly idle
+when running this test, it's not very CPU consuming. The IO pattern
+issued is not the same, since libaio would commit IO [0..7], then
+[8..15] and so on, where syslet would expose [0,8,16,24,32,40,48,56] and
+then [1,9,17,25,33,41,49,57] etc. If iodepth_batch is set to 1 you'd
+get a closer match wrt io pattern, but at a higher cost (increased
+system calls, and 8 times as many pending async threads). That gets it
+to 20,253KiB/s here with ~1000 as many context switches.
 
-The former breaks the compilation in a different way. The latter fixes
-it but causes the breakage I reported originally.
+So in short, it's harder to compare with real storage, as access
+patterns don't translate very easily
 
-Does it really matter anyway? Even in mainline,
-include/asm-x86_64/io_apic.h uses MAX_IO_APICS, so it should include
-the header file which defines it, that is <asm/apicdef.h>. It doesn't,
-that's a bug, let's just fix it. Same for i386. So what about pushing
-my patch to Linus right away?
-
-Thanks,
 -- 
-Jean Delvare
+Jens Axboe
+
