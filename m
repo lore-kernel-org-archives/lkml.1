@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932928AbXB1Oym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932966AbXB1Oz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932928AbXB1Oym (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 09:54:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932931AbXB1Oym
+	id S932966AbXB1Oz5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 09:55:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932968AbXB1Oz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 09:54:42 -0500
-Received: from mail-in-01.arcor-online.net ([151.189.21.41]:37187 "EHLO
-	mail-in-01.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932928AbXB1Oyl (ORCPT
+	Wed, 28 Feb 2007 09:55:57 -0500
+Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:49682 "EHLO
+	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932966AbXB1Oz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 09:54:41 -0500
-In-Reply-To: <45E592DC.9060700@freescale.com>
-References: <45E46976.6060600@freescale.com> <29c13109971547687159078eacdea008@kernel.crashing.org> <45E592DC.9060700@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <511cacb7bbe8a65ff72738c84ec9ece4@kernel.crashing.org>
+	Wed, 28 Feb 2007 09:55:57 -0500
+In-Reply-To: <93C4769E3BED6B42B7203BD6F065654C08C5D8FD@dmoexc01.emea.cpqcorp.net>
+References: <45E46976.6060600@freescale.com> <93C4769E3BED6B42B7203BD6F065654C08C5D6E8@dmoexc01.emea.cpqcorp.net> <45E57CE5.5010003@zytor.com> <93C4769E3BED6B42B7203BD6F065654C08C5D7FF@dmoexc01.emea.cpqcorp.net> <45E593C2.6020004@freescale.com> <93C4769E3BED6B42B7203BD6F065654C08C5D8FD@dmoexc01.emea.cpqcorp.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <0DA3FFD2-CFB8-44FB-872B-00D85B11213B@kernel.crashing.org>
+Cc: "Timur Tabi" <timur@freescale.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       <linux-kernel@vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ppc-embedded <linuxppc-embedded@ozlabs.org>,
-       Torben.Mathiasen@hp.com
-From: Segher Boessenkool <segher@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
-Date: Wed, 28 Feb 2007 15:54:37 +0100
-To: Timur Tabi <timur@freescale.com>
-X-Mailer: Apple Mail (2.623)
+Date: Wed, 28 Feb 2007 08:54:58 -0600
+To: "Mathiasen, Torben" <Torben.Mathiasen@hp.com>
+X-Mailer: Apple Mail (2.752.2)
+X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - kernel.crashing.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>           46 = /dev/ttyCPM0        PPC CPM (SCC or SMC) - port 0
->>>              ...
->>> -         47 = /dev/ttyCPM5        PPC CPM (SCC or SMC) - port 5
->>> +         49 = /dev/ttyCPM5        PPC CPM (SCC or SMC) - port 5
->> If CPM0 is 46, then CPM5 is not 47, but not 49 either.
->> Unless it's not CPM5 but CPM3?
+
+On Feb 28, 2007, at 8:51 AM, Mathiasen, Torben wrote:
+
+>>
+>> Mathiasen, Torben wrote:
+>>
+>>> Assuming QE has 4 entries, I would expect CPM to be the same. But we
+>>> need verification of that. If it needs 6, we are in more trouble.
+>>
+>> The QE can have up to 8, actually, but I'm willing to limit the  
+>> driver
+>> to 4.
 >
-> Honestly, I don't know.  I was just correcting the obvious typo (47 
-> instead of 49).
+> Its your choice if you want to limit it to 4 or have it moved into a
+> different minor range. I can live with both.
 
-It's obvious it shouldn't be 47, but it's not obvious it
-should be 49 instead.
+I'd rather we support 8 now.
 
-> I'll try to get an answer from someone, but I'm no CPM expert.
-
-Adding linuxppc-embedded to the CC:, someone there surely knows.
-
-
-Segher
-
+- k
