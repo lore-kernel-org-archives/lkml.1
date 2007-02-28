@@ -1,84 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751108AbXB1CVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751157AbXB1CXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751108AbXB1CVn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 21:21:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbXB1CVn
+	id S1751157AbXB1CXu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 21:23:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbXB1CXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 21:21:43 -0500
-Received: from mail.tmr.com ([64.65.253.246]:53330 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751108AbXB1CVm convert rfc822-to-8bit (ORCPT
+	Tue, 27 Feb 2007 21:23:50 -0500
+Received: from smtp102.plus.mail.mud.yahoo.com ([68.142.206.235]:24872 "HELO
+	smtp102.plus.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751157AbXB1CXt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 21:21:42 -0500
-Message-ID: <45E4E736.2050505@tmr.com>
-Date: Tue, 27 Feb 2007 21:21:42 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Tue, 27 Feb 2007 21:23:49 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=0aVU3H+wib36f7h16JpIabq0o4VmLV0Y0U+0HFNGlfpzQmzis1N5cgIQZ1AplkkqEAnQCmfIDBB6se1mgyy1/4HagCFszwAy9hv+VaJNjSSJeyJOMabezgmZDzaW6DKrY8Q+B+g7AgfWW2doE4TxG+lNJ1SfZgl09bImNt8cNBU=  ;
+X-YMail-OSG: IU84U5cVM1lZyOBXjVeraLfHnsKBBxUzmmZfelVD3096Ms3z0h73zcDa.r9WMt3MTuwGBxG.0W3rU7CTZaPd8GWSmQCvY0JNjyvUIlWYNRuCkLrWqfHV50V.a8Rjbnpax6WNXEZnGzL7LZY-
+Message-ID: <45E4E780.8010109@yahoo.com.au>
+Date: Wed, 28 Feb 2007 13:22:56 +1100
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-To: Paulo Marques <pmarques@grupopie.com>
-CC: Rik van Riel <riel@redhat.com>,
-       =?ISO-8859-1?Q?=22J=2EA=2E_Magall=F3?= =?ISO-8859-1?Q?n=22?= 
-	<jamagallon@ono.com>,
-       Hiro Yoshioka <hyoshiok@miraclelinux.com>, davej@redhat.com,
-       harlan@artselect.com, nickpiggin@yahoo.com.au, l_allegrucci@yahoo.it,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, suparna@in.ibm.com,
-       jens.axboe@oracle.com
+To: Nish Aravamudan <nish.aravamudan@gmail.com>
+CC: Rik van Riel <riel@redhat.com>, Lorenzo Allegrucci <l_allegrucci@yahoo.it>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>
 Subject: Re: SMP performance degradation with sysbench
-References: <20070226223645.GA24174@redhat.com>	<98df96d30702261632u7479c9b2sce93f80f68bbc8d0@mail.gmail.com>	<45E37EA3.3060101@redhat.com>	<20070227.130305.424251739.hyoshiok@miraclelinux.com>	<45E3B421.603@redhat.com> <20070227091409.6f3d12f9@werewolf-wl> <45E439E4.5030703@redhat.com> <45E4469C.8000505@grupopie.com>
-In-Reply-To: <45E4469C.8000505@grupopie.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+References: <1172425476.5489.11.camel@odyssey.lan>	 <45E21FEC.9060605@redhat.com> <45E2E244.8040009@yahoo.com.au> <29495f1d0702271727w358cc9o644c4017d50634a9@mail.gmail.com>
+In-Reply-To: <29495f1d0702271727w358cc9o644c4017d50634a9@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paulo Marques wrote:
-> Rik van Riel wrote:
->> J.A. Magallón wrote:
->>> [...]
->>> Its the same to answer 4+4 queries than 8 at half the speed, isn't it ?
+Nish Aravamudan wrote:
+> On 2/26/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> 
+>> Rik van Riel wrote:
+>> > Lorenzo Allegrucci wrote:
+>> >
+>> >> Hi lkml,
+>> >>
+>> >> according to the test below (sysbench) Linux seems to have scalability
+>> >> problems beyond 8 client threads:
+>> >> http://jeffr-tech.livejournal.com/6268.html#cutid1
+>> >> http://jeffr-tech.livejournal.com/5705.html
+>> >> Hardware is an 8-core amd64 system and jeffr seems willing to try more
+>> >> Linux versions on that machine.
+>> >> Anyway, is there anyone who can reproduce this?
+>> >
+>> >
+>> > I have reproduced it on a quad core test system.
+>> >
+>> > With 4 threads (on 4 cores) I get a high throughput, with
+>> > approximately 58% user time and 42% system time.
+>> >
+>> > With 8 threads (on 4 cores) I get way lower throughput,
+>> > with 37% user time, 29% system time 35% idle time!
+>> >
+>> > The maximum time taken per query also increases from
+>> > 0.0096s to 0.5273s. Ouch!
+>> >
+>> > I don't know if this is MySQL, glibc or Linux kernel,
+>> > but something strange is going on...
 >>
->> That still doesn't fix the potential Linux problem that this
->> benchmark identified.
+>> Like you, I'm also seeing idle time start going up as threads increase.
 >>
->> To clarify: I don't care as much about MySQL performance as
->> I care about identifying and fixing this potential bug in
->> Linux.
+>> I initially thought this was a problem with the multiprocessor scheduler,
+>> because the pattern is exactly like some artificat in the load balancing.
+>>
+>> However, after looking at the stats, and testing a couple of things, I
+>> think it may not be after all.
+>>
+>> I've reproduced this on a 8-socket/16-way dual core Opteron. So far what
+>> I am seeing is that MySQL is having trouble putting enough load into the
+>> scheduler.
 > 
-> IIRC a long time ago there was a change in the scheduler to prevent a 
-> low prio task running on a sibling of a hyperthreaded processor to slow 
-> down a higher prio task on another sibling of the same processor.
 > 
-> Basically the scheduler would put the low prio task to sleep during an 
-> adequate task slice to allow the other sibling to run at full speed for 
-> a while.
+> Here are some graphs from the 4-socket/8-way Xeon box (no SMT, no MC
+> in .config) I posted about earlier.
 > 
-> I don't know the scheduler code well enough, but comments like this one 
-> make me think that the change is still in place:
-> 
->>     /*
->>      * If an SMT sibling task has been put to sleep for priority
->>      * reasons reschedule the idle task to see if it can now run.
->>      */
->>     if (rq->nr_running) {
->>         resched_task(rq->idle);
->>         ret = 1;
->>     }
-> 
-> If that is the case, turning off CONFIG_SCHED_SMT would solve the problem.
-> 
-That may be the case, but in my opinion if this helps it doesn't "solve" 
-the problem, because the real problem is that a process which is not on 
-a HT is being treated as if it were.
+> transactions.png resembles Nick's results pretty closely, in that a
+> drop-off occurs, at the same # of threads, too. That seems weird to
+> me, but I haven't thought about it too closely. Shouldn't Nick's be
+> dropping off closer to 16 threads (that would be 1 per core, then,
+> right?)
 
-Note that Intel does make multicore HT processors, and hopefully when 
-this code works as intended it will result in more total throughput. My 
-supposition is that it currently is NOT working as intended, since 
-disabling SMT scheduling is reported to help.
-
-A test with MC on and SMT off would be informative for where to look next.
+I don't think it is exactly a matter of processes >= cores, but rather
+just a general problem at higher concurrency.
 
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
-
+SUSE Labs, Novell Inc.
+Send instant messages to your online friends http://au.messenger.yahoo.com 
