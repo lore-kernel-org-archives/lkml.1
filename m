@@ -1,49 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751404AbXB1Dvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751385AbXB1EDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751404AbXB1Dvo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 22:51:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbXB1Dvo
+	id S1751385AbXB1EDr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 23:03:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbXB1EDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 22:51:44 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:60852 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751404AbXB1Dvn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 22:51:43 -0500
-Date: Wed, 28 Feb 2007 09:21:49 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>, Gautham R Shenoy <ego@in.ibm.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: Problem with freezable workqueues
-Message-ID: <20070228035149.GL29179@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <200702272251.28844.rjw@sisk.pl> <20070228030113.GJ29179@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 27 Feb 2007 23:03:47 -0500
+Received: from iucha.net ([209.98.146.184]:54122 "EHLO mail.iucha.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751385AbXB1EDr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 23:03:47 -0500
+Date: Tue, 27 Feb 2007 22:03:46 -0600
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-rc1: CIFS cheers, NFS4 jeers
+Message-ID: <20070228040345.GL29073@iucha.net>
+References: <20070226064500.GZ29073@iucha.net> <45E4EAA7.2090007@tmr.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="bnUi9GzdSM4S/DMA"
 Content-Disposition: inline
-In-Reply-To: <20070228030113.GJ29179@in.ibm.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <45E4EAA7.2090007@tmr.com>
+X-GPG-Key: http://iucha.net/florin_iucha.gpg
+X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: florin@iucha.net (Florin Iucha)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 28, 2007 at 08:31:13AM +0530, Srivatsa Vaddagiri wrote:
-> This problem (of kthread_stopping a frozen thread) was there when we
-> implemented freezer-based cpu hotplug. We worked around that in the
-> callbacks by thawing the worker thread first before kthread_stopping it,
-> which is working pretty neatly.
-> 
-> Should that fix the issue? 
 
-In addition to thawing worker thread before kthread_stopping it, there
-are minor changes required in worker threads, to check for
-is_cpu_offline(bind_cpu) when they come out of refrigerator and jump to
-wait_to_die if so (ex: softirq.c).
+--bnUi9GzdSM4S/DMA
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I guess you would need these changes before freezer-based hotplug is
-merged, in which case Gautham can send those patches out first.
+On Tue, Feb 27, 2007 at 09:36:23PM -0500, Bill Davidsen wrote:
+> Florin Iucha wrote:
+> >Hello, it's me and my 70 GB of photos again.
+> >
+> >I have tested both CIFS and NFSv4 clients in kernel 2.6.20-rc1 . CIFS
+> >passed with flying colors and NFSv4 stalled after 7 GB.
 
--- 
-Regards,
-vatsa
+> Neil has been diddling NFS, I did some light testing with 2.6.20-git14=20
+> with 190GB of mp3 and mpg files (library of congress folk music) without=
+=20
+> hangs. Just "did it work" tests, copy 20-30GB to server, do md5 on the=20
+> data pulled back from the server.
+>=20
+> Didn't hang, performance testing later.
+
+2.6.20-rcX used to copy all files then hang on certain operations that
+I think used the VFS.  2.6.21-rc1 stalls the NFS transfer itself after
+several GB.  The data was never corrupted.
+
+Have you tried copying _ALL_ 190 GB to the server?
+
+florin
+
+--=20
+Bruce Schneier expects the Spanish Inquisition.
+      http://geekz.co.uk/schneierfacts/fact/163
+
+--bnUi9GzdSM4S/DMA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFF5P8hND0rFCN2b1sRAvqYAKCrPaxlu19dGvzMEe/1A1uGRxzKgQCfZW//
+F8Q5m50RKRppM70klTEk/ww=
+=PmUe
+-----END PGP SIGNATURE-----
+
+--bnUi9GzdSM4S/DMA--
