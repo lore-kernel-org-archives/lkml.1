@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751796AbXB1PfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751941AbXB1Phf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751796AbXB1PfJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 10:35:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbXB1PfJ
+	id S1751941AbXB1Phf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 10:37:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbXB1Phf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 10:35:09 -0500
-Received: from mail.cse.ohio-state.edu ([164.107.123.5]:57063 "EHLO
-	cse.ohio-state.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751796AbXB1PfI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 10:35:08 -0500
-Message-ID: <45E5A0E4.2000301@cse.ohio-state.edu>
-Date: Wed, 28 Feb 2007 10:33:56 -0500
-From: Xiaoning Ding <dingxn@cse.ohio-state.edu>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061215)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Benoit Boissinot <bboissin@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: a bug in AS scheduler?
-References: <45E5038F.1090200@cse.ohio-state.edu> <20070228121040.GW3733@kernel.dk> <40f323d00702280525g3d898a9bm1297dc32b8f7fda2@mail.gmail.com> <20070228133458.GC3733@kernel.dk>
-In-Reply-To: <20070228133458.GC3733@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Feb 2007 10:37:35 -0500
+Received: from systemlinux.org ([83.151.29.59]:45116 "EHLO m18s25.vlinux.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751922AbXB1Phe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 10:37:34 -0500
+Date: Wed, 28 Feb 2007 16:37:22 +0100
+From: Andre Noll <maan@systemlinux.org>
+To: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@SteelEye.com>
+Subject: Re: qla2xxx BUG: workqueue leaked lock or atomic
+Message-ID: <20070228153722.GJ22572@skl-net.de>
+References: <20070226133153.GC4095@skl-net.de> <20070226182617.GC9968@andrew-vasquezs-computer.local> <20070227101100.GA22572@skl-net.de> <20070227185134.GJ20397@andrew-vasquezs-computer.local> <20070228151829.GI22572@skl-net.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="xHbokkKX1kTiQeDC"
+Content-Disposition: inline
+In-Reply-To: <20070228151829.GI22572@skl-net.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Wed, Feb 28 2007, Benoit Boissinot wrote:
->> On 2/28/07, Jens Axboe <jens.axboe@oracle.com> wrote:
->>> On Tue, Feb 27 2007, Xiaoning Ding wrote:
->>>> Hi,
->>>>
->>>> I am reading the source code AS scheduler in 2.6.18(as-ioscheduler.c).
->>>> In function as_close_req, variable delay is in millisecond, while
->>>> ad->antic_expire is in jiffies. Doesn't the comparison of delay and
->>>> ad->antic_expire make any problem?
->>>> The related source code is quoted blow:
->>>>
->>>>       if (ad->antic_status == ANTIC_OFF || !ad->ioc_finished)
->>>>               delay = 0;
->>>>       else
->>>>               delay = ((jiffies - ad->antic_start) * 1000) / HZ;
->>> antic_start is in jiffies, the difference is here multiplied by 1000 and
->>> divided by HZ to turn it into msecs. so delay is in msecs.
->>>
->> I am pretty sure Xiaoning was talking about antic_expire, particularly
->> this comparison:
->>
->>     else if (delay <= 20 && delay <= ad->antic_expire)
-> 
-> Ah, I misread the name. That does look like a bug, antic_expire is in
-> jiffies.
 
-You got it.
+--xHbokkKX1kTiQeDC
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Xiaoning
+On 16:18, Andre Noll wrote:
 
+> With 2.6.21-rc2 I am unable to reproduce this BUG message. However,
+> writing to both raid systems at the same time via lvm still locks up
+> the system within minutes.
+
+Screenshot of the resulting kernel panic:
+
+	http://systemlinux.org/~maan/shots/kernel-panic-21-rc2-huangho2.png
+
+Andre
+
+--xHbokkKX1kTiQeDC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFF5aGyWto1QDEAkw8RAr33AKCcCEmhjWp2laq+fOrRKA+8+guuGwCgljar
+0a+Mc5A0aQ9vj1UyLlxsejQ=
+=k2MA
+-----END PGP SIGNATURE-----
+
+--xHbokkKX1kTiQeDC--
