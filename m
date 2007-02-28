@@ -1,55 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932627AbXB1OP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932634AbXB1OQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932627AbXB1OP4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 09:15:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932638AbXB1OPz
+	id S932634AbXB1OQf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 09:16:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932641AbXB1OQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 09:15:55 -0500
-Received: from host2.innominate.fta-berlin.de ([141.16.82.35]:45166 "EHLO
-	home.innominate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932627AbXB1OPz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 09:15:55 -0500
-X-Greylist: delayed 1720 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Feb 2007 09:15:55 EST
-Date: Wed, 28 Feb 2007 14:47:12 +0100
-From: Christopher Meller <cmeller@innominate.com>
-To: linux-kernel@vger.kernel.org
-Subject: Question on tty line discipline 
-Message-ID: <20070228134711.GA8631@innominate.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	Wed, 28 Feb 2007 09:16:35 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:50263 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932634AbXB1OQe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 09:16:34 -0500
+Message-ID: <45E58EB8.6030502@redhat.com>
+Date: Wed, 28 Feb 2007 09:16:24 -0500
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061215)
+MIME-Version: 1.0
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [patch 01/22] update ctime and mtime for mmaped write
+References: <20070227231442.627972152@szeredi.hu> <20070227231544.519463073@szeredi.hu>
+In-Reply-To: <20070227231544.519463073@szeredi.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Miklos Szeredi wrote:
+> From: Miklos Szeredi <mszeredi@suse.cz>
+>
+> Changes:
+>  o moved check from __fput() to remove_vma(), which is more logical
+>  o changed set_page_dirty() to set_page_dirty_mapping in hugetlb.c
+>  o cleaned up #ifdef CONFIG_BLOCK mess
+>
+>
+> This patch makes writing to shared memory mappings update st_ctime and
+> st_mtime as defined by SUSv3:
+>
+>    The st_ctime and st_mtime fields of a file that is mapped with
+>    MAP_SHARED and PROT_WRITE shall be marked for update at some point
+>    in the interval between a write reference to the mapped region and
+>    the next call to msync() with MS_ASYNC or MS_SYNC for that portion
+>    of the file by any process. If there is no such call and if the
+>    underlying file is modified as a result of a write reference, then
+>    these fields shall be marked for update at some time after the
+>    write reference.
+>
+> A new address_space flag is introduced: AS_CMTIME.  This is set each
+> time a page is dirtied through a userspace memory mapping.  This
+> includes write accesses via get_user_pages().
+>
+> Note, the flag is set unconditionally, even if the page is already
+> dirty.  This is important, because the page might have been dirtied
+> earlier by a non-mmap write.
+>
+> This flag is checked in msync() and munmap()/mremap(), and if set, the
+> file times are updated and the flag is cleared
+>
+> The flag is also cleared, if the time update is triggered by a normal
+> write.  This is not mandated by the standard, but seems to be a sane
+> thing to do.
+>
+> Fixes Novell Bugzilla #206431.
+>
+> Inspired by Peter Staubach's patch and the resulting comments.
+>
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 
-I have a question concerning the line discipline behaviour for serial
-devices.
-When the line discipline is set via ioctl from  user space to e.g. N_PPP and the userspace program returns without resetting  the line discipline back to N_TTY, the serial device cannot be used (ENODV) until an appropriate  ioctl (to N_TTY) is performed. Is there any reason for the fact that the line discipline is not reset by the kernel , when closing the device. 
+These change still have the undesirable property that although the
+modified pages may be flushed to stable storage, the metadata on
+the file will not be updated until the application takes positive
+action.  This is permissible given the current wording in the
+specifications, but it would be much more desirable if sync(2),
+fsync(P), or the inode being written out due to normal system
+activity would also cause the metadata to be updated.
 
-Could you please CC me on answers and comments ?
+Perhaps the setting of the flag could be checked in some places
+like __sync_single_inode() and do_fsync()?
 
+    Thanx...
 
-Kind regards,
-
-Christopher Meller
-
-
-
--- 
-Christopher Meller
-Software engineer
-
-Innominate Security Technologies AG
-protecting industrial networks
-tel: +49.30.6392-3680
-fax: +49.30.6392-3307
-Albert-Einstein-Str. 14
-D-12489 Berlin
-www.innominate.com
-
-Register Court: AG Charlottenburg, HR B 81603
-Management Board: Joachim Fietz, Dirk Seewald
-Chairman of the Supervisory Board: Edward M. Stadum
+       ps
