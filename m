@@ -1,42 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932067AbXB1JNo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932081AbXB1JQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932067AbXB1JNo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 04:13:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbXB1JNo
+	id S932081AbXB1JQf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 04:16:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932074AbXB1JQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 04:13:44 -0500
-Received: from smtp.ocgnet.org ([64.20.243.3]:46768 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752082AbXB1JNm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 04:13:42 -0500
-Date: Wed, 28 Feb 2007 18:11:11 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: John Reiser <jreiser@BitWagon.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: fully honor vdso_enabled [i386, sh; x86_64?]
-Message-ID: <20070228091110.GA26128@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	John Reiser <jreiser@BitWagon.com>, linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <45DDFD98.4080300@BitWagon.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45DDFD98.4080300@BitWagon.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 28 Feb 2007 04:16:35 -0500
+Received: from crystal.sipsolutions.net ([195.210.38.204]:38280 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752082AbXB1JQd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 04:16:33 -0500
+Subject: Re: [PATCH 2.6.20] kobject net ifindex + rename
+From: Johannes Berg <johannes@sipsolutions.net>
+To: jt@hpl.hp.com
+Cc: Greg Kroah-Hartman <gregkh@suse.de>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-wireless <linux-wireless@vger.kernel.org>
+In-Reply-To: <20070228012741.GA3988@bougret.hpl.hp.com>
+References: <20070228012741.GA3988@bougret.hpl.hp.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-fqSkluyBxkpWE3nHXRW0"
+Date: Wed, 28 Feb 2007 10:16:05 +0100
+Message-Id: <1172654165.3681.31.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 22, 2007 at 12:31:20PM -0800, John Reiser wrote:
-> This patch changes arch_setup_additonal_pages() to honor vdso_enabled.
-> For i386 it also allows the option of a fixed addresss to avoid
-> fragmenting the address space.  Compiles and runs on i386.
-> x86_64 [IA32 support] and sh maintainers also please comment.
-> 
-We didn't actually have the sysctl entry wired up on SH, but once that's
-done, this patch works fine there too.
 
-Andrew, do you want a separate patch for the vdso_enabled sysctl or
-is it more convenient through my git tree?
+--=-fqSkluyBxkpWE3nHXRW0
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+Hi,
+
+> 	Patch for 2.6.20 is attached.
+
+... and in the meantime netdevices aren't class_device any more :) IOW,
+your patch isn't going to work any more. Also, I think wireless could
+benefit from this as well.
+
+>         The kobject framework is well designed, so adding these
+> features is trivial change and won't run the risk of breaking anything
+> (famous last words). Obviously, hotplug apps are free to ignore those
+> additional features.
+
+Why not just add this to base kobject_rename instead? That way,
+userspace is notified for all renames in sysfs.
+The patch then collapses down to the change in net's sysfs code to add
+the ifindex to the environment, and another change in kobject to invoke
+a new event when a name changes and show the old name.
+
+johannes
+
+--=-fqSkluyBxkpWE3nHXRW0
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBF5UhV/ETPhpq3jKURApykAJ9ZUXi6bJwmnMglXvkrs/woCNvi/ACfduQ/
+vK6NsgvxMQh5r4sZIJT1acU=
+=U4iY
+-----END PGP SIGNATURE-----
+
+--=-fqSkluyBxkpWE3nHXRW0--
+
