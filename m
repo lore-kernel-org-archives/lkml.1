@@ -1,106 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932213AbXB1SXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932215AbXB1SZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932213AbXB1SXA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 13:23:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932215AbXB1SXA
+	id S932215AbXB1SZG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 13:25:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932225AbXB1SZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 13:23:00 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:4774 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932213AbXB1SW7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 13:22:59 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 28 Feb 2007 10:22:56 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-In-Reply-To: <Pine.LNX.4.64.0702280836080.12485@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0702281011220.6806@alien.or.mcafeemobile.com>
-References: <20070221211355.GA7302@elte.hu> <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
- <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com>
- <20070222074044.GA4158@elte.hu> <Pine.LNX.4.64.0702221130050.1356@alien.or.mcafeemobile.com>
- <20070228094522.GA17716@elte.hu> <Pine.LNX.4.64.0702280740250.5935@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0702280836080.12485@woody.linux-foundation.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 28 Feb 2007 13:25:05 -0500
+Received: from mtl.rackplans.net ([69.90.0.18]:41314 "EHLO mtl.rackplans.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932222AbXB1SZD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 13:25:03 -0500
+Date: Wed, 28 Feb 2007 13:25:00 -0500 (EST)
+From: Gerhard Mack <gmack@innerfire.net>
+X-X-Sender: gmack@mtl.rackplans.net
+To: Charles Shannon Hendrix <shannon@widomaker.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20 SATA error
+In-Reply-To: <20070228111412.4d8a2d72@daydream.goid.lan>
+Message-ID: <Pine.LNX.4.64.0702281220510.12067@mtl.rackplans.net>
+References: <Pine.LNX.4.64.0702280739510.21113@mtl.rackplans.net>
+ <20070228111412.4d8a2d72@daydream.goid.lan>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Feb 2007, Linus Torvalds wrote:
+On Wed, 28 Feb 2007, Charles Shannon Hendrix wrote:
 
-> On Wed, 28 Feb 2007, Davide Libenzi wrote:
+> On Wed, 28 Feb 2007 07:40:23 -0500 (EST)
+> Gerhard Mack <gmack@innerfire.net> wrote:
+> 
+> > hello, 
 > > 
-> > At this point, given how threadlets can be easily/effectively dispatched 
-> > from userspace, I'd argue the presence of either single/parallel or syslet 
-> > submission altogether. Threadlets allows you to code chains *way* more 
-> > naturally than syslets, and since they basically are like functions calls 
-> > in the fast path, they can be used even for single/parallel submissions. 
+> > Can someone tell me what this means?
+> > ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x400000 action 0x2 frozen
+> > ata1.00: cmd 35/00:00:40:a6:23/00:04:00:00:00/e0 tag 0 cdb 0x0 data 524288 
+> > out
+> >          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> > ata1: port is slow to respond, please be patient (Status 0xd0)
+> > ata1: port failed to respond (30 secs, Status 0xd0)
+> > ata1: soft resetting port
+> > ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+> > ata1.00: configured for UDMA/100
 > 
-> Well, I agree, except for one thing:
->  - user space execution is *inherently* more expensive.
+> I am fairly certain this is a bug in the 2.6.20 kernel.
 > 
-> Why? Stack. Stack. Stack.
+> I never see it in 2.6.19*, just 2.6.20.
 > 
-> If you support threadlets with user space code, it means that you need a 
-> separate user-space stack for each threadlet. That's a potentially *big* 
-> cost to bear, both from a setup standpoint and from simply a memory 
-> allocation standpoint.
-
-Right, point taken.
-
-
-
-> In short - the only thing I *don't* think is a great idea are those linked 
-> lists of atoms. I still think it's a pretty horrible interface, and I 
-> still don't think it really buys us very much. The only way it would buy 
-> us a lot is to change the linked lists dynamically (ie add new events at 
-> the end while old events are still executing), but quite frankly, that 
-> just makes the whole interface *even*worse* and just makes me have 
-> debugging nightmares (I'm also not even convinced it really would help 
-> us: we might avoid some costs of adding new events, but it would only 
-> avoid them for serial execution, and if the whole point of this is to 
-> execute things in parallel, that's a stupid thing to do).
+> It is some kind of but in the SATA code paths, or at least that's all it
+> appears to affect on my system.
 > 
-> So I would repeat my call for getting rid of the atoms, and instead just 
-> do a "single submission" at a time. Do the linking by running a threadlet 
-> that has user space code (and the stack overhead), which is MUCH more 
-> flexible. And do nonlinked single system calls without *either* atoms *or* 
-> a user-space stack footprint.
+> What chipset do you have?
+> 
+> I have an nforce4 chipset.
+> 
+> In another thread, I think they were saying it was either a SATA chipset
+> driver bug, or a problem in libata core.
 
-Here we very much agree. The way I'd like it:
+I also have an nforce4.
 
-struct async_syscall {
-	unsigned long nr_sysc;
-	unsigned long params[8];
-	long result;
-};
-
-int async_exec(struct async_syscall *a, int n);
-
-or:
-
-int async_exec(struct async_syscall **a, int n);
-
-At this point I'm ok even with the userspace ring buffer, returning 
-back pointers to "struct async_syscall".
+	Gerhard
 
 
+--
+Gerhard Mack
 
+gmack@innerfire.net
 
-- Davide
-
-
+<>< As a computer I find your faith in technology amusing.
