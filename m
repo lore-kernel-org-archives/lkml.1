@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752069AbXB1IpI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752059AbXB1It3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752069AbXB1IpI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 03:45:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbXB1IpI
+	id S1752059AbXB1It3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 03:49:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbXB1It2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 03:45:08 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34519 "EHLO mx2.mail.elte.hu"
+	Wed, 28 Feb 2007 03:49:28 -0500
+Received: from mail.screens.ru ([213.234.233.54]:60718 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752065AbXB1IpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 03:45:06 -0500
-Date: Wed, 28 Feb 2007 09:38:05 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Suparna Bhattacharya <suparna@in.ibm.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: A quick fio test (was Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3)
-Message-ID: <20070228083805.GB9705@elte.hu>
-References: <20070223151515.GA12960@in.ibm.com> <20070223162508.GA16782@kernel.dk> <20070223171348.GA27838@in.ibm.com> <20070226135736.GF3822@kernel.dk> <20070226141315.GA15631@in.ibm.com> <20070226144548.GH3822@kernel.dk> <20070227043331.GA29942@in.ibm.com> <20070227094211.GR3822@kernel.dk> <20070227123932.GA8720@in.ibm.com> <20070228083100.GM3733@kernel.dk>
+	id S1752059AbXB1It2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 03:49:28 -0500
+Date: Wed, 28 Feb 2007 11:48:59 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Problem with freezable workqueues
+Message-ID: <20070228084859.GB104@tv-sign.ru>
+References: <200702272251.28844.rjw@sisk.pl> <20070227232855.GA457@tv-sign.ru> <200702280057.36198.rjw@sisk.pl> <20070228030726.GK29179@in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070228083100.GM3733@kernel.dk>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070228030726.GK29179@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 02/28, Srivatsa Vaddagiri wrote:
+>
+> On Wed, Feb 28, 2007 at 12:57:35AM +0100, Rafael J. Wysocki wrote:
+> > > How about other kthread_stop()s ? For example, kernel/softirq.c:cpu_callback() ?
+> > 
+> > They all are PF_NOFREEZE, I suppose.  If we make all workqueues nonfreezable
+> > (as they were before), the problem won't appear.
+> 
+> We can just thaw the worker thread selectively before kthread_stopping
+> them. This will let us freeze all worker threads (which we want to for
+> hotplug anyway).
 
-* Jens Axboe <jens.axboe@oracle.com> wrote:
+I am not sure this is a good change for 2.6.21.
 
-> Engine                Depth      Batch	Bw (KiB/sec)
-> libaio		20000	   8		21,125
-> syslet		20000	   8		19,610
+I strongly believe it is better to change XFS so that it doesn't use
+create_freezeable_workqueue() as Rafael suggested. Besides, freezeable
+workqueues are buggy anyway in 2.6.21-rc,
 
-i'd like to do something more about this to be more in line with libaio 
-- if nothing else then for the bragging rights ;-) It seems to me that a 
-drop of ~7% in throughput cannot be explained with any CPU overhead, it 
-must be some sort of queueing + IO scheduling effect - right?
+	http://marc.theaimsgroup.com/?l=linux-kernel&m=116855740612755
 
-	Ingo
+This means that workqueues become non-freezeable after suspend/resume
+anyway (if I understand disable_nonboot_cpus() correctly).
+
+Oleg.
+
