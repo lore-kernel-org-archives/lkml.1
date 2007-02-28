@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932601AbXB1XwO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932765AbXB1Xz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932601AbXB1XwO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 18:52:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932611AbXB1XwO
+	id S932765AbXB1Xz2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 18:55:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932768AbXB1Xz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 18:52:14 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45072 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932596AbXB1XwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 18:52:12 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Make XFS workqueues nonfreezable
-Date: Thu, 1 Mar 2007 00:54:32 +0100
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Oleg Nesterov <oleg@tv-sign.ru>,
-       vatsa@in.ibm.com, Gautham R Shenoy <ego@in.ibm.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       LKML <linux-kernel@vger.kernel.org>, David Chinner <dgc@sgi.com>,
-       Nigel Cunningham <ncunningham@linuxmail.org>
-References: <200702272251.28844.rjw@sisk.pl> <200702282339.31234.rjw@sisk.pl> <20070228224443.GC19542@elf.ucw.cz>
-In-Reply-To: <20070228224443.GC19542@elf.ucw.cz>
+	Wed, 28 Feb 2007 18:55:28 -0500
+Received: from fmmailgate01.web.de ([217.72.192.221]:53164 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932764AbXB1Xz0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 18:55:26 -0500
+X-Greylist: delayed 1855 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Feb 2007 18:55:26 EST
+Message-ID: <45E60EBD.2090806@web.de>
+Date: Thu, 01 Mar 2007 00:22:37 +0100
+From: Jan Kiszka <jan.kiszka@web.de>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+CC: linux-kernel@vger.kernel.org, bernhard.walle@gmx.de,
+       gernot.hillier@siemens.com
+Subject: Re: MOST(Media Oriented Systems Transport) Interface?
+References: <200702231826.30395.rgetz@blackfin.uclinux.org>
+In-Reply-To: <200702231826.30395.rgetz@blackfin.uclinux.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703010054.33536.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since freezable workqueues are broken in 2.6.21-rc
-(cf. http://marc.theaimsgroup.com/?l=linux-kernel&m=116855740612755,
-http://marc.theaimsgroup.com/?l=linux-kernel&m=117261312523921&w=2)
-it's better to change the only user of them, which is XFS, to use "normal"
-nonfreezable workqueues.
+Robin Getz wrote:
+> Does anyone have a pointer for a MOST (Media Oriented Systems Transport) driver?
+> 
+> http://en.wikipedia.org/wiki/Media_Oriented_Systems_Transport
+> 
+> I have seen announcements of Linux systems that support MOST:
+> 
+> http://linuxdevices.com/news/NS2586090082.html
+> 
+> But I have not seen the driver architecture, or the protocol that people are running on them...
+> 
+> Any pointers? 
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- fs/xfs/linux-2.6/xfs_buf.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+The were some rumours earlier, but now I actually stumbled over the
+release - and recalled this thread.
 
-Index: linux-2.6.21-rc2/fs/xfs/linux-2.6/xfs_buf.c
-===================================================================
---- linux-2.6.21-rc2.orig/fs/xfs/linux-2.6/xfs_buf.c
-+++ linux-2.6.21-rc2/fs/xfs/linux-2.6/xfs_buf.c
-@@ -1829,11 +1829,11 @@ xfs_buf_init(void)
- 	if (!xfs_buf_zone)
- 		goto out_free_trace_buf;
- 
--	xfslogd_workqueue = create_freezeable_workqueue("xfslogd");
-+	xfslogd_workqueue = create_workqueue("xfslogd");
- 	if (!xfslogd_workqueue)
- 		goto out_free_buf_zone;
- 
--	xfsdatad_workqueue = create_freezeable_workqueue("xfsdatad");
-+	xfsdatad_workqueue = create_workqueue("xfsdatad");
- 	if (!xfsdatad_workqueue)
- 		goto out_destroy_xfslogd_workqueue;
- 
+This might be what you are looking for:
+
+http://most4linux.sourceforge.net/
+
+Jan
