@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750796AbXB1DaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751404AbXB1Dvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750796AbXB1DaL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 22:30:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751284AbXB1DaL
+	id S1751404AbXB1Dvo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 22:51:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbXB1Dvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 22:30:11 -0500
-Received: from [12.22.49.110] ([12.22.49.110]:14411 "EHLO stargate.chelsio.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750796AbXB1DaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 22:30:09 -0500
-From: divy@chelsio.com
-Subject: [PATCH] cxgb3 - Tag driver version
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Date: Tue, 27 Feb 2007 19:28:14 -0800
-Message-ID: <20070228032814.29900.92439.stgit@localhost.localdomain>
-User-Agent: StGIT/0.12
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Feb 2007 22:51:44 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:60852 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751404AbXB1Dvn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 22:51:43 -0500
+Date: Wed, 28 Feb 2007 09:21:49 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, Gautham R Shenoy <ego@in.ibm.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: Problem with freezable workqueues
+Message-ID: <20070228035149.GL29179@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <200702272251.28844.rjw@sisk.pl> <20070228030113.GJ29179@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070228030113.GJ29179@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
+On Wed, Feb 28, 2007 at 08:31:13AM +0530, Srivatsa Vaddagiri wrote:
+> This problem (of kthread_stopping a frozen thread) was there when we
+> implemented freezer-based cpu hotplug. We worked around that in the
+> callbacks by thawing the worker thread first before kthread_stopping it,
+> which is working pretty neatly.
+> 
+> Should that fix the issue? 
 
-This patch adds a "-ko" tag to the driver version.
+In addition to thawing worker thread before kthread_stopping it, there
+are minor changes required in worker threads, to check for
+is_cpu_offline(bind_cpu) when they come out of refrigerator and jump to
+wait_to_die if so (ex: softirq.c).
 
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
----
+I guess you would need these changes before freezer-based hotplug is
+merged, in which case Gautham can send those patches out first.
 
- drivers/net/cxgb3/version.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/cxgb3/version.h b/drivers/net/cxgb3/version.h
-index 782a6cf..82278f8 100644
---- a/drivers/net/cxgb3/version.h
-+++ b/drivers/net/cxgb3/version.h
-@@ -35,7 +35,7 @@
- #define DRV_DESC "Chelsio T3 Network Driver"
- #define DRV_NAME "cxgb3"
- /* Driver version */
--#define DRV_VERSION "1.0"
-+#define DRV_VERSION "1.0-ko"
- #define FW_VERSION_MAJOR 3
- #define FW_VERSION_MINOR 2
- #endif				/* __CHELSIO_VERSION_H */
+-- 
+Regards,
+vatsa
