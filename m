@@ -1,27 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932781AbXB1O1O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932848AbXB1ObU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932781AbXB1O1O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 09:27:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932784AbXB1O1O
+	id S932848AbXB1ObU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 09:31:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932864AbXB1ObU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 09:27:14 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54075 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932781AbXB1O1N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 09:27:13 -0500
-Message-ID: <45E5913D.3080505@redhat.com>
-Date: Wed, 28 Feb 2007 09:27:09 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
-MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-CC: Andi Kleen <andi@firstfloor.org>
-Subject: Wanted: simple, safe x86 stack overflow detection
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 28 Feb 2007 09:31:20 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:46504
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932848AbXB1ObT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 09:31:19 -0500
+Message-Id: <45E5A05F.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.1 
+Date: Wed, 28 Feb 2007 14:31:43 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Hugh Dickins" <hugh@veritas.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: struct page field arrangement
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Can we just put a canary in the threadinfo and check it on every
-task switch? What are the drawbacks?
+A change early last year reordered struct page so that ptl overlaps not only
+private, but also mapping. Since spinlock_t can be much larger, I'm wondering
+whether there's a reason to not also overlay the space index and lru take -
+are these used for anything on page table pages?
+
+Thanks, Jan
