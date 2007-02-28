@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750971AbXB1Hn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750785AbXB1IFK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750971AbXB1Hn3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 02:43:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbXB1Hn3
+	id S1750785AbXB1IFK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 03:05:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbXB1IFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 02:43:29 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59477 "EHLO mx2.mail.elte.hu"
+	Wed, 28 Feb 2007 03:05:10 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:36681 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750971AbXB1Hn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 02:43:28 -0500
-Date: Wed, 28 Feb 2007 08:36:20 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ayaz Abdulla <aabdulla@nvidia.com>, Jeff Garzik <jeff@garzik.org>
-Subject: Re: regression: forcedeth.c hang
-Message-ID: <20070228073619.GA32542@elte.hu>
-References: <Pine.LNX.4.64.0702202043280.4043@woody.linux-foundation.org> <20070225175247.GB12392@stusta.de> <20070227083918.GC30376@elte.hu> <20070227090106.GA2749@elte.hu> <20070227093817.GA5007@elte.hu> <20070227112521.GA9440@elte.hu> <Pine.LNX.4.64.0702270741300.12485@woody.linux-foundation.org>
+	id S1750876AbXB1IFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 03:05:08 -0500
+Date: Wed, 28 Feb 2007 11:02:26 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: "Michael K. Edwards" <medwards.linux@gmail.com>
+Cc: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070228080226.GA9639@2ka.mipt.ru>
+References: <45DCD9E5.2010106@redhat.com> <20070222074044.GA4158@elte.hu> <20070222113148.GA3781@2ka.mipt.ru> <Pine.LNX.4.64.0702251428490.12485@woody.linux-foundation.org> <20070226172812.GC22454@2ka.mipt.ru> <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org> <20070226195416.GA11188@elte.hu> <20070227102832.GC23170@2ka.mipt.ru> <20070227115221.GJ8154@thunk.org> <f2b55d220702271903o6bc418efu7d72a564a7ade365@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0702270741300.12485@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <f2b55d220702271903o6bc418efu7d72a564a7ade365@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Wed, 28 Feb 2007 11:02:52 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Tue, 27 Feb 2007, Ingo Molnar wrote:
-> > 
-> > update: Jeff sent me 3 pending forcedeth.c fixes, and they indeed 
-> > fix the regression. The one that fixed it is:
+On Tue, Feb 27, 2007 at 07:03:21PM -0800, Michael K. Edwards (medwards.linux@gmail.com) wrote:
 > 
-> Ok, that was included in the bunch I just pulled and pushed out, so 
-> hopefully this one is resolved. Pls verify.
+> State machines are much harder to write without going through a real
+> on-paper design phase first.  But multi-threaded code is much harder
+> for a team of average working coders to write correctly, judging from
+> the numerous train wrecks that I've been called in to salvage over the
+> last ten years or so.
 
-yep, can confirm that it's now fixed upstream too.
+130 lines skipped...
 
-	Ingo
+I have only one question - wasn't it too lazy to write all that? :)
+
+> Cheers,
+> - Michael
+
+-- 
+	Evgeniy Polyakov
