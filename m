@@ -1,127 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932186AbXB1MZE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751981AbXB1Mcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932186AbXB1MZE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 07:25:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932184AbXB1MZE
+	id S1751981AbXB1Mcd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 07:32:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbXB1Mcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 07:25:04 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:49799 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932179AbXB1MZA (ORCPT
+	Wed, 28 Feb 2007 07:32:33 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46541 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751552AbXB1Mcc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 07:25:00 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [RFC] killing the NR_IRQS arrays.
-Date: Wed, 28 Feb 2007 13:24:18 +0100
-User-Agent: KMail/1.9.6
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com> <200702280141.51420.arnd@arndb.de> <m14pp6kat9.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m14pp6kat9.fsf@ebiederm.dsl.xmission.com>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Wed, 28 Feb 2007 07:32:32 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Zwane Mwaikambo <zwane@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chuck Ebbert <cebbert@redhat.com>, Andi Kleen <ak@suse.de>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/21] 2.6.19-stable review
+References: <20070221013619.GA30227@kroah.com> <45DC9E1D.40805@redhat.com>
+	<20070221114737.a09be761.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0702211208500.4043@woody.linux-foundation.org>
+	<m1lkiikcth.fsf@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.64.0702272312580.2632@montezuma.windriver.com>
+Date: Wed, 28 Feb 2007 05:28:27 -0700
+In-Reply-To: <Pine.LNX.4.64.0702272312580.2632@montezuma.windriver.com> (Zwane
+	Mwaikambo's message of "Wed, 28 Feb 2007 00:51:18 -0800 (PST)")
+Message-ID: <m1ps7uihzo.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702281324.19884.arnd@arndb.de>
-X-Provags-ID: kundenserver.de abuse@kundenserver.de login:c48f057754fc1b1a557605ab9fa6da41
-X-Provags-ID2: V01U2FsdGVkX18iSaunVO5j+XkJlrhfrioYBV24RMfvYjo/Nlx
- Hhj9/HDx0yoeuddb3f4PG6cW+UTCTfDHi6yjejXkA216LfQSfh
- j55trm7jNLKDWZ7J3mHNA==
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 28 February 2007, Eric W. Biederman wrote:
-> Arnd Bergmann <arnd@arndb.de> writes:
-> 
-> >
-> > Introducing the irq_request() etc. functions that take a struct irq*
-> > instead of an int sounds good, but I'd hope we can avoid using those
-> > in device drivers and do a separate abstraction for each bus_type
-> > that deals with interrupts. I'm not sure if that's possible for
-> > each bus_type, but the ones I have worked with in the past should
-> > allow that:
-> >
-> > pci: each device/function has a unique irq, drivers need not know
-> >      about it afaics.
-> Then there is msi and with msi-x you can have up to 4K irqs.
+Zwane Mwaikambo <zwane@infradead.org> writes:
 
-I have to admit I still don't really understand how this works
-at all. Can a driver that uses msi-x have different handlers
-for each of those interrupts registered simultaneously?
+> Hi Eric,
+> 	Thanks for getting this cruft cleaned up. I have a few comments 
+> regarding;
+>
+> handle-irqs-pending-in-irr-during-irq-migration.patch
+>
+> 1) It relies on checking the IRR, this could race with the corresponding 
+> vector bit being set by hardware.
 
-I would expect that instead there should be only one 'struct irq'
-for the device, with the handler getting a 12 bit number argument.
+The mostly correct assumption is that because that vector is masked and
+has been for a while we should not have a race.
 
-> > s390: got rid of irq numbers already
-> 
-> Yes.  I should really look at that more and see if I could bring
-> s390 into the generic irq code with my planned changes.
+> 2) apic_handle_pending_vector is oddly named since it doesn't actually 
+> handle a pending vector but drops it if it has been freed.
+>
+> 3) It looks complex
+>
+> So how about the following scheme. Add a check in do_IRQ whether the irq's 
+> domain contains the current cpu, if not we free the vector upon handler 
+> completion.
 
-I don't think there is much point in changing the s390 code, but
-the way it is solved there may be interesting for other buses
-as well. The interrupt handler there is not being registered
-explicitly, but is part of the driver (in case of subchannel)
-or of the device (in case of ccw_device) data structure.
+  Because that check will leak vector entries.  And after a while the
+  box will be unable to migrate irqs, and possible something more
+  severe.
 
-Similarly, in a pci device, one could imagine that the
-struct pci_driver contains a irq_handler_t member that
-is registered from the pci_device_probe() function
-if present.
+Yes.  It is moderately complex.  After receiving a little feedback
+like this I have something much simpler and more robust mered into the
+current git for 2.6.21.  Which except for my stupid it doesn't compile
+on uniprocessor bug should be good.
 
-> > Note that we can even start converting device drivers first, before
-> > moving away from irq numbers. A typical PCI driver should get
-> > somewhat simpler by the conversion, and when they are all converted,
-> > we can replace pci_dev->irq with a struct irq* under the covers.
-> 
-> Reasonable if it is easy and straight forward.
-> Something like pci_request_irq(dev,....) and the helper looks at
-> dev->irq under the covers and calls request_irq or whatever makes
-> sense.  Is this what you are thinking.  Examples would help me here.
+However it took me 13 patches to come up with something clean and
+simple.
 
-Ok, I had an example in on of my previous posts, but based on the
-discussion since then, it has become significantly simpler, basically
-reducing the work to
+Basically I wait until an irq has arrived at the new location until I
+free it, and even then I send a lowest priority IPI to land to the cpu in
+question before I free it so that if that other cpu has it stuck in the
+pending bit that gets processed before the freeing happens.
+Even with that I'm still only 99% certain that the last in flight irq before
+we reprogrammed it actually made it to a different cpus local apic.   But
+there appears to be nothing more that I can do.  I have exhausted every
+property I can find.  Added to that is the fact that simply handing the
+irq in IRR empirically is sufficient.  So I truly believe in practice
+the code in my first patch is sufficient, and what I am doing for 2.6.21
+is better simply because it is simpler and much more paranoid and thus
+affords us with a bit of margin.  If one irq is delivered to a local
+apic you would expect the previous incarnation of that irq to be
+delivered to a local apic first...
 
-struct irq *pci_irq_request(struct pci_device *dev,
-			    irq_handler_t handler)
-{
-        if (!dev->irq)
-                return -ENODEV;
+Honestly I would be completely happy if all that gets back ported is
+my stupid patch, that adds:
 
-        return irq_request(irq, handler, IRQF_SHARED,
-			  &dev->driver->name, dev);
-}
-int pci_irq_free(struct pci_device *dev)
-{
-        return irq_free(dev->irq, dev);
-}
+		if (!disable_apic)
+			ack_APIC_irq();
 
-The most significant change of this to the current code
-would be that we can pass arguments down to irq_request
-automatically, e.g. the irq handler can always get the
-pci_device as its dev_id.
+Before
+		if (printk_ratelimit())
+			printk(KERN_EMERG "%s: %d.%d No irq handler for vector\n",
 
-> For talking to user space I expect we will have numbers for a long time
-> to come yet.
+In do_IRQ.  That is sufficient in most cases to keep the box from
+falling over.  Is obviously correct.  And only emits a scary message.
+If that isn't sufficient to give everyone warm fuzzy. I think the
+patch under discussion make sense for a backport.  At least it doesn't
+change lot so things.
 
-I was wondering about that. Do you only mean /proc/interrupts or
-are there other user interfaces we need to worry about?
-For /proc/interrupts, what could break if we have interrupt numbers
-only local to each controller and potentially duplicate numbers
-in the list? It's good to be paranoid about changes to proc files,
-but I can definitely see value in having meaningful interrupt
-numbers in there instead of making up a more or less random mapping
-to a flat number space.
+Honestly.  I am happy if I fix this for 2.6.21.  Beyond that I am
+happy to offer my advice but I have no expectations of anyone
+following it.  Possibly I suffer from giving to complete an answer?
 
-	Arnd <><
+What are the rules that are supposed to govern backports to stable
+trees these days anyway?
+
+Eric
