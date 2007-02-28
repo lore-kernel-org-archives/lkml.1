@@ -1,53 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932500AbXB1WIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932515AbXB1WPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932500AbXB1WIa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 17:08:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932503AbXB1WIa
+	id S932515AbXB1WPa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 17:15:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932514AbXB1WPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 17:08:30 -0500
-Received: from mail-in-02.arcor-online.net ([151.189.21.42]:34360 "EHLO
-	mail-in-02.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932500AbXB1WI3 (ORCPT
+	Wed, 28 Feb 2007 17:15:30 -0500
+Received: from mga09.intel.com ([134.134.136.24]:25901 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932504AbXB1WP3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 17:08:29 -0500
-In-Reply-To: <A6EED9FC-4CE4-4089-ACB8-A1C7A3C50FDD@embeddedalley.com>
-References: <45E46976.6060600@freescale.com>	<29c13109971547687159078eacdea008@kernel.crashing.org>	<45E592DC.9060700@freescale.com>	<511cacb7bbe8a65ff72738c84ec9ece4@kernel.crashing.org>	<BD465924-7387-47EF-B90F-606F215819C2@embeddedalley.com>	<45E5B604.904@freescale.com> <46F6BF70-2922-4E05-8DAB-6B0830B0AB47@embeddedalley.com> <45E5BD6B.1010509@freescale.com> <F2D0230C-CA22-4DEF-917E-6982FA0C6171@embeddedalley.com> <45E5C128.7020204@freescale.com> <45E5C333.2060100@zytor.com> <ED6BD6F0-827F-4ADC-9D66-F9C3DD7FC470@embeddedalley.com> <E919B903-0890-4725-81CF-005003A1A2F6@kernel.crashing.org> <45E5D627.6030707@zytor.com> <45E5D84A.5000502@freescale.com> <278AADB6-E175-4177-A728-5357E21697B7@kernel.crashing.org> <45E5DB49.8010205@freescale.com> <A6EED9FC-4CE4-4089-ACB8-A1C7A3C50FDD@embeddedalley.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <a2fc3b0b25c4ad798b63b03763256a2f@kernel.crashing.org>
-Content-Transfer-Encoding: 7bit
-Cc: Kumar Gala <galak@kernel.crashing.org>,
-       linux-ppc-embedded <linuxppc-embedded@ozlabs.org>,
-       Timur Tabi <timur@freescale.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Torben.Mathiasen@hp.com
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
-Date: Wed, 28 Feb 2007 23:08:23 +0100
-To: Dan Malek <dan@embeddedalley.com>
-X-Mailer: Apple Mail (2.623)
+	Wed, 28 Feb 2007 17:15:29 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,232,1170662400"; 
+   d="scan'208"; a="51787329:sNHT20320182"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: 2.6.21-rc1: more ACPI errors (EC__)
+Date: Wed, 28 Feb 2007 14:14:40 -0800
+Message-ID: <B28E9812BAF6E2498B7EC5C427F293A401FEFC82@orsmsx415.amr.corp.intel.com>
+In-Reply-To: <Pine.SOC.4.64.0702260842260.9705@math>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.21-rc1: more ACPI errors (EC__)
+Thread-Index: AcdasPWefseR1eR7RAy4wa9MDjcq0wA1NeCw
+From: "Moore, Robert" <robert.moore@intel.com>
+To: "Meelis Roos" <mroos@linux.ee>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>,
+       <linux-acpi@vger.kernel.org>
+X-OriginalArrivalTime: 28 Feb 2007 22:14:41.0402 (UTC) FILETIME=[D7E1B5A0:01C75B85]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Please, let's just leave the four we have
+This exception appears to be originating somewhere in the EC driver:
 
-No one is suggesting otherwise.
-
-> and let
-> the driver just allocate increasing minor numbers.
-> If anyone has a product with more than 4 UARTs,
-> they will have to figure out what to do with the
-> additional minors.
-
-Since you say no one has ever used more than 4 UARTs,
-there are two options:
-
-- Cap the driver at 4 UARTs;
-- Assign an extra range of minors for more ports.
-
-Just randomly using some extra minors that aren't
-assigned to you isn't such a great idea.
+ACPI Exception (evregion-0420): AE_NOT_FOUND, Returned by Handler for
+[EmbeddedControl] [20070126]
 
 
-Segher
 
+> -----Original Message-----
+> From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-
+> owner@vger.kernel.org] On Behalf Of Meelis Roos
+> Sent: Tuesday, February 27, 2007 12:50 PM
+> To: Linux Kernel list; linux-acpi@vger.kernel.org
+> Subject: 2.6.21-rc1: more ACPI errors (EC__)
+> 
+> I tested 2.6.21-rc1 on my laptop (IBM X20 with 440BX) and found two
+> problems:
+> 
+> First, a seemingly harmless one - ACPI error messages during bootup:
+> 
+> ACPI Exception (evregion-0420): AE_NOT_FOUND, Returned by Handler for
+> [EmbeddedControl] [20070126]
+> ACPI Exception (dswexec-0462): AE_NOT_FOUND, While resolving operands
+for
+> [OpcodeName unavailable] [20070126]
+> ACPI Error (psparse-0537): Method parse/execution failed
+> [\_SB_.PCI0.ISA_.EC__.BAT0._STA] (Node d3c435e0), AE_NOT_FOUND
+> ACPI Exception (evregion-0420): AE_NOT_FOUND, Returned by Handler for
+> [EmbeddedControl] [20070126]
+> ACPI Error (psparse-0537): Method parse/execution failed
+> [\_SB_.PCI0.ISA_.EC__.AC__._PSR] (Node d3c43540), AE_NOT_FOUND
+> ACPI Exception (ac-0095): AE_NOT_FOUND, Error reading AC Adapter state
+> [20070126]
+> 
+> And second, there were ACPI error messages about EC__ during shutdown.
+> These messages appeared, then the "acpi_power_off called" message
+> appeared, then it waited for about 5 seconds (this does not happen
+> normally) and then it succeeded shutting down. Captured a screenshot
+of
+> these messages, temporarily available at
+> http://www.cs.ut.ee/~mroos/x20-shutdown-acpi-errors.jpg
+> 
+> --
+> Meelis Roos (mroos@linux.ee)
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi"
+in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
