@@ -1,67 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933103AbXB1PSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933112AbXB1PTF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933103AbXB1PSn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 10:18:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933095AbXB1PSn
+	id S933112AbXB1PTF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 10:19:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933115AbXB1PTF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 10:18:43 -0500
-Received: from systemlinux.org ([83.151.29.59]:44759 "EHLO m18s25.vlinux.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933085AbXB1PSm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 10:18:42 -0500
-Date: Wed, 28 Feb 2007 16:18:29 +0100
-From: Andre Noll <maan@systemlinux.org>
-To: Andrew Vasquez <andrew.vasquez@qlogic.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@SteelEye.com>
-Subject: Re: qla2xxx BUG: workqueue leaked lock or atomic
-Message-ID: <20070228151829.GI22572@skl-net.de>
-References: <20070226133153.GC4095@skl-net.de> <20070226182617.GC9968@andrew-vasquezs-computer.local> <20070227101100.GA22572@skl-net.de> <20070227185134.GJ20397@andrew-vasquezs-computer.local>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="vJguvTgX93MxBIIe"
-Content-Disposition: inline
-In-Reply-To: <20070227185134.GJ20397@andrew-vasquezs-computer.local>
-User-Agent: Mutt/1.5.9i
+	Wed, 28 Feb 2007 10:19:05 -0500
+Received: from smtp-out2.blueyonder.co.uk ([195.188.213.5]:54656 "EHLO
+	smtp-out2.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933112AbXB1PTD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 10:19:03 -0500
+Message-ID: <45E59D64.3070202@blueyonder.co.uk>
+Date: Wed, 28 Feb 2007 15:19:00 +0000
+From: Sid Boyce <g3vbv@blueyonder.co.uk>
+Reply-To: g3vbv@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.21-rc1 and 2.6.21-rc2 kwin dies silently
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+openSUSE 10.3 Alpha and KDE-3.5.6, xorg-x11-7.2. KDE is setup not to
+require a password to unlock, but it asks for password. When the screen
+unlocks, kwin is gone with no errors logged in /var/log/kdm or
+/var/log/messages. No problems with 2.6.20.
 
---vJguvTgX93MxBIIe
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Same problem on openSUSE 10.2 x86_64, KDE-3.5.5 and 2.6.21-rc2.
+Regards
+Sid.
 
-On 10:51, Andrew Vasquez wrote:
-> On Tue, 27 Feb 2007, Andre Noll wrote:
-> > [   68.532665] BUG: at kernel/lockdep.c:1860 trace_hardirqs_on()
->=20
-> Ok, since 2.6.20, there been a patch added to qla2xxx which drops the
-> spin_unlock_irq() call while attempting to ramp-up the queue-depth:
->=20
-> Could you try the latest 2.6.21-rc which contains the correction?
+-- 
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
 
-With 2.6.21-rc2 I am unable to reproduce this BUG message. However,
-writing to both raid systems at the same time via lvm still locks up
-the system within minutes.
 
-As lockdep revealed another dm-related lock problem on this kernel,
-I guess I'll have to bother the lvm people on this.
-
-Thanks
-Andre
-
---vJguvTgX93MxBIIe
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQFF5Z1FWto1QDEAkw8RAoC4AJ0TWmP8BO8mC5YjwKbKqeslRTY1CwCfYOSM
-maZi/OoYRys9tZ75BEB3GHc=
-=GKfy
------END PGP SIGNATURE-----
-
---vJguvTgX93MxBIIe--
