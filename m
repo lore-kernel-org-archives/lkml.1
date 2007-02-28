@@ -1,64 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932563AbXB1OKJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932586AbXB1OOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932563AbXB1OKJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 09:10:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932566AbXB1OKJ
+	id S932586AbXB1OOy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 09:14:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932611AbXB1OOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 09:10:09 -0500
-Received: from gate.edelkey.net ([213.138.147.140]:40098 "EHLO
-	gate.edelkey.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932563AbXB1OKH (ORCPT
+	Wed, 28 Feb 2007 09:14:54 -0500
+Received: from outbound-cpk.frontbridge.com ([207.46.163.16]:58142 "EHLO
+	outbound3-cpk-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932586AbXB1OOx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 09:10:07 -0500
-Message-ID: <45E58D2D.6010308@ray.fi>
-Date: Wed, 28 Feb 2007 16:09:49 +0200
-From: Tommi Kyntola <tommi.kyntola@ray.fi>
-Reply-To: tommi.kyntola@ray.fi
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Wed, 28 Feb 2007 09:14:53 -0500
+X-BigFish: VP
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+Date: Wed, 28 Feb 2007 15:14:24 +0100
+From: "Joerg Roedel" <joerg.roedel@amd.com>
+To: discuss@x86-64.org
+cc: "Andi Kleen" <ak@suse.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/4] i386: extend alternative instructions framework
+Message-ID: <20070228141424.GB19452@amd.com>
+References: <20070228140501.GA19452@amd.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, alsa-devel@lists.sourceforge.net
-Subject: [RFC][PATCH] intel8x0: revert regression that broke sounds after
- S3 suspend
-X-MIMETrack: Itemize by SMTP Server on raysrv05/RAY(Release 6.5.5 HF456|May 19, 2006) at
- 28.02.2007 16:09:49,
-	Serialize by Router on raysrv05/RAY(Release 6.5.5 HF456|May 19, 2006) at
- 28.02.2007 16:09:51,
-	Serialize complete at 28.02.2007 16:09:51
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20070228140501.GA19452@amd.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 28 Feb 2007 14:14:37.0093 (UTC)
+ FILETIME=[C72CF550:01C75B42]
+X-WSS-ID: 69FB51DA2KW9302119-01-01
+Content-Type: multipart/mixed;
+ boundary="yrj/dFKFPuw6o+aM"
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-The regression in 2.6.19-rc3 (namely 30b35399ceb2398d05837863476dcb12f12f3a82,
-"[ALSA] Various fixes for suspend/resume of ALSA PCI drivers"),
-broke HP nw8000 speaker sounds after S3 suspend (headphones still worked).
-Removing this line makes the sounds work again...
+--yrj/dFKFPuw6o+aM
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Tommi Kyntola <tommi.kyntola@ray.fi>
----
-This is a FYI kinda message, which Rafael Wysocki asekd me to send,
-and something that is clearly not the correct way to go with this,
-but I was unable to locate the actual reason for the regression
-and this does fix it for me, so here it goes.
+From: Joerg Roedel <joerg.roedel@amd.com>
 
-Wether other devices suffer from this or not, I don't know. I was only
-able test this on an HP nw8000, which has the said intel8x0.
+This patch extends the alternative instructions framework to support 2
+alternative instructions.
 
-I'll gladly try out further patches or submit configs, or whatever
-more verbose information is asked for.
-         Kynde
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 
-diff --git a/sound/pci/intel8x0.c b/sound/pci/intel8x0.c
-index a289abf..f62a456 100644
---- a/sound/pci/intel8x0.c
-+++ b/sound/pci/intel8x0.c
-@@ -2470,7 +2470,6 @@ static int intel8x0_suspend(struct pci_dev *pci, pm_message_t state)
-         }
-         pci_disable_device(pci);
-         pci_save_state(pci);
--       pci_set_power_state(pci, pci_choose_state(pci, state));
-         return 0;
-  }
+-- 
+Joerg Roedel
+Operating System Research Center
+AMD Saxony LLC & Co. KG
+
+--yrj/dFKFPuw6o+aM
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: attachment;
+ filename=two-alternatives-i386.patch
+Content-Transfer-Encoding: 7bit
+
+diff --git a/arch/i386/kernel/alternative.c b/arch/i386/kernel/alternative.c
+index 9eca21b..59f1770 100644
+--- a/arch/i386/kernel/alternative.c
++++ b/arch/i386/kernel/alternative.c
+@@ -153,14 +153,23 @@ extern u8 __smp_alt_begin[], __smp_alt_end[];
+ void apply_alternatives(struct alt_instr *start, struct alt_instr *end)
+ {
+ 	struct alt_instr *a;
+-	u8 *instr;
++	u8 *instr, *replacement;
++	u8 replacementlen;
+ 	int diff;
+ 
+ 	DPRINTK("%s: alt table %p -> %p\n", __FUNCTION__, start, end);
+ 	for (a = start; a < end; a++) {
+-		BUG_ON(a->replacementlen > a->instrlen);
+-		if (!boot_cpu_has(a->cpuid))
++		if (boot_cpu_has(a->cpuid)) {
++			replacement = a->replacement;
++			replacementlen = a->replacementlen;
++		} else if ((a->replacementlen2 > 0) &&
++			   (boot_cpu_has(a->cpuid2))) {
++			replacement = a->replacement2;
++			replacementlen = a->replacementlen2;
++		} else
+ 			continue;
++
++		BUG_ON(replacementlen > a->instrlen);
+ 		instr = a->instr;
+ #ifdef CONFIG_X86_64
+ 		/* vsyscall code is not mapped yet. resolve it manually. */
+@@ -170,9 +179,9 @@ void apply_alternatives(struct alt_instr *start, struct alt_instr *end)
+ 				__FUNCTION__, a->instr, instr);
+ 		}
+ #endif
+-		memcpy(instr, a->replacement, a->replacementlen);
+-		diff = a->instrlen - a->replacementlen;
+-		nop_out(instr + a->replacementlen, diff);
++		memcpy(instr, replacement, replacementlen);
++		diff = a->instrlen - replacementlen;
++		nop_out(instr + replacementlen, diff);
+ 	}
+ }
+ 
+diff --git a/include/asm-i386/alternative.h b/include/asm-i386/alternative.h
+index b8fa955..4a77e93 100644
+--- a/include/asm-i386/alternative.h
++++ b/include/asm-i386/alternative.h
+@@ -10,11 +10,14 @@
+ struct alt_instr {
+ 	u8 *instr; 		/* original instruction */
+ 	u8 *replacement;
++	u8 *replacement2;
+ 	u8  cpuid;		/* cpuid bit set for replacement */
++	u8  cpuid2;		/* cpuid bit set for replacement2 */
+ 	u8  instrlen;		/* length of original instruction */
+ 	u8  replacementlen; 	/* length of new instruction, <= instrlen */
+-	u8  pad;
+-};
++	u8  replacementlen2;
++	u8  pad[3];
++}  __attribute__ ((packed));
+ 
+ extern void apply_alternatives(struct alt_instr *start, struct alt_instr *end);
+ 
+@@ -36,6 +39,12 @@ static inline void alternatives_smp_switch(int smp) {}
+ #endif
+ 
+ /*
++ * use this macro(s) if you need more than one output parameter
++ * in alternative_io_*
++ */
++#define ASM_OUTPUT2(a, b) a, b
++
++/*
+  * Alternative instructions for different CPU types or capabilities.
+  *
+  * This allows to use optimized instructions even on generic binary
+@@ -53,9 +62,12 @@ static inline void alternatives_smp_switch(int smp) {}
+ 		      "  .align 4\n"					\
+ 		      "  .long 661b\n"            /* label */		\
+ 		      "  .long 663f\n"		  /* new instruction */	\
++		      "  .long 0x00\n"					\
+ 		      "  .byte %c0\n"             /* feature bit */	\
++		      "  .byte 0x00\n"					\
+ 		      "  .byte 662b-661b\n"       /* sourcelen */	\
+ 		      "  .byte 664f-663f\n"       /* replacementlen */	\
++		      "  .byte 0x00\n"					\
+ 		      ".previous\n"					\
+ 		      ".section .altinstr_replacement,\"ax\"\n"		\
+ 		      "663:\n\t" newinstr "\n664:\n"   /* replacement */\
+@@ -77,14 +89,38 @@ static inline void alternatives_smp_switch(int smp) {}
+ 		      "  .align 4\n"					\
+ 		      "  .long 661b\n"            /* label */		\
+ 		      "  .long 663f\n"		  /* new instruction */ \
++		      "  .long 0x00\n"					\
+ 		      "  .byte %c0\n"             /* feature bit */	\
++		      "  .byte 0x00\n"					\
+ 		      "  .byte 662b-661b\n"       /* sourcelen */	\
+ 		      "  .byte 664f-663f\n"       /* replacementlen */ 	\
++		      "  .byte 0x00\n"					\
+ 		      ".previous\n"					\
+ 		      ".section .altinstr_replacement,\"ax\"\n"		\
+ 		      "663:\n\t" newinstr "\n664:\n"   /* replacement */\
+ 		      ".previous" :: "i" (feature), ##input)
+ 
++/* Like alternative_io, but supports 2 possible alternatives */
++#define alternative_io_two(oldinstr, newinstr, feat, newinstr2, feat2,\
++		output, input...) \
++	asm volatile ("661:\n\t" oldinstr "\n662:\n"                    \
++		      ".section .altinstructions,\"a\"\n"               \
++		      "  .align 4\n"                                    \
++		      "  .long 661b\n"            /* label */           \
++		      "  .long 663f\n"            /* new instruction */ \
++		      "  .long 665f\n"            /* new instruction 2 */\
++		      "  .byte %c[f]\n"        /* feature bit */        \
++		      "  .byte %c[f2]\n"          /* feature bit 2*/    \
++		      "  .byte 662b-661b\n"       /* sourcelen */       \
++		      "  .byte 664f-663f\n"       /* replacementlen */  \
++		      "  .byte 666f-665f\n"       /* replacementlen 2 */\
++		      ".previous\n"                                     \
++		      ".section .altinstr_replacement,\"ax\"\n"         \
++		      "663:\n\t" newinstr "\n664:\n"  /* replacement */ \
++		      "665:\n\t" newinstr2 "\n666:\n" /* replacement2 */ \
++		      ".previous" : output : [f] "i" (feat), \
++		      [f2] "i" (feat2),##input)
++
+ /*
+  * Alternative inline assembly for SMP.
+  *
+
+--yrj/dFKFPuw6o+aM--
 
 
