@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932465AbXB1Vt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932469AbXB1Vtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932465AbXB1Vt2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 16:49:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932459AbXB1Vt2
+	id S932469AbXB1Vtw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 16:49:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932473AbXB1Vtv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 16:49:28 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37839 "EHLO mx2.mail.elte.hu"
+	Wed, 28 Feb 2007 16:49:51 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37890 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932465AbXB1Vt0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 16:49:26 -0500
-Date: Wed, 28 Feb 2007 22:42:04 +0100
+	id S932469AbXB1Vts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 16:49:48 -0500
+Date: Wed, 28 Feb 2007 22:42:11 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -23,8 +23,8 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Davide Libenzi <davidel@xmailserver.org>,
        Jens Axboe <jens.axboe@oracle.com>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 08/12] syslets: x86, add move_user_context() method
-Message-ID: <20070228214204.GH2305@elte.hu>
+Subject: [patch 10/12] syslets: x86: enable ASYNC_SUPPORT
+Message-ID: <20070228214211.GJ2305@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -35,7 +35,7 @@ X-ELTE-SpamScore: -2.0
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
 	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
 	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,69 +43,26 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ingo Molnar <mingo@elte.hu>
 
-add the move_user_context() method to move the user-space
-context of one kernel thread to another kernel thread.
-User-space might notice the changed TID, but execution,
-stack and register contents (general purpose and FPU) are
-still the same.
-
-An architecture must implement this interface before it can turn
-CONFIG_ASYNC_SUPPORT on.
+enable CONFIG_ASYNC_SUPPORT on x86.
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- arch/i386/kernel/process.c |   21 +++++++++++++++++++++
- include/asm-i386/system.h  |    7 +++++++
- 2 files changed, 28 insertions(+)
+ arch/i386/Kconfig |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-Index: linux/arch/i386/kernel/process.c
+Index: linux/arch/i386/Kconfig
 ===================================================================
---- linux.orig/arch/i386/kernel/process.c
-+++ linux/arch/i386/kernel/process.c
-@@ -839,6 +839,27 @@ unsigned long get_wchan(struct task_stru
- }
+--- linux.orig/arch/i386/Kconfig
++++ linux/arch/i386/Kconfig
+@@ -55,6 +55,10 @@ config ZONE_DMA
+ 	bool
+ 	default y
  
- /*
-+ * Move user-space context from one kernel thread to another.
-+ * This includes registers and FPU state. Callers must make
-+ * sure that neither task is running user context at the moment:
-+ */
-+void
-+move_user_context(struct task_struct *new_task, struct task_struct *old_task)
-+{
-+	struct pt_regs *old_regs = task_pt_regs(old_task);
-+	struct pt_regs *new_regs = task_pt_regs(new_task);
-+	union i387_union *tmp;
++config ASYNC_SUPPORT
++	bool
++	default y
 +
-+	*new_regs = *old_regs;
-+	/*
-+	 * Flip around the FPU state too:
-+	 */
-+	tmp = new_task->thread.i387;
-+	new_task->thread.i387 = old_task->thread.i387;
-+	old_task->thread.i387 = tmp;
-+}
-+
-+/*
-  * sys_alloc_thread_area: get a yet unused TLS descriptor index.
-  */
- static int get_free_idx(void)
-Index: linux/include/asm-i386/system.h
-===================================================================
---- linux.orig/include/asm-i386/system.h
-+++ linux/include/asm-i386/system.h
-@@ -33,6 +33,13 @@ extern struct task_struct * FASTCALL(__s
- 		      "2" (prev), "d" (next));				\
- } while (0)
+ config SBUS
+ 	bool
  
-+/*
-+ * Move user-space context from one kernel thread to another.
-+ * This includes registers and FPU state for now:
-+ */
-+extern void
-+move_user_context(struct task_struct *new_task, struct task_struct *old_task);
-+
- #define _set_base(addr,base) do { unsigned long __pr; \
- __asm__ __volatile__ ("movw %%dx,%1\n\t" \
- 	"rorl $16,%%edx\n\t" \
