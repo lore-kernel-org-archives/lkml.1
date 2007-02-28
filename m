@@ -1,64 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932255AbXB1SpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932270AbXB1SqI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932255AbXB1SpL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 13:45:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932264AbXB1SpL
+	id S932270AbXB1SqI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 13:46:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932274AbXB1SqI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 13:45:11 -0500
-Received: from smtp.osdl.org ([65.172.181.24]:38758 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932255AbXB1SpJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 13:45:09 -0500
-Date: Wed, 28 Feb 2007 10:42:49 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-cc: Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+	Wed, 28 Feb 2007 13:46:08 -0500
+Received: from gundega.hpl.hp.com ([192.6.19.190]:52524 "EHLO
+	gundega.hpl.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932270AbXB1SqG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 13:46:06 -0500
+Date: Wed, 28 Feb 2007 10:45:41 -0800
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>,
        "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-In-Reply-To: <Pine.LNX.4.64.0702281011220.6806@alien.or.mcafeemobile.com>
-Message-ID: <Pine.LNX.4.64.0702281040030.12485@woody.linux-foundation.org>
-References: <20070221211355.GA7302@elte.hu> <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
- <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com>
- <20070222074044.GA4158@elte.hu> <Pine.LNX.4.64.0702221130050.1356@alien.or.mcafeemobile.com>
- <20070228094522.GA17716@elte.hu> <Pine.LNX.4.64.0702280740250.5935@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0702280836080.12485@woody.linux-foundation.org>
- <Pine.LNX.4.64.0702281011220.6806@alien.or.mcafeemobile.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 2.6.20] kobject net ifindex + rename
+Message-ID: <20070228184541.GD6134@bougret.hpl.hp.com>
+Reply-To: jt@hpl.hp.com
+References: <20070228012741.GA3988@bougret.hpl.hp.com> <20070228093437.GA1847@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070228093437.GA1847@ff.dom.local>
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: jt@hpl.hp.com
+User-Agent: Mutt/1.5.9i
+From: Jean Tourrilhes <jt@hpl.hp.com>
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: jt@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 28 Feb 2007, Davide Libenzi wrote:
+On Wed, Feb 28, 2007 at 10:34:37AM +0100, Jarek Poplawski wrote:
+> On 28-02-2007 02:27, Jean Tourrilhes wrote:
+> > 	Hi all,
+> ...
+> > 	Patch for 2.6.20 is attached. The patch was tested on a system
+> > running the hotplug scripts, and on another system running udev.
+> > 
+> > 	Have fun...
+> > 
+> > 	Jean
+> > 
+> > Signed-off-by: Jean Tourrilhes <jt@hpl.hp.com>
+> > 
+> > ---------------------------------------------------------
+> ...
+> > diff -u -p linux/net/core/net-sysfs.j1.c linux/net/core/net-sysfs.c
+> > --- linux/net/core/net-sysfs.j1.c	2007-02-27 15:01:08.000000000 -0800
+> > +++ linux/net/core/net-sysfs.c	2007-02-27 15:06:49.000000000 -0800
+> > @@ -412,6 +412,17 @@ static int netdev_uevent(struct class_de
+> >  	if ((size <= 0) || (i >= num_envp))
+> >  		return -ENOMEM;
+> >  
+> > +	/* pass ifindex to uevent.
+> > +	 * ifindex is useful as it won't change (interface name may change)
+> > +	 * and is what RtNetlink uses natively. */
+> > +	envp[i++] = buf;
+> > +	n = snprintf(buf, size, "IFINDEX=%d", dev->ifindex) + 1;
+> > +	buf += n;
+> > +	size -= n;
+> > +
+> > +	if ((size <= 0) || (i >= num_envp))
 > 
-> Here we very much agree. The way I'd like it:
+> Btw.:
+> 1. if size == 10 and snprintf returns 9 (without NULL)
+>    then n == 10 (with NULL), so isn't it enough (here and above):
+>  
+> 	if ((size < 0) || (i >= num_envp))
+
+	I just cut'n'pasted the code a few line above. If the original
+code is incorrect, it need fixing. And it will need fixing in probably
+a lot of places.
+
+> 2. shouldn't there be (here and above):
+>  
+> 		envp[--i] = NULL;
 > 
-> struct async_syscall {
-> 	unsigned long nr_sysc;
-> 	unsigned long params[8];
-> 	long result;
-> };
 
-No, the "result" needs to go somewhere else. The caller may be totally 
-uninterested in keeping the system call number or parameters around until 
-the operation completes, but if you put them in the same structure with 
-the result, you obviously cannot sanely get rid of them.
+	No, envp is local, so who cares.
+	Thanks.
 
-I also don't much like read-write interfaces (which the above would be: 
-the kernel would read most of the structure, and then write one member of 
-the structure). 
-
-It's entirely possible, for example, that the operation we submit is some 
-legacy "aio_read()", which has soem other structure layout than the new 
-one (but one field will be the result code).
-
-		Linus
+	Jean
