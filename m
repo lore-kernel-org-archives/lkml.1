@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932453AbXB1OtK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932458AbXB1Owg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932453AbXB1OtK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 09:49:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932451AbXB1OtJ
+	id S932458AbXB1Owg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 09:52:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932913AbXB1Owg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 09:49:09 -0500
-Received: from sdcsmtp.europe.hp.net ([15.203.169.187]:53158 "EHLO
-	sdcrelbas01.sdc.hp.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932432AbXB1OtI convert rfc822-to-8bit (ORCPT
+	Wed, 28 Feb 2007 09:52:36 -0500
+Received: from neopsis.com ([213.239.204.14]:33632 "EHLO
+	matterhorn.dbservice.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932458AbXB1Owf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 09:49:08 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 28 Feb 2007 09:52:35 -0500
+Message-ID: <45E59C07.7020902@dbservice.com>
+Date: Wed, 28 Feb 2007 16:13:11 +0100
+From: Tomas Carnecky <tom@dbservice.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070208)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: lanana: Add major/minor entries for PPC QE UART devices
-Date: Wed, 28 Feb 2007 15:51:39 +0100
-Message-ID: <93C4769E3BED6B42B7203BD6F065654C08C5D8FD@dmoexc01.emea.cpqcorp.net>
-In-Reply-To: <45E593C2.6020004@freescale.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: lanana: Add major/minor entries for PPC QE UART devices
-Thread-Index: AcdbRg+b/GsC6YmPR8ird4RsZVgtAQAATr0Q
-References: <45E46976.6060600@freescale.com> <93C4769E3BED6B42B7203BD6F065654C08C5D6E8@dmoexc01.emea.cpqcorp.net> <45E57CE5.5010003@zytor.com> <93C4769E3BED6B42B7203BD6F065654C08C5D7FF@dmoexc01.emea.cpqcorp.net> <45E593C2.6020004@freescale.com>
-From: "Mathiasen, Torben" <Torben.Mathiasen@hp.com>
-To: "Timur Tabi" <timur@freescale.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 28 Feb 2007 14:49:07.0547 (UTC) FILETIME=[99432AB0:01C75B47]
+To: Gerhard Mack <gmack@innerfire.net>
+CC: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20 SATA error
+References: <fa./FMiSBkno9w078cQXK8Y1+afU50@ifi.uio.no> <45E58FC7.7020102@shaw.ca> <Pine.LNX.4.64.0702280936140.28570@mtl.rackplans.net>
+In-Reply-To: <Pine.LNX.4.64.0702280936140.28570@mtl.rackplans.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Neopsis-MailScanner-Information: Neopsis MailScanner using ClamAV and Spaassassin
+X-Neopsis-MailScanner: Found to be clean
+X-Neopsis-MailScanner-SpamCheck: not spam, SpamAssassin (score=-2.381,
+	required 5, autolearn=spam, AWL 0.22, BAYES_00 -2.60)
+X-MailScanner-From: tom@dbservice.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> Mathiasen, Torben wrote:
-> 
-> > Assuming QE has 4 entries, I would expect CPM to be the same. But we
-> > need verification of that. If it needs 6, we are in more trouble.
-> 
-> The QE can have up to 8, actually, but I'm willing to limit the driver
-> to 4.
+Gerhard Mack wrote:
+> ata1.00: configured for UDMA/100
+> [...]
+> ata1.00: configured for UDMA/66
+> [...]
+> ata1.00: configured for UDMA/44
+> [...]
+> ata1.00: configured for UDMA/33
+> [...]
+> ata1.00: configured for UDMA/25
+> [...]
+> ata1.00: configured for UDMA/16
+> [...]
+> ata1.00: configured for PIO4
 
-Its your choice if you want to limit it to 4 or have it moved into a
-different minor range. I can live with both.
+I have the same problem, though it appears randomly. It seems like the 
+chances for this happening are bigger if I do heavy disk I/O. The only 
+way to fix that is to shut down the computer and wait a few seconds 
+before rebooting (if I don't wait, the problem doesn't go away). I 
+bought new harddrives, so it's most likely not caused by the drives, I 
+also tried putting the drives onto a different controller (I have four 
+on-board SATA controller and two harddrives), that didn't help either, 
+so I suspect its the cable - SATA cables are very error-prone, I don't 
+trust them as they don't hold that tightly in the socket.
 
-Thanks,
-Torben
+tom
