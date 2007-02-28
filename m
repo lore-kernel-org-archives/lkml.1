@@ -1,144 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbXB1NAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932192AbXB1NCJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752184AbXB1NAl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 08:00:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbXB1NAl
+	id S932192AbXB1NCJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 08:02:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932195AbXB1NCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 08:00:41 -0500
-Received: from lvps87-230-19-68.dedicated.hosteurope.de ([87.230.19.68]:49530
-	"EHLO lvps87-230-19-68.dedicated.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752184AbXB1NAk (ORCPT
+	Wed, 28 Feb 2007 08:02:08 -0500
+Received: from mail-in-05.arcor-online.net ([151.189.21.45]:47772 "EHLO
+	mail-in-05.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932190AbXB1NCE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 08:00:40 -0500
-Message-ID: <45E57C67.5060806@toshsoft.de>
-Date: Wed, 28 Feb 2007 13:58:15 +0100
-From: Oliver Pahl <opahl@toshsoft.de>
-User-Agent: Thunderbird 2.0b2 (X11/20070123)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: 2.6.20-mm2: Oops in generic_make_request not git-block.patches fault
-X-Enigmail-Version: 0.94.1.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 28 Feb 2007 08:02:04 -0500
+In-Reply-To: <200702281324.19884.arnd@arndb.de>
+References: <m1ire2e20p.fsf@ebiederm.dsl.xmission.com> <200702280141.51420.arnd@arndb.de> <m14pp6kat9.fsf@ebiederm.dsl.xmission.com> <200702281324.19884.arnd@arndb.de>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <1d80d625c286a59844874e000756350c@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC] killing the NR_IRQS arrays.
+Date: Wed, 28 Feb 2007 14:02:00 +0100
+To: Arnd Bergmann <arnd@arndb.de>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+>>> pci: each device/function has a unique irq, drivers need not know
+>>>      about it afaics.
+>> Then there is msi and with msi-x you can have up to 4K irqs.
+>
+> I have to admit I still don't really understand how this works
+> at all. Can a driver that uses msi-x have different handlers
+> for each of those interrupts registered simultaneously?
 
-I rebuild the kernel, without the git-block patches Patches
+Yes.  It doesn't have to, though.
 
-revert-md-avoid-possible-bug_on-in-md-bitmap-handling-for-git-block.patch
-git-block.patch
-git-block-fixup.patch
-git-block-dupe-definitions.patch
-git-block-xfs-barriers-broke.patch
+> I would expect that instead there should be only one 'struct irq'
+> for the device, with the handler getting a 12 bit number argument.
 
-but i still get:
+Why?  The device really generates many different interrupts,
+why hide this fact.
 
-BUG: unable to handle kernel NULL pointer dereference at virtual
-address 0000000
-4
- printing eip:
-c01f369b
-*pde = 00000000
-Oops: 0000 [#1]
-PREEMPT
-last sysfs file:
-/devices/pci0000:00/0000:00:1d.3/usb5/5-0:1.0/bInterfaceProtoco
-l
-Modules linked in: fglrx(P) arc4 ecb blkcipher cryptomgr
-crypto_algapi ieee80211
-_crypt_wep ipw2200 ieee80211 ieee80211_crypt sk98lin intel_agp
-agpgart
-CPU:    0
-EIP:    0060:[<c01f369b>]    Tainted: P       VLI
-EFLAGS: 00210297   (2.6.20-tEwaN1 #4)
-EIP is at __make_request+0xeb/0x2d7
-eax: ffffffff   ebx: 00000000   ecx: 00000000   edx: 00010585
-esi: dff497d4   edi: c1974d54   ebp: c1947200   esp: ec6b1b1c
-ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-Process firefox-bin (pid: 10937, ti=ec6b0000 task=c1938540
-task.ti=ec6b0000)
-Stack: 00000000 c1947200 dff4c494 00000008 00000100 c1947200
-dff497d4 c01f1778
-       ef4c15c0 00672810 00000000 ef07c9a0 00000008 ef7de6b8
-00000000 c1948d8c
-       00200202 00000000 c192dc00 000112d0 00200202 c017c700
-00000001 c1947200
-Call Trace:
- [<c01f1778>] generic_make_request+0x18d/0x1bb
- [<c017c700>] do_mpage_readpage+0x44e/0x454
- [<c01f343e>] submit_bio+0xc3/0xca
- [<c0192124>] ext3_get_block+0xa8/0xbe
- [<c017c75b>] mpage_end_io_read+0x0/0x61
- [<c017bd81>] mpage_bio_submit+0x19/0x1d
- [<c017c5fe>] do_mpage_readpage+0x34c/0x454
- [<c0179168>] bio_add_page+0x31/0x37
- [<c019207c>] ext3_get_block+0x0/0xbe
- [<c013e2b9>] add_to_page_cache+0x37/0xa7
- [<c017c8d1>] mpage_readpages+0xb2/0x119
- [<c019207c>] ext3_get_block+0x0/0xbe
- [<c02781d4>] ata_qc_issue_prot+0xfe/0x234
- [<c0275255>] ata_qc_issue+0x43b/0x48d
- [<c02795ca>] ata_scsi_rw_xlat+0x126/0x19c
- [<c01915f4>] ext3_readpages+0x0/0x15
- [<c0144143>] __do_page_cache_readahead+0x16a/0x237
- [<c019207c>] ext3_get_block+0x0/0xbe
- [<c026bce9>] scsi_prep_fn+0x1b5/0x227
- [<c01fbdfb>] radix_tree_scan_hole_backward+0x17/0x2d
- [<c0144799>] try_context_based_readahead+0x307/0x336
- [<c0102dbc>] __switch_to+0x161/0x17b
- [<c01442c9>] ra_submit+0xb9/0xc5
- [<c0144a9b>] page_cache_readahead_adaptive+0x2d3/0x4a4
- [<c036552a>] io_schedule+0x4e/0x57
- [<c013e066>] file_read_actor+0x79/0xca
- [<c013e7f8>] do_generic_mapping_read+0x1a4/0x4f3
- [<c01409ad>] generic_file_aio_read+0x1af/0x1f6
- [<c013dfed>] file_read_actor+0x0/0xca
- [<c01efb84>] elv_next_request+0x105/0x114
- [<c015af8f>] do_sync_read+0xc7/0x10a
- [<c026b50c>] scsi_next_command+0x25/0x2f
- [<c0128560>] wake_bit_function+0x0/0x44
- [<c015defe>] sys_fstat64+0x1e/0x23
- [<c015aec8>] do_sync_read+0x0/0x10a
- [<c015b6f2>] vfs_read+0x88/0x10a
- [<c015ba3a>] sys_read+0x41/0x67
- [<c0103cce>] sysenter_past_esp+0x5f/0x85
- [<c0360000>] inet6_synq_hash+0xe0/0xf5
- =======================
-Code: 83 f8 02 75 0d 89 e9 89 da 89 f0 e8 82 ec ff ff eb 0e 48 75 13 89
-e9 89 da
- 89 f0 e8 f0 e9 ff ff 85 c0 0f 85 e5 01 00 00 8b 5b 04 <8b> 43 04 0f 18
-00 90 8d
- 47 14 39 c3 75 be fa 89 e0 25 00 e0 ff
-EIP: [<c01f369b>] __make_request+0xeb/0x2d7 SS:ESP 0068:ec6b1b1c
+>> For talking to user space I expect we will have numbers for a long 
+>> time
+>> to come yet.
+>
+> I was wondering about that. Do you only mean /proc/interrupts or
+> are there other user interfaces we need to worry about?
 
-Ths time i had to wait a few hours till the Bug jumped on. I am trying
-to make a bisection search, without the patches,
-but i am not that experienced.
+There's the IRQ affinity stuff too.
 
-HTH
+> For /proc/interrupts, what could break if we have interrupt numbers
+> only local to each controller and potentially duplicate numbers
+> in the list? It's good to be paranoid about changes to proc files,
+> but I can definitely see value in having meaningful interrupt
+> numbers in there instead of making up a more or less random mapping
+> to a flat number space.
 
-Oli
+Duplicate all this stuff into /sys in a sane format (*) and
+wait until userland catches up, then throw away the /proc
+interfaces.  It'll take a while, and until that day you will
+have to keep *some* interrupt number <-> interrupt bijection.
+Userland tools that think they know what interrupt number
+should be what are dead already.
 
-- --
-This email is intended for the person specified at the beginning of this
-message. It is confidential and may contain legally privileged
-information. If you have received this in error please let us know. You
-should note that you may not copy this email or use any information
-contained within it. Messages sent by email over the Internet are not
-necessarily completely secure. We accept no responsibility for changes
-made to this email after we sent it. You should be aware of these risks
-if you communicate with us by email. If you are unsure about how to act
-on this email please contact the person sending it to you.
+(*) i.e., exposing the interrupt tree as a tree, cascaded
+controllers and all.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-iD8DBQFF5XxnTvJ2Ft8Rz5cRAlVlAJ9jWSrE1Jf6KS476LNgHBr5nUjGOgCcDR34
-SNFSeDQx6IhF4I1HWe25N1c=
-=00jf
------END PGP SIGNATURE-----
+Segher
 
