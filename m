@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752214AbXB1XUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752215AbXB1XVI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752214AbXB1XUu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 18:20:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbXB1XUu
+	id S1752215AbXB1XVI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 18:21:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbXB1XVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 18:20:50 -0500
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:32278 "EHLO
-	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752214AbXB1XUt (ORCPT
+	Wed, 28 Feb 2007 18:21:08 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:26352 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752215AbXB1XVF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 18:20:49 -0500
-Date: Wed, 28 Feb 2007 17:20:22 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: solved Re: 2.6.20 SATA error
-In-reply-to: <fa.Evhbh+iC4EjQWXsDSWHX9shqJXc@ifi.uio.no>
-To: Gerhard Mack <gmack@innerfire.net>,
+	Wed, 28 Feb 2007 18:21:05 -0500
+Date: Wed, 28 Feb 2007 15:20:47 -0800
+From: Bill Irwin <bill.irwin@oracle.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
        linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Charles Shannon Hendrix <shannon@widomaker.com>
-Message-id: <45E60E36.2070709@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa./FMiSBkno9w078cQXK8Y1+afU50@ifi.uio.no>
- <fa.OO5sHloeJxxBmHwyt7Swo5eydUY@ifi.uio.no>
- <fa.G7ZWCF8iZMzCCHcWS6votbmzA3U@ifi.uio.no>
- <fa.GSOUb36DPlkk7gFXS5FtJVpQIq0@ifi.uio.no>
- <fa.Evhbh+iC4EjQWXsDSWHX9shqJXc@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
+Subject: Re: Wanted: simple, safe x86 stack overflow detection
+Message-ID: <20070228232047.GB10643@holomorphy.com>
+Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
+	Andi Kleen <andi@firstfloor.org>, Chuck Ebbert <cebbert@redhat.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <45E5913D.3080505@redhat.com> <20070228204144.GA32316@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070228204144.GA32316@one.firstfloor.org>
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerhard Mack wrote:
-> On Wed, 28 Feb 2007, Charles Shannon Hendrix wrote:
-> 
->> On Wed, 28 Feb 2007 13:25:00 -0500 (EST)
->> Gerhard Mack <gmack@innerfire.net> wrote:
->>
->>  
->>>> In another thread, I think they were saying it was either a SATA chipset
->>>> driver bug, or a problem in libata core.
->>> I also have an nforce4.
->> On another mailing list, someone with an Intel chipset is reporting the same
->> problem, and also that others without nforce chipsets are seeing it.
-> 
-> I was reaching inside my computer to check something and heared the thing 
-> click and got the same error message.
-> 
-> Turns out the adaptor that goes between SATA drive and the old style power 
-> connector was loose on the drive side.  Doesn't seem to me like it was 
-> very snug fitting to begin with.  I changed it to one of the proper SATA 
-> connectors comming off the power supply and it doesn't do that anymore.
-> 
-> Sorry for the false alarm, 
+On Wed, Feb 28, 2007 at 09:41:44PM +0100, Andi Kleen wrote:
+> Likely already too late then -- if critical state is overwritten
+> you crashed before. Also a lot of stack intensive codes
+> relatively large unused holes so it might miss the canary completely
+> Anyways if you want a crash on context switch in the non
+> hole case you can probably get it by just rearranging thread_info a bit.
+> e.g. put preempt_count first. Any corruption of that will lead
+> to schedule complaining.
+> Don't think it is worth it though.
+> I suppose one could have a CONFIG_DEBUG_STACK_OVERFLOW that gets
+> the stacks from vmalloc which would catch any overflow with its
+> guard pages. This is you would need to change __pa() to handle
+> that too because there might be still some drivers that do
+> DMA on stack addresses.  Would be somewhat ugly but doable.
+> But I have my doubts it is worth it again -- in my experience static
+> analysis works well enough to trace them down and 
+> there are not that many anyways.
 
-There is one thing that seems odd, if you do have an nForce4 chipset, 
-the kernel should be running the SATA controller in ADMA mode in 2.6.20, 
-but it doesn't seem like it is from your dmesg output. Can you post the 
-output of "lspci -vvn"? Also what kind of motherboard is that?
+I don't know about the rest of the world, but halting the system in the
+case of memory corruption sounds like an extremely good idea to me.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
 
+-- wli
