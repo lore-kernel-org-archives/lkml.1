@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751782AbXB1U5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751881AbXB1U5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751782AbXB1U5R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 15:57:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbXB1U5R
+	id S1751881AbXB1U5v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 15:57:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbXB1U5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 15:57:17 -0500
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:40710 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751782AbXB1U5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 15:57:16 -0500
-Subject: Re: [PATCH 5/5] jffs2: Allow selection of compression mode via a
-	sysfs attribute
-From: Richard Purdie <rpurdie@openedhand.com>
-To: dedekind@infradead.org
-Cc: LKML <linux-kernel@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>,
-       herbert@gondor.apana.org.au, linux-mtd <linux-mtd@lists.infradead.org>,
-       linux-crypto@vger.kernel.org
-In-Reply-To: <1172691583.17031.35.camel@sauron>
-References: <1172690034.16062.144.camel@localhost.localdomain>
-	 <1172691583.17031.35.camel@sauron>
-Content-Type: text/plain
-Date: Wed, 28 Feb 2007 20:56:56 +0000
-Message-Id: <1172696216.16062.147.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Wed, 28 Feb 2007 15:57:51 -0500
+Received: from smtp106.biz.mail.re2.yahoo.com ([206.190.52.175]:29089 "HELO
+	smtp106.biz.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751881AbXB1U5u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 15:57:50 -0500
+X-YMail-OSG: 6rzKsuIVM1mmRScMhTR_lhSvrAibyZCcwvf9FwA_cwnapjHCvbqPYPN6kDhC0o05ORGd1rX8V6KOLn3wqohHdkLEXMur5tdlG9DRcp.t7VC6j6kotK.YwsLyUlNWYzy_NGn1mA2sUlJyIt4-
+In-Reply-To: <45E5DB49.8010205@freescale.com>
+References: <45E46976.6060600@freescale.com>	<29c13109971547687159078eacdea008@kernel.crashing.org>	<45E592DC.9060700@freescale.com>	<511cacb7bbe8a65ff72738c84ec9ece4@kernel.crashing.org>	<BD465924-7387-47EF-B90F-606F215819C2@embeddedalley.com>	<45E5B604.904@freescale.com> <46F6BF70-2922-4E05-8DAB-6B0830B0AB47@embeddedalley.com> <45E5BD6B.1010509@freescale.com> <F2D0230C-CA22-4DEF-917E-6982FA0C6171@embeddedalley.com> <45E5C128.7020204@freescale.com> <45E5C333.2060100@zytor.com> <ED6BD6F0-827F-4ADC-9D66-F9C3DD7FC470@embeddedalley.com> <E919B903-0890-4725-81CF-005003A1A2F6@kernel.crashing.org> <45E5D627.6030707@zytor.com> <45E5D84A.5000502@freescale.com> <278AADB6-E175-4177-A728-5357E21697B7@kernel.crashing.org> <45E5DB49.8010205@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A6EED9FC-4CE4-4089-ACB8-A1C7A3C50FDD@embeddedalley.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Torben.Mathiasen@hp.com,
+       linux-ppc-embedded <linuxppc-embedded@ozlabs.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Transfer-Encoding: 7bit
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
+Date: Wed, 28 Feb 2007 15:57:48 -0500
+To: Timur Tabi <timur@freescale.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-28 at 21:39 +0200, Artem Bityutskiy wrote:
-> On Wed, 2007-02-28 at 19:13 +0000, Richard Purdie wrote:
-> > +/* gives us jffs2_subsys */
-> > +static decl_subsys(jffs2, NULL, NULL);
-> 
-> There is actually a file-system subsys - look up for fs_subsys. It is
-> declared at fs/namespace.c.
 
-Further down the patch you'll see:
+On Feb 28, 2007, at 2:43 PM, Timur Tabi wrote:
 
-+	kset_set_kset_s(&jffs2_subsys, fs_subsys);
+> What about major number 205?  It also has the screwed-up /dev/ 
+> ttyCPM entries, but it has more room, and the CPM driver doesn't  
+> actually use it.  At least, I can't see where it uses it.
 
-There was a reason for doing that instead using fs_subsys in the above
-although I can't remember why offhand. I did try it and it didn't work
-as expected...
+Please, let's just leave the four we have and let
+the driver just allocate increasing minor numbers.
+If anyone has a product with more than 4 UARTs,
+they will have to figure out what to do with the
+additional minors.
 
-Regards,
+We are making a very complicated problem
+out of nothing.  This hasn't caused any problems
+in the past, and changing the existing names and
+minors will cause problems for everyone today.
 
-Richard
+Just leave it alone, fix up the documentation,
+and have the driver print some warning if it
+allocates more than 4 UARTs.
+
+Thanks.
+
+	-- Dan
 
