@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932450AbXB1VsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932461AbXB1Vsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932450AbXB1VsR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 16:48:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932457AbXB1VsR
+	id S932461AbXB1Vsh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 16:48:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932457AbXB1Vsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 16:48:17 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37676 "EHLO mx2.mail.elte.hu"
+	Wed, 28 Feb 2007 16:48:36 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37713 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932450AbXB1VsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 16:48:15 -0500
-Date: Wed, 28 Feb 2007 22:41:17 +0100
+	id S932459AbXB1Vse (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 16:48:34 -0500
+Date: Wed, 28 Feb 2007 22:41:44 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -23,8 +23,8 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Davide Libenzi <davidel@xmailserver.org>,
        Jens Axboe <jens.axboe@oracle.com>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 02/12] syslets: add syslet.h include file, user API/ABI definitions
-Message-ID: <20070228214117.GB2305@elte.hu>
+Subject: [patch 03/12] syslets: generic kernel bits
+Message-ID: <20070228214144.GC2305@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -35,7 +35,7 @@ X-ELTE-SpamScore: -2.0
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
 	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
 	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,185 +43,305 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ingo Molnar <mingo@elte.hu>
 
-add include/linux/syslet.h which contains the user-space API/ABI
-declarations. Add the new header to include/linux/Kbuild as well.
+add the kernel generic bits - these are present even if !CONFIG_ASYNC_SUPPORT.
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- include/linux/Kbuild   |    1 
- include/linux/syslet.h |  155 +++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 156 insertions(+)
+ fs/exec.c             |    4 ++++
+ include/linux/sched.h |   23 ++++++++++++++++++++++-
+ kernel/capability.c   |    3 +++
+ kernel/exit.c         |    7 +++++++
+ kernel/fork.c         |    5 +++++
+ kernel/sched.c        |    9 +++++++++
+ kernel/sys.c          |   36 ++++++++++++++++++++++++++++++++++++
+ 7 files changed, 86 insertions(+), 1 deletion(-)
 
-Index: linux/include/linux/Kbuild
+Index: linux/fs/exec.c
 ===================================================================
---- linux.orig/include/linux/Kbuild
-+++ linux/include/linux/Kbuild
-@@ -141,6 +141,7 @@ header-y += sockios.h
- header-y += som.h
- header-y += sound.h
- header-y += synclink.h
-+header-y += syslet.h
- header-y += telephony.h
- header-y += termios.h
- header-y += ticable.h
-Index: linux/include/linux/syslet.h
+--- linux.orig/fs/exec.c
++++ linux/fs/exec.c
+@@ -1444,6 +1444,10 @@ static int coredump_wait(int exit_code)
+ 		tsk->vfork_done = NULL;
+ 		complete(vfork_done);
+ 	}
++	/*
++	 * Make sure we exit our async context before waiting:
++	 */
++	async_exit(tsk);
+ 
+ 	if (core_waiters)
+ 		wait_for_completion(&startup_done);
+Index: linux/include/linux/sched.h
 ===================================================================
---- /dev/null
-+++ linux/include/linux/syslet.h
-@@ -0,0 +1,155 @@
-+#ifndef _LINUX_SYSLET_H
-+#define _LINUX_SYSLET_H
-+/*
-+ * The syslet subsystem - asynchronous syscall execution support.
-+ *
-+ * Started by Ingo Molnar:
-+ *
-+ *  Copyright (C) 2007 Red Hat, Inc., Ingo Molnar <mingo@redhat.com>
-+ *
-+ * User-space API/ABI definitions:
-+ */
+--- linux.orig/include/linux/sched.h
++++ linux/include/linux/sched.h
+@@ -83,12 +83,12 @@ struct sched_param {
+ #include <linux/timer.h>
+ #include <linux/hrtimer.h>
+ #include <linux/task_io_accounting.h>
++#include <linux/async.h>
+ 
+ #include <asm/processor.h>
+ 
+ struct exec_domain;
+ struct futex_pi_state;
+-
+ /*
+  * List of flags we want to share for kernel threads,
+  * if only because they are not used by them anyway.
+@@ -997,6 +997,12 @@ struct task_struct {
+ /* journalling filesystem info */
+ 	void *journal_info;
+ 
++/* async syscall support: */
++	struct async_thread *at, *async_ready;
++	struct async_head *ah;
++	struct async_thread __at;
++	struct async_head __ah;
 +
-+#ifndef __user
-+# define __user
-+#endif
-+
+ /* VM state */
+ 	struct reclaim_state *reclaim_state;
+ 
+@@ -1055,6 +1061,21 @@ struct task_struct {
+ #endif
+ };
+ 
 +/*
-+ * This is the 'Syslet Atom' - the basic unit of execution
-+ * within the syslet framework. A syslet always represents
-+ * a single system-call plus its arguments, plus has conditions
-+ * attached to it that allows the construction of larger
-+ * programs from these atoms. User-space variables can be used
-+ * (for example a loop index) via the special sys_umem*() syscalls.
-+ *
-+ * Arguments are implemented via pointers to arguments. This not
-+ * only increases the flexibility of syslet atoms (multiple syslets
-+ * can share the same variable for example), but is also an
-+ * optimization: copy_uatom() will only fetch syscall parameters
-+ * up until the point it meets the first NULL pointer. 50% of all
-+ * syscalls have 2 or less parameters (and 90% of all syscalls have
-+ * 4 or less parameters).
-+ *
-+ * [ Note: since the argument array is at the end of the atom, and the
-+ *   kernel will not touch any argument beyond the final NULL one, atoms
-+ *   might be packed more tightly. (the only special case exception to
-+ *   this rule would be SKIP_TO_NEXT_ON_STOP atoms, where the kernel will
-+ *   jump a full syslet_uatom number of bytes.) ]
++ * Is an async syscall being executed currently?
 + */
-+struct syslet_uatom {
-+	u32		flags;
-+	u32		nr;
-+	u64		ret_ptr;
-+	u64		next;
-+	u64		arg_ptr[6];
++#ifdef CONFIG_ASYNC_SUPPORT
++static inline int async_syscall(struct task_struct *t)
++{
++	return t->async_ready != NULL;
++}
++#else /* !CONFIG_ASYNC_SUPPORT */
++static inline int async_syscall(struct task_struct *t)
++{
++	return 0;
++}
++#endif /* !CONFIG_ASYNC_SUPPORT */
++
+ static inline pid_t process_group(struct task_struct *tsk)
+ {
+ 	return tsk->signal->pgrp;
+Index: linux/kernel/capability.c
+===================================================================
+--- linux.orig/kernel/capability.c
++++ linux/kernel/capability.c
+@@ -178,6 +178,9 @@ asmlinkage long sys_capset(cap_user_head
+      int ret;
+      pid_t pid;
+ 
++     if (async_syscall(current))
++             return -ENOSYS;
++
+      if (get_user(version, &header->version))
+ 	     return -EFAULT; 
+ 
+Index: linux/kernel/exit.c
+===================================================================
+--- linux.orig/kernel/exit.c
++++ linux/kernel/exit.c
+@@ -26,6 +26,7 @@
+ #include <linux/ptrace.h>
+ #include <linux/profile.h>
+ #include <linux/mount.h>
++#include <linux/async.h>
+ #include <linux/proc_fs.h>
+ #include <linux/mempolicy.h>
+ #include <linux/taskstats_kern.h>
+@@ -890,6 +891,12 @@ fastcall NORET_TYPE void do_exit(long co
+ 		schedule();
+ 	}
+ 
 +	/*
-+	 * User-space can put anything in here, kernel will not
-+	 * touch it:
++	 * Note: async threads have to exit their context before the MM
++	 * exit (due to the coredumping wait):
 +	 */
-+	u64		private;
-+};
++	async_exit(tsk);
 +
-+/*
-+ * Flags to modify/control syslet atom behavior:
-+ */
+ 	tsk->flags |= PF_EXITING;
+ 
+ 	if (unlikely(in_atomic()))
+Index: linux/kernel/fork.c
+===================================================================
+--- linux.orig/kernel/fork.c
++++ linux/kernel/fork.c
+@@ -22,6 +22,7 @@
+ #include <linux/personality.h>
+ #include <linux/mempolicy.h>
+ #include <linux/sem.h>
++#include <linux/async.h>
+ #include <linux/file.h>
+ #include <linux/key.h>
+ #include <linux/binfmts.h>
+@@ -1056,6 +1057,7 @@ static struct task_struct *copy_process(
+ 
+ 	p->lock_depth = -1;		/* -1 = no lock */
+ 	do_posix_clock_monotonic_gettime(&p->start_time);
++	async_init(p);
+ 	p->security = NULL;
+ 	p->io_context = NULL;
+ 	p->io_wait = NULL;
+@@ -1623,6 +1625,9 @@ asmlinkage long sys_unshare(unsigned lon
+ 	struct uts_namespace *uts, *new_uts = NULL;
+ 	struct ipc_namespace *ipc, *new_ipc = NULL;
+ 
++	if (async_syscall(current))
++		return -ENOSYS;
 +
-+/*
-+ * Immediately queue this syslet asynchronously - do not even
-+ * attempt to execute it synchronously in the user context:
-+ */
-+#define SYSLET_ASYNC				0x00000001
+ 	check_unshare_flags(&unshare_flags);
+ 
+ 	/* Return -EINVAL for all unsupported flags */
+Index: linux/kernel/sched.c
+===================================================================
+--- linux.orig/kernel/sched.c
++++ linux/kernel/sched.c
+@@ -38,6 +38,7 @@
+ #include <linux/vmalloc.h>
+ #include <linux/blkdev.h>
+ #include <linux/delay.h>
++#include <linux/async.h>
+ #include <linux/smp.h>
+ #include <linux/threads.h>
+ #include <linux/timer.h>
+@@ -3455,6 +3456,14 @@ asmlinkage void __sched schedule(void)
+ 	}
+ 	profile_hit(SCHED_PROFILING, __builtin_return_address(0));
+ 
++	prev = current;
++	if (unlikely(prev->async_ready)) {
++		if (prev->state && !(preempt_count() & PREEMPT_ACTIVE) &&
++			(!(prev->state & TASK_INTERRUPTIBLE) ||
++				!signal_pending(prev)))
++			__async_schedule(prev);
++	}
 +
-+/*
-+ * Never queue this syslet asynchronously - even if synchronous
-+ * execution causes a context-switching:
-+ */
-+#define SYSLET_SYNC				0x00000002
+ need_resched:
+ 	preempt_disable();
+ 	prev = current;
+Index: linux/kernel/sys.c
+===================================================================
+--- linux.orig/kernel/sys.c
++++ linux/kernel/sys.c
+@@ -941,6 +941,9 @@ asmlinkage long sys_setregid(gid_t rgid,
+ 	int new_egid = old_egid;
+ 	int retval;
+ 
++	if (async_syscall(current))
++		return -ENOSYS;
 +
-+/*
-+ * Do not queue the syslet in the completion ring when done.
-+ *
-+ * ( the default is that the final atom of a syslet is queued
-+ *   in the completion ring. )
-+ *
-+ * Some syscalls generate implicit completion events of their
-+ * own.
-+ */
-+#define SYSLET_NO_COMPLETE			0x00000004
+ 	retval = security_task_setgid(rgid, egid, (gid_t)-1, LSM_SETID_RE);
+ 	if (retval)
+ 		return retval;
+@@ -987,6 +990,9 @@ asmlinkage long sys_setgid(gid_t gid)
+ 	int old_egid = current->egid;
+ 	int retval;
+ 
++	if (async_syscall(current))
++		return -ENOSYS;
 +
-+/*
-+ * Execution control: conditions upon the return code
-+ * of the just executed syslet atom. 'Stop' means syslet
-+ * execution is stopped and the atom is put into the
-+ * completion ring:
-+ */
-+#define SYSLET_STOP_ON_NONZERO			0x00000008
-+#define SYSLET_STOP_ON_ZERO			0x00000010
-+#define SYSLET_STOP_ON_NEGATIVE			0x00000020
-+#define SYSLET_STOP_ON_NON_POSITIVE		0x00000040
+ 	retval = security_task_setgid(gid, (gid_t)-1, (gid_t)-1, LSM_SETID_ID);
+ 	if (retval)
+ 		return retval;
+@@ -1057,6 +1063,9 @@ asmlinkage long sys_setreuid(uid_t ruid,
+ 	int old_ruid, old_euid, old_suid, new_ruid, new_euid;
+ 	int retval;
+ 
++	if (async_syscall(current))
++		return -ENOSYS;
 +
-+#define SYSLET_STOP_MASK				\
-+	(	SYSLET_STOP_ON_NONZERO		|	\
-+		SYSLET_STOP_ON_ZERO		|	\
-+		SYSLET_STOP_ON_NEGATIVE		|	\
-+		SYSLET_STOP_ON_NON_POSITIVE		)
+ 	retval = security_task_setuid(ruid, euid, (uid_t)-1, LSM_SETID_RE);
+ 	if (retval)
+ 		return retval;
+@@ -1120,6 +1129,9 @@ asmlinkage long sys_setuid(uid_t uid)
+ 	int old_ruid, old_suid, new_suid;
+ 	int retval;
+ 
++	if (async_syscall(current))
++		return -ENOSYS;
 +
-+/*
-+ * Special modifier to 'stop' handling: instead of stopping the
-+ * execution of the syslet, the linearly next syslet is executed.
-+ * (Normal execution flows along atom->next, and execution stops
-+ *  if atom->next is NULL or a stop condition becomes true.)
-+ *
-+ * This is what allows true branches of execution within syslets.
-+ */
-+#define SYSLET_SKIP_TO_NEXT_ON_STOP		0x00000080
+ 	retval = security_task_setuid(uid, (uid_t)-1, (uid_t)-1, LSM_SETID_ID);
+ 	if (retval)
+ 		return retval;
+@@ -1160,6 +1172,9 @@ asmlinkage long sys_setresuid(uid_t ruid
+ 	int old_suid = current->suid;
+ 	int retval;
+ 
++	if (async_syscall(current))
++		return -ENOSYS;
 +
-+/*
-+ * This is the (per-user-context) descriptor of the async completion
-+ * ring. This gets passed in to sys_async_exec():
-+ */
-+struct async_head_user {
-+	/*
-+	 * Current completion ring index - managed by the kernel:
-+	 */
-+	u64		kernel_ring_idx;
-+	/*
-+	 * User-side ring index:
-+	 */
-+	u64		user_ring_idx;
+ 	retval = security_task_setuid(ruid, euid, suid, LSM_SETID_RES);
+ 	if (retval)
+ 		return retval;
+@@ -1214,6 +1229,9 @@ asmlinkage long sys_setresgid(gid_t rgid
+ {
+ 	int retval;
+ 
++	if (async_syscall(current))
++		return -ENOSYS;
 +
-+	/*
-+	 * Ring of pointers to completed async syslets (i.e. syslets that
-+	 * generated a cachemiss and went async, returning -EASYNCSYSLET
-+	 * to the user context by sys_async_exec()) are queued here.
-+	 * Syslets that were executed synchronously (cached) are not
-+	 * queued here.
-+	 *
-+	 * Note: the final atom that generated the exit condition is
-+	 * queued here. Normally this would be the last atom of a syslet.
-+	 */
-+	u64		completion_ring_ptr;
+ 	retval = security_task_setgid(rgid, egid, sgid, LSM_SETID_RES);
+ 	if (retval)
+ 		return retval;
+@@ -1269,6 +1287,9 @@ asmlinkage long sys_setfsuid(uid_t uid)
+ {
+ 	int old_fsuid;
+ 
++	if (async_syscall(current))
++		return -ENOSYS;
 +
-+	/*
-+	 * Ring size in bytes:
-+	 */
-+	u64		ring_size_bytes;
+ 	old_fsuid = current->fsuid;
+ 	if (security_task_setuid(uid, (uid_t)-1, (uid_t)-1, LSM_SETID_FS))
+ 		return old_fsuid;
+@@ -1298,6 +1319,9 @@ asmlinkage long sys_setfsgid(gid_t gid)
+ {
+ 	int old_fsgid;
+ 
++	if (async_syscall(current))
++		return -ENOSYS;
 +
-+	/*
-+	 * The head task can become a cachemiss thread later on
-+	 * too, if it blocks - so it needs its separate thread
-+	 * stack and start address too:
-+	 */
-+	u64		head_stack;
-+	u64		head_ip;
+ 	old_fsgid = current->fsgid;
+ 	if (security_task_setgid(gid, (gid_t)-1, (gid_t)-1, LSM_SETID_FS))
+ 		return old_fsgid;
+@@ -1373,6 +1397,9 @@ asmlinkage long sys_setpgid(pid_t pid, p
+ 	struct task_struct *group_leader = current->group_leader;
+ 	int err = -EINVAL;
+ 
++	if (async_syscall(current))
++		return -ENOSYS;
 +
-+	/*
-+	 * Newly started async kernel threads will take their
-+	 * user stack and user start address from here. User-space
-+	 * code has to check for new_thread_stack going to NULL
-+	 * and has to refill it with a new stack if that happens.
-+	 */
-+	u64		new_thread_stack;
-+	u64		new_thread_ip;
-+};
+ 	if (!pid)
+ 		pid = group_leader->pid;
+ 	if (!pgid)
+@@ -1496,6 +1523,9 @@ asmlinkage long sys_setsid(void)
+ 	pid_t session;
+ 	int err = -EPERM;
+ 
++	if (async_syscall(current))
++		return -ENOSYS;
 +
-+#endif
+ 	write_lock_irq(&tasklist_lock);
+ 
+ 	/* Fail if I am already a session leader */
+@@ -1739,6 +1769,9 @@ asmlinkage long sys_setgroups(int gidset
+ 	struct group_info *group_info;
+ 	int retval;
+ 
++	if (async_syscall(current))
++		return -ENOSYS;
++
+ 	if (!capable(CAP_SETGID))
+ 		return -EPERM;
+ 	if ((unsigned)gidsetsize > NGROUPS_MAX)
+@@ -2080,6 +2113,9 @@ asmlinkage long sys_prctl(int option, un
+ {
+ 	long error;
+ 
++	if (async_syscall(current))
++		return -ENOSYS;
++
+ 	error = security_task_prctl(option, arg2, arg3, arg4, arg5);
+ 	if (error)
+ 		return error;
