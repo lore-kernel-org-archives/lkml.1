@@ -1,61 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932131AbXB1KQJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932128AbXB1KRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932131AbXB1KQJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 05:16:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932134AbXB1KQI
+	id S932128AbXB1KRg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 05:17:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932123AbXB1KRf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 05:16:08 -0500
-Received: from relay00.pair.com ([209.68.5.9]:3356 "HELO relay00.pair.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932133AbXB1KQH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 05:16:07 -0500
-X-pair-Authenticated: 24.241.238.207
-Message-ID: <45E55664.90407@cybsft.com>
-Date: Wed, 28 Feb 2007 04:16:04 -0600
-From: "K.R. Foley" <kr@cybsft.com>
-Organization: Cybersoft Solutions, Inc.
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
+	Wed, 28 Feb 2007 05:17:35 -0500
+Received: from styx.suse.cz ([82.119.242.94]:59552 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932128AbXB1KRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 05:17:34 -0500
+Date: Wed, 28 Feb 2007 11:19:01 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PATCH] HID and USB HID update for 2.6.21-rc2
+Message-ID: <Pine.LNX.4.64.0702281114420.4255@jikos.suse.cz>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: v2.6.20-rt1, yum/rpm
-References: <20070205065636.GA1652@elte.hu> <45E46CB4.1080009@cybsft.com> <20070228081132.GA32405@elte.hu>
-In-Reply-To: <20070228081132.GA32405@elte.hu>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * K.R. Foley <kr@cybsft.com> wrote:
-> 
->> Ingo Molnar wrote:
->>> i have released the v2.6.20-rt1 kernel, which can be downloaded from the 
->>> usual place:
->>>
->> I have a couple of questions regarding priorities of the softirqs, IRQ 
->> handlers, etc.
->>
->> With some exceptions, back in 2.6.18 and prior patches the IRQ threads 
->> were prioritized between 50 and 25 and the most of the softirqs were 
->> prioritized at 1? In newer patches it looks like they are all 
->> prioritized at 50?
->>
->> I was just curious what went into making these choices? I am just 
->> trying to better understand these decisions.
-> 
-> The basically random order-of-request_irq() prioritization was causing 
-> problems (it worked for some but didnt work for others), so i got rid of 
-> trying to auto-guess some priority order. Also, now that we've got 
-> tools/scripts like set_kthread_prio and rtprio it seemed more consistent 
-> to just not attempt to prioritize interrupts and softirqs at all, but to 
-> keep them all 'in the middle' of the RT priority range.
-> 
-> 	Ingo
-> 
+Linus,
 
-Thanks.
+could you please pull from 'for-linus' branch of
 
--- 
-	kr
+        git://git.kernel.org/pub/scm/linux/kernel/git/jikos/hid.git for-linus
+
+or
+        master.kernel.org:/pub/scm/linux/kernel/git/jikos/hid.git for-linus
+
+to receive updates for HID core layer and USB HID for 2.6.21-rc2. These 
+are mainly straightforward fixes for various broken devices (kernel 
+bugzilla #8099, #7352) and other trivial things.
+
+The diffstat looks larger because the usbhid code is moved from 
+USB-specific directory to HID-specific directory, as discussed previously 
+with Greg and Dmitry in order to ease maintainance, no functional changes 
+here. This was held back until all related fixes from other people trees 
+are upstream, so that no merge conflicts occur.
+
+ MAINTAINERS                                   |    2 +
+ drivers/hid/Kconfig                           |    2 +
+ drivers/hid/Makefile                          |    2 +
+ drivers/hid/hid-core.c                        |    7 +-
+ drivers/hid/hid-debug.c                       |    1 +
+ drivers/hid/hid-input.c                       |   37 +-
+ drivers/hid/usbhid/Kconfig                    |  152 +++
+ drivers/hid/usbhid/Makefile                   |   33 +
+ drivers/hid/usbhid/hid-core.c                 | 1061 ++++++++++++++++++
+ drivers/{usb/input => hid/usbhid}/hid-ff.c    |    0 
+ drivers/{usb/input => hid/usbhid}/hid-lgff.c  |    0 
+ drivers/{usb/input => hid/usbhid}/hid-pidff.c |    0 
+ drivers/{usb/input => hid/usbhid}/hid-plff.c  |    0 
+ drivers/{usb/input => hid/usbhid}/hid-tmff.c  |    0 
+ drivers/{usb/input => hid/usbhid}/hid-zpff.c  |    0 
+ drivers/{usb/input => hid/usbhid}/hiddev.c    |    0 
+ drivers/hid/usbhid/usbhid.h                   |  504 +++++++++
+ drivers/{usb/input => hid/usbhid}/usbkbd.c    |    0 
+ drivers/{usb/input => hid/usbhid}/usbmouse.c  |    0 
+ drivers/usb/input/Kconfig                     |  145 ---
+ drivers/usb/input/Makefile                    |   24 -
+ drivers/usb/input/hid-core.c                  | 1457 -------------------------
+ drivers/usb/input/usbhid.h                    |   87 --
+ include/linux/hid.h                           |    6 +-
+ 24 files changed, 1793 insertions(+), 1727 deletions(-)
+
+Adrian Bunk (1):
+      HID: hid-debug.c should #include <linux/hid-debug.h>
+
+Jiri Kosina (8):
+      USB HID: use CONFIG_HID_DEBUG for outputting report descriptor
+      HID: fix bug in zeroing the last field byte in output reports
+      HID: fix possible double-free on error path in hid parser
+      HID: fix broken Logitech S510 keyboard report descriptor; make extra keys work
+      USB HID: move usbhid to hid-specific directory
+      USB HID: cleanup - move hid_blacklist to where it belongs
+      HID: add git tree information to MAINTAINERS
+      HID: fix Logitech DiNovo Edge touchwheel and Logic3 /SpectraVideo middle button
+
+Julien BLACHE (1):
+      USB HID: Fix USB vendor and product IDs endianness for USB HID devices
+
