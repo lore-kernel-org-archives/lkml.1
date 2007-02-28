@@ -1,41 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933112AbXB1PTF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751006AbXB1PWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933112AbXB1PTF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 10:19:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933115AbXB1PTF
+	id S1751006AbXB1PWM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 10:22:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751011AbXB1PWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 10:19:05 -0500
-Received: from smtp-out2.blueyonder.co.uk ([195.188.213.5]:54656 "EHLO
-	smtp-out2.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933112AbXB1PTD (ORCPT
+	Wed, 28 Feb 2007 10:22:12 -0500
+Received: from neopsis.com ([213.239.204.14]:33798 "EHLO
+	matterhorn.dbservice.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751006AbXB1PWM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 10:19:03 -0500
-Message-ID: <45E59D64.3070202@blueyonder.co.uk>
-Date: Wed, 28 Feb 2007 15:19:00 +0000
-From: Sid Boyce <g3vbv@blueyonder.co.uk>
-Reply-To: g3vbv@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
+	Wed, 28 Feb 2007 10:22:12 -0500
+Message-ID: <45E5A2F4.6030806@dbservice.com>
+Date: Wed, 28 Feb 2007 16:42:44 +0100
+From: Tomas Carnecky <tom@dbservice.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070208)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.21-rc1 and 2.6.21-rc2 kwin dies silently
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: =?UTF-8?B?UmFsZiBNw7xsbGVy?= <ralf@bj-ig.de>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Gerhard Mack <gmack@innerfire.net>
+Subject: Re: 2.6.20 SATA error
+References: <fa./FMiSBkno9w078cQXK8Y1+afU50@ifi.uio.no> <45E58FC7.7020102@shaw.ca> <Pine.LNX.4.64.0702280936140.28570@mtl.rackplans.net> <45E59C07.7020902@dbservice.com> <D26234EB-3A11-4DF9-B773-559C4AAE5455@bj-ig.de>
+In-Reply-To: <D26234EB-3A11-4DF9-B773-559C4AAE5455@bj-ig.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Neopsis-MailScanner-Information: Neopsis MailScanner using ClamAV and Spaassassin
+X-Neopsis-MailScanner: Found to be clean
+X-Neopsis-MailScanner-SpamCheck: not spam, SpamAssassin (score=-2.382,
+	required 5, autolearn=spam, AWL 0.22, BAYES_00 -2.60)
+X-MailScanner-From: tom@dbservice.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-openSUSE 10.3 Alpha and KDE-3.5.6, xorg-x11-7.2. KDE is setup not to
-require a password to unlock, but it asks for password. When the screen
-unlocks, kwin is gone with no errors logged in /var/log/kdm or
-/var/log/messages. No problems with 2.6.20.
+Ralf Müller wrote:
+> I had the same type of problem using an unstable power supply - after 
+> replacing it the problems
+> were gone ...
+> 
 
-Same problem on openSUSE 10.2 x86_64, KDE-3.5.5 and 2.6.21-rc2.
-Regards
-Sid.
+Hm.. my shuttle box has only a 350W power supply, that could indeed be 
+the problem, as I have an Athlon 64 X2 4400+ CPU (dual core), two 
+SATA-II 500GB harddrives and a GeForce 7800GTX.
+Damn.. I thought I payed attention to the power supply when I bought the 
+components for my computer  :(
 
--- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
-
-
+tom
