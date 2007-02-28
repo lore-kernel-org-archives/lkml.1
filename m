@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750851AbXB1Rvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751220AbXB1Rw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750851AbXB1Rvq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 12:51:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbXB1Rvq
+	id S1751220AbXB1Rw2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 12:52:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbXB1Rw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 12:51:46 -0500
-Received: from de01egw02.freescale.net ([192.88.165.103]:63726 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750851AbXB1Rvp (ORCPT
+	Wed, 28 Feb 2007 12:52:28 -0500
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:37215 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751109AbXB1Rw1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 12:51:45 -0500
-Message-ID: <45E5C128.7020204@freescale.com>
-Date: Wed, 28 Feb 2007 11:51:36 -0600
-From: Timur Tabi <timur@freescale.com>
-Organization: Freescale
-User-Agent: Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; it; rv:1.8.1) Gecko/20061010 Firefox/2.0 
-MIME-Version: 1.0
-To: Dan Malek <dan@embeddedalley.com>
-CC: Torben.Mathiasen@hp.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
-References: <45E46976.6060600@freescale.com>	<29c13109971547687159078eacdea008@kernel.crashing.org>	<45E592DC.9060700@freescale.com>	<511cacb7bbe8a65ff72738c84ec9ece4@kernel.crashing.org>	<BD465924-7387-47EF-B90F-606F215819C2@embeddedalley.com>	<45E5B604.904@freescale.com> <46F6BF70-2922-4E05-8DAB-6B0830B0AB47@embeddedalley.com> <45E5BD6B.1010509@freescale.com> <F2D0230C-CA22-4DEF-917E-6982FA0C6171@embeddedalley.com>
-In-Reply-To: <F2D0230C-CA22-4DEF-917E-6982FA0C6171@embeddedalley.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Feb 2007 12:52:27 -0500
+To: staubach@redhat.com
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-reply-to: <45E5BA2E.8060003@redhat.com> (message from Peter Staubach on
+	Wed, 28 Feb 2007 12:21:50 -0500)
+Subject: Re: [patch 01/22] update ctime and mtime for mmaped write
+References: <20070227231442.627972152@szeredi.hu> <20070227231544.519463073@szeredi.hu> <45E58EB8.6030502@redhat.com> <E1HMSGE-000886-00@dorka.pomaz.szeredi.hu> <45E5BA2E.8060003@redhat.com>
+Message-Id: <E1HMSy2-0008F6-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 28 Feb 2007 18:51:54 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Malek wrote:
+> While these entry points do not actually modify the file itself,
+> as was pointed out, they are handy points at which the kernel gains
+> control and could actually notice that the contents of the file are
+> no longer the same as they were, ie. modified.
+> 
+>  From the operating system viewpoint, this is where the semantics of
+> modification to file contents via mmap differs from the semantics of
+> modification to file contents via write(2).
+> 
+> It is desirable for the file times to be updated as quickly as
+> possible after the actual modification has occurred.
 
-> I'd shoot that down, too.  Using udev in an
-> embedded, reliable environment is very
-> troublesome.  Although, products I've
-> developed using more than 4 UARTs had
-> some custom /dev work done to it just
-> to get everything mapped.  My only
-> concern is we don't add a new range for
-> QE UARTs, that we use the same minors
-> for both CPM and QE.
+I disagree.
 
-Then it appears that the only possible solution is to assign numbers 46 - 53 to the CPM/QE 
-and accept that it overlaps with the Altix.  Is everyone okay with that?
+You don't worry about the timestamp being updated _during_ a large
+write() call, even though the file is constantly being modified.
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+You think of write() as something instantaneous, while you think of
+writing to a shared mapping, then doing msync() as something taking a
+long time.  In actual fact both of these are basically equivalent
+operations, the differences being, that you can easily modify
+non-contiguous parts of a file with mmap, while you can't do that with
+write.  The disadvantage from mmap comes from the cost of setting up
+the page tables and handling the faults.
+
+Think of it this way:
+
+  shared mmap write + msync(MS_ASYNC)  ==  write()
+  msync(MS_ASYNC) + fsync()  ==  msync(MS_SYNC)
+
+> A better design for all of this would be to update the file times
+> and mark the inode as needing to be written out when a page fault
+> is taken for a page which either does not exist or needs to be made
+> writable and that page is part of an appropriate style mapping.
+
+I think this would just be a waste of CPU.
+
+Miklos
