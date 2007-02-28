@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932281AbXB1NR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932282AbXB1NRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932281AbXB1NR1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 08:17:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932282AbXB1NR1
+	id S932282AbXB1NRa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 08:17:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932283AbXB1NRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 08:17:27 -0500
-Received: from sdcrelbas03.europe.hp.net ([15.203.169.189]:38161 "EHLO
-	sdcrelbas03.sdc.hp.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932281AbXB1NR0 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 08:17:26 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: lanana: Add major/minor entries for PPC QE UART devices
-Date: Wed, 28 Feb 2007 14:14:41 +0100
-Message-ID: <93C4769E3BED6B42B7203BD6F065654C08C5D7FF@dmoexc01.emea.cpqcorp.net>
-In-Reply-To: <45E57CE5.5010003@zytor.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: lanana: Add major/minor entries for PPC QE UART devices
-Thread-Index: AcdbOHLmOEtottJ1TmSRY7fKC0rHQAAAejVw
-References: <45E46976.6060600@freescale.com> <93C4769E3BED6B42B7203BD6F065654C08C5D6E8@dmoexc01.emea.cpqcorp.net> <45E57CE5.5010003@zytor.com>
-From: "Mathiasen, Torben" <Torben.Mathiasen@hp.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Timur Tabi" <timur@freescale.com>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 28 Feb 2007 13:17:20.0090 (UTC) FILETIME=[C68FEBA0:01C75B3A]
+	Wed, 28 Feb 2007 08:17:30 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:46101 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932282AbXB1NR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 08:17:29 -0500
+Date: Wed, 28 Feb 2007 18:47:21 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, Gautham R Shenoy <ego@in.ibm.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: Problem with freezable workqueues
+Message-ID: <20070228131721.GD15509@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <200702272251.28844.rjw@sisk.pl> <20070228030113.GJ29179@in.ibm.com> <20070228035149.GL29179@in.ibm.com> <200702281211.04515.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702281211.04515.rjw@sisk.pl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Mathiasen, Torben wrote:
-> >
-> > Got around looking at this one. I'm fine with this approach, but the
-> > CPM5 fix looks wrong. Shouldn't it be:
-> >
-> > 49 = /dev/ttyCPM3		PPC CPM (SCC or SMC) - port 3
-> >
-> > instead?
-> >
+On Wed, Feb 28, 2007 at 12:11:03PM +0100, Rafael J. Wysocki wrote:
+> > In addition to thawing worker thread before kthread_stopping it, there
+> > are minor changes required in worker threads, to check for
+> > is_cpu_offline(bind_cpu) when they come out of refrigerator and jump to
+> > wait_to_die if so (ex: softirq.c).
+> > 
+> > I guess you would need these changes before freezer-based hotplug is
+> > merged, in which case Gautham can send those patches out first.
 > 
-> Well, how many CPM devices can exist?  If there are really 6 ports
-> possible, they need minors up to 51.
-> 
-> Also, if QE really is just CPM v3, and they share the same minors, why
-> change the name?
-> 
+> Yes, please, if that's possible.
 
-Assuming QE has 4 entries, I would expect CPM to be the same. But we
-need verification of that. If it needs 6, we are in more trouble.
+After looking at the current workqueue code, the above minor change I
+suggested is not required.
 
-Torben
+So you should be able to fix your "kthread_stop on a frozen worker
+thread hangs" problem by just a simple patch like this (against
+2.6.20-mm2):
+
+
+--- workqueue.c.org	2007-02-28 18:32:48.000000000 +0530
++++ workqueue.c	2007-02-28 18:44:23.000000000 +0530
+@@ -718,6 +718,8 @@ static void cleanup_workqueue_thread(str
+ 		insert_wq_barrier(cwq, &barr, 1);
+ 		cwq->should_stop = 1;
+ 		alive = 1;
++		if (frozen(cwq->thread))
++			thaw(cwq->thread);
+ 	}
+ 	spin_unlock_irq(&cwq->lock);
+ 
+
+Can you test with this?
+
+Note that as Oleg commented, freezable workqueues are broken w/o his
+patch here:
+
+	http://marc.theaimsgroup.com/?l=linux-kernel&m=116855740612755	
+
+So you need to have Andrew/Linux pick up the above patch first to have
+correctly functioning freezable workqueues.
+
+-- 
+Regards,
+vatsa
