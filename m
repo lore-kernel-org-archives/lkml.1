@@ -1,35 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932309AbXB1TWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932382AbXB1TXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932309AbXB1TWU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 14:22:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932388AbXB1TWU
+	id S932382AbXB1TXl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 14:23:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932386AbXB1TXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 14:22:20 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50233 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932309AbXB1TWT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 14:22:19 -0500
-Message-ID: <45E5D63E.5030305@redhat.com>
-Date: Wed, 28 Feb 2007 14:21:34 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+	Wed, 28 Feb 2007 14:23:41 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:4828 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932382AbXB1TXk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 14:23:40 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 28 Feb 2007 11:23:37 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch - v3] epoll ready set loops diet ...
+In-Reply-To: <200702282009.29527.dada1@cosmosbay.com>
+Message-ID: <Pine.LNX.4.64.0702281115090.6806@alien.or.mcafeemobile.com>
+References: <Pine.LNX.4.64.0702281034050.6806@alien.or.mcafeemobile.com>
+ <200702282009.29527.dada1@cosmosbay.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>, Neil Brown <neilb@suse.de>
-Subject: Re: PROBLEM: null pointer dereference in cfq_dispatch_requests	(2.6.21-rc2
- and 2.6.20)
-References: <1172685755.5773.6.camel@dwillia2-linux.ch.intel.com> <45E5CE9E.7050904@redhat.com>
-In-Reply-To: <45E5CE9E.7050904@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
-> There are two patches for raid5/6 out there that might fix this. I'll
-> attach them (the second just fixes a minor bug in the first one.)
+On Wed, 28 Feb 2007, Eric Dumazet wrote:
 
-Never mind, those patches are already in 2.6.21-rc.
+> On Wednesday 28 February 2007 19:37, Davide Libenzi wrote:
+> 
+> > +		list_del(&epi->rdllink);
+> > +		if (!(epi->event.events & EPOLLET) && (revents & epi->event.events))
+> > +			list_add_tail(&epi->rdllink, &injlist);
+> > +		else {
+> 
+> Is the ( ... & epi->event.events) really necessary ? (It seems already done)
+
+Yes, look here:
+
+	if (epi->event.events & EPOLLONESHOT)
+                 epi->event.events &= EP_PRIVATE_BITS;
+
+Oneshot events should not be requeued.
+
+
+> I was wrong about the size of epitem : it is now 68 bytes instead of 72.
+> At least we now use/dirty one cache line instead of two per epitem.
+> 
+> Do you have another brilliant idea to shrink 4 more bytes ? :)
+
+I don't think we can cleanly shove more stuff out of it.
+
+
+
+- Davide
+
 
