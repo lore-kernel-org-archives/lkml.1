@@ -1,67 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752173AbXB1M44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752182AbXB1NAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752173AbXB1M44 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 07:56:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbXB1M44
+	id S1752182AbXB1NAf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 08:00:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbXB1NAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 07:56:56 -0500
-Received: from sally.edelkey.net ([213.138.147.136]:57947 "EHLO
-	sally.edelkey.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752173AbXB1M4z (ORCPT
+	Wed, 28 Feb 2007 08:00:35 -0500
+Received: from terminus.zytor.com ([192.83.249.54]:56422 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752182AbXB1NAe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 07:56:55 -0500
-X-Greylist: delayed 508 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Feb 2007 07:56:55 EST
-Message-ID: <45E57A08.5060403@ray.fi>
-Date: Wed, 28 Feb 2007 14:48:08 +0200
-From: Tommi Kyntola <tommi.kyntola@ray.fi>
-Reply-To: tommi.kyntola@ray.fi
+	Wed, 28 Feb 2007 08:00:34 -0500
+Message-ID: <45E57CE5.5010003@zytor.com>
+Date: Wed, 28 Feb 2007 05:00:21 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: acpi-devel@lists.sourceforge.net
-Subject: [PATCH] acpi: fan after suspend-to-mem fix
-X-MIMETrack: Itemize by SMTP Server on raysrv05/RAY(Release 6.5.5 HF456|May 19, 2006) at
- 28.02.2007 14:48:09,
-	Serialize by Router on raysrv05/RAY(Release 6.5.5 HF456|May 19, 2006) at
- 28.02.2007 14:48:10,
-	Serialize complete at 28.02.2007 14:48:10
-Content-Transfer-Encoding: 7bit
+To: "Mathiasen, Torben" <Torben.Mathiasen@hp.com>
+CC: Timur Tabi <timur@freescale.com>, linux-kernel@vger.kernel.org
+Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
+References: <45E46976.6060600@freescale.com> <93C4769E3BED6B42B7203BD6F065654C08C5D6E8@dmoexc01.emea.cpqcorp.net>
+In-Reply-To: <93C4769E3BED6B42B7203BD6F065654C08C5D6E8@dmoexc01.emea.cpqcorp.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mathiasen, Torben wrote:
+> 
+> Got around looking at this one. I'm fine with this approach, but the
+> CPM5 fix looks wrong. Shouldn't it be:
+> 
+> 49 = /dev/ttyCPM3		PPC CPM (SCC or SMC) - port 3
+> 
+> instead?
+> 
 
-acpi_fan_suspend should probably set state to ACPI_D3, rather than ACPI_D0.
-With this change the fan works after S3 suspend atleast on HP nw8000 laptop,
-for which the suspended fan has been broken since sword-and-stone.
+Well, how many CPM devices can exist?  If there are really 6 ports 
+possible, they need minors up to 51.
 
-Signed-off-by: Tommi Kyntola <tommi.kyntola@ray.fi>
----
-Why this was ACPI_D0 beats me, but it's been that way since
-the _suspend/_resume functios got added in the commit
-0feabb01d93e5801d1127416a66cfc3963280bca (2.6.18-rc1, I think).
+Also, if QE really is just CPM v3, and they share the same minors, why 
+change the name?
 
-The fan hasn't worked on my HP nw8000 laptop after an S3 suspend
-ever, but fixing that to ACPI_D3 there finally makes it work as
-expected.
-
-If there was some hidden reason why that was set to ACPI_D0,
-then perhaps a config option for some ICH4 or HP laptops
-is called for.
-
-         Kynde
-
-diff --git a/drivers/acpi/fan.c b/drivers/acpi/fan.c
-index 045c894..7ae70b0 100644
---- a/drivers/acpi/fan.c
-+++ b/drivers/acpi/fan.c
-@@ -243,7 +243,7 @@ static int acpi_fan_suspend(struct acpi_device *device, int state)
-         if (!device)
-                 return -EINVAL;
-
--       acpi_bus_set_power(device->handle, ACPI_STATE_D0);
-+       acpi_bus_set_power(device->handle, ACPI_STATE_D3);
-
-         return AE_OK;
-  }
-
+	-hpa
