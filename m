@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750872AbXB1AG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750994AbXB1AYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750872AbXB1AG6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 19:06:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750873AbXB1AG5
+	id S1750994AbXB1AYb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 19:24:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751007AbXB1AYb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 19:06:57 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38833 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750858AbXB1AG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 19:06:57 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: Problem with freezable workqueues
-Date: Wed, 28 Feb 2007 01:08:56 +0100
-User-Agent: KMail/1.9.5
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Pavel Machek <pavel@ucw.cz>,
-       Gautham R Shenoy <ego@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Nigel Cunningham <nigel@suspend2.net>
-References: <200702272251.28844.rjw@sisk.pl> <200702280057.36198.rjw@sisk.pl> <1172620896.3681.19.camel@johannes.berg>
-In-Reply-To: <1172620896.3681.19.camel@johannes.berg>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702280108.57988.rjw@sisk.pl>
+	Tue, 27 Feb 2007 19:24:31 -0500
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:5448 "EHLO
+	pd5mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750918AbXB1AYa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 19:24:30 -0500
+Date: Tue, 27 Feb 2007 18:20:25 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: SMP performance degradation with sysbench
+In-reply-to: <fa.XocsudxlGplKh0kloTtA0juPwtA@ifi.uio.no>
+To: hyoshiok@miraclelinux.com
+Cc: Dave Jones <davej@redhat.com>, Pete Harlan <harlan@artselect.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Rik van Riel <riel@redhat.com>,
+       Lorenzo Allegrucci <l_allegrucci@yahoo.it>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Message-id: <45E4CAC9.4070504@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.V3M3ZgXL+lFlIyhx43YxCU/JFUk@ifi.uio.no>
+ <fa.ciL5lzdfskdJHJPgn+UVCHt/9EM@ifi.uio.no>
+ <fa.2ABbHhyCbp3Fx7hSE/Gr0SuzFvw@ifi.uio.no>
+ <fa.oaZk6Aiqd8gyZNsj7+m+w9MibhU@ifi.uio.no>
+ <fa.RjX9Y4ckjRCle5L+uWNdd0snOio@ifi.uio.no>
+ <fa.XocsudxlGplKh0kloTtA0juPwtA@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.9 (Windows/20061207)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 28 February 2007 01:01, Johannes Berg wrote:
-> On Wed, 2007-02-28 at 00:57 +0100, Rafael J. Wysocki wrote:
+Hiro Yoshioka wrote:
+> Howdy,
 > 
-> > Okay, in that case I'd suggest removing create_freezeable_workqueue() and
-> > make all workqueues nonfreezable once again for 2.6.21 (as far as I know, only
-> > the two XFS workqueues are affected).
+> MySQL 5.0.26 had some scalability issues and it solved since 5.0.32
+> http://ossipedia.ipa.go.jp/capacity/EV0612260303/
+> (written in Japanese but you may read the graph. We compared
+> 5.0.24 vs 5.0.32)
 > 
-> I think Nigel might object but I forgot what specific trouble XFS was
-> causing him.
+> The following is oprofile data
+> ==> 
+> cpu=8-mysql=5.0.32-gcc=3.4/oprofile-eu=2200-op=default-none/opreport-l.txt
+> <==
+> CPU: Core Solo / Duo, speed 2666.76 MHz (estimated)
+> Counted CPU_CLK_UNHALTED events (Unhalted clock cycles) with a unit
+> mask of 0x00 (Unhalted core cycles) count 100000
+> samples  %        app name                 symbol name
+> 47097502 16.8391  libpthread-2.3.4.so      pthread_mutex_trylock
+> 19636300  7.0207  libpthread-2.3.4.so      pthread_mutex_unlock
+> 18600010  6.6502  mysqld                   rec_get_offsets_func
+> 18121328  6.4790  mysqld                   btr_search_guess_on_hash
+> 11453095  4.0949  mysqld                   row_search_for_mysql
+> 
+> MySQL tries to get a mutex but it spends about 16.8% of CPU on 8 core
+> machine.
 
-We suspected that the XFS' worker threads might commit I/O after
-freeze_processes() has returned, but that hasn't been supported by evidence,
-as far as I can recall.
+Curious that it calls pthread_mutex_trylock (as opposed to 
+pthread_mutex_lock) so often. Maybe they're doing some kind of mutex 
+lock busy-looping?
 
-Also, making them freezable was controversial ...
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-Greetings,
-Rafael
