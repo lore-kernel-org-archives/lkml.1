@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750699AbXB1ADF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750872AbXB1AG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750699AbXB1ADF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Feb 2007 19:03:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750728AbXB1ADF
+	id S1750872AbXB1AG6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Feb 2007 19:06:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750873AbXB1AG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Feb 2007 19:03:05 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38804 "EHLO ogre.sisk.pl"
+	Tue, 27 Feb 2007 19:06:57 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38833 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750699AbXB1ADB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Feb 2007 19:03:01 -0500
+	id S1750858AbXB1AG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Feb 2007 19:06:57 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Kristian =?iso-8859-15?q?Gr=F8nfeldt_S=F8rensen?= <kriller@vkr.dk>
-Subject: Re: PROBLEM: "BUG:" when resuming from suspend-to-ram
-Date: Wed, 28 Feb 2007 01:05:34 +0100
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: Problem with freezable workqueues
+Date: Wed, 28 Feb 2007 01:08:56 +0100
 User-Agent: KMail/1.9.5
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <1172601905.5428.28.camel@localhost.localdomain> <200702272334.07985.rjw@sisk.pl> <1172617960.4587.3.camel@localhost.localdomain>
-In-Reply-To: <1172617960.4587.3.camel@localhost.localdomain>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Pavel Machek <pavel@ucw.cz>,
+       Gautham R Shenoy <ego@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Nigel Cunningham <nigel@suspend2.net>
+References: <200702272251.28844.rjw@sisk.pl> <200702280057.36198.rjw@sisk.pl> <1172620896.3681.19.camel@johannes.berg>
+In-Reply-To: <1172620896.3681.19.camel@johannes.berg>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200702280105.35015.rjw@sisk.pl>
+Message-Id: <200702280108.57988.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 28 February 2007 00:12, Kristian Grønfeldt Sørensen wrote:
-> On Tue, 2007-02-27 at 23:34 +0100, Rafael J. Wysocki wrote:
-> > On Tuesday, 27 February 2007 23:23, Kristian Grønfeldt Sørensen wrote:
-> > > On Tue, 2007-02-27 at 23:04 +0100, Rafael J. Wysocki wrote:
-> > > > Hi,
-> > > > 
-> > > > On Tuesday, 27 February 2007 19:45, Kristian Grønfeldt Sørensen wrote:
-> > > > > Hi.
-> > > > > 
-> > > > > PROBLEM: "BUG:" when resumimg from suspend-to-ram 
-> > > > > 	
-> > > > > My laptop have a problem with resuming from suspend-to-ram. 
-> > > > > It does not occur every time - most of the time, resume works without
-> > > > > any problem.at all.
-> > > > > 
-> > > > > After it occurs, the laptop refuses to go into suspend-to-ram mode until
-> > > > > next reboot.
-> > > > 
-> > > > What do you mean by "refuses"?  
-> > > 
-> > > As in it does not suspend when i close the lid. It just stays on.
-> > 
-> > Hm, it doesn't seem to attempt to suspend.  Can you just do
-> > "echo mem > /sys/power/state" when it's in that state and see what happens?
+On Wednesday, 28 February 2007 01:01, Johannes Berg wrote:
+> On Wed, 2007-02-28 at 00:57 +0100, Rafael J. Wysocki wrote:
 > 
-> Hmmm. That works. (except for video restore - forgot to save
-> vbe-state :-( )
+> > Okay, in that case I'd suggest removing create_freezeable_workqueue() and
+> > make all workqueues nonfreezable once again for 2.6.21 (as far as I know, only
+> > the two XFS workqueues are affected).
+> 
+> I think Nigel might object but I forgot what specific trouble XFS was
+> causing him.
 
-Please see: http://en.opensuse.org/s2ram
+We suspected that the XFS' worker threads might commit I/O after
+freeze_processes() has returned, but that hasn't been supported by evidence,
+as far as I can recall.
 
-> Resume also worked. 
-
-Well, this means that at some point your lid switch driver explodes and doesn't
-work any more (the oops trace you've sent suggests something like this).  The
-problem seems to be ACPI-related.
+Also, making them freezable was controversial ...
 
 Greetings,
 Rafael
