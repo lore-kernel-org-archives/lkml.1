@@ -1,84 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751669AbXB1Tm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751729AbXB1TnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751669AbXB1Tm2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 14:42:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbXB1Tm2
+	id S1751729AbXB1TnS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 14:43:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbXB1TnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 14:42:28 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:4841 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751669AbXB1Tm1 (ORCPT
+	Wed, 28 Feb 2007 14:43:18 -0500
+Received: from de01egw02.freescale.net ([192.88.165.103]:52752 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751695AbXB1TnR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 14:42:27 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 28 Feb 2007 11:42:24 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Chris Friesen <cfriesen@nortel.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-In-Reply-To: <45E5D217.9060101@nortel.com>
-Message-ID: <Pine.LNX.4.64.0702281134380.6806@alien.or.mcafeemobile.com>
-References: <20070221211355.GA7302@elte.hu> <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
- <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com>
- <20070222074044.GA4158@elte.hu> <Pine.LNX.4.64.0702221130050.1356@alien.or.mcafeemobile.com>
- <20070228094522.GA17716@elte.hu> <Pine.LNX.4.64.0702280740250.5935@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0702280836080.12485@woody.linux-foundation.org>
- <Pine.LNX.4.64.0702281011220.6806@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0702281040030.12485@woody.linux-foundation.org>
- <Pine.LNX.4.64.0702281047430.6806@alien.or.mcafeemobile.com>
- <45E5D217.9060101@nortel.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 28 Feb 2007 14:43:17 -0500
+Message-ID: <45E5DB49.8010205@freescale.com>
+Date: Wed, 28 Feb 2007 13:43:05 -0600
+From: Timur Tabi <timur@freescale.com>
+Organization: Freescale
+User-Agent: Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; it; rv:1.8.1) Gecko/20061010 Firefox/2.0 
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Kumar Gala <galak@kernel.crashing.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Dan Malek <dan@embeddedalley.com>,
+       Torben.Mathiasen@hp.com,
+       linux-ppc-embedded <linuxppc-embedded@ozlabs.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
+References: <45E46976.6060600@freescale.com>	<29c13109971547687159078eacdea008@kernel.crashing.org>	<45E592DC.9060700@freescale.com>	<511cacb7bbe8a65ff72738c84ec9ece4@kernel.crashing.org>	<BD465924-7387-47EF-B90F-606F215819C2@embeddedalley.com>	<45E5B604.904@freescale.com> <46F6BF70-2922-4E05-8DAB-6B0830B0AB47@embeddedalley.com> <45E5BD6B.1010509@freescale.com> <F2D0230C-CA22-4DEF-917E-6982FA0C6171@embeddedalley.com> <45E5C128.7020204@freescale.com> <45E5C333.2060100@zytor.com> <ED6BD6F0-827F-4ADC-9D66-F9C3DD7FC470@embeddedalley.com> <E919B903-0890-4725-81CF-005003A1A2F6@kernel.crashing.org> <45E5D627.6030707@zytor.com> <45E5D84A.5000502@freescale.com> <278AADB6-E175-4177-A728-5357E21697B7@kernel.crashing.org>
+In-Reply-To: <278AADB6-E175-4177-A728-5357E21697B7@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Feb 2007, Chris Friesen wrote:
+Kumar Gala wrote:
 
-> Davide Libenzi wrote:
+>> Eh, I'm not crazy about that.  That means that I have to complicate my 
+>> driver because someone else screwed up a long time ago.
 > 
-> > struct async_syscall {
-> > 	unsigned long nr_sysc;
-> > 	unsigned long params[8];
-> > 	long *result;
-> > };
-> > 
-> > And what would async_wait() return bak? Pointers to "struct async_syscall"
-> > or pointers to "result"?
-> 
-> Either one has downsides.  Pointer to struct async_syscall requires that the
-> caller keep the struct around.  Pointer to result requires that the caller
-> always reserve a location for the result.
-> 
-> Does the kernel care about the (possibly rare) case of callers that don't want
-> to pay attention to result?  If so, what about adding some kind of
-> caller-specified handle to struct async_syscall, and having async_wait()
-> return the handle?  In the case where the caller does care about the result,
-> the handle could just be the address of result.
+> If not you someone else.  The cost in the driver is small compared to 
+> fixing up all the distro's and such.  If you don't provide this change 
+> someone else will.
 
-Something like this (with async_wait() returning asynid's)?
+*sigh*
 
-struct async_syscall {
-	long *result;
-	unsigned long asynid;
-	unsigned long nr_sysc;
-	unsigned long params[8];
-};
+What about major number 205?  It also has the screwed-up /dev/ttyCPM entries, but it has 
+more room, and the CPM driver doesn't actually use it.  At least, I can't see where it 
+uses it.
 
-
-
-- Davide
-
-
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
