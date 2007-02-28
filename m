@@ -1,70 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751278AbXB1Wgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750928AbXB1Wke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751278AbXB1Wgz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 17:36:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbXB1Wgz
+	id S1750928AbXB1Wke (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 17:40:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932086AbXB1Wke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 17:36:55 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:44817 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750839AbXB1Wgy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 17:36:54 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: Problem with freezable workqueues
-Date: Wed, 28 Feb 2007 23:39:30 +0100
-User-Agent: KMail/1.9.5
-Cc: vatsa@in.ibm.com, Gautham R Shenoy <ego@in.ibm.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200702272251.28844.rjw@sisk.pl> <200702282125.53318.rjw@sisk.pl> <20070228203515.GA145@tv-sign.ru>
-In-Reply-To: <20070228203515.GA145@tv-sign.ru>
+	Wed, 28 Feb 2007 17:40:34 -0500
+Received: from xyzzy.farnsworth.org ([65.39.95.219]:4428 "HELO farnsworth.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750928AbXB1Wkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 17:40:33 -0500
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Wed, 28 Feb 2007 15:40:31 -0700
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>
+Subject: [PATCH 1/2] mv643xx_eth: move mac_addr inside of mv643xx_eth_platform_data
+Message-ID: <20070228224031.GA8233@xyzzy.farnsworth.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702282339.31234.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 28 February 2007 21:35, Oleg Nesterov wrote:
-> On 02/28, Rafael J. Wysocki wrote:
-> > 
-> > Okay, but I've just finished the patch that removes the freezability of
-> > workqueues (appended), so can we please do this in a separate one?
-> 
-> Please, please, no. This patch is of course correct, but it breaks _a lot_
-> of patches in -mm tree.
-> 
-> May I ask you to send just
-> 
-> > ===================================================================
-> > --- linux-2.6.21-rc2.orig/fs/xfs/linux-2.6/xfs_buf.c
-> > +++ linux-2.6.21-rc2/fs/xfs/linux-2.6/xfs_buf.c
-> > @@ -1829,11 +1829,11 @@ xfs_buf_init(void)
-> >  	if (!xfs_buf_zone)
-> >  		goto out_free_trace_buf;
-> >  
-> > -	xfslogd_workqueue = create_freezeable_workqueue("xfslogd");
-> > +	xfslogd_workqueue = create_workqueue("xfslogd");
-> >  	if (!xfslogd_workqueue)
-> >  		goto out_free_buf_zone;
-> >  
-> > -	xfsdatad_workqueue = create_freezeable_workqueue("xfsdatad");
-> > +	xfsdatad_workqueue = create_workqueue("xfsdatad");
-> >  	if (!xfsdatad_workqueue)
-> >  		goto out_destroy_xfslogd_workqueue;
-> >  
-> > 
-> 
-> this bit?
-> 
-> After that, we can do the "removes the freezability of workqueues" patch
-> against -mm tree.
+The information contained within platform_data should be self-contained.
+Replace the pointer to a MAC address with the actual MAC address in
+struct mv643xx_eth_platform_data.
 
-Okay, if that's better.
+Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
 
-Pavel, is that acceptable to you?
-
-Rafael
+Index: b/drivers/net/mv643xx_eth.c
+===================================================================
+--- a/drivers/net/mv643xx_eth.c
++++ b/drivers/net/mv643xx_eth.c
+@@ -1380,7 +1380,9 @@ static int mv643xx_eth_probe(struct plat
+ 
+ 	pd = pdev->dev.platform_data;
+ 	if (pd) {
+-		if (pd->mac_addr)
++		static u8 zero_mac_addr[6] = { 0 };
++
++		if (memcmp(pd->mac_addr, zero_mac_addr, 6) != 0)
+ 			memcpy(dev->dev_addr, pd->mac_addr, 6);
+ 
+ 		if (pd->phy_addr || pd->force_phy_addr)
+Index: b/include/linux/mv643xx.h
+===================================================================
+--- a/include/linux/mv643xx.h
++++ b/include/linux/mv643xx.h
+@@ -1289,7 +1289,6 @@ struct mv64xxx_i2c_pdata {
+ #define MV643XX_ETH_NAME	"mv643xx_eth"
+ 
+ struct mv643xx_eth_platform_data {
+-	char		*mac_addr;	/* pointer to mac address */
+ 	u16		force_phy_addr;	/* force override if phy_addr == 0 */
+ 	u16		phy_addr;
+ 
+@@ -1304,6 +1303,7 @@ struct mv643xx_eth_platform_data {
+ 	u32		tx_sram_size;
+ 	u32		rx_sram_addr;
+ 	u32		rx_sram_size;
++	u8		mac_addr[6];	/* mac address if non-zero*/
+ };
+ 
+ #endif /* __ASM_MV643XX_H */
+Index: b/arch/mips/momentum/jaguar_atx/platform.c
+===================================================================
+--- a/arch/mips/momentum/jaguar_atx/platform.c
++++ b/arch/mips/momentum/jaguar_atx/platform.c
+@@ -47,11 +47,7 @@ static struct resource mv64x60_eth0_reso
+ 	},
+ };
+ 
+-static char eth0_mac_addr[ETH_ALEN];
+-
+ static struct mv643xx_eth_platform_data eth0_pd = {
+-	.mac_addr	= eth0_mac_addr,
+-
+ 	.tx_sram_addr	= MV_SRAM_BASE_ETH0,
+ 	.tx_sram_size	= MV_SRAM_TXRING_SIZE,
+ 	.tx_queue_size	= MV_SRAM_TXRING_SIZE / 16,
+@@ -80,11 +76,7 @@ static struct resource mv64x60_eth1_reso
+ 	},
+ };
+ 
+-static char eth1_mac_addr[ETH_ALEN];
+-
+ static struct mv643xx_eth_platform_data eth1_pd = {
+-	.mac_addr	= eth1_mac_addr,
+-
+ 	.tx_sram_addr	= MV_SRAM_BASE_ETH1,
+ 	.tx_sram_size	= MV_SRAM_TXRING_SIZE,
+ 	.tx_queue_size	= MV_SRAM_TXRING_SIZE / 16,
+@@ -113,11 +105,7 @@ static struct resource mv64x60_eth2_reso
+ 	},
+ };
+ 
+-static char eth2_mac_addr[ETH_ALEN];
+-
+-static struct mv643xx_eth_platform_data eth2_pd = {
+-	.mac_addr	= eth2_mac_addr,
+-};
++static struct mv643xx_eth_platform_data eth2_pd;
+ 
+ static struct platform_device eth2_device = {
+ 	.name		= MV643XX_ETH_NAME,
+@@ -200,9 +188,9 @@ static int __init mv643xx_eth_add_pds(vo
+ 	int ret;
+ 
+ 	get_mac(mac);
+-	eth_mac_add(eth0_mac_addr, mac, 0);
+-	eth_mac_add(eth1_mac_addr, mac, 1);
+-	eth_mac_add(eth2_mac_addr, mac, 2);
++	eth_mac_add(eth0_pd.mac_addr, mac, 0);
++	eth_mac_add(eth1_pd.mac_addr, mac, 1);
++	eth_mac_add(eth2_pd.mac_addr, mac, 2);
+ 	ret = platform_add_devices(mv643xx_eth_pd_devs,
+ 			ARRAY_SIZE(mv643xx_eth_pd_devs));
+ 
+Index: b/arch/mips/momentum/ocelot_3/platform.c
+===================================================================
+--- a/arch/mips/momentum/ocelot_3/platform.c
++++ b/arch/mips/momentum/ocelot_3/platform.c
+@@ -47,11 +47,7 @@ static struct resource mv64x60_eth0_reso
+ 	},
+ };
+ 
+-static char eth0_mac_addr[ETH_ALEN];
+-
+ static struct mv643xx_eth_platform_data eth0_pd = {
+-	.mac_addr	= eth0_mac_addr,
+-
+ 	.tx_sram_addr	= MV_SRAM_BASE_ETH0,
+ 	.tx_sram_size	= MV_SRAM_TXRING_SIZE,
+ 	.tx_queue_size	= MV_SRAM_TXRING_SIZE / 16,
+@@ -80,11 +76,7 @@ static struct resource mv64x60_eth1_reso
+ 	},
+ };
+ 
+-static char eth1_mac_addr[ETH_ALEN];
+-
+ static struct mv643xx_eth_platform_data eth1_pd = {
+-	.mac_addr	= eth1_mac_addr,
+-
+ 	.tx_sram_addr	= MV_SRAM_BASE_ETH1,
+ 	.tx_sram_size	= MV_SRAM_TXRING_SIZE,
+ 	.tx_queue_size	= MV_SRAM_TXRING_SIZE / 16,
+@@ -113,11 +105,7 @@ static struct resource mv64x60_eth2_reso
+ 	},
+ };
+ 
+-static char eth2_mac_addr[ETH_ALEN];
+-
+-static struct mv643xx_eth_platform_data eth2_pd = {
+-	.mac_addr	= eth2_mac_addr,
+-};
++static struct mv643xx_eth_platform_data eth2_pd;
+ 
+ static struct platform_device eth2_device = {
+ 	.name		= MV643XX_ETH_NAME,
+@@ -200,9 +188,9 @@ static int __init mv643xx_eth_add_pds(vo
+ 	int ret;
+ 
+ 	get_mac(mac);
+-	eth_mac_add(eth0_mac_addr, mac, 0);
+-	eth_mac_add(eth1_mac_addr, mac, 1);
+-	eth_mac_add(eth2_mac_addr, mac, 2);
++	eth_mac_add(eth0_pd.mac_addr, mac, 0);
++	eth_mac_add(eth1_pd.mac_addr, mac, 1);
++	eth_mac_add(eth2_pd.mac_addr, mac, 2);
+ 	ret = platform_add_devices(mv643xx_eth_pd_devs,
+ 			ARRAY_SIZE(mv643xx_eth_pd_devs));
+ 
+Index: b/arch/mips/momentum/ocelot_c/platform.c
+===================================================================
+--- a/arch/mips/momentum/ocelot_c/platform.c
++++ b/arch/mips/momentum/ocelot_c/platform.c
+@@ -46,11 +46,7 @@ static struct resource mv64x60_eth0_reso
+ 	},
+ };
+ 
+-static char eth0_mac_addr[ETH_ALEN];
+-
+ static struct mv643xx_eth_platform_data eth0_pd = {
+-	.mac_addr	= eth0_mac_addr,
+-
+ 	.tx_sram_addr	= MV_SRAM_BASE_ETH0,
+ 	.tx_sram_size	= MV_SRAM_TXRING_SIZE,
+ 	.tx_queue_size	= MV_SRAM_TXRING_SIZE / 16,
+@@ -79,11 +75,7 @@ static struct resource mv64x60_eth1_reso
+ 	},
+ };
+ 
+-static char eth1_mac_addr[ETH_ALEN];
+-
+ static struct mv643xx_eth_platform_data eth1_pd = {
+-	.mac_addr	= eth1_mac_addr,
+-
+ 	.tx_sram_addr	= MV_SRAM_BASE_ETH1,
+ 	.tx_sram_size	= MV_SRAM_TXRING_SIZE,
+ 	.tx_queue_size	= MV_SRAM_TXRING_SIZE / 16,
+@@ -174,8 +166,8 @@ static int __init mv643xx_eth_add_pds(vo
+ 	int ret;
+ 
+ 	get_mac(mac);
+-	eth_mac_add(eth0_mac_addr, mac, 0);
+-	eth_mac_add(eth1_mac_addr, mac, 1);
++	eth_mac_add(eth0_pd.mac_addr, mac, 0);
++	eth_mac_add(eth1_pd.mac_addr, mac, 1);
+ 	ret = platform_add_devices(mv643xx_eth_pd_devs,
+ 			ARRAY_SIZE(mv643xx_eth_pd_devs));
+ 
