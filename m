@@ -1,71 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751367AbXB1SHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751360AbXB1SJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751367AbXB1SHv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 13:07:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbXB1SHv
+	id S1751360AbXB1SJS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 13:09:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbXB1SJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 13:07:51 -0500
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:39643 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751367AbXB1SHv (ORCPT
+	Wed, 28 Feb 2007 13:09:18 -0500
+Received: from stinky.trash.net ([213.144.137.162]:63084 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751360AbXB1SJR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 13:07:51 -0500
-Date: Wed, 28 Feb 2007 23:36:57 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Subject: Re: Problem with freezable workqueues
-Message-ID: <20070228180657.GB7021@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <200702272251.28844.rjw@sisk.pl> <20070227232855.GA457@tv-sign.ru> <1172619412.3681.11.camel@johannes.berg>
+	Wed, 28 Feb 2007 13:09:17 -0500
+Message-ID: <45E5C549.2030009@trash.net>
+Date: Wed, 28 Feb 2007 19:09:13 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1172619412.3681.11.camel@johannes.berg>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: netfilter-devel@lists.netfilter.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Soft lockup on shutdown in nf_ct_iterate_cleanup()
+References: <45DB9C1F.1080605@redhat.com> <45DCEA47.5080100@redhat.com> <45E04468.7020001@trash.net> <45E06546.504@redhat.com> <45E1C7E0.9070102@trash.net> <45E31572.4040108@redhat.com> <45E31EB5.6000809@trash.net> <45E34F74.8050807@redhat.com>
+In-Reply-To: <45E34F74.8050807@redhat.com>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: multipart/mixed;
+ boundary="------------030902070508090902050403"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 28, 2007 at 12:36:52AM +0100, Johannes Berg wrote:
-> On Wed, 2007-02-28 at 02:28 +0300, Oleg Nesterov wrote:
-> 
-> > Ugh. I know nothing, nothing, nothing about suspend. I'll try to guess.
-> > 
-> >    Commit: ed746e3b18f4df18afa3763155972c5835f284c5
-> 
-> > Yes? with the patch above, _cpu_down() called _after_ freeze_processes() ???
-> 
-> perfect :)
-> See also my original mail and the thread:
-> http://thread.gmane.org/gmane.linux.power-management.general/4314
-> 
-> > How about other kthread_stop()s ? For example, kernel/softirq.c:cpu_callback() ?
-> 
-> I'd they should be affected as well. For me, I guess I haven't run into
-> them because xfs is enough to freeze the box ;) As for Rafael, I don't
-> know why he isn't seeing that... I haven't been able to test this patch
-> on my quad powermac so far unfortunately, been sick and away from the
-> machine. I'll probably be able to test tomorrow.
+This is a multi-part message in MIME format.
+--------------030902070508090902050403
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 
-They will be affected. In our first implemetentation of 
-general "cpu_down after freeze"(http://lkml.org/lkml/2007/2/14/107)
-we had a new state known CPU_DEAD_KILL_THREADS, 
-the notifications for which were being sent
-*after* we thawed the processes in __cpu_down.
+Chuck Ebbert wrote:
+> Patrick McHardy wrote:
+> 
+>>This patch is against current stable-2.6.20, it applies
+>>cleanly to 2.6.20 as well.
+>
+>
+> Everything works OK, but I get:
+> 
+> BUG: warning: (!list_empty(&unconfirmed)) at
+> net/netfilter/nf_conntrack_core.c:1068/nf_ct_cleanup()
+> 
+> <> nf_ct_cleanup+0x66/0x122 [nf_conntrack]
+> <> kill_l4proto+0x0 [nf_conntrack]
+> <> nf_conntrack_l4proto_unregister+0x7d/0x82 [nf_conntrack]
+> <> nf_conntrack_l3proto_ipv4_fini+0x3c/0x46 [nf_conntrack_ipv4]
+> <> sys_delete_module+0x18a/0x1b1
 
-However, in the version which we are working on, we are thawing processes
-individually in CPU_DEAD before cleaning/stopping them.
 
-I haven't observed any bad lockups/freeze chills with this approach. 
-But I need to test it a bit more before posting them.
+Thanks, the previous approach doesn't seem to work properly without
+unpleasant event cache hacks. This patch takes a simpler approach
+and keeps the unconfirmed list iteration, but makes sure to make
+forward progress.
 
-regards
-gautham.
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+
+--------------030902070508090902050403
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x"
+
+[NETFILTER]: conntrack: fix {nf,ip}_ct_iterate_cleanup endless loops
+
+Fix {nf,ip}_ct_iterate_cleanup unconfirmed list handling:
+
+- unconfirmed entries can not be killed manually, they are removed on
+  confirmation or final destruction of the conntrack entry, which means
+  we might iterate forever without making forward progress.
+
+  This can happen in combination with the conntrack event cache, which
+  holds a reference to the conntrack entry, which is only released when
+  the packet makes it all the way through the stack or a different
+  packet is handled.
+
+- taking references to an unconfirmed entry and using it outside the
+  locked section doesn't work, the list entries are not refcounted and
+  another CPU might already be waiting to destroy the entry
+
+What the code really wants to do is make sure the references of the hash
+table to the selected conntrack entries are released, so they will be
+destroyed once all references from skbs and the event cache are dropped.
+
+Since unconfirmed entries haven't even entered the hash yet, simply mark
+them as dying and skip confirmation based on that.
+
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+
+---
+commit 841de8621862a5406d2a236dd142a5e5db167d25
+tree 347d137f0d6466f0b4da83256bfbeaa4150f105a
+parent 8d1117a9f5d302d8d460fbe7ef322b382e45c9ce
+author Patrick McHardy <kaber@trash.net> Mon, 26 Feb 2007 18:48:05 +0100
+committer Patrick McHardy <kaber@trash.net> Wed, 28 Feb 2007 19:02:00 +0100
+
+ include/linux/netfilter_ipv4/ip_conntrack_core.h |    2 +-
+ include/net/netfilter/nf_conntrack_core.h        |    2 +-
+ net/ipv4/netfilter/ip_conntrack_core.c           |    2 +-
+ net/netfilter/nf_conntrack_core.c                |    2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/include/linux/netfilter_ipv4/ip_conntrack_core.h b/include/linux/netfilter_ipv4/ip_conntrack_core.h
+index 907d4f5..e3a6df0 100644
+--- a/include/linux/netfilter_ipv4/ip_conntrack_core.h
++++ b/include/linux/netfilter_ipv4/ip_conntrack_core.h
+@@ -45,7 +45,7 @@ static inline int ip_conntrack_confirm(s
+ 	int ret = NF_ACCEPT;
+ 
+ 	if (ct) {
+-		if (!is_confirmed(ct))
++		if (!is_confirmed(ct) && !is_dying(ct))
+ 			ret = __ip_conntrack_confirm(pskb);
+ 		ip_ct_deliver_cached_events(ct);
+ 	}
+diff --git a/include/net/netfilter/nf_conntrack_core.h b/include/net/netfilter/nf_conntrack_core.h
+index 7fdc72c..85634e1 100644
+--- a/include/net/netfilter/nf_conntrack_core.h
++++ b/include/net/netfilter/nf_conntrack_core.h
+@@ -64,7 +64,7 @@ static inline int nf_conntrack_confirm(s
+ 	int ret = NF_ACCEPT;
+ 
+ 	if (ct) {
+-		if (!nf_ct_is_confirmed(ct))
++		if (!nf_ct_is_confirmed(ct) && !nf_ct_is_dying(ct))
+ 			ret = __nf_conntrack_confirm(pskb);
+ 		nf_ct_deliver_cached_events(ct);
+ 	}
+diff --git a/net/ipv4/netfilter/ip_conntrack_core.c b/net/ipv4/netfilter/ip_conntrack_core.c
+index 8556a4f..f8b3009 100644
+--- a/net/ipv4/netfilter/ip_conntrack_core.c
++++ b/net/ipv4/netfilter/ip_conntrack_core.c
+@@ -1242,7 +1242,7 @@ get_next_corpse(int (*iter)(struct ip_co
+ 	list_for_each_entry(h, &unconfirmed, list) {
+ 		ct = tuplehash_to_ctrack(h);
+ 		if (iter(ct, data))
+-			goto found;
++			set_bit(IPS_DYING_BIT, &ct->status);
+ 	}
+ 	write_unlock_bh(&ip_conntrack_lock);
+ 	return NULL;
+diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core.c
+index 9b02ec4..cb29ba7 100644
+--- a/net/netfilter/nf_conntrack_core.c
++++ b/net/netfilter/nf_conntrack_core.c
+@@ -1052,7 +1052,7 @@ get_next_corpse(int (*iter)(struct nf_co
+ 	list_for_each_entry(h, &unconfirmed, list) {
+ 		ct = nf_ct_tuplehash_to_ctrack(h);
+ 		if (iter(ct, data))
+-			goto found;
++			set_bit(IPS_DYING_BIT, &ct->status);
+ 	}
+ 	write_unlock_bh(&nf_conntrack_lock);
+ 	return NULL;
+
+--------------030902070508090902050403--
