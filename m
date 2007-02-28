@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932227AbXB1Sna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932255AbXB1SpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932227AbXB1Sna (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 13:43:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932255AbXB1Sna
+	id S932255AbXB1SpL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 13:45:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932264AbXB1SpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 13:43:30 -0500
-Received: from madara.hpl.hp.com ([192.6.19.124]:63109 "EHLO madara.hpl.hp.com"
+	Wed, 28 Feb 2007 13:45:11 -0500
+Received: from smtp.osdl.org ([65.172.181.24]:38758 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932227AbXB1Sn3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 13:43:29 -0500
-Date: Wed, 28 Feb 2007 10:43:14 -0800
-To: Greg KH <gregkh@suse.de>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2.6.20] kobject net ifindex + rename
-Message-ID: <20070228184314.GC6134@bougret.hpl.hp.com>
-Reply-To: jt@hpl.hp.com
-References: <20070228012741.GA3988@bougret.hpl.hp.com> <20070228153617.GA5670@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070228153617.GA5670@suse.de>
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: jt@hpl.hp.com
-User-Agent: Mutt/1.5.9i
-From: Jean Tourrilhes <jt@hpl.hp.com>
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: jt@hpl.hp.com
+	id S932255AbXB1SpJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 13:45:09 -0500
+Date: Wed, 28 Feb 2007 10:42:49 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+cc: Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+In-Reply-To: <Pine.LNX.4.64.0702281011220.6806@alien.or.mcafeemobile.com>
+Message-ID: <Pine.LNX.4.64.0702281040030.12485@woody.linux-foundation.org>
+References: <20070221211355.GA7302@elte.hu> <f2b55d220702211446l78af6f14hc3e0dd0084016770@mail.gmail.com>
+ <20070221233111.GB5895@elte.hu> <45DCD9E5.2010106@redhat.com>
+ <20070222074044.GA4158@elte.hu> <Pine.LNX.4.64.0702221130050.1356@alien.or.mcafeemobile.com>
+ <20070228094522.GA17716@elte.hu> <Pine.LNX.4.64.0702280740250.5935@alien.or.mcafeemobile.com>
+ <Pine.LNX.4.64.0702280836080.12485@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0702281011220.6806@alien.or.mcafeemobile.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 28, 2007 at 07:36:17AM -0800, Greg KH wrote:
-> On Tue, Feb 27, 2007 at 05:27:41PM -0800, Jean Tourrilhes wrote:
-> > diff -u -p linux/drivers/base/class.j1.c linux/drivers/base/class.c
-> > --- linux/drivers/base/class.j1.c	2007-02-26 18:38:10.000000000 -0800
-> > +++ linux/drivers/base/class.c	2007-02-27 15:52:37.000000000 -0800
-> > @@ -841,6 +841,8 @@ int class_device_rename(struct class_dev
+
+
+On Wed, 28 Feb 2007, Davide Libenzi wrote:
 > 
-> This function is not in the 2.6.21-rc2 kernel, so you might want to
-> rework this patch a bit :)
-
-	It was a trial balloon to gather feedback. I will do.
-
-> Also, it's userspace that causes the rename to happen, so it knows it
-> did it, why should the kernel have to emit a message to tell userspace
-> again what just happened?
-
-	Username is not one big program, but a collection of program,
-and one program does not know what another program do.
-	In particular, udev does not know when people are using
-iproute2 to rename interface and loose its marbles. We don't really
-want to ban iproute2 or udev ;-)
-
-> thanks,
+> Here we very much agree. The way I'd like it:
 > 
-> greg k-h
+> struct async_syscall {
+> 	unsigned long nr_sysc;
+> 	unsigned long params[8];
+> 	long result;
+> };
 
-	Have fun...
+No, the "result" needs to go somewhere else. The caller may be totally 
+uninterested in keeping the system call number or parameters around until 
+the operation completes, but if you put them in the same structure with 
+the result, you obviously cannot sanely get rid of them.
 
-	Jean
+I also don't much like read-write interfaces (which the above would be: 
+the kernel would read most of the structure, and then write one member of 
+the structure). 
+
+It's entirely possible, for example, that the operation we submit is some 
+legacy "aio_read()", which has soem other structure layout than the new 
+one (but one field will be the result code).
+
+		Linus
