@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932247AbXB1SjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932227AbXB1Sna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932247AbXB1SjU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 13:39:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932249AbXB1SjU
+	id S932227AbXB1Sna (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 13:43:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932255AbXB1Sna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 13:39:20 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43846 "EHLO ogre.sisk.pl"
+	Wed, 28 Feb 2007 13:43:30 -0500
+Received: from madara.hpl.hp.com ([192.6.19.124]:63109 "EHLO madara.hpl.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932247AbXB1SjS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 13:39:18 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: ego@in.ibm.com
-Subject: Re: Problem with freezable workqueues
-Date: Wed, 28 Feb 2007 19:41:23 +0100
-User-Agent: KMail/1.9.5
-Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Pavel Machek <pavel@ucw.cz>, Johannes Berg <johannes@sipsolutions.net>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200702272251.28844.rjw@sisk.pl> <20070228030726.GK29179@in.ibm.com> <20070228181703.GC7021@in.ibm.com>
-In-Reply-To: <20070228181703.GC7021@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S932227AbXB1Sn3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 13:43:29 -0500
+Date: Wed, 28 Feb 2007 10:43:14 -0800
+To: Greg KH <gregkh@suse.de>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 2.6.20] kobject net ifindex + rename
+Message-ID: <20070228184314.GC6134@bougret.hpl.hp.com>
+Reply-To: jt@hpl.hp.com
+References: <20070228012741.GA3988@bougret.hpl.hp.com> <20070228153617.GA5670@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200702281941.24698.rjw@sisk.pl>
+In-Reply-To: <20070228153617.GA5670@suse.de>
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: jt@hpl.hp.com
+User-Agent: Mutt/1.5.9i
+From: Jean Tourrilhes <jt@hpl.hp.com>
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: jt@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 28 February 2007 19:17, Gautham R Shenoy wrote:
-> On Wed, Feb 28, 2007 at 08:37:26AM +0530, Srivatsa Vaddagiri wrote:
-> > 
-> > Hmm ..good point. So can we assume that disable/enable_nonboot_cpus() are called
-> > with processes frozen already?
-> > 
-> > Gautham, you need to take this into account in your patchset!
+On Wed, Feb 28, 2007 at 07:36:17AM -0800, Greg KH wrote:
+> On Tue, Feb 27, 2007 at 05:27:41PM -0800, Jean Tourrilhes wrote:
+> > diff -u -p linux/drivers/base/class.j1.c linux/drivers/base/class.c
+> > --- linux/drivers/base/class.j1.c	2007-02-26 18:38:10.000000000 -0800
+> > +++ linux/drivers/base/class.c	2007-02-27 15:52:37.000000000 -0800
+> > @@ -841,6 +841,8 @@ int class_device_rename(struct class_dev
 > 
-> Yup. That would mean making the freezer reentrant since we will
-> be freezing twice (once for suspend and later on for hotplug). This is
-> ok since the api in my patches looks like
-> freeze_processes(int freeze_event);
+> This function is not in the 2.6.21-rc2 kernel, so you might want to
+> rework this patch a bit :)
+
+	It was a trial balloon to gather feedback. I will do.
+
+> Also, it's userspace that causes the rename to happen, so it knows it
+> did it, why should the kernel have to emit a message to tell userspace
+> again what just happened?
+
+	Username is not one big program, but a collection of program,
+and one program does not know what another program do.
+	In particular, udev does not know when people are using
+iproute2 to rename interface and loose its marbles. We don't really
+want to ban iproute2 or udev ;-)
+
+> thanks,
 > 
-> But thaw will be interesting. If we are thawing for hotplug, we gotta
-> only thaw processes which were frozen *only* for hotplug.
-> 
-> Rafael, does that mean more status flags?!
+> greg k-h
 
-Well, I don't really think so, but we need to store some information in the
-freezer (eg. in a status variable).  Namely, we can define a variable, say
-tasks_frozen, the value of which will be the bitwise or of the flags
-SPE_SUSPEND, SPE_HOTPLUG etc.  In a fully functional system, tasks_frozen
-is equal to zero.  If freeze_processes(SPE_SUSPEND) is run, it does
-tasks_frozen |= SPE_SUSPEND and analogously for SPE_HOTPLUG etc.
-If tasks_frozen is equal to SPE_SUSPEND|SPE_HOTPLUG,  for example, and
-thaw_tasks(SPE_HOTPLUG) runs, it only thaws the tasks that need not stay frozen
-for the suspend and does tasks_frozen &= ~SPE_SUSPEND etc.
+	Have fun...
 
-I think something like this should work.
-
-Greetings,
-Rafael 
+	Jean
