@@ -1,74 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752082AbXB1KYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752109AbXB1KsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752082AbXB1KYL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 05:24:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbXB1KYK
+	id S1752109AbXB1KsN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 05:48:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbXB1KsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 05:24:10 -0500
-Received: from ns2.suse.de ([195.135.220.15]:44517 "EHLO mx2.suse.de"
+	Wed, 28 Feb 2007 05:48:13 -0500
+Received: from smtp01.cdmon.com ([86.109.99.230]:54782 "EHLO smtp01.cdmon.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752082AbXB1KYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 05:24:09 -0500
-Message-Id: <20070228102346.115707000@suse.de>
-User-Agent: quilt/0.46-14
-Date: Wed, 28 Feb 2007 11:23:46 +0100
-From: Gerd Hoffmann <kraxel@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Alex Williamson <alex.williamson@hp.com>,
-       Kevin Stansell <kstansel@us.ibm.com>
-Subject: [patch] Add insmod option to force the use of the backup timer.
-Content-Disposition: inline; filename=serial-8250-backup-timerPatch
+	id S1752109AbXB1KsN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 05:48:13 -0500
+Date: Wed, 28 Feb 2007 11:49:36 +0100
+From: DervishD <lkml@dervishd.net>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux Fbdev development list 
+	<linux-fbdev-devel@lists.sourceforge.net>
+Subject: Re: tdfx framebuffer garbles display in 2.6.19.5
+Message-ID: <20070228104936.GA4523@DervishD>
+Mail-Followup-To: "Antonino A. Daplas" <adaplas@gmail.com>,
+	Linux-kernel <linux-kernel@vger.kernel.org>,
+	Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+References: <20070226144744.GA3615@DervishD> <1172503471.20842.14.camel@daplas> <20070226171334.GB13496@DervishD> <1172510654.7101.11.camel@daplas> <20070226203223.GA161@DervishD> <1172617755.13422.0.camel@daplas>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1172617755.13422.0.camel@daplas>
+User-Agent: Mutt/1.4.2.2i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The test which automatically enables the backup timer on some HP
-machines doesn't trigger on other hardware which needs the backup
-timer too.
+    Hi Antonino :)
 
-This patch add a way to enable it manually (8250.use_backup_timer=1)
-to deal with these machines.
+ * Antonino A. Daplas <adaplas@gmail.com> dixit:
+> On Mon, 2007-02-26 at 21:32 +0100, DervishD wrote:
+> >     Probably setting it back to 4096 will make the problem reappear.
+> > Right now I cannot test, but I'll make some experiments.
+> 
+> Can you try this patch?  It might help with the screen corruption.
 
-Signed-off-by: Gerd Hoffmann <kraxel@suse.de>
-Cc: Alex Williamson <alex.williamson@hp.com>
-Cc: Kevin Stansell <kstansel@us.ibm.com>
----
- drivers/serial/8250.c |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+    I'm doing system maintenance now, and won't have spare time until
+friday, probably, but as soon as possible I'll test the patch. Thanks a
+lot for your invaluable help :)
 
-Index: vanilla-2.6.21-rc2/drivers/serial/8250.c
-===================================================================
---- vanilla-2.6.21-rc2.orig/drivers/serial/8250.c
-+++ vanilla-2.6.21-rc2/drivers/serial/8250.c
-@@ -52,8 +52,8 @@
-  *                is unsafe when used on edge-triggered interrupts.
-  */
- static unsigned int share_irqs = SERIAL8250_SHARE_IRQS;
--
- static unsigned int nr_uarts = CONFIG_SERIAL_8250_RUNTIME_UARTS;
-+static unsigned int use_backup_timer;
- 
- /*
-  * Debugging.
-@@ -1729,7 +1729,7 @@ static int serial8250_startup(struct uar
- 		 * If the interrupt is not reasserted, setup a timer to
- 		 * kick the UART on a regular basis.
- 		 */
--		if (iir & UART_IIR_NO_INT) {
-+		if (iir & UART_IIR_NO_INT || use_backup_timer) {
- 			pr_debug("ttyS%d - using backup timer\n", port->line);
- 			up->timer.function = serial8250_backup_timeout;
- 			up->timer.data = (unsigned long)up;
-@@ -2805,6 +2805,9 @@ module_param(share_irqs, uint, 0644);
- MODULE_PARM_DESC(share_irqs, "Share IRQs with other non-8250/16x50 devices"
- 	" (unsafe)");
- 
-+module_param(use_backup_timer, uint, 0644);
-+MODULE_PARM_DESC(use_backup_timer, "use backup timer");
-+
- module_param(nr_uarts, uint, 0644);
- MODULE_PARM_DESC(nr_uarts, "Maximum number of UARTs supported. (1-" __MODULE_STRING(CONFIG_SERIAL_8250_NR_UARTS) ")");
- 
+    If you want me to test more patches, feel free. I'll test them ASAP,
+probably this weekend if I can afford the time.
+
+    Raúl Núñez de Arenas Coronado
 
 -- 
-Gerd Hoffmann <kraxel@suse.de>
-
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
