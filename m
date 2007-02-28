@@ -1,193 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932586AbXB1OOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932627AbXB1OP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932586AbXB1OOy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 09:14:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932611AbXB1OOy
+	id S932627AbXB1OP4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 09:15:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932638AbXB1OPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 09:14:54 -0500
-Received: from outbound-cpk.frontbridge.com ([207.46.163.16]:58142 "EHLO
-	outbound3-cpk-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932586AbXB1OOx (ORCPT
+	Wed, 28 Feb 2007 09:15:55 -0500
+Received: from host2.innominate.fta-berlin.de ([141.16.82.35]:45166 "EHLO
+	home.innominate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932627AbXB1OPz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 09:14:53 -0500
-X-BigFish: VP
-X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-Date: Wed, 28 Feb 2007 15:14:24 +0100
-From: "Joerg Roedel" <joerg.roedel@amd.com>
-To: discuss@x86-64.org
-cc: "Andi Kleen" <ak@suse.de>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/4] i386: extend alternative instructions framework
-Message-ID: <20070228141424.GB19452@amd.com>
-References: <20070228140501.GA19452@amd.com>
-MIME-Version: 1.0
-In-Reply-To: <20070228140501.GA19452@amd.com>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 28 Feb 2007 14:14:37.0093 (UTC)
- FILETIME=[C72CF550:01C75B42]
-X-WSS-ID: 69FB51DA2KW9302119-01-01
-Content-Type: multipart/mixed;
- boundary="yrj/dFKFPuw6o+aM"
+	Wed, 28 Feb 2007 09:15:55 -0500
+X-Greylist: delayed 1720 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Feb 2007 09:15:55 EST
+Date: Wed, 28 Feb 2007 14:47:12 +0100
+From: Christopher Meller <cmeller@innominate.com>
+To: linux-kernel@vger.kernel.org
+Subject: Question on tty line discipline 
+Message-ID: <20070228134711.GA8631@innominate.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
---yrj/dFKFPuw6o+aM
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+I have a question concerning the line discipline behaviour for serial
+devices.
+When the line discipline is set via ioctl from  user space to e.g. N_PPP and the userspace program returns without resetting  the line discipline back to N_TTY, the serial device cannot be used (ENODV) until an appropriate  ioctl (to N_TTY) is performed. Is there any reason for the fact that the line discipline is not reset by the kernel , when closing the device. 
 
-From: Joerg Roedel <joerg.roedel@amd.com>
+Could you please CC me on answers and comments ?
 
-This patch extends the alternative instructions framework to support 2
-alternative instructions.
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+Kind regards,
+
+Christopher Meller
+
+
 
 -- 
-Joerg Roedel
-Operating System Research Center
-AMD Saxony LLC & Co. KG
+Christopher Meller
+Software engineer
 
---yrj/dFKFPuw6o+aM
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: attachment;
- filename=two-alternatives-i386.patch
-Content-Transfer-Encoding: 7bit
+Innominate Security Technologies AG
+protecting industrial networks
+tel: +49.30.6392-3680
+fax: +49.30.6392-3307
+Albert-Einstein-Str. 14
+D-12489 Berlin
+www.innominate.com
 
-diff --git a/arch/i386/kernel/alternative.c b/arch/i386/kernel/alternative.c
-index 9eca21b..59f1770 100644
---- a/arch/i386/kernel/alternative.c
-+++ b/arch/i386/kernel/alternative.c
-@@ -153,14 +153,23 @@ extern u8 __smp_alt_begin[], __smp_alt_end[];
- void apply_alternatives(struct alt_instr *start, struct alt_instr *end)
- {
- 	struct alt_instr *a;
--	u8 *instr;
-+	u8 *instr, *replacement;
-+	u8 replacementlen;
- 	int diff;
- 
- 	DPRINTK("%s: alt table %p -> %p\n", __FUNCTION__, start, end);
- 	for (a = start; a < end; a++) {
--		BUG_ON(a->replacementlen > a->instrlen);
--		if (!boot_cpu_has(a->cpuid))
-+		if (boot_cpu_has(a->cpuid)) {
-+			replacement = a->replacement;
-+			replacementlen = a->replacementlen;
-+		} else if ((a->replacementlen2 > 0) &&
-+			   (boot_cpu_has(a->cpuid2))) {
-+			replacement = a->replacement2;
-+			replacementlen = a->replacementlen2;
-+		} else
- 			continue;
-+
-+		BUG_ON(replacementlen > a->instrlen);
- 		instr = a->instr;
- #ifdef CONFIG_X86_64
- 		/* vsyscall code is not mapped yet. resolve it manually. */
-@@ -170,9 +179,9 @@ void apply_alternatives(struct alt_instr *start, struct alt_instr *end)
- 				__FUNCTION__, a->instr, instr);
- 		}
- #endif
--		memcpy(instr, a->replacement, a->replacementlen);
--		diff = a->instrlen - a->replacementlen;
--		nop_out(instr + a->replacementlen, diff);
-+		memcpy(instr, replacement, replacementlen);
-+		diff = a->instrlen - replacementlen;
-+		nop_out(instr + replacementlen, diff);
- 	}
- }
- 
-diff --git a/include/asm-i386/alternative.h b/include/asm-i386/alternative.h
-index b8fa955..4a77e93 100644
---- a/include/asm-i386/alternative.h
-+++ b/include/asm-i386/alternative.h
-@@ -10,11 +10,14 @@
- struct alt_instr {
- 	u8 *instr; 		/* original instruction */
- 	u8 *replacement;
-+	u8 *replacement2;
- 	u8  cpuid;		/* cpuid bit set for replacement */
-+	u8  cpuid2;		/* cpuid bit set for replacement2 */
- 	u8  instrlen;		/* length of original instruction */
- 	u8  replacementlen; 	/* length of new instruction, <= instrlen */
--	u8  pad;
--};
-+	u8  replacementlen2;
-+	u8  pad[3];
-+}  __attribute__ ((packed));
- 
- extern void apply_alternatives(struct alt_instr *start, struct alt_instr *end);
- 
-@@ -36,6 +39,12 @@ static inline void alternatives_smp_switch(int smp) {}
- #endif
- 
- /*
-+ * use this macro(s) if you need more than one output parameter
-+ * in alternative_io_*
-+ */
-+#define ASM_OUTPUT2(a, b) a, b
-+
-+/*
-  * Alternative instructions for different CPU types or capabilities.
-  *
-  * This allows to use optimized instructions even on generic binary
-@@ -53,9 +62,12 @@ static inline void alternatives_smp_switch(int smp) {}
- 		      "  .align 4\n"					\
- 		      "  .long 661b\n"            /* label */		\
- 		      "  .long 663f\n"		  /* new instruction */	\
-+		      "  .long 0x00\n"					\
- 		      "  .byte %c0\n"             /* feature bit */	\
-+		      "  .byte 0x00\n"					\
- 		      "  .byte 662b-661b\n"       /* sourcelen */	\
- 		      "  .byte 664f-663f\n"       /* replacementlen */	\
-+		      "  .byte 0x00\n"					\
- 		      ".previous\n"					\
- 		      ".section .altinstr_replacement,\"ax\"\n"		\
- 		      "663:\n\t" newinstr "\n664:\n"   /* replacement */\
-@@ -77,14 +89,38 @@ static inline void alternatives_smp_switch(int smp) {}
- 		      "  .align 4\n"					\
- 		      "  .long 661b\n"            /* label */		\
- 		      "  .long 663f\n"		  /* new instruction */ \
-+		      "  .long 0x00\n"					\
- 		      "  .byte %c0\n"             /* feature bit */	\
-+		      "  .byte 0x00\n"					\
- 		      "  .byte 662b-661b\n"       /* sourcelen */	\
- 		      "  .byte 664f-663f\n"       /* replacementlen */ 	\
-+		      "  .byte 0x00\n"					\
- 		      ".previous\n"					\
- 		      ".section .altinstr_replacement,\"ax\"\n"		\
- 		      "663:\n\t" newinstr "\n664:\n"   /* replacement */\
- 		      ".previous" :: "i" (feature), ##input)
- 
-+/* Like alternative_io, but supports 2 possible alternatives */
-+#define alternative_io_two(oldinstr, newinstr, feat, newinstr2, feat2,\
-+		output, input...) \
-+	asm volatile ("661:\n\t" oldinstr "\n662:\n"                    \
-+		      ".section .altinstructions,\"a\"\n"               \
-+		      "  .align 4\n"                                    \
-+		      "  .long 661b\n"            /* label */           \
-+		      "  .long 663f\n"            /* new instruction */ \
-+		      "  .long 665f\n"            /* new instruction 2 */\
-+		      "  .byte %c[f]\n"        /* feature bit */        \
-+		      "  .byte %c[f2]\n"          /* feature bit 2*/    \
-+		      "  .byte 662b-661b\n"       /* sourcelen */       \
-+		      "  .byte 664f-663f\n"       /* replacementlen */  \
-+		      "  .byte 666f-665f\n"       /* replacementlen 2 */\
-+		      ".previous\n"                                     \
-+		      ".section .altinstr_replacement,\"ax\"\n"         \
-+		      "663:\n\t" newinstr "\n664:\n"  /* replacement */ \
-+		      "665:\n\t" newinstr2 "\n666:\n" /* replacement2 */ \
-+		      ".previous" : output : [f] "i" (feat), \
-+		      [f2] "i" (feat2),##input)
-+
- /*
-  * Alternative inline assembly for SMP.
-  *
-
---yrj/dFKFPuw6o+aM--
-
-
+Register Court: AG Charlottenburg, HR B 81603
+Management Board: Joachim Fietz, Dirk Seewald
+Chairman of the Supervisory Board: Edward M. Stadum
