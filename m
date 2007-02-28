@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932382AbXB1TXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932390AbXB1TYF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932382AbXB1TXl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 14:23:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932386AbXB1TXl
+	id S932390AbXB1TYF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 14:24:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932401AbXB1TYE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 14:23:41 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:4828 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932382AbXB1TXk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 14:23:40 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 28 Feb 2007 11:23:37 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch - v3] epoll ready set loops diet ...
-In-Reply-To: <200702282009.29527.dada1@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0702281115090.6806@alien.or.mcafeemobile.com>
-References: <Pine.LNX.4.64.0702281034050.6806@alien.or.mcafeemobile.com>
- <200702282009.29527.dada1@cosmosbay.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 28 Feb 2007 14:24:04 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:50763 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932390AbXB1TYC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 14:24:02 -0500
+Date: Wed, 28 Feb 2007 14:24:00 -0500
+From: Prarit Bhargava <prarit@redhat.com>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       mike.miller@hp.com, chirag.kantharia@hp.com
+Cc: Prarit Bhargava <prarit@redhat.com>
+Message-Id: <20070228192400.21367.2923.sendpatchset@prarit.boston.redhat.com>
+Subject: [PATCH]: Fix __init declarations in Compaq SMART2 Controller driver
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Feb 2007, Eric Dumazet wrote:
+Fix __init declarations in Compaq SMART2 Controller driver.
 
-> On Wednesday 28 February 2007 19:37, Davide Libenzi wrote:
-> 
-> > +		list_del(&epi->rdllink);
-> > +		if (!(epi->event.events & EPOLLET) && (revents & epi->event.events))
-> > +			list_add_tail(&epi->rdllink, &injlist);
-> > +		else {
-> 
-> Is the ( ... & epi->event.events) really necessary ? (It seems already done)
+Resolves MODPOST warnings similar to:
 
-Yes, look here:
+WARNING: drivers/block/cpqarray.o - Section mismatch: reference to
+.init.text:cpqarray_init_one from .data.rel.local between 'cpqarray_pci_driver'
+(at offset 0x20) and 'smart1_access'
 
-	if (epi->event.events & EPOLLONESHOT)
-                 epi->event.events &= EP_PRIVATE_BITS;
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
 
-Oneshot events should not be requeued.
-
-
-> I was wrong about the size of epitem : it is now 68 bytes instead of 72.
-> At least we now use/dirty one cache line instead of two per epitem.
-> 
-> Do you have another brilliant idea to shrink 4 more bytes ? :)
-
-I don't think we can cleanly shove more stuff out of it.
-
-
-
-- Davide
-
-
+--- linux-2.6.18.ia64.orig/drivers/block/cpqarray.c	2007-02-14 11:36:20.000000000 -0500
++++ linux-2.6.18.ia64/drivers/block/cpqarray.c	2007-02-14 13:08:57.000000000 -0500
+@@ -212,7 +212,7 @@ static struct proc_dir_entry *proc_array
+  * Get us a file in /proc/array that says something about each controller.
+  * Create /proc/array if it doesn't exist yet.
+  */
+-static void __init ida_procinit(int i)
++static void __devinit ida_procinit(int i)
+ {
+ 	if (proc_array == NULL) {
+ 		proc_array = proc_mkdir("cpqarray", proc_root_driver);
+@@ -390,7 +390,7 @@ static void __devexit cpqarray_remove_on
+ }
+ 
+ /* pdev is NULL for eisa */
+-static int __init cpqarray_register_ctlr( int i, struct pci_dev *pdev)
++static int __devinit cpqarray_register_ctlr( int i, struct pci_dev *pdev)
+ {
+ 	request_queue_t *q;
+ 	int j;
+@@ -511,7 +511,7 @@ Enomem4:
+ 	return -1;
+ }
+ 
+-static int __init cpqarray_init_one( struct pci_dev *pdev,
++static int __devinit cpqarray_init_one( struct pci_dev *pdev,
+ 	const struct pci_device_id *ent)
+ {
+ 	int i;
