@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750708AbXB1QGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750930AbXB1QHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750708AbXB1QGS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 11:06:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750759AbXB1QGS
+	id S1750930AbXB1QHl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 11:07:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751025AbXB1QHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 11:06:18 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:58580 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750708AbXB1QGR (ORCPT
+	Wed, 28 Feb 2007 11:07:41 -0500
+Received: from empbedex1.empirix.com ([12.38.203.54]:1647 "EHLO
+	empbedex1.empirix.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbXB1QHk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 11:06:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=S1ULuY1N104lT6+2etIiessJc329zbgTd48bj6RkSw3/j0+44dSLaFWbIQWZWNLG3sVolQ3osccbnNXyU1qh533v4kQboRT0gKDimxr/Cu8ZzJrt6VtRSMJomtOhjeUwPJjV4Pdh2oRnzU6jrF8jTCVpFH3uZ9p7+hXdHukIPSs=
-From: auxsvr@gmail.com
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc1 and 2.6.21-rc2 kwin dies silently
-Date: Wed, 28 Feb 2007 18:05:13 +0200
-User-Agent: KMail/1.9.5
-References: <45E59D64.3070202@blueyonder.co.uk>
-In-Reply-To: <45E59D64.3070202@blueyonder.co.uk>
+	Wed, 28 Feb 2007 11:07:40 -0500
+X-Greylist: delayed 848 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Feb 2007 11:07:40 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200702281805.13822.auxsvr@gmail.com>
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: [PATCH]Support for Marvell 7042 Chip
+Date: Wed, 28 Feb 2007 10:53:22 -0500
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D90106ADB2B9@EMPBEDEX.empirix.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH]Support for Marvell 7042 Chip
+Thread-Index: AcdbUJNBf5oksfFRTCWtlpu/lnEdqg==
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: <jgarzik@pobox.com>, <jeff@garzik.org>
+Cc: <linux-ide@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 28 Feb 2007 15:53:29.0525 (UTC) FILETIME=[972E3E50:01C75B50]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 28 February 2007 17:19, Sid Boyce wrote:
-> openSUSE 10.3 Alpha and KDE-3.5.6, xorg-x11-7.2. KDE is setup not to
-> require a password to unlock, but it asks for password. When the screen
-> unlocks, kwin is gone with no errors logged in /var/log/kdm or
-> /var/log/messages. No problems with 2.6.20.
->
-> Same problem on openSUSE 10.2 x86_64, KDE-3.5.5 and 2.6.21-rc2.
-> Regards
-> Sid.
+Added Support for Marvell 7042 Chip - 7042 has same 
+capabilities & behavior as 6042.
 
-This is the linux kernel mailing list. Perhaps you should post your problem to 
-the opensuse mailing list.
+Patch based upon stable Linux 2.6.20.1 Kernel Tree...
 
-Regards
+Signed-off-by: Thomas A. Morrison <tmorrison@empirix.com>
+
+----
+
+--- drivers/ata/sata_mv.c.orig	2007-02-20 01:34:32.000000000 -0500
++++ drivers/ata/sata_mv.c	2007-02-28 10:22:03.000000000 -0500
+@@ -546,6 +546,9 @@ static const struct pci_device_id mv_pci
+ 
+ 	{ PCI_VDEVICE(TTI, 0x2310), chip_7042 },
+ 
++	/* add Marvell 7042 support */
++	{ PCI_VDEVICE(MARVELL, 0x7042), chip_7042 },
++
+ 	{ }			/* terminate list */
+ };
+
