@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965160AbXCAPNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965171AbXCAPNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965160AbXCAPNZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 10:13:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965171AbXCAPNZ
+	id S965171AbXCAPNs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 10:13:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965175AbXCAPNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 10:13:25 -0500
-Received: from smtp.bulldogdsl.com ([212.158.248.8]:4706 "EHLO
-	mcr-smtp-002.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965160AbXCAPNY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 10:13:24 -0500
-X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
-From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-To: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: CK804 SATA Errors (still got them)
-Date: Thu, 1 Mar 2007 15:13:15 +0000
-User-Agent: KMail/1.9.5
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
-References: <200703011339.52895.s0348365@sms.ed.ac.uk> <45E6E701.6000600@shaw.ca>
-In-Reply-To: <45E6E701.6000600@shaw.ca>
+	Thu, 1 Mar 2007 10:13:47 -0500
+Received: from il.qumranet.com ([82.166.9.18]:50983 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965171AbXCAPNr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 10:13:47 -0500
+Message-ID: <45E6ED26.10308@argo.co.il>
+Date: Thu, 01 Mar 2007 17:11:34 +0200
+From: Avi Kivity <avi@argo.co.il>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: g3vbv@blueyonder.co.uk
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc1 and 2.6.21-rc2 kwin dies silently
+References: <45E5DE32.2070902@argo.co.il> <45E6DA9A.2030301@blueyonder.co.uk>
+In-Reply-To: <45E6DA9A.2030301@blueyonder.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200703011513.15179.s0348365@sms.ed.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 01 March 2007 14:45, Robert Hancock wrote:
-> This one seems a bit different. This time it's not related to NCQ vs.
-> non-NCQ (this is a non-NCQ write here), it's in ADMA mode (so it's
-> presumably not related to switching between ADMA and register mode,
-> unless perhaps a flush cache or something executed just before), and
-> from the CPB data it appears the command completed but the controller's
-> registers aren't indicating that it has. Not sure if I've seen one like
-> that before..
->
-> How easily can you reproduce this?
+Sid Boyce wrote:
+>> > That's very much appreciated. The point is that all vanilla kernels up
+>> > to 2.6.20+ have not had the problems now seen on 2.6.20-rc1 and
+>> > 2.6.20-rc2 and like other problems reported, sic framebuffer, etc.,
+>> > there is a distinct likelihood that it's related to those kernels and
+>> > worth reporting here where it will also be seen by the openSUSE kernel
+>> > developers.
+>>
+>> Try running an strace on kwin and reporting the result.
+>>
+>>
+> Modified /opt/kde3/bin/startkde as below, but got no output, not even 
+> an empty file.
+> strace -s 256 -f kwin --lock -o /home/lancelot/KWIN.out &
 
-It's the first one since -rc2, so apparently not easily. I'm more than willing 
-to find loads that expose it, though, so I might try that this afternoon.
+Perhaps that line is never executed.
+
+Try running kwin from your konsole after it dies, with the strace of 
+course. Oh, and put the '-o ...' before the kwin command, not after.
+
 
 -- 
-Cheers,
-Alistair.
+error compiling committee.c: too many arguments to function
 
-Final year Computer Science undergraduate.
-1F2 55 South Clerk Street, Edinburgh, UK.
