@@ -1,432 +1,802 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422634AbXCAX5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161314AbXCAX52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422634AbXCAX5W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 18:57:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161314AbXCAX5K
+	id S1161314AbXCAX52 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 18:57:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161277AbXCAX5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 18:57:10 -0500
-Received: from 207.47.60.4.static.nextweb.net ([207.47.60.4]:47899 "EHLO
+	Thu, 1 Mar 2007 18:57:08 -0500
+Received: from 207.47.60.4.static.nextweb.net ([207.47.60.4]:47904 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161283AbXCAX4u (ORCPT
+	with ESMTP id S1161291AbXCAX4u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 1 Mar 2007 18:56:50 -0500
-Message-Id: <20070301232527.362011844@goop.org>
+Message-Id: <20070301232527.956565107@goop.org>
 References: <20070301232443.195603797@goop.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 01 Mar 2007 15:24:52 -0800
+Date: Thu, 01 Mar 2007 15:24:56 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@muc.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
        Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-arch@vger.kernel.org,
-       James Bottomley <James.Bottomley@SteelEye.com>
-Subject: [patch 09/26] Xen-paravirt_ops: remove HAVE_ARCH_MM_LIFETIME, define no-op architecture implementations
-Content-Disposition: inline; filename=kill-HAVE_ARCH_MM_LIFETIME.patch
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <anthony@codemonkey.ws>
+Subject: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops callsites to make them patchable
+Content-Disposition: inline; filename=paravirt-patchable-call-wrappers.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-akpm:
-> Can we lose __HAVE_ARCH_MM_LIFETIME?  Just define these (preferably in C,
-> not in cpp) in the appropriate include/asm-foo/ files?
+Wrap a set of interesting paravirt_ops calls in a wrapper which makes
+the callsites available for patching.  Unfortunately this is pretty
+ugly because there's no way to get gcc to generate a function call,
+but also wrap just the callsite itself with the necessary labels.
+
+This patch supports functions with 0-4 arguments, and either void or
+returning a value.  64-bit arguments must be split into a pair of
+32-bit arguments (lower word first).  Small structures are returned in
+registers.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: linux-arch@vger.kernel.org
-Cc: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Zachary Amsden <zach@vmware.com>
+Cc: Anthony Liguori <anthony@codemonkey.ws>
 
 ---
- include/asm-alpha/mmu_context.h     |    1 +
- include/asm-arm/mmu_context.h       |    1 +
- include/asm-arm26/mmu_context.h     |    2 ++
- include/asm-avr32/mmu_context.h     |    1 +
- include/asm-cris/mmu_context.h      |    2 ++
- include/asm-frv/mmu_context.h       |    1 +
- include/asm-generic/mm_hooks.h      |   18 ++++++++++++++++++
- include/asm-h8300/mmu_context.h     |    1 +
- include/asm-i386/mmu_context.h      |   11 ++++++++++-
- include/asm-i386/paravirt.h         |    5 ++---
- include/asm-ia64/mmu_context.h      |    1 +
- include/asm-m32r/mmu_context.h      |    1 +
- include/asm-m68k/mmu_context.h      |    1 +
- include/asm-m68knommu/mmu_context.h |    1 +
- include/asm-mips/mmu_context.h      |    1 +
- include/asm-parisc/mmu_context.h    |    1 +
- include/asm-powerpc/mmu_context.h   |    1 +
- include/asm-ppc/mmu_context.h       |    1 +
- include/asm-s390/mmu_context.h      |    2 ++
- include/asm-sh/mmu_context.h        |    1 +
- include/asm-sh64/mmu_context.h      |    2 +-
- include/asm-sparc/mmu_context.h     |    2 ++
- include/asm-sparc64/mmu_context.h   |    1 +
- include/asm-um/mmu_context.h        |    2 ++
- include/asm-v850/mmu_context.h      |    2 ++
- include/asm-x86_64/mmu_context.h    |    1 +
- include/asm-xtensa/mmu_context.h    |    1 +
- include/linux/sched.h               |    6 ------
- mm/mmap.c                           |    1 +
- 29 files changed, 61 insertions(+), 11 deletions(-)
+ include/asm-i386/paravirt.h |  577 ++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 442 insertions(+), 135 deletions(-)
 
-===================================================================
---- a/include/asm-alpha/mmu_context.h
-+++ b/include/asm-alpha/mmu_context.h
-@@ -10,6 +10,7 @@
- #include <asm/system.h>
- #include <asm/machvec.h>
- #include <asm/compiler.h>
-+#include <asm-generic/mm_hooks.h>
- 
- /*
-  * Force a context reload. This is needed when we change the page
-===================================================================
---- a/include/asm-arm/mmu_context.h
-+++ b/include/asm-arm/mmu_context.h
-@@ -16,6 +16,7 @@
- #include <linux/compiler.h>
- #include <asm/cacheflush.h>
- #include <asm/proc-fns.h>
-+#include <asm-generic/mm_hooks.h>
- 
- void __check_kvm_seq(struct mm_struct *mm);
- 
-===================================================================
---- a/include/asm-arm26/mmu_context.h
-+++ b/include/asm-arm26/mmu_context.h
-@@ -12,6 +12,8 @@
-  */
- #ifndef __ASM_ARM_MMU_CONTEXT_H
- #define __ASM_ARM_MMU_CONTEXT_H
-+
-+#include <asm-generic/mm_hooks.h>
- 
- #define init_new_context(tsk,mm)	0
- #define destroy_context(mm)		do { } while(0)
-===================================================================
---- a/include/asm-avr32/mmu_context.h
-+++ b/include/asm-avr32/mmu_context.h
-@@ -15,6 +15,7 @@
- #include <asm/tlbflush.h>
- #include <asm/pgalloc.h>
- #include <asm/sysreg.h>
-+#include <asm-generic/mm_hooks.h>
- 
- /*
-  * The MMU "context" consists of two things:
-===================================================================
---- a/include/asm-cris/mmu_context.h
-+++ b/include/asm-cris/mmu_context.h
-@@ -1,5 +1,7 @@
- #ifndef __CRIS_MMU_CONTEXT_H
- #define __CRIS_MMU_CONTEXT_H
-+
-+#include <asm-generic/mm_hooks.h>
- 
- extern int init_new_context(struct task_struct *tsk, struct mm_struct *mm);
- extern void get_mmu_context(struct mm_struct *mm);
-===================================================================
---- a/include/asm-frv/mmu_context.h
-+++ b/include/asm-frv/mmu_context.h
-@@ -15,6 +15,7 @@
- #include <asm/setup.h>
- #include <asm/page.h>
- #include <asm/pgalloc.h>
-+#include <asm-generic/mm_hooks.h>
- 
- static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
- {
-===================================================================
---- /dev/null
-+++ b/include/asm-generic/mm_hooks.h
-@@ -0,0 +1,18 @@
-+/*
-+ * Define generic no-op hooks for arch_dup_mmap and arch_exit_mmap, to
-+ * be included in asm-FOO/mmu_context.h for any arch FOO which doesn't
-+ * need to hook these.
-+ */
-+#ifndef _ASM_GENERIC_MM_HOOKS_H
-+#define _ASM_GENERIC_MM_HOOKS_H
-+
-+static inline void arch_dup_mmap(struct mm_struct *oldmm,
-+				 struct mm_struct *mm)
-+{
-+}
-+
-+static inline void arch_exit_mmap(struct mm_struct *mm)
-+{
-+}
-+
-+#endif	/* _ASM_GENERIC_MM_HOOKS_H */
-===================================================================
---- a/include/asm-h8300/mmu_context.h
-+++ b/include/asm-h8300/mmu_context.h
-@@ -4,6 +4,7 @@
- #include <asm/setup.h>
- #include <asm/page.h>
- #include <asm/pgalloc.h>
-+#include <asm-generic/mm_hooks.h>
- 
- static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
- {
-===================================================================
---- a/include/asm-i386/mmu_context.h
-+++ b/include/asm-i386/mmu_context.h
-@@ -6,6 +6,15 @@
- #include <asm/pgalloc.h>
- #include <asm/tlbflush.h>
- #include <asm/paravirt.h>
-+#ifndef CONFIG_PARAVIRT
-+#include <asm-generic/mm_hooks.h>
-+
-+static inline void paravirt_activate_mm(struct mm_struct *prev,
-+					struct mm_struct *next)
-+{
-+}
-+#endif	/* !CONFIG_PARAVIRT */
-+
- 
- /*
-  * Used for LDT copy/destruction.
-@@ -68,7 +77,7 @@ static inline void switch_mm(struct mm_s
- 
- #define activate_mm(prev, next)				\
- 	do {						\
--		arch_activate_mm(prev, next);		\
-+		paravirt_activate_mm(prev, next);	\
- 		switch_mm((prev),(next),NULL);		\
- 	} while(0);
- 
 ===================================================================
 --- a/include/asm-i386/paravirt.h
 +++ b/include/asm-i386/paravirt.h
-@@ -403,9 +403,8 @@ static inline void startup_ipi_hook(int 
+@@ -33,6 +33,222 @@
+ #define paravirt_alt(insn_string)				\
+ 	_paravirt_alt(insn_string, "%c[paravirt_typenum]", "%c[paravirt_clobber]")
+ 
++#define PVOP_CALL0(__rettype, __op)					\
++	({								\
++		__rettype __ret;					\
++		if (sizeof(__rettype) > sizeof(unsigned long)) {	\
++			unsigned long long __tmp;			\
++			unsigned long __ecx;				\
++			asm volatile(paravirt_alt("call *%[op]")	\
++				     : "=A" (__tmp), "=c" (__ecx)	\
++				     : [op] "m" (paravirt_ops.__op),	\
++				       paravirt_type(PARAVIRT_PATCH(__op)), \
++				       paravirt_clobber(CLBR_ANY)	\
++				     : "memory", "cc");			\
++			__ret = (__rettype)__tmp;			\
++		} else {						\
++			unsigned long __tmp, __edx, __ecx;	\
++			asm volatile(paravirt_alt("call *%[op]")	\
++				     : "=a" (__tmp), "=d" (__edx), "=c" (__ecx) \
++				     : [op] "m" (paravirt_ops.__op),	\
++				       paravirt_type(PARAVIRT_PATCH(__op)), \
++				       paravirt_clobber(CLBR_ANY)	\
++				     : "memory", "cc");			\
++			__ret = (__rettype)__tmp;			\
++		}							\
++		__ret;							\
++	})
++#define PVOP_VCALL0(__op)						\
++	({								\
++		unsigned long __eax, __edx, __ecx;			\
++		asm volatile(paravirt_alt("call *%[op]")		\
++			     : "=a" (__eax), "=d" (__edx), "=c" (__ecx) \
++			     : [op] "m" (paravirt_ops.__op),		\
++			       paravirt_type(PARAVIRT_PATCH(__op)),	\
++			       paravirt_clobber(CLBR_ANY)		\
++			     : "memory", "cc");				\
++	})
++
++#define PVOP_CALL1(__rettype, __op, arg1)				\
++	({								\
++		__rettype __ret;					\
++		if (sizeof(__rettype) > sizeof(unsigned long)) {	\
++			unsigned long long __tmp;			\
++			unsigned long __ecx;				\
++			asm volatile(paravirt_alt("call *%[op]")	\
++				     : "=A" (__tmp), "=c" (__ecx)	\
++				     : [op] "m" (paravirt_ops.__op),	\
++				       "a" ((u32)(arg1)),		\
++				       paravirt_type(PARAVIRT_PATCH(__op)), \
++				       paravirt_clobber(CLBR_ANY)	\
++				     : "memory", "cc");			\
++			__ret = (__rettype)__tmp;			\
++		} else {						\
++			unsigned long __tmp, __edx, __ecx;	\
++			asm volatile(paravirt_alt("call *%[op]")	\
++				     : "=a" (__tmp), "=d" (__edx), "=c" (__ecx) \
++				     : [op] "m" (paravirt_ops.__op),	\
++				       "0" ((u32)(arg1)),		\
++				       paravirt_type(PARAVIRT_PATCH(__op)), \
++				       paravirt_clobber(CLBR_ANY)	\
++				     : "memory", "cc");			\
++			__ret = (__rettype)__tmp;			\
++		}							\
++		__ret;							\
++	})
++#define PVOP_VCALL1(__op, arg1)						\
++	({								\
++		unsigned long __eax, __edx, __ecx;			\
++		asm volatile(paravirt_alt("call *%[op]")		\
++			     : "=a" (__eax), "=d" (__edx), "=c" (__ecx) \
++			     : [op] "m" (paravirt_ops.__op),		\
++			       "0" ((u32)(arg1)),			\
++			       paravirt_type(PARAVIRT_PATCH(__op)),	\
++			       paravirt_clobber(CLBR_ANY)		\
++			     : "memory", "cc");				\
++	})
++
++#define PVOP_CALL2(__rettype, __op, arg1, arg2)				\
++	({								\
++		__rettype __ret;					\
++		if (sizeof(__rettype) > sizeof(unsigned long)) {	\
++			unsigned long long __tmp;			\
++			unsigned long __ecx;				\
++			asm volatile(paravirt_alt("call *%[op]")	\
++				     : "=A" (__tmp), "=c" (__ecx)	\
++				     : [op] "m" (paravirt_ops.__op),	\
++				       "a" ((u32)(arg1)),		\
++				       "d" ((u32)(arg2)),		\
++				       paravirt_type(PARAVIRT_PATCH(__op)), \
++				       paravirt_clobber(CLBR_ANY)	\
++				     : "memory", "cc");			\
++			__ret = (__rettype)__tmp;			\
++		} else {						\
++			unsigned long __tmp, __edx, __ecx;	\
++			asm volatile(paravirt_alt("call *%[op]")	\
++				     : "=a" (__tmp), "=d" (__edx), "=c" (__ecx) \
++				     : [op] "m" (paravirt_ops.__op),	\
++				       "0" ((u32)(arg1)),		\
++				       "1" ((u32)(arg2)),		\
++				       paravirt_type(PARAVIRT_PATCH(__op)), \
++				       paravirt_clobber(CLBR_ANY)	\
++				     : "memory", "cc");			\
++			__ret = (__rettype)__tmp;			\
++		}							\
++		__ret;							\
++	})
++#define PVOP_VCALL2(__op, arg1, arg2)					\
++	({								\
++		unsigned long __eax, __edx, __ecx;			\
++		asm volatile(paravirt_alt("call *%[op]")		\
++			     : "=a" (__eax), "=d" (__edx), "=c" (__ecx) \
++			     : [op] "m" (paravirt_ops.__op),		\
++			       "0" ((u32)(arg1)),			\
++			       "1" ((u32)(arg2)),			\
++			       paravirt_type(PARAVIRT_PATCH(__op)),	\
++			       paravirt_clobber(CLBR_ANY)		\
++			     : "memory", "cc");				\
++	})
++
++#define PVOP_CALL3(__rettype, __op, arg1, arg2, arg3)			\
++	({								\
++		__rettype __ret;					\
++		if (sizeof(__rettype) > sizeof(unsigned long)) {	\
++			unsigned long long __tmp;			\
++			unsigned long __ecx;				\
++			asm volatile(paravirt_alt("call *%[op]")	\
++				     : "=A" (__tmp), "=c" (__ecx)	\
++				     : [op] "m" (paravirt_ops.__op),	\
++				       "a" ((u32)(arg1)),		\
++				       "d" ((u32)(arg2)),		\
++				       "1" ((u32)(arg3)),		\
++				       paravirt_type(PARAVIRT_PATCH(__op)), \
++				       paravirt_clobber(CLBR_ANY)	\
++				     : "memory", "cc");			\
++			__ret = (__rettype)__tmp;			\
++		} else {						\
++			unsigned long __tmp, __edx, __ecx;	\
++			asm volatile(paravirt_alt("call *%[op]")	\
++				     : "=a" (__tmp), "=d" (__edx), "=c" (__ecx) \
++				     : [op] "m" (paravirt_ops.__op),	\
++				       "0" ((u32)(arg1)),		\
++				       "1" ((u32)(arg2)),		\
++				       "2" ((u32)(arg3)),		\
++				       paravirt_type(PARAVIRT_PATCH(__op)), \
++				       paravirt_clobber(CLBR_ANY)	\
++				     : "memory", "cc");			\
++			__ret = (__rettype)__tmp;			\
++		}							\
++		__ret;							\
++	})
++#define PVOP_VCALL3(__op, arg1, arg2, arg3)				\
++	({								\
++		unsigned long __eax, __edx, __ecx;			\
++		asm volatile(paravirt_alt("call *%[op]")		\
++			     : "=a" (__eax), "=d" (__edx), "=c" (__ecx) \
++			     : [op] "m" (paravirt_ops.__op),		\
++			       "0" ((u32)(arg1)),			\
++			       "1" ((u32)(arg2)),			\
++			       "2" ((u32)(arg3)),			\
++			       paravirt_type(PARAVIRT_PATCH(__op)),	\
++			       paravirt_clobber(CLBR_ANY)		\
++			     : "memory", "cc");				\
++	})
++
++#define PVOP_CALL4(__rettype, __op, arg1, arg2, arg3, arg4)		\
++	({								\
++		__rettype __ret;					\
++		if (sizeof(__rettype) > sizeof(unsigned long)) {	\
++			unsigned long long __tmp;			\
++			unsigned long __ecx;				\
++			asm volatile("push %[_arg4]; "			\
++				     paravirt_alt("call *%[op]")	\
++				     "lea 4(%%esp),%%esp"		\
++				     : "=A" (__tmp), "=c" (__ecx)	\
++				     : [op] "m" (paravirt_ops.__op),	\
++				       "a" ((u32)(arg1)),		\
++				       "d" ((u32)(arg2)),		\
++				       "1" ((u32)(arg3)),		\
++				       [_arg4] "mr" ((u32)(arg4)),	\
++				       paravirt_type(PARAVIRT_PATCH(__op)), \
++				       paravirt_clobber(CLBR_ANY)	\
++				     : "memory", "cc",);		\
++			__ret = (__rettype)__tmp;			\
++		} else {						\
++			unsigned long __tmp, __edx, __ecx;		\
++			asm volatile("push %[_arg4]; "			\
++				     paravirt_alt("call *%[op]")	\
++				     "lea 4(%%esp),%%esp"		\
++				     : "=a" (__tmp), "=d" (__edx), "=c" (__ecx) \
++				     : [op] "m" (paravirt_ops.__op),	\
++				       "0" ((u32)(arg1)),		\
++				       "1" ((u32)(arg2)),		\
++				       "2" ((u32)(arg3)),		\
++				       [_arg4]"mr" ((u32)(arg4)),	\
++				       paravirt_type(PARAVIRT_PATCH(__op)), \
++				       paravirt_clobber(CLBR_ANY)	\
++				     : "memory", "cc");			\
++			__ret = (__rettype)__tmp;			\
++		}							\
++		__ret;							\
++	})
++#define PVOP_VCALL4(__op, arg1, arg2, arg3, arg4)			\
++	({								\
++		unsigned long __eax, __edx, __ecx;			\
++		asm volatile("push %[_arg4]; "				\
++			     paravirt_alt("call *%[op]")		\
++			     "lea 4(%%esp),%%esp"			\
++			     : "=a" (__eax), "=d" (__edx), "=c" (__ecx) \
++			     : [op] "m" (paravirt_ops.__op),		\
++			       "0" ((u32)(arg1)),			\
++			       "1" ((u32)(arg2)),			\
++			       "2" ((u32)(arg3)),			\
++			       [_arg4]"mr" ((u32)(arg4)),		\
++			       paravirt_type(PARAVIRT_PATCH(__op)),	\
++			       paravirt_clobber(CLBR_ANY)		\
++			     : "memory", "cc");				\
++	})
++
+ struct thread_struct;
+ struct Xgt_desc_struct;
+ struct tss_struct;
+@@ -110,14 +326,10 @@ struct paravirt_ops
+ 	void (*set_ldt)(const void *desc, unsigned entries);
+ 	unsigned long (*store_tr)(void);
+ 	void (*load_tls)(struct thread_struct *t, unsigned int cpu);
+-	void (*write_ldt_entry)(void *dt, int entrynum,
+-					 u32 low, u32 high);
+-	void (*write_gdt_entry)(void *dt, int entrynum,
+-					 u32 low, u32 high);
+-	void (*write_idt_entry)(void *dt, int entrynum,
+-					 u32 low, u32 high);
+-	void (*load_esp0)(struct tss_struct *tss,
+-				   struct thread_struct *thread);
++	void (*write_ldt_entry)(void *dt, int entrynum, u32 low, u32 high);
++	void (*write_gdt_entry)(void *dt, int entrynum, u32 low, u32 high);
++	void (*write_idt_entry)(void *dt, int entrynum, u32 low, u32 high);
++	void (*load_esp0)(struct tss_struct *tss, struct thread_struct *thread);
+ 
+ 	void (*set_iopl_mask)(unsigned mask);
+ 
+@@ -194,151 +406,165 @@ struct paravirt_ops
+ 
+ extern struct paravirt_ops paravirt_ops;
+ 
+-#define paravirt_enabled() (paravirt_ops.paravirt_enabled)
++static inline int paravirt_enabled(void)
++{
++	return paravirt_ops.paravirt_enabled;
++}
+ 
+ static inline void load_esp0(struct tss_struct *tss,
+ 			     struct thread_struct *thread)
+ {
+-	paravirt_ops.load_esp0(tss, thread);
+-}
+-
+-#define ARCH_SETUP			paravirt_ops.arch_setup();
++	PVOP_VCALL2(load_esp0, tss, thread);
++}
++
++#define ARCH_SETUP			PVOP_VCALL0(arch_setup);
+ static inline unsigned long get_wallclock(void)
+ {
+-	return paravirt_ops.get_wallclock();
++	return PVOP_CALL0(unsigned long, get_wallclock);
+ }
+ 
+ static inline int set_wallclock(unsigned long nowtime)
+ {
+-	return paravirt_ops.set_wallclock(nowtime);
++	return PVOP_CALL1(int, set_wallclock, nowtime);
+ }
+ 
+ static inline void do_time_init(void)
+ {
+-	return paravirt_ops.time_init();
++	PVOP_VCALL0(time_init);
+ }
+ 
+ /* The paravirtualized CPUID instruction. */
+ static inline void __cpuid(unsigned int *eax, unsigned int *ebx,
+ 			   unsigned int *ecx, unsigned int *edx)
+ {
+-	paravirt_ops.cpuid(eax, ebx, ecx, edx);
++	PVOP_VCALL4(cpuid, eax, ebx, ecx, edx);
+ }
+ 
+ /*
+  * These special macros can be used to get or set a debugging register
+  */
+-#define get_debugreg(var, reg) var = paravirt_ops.get_debugreg(reg)
+-#define set_debugreg(val, reg) paravirt_ops.set_debugreg(reg, val)
+-
+-#define clts() paravirt_ops.clts()
+-
+-#define read_cr0() paravirt_ops.read_cr0()
+-#define write_cr0(x) paravirt_ops.write_cr0(x)
+-
+-#define read_cr2() paravirt_ops.read_cr2()
+-#define write_cr2(x) paravirt_ops.write_cr2(x)
+-
+-#define read_cr3() paravirt_ops.read_cr3()
+-#define write_cr3(x) paravirt_ops.write_cr3(x)
+-
+-#define read_cr4() paravirt_ops.read_cr4()
+-#define read_cr4_safe(x) paravirt_ops.read_cr4_safe()
+-#define write_cr4(x) paravirt_ops.write_cr4(x)
+-
+-#define raw_ptep_get_and_clear(xp)	(paravirt_ops.ptep_get_and_clear(xp))
++#define get_debugreg(var, reg) var = PVOP_CALL1(unsigned long, get_debugreg, reg)
++#define set_debugreg(val, reg) PVOP_VCALL2(set_debugreg, reg, val)
++
++#define clts()		PVOP_VCALL0(clts)
++
++#define read_cr0()	PVOP_CALL0(unsigned long, read_cr0)
++#define write_cr0(x)	PVOP_VCALL1(write_cr0, x)
++
++#define read_cr2()	PVOP_CALL0(unsigned long, read_cr2)
++#define write_cr2(x)	PVOP_VCALL1(write_cr2, x)
++
++#define read_cr3()	PVOP_CALL0(unsigned long, read_cr3)
++#define write_cr3(x)	PVOP_VCALL1(write_cr3, x)
++
++#define read_cr4()	PVOP_CALL0(unsigned long, read_cr4)
++#define read_cr4_safe(x) PVOP_CALL0(unsigned long, read_cr4_safe)
++#define write_cr4(x)	PVOP_VCALL1(write_cr4, x)
+ 
+ static inline void raw_safe_halt(void)
+ {
+-	paravirt_ops.safe_halt();
++	PVOP_VCALL0(safe_halt);
+ }
+ 
+ static inline void halt(void)
+ {
+-	paravirt_ops.safe_halt();
+-}
+-#define wbinvd() paravirt_ops.wbinvd()
++	PVOP_VCALL0(safe_halt);
++}
++#define wbinvd()	PVOP_VCALL0(wbinvd)
+ 
+ #define get_kernel_rpl()  (paravirt_ops.kernel_rpl)
+ 
+ #define rdmsr(msr,val1,val2) do {				\
+ 	int _err;						\
+-	u64 _l = paravirt_ops.read_msr(msr,&_err);		\
++	u64 _l = PVOP_CALL2(u64, read_msr, msr, &_err);		\
+ 	val1 = (u32)_l;						\
+ 	val2 = _l >> 32;					\
+ } while(0)
+ 
+-#define wrmsr(msr,val1,val2) do {				\
+-	u64 _l = ((u64)(val2) << 32) | (val1);			\
+-	paravirt_ops.write_msr((msr), _l);			\
+-} while(0)
++#define wrmsr(msr,val1,val2) PVOP_VCALL3(write_msr, msr, val1, val2)
+ 
+ #define rdmsrl(msr,val) do {					\
+ 	int _err;						\
+-	val = paravirt_ops.read_msr((msr),&_err);		\
++	val = PVOP_CALL2(u64, read_msr, msr, &_err);		\
+ } while(0)
+ 
+-#define wrmsrl(msr,val) (paravirt_ops.write_msr((msr),(val)))
+-#define wrmsr_safe(msr,a,b) ({					\
+-	u64 _l = ((u64)(b) << 32) | (a);			\
+-	paravirt_ops.write_msr((msr),_l);			\
+-})
++#define wrmsrl(msr,val)		PVOP_CALL3(int, write_msr, msr, val, 0)
++#define wrmsr_safe(msr,a,b)	PVOP_CALL3(int, write_msr, msr, a, b)
+ 
+ /* rdmsr with exception handling */
+ #define rdmsr_safe(msr,a,b) ({					\
+ 	int _err;						\
+-	u64 _l = paravirt_ops.read_msr(msr,&_err);		\
++	u64 _l = PVOP_CALL2(u64, read_msr, msr, &_err);		\
+ 	(*a) = (u32)_l;						\
+ 	(*b) = _l >> 32;					\
+ 	_err; })
+ 
+ #define rdtsc(low,high) do {					\
+-	u64 _l = paravirt_ops.read_tsc();			\
++	u64 _l = PVOP_CALL0(u64, read_tsc);			\
+ 	low = (u32)_l;						\
+ 	high = _l >> 32;					\
+ } while(0)
+ 
+ #define rdtscl(low) do {					\
+-	u64 _l = paravirt_ops.read_tsc();			\
++	u64 _l = PVOP_CALL0(u64, read_tsc);			\
+ 	low = (int)_l;						\
+ } while(0)
+ 
+-#define rdtscll(val) (val = paravirt_ops.read_tsc())
++#define rdtscll(val) (val = PVOP_CALL0(u64, read_tsc))
+ 
+ #define write_tsc(val1,val2) wrmsr(0x10, val1, val2)
+ 
+ #define rdpmc(counter,low,high) do {				\
+-	u64 _l = paravirt_ops.read_pmc();			\
++	u64 _l = PVOP_CALL0(u64, read_pmc);			\
+ 	low = (u32)_l;						\
+ 	high = _l >> 32;					\
+ } while(0)
+ 
+-#define load_TR_desc() (paravirt_ops.load_tr_desc())
+-#define load_gdt(dtr) (paravirt_ops.load_gdt(dtr))
+-#define load_idt(dtr) (paravirt_ops.load_idt(dtr))
+-#define set_ldt(addr, entries) (paravirt_ops.set_ldt((addr), (entries)))
+-#define store_gdt(dtr) (paravirt_ops.store_gdt(dtr))
+-#define store_idt(dtr) (paravirt_ops.store_idt(dtr))
+-#define store_tr(tr) ((tr) = paravirt_ops.store_tr())
+-#define load_TLS(t,cpu) (paravirt_ops.load_tls((t),(cpu)))
+-#define write_ldt_entry(dt, entry, low, high)				\
+-	(paravirt_ops.write_ldt_entry((dt), (entry), (low), (high)))
+-#define write_gdt_entry(dt, entry, low, high)				\
+-	(paravirt_ops.write_gdt_entry((dt), (entry), (low), (high)))
+-#define write_idt_entry(dt, entry, low, high)				\
+-	(paravirt_ops.write_idt_entry((dt), (entry), (low), (high)))
+-#define set_iopl_mask(mask) (paravirt_ops.set_iopl_mask(mask))
+-
+-#define __pte(x)	paravirt_ops.make_pte(x)
+-#define __pgd(x)	paravirt_ops.make_pgd(x)
+-
+-#define pte_val(x)	paravirt_ops.pte_val(x)
+-#define pgd_val(x)	paravirt_ops.pgd_val(x)
+-
+-#ifdef CONFIG_X86_PAE
+-#define __pmd(x)	paravirt_ops.make_pmd(x)
+-#define pmd_val(x)	paravirt_ops.pmd_val(x)
+-#endif
++static inline void load_TR_desc(void)
++{
++	PVOP_VCALL0(load_tr_desc);
++}
++static inline void load_gdt(const struct Xgt_desc_struct *dtr)
++{
++	PVOP_VCALL1(load_gdt, dtr);
++}
++static inline void load_idt(const struct Xgt_desc_struct *dtr)
++{
++	PVOP_VCALL1(load_idt, dtr);
++}
++static inline void set_ldt(const void *addr, unsigned entries)
++{
++	PVOP_VCALL2(set_ldt, addr, entries);
++}
++static inline void store_gdt(struct Xgt_desc_struct *dtr)
++{
++	PVOP_VCALL1(store_gdt, dtr);
++}
++static inline void store_idt(struct Xgt_desc_struct *dtr)
++{
++	PVOP_VCALL1(store_idt, dtr);
++}
++#define store_tr(tr)	((tr) = PVOP_CALL0(unsigned long, store_tr))
++static inline void load_TLS(struct thread_struct *t, unsigned cpu)
++{
++	PVOP_VCALL2(load_tls, t, cpu);
++}
++static inline void write_ldt_entry(void *dt, int entry, u32 low, u32 high)
++{
++	PVOP_VCALL4(write_ldt_entry, dt, entry, low, high);
++}
++static inline void write_gdt_entry(void *dt, int entry, u32 low, u32 high)
++{
++	PVOP_VCALL4(write_gdt_entry, dt, entry, low, high);
++}
++static inline void write_idt_entry(void *dt, int entry, u32 low, u32 high)
++{
++	PVOP_VCALL4(write_idt_entry, dt, entry, low, high);
++}
++static inline void set_iopl_mask(unsigned mask)
++{
++	PVOP_VCALL1(set_iopl_mask, mask);
++}
+ 
+ /* The paravirtualized I/O functions */
+ static inline void slow_down_io(void) {
+@@ -356,27 +582,27 @@ static inline void slow_down_io(void) {
+  */
+ static inline void apic_write(unsigned long reg, unsigned long v)
+ {
+-	paravirt_ops.apic_write(reg,v);
++	PVOP_VCALL2(apic_write, reg, v);
+ }
+ 
+ static inline void apic_write_atomic(unsigned long reg, unsigned long v)
+ {
+-	paravirt_ops.apic_write_atomic(reg,v);
++	PVOP_VCALL2(apic_write_atomic, reg, v);
+ }
+ 
+ static inline unsigned long apic_read(unsigned long reg)
+ {
+-	return paravirt_ops.apic_read(reg);
++	return PVOP_CALL1(unsigned long, apic_read, reg);
+ }
+ 
+ static inline void setup_boot_clock(void)
+ {
+-	paravirt_ops.setup_boot_clock();
++	PVOP_VCALL0(setup_boot_clock);
+ }
+ 
+ static inline void setup_secondary_clock(void)
+ {
+-	paravirt_ops.setup_secondary_clock();
++	PVOP_VCALL0(setup_secondary_clock);
  }
  #endif
  
--#define __HAVE_ARCH_MM_LIFETIME
--static inline void arch_activate_mm(struct mm_struct *prev,
--				    struct mm_struct *next)
-+static inline void paravirt_activate_mm(struct mm_struct *prev,
-+					struct mm_struct *next)
+@@ -396,91 +622,172 @@ static inline void startup_ipi_hook(int 
+ static inline void startup_ipi_hook(int phys_apicid, unsigned long start_eip,
+ 				    unsigned long start_esp)
  {
- 	paravirt_ops.activate_mm(prev, next);
+-	return paravirt_ops.startup_ipi_hook(phys_apicid, start_eip, start_esp);
++	PVOP_VCALL3(startup_ipi_hook, phys_apicid, start_eip, start_esp);
  }
-===================================================================
---- a/include/asm-ia64/mmu_context.h
-+++ b/include/asm-ia64/mmu_context.h
-@@ -29,6 +29,7 @@
- #include <linux/spinlock.h>
+ #endif
  
- #include <asm/processor.h>
-+#include <asm-generic/mm_hooks.h>
- 
- struct ia64_ctx {
- 	spinlock_t lock;
-===================================================================
---- a/include/asm-m32r/mmu_context.h
-+++ b/include/asm-m32r/mmu_context.h
-@@ -15,6 +15,7 @@
- #include <asm/pgalloc.h>
- #include <asm/mmu.h>
- #include <asm/tlbflush.h>
-+#include <asm-generic/mm_hooks.h>
- 
- /*
-  * Cache of MMU context last used.
-===================================================================
---- a/include/asm-m68k/mmu_context.h
-+++ b/include/asm-m68k/mmu_context.h
-@@ -1,6 +1,7 @@
- #ifndef __M68K_MMU_CONTEXT_H
- #define __M68K_MMU_CONTEXT_H
- 
-+#include <asm-generic/mm_hooks.h>
- 
- static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+ static inline void paravirt_activate_mm(struct mm_struct *prev,
+ 					struct mm_struct *next)
  {
-===================================================================
---- a/include/asm-m68knommu/mmu_context.h
-+++ b/include/asm-m68knommu/mmu_context.h
-@@ -4,6 +4,7 @@
- #include <asm/setup.h>
- #include <asm/page.h>
- #include <asm/pgalloc.h>
-+#include <asm-generic/mm_hooks.h>
+-	paravirt_ops.activate_mm(prev, next);
++	PVOP_VCALL2(activate_mm, prev, next);
+ }
  
- static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+ static inline void arch_dup_mmap(struct mm_struct *oldmm,
+ 				 struct mm_struct *mm)
  {
-===================================================================
---- a/include/asm-mips/mmu_context.h
-+++ b/include/asm-mips/mmu_context.h
-@@ -20,6 +20,7 @@
- #include <asm/mipsmtregs.h>
- #include <asm/smtc.h>
- #endif /* SMTC */
-+#include <asm-generic/mm_hooks.h>
+-	paravirt_ops.dup_mmap(oldmm, mm);
++	PVOP_VCALL2(dup_mmap, oldmm, mm);
+ }
  
- /*
-  * For the fast tlb miss handlers, we keep a per cpu array of pointers
-===================================================================
---- a/include/asm-parisc/mmu_context.h
-+++ b/include/asm-parisc/mmu_context.h
-@@ -5,6 +5,7 @@
- #include <asm/atomic.h>
- #include <asm/pgalloc.h>
- #include <asm/pgtable.h>
-+#include <asm-generic/mm_hooks.h>
- 
- static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+ static inline void arch_exit_mmap(struct mm_struct *mm)
  {
-===================================================================
---- a/include/asm-powerpc/mmu_context.h
-+++ b/include/asm-powerpc/mmu_context.h
-@@ -10,6 +10,7 @@
- #include <linux/mm.h>	
- #include <asm/mmu.h>	
- #include <asm/cputable.h>
-+#include <asm-generic/mm_hooks.h>
- 
- /*
-  * Copyright (C) 2001 PPC 64 Team, IBM Corp
-===================================================================
---- a/include/asm-ppc/mmu_context.h
-+++ b/include/asm-ppc/mmu_context.h
-@@ -6,6 +6,7 @@
- #include <asm/bitops.h>
- #include <asm/mmu.h>
- #include <asm/cputable.h>
-+#include <asm-generic/mm_hooks.h>
- 
- /*
-  * On 32-bit PowerPC 6xx/7xx/7xxx CPUs, we use a set of 16 VSIDs
-===================================================================
---- a/include/asm-s390/mmu_context.h
-+++ b/include/asm-s390/mmu_context.h
-@@ -10,6 +10,8 @@
- #define __S390_MMU_CONTEXT_H
- 
- #include <asm/pgalloc.h>
-+#include <asm-generic/mm_hooks.h>
-+
- /*
-  * get a new mmu context.. S390 don't know about contexts.
-  */
-===================================================================
---- a/include/asm-sh/mmu_context.h
-+++ b/include/asm-sh/mmu_context.h
-@@ -12,6 +12,7 @@
- #include <asm/tlbflush.h>
- #include <asm/uaccess.h>
- #include <asm/io.h>
-+#include <asm-generic/mm_hooks.h>
- 
- /*
-  * The MMU "context" consists of two things:
-===================================================================
---- a/include/asm-sh64/mmu_context.h
-+++ b/include/asm-sh64/mmu_context.h
-@@ -27,7 +27,7 @@ extern unsigned long mmu_context_cache;
- extern unsigned long mmu_context_cache;
- 
- #include <asm/page.h>
+-	paravirt_ops.exit_mmap(mm);
+-}
 -
-+#include <asm-generic/mm_hooks.h>
- 
- /* Current mm's pgd */
- extern pgd_t *mmu_pdtp_cache;
-===================================================================
---- a/include/asm-sparc/mmu_context.h
-+++ b/include/asm-sparc/mmu_context.h
-@@ -4,6 +4,8 @@
- #include <asm/btfixup.h>
- 
- #ifndef __ASSEMBLY__
-+
-+#include <asm-generic/mm_hooks.h>
- 
- static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
- {
-===================================================================
---- a/include/asm-sparc64/mmu_context.h
-+++ b/include/asm-sparc64/mmu_context.h
-@@ -9,6 +9,7 @@
- #include <linux/spinlock.h>
- #include <asm/system.h>
- #include <asm/spitfire.h>
-+#include <asm-generic/mm_hooks.h>
- 
- static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
- {
-===================================================================
---- a/include/asm-um/mmu_context.h
-+++ b/include/asm-um/mmu_context.h
-@@ -5,6 +5,8 @@
- 
- #ifndef __UM_MMU_CONTEXT_H
- #define __UM_MMU_CONTEXT_H
-+
-+#include <asm-generic/mm_hooks.h>
- 
- #include "linux/sched.h"
- #include "choose-mode.h"
-===================================================================
---- a/include/asm-v850/mmu_context.h
-+++ b/include/asm-v850/mmu_context.h
-@@ -1,5 +1,7 @@
- #ifndef __V850_MMU_CONTEXT_H__
- #define __V850_MMU_CONTEXT_H__
-+
-+#include <asm-generic/mm_hooks.h>
- 
- #define destroy_context(mm)		((void)0)
- #define init_new_context(tsk,mm)	0
-===================================================================
---- a/include/asm-x86_64/mmu_context.h
-+++ b/include/asm-x86_64/mmu_context.h
-@@ -7,6 +7,7 @@
- #include <asm/pda.h>
- #include <asm/pgtable.h>
- #include <asm/tlbflush.h>
-+#include <asm-generic/mm_hooks.h>
- 
- /*
-  * possibly do the LDT unload here?
-===================================================================
---- a/include/asm-xtensa/mmu_context.h
-+++ b/include/asm-xtensa/mmu_context.h
-@@ -18,6 +18,7 @@
- #include <asm/pgtable.h>
- #include <asm/cacheflush.h>
- #include <asm/tlbflush.h>
-+#include <asm-generic/mm_hooks.h>
- 
- #define XCHAL_MMU_ASID_BITS	8
- 
-===================================================================
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -374,12 +374,6 @@ struct mm_struct {
- 	rwlock_t		ioctx_list_lock;
- 	struct kioctx		*ioctx_list;
- };
+-#define __flush_tlb() paravirt_ops.flush_tlb_user()
+-#define __flush_tlb_global() paravirt_ops.flush_tlb_kernel()
+-#define __flush_tlb_single(addr) paravirt_ops.flush_tlb_single(addr)
 -
--#ifndef __HAVE_ARCH_MM_LIFETIME
--#define arch_activate_mm(prev, next)	do {} while(0)
--#define arch_dup_mmap(oldmm, mm)	do {} while(0)
--#define arch_exit_mmap(mm)		do {} while(0)
+-#define paravirt_alloc_pt(pfn) paravirt_ops.alloc_pt(pfn)
+-#define paravirt_release_pt(pfn) paravirt_ops.release_pt(pfn)
+-
+-#define paravirt_alloc_pd(pfn) paravirt_ops.alloc_pd(pfn)
++	PVOP_VCALL1(exit_mmap, mm);
++}
++
++#define __flush_tlb()		PVOP_VCALL0(flush_tlb_user)
++#define __flush_tlb_global()	PVOP_VCALL0(flush_tlb_kernel)
++#define __flush_tlb_single(addr) PVOP_VCALL1(flush_tlb_single, addr)
++
++#define paravirt_alloc_pt(pfn)	PVOP_VCALL1(alloc_pt, pfn)
++#define paravirt_release_pt(pfn) PVOP_VCALL1(release_pt, pfn)
++
++#define paravirt_alloc_pd(pfn)	PVOP_VCALL1(alloc_pd, pfn)
+ #define paravirt_alloc_pd_clone(pfn, clonepfn, start, count) \
+-	paravirt_ops.alloc_pd_clone(pfn, clonepfn, start, count)
+-#define paravirt_release_pd(pfn) paravirt_ops.release_pd(pfn)
++	PVOP_VCALL4(alloc_pd_clone, pfn, clonepfn, start, count)
++#define paravirt_release_pd(pfn) PVOP_VCALL1(release_pd, pfn)
++
++static inline void pte_update(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
++{
++	PVOP_VCALL3(pte_update, mm, addr, ptep);
++}
++
++static inline void pte_update_defer(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
++{
++	PVOP_VCALL3(pte_update_defer, mm, addr, ptep);
++}
++
++#ifdef CONFIG_X86_PAE
++static inline pte_t __pte(unsigned long long val)
++{
++	unsigned long long ret = PVOP_CALL2(unsigned long long, make_pte, val, val >> 32);
++	return (pte_t) { ret, ret >> 32 };
++}
++
++static inline pmd_t __pmd(unsigned long long val)
++{
++	return (pmd_t) { PVOP_CALL2(unsigned long long, make_pmd, val, val >> 32) };
++}
++
++static inline pgd_t __pgd(unsigned long long val)
++{
++	return (pgd_t) { PVOP_CALL2(unsigned long long, make_pgd, val, val >> 32) };
++}
++
++static inline unsigned long long pte_val(pte_t x)
++{
++	return PVOP_CALL2(unsigned long long, pte_val, x.pte_low, x.pte_high);
++}
++
++static inline unsigned long long pmd_val(pmd_t x)
++{
++	return PVOP_CALL2(unsigned long long, pmd_val, x.pmd, x.pmd >> 32);
++}
++
++static inline unsigned long long pgd_val(pgd_t x)
++{
++	return PVOP_CALL2(unsigned long long, pgd_val, x.pgd, x.pgd >> 32);
++}
+ 
+ static inline void set_pte(pte_t *ptep, pte_t pteval)
+ {
+-	paravirt_ops.set_pte(ptep, pteval);
++	PVOP_VCALL3(set_pte, ptep, pteval.pte_low, pteval.pte_high);
+ }
+ 
+ static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
+ 			      pte_t *ptep, pte_t pteval)
+ {
++	/* 5 arg words */
+ 	paravirt_ops.set_pte_at(mm, addr, ptep, pteval);
+ }
+ 
++static inline void set_pte_atomic(pte_t *ptep, pte_t pteval)
++{
++	PVOP_VCALL3(set_pte_atomic, ptep, pteval.pte_low, pteval.pte_high);
++}
++
++static inline void set_pte_present(struct mm_struct *mm, unsigned long addr,
++				   pte_t *ptep, pte_t pte)
++{
++	/* 5 arg words */
++	paravirt_ops.set_pte_present(mm, addr, ptep, pte);
++}
++
+ static inline void set_pmd(pmd_t *pmdp, pmd_t pmdval)
+ {
+-	paravirt_ops.set_pmd(pmdp, pmdval);
+-}
+-
+-static inline void pte_update(struct mm_struct *mm, u32 addr, pte_t *ptep)
+-{
+-	paravirt_ops.pte_update(mm, addr, ptep);
+-}
+-
+-static inline void pte_update_defer(struct mm_struct *mm, u32 addr, pte_t *ptep)
+-{
+-	paravirt_ops.pte_update_defer(mm, addr, ptep);
+-}
+-
+-#ifdef CONFIG_X86_PAE
+-static inline void set_pte_atomic(pte_t *ptep, pte_t pteval)
+-{
+-	paravirt_ops.set_pte_atomic(ptep, pteval);
+-}
+-
+-static inline void set_pte_present(struct mm_struct *mm, unsigned long addr, pte_t *ptep, pte_t pte)
+-{
+-	paravirt_ops.set_pte_present(mm, addr, ptep, pte);
++	PVOP_VCALL3(set_pmd, pmdp, pmdval.pmd, pmdval.pmd >> 32);
+ }
+ 
+ static inline void set_pud(pud_t *pudp, pud_t pudval)
+ {
+-	paravirt_ops.set_pud(pudp, pudval);
++	PVOP_VCALL3(set_pud, pudp, pudval.pgd.pgd, pudval.pgd.pgd >> 32);
+ }
+ 
+ static inline void pte_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
+ {
+-	paravirt_ops.pte_clear(mm, addr, ptep);
++	PVOP_VCALL3(pte_clear, mm, addr, ptep);
+ }
+ 
+ static inline void pmd_clear(pmd_t *pmdp)
+ {
+-	paravirt_ops.pmd_clear(pmdp);
+-}
 -#endif
++	PVOP_VCALL1(pmd_clear, pmdp);
++}
++
++static inline pte_t raw_ptep_get_and_clear(pte_t *p)
++{
++	unsigned long long val = PVOP_CALL1(unsigned long long, ptep_get_and_clear, p);
++	return (pte_t) { val, val >> 32 };
++}
++#else  /* !CONFIG_X86_PAE */
++static inline pte_t __pte(unsigned long val)
++{
++	return (pte_t) { PVOP_CALL1(unsigned long, make_pte, val) };
++}
++
++static inline pgd_t __pgd(unsigned long val)
++{
++	return (pgd_t) { PVOP_CALL1(unsigned long, make_pgd, val) };
++}
++
++static inline unsigned long pte_val(pte_t x)
++{
++	return PVOP_CALL1(unsigned long, pte_val, x.pte_low);
++}
++
++static inline unsigned long pgd_val(pgd_t x)
++{
++	return PVOP_CALL1(unsigned long, pgd_val, x.pgd);
++}
++
++static inline void set_pte(pte_t *ptep, pte_t pteval)
++{
++	PVOP_VCALL2(set_pte, ptep, pteval.pte_low);
++}
++
++static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
++			      pte_t *ptep, pte_t pteval)
++{
++	PVOP_VCALL4(set_pte_at, mm, addr, ptep, pteval.pte_low);
++}
++
++static inline void set_pmd(pmd_t *pmdp, pmd_t pmdval)
++{
++	PVOP_VCALL2(set_pmd, pmdp, pmdval.pud.pgd.pgd);
++}
++
++static inline pte_t raw_ptep_get_and_clear(pte_t *p)
++{
++	return (pte_t) { PVOP_CALL1(unsigned long, ptep_get_and_clear, p) };
++}
++#endif	/* CONFIG_X86_PAE */
  
- struct sighand_struct {
- 	atomic_t		count;
-===================================================================
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -29,6 +29,7 @@
- #include <asm/uaccess.h>
- #include <asm/cacheflush.h>
- #include <asm/tlb.h>
-+#include <asm/mmu_context.h>
+ /* Lazy mode for batching updates / context switch */
+ #define PARAVIRT_LAZY_NONE 0
+@@ -488,12 +795,12 @@ static inline void pmd_clear(pmd_t *pmdp
+ #define PARAVIRT_LAZY_CPU  2
  
- #ifndef arch_mmap_check
- #define arch_mmap_check(addr, len, flags)	(0)
+ #define  __HAVE_ARCH_ENTER_LAZY_CPU_MODE
+-#define arch_enter_lazy_cpu_mode() paravirt_ops.set_lazy_mode(PARAVIRT_LAZY_CPU)
+-#define arch_leave_lazy_cpu_mode() paravirt_ops.set_lazy_mode(PARAVIRT_LAZY_NONE)
++#define arch_enter_lazy_cpu_mode() PVOP_VCALL1(set_lazy_mode, PARAVIRT_LAZY_CPU)
++#define arch_leave_lazy_cpu_mode() PVOP_VCALL1(set_lazy_mode, PARAVIRT_LAZY_NONE)
+ 
+ #define  __HAVE_ARCH_ENTER_LAZY_MMU_MODE
+-#define arch_enter_lazy_mmu_mode() paravirt_ops.set_lazy_mode(PARAVIRT_LAZY_MMU)
+-#define arch_leave_lazy_mmu_mode() paravirt_ops.set_lazy_mode(PARAVIRT_LAZY_NONE)
++#define arch_enter_lazy_mmu_mode() PVOP_VCALL1(set_lazy_mode, PARAVIRT_LAZY_MMU)
++#define arch_leave_lazy_mmu_mode() PVOP_VCALL1(set_lazy_mode, PARAVIRT_LAZY_NONE)
+ 
+ void _paravirt_nop(void);
+ #define paravirt_nop	((void *)_paravirt_nop)
 
 -- 
 
