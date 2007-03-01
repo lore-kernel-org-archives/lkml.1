@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932801AbXCAABZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932806AbXCAAH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932801AbXCAABZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 19:01:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932800AbXCAABZ
+	id S932806AbXCAAH2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 19:07:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932809AbXCAAH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 19:01:25 -0500
-Received: from firewall.rowland.harvard.edu ([140.247.233.35]:46185 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S932801AbXCAABY (ORCPT
+	Wed, 28 Feb 2007 19:07:28 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:41019
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932806AbXCAAH2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 19:01:24 -0500
-Date: Wed, 28 Feb 2007 19:01:17 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Roland McGrath <roland@redhat.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, <eranian@hpl.hp.com>,
-       <linux-kernel@vger.kernel.org>, <linux-ia64@vger.kernel.org>,
-       <ak@suse.de>, <tony.luck@intel.com>, William Cohen <wcohen@redhat.com>
-Subject: Re: debug registers and fork
-In-Reply-To: <20070228212510.1E213180067@magilla.sf.frob.com>
-Message-ID: <Pine.LNX.4.44L0.0702281847330.24215-100000@netrider.rowland.org>
+	Wed, 28 Feb 2007 19:07:28 -0500
+From: Rob Landley <rob@landley.net>
+To: "Gregor Jasny" <gjasny@googlemail.com>
+Subject: Re: Menuconfig has butterfly effects?
+Date: Wed, 28 Feb 2007 19:07:04 -0500
+User-Agent: KMail/1.9.1
+Cc: linux-kernel@vger.kernel.org
+References: <200702271812.42616.rob@landley.net> <9d2cd630702271543i1e7931f8kd786570d2ff60adf@mail.gmail.com>
+In-Reply-To: <9d2cd630702271543i1e7931f8kd786570d2ff60adf@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200702281907.06152.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Feb 2007, Roland McGrath wrote:
-
-> It is true that debug registers are inherited by fork and clone.
-> I am 99% sure that this was never specifically intended, but it
-> has been this way for a long time (since 2.4 at least).  It's an
-> implicit consequence of the do_fork implementation style, which
-> does a blind copy of the whole task_struct and then explicitly
-> reinitializes some individual fields.  I suppose this has some
-> benefit or other, but it is very prone to new pieces of state
-> getting implicitly copied without the person adding that new state
-> ever consciously deciding what its inheritance semantics should be.
+On Tuesday 27 February 2007 6:43 pm, Gregor Jasny wrote:
+> Hi,
 > 
-> Alan Stern is working on a revamp of the x86 debug register
-> support.  This is a fine opportunity to clean this area up and
-> decide positively what the semantics ought to be.
+> 2007/2/28, Rob Landley <rob@landley.net>:
+> > I ran "make ARCH=x86_64 menuconfig", did a lot of editing, and saved
+> > the .config.  Then I copied that to a backup, ran "make oldconfig" on the
+> 
+> I'd try with "make ARCH=x86_64 oldconfig"
 
-Absolutely.  Right now I just have a placeholder function with a note
-about checking for CLONE_PTRACE.  The cleanest solution, far and away,
-would be to have the child process inherit no breakpoints and no debug
-register values.
+I did.  Sorry for the confusion there.  (If I'd gotten that wrong, there'd 
+have been a bit more change. :)
 
-Alan Stern
-
+Rob
+-- 
+"Perfection is reached, not when there is no longer anything to add, but
+when there is no longer anything to take away." - Antoine de Saint-Exupery
