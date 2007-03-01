@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752163AbXCAEPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752166AbXCAEP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752163AbXCAEPo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 23:15:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbXCAEPo
+	id S1752166AbXCAEP5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 23:15:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbXCAEP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 23:15:44 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:19946 "EHLO
+	Wed, 28 Feb 2007 23:15:57 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:18775 "EHLO
 	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752163AbXCAEPj (ORCPT
+	with ESMTP id S1752166AbXCAEPz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 23:15:39 -0500
+	Wed, 28 Feb 2007 23:15:55 -0500
 X-IronPort-AV: i="4.14,233,1170651600"; 
-   d="scan'208"; a="29445841:sNHT57543038"
-Subject: [PATCH -mm 2/5] Blackfin: on-chip serial driver update
+   d="scan'208"; a="29445866:sNHT34551160"
+Subject: [PATCH -mm 3/5] Blackfin: on-chip ethernet MAC controller driver
 From: "Wu, Bryan" <bryan.wu@analog.com>
 Reply-To: bryan.wu@analog.com
-To: Andrew Morton <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk,
-       rmk+lkml@arm.linux.org.uk, linux-kernel@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>, jgarzik@pobox.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Organization: Analog Devices, Inc.
-Date: Thu, 01 Mar 2007 12:14:58 +0800
-Message-Id: <1172722498.5264.76.camel@roc-desktop>
+Date: Thu, 01 Mar 2007 12:15:14 +0800
+Message-Id: <1172722514.5264.77.camel@roc-desktop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,1175 +29,1237 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi folks,
 
-Here is the update version of blackfin serial driver in -mm tree.
-Fixed some bugs and please rename the patch file to
-blackfin-driver-serial-core.patch.
+Here is the blackfin on-chip ethernet MAC controller driver for Linux.
 
-[PATCH] Blackfin: serial driver for Blackfin architecture
+It's name is blackfin-driver-net-stamp537.patch
 
-This patch implements the driver necessary use the Analog Devices Blackfin processor's Serial Port.
+[PATCH] Blackfin: on-chip ethernet MAC controller driver
 
-Signed-off-by: Bryan Wu <bryan.wu@analog.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+This patch implements the driver necessary use the Analog Devices
+Blackfin processor's on-chip ethernet MAC controller.
+
+Signed-off-by: Bryan Wu <bryan.wu@analog.com> 
 ---
 
- drivers/serial/Kconfig      |   94 ++++
- drivers/serial/Makefile     |    1
- drivers/serial/bfin_5xx.c   | 1012 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/serial_core.h |    3
- 4 files changed, 1110 insertions(+)
+ drivers/net/Kconfig    |   44 ++
+ drivers/net/Makefile   |    1
+ drivers/net/bfin_mac.c |  988 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/net/bfin_mac.h |  146 +++++++++
+ 4 files changed, 1179 insertions(+)
 
-Index: linux-2.6/drivers/serial/Kconfig
+Index: linux-2.6/drivers/net/Kconfig
 ===================================================================
---- linux-2.6.orig/drivers/serial/Kconfig	2007-03-01 17:20:57.000000000 +0800
-+++ linux-2.6/drivers/serial/Kconfig	2007-03-01 17:21:12.000000000 +0800
-@@ -509,6 +509,100 @@
- 	  your boot loader (lilo or loadlin) about how to pass options to the
- 	  kernel at boot time.)
+--- linux-2.6.orig/drivers/net/Kconfig	2007-03-01 11:39:14.000000000 +0800
++++ linux-2.6/drivers/net/Kconfig	2007-03-01 11:39:19.000000000 +0800
+@@ -836,6 +836,50 @@
+ 	  module, say M here and read <file:Documentation/modules.txt> as well
+ 	  as <file:Documentation/networking/net-modules.txt>.
  
-+config SERIAL_BFIN
-+	tristate "Blackfin serial port support (EXPERIMENTAL)"
-+	depends on BFIN && EXPERIMENTAL
-+	select SERIAL_CORE
-+	select SERIAL_BFIN_UART0 if (BF531 || BF532 || BF533 || BF561)
++config BFIN_MAC
++	tristate "Blackfin 536/537 on-chip mac support"
++	depends on NET_ETHERNET && (BF537 || BF536) && (!BF537_PORT_H)
++	select CRC32
++	select BFIN_MAC_USE_L1 if DMA_UNCACHED_NONE
 +	help
-+	  Add support for the built-in UARTs on the Blackfin.
++	  This is the driver for blackfin on-chip mac device. Say Y if you want it
++	  compiled into the kernel. This driver is also available as a module
++	  ( = code which can be inserted in and removed from the running kernel
++	  whenever you want). The module will be called bfin_mac.
 +
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called bfin_5xx.
-+
-+config SERIAL_BFIN_CONSOLE
-+	bool "Console on Blackfin serial port"
-+	depends on SERIAL_BFIN
-+	select SERIAL_CORE_CONSOLE
-+
-+choice
-+	prompt  "Blackfin UART Mode"
-+	depends on SERIAL_BFIN
-+	default SERIAL_BFIN_DMA
++config BFIN_MAC_USE_L1
++	bool "Use L1 memory for rx/tx packets"
++	depends on BFIN_MAC && BF537
++	default y
 +	help
-+	  This driver supports the built-in serial ports of the Blackfin family
-+	  of CPUs
++	  To get maximum network performace, you should use L1 memory as rx/tx buffers.
++	  Say N here if you want to reserve L1 memory for other uses.
 +
-+config SERIAL_BFIN_DMA
-+	bool "Blackfin UART DMA mode"
-+	depends on DMA_UNCACHED_1M
++config BFIN_TX_DESC_NUM
++	int "Number of transmit buffer packets"
++	depends on BFIN_MAC
++	range 6 10 if BFIN_MAC_USE_L1
++	range 10 100
++	default "10"
 +	help
-+	  This driver works under DMA mode. If this option is selected, the
-+	  blackfin simple dma driver is also enabled.
++	  Set the number of buffer packets used in driver.
 +
-+config SERIAL_BFIN_PIO
-+	bool "Blackfin UART PIO mode"
++config BFIN_RX_DESC_NUM
++	int "Number of receive buffer packets"
++	depends on BFIN_MAC
++	range 20 100 if BFIN_MAC_USE_L1
++	range 20 800
++	default "20"
 +	help
-+	  This driver works under PIO mode.
++	  Set the number of buffer packets used in driver.
 +
-+endchoice
-+
-+config SERIAL_BFIN_UART0
-+	bool "Enable UART0"
-+	depends on SERIAL_BFIN
++config BFIN_MAC_RMII
++	bool "RMII PHY Interface (EXPERIMENTAL)"
++	depends on BFIN_MAC && EXPERIMENTAL
++	default n
 +	help
-+	  Enable UART0
++	  Use Reduced PHY MII Interface
 +
-+config BFIN_UART0_CTSRTS
-+	bool "Enable UART0 hardware flow control"
-+	depends on SERIAL_BFIN_UART0
-+	help
-+	  Enable hardware flow control in the driver. Using GPIO emulate the CTS/RTS
-+	  signal.
-+
-+config UART0_CTS_PIN
-+	int "UART0 CTS pin"
-+	depends on BFIN_UART0_CTSRTS
-+	default 23
-+	help
-+	  The default pin is GPIO_GP7.
-+	  Refer to ./include/asm-blackfin/gpio.h to see the GPIO map.
-+
-+config UART0_RTS_PIN
-+	int "UART0 RTS pin"
-+	depends on BFIN_UART0_CTSRTS
-+	default 22
-+	help
-+	  The default pin is GPIO_GP6.
-+	  Refer to ./include/asm-blackfin/gpio.h to see the GPIO map.
-+
-+config SERIAL_BFIN_UART1
-+	bool "Enable UART1"
-+	depends on SERIAL_BFIN && BF537
-+	help
-+	  Enable UART1
-+
-+config BFIN_UART1_CTSRTS
-+	bool "Enable UART1 hardware flow control"
-+	depends on SERIAL_BFIN_UART1
-+	help
-+	  Enable hardware flow control in the driver. Using GPIO emulate the CTS/RTS
-+	  signal.
-+
-+config UART1_CTS_PIN
-+	int "UART1 CTS pin"
-+	depends on BFIN_UART1_CTSRTS
-+	default -1
-+	help
-+	  Refer to ./include/asm-blackfin/gpio.h to see the GPIO map.
-+
-+config UART1_RTS_PIN
-+	int "UART1 RTS pin"
-+	depends on BFIN_UART1_CTSRTS
-+	default -1
-+	help
-+	  Refer to ./include/asm-blackfin/gpio.h to see the GPIO map.
-+
- config SERIAL_IMX
- 	bool "IMX serial port support"
- 	depends on ARM && ARCH_IMX
-Index: linux-2.6/drivers/serial/Makefile
+ config SMC9194
+ 	tristate "SMC 9194 support"
+ 	depends on NET_VENDOR_SMC && (ISA || MAC && BROKEN)
+Index: linux-2.6/drivers/net/Makefile
 ===================================================================
---- linux-2.6.orig/drivers/serial/Makefile	2007-03-01 17:20:21.000000000 +0800
-+++ linux-2.6/drivers/serial/Makefile	2007-03-01 17:21:12.000000000 +0800
-@@ -27,6 +27,7 @@
- obj-$(CONFIG_SERIAL_PXA) += pxa.o
- obj-$(CONFIG_SERIAL_PNX8XXX) += pnx8xxx_uart.o
- obj-$(CONFIG_SERIAL_SA1100) += sa1100.o
-+obj-$(CONFIG_SERIAL_BFIN) += bfin_5xx.o
- obj-$(CONFIG_SERIAL_S3C2410) += s3c2410.o
- obj-$(CONFIG_SERIAL_SUNCORE) += suncore.o
- obj-$(CONFIG_SERIAL_SUNHV) += sunhv.o
-Index: linux-2.6/drivers/serial/bfin_5xx.c
+--- linux-2.6.orig/drivers/net/Makefile	2007-03-01 11:33:24.000000000 +0800
++++ linux-2.6/drivers/net/Makefile	2007-03-01 11:39:19.000000000 +0800
+@@ -195,6 +195,7 @@
+ obj-$(CONFIG_MYRI10GE) += myri10ge/
+ obj-$(CONFIG_SMC91X) += smc91x.o
+ obj-$(CONFIG_SMC911X) += smc911x.o
++obj-$(CONFIG_BFIN_MAC) += bfin_mac.o
+ obj-$(CONFIG_DM9000) += dm9000.o
+ obj-$(CONFIG_FEC_8XX) += fec_8xx/
+ obj-$(CONFIG_PASEMI_MAC) += pasemi_mac.o
+Index: linux-2.6/drivers/net/bfin_mac.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/drivers/serial/bfin_5xx.c	2007-03-01 17:22:47.000000000 +0800
-@@ -0,0 +1,1012 @@
++++ linux-2.6/drivers/net/bfin_mac.c	2007-03-01 11:39:19.000000000 +0800
+@@ -0,0 +1,988 @@
 +/*
-+ * File:         drivers/serial/bfin_5xx.c
-+ * Based on:     Based on drivers/serial/sa1100.c
-+ * Author:       Aubrey Li <aubrey.li@analog.com>
++ * File:         drivers/net/bfin_mac.c
++ * Based on:
++ * Author:       Luke Yang <luke.yang@analog.com>
 + *
 + * Created:
-+ * Description:  Driver for blackfin 5xx serial ports
++ * Description:
 + *
-+ * Rev:          $Id: bfin_5xx.c,v 1.19 2006/09/24 02:33:53 aubrey Exp $
++ * Rev:          $Id: bfin_mac.c,v 1.60 2006/12/16 11:23:56 hennerich Exp $
 + *
 + * Modified:
-+ *               Copyright 2006 Analog Devices Inc.
++ *               Copyright 2004-2006 Analog Devices Inc.
 + *
 + * Bugs:         Enter bugs at http://blackfin.uclinux.org/
 + *
-+ * This program is free software; you can redistribute it and/or modify
++ * This program is free software ;  you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
++ * the Free Software Foundation ;  either version 2, or (at your option)
++ * any later version.
 + *
 + * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * but WITHOUT ANY WARRANTY ;  without even the implied warranty of
 + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 + * GNU General Public License for more details.
 + *
 + * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ * along with this program ;  see the file COPYING.
++ * If not, write to the Free Software Foundation,
++ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 + */
 +
-+#if defined(CONFIG_SERIAL_BFIN_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ)
-+#define SUPPORT_SYSRQ
-+#endif
-+
-+#include <linux/module.h>
-+#include <linux/ioport.h>
 +#include <linux/init.h>
-+#include <linux/console.h>
-+#include <linux/sysrq.h>
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/sched.h>
++#include <linux/slab.h>
++#include <linux/delay.h>
++#include <linux/timer.h>
++#include <linux/errno.h>
++#include <linux/ioport.h>
++#include <linux/crc32.h>
++#include <linux/device.h>
++#include <linux/spinlock.h>
++#include <linux/ethtool.h>
++#include <linux/mii.h>
++
++#include <linux/netdevice.h>
++#include <linux/etherdevice.h>
++#include <linux/skbuff.h>
++
 +#include <linux/platform_device.h>
-+#include <linux/tty.h>
-+#include <linux/tty_flip.h>
-+#include <linux/serial_core.h>
++#include <linux/netdevice.h>
++#include <linux/etherdevice.h>
++#include <linux/skbuff.h>
 +
-+#include <asm/gpio.h>
-+#include <asm/mach/bfin_serial_5xx.h>
-+
-+#ifdef CONFIG_SERIAL_BFIN_DMA
-+#include <linux/dma-mapping.h>
 +#include <asm/io.h>
 +#include <asm/irq.h>
-+#include <asm/cacheflush.h>
-+#endif
++#include <asm/dma.h>
++#include <linux/dma-mapping.h>
 +
-+/* UART name and device definitions */
-+#define BFIN_SERIAL_NAME	"ttyBF"
-+#define BFIN_SERIAL_MAJOR	204
-+#define BFIN_SERIAL_MINOR	64
++#include <asm/irq.h>
++#include <asm/blackfin.h>
++#include <asm/delay.h>
 +
-+/*
-+ * Setup for console. Argument comes from the menuconfig
-+ */
-+#define DMA_RX_XCOUNT		512
-+#define DMA_RX_YCOUNT		(PAGE_SIZE / DMA_RX_XCOUNT)
++#include "bfin_mac.h"
 +
-+#define DMA_RX_FLUSH_JIFFIES	5
++#define CARDNAME "bfin_mac"
 +
-+#ifdef CONFIG_SERIAL_BFIN_DMA
-+static void bfin_serial_dma_tx_chars(struct bfin_serial_port *uart);
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Luke Yang");
++MODULE_DESCRIPTION("Blackfin MAC Driver");
++
++#if defined(CONFIG_BFIN_MAC_USE_L1)
++# define bfin_mac_alloc(dma_handle, size)  l1_data_sram_zalloc(size)
++# define bfin_mac_free(dma_handle, ptr)    l1_data_sram_free(ptr)
 +#else
-+static void bfin_serial_do_work(struct work_struct *work);
-+static void bfin_serial_tx_chars(struct bfin_serial_port *uart);
-+static void local_put_char(struct bfin_serial_port *uart, char ch);
++# define bfin_mac_alloc(dma_handle, size)  dma_alloc_coherent(NULL, size, dma_handle, GFP_DMA)
++# define bfin_mac_free(dma_handle, ptr)    dma_free_coherent(NULL, sizeof(*ptr), ptr, dma_handle)
 +#endif
 +
-+static void bfin_serial_mctrl_check(struct bfin_serial_port *uart);
++#define PKT_BUF_SZ 1580
 +
-+/*
-+ * interrupts are disabled on entry
-+ */
-+static void bfin_serial_stop_tx(struct uart_port *port)
++static void desc_list_free(void);
++
++/* pointers to maintain transmit list */
++struct net_dma_desc_tx *tx_list_head;
++struct net_dma_desc_tx *tx_list_tail;
++struct net_dma_desc_rx *rx_list_head;
++struct net_dma_desc_rx *rx_list_tail;
++struct net_dma_desc_rx *current_rx_ptr;
++struct net_dma_desc_tx *current_tx_ptr;
++struct net_dma_desc_tx *tx_desc;
++struct net_dma_desc_rx *rx_desc;
++
++extern void get_bf537_ether_addr(char *addr);
++
++static int desc_list_init(void)
 +{
-+	struct bfin_serial_port *uart = (struct bfin_serial_port *)port;
-+
-+#ifdef CONFIG_SERIAL_BFIN_DMA
-+	disable_dma(uart->tx_dma_channel);
-+#else
-+	unsigned short ier;
-+
-+	ier = UART_GET_IER(uart);
-+	ier &= ~ETBEI;
-+	UART_PUT_IER(uart, ier);
-+#endif
-+}
-+
-+/*
-+ * port is locked and interrupts are disabled
-+ */
-+static void bfin_serial_start_tx(struct uart_port *port)
-+{
-+	struct bfin_serial_port *uart = (struct bfin_serial_port *)port;
-+
-+#ifdef CONFIG_SERIAL_BFIN_DMA
-+	bfin_serial_dma_tx_chars(uart);
-+#else
-+	unsigned short ier;
-+	ier = UART_GET_IER(uart);
-+	ier |= ETBEI;
-+	UART_PUT_IER(uart, ier);
-+	bfin_serial_tx_chars(uart);
-+#endif
-+}
-+
-+/*
-+ * Interrupts are enabled
-+ */
-+static void bfin_serial_stop_rx(struct uart_port *port)
-+{
-+	struct bfin_serial_port *uart = (struct bfin_serial_port *)port;
-+	unsigned short ier;
-+
-+	ier = UART_GET_IER(uart);
-+	ier &= ~ERBFI;
-+	UART_PUT_IER(uart, ier);
-+}
-+
-+/*
-+ * Set the modem control timer to fire immediately.
-+ */
-+static void bfin_serial_enable_ms(struct uart_port *port)
-+{
-+}
-+
-+#ifdef CONFIG_SERIAL_BFIN_PIO
-+static void local_put_char(struct bfin_serial_port *uart, char ch)
-+{
-+	unsigned short status;
-+	int flags = 0;
-+
-+	spin_lock_irqsave(&uart->port.lock, flags);
-+
-+	do {
-+		status = UART_GET_LSR(uart);
-+	} while (!(status & THRE));
-+
-+	UART_PUT_CHAR(uart, ch);
-+	SSYNC();
-+
-+	spin_unlock_irqrestore(&uart->port.lock, flags);
-+}
-+
-+static void bfin_serial_rx_chars(struct bfin_serial_port *uart)
-+{
-+	struct tty_struct *tty = uart->port.info?uart->port.info->tty:0;
-+	unsigned int status, ch, flg;
-+#ifdef BF533_FAMILY
-+	static int in_break = 0;
-+#endif
-+
-+	status = UART_GET_LSR(uart);
-+ 	ch = UART_GET_CHAR(uart);
-+ 	uart->port.icount.rx++;
-+
-+#ifdef BF533_FAMILY
-+	/* The BF533 family of processors have a nice misbehavior where
-+	 * they continuously generate characters for a "single" break.
-+	 * We have to basically ignore this flood until the "next" valid
-+	 * character comes across.  All other Blackfin families operate
-+	 * properly though.
-+	 */
-+	if (in_break) {
-+		if (ch != 0) {
-+			in_break = 0;
-+			ch = UART_GET_CHAR(uart);
-+		}
-+		return;
-+	}
-+#endif
-+
-+	if (status & BI) {
-+#ifdef BF533_FAMILY
-+		in_break = 1;
-+#endif
-+		uart->port.icount.brk++;
-+		if (uart_handle_break(&uart->port))
-+			goto ignore_char;
-+		flg = TTY_BREAK;
-+	} else if (status & PE) {
-+		flg = TTY_PARITY;
-+		uart->port.icount.parity++;
-+	} else if (status & OE) {
-+		flg = TTY_OVERRUN;
-+		uart->port.icount.overrun++;
-+	} else if (status & FE) {
-+		flg = TTY_FRAME;
-+		uart->port.icount.frame++;
-+	} else
-+		flg = TTY_NORMAL;
-+
-+	if (uart_handle_sysrq_char(&uart->port, ch))
-+		goto ignore_char;
-+	if (tty)
-+		uart_insert_char(&uart->port, status, 2, ch, flg);
-+
-+ignore_char:
-+	if (tty)
-+		tty_flip_buffer_push(tty);
-+}
-+
-+static void bfin_serial_tx_chars(struct bfin_serial_port *uart)
-+{
-+	struct circ_buf *xmit = &uart->port.info->xmit;
-+
-+	if (uart->port.x_char) {
-+		UART_PUT_CHAR(uart, uart->port.x_char);
-+		uart->port.icount.tx++;
-+		uart->port.x_char = 0;
-+		return;
-+	}
-+	/*
-+	 * Check the modem control lines before
-+	 * transmitting anything.
-+	 */
-+	bfin_serial_mctrl_check(uart);
-+
-+	if (uart_circ_empty(xmit) || uart_tx_stopped(&uart->port)) {
-+		bfin_serial_stop_tx(&uart->port);
-+		return;
-+	}
-+
-+	local_put_char(uart, xmit->buf[xmit->tail]);
-+	xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
-+	uart->port.icount.tx++;
-+
-+	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
-+		uart_write_wakeup(&uart->port);
-+
-+	if (uart_circ_empty(xmit))
-+		bfin_serial_stop_tx(&uart->port);
-+}
-+
-+static irqreturn_t bfin_serial_int(int irq, void *dev_id)
-+{
-+	struct bfin_serial_port *uart = dev_id;
-+	unsigned short status;
-+
-+	spin_lock(&uart->port.lock);
-+	status = UART_GET_IIR(uart);
-+	do {
-+		if ((status & IIR_STATUS) == IIR_TX_READY)
-+			bfin_serial_tx_chars(uart);
-+		if ((status & IIR_STATUS) == IIR_RX_READY)
-+			bfin_serial_rx_chars(uart);
-+		status = UART_GET_IIR(uart);
-+	} while (status & (IIR_TX_READY | IIR_RX_READY));
-+	spin_unlock(&uart->port.lock);
-+	return IRQ_HANDLED;
-+}
-+
-+static void bfin_serial_do_work(struct work_struct *work)
-+{
-+	struct bfin_serial_port *uart = container_of(work, struct bfin_serial_port, cts_workqueue);
-+	
-+	bfin_serial_mctrl_check(uart);
-+}
-+
-+#endif
-+
-+#ifdef CONFIG_SERIAL_BFIN_DMA
-+static void bfin_serial_dma_tx_chars(struct bfin_serial_port *uart)
-+{
-+	struct circ_buf *xmit = &uart->port.info->xmit;
-+	unsigned short ier;
-+	int flags = 0;
-+
-+	if (!uart->tx_done)
-+		return;
-+
-+	uart->tx_done = 0;
-+
-+	if (uart->port.x_char) {
-+		UART_PUT_CHAR(uart, uart->port.x_char);
-+		uart->port.icount.tx++;
-+		uart->port.x_char = 0;
-+		uart->tx_done = 1;
-+		return;
-+	}
-+	/*
-+	 * Check the modem control lines before
-+	 * transmitting anything.
-+	 */
-+	bfin_serial_mctrl_check(uart);
-+
-+	if (uart_circ_empty(xmit) || uart_tx_stopped(&uart->port)) {
-+		bfin_serial_stop_tx(&uart->port);
-+		uart->tx_done = 1;
-+		return;
-+	}
-+
-+	spin_lock_irqsave(&uart->port.lock, flags);
-+	uart->tx_count = CIRC_CNT(xmit->head, xmit->tail, UART_XMIT_SIZE);
-+	if (uart->tx_count > (UART_XMIT_SIZE - xmit->tail))
-+		uart->tx_count = UART_XMIT_SIZE - xmit->tail;
-+	blackfin_dcache_flush_range((unsigned long)(xmit->buf+xmit->tail),
-+					(unsigned long)(xmit->buf+xmit->tail+uart->tx_count));
-+	set_dma_config(uart->tx_dma_channel,
-+		set_bfin_dma_config(DIR_READ, DMA_FLOW_STOP,
-+			INTR_ON_BUF,
-+			DIMENSION_LINEAR,
-+			DATA_SIZE_8));
-+	set_dma_start_addr(uart->tx_dma_channel, (unsigned long)(xmit->buf+xmit->tail));
-+	set_dma_x_count(uart->tx_dma_channel, uart->tx_count);
-+	set_dma_x_modify(uart->tx_dma_channel, 1);
-+	enable_dma(uart->tx_dma_channel);
-+	ier = UART_GET_IER(uart);
-+	ier |= ETBEI;
-+	UART_PUT_IER(uart, ier);
-+	spin_unlock_irqrestore(&uart->port.lock, flags);
-+}
-+
-+static void bfin_serial_dma_rx_chars(struct bfin_serial_port * uart)
-+{
-+	struct tty_struct *tty = uart->port.info->tty;
-+	int i, flg, status;
-+
-+	status = UART_GET_LSR(uart);
-+	uart->port.icount.rx += CIRC_CNT(uart->rx_dma_buf.head, uart->rx_dma_buf.tail, UART_XMIT_SIZE);;
-+
-+	if (status & BI) {
-+		uart->port.icount.brk++;
-+		if (uart_handle_break(&uart->port))
-+			goto dma_ignore_char;
-+		flg = TTY_BREAK;
-+	} else if (status & PE) {
-+		flg = TTY_PARITY;
-+		uart->port.icount.parity++;
-+	} else if (status & OE) {
-+		flg = TTY_OVERRUN;
-+		uart->port.icount.overrun++;
-+	} else if (status & FE) {
-+		flg = TTY_FRAME;
-+		uart->port.icount.frame++;
-+	} else
-+		flg = TTY_NORMAL;
-+
-+	for (i = uart->rx_dma_buf.head; i < uart->rx_dma_buf.tail; i++) {
-+		if (uart_handle_sysrq_char(&uart->port, uart->rx_dma_buf.buf[i]))
-+			goto dma_ignore_char;
-+		uart_insert_char(&uart->port, status, 2, uart->rx_dma_buf.buf[i], flg);
-+	}
-+dma_ignore_char:
-+	tty_flip_buffer_push(tty);
-+}
-+
-+void bfin_serial_rx_dma_timeout(struct bfin_serial_port *uart)
-+{
-+	int x_pos, pos;
-+	int flags = 0;
-+
-+	bfin_serial_dma_tx_chars(uart);
-+
-+	spin_lock_irqsave(&uart->port.lock, flags);
-+	x_pos = DMA_RX_XCOUNT - get_dma_curr_xcount(uart->rx_dma_channel);
-+	if (x_pos == DMA_RX_XCOUNT)
-+		x_pos = 0;
-+
-+	pos = uart->rx_dma_nrows * DMA_RX_XCOUNT + x_pos;
-+
-+	if (pos>uart->rx_dma_buf.tail) {
-+		uart->rx_dma_buf.tail = pos;
-+		bfin_serial_dma_rx_chars(uart);
-+		uart->rx_dma_buf.head = uart->rx_dma_buf.tail;
-+	}
-+	spin_unlock_irqrestore(&uart->port.lock, flags);
-+	uart->rx_dma_timer.expires = jiffies + DMA_RX_FLUSH_JIFFIES;
-+	add_timer(&(uart->rx_dma_timer));
-+}
-+
-+static irqreturn_t bfin_serial_dma_tx_int(int irq, void *dev_id)
-+{
-+	struct bfin_serial_port *uart = dev_id;
-+	struct circ_buf *xmit = &uart->port.info->xmit;
-+	unsigned short ier;
-+
-+	spin_lock(&uart->port.lock);
-+	if (!(get_dma_curr_irqstat(uart->tx_dma_channel)&DMA_RUN)) {
-+		clear_dma_irqstat(uart->tx_dma_channel);
-+		disable_dma(uart->tx_dma_channel);
-+		ier = UART_GET_IER(uart);
-+		ier &= ~ETBEI;
-+		UART_PUT_IER(uart, ier);
-+		xmit->tail = (xmit->tail+uart->tx_count) &(UART_XMIT_SIZE -1);
-+		uart->port.icount.tx+=uart->tx_count;
-+
-+		if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
-+			uart_write_wakeup(&uart->port);
-+
-+		if (uart_circ_empty(xmit))
-+			bfin_serial_stop_tx(&uart->port);
-+		uart->tx_done = 1;
-+	}
-+
-+	spin_unlock(&uart->port.lock);
-+	return IRQ_HANDLED;
-+}
-+
-+static irqreturn_t bfin_serial_dma_rx_int(int irq, void *dev_id)
-+{
-+	struct bfin_serial_port *uart = dev_id;
-+	unsigned short irqstat;
-+
-+	uart->rx_dma_nrows++;
-+	if (uart->rx_dma_nrows == DMA_RX_YCOUNT) {
-+		uart->rx_dma_nrows = 0;
-+		uart->rx_dma_buf.tail = DMA_RX_XCOUNT*DMA_RX_YCOUNT;
-+		bfin_serial_dma_rx_chars(uart);
-+		uart->rx_dma_buf.head = uart->rx_dma_buf.tail = 0;
-+	}
-+	spin_lock(&uart->port.lock);
-+	irqstat = get_dma_curr_irqstat(uart->rx_dma_channel);
-+	clear_dma_irqstat(uart->rx_dma_channel);
-+
-+	spin_unlock(&uart->port.lock);
-+	return IRQ_HANDLED;
-+}
-+#endif
-+
-+/*
-+ * Return TIOCSER_TEMT when transmitter is not busy.
-+ */
-+static unsigned int bfin_serial_tx_empty(struct uart_port *port)
-+{
-+	struct bfin_serial_port *uart = (struct bfin_serial_port *)port;
-+	unsigned short lsr;
-+
-+	lsr = UART_GET_LSR(uart);
-+	if (lsr & TEMT)
-+		return TIOCSER_TEMT;
-+	else
-+		return 0;
-+}
-+
-+static unsigned int bfin_serial_get_mctrl(struct uart_port *port)
-+{
-+#ifdef CONFIG_SERIAL_BFIN_CTSRTS
-+	struct bfin_serial_port *uart = (struct bfin_serial_port *)port;
-+	if (uart->cts_pin < 0)
-+		return TIOCM_CTS | TIOCM_DSR | TIOCM_CAR;
-+
-+	if (gpio_get_value(uart->cts_pin))
-+		return TIOCM_DSR | TIOCM_CAR;
-+	else
-+#endif
-+		return TIOCM_CTS | TIOCM_DSR | TIOCM_CAR;
-+}
-+
-+static void bfin_serial_set_mctrl(struct uart_port *port, unsigned int mctrl)
-+{
-+#ifdef CONFIG_SERIAL_BFIN_CTSRTS
-+	struct bfin_serial_port *uart = (struct bfin_serial_port *)port;
-+	if (uart->rts_pin < 0)
-+		return;
-+
-+	if (mctrl & TIOCM_RTS)
-+		gpio_set_value(uart->rts_pin, 0);
-+	else
-+		gpio_set_value(uart->rts_pin, 1);
-+#endif
-+}
-+
-+/*
-+ * Handle any change of modem status signal since we were last called.
-+ */
-+static void bfin_serial_mctrl_check(struct bfin_serial_port *uart)
-+{
-+#ifdef CONFIG_SERIAL_BFIN_CTSRTS
-+	unsigned int status;
-+# ifdef CONFIG_SERIAL_BFIN_DMA
-+	struct uart_info *info = uart->port.info;
-+	struct tty_struct *tty = info->tty;
-+
-+	status = bfin_serial_get_mctrl(&uart->port);
-+	if (!(status & TIOCM_CTS)) {
-+		tty->hw_stopped = 1;
-+	} else {
-+		tty->hw_stopped = 0;
-+	}
-+# else
-+	status = bfin_serial_get_mctrl(&uart->port);
-+	uart_handle_cts_change(&uart->port, status & TIOCM_CTS);
-+	if (!(status & TIOCM_CTS))
-+		schedule_work(&uart->cts_workqueue);
-+# endif
-+#endif
-+}
-+
-+/*
-+ * Interrupts are always disabled.
-+ */
-+static void bfin_serial_break_ctl(struct uart_port *port, int break_state)
-+{
-+}
-+
-+static int bfin_serial_startup(struct uart_port *port)
-+{
-+	struct bfin_serial_port *uart = (struct bfin_serial_port *)port;
-+
-+#ifdef CONFIG_SERIAL_BFIN_DMA
++	struct net_dma_desc_tx *tmp_desc_tx;
++	struct net_dma_desc_rx *tmp_desc_rx;
++	int i;
++	struct sk_buff *new_skb;
++#if !defined(CONFIG_BFIN_MAC_USE_L1)
 +	dma_addr_t dma_handle;
-+
-+	if (request_dma(uart->rx_dma_channel, "BFIN_UART_RX") < 0) {
-+		printk(KERN_NOTICE "Unable to attach Blackfin UART RX DMA channel\n");
-+		return -EBUSY;
-+	}
-+
-+	if (request_dma(uart->tx_dma_channel, "BFIN_UART_TX") < 0) {
-+		printk(KERN_NOTICE "Unable to attach Blackfin UART TX DMA channel\n");
-+		free_dma(uart->rx_dma_channel);
-+		return -EBUSY;
-+	}
-+
-+	set_dma_callback(uart->rx_dma_channel, bfin_serial_dma_rx_int, uart);
-+	set_dma_callback(uart->tx_dma_channel, bfin_serial_dma_tx_int, uart);
-+
-+	uart->rx_dma_buf.buf = (unsigned char *)dma_alloc_coherent(NULL, PAGE_SIZE, &dma_handle, GFP_DMA);
-+	uart->rx_dma_buf.head = 0;
-+	uart->rx_dma_buf.tail = 0;
-+	uart->rx_dma_nrows = 0;
-+
-+	set_dma_config(uart->rx_dma_channel,
-+		set_bfin_dma_config(DIR_WRITE, DMA_FLOW_AUTO,
-+				INTR_ON_ROW, DIMENSION_2D,
-+				DATA_SIZE_8));
-+	set_dma_x_count(uart->rx_dma_channel, DMA_RX_XCOUNT);
-+	set_dma_x_modify(uart->rx_dma_channel, 1);
-+	set_dma_y_count(uart->rx_dma_channel, DMA_RX_YCOUNT);
-+	set_dma_y_modify(uart->rx_dma_channel, 1);
-+	set_dma_start_addr(uart->rx_dma_channel, (unsigned long)uart->rx_dma_buf.buf);
-+	enable_dma(uart->rx_dma_channel);
-+
-+	uart->rx_dma_timer.data = (unsigned long)(uart);
-+	uart->rx_dma_timer.function = (void *)bfin_serial_rx_dma_timeout;
-+	uart->rx_dma_timer.expires = jiffies + DMA_RX_FLUSH_JIFFIES;
-+	add_timer(&(uart->rx_dma_timer));
-+#else
-+	if (request_irq
-+	    (uart->port.irq, bfin_serial_int, IRQF_DISABLED,
-+	     "BFIN_UART_RX", uart)) {
-+		printk(KERN_NOTICE "Unable to attach BlackFin UART RX interrupt\n");
-+		return -EBUSY;
-+	}
-+
-+	if (request_irq
-+	    (uart->port.irq+1, bfin_serial_int, IRQF_DISABLED,
-+	     "BFIN_UART_TX", uart)) {
-+		printk(KERN_NOTICE "Unable to attach BlackFin UART TX interrupt\n");
-+		free_irq(uart->port.irq, uart);
-+		return -EBUSY;
-+	}
 +#endif
-+	UART_PUT_IER(uart, UART_GET_IER(uart) | ERBFI);
-+	return 0;
-+}
 +
-+static void bfin_serial_shutdown(struct uart_port *port)
-+{
-+	struct bfin_serial_port *uart = (struct bfin_serial_port *)port;
++	tx_desc =
++	    bfin_mac_alloc(&dma_handle,
++			   sizeof(struct net_dma_desc_tx) *
++			   CONFIG_BFIN_TX_DESC_NUM);
++	if (tx_desc == NULL)
++		goto init_error;
 +
-+#ifdef CONFIG_SERIAL_BFIN_DMA
-+	disable_dma(uart->tx_dma_channel);
-+	free_dma(uart->tx_dma_channel);
-+	disable_dma(uart->rx_dma_channel);
-+	free_dma(uart->rx_dma_channel);
-+	del_timer(&(uart->rx_dma_timer));
-+#else
-+	free_irq(uart->port.irq, uart);
-+	free_irq(uart->port.irq+1, uart);
-+#endif
-+}
++	rx_desc =
++	    bfin_mac_alloc(&dma_handle,
++			   sizeof(struct net_dma_desc_rx) *
++			   CONFIG_BFIN_RX_DESC_NUM);
++	if (rx_desc == NULL)
++		goto init_error;
 +
-+static void
-+bfin_serial_set_termios(struct uart_port *port, struct ktermios *termios,
-+		   struct ktermios *old)
-+{
-+	struct bfin_serial_port *uart = (struct bfin_serial_port *)port;
-+	unsigned long flags;
-+	unsigned int baud, quot;
-+	unsigned short val, ier, lsr, lcr = 0;
++	/* init tx_list */
++	for (i = 0; i < CONFIG_BFIN_TX_DESC_NUM; i++) {
 +
-+	switch (termios->c_cflag & CSIZE) {
-+	case CS8:
-+		lcr = WLS(8);
-+		break;
-+	case CS7:
-+		lcr = WLS(7);
-+		break;
-+	case CS6:
-+		lcr = WLS(6);
-+		break;
-+	case CS5:
-+		lcr = WLS(5);
-+		break;
-+	default:
-+		printk(KERN_ERR "%s: word lengh not supported\n",
-+			__FUNCTION__);
++		tmp_desc_tx = tx_desc + i;
++
++		if (i == 0) {
++			tx_list_head = tmp_desc_tx;
++			tx_list_tail = tmp_desc_tx;
++		}
++
++		tmp_desc_tx->desc_a.start_addr =
++		    (unsigned long)tmp_desc_tx->packet;
++		tmp_desc_tx->desc_a.x_count = 0;
++		tmp_desc_tx->desc_a.config.b_DMA_EN = 0;	//disabled
++		tmp_desc_tx->desc_a.config.b_WNR = 0;	//read from memory
++		tmp_desc_tx->desc_a.config.b_WDSIZE = 2;	//wordsize is 32 bits
++		tmp_desc_tx->desc_a.config.b_NDSIZE = 6;	//6 half words is desc size.
++		tmp_desc_tx->desc_a.config.b_FLOW = 7;	//large desc flow
++		tmp_desc_tx->desc_a.next_dma_desc = &(tmp_desc_tx->desc_b);
++
++		tmp_desc_tx->desc_b.start_addr =
++		    (unsigned long)(&(tmp_desc_tx->status));
++		tmp_desc_tx->desc_b.x_count = 0;
++		tmp_desc_tx->desc_b.config.b_DMA_EN = 1;	//enabled
++		tmp_desc_tx->desc_b.config.b_WNR = 1;	//write to memory
++		tmp_desc_tx->desc_b.config.b_WDSIZE = 2;	//wordsize is 32 bits
++		tmp_desc_tx->desc_b.config.b_DI_EN = 0;	//disable interrupt
++		tmp_desc_tx->desc_b.config.b_NDSIZE = 6;
++		tmp_desc_tx->desc_b.config.b_FLOW = 7;	//stop mode
++		tmp_desc_tx->skb = NULL;
++		tx_list_tail->desc_b.next_dma_desc = &(tmp_desc_tx->desc_a);
++		tx_list_tail->next = tmp_desc_tx;
++
++		tx_list_tail = tmp_desc_tx;
 +	}
++	tx_list_tail->next = tx_list_head;	/* tx_list is a circle */
++	tx_list_tail->desc_b.next_dma_desc = &(tx_list_head->desc_a);
++	current_tx_ptr = tx_list_head;
 +
-+	if (termios->c_cflag & CSTOPB)
-+		lcr |= STB;
-+	if (termios->c_cflag & PARENB) {
-+		lcr |= PEN;
-+		if (!(termios->c_cflag & PARODD))
-+			lcr |= EPS;
++	/* init rx_list */
++	for (i = 0; i < CONFIG_BFIN_RX_DESC_NUM; i++) {
++
++		tmp_desc_rx = rx_desc + i;
++
++		if (i == 0) {
++			rx_list_head = tmp_desc_rx;
++			rx_list_tail = tmp_desc_rx;
++		}
++
++		/* allocat a new skb for next time receive */
++		new_skb = dev_alloc_skb(PKT_BUF_SZ + 2);
++		if (!new_skb) {
++			printk(KERN_NOTICE CARDNAME
++			       ": init: low on mem - packet dropped\n");
++			goto init_error;
++		}
++		skb_reserve(new_skb, 2);
++		tmp_desc_rx->skb = new_skb;
++		/* since RXDWA is enabled */
++		tmp_desc_rx->desc_a.start_addr =
++		    (unsigned long)new_skb->data - 2;
++		tmp_desc_rx->desc_a.x_count = 0;
++		tmp_desc_rx->desc_a.config.b_DMA_EN = 1;	//enabled
++		tmp_desc_rx->desc_a.config.b_WNR = 1;	//Write to memory
++		tmp_desc_rx->desc_a.config.b_WDSIZE = 2;	//wordsize is 32 bits
++		tmp_desc_rx->desc_a.config.b_NDSIZE = 6;	//6 half words is desc size.
++		tmp_desc_rx->desc_a.config.b_FLOW = 7;	//large desc flow
++		tmp_desc_rx->desc_a.next_dma_desc = &(tmp_desc_rx->desc_b);
++
++		tmp_desc_rx->desc_b.start_addr =
++		    (unsigned long)(&(tmp_desc_rx->status));
++		tmp_desc_rx->desc_b.x_count = 0;
++		tmp_desc_rx->desc_b.config.b_DMA_EN = 1;	//enabled
++		tmp_desc_rx->desc_b.config.b_WNR = 1;	//Write to memory
++		tmp_desc_rx->desc_b.config.b_WDSIZE = 2;	//wordsize is 32 bits
++		tmp_desc_rx->desc_b.config.b_NDSIZE = 6;
++		tmp_desc_rx->desc_b.config.b_DI_EN = 1;	//enable interrupt
++		tmp_desc_rx->desc_b.config.b_FLOW = 7;	//large mode
++		rx_list_tail->desc_b.next_dma_desc = &(tmp_desc_rx->desc_a);
++
++		rx_list_tail->next = tmp_desc_rx;
++		rx_list_tail = tmp_desc_rx;
 +	}
++	rx_list_tail->next = rx_list_head;	/* rx_list is a circle */
++	rx_list_tail->desc_b.next_dma_desc = &(rx_list_head->desc_a);
++	current_rx_ptr = rx_list_head;
 +
-+	/* These controls are not implemented for this port */
-+	termios->c_iflag |= INPCK | BRKINT | PARMRK;
-+	termios->c_iflag &= ~(IGNPAR | IGNBRK);
-+
-+	/* These controls are not implemented for this port */
-+	termios->c_iflag |= INPCK | BRKINT | PARMRK;
-+	termios->c_iflag &= ~(IGNPAR | IGNBRK);
-+
-+	baud = uart_get_baud_rate(port, termios, old, 0, port->uartclk/16);
-+	quot = uart_get_divisor(port, baud);
-+	spin_lock_irqsave(&uart->port.lock, flags);
-+
-+	do {
-+		lsr = UART_GET_LSR(uart);
-+	} while (!(lsr & TEMT));
-+
-+	/* Disable UART */
-+	ier = UART_GET_IER(uart);
-+	UART_PUT_IER(uart, 0);
-+
-+	/* Set DLAB in LCR to Access DLL and DLH */
-+	val = UART_GET_LCR(uart);
-+	val |= DLAB;
-+	UART_PUT_LCR(uart, val);
-+	SSYNC();
-+
-+	UART_PUT_DLL(uart, quot & 0xFF);
-+	SSYNC();
-+	UART_PUT_DLH(uart, (quot >> 8) & 0xFF);
-+	SSYNC();
-+
-+	/* Clear DLAB in LCR to Access THR RBR IER */
-+	val = UART_GET_LCR(uart);
-+	val &= ~DLAB;
-+	UART_PUT_LCR(uart, val);
-+	SSYNC();
-+
-+	UART_PUT_LCR(uart, lcr);
-+
-+	/* Enable UART */
-+	UART_PUT_IER(uart, ier);
-+
-+	val = UART_GET_GCTL(uart);
-+	val |= UCEN;
-+	UART_PUT_GCTL(uart, val);
-+
-+	spin_unlock_irqrestore(&uart->port.lock, flags);
-+}
-+
-+static const char *bfin_serial_type(struct uart_port *port)
-+{
-+	struct bfin_serial_port *uart = (struct bfin_serial_port *)port;
-+
-+	return uart->port.type == PORT_BFIN ? "BFIN-UART" : NULL;
-+}
-+
-+/*
-+ * Release the memory region(s) being used by 'port'.
-+ */
-+static void bfin_serial_release_port(struct uart_port *port)
-+{
-+}
-+
-+/*
-+ * Request the memory region(s) being used by 'port'.
-+ */
-+static int bfin_serial_request_port(struct uart_port *port)
-+{
 +	return 0;
++
++      init_error:
++	desc_list_free();
++	printk(KERN_ERR CARDNAME ": kmalloc failed\n");
++	return -ENOMEM;
 +}
 +
-+/*
-+ * Configure/autoconfigure the port.
-+ */
-+static void bfin_serial_config_port(struct uart_port *port, int flags)
++static void desc_list_free(void)
 +{
-+	struct bfin_serial_port *uart = (struct bfin_serial_port *)port;
-+
-+	if (flags & UART_CONFIG_TYPE &&
-+	    bfin_serial_request_port(&uart->port) == 0)
-+		uart->port.type = PORT_BFIN;
-+}
-+
-+/*
-+ * Verify the new serial_struct (for TIOCSSERIAL).
-+ * The only change we allow are to the flags and type, and
-+ * even then only between PORT_BFIN and PORT_UNKNOWN
-+ */
-+static int
-+bfin_serial_verify_port(struct uart_port *port, struct serial_struct *ser)
-+{
-+	return 0;
-+}
-+
-+static struct uart_ops bfin_serial_pops = {
-+	.tx_empty	= bfin_serial_tx_empty,
-+	.set_mctrl	= bfin_serial_set_mctrl,
-+	.get_mctrl	= bfin_serial_get_mctrl,
-+	.stop_tx	= bfin_serial_stop_tx,
-+	.start_tx	= bfin_serial_start_tx,
-+	.stop_rx	= bfin_serial_stop_rx,
-+	.enable_ms	= bfin_serial_enable_ms,
-+	.break_ctl	= bfin_serial_break_ctl,
-+	.startup	= bfin_serial_startup,
-+	.shutdown	= bfin_serial_shutdown,
-+	.set_termios	= bfin_serial_set_termios,
-+	.type		= bfin_serial_type,
-+	.release_port	= bfin_serial_release_port,
-+	.request_port	= bfin_serial_request_port,
-+	.config_port	= bfin_serial_config_port,
-+	.verify_port	= bfin_serial_verify_port,
-+};
-+
-+static void __init bfin_serial_init_ports(void)
-+{
-+	static int first = 1;
++	struct net_dma_desc_rx *tmp_desc_rx;
++	struct net_dma_desc_tx *tmp_desc_tx;
 +	int i;
-+
-+	if (!first)
-+		return;
-+	first = 0;
-+
-+	for (i = 0; i < nr_ports; i++) {
-+		bfin_serial_ports[i].port.uartclk   = get_sclk();
-+		bfin_serial_ports[i].port.ops       = &bfin_serial_pops;
-+		bfin_serial_ports[i].port.line      = i;
-+		bfin_serial_ports[i].port.iotype    = UPIO_MEM;
-+		bfin_serial_ports[i].port.membase   =
-+			(void __iomem *)bfin_serial_resource[i].uart_base_addr;
-+		bfin_serial_ports[i].port.mapbase   =
-+			bfin_serial_resource[i].uart_base_addr;
-+		bfin_serial_ports[i].port.irq       =
-+			bfin_serial_resource[i].uart_irq;
-+		bfin_serial_ports[i].port.flags     = UPF_BOOT_AUTOCONF;
-+#ifdef CONFIG_SERIAL_BFIN_DMA
-+		bfin_serial_ports[i].tx_done	    = 1;
-+		bfin_serial_ports[i].tx_count	    = 0;
-+		bfin_serial_ports[i].tx_dma_channel =
-+			bfin_serial_resource[i].uart_tx_dma_channel;
-+		bfin_serial_ports[i].rx_dma_channel =
-+			bfin_serial_resource[i].uart_rx_dma_channel;
-+		init_timer(&(bfin_serial_ports[i].rx_dma_timer));
-+#else
-+		INIT_WORK(&bfin_serial_ports[i].cts_workqueue, bfin_serial_do_work);
++#if !defined(CONFIG_BFIN_MAC_USE_L1)
++	dma_addr_t dma_handle = 0;
 +#endif
-+#ifdef CONFIG_SERIAL_BFIN_CTSRTS
-+		bfin_serial_ports[i].cts_pin	    =
-+			bfin_serial_resource[i].uart_cts_pin;
-+		bfin_serial_ports[i].rts_pin	    =
-+			bfin_serial_resource[i].uart_rts_pin;
-+#endif
-+		bfin_serial_hw_init(&bfin_serial_ports[i]);
 +
++	if (tx_desc != NULL) {
++		tmp_desc_tx = tx_list_head;
++		for (i = 0; i < CONFIG_BFIN_TX_DESC_NUM; i++) {
++			if (tmp_desc_tx != NULL) {
++				if (tmp_desc_tx->skb) {
++					dev_kfree_skb(tmp_desc_tx->skb);
++					tmp_desc_tx->skb = NULL;
++				}
++
++			}
++			tmp_desc_tx = tmp_desc_tx->next;
++		}
++		bfin_mac_free(dma_handle, tx_desc);
++	}
++
++	if (rx_desc != NULL) {
++		tmp_desc_rx = rx_list_head;
++		for (i = 0; i < CONFIG_BFIN_RX_DESC_NUM; i++) {
++			if (tmp_desc_rx != NULL) {
++				if (tmp_desc_rx->skb) {
++					dev_kfree_skb(tmp_desc_rx->skb);
++					tmp_desc_rx->skb = NULL;
++				}
++			}
++			tmp_desc_rx = tmp_desc_rx->next;
++		}
++		bfin_mac_free(dma_handle, rx_desc);
 +	}
 +}
 +
-+#ifdef CONFIG_SERIAL_BFIN_CONSOLE
-+static void bfin_serial_console_putchar(struct uart_port *port, int ch)
++/*---PHY CONTROL AND CONFIGURATION-----------------------------------------*/
++
++//
++//Set FER regs to MUX in Ethernet pins
++//
++
++static void SetupPinMux(void)
 +{
-+	struct bfin_serial_port *uart = (struct bfin_serial_port *)port;
-+	while (!(UART_GET_LSR(uart)))
-+		barrier();
-+	UART_PUT_CHAR(uart, ch);
-+	SSYNC();
-+}
++	unsigned int fer_val;
 +
-+/*
-+ * Interrupts are disabled on entering
-+ */
-+static void
-+bfin_serial_console_write(struct console *co, const char *s, unsigned int count)
-+{
-+	struct bfin_serial_port *uart = &bfin_serial_ports[co->index];
-+	int flags = 0;
++	// FER reg bug work-around
++	// read it once
++	fer_val = bfin_read_PORTH_FER();
 +
-+	spin_lock_irqsave(&uart->port.lock, flags);
-+	uart_console_write(&uart->port, s, count, bfin_serial_console_putchar);
-+	spin_unlock_irqrestore(&uart->port.lock, flags);
-+
-+}
-+
-+/*
-+ * If the port was already initialised (eg, by a boot loader),
-+ * try to determine the current setup.
-+ */
-+static void __init
-+bfin_serial_console_get_options(struct bfin_serial_port *uart, int *baud,
-+			   int *parity, int *bits)
-+{
-+	unsigned short status;
-+
-+	status = UART_GET_IER(uart) & (ERBFI | ETBEI);
-+	if (status == (ERBFI | ETBEI)) {
-+		/* ok, the port was enabled */
-+		unsigned short lcr, val;
-+		unsigned short dlh, dll;
-+
-+		lcr = UART_GET_LCR(uart);
-+
-+		*parity = 'n';
-+		if (lcr & PEN) {
-+			if (lcr & EPS)
-+				*parity = 'e';
-+			else
-+				*parity = 'o';
-+		}
-+		switch (lcr & 0x03) {
-+			case 0:	*bits = 5; break;
-+			case 1:	*bits = 6; break;
-+			case 2:	*bits = 7; break;
-+			case 3:	*bits = 8; break;
-+		}
-+		/* Set DLAB in LCR to Access DLL and DLH */
-+		val = UART_GET_LCR(uart);
-+		val |= DLAB;
-+		UART_PUT_LCR(uart, val);
-+
-+		dll = UART_GET_DLL(uart);
-+		dlh = UART_GET_DLH(uart);
-+
-+		/* Clear DLAB in LCR to Access THR RBR IER */
-+		val = UART_GET_LCR(uart);
-+		val &= ~DLAB;
-+		UART_PUT_LCR(uart, val);
-+
-+		*baud = get_sclk() / (16*(dll | dlh << 8));
-+	}
-+	pr_debug("%s:baud = %d, parity = %c, bits= %d\n", __FUNCTION__, *baud, *parity, *bits);
-+}
-+
-+static int __init
-+bfin_serial_console_setup(struct console *co, char *options)
-+{
-+	struct bfin_serial_port *uart;
-+	int baud = 57600;
-+	int bits = 8;
-+	int parity = 'n';
-+#ifdef CONFIG_SERIAL_BFIN_CTSRTS
-+	int flow = 'r';
++#if defined(CONFIG_BFIN_MAC_RMII)
++	fer_val = 0xC373;
 +#else
-+	int flow = 'n';
++	fer_val = 0xffff;
 +#endif
++	// write it twice to the same value
++
++	bfin_write_PORTH_FER(fer_val);
++	bfin_write_PORTH_FER(fer_val);
++}
++
++//
++//Wait until the previous MDC/MDIO transaction has completed
++//
++
++static void PollMdcDone(void)
++{
++	// poll the STABUSY bit
++	while ((bfin_read_EMAC_STAADD()) & STABUSY) {
++	};
++}
++
++//
++//Read an off-chip register in a PHY through the MDC/MDIO port
++//
++
++static u16 RdPHYReg(u16 PHYAddr, u16 RegAddr)
++{
++	PollMdcDone();
++	bfin_write_EMAC_STAADD(SET_PHYAD(PHYAddr) | SET_REGAD(RegAddr) | STABUSY);	// read mode
++	PollMdcDone();
++
++	return (u16) bfin_read_EMAC_STADAT();
++}
++
++//
++//Write an off-chip register in a PHY through the MDC/MDIO port
++//
++
++static void RawWrPHYReg(u16 PHYAddr, u16 RegAddr, u32 Data)
++{
++
++	bfin_write_EMAC_STADAT(Data);
++
++	bfin_write_EMAC_STAADD(SET_PHYAD(PHYAddr) | SET_REGAD(RegAddr) | STAOP | STABUSY);	//write mode
++
++	PollMdcDone();
++}
++
++static void WrPHYReg(u16 PHYAddr, u16 RegAddr, u32 Data)
++{
++	PollMdcDone();
++	RawWrPHYReg(PHYAddr, RegAddr, Data);
++}
++
++//
++//set up the phy
++//
++static void bf537mac_setphy(struct net_device *dev)
++{
++	u16 phydat;
++	u32 sysctl;
++	struct bf537mac_local *lp = netdev_priv(dev);
++
++	//printk(KERN_DEBUG CARDNAME ": start settting up phy\n");
++
++	//Program PHY registers
++	phydat = 0;
++
++	// issue a reset
++	RawWrPHYReg(lp->PhyAddr, PHYREG_MODECTL, 0x8000);
++
++	// wait half a second
++	udelay(500);
++
++	phydat = RdPHYReg(lp->PhyAddr, PHYREG_MODECTL);
++
++	// advertise flow control supported
++	phydat = RdPHYReg(lp->PhyAddr, PHYREG_ANAR);
++	phydat |= (1 << 10);
++	WrPHYReg(lp->PhyAddr, PHYREG_ANAR, phydat);
++
++	phydat = 0;
++	if (lp->Negotiate) {
++		phydat |= 0x1000;	// enable auto negotiation
++	} else {
++		if (lp->FullDuplex) {
++			phydat |= (1 << 8);	// full duplex
++		} else {
++			phydat &= (~(1 << 8));	// half duplex
++		}
++		if (!lp->Port10) {
++			phydat |= (1 << 13);	// 100 Mbps
++		} else {
++			phydat &= (~(1 << 13));	// 10 Mbps
++		}
++	}
++
++	if (lp->Loopback) {
++		phydat |= (1 << 14);	// enable TX->RX loopback
++		//WrPHYReg(lp->PhyAddr, PHYREG_MODECTL, phydat);
++	}
++
++	WrPHYReg(lp->PhyAddr, PHYREG_MODECTL, phydat);
++	udelay(500);
++
++	phydat = RdPHYReg(lp->PhyAddr, PHYREG_MODECTL);
++	// check for SMSC PHY
++	if ((RdPHYReg(lp->PhyAddr, PHYREG_PHYID1) == 0x7)
++	    && ((RdPHYReg(lp->PhyAddr, PHYREG_PHYID2) & 0xfff0) == 0xC0A0)) {
++		// we have SMSC PHY so reqest interrupt on link down condition
++		WrPHYReg(lp->PhyAddr, 30, 0x0ff);	// enable interrupts
++		// enable PHY_INT
++		sysctl = bfin_read_EMAC_SYSCTL();
++		sysctl |= 0x1;
++		//bfin_write_EMAC_SYSCTL(sysctl);
++	}
++}
++
++/**************************************************************************/
++void SetupSystemRegs(struct net_device *dev)
++{
++	int PHYADDR;
++	unsigned short sysctl, phydat;
++	u32 opmode;
++	struct bf537mac_local *lp = netdev_priv(dev);
++	int count = 0;
++
++	PHYADDR = lp->PhyAddr;
++
++	/* Enable PHY output */
++	if (!(bfin_read_VR_CTL() & PHYCLKOE))
++		bfin_write_VR_CTL(bfin_read_VR_CTL() | PHYCLKOE);
++
++	/* MDC  = 2.5 MHz */
++	sysctl = SET_MDCDIV(24);
++	/* Odd word alignment for Receive Frame DMA word */
++	/* Configure checksum support and rcve frame word alignment */
++#if defined(BFIN_MAC_CSUM_OFFLOAD)
++	sysctl |= RXDWA | RXCKS;
++#else
++	sysctl |= RXDWA;
++#endif
++	bfin_write_EMAC_SYSCTL(sysctl);
++	/* auto negotiation on  */
++	/* full duplex          */
++	/* 100 Mbps             */
++	phydat = PHY_ANEG_EN | PHY_DUPLEX | PHY_SPD_SET;
++	WrPHYReg(PHYADDR, PHYREG_MODECTL, phydat);
++
++	/* test if full duplex supported */
++	do {
++		msleep(100);
++		phydat = RdPHYReg(PHYADDR, PHYREG_MODESTAT);
++		if (count > 30) {
++			printk(KERN_NOTICE CARDNAME
++			       ": Link is down, please check your network connection\n");
++			break;
++		}
++		count++;
++	} while (!(phydat & 0x0004));
++
++	phydat = RdPHYReg(PHYADDR, PHYREG_ANLPAR);
++
++	if ((phydat & 0x0100) || (phydat & 0x0040)) {
++		opmode = FDMODE;
++	} else {
++		opmode = 0;
++		printk(KERN_INFO CARDNAME ": Network is set to half duplex\n");
++	}
++
++#if defined(CONFIG_BFIN_MAC_RMII)
++	opmode |= RMII; /* For Now only 100MBit are supported */
++#endif
++
++	bfin_write_EMAC_OPMODE(opmode);
++
++	//bfin_write_EMAC_MMC_CTL(RSTC | CROLL | MMCE);
++	bfin_write_EMAC_MMC_CTL(RSTC | CROLL);
++
++	/* Initialize the TX DMA channel registers */
++	bfin_write_DMA2_X_COUNT(0);
++	bfin_write_DMA2_X_MODIFY(4);
++	bfin_write_DMA2_Y_COUNT(0);
++	bfin_write_DMA2_Y_MODIFY(0);
++
++	/* Initialize the RX DMA channel registers */
++	bfin_write_DMA1_X_COUNT(0);
++	bfin_write_DMA1_X_MODIFY(4);
++	bfin_write_DMA1_Y_COUNT(0);
++	bfin_write_DMA1_Y_MODIFY(0);
++}
++
++void SetupMacAddr(u8 * mac_addr)
++{
++	// this depends on a little-endian machine
++	bfin_write_EMAC_ADDRLO(*(u32 *) & mac_addr[0]);
++	bfin_write_EMAC_ADDRHI(*(u16 *) & mac_addr[4]);
++}
++
++static void adjust_tx_list(void)
++{
++	if (tx_list_head->status.status_word != 0
++	    && current_tx_ptr != tx_list_head) {
++		goto adjust_head;	// released something, just return;
++	}
++
++	/* if nothing released, check wait condition */
++	/* current's next can not be the head, otherwise the dma will not stop as we want */
++	if (current_tx_ptr->next->next == tx_list_head) {
++		while (tx_list_head->status.status_word == 0) {
++			udelay(10);
++			if (tx_list_head->status.status_word != 0
++			    || !(bfin_read_DMA2_IRQ_STATUS() & 0x08)) {
++				goto adjust_head;
++			}
++		}
++		if (tx_list_head->status.status_word != 0) {
++			goto adjust_head;
++		}
++	}
++
++	return;
++
++      adjust_head:
++	do {
++		tx_list_head->desc_a.config.b_DMA_EN = 0;
++		tx_list_head->status.status_word = 0;
++		if (tx_list_head->skb) {
++			dev_kfree_skb(tx_list_head->skb);
++			tx_list_head->skb = NULL;
++		} else {
++			printk(KERN_ERR CARDNAME
++			       ": no sk_buff in a transmitted frame!\n");
++		}
++		tx_list_head = tx_list_head->next;
++	} while (tx_list_head->status.status_word != 0
++		 && current_tx_ptr != tx_list_head);
++	return;
++
++}
++
++static int bf537mac_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
++{
++	struct bf537mac_local *lp = netdev_priv(dev);
++	unsigned int data;
++
++	current_tx_ptr->skb = skb;
++	// Is skb->data always 16-bit aligned? Do we need to memcpy((char *)(tail->packet + 2),skb->data,len)?
++	if ((((unsigned int)(skb->data)) & 0x02) == 2) {
++		//move skb->data to current_tx_ptr payload
++		data = (unsigned int)(skb->data) - 2;
++		*((unsigned short *)data) = (unsigned short)(skb->len);
++		current_tx_ptr->desc_a.start_addr = (unsigned long)data;
++		blackfin_dcache_flush_range(data, (data + (skb->len)) + 2);	//this is important!
++
++	} else {
++		*((unsigned short *)(current_tx_ptr->packet)) =
++		    (unsigned short)(skb->len);
++		memcpy((char *)(current_tx_ptr->packet + 2), skb->data,
++		       (skb->len));
++		current_tx_ptr->desc_a.start_addr =
++		    (unsigned long)current_tx_ptr->packet;
++		if (current_tx_ptr->status.status_word != 0)
++			current_tx_ptr->status.status_word = 0;
++		blackfin_dcache_flush_range((unsigned int)current_tx_ptr->
++					    packet,
++					    (unsigned int)(current_tx_ptr->
++							   packet + skb->len) +
++					    2);
++	}
++
++	current_tx_ptr->desc_a.config.b_DMA_EN = 1;	//enable this packet's dma
++
++	if (bfin_read_DMA2_IRQ_STATUS() & 0x08) {	//tx dma is running, just return
++		goto out;
++	} else {		//tx dma is not running
++		bfin_write_DMA2_NEXT_DESC_PTR(&(current_tx_ptr->desc_a));
++		bfin_write_DMA2_CONFIG(*((unsigned short *)(&(current_tx_ptr->desc_a.config))));	// dma enabled, read from memory, size is 6
++		// Turn on the EMAC tx
++		bfin_write_EMAC_OPMODE(bfin_read_EMAC_OPMODE() | TE);
++	}
++
++      out:
++	adjust_tx_list();
++	current_tx_ptr = current_tx_ptr->next;
++	dev->trans_start = jiffies;
++	lp->stats.tx_packets++;
++	lp->stats.tx_bytes += (skb->len);
++	return 0;
++}
++
++static void bf537mac_rx(struct net_device *dev)
++{
++	struct sk_buff *skb, *new_skb;
++	struct bf537mac_local *lp = netdev_priv(dev);
++	unsigned short len;
++
++	/* allocat a new skb for next time receive */
++	skb = current_rx_ptr->skb;
++	new_skb = dev_alloc_skb(PKT_BUF_SZ + 2);
++	if (!new_skb) {
++		printk(KERN_NOTICE CARDNAME
++		       ": rx: low on mem - packet dropped\n");
++		lp->stats.rx_dropped++;
++		goto out;
++	}
++	/* reserve 2 bytes for RXDWA padding */
++	skb_reserve(new_skb, 2);
++	current_rx_ptr->skb = new_skb;
++	current_rx_ptr->desc_a.start_addr = (unsigned long)new_skb->data - 2;
++/*
++	int i;
++	if (len >= 64) {
++		for (i=0;i<len;i++) {
++			printk("%.2x-",((unsigned char *)pkt)[i]);
++			if (((i%8)==0) && (i!=0)) printk("\n");
++		}
++	printk("\n");
++	}
++*/
++
++	len = (unsigned short)((current_rx_ptr->status.status_word) & RX_FRLEN);
++	skb_put(skb, len);
++	blackfin_dcache_invalidate_range((unsigned long)skb->head,
++					 (unsigned long)skb->tail);
++
++	dev->last_rx = jiffies;
++	skb->dev = dev;
++	skb->protocol = eth_type_trans(skb, dev);
++#if defined(BFIN_MAC_CSUM_OFFLOAD)
++	skb->csum = current_rx_ptr->status.ip_payload_csum;
++	skb->ip_summed = CHECKSUM_PARTIAL;
++#endif
++
++	netif_rx(skb);
++	lp->stats.rx_packets++;
++	lp->stats.rx_bytes += len;
++	current_rx_ptr->status.status_word = 0x00000000;
++	current_rx_ptr = current_rx_ptr->next;
++
++      out:
++	return;
++}
++
++/* interrupt routine to handle rx and error signal */
++static irqreturn_t bf537mac_interrupt(int irq, void *dev_id)
++{
++	struct net_device *dev = dev_id;
++	int number = 0;
++
++      get_one_packet:
++	if (current_rx_ptr->status.status_word == 0) {	// no more new packet received
++		if (number == 0) {
++			if (current_rx_ptr->next->status.status_word != 0) {
++				current_rx_ptr = current_rx_ptr->next;
++				goto real_rx;
++			}
++		}
++		bfin_write_DMA1_IRQ_STATUS(bfin_read_DMA1_IRQ_STATUS() |
++					   DMA_DONE | DMA_ERR);
++		return IRQ_HANDLED;
++	}
++
++      real_rx:
++	bf537mac_rx(dev);
++	number++;
++	goto get_one_packet;
++}
++
++#ifdef CONFIG_NET_POLL_CONTROLLER
++static void bf537mac_poll(struct net_device *dev)
++{
++	disable_irq(IRQ_MAC_RX);
++	bf537mac_interrupt(IRQ_MAC_RX, dev);
++	enable_irq(IRQ_MAC_RX);
++}
++#endif				/* CONFIG_NET_POLL_CONTROLLER */
++
++static void bf537mac_reset(void)
++{
++	unsigned int opmode;
++
++	opmode = bfin_read_EMAC_OPMODE();
++	opmode &= (~RE);
++	opmode &= (~TE);
++	/* Turn off the EMAC */
++	bfin_write_EMAC_OPMODE(bfin_read_EMAC_OPMODE() & opmode);
++}
++
++/*
++ * Enable Interrupts, Receive, and Transmit
++ */
++static int bf537mac_enable(struct net_device *dev)
++{
++	u32 opmode;
++	//u32 pkt_status;
++
++	//printk("%s: %s\n", dev->name, __FUNCTION__);
++
++	/* Set RX DMA */
++	bfin_write_DMA1_NEXT_DESC_PTR(&(rx_list_head->desc_a));
++	bfin_write_DMA1_CONFIG(*
++			       ((unsigned short
++				 *)(&(rx_list_head->desc_a.config))));
++
++	/* Wait MII done */
++	PollMdcDone();
++
++	/* We enable only RX here */
++	/* ASTP   : Enable Automatic Pad Stripping
++	   PR     : Promiscuous Mode for test
++	   PSF    : Receive frames with total length less than 64 bytes.
++	   FDMODE : Full Duplex Mode
++	   LB     : Internal Loopback for test
++	   RE     : Receiver Enable */
++	opmode = bfin_read_EMAC_OPMODE();
++	if (opmode & FDMODE)
++		opmode |= PSF;
++	else
++		opmode |= DRO | DC | PSF;
++	opmode |= RE;
++
++#if defined(CONFIG_BFIN_MAC_RMII)
++	opmode |= RMII; /* For Now only 100MBit are supported */
++#ifdef CONFIG_BF_REV_0_2
++	opmode |= TE;
++#endif
++#endif
++	/* Turn on the EMAC rx */
++	bfin_write_EMAC_OPMODE(opmode);
++
++	return 0;
++}
++
++/* Our watchdog timed out. Called by the networking layer */
++static void bf537mac_timeout(struct net_device *dev)
++{
++	//printk("%s: %s\n", dev->name, __FUNCTION__);
++
++	bf537mac_reset();
++
++	/* reset tx queue */
++	tx_list_tail = tx_list_head->next;
++
++	bf537mac_enable(dev);
++
++	/* We can accept TX packets again */
++	dev->trans_start = jiffies;
++	netif_wake_queue(dev);
++}
++
++/*
++ * Get the current statistics.
++ * This may be called with the card open or closed.
++ */
++static struct net_device_stats *bf537mac_query_statistics(struct net_device
++							  *dev)
++{
++	struct bf537mac_local *lp = netdev_priv(dev);
++
++	//printk("%s: %s\n", dev->name, __FUNCTION__);
++
++	return &lp->stats;
++}
++
++/*
++ * This routine will, depending on the values passed to it,
++ * either make it accept multicast packets, go into
++ * promiscuous mode (for TCPDUMP and cousins) or accept
++ * a select set of multicast packets
++ */
++static void bf537mac_set_multicast_list(struct net_device *dev)
++{
++	u32 sysctl;
++
++	if (dev->flags & IFF_PROMISC) {
++		printk(KERN_INFO "%s: set to promisc mode\n", dev->name);
++		sysctl = bfin_read_EMAC_OPMODE();
++		sysctl |= RAF;
++		bfin_write_EMAC_OPMODE(sysctl);
++	} else if (dev->flags & IFF_ALLMULTI || dev->mc_count > 16) {
++		/* accept all multicast */
++		sysctl = bfin_read_EMAC_OPMODE();
++		sysctl |= PAM;
++		bfin_write_EMAC_OPMODE(sysctl);
++	} else if (dev->mc_count) {
++		/* set multicast */
++	} else {
++		/* clear promisc or multicast mode */
++		sysctl = bfin_read_EMAC_OPMODE();
++		sysctl &= ~(RAF | PAM);
++		bfin_write_EMAC_OPMODE(sysctl);
++	}
++}
++
++/*
++ * this puts the device in an inactive state
++ */
++static void bf537mac_shutdown(struct net_device *dev)
++{
++	/* Turn off the EMAC */
++	bfin_write_EMAC_OPMODE(0x00000000);
++	/* Turn off the EMAC RX DMA */
++	bfin_write_DMA1_CONFIG(0x0000);
++	bfin_write_DMA2_CONFIG(0x0000);
++}
++
++/*
++ * Open and Initialize the interface
++ *
++ * Set up everything, reset the card, etc..
++ */
++static int bf537mac_open(struct net_device *dev)
++{
++	//printk("%s: %s\n", dev->name, __FUNCTION__);
 +
 +	/*
-+	 * Check whether an invalid uart number has been specified, and
-+	 * if so, search for the first available port that does have
-+	 * console support.
++	 * Check that the address is valid.  If its not, refuse
++	 * to bring the device up.  The user must specify an
++	 * address using ifconfig eth0 hw ether xx:xx:xx:xx:xx:xx
 +	 */
-+	if (co->index == -1 || co->index >= nr_ports)
-+		co->index = 0;
-+	uart = &bfin_serial_ports[co->index];
-+
-+	if (options)
-+		uart_parse_options(options, &baud, &parity, &bits, &flow);
-+	else
-+		bfin_serial_console_get_options(uart, &baud, &parity, &bits);
-+
-+	return uart_set_options(&uart->port, co, baud, parity, bits, flow);
-+}
-+
-+static struct uart_driver bfin_serial_reg;
-+static struct console bfin_serial_console = {
-+	.name		= BFIN_SERIAL_NAME,
-+	.write		= bfin_serial_console_write,
-+	.device		= uart_console_device,
-+	.setup		= bfin_serial_console_setup,
-+	.flags		= CON_PRINTBUFFER,
-+	.index		= -1,
-+	.data		= &bfin_serial_reg,
-+};
-+
-+static int __init bfin_serial_rs_console_init(void)
-+{
-+	bfin_serial_init_ports();
-+	register_console(&bfin_serial_console);
-+	return 0;
-+}
-+console_initcall(bfin_serial_rs_console_init);
-+
-+#define BFIN_SERIAL_CONSOLE	&bfin_serial_console
-+#else
-+#define BFIN_SERIAL_CONSOLE	NULL
-+#endif
-+
-+static struct uart_driver bfin_serial_reg = {
-+	.owner			= THIS_MODULE,
-+	.driver_name		= "bfin-uart",
-+	.dev_name		= BFIN_SERIAL_NAME,
-+	.major			= BFIN_SERIAL_MAJOR,
-+	.minor			= BFIN_SERIAL_MINOR,
-+	.nr			= NR_PORTS,
-+	.cons			= BFIN_SERIAL_CONSOLE,
-+};
-+
-+static int bfin_serial_suspend(struct platform_device *dev, pm_message_t state)
-+{
-+	struct bfin_serial_port *uart = platform_get_drvdata(dev);
-+
-+	if (uart)
-+		uart_suspend_port(&bfin_serial_reg, &uart->port);
-+
-+	return 0;
-+}
-+
-+static int bfin_serial_resume(struct platform_device *dev)
-+{
-+	struct bfin_serial_port *uart = platform_get_drvdata(dev);
-+
-+	if (uart)
-+		uart_resume_port(&bfin_serial_reg, &uart->port);
-+
-+	return 0;
-+}
-+
-+static int bfin_serial_probe(struct platform_device *dev)
-+{
-+	struct resource *res = dev->resource;
-+	int i;
-+
-+	for (i = 0; i < dev->num_resources; i++, res++)
-+		if (res->flags & IORESOURCE_MEM)
-+			break;
-+
-+	if (i < dev->num_resources) {
-+		for (i = 0; i < nr_ports; i++, res++) {
-+			if (bfin_serial_ports[i].port.mapbase != res->start)
-+				continue;
-+			bfin_serial_ports[i].port.dev = &dev->dev;
-+			uart_add_one_port(&bfin_serial_reg, &bfin_serial_ports[i].port);
-+			platform_set_drvdata(dev, &bfin_serial_ports[i]);
-+		}
++	if (!is_valid_ether_addr(dev->dev_addr)) {
++		printk(KERN_WARNING CARDNAME ": no valid ethernet hw addr\n");
++		return -EINVAL;
 +	}
 +
++	/* initial rx and tx list */
++	desc_list_init();
++
++	bf537mac_setphy(dev);
++	SetupSystemRegs(dev);
++	bf537mac_reset();
++	bf537mac_enable(dev);
++
++	//printk(KERN_DEBUG CARDNAME ": hardware init finished\n");
++	netif_start_queue(dev);
++	netif_carrier_on(dev);
++
 +	return 0;
 +}
 +
-+static int bfin_serial_remove(struct platform_device *pdev)
++/*
++ *
++ * this makes the board clean up everything that it can
++ * and not talk to the outside world.   Caused by
++ * an 'ifconfig ethX down'
++ */
++static int bf537mac_close(struct net_device *dev)
 +{
-+	struct bfin_serial_port *uart = platform_get_drvdata(pdev);
++	//printk("%s: %s\n", dev->name, __FUNCTION__);
 +
++	netif_stop_queue(dev);
++	netif_carrier_off(dev);
 +
-+#ifdef CONFIG_SERIAL_BFIN_CTSRTS
-+	gpio_free(uart->cts_pin);
-+	gpio_free(uart->rts_pin);
++	/* clear everything */
++	bf537mac_shutdown(dev);
++
++	/* free the rx/tx buffers */
++	desc_list_free();
++
++	return 0;
++}
++
++static int __init bf537mac_probe(struct net_device *dev)
++{
++	struct bf537mac_local *lp = netdev_priv(dev);
++	int retval;
++
++	/* Grab the MAC address in the MAC */
++	*(u32 *) (&(dev->dev_addr[0])) = bfin_read_EMAC_ADDRLO();
++	*(u16 *) (&(dev->dev_addr[4])) = (u16) bfin_read_EMAC_ADDRHI();
++
++/* probe mac */
++	/*todo: how to proble? which is revision_register */
++	bfin_write_EMAC_ADDRLO(0x12345678);
++	if (bfin_read_EMAC_ADDRLO() != 0x12345678) {
++		//printk(CARDNAME ": can't detect bf537 mac!\n");
++		retval = -ENODEV;
++		goto err_out;
++	}
++
++	/*Is it valid? (Did bootloader initialize it?) */
++	if (!is_valid_ether_addr(dev->dev_addr)) {
++		/* Grab the MAC from the board somehow - this is done in the
++		   arch/blackfin/boards/bf537/boardname.c */
++		get_bf537_ether_addr(dev->dev_addr);
++	}
++
++	/* If still not valid, get a random one */
++	if (!is_valid_ether_addr(dev->dev_addr)) {
++		random_ether_addr(dev->dev_addr);
++	}
++
++	SetupMacAddr(dev->dev_addr);
++
++	/* Fill in the fields of the device structure with ethernet values. */
++	ether_setup(dev);
++
++	dev->open = bf537mac_open;
++	dev->stop = bf537mac_close;
++	dev->hard_start_xmit = bf537mac_hard_start_xmit;
++	dev->tx_timeout = bf537mac_timeout;
++	dev->get_stats = bf537mac_query_statistics;
++	dev->set_multicast_list = bf537mac_set_multicast_list;
++	//  dev->ethtool_ops = &bf537mac_ethtool_ops;
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	dev->poll_controller = bf537mac_poll;
 +#endif
++
++	/* fill in some of the fields */
++	lp->version = 1;
++	lp->PhyAddr = 0x01;
++	lp->CLKIN = 25;
++	lp->FullDuplex = 0;
++	lp->Negotiate = 1;
++	lp->FlowControl = 0;
++	spin_lock_init(&lp->lock);
++
++	// set the GPIO pins to Ethernet mode
++	SetupPinMux();
++
++	/* now, enable interrupts */
++	/* register irq handler */
++	if (request_irq
++	    (IRQ_MAC_RX, bf537mac_interrupt, IRQF_DISABLED | IRQF_SHARED,
++	     "BFIN537_MAC_RX", dev)) {
++		printk(KERN_WARNING CARDNAME
++		       ": Unable to attach BlackFin MAC RX interrupt\n");
++		return -EBUSY;
++	}
++
++	/* Enable PHY output early*/
++	if (!(bfin_read_VR_CTL() & PHYCLKOE))
++		bfin_write_VR_CTL(bfin_read_VR_CTL() | PHYCLKOE);
++
++	retval = register_netdev(dev);
++	if (retval == 0) {
++		/* now, print out the card info, in a short format.. */
++		printk(KERN_INFO "Blackfin mac net device registered\n");
++	}
++
++      err_out:
++	return retval;
++}
++
++static int bfin_mac_probe(struct platform_device *pdev)
++{
++	struct net_device *ndev;
++
++	ndev = alloc_etherdev(sizeof(struct bf537mac_local));
++
++	if (!ndev) {
++		printk(KERN_WARNING CARDNAME ": could not allocate device\n");
++		return -ENOMEM;
++	}
++
++	if (bf537mac_probe(ndev) != 0) {
++		platform_set_drvdata(pdev, NULL);
++		free_netdev(ndev);
++		printk(KERN_WARNING CARDNAME ": not found\n");
++		return -ENODEV;
++	}
++
++	SET_MODULE_OWNER(ndev);
++	SET_NETDEV_DEV(ndev, &pdev->dev);
++
++	platform_set_drvdata(pdev, ndev);
++
++	return 0;
++}
++
++static int bfin_mac_remove(struct platform_device *pdev)
++{
++	struct net_device *ndev = platform_get_drvdata(pdev);
 +
 +	platform_set_drvdata(pdev, NULL);
 +
-+	if (uart)
-+		uart_remove_one_port(&bfin_serial_reg, &uart->port);
++	unregister_netdev(ndev);
++
++	free_irq(IRQ_MAC_RX, ndev);
++
++	free_netdev(ndev);
 +
 +	return 0;
 +}
 +
-+static struct platform_driver bfin_serial_driver = {
-+	.probe		= bfin_serial_probe,
-+	.remove		= bfin_serial_remove,
-+	.suspend	= bfin_serial_suspend,
-+	.resume		= bfin_serial_resume,
-+	.driver		= {
-+		.name	= "bfin-uart",
-+	},
++static int bfin_mac_suspend(struct platform_device *pdev, pm_message_t state)
++{
++	return 0;
++}
++
++static int bfin_mac_resume(struct platform_device *pdev)
++{
++	return 0;
++}
++
++static struct platform_driver bfin_mac_driver = {
++	.probe = bfin_mac_probe,
++	.remove = bfin_mac_remove,
++	.resume = bfin_mac_resume,
++	.suspend = bfin_mac_suspend,
++	.driver = {
++		   .name = CARDNAME,
++		   },
 +};
 +
-+static int __init bfin_serial_init(void)
++static int __init bfin_mac_init(void)
 +{
-+	int ret;
-+
-+	pr_info("Serial: Blackfin serial driver\n");
-+
-+	bfin_serial_init_ports();
-+
-+	ret = uart_register_driver(&bfin_serial_reg);
-+	if (ret == 0) {
-+		ret = platform_driver_register(&bfin_serial_driver);
-+		if (ret) {
-+			pr_debug("uart register failed\n");
-+			uart_unregister_driver(&bfin_serial_reg);
-+		}
-+	}
-+	return ret;
++	return platform_driver_register(&bfin_mac_driver);
 +}
 +
-+static void __exit bfin_serial_exit(void)
++module_init(bfin_mac_init);
++
++static void __exit bfin_mac_cleanup(void)
 +{
-+	platform_driver_unregister(&bfin_serial_driver);
-+	uart_unregister_driver(&bfin_serial_reg);
++	platform_driver_unregister(&bfin_mac_driver);
 +}
 +
-+module_init(bfin_serial_init);
-+module_exit(bfin_serial_exit);
-+
-+MODULE_AUTHOR("Aubrey.Li <aubrey.li@analog.com>");
-+MODULE_DESCRIPTION("Blackfin generic serial port driver");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS_CHARDEV_MAJOR(BFIN_SERIAL_MAJOR);
-Index: linux-2.6/include/linux/serial_core.h
++module_exit(bfin_mac_cleanup);
+Index: linux-2.6/drivers/net/bfin_mac.h
 ===================================================================
---- linux-2.6.orig/include/linux/serial_core.h	2007-03-01 17:20:27.000000000 +0800
-+++ linux-2.6/include/linux/serial_core.h	2007-03-01 17:21:12.000000000 +0800
-@@ -135,6 +135,9 @@
- /* Xilinx uartlite */
- #define PORT_UARTLITE	74
- 
-+/* Blackfin bf5xx */
-+#define PORT_BFIN	75
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/drivers/net/bfin_mac.h	2007-03-01 11:39:19.000000000 +0800
+@@ -0,0 +1,146 @@
++/*
++ * File:         drivers/net/bfin_mac.h
++ * Based on:
++ * Author:       Luke Yang <luke.yang@analog.com>
++ *
++ * Created:
++ * Description:
++ *
++ * Rev:          $Id: bfin_mac.h,v 1.8 2006/08/22 10:50:04 magicyang Exp $
++ *
++ * Modified:
++ *               Copyright 2004-2006 Analog Devices Inc.
++ *
++ * Bugs:         Enter bugs at http://blackfin.uclinux.org/
++ *
++ * This program is free software ;  you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation ;  either version 2, or (at your option)
++ * any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY ;  without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program ;  see the file COPYING.
++ * If not, write to the Free Software Foundation,
++ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
 +
- #ifdef __KERNEL__
- 
- #include <linux/compiler.h>
++// -----------------------------------------------------------------------
++//                     PHY REGISTER NAMES                               //
++// -----------------------------------------------------------------------
++#define PHYREG_MODECTL          0x0000
++#define PHYREG_MODESTAT         0x0001
++#define PHYREG_PHYID1           0x0002
++#define PHYREG_PHYID2           0x0003
++#define PHYREG_ANAR                     0x0004
++#define PHYREG_ANLPAR           0x0005
++#define PHYREG_ANER                     0x0006
++#define PHYREG_NSR                      0x0010
++#define PHYREG_LBREMR           0x0011
++#define PHYREG_REC                      0x0012
++#define PHYREG_10CFG            0x0013
++#define PHYREG_PHY1_1           0x0014
++#define PHYREG_PHY1_2           0x0015
++#define PHYREG_PHY2                     0x0016
++#define PHYREG_TW_1                     0x0017
++#define PHYREG_TW_2                     0x0018
++#define PHYREG_TEST                     0x0019
++
++#define PHY_RESET               0x8000
++#define PHY_ANEG_EN             0x1000
++#define PHY_DUPLEX              0x0100
++#define PHY_SPD_SET             0x2000
++
++#define BFIN_MAC_CSUM_OFFLOAD
++
++typedef struct _DMA_CONFIG {
++	unsigned short b_DMA_EN:1;	//Bit 0 : DMA Enable
++	unsigned short b_WNR:1;	//Bit 1 : DMA Direction
++	unsigned short b_WDSIZE:2;	//Bit 2 & 3 : DMA Tranfer Word size
++	unsigned short b_DMA2D:1;	//Bit 4 : DMA Mode 2D or 1D
++	unsigned short b_RESTART:1;	//Bit 5 : Retain the FIFO
++	unsigned short b_DI_SEL:1;	//Bit 6 : Data Interrupt Timing Select
++	unsigned short b_DI_EN:1;	//Bit 7 : Data Interrupt Enable
++	unsigned short b_NDSIZE:4;	//Bit 8 to 11 : Flex descriptor Size
++	unsigned short b_FLOW:3;	//Bit 12 to 14 : FLOW
++} DMA_CONFIG_REG;
++
++struct dma_descriptor {
++	struct dma_descriptor *next_dma_desc;
++	unsigned long start_addr;
++	DMA_CONFIG_REG config;
++	unsigned short x_count;
++};
++
++/*
++struct status_area {
++  unsigned short ip_hdr_chksum;         // the IP header checksum
++  unsigned short ip_payload_chksum;     // the IP header and payload checksum
++  unsigned long  status_word;           // the frame status word
++};
++*/
++struct status_area_rx {
++#if defined(BFIN_MAC_CSUM_OFFLOAD)
++	unsigned short ip_hdr_csum;	// ip header checksum
++	unsigned short ip_payload_csum;	// ip payload(udp or tcp or others) checksum
++#endif
++	unsigned long status_word;	// the frame status word
++};
++
++struct status_area_tx {
++	unsigned long status_word;	// the frame status word
++};
++
++/* use two descriptors for a packet */
++struct net_dma_desc_rx {
++	struct net_dma_desc_rx *next;
++	struct sk_buff *skb;
++	struct dma_descriptor desc_a;
++	struct dma_descriptor desc_b;
++	volatile struct status_area_rx status;
++};
++
++/* use two descriptors for a packet */
++struct net_dma_desc_tx {
++	struct net_dma_desc_tx *next;
++	struct sk_buff *skb;
++	struct dma_descriptor desc_a;
++	struct dma_descriptor desc_b;
++	volatile unsigned char packet[1560];
++	volatile struct status_area_tx status;
++};
++
++struct bf537mac_local {
++	/*
++	 * these are things that the kernel wants me to keep, so users
++	 * can find out semi-useless statistics of how well the card is
++	 * performing
++	 */
++	struct net_device_stats stats;
++
++	int version;
++
++	int FlowEnabled;	// record if data flow is active
++	int EtherIntIVG;	// IVG for the ethernet interrupt
++	int RXIVG;		// IVG for the RX completion
++	int TXIVG;		// IVG for the TX completion
++	int PhyAddr;		// PHY address
++	int OpMode;		// set these bits n the OPMODE regs
++	int Port10;		// set port speed to 10 Mbit/s
++	int GenChksums;		// IP checksums to be calculated
++	int NoRcveLnth;		// dont insert recv length at start of buffer
++	int StripPads;		// remove trailing pad bytes
++	int FullDuplex;		// set full duplex mode
++	int Negotiate;		// enable auto negotiation
++	int Loopback;		// loopback at the PHY
++	int Cache;		// Buffers may be cached
++	int FlowControl;	// flow control active
++	int CLKIN;		// clock in value in MHZ
++	unsigned short IntMask;	// interrupt mask
++	unsigned char Mac[6];	// MAC address of the board
++	spinlock_t lock;
++};
 ---
 
 Thanks
--Bryan Wu
+-Bryan
+
