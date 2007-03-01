@@ -1,69 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932840AbXCAA2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932857AbXCAA3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932840AbXCAA2f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Feb 2007 19:28:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932839AbXCAA2e
+	id S932857AbXCAA3R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Feb 2007 19:29:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932853AbXCAA3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Feb 2007 19:28:34 -0500
-Received: from madara.hpl.hp.com ([192.6.19.124]:59495 "EHLO madara.hpl.hp.com"
+	Wed, 28 Feb 2007 19:29:17 -0500
+Received: from madara.hpl.hp.com ([192.6.19.124]:59515 "EHLO madara.hpl.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932835AbXCAA2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Feb 2007 19:28:33 -0500
-Date: Wed, 28 Feb 2007 16:27:58 -0800
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, ak@suse.de, tony.luck@intel.com,
-       William Cohen <wcohen@redhat.com>
-Subject: Re: debug registers and fork
-Message-ID: <20070301002758.GF23543@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <20070228212510.1E213180067@magilla.sf.frob.com> <Pine.LNX.4.44L0.0702281847330.24215-100000@netrider.rowland.org>
+	id S932850AbXCAA3Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Feb 2007 19:29:16 -0500
+Date: Wed, 28 Feb 2007 16:26:47 -0800
+To: Greg KH <gregkh@suse.de>
+Cc: Johannes Berg <johannes@sipsolutions.net>, Jarek Poplawski <jarkao2@o2.pl>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 2.6.20] kobject net ifindex + rename
+Message-ID: <20070301002647.GA7045@bougret.hpl.hp.com>
+Reply-To: jt@hpl.hp.com
+References: <20070228012741.GA3988@bougret.hpl.hp.com> <20070228153617.GA5670@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0702281847330.24215-100000@netrider.rowland.org>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20070228153617.GA5670@suse.de>
 Organisation: HP Labs Palo Alto
 Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
+E-mail: jt@hpl.hp.com
+User-Agent: Mutt/1.5.9i
+From: Jean Tourrilhes <jt@hpl.hp.com>
 X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+X-HPL-MailScanner-From: jt@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan,
+On Wed, Feb 28, 2007 at 07:36:17AM -0800, Greg KH wrote:
+> On Tue, Feb 27, 2007 at 05:27:41PM -0800, Jean Tourrilhes wrote:
+> > diff -u -p linux/drivers/base/class.j1.c linux/drivers/base/class.c
+> > --- linux/drivers/base/class.j1.c	2007-02-26 18:38:10.000000000 -0800
+> > +++ linux/drivers/base/class.c	2007-02-27 15:52:37.000000000 -0800
+> > @@ -841,6 +841,8 @@ int class_device_rename(struct class_dev
+> 
+> This function is not in the 2.6.21-rc2 kernel, so you might want to
+> rework this patch a bit :)
 
-On Wed, Feb 28, 2007 at 07:01:17PM -0500, Alan Stern wrote:
-> On Wed, 28 Feb 2007, Roland McGrath wrote:
-> 
-> > It is true that debug registers are inherited by fork and clone.
-> > I am 99% sure that this was never specifically intended, but it
-> > has been this way for a long time (since 2.4 at least).  It's an
-> > implicit consequence of the do_fork implementation style, which
-> > does a blind copy of the whole task_struct and then explicitly
-> > reinitializes some individual fields.  I suppose this has some
-> > benefit or other, but it is very prone to new pieces of state
-> > getting implicitly copied without the person adding that new state
-> > ever consciously deciding what its inheritance semantics should be.
-> > 
-> > Alan Stern is working on a revamp of the x86 debug register
-> > support.  This is a fine opportunity to clean this area up and
-> > decide positively what the semantics ought to be.
-> 
-> Absolutely.  Right now I just have a placeholder function with a note
-> about checking for CLONE_PTRACE.  The cleanest solution, far and away,
-> would be to have the child process inherit no breakpoints and no debug
-> register values.
-> 
-I agree and that is how we have it on IA-64. With debugging, there is
-always another process involved and no matter what I think it needs to 
-be aware of the new child. I don't think autoamtic inheritance is good.
-It should always be trigger by the controlling process (e.g., debugger).
-There is enough support in ptrace to catch the fork/vfork/pthread_create
-and decide what to do.  This is how I have coded perfmon so that hardware
-performance counters are never automatically inherited.
+	Thanks for all you good comments. I ported my patch to
+2.6.21-rc2, and tested it both on a hotplug and a udev system. Patch
+is attached, I would be glad if you could push that through the usual
+channels.
 
--- 
--Stephane
+	Also, I realised that I forgot to say in my original e-mail
+that migrating udev to use ifindex instead of ifname would fix the
+remove/add race condition for network devices. But that's not going to
+happen overnight...
+
+	Have fun...
+
+	Jean
+
+Signed-off-by: Jean Tourrilhes <jt@hpl.hp.com>
+
+---------------------------------------------------------
+
+diff -u -p linux/include/linux/kobject.j1.h linux/include/linux/kobject.h
+--- linux/include/linux/kobject.j1.h	2007-02-28 14:26:29.000000000 -0800
++++ linux/include/linux/kobject.h	2007-02-28 14:27:54.000000000 -0800
+@@ -48,6 +48,7 @@ enum kobject_action {
+ 	KOBJ_OFFLINE	= (__force kobject_action_t) 0x06,	/* device offline */
+ 	KOBJ_ONLINE	= (__force kobject_action_t) 0x07,	/* device online */
+ 	KOBJ_MOVE	= (__force kobject_action_t) 0x08,	/* device move */
++	KOBJ_RENAME	= (__force kobject_action_t) 0x09,	/* device renamed */
+ };
+ 
+ struct kobject {
+diff -u -p linux/net/core/net-sysfs.j1.c linux/net/core/net-sysfs.c
+--- linux/net/core/net-sysfs.j1.c	2007-02-28 14:26:45.000000000 -0800
++++ linux/net/core/net-sysfs.c	2007-02-28 14:27:54.000000000 -0800
+@@ -424,6 +424,17 @@ static int netdev_uevent(struct device *
+ 	if ((size <= 0) || (i >= num_envp))
+ 		return -ENOMEM;
+ 
++	/* pass ifindex to uevent.
++	 * ifindex is useful as it won't change (interface name may change)
++	 * and is what RtNetlink uses natively. */
++	envp[i++] = buf;
++	n = snprintf(buf, size, "IFINDEX=%d", dev->ifindex) + 1;
++	buf += n;
++	size -= n;
++
++	if ((size <= 0) || (i >= num_envp))
++		return -ENOMEM;
++
+ 	envp[i] = NULL;
+ 	return 0;
+ }
+diff -u -p linux/lib/kobject_uevent.j1.c linux/lib/kobject_uevent.c
+--- linux/lib/kobject_uevent.j1.c	2007-02-28 14:26:58.000000000 -0800
++++ linux/lib/kobject_uevent.c	2007-02-28 14:27:54.000000000 -0800
+@@ -52,6 +52,8 @@ static char *action_to_string(enum kobje
+ 		return "online";
+ 	case KOBJ_MOVE:
+ 		return "move";
++	case KOBJ_RENAME:
++		return "rename";
+ 	default:
+ 		return NULL;
+ 	}
+diff -u -p linux/drivers/base/core.j1.c linux/drivers/base/core.c
+--- linux/drivers/base/core.j1.c	2007-02-28 15:45:45.000000000 -0800
++++ linux/drivers/base/core.c	2007-02-28 15:47:30.000000000 -0800
+@@ -1007,6 +1007,8 @@ int device_rename(struct device *dev, ch
+ 	char *new_class_name = NULL;
+ 	char *old_symlink_name = NULL;
+ 	int error;
++	char *devname_string = NULL;
++	char *envp[2];
+ 
+ 	dev = get_device(dev);
+ 	if (!dev)
+@@ -1014,6 +1016,15 @@ int device_rename(struct device *dev, ch
+ 
+ 	pr_debug("DEVICE: renaming '%s' to '%s'\n", dev->bus_id, new_name);
+ 
++	devname_string = kmalloc(strlen(dev->bus_id) + 15, GFP_KERNEL);
++	if (!devname_string) {
++		put_device(dev);
++		return -ENOMEM;
++	}
++	sprintf(devname_string, "INTERFACE_OLD=%s", dev->bus_id);
++	envp[0] = devname_string;
++	envp[1] = NULL;
++
+ #ifdef CONFIG_SYSFS_DEPRECATED
+ 	if ((dev->class) && (dev->parent))
+ 		old_class_name = make_class_name(dev->class->name, &dev->kobj);
+@@ -1049,12 +1060,20 @@ int device_rename(struct device *dev, ch
+ 		sysfs_create_link(&dev->class->subsys.kset.kobj, &dev->kobj,
+ 				  dev->bus_id);
+ 	}
++
++	/* This function is only used for network interface.
++	 * Some hotplug package track interfaces by their name and
++	 * therefore want to know when the name is changed by the user. */
++	if(!error)
++		kobject_uevent_env(&dev->kobj, KOBJ_RENAME, envp);
++
+ 	put_device(dev);
+ 
+ 	kfree(new_class_name);
+ 	kfree(old_symlink_name);
+  out_free_old_class:
+ 	kfree(old_class_name);
++	kfree(devname_string);
+ 
+ 	return error;
+ }
