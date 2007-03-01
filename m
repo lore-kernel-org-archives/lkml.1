@@ -1,83 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964780AbXCAJtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964784AbXCAJx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964780AbXCAJtd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 04:49:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964783AbXCAJtd
+	id S964784AbXCAJx1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 04:53:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964785AbXCAJx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 04:49:33 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:43387 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964780AbXCAJtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 04:49:32 -0500
-Date: Thu, 1 Mar 2007 12:47:23 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
-Message-ID: <20070301094723.GJ7217@2ka.mipt.ru>
-References: <Pine.LNX.4.64.0702251428490.12485@woody.linux-foundation.org> <20070226172812.GC22454@2ka.mipt.ru> <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org> <20070226195416.GA11188@elte.hu> <20070227102832.GC23170@2ka.mipt.ru> <20070227115221.GJ8154@thunk.org> <20070227121116.GA31597@2ka.mipt.ru> <20070228161413.GA4319@ucw.cz> <20070301081808.GD7217@2ka.mipt.ru> <20070301092634.GB20171@elf.ucw.cz>
+	Thu, 1 Mar 2007 04:53:27 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:8445 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964784AbXCAJx0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 04:53:26 -0500
+X-IronPort-AV: i="4.14,234,1170651600"; 
+   d="scan'208"; a="23222380:sNHT24639048"
+Subject: Re: [PATCH -mm 4/5] Blackfin: patch add blackfin support in smc91x
+	ethernet controller driver
+From: "Wu, Bryan" <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: bryan.wu@analog.com, nico@cam.org, jgarzik@pobox.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070301013201.e43ae3f5.akpm@linux-foundation.org>
+References: <1172722530.5264.78.camel@roc-desktop>
+	 <20070301005428.e5823f15.akpm@linux-foundation.org>
+	 <1172741003.5264.88.camel@roc-desktop>
+	 <20070301013201.e43ae3f5.akpm@linux-foundation.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Thu, 01 Mar 2007 17:52:48 +0800
+Message-Id: <1172742768.5264.97.camel@roc-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <20070301092634.GB20171@elf.ucw.cz>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 01 Mar 2007 12:48:28 +0300 (MSK)
+X-Mailer: Evolution 2.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 01, 2007 at 10:26:34AM +0100, Pavel Machek (pavel@ucw.cz) wrote:
-> > > 10% gain in speed is NOT worth major complexity increase.
-> > 
-> > Should I create a patch to remove rb-tree implementation?
+On Thu, 2007-03-01 at 01:32 -0800, Andrew Morton wrote:
+> On Thu, 01 Mar 2007 17:23:23 +0800 "Wu, Bryan" <bryan.wu@analog.com> wrote:
 > 
-> If you can replace them with something simpler, and no worse than 10%
-> slower in worst case, then go ahead. (We actually tried to do that at
-> some point, only to realize that efence stresses vm subsystem in very
-> unexpected/unfriendly way).
-
-Agh, only 10% in the worst case.
-I think you can not even imagine what tricks network uses to get at
-least aditional 1% out of the box.
-Using such logic you can just abandon any further development, since it
-work as is right now.
-
-> > That practice is stupid IMO.
+> > On Thu, 2007-03-01 at 00:54 -0800, Andrew Morton wrote:
+> > > On Thu, 01 Mar 2007 12:15:29 +0800 "Wu, Bryan" <bryan.wu@analog.com> wrote:
+> > > 
+> > > > +/* check if the mac in reg is valid */
+> > > > +#define SMC_GET_MAC_ADDR(addr)					\
+> > > > +	do {							\
+> > > > +		unsigned int __v;				\
+> > > > +		__v = SMC_inw( ioaddr, ADDR0_REG );		\
+> > > > +		addr[0] = __v; addr[1] = __v >> 8;		\
+> > > > +		__v = SMC_inw( ioaddr, ADDR1_REG );		\
+> > > > +		addr[2] = __v; addr[3] = __v >> 8;		\
+> > > > +		__v = SMC_inw( ioaddr, ADDR2_REG );		\
+> > > > +		addr[4] = __v; addr[5] = __v >> 8;		\
+> > > > +		if (*(u32 *)(&addr[0]) == 0xFFFFFFFF) {		\
+> > > > +			random_ether_addr(addr);		\
+> > > > +		}						\
+> > > > +	} while (0)
+> > > 
+> > > Please follow kernel coding style:
+> > > 
+> > > 	__v = SMC_inw(ioaddr, ADDR2_REG);
+> > > 
 > 
-> Too bad. Now you can start Linux fork called Eugenix.
+> You skipped this:
 > 
-> (But really, Linux is not "maximum performance at any cost". Linux is
-> "how fast can we get that while keeping it maintainable?").
+> > > Can this not be implemented as a C function?
+> 
+> > +#define SMC_GET_MAC_ADDR(addr)					\
+> > +	do {							\
+> > +		unsigned int __v;				\
+> > +		__v = SMC_inw(ioaddr, ADDR0_REG);		\
+> > +		addr[0] = __v; addr[1] = __v >> 8;		\
+> > +		__v = SMC_inw(ioaddr, ADDR1_REG);		\
+> > +		addr[2] = __v; addr[3] = __v >> 8;		\
+> > +		__v = SMC_inw(ioaddr, ADDR2_REG);		\
+> > +		addr[4] = __v; addr[5] = __v >> 8;		\
+> > +		if (*(u32 *)(&addr[0]) == 0xFFFFFFFF) {		\
+> > +			random_ether_addr(addr);		\
+> > +		}						\
+> > +	} while (0)
+> 
+> It can be, I think...
+> 
+> Please always prefer coding in C over coding in cpp.
 
-Should I read it like: we do not understand what it is and thus we do
-not want it?
+Yes, it can be writen as a C function.
+We just follow other implementation in the drivers/net/smc91x.h
 
-> That is why, while arguing syslets vs. kevents, you need need to argue
-> not "kevents are faster because they avoid context switch overhead",
-> but "kevents are _so much_ faster that it is worth the added
-> complexity". And Ingo seems to showing you they are not _so much_
-> faster.
+start at line 1156 of
+---
+#ifndef SMC_GET_MAC_ADDR
+#define SMC_GET_MAC_ADDR(addr)                                          \
+        do {                                                            \
+                unsigned int __v;                                       \
+                __v = SMC_inw( ioaddr, ADDR0_REG );                     \
+                addr[0] = __v; addr[1] = __v >> 8;                      \
+                __v = SMC_inw( ioaddr, ADDR1_REG );                     \
+                addr[2] = __v; addr[3] = __v >> 8;                      \
+                __v = SMC_inw( ioaddr, ADDR2_REG );                     \
+                addr[4] = __v; addr[5] = __v >> 8;                      \
+        } while (0)
+#endif
+_
 
-Threadlets behave much worse without event driven model, events can
-behave worse without backed threads, they are mutually compensating.
+If you think this is necessary, we may rewrite it in C function.
 
-I posted kevent/epoll benchmarks and related design issues too many 
-times both with handmade applications (which might be broken as hell)
-and popular open-source servers to repeat them again.
-
-> 									Pavel
-> -- 
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-
--- 
-	Evgeniy Polyakov
+Thanks
+-Bryan
