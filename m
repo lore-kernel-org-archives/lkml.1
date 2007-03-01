@@ -1,70 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752389AbXCANZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965034AbXCAN1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752389AbXCANZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 08:25:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbXCANZ6
+	id S965034AbXCAN1v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 08:27:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965044AbXCAN1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 08:25:58 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:56706 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752389AbXCANZ5 (ORCPT
+	Thu, 1 Mar 2007 08:27:51 -0500
+Received: from web52902.mail.yahoo.com ([206.190.49.12]:43950 "HELO
+	web52902.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965034AbXCAN1u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 08:25:57 -0500
-Date: Thu, 1 Mar 2007 14:25:55 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Paul Mundt <lethal@linux-sh.org>
-cc: Ben Dooks <ben@fluff.org.uk>,
-       Linux Frame Buffer Device Development 
-	<linux-fbdev-devel@lists.sourceforge.net>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH] fb: sm501fb off-by-1 sysfs store
-In-Reply-To: <20070301082456.GA3701@linux-sh.org>
-Message-ID: <Pine.LNX.4.62.0703011423060.766@pademelon.sonytel.be>
-References: <20070301082456.GA3701@linux-sh.org>
+	Thu, 1 Mar 2007 08:27:50 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=nce27yiUcCZrer5xEUMIW2LONUKDsseRBw4PnIB2a6j6z4X6bntaGAqywHctpo6if97PQqvcsvOAi6XiRogrs354ZKkTSYZh3AitkBTOSd7s3LVaIlgXjrSIMysC5XI5x/BF3xWQNHxRCKwg0f6+xPzq8Yjs00bpuFF348hnzcM=;
+X-YMail-OSG: h4JyuAkVM1ki1Vm9HiXnzGGN5Tc91f3Wh_uhcIVFkR7sTBbP5OKJuM1udxj..8coVzhh71wn9dRYtWisecmcgo73TYbHFV6bvj_sqKLXKPAoJsOTR4vewNiLPxTIsMzRwnlCgzqeSdpLci9HNTqm8Ias
+Date: Thu, 1 Mar 2007 13:27:49 +0000 (GMT)
+From: Chris Rankin <rankincj@yahoo.com>
+Subject: Re: [BUG] Linux 2.6.20.1 - unable to handle kernel paging request - accessing freed memory?
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0703011330330.29829@sbz-30.cs.Helsinki.FI>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Message-ID: <700199.70204.qm@web52902.mail.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Mar 2007, Paul Mundt wrote:
-> Currently sm501fb_crtsrc_store() won't allow the routing to be changed
-> via echos from userspace in to the sysfs file. The reason for this is
-> that the strnicmp() for both heads uses a sizeof() for the string length,
-> which ends up being strlen() + 1 (\0 in the normal case, but the echo
-> gives a newline, which is where the issue occurs), this then causes a
-> mismatch and subsequently bails with the -EINVAL.
+Oh yes - I'd better mention what my Ethernet devices are:
 
-> sizeof("string") is great for making sure you have space in your buffer,
-> but rather less so for string comparisons :-)
+$ cat /proc/net/dev
+Inter-|   Receive                                                |  Transmit
+ face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo
+colls carrier compressed
+    lo:  820705   15570    0    0    0     0          0         0   820705   15570    0    0    0 
+   0       0          0
+  eth0: 3289077   14258    0    0    0     0          0       639  1379700   14175    0    0    0 
+   0       0          0
+  eth1:       0       0    0    0    0     0          0         0        0  0    0    0    0     0
+      0          0
+  eth2:       0       0    0    0    0     0          0         0        0  0    0    0    0     0
+      0          0
 
-> diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
-> index 02b290c..72b5358 100644
-> --- a/drivers/video/sm501fb.c
-> +++ b/drivers/video/sm501fb.c
-> @@ -1074,9 +1074,9 @@ static ssize_t sm501fb_crtsrc_store(struct device *dev,
->  	if (len < 1)
->  		return -EINVAL;
->  
-> -	if (strnicmp(buf, "crt", sizeof("crt")) == 0)
-> +	if (strnicmp(buf, "crt", 3) == 0)
->  		head = HEAD_CRT;
-> -	else if (strnicmp(buf, "panel", sizeof("panel")) == 0)
-> +	else if (strnicmp(buf, "panel", 5) == 0)
->  		head = HEAD_PANEL;
->  	else
->  		return -EINVAL;
 
-What about using just `strlen("string")' instead? ISTR gcc optimizes this to a
-constant. Not that it matters that much, as the actual string won't be
-duplicated.
+$ /sbin/ifconfig
+eth0      Link encap:Ethernet  HWaddr 00:0D:56:0D:E7:3F
+          inet addr:192.168.0.3  Bcast:192.168.0.255  Mask:255.255.255.0
+          inet6 addr: fe80::20d:56ff:fe0d:e73f/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:14262 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:14175 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:100
+          RX bytes:3289533 (3.1 MiB)  TX bytes:1379700 (1.3 MiB)
+          Base address:0xdcc0 Memory:ff6e0000-ff700000
 
-Gr{oetje,eeting}s,
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          inet6 addr: ::1/128 Scope:Host
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:15570 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:15570 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:820705 (801.4 KiB)  TX bytes:820705 (801.4 KiB)
 
-						Geert
+# /sbin/ifconfig eth1
+eth1      Link encap:UNSPEC  HWaddr 87-FF-FF-FF-FF-FF-FF-00-00-00-00-00-00-00-00-00
+          BROADCAST MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+# /sbin/ifconfig eth2
+eth2      Link encap:UNSPEC  HWaddr 00-02-3C-00-A1-03-71-11-00-00-00-00-00-00-00-00
+          BROADCAST MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+I think that eth1 and eth2 are both "eth1394" devices, automatically loaded on the two Firewire
+"hubs"(?) in this machine?
+
+Cheers,
+Chris
+
+
+
+		
+___________________________________________________________ 
+All New Yahoo! Mail – Tired of unwanted email come-ons? Let our SpamGuard protect you. http://uk.docs.yahoo.com/nowyoucan.html
