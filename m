@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933262AbXCAP4I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965309AbXCAQAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933262AbXCAP4I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 10:56:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933286AbXCAP4I
+	id S965309AbXCAQAP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 11:00:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965310AbXCAQAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 10:56:08 -0500
-Received: from de01egw01.freescale.net ([192.88.165.102]:36883 "EHLO
-	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933262AbXCAP4H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 10:56:07 -0500
-Message-ID: <45E6F78A.7070603@freescale.com>
-Date: Thu, 01 Mar 2007 09:55:54 -0600
-From: Timur Tabi <timur@freescale.com>
-Organization: Freescale
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.2pre) Gecko/20070111 SeaMonkey/1.1
-MIME-Version: 1.0
-To: Dan Malek <dan@embeddedalley.com>, Torben.Mathiasen@hp.com
-CC: Segher Boessenkool <segher@kernel.crashing.org>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       linux-ppc-embedded <linuxppc-embedded@ozlabs.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
-References: <45E46976.6060600@freescale.com>	<29c13109971547687159078eacdea008@kernel.crashing.org>	<45E592DC.9060700@freescale.com>	<511cacb7bbe8a65ff72738c84ec9ece4@kernel.crashing.org>	<BD465924-7387-47EF-B90F-606F215819C2@embeddedalley.com>	<45E5B604.904@freescale.com> <46F6BF70-2922-4E05-8DAB-6B0830B0AB47@embeddedalley.com> <45E5BD6B.1010509@freescale.com> <F2D0230C-CA22-4DEF-917E-6982FA0C6171@embeddedalley.com> <45E5C128.7020204@freescale.com> <45E5C333.2060100@zytor.com> <ED6BD6F0-827F-4ADC-9D66-F9C3DD7FC470@embeddedalley.com> <E919B903-0890-4725-81CF-005003A1A2F6@kernel.crashing.org> <45E5D627.6030707@zytor.com> <45E5D84A.5000502@freescale.com> <278AADB6-E175-4177-A728-5357E21697B7@kernel.crashing.org> <45E5DB49.8010205@freescale.com> <A6EED9FC-4CE4-4089-ACB8-A1C7A3C50FDD@embeddedalley.com> <a2fc3b0b25c4ad798b63b03763256a2f@kernel.crashing.org> <BE8D549F-71E4-43DE-B624-A8E4A50D094D@embeddedalley.com>
-In-Reply-To: <BE8D549F-71E4-43DE-B624-A8E4A50D094D@embeddedalley.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Mar 2007 11:00:15 -0500
+Received: from smtp01.cdmon.com ([86.109.99.230]:49726 "EHLO smtp01.cdmon.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965309AbXCAQAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 11:00:14 -0500
+Date: Thu, 1 Mar 2007 17:01:39 +0100
+From: DervishD <lkml@dervishd.net>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux Fbdev development list 
+	<linux-fbdev-devel@lists.sourceforge.net>
+Subject: Re: tdfx framebuffer garbles display in 2.6.19.5
+Message-ID: <20070301160139.GA102@DervishD>
+Mail-Followup-To: "Antonino A. Daplas" <adaplas@gmail.com>,
+	Linux-kernel <linux-kernel@vger.kernel.org>,
+	Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+References: <20070226144744.GA3615@DervishD> <1172503471.20842.14.camel@daplas> <20070226171334.GB13496@DervishD> <1172510654.7101.11.camel@daplas> <20070226203223.GA161@DervishD> <1172617755.13422.0.camel@daplas>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1172617755.13422.0.camel@daplas>
+User-Agent: Mutt/1.4.2.2i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Malek wrote:
+    Hi Antonino :)
 
-> People have used more than 4, but we just
-> allocated the additional /dev entries to cover
-> them.  I know of only one time this has happened.
-> It's such a custom case that the other device
-> names didn't matter.
+ * Antonino A. Daplas <adaplas@gmail.com> dixit:
+> Can you try this patch?  It might help with the screen corruption.
 
-Ok guys, I need a consensus here.  Are we going to allocate a second block of 4 minor 
-numbers for the QE/CPM UART or not?
+    With the patch, the scroll slows to a crawl and the system is
+unusable. The time to scroll 30 lines is about a minute or so (probably
+more, I just measured for a while).
 
-My driver already has a macro that limits the number of UARTS to 4, and it just uses minor 
-numbers 47 through (47 + UCC_MAX_UART - 1).  So my driver can easily be modified to spill 
-into the Altic's range if some custom board needs it.
+    If you want me to test other patches, just tell :)
 
-I'll add a second TTY struct to handle the 2nd set of minor numbers if and only if 
-devices-2.6+.txt is updated with that information.
+    Raúl Núñez de Arenas Coronado
 
 -- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
