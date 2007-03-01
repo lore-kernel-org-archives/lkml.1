@@ -1,76 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932089AbXCAMUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932111AbXCAMVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932089AbXCAMUk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Mar 2007 07:20:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933261AbXCAMUk
+	id S932111AbXCAMVs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Mar 2007 07:21:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933259AbXCAMVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Mar 2007 07:20:40 -0500
-Received: from uhweb15152.united-hoster.com ([85.88.15.152]:50898 "EHLO
-	uhweb15152.united-hoster.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932089AbXCAMUj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Mar 2007 07:20:39 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Mar 2007 07:20:39 EST
-From: Frank Seidel <linux@f-seidel.de>
-To: Dan Williams <dan.j.williams@intel.com>
-Subject: Re: PROBLEM: null pointer dereference in cfq_dispatch_requests (2.6.21-rc2 and 2.6.20)
-Date: Thu, 1 Mar 2007 13:08:27 +0100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <1172685755.5773.6.camel@dwillia2-linux.ch.intel.com>
-In-Reply-To: <1172685755.5773.6.camel@dwillia2-linux.ch.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Mar 2007 07:21:48 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:50361 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932111AbXCAMVr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Mar 2007 07:21:47 -0500
+Date: Thu, 1 Mar 2007 15:19:40 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
+       Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Zach Brown <zach.brown@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/13] Syslets, "Threadlets", generic AIO support, v3
+Message-ID: <20070301121940.GA20952@2ka.mipt.ru>
+References: <Pine.LNX.4.64.0702260938450.12485@woody.linux-foundation.org> <200703011214.45144.dada1@cosmosbay.com> <20070301112017.GB27381@2ka.mipt.ru> <200703011228.01144.dada1@cosmosbay.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-Message-Id: <200703011308.28266.linux@f-seidel.de>
+In-Reply-To: <200703011228.01144.dada1@cosmosbay.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 01 Mar 2007 15:20:24 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 28. Februar 2007 19:02 schrieb Dan Williams:
-> I can reliably reproduce a null pointer dereference on 2.6.20 and
-> 2.6.21-rc2.  I will keep digging to find the kernel version where
-> this last worked, but wanted to see if there were any immediate
-> experiments I should try.
-> ...
-> Kernel 2.6.21-rc2 on an i686
-> ...
-> [  431.709022] BUG: unable to handle kernel NULL pointer dereference
-> at virtual address 0000005c [  431.717993]  printing eip:
-> ...
-> [  431.825386] EIP is at cfq_dispatch_insert+0xb/0x53
-> ...
-> [  431.887396]  [<c01e1fc9>] cfq_dispatch_requests+0x138/0x3f0
-Hi,
-unfortunately i yet don't really have much/enough knowledge of cfq and 
-the kernels inwards at the moment...
-but looking at cfq_dispatch_insert+0xb it seems the struct request 
-pointer given (as second parameter by cfq_dispatch_request) was NULL 
-and dereferencing it in the RQ_CFQQ macro leads to this oops.
+On Thu, Mar 01, 2007 at 12:28:00PM +0100, Eric Dumazet (dada1@cosmosbay.com) wrote:
+> I used the CVS version of oprofile plus a patch you can find in the mailing 
+> list archives. Dont remember exactly, since I hit this some months ago
 
-The "break"-out patch below for __cfq_dispatch_request might be at least 
-a possible workaround for this, but it could also be total bullsh.. 
-Perhaps someone smarter might pick this up.. and give a real fix.
+Ugh, I started - but CVS compilation requires about 40mb of additional
+libs (according to debian testing dependencies on my very light
+installation), so with my miserable 1-1.6 kb/sec do not expect it today :)
 
-Have fun,
-Frank
----
-
- block/cfq-iosched.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/block/cfq-iosched.c
-===================================================================
---- linux-2.6.orig/block/cfq-iosched.c
-+++ linux-2.6/block/cfq-iosched.c
-@@ -962,7 +962,8 @@ __cfq_dispatch_requests(struct cfq_data
-                 * follow expired path, else get first next available
-                 */
-                if ((rq = cfq_check_fifo(cfqq)) == NULL)
--                       rq = cfqq->next_rq;
-+                       if ((rq = cfqq->next_rq) == NULL)
-+                               break;
-
-                /*
-                 * finally, insert request into driver dispatch list
+-- 
+	Evgeniy Polyakov
